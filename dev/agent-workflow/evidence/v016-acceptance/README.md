@@ -1,0 +1,151 @@
+# V016 acceptance — Gate 3 joint acceptance (DEV-LIVE)
+
+- **Candidate under test:** `origin/integration/v0.1.6` @ `c66fa8b03` (frozen for this run).
+- **Worktree / branch:** `.worktrees/v016-accept` on `task/v016-acceptance-20261109`, created off exactly `c66fa8b03`.
+- **Host baseline:** `@deepseek-ai/dsh@0.2.0-rc.2` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (`tests/paths.mjs`).
+- **Record class:** DEV-LIVE. No `V@B`, no grade, no `CANDIDATE-C2` claim. A red measurement reported as red is worth more than a green one we cannot defend.
+- **Product changes:** none. `CORE PATCH BUDGET = 0`; every scenario below runs on the frozen tree with operator config only (blueprint + profile patch + kit flags).
+- **Head discipline:** every row in the table was measured on `c66fa8b03`. When the candidate moves, re-runs on the new head are appended in [Re-runs on a moved head](#re-runs-on-a-moved-head) and labelled with their head; rows above are not rewritten.
+
+## Result table
+
+| # | Acceptance item | Result | Decisive line |
+| --- | --- | --- | --- |
+| A | Alpha.5 zero-regression E2E, `run-boot.mjs --boots 2` | **PASS** (2/2 boots agreeing) | `RESULT PASS (2/2 boots; agreeing pair=true)` |
+| B1 | Alpha.6 normal allow → execute | **PASS** (r1+r2 agree) | `PASS A6-27: ... executed=true ... outcome=succeeded facts=1` |
+| B2 | Alpha.6 deny + post-consumption negative | **PASS** (r1+r2 agree) | `PASS A6-28: ... consumed=false execFacts=0 file=false` / `PASS A6-29: ... consumed=true execFacts=failed` |
+| B3 | Alpha.6 declared Leader exception | **PASS** (r1+r2 agree) | `PASS A6-10: the PA leg of a declared Leader exception was decided by the Leader, never the Officer` |
+| B4 | Alpha.6 Stop before consumption | **PASS** (r1+r2 agree) | `PASS A6-12: Stop before consumption prevents execution; a second allow is rejected as already decided — consumed=false file=""` |
+| B5 | Alpha.6 crash / restart | **PASS** (r1+r2 agree) | `PASS A6-14: after a Host crash the dead invocation is settled without a deny rewrite and a late human allow cannot execute it` |
+| B6 | Alpha.6 CLAIMED inbox recovery | **PASS** (r1+r2 agree) | `PASS A6-25: a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided` |
+| B7 | Alpha.6 ACCEPTED-but-unclaimed (A6-26) | **FAIL** (r1+r2 agree; expected defect) | `FAIL A6-26: ... pendingBefore=1 pendingAfter=0 discoverable=true pendingCount=0 abandoned=1 recoveryCode=CONTROL_REQUEST_ABANDONED restart=ok verdict=abandoned-terminal` |
+| C | Ordinary-install joint flow, **0.1.6 tarball**, run twice | **PASS with 2 findings** (r1+r2 agree) | `cold recovery: member=true goal=paused rounds=1->1 records=51->51 ok=true` |
+| D | Required CI on the candidate | **see §CI** | filled from the pushed branch |
+
+Every A6 row was run twice back-to-back on the same ports in sequence and the two runs produced the **same check set with the same verdicts**; the only row that fails is B7, and it fails identically in both runs.
+
+## A. Alpha.5 zero-regression E2E
+
+```
+node tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs --boots 2
+```
+
+- 19/19 cases PROVEN in both boots, agreement `agree` for every case, `RESULT PASS (2/2 boots; agreeing pair=true)`, host porcelain empty after the run.
+- **A6 plane is NOT loaded:** `runs/boot01/preset-effective.json` and `runs/boot02/preset-effective.json` contain **no `alpha6*` key at all** (`alpha6` does not occur anywhere in the effective preset). The A5 E2E therefore measures the Alpha.5 path, not an accidental Alpha.6 boot.
+- Raw evidence: `a5-e2e-r1/driver.log`, `a5-e2e-r1/agreement.json`, `a5-e2e-r1/runs/boot01|boot02/` (snapshot of the tracked driver output taken immediately after the run; the tracked driver evidence directory was restored to its committed state).
+
+## B. Alpha.6 approval plane (real Host boots)
+
+Kit: `tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs` with `C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1` and the per-arm flag. Two consecutive runs per arm, evidence per run.
+
+| Arm | Flags | Runs | Checks |
+| --- | --- | --- | --- |
+| normal allow | `C1_A6_*` default | `a6-allow-r1`, `a6-allow-r2` | A6-1,2,3,4,5,6,27 PASS |
+| deny + negatives | `C1_A6_EXEC_NEG=1` (deny arm) | `a6-deny-r1`, `a6-deny-r2` | A6-1,2,3,4,5,6,7,27,28,29 PASS |
+| exception / escalation | `C1_A6_EXCEPTION=1` | `a6-exception-r1`, `a6-exception-r2` | A6-1,2,3,4,5,6,10,27 PASS |
+| Stop | `C1_A6_STOP=1` | `a6-stop-r1`, `a6-stop-r2` | A6-1,11,12 PASS |
+| crash / restart | `C1_A6_CRASH=1` | `a6-crash-r1`, `a6-crash-r2` | A6-1,13,14 PASS |
+| inbox CLAIMED | `C1_A6_INBOX=1` | `a6-inbox-r1`, `a6-inbox-r2` | A6-1,25 PASS |
+| inbox ACCEPTED-unclaimed | `C1_A6_INBOX_UNCLAIMED=1` | `a6-unclaimed-r1`, `a6-unclaimed-r2` | A6-26 **FAIL** in both |
+
+`a6-arms.log` is the master log (one line per arm, exit code, FAIL lines).
+
+### B7 — A6-26 is red, and it is the known defect
+
+The two runs fail identically:
+
+```
+FAIL A6-26: an ACCEPTED-but-never-CLAIMED wake after restart is claimed EXACTLY once,
+or stranded with a discoverable durable request (never duplicated) —
+accepted=review-wake:... pendingBefore=1 pendingAfter=0 discoverable=true pendingCount=0
+abandoned=1 recoveryCode=CONTROL_REQUEST_ABANDONED restart=ok verdict=abandoned-terminal
+```
+
+The durable facts behind it (`a6-inbox-unclaimed.json`): `control-request-abandoned` with `reason:
+"invocation-abandoned"`, `requestFactVisible: true`, `pendingControlCount: 0`, `wakesAfterRestart: 0`,
+`deliveredAfterRestart: 0` — i.e. **no duplicate execution and no redelivery**; the request is visible in
+the ledger page but is **not in the pending-control list and cannot be decided**.
+
+**Release Notes sentence it should match** (`RELEASE-NOTES-0.1.6.md` §5):
+
+> "the durable control request is marked `control-request-abandoned` with reason `invocation-abandoned`;
+> the request is **not decidable afterwards**: `team_resolve_control` is refused with the typed
+> `CONTROL_REQUEST_ABANDONED` ('can never become an allow'); the Inbox wake is not redelivered."
+
+and the narrow promise:
+
+> "an accepted wake may end in a durable, discoverable, side-effect-free abandonment; it is not a
+> promise that every accepted wake is …"
+
+**Discrepancy, stated plainly:** the note's word "discoverable" holds only for the **ledger page**
+(`requestFactVisible: true`), not for the **pending-control surface** the kit's A6-26 checks
+(`pendingControlCount: 0`, `pendingAfter: 0`). An operator who looks only at
+`team_list_pending_control` sees nothing; an operator who reads the ledger page sees the abandonment.
+The note's other clauses (reason `invocation-abandoned`, typed `CONTROL_REQUEST_ABANDONED`,
+no redelivery, no duplicate execution, recovery = re-issue) are exactly what was measured. The note
+does not say "recovery = re-issue" in the sentence quoted above; it says it two paragraphs later
+("Recovery is re-issue, not resolve."). Nothing was smoothed.
+
+## C. Ordinary-install joint flow on the 0.1.6 artifact (run twice)
+
+Driver: `install-flow.mjs`. Per run it creates a **fresh world** and performs the ordinary install:
+
+1. `pnpm pack` of the frozen tree → `dsh-agent-team-0.1.6.tgz`, **4,358,631 bytes**, sha256
+   `e23257e8b07b6590904fa680b6a81c3a7a33f7b747f285f90018c506400a3929` (the 0.1.6 artifact, not an
+   older tarball).
+2. A clean directory containing **only** `@deepseek-ai/dsh@0.2.0-rc.2` (`npm install`-clean, plus the
+   plugin's own dependency store).
+3. Real CLI install: `dsh plugin --profile web add <tarball>` → `+ dsh-agent-team`, 7 packages, and a
+   profile whose bundles are `[@deepseek-ai/dsh-base, @deepseek-ai/dsh-web-app, dsh-agent-team]` (no
+   `@deepseek-ai/dsh-tools`, so the PD-37 shape holds).
+4. Profile patch = operator config: the shipped host row with the documented opt-in governed-member
+   realm (`memberPresetId: a5sf-governed-member`, `a5sfGovernedRealm: true`), real model
+   `qiyuan-self/deepseek-v4.1-flash-1017` via `llm-pi-ai`, and a v4 blueprint with `memberIoCeilings`.
+5. Real `dsh web`, then the joint flow over the public RPCs: Team create → Member execute → approval →
+   Goal → Stop → collect → SIGKILL + cold restart on the same `DSH_HOME`.
+
+Both runs agree:
+
+| Step | r1 (`install-r1/flow.log`) | r2 (`install-r2/flow.log`) |
+| --- | --- | --- |
+| `team.create` | `status=200 ok=true` | `status=200 ok=true` |
+| Member created by the real Leader model | `label=w1` created, `childSessionId` set | same |
+| Member bash side effect | `body="INSTALL_FLOW_r1"` | `body="INSTALL_FLOW_r2"` |
+| Goal on the Member | `phase=active roundsStarted=1` | `phase=active roundsStarted=1` |
+| Stop (`goals/pause` + `session/cancel`) | `pause=true cancel=200 phase=paused rounds=1 recordsDelta=0 ok=true` | same |
+| Result collection | `collect: ok=true` | `collect: ok=true` |
+| Cold recovery (SIGKILL + restart) | `member=true goal=paused rounds=1->1 records=51->51 ok=true` | same |
+
+**Finding C-1 (honest red for one sub-step):** the shipped default **did not surface a human approval
+prompt** for the Member's bash. In both runs the governed Member executed the command and the durable
+approval never appeared (`no pending control for the member bash; side effect already present ->
+approval=none-required`). The `人工审批` step is only real with the Alpha.6 approval plane, which is
+**opt-in and experimental** (`RELEASE-NOTES-0.1.6.md` §2) and is measured in part B; an ordinary
+install with the governed preset configured as documented executes without a prompt. This is recorded,
+not worked around, and no product change was made to force a prompt.
+
+**Finding C-2 (measurement, not a defect claim):** after Stop, the Leader's `team_collect` still
+returns the Member's settled body (`collect: ok=true` in both runs). Stop freezes goal rounds
+(`rounds=1->1`, `recordsDelta=0` over the 15 s quiet window) but does not hide the already-settled
+work result.
+
+Limitations: no headless browser is available in this environment (`bsk` missing), so Stop and the
+approval decision were issued through the **exact RPCs the buttons issue** (`goals/get`,
+`goals/pause`, `session/cancel`, `team.resolveControl`) — **no DOM click occurred**.
+
+The scratch worlds (`tests/homes/v016-install-r1|r2`) are gitignored and deleted after the run; no
+credential file is copied into any `DSH_HOME` (the driver never writes credentials; the model key is
+resolved by the host from the operator store).
+
+## D. Required CI
+
+_(filled after the acceptance branch is pushed and the draft PR is opened; see §CI below.)_
+
+## Teardown / hygiene
+
+- Two Hosts maximum at a time; all ports in the 3180 family or an ephemeral pair from the reserved
+  ranges; `:3080` and the stable dev instance were never addressed (`pre-stable-probe: 3080=401` in
+  every run; `3180` unreachable throughout).
+- Every run tears its Host down; A6 kit homes are removed unless `--keep`.
+- The tracked `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/` directory is byte-restored; only
+  this new `v016-acceptance/` directory is added by the commit.

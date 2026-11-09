@@ -1,0 +1,16 @@
+[2026-11-09T19:39:30.121Z] c1 real-host smoke — stamp 2026-11-09T19-39-30
+[2026-11-09T19:39:30.121Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept
+[2026-11-09T19:39:30.121Z] testuse=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-09T19:39:30.121Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/dev/agent-workflow/evidence/v016-acceptance/a6-inbox-r1
+[2026-11-09T19:39:30.167Z] ports: host=3163 mock=3480
+[2026-11-09T19:39:35.177Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-09T19:39:35.179Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-09T19:39:35.184Z] mock model listening on 3480
+[2026-11-09T19:39:37.781Z] host booted at http://127.0.0.1:3163; row ready — toolCount=15
+[2026-11-09T19:39:37.781Z] ── L0: discovery ──
+[2026-11-09T19:39:38.200Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-09T19:39:38.200Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-09T19:39:38.201Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-09T19:39:38.203Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-09T19:39:38.914Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-lkvj2ri6c","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-09T19-39-30","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:0a986f4a0070929f59e2264ce2c4eb35dcb0a19b46803e5cd0a2f3716b3491bd"},"createdAt":"2026-11-09T19:39:38.239Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wor
+[2026-11-09T19:41:25.284Z] PASS A6-25: a wake claimed by a crashed turn is replaced by exactly one new wake; its durable request is preserved or decided — intent=review-wake:session-c1-smoke-a6-2026-11-09T19-39-30:inst-04x4zvx0myda:1:a6wake%3Av1%3A1%3A204222ec pendingBefore=1 rows=1->1->0 wakes=1->2->2 pending=1 restart=ok

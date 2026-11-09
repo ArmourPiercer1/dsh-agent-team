@@ -1,0 +1,120 @@
+{
+  "schema": "v016-install-flow/1",
+  "run": "1",
+  "steps": {
+    "mount": {
+      "ok": true,
+      "at": "2026-11-09T19:43:33.675Z"
+    },
+    "teamCreate": {
+      "status": 200,
+      "ok": true,
+      "error": null
+    },
+    "memberCreated": {
+      "member": {
+        "instanceId": "inst-1ls3ps80m8r9",
+        "templateId": "worker",
+        "label": "w1",
+        "lifecycle": "CREATED",
+        "childSessionId": "session-team-child-c13d580c4e3905cd03b88d68a892af83",
+        "result": null
+      },
+      "members": [
+        {
+          "instanceId": "inst-1ls3ps80m8r9",
+          "templateId": "worker",
+          "label": "w1",
+          "lifecycle": "CREATED",
+          "childSessionId": "session-team-child-c13d580c4e3905cd03b88d68a892af83",
+          "result": null
+        },
+        {
+          "instanceId": "inst-leader",
+          "templateId": "leader",
+          "label": "leader",
+          "lifecycle": "RUNNING",
+          "childSessionId": null,
+          "result": null
+        }
+      ]
+    },
+    "pendingControl": {
+      "request": null,
+      "finding": "no durable approval was surfaced for the member bash in the shipped configuration"
+    },
+    "humanApprove": {
+      "ok": false,
+      "skipped": true,
+      "finding": "member bash executed without an approval prompt; approval required the opt-in A6 plane (measured in part B)"
+    },
+    "memberExecuted": {
+      "ok": true,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept/tests/homes/v016-install-r1/ws/install-flow-r1.txt",
+      "body": "INSTALL_FLOW_r1"
+    },
+    "executionFacts": {
+      "consumption": null,
+      "execution": null
+    },
+    "goal": {
+      "ok": true,
+      "goal": {
+        "id": "goal-7c647998-3bb1-4526-947b-6d1c85e44e29",
+        "revision": 1,
+        "objective": "v016 install-flow goal INSTALL_FLOW_r1",
+        "phase": "active",
+        "maxGoalRounds": 3,
+        "roundsStarted": 1,
+        "createdAt": 1794253430459,
+        "updatedAt": 1794253430459,
+        "activation": "armed"
+      }
+    },
+    "stop": {
+      "before": {
+        "phase": "active",
+        "revision": 1,
+        "roundsStarted": 1
+      },
+      "pause": {
+        "status": 200,
+        "ok": true,
+        "value": {
+          "id": "goal-7c647998-3bb1-4526-947b-6d1c85e44e29",
+          "revision": 2,
+          "objective": "v016 install-flow goal INSTALL_FLOW_r1",
+          "phase": "paused",
+          "maxGoalRounds": 3,
+          "roundsStarted": 1,
+          "createdAt": 1794253430459,
+          "updatedAt": 1794253431261,
+          "activation": "disarmed"
+        },
+        "error": null
+      },
+      "cancel": {
+        "status": 200,
+        "ok": true
+      },
+      "after": {
+        "phase": "paused",
+        "revision": 2,
+        "roundsStarted": 1
+      },
+      "note": "goals/get -> goals/pause -> session/cancel -> goals/get are the RPCs the Stop button issues; no DOM click occurred (no headless browser in this environment).",
+      "silentWindowMs": 15000,
+      "recordsBefore": 50,
+      "recordsAfter": 50,
+      "recordsDelta": 0,
+      "roundsAfter": 1,
+      "ok": true
+    },
+    "collect": {
+      "ok": true,
+      "body": "[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"session-v016-install-root-r1\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"tok-install-flow-r1-delegate\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-1ls3ps80m8r9\\\",\\\"admittedSequence\\\":2,\\\"settledSequence\\\":5,\\\"memberResult\\\":{\\\"body\\\":\\\"Command output:\\\\n\\\\n```\\\\nINSTALL_FLOW_r1\\\\n```\\\\n\\\\nExit code 0, no stderr. File `install-flow-r1.txt` created in the workspace (`.`) with contents `INSTALL_FLOW_r1` (no trailing newline, per `printf`).\\\",\\\"requestToken\\\":\\\"tok-install-flow-r1-delegate\\\",\\\"status\\\":\\\"succeeded\\\"}}]},\\\"requestToken\\\":\\\"tok-install-flow-r1-collect\\\"}\"}]"
+    }
+  },
+  "ok": true,
+  "origin": "http://127.0.0.1:3197"
+}
