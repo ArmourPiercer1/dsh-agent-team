@@ -1,0 +1,37 @@
+# install transcript (excerpt; full trees in .scratch/install-smoke, gitignored)
+
+## 1. pack
+$ pnpm pack --pack-destination .scratch/install-smoke
+4208998 .scratch/install-smoke/dsh-agent-team-0.1.1-alpha.2.tgz
+
+## 2. clean host install (pnpm, isolated linker)
+$ cd .scratch/install-smoke/app && pnpm install --store-dir ../pnpm-store
+node_modules/@deepseek-ai/dsh/lib/bin.js --version -> 0.2.0-rc.2
+
+## 3. plugin install through the real CLI
+$ DSH_HOME=<home> node .../dsh/lib/bin.js plugin --profile web add <tarball>
+Packages: +21
+Done in 2.6s using pnpm v11.7.0
+
+## 4. resulting profile package.json (dependencies + bundles)
+{
+  "dependencies": {
+    "dsh-agent-team": "file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd36-install-smoke/.scratch/install-smoke/dsh-agent-team-0.1.1-alpha.2.tgz"
+  },
+  "bundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-agent-team"
+  ]
+}
+
+## 5. installed tree (depth 2)
+.
+./.agents
+./.agents/skills
+./README.md
+./cordis.patch.yml
+./package.json
+./packages
+./packages/client
+./packages/runtime

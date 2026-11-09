@@ -1,0 +1,7 @@
+{
+  "artifact": "dsh-agent-team-0.1.1-alpha.2.tgz",
+  "producedBy": "pnpm pack --pack-destination .scratch/install-smoke (worktree clean before/after)",
+  "bytes": 4208998,
+  "sha256": "bea32690ba57661f4a940b3f2f3efa71e9789818c64bbad7520db4df290ce366",
+  "packageManager": "pnpm pnpm/11.7.0 npm/? node/v24.21.0 linux x64"
+}
