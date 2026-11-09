@@ -1,0 +1,39 @@
+# PD-37 — why pnpm-lock.yaml is byte-identical while the peer set goes 10 -> 15
+# captured 2026-11-09 in .worktrees/pd37-installed-tools
+
+## 1. the lockfile really is untouched vs the base commit
+$ git diff 838f9d919 HEAD --stat -- pnpm-lock.yaml
+(no output above = no change)
+
+## 2. the root importer already carried all fifteen, at the same exact specifier
+# pnpm 11 records a resolution per name in the importer regardless of whether the
+# specifier sits in dependencies or peerDependencies; the five moved names keep the
+# same 0.2.0-rc.2 specifier, so the importer entry is identical before and after.
+--- dsh-skill
+41:      '@deepseek-ai/dsh-skill':
+42-        specifier: 0.2.0-rc.2
+43-        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-scope@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)))
+--- dsh-tool-fs
+50:      '@deepseek-ai/dsh-tool-fs':
+51-        specifier: 0.2.0-rc.2
+52-        version: 0.2.0-rc.2(bf0da04cc963a4827c7c5eca38b096b0)
+--- dsh-tool-web
+56:      '@deepseek-ai/dsh-tool-web':
+57-        specifier: 0.2.0-rc.2
+58-        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-system-prompt@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-scope@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-invariants@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))))(@deepseek-ai/dsh-tools@0.2.0-rc.2(52b5a8ab481be2b3d891c22a71641755))(@deepseek-ai/dsh-web@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)))
+--- dsh-tools
+59:      '@deepseek-ai/dsh-tools':
+60-        specifier: 0.2.0-rc.2
+61-        version: 0.2.0-rc.2(52b5a8ab481be2b3d891c22a71641755)
+--- dsh-web-fetch-http
+62:      '@deepseek-ai/dsh-web-fetch-http':
+63-        specifier: 0.2.0-rc.2
+64-        version: 0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-http-proxy@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-timeout@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4))(@deepseek-ai/dsh-web@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)(@deepseek-ai/dsh-llm@0.2.0-rc.2(@deepseek-ai/cordis@4.0.4)))
+
+## 3. frozen install still agrees with the lockfile
+$ pnpm install --frozen-lockfile --offline
+Already up to date
+Done in 336ms using pnpm v11.7.0
+
+## 4. the repo's installer check agrees too
+FAIL check-install-manifest: 14 issue(s) over 555 graph visit(s); lock leg: PASS

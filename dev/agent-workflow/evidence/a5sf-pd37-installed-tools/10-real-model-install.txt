@@ -1,0 +1,65 @@
+# PD-37 REAL-MODEL, REAL-INSTALL RUN — install shape + provider row
+# captured 2026-11-09 from home tests/dsh-homes/pd37/real2 (port 3214)
+
+## artifact
+61fd2e48d4d78593d2d8cd16efe8c737f50d794d80d4a93b96dd8d695169efb4  /home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/pack-final3/dsh-agent-team-0.1.1-alpha.2.tgz
+
+## profile package.json (written by the real CLI: `dsh plugin --profile web add <tgz>`)
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  },
+  "dependencies": {
+    "dsh-agent-team": "file:/home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/pack-final/dsh-agent-team-0.1.1-alpha.2.tgz"
+  }
+}
+
+## profile @deepseek-ai packages (3; dsh-tools absent)
+cosmokit
+dsh-web-search-exa
+schemastery
+
+## profile patch: provider row (this is a USER config row, not a product change)
+- id: llm-pi-ai
+  name: "@deepseek-ai/dsh-llm-pi-ai"
+  config:
+    providers:
+      qiyuan-self:
+        apiKeyEnv: QIYUAN_SELF_API_KEY
+        api: openai-completions
+        baseURL: http://58.57.119.30:52010/v1
+        models:
+          - id: deepseek-v4.1-flash-1017
+            name: deepseek-v4.1-flash-1017
+            maxTokens: 8000
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: qiyuan-self
+    model: deepseek-v4.1-flash-1017
+
+## host boot log (plugin mounted)
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/tests/dsh-homes/pd37/real2/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3214/?token=Ffq1vxl-zU4v-47kWtnDO5ludUplRg3nCqMTjvHVrlk
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+
+## model selection (RPC session/selectModel)
+see 12-real-model-summary.json .model
+
+## workspace artifacts (what the model itself wrote)
+total 16
+drwxr-xr-x 2 armourpiercer armourpiercer 4096 Nov  9 13:06 .
+drwxr-xr-x 6 armourpiercer armourpiercer 4096 Nov  9 13:06 ..
+-rw-r--r-- 1 armourpiercer armourpiercer  103 Nov  9 13:06 pd37-goal.txt
+-rw------- 1 armourpiercer armourpiercer   12 Nov  9 13:05 pd37-real.txt
+--- ws/pd37-real.txt
+PD37_REAL_OK--- ws/pd37-goal.txt
+1. Send explicit Cache-Control headers (max-age, s-maxage) rather than relying on heuristic freshness.

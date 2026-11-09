@@ -110,6 +110,35 @@ profile 内 `dsh-tools` 也能复现同一错误）。证据：`dev/agent-workfl
 2026-11-09 两轮实测通过（fetch / fs / goal ≥2 轮 / Stop）。"** §2.3 的"待修复（PD-36）"由本句取代，PD-36 作为
 **历史读数**保留——它记录的是**已发布产物里真实存在过的阻塞**，不是措辞问题。
 
+### 2.3.2 真实模型 × 真实安装：**同一次运行里**四件事都发生（2026-11-09 追加）
+
+§2.3.1 的两轮用的是**脚本化模型**（工具调用由脚本决定），PD-36 用的是**真实模型**但只到"第一次工具调用"。
+外部审查要的那句话是两者**同时**成立。本节是一次把两者放在一起的运行：**同一个已安装 artifact**
+（`sha256 61fd2e48…`）、**真实 provider**（`qiyuan-self` / `deepseek-v4.1-flash-1017`，走 profile 的
+`llm-pi-ai` provider 行 + `agent-default-model`，凭据取本机 credential store）、**模型自己决定调什么工具**
+（没有任何 tool-call 脚本）。证据：`10-real-model-install.txt`、`11-real-model-session.jsonl`（91 个事件）、
+`12-real-model-summary.json`。
+
+| 回合 | 模型自己发出的调用 | 结果 |
+| --- | --- | --- |
+| 1 | `web_fetch` `https://registry.npmjs.org/-/ping` → `write` → `read` | **HTTP 200**（`meta.statusCode=200`）；写入并读回 `PD37_REAL_OK`；`turn/end completed` |
+| 2 | `create_goal`（`max_goal_rounds: 5`）→ `bash` 追加清单第 1 条 → `read` | goal `active`、`revision 1`；`turn/end completed`（goal 第 1 轮） |
+| 3 | `write` → `read`（改第 1 条措辞） | `turn/end completed`（goal 第 2 轮；`roundsStarted=2`） |
+| 4 | （Stop 打断） | `goal/change pause` → `phase=paused`、`armed → disarmed`；`turn/end {kind:'aborted', reason:{kind:'user'}}`；**abort 之后零事件**（`events_after_abort=0`，日志最后一条就是这次 `turn/end`） |
+
+**三个断言，一句一个，不合并**：
+1. **真实安装上工具会执行**——脚本化模型两轮（§2.3.1）+ 真实模型一轮（§2.3.2）都测到了。
+2. **真实模型会在真实安装上跑回合并发起工具调用**——PD-36 测到"发起"，§2.3.2 测到"发起并完成"。
+3. **四件事（fetch / fs 读写 / goal ≥2 轮 / Stop）在一次真实模型 × 真实安装的运行里全部发生**——§2.3.2，**n=1**
+   （一个 provider、一个模型、一次运行）。
+
+**这次运行没有证明的（同样一句一条）**：`team.create` → Leader 回合未在本 lane 重测；Stop 走的是按钮发出的同一组
+RPC（无 headless 浏览器，未点击 DOM）；重启后不续跑未测；`n=1` 不同于"稳定"，它是"存在性证明"。
+
+**因此对外表述（替换 §2.3.1 末句，仍然只此一句）**：**"普通安装（`dsh plugin add` + `dsh web`）的工具执行可用：
+真实模型在已安装 artifact 上完成了 fetch / 文件读写 / goal 两轮 / Stop（2026-11-09，一次运行）。"**
+PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——它记录的是**已发布产物里真实存在过的阻塞**。
+
 **这次修复没有证明的东西（逐条披露）**：
 1. **未重测** `team.create` → Leader 回合：PD-36 里该链路在"第一次工具调用"之前是绿的，本 lane 只跑了普通会话；
    代码未变，但**没有**在本 lane 重新测量，`team_collect` 同理。
@@ -205,8 +234,9 @@ profile 内 `dsh-tools` 也能复现同一错误）。证据：`dev/agent-workfl
 - 新事实：**PD-37** 定位并修复了那条阻塞（我们清单里的重复核心拷贝），并在**安装形态**下连续两轮实测通过
   （`web_fetch` / fs 读写 / goal ≥2 轮 / Stop）。全部读数 = §2.3.1 与
   `dev/agent-workflow/evidence/a5sf-pd37-installed-tools/`。
-- 因此：**"装完即可用"这一句自本 lane 起成立**，条件是 §2.1/§2.2 的部署前置条件照旧；**但**它只覆盖工具执行，
-  不覆盖本 lane **未重测**的 `team.create` 之后链路（§2.3.1 末条）。
+- 因此：**"装完即可用"这一句自本 lane 起成立**，条件与范围逐条固定为：§2.1/§2.2 的部署前置条件照旧；成立的是
+  **工具执行**（真实模型在已安装 artifact 上完成 fetch / fs / goal 两轮 / Stop，§2.3.2，n=1）；**不**覆盖本 lane
+  **未重测**的 `team.create` 之后链路、DOM 点击 Stop、重启不续跑。
 - 旧判定（`PREVIEW-GO`、`V@B`、等级、`release BLOCKED`）**一字不动**；本节只更正措辞，不移动任何裁决。
 - 落点：本文件 §2.3.1 与 §5.3（均为追加）；`PRODUCT-DEBT-REGISTER.md` 的 **PD-37** 行。
 

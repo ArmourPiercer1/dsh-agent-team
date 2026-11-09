@@ -2,7 +2,7 @@
   "name": "dsh-agent-team",
   "version": "0.1.1-alpha.2",
   "private": true,
-  "description": "DSH Agent Team vNext plugin set \u2014 public-seam only, CORE PATCH BUDGET = 0.",
+  "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
   "type": "module",
   "packageManager": "pnpm@11.7.0",
   "engines": {

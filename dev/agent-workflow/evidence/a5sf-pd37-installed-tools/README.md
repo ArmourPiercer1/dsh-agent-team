@@ -110,6 +110,28 @@ success path. The Stop click was **not** clicked in a browser (none is installed
 RPC sequence the button issues was driven directly, and the abort is visible in the session log as
 `turn/end {kind:'aborted', reason:{kind:'user'}}`.
 
+### 3.1 Real model, real install — the run the external review asked for
+
+The scripted rounds above prove *tool execution*. PD-36 proves *a real model runs turns and emits tool calls*.
+This is the one run where both hold at once: the **same installed artifact**, a **real provider**
+(`qiyuan-self` / `deepseek-v4.1-flash-1017`, configured by the profile's `llm-pi-ai` provider row + `agent-default-model`,
+credentials from the machine credential store), and **no tool-call script** — the model chose every call.
+Evidence: `10-real-model-install.txt` (install shape + provider row + workspace artifacts),
+`11-real-model-session.jsonl` (the 91-event session log), `12-real-model-summary.json`.
+
+| turn | calls the model itself emitted | outcome |
+| --- | --- | --- |
+| 1 | `web_fetch https://registry.npmjs.org/-/ping` → `write` → `read` | **HTTP 200** (`meta.statusCode=200`); file written and read back as `PD37_REAL_OK`; `turn/end completed` |
+| 2 | `create_goal` (`max_goal_rounds: 5`) → `bash` (append item 1) → `read` | goal `active`, `revision 1`; `turn/end completed` (goal round 1) |
+| 3 | `write` → `read` (rewrite item 1) | `turn/end completed` (goal round 2; `roundsStarted=2`) |
+| 4 | — (Stop) | `goal/change pause` → `phase=paused`, `armed → disarmed`; `turn/end {kind:'aborted', reason:{kind:'user'}}`; **zero events after the abort** (`events_after_abort=0`; the last log record is that `turn/end`) |
+
+Three claims, one sentence each, deliberately not merged:
+1. **Tools execute on a real install** — measured with a scripted model (two rounds, §3) and with a real model (one run, §3.1).
+2. **A real model runs turns and emits tool calls on a real install** — PD-36 measured *emission*; §3.1 measured *emission and completion*.
+3. **fetch / fs read-write / a ≥2-round goal / Stop all happened in one real-model, real-install run** — §3.1, **n=1**
+   (one provider, one model, one run). Existence proof, not a stability claim.
+
 ## 4. Negative control and the pins
 
 **Negative control** (`02-install-prefix.txt`, `07-negative-control-session.jsonl`): the same profile
@@ -126,6 +148,11 @@ and **no `@deepseek-ai/*` may be a regular or optional dependency at all**, exce
 host-absent name (asserted as exactly that name, and asserted not to be a peer). RED-first: putting
 `@deepseek-ai/dsh-tools` back into `dependencies` fails that test (`×`, measured 2026-11-09).
 
+The artifact cited everywhere in this directory is byte-identical across all three rounds: `pnpm pack` after
+reverting an accidental `\u2014` escape in `package.json#description` reproduces the same
+`sha256 61fd2e48…` (pnpm re-serialises the manifest, so the escape never reached the tarball — the fix is
+cosmetic in the source only).
+
 **Pin 2 (manual gate)** — *boot a bare profile with the installed bundle and assert one tool call
 succeeds*. This **cannot run in CI**: it needs a real `pnpm pack`, a real `pnpm add` into a clean
 profile, a booted `dsh web` and a scripted model — network/registry access, a writable `DSH_HOME`
@@ -134,9 +161,9 @@ manual gate that Pin 1 stands in for; the driver is re-derivable from the comman
 
 ## 5. What this does and does not establish
 
-- **Does**: the shipped artifact's tool execution works in the ordinary install form, twice in a row
-  (four actions + a multi-round goal + Stop), and the order-of-magnitude cause is a manifest line we
-  own.
+- **Does**: the shipped artifact's tool execution works in the ordinary install form — twice in a row with a
+  scripted model, and once with a **real** model driving the calls (`§3.1`, n=1: fetch 200, fs round-trip, a
+  2-round goal, Stop interrupting a live turn). The cause is a manifest line we own.
 - **Does not**: re-measure `team.create` → Leader turns in this lane. That leg ran green in PD-36 up
   to the first tool call; the code on that path is unchanged here, but this lane only executed a
   plain session. `team_collect`, the DOM click on Stop, and restart-no-continuation remain
