@@ -186,8 +186,12 @@ have had side effects. The operator procedure, including when re-issuing is **no
 [RUNBOOK-CONTROL-ABANDONED.md](./RUNBOOK-CONTROL-ABANDONED.md).
 
 This defect is why the release-notes promise for review wake is narrow: an accepted wake may end in a
-durable, discoverable, side-effect-free abandonment; it is not a promise that every accepted wake is
-eventually delivered or decidable on this base.
+durable, discoverable **in the team ledger page**, side-effect-free abandonment; it is not a promise
+that every accepted wake is eventually delivered or decidable on this base.
+**"Discoverable" does not mean it shows up where an operator looks first**: the abandoned request is
+readable by id on the ledger page, but it does **not** appear in `team_list_pending_control`
+(`pendingControlCount` reads 0) and `team_resolve_control` refuses it with
+`CONTROL_REQUEST_ABANDONED`. An operator who checks only the pending list will see it vanish.
 
 ---
 
