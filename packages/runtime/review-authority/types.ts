@@ -121,7 +121,16 @@ export interface ReviewCapability {
  * caller data.
  */
 export class ReviewCapabilityCandidate {
-  private constructor(readonly capability: ReviewCapability) {}
+  readonly capability: ReviewCapability
+
+  // A parameter property (`private constructor(readonly capability: ...)`) is
+  // TypeScript-only syntax that Node's strip-only type loader rejects, and the
+  // World factory imports this module as source (not through dist). Writing the
+  // field out keeps the same nominal guarantee — the constructor is still the
+  // only way to build one — while staying runnable as plain ESM.
+  private constructor(capability: ReviewCapability) {
+    this.capability = capability
+  }
   /** @internal — only `evaluateReviewCapability` calls this. */
   static of(capability: ReviewCapability): ReviewCapabilityCandidate {
     return new ReviewCapabilityCandidate(Object.freeze(capability))

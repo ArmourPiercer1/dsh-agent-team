@@ -20,6 +20,11 @@ export const REVIEW_CAPABILITY_SOURCES = ['native', 'blueprint-officer'];
  */
 export class ReviewCapabilityCandidate {
     capability;
+    // A parameter property (`private constructor(readonly capability: ...)`) is
+    // TypeScript-only syntax that Node's strip-only type loader rejects, and the
+    // World factory imports this module as source (not through dist). Writing the
+    // field out keeps the same nominal guarantee — the constructor is still the
+    // only way to build one — while staying runnable as plain ESM.
     constructor(capability) {
         this.capability = capability;
     }
