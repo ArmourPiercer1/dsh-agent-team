@@ -216,6 +216,8 @@ export type TeamKey =
   | 'member.stop.label'
   | 'member.stop.hint'
   | 'member.stop.stopped'
+  | 'member.stop.contradicted'
+  | 'member.stop.unverified'
   | 'member.stop.noGoal'
   | 'member.stop.already'
   | 'member.stop.error'
@@ -518,6 +520,8 @@ export const zh: Record<TeamKey, string> = {
   'member.stop.label': '停止此成员',
   'member.stop.hint': '暂停该成员的目标并中止其当前回合（可稍后 resume）；pause 确认后不再有新的续轮，确认前已开始的调用可能仍会完成。不影响其他成员，也不等同于归档。',
   'member.stop.stopped': '已停止：目标 phase={phase}（rev {revision}），回合中止={cancel}',
+  'member.stop.contradicted': '暂停已写入（rev {revision}），但最新读取仍是 {phase}：未确认停止，请重试或核对；回合中止={cancel}',
+  'member.stop.unverified': '暂停已写入（rev {revision}），但未能确认最终状态（重读失败）；请重试或核对；回合中止={cancel}',
   'member.stop.noGoal': '该成员当前没有目标；回合中止={cancel}',
   'member.stop.already': '该成员的目标已是 {phase}，无需再暂停；回合中止={cancel}',
   'member.stop.error': '停止失败：{code}: {message}',
@@ -817,6 +821,8 @@ export const en: Record<TeamKey, string> = {
   'member.stop.label': 'Stop this Member',
   'member.stop.hint': 'Pauses THIS Member’s goal and aborts its current turn (resumable later). Once the pause is acknowledged no new round starts; a call admitted before that may still complete. It does not stop other Members and is not the same as archiving.',
   'member.stop.stopped': 'Stopped: goal phase={phase} (rev {revision}), turn abort={cancel}',
+  'member.stop.contradicted': 'Pause was written (rev {revision}) but the latest read is still {phase}: the stop is NOT confirmed — retry or check; turn abort={cancel}',
+  'member.stop.unverified': 'Pause was written (rev {revision}) but the final state could not be confirmed (the re-read failed); retry or check; turn abort={cancel}',
   'member.stop.noGoal': 'This Member has no current goal; turn abort={cancel}',
   'member.stop.already': 'This Member’s goal is already {phase}; nothing to pause. Turn abort={cancel}',
   'member.stop.error': 'Stop failed: {code}: {message}',

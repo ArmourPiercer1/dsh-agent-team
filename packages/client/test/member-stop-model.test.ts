@@ -9,8 +9,11 @@
  *
  * The negative controls live here too: a pause the service refuses must NOT
  * be reported as a stop, a read the service refuses must NOT fall through to
- * a cancel-only path that would let the goal keep running, and a re-read that
- * comes back `active` must be reported as `active` (no smoothing).
+ * a cancel-only path that would let the goal keep running, and — PD-35 — the
+ * classification after the pause is decided by the LAST read alone: `stopped`
+ * only when it confirms `paused`; a re-read that comes back `active` is
+ * `pause-contradicted` (NOT a stop), and a re-read that is refused, throws or
+ * returns no goal is `pause-unverified` (the final state is unknown).
  *
  * Plain-node test (the sanctioned runner executes `.test.ts` only): the model
  * is pure — no React, no I/O, no timers.
@@ -41,19 +44,30 @@ function goalSeam(options: {
   readonly pauseView?: MemberGoalView
   readonly refusal?: { readonly method: 'get' | 'pause'; readonly code: string; readonly message: string }
   readonly throwOn?: 'get' | 'pause'
+  /**
+   * PD-35: how the SECOND read (the oracle) fails. `refuse` answers a typed
+   * failure, `throw` loses the carrier, `empty` answers "no current goal".
+   */
+  readonly reread?: 'refuse' | 'throw' | 'empty'
   readonly calls: Call[]
 }): MemberStopGoalSeam {
   let read = 0
   return {
     async get(memberSessionId: string) {
       options.calls.push({ seam: 'goals', method: 'get', args: [memberSessionId] })
+      const isReread = read >= 1
+      read += 1
       if (options.throwOn === 'get') throw new Error('socket closed')
       if (options.refusal?.method === 'get') {
         return { ok: false, error: { code: options.refusal.code, message: options.refusal.message } }
       }
+      if (isReread && options.reread === 'throw') throw new Error('socket closed')
+      if (isReread && options.reread === 'refuse') {
+        return { ok: false, error: { code: 'goal/not-live', message: 'no live agent' } }
+      }
+      if (isReread && options.reread === 'empty') return { ok: true, value: undefined }
       const views = options.views ?? []
-      const value = views[Math.min(read, views.length - 1)]
-      read += 1
+      const value = views[Math.min(read - 1, views.length - 1)]
       return { ok: true, value }
     },
     async pause(memberSessionId: string, ref: { id: string; revision: number }) {
@@ -168,15 +182,68 @@ describe('pd34 stopMember — the sequence the UI emits', () => {
     expect(calls.map(call => `${call.seam}.${call.method}`)).toEqual(['goals.get'])
   })
 
-  it('reports the phase it actually observed on the second read (never smooths "active")', async () => {
+  // PD-35: this replaces the old test that allowed `observedPhase='active'`
+  // and STILL asserted `kind==='stopped'` — the assertion that pinned the
+  // defect (the UI rendered "已停止：目标 phase=active"). A contradiction is
+  // now its own outcome, and `stopped` is reserved for a confirmed `paused`.
+  it('does NOT claim a stop when the second read still says active (PD-35)', async () => {
     const calls: Call[] = []
     const outcome = await stopMember({
       goals: goalSeam({ views: [ACTIVE, { ...ACTIVE, revision: 3 }], pauseView: PAUSED, calls }),
       session: sessionSeam({ calls }),
     }, 'session-member-f')
 
-    if (outcome.kind !== 'stopped') throw new Error('expected stopped')
+    expect(outcome.kind).toBe('pause-contradicted')
+    if (outcome.kind !== 'pause-contradicted') throw new Error('expected pause-contradicted')
     expect(outcome.observedPhase).toBe('active')
+    expect(outcome.phase).toBe('paused')
+    expect(outcome.revision).toBe(3)
+    expect(outcome.cancel.kind).toBe('accepted')
+    expect(calls.map(call => `${call.seam}.${call.method}`)).toEqual([
+      'goals.get', 'goals.pause', 'session.cancel', 'goals.get',
+    ])
+  })
+
+  it('reports pause-unverified when the second read is refused (final state unknown)', async () => {
+    const calls: Call[] = []
+    const outcome = await stopMember({
+      goals: goalSeam({ views: [ACTIVE], pauseView: PAUSED, reread: 'refuse', calls }),
+      session: sessionSeam({ calls }),
+    }, 'session-member-f2')
+
+    expect(outcome.kind).toBe('pause-unverified')
+    if (outcome.kind !== 'pause-unverified') throw new Error('expected pause-unverified')
+    expect(outcome.observedPhase).toBeUndefined()
+    expect(outcome.revision).toBe(3)
+    expect(outcome.cancel.kind).toBe('accepted')
+    expect(calls.map(call => `${call.seam}.${call.method}`)).toEqual([
+      'goals.get', 'goals.pause', 'session.cancel', 'goals.get',
+    ])
+  })
+
+  it('reports pause-unverified when the second read throws (transport loss)', async () => {
+    const calls: Call[] = []
+    const outcome = await stopMember({
+      goals: goalSeam({ views: [ACTIVE], pauseView: PAUSED, reread: 'throw', calls }),
+      session: sessionSeam({ calls }),
+    }, 'session-member-f3')
+
+    expect(outcome.kind).toBe('pause-unverified')
+    if (outcome.kind !== 'pause-unverified') throw new Error('expected pause-unverified')
+    expect(outcome.observedPhase).toBeUndefined()
+    expect(outcome.cancel.kind).toBe('accepted')
+  })
+
+  it('reports pause-unverified when the second read returns no goal (never "paused")', async () => {
+    const calls: Call[] = []
+    const outcome = await stopMember({
+      goals: goalSeam({ views: [ACTIVE], pauseView: PAUSED, reread: 'empty', calls }),
+      session: sessionSeam({ calls }),
+    }, 'session-member-f4')
+
+    expect(outcome.kind).toBe('pause-unverified')
+    if (outcome.kind !== 'pause-unverified') throw new Error('expected pause-unverified')
+    expect(outcome.observedPhase).toBeUndefined()
   })
 
   it('keeps the durable stop when the cancel is refused (a detach is not a failed stop)', async () => {

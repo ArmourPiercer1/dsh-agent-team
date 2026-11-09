@@ -32,12 +32,12 @@ Team 视图里有两个 **Stop**，它们的语义**不同**，文案也不同�
    被 host 暂停的回合）；
 3. `POST /api/session/cancel` `{ sessionId }` — 中止该 Member 当前的 turn（与 PD-30 测量
    的同一个停止机制）；
-4. `POST /api/goals/get` `{ agentId }` — **再读一次**；UI 注释里显示的 phase 来自这一次
-   读，而不是 RPC 返回 200。
+4. `POST /api/goals/get` `{ agentId }` — **再读一次**；这一次读是"是否已停止"的**唯一判据**，
+   而不是第 2/3 步的 RPC 返回 200。
 
-因此：**成功的判据是耐久状态，不是 RPC 返回码**。UI 只在拿到第二次读的 `phase` 后显示
-"已停止：目标 phase=… (rev …)"；读/暂停被拒绝时显示逐字错误（code + message），
-不会把失败渲染成绿色。
+因此：**成功的判据是耐久状态，不是 RPC 返回码**。`pause` 被写入之后，结果按**最后一次重读**
+分成三类，UI 分别显示不同文案（PD-35，见 §2.2）；读/暂停被拒绝时显示逐字错误
+（code + message），不会把失败渲染成绿色。
 
 ## 2.1 时序保证：保证的是"pause 确认后不再续轮"，不是"点击后立即没有执行"
 
@@ -50,9 +50,28 @@ Stop **不是瞬时**的。从按下按钮到耐久 `pause` 落盘之间存在**
 > **"`goals/pause` 被确认（ACK）之后，不再有新的续轮。"**
 
 不是"点击之后没有任何执行"。闭包条件因此是 **pause 的 ACK + 第二次 `goals/get` 读到的
-耐久 `paused`**，而不是按钮的点击时刻：UI 显示"已停止"的时间点来自第二次读，之前不宣称
-停止已完成。文案也按这个口径写——"暂停该成员的目标并中止其当前回合"，不承诺"立刻"或
-"已经发生的调用会消失"。
+耐久 `paused`**，而不是按钮的点击时刻：只有第二次读确认 `paused` 时 UI 才显示"已停止"，
+其余两种"pause 已写入但未确认"的结果有各自的文案（§2.2），都不宣称停止已完成。文案
+也按这个口径写——"暂停该成员的目标并中止其当前回合"，不承诺"立刻"或"已经发生的调用会消失"。
+
+## 2.2 pause 写入后的三种结果（PD-35）
+
+`stopMember()` 只有在**最后一次重读确认 `paused`** 时才返回 `stopped`。其余两种"pause 已写入"
+的情况不再被混进成功：
+
+| 情况 | 结果种类 | UI 文案（中文口径） |
+| --- | --- | --- |
+| 重读确认 `paused` | `stopped` | `已停止：目标 phase=paused（rev {revision}），回合中止={cancel}` |
+| 重读得到**非 `paused`**（例如 `active`） | `pause-contradicted` | `暂停已写入（rev {revision}），但最新读取仍是 {phase}：未确认停止，请重试或核对；回合中止={cancel}` |
+| 重读**失败/无值**（拒绝、异常、无目标） | `pause-unverified` | `暂停已写入（rev {revision}），但未能确认最终状态（重读失败）；请重试或核对；回合中止={cancel}` |
+
+第二条**不得**渲染成"已停止"：`暂停已写入` 只陈述第 2 步的耐久 CAS 已落盘，`最新读取仍是
+active` 陈述最后一次重读观察到的矛盾，两者同时出现时由用户决定重试或核对。第三条把缺失的
+观察当作**未知**（`observedPhase=undefined`），不把 `undefined` 归一成 `paused` 或 `active`。
+`cancel` 拒绝/未附着仍只是结果里的一个**字段**（回合中止={cancel}），不是停止失败。
+
+这三类由外部审查（P1）指出、经复核确认：旧实现采集了 `observedPhase` 却不参与分类，
+且旧测试把"重读 `active` 仍算 `stopped`"固化成了断言；PD-35 把分类拆开并把那条测试改掉。
 
 ## 3. 停止之后
 
@@ -94,7 +113,7 @@ Stop **不是瞬时**的。从按下按钮到耐久 `pause` 落盘之间存在**
 - live 证据：`dev/agent-workflow/evidence/a5sf-pd34-member-stop/README.md`（真实 Host、
   真实 governed Member、≥3 rounds、20 000 ms 静默窗、`paused`、`revived=false`、
   resume 恰好 1 轮）。
-- 纯模型：`packages/client/src/model/member-stop.ts`；逐调用测试
+- 纯模型：`packages/client/src/model/member-stop.ts`（PD-35 的三类结果分类）；逐调用测试
   `packages/client/test/member-stop-model.test.ts`。
 - 视图入口：`packages/client/src/ui/TeamMembers.tsx`（`data-member-stop` /
   `data-leader-stop`）；组件测试 `packages/client/test/team-member-stop.client.spec.tsx`。

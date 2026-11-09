@@ -296,6 +296,8 @@ function makeMount(
   const log: CarrierCall[] = []
   /** PD-34: the public goals/session namespace calls (not the /team-remote carrier). */
   const remoteLog: Array<{ readonly seam: string; readonly method: string; readonly args: readonly unknown[] }> = []
+  /** PD-35: what `goals.get` answers AFTER the pause wrote the durable state. */
+  let pausedView: { readonly id: string; readonly revision: number; readonly phase: 'paused' } | undefined
   const queues: Record<string, Array<() => RemoteResponse | Promise<RemoteResponse>>> = {}
   const enqueue = (
     endpoint: string,
@@ -506,14 +508,14 @@ function makeMount(
     goals: {
       get: async (memberSessionId: string) => {
         remoteLog.push({ seam: 'goals', method: 'get', args: [memberSessionId] })
-        return { ok: true as const, value: opts.goalView }
+        // PD-35: the re-read is the ONLY stop oracle, so the double has to
+        // answer the post-pause durable state (not the pre-pause view twice).
+        return { ok: true as const, value: pausedView ?? opts.goalView }
       },
       pause: async (memberSessionId: string, ref: { readonly id: string; readonly revision: number }) => {
         remoteLog.push({ seam: 'goals', method: 'pause', args: [memberSessionId, ref] })
-        return {
-          ok: true as const,
-          value: { id: ref.id, revision: ref.revision + 1, phase: 'paused' as const },
-        }
+        pausedView = { id: ref.id, revision: ref.revision + 1, phase: 'paused' as const }
+        return { ok: true as const, value: pausedView }
       },
     },
     session: {

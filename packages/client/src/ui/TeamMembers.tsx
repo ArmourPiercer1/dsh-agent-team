@@ -197,8 +197,10 @@ function cancelToken(cancel: MemberStopCancelOutcome): string {
 }
 
 /**
- * PD-34: render one stop outcome as a note. Every branch names what was
- * OBSERVED (`phase` re-read from the goal service) or the verbatim refusal.
+ * PD-34/PD-35: render one stop outcome as a note. Every branch names what was
+ * OBSERVED (the phase re-read from the goal service) or the verbatim refusal.
+ * `stopped` is reserved for a re-read that confirmed `paused`; the other two
+ * pause-written results say the stop is NOT confirmed and never render "已停止".
  * @param outcome - the settled stop outcome.
  * @param t - the team dictionary.
  * @returns the note text.
@@ -210,7 +212,18 @@ function stopNote(
   switch (outcome.kind) {
     case 'stopped':
       return t('member.stop.stopped', {
-        phase: outcome.observedPhase ?? outcome.phase,
+        phase: outcome.observedPhase,
+        revision: outcome.revision,
+        cancel: cancelToken(outcome.cancel),
+      })
+    case 'pause-contradicted':
+      return t('member.stop.contradicted', {
+        phase: outcome.observedPhase,
+        revision: outcome.revision,
+        cancel: cancelToken(outcome.cancel),
+      })
+    case 'pause-unverified':
+      return t('member.stop.unverified', {
         revision: outcome.revision,
         cancel: cancelToken(outcome.cancel),
       })

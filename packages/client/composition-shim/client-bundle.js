@@ -5113,8 +5113,10 @@ var __dshFactory = (require) => {
 			    return cancel.kind === 'refused' ? `refused:${cancel.code}` : cancel.kind;
 			}
 			/**
-			 * PD-34: render one stop outcome as a note. Every branch names what was
-			 * OBSERVED (`phase` re-read from the goal service) or the verbatim refusal.
+			 * PD-34/PD-35: render one stop outcome as a note. Every branch names what was
+			 * OBSERVED (the phase re-read from the goal service) or the verbatim refusal.
+			 * `stopped` is reserved for a re-read that confirmed `paused`; the other two
+			 * pause-written results say the stop is NOT confirmed and never render "已停止".
 			 * @param outcome - the settled stop outcome.
 			 * @param t - the team dictionary.
 			 * @returns the note text.
@@ -5123,7 +5125,18 @@ var __dshFactory = (require) => {
 			    switch (outcome.kind) {
 			        case 'stopped':
 			            return t('member.stop.stopped', {
-			                phase: outcome.observedPhase ?? outcome.phase,
+			                phase: outcome.observedPhase,
+			                revision: outcome.revision,
+			                cancel: cancelToken(outcome.cancel),
+			            });
+			        case 'pause-contradicted':
+			            return t('member.stop.contradicted', {
+			                phase: outcome.observedPhase,
+			                revision: outcome.revision,
+			                cancel: cancelToken(outcome.cancel),
+			            });
+			        case 'pause-unverified':
+			            return t('member.stop.unverified', {
 			                revision: outcome.revision,
 			                cancel: cancelToken(outcome.cancel),
 			            });
@@ -6797,6 +6810,13 @@ var __dshFactory = (require) => {
 			 * service (or the typed refusal). A front end may render that observation but
 			 * must not invent one.
 			 *
+			 * PD-35 (STOP-OUTCOME): the SECOND read is the ONLY oracle for "stopped".
+			 * Before PD-35 the model collected `observedPhase` and then returned
+			 * `kind:'stopped'` whatever it read, so a re-read of `active` rendered
+			 * "已停止：目标 phase=active" (self-contradictory) and a failed re-read
+			 * rendered "已停止" from the pause's own phase. The three cases are now
+			 * separate values, and only a re-read of `paused` means `stopped`.
+			 *
 			 * Pure module: no React, no I/O, no node: builtins, no DSH internal API.
 			 * @module @dsh-agent-team/client/model/member-stop
 			 */
@@ -6837,6 +6857,11 @@ var __dshFactory = (require) => {
 			 * `session.cancel` → `goals.get`. A Member with no current goal still gets
 			 * its turn aborted (the button means "stop this Member", not "pause a
 			 * record"); the outcome says `no-goal` so the UI does not claim a pause.
+			 *
+			 * After the pause the outcome is classified by the LAST read alone: `stopped`
+			 * only when it says `paused`; `pause-contradicted` when it says anything else;
+			 * `pause-unverified` when it fails or returns no goal. The cancel outcome is a
+			 * field on all three, never a reason to downgrade the stop result.
 			 *
 			 * @param seams - the injected public seams (`ctx.remote.goals` / `ctx.remote.session`).
 			 * @param memberSessionId - the Member's child session id (the durable projection row's `childSessionId`).
@@ -6898,8 +6923,10 @@ var __dshFactory = (require) => {
 			    // The pause is durable and already withdrew continuation; the cancel is the
 			    // explicit turn abort, and its refusal must not be reported as a failed stop.
 			    const cancel = await cancelTurn(seams, memberSessionId);
-			    // The DURABLE observation (step 4). A failed re-read is disclosed as
-			    // `undefined`; the paused CAS above is still the written authority.
+			    // The DURABLE observation (step 4) is the ONLY oracle for "stopped".
+			    // `ok:false` and `value:undefined` both mean "the final state is unknown":
+			    // a missing observation is `pause-unverified`, never smoothed into either a
+			    // success or the pause's own phase (PD-35).
 			    let observedPhase;
 			    try {
 			        const reread = await goals.get(memberSessionId);
@@ -6909,14 +6936,24 @@ var __dshFactory = (require) => {
 			    catch {
 			        observedPhase = undefined;
 			    }
-			    return {
-			        kind: 'stopped',
+			    const base = {
 			        goalId: paused.id,
 			        revision: paused.revision,
 			        phase: paused.phase,
-			        observedPhase,
 			        cancel,
 			    };
+			    if (observedPhase === undefined) {
+			        // The re-read was refused/threw or returned no goal: the pause is written,
+			        // but its final state could not be confirmed.
+			        return { kind: 'pause-unverified', ...base, observedPhase: undefined };
+			    }
+			    if (observedPhase !== 'paused') {
+			        // The pause was acknowledged but the latest durable read says otherwise.
+			        // Reporting `stopped` here is the PD-35 defect: the UI would print
+			        // "已停止：目标 phase=active". Keep the contradiction explicit.
+			        return { kind: 'pause-contradicted', ...base, observedPhase };
+			    }
+			    return { kind: 'stopped', ...base, observedPhase };
 			}
 			Object.defineProperty(exports, "stopMember", { enumerable: true, get: () => stopMember });
 			/**
@@ -8845,6 +8882,8 @@ var __dshFactory = (require) => {
 			    'member.stop.label': '停止此成员',
 			    'member.stop.hint': '暂停该成员的目标并中止其当前回合（可稍后 resume）；pause 确认后不再有新的续轮，确认前已开始的调用可能仍会完成。不影响其他成员，也不等同于归档。',
 			    'member.stop.stopped': '已停止：目标 phase={phase}（rev {revision}），回合中止={cancel}',
+			    'member.stop.contradicted': '暂停已写入（rev {revision}），但最新读取仍是 {phase}：未确认停止，请重试或核对；回合中止={cancel}',
+			    'member.stop.unverified': '暂停已写入（rev {revision}），但未能确认最终状态（重读失败）；请重试或核对；回合中止={cancel}',
 			    'member.stop.noGoal': '该成员当前没有目标；回合中止={cancel}',
 			    'member.stop.already': '该成员的目标已是 {phase}，无需再暂停；回合中止={cancel}',
 			    'member.stop.error': '停止失败：{code}: {message}',
@@ -9144,6 +9183,8 @@ var __dshFactory = (require) => {
 			    'member.stop.label': 'Stop this Member',
 			    'member.stop.hint': 'Pauses THIS Member’s goal and aborts its current turn (resumable later). Once the pause is acknowledged no new round starts; a call admitted before that may still complete. It does not stop other Members and is not the same as archiving.',
 			    'member.stop.stopped': 'Stopped: goal phase={phase} (rev {revision}), turn abort={cancel}',
+			    'member.stop.contradicted': 'Pause was written (rev {revision}) but the latest read is still {phase}: the stop is NOT confirmed — retry or check; turn abort={cancel}',
+			    'member.stop.unverified': 'Pause was written (rev {revision}) but the final state could not be confirmed (the re-read failed); retry or check; turn abort={cancel}',
 			    'member.stop.noGoal': 'This Member has no current goal; turn abort={cancel}',
 			    'member.stop.already': 'This Member’s goal is already {phase}; nothing to pause. Turn abort={cancel}',
 			    'member.stop.error': 'Stop failed: {code}: {message}',
