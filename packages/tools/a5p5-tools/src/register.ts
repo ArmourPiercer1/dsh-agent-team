@@ -261,7 +261,6 @@ function createRowExecutionState(assembly: A5P5Assembly) {
           // law), computed here from the CLOSED parsed args — the fact the PA
           // edge asks, consumes and rechecks against.
           parametersFingerprint: canonicalJsonFingerprint(parsed.value),
-          ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
           // B3: the host's cancel signal rides the call untouched. This face
           // only CARRIES it — the cancelled fact belongs to the row that can
           // actually stop a payload (the shell arm), never to the presentation.
@@ -270,6 +269,11 @@ function createRowExecutionState(assembly: A5P5Assembly) {
         decide: assembly.decide,
         ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
         backend,
+        // A6 exec-result observation rides the DEPS, never the request: the
+        // pipeline reads `deps.onExecutionResult` (pipeline.ts:186). Placing
+        // it in the request literal (the pre-fix shape) was dead data that a
+        // spread kept invisible to TypeScript.
+        ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
         ...(assembly.spillStore === undefined ? {} : { spill: { store: assembly.spillStore } }),
         })
       } finally {

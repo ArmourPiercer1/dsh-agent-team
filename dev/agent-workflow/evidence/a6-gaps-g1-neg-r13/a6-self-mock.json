@@ -1,0 +1,135 @@
+[
+  {
+    "seq": 29,
+    "lastUser": "C1MK_A6SELF_2026-11-09T17-58-30",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-hm791hwr",
+          "name": "bash",
+          "arguments": {
+            "command": "echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace/c1-a6-self-2026-11-09T17-58-30.txt && echo a6-self-executed",
+            "timeout": 30000
+          }
+        }
+      ]
+    },
+    "toolResults": []
+  },
+  {
+    "seq": 30,
+    "lastUser": "[team-control requestId=ctrl-1vaw9s61nkiznd1i2smps1yj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1vaw9s61nkiznd1i2smps1yj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace] echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smok...\napprovalCase: case-0nirw3a0ux8art0yb5hj81wf\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-0nirw3a0ux8art0yb5hj81wf, you cannot act on this case again.",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-4hh4jcn4",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-09T17-58-30",
+            "requestToken": "c1-notif-list-ctrl-1vaw9s61nkiznd1i2smps1yj"
+          }
+        }
+      ]
+    },
+    "toolResults": []
+  },
+  {
+    "seq": 31,
+    "lastUser": "[team-control requestId=ctrl-1vaw9s61nkiznd1i2smps1yj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1vaw9s61nkiznd1i2smps1yj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace] echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smok...\napprovalCase: case-0nirw3a0ux8art0yb5hj81wf\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-0nirw3a0ux8art0yb5hj81wf, you cannot act on this case again.",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-d2h1ybpr",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-09T17-58-30",
+            "requestToken": "c1-notif-res-ctrl-1vaw9s61nkiznd1i2smps1yj",
+            "requestId": "ctrl-1vaw9s61nkiznd1i2smps1yj",
+            "decision": "allow"
+          }
+        }
+      ]
+    },
+    "toolResults": [
+      "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"pending\":[{\"requestId\":\"ctrl-1vaw9s61nkiznd1i2smps1yj\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-09T17-58-30\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-hm791hwr\",\"status\":\"pending\",\"createdAt\":\"2026-11-09T17:59:46.266Z\",\"requestSequence\":28,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:5625263b4bae59fea4cdf6bf4dedd80f27792f3322856fb22dd5ea82b6b7d865\",\"summary\":\"bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace] echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smok...\",\"executionCoupling\":\"guarded\",\"approvalCaseId\":\"case-0nirw3a0ux8art0yb5hj81wf\",\"legOrdinal\":1,\"reviewAuthority\":\"leader\",\"requiredAuthorityAtCreation\":\"leader\",\"beneficiaryAuthority\":\"member\",\"req"
+    ]
+  },
+  {
+    "seq": 32,
+    "lastUser": "[team-control requestId=ctrl-1vaw9s61nkiznd1i2smps1yj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-1vaw9s61nkiznd1i2smps1yj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace] echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smok...\napprovalCase: case-0nirw3a0ux8art0yb5hj81wf\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-0nirw3a0ux8art0yb5hj81wf, you cannot act on this case again.",
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOTIF_DONE"
+    },
+    "toolResults": [
+      "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"pending\":[{\"requestId\":\"ctrl-1vaw9s61nkiznd1i2smps1yj\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-09T17-58-30\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-hm791hwr\",\"status\":\"pending\",\"createdAt\":\"2026-11-09T17:59:46.266Z\",\"requestSequence\":28,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:5625263b4bae59fea4cdf6bf4dedd80f27792f3322856fb22dd5ea82b6b7d865\",\"summary\":\"bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace] echo c1-a6-self-2026-11-09T17-58-30 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smok...\",\"executionCoupling\":\"guarded\",\"approvalCaseId\":\"case-0nirw3a0ux8art0yb5hj81wf\",\"legOrdinal\":1,\"reviewAuthority\":\"leader\",\"requiredAuthorityAtCreation\":\"leader\",\"beneficiaryAuthority\":\"member\",\"req",
+      "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1vaw9s61nkiznd1i2smps1yj\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-hm791hwr\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:5625263b4bae59fea4cdf6bf4dedd80f27792f3322856fb22dd5ea82b6b7d865\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"bash\"}}},\"requestSequence\":28,\"decisionSequence\":29,\"createdAt\":\"2026-11-09T17:59:46.442Z\"}}"
+    ]
+  },
+  {
+    "seq": 33,
+    "lastUser": "[team-control requestId=ctrl-09jrahd06ys7g60rsjtob0vj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-09jrahd06ys7g60rsjtob0vj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: PA ask case=tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\napprovalCase: case-16zhrws1bs8yer02ordpq0oj\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-16zhrws1bs8yer02ordpq0oj, you cannot act on this case again.",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-3j838l08",
+          "name": "team_list_pending_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-09T17-58-30",
+            "requestToken": "c1-notif-list-ctrl-09jrahd06ys7g60rsjtob0vj"
+          }
+        }
+      ]
+    },
+    "toolResults": []
+  },
+  {
+    "seq": 34,
+    "lastUser": "[team-control requestId=ctrl-09jrahd06ys7g60rsjtob0vj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-09jrahd06ys7g60rsjtob0vj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: PA ask case=tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\napprovalCase: case-16zhrws1bs8yer02ordpq0oj\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-16zhrws1bs8yer02ordpq0oj, you cannot act on this case again.",
+    "reply": {
+      "kind": "tool-call",
+      "toolCalls": [
+        {
+          "id": "call-c1-ikircijz",
+          "name": "team_resolve_control",
+          "arguments": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-09T17-58-30",
+            "requestToken": "c1-notif-res-ctrl-09jrahd06ys7g60rsjtob0vj",
+            "requestId": "ctrl-09jrahd06ys7g60rsjtob0vj",
+            "decision": "allow"
+          }
+        }
+      ]
+    },
+    "toolResults": [
+      "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"pending\":[{\"requestId\":\"ctrl-09jrahd06ys7g60rsjtob0vj\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-09T17-58-30\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0ya6yc90kc9a-bash:hexec:6da08e6d-06af-44d8-9698-5fb01a2cc3d1-3\",\"status\":\"pending\",\"createdAt\":\"2026-11-09T17:59:46.662Z\",\"requestSequence\":31,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:9b88f418190a708cf79daf006ad12ed49d71e320b392b6d1fee561a9c5a92a67\",\"summary\":\"PA ask case=tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-c1-smoke-a6-2026-11-0"
+    ]
+  },
+  {
+    "seq": 35,
+    "lastUser": "[team-control requestId=ctrl-09jrahd06ys7g60rsjtob0vj]\nA Team member operation is waiting for Leader approval.\n\nrequestId: ctrl-09jrahd06ys7g60rsjtob0vj\nrequester: inst-0ya6yc90kc9a\nsubject: instance inst-0ya6yc90kc9a\ntarget: inst-0ya6yc90kc9a\ntool: bash\nsummary: PA ask case=tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\napprovalCase: case-16zhrws1bs8yer02ordpq0oj\nleg: 1\nreviewAuthority: leader\n\nDecide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.\nRecover or inspect pending requests with `team_list_pending_control`.\nIf you already decided or escalated an earlier leg of approvalCase case-16zhrws1bs8yer02ordpq0oj, you cannot act on this case again.",
+    "reply": {
+      "kind": "text",
+      "content": "C1_NOTIF_DONE"
+    },
+    "toolResults": [
+      "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"pending\":[{\"requestId\":\"ctrl-09jrahd06ys7g60rsjtob0vj\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-09T17-58-30\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0ya6yc90kc9a-bash:hexec:6da08e6d-06af-44d8-9698-5fb01a2cc3d1-3\",\"status\":\"pending\",\"createdAt\":\"2026-11-09T17:59:46.662Z\",\"requestSequence\":31,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:9b88f418190a708cf79daf006ad12ed49d71e320b392b6d1fee561a9c5a92a67\",\"summary\":\"PA ask case=tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1\",\"reviewPayload\":{\"approvalCaseId\":\"tadm:session-c1-smoke-a6-2026-11-0",
+      "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-09jrahd06ys7g60rsjtob0vj\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-09T17-58-30\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ya6yc90kc9a\"},\"targetInstanceId\":\"inst-0ya6yc90kc9a\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-09T17-58-30:inst-0ya6yc90kc9a:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0ya6yc90kc9a-bash:hexec:6da08e6d-06af-44d8-9698-5fb01a2cc3d1-3\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:9b88f418190a708cf79daf006ad12ed49d71e320b392b6d1fee561a9c5a92a67\",\"authorityScope\":{\"operationClass\":\"tool-invoke\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"c1-plane-realm-2026-11-09T17-58-30|tool:bash\"}}},\"requestSequence\":31,\"decisionSequence\":32,\"createdAt\":\"2026-11-09T17:59:46.866Z\"}}"
+    ]
+  },
+  {
+    "seq": 36,
+    "lastUser": "C1MK_A6SELF_2026-11-09T17-58-30",
+    "reply": {
+      "kind": "text",
+      "content": "C1_A6_SELF_DONE"
+    },
+    "toolResults": [
+      "bash · exit=0\n> a6-self-executed\n> \na5p5-meta {\"kind\":\"shell\",\"exitCode\":0,\"timedOut\":false,\"cancelled\":false,\"truncated\":false}"
+    ]
+  }
+]

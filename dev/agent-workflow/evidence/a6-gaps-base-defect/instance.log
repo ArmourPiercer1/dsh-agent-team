@@ -1,0 +1,5 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3186/?token=exzVCdHIYO0d6wZrU2iLcN_kQaCeg74H8LDVOYO0i8U
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: alpha6ReviewRouting is enabled but this Host exposes no live wake seam; the Team refuses to boot rather than silently notify the Leader
+    at createTeamProductionRoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/packages/runtime/dist/packages/runtime/src/plugin/root.js:1739:15)
+    at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/packages/runtime/dist/packages/runtime/src/plugin/host.js:2156:27)

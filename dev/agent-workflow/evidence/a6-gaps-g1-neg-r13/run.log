@@ -1,0 +1,28 @@
+[2026-11-09T17:58:30.343Z] c1 real-host smoke — stamp 2026-11-09T17-58-30
+[2026-11-09T17:58:30.344Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps
+[2026-11-09T17:58:30.344Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-09T17:58:30.344Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/dev/agent-workflow/evidence/a6-gaps-g1-neg-r13
+[2026-11-09T17:58:30.795Z] ports: host=3186 mock=3491
+[2026-11-09T17:58:36.010Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-09T17:58:36.015Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-09T17:58:36.022Z] mock model listening on 3491
+[2026-11-09T17:58:39.356Z] host booted at http://127.0.0.1:3186; row ready — toolCount=15
+[2026-11-09T17:58:39.356Z] ── L0: discovery ──
+[2026-11-09T17:58:39.775Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-09T17:58:39.776Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-09T17:58:39.776Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-09T17:58:39.778Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-09T17:58:40.526Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-whpydgygcv","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-09T17-58-30","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:9a94f4ce548f2ad1545226d715ae529674a2262deadc0bb6065fdd5d66e3bab0"},"createdAt":"2026-11-09T17:58:39.816Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-09T17:58:44.537Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-09T17:58:44.538Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 notifications=0 requests=14
+[2026-11-09T17:58:44.538Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-09T17:58:44.538Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-gaps/tests/homes/c1-smoke-2026-11-09T17-58-30/workspace/c1-a6-allow-2026-11-09T17-58-30.txt text="c1-a6-allow-2026-11-09T17-58-30\n"
+[2026-11-09T17:58:44.538Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0 notifications=0
+[2026-11-09T17:58:44.538Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=
+[2026-11-09T17:58:44.538Z] PASS A6-27: the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request — executed=true pa=ctrl-1ng4hxe1f9kszh1fzkq380bj callId=team-inst-1ezrh1f1jkv9-bash:hexec:53598035-6d33-4b77-a2e6-846179f6c47a-1 outcome=succeeded facts=1
+[2026-11-09T17:58:44.551Z] A6-DENY prompt status=200 body={"type":"server-response","rpcId":"c1a6deny-berqjcy77n","result":{"ok":true,"value":{"accepted":true}}}
+[2026-11-09T17:58:45.624Z] PASS A6-28: a DENIED call is refused after its durable decision: zero consumption, zero side effect, and NO execution-result fact — request=ctrl-0flakgz1bukm6c0bs0g190ax decision=deny consumed=false execFacts=0 file=false done=true
+[2026-11-09T17:58:45.633Z] A6-THROW prompt status=200 body={"type":"server-response","rpcId":"c1a6throw-7lb3t4ilhj","result":{"ok":true,"value":{"accepted":true}}}
+[2026-11-09T17:59:45.686Z] PASS A6-29: a call whose backend THROWS/aborts after consumption records ONE terminal `failed` execution-result (never `succeeded`) — request=ctrl-02ytm2y0w0uswt1tlrrd01ht consumed=true execFacts=failed callId=team-inst-0ya6yc90kc9a-bash:hexec:6da08e6d-06af-44d8-9698-5fb01a2cc3d1-2 done=true
+[2026-11-09T17:59:45.688Z] ── A6-SELF: Officer self-ask -> Leader wake -> allow -> execute ──
+[2026-11-09T17:59:50.509Z] PASS A6-7: Officer self-ask is routed to the Leader, not back to the Officer — prompt=200 notif=6 selfReq=ctrl-09jrahd06ys7g60rsjtob0vj leaderDecided=true executed=true

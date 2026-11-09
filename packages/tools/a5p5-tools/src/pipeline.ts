@@ -173,15 +173,25 @@ export async function runToolCall(deps: RunToolCallDeps): Promise<ToolCallResult
     sink = opened.sink
   }
 
-  const result = await deps.backend.run(
-    {
-      realmId: request.realmId,
-      callId: request.callId,
-      parsedArgs: request.parsedArgs,
-      ...(request.signal === undefined ? {} : { signal: request.signal }),
-    },
-    { lease, sink },
-  )
+  let result: Awaited<ReturnType<ToolEffectBackend['run']>>
+  try {
+    result = await deps.backend.run(
+      {
+        realmId: request.realmId,
+        callId: request.callId,
+        parsedArgs: request.parsedArgs,
+        ...(request.signal === undefined ? {} : { signal: request.signal }),
+      },
+      { lease, sink },
+    )
+  } catch (error) {
+    // A THROW is a terminal execution outcome too: the call was admitted and
+    // consumed, and the backend refused/aborted before answering. Report it
+    // ONCE as `failed` (observation only), then rethrow unchanged — the row's
+    // own presentation error stays the caller's fact.
+    deps.onExecutionResult?.({ callId: request.callId, outcome: 'failed' })
+    throw error
+  }
 
   deps.onExecutionResult?.({ callId: request.callId, outcome: result.ok ? 'succeeded' : 'failed' })
   const settlement: LeaseSettlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT
