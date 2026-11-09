@@ -325,6 +325,12 @@
    "sha256": "164c42491f466c470e000d108ece0e835f556f46fc0bdaff8e7b239d0fb53ad1",
    "pr": "A5+A6 Preview combined center-interface (preview/alpha5-alpha6-rc1) - NAMED combined-tree booking",
    "reason": "Alpha.6 closing adds the execution-result callback and the A5 tree adds the a5sf realm seam to the same live binding file; the merged tree is the only truthful byte. Rebuilt dist from this source. Original A6 booking remains in history."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "0c25bb0a5829cb08931f42a39efac261d047174a52c7012ee834d17e6f73d9f8",
+   "pr": "integration/v0.1.6 (PR #691) - NAMED integration-tree booking",
+   "reason": "Joint Alpha.5+Alpha.6 close-out: the merged live-binding keeps PD-29 stop semantics (derived childSessionId, durable pause, disarm) and restores the Alpha.6 glue (review-wake delivery, execution-result callback) that the first merge pass dropped; cancel provenance is hook (machine stop) so a relay cannot clear a human Sticky Stop. This digest is the only truthful byte for the integrated tree."
   }
  ]
 }

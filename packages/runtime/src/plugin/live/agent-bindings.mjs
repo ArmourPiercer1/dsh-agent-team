@@ -3173,17 +3173,50 @@ export function createAgentBindings(deps) {
             return { decision: 'deny', detail: 'no durable ControlService wired — a PA approval cannot be made functional' }
           }
           const a5IsLeaderPlane = sessionId === String(teamRoot)
+          // Alpha.6 (opt-in, v5 only): the PA leg becomes an approval CASE
+          // leg, so the executing Member's identity/generation and the bound
+          // Blueprint identity are frozen on the durable row. Absent the
+          // opt-in (or on v4) the exact legacy requestControl path is used.
+          const a6BoundBlueprint = getBoundBlueprint(String(teamRoot))
+          const a6PaCase = config?.alpha6ReviewRouting === true
+            && Number(a6BoundBlueprint?.schemaVersion) === 5
           const a5Leg = createPaControlLeg({
             controlService: a5ControlService,
             rootSessionId: String(teamRoot),
             caller: { kind: 'instance', instanceId },
             beneficiaryAuthority: a5IsLeaderPlane ? 'leader' : 'member',
+            ...(a6PaCase
+              ? {
+                  a6: true,
+                  ...(boundTemplate?.templateId === undefined
+                    ? {}
+                    : { operationOwnerTemplateId: String(boundTemplate.templateId) }),
+                  ...(a6BoundBlueprint?.contentHash === undefined
+                    ? {}
+                    : { blueprintContentHash: String(a6BoundBlueprint.contentHash) }),
+                  ...(a6BoundBlueprint?.revision === undefined
+                    ? {}
+                    : { blueprintRevision: String(a6BoundBlueprint.revision) }),
+                  waitTimeoutMs: config?.alpha6WaitTimeoutMs ?? 600_000,
+                }
+              : {}),
             onObserve: (o) => observations.push(`a5-pa-bridge: ${String(o?.stage ?? 'stage')} ${String(o?.detail ?? '')}`),
           })
           return await a5Leg(legInput)
         }
         const built = createTeamToolPlaneAssembly({
           controlLeg: a5PaControlLeg,
+          onExecutionResult: ({ callId, outcome }) => {
+            const service = controlServiceRef?.current
+            if (service === undefined || service === null || typeof service.recordExecutionResult !== 'function') return
+            void service.recordExecutionResult({
+              rootSessionId: String(teamRoot),
+              callId,
+              outcome,
+            }).catch((error) => {
+              observations.push(`alpha6-execution-result: failed callId=${String(callId)}: ${error instanceof Error ? error.message : String(error)}`)
+            })
+          },
           // PR358 fix-2: the DURABLE attribution the Control rows live under
           // is the real TeamSession root — never a `plane:<template>`
           // fallback. Missing teamSessionId is a wiring bug the plane now
@@ -5381,7 +5414,12 @@ export function createAgentBindings(deps) {
       }
       const message = createUserMessage({
         content: [{ type: 'text', text: input.text }],
-        source: { kind: 'user' },
+        // Only a HUMAN sender (the closed attribution's fromHumanId) is a
+        // human interaction; a Leader/model relay must never clear a human
+        // Sticky Stop on the recipient.
+        source: input.attribution.fromHumanId === undefined
+          ? { kind: 'plugin:dsh-agent-team' }
+          : { kind: 'user' },
       })
       // Success boundary = inbox acceptance: NO whenIdle, NO
       // ensureMaterialized (the turn's durable log is materialized by the
@@ -5439,7 +5477,7 @@ export function createAgentBindings(deps) {
         : args.prompt
       const message = createUserMessage({
         content: [{ type: 'text', text: `[team-work requestToken=${args.requestToken}] ${text}` }],
-        source: { kind: 'user' },
+        source: { kind: 'plugin:dsh-agent-team' },
       })
       handle.agent.followup(message)
       const signal = args.signal
@@ -5450,13 +5488,13 @@ export function createAgentBindings(deps) {
         typeof signal.removeEventListener === 'function'
       ) {
         if (signal.aborted) {
-          handle.agent.cancel({ kind: 'user' })
+          handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
           throw signal.reason ?? new Error('team work delivery aborted')
         }
         let onAbort
         const aborted = new Promise((_, reject) => {
           onAbort = () => {
-            handle.agent.cancel({ kind: 'user' })
+            handle.agent.cancel({ kind: 'hook', reason: 'team-work-delivery-aborted' })
             reject(signal.reason ?? new Error('team work delivery aborted'))
           }
           signal.addEventListener('abort', onAbort, { once: true })
@@ -5640,7 +5678,7 @@ export function createAgentBindings(deps) {
     }
     const message = createUserMessage({
       content: [{ type: 'text', text }],
-      source: { kind: 'user' },
+      source: { kind: 'plugin:dsh-agent-team' },
     })
     handle.agent.followup(message)
     await handle.agent.whenIdle()
@@ -5878,6 +5916,112 @@ export function createAgentBindings(deps) {
     // ensureMaterialized. The turn (if any) runs on its own.
   }
 
+  /**
+   * A6-PR4 — deliver ONE generic Review Wake to the review recipient's
+   * session inbox (the PR4 delivery slice's real Host seam). The caller has
+   * already resolved the recipient to a live/durable session (PR6 owns that
+   * mapping: Leader root or Officer child). Semantics are the same as the
+   * work-completion wake: idle -> followup, busy -> steer, success boundary
+   * = inbox acceptance, NO whenIdle/ensureMaterialized. Non-authority: the
+   * text is pre-rendered and the durable case ledger remains the authority.
+   * A rejection PROPAGATES: the wake coordinator's `delivery-failed`
+   * transition releases `queued`.
+   * @param {{rootSessionId: string, targetSessionId: string, wakeId: string, text: string}} input
+   * @returns {Promise<void>}
+   */
+  /**
+   * Alpha.6 — the native-Inbox truth for ONE recipient session. `has` reads
+   * the LIVE pending lists only (never materializes an agent), matching the
+   * wakeId inside the rendered text; `remove` withdraws that exact message.
+   * @param {string} targetSessionId
+   * @returns {{ has: (wakeId: string) => boolean, remove: (wakeId: string) => boolean }}
+   */
+  function reviewWakeInbox(targetSessionId) {
+    const sid = String(targetSessionId)
+    const handle = async () => {
+      const existing = liveAgents.get(sid)
+      if (existing !== undefined) return existing
+      try {
+        // Boot recovery runs before the recipient handle exists; materialising
+        // its durable session is what makes the native Inbox readable at all.
+        return await ensureLiveAgent(sid)
+      } catch {
+        return undefined
+      }
+    }
+    const pending = async () => {
+      const live = await handle()
+      if (live === undefined) return []
+      return [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+    }
+    const matches = (message, wakeId) => {
+      const content = Array.isArray(message?.content) ? message.content : []
+      return content.some(
+        (part) => part?.type === 'text' && typeof part.text === 'string' && part.text.includes(wakeId),
+      )
+    }
+    return {
+      async has(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // An unreadable Inbox is NOT evidence of absence. Callers must keep
+          // the queued row and retry rather than release + duplicate.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const messages = [...live.agent.inbox.nextTurn, ...live.agent.inbox.nextStep]
+        return messages.some((message) => matches(message, String(wakeId)))
+      },
+      async remove(wakeId) {
+        const live = await handle()
+        if (live === undefined) {
+          // Same contract as `has`: unreadable is not evidence the message is
+          // gone. Keep the intent instead of reporting a refusal that the
+          // caller would mistake for an absent message.
+          throw new Error('the native Inbox is unreadable for this session')
+        }
+        const message = (await pending()).find((entry) => matches(entry, String(wakeId)))
+        if (message === undefined) return false
+        return live.agent.inbox.remove(message.id)
+      },
+    }
+  }
+
+  async function deliverReviewWake(input) {
+    const rootSessionId = String(input?.rootSessionId ?? '')
+    const targetSessionId = String(input?.targetSessionId ?? '')
+    const wakeId = String(input?.wakeId ?? '')
+    const text = String(input?.text ?? '')
+    if (rootSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty rootSessionId')
+    }
+    if (targetSessionId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty targetSessionId')
+    }
+    if (wakeId === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty wakeId (the token-leading hint)')
+    }
+    if (text === '') {
+      throw new Error('agent-bindings: deliverReviewWake requires a non-empty text')
+    }
+    if (closing) {
+      throw new Error('agent-bindings: live bindings are closing — review wake dropped (best-effort)')
+    }
+    const handle = await ensureLiveAgent(targetSessionId)
+    await prepareAgentForRequest(String(targetSessionId), teamRootOfSession(targetSessionId))
+    if (closing) {
+      throw new Error('agent-bindings: live bindings began closing before the review wake — dropped (best-effort)')
+    }
+    const message = createUserMessage({
+      content: [{ type: 'text', text }],
+      source: { kind: 'plugin:dsh-agent-team' },
+    })
+    if (handle.agent.status === 'idle') {
+      handle.agent.followup(message)
+    } else {
+      handle.agent.steer(message)
+    }
+  }
+
   // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
   // admission stays with the production row (no separate in-process
   // admission gate — the router's per-team lock serializes the whole
@@ -5923,7 +6067,11 @@ export function createAgentBindings(deps) {
       observations.push(`pd29: Team interrupt of '${String(target?.instanceId ?? '<unknown>')}' found NO live agent (childSessionId=${childSid}); nothing to cancel or disarm`)
       return // no activity in flight: no-op by contract
     }
-    handle.agent.cancel({ kind: 'user' })
+    // A6 provenance: a Team machine stop is NOT human input, so it carries the
+    // hook cause and cannot clear a human Sticky Stop. The durable pause below
+    // is what withdraws continuation; the human Stop button reaches the host
+    // through its own client RPC and does not pass through this function.
+    handle.agent.cancel({ kind: 'hook', reason: 'team-member-interrupt' })
     disarmStoppedGoal(handle.agent, target)
   }
 
@@ -6712,6 +6860,11 @@ export function createAgentBindings(deps) {
     // delivery failure is a liveness failure only, swallowed by the
     // router's completion observer)
     deliverRootWorkCompletionNotification,
+    // additive (A6-PR4): the generic Review Wake inbox delivery. The caller
+    // resolves the recipient session; idle -> followup, busy -> steer, and a
+    // rejection releases the coordinator's queued latch.
+    deliverReviewWake,
+    reviewWakeInbox,
     // additive (C1 restart-recovery, guide §10.1): the one-shot ordinary
     // activation permit passthrough — the production root's S6
     // `prepareOrdinaryOpen` handler arms it (process-local, single-use,
