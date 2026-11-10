@@ -1,0 +1,215 @@
+{
+ "agreeing": true,
+ "runs": 2,
+ "note": "FS/Search DEV-LIVE pair on 0f4f4f8eb; both boots identical at verdict+reason+decisive-number granularity",
+ "rows": [
+  {
+   "case": "fs:edit-in-lane",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "CEILING_EDIT_ALLOWED_AND_CONFINED",
+   "reason_02": "CEILING_EDIT_ALLOWED_AND_CONFINED",
+   "decisive_01": {
+    "writeCalls": 1,
+    "facts": 3
+   },
+   "decisive_02": {
+    "writeCalls": 1,
+    "facts": 3
+   },
+   "agree": true
+  },
+  {
+   "case": "fs:edit-outside-ceiling",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "OUTSIDE_CEILING_EDIT_REFUSED_BEFORE_PROVIDER_LOCUS_host-read-before-write-observation-policy",
+   "reason_02": "OUTSIDE_CEILING_EDIT_REFUSED_BEFORE_PROVIDER_LOCUS_host-read-before-write-observation-policy",
+   "decisive_01": {
+    "writeCalls": 0,
+    "guardFacts": 0,
+    "locus": "host-read-before-write-observation-policy"
+   },
+   "decisive_02": {
+    "writeCalls": 0,
+    "guardFacts": 0,
+    "locus": "host-read-before-write-observation-policy"
+   },
+   "agree": true
+  },
+  {
+   "case": "fs:read-image-observation",
+   "run-01": "NOT_REACHED",
+   "run-02": "NOT_REACHED",
+   "reason_01": "READ_IMAGE_ROUTE_REFUSED_MODEL_DECLARES_NO_IMAGE_INPUT",
+   "reason_02": "READ_IMAGE_ROUTE_REFUSED_MODEL_DECLARES_NO_IMAGE_INPUT",
+   "decisive_01": {
+    "guardFacts": 0
+   },
+   "decisive_02": {
+    "guardFacts": 0
+   },
+   "agree": true
+  },
+  {
+   "case": "live:row1-read-a-inside-both-allowed",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "READ_A_ALLOWED_AND_CONFINED",
+   "reason_02": "READ_A_ALLOWED_AND_CONFINED",
+   "decisive_01": {
+    "counterRows": 1
+   },
+   "decisive_02": {
+    "counterRows": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:row2-read-b-binding-deny-on-read-path",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "BINDING_DENY_ON_READ_PATH",
+   "reason_02": "BINDING_DENY_ON_READ_PATH",
+   "decisive_01": {
+    "readPathFacts": 1,
+    "readPathDecisions": [
+     "deny"
+    ],
+    "counterRows": 0
+   },
+   "decisive_02": {
+    "readPathFacts": 1,
+    "readPathDecisions": [
+     "deny"
+    ],
+    "counterRows": 0
+   },
+   "agree": true
+  },
+  {
+   "case": "live:row3-read-c-refused-no-widening",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "REFUSED_WITHOUT_WIDENING",
+   "reason_02": "REFUSED_WITHOUT_WIDENING",
+   "decisive_01": {},
+   "decisive_02": {},
+   "agree": true
+  },
+  {
+   "case": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "CEILING_WRITE_IN_LANE_READABLE",
+   "reason_02": "CEILING_WRITE_IN_LANE_READABLE",
+   "decisive_01": {
+    "counterRows": 1
+   },
+   "decisive_02": {
+    "counterRows": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+   "reason_02": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+   "decisive_01": {
+    "counterRows": 1
+   },
+   "decisive_02": {
+    "counterRows": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:search-row1-grep-in-lane-allowed",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+   "reason_02": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+   "decisive_01": {
+    "confinedSpawns": 1,
+    "baseSpawns": 0,
+    "factCount": 1
+   },
+   "decisive_02": {
+    "confinedSpawns": 1,
+    "baseSpawns": 0,
+    "factCount": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:search-row2-grep-outside-ceiling-refused",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+   "reason_02": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+   "decisive_01": {
+    "confinedSpawns": 0,
+    "baseSpawns": 0,
+    "factCount": 1
+   },
+   "decisive_02": {
+    "confinedSpawns": 0,
+    "baseSpawns": 0,
+    "factCount": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:search-row3-grep-outside-restriction-refused",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION",
+   "reason_02": "RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION",
+   "decisive_01": {
+    "confinedSpawns": 0,
+    "baseSpawns": 0
+   },
+   "decisive_02": {
+    "confinedSpawns": 0,
+    "baseSpawns": 0
+   },
+   "agree": true
+  },
+  {
+   "case": "live:search-row4-cancelled-search-settles-cancelled",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT",
+   "reason_02": "CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT",
+   "decisive_01": {},
+   "decisive_02": {},
+   "agree": true
+  },
+  {
+   "case": "live:search-row5-invalid-pattern-is-error",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "INVALID_PATTERN_SURFACED_AS_TOOL_ERROR",
+   "reason_02": "INVALID_PATTERN_SURFACED_AS_TOOL_ERROR",
+   "decisive_01": {
+    "facts": 1
+   },
+   "decisive_02": {
+    "facts": 1
+   },
+   "agree": true
+  },
+  {
+   "case": "live:search-row6-archive-boundary-no-callable-shadow",
+   "run-01": "PASS",
+   "run-02": "PASS",
+   "reason_01": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+   "reason_02": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+   "decisive_01": {},
+   "decisive_02": {},
+   "agree": true
+  }
+ ]
+}

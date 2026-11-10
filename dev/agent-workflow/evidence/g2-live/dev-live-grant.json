@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-g2-live-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (relayed through the G2-LIVE brief): scope authorisation for the FS Provider face — repeated self-authorised development starts on the current master, no per-start approval, no cumulative cap",
+  "face": "FS Provider",
+  "world": "u5a5sfdev1",
+  "note": "G2 live half (BL-14/15/16 + edit + read_image) re-measured on origin/master @ 0f4f4f8eb. Development evidence only: this class can never produce V@B=yes and no candidate claim is made."
+}

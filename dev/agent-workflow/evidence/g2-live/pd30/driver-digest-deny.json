@@ -1,0 +1,39 @@
+{
+  "at": "2026-11-10T00:02:27.791Z",
+  "arm": "deny",
+  "head": "0f4f4f8eb2bbe991f78b55ed1f98abb18c504087",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "2f6d0951f0e2281c93e9ab0d789e5e071de2fd7a270d321c9448f21ff3b641ea",
+  "jsSubstitutions": [
+    {
+      "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
+      "value": []
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'",
+      "value": "https://api.exa.ai"
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
+      "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/cordis.patch.yml",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
+    "arm": "deny"
+  },
+  "authorization": {
+    "scope": "DEV-LIVE",
+    "face": "WebPreview",
+    "world": "u5a5sfpd30",
+    "source": "task PD30-WEB-PREVIEW explicit boot authorisation (2026-11-14), arm=deny"
+  },
+  "command": "node tests/world-factory/drivers/a5sf-pd30-web-preview/run-boot.mjs --arm deny"
+}
