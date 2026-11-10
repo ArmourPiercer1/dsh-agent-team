@@ -20,6 +20,15 @@
  * verdict (which may legitimately be PASS/NOT_REACHED on what was measured) to
  * the RUN verdict (which may never be). `markAborted()` is the one place a
  * caller declares that, so no runner can hand-compute a softer overall.
+ *
+ * THE SUBSET RULE (2026-11-09): "not selected" is not "failed". A caller that
+ * deliberately runs a subset of its declared cases (`--arms e2e`) declares the
+ * full case set via `allCases`; `finalize()` records every unselected case with
+ * the distinct `NOT_SELECTED` outcome and computes `overall` over the cases the
+ * run actually selected. The record says `subset: true`, `arms`, `selected` and
+ * `totalCases` so a subset can never be mistaken for a full run. A SELECTED
+ * case that produces no verdict is still filled `FAIL` (fail-closed) — this
+ * rule only removes the false FAILs on cases the caller never asked for.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -61,9 +70,10 @@ export function hostStartBudgetPosition(record, maxHostStarts) {
   })
 }
 
-export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED', 'NOT_REACHED'])
+export const VERDICTS = Object.freeze(['PASS', 'FAIL', 'REFUSED', 'ENV_BLOCK', 'SKIP', 'TIMEOUT', 'START_FAILED', 'NOT_REACHED', 'NOT_SELECTED'])
 
-/** Higher = worse. `overall` takes the max severity over selected cases. */
+/** Higher = worse. `overall` takes the max severity over the SELECTED cases;
+ *  `NOT_SELECTED` is outside the algebra entirely (see the SUBSET RULE). */
 export const VERDICT_SEVERITY = Object.freeze({
   PASS: 0,
   SKIP: 1,
@@ -76,6 +86,9 @@ export const VERDICT_SEVERITY = Object.freeze({
   TIMEOUT: 4,
   START_FAILED: 5,
   FAIL: 6,
+  // Not an outcome at all: the caller never asked this case to run. It is
+  // excluded from `overall` and may never appear for a SELECTED case.
+  NOT_SELECTED: -1,
 })
 
 export function assertVerdict(v) {
@@ -83,10 +96,16 @@ export function assertVerdict(v) {
   return v
 }
 
+/** The worst verdict over the cases that were actually SELECTED. `NOT_SELECTED`
+ *  rows are disclosures, not outcomes: a subset run is graded on its selection,
+ *  never punished for the cases it did not ask for. A run with no judged case at
+ *  all (empty suite, or every row NOT_SELECTED) is still FAIL — a suite that
+ *  selected nothing is a red suite, never a green one. */
 export function overallVerdict(cases) {
-  if (cases.length === 0) return 'FAIL' // a suite that selected nothing is a red suite, never a green one
+  const judged = cases.filter((c) => c.verdict !== 'NOT_SELECTED')
+  if (judged.length === 0) return 'FAIL'
   let worst = 'PASS'
-  for (const c of cases) {
+  for (const c of judged) {
     assertVerdict(c.verdict)
     if (VERDICT_SEVERITY[c.verdict] > VERDICT_SEVERITY[worst]) worst = c.verdict
   }
@@ -98,6 +117,11 @@ export function overallVerdict(cases) {
  * @param {string} bindings.runId
  * @param {string} bindings.suite
  * @param {string[]} bindings.selectedCases case ids this run intended to execute
+ * @param {string[]} [bindings.allCases] every case the suite DECLARES (defaults to
+ *        the selection, i.e. a full run). Cases in `allCases` but not in
+ *        `selectedCases` are recorded `NOT_SELECTED` instead of FAIL.
+ * @param {string[]|null} [bindings.arms] the arms/subset the caller requested
+ *        (recorded verbatim so a subset run says what it is)
  * @param {object} bindings.bindings Team/Host/config/World digests
  * @param {string} [bindings.ledgerPath] host-start budget ledger (JSONL)
  * @param {string} [bindings.recordClass] `DEV-LIVE` | `CANDIDATE-C2` (default C2:
@@ -137,8 +161,10 @@ export function assertBoundRecord(record) {
   return record
 }
 
-export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerPath, recordClass = DEFAULT_RECORD_CLASS, candidateClaim = null }) {
+export function createRunRecord({ runId, suite, selectedCases, allCases = selectedCases, arms = null, bindings, ledgerPath, recordClass = DEFAULT_RECORD_CLASS, candidateClaim = null }) {
   const cases = new Map()
+  const declaredCases = [...allCases]
+  const selectedSet = new Set(selectedCases)
   const record = {
     schema: 'u5-run-record/1',
     runId,
@@ -146,10 +172,16 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
     recordClass: assertRecordClass(recordClass),
     startedAt: new Date().toISOString(),
     selectedCases: [...selectedCases],
+    allCases: declaredCases,
+    arms: arms === null ? null : [...arms],
+    subset: selectedCases.length < declaredCases.length,
+    selected: selectedCases.length,
+    totalCases: declaredCases.length,
     bindings,
     cases: [],
     hostStarts: { ledgerPath: ledgerPath ?? null, thisRunCount: 0, thisRunEntries: [] },
   }
+  if (arms === null) delete record.arms
   if (candidateClaim !== null) record.candidateClaim = candidateClaim
   let finalized = null
   /** Set by `markAborted()`; a non-null value makes `finalize()` refuse to
@@ -180,6 +212,11 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
     },
     addCase(id, verdict, detail = {}) {
       assertVerdict(verdict)
+      // "not selected" is a bookkeeping outcome written by finalize(), never a
+      // judgement a caller may stamp on a case it did select.
+      if (verdict === 'NOT_SELECTED' && selectedSet.has(id)) {
+        throw new Error(`case ${JSON.stringify(id)} is selected: NOT_SELECTED is only for cases this run did not ask for`)
+      }
       cases.set(id, { id, verdict, at: new Date().toISOString(), ...detail })
       return cases.get(id)
     },
@@ -206,8 +243,10 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
       return abort !== null
     },
     /**
-     * Fold: every selected case must have a verdict; a selected case without
-     * one is recorded FAIL (a case that never reported is not a pass).
+     * Fold: every SELECTED case must have a verdict; a selected case without
+     * one is recorded FAIL (a case that never reported is not a pass). Every
+     * DECLARED case the caller did not select is recorded NOT_SELECTED and is
+     * excluded from `overall` — a subset run is not a failed full run.
      */
     finalize() {
       // Fail closed at the WRITER, not at the gate: see assertBoundRecord().
@@ -215,7 +254,22 @@ export function createRunRecord({ runId, suite, selectedCases, bindings, ledgerP
       for (const id of record.selectedCases) {
         if (!cases.has(id)) cases.set(id, { id, verdict: 'FAIL', at: new Date().toISOString(), detail: { reason: 'selected case produced no verdict (fail-closed)' } })
       }
+      for (const id of declaredCases) {
+        if (selectedSet.has(id) || cases.has(id)) continue
+        cases.set(id, {
+          id,
+          verdict: 'NOT_SELECTED',
+          at: new Date().toISOString(),
+          detail: { reason: 'case not selected for this run (subset invocation); NOT a failure and excluded from overall' },
+        })
+      }
       record.cases = [...cases.values()]
+      // The subset metadata is recomputed here, not merely echoed from the
+      // constructor: a caller may record a case outside `allCases` (an arm-only
+      // probe), and `selected <= totalCases` must stay true or the summary lies.
+      record.selected = record.selectedCases.length
+      record.totalCases = Math.max(declaredCases.length, record.cases.length)
+      record.subset = record.selected < record.totalCases
       // The record-class claim rule (owner ruling 2026-11-09): a DEV-LIVE run
       // may never satisfy a V@B=yes / frozen-candidate claim. This is checked
       // on the record's OWN declared claim and disclosed on EVERY record, so a
@@ -265,10 +319,15 @@ export function formatSummary(record) {
   // impossible for it, and a reader must not have to open the JSON to learn that
   // the grade covers only the cases the run reached.
   const partial = r.partial === true ? ` partial=true abortedAt=${String(r.abortedAt ?? r.abort?.stage ?? 'unknown')}` : ''
+  // A SUBSET run says so on the summary line: its `overall` grades only the
+  // selected cases, so a reader must never mistake `overall=PASS` for a full run.
+  const subset = r.subset === true
+    ? ` subset=true arms=${(r.arms ?? ['<unspecified>']).join(',')} selected=${String(r.selected ?? r.selectedCases?.length ?? 0)}/${String(r.totalCases ?? r.cases.length)}`
+    : ''
   // A development-boot record says so on the summary line (CANDIDATE-C2 adds
   // nothing, so every pre-existing line keeps its exact shape).
   const classTag = r.recordClass === 'DEV-LIVE' ? ' recordClass=DEV-LIVE (not candidate evidence)' : ''
-  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}${partial}${classTag}`
+  return `RUN-SUMMARY run=${r.runId} suite=${r.suite} overall=${r.overall} cases=${r.cases.length} ${parts} worlds=${(r.bindings?.worldIds ?? []).join('|') || 'none'}${marker}${partial}${subset}${classTag}`
 }
 
 /**
