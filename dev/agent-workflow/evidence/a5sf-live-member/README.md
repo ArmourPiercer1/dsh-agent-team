@@ -302,6 +302,15 @@ Per boot (`runs/boot01`, `runs/boot02`): `member-transcript.json` / `.txt`,
 `driver-digest.json`, `driver.log`, `plan-patch.yml`, `run-ledger.jsonl`,
 `seam-before/`.
 
+> **2026-11-09 — 448 KB 未跟踪 scratch 的处置**：主 checkout 里曾有一棵未被引用的
+> `archive/2026-11-07T15-45-31-743Z/` + `driver/logs/u5u5a5sfsub1-2026-11-07T15-4{5,6}-*`（driver
+> 运行期自己写出的再生性临时树，从未被本 README、`runs/` 或任何 tracked 记录引用；tracked
+> `driver.log` 只覆盖 11:11Z 之前的最终轮）。它是 scratch，**不属于本记录**，已删除；本记录的
+> 证据仍是上面列出的 `runs/boot01|02`、`driver.log` 与 run-level 文件。
+> 没有加 `.gitignore` 规则：本仓库的 `evidence/*/archive/` 与 `evidence/*/driver/` 在其它 lane
+> 里有 1407 / 555 个 **tracked** 文件，说明它们是可被 curation 的正式证据路径，整类忽略会掩盖
+> 真正的记录；一次性 scratch 的正确处置是删除而不是忽略。
+
 ## 9. Gates
 
 | gate | result |
