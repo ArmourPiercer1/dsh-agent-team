@@ -241,8 +241,14 @@ This is a deliberate version-line jump, not a sequence of five releases:
 ## 7. 验收范围与类型化例外（2026-11-09 裁决，只追加）
 
 **G3–G5 的适用范围是 opt-in 的受治路径（governed preset），不是默认 `standard` 路径。**
-默认路径承诺的是 Alpha.5 的既有语义——I/O 上界照常生效——但**逐工具等价矩阵不覆盖默认路径**。
-两份文件此前口径不一致（计划字面指向默认路径，`docs/STATUS.md` 指向 opt-in 路径），以本节为准。
+**默认 `standard` 路径保留其原有的权限与执行行为，不宣称受到 Alpha.5 confined I/O 上界治理，也不纳入本次逐工具验收矩阵。**
+它并非"没有任何权限检查"——Alpha.4 的既有 envelope 与宿主原生授权仍在——但它**没有**进入
+`MemberCeiling ∩ ToolRestriction` 的受治机制：confined realm 只在显式选择 `a5sf-governed-member`
+且启用 `a5sfGovernedRealm` 时装配（`cordis.patch.yml`）。
+
+> **2026-11-09 勘误（Owner 裁决，安全语义级）**：本节初稿写过"默认路径 I/O 上界照常生效"，**那是错的**。
+> 默认路径没有 Alpha.5 的 I/O 硬上界；把两者混为一谈会让读者以为不受治的路径受治。原文保留于此行之上不删，
+> 错误以本块显式撤回。
 
 **`network: restricted` 是类型化例外，不是"没配好"。** 能力表只承诺 `allow` / `deny` 两态；
 `restricted` 会**显式**判为 `UNSUPPORTED`（netns 后端仍是未合并草稿），不会静默降级成 deny 或 allow。
