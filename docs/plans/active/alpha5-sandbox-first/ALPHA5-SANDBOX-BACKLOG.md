@@ -156,6 +156,12 @@ BL-24/BL-25 的括号里。
 `DONE`/`ENFORCE` 的行是矩阵缺陷，不是本表缺陷。**需要 boot 的条目共 17 条**，其中只有 BL-17/18 有
 具名 allocation（#2/#3），其余全部在 G3/G4/G5 之后——这是“boot 是稀缺资源”的可核验表达。
 
+> **2026-11-09 注记（只追加；不复制等级、不改任何行文字）**：上表 BL-21 的「需要 boot = 是（runtime 半）」
+> 已被**现有 artefact 满足**，不需要新的 boot：runtime 半场的面枚举见
+> `dev/agent-workflow/evidence/a5sf-pd18-web-ptc/runs/boot02/member-surface.json`（40 名真实 Host 工具名；
+> `DEV-LIVE`，不产 `V@B`）。BL-21 的现行读法与边界、以及由此满足的 BL-24、以及 BL-26 的 freeze-only
+> 定性，都写在 §7 P3 表下的三条 2026-11-09 注记里。本注记不移动任何等级、不改任何 `V@B`。
+
 ## 0.2 历史裁决与 P2 统一前置（旧 §2 尾，2026-11-06 重组时逐字移入）
 
 > 这段在旧版本里位于 P2 表之后、P3 之前。按面重排后它不属于任何单一能力面（它约束的是**整个 P2 阶段的
@@ -483,6 +489,50 @@ _（本面无独立条目。）_
 | BL-24 | P3-03 Web 与外部提供者（`web_fetch`/`web_search`/stdio MCP/remote MCP） | BLOCKED（依赖 BL-18/BL-21） | remote = TRUSTED_DELEGATION 或 UNSUPPORTED |
 | BL-25 | P3-04 无直接数据面 I/O 的工具与未知工具（`goal`/`todo`/`jobs`/`present`/`ask`/`skill`/`session`） | BLOCKED（依赖 BL-21） | 逐工具列明实施/不实施理由 |
 | BL-26 | P3-05 旧工具 Family 分阶段接管/退役（freeze → parity → switch → delete，不删证据） | BLOCKED（依赖 BL-22..BL-25） | 唯一 Integrator 变更 `team-tool-plane.mjs` 等 |
+
+> **BL-21 — 2026-11-09 注记（只追加；不改任何等级 / `V@B`）**：本行的 **runtime 半场已有测量**，
+> 不需要新的 boot。`dev/agent-workflow/evidence/a5sf-pd18-web-ptc/runs/boot02/member-surface.json`
+> 是**真实 Host 上受治 Member 请求的完整、未过滤的模型可见工具名列表**：`tools` 数组 **40** 名，
+> 同文件 `closedNames` = `web_fetch` / `web_search` / `workflow` / `run_code` 4 名**不在面**，
+> `note` 原文 “the FULL model-visible tool name list of the governed Member request, unfiltered”。
+> 同一次 boot 的绑定：head `d590d58a0`、host `639ed01539`、preset = shipped opt-in
+> `a5sf-governed-member`、`recordClass=DEV-LIVE`、`candidateClaimEligibility.eligible=false`
+> （`runs/boot02/run-record.json`；preset 见 `dev/agent-workflow/evidence/a5sf-pd18-web-ptc/README.md` §1）。
+> **它证明了什么**：受治 Member 的 runtime 导出面在这一个 head、这一个 preset、这一次 boot 上被**枚举过**
+> ——40 个名字 + 4 个显式关闭名；并且它和矩阵 §1.7 的「面上名册」是同一份 artefact（§1.7.1 的
+> “面上名册”）。
+> **它不证明什么**：(1) 它**不是 per-tool 矩阵**——40 名里有 33 名是“表面存在但 0 条 a5sf fact”
+> （矩阵 §1.7.2），名字在面上 ≠ 该工具受治；(2) 它只是**一个 Member 面、一个 preset、一个 head** 的一次
+> `DEV-LIVE` 观测，不是候选 C2、结构上不产 `V@B=yes`；(3) 动态来源（`dynamic_source_classes`：
+> client-plugin / cua / `mcp__*`）与**另一个**面（standard Leader 43 名，`runs/boot02/leader-surface.json`）
+> 不在这一条测量里；(4) 它不移动本行任何等级。
+> 因此本行 runtime 半场记为 **measured（`DEV-LIVE`，面枚举）**；源半 = 同目录的
+> `NATIVE-SOURCE-INVENTORY.md`（逐模块采用状态 §2 + 退役清单 §3）。本行“输出”列里的
+> `tests/kits/a5sf-native-inventory/` 与 `dev/agent-workflow/evidence/a5sf-p3/inventory/` 是**计划输出**，
+> 在本 head 上**不存在**（`ls` 实测），不得被读成已经落地的源半。
+
+> **BL-24 — 2026-11-09 注记（只追加；不改任何等级 / `V@B`）**：本行原记 `BLOCKED（依赖 BL-18/BL-21）`。
+> 复核时两条依赖都已在**机制**层满足：
+> - **BL-18**：`#### PD-30 追加注记` 记录产品组合经 `a5sf-web-transport` 行提供 web face，并给出
+>   allow / deny / nosearch 三对 agreeing **`DEV-LIVE`** boots（证据
+>   `dev/agent-workflow/evidence/a5sf-pd30-web-preview/`；本文件末尾的 `#### PD-30 追加注记`）。
+> - **BL-21**：runtime 半场由 `dev/agent-workflow/evidence/a5sf-pd18-web-ptc/runs/boot02/member-surface.json`
+>   的 40 名面枚举满足（见上一条 BL-21 注记）。
+>
+> 因此本行的**现行读法 = mechanism ready, live half pending**：`web_fetch` / `web_search` 的产品供给与
+> `DEV-LIVE` 读数已有；**正式逐工具 live 验收（`V@B`）仍未做**，且本行的 stdio MCP / remote MCP 半边
+> 仍是 `NOT_WIRED` / `UNSUPPORTED`（矩阵 M-17 / M-18）。原 `BLOCKED` 字样保留为历史；本行**不记 `DONE`**、
+> 不改任何等级。
+
+> **BL-26 — 2026-11-09 注记（只追加；不改任何等级 / `V@B`）**：本行**不是**一个 G3 逐工具验收格。
+> `NATIVE-SOURCE-INVENTORY.md:117` 已把本阶段动作写死为 **freeze-only**——“所以本阶段只能做 **freeze**：
+> `delete` 一个都不允许”；前置是旧 family 平面仍是生产路径
+> （`packages/runtime/src/plugin/live/team-tool-plane.mjs:110` 仍 import `FAMILY_INDEX`；
+> `:75` 与 `:1706` 的 `createGovernedToolDefinitions`）。因此 **native family 的退役是 Integrator 变更**
+> （`team-tool-plane.mjs` 等；本行备注原文也是“唯一 Integrator 变更”），**不是**工具验收矩阵的格子：
+> 不得把 BL-26 记为 G3 工作、不得为它占一次 boot、也不得用任何逐工具 PASS 折算它的完成。
+> 触发条件不变：freeze → parity → switch → delete，且 `delete` 需同时具备 native parity、live 或 host-free
+> parity 与负控（`NATIVE-SOURCE-INVENTORY.md:133-134`）；当前三条一条都不满足。
 
 #### P4 — 全维度验收（G4）
 

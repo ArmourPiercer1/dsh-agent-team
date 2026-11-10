@@ -176,6 +176,12 @@ text-only 拒绝仍先于任何 I/O，且 GAP 的 inject 文本不出现）。**
 2. **External execution 面与 Non-data-plane 面在 B 层是空的**（除 M-20）。这不是“验收失败”，
    是“没有产品可验收”；把它们记为 `—` 而不是 `NO`，是为了不把“未接线”读成“已限制”。
 
+> **2026-11-09 注记（只追加；不改任何 ⑧ / ⑨ / `V@B`）**：缺口 1 的 `packages/**/test/a5sf-*.test.ts`
+> 半场已经生成成表 —— §1.1.2（17 个套件 / 240 条臂，生成器 `scripts/a5sf-a-layer-arms.mjs`）。
+> `tests/world-factory/*.mjs` 上的 A 层臂（`a5sf-product-assembly` PA5/PA8、`a5sf-web-face`、
+> `a5sf-pty-face`）**不在该生成器的扫描宇宙**，仍按本小节与各行的证据指针阅读；本注记只关闭
+> “`.ts` 半场没有文档”这一条，不改缺口 1 原文、不关缺口 2、不把任何行写成 live。
+
 **本小节不改变任何 ⑧ 等级或 ⑨ `V@B`**：`M-01`/`M-02`/`M-06`/`M-07` 仍是
 `ENFORCE-PARTIAL` / `V@B=no`（`#606` 之后），`M-10`/`M-11`/`M-12`/`M-17`/`M-19`/`M-21` 仍是不接线/
 不支持，其余不动。`†` 标记的四行与 §1.1 正文的撤回说明是同一件事的两种写法。
@@ -202,6 +208,79 @@ compiled 车道与**同一个** guard 实例（`sequence` 1→2），因此“al
 `dev/agent-workflow/evidence/a5sf-web-face/README.md`、`suite.log`、`mutations.log`、`red-first-run.log`。
 **这些臂不构成任何行的 live/level 证据**：`M-14`/`M-15` 仍 `B` / `V@B=no`；本段只加证据指针，并把
 `M-14` 原“行不转发 `web` face”的过时说明更正为“live 未跑”。
+
+### 1.1.2 A 层臂表（2026-11-09 生成；只追加，不改任何 ⑧ / ⑨ / `V@B`）
+
+**这张表回答“A 层的臂在哪些套件里、各有多少条”，不回答“哪个面通过了”。** 行由
+`scripts/a5sf-a-layer-arms.mjs` 从 `packages/**/test/a5sf-*.test.ts` 的**实际文件列表**生成
+（重跑：`node scripts/a5sf-a-layer-arms.mjs`）；套件 → Face 的归属写在生成器内，遇到未登记的
+新 `a5sf-*.test.ts` 时生成器**拒绝渲染**（fail-closed），所以表里不会出现“计划中的套件”。
+臂本身由 `ci-census` 的 root vitest 收集执行（`vitest.config.ts:24` 的 include
+`packages/*/test/**/*.test.ts`）；本表只做文档归位。
+
+**计数口径（词元，不是判定）**：后三列是**标题字符串命中**的条数，一条标题可同时命中多列。
+它只索引臂的位置，不评价臂是否有效，也不是任何面的安全结论。
+
+| 套件 | Face | 臂 | 标题含 allow/admit/keep | 标题含 deny/refuse/reject | 标题含 BEFORE / 0 spawn |
+|---|---|---|---|---|---|
+| `packages/domain/test/a5sf-v4-member-ceiling-projection.test.ts` | Cross-face | 21 | 4 | 5 | 0 |
+| `packages/runtime/test/a5sf-approval-takeover.test.ts` | Cross-face | 23 | 7 | 12 | 1 |
+| `packages/runtime/test/a5sf-bl16-grep-realm.test.ts` | Subprocess | 10 | 2 | 3 | 2 |
+| `packages/runtime/test/a5sf-confined-subprocess.test.ts` | Subprocess | 38 | 9 | 16 | 5 |
+| `packages/runtime/test/a5sf-invocation.test.ts` | Cross-face | 20 | 1 | 6 | 0 |
+| `packages/runtime/test/a5sf-member-policy.test.ts` | FS Provider | 17 | 4 | 6 | 0 |
+| `packages/runtime/test/a5sf-os-runner.test.ts` | Subprocess | 9 | 1 | 6 | 1 |
+| `packages/runtime/test/a5sf-path-rules.test.ts` | FS Provider | 32 | 14 | 14 | 0 |
+| `packages/runtime/test/a5sf-pd17-fs-policy.test.ts` | FS Provider | 5 | 1 | 1 | 0 |
+| `packages/runtime/test/a5sf-pd20-admission-close.test.ts` | Cross-face | 10 | 2 | 2 | 0 |
+| `packages/runtime/test/a5sf-pd20-closed-arguments.test.ts` | Cross-face | 6 | 1 | 4 | 2 |
+| `packages/runtime/test/a5sf-provider-composition.test.ts` | Cross-face | 9 | 0 | 5 | 0 |
+| `packages/runtime/test/a5sf-service-install.test.ts` | Cross-face | 16 | 3 | 6 | 0 |
+| `packages/runtime/test/a5sf-subprocess-contract.test.ts` | Subprocess | 3 | 0 | 1 | 0 |
+| `packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts` | Subprocess | 4 | 0 | 3 | 1 |
+| `packages/runtime/test/a5sf-terminal-lifecycle.test.ts` | Shell-PTY | 7 | 0 | 3 | 0 |
+| `packages/runtime/test/a5sf-trust-registry.test.ts` | Cross-face | 10 | 0 | 5 | 0 |
+
+| Face | 套件 | 臂 | allow 词元 | deny/refuse 词元 | before-side-effect 词元 |
+|---|---|---|---|---|---|
+| Cross-face | 8 | 115 | 18 | 45 | 3 |
+| Subprocess | 5 | 64 | 12 | 29 | 9 |
+| FS Provider | 3 | 54 | 19 | 21 | 0 |
+| Shell-PTY | 1 | 7 | 0 | 3 | 0 |
+
+**这张表不说什么**：① `Web` / `External execution` / `Non-data-plane` 在本扫描宇宙里**没有
+`a5sf-*.test.ts` 套件**，这不等于“没有 A 层臂”——它们的臂在 `tests/world-factory/*.mjs`
+（`a5sf-web-face`、`a5sf-pty-face`、`a5sf-product-assembly` PA5/PA8），不在本生成器的扫描范围；
+② 表里的 `0` 是“标题里没有该词元”，不是“没有该臂”；③ 本表不改任何 ⑧ 等级、不改任何 `V@B`、
+不关闭 G2–G5、不动 `release BLOCKED`。
+
+### 1.1.3 类型化例外（D9 的剩余格）的机器依据（2026-11-09；只追加，不改任何 ⑧ / ⑨）
+
+**问题**：G4 的剩余待测格（D9 估计约 **74** 格：42 个 REQUIRED 数据面名字 → 约 108 格候选，今天约
+34 格可测，其余需要接线或写一条类型化例外）不能靠手写声明结案。
+
+**机器依据** = `dev/engineering/tool-obligations/expected-tool-obligations.v1.json`
+（`counts` 块，`:25-32`：`entries 91` / `required 58` / `out_of_scope 33` / `named 87` /
+`dynamic_classes 3` / `surfaces 1`；口径见 `dev/engineering/tool-obligations/README.md:23`）。
+该文件是**生成物、不是手改文件**：`build-expected-tool-obligations.mjs --check` 在
+`packages/testkit/test/u7-0-census-reconcile.test.ts:86-89` 里被 CI census 执行
+（`vitest.config.ts:24`），字节不可复算即红。
+
+**一条类型化例外的最小形式**（缺一条就只是“未测”，不是例外）：
+
+1. **精确工具名**命中 `obligations[]` 的一条（`name`），并抄下它的 `obligation` 与
+   `source_registration.file:line`（或 `team_source_registration.file:line`）。87 条具名条目**全部**
+   带这二者之一（69 条 `source_registration` + 18 条 `team_source_registration`）；3 条
+   `dynamic-class` + 1 条 `surface` 条目按**类**引用，不伪造单一注册行（例如
+   `mcp__<server>__<tool> (dynamic class)`）。
+2. `OUT_OF_SCOPE` 必须引用该条目的 `out_of_scope_reason`（33/33 非空）；`REQUIRED` **不得**被写成
+   “不适用”，只能写“被哪条机制 / backlog 行阻塞”，并保留该格的现有等级不变。
+3. 引用必须仍能通过字节复算：条目改名、删除或移动行而例外没跟着改 ⇒
+   `u7-0-census-reconcile` 的 `--check` 臂红（同上）。
+
+**边界**：这给的是“例外的**引用形式**可机器核对”，不是“74 格已裁决”。D9 的取舍（逐名字写例外 vs
+先接线再测）仍是 owner 决策（`OWNER-DECISIONS-2026-11-09.md:95-101`）。本段不移动任何
+⑧ / ⑨ / `V@B` / `release BLOCKED`，也不声称任何剩余格已经例外化。
 
 ## 1.2 2026-11-08 定点更正（ALPHA5-CONSOLIDATE；只追加，不改任何历史数字）
 
