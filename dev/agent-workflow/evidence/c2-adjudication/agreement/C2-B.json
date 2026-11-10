@@ -1,0 +1,320 @@
+{
+ "schema": "c2-agreement/1",
+ "scope": "C2-B",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateRef": "refs/heads/candidate/v0.1.6-1",
+ "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+ "hostVersion": "0.2.0-rc.2",
+ "authoritySnapshot": "as20261109r1",
+ "instrument": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+ "optIn": {
+  "alpha6Officer": true,
+  "planeTakeover": true
+ },
+ "instruments": {
+  "allowdeny": {
+   "boots": [
+    {
+     "dir": "c2b-a6-allowdeny-r1",
+     "runId": "2026-11-10T15-57-52"
+    },
+    {
+     "dir": "c2b-a6-allowdeny-r1b",
+     "runId": "2026-11-10T16-03-12"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-2",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-3",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-4",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-5",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-6",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-27",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-28",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-29",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "stop": {
+   "boots": [
+    {
+     "dir": "c2b-a6-stop-r1",
+     "runId": "2026-11-10T16-07-49"
+    },
+    {
+     "dir": "c2b-a6-stop-r2",
+     "runId": "2026-11-10T16-09-24"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-11",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-12",
+     "boot1": "FAIL",
+     "boot2": "PASS",
+     "agree": false
+    }
+   ],
+   "agreeing": false
+  },
+  "sticky": {
+   "boots": [
+    {
+     "dir": "c2b-a6-sticky-r1",
+     "runId": "2026-11-10T16-10-01"
+    },
+    {
+     "dir": "c2b-a6-sticky-r2",
+     "runId": "2026-11-10T16-12-41"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-22",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-26",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-27",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-23",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-24",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "crash": {
+   "boots": [
+    {
+     "dir": "c2b-a6-crash-r1",
+     "runId": "2026-11-10T16-15-28"
+    },
+    {
+     "dir": "c2b-a6-crash-r2",
+     "runId": "2026-11-10T16-16-50"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-13",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-14",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "unclaimed": {
+   "boots": [
+    {
+     "dir": "c2b-a6-unclaimed-r1",
+     "runId": "2026-11-10T16-19-11"
+    },
+    {
+     "dir": "c2b-a6-unclaimed-r2",
+     "runId": "2026-11-10T16-21-22"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-26",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  }
+ },
+ "adjudicatedCases": [
+  {
+   "id": "C2-B/officer-allow",
+   "verdict": "PASS",
+   "cases": [
+    "A6-2",
+    "A6-3",
+    "A6-4",
+    "A6-5"
+   ]
+  },
+  {
+   "id": "C2-B/single-consumption-single-execution",
+   "verdict": "PASS",
+   "cases": [
+    "A6-6",
+    "A6-27"
+   ]
+  },
+  {
+   "id": "C2-B/officer-deny",
+   "verdict": "FAIL",
+   "note": "no durable control-request row; ask answered by base permission fallback",
+   "cases": [
+    "A6-28"
+   ]
+  },
+  {
+   "id": "C2-B/post-consumption-throw",
+   "verdict": "FAIL",
+   "note": "same precondition failure",
+   "cases": [
+    "A6-29"
+   ]
+  },
+  {
+   "id": "C2-B/goal-authorisation",
+   "verdict": "NOT-ESTABLISHED (exact A6-on conjunction)",
+   "note": "A5-governed convergence PROVEN via pd33; A6-on human attribution PASS via A6-27; no joint instrument",
+   "cases": []
+  },
+  {
+   "id": "C2-B/stop",
+   "verdict": "DISAGREE",
+   "note": "A6-12 boot1 FAIL consumed=true / boot2 PASS consumed=false",
+   "cases": [
+    "A6-11",
+    "A6-12"
+   ]
+  },
+  {
+   "id": "C2-B/sticky-stop",
+   "verdict": "FAIL",
+   "note": "no durable marker in either boot; consistent with RELEASE-NOTES 4.7 latch-scoped limit",
+   "cases": [
+    "A6-22",
+    "A6-23",
+    "A6-24",
+    "A6-26",
+    "A6-27"
+   ]
+  },
+  {
+   "id": "C2-B/cold-recovery-sigkill",
+   "verdict": "PASS",
+   "cases": [
+    "A6-13",
+    "A6-14"
+   ]
+  },
+  {
+   "id": "C2-B/a6-26-accepted-not-claimed",
+   "verdict": "REPRODUCED-AS-DOCUMENTED",
+   "note": "verdict=abandoned-terminal, recoveryCode=CONTROL_REQUEST_ABANDONED, discoverable=true, abandoned=1",
+   "cases": [
+    "A6-26"
+   ]
+  }
+ ],
+ "agreeing": false,
+ "disagreements": [
+  {
+   "arm": "stop",
+   "case": "A6-12",
+   "boot1": "FAIL",
+   "boot2": "PASS"
+  }
+ ],
+ "scopeVerdict": "NOT PASS"
+}

@@ -1,0 +1,18 @@
+{
+  "host": {
+    "wasRunning": true,
+    "pid": 2203,
+    "killed": true,
+    "portFree": true
+  },
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-59-33Z",
+  "releasedPorts": [
+    3191,
+    13054,
+    3191
+  ],
+  "killedPids": [
+    2203
+  ],
+  "notes": []
+}

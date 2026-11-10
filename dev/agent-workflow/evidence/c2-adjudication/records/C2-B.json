@@ -1,0 +1,191 @@
+{
+ "schema": "c2-adjudication-record/1",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateRef": "refs/heads/candidate/v0.1.6-1",
+ "candidateId": "cand-v0.1.6-1",
+ "manifest": {
+  "path": "dev/engineering/candidates/cand-v0.1.6-1.json",
+  "commit": "f31e3d9e2e56b04fba4720f4749621bd0ff6086b",
+  "content_digest": "sha256:7a6c8dbd512d8ef7ba29668dcdd06342a1f665904aed13f284f7b3700c0518bd"
+ },
+ "host": {
+  "version": "0.2.0-rc.2",
+  "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "tree": "tests/deepseek-harness-test-use"
+ },
+ "authority": {
+  "pointer": "dev/engineering/current-authority.json",
+  "snapshot_version": "as20261109r1",
+  "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+  "baseline": "cb2e41483af8447700fb3c2a25c2686705320692"
+ },
+ "measurementWorktree": ".worktrees/c2",
+ "adjudicator": {
+  "role": "independent C2 adjudicator",
+  "session": "c2-adjudication-20261109",
+  "authored_product_code": false,
+  "moved_authority_pointer": false,
+  "moved_candidate_ref": false,
+  "merged": false
+ },
+ "oraclePolicy": "The tool return value is never its own correctness evidence. Channels read: durable guard-consult facts, confined-spawn counters, on-disk markers, World transcript/ledger, mock connection counters, /proc tripwire, host-pid liveness. tests/world-factory/lib/oracle.mjs was not directly wired (see README section 7.6).",
+ "runId": "c2-b-2026-11-10T15-57-52Z",
+ "scope": "C2-B",
+ "scopeDefinition": "governed preset a5sf-governed-member with alpha6ReviewRouting true (A6 on)",
+ "boots": [
+  {
+   "arm": "allowdeny",
+   "dir": "c2b-a6-allowdeny-r1",
+   "runId": "2026-11-10T15-57-52",
+   "overall": "EXIT=2 (A6-28/A6-29 fail)"
+  },
+  {
+   "arm": "allowdeny",
+   "dir": "c2b-a6-allowdeny-r1b",
+   "runId": "2026-11-10T16-03-12",
+   "overall": "EXIT=2 (A6-28/A6-29 fail)"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r1",
+   "runId": "2026-11-10T16-07-49",
+   "overall": "EXIT=2 (A6-12 fail)"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r2",
+   "runId": "2026-11-10T16-09-24",
+   "overall": "EXIT=0"
+  },
+  {
+   "arm": "sticky",
+   "dir": "c2b-a6-sticky-r1",
+   "runId": "2026-11-10T16-10-01",
+   "overall": "EXIT=2 (A6-22/23/24/26/27 fail)"
+  },
+  {
+   "arm": "sticky",
+   "dir": "c2b-a6-sticky-r2",
+   "runId": "2026-11-10T16-12-41",
+   "overall": "EXIT=2 (A6-22/23/24/26/27 fail)"
+  },
+  {
+   "arm": "crash",
+   "dir": "c2b-a6-crash-r1",
+   "runId": "2026-11-10T16-15-28",
+   "overall": "EXIT=0"
+  },
+  {
+   "arm": "crash",
+   "dir": "c2b-a6-crash-r2",
+   "runId": "2026-11-10T16-16-50",
+   "overall": "EXIT=0"
+  },
+  {
+   "arm": "unclaimed",
+   "dir": "c2b-a6-unclaimed-r1",
+   "runId": "2026-11-10T16-19-11",
+   "overall": "EXIT=2 (A6-26, verdict abandoned-terminal)"
+  },
+  {
+   "arm": "unclaimed",
+   "dir": "c2b-a6-unclaimed-r2",
+   "runId": "2026-11-10T16-21-22",
+   "overall": "EXIT=2 (A6-26, verdict abandoned-terminal)"
+  }
+ ],
+ "allBootsSubordinateRecordClass": "DEV-LIVE",
+ "cases": [
+  {
+   "id": "C2-B/officer-allow",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-2 wakes=3 notifications=0 requests=17 (r1) / requests=16 (r1b); PASS A6-4 file=c1-a6-allow-*.txt; PASS A6-5 leaderWakes=0",
+   "oracle": "durable request/decision + on-disk effect file + wake transcript",
+   "falsifier": "Leader woken, no file, no decision"
+  },
+  {
+   "id": "C2-B/single-consumption-single-execution",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-6 requests=2 decisions=2 consumptions=2 pending=; PASS A6-27 executed=true outcome=succeeded facts=1",
+   "oracle": "ledger counts + succeeded execution-result fact",
+   "falsifier": "2 consumptions/facts or missing result"
+  },
+  {
+   "id": "C2-B/officer-deny",
+   "verdict": "FAIL",
+   "bootsAgree": true,
+   "decisive": "FAIL A6-28 request=none decision=none consumed=false execFacts=0 file=false done=true (both boots); a6-exec-negatives.json deny.request=null; tool result \"permission denied: exec fingerprint ... answered deny from the fallback\"",
+   "oracle": "control ledger: no control-request-recorded row for the deny prompt; the base permission fallback answered before the A6 plane",
+   "falsifier": "a durable control-request-recorded row would be needed before a deny verdict is meaningful",
+   "note": "measurement-precondition failure, not proof that a human deny of a durable request fails"
+  },
+  {
+   "id": "C2-B/post-consumption-throw",
+   "verdict": "FAIL",
+   "bootsAgree": true,
+   "decisive": "FAIL A6-29 request=none consumed=false execFacts=none callId=none done=true (both boots); same fallback deny",
+   "oracle": "ledger execution-results for the call",
+   "falsifier": "a consumed request with a succeeded fact",
+   "note": "unmeasured, not refuted"
+  },
+  {
+   "id": "C2-B/goal-authorisation",
+   "verdict": "NOT-ESTABLISHED",
+   "bootsAgree": null,
+   "decisive": "pd33 three-automatic-rounds rounds=3; terminal-complete finalPhase=complete; complete-call-accepted call=true (A5 governed, A6 off); A6-27 outcome=succeeded facts=1 (A6-on attribution leg)",
+   "oracle": "goal-phase transcript (rounds/finalPhase) + create_goal result; A6-27 execution fact",
+   "falsifier": "a refused create_goal under the A6-on composition or a goal never reaching complete",
+   "note": "no shipped instrument composes A6-on with governed create_goal; the RuntimeRoot ^ SourceKindUser rule is evidenced in two halves, not jointly"
+  },
+  {
+   "id": "C2-B/stop",
+   "verdict": "DISAGREE",
+   "bootsAgree": false,
+   "decisive": "r1 FAIL A6-12 lateStatus=200 lateDecision={decision:allow} consumed=true file=\"\"; r2 PASS A6-12 consumed=false file=\"\"",
+   "oracle": "late-allow decision + consumption ledger + effect file",
+   "falsifier": "a consumption entry for a post-Stop allow is the failing observation",
+   "note": "race in the Stop-vs-consumption window; not averaged"
+  },
+  {
+   "id": "C2-B/sticky-stop",
+   "verdict": "FAIL",
+   "bootsAgree": true,
+   "decisive": "both boots FAIL A6-22 cancel=true markers= wakeRows= wakes=1->1; FAIL A6-23 restart=ok markers=; FAIL A6-24 markers=; a6-sticky-stop.json rows=[] stoppedRows=[] wakeRows=[] markersAfterRestart=[]",
+   "oracle": "marker file existence + wake rows + wake counter + restart",
+   "falsifier": "a stopped-*.json marker would flip this; none exists",
+   "note": "consistent with RELEASE-NOTES-0.1.6 section 4.7 latch-scoped marker limit; recorded as reproduced limit, not a new defect"
+  },
+  {
+   "id": "C2-B/cold-recovery-sigkill",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-13 exited=true restart=ok decision=null consumed=false file=false; PASS A6-14 abandon=invocation-abandoned consumed=false file=false",
+   "oracle": "host-pid liveness across SIGKILL/restart + durable request row + absence of consumption/effect",
+   "falsifier": "execution before restart or a deny rewrite"
+  },
+  {
+   "id": "C2-B/a6-26-accepted-not-claimed",
+   "verdict": "REPRODUCED-AS-DOCUMENTED",
+   "bootsAgree": true,
+   "decisive": "both boots pendingBefore=1 pendingAfter=0 discoverable=true pendingCount=0 abandoned=1 recoveryCode=CONTROL_REQUEST_ABANDONED restart=ok verdict=abandoned-terminal; a6-inbox-unclaimed.json abandonedAfter=[control-request-abandoned:invocation-abandoned]",
+   "oracle": "abandonment fact + public remote discovery of the request id + wake counters",
+   "falsifier": "wakesAfterRestart>0 (exactly-once) or discoverable=false",
+   "note": "D11 / release-notes section 5 known path; kit check FAIL is by design because its ok predicate excludes abandoned-terminal"
+  }
+ ],
+ "verdict": "NOT PASS",
+ "agreementFile": "agreement/C2-B.json",
+ "disagreements": [
+  {
+   "case": "A6-12 / C2-B/stop",
+   "boot1": "FAIL consumed=true",
+   "boot2": "PASS consumed=false",
+   "treatment": "reported, not averaged"
+  }
+ ],
+ "notes": "Ten single-boot kit runs (two per arm), all at the frozen SHA and host pin. Allow path, single consumption/execution and SIGKILL cold recovery pass in both boots. Deny/throw arms never reach a durable request (base permission fallback), Sticky Stop writes no durable marker (documented 4.7 limit), A6-26 reproduces the documented abandonment, and Stop-vs-consumption disagrees between boots."
+}

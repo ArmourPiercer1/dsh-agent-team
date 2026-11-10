@@ -1,0 +1,70 @@
+[2026-11-10T15:57:16.566Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-10T15:57:16.643Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-10T15:57:16.644Z] [boot1] dev-live slot #0 face=GoalStop world=u5a5sfpd33 head=168266dbfe7f2de091d998431bd56ce4dba0dbb5
+[2026-11-10T15:57:16.660Z] [boot1] fixture origins: fetch=http://127.0.0.1:45957 search=http://127.0.0.1:44779
+[2026-11-10T15:57:16.666Z] [boot1] world=u5u5a5sfpd33-20261110T15-57-16Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z
+[2026-11-10T15:57:16.667Z] [boot1] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2 (7 exports resolved, incl. ./web-tool)
+[2026-11-10T15:58:28.864Z] [boot1] mock on 13054
+[2026-11-10T15:59:22.831Z] [boot1] BOOTED port=3191 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z
+[2026-11-10T15:59:23.313Z] [boot1] p6t6 health=true
+[2026-11-10T15:59:23.334Z] [boot1] discovery prompt status=200
+[2026-11-10T15:59:30.662Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-map1bwlg2z","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd33-team","blueprint":{"blueprintId":"team.a5sf.pd33.main","revision":"1","contentHash":"sha256:d3e269d9a8cb391a
+[2026-11-10T15:59:30.662Z] [boot1] delegations seen=true
+[2026-11-10T15:59:30.663Z] [boot1] goals created=true
+[2026-11-10T15:59:30.671Z] [boot1] member sessions: {"a":"session-team-child-c63faae83d9a80429d3002bf9e60facf","b":"session-team-child-601eb61ddb9c29453cfd84348361e067","s1":"session-team-child-c98107c8db0087de6f75d58677283fbc","s2":"session-team-child-d7c127890591a07df6eee9044a8b88eb","cold":"session-team-child-421a8ea96efdea7a541eb5594f6cffce","stop2":"session-team-child-2f1eae16018a06cee9a40eda2e85408a","stop3":"session-team-child-3241d9a92f4dd2e657724b49359fbf7a"}
+[2026-11-10T15:59:30.684Z] [boot1] first rounds on every member=true rounds={"b":3,"s1":2,"s2":4,"cold":3,"stop2":2,"stop3":1}
+[2026-11-10T15:59:32.849Z] [boot1] E2E: members=8 a.calls=18 b.rounds=3 b.phase=complete fetchConn=1 searchPOST=0 hostWebCalls=0 collect=true
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:leader-creates-two-members: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:member-a-io-chain: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:member-a-authorization: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:shell-write-boundary: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:read-image-route: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:member-b-web: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:member-b-goal-converges: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:deferred-tools-typed: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:skill-lane: PROVEN
+[2026-11-10T15:59:32.929Z] [boot1] case pd33:no-base-web: PROVEN
+[2026-11-10T15:59:32.930Z] [boot1] RUN-SUMMARY run=a5sf-pd33-preview-e2e-2026-11-10T15-57-16-605Z-b1 suite=a5sf-pd33-preview-e2e overall=PASS cases=19 NOT_SELECTED:9 PASS:10 worlds=u5u5a5sfpd33-20261110T15-57-16Z subset=true arms=e2e selected=10/19 recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-10T15:59:33.124Z] [boot1] dev-live slot released (slot=0 state=true)
+[2026-11-10T15:59:33.159Z] [boot2] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-10T15:59:33.159Z] [boot2] dev-live slot #0 face=GoalStop world=u5a5sfpd33 head=168266dbfe7f2de091d998431bd56ce4dba0dbb5
+[2026-11-10T15:59:33.171Z] [boot2] fixture origins: fetch=http://127.0.0.1:44839 search=http://127.0.0.1:46335
+[2026-11-10T15:59:33.175Z] [boot2] world=u5u5a5sfpd33-20261110T15-59-33Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-59-33Z
+[2026-11-10T15:59:33.175Z] [boot2] install graph: profiles/web/node_modules/dsh-agent-team -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2 (7 exports resolved, incl. ./web-tool)
+[2026-11-10T16:00:45.778Z] [boot2] mock on 13054
+[2026-11-10T16:01:39.566Z] [boot2] BOOTED port=3191 home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-59-33Z
+[2026-11-10T16:01:39.903Z] [boot2] p6t6 health=true
+[2026-11-10T16:01:39.923Z] [boot2] discovery prompt status=200
+[2026-11-10T16:01:48.027Z] [boot2] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sfpd29-04m4kgqyzs","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-a5sf-pd33-team","blueprint":{"blueprintId":"team.a5sf.pd33.main","revision":"1","contentHash":"sha256:cd1f7954ad440320
+[2026-11-10T16:01:48.027Z] [boot2] delegations seen=true
+[2026-11-10T16:01:48.028Z] [boot2] goals created=true
+[2026-11-10T16:01:48.057Z] [boot2] member sessions: {"a":"session-team-child-c63faae83d9a80429d3002bf9e60facf","b":"session-team-child-601eb61ddb9c29453cfd84348361e067","s1":"session-team-child-c98107c8db0087de6f75d58677283fbc","s2":"session-team-child-d7c127890591a07df6eee9044a8b88eb","cold":"session-team-child-421a8ea96efdea7a541eb5594f6cffce","stop2":"session-team-child-2f1eae16018a06cee9a40eda2e85408a","stop3":"session-team-child-3241d9a92f4dd2e657724b49359fbf7a"}
+[2026-11-10T16:01:48.074Z] [boot2] first rounds on every member=true rounds={"b":3,"s1":2,"s2":5,"cold":3,"stop2":2,"stop3":1}
+[2026-11-10T16:01:50.040Z] [boot2] E2E: members=8 a.calls=18 b.rounds=3 b.phase=complete fetchConn=1 searchPOST=0 hostWebCalls=0 collect=true
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:leader-creates-two-members: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:member-a-io-chain: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:member-a-authorization: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:shell-write-boundary: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:read-image-route: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:member-b-web: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:member-b-goal-converges: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:deferred-tools-typed: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:skill-lane: PROVEN
+[2026-11-10T16:01:50.130Z] [boot2] case pd33:no-base-web: PROVEN
+[2026-11-10T16:01:50.131Z] [boot2] RUN-SUMMARY run=a5sf-pd33-preview-e2e-2026-11-10T15-59-33-124Z-b2 suite=a5sf-pd33-preview-e2e overall=PASS cases=19 NOT_SELECTED:9 PASS:10 worlds=u5u5a5sfpd33-20261110T15-59-33Z subset=true arms=e2e selected=10/19 recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-10T16:01:50.345Z] [boot2] dev-live slot released (slot=0 state=true)
+[2026-11-10T16:01:50.346Z] | case | boot1 | boot2 | agreement |
+| --- | --- | --- | --- |
+| pd33:leader-creates-two-members | PROVEN | PROVEN | agree |
+| pd33:member-a-io-chain | PROVEN | PROVEN | agree |
+| pd33:member-a-authorization | PROVEN | PROVEN | agree |
+| pd33:shell-write-boundary | PROVEN | PROVEN | agree |
+| pd33:read-image-route | PROVEN | PROVEN | agree |
+| pd33:member-b-web | PROVEN | PROVEN | agree |
+| pd33:member-b-goal-converges | PROVEN | PROVEN | agree |
+| pd33:deferred-tools-typed | PROVEN | PROVEN | agree |
+| pd33:skill-lane | PROVEN | PROVEN | agree |
+| pd33:no-base-web | PROVEN | PROVEN | agree |
+[2026-11-10T16:01:50.376Z] host porcelain after: []
+[2026-11-10T16:01:50.376Z] RESULT PASS (2/2 boots; agreeing pair=true)
+EXIT=0
