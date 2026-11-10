@@ -203,6 +203,43 @@ export function validateRunRecord({ record, rel, ctx, strictGeneration = false }
     for (const id of selected) {
       if (!have.has(id)) add('RUN_CASE_VERDICT', `selected case ${JSON.stringify(id)} produced no verdict row — recordRunRecord's finalize() writes FAIL for exactly this, so its absence means the record was written by something else`)
     }
+    // "not selected" is not "failed", and it is also not a colour a SELECTED
+    // case may borrow: a selected case recorded NOT_SELECTED would hide a
+    // missing observation behind a bookkeeping outcome.
+    for (const c of cases) {
+      if (c?.verdict === 'NOT_SELECTED' && selected.includes(c?.id)) {
+        add('RUN_CASE_VERDICT', `selected case ${JSON.stringify(c.id)} is recorded NOT_SELECTED — a case the run asked for may not be filed as "not selected"`)
+      }
+    }
+  }
+  // A subset run must SAY it is a subset (2026-11-09): `overall` grades only the
+  // selection, so a reader who mistakes it for a full run is misled. The fields
+  // are checked for internal consistency, not merely for presence.
+  if (record.subset === true) {
+    if (!Array.isArray(record.arms) || record.arms.length === 0) add('RUN_SCHEMA', 'subset=true but arms is not a non-empty array — a subset must say which arms it ran')
+    if (selected === null) add('RUN_SCHEMA', 'subset=true but selectedCases is not an array')
+    else if (record.selected !== selected.length) add('RUN_SCHEMA', `subset=true but selected=${JSON.stringify(record.selected)} disagrees with selectedCases.length=${String(selected.length)}`)
+    if (!Number.isInteger(record.totalCases) || record.totalCases <= (record.selected ?? 0)) {
+      add('RUN_SCHEMA', `subset=true but totalCases=${JSON.stringify(record.totalCases)} does not exceed selected=${JSON.stringify(record.selected)} — a subset must declare the larger full set`)
+    }
+  } else if (record.subset === false) {
+    if (selected !== null && record.selected !== undefined && record.selected !== selected.length) {
+      add('RUN_SCHEMA', `subset=false but selected=${JSON.stringify(record.selected)} disagrees with selectedCases.length=${String(selected.length)}`)
+    }
+    if (Number.isInteger(record.totalCases) && Number.isInteger(record.selected) && record.totalCases !== record.selected) {
+      add('RUN_SCHEMA', `subset=false but totalCases=${String(record.totalCases)} differs from selected=${String(record.selected)}`)
+    }
+  }
+  // Every NOT_SELECTED row must be outside the declaration it was filled from
+  // and outside the selection: otherwise a runner could file a real case as
+  // "not selected" and hide it from `overall` while the record still looks full.
+  if (Array.isArray(record.allCases)) {
+    const declared = new Set(record.allCases)
+    for (const c of cases) {
+      if (c?.verdict !== 'NOT_SELECTED') continue
+      if (selected !== null && selected.includes(c.id)) add('RUN_CASE_VERDICT', `NOT_SELECTED case ${JSON.stringify(c.id)} is also in selectedCases`)
+      else if (!declared.has(c.id)) add('RUN_CASE_VERDICT', `NOT_SELECTED case ${JSON.stringify(c.id)} is not in allCases — it was never a declared case`)
+    }
   }
   // overall must be the worst-of rule. Only computed when every verdict is legal,
   // because overallVerdict throws on an unknown token (and a throw is not a finding).

@@ -44,3 +44,14 @@ the roster discloses them, no preset row is rewritten.
   clause detail rather than asserting the service axis refused it;
 - `read_image` is refused through the route gate; the case requires 0 facts and
   0 bytes so a fallthrough to the fs face cannot pass.
+
+## `--arms` is a subset, and the record says so
+
+`--arms` selects drive code (`e2e`, `s8`, `s1c`, `s1`, `s4`, `s2`, `s5`, `s6`, `s7`), not
+case ids; `ARM_CASES` maps each token to the case rows it covers. In a subset run the
+cases the caller did **not** ask for are recorded with the distinct `NOT_SELECTED`
+outcome — never `FAIL` — and `overall` is the worst verdict over the selection only. The
+record discloses the subset (`subset: true`, `arms: [...]`, `selected: n`, `totalCases: m`)
+and the summary line carries `subset=true arms=… selected=n/m`, so a subset can never be
+read as a full run. A **full** run (no `--arms`) still fails closed: a selected case that
+produces no verdict is recorded `FAIL` and `overall=FAIL`.

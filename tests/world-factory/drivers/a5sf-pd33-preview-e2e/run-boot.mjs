@@ -322,7 +322,39 @@ const SELECTED_CASES = Object.freeze([
   'pd29:stop-in-idle-window',
   'pd29:cold-recovery-no-revival',
   'pd29:explicit-resume-after-recovery',
+  'pd29:complete-does-not-continue',
 ])
+
+/** Which declared (or arm-only) case each `--arms` token selects. The mapping is
+ *  explicit because `--arms` selects DRIVE CODE, not case ids: without it the
+ *  runner cannot distinguish "this case failed" from "nobody asked for it".
+ *  A full run (no `--arms`) runs the unconditional lifecycle arms and therefore
+ *  selects exactly SELECTED_CASES. */
+const ARM_CASES = Object.freeze({
+  e2e: Object.freeze([
+    'pd33:leader-creates-two-members',
+    'pd33:member-a-io-chain',
+    'pd33:member-a-authorization',
+    'pd33:shell-write-boundary',
+    'pd33:member-b-web',
+    'pd33:member-b-goal-converges',
+    'pd33:deferred-tools-typed',
+    'pd33:read-image-route',
+    'pd33:skill-lane',
+    'pd33:no-base-web',
+  ]),
+  s8: Object.freeze(['pd29:goal-continuous-rounds', 'pd29:terminal-phases-do-not-continue']),
+  s1c: Object.freeze(['pd34:control-stops-member']),
+  s1: Object.freeze(['pd29:stop-during-round']),
+  s4: Object.freeze(['pd29:leader-archive-stops-goal']),
+  s2: Object.freeze(['pd29:stop-at-round-boundary', 'pd29:stop-in-idle-window']),
+  s5: Object.freeze(['pd29:user-stops-leader-no-propagation']),
+  // s7 has no arm block of its own: the explicit-resume probe runs inside the
+  // s6 cold-recovery block, so `--arms s6,s7` (the documented invocation) is
+  // accepted and both names select the recovery cases.
+  s6: Object.freeze(['pd29:cold-recovery-no-revival', 'pd29:explicit-resume-after-recovery', 'pd29:complete-does-not-continue']),
+  s7: Object.freeze(['pd29:explicit-resume-after-recovery']),
+})
 
 const argv = process.argv.slice(2)
 const PLAN_ONLY = argv.includes('--plan')
@@ -336,6 +368,17 @@ const ARMS = (() => {
   const i = argv.indexOf('--arms')
   if (i < 0) return null
   return new Set(String(argv[i + 1] ?? '').split(',').map((s) => s.trim()).filter((s) => s !== ''))
+})()
+const ARM_NAMES = Object.freeze(Object.keys(ARM_CASES))
+const SELECTED_FOR_RUN = (() => {
+  if (ARMS === null) return Object.freeze([...SELECTED_CASES])
+  const unknown = [...ARMS].filter((a) => !ARM_NAMES.includes(a))
+  if (unknown.length > 0) {
+    throw new Error(`unknown --arms value(s) ${JSON.stringify(unknown)}; allowed: ${ARM_NAMES.join(',')}`)
+  }
+  const ids = new Set()
+  for (const arm of ARMS) for (const id of ARM_CASES[arm]) ids.add(id)
+  return Object.freeze([...ids])
 })()
 const startedAt = new Date().toISOString()
 
@@ -1100,7 +1143,8 @@ async function bootOnce({ index, head, authorization, layer, composition }) {
   const phase = `a5sf-pd33-preview-e2e-boot${String(index)}`
   const runId = `a5sf-pd33-preview-e2e-${utcStamp()}-b${String(index)}`
   const record = createRunRecord({
-    runId, suite: 'a5sf-pd33-preview-e2e', selectedCases: SELECTED_CASES,
+    runId, suite: 'a5sf-pd33-preview-e2e', selectedCases: SELECTED_FOR_RUN,
+    allCases: SELECTED_CASES, arms: ARMS === null ? null : [...ARMS],
     bindings: runBindings(head, authorization), ledgerPath: LEDGER_PATH, recordClass: 'DEV-LIVE',
   })
   const harness = createA5sfHarness({
@@ -1776,7 +1820,6 @@ ${INLANE_SKILL_BODY}
     writeFileSync(join(bootDir, 'arms.json'), JSON.stringify({ arms, counters, stages }, null, 2) + '\n')
 
     const verdicts = judgeAll(arms)
-    const failed = verdicts.filter((v) => v.verdict !== 'PROVEN')
     writeFileSync(join(bootDir, 'verdicts.json'), JSON.stringify(verdicts, null, 2) + '\n')
     for (const v of verdicts) {
       const { verdict: _ignored, ...rest } = v
@@ -1788,7 +1831,10 @@ ${INLANE_SKILL_BODY}
     writeFileSync(join(bootDir, 'summary.txt'), formatSummary(final) + '\n')
     log(`[boot${String(index)}] ${formatSummary(final)}`)
     record.record.counters = counters
-    return { index, bootDir, verdicts, arms, counters, failed: failed.length !== 0, overall: failed.length === 0 ? 'PASS' : 'FAIL' }
+    // The boot's own PASS/FAIL is the RECORD's overall, not `verdicts.length`:
+    // a selected case that produced no verdict is FAIL in the record, and the
+    // driver's exit status must agree with the evidence it wrote.
+    return { index, bootDir, verdicts, arms, counters, failed: final.overall !== 'PASS', overall: final.overall }
   } catch (error) {
     log(`[boot${String(index)}] FAILED at ${error?.stack ?? String(error)}`)
     arms.error = String(error?.stack ?? error)
