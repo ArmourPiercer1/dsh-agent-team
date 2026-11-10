@@ -1,0 +1,86 @@
+# candidate-verify — INFORMATIONAL ONLY. NOT A REQUIRED CONTEXT.
+#
+# Owner ruling D8 (2026-11-09), option 2: give the candidate track visibility
+# without changing what Required CI decides. This workflow is deliberately:
+#
+#   * named so an unmistakable reading is impossible: the check name itself says
+#     "(informational, not a required context)";
+#   * NOT added to branch protection / required status checks — a green here is
+#     NOT a required-context success and must never be quoted as one;
+#   * a pure re-run of two read-only scripts (`scripts/freeze-candidate.mjs
+#     --check` and `scripts/verify-candidate.mjs`). It does not move the Authority
+#     pointer, does not move a candidate ref, does not write any evidence, and
+#     does not run a DSH boot.
+#
+# WHAT A RED MEANS. Drift between the frozen manifest and the tree/authority/
+# evidence it names — a real finding for a human, not a flake. WHAT A GREEN
+# MEANS: exactly "the manifest still describes reality at this commit"; it does
+# NOT mean the candidate passed C2, and it does NOT satisfy any Required leg.
+name: candidate-verify (informational, not a required context)
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - 'dev/engineering/candidates/**'
+      - 'scripts/freeze-candidate.mjs'
+      - 'scripts/verify-candidate.mjs'
+      - 'dev/engineering/current-authority.json'
+      - 'dev/engineering/authority-snapshots/**'
+      - 'tests/paths.mjs'
+      - 'dev/agent-workflow/evidence/candidate-v0.1.6-1/**'
+      - '.github/workflows/candidate-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate-verify-informational-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  candidate-verify:
+    name: candidate-verify (informational, not a required context)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (full history, no writes)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # The manifest's ancestry command names origin/master and its candidate_ref
+      # edge names candidate/v0.1.6-1. Fetch both so the informational run grades
+      # the same refs a reviewer grades locally instead of reporting a missing ref.
+      - name: Fetch master and candidate refs (read-only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin '+refs/heads/master:refs/remotes/origin/master'
+          git fetch --no-tags origin '+refs/heads/candidate/*:refs/remotes/origin/candidate/*'
+
+      - name: Recompute the frozen manifest (one line per field; drift exits 1)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/freeze-candidate.mjs --check \
+            --manifest dev/engineering/candidates/cand-v0.1.6-1.json
+
+      - name: Independently verify the manifest and any C2 run records
+        shell: bash
+        run: |
+          set -euo pipefail
+          records=()
+          shopt -s nullglob
+          for f in dev/agent-workflow/evidence/candidate-v0.1.6-1/run-record*.json; do
+            records+=(--record "$f")
+          done
+          node scripts/verify-candidate.mjs \
+            --manifest dev/engineering/candidates/cand-v0.1.6-1.json \
+            "${records[@]}"
