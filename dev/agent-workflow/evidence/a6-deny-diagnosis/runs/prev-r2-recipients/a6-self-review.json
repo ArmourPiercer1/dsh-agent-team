@@ -1,0 +1,28 @@
+{
+  "ok": true,
+  "promptStatus": 200,
+  "doneSeen": true,
+  "wakes": 0,
+  "leaderWakes": 0,
+  "officerWakes": 0,
+  "leaderNotifications": 6,
+  "selfRequestId": "ctrl-13dy7cq10mnl5p1t9sanc1bx",
+  "selfActionName": "team-tool-execute",
+  "selfDecision": {
+    "sequence": 32,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-13dy7cq10mnl5p1t9sanc1bx",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "createdAt": "2026-11-10T16:49:36.234Z"
+  },
+  "leaderDecided": true,
+  "executed": true,
+  "execText": "c1-a6-self-2026-11-10T16-48-18\n",
+  "filePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-prev/tests/homes/c1-smoke-2026-11-10T16-48-18/workspace/c1-a6-self-2026-11-10T16-48-18.txt",
+  "requestId": "ctrl-13dy7cq10mnl5p1t9sanc1bx"
+}

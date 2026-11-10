@@ -1,0 +1,20 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-cand/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3183/?token=Gp7bi_-YU0HeDymtDgjaS8GZTwvaKs_fwM8xvsWRnXw
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-10T16-34-49 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-10T16-34-49
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-10T16-34-49 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-cand/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-10T16-34-49 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-10T16-34-49
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-10T16-34-49 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-10T16-34-49
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1xgvsc91e3wb-bash:hexec:ea8e4010-f849-4e6b-9587-e73be9cc86ce-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-10T16-34-49:inst-1xgvsc91e3wb:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-1xgvsc91e3wb-bash:hexec:ea8e4010-f849-4e6b-9587-e73be9cc86ce-1 grantId=grant:4b80bba00e41452297e536fab6618f61 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-1xgvsc91e3wb-bash:hexec:ea8e4010-f849-4e6b-9587-e73be9cc86ce-1 grantId=grant:4b80bba00e41452297e536fab6618f61 caseId=tadm:session-c1-smoke-a6-2026-11-10T16-34-49:inst-1xgvsc91e3wb:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=c1-plane-realm-2026-11-10T16-34-49 rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=c1-plane-realm-2026-11-10T16-34-49 call=team-inst-1xgvsc91e3wb-bash:hexec:ea8e4010-f849-4e6b-9587-e73be9cc86ce-1 pid=266 exit=0 timedOut=false cancelled=false

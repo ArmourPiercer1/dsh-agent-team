@@ -1,0 +1,2 @@
+tag=cand-r1 worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-cand head=168266dbfe7f2de091d998431bd56ce4dba0dbb5 host=3183 mock=3483 start=2026-11-10T16:34:49Z
+exit=2 end=2026-11-10T16:40:47Z
