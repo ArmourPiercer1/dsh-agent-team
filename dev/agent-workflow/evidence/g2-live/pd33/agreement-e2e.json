@@ -1,0 +1,117 @@
+{
+ "note": "10 executed E2E cases agree across boots 1/2. The run-record overall=FAIL is the driver fail-closed filler for the 8 lifecycle arms NOT selected by --arms e2e (they have no verdict by construction).",
+ "executed_cases": 10,
+ "agreeing": true,
+ "rows": [
+  {
+   "case": "pd33:leader-creates-two-members",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:member-a-io-chain",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:member-a-authorization",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:shell-write-boundary",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:read-image-route",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:member-b-web",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:member-b-goal-converges",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:deferred-tools-typed",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:skill-lane",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  },
+  {
+   "case": "pd33:no-base-web",
+   "boot01": "PASS",
+   "boot02": "PASS",
+   "agree": true
+  }
+ ],
+ "not_run_arms_driver_filler_fail": [
+  {
+   "case": "pd29:leader-archive-stops-goal",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:goal-continuous-rounds",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd34:control-stops-member",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:stop-during-round",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:stop-at-round-boundary",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:stop-in-idle-window",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:cold-recovery-no-revival",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  },
+  {
+   "case": "pd29:explicit-resume-after-recovery",
+   "boot01": "FAIL",
+   "boot02": "FAIL",
+   "reason": "selected case produced no verdict (fail-closed)"
+  }
+ ]
+}

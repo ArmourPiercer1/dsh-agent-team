@@ -1,0 +1,12 @@
+| case | boot01 | boot02 | agree |
+| --- | --- | --- | --- |
+| pd33:leader-creates-two-members | PASS | PASS | True |
+| pd33:member-a-io-chain | PASS | PASS | True |
+| pd33:member-a-authorization | PASS | PASS | True |
+| pd33:shell-write-boundary | PASS | PASS | True |
+| pd33:read-image-route | PASS | PASS | True |
+| pd33:member-b-web | PASS | PASS | True |
+| pd33:member-b-goal-converges | PASS | PASS | True |
+| pd33:deferred-tools-typed | PASS | PASS | True |
+| pd33:skill-lane | PASS | PASS | True |
+| pd33:no-base-web | PASS | PASS | True |

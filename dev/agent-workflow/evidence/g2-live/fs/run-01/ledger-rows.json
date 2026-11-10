@@ -1,0 +1,30 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/dev/agent-workflow/evidence/g2-live/fs/run-ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-09T23:56:26.034Z",
+      "runId": "a5sf-fs-devlive-2026-11-09T23-56-25-991Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "budget-intent",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-intent",
+      "world": "intent:devlive-g2-live-1",
+      "grantId": "devlive-g2-live-1",
+      "grantedBy": "owner 2026-11-09 ruling (relayed through the G2-LIVE brief): scope authorisation for the FS Provider face — repeated self-authorised development starts on the current master, no per-start approval, no cumulative cap",
+      "face": "FS Provider",
+      "worldLine": "u5a5sfdev1",
+      "headCommit": "0f4f4f8eb2bbe991f78b55ed1f98abb18c504087",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-09T23:57:34.775Z",
+      "runId": "a5sf-fs-devlive-2026-11-09T23-56-25-991Z",
+      "suite": "a5sf-fs-devlive",
+      "recordClass": "DEV-LIVE",
+      "world": "u5u5a5sfdev1-20261109T23-56-26Z",
+      "phase": "a5sf-fs-devlive-boot1"
+    }
+  ]
+}

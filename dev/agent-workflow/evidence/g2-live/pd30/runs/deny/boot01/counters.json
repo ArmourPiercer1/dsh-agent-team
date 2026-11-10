@@ -1,0 +1,104 @@
+{
+  "guardFacts": {
+    "allow": 0,
+    "deny": 1,
+    "web": {
+      "total": 1,
+      "fetch": 1,
+      "search": 0,
+      "allow": 0,
+      "deny": 1,
+      "perCall": {
+        "fetch": 1,
+        "search": 0,
+        "ssrf": 0,
+        "malformed": 0
+      }
+    },
+    "perTool": {
+      "bash": 0,
+      "read": 0,
+      "write": 0,
+      "edit": 0,
+      "grep": 0,
+      "glob": 0,
+      "workflow": 0,
+      "run_code": 0
+    }
+  },
+  "server": {
+    "connections": 0,
+    "pathHits": {},
+    "requests": [],
+    "bytesServed": 0,
+    "openSockets": 0
+  },
+  "searchServer": {
+    "connections": 0,
+    "pathHits": {},
+    "requests": [],
+    "bytesServed": 0,
+    "openSockets": 0
+  },
+  "hostWebCalls": 0,
+  "mockRequests": 11,
+  "aModelRequests": 4,
+  "surfaceACount": 36,
+  "surfaceANames": [
+    "bash",
+    "create_goal",
+    "edit",
+    "exit_plan_mode",
+    "get_goal",
+    "glob",
+    "grep",
+    "job_kill",
+    "job_list",
+    "job_output",
+    "present",
+    "read",
+    "read_image",
+    "skill",
+    "team_archive_member",
+    "team_collect",
+    "team_create_member",
+    "team_delegate",
+    "team_follow_up",
+    "team_grant_permission",
+    "team_inspect_config",
+    "team_list_members",
+    "team_list_pending_control",
+    "team_list_templates",
+    "team_report_progress",
+    "team_request_control",
+    "team_resolve_control",
+    "team_revoke_permission",
+    "team_send_message",
+    "todo_write",
+    "u5_canary",
+    "u6fs_probe",
+    "update_goal",
+    "web_fetch",
+    "web_search",
+    "write"
+  ],
+  "membersAfter": 2,
+  "memberTemplates": [
+    "leader",
+    "webworker-deny"
+  ],
+  "memberWindow": {
+    "from": "2026-11-10T00:04:26.888Z",
+    "to": "2026-11-10T00:04:27.855Z"
+  },
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/cordis.patch.yml",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097",
+    "arm": "deny"
+  },
+  "quiesced": true,
+  "webNamesOnSurface": [
+    "web_fetch",
+    "web_search"
+  ]
+}

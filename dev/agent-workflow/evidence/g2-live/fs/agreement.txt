@@ -1,0 +1,16 @@
+| case | run-01 | run-02 | reason | decisive | agree |
+| --- | --- | --- | --- | --- | --- |
+| fs:edit-in-lane | PASS | PASS | CEILING_EDIT_ALLOWED_AND_CONFINED | {"facts": 3, "writeCalls": 1} | True |
+| fs:edit-outside-ceiling | PASS | PASS | OUTSIDE_CEILING_EDIT_REFUSED_BEFORE_PROVIDER_LOCUS_host-read-before-write-observation-policy | {"guardFacts": 0, "locus": "host-read-before-write-observation-policy", "writeCalls": 0} | True |
+| fs:read-image-observation | NOT_REACHED | NOT_REACHED | READ_IMAGE_ROUTE_REFUSED_MODEL_DECLARES_NO_IMAGE_INPUT | {"guardFacts": 0} | True |
+| live:row1-read-a-inside-both-allowed | PASS | PASS | READ_A_ALLOWED_AND_CONFINED | {"counterRows": 1} | True |
+| live:row2-read-b-binding-deny-on-read-path | PASS | PASS | BINDING_DENY_ON_READ_PATH | {"counterRows": 0, "readPathDecisions": ["deny"], "readPathFacts": 1} | True |
+| live:row3-read-c-refused-no-widening | PASS | PASS | REFUSED_WITHOUT_WIDENING | {} | True |
+| live:row4a-write-in-lane-readable-allowed-ceiling-only | PASS | PASS | CEILING_WRITE_IN_LANE_READABLE | {"counterRows": 1} | True |
+| live:row4b-write-b-ceiling-allowed-read-not-implied | PASS | PASS | CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED | {"counterRows": 1} | True |
+| live:search-row1-grep-in-lane-allowed | PASS | PASS | IN_LANE_GREP_ALLOWED_AND_CONFINED | {"baseSpawns": 0, "confinedSpawns": 1, "factCount": 1} | True |
+| live:search-row2-grep-outside-ceiling-refused | PASS | PASS | OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS | {"baseSpawns": 0, "confinedSpawns": 0, "factCount": 1} | True |
+| live:search-row3-grep-outside-restriction-refused | PASS | PASS | RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION | {"baseSpawns": 0, "confinedSpawns": 0} | True |
+| live:search-row4-cancelled-search-settles-cancelled | PASS | PASS | CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT | {} | True |
+| live:search-row5-invalid-pattern-is-error | PASS | PASS | INVALID_PATTERN_SURFACED_AS_TOOL_ERROR | {"facts": 1} | True |
+| live:search-row6-archive-boundary-no-callable-shadow | PASS | PASS | NO_USABLE_CALLABLE_SHADOW_AFTER_STOP | {} | True |

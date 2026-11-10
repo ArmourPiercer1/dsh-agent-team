@@ -1,0 +1,4 @@
+AGREEMENT arm=deny: two boots agree on every measured counter
+boot | overall | arm | allow | deny | search | ssrf | malformed | regression | noBackend | closed | fixtureConns | fixtureHits | searchConns | webFacts | hostWebCalls | surface
+boot1 | PASS | deny | REFUTED | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | 0 | {} | 0 | {"total":1,"fetch":1,"search":0,"allow":0,"deny":1,"perCall":{"fetch":1,"search":0,"ssrf":0,"malformed":0}} | 0 | 36
+boot2 | PASS | deny | REFUTED | PROVEN | REFUTED | REFUTED | REFUTED | REFUTED | REFUTED | PROVEN | 0 | {} | 0 | {"total":1,"fetch":1,"search":0,"allow":0,"deny":1,"perCall":{"fetch":1,"search":0,"ssrf":0,"malformed":0}} | 0 | 36

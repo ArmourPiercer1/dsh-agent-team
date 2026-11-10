@@ -1,0 +1,18 @@
+{
+  "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/tests/deepseek-harness-test-use",
+  "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "head": "0f4f4f8eb2bbe991f78b55ed1f98abb18c504087",
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/g2-live/cordis.patch.yml",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097"
+  },
+  "startedAt": "2026-11-09T23:50:47.905Z",
+  "argv": [
+    "--arms",
+    "e2e",
+    "--boots",
+    "2"
+  ]
+}
