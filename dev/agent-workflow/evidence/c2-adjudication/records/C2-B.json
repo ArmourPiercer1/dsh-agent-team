@@ -94,6 +94,44 @@
    "dir": "c2b-a6-unclaimed-r2",
    "runId": "2026-11-10T16-21-22",
    "overall": "EXIT=2 (A6-26, verdict abandoned-terminal)"
+  },
+  {
+   "arm": "denyfix",
+   "dir": "c2b-a6-denyfix-r1",
+   "runId": "2026-11-10T16-57-40",
+   "overall": "EXIT=0 (10/10 PASS)",
+   "invocation": "C1_A6_EXEC_NEG=1 C1_A6_RECIPIENTS=1"
+  },
+  {
+   "arm": "denyfix",
+   "dir": "c2b-a6-denyfix-r2",
+   "runId": "2026-11-10T16-59-06",
+   "overall": "EXIT=0 (10/10 PASS)",
+   "invocation": "C1_A6_EXEC_NEG=1 C1_A6_RECIPIENTS=1"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r3",
+   "runId": "2026-11-10T16-56-12",
+   "overall": "EXIT=2 (A6-12 FAIL consumed=true)"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r4",
+   "runId": "2026-11-10T17-05-22",
+   "overall": "EXIT=0"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r5",
+   "runId": "2026-11-10T17-05-46",
+   "overall": "EXIT=2 (A6-12 FAIL consumed=true)"
+  },
+  {
+   "arm": "stop",
+   "dir": "c2b-a6-stop-r6",
+   "runId": "2026-11-10T17-06-08",
+   "overall": "EXIT=2 (A6-12 FAIL consumed=true)"
   }
  ],
  "allBootsSubordinateRecordClass": "DEV-LIVE",
@@ -116,21 +154,25 @@
   },
   {
    "id": "C2-B/officer-deny",
-   "verdict": "FAIL",
+   "verdict": "PASS",
    "bootsAgree": true,
-   "decisive": "FAIL A6-28 request=none decision=none consumed=false execFacts=0 file=false done=true (both boots); a6-exec-negatives.json deny.request=null; tool result \"permission denied: exec fingerprint ... answered deny from the fallback\"",
+   "decisive": "r1 PASS A6-28 request=ctrl-0h0jf3d1nmbzde0p3zjwf19f decision=deny consumed=false execFacts=0 file=false done=true; r2 PASS A6-28 request=ctrl-06pc7ad0inarny11ylrgf0n4 consumed=false execFacts=0; both EXIT=0, 10/10 checks, 4 admission-requires-approval events",
    "oracle": "control ledger: no control-request-recorded row for the deny prompt; the base permission fallback answered before the A6 plane",
    "falsifier": "a durable control-request-recorded row would be needed before a deny verdict is meaningful",
-   "note": "measurement-precondition failure, not proof that a human deny of a durable request fails"
+   "note": "earlier FAIL was an incomplete recorded invocation: without C1_A6_RECIPIENTS the Officer ask rule and request-control envelope are absent, so the static fallback denies before the approval lane and request=none is structural. a6-deny-diagnosis 2x2 (PR #708) identical on c66fa8b03 and 168266dbf.",
+   "previousVerdict": "FAIL",
+   "supersededBy": "revision 2 (2026-11-10) \u2014 corrected invocation C1_A6_RECIPIENTS=1"
   },
   {
    "id": "C2-B/post-consumption-throw",
-   "verdict": "FAIL",
+   "verdict": "PASS",
    "bootsAgree": true,
-   "decisive": "FAIL A6-29 request=none consumed=false execFacts=none callId=none done=true (both boots); same fallback deny",
+   "decisive": "r1 PASS A6-29 request=ctrl-1kji77e1kdhh791c3ag1k1n1 consumed=true execFacts=failed; r2 PASS A6-29 request=ctrl-02oml390nrka3q06l3gj70hs consumed=true execFacts=failed",
    "oracle": "ledger execution-results for the call",
    "falsifier": "a consumed request with a succeeded fact",
-   "note": "unmeasured, not refuted"
+   "note": "unmeasured, not refuted",
+   "previousVerdict": "FAIL",
+   "supersededBy": "revision 2 (2026-11-10) \u2014 corrected invocation"
   },
   {
    "id": "C2-B/goal-authorisation",
@@ -143,12 +185,13 @@
   },
   {
    "id": "C2-B/stop",
-   "verdict": "DISAGREE",
+   "verdict": "DISAGREE / PRODUCT RACE (4 of 6 consumed)",
    "bootsAgree": false,
-   "decisive": "r1 FAIL A6-12 lateStatus=200 lateDecision={decision:allow} consumed=true file=\"\"; r2 PASS A6-12 consumed=false file=\"\"",
-   "oracle": "late-allow decision + consumption ledger + effect file",
-   "falsifier": "a consumption entry for a post-Stop allow is the failing observation",
-   "note": "race in the Stop-vs-consumption window; not averaged"
+   "decisive": "six boots: A6-11 PASS 6/6; A6-12 4 FAIL consumed=true file=\"\" (r1,r3,r5,r6) and 2 PASS consumed=false file=\"\" (r2,r4); late allow rejected CONTROL_REQUEST_DECIDED 6/6; consumption at +83..110 ms after the allow decision, simultaneous with the cancel; effect file empty 6/6",
+   "oracle": "late-allow RPC body + last durable decision + consumption fact + effect file",
+   "falsifier": "a boot with a side effect, or a post-Stop consumption far outside the ~100 ms window, would change the characterisation",
+   "note": "race between the Stop/cancel acknowledgement and the consumption step of the pre-Stop allow; the second allow is rejected in all six, so it is not the source. No side effect observed. Rate 4/6 = 67%.",
+   "previousVerdict": "DISAGREE (2 boots)"
   },
   {
    "id": "C2-B/sticky-stop",
@@ -184,8 +227,24 @@
    "case": "A6-12 / C2-B/stop",
    "boot1": "FAIL consumed=true",
    "boot2": "PASS consumed=false",
-   "treatment": "reported, not averaged"
+   "distribution": "4 consumed / 2 not consumed over 6 boots",
+   "treatment": "reported as a product race with the observed rate; not averaged"
   }
  ],
- "notes": "Ten single-boot kit runs (two per arm), all at the frozen SHA and host pin. Allow path, single consumption/execution and SIGKILL cold recovery pass in both boots. Deny/throw arms never reach a durable request (base permission fallback), Sticky Stop writes no durable marker (documented 4.7 limit), A6-26 reproduces the documented abandonment, and Stop-vs-consumption disagrees between boots."
+ "notes": "Ten single-boot kit runs (two per arm), all at the frozen SHA and host pin. Allow path, single consumption/execution and SIGKILL cold recovery pass in both boots. Deny/throw arms never reach a durable request (base permission fallback), Sticky Stop writes no durable marker (documented 4.7 limit), A6-26 reproduces the documented abandonment, and Stop-vs-consumption disagrees between boots.",
+ "revision": 2,
+ "updatedAt": "2026-11-10T17:10:00Z",
+ "verdictBasis": "Deny and throw arms PASS on the corrected invocation. Overall NOT PASS rests on (1) the A6-12 Stop consumption race (4/6, 67%), (2) Sticky Stop writing no durable marker (both boots, documented 4.7 limit), (3) the exact A6-on + governed Goal-authorisation conjunction not established. No candidateClaimEligibility is asserted.",
+ "revisionHistory": [
+  {
+   "revision": 1,
+   "date": "2026-11-10",
+   "summary": "initial: deny/throw FAIL as instrumented; Stop DISAGREE over 2 boots"
+  },
+  {
+   "revision": 2,
+   "date": "2026-11-10",
+   "summary": "corrected deny invocation PASS 2/2; Stop extended to 6 boots (4/6 consumed = race); other arms unchanged"
+  }
+ ]
 }

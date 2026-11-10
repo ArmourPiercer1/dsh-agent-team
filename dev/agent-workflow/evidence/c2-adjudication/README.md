@@ -422,3 +422,96 @@ from the measurement worktree `.worktrees/c2` at the frozen commit, with at most
 concurrent, and I report the two-boot disagreements rather than averaging them.
 
 Signed: DSH independent C2 adjudicator, session `c2-adjudication-20261109`, 2026-11-10.
+
+## 11. Update 2026-11-10 (revision 2) — corrected deny invocation and the A6-12 distribution
+
+Appended after PR review; §2–§10 are **not** rewritten. This section supersedes exactly:
+**§3 B3** (officer deny), **§3 B4** (post-consumption throw), **§3 B6** (Stop), the A6-12
+bullet in **§4**, and the two deny-related bullets in **§8**. Everything else (allow, single
+execution, cold recovery, Sticky Stop, A6-26, Goal authorisation) stands unchanged.
+
+### 11.1 The deny arm is PASS — my earlier invocation was incomplete
+
+The earlier `A6-28`/`A6-29` failure was **an incomplete recorded invocation, not the product and
+not flakiness**. In the kit, the Officer template's `permissions.ask: [bash any]` rule and the
+Officer member-envelope `request-control` admission are emitted only when
+`A6_EXTRA = C1_A6_RECIPIENTS || C1_A6_HANDOFF` (`c1-leader-approval-smoke.mjs:330`,
+`:817-819`, `:833-843`). Without that flag the Officer's bash is `default: deny` with
+`ask: []`, so the static fallback answers before any approval lane exists and `request=none` is
+structurally guaranteed. I reproduced the flags **as recorded** in
+`dev/agent-workflow/evidence/v016-acceptance/README.md:45` (`C1_A6_EXEC_NEG=1` only); that
+recorded column is incomplete — the acceptance deny boots did carry the flag (their `A6-7` is
+recipient-gated). The independent diagnosis
+(`dev/agent-workflow/evidence/a6-deny-diagnosis/`, commit `c92b7b9cf`, PR #708) ran the 2×2 on
+`c66fa8b03` and `168266dbf`: FAIL without the flag and PASS with it on **both** trees, so the
+candidate delta is not the cause.
+
+Corrected invocation: `C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_EXEC_NEG=1
+C1_A6_RECIPIENTS=1`. Two fresh boots on `168266dbf` / `639ed015…`, both `EXIT=0`, both
+**10/10 checks PASS**, each with four `admission-requires-approval` events (the same count as
+the recorded acceptance boot):
+
+| check | `c2b-a6-denyfix-r1` | `c2b-a6-denyfix-r2` |
+| --- | --- | --- |
+| A6-28 | PASS `request=ctrl-0h0jf3d1nmbzde0p3zjwf19f decision=deny consumed=false execFacts=0 file=false done=true` | PASS `request=ctrl-06pc7ad0inarny11ylrgf0n4 decision=deny consumed=false execFacts=0 file=false done=true` |
+| A6-29 | PASS `request=ctrl-1kji77e1kdhh791c3ag1k1n1 consumed=true execFacts=failed` (`…hexec:22fa3339-…-2`) | PASS `request=ctrl-02oml390nrka3q06l3gj70hs consumed=true execFacts=failed` (`…hexec:2f03be29-…-2`) |
+| A6-7 | PASS `selfReq=ctrl-1bgnr7s1akeqrz1nqoaju1qb leaderDecided=true executed=true` | PASS `selfReq=ctrl-1oaw7c61lij3r11cxznwg1sx leaderDecided=true executed=true` |
+
+The deny leg records a durable request, a durable `deny` decision, **zero** consumption, **zero**
+execution facts and no effect file; the throw leg records exactly one terminal `failed`
+execution-result after a real consumption, never `succeeded`. **B3 and B4 are therefore PASS**
+on the corrected invocation, and the earlier `FAIL` lines are withdrawn as measurement error
+(the diagnosis was right; the record must now say the arm passes when invoked as the acceptance
+invoked it).
+
+### 11.2 A6-12 over six boots — a product race between the Stop ack and consumption
+
+Four fresh boots (`r3`–`r6`) plus the original `r1`/`r2`; same kit, same flags, sequential
+(`r3` ran with no other boot). The late allow is **rejected with
+`CONTROL_REQUEST_DECIDED` in 6/6 boots**, so the "second allow is rejected as already decided"
+half is satisfied everywhere; the kit's `!revived` predicate fails only when a consumption fact
+exists for the pre-Stop allow.
+
+| run | A6-11 | late allow | consumption for the human leg | effect file | A6-12 |
+| --- | --- | --- | --- | --- | --- |
+| r1 | PASS | 200 `CONTROL_REQUEST_DECIDED` | **yes** (seq 15, +83 ms) | `""` | FAIL |
+| r2 | PASS | 200 `CONTROL_REQUEST_DECIDED` | no | `""` | PASS |
+| r3 | PASS | 200 `CONTROL_REQUEST_DECIDED` | **yes** (seq 15, +81 ms) | `""` | FAIL |
+| r4 | PASS | 200 `CONTROL_REQUEST_DECIDED` | no | `""` | PASS |
+| r5 | PASS | 200 `CONTROL_REQUEST_DECIDED` | **yes** (seq 15, +83 ms) | `""` | FAIL |
+| r6 | PASS | 200 `CONTROL_REQUEST_DECIDED` | **yes** (seq 15, +83 ms) | `""` | FAIL |
+
+**Distribution over the four fresh runs: 3 FAIL / 1 PASS; over all six: 4 consumed / 2 not
+consumed (67% consumed).** The consumption fact lands ~83–110 ms after the allow decision. The
+kit issues the cancel immediately after resolving the human allow and then waits 2.5 s, so the
+block's own fixed waits put the cancel at `checkTime − 5 s` — i.e. the consumption and the cancel
+land in the **same ~10 ms**. What the disagreement is a race *between* is the **Stop/cancel
+acknowledgement** and the **consume-and-execute step of the allow that preceded it**: in 4/6
+boots that step had already run (or was not fenced) when the Stop arrived; in 2/6 it had not.
+No side effect was observed in any of the six (`file=""`), so execution was prevented even when
+consumption was recorded. This is a genuine product Stop-semantics finding — a ~100 ms window in
+which a human Stop cannot prevent consumption of an allow that precedes it — and it is recorded
+as such, with the observed rate, not averaged and not called "flaky".
+
+### 11.3 Corrected C2-B table (supersedes §3 B3/B4/B6)
+
+| arm | verdict | decisive line | boots |
+| --- | --- | --- | --- |
+| Officer allow | PASS | `A6-2 wakes=3 requests=17/16`, `A6-4` effect file, `A6-5 leaderWakes=0` | 2/2 (`allowdeny-r1`, `r1b`) |
+| single consumption + single execution | PASS | `A6-6 requests=2 decisions=2 consumptions=2 pending=`, `A6-27 outcome=succeeded facts=1` | 2/2 |
+| **Officer deny** | **PASS** (corrected invocation) | `A6-28 request=ctrl-0h0jf3d1nmbzde0p3zjwf19f decision=deny consumed=false execFacts=0 file=false` | 2/2 (`denyfix-r1/r2`), 10/10 each |
+| **post-consumption throw** | **PASS** (corrected invocation) | `A6-29 request=ctrl-1kji77e1kdhh791c3ag1k1n1 consumed=true execFacts=failed` | 2/2 (`denyfix-r1/r2`) |
+| **Stop** | **FAIL as a race** (4/6 consumed, no side effect) | `A6-11 PASS 6/6`; `A6-12 consumed=true` in r1/r3/r5/r6, `consumed=false` in r2/r4; late allow `CONTROL_REQUEST_DECIDED` 6/6 | 6 boots |
+| Sticky Stop | FAIL — documented limit, no durable marker | `A6-22/23/24/26/27 markers=` | 2/2 |
+| cold recovery after SIGKILL | PASS | `A6-13 restart=ok consumed=false file=false`, `A6-14 abandon=invocation-abandoned` | 2/2 |
+| A6-26 accepted-not-claimed | REPRODUCED-AS-DOCUMENTED | `verdict=abandoned-terminal recoveryCode=CONTROL_REQUEST_ABANDONED discoverable=true abandoned=1` | 2/2 |
+| Goal authorisation | NOT ESTABLISHED for the exact A6-on conjunction | pd33 `rounds=3 finalPhase=complete`; `A6-27 outcome=succeeded` | 2+2 |
+
+**C2-B overall remains NOT PASS**, but no longer because of the deny arm: the remaining grounds
+are the A6-12 Stop consumption race (4/6), Sticky Stop writing no durable marker (both boots;
+documented §4.7 limit), and the exact A6-on ∧ governed Goal-authorisation conjunction having no
+shipped instrument. The records still do not assert `candidateClaimEligibility.eligible=true`
+because not every arm in this table is a pass.
+
+Re-run verifier after this revision: `exit 0`, `PASS=146` (records unchanged in class/binding;
+`verifier-output.txt` regenerated below).
