@@ -235,3 +235,22 @@ This is a deliberate version-line jump, not a sequence of five releases:
   `dev/agent-workflow/evidence/a6-gaps-g2-claimed-r10/`
 - Alpha.5 Goal authority × Alpha.6 message identity:
   `dev/agent-workflow/evidence/a56-semantics/`
+
+---
+
+## 7. 验收范围与类型化例外（2026-11-09 裁决，只追加）
+
+**G3–G5 的适用范围是 opt-in 的受治路径（governed preset），不是默认 `standard` 路径。**
+默认路径承诺的是 Alpha.5 的既有语义——I/O 上界照常生效——但**逐工具等价矩阵不覆盖默认路径**。
+两份文件此前口径不一致（计划字面指向默认路径，`docs/STATUS.md` 指向 opt-in 路径），以本节为准。
+
+**`network: restricted` 是类型化例外，不是"没配好"。** 能力表只承诺 `allow` / `deny` 两态；
+`restricted` 会**显式**判为 `UNSUPPORTED`（netns 后端仍是未合并草稿），不会静默降级成 deny 或 allow。
+如果你在蓝图里写了 `restricted` 并以为它比 `deny` 更严，读这一行：它不会按你的预期生效。
+
+**候选验收（`CANDIDATE-C2`）的独立裁决由一个未参与产品实现的独立评审执行**：它自己跑 ≥2 次一致 boot、
+自己产出 per-case verdict 并签进候选清单。它的独立性依据是"未写产品代码"，**不是**外部机构签署；
+如果审计要求外部人类签名，这一点不满足，会明写。
+
+**未验收项（不会被写成"通过"）**：性能阈值（BL-34）、`network: restricted` 的 enforcement、
+A6 审批面在候选级（`CANDIDATE-C2`）的验收——Alpha.6 仍只由独立 kit 的 DEV-LIVE 覆盖。
