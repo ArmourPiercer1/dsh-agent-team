@@ -33,6 +33,23 @@
 #   offending content, nothing resolved. All other identity lines are
 #   byte-identical. Standing condition after this re-record: dirty(10 files, 26
 #   sites), unknown(0 files, 0 sites).
+# RE-RECORDED (WP3-FENCE-TIMING lane act in the open, 2026-11-11) for the Stop
+#   timing instrument (task/wp3-fence-20261111, on cand-v0.1.6-2 @ bb3c158eb):
+#   ALL FOUR identities inside
+#   tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs moved,
+#   `L639=v5, L828=v5, L2279=v5, L3015=v5` ->
+#   `L680=v5, L869=v5, L2361=v5, L3124=v5`. Cause: the lane added the
+#   env-gated `C1_A6_STOP_TIMING_MS` timing control (a `const` block near the
+#   other A6 opt-ins, a `readLedgerCounter`/`sleepUntilWallClock` helper pair,
+#   and the anchored resolve/Stop block) ABOVE those four v5 fixture sites;
+#   the kit is the instrument, the four fixtures are untouched. Same four
+#   statements, same `=v5` digits, no new offending content and nothing
+#   resolved: the shifts are +41, +41, +82, +109 lines respectively. All other
+#   identity lines are byte-identical. Standing condition after this re-record:
+#   dirty(10 files, 26 sites), unknown(0 files, 0 sites) — re-measured from the
+#   edited tree (`node scripts/verify-blueprint-version-clean.mjs`), not copied.
+#   The lane did not edit any other scannable file and added NO file under
+#   `packages/**`, so no p4t6 census booking is implied.
 # command:     node scripts/verify-blueprint-version-clean.mjs   (exit 1, "dirty-or-unknown")
 # lines:       every OFFENDING/UNKNOWN line, verbatim, sorted; one identity per line.
 #
@@ -56,14 +73,17 @@ OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L7
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
-OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L639=v5, L828=v5, L2279=v5, L3015=v5
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L680=v5, L869=v5, L2361=v5, L3124=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L862=v5
 # 2026-11-11 (V016-PACKAGED-ACCEPTANCE, task/pack-accept-20261111): one new identity line,
 # the new kit's v5 Team-create fixture. Nothing else moved: re-recorded by re-running
 # scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
+OFFENDING tests/kits/wp1-sticky-stop/wp1-sticky-stop.mjs :: L422=v5, L566=v5
+# 2026-11-11 (WP1-STICKY-STOP, task/wp1-sticky-20261111): one new identity line — the kit authors
+# two v5 Blueprints (the Alpha.6 anchor and the per-run Team) because the review-wake subject
+# only exists on a v5 document. Appended in the open from a re-run of the verifier on this tree.
 OFFENDING tests/kits/wp2-a6-governed-goal/wp2-a6-governed-goal.mjs :: L294=v5, L329=v4, L1128=v5, L1129=v4
-# 2026-11-11 (WP2-A6-GOVERNED-GOAL, task/wp2-goal-20261111): one new identity line — the kit authors
-# BOTH a v5 Alpha.6 anchor and a v4 governed realm, because its subject is the plane asymmetry.
-# Appended in the open from a re-run of verify-blueprint-version-clean.mjs on this rebased tree.
+# 2026-11-11 (WP2-A6-GOVERNED-GOAL): one new identity line — the kit authors both a v5 Alpha.6
+# anchor and a v4 governed realm because its subject is the plane asymmetry.

@@ -1,0 +1,88 @@
+{
+  "verdict": "fence-reached",
+  "label": "run-edge-s368",
+  "planned": {
+    "resolveOffsetMs": 120,
+    "stopOffsetMs": 368
+  },
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "requestId": "ctrl-0l7h90o06h7nuj0uiof0u1i3",
+  "timings": {
+    "anchorCreatedAt": "2026-11-11T14:36:19.965Z",
+    "resolveSentAt": "2026-11-11T14:36:20.085Z",
+    "resolveReturnedAt": "2026-11-11T14:36:20.154Z",
+    "decisionCreatedAt": "2026-11-11T14:36:20.132Z",
+    "stopSentAt": "2026-11-11T14:36:20.333Z",
+    "stopReturnedAt": "2026-11-11T14:36:20.343Z",
+    "stopAfterDecisionMs": 201,
+    "stopAfterResolveSentMs": 248,
+    "decisionAfterStopSentMs": -201,
+    "abandonmentCreatedAt": "2026-11-11T14:36:20.352Z",
+    "decisionToAbandonmentMs": 220,
+    "decisionToConsumptionMs": null
+  },
+  "sequences": {
+    "counterAtFinalRead": 18,
+    "request": 13,
+    "decision": 14,
+    "consumption": null,
+    "abandonment": 16,
+    "burned": {
+      "expectedGap": 15,
+      "abandonmentAt": 16
+    }
+  },
+  "rows": {
+    "decisions": [
+      {
+        "sequence": 14,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0l7h90o06h7nuj0uiof0u1i3",
+        "decision": "allow",
+        "decider": {
+          "humanId": "session-c1-smoke-a6-2026-11-11T14-36-08",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-11T14:36:20.132Z"
+      }
+    ],
+    "consumptions": [],
+    "abandonments": [
+      {
+        "sequence": 16,
+        "factType": "control-request-abandoned",
+        "requestId": "ctrl-0l7h90o06h7nuj0uiof0u1i3",
+        "reason": "invocation-cancelled-before-consumption",
+        "createdAt": "2026-11-11T14:36:20.352Z"
+      }
+    ],
+    "executionResults": []
+  },
+  "requirements": {
+    "decisionAllow": true,
+    "stopAfterDecision": true,
+    "resolveBeforeStop": true,
+    "zeroConsumption": true,
+    "exactlyOneAbandonment": true,
+    "fenceReason": true,
+    "burnedSequence": true,
+    "noExecutionFact": true,
+    "zeroSideEffect": true,
+    "lateAllowRefusedAbandoned": true,
+    "lateAllowRefusedDecided": false
+  },
+  "offsets": {
+    "decision": 167,
+    "stopSent": 368,
+    "stopReturned": 378,
+    "consumptionWrite": null,
+    "abandonmentWrite": 387,
+    "stopSentMinusConsumptionWriteMs": null,
+    "stopSentMinusAbandonmentWriteMs": -19
+  },
+  "failedRequirements": [],
+  "kitExit": 0,
+  "wallMs": 16945
+}

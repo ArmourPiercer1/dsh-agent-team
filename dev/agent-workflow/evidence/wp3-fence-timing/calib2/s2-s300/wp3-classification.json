@@ -1,0 +1,82 @@
+{
+  "verdict": "pre-fence",
+  "label": "s2-s300",
+  "planned": {
+    "resolveOffsetMs": 120,
+    "stopOffsetMs": 300
+  },
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "requestId": "ctrl-10d4ker0o0s9bw0kb222d1xv",
+  "timings": {
+    "anchorCreatedAt": "2026-11-11T14:24:28.419Z",
+    "resolveSentAt": "2026-11-11T14:24:28.539Z",
+    "resolveReturnedAt": "2026-11-11T14:24:28.601Z",
+    "decisionCreatedAt": "2026-11-11T14:24:28.586Z",
+    "stopSentAt": "2026-11-11T14:24:28.719Z",
+    "stopReturnedAt": "2026-11-11T14:24:28.727Z",
+    "stopAfterDecisionMs": 133,
+    "stopAfterResolveSentMs": 180,
+    "decisionAfterStopSentMs": -133,
+    "abandonmentCreatedAt": null,
+    "decisionToAbandonmentMs": null,
+    "decisionToConsumptionMs": null
+  },
+  "sequences": {
+    "counterAtFinalRead": 16,
+    "request": 13,
+    "decision": 14,
+    "consumption": null,
+    "abandonment": null,
+    "burned": null
+  },
+  "rows": {
+    "decisions": [
+      {
+        "sequence": 14,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-10d4ker0o0s9bw0kb222d1xv",
+        "decision": "allow",
+        "decider": {
+          "humanId": "session-c1-smoke-a6-2026-11-11T14-24-17",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-11T14:24:28.586Z"
+      }
+    ],
+    "consumptions": [],
+    "abandonments": [],
+    "executionResults": []
+  },
+  "requirements": {
+    "decisionAllow": true,
+    "stopAfterDecision": true,
+    "resolveBeforeStop": true,
+    "zeroConsumption": true,
+    "exactlyOneAbandonment": false,
+    "fenceReason": false,
+    "burnedSequence": false,
+    "noExecutionFact": true,
+    "zeroSideEffect": true,
+    "lateAllowRefusedAbandoned": false,
+    "lateAllowRefusedDecided": true
+  },
+  "suite": {
+    "decisionAllow": true,
+    "stopAfterDecision": true,
+    "resolveBeforeStop": true,
+    "zeroConsumption": true,
+    "noExecutionFact": true,
+    "zeroSideEffect": true,
+    "lateAllowRefusedDecided": true
+  },
+  "failedRequirements": [
+    "exactlyOneAbandonment",
+    "fenceReason",
+    "burnedSequence",
+    "lateAllowRefusedAbandoned"
+  ],
+  "kitExit": 0,
+  "wallMs": 16296
+}

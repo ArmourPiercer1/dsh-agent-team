@@ -1,0 +1,10 @@
+{
+  "followup": {
+    "status": -1,
+    "body": {
+      "pending": true
+    }
+  },
+  "workerAskSeen": true,
+  "seq": 17
+}

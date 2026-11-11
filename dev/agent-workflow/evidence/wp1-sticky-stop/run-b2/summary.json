@@ -1,0 +1,36 @@
+{
+  "runLabel": "b2",
+  "arm": "b",
+  "evidenceClass": "CANDIDATE-C2",
+  "runStamp": "2026-11-11T15-58-39",
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "ok": true,
+  "criteria": [
+    {
+      "id": "B1",
+      "name": "no review wake was dispatched and no intent/stopped row exists: no wake coordinator for the Officer (documented-unsupported path)",
+      "ok": true,
+      "detail": "wakeRows=[] stopped=[] wakeTurns=0 controlRequests=0"
+    },
+    {
+      "id": "B3",
+      "name": "the same human Stop on a session with NO latch returns false / writes NO marker: no durable protection is created (false inferred from the coordinator-undefined branch + absent marker)",
+      "ok": true,
+      "detail": "cancel=true markers=[] wakeRows=[]"
+    },
+    {
+      "id": "B3b",
+      "name": "nothing on the no-latch path CLAIMS durable protection: no fact, log line or UI state asserting \"stopped\"",
+      "ok": true,
+      "detail": "hits=0"
+    },
+    {
+      "id": "B4",
+      "name": "after the no-latch Stop and one ordinary human re-engagement turn, the next review wake ACTIVATES the reviewer: a new [team-review-wake] turn starts at the model, with no marker anywhere",
+      "ok": true,
+      "detail": "leaderPrompt=200 wakeSeq=21 wakes=0->1 wakeIds=[review-wake:session-wp1-team-2026-11-11T15-58-39:inst-0zmgqt41q9jp:1:a6wake%3Av1%3A1%3Aa5ff8a55] newLegs=2 markers=[]"
+    }
+  ],
+  "homeRetained": null,
+  "note": "n=2 per arm is agreement, not stability"
+}

@@ -1,0 +1,24 @@
+{
+  "evidenceClass": "CANDIDATE-C2",
+  "runLabel": "a2",
+  "arm": "a",
+  "runStamp": "2026-11-11T15-55-58",
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky",
+  "candidate": "cand-v0.1.6-2",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "rootSessionId": "session-wp1-root-2026-11-11T15-55-58",
+  "teamSessionId": "session-wp1-team-2026-11-11T15-55-58",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-a2-2026-11-11T15-55-58",
+  "ports": {
+    "host": 15002,
+    "mock": 15052
+  },
+  "optIn": {
+    "alpha6ReviewRouting": true,
+    "alpha6WakeIntentPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-a2-2026-11-11T15-55-58/alpha6-wake-intents",
+    "planeTakeover": true
+  },
+  "note": "one boot per arm run; n=2 agreement is not a stability claim"
+}
