@@ -847,7 +847,6 @@ const s9 = await (async (): Promise<AskLaneOutcome> => {
     // pre-ask routing call happens while disarmed.
     let armed = false
     let routingSeen = false
-    let routingCalls = 0
     const policy: TemplatePermissionPolicy = { default: 'ask', allow: [], ask: [], deny: [] }
     installParameterPermissionListener(ctx, {
       policy,
@@ -865,7 +864,6 @@ const s9 = await (async (): Promise<AskLaneOutcome> => {
         if (observation['stage'] === 'decision-arrived') armed = true
       },
       operationApprovalRouting: async () => {
-        routingCalls += 1
         if (armed && !routingSeen) {
           routingSeen = true
           gate.hit()
