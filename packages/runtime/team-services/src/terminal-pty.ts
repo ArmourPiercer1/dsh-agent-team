@@ -52,8 +52,6 @@
 import { isAbsolute, resolve as resolvePath } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox'
-import type { SandboxPolicyRequest } from '@deepseek-ai/dsh-sandbox-policy'
 import { TerminalSessionService } from '@deepseek-ai/dsh-terminal'
 import { Config as BashTerminalConfig, apply as applyBashTerminalBackend } from '@deepseek-ai/dsh-terminal-bash'
 import type { EffectiveIoPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
@@ -91,10 +89,38 @@ export class PtyFaceRefusal extends Error {
   }
 }
 
+/**
+ * STRUCTURAL MIRRORS of the pinned host's sandbox types.
+ *
+ * `team-services` does NOT depend on `@deepseek-ai/dsh-sandbox` /
+ * `@deepseek-ai/dsh-sandbox-policy`: they are host packages the consumer
+ * supplies at runtime, and they are not in this package's install graph (a
+ * `import type` from them resolves in a developer worktree that happens to have
+ * the host linked, and fails in a clean install — the CI `TS2307` this
+ * replaced). The convention in this package is a structural subset with the
+ * narrowest shape the face actually touches (`PtyBaseSubprocessSurface` below,
+ * `sandboxPolicy as never` in `install.ts`): a policy VALUE crosses the boundary,
+ * never a host type, so a mirror loses nothing and stays honest about the
+ * contract. Keep these in sync with the pinned `SandboxExecutionPolicy` /
+ * `SandboxPolicyRequest` (`0.2.0-rc.2 @ 639ed01539`); a wider host policy is
+ * still assignable to them.
+ */
+export type PtySandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access'
+
+export interface PtySandboxExecutionPolicy {
+  readonly mode: PtySandboxMode
+  readonly workspaceRoot: string
+  readonly sessionId?: string
+}
+
+export interface PtySandboxPolicyRequest {
+  readonly session?: { readonly id?: string }
+}
+
 /** The sandbox-policy service surface this face needs (a structural subset). */
 export interface PtySandboxPolicyService {
-  resolve(request: SandboxPolicyRequest): SandboxExecutionPolicy
-  readonly defaultMode: SandboxMode
+  resolve(request: PtySandboxPolicyRequest): PtySandboxExecutionPolicy
+  readonly defaultMode: PtySandboxMode
   readonly workspaceRoot: string
 }
 
@@ -153,7 +179,7 @@ export interface GovernedPtyTerminalFaceOptions {
   /** The BASE subprocess service (a PTY cannot ride the confined child face). */
   readonly baseSubprocess: PtyBaseSubprocessSurface
   /** Base `sandbox` provider lookup; `undefined` = no enforcement available. */
-  readonly sandboxProvider?: () => { confine(argv: readonly string[], policy: SandboxExecutionPolicy, signal?: AbortSignal): Promise<{ argv: readonly string[] }> } | undefined
+  readonly sandboxProvider?: () => { confine(argv: readonly string[], policy: PtySandboxExecutionPolicy, signal?: AbortSignal): Promise<{ argv: readonly string[] }> } | undefined
   /** Extra pinned-backend config (rows/cols/timeouts); never policy. */
   readonly backendConfig?: Record<string, unknown>
 }
@@ -162,15 +188,21 @@ export interface GovernedPtyTerminalFaceOptions {
 interface PtyDomain {
   readonly policyRevision: string
   readonly writeRoot: string
-  readonly mode: SandboxMode
+  readonly mode: PtySandboxMode
   readonly createdAt: number
 }
 
-const MODE_RANK: Readonly<Record<SandboxMode, number>> = Object.freeze({
+/**
+ * The total ordering of the three modes. Declared as a LITERAL object (not a
+ * `Record`): with `noUncheckedIndexedAccess` an index signature makes every
+ * lookup `number | undefined`, and the clamp below compares two lookups
+ * (`TS2532`). A literal type has all three keys, so a lookup is `0 | 1 | 2`.
+ */
+const MODE_RANK = Object.freeze({
   'read-only': 0,
   'workspace-write': 1,
   'danger-full-access': 2,
-})
+} as const satisfies Readonly<Record<PtySandboxMode, number>>)
 
 /** True when `child` is `parent` or lives under it (path-segment exact). */
 function containsPath(parent: string, child: string): boolean {
@@ -210,9 +242,9 @@ function absoluteRoots(locators: readonly string[]): string[] {
  * @returns the narrowed policy the PTY backend must confine with.
  */
 export function narrowSandboxPolicy(
-  base: SandboxExecutionPolicy,
+  base: PtySandboxExecutionPolicy,
   effective: PtyCeilingLane,
-): { policy: SandboxExecutionPolicy; writeRoot: string | null; reason: 'ceiling-root' | 'no-writable-root' | 'unrestricted-ceiling' } {
+): { policy: PtySandboxExecutionPolicy; writeRoot: string | null; reason: 'ceiling-root' | 'no-writable-root' | 'unrestricted-ceiling' } {
   const cwd = resolvePath(base.workspaceRoot)
   const ceilingRestricted = effective.write.mode === 'restricted'
   const declared = ceilingRestricted ? absoluteRoots(effective.write.allow) : [cwd]
@@ -223,11 +255,11 @@ export function narrowSandboxPolicy(
     .sort((a, b) => b.length - a.length)[0]
   // The ceiling can never lift the deployment mode: `danger-full-access` is
   // clamped, `read-only` stays read-only.
-  const ceilingMode: SandboxMode = candidate === undefined
+  const ceilingMode: PtySandboxMode = candidate === undefined
     ? 'read-only'
     : (base.mode === 'read-only' ? 'read-only' : 'workspace-write')
   const mode = MODE_RANK[base.mode] <= MODE_RANK[ceilingMode] ? base.mode : ceilingMode
-  const policy: SandboxExecutionPolicy = {
+  const policy: PtySandboxExecutionPolicy = {
     mode,
     workspaceRoot: candidate ?? cwd,
     ...base.sessionId === undefined ? {} : { sessionId: base.sessionId },
@@ -341,7 +373,7 @@ export function createGovernedPtyTerminalFace(options: GovernedPtyTerminalFaceOp
       const narrowed = {
         defaultMode: options.sandboxPolicy.defaultMode,
         workspaceRoot: options.sandboxPolicy.workspaceRoot,
-        resolve(request: SandboxPolicyRequest): SandboxExecutionPolicy {
+        resolve(request: PtySandboxPolicyRequest): PtySandboxExecutionPolicy {
           const base = options.sandboxPolicy.resolve(request)
           const result = narrowSandboxPolicy(base, effective)
           if (result.writeRoot === null && base.mode !== 'read-only') {

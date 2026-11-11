@@ -79,6 +79,12 @@ export class PtyFaceRefusal extends Error {
         this.code = code;
     }
 }
+/**
+ * The total ordering of the three modes. Declared as a LITERAL object (not a
+ * `Record`): with `noUncheckedIndexedAccess` an index signature makes every
+ * lookup `number | undefined`, and the clamp below compares two lookups
+ * (`TS2532`). A literal type has all three keys, so a lookup is `0 | 1 | 2`.
+ */
 const MODE_RANK = Object.freeze({
     'read-only': 0,
     'workspace-write': 1,

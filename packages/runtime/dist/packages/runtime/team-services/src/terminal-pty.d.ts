@@ -49,8 +49,6 @@
  * @module @dsh-agent-team/runtime/team-services/terminal-pty
  */
 import type { Context } from '@deepseek-ai/cordis';
-import type { SandboxExecutionPolicy, SandboxMode } from '@deepseek-ai/dsh-sandbox';
-import type { SandboxPolicyRequest } from '@deepseek-ai/dsh-sandbox-policy';
 import type { PathRuleSet } from '../../member-io-policy/src/types.js';
 /** The closed refusal vocabulary of THIS face (never a bare `Error`). */
 export declare const PTY_FACE_REFUSAL_CODES: readonly ["PTY_OWNER_UNBOUND", "PTY_OWNER_MISMATCH", "PTY_CEILING_UNAVAILABLE", "PTY_CEILING_STALE", "PTY_POLICY_STALE", "PTY_WRITE_ROOT_UNAVAILABLE", "ENFORCEMENT_UNAVAILABLE", "PTY_BACKEND_UNAVAILABLE"];
@@ -60,10 +58,37 @@ export declare class PtyFaceRefusal extends Error {
     readonly code: PtyFaceRefusalCode;
     constructor(code: PtyFaceRefusalCode, detail: string);
 }
+/**
+ * STRUCTURAL MIRRORS of the pinned host's sandbox types.
+ *
+ * `team-services` does NOT depend on `@deepseek-ai/dsh-sandbox` /
+ * `@deepseek-ai/dsh-sandbox-policy`: they are host packages the consumer
+ * supplies at runtime, and they are not in this package's install graph (a
+ * `import type` from them resolves in a developer worktree that happens to have
+ * the host linked, and fails in a clean install — the CI `TS2307` this
+ * replaced). The convention in this package is a structural subset with the
+ * narrowest shape the face actually touches (`PtyBaseSubprocessSurface` below,
+ * `sandboxPolicy as never` in `install.ts`): a policy VALUE crosses the boundary,
+ * never a host type, so a mirror loses nothing and stays honest about the
+ * contract. Keep these in sync with the pinned `SandboxExecutionPolicy` /
+ * `SandboxPolicyRequest` (`0.2.0-rc.2 @ 639ed01539`); a wider host policy is
+ * still assignable to them.
+ */
+export type PtySandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access';
+export interface PtySandboxExecutionPolicy {
+    readonly mode: PtySandboxMode;
+    readonly workspaceRoot: string;
+    readonly sessionId?: string;
+}
+export interface PtySandboxPolicyRequest {
+    readonly session?: {
+        readonly id?: string;
+    };
+}
 /** The sandbox-policy service surface this face needs (a structural subset). */
 export interface PtySandboxPolicyService {
-    resolve(request: SandboxPolicyRequest): SandboxExecutionPolicy;
-    readonly defaultMode: SandboxMode;
+    resolve(request: PtySandboxPolicyRequest): PtySandboxExecutionPolicy;
+    readonly defaultMode: PtySandboxMode;
     readonly workspaceRoot: string;
 }
 /** The base subprocess surface the pinned PTY backend allocates the PTY on. */
@@ -120,7 +145,7 @@ export interface GovernedPtyTerminalFaceOptions {
     readonly baseSubprocess: PtyBaseSubprocessSurface;
     /** Base `sandbox` provider lookup; `undefined` = no enforcement available. */
     readonly sandboxProvider?: () => {
-        confine(argv: readonly string[], policy: SandboxExecutionPolicy, signal?: AbortSignal): Promise<{
+        confine(argv: readonly string[], policy: PtySandboxExecutionPolicy, signal?: AbortSignal): Promise<{
             argv: readonly string[];
         }>;
     } | undefined;
@@ -144,8 +169,8 @@ export interface GovernedPtyTerminalFaceOptions {
  * @param effective - the Member's compiled lane.
  * @returns the narrowed policy the PTY backend must confine with.
  */
-export declare function narrowSandboxPolicy(base: SandboxExecutionPolicy, effective: PtyCeilingLane): {
-    policy: SandboxExecutionPolicy;
+export declare function narrowSandboxPolicy(base: PtySandboxExecutionPolicy, effective: PtyCeilingLane): {
+    policy: PtySandboxExecutionPolicy;
     writeRoot: string | null;
     reason: 'ceiling-root' | 'no-writable-root' | 'unrestricted-ceiling';
 };

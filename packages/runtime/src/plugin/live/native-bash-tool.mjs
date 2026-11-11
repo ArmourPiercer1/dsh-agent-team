@@ -47,8 +47,29 @@ export const name = 'a5sf-native-bash-persistent'
  */
 export const inject = ['tools', 'terminals']
 
-/** Model-facing config passthrough; the host module owns every default. */
-export const Config = Object.freeze({})
+/**
+ * NO `Config` EXPORT — and that is the loader contract, not an omission.
+ *
+ * Cordis resolves a plugin's config with `resolveConfig(runtime, config)`:
+ * `if (!runtime.Config) return config` (`vendor/cordis/lib/index.js`), i.e. a
+ * module WITHOUT `Config` receives its config unchanged. A module WITH `Config`
+ * is validated through `Config['~standard'].validate(config)`, so any non-schema
+ * object exported as `Config` (this module used to export `Object.freeze({})`)
+ * throws `Cannot read properties of undefined (reading 'validate')` at
+ * activation, and the Member mount fails with
+ * `TEAM_RUNTIME_DURABLE_WRITE_FAILED` → `SERVICE_MOUNT_FAILED` (found live by
+ * the joint-acceptance lane; pinned host-free by P8/P8b below).
+ *
+ * This module carries no schema of its own on purpose: every field is the pinned
+ * host module's (`timeoutMs`, `maxOutputChars`, `description`, `backendType`),
+ * and `apply` below forwards them verbatim, so a second, invented schema here
+ * could only reject values the host accepts. Absence is both the safe and the
+ * correct answer.
+ *
+ * `mount.ts` requires only `name` + `apply` from a native tool module, so a
+ * configless module is exactly what this seam expects; see
+ * `a5sf-native-route-c.test.mjs`'s N1 for the sibling config-reader contract.
+ */
 
 /**
  * The refusal code a call gets when the plane's admission edge is absent.

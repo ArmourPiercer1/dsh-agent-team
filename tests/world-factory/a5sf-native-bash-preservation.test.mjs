@@ -394,6 +394,70 @@ test('P4b enforcement refusal: a confiner that refuses means NO PTY and a failed
   assert.equal(blocked.terminals.list(blockedAgent).length, 0, 'no PTY exists for a refused allocation')
 })
 
+// ── P8 — the LOADER path, not `apply()` directly ────────────────────────────
+//
+// Regression guard for the defect the joint-acceptance lane found live:
+// `ctx.plugin(module, config)` resolves a plugin's config through
+// `resolveConfig(runtime, config)` (`vendor/cordis/lib/index.js`), which is
+//   `if (!runtime.Config) return config`
+//   `const result = runtime.Config["~standard"].validate(config)`
+// A module that exports a NON-SCHEMA `Config` (this module used to export
+// `Object.freeze({})`) therefore throws `Cannot read properties of undefined
+// (reading 'validate')` and the whole Member mount fails
+// (`TEAM_RUNTIME_DURABLE_WRITE_FAILED` → `SERVICE_MOUNT_FAILED`). The host-free
+// suite could not see it because it called `apply()` directly, so this arm
+// mounts through the REAL Cordis loader with real injected services.
+test('P8 the module mounts through the Cordis loader: config resolution passes and it registers', async () => {
+  const { Context } = await import('@deepseek-ai/cordis')
+  const registered = []
+  const root = new Context()
+  // The two injected services, minimal but REAL (provided, not faked into a
+  // plain object ctx): the fiber must actually start for config resolution to
+  // run at all.
+  root.provide('tools', { register: (definition) => { registered.push(definition); return () => {} } })
+  root.provide('terminals', { listBackends: () => ['shell'] })
+  await root.plugin(nativeBash, {})
+  assert.equal(registered.length, 1, 'the loader-mounted module registers exactly one definition')
+  assert.equal(registered[0].name, 'bash')
+  // The loader's own rule, stated as the contract it is: a configless module
+  // exports NO `Config`, and then the loader hands the config through untouched.
+  assert.equal(
+    nativeBash.Config,
+    undefined,
+    'a configless native tool module must not export `Config`: the Cordis loader validates `Config["~standard"]` and only passes the config through when `Config` is absent',
+  )
+})
+
+test('P8b every route-C mountable module in `live/` has a LOADER-ACCEPTABLE config surface', async () => {
+  const { readdirSync } = await import('node:fs')
+  const liveDir = new URL('../../packages/runtime/src/plugin/live/', import.meta.url)
+  const mountable = []
+  for (const file of readdirSync(liveDir).filter((name) => name.endsWith('.mjs'))) {
+    let module
+    try {
+      module = await import(new URL(file, liveDir).href)
+    } catch (error) {
+      // A module that cannot even be imported is not mountable by route C
+      // either; its own suite owns that fact.
+      if (error?.code === 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX') continue
+      throw error
+    }
+    if (typeof module.apply === 'function' && typeof module.name === 'string') mountable.push({ file, module })
+  }
+  assert.ok(
+    mountable.some(({ file }) => file === 'native-bash-tool.mjs'),
+    'the scan must include the adopted native bash module (a vacuous scan proves nothing)',
+  )
+  for (const { file, module } of mountable) {
+    if (module.Config === undefined) continue
+    assert.equal(
+      typeof module.Config?.['~standard']?.validate,
+      'function',
+      `${file} exports a Config the Cordis loader cannot validate (it calls Config["~standard"].validate); omit Config or export a real schema`,
+    )
+  }
+})
+
 // ── P5 — policy generations ─────────────────────────────────────────────────
 test('P5 policy generation: a retained PTY from a stale revision is refused and killed', async () => {
   const world = await makeWorld('p5')

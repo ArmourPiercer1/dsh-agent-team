@@ -58,10 +58,10 @@ does not place its own shell row when `plane.nativeBashAdopted` is set (so no
 second Team shell competes with the native name), and exposes `admitNative` /
 `settleNative`, which `agent-bindings.mjs` publishes per runtime Agent.
 
-## Measured — host-free contract suite (13/13 PASS)
+## Measured — host-free contract suite (15/15 PASS)
 
 `node --test tests/world-factory/a5sf-native-bash-preservation.test.mjs`
-→ [`host-free-contract-run.log`](host-free-contract-run.log). These are real
+→ [`host-free-contract-run.log`](host-free-contract-run.log) (15/15). These are real
 PTYs (`@deepseek-ai/dsh-terminal` + `dsh-terminal-bash` + `subprocess-local`),
 not doubles; the enforcement provider is a recorder, so what is measured here is
 the **policy contract**, not kernel enforcement.
@@ -81,6 +81,8 @@ the **policy contract**, not kernel enforcement.
 | P6b | deny ⇒ **0** native executions, **0** PTYs, no file side effect | **PASS** |
 | P6c | no published edge ⇒ typed `A5_NATIVE_ADMISSION_UNAVAILABLE`, 0 execution | **PASS** |
 | P7 | route C selects the native module only for a face carrying `governedPty`; the selector refuses any face without it | **PASS** |
+| P8 | the module mounts through the **Cordis loader** (`ctx.plugin(module, {})`): config resolution passes, one `bash` registered; the module exports **no** `Config` (the loader's configless branch). Negative control: reinstating `Config = Object.freeze({})` reproduces the live `reading 'validate'` failure | **PASS** |
+| P8b | every route-C-mountable `live/*.mjs` either omits `Config` or exports a real `~standard` schema (the scan asserts it includes the native bash module) | **PASS** |
 
 Regression suites re-run green in this worktree: `a5sf-native-route-c` (8),
 `a5sf-governed-preset` (14), `a5sf-pd12-bash-governance` + `a5sf-pd13-terminal-read-axis`
@@ -88,40 +90,61 @@ Regression suites re-run green in this worktree: `a5sf-native-route-c` (8),
 `a5sf-pd15`/`a5sf-pd19` (70 total, 0 fail). `check-install-manifest` reports the
 **baseline** 14 pre-existing issues with the lock leg PASS (master carries the same 14).
 
-## NOT MET on a real Host — stated as measured, not re-labelled
+## Real-Host acceptance: the driver exists; the blocker was OURS
 
-The acceptance requires **two real-Host runs** with a fresh `DSH_HOME` proving
-PTY persistence, exact Member binding, real OS ceiling refusal and Alpha.6
-approval of the **native** call. **This lane did not obtain them.** Measured
-cause, not a judgement:
+When this lane first reported, it stated the live arms NOT MET because *no
+harness drove the governed realm*. That cause is now **superseded**: the
+joint-acceptance lane (PR #731, `tests/kits/joint-acceptance-20261111/`) built
+the missing instrument — one Team, one v5 blueprint carrying both families and
+the governed realm, A6 approval, plane takeover, `boot-preflight`-gated, two
+agreeing runs — and drove **this lane's** mount path live. Two findings:
 
-* the only live harness that drives the **governed realm** (`a5sfGovernedRealm: true`)
-  is `dev/agent-workflow/evidence/a5sf-pty-devlive/` — its nine runs measured the
-  **ungoverned** product PTY (no ceiling) through a probe tool;
-* the only live harness that drives **Alpha.6 approval + the plane takeover** is
-  `tests/kits/c1-leader-approval-smoke/`, and its team row config declares **no**
-  `a5sfGovernedRealm` (`teamRowConfig()` → no such key), so it never mounts the
-  governed PTY face and therefore never exercises `nativeBashPtySpecOf`;
-* one run of either needs a fresh `DSH_HOME`, a mock-model deployment, a
-  blueprint carrying `memberIoCeilings`, and a driver that asserts on the tool
-  result — the two harnesses would have to be merged, which was outside this
-  round's remaining budget.
+1. **The mount failed at activation for both Members, both runs**:
 
-Consequently these criteria are **NOT MET**, with the cause above: real-OS write
-refusal attributable to PTY/Member/call, the `danger-full-access` clamp measured
-against a live `sandbox` provider, live Alpha.6 allow-once / deny-zero on the
-**native** call, and the cancellation/timeout/background contract under a live
-Host. The host-free suite measures the same properties at the policy layer and
-must not be reported as their substitute.
+   ```
+   team_create_member → TEAM_RUNTIME_DURABLE_WRITE_FAILED
+     → SERVICE_MOUNT_FAILED: native tool module re-mount failed:
+       Cannot read properties of undefined (reading 'validate')
+   ```
 
-### The next step that would close it
+   Cause: this module exported `Config = Object.freeze({})`. The Cordis loader
+   resolves config as `if (!runtime.Config) return config` else
+   `runtime.Config['~standard'].validate(config)` (`vendor/cordis/lib/index.js`
+   `resolveConfig`), so a non-schema object thrown into that slot fails at
+   activation and takes the Member's durable write with it. The host-free suite
+   missed it because it called `apply()` directly instead of mounting through the
+   loader. **Fixed** by exporting **no** `Config` at all (the loader's own
+   configless branch; `mount.ts` requires only `name` + `apply`), and **pinned**
+   by P8 (a real `ctx.plugin(module, {})` mount through the Cordis loader, which
+   reproduced the exact live error when `Config` was reinstated) and P8b (every
+   route-C-mountable `live/*.mjs` either omits `Config` or exports a real
+   `~standard` schema).
+2. **`parameter-permission` currently routes to the Leader**, so the Alpha.6 half
+   of the junction is being corrected in its own lane. **This lane's native bash
+   must not assume the Officer arc is correct**: its admission seam takes
+   whatever decision the plane's `decide` returns and consumes/settles it; it
+   invents no approval semantics of its own.
 
-Point the `a5sf-pty-devlive` driver at a row whose config carries
-`a5sfGovernedRealm: true` (the shipped product row already does) plus a v5
-blueprint with `memberIoCeilings`, and keep the C1 kit's Alpha.6 arms for the
-approval leg: the probe Member's `bash` then resolves the pinned definition over
-the PTY face, and every arm the suite already checks host-free becomes a live
-measurement.
+Also recorded from the joint run, because it strengthens this lane's result:
+
+* with the **fs-only** diagnostic preset, the PD-42 ceiling repair is confirmed
+  **live**: a write inside the Member root produces an ALLOW fact, a write
+  outside produces `IO_WRITE_DENIED` with zero bytes. The **realm side works**;
+  the remaining red is on the mount/native-bash side, not the ceiling side.
+
+**NOT MET, now for one concrete reason (not a missing instrument):** the two
+real-Host runs of the **joined** acceptance. This lane's fix (no `Config`,
+loader-path tests) must be re-driven by `tests/kits/joint-acceptance-20261111/`
+after the approval-lane fix lens `J05`/`J06` lands. Until that re-run, these
+remain NOT MET:
+
+| criterion | why it is still open |
+|---|---|
+| PTY persistence + exact Member binding measured **live** | mount now passes validation host-free; live re-run pending |
+| real-OS write refusal attributable to PTY/Member/call | realm side proven live **without** the PTY face (fs-only preset); the PTY leg needs the joined re-run |
+| the `danger-full-access` clamp against a live `sandbox` provider | same |
+| Alpha.6 allow-once / deny-zero on the **native** call | blocked on the `parameter-permission` routing fix (`J05`/`J06`), not on this lane |
+| cancellation / timeout / background under a live Host | not yet exercised |
 
 ## Known limits, disclosed (not claimed away)
 
@@ -132,6 +155,13 @@ measurement.
 * **`SandboxExecutionPolicy` carries one `workspaceRoot`.** A Member lane with
   several write roots is narrowed to the deepest root containing the session
   cwd; a lane with none degrades to `read-only`. Never widened, never guessed.
+* **The build-time host-type trap.** `team-services` originally `import type`d
+  `@deepseek-ai/dsh-sandbox` / `dsh-sandbox-policy`. That resolves in a developer
+  worktree that has the host linked and fails in a clean CI install
+  (`TS2307`), so the face now carries **structural mirrors** (`PtySandboxMode`,
+  `PtySandboxExecutionPolicy`, `PtySandboxPolicyRequest`) — the same convention
+  as `PtyBaseSubprocessSurface` and `install.ts`'s `as never`. A policy VALUE
+  crosses the boundary; no host type does.
 * **`pwsh`** stays the plane's row: no native owner exists for that name.
 * **`backgroundJobs`** still requires `names.bash === 'bash'`; the adopted native
   shell does not enable it.
