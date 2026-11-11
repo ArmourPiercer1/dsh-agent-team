@@ -260,3 +260,40 @@ This is a deliberate version-line jump, not a sequence of five releases:
 
 **未验收项（不会被写成"通过"）**：性能阈值（BL-34）、`network: restricted` 的 enforcement、
 A6 审批面在候选级（`CANDIDATE-C2`）的验收——Alpha.6 仍只由独立 kit 的 DEV-LIVE 覆盖。
+
+---
+
+## 8. 2026-11-09 — Stop before the durable consumption (A6-STOP-FENCE, owner ruling A; append-only)
+
+This section is appended, not a rewrite of §4.4 or §5. It states the Stop guarantee this build
+provides for the **approval-consumption boundary** and the residual it does not close.
+
+**The guarantee (exactly this, no more).** The last-mile guard now receives the SAME invocation
+cancellation signal the approval wait already consumes (an optional second argument; never a scope
+field, never durable identity). That signal is read once, synchronously, at the final consumption
+boundary — inside the per-team lock, after the authority / external-policy / PA-manifest checks, with
+the ledger sequence already prepared:
+
+- **cancellation observed BEFORE that final consumption check** ⇒ nothing is consumed
+  (zero `control-allow-consumed`), the tool body does not execute, the durable `allow` decision is
+  left exactly as the approver wrote it, and the request is closed with exactly one terminal
+  `control-request-abandoned` fact carrying the lifecycle reason
+  `invocation-cancelled-before-consumption`. A later replay cannot re-consume (the terminal mark
+  refuses it as `request-abandoned`).
+- **cancellation arriving AFTER that check may race the durable write.** The window that remains is
+  the single consumption write await (`await putEntry(...)` → `repositories.ledger.put`). If the
+  write commits, the consumption fact is KEPT and is never rewritten as un-consumed; the execution
+  edge still refuses the body. In the host-free test the natural write await measured
+  ≈0.3–0.4 ms, and the window was held open (≈1–2 ms) only to prove that a cancel landing inside it
+  still commits. **No atomic Stop is claimed.**
+
+**Not claimed / not attempted.** No durable per-invocation Stop state and no cross-process atomic
+fence is introduced; that remains the design change PD-40 declined (see §4.7). The Alpha.6 Sticky
+Stop and the **A6-26 accepted-but-unclaimed review-wake abandonment (§5)** are separate disclosures
+and are not changed by this section — a Stop-abandon and a crash-abandon carry different reasons and
+must not be read as each other.
+
+**Team-tools branch.** The `team_*` guarded tools used to consult the same guard with no
+cancellation signal at all (only the runtime action received it). That branch now forwards its
+invocation signal to the same probe, so it is fenced at the same point; callers that pass no signal
+behave exactly as before.
