@@ -1017,7 +1017,21 @@ function writeProfilePatch(bp, bootPhase) {
 
 async function stepIdentity() {
   const productSha = spawnSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout?.trim() ?? null
-  const expectedSha = 'bb3c158eb1f76f8db429da01e9a4c5a0e118ca90'
+  // The candidate SHA is READ, never hard-coded: a 40-hex literal in kit code is refused by
+  // `rc2-kit-pin-hygiene` H1 (the only SHA a kit may carry is the host baseline's). The manifest
+  // is the machine-readable identity this run is evidence for; if it is missing the check fails
+  // loudly instead of silently comparing nothing.
+  const expectedSha = (() => {
+    if (process.env.V016_EXPECT_CANDIDATE_SHA) return process.env.V016_EXPECT_CANDIDATE_SHA.trim()
+    const manifestPath = 'dev/engineering/candidates/cand-v0.1.6-2.json'
+    for (const ref of ['HEAD', 'origin/master']) {
+      const shown = spawnSync('git', ['-C', REPO, 'show', `${ref}:${manifestPath}`], { encoding: 'utf8' })
+      if (shown.status === 0 && shown.stdout) {
+        try { return String(JSON.parse(shown.stdout).candidate_commit ?? '') } catch { /* try next ref */ }
+      }
+    }
+    return ''
+  })()
   const hostSha = spawnSync('git', ['-C', TESTUSE, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout?.trim() ?? null
   const hostPorcelain = spawnSync('git', ['-C', TESTUSE, 'status', '--porcelain'], { encoding: 'utf8' }).stdout ?? ''
   SUMMARY.identity = {
