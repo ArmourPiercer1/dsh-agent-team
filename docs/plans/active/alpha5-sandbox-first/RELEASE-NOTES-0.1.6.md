@@ -260,3 +260,103 @@ This is a deliberate version-line jump, not a sequence of five releases:
 
 **未验收项（不会被写成"通过"）**：性能阈值（BL-34）、`network: restricted` 的 enforcement、
 A6 审批面在候选级（`CANDIDATE-C2`）的验收——Alpha.6 仍只由独立 kit 的 DEV-LIVE 覆盖。
+
+---
+
+## 8. 2026-11-09 — Stop before the durable consumption (A6-STOP-FENCE, owner ruling A; append-only)
+
+> **Appended correction, 2026-11-11 (review finding on PR #710).** The first version of this section
+> made universal claims that the evidence did not support. It said the guard "now receives the SAME
+> invocation cancellation signal" without naming the lanes, it said "observed BEFORE that final
+> consumption check" (which is not what the probe does), and it quoted a narrow measurement band as
+> if it were stable. This paragraph and the substituted sentences below are the correction; the
+> earlier wording is not silently rewritten elsewhere — the history lives in the PR review.
+
+This section is appended, not a rewrite of §4.4 or §5. It states the Stop guarantee this build
+provides for the **approval-consumption boundary** and the residual it does not close.
+
+**The guarantee (exactly this, no more).** The last-mile guard can now receive the SAME invocation
+cancellation signal the approval wait already consumes (an optional second argument; never a scope
+field, never durable identity). That signal is read once, synchronously, **by** the final consumption
+check — inside the per-team lock, after the authority / external-policy / PA-manifest checks, with
+the ledger sequence already prepared. Earlier checkpoints in the same guard (team liveness, target
+lifecycle, scope candidacy, external policy, corruption) return an ordinary block or an
+undetermined/deny verdict and write **no** abandonment; within this guard path, and with this
+reason, the terminal `control-request-abandoned` is written only by the fence trip itself. (The fact
+type is also written by other abandonment paths — the inline `abandonControlRequest` and the
+A6-26 crash abandon — which carry different reasons; see the note below.)
+
+**Which lanes are wired — verified per lane, not asserted globally.** The fence exists in
+`guardOperation`; whether a caller benefits depends on that caller handing it a signal. As of this
+append:
+
+| lane | call site | wired? | verification |
+| --- | --- | --- | --- |
+| A4/A5 parameter-permission ask | `packages/runtime/operation-permission/pre-execute-adapter.ts` (`guardOperation(scope, { signal })`, the same `exec.signal` passed to `awaitControlDecision`) | **wired** | host-free `a6-stop-fence.test.ts` arm S9 (barrier on the post-decision authority-facts await; verified RED against the unwired call) |
+| PA control leg | `packages/runtime/operation-permission/pa-control-bridge.ts` (`waitSignal` = wiring signal ⊕ `input.signal` ⊕ bounded-wait controller) | **wired** | real-Host A6 boots (`dev/agent-workflow/evidence/a6-stop-fence/`, `-c2/`) plus the host-free guard suite |
+| `team_*` guarded tools | `packages/tools/src/tools.ts#executeGuarded` → `packages/tools/src/guard.ts#consultGuard` (`ctx.signal` = the host's `exec.signal`) | **wired** | host-free `packages/tools/test/a6-stop-fence-wiring.test.ts` W1 (verified RED against the unwired call) |
+| callers with no invocation signal | any `guardOperation(scope)` with no second argument | not wired **by design** | `a6-stop-fence.test.ts` S8 and the wiring test W2 pin the historical allow/deny behaviour |
+
+A caller that passes no signal gets the historical behaviour byte-for-byte: no probe, no
+abandonment.
+
+- **cancellation observed BY that final consumption check** ⇒ nothing is consumed
+  (zero `control-allow-consumed`), the tool body does not execute, the durable `allow` decision is
+  left exactly as the approver wrote it, and the request is closed with exactly one terminal
+  `control-request-abandoned` fact carrying the lifecycle reason
+  `invocation-cancelled-before-consumption`. The prepared ledger sequence is deliberately burned (a
+  gap), so the terminal row cannot occupy a sequence a consumption was already bound to. A later
+  replay cannot re-consume (the terminal mark refuses it as `request-abandoned`) — **only while the
+  abandonment row is durable** (see the fault path below).
+- **cancellation arriving AFTER that check may race the durable write.** The window that remains is
+  the single consumption write await (`await putEntry(...)` → `repositories.ledger.put`). If the
+  write commits, the consumption fact is KEPT and is never rewritten as un-consumed. The host
+  execution edge does check `signal.aborted` before the body, but **this PR does not exercise the
+  post-consumption body**: the host-free arm S7 proves only that a cancel landing inside the write
+  still commits and is kept. In-process on the author/review hosts the natural write await measured
+  **sub-millisecond** (author ≈0.23–0.43 ms, reviewer 0.348–0.585 ms — a factor of ≈2.5 across hosts,
+  not a stable band), and the window was deliberately held open (≈1–2 ms on both hosts) only to prove
+  that a cancel landing inside it still commits. **No atomic Stop is claimed.** These are in-process
+  numbers from the host-free suite, not production latency.
+- **fault path (durability of the trip).** `commitAbandonmentFact` is not best-effort: if the
+  abandonment write fails durably, the guard **throws** instead of returning a verdict. The allow is
+  then unspent and still spendable — so "a replay cannot re-consume" holds only once the terminal
+  abandonment is durable. A failed trip is a failed fence, not a silent one. The A4/A5 parameter
+  lane and the PA bridge catch the throw and map it to a deny/block; the `team_*` guarded-tool lane
+  does not catch it, so the failure propagates as a thrown tool error. In all three the body never
+  runs.
+
+**Not claimed / not attempted.** No durable per-invocation Stop state and no cross-process atomic
+fence is introduced; that remains the design change PD-40 declined (see §4.7). The Alpha.6 Sticky
+Stop and the **A6-26 accepted-but-unclaimed review-wake abandonment (§5)** are separate disclosures
+and are not changed by this section — a Stop-abandon and a crash-abandon carry different reasons and
+must not be read as each other.
+
+**Team-tools branch.** The `team_*` guarded tools used to consult the same guard with no
+cancellation signal at all (only the runtime action received it). That branch now forwards its
+invocation signal to the same probe, so it is fenced at the same point; callers that pass no signal
+behave exactly as before.
+
+**Boot evidence (correction, 2026-11-11; superseded by the re-boot below).** The *first* kept boot
+artifacts under `dev/agent-workflow/evidence/a6-stop-fence/` (`main-boot-r1`, `main-boot-r2`) and
+`.../a6-stop-fence-c2/` were produced by a kit that recorded `git -C process.cwd() rev-parse HEAD`,
+i.e. the tree the kit process ran in, not the tree `--worktree` booted. Their
+`run-manifest.json#productSha` therefore names the base/main tree (`1964cb71c…`) and does **not**
+bind the PR head, and `a6-stop.json` did not persist the abandonment rows. They are marked
+**instrument-defective** in `a6-stop-fence/README.md` and `BOOT-2026-11-11.md`; their "Stop admitted,
+no consumption, no execution" observation stands, their reason/sequence claim does not.
+
+**Binding re-boot (2026-11-11, `re-boot` on the review-fixed head).** The kit now records the
+`--worktree` HEAD and `final.abandonments`. Two main-agent boots on the review-fixed head
+(`920981375…`, recorded as `productSha`/`productTree` in their manifests, evidence-only commits
+after it) are the binding artifacts:
+
+| run | A6-12 | what it shows |
+| --- | --- | --- |
+| `main-boot3-r1` | PASS | **the fence trip itself**: ledger `seq 16 control-request-abandoned`, reason `invocation-cancelled-before-consumption`, late re-allow refused `CONTROL_REQUEST_ABANDONED`, zero consumption, `file=""` |
+| `main-boot3-r2` | PASS | **a different arm**: the Stop cancelled the invocation *before* the guard's final check — zero consumption, zero execution, **no** abandonment row and late re-allow refused `CONTROL_REQUEST_DECIDED` |
+
+So the trip is now a captured artifact, not an inference, and the terminal-fact sentence above holds
+for r1. r2 is recorded as the arm it is, not merged into the trip. Two clean boots still do **not**
+prove the 4/6 rate measured on the unfenced candidate is zero; the rate claim belongs to the next
+candidate's re-measurement (§7).

@@ -2125,17 +2125,31 @@ export function installParameterPermissionListener(
 
     // (4d) the last-mile guard (A4 — check-and-reserve exactly once over
     // the EXACT scope including the operation fingerprint).
+    //
+    // A6-STOP-FENCE (owner ruling A, 2026-11-09): the A4/A5 ask lane is a
+    // REAL consumption lane (the human `allow` is consumed here), yet it
+    // used to consult the guard with NO cancellation signal even though the
+    // invocation's own signal was already in scope (`const signal =
+    // exec.signal`, forwarded to `awaitControlDecision` above). A Stop that
+    // landed after the decision but before this consumption therefore could
+    // still write `control-allow-consumed`. The SAME invocation signal now
+    // rides the guard's OPTIONAL second argument, so the final probe sees
+    // it. It is liveness, never durable identity (it stays out of the scope
+    // and the ledger payload).
     let verdict
     try {
-      verdict = await controlService.guardOperation({
-        rootSessionId,
-        targetInstanceId,
-        actionName: ACTION_NAME,
-        toolName: name,
-        correlation: callId,
-        operationFingerprint: operation.fingerprint,
-        ...(authorityPoint !== undefined ? { authorityScope: authorityPoint } : {}),
-      })
+      verdict = await controlService.guardOperation(
+        {
+          rootSessionId,
+          targetInstanceId,
+          actionName: ACTION_NAME,
+          toolName: name,
+          correlation: callId,
+          operationFingerprint: operation.fingerprint,
+          ...(authorityPoint !== undefined ? { authorityScope: authorityPoint } : {}),
+        },
+        { signal },
+      )
     } catch (error: unknown) {
       return {
         kind: 'deny',

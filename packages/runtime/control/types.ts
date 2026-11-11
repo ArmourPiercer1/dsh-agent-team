@@ -1945,6 +1945,22 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
    * exists. ZERO consumption, the same discipline as `authority-risen`.
    */
   PA_AUTHORITY_DRIFT: 'pa-authority-drift',
+  /**
+   * A6-STOP-FENCE (2026-11-09 owner ruling A): the invocation was CANCELLED
+   * before the guard's final consumption probe. This is an
+   * EXECUTION-LIFECYCLE event, not an approver's decision: the durable
+   * `allow` is left EXACTLY as the decider wrote it, no
+   * `control-allow-consumed` fact is written (ZERO consumption) and the
+   * tool body is not executed. The request is closed with the ordinary
+   * terminal `control-request-abandoned` fact (reason
+   * `invocation-cancelled-before-consumption`), so a later replay finds the
+   * terminal mark, not a spendable allow.
+   *
+   * It is deliberately SEPARATE from every crash/undetermined reason
+   * (`invocation-abandoned`): a Stop is observable and intended, and must
+   * not read back as a recovery fault.
+   */
+  INVOCATION_CANCELLED: 'invocation-cancelled',
 } as const
 
 /** One of the closed guard block reasons. */
@@ -2016,6 +2032,32 @@ export interface ControlWaitSignal {
   addEventListener(type: 'abort', listener: () => void, options?: { readonly once?: boolean }): void
   /** Remove the waiter's abort listener (the settle cleanup). */
   removeEventListener(type: 'abort', listener: () => void): void
+}
+
+/**
+ * A6-STOP-FENCE (owner ruling A, 2026-11-09) — the OPTIONAL per-invocation
+ * argument of {@link ControlService.guardOperation}.
+ *
+ * It exists as a SECOND PARAMETER, never as a scope field: the signal is
+ * invocation LIVENESS, not durable identity. It must not enter
+ * `ControlOperationScope`, the scope key, the PA manifest, the request
+ * identity or any ledger payload — a reloaded row cannot carry (and must
+ * never be asked to carry) who was still alive when it was written.
+ *
+ * Callers that pass nothing behave exactly as before this option existed
+ * (no probe, no cancellation fence). Callers that pass a signal get the
+ * guard's FINAL consumption probe: if it is aborted before the consumption
+ * write, nothing is consumed, no body executes, and the request is closed
+ * with the ordinary terminal `control-request-abandoned` fact.
+ */
+export interface ControlGuardOperationOptions {
+  /**
+   * The SAME invocation cancellation signal the approval wait already
+   * consumes ({@link ControlWaitSignal}; a platform `AbortSignal`
+   * satisfies it structurally). READ ONCE, synchronously, immediately
+   * before the durable consumption write.
+   */
+  readonly signal?: ControlWaitSignal
 }
 
 /**
@@ -2436,9 +2478,24 @@ export interface ControlService {
    * "prefer zero allow consumption"; invariant 34). The guard never
    * executes the operation itself and never throws for a policy outcome
    * (it returns a block verdict).
+   *
+   * A6-STOP-FENCE (owner ruling A): the LAST consumption boundary also
+   * honours the invocation's own cancellation signal — passed as the
+   * OPTIONAL second argument, never as a scope field (see
+   * {@link ControlGuardOperationOptions}). The probe runs inside the same
+   * per-team lock, after every authority/policy/manifest check, with the
+   * sequence already prepared: a cancelled invocation consumes nothing,
+   * writes the ordinary terminal `control-request-abandoned` fact (reason
+   * `invocation-cancelled-before-consumption`), leaves the durable `allow`
+   * untouched and returns `invocation-cancelled`. A caller that passes no
+   * options gets the historical behaviour byte-for-byte.
    * @param scope - the exact operation scope (see the module docs).
+   * @param options - optional per-invocation liveness (NOT durable identity).
    */
-  guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict>
+  guardOperation(
+    scope: ControlOperationScope,
+    options?: ControlGuardOperationOptions,
+  ): Promise<ControlGuardVerdict>
   /**
    * The SHARED READ-ONLY external hard check (A2C-4 last-mile recheck,
    * alpha.2 plan §6.3). Probes the LIVE `externalPolicyFacts` port and

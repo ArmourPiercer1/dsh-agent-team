@@ -130,6 +130,10 @@ import type {
   TeamRuntimeActionRequest,
 } from '../../runtime/admission/index.js'
 import type { SendTeamMessageOutcome } from '../../runtime/messaging/index.js'
+import type {
+  ControlGuardOperationOptions,
+  ControlWaitSignal,
+} from '../../runtime/control/index.js'
 
 /** The maximum root-session-id length accepted by the tool layer. */
 const ROOT_SESSION_MAX_LENGTH = 255
@@ -341,13 +345,23 @@ async function executeGuarded(
   execute: () => Promise<TeamToolsResult>,
 ): Promise<TeamToolsResult> {
   if (INSTANCE_ID_PATTERN.test(targetInstanceId)) {
+    // A6-STOP-FENCE (owner ruling A, 2026-11-09): this branch is the
+    // TEAM-TOOLS guarded path. It used to consult the guard with no
+    // cancellation signal (the signal was only forwarded to the runtime
+    // action below), so a Stop could not fence its consumption. The SAME
+    // invocation signal the tool pipeline already carries now rides the
+    // guard's optional second argument; absent it, behaviour is unchanged.
+    const guardOptions: ControlGuardOperationOptions | undefined =
+      ctx.signal === undefined
+        ? undefined
+        : { signal: ctx.signal as ControlWaitSignal }
     const decision = await consultGuard(ctx.options.controlService, {
       rootSessionId: ctx.rootSessionId,
       targetInstanceId,
       actionName,
       toolName: ctx.toolName,
       correlation: ctx.requestToken,
-    })
+    }, guardOptions)
     if (!decision.proceed) {
       return {
         status: 'blocked',

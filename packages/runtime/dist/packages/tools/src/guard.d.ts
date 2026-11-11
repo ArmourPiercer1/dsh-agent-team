@@ -35,7 +35,7 @@
  *
  * @module @dsh-agent-team/tools/guard
  */
-import type { ControlGuardBlockReason, ControlOperationScope, ControlService } from '../../runtime/control/index.js';
+import type { ControlGuardBlockReason, ControlGuardOperationOptions, ControlOperationScope, ControlService } from '../../runtime/control/index.js';
 /**
  * The outcome of one guard consult: proceed (the allow was consumed, or
  * no request exists for the scope) or a closed block verdict.
@@ -52,12 +52,20 @@ export type GuardConsultDecision = {
  * Consult the control service's last-mile guard for one operation scope
  * (SD-GUARD semantics, see the module docs).
  *
+ * A6-STOP-FENCE (owner ruling A, 2026-11-09): the TEAM-TOOLS branch used to
+ * reach this function with no cancellation signal at all, so a Stop could not
+ * fence its consumption. The optional `options.signal` is forwarded to the
+ * guard's final consumption probe; callers that pass nothing (or pass a scope
+ * only) behave exactly as before.
+ *
  * @param controlService - the durable control plane service.
  * @param scope - the EXACT operation scope (root, target instance, action,
  *   tool name, the caller's correlation token).
+ * @param options - optional per-invocation cancellation (structurally an
+ *   `AbortSignal`; NEVER durable identity).
  * @returns proceed or the closed block verdict (never throws for a
  *   policy outcome — malformed scopes surface as the service's typed
  *   errors, which the tool layer maps to rejected results).
  */
-export declare function consultGuard(controlService: ControlService, scope: ControlOperationScope): Promise<GuardConsultDecision>;
+export declare function consultGuard(controlService: ControlService, scope: ControlOperationScope, options?: ControlGuardOperationOptions): Promise<GuardConsultDecision>;
 //# sourceMappingURL=guard.d.ts.map

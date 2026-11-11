@@ -224,6 +224,13 @@ const WAIT_ABORT_ABANDON_REASON = 'wait-aborted';
 /** A6 closing constraint 1: the lifecycle reason an undetermined late ALLOW
  *  records instead of a durable DENY (see `a6AbandonUndeterminedAllow`). */
 const A6_UNDETERMINED_ABANDON_REASON = 'invocation-abandoned';
+/** A6-STOP-FENCE (owner ruling A, 2026-11-09): the lifecycle reason the
+ *  guard's final consumption probe records when the invocation was
+ *  cancelled before the consumption write. It is deliberately its OWN
+ *  reason — a Stop is not a crash and not an engine-undetermined answer, so
+ *  it must never read back as `invocation-abandoned` (A6-26's crash reason
+ *  and the A6 closing constraint's undetermined reason). */
+const GUARD_CANCELLED_ABANDON_REASON = 'invocation-cancelled-before-consumption';
 /** The minimal platform-timer surface the wait bridge schedules on
  *  (alpha.2 §9.4). The codebase builds against `lib: ES2022` WITHOUT
  *  ambient DOM/Node globals (tsconfig.base.json), so the platform timer
@@ -3198,7 +3205,7 @@ export function createControlService(options) {
                 return reasons.AUTHORITY_UNDETERMINED;
         }
     }
-    async function guardOperation(scope) {
+    async function guardOperation(scope, guardOptions) {
         const root = parseRoot(scope.rootSessionId, CONTROL_ERROR_CODES.CONTROL_GUARD_MALFORMED, 'guard');
         // Subject normalization (pre-alpha3 PR-D, D.2): the canonical
         // identity is the closed three-kind subject. An EXPLICIT subject
@@ -3543,9 +3550,39 @@ export function createControlService(options) {
                 // instead of an execution whose approval nobody can re-verify.
                 if (corruptLeg !== undefined)
                     return corruptLegVerdictOf(corruptLeg.payload);
+                // A6-STOP-FENCE (owner ruling A, 2026-11-09): everything the guard
+                // can still await BEFORE the consumption is now behind us — every
+                // authority / external-policy / PA-manifest check above is done by
+                // construction, and the ledger sequence is prepared HERE rather than
+                // inside the consumption `putEntry`, so the final cancellation probe
+                // has exactly ONE await left after it (the consumption write below,
+                // the disclosed residual window) instead of two.
+                const consumptionSequence = await allocateSequence();
+                // A6-STOP-FENCE: THE FINAL CONSUMPTION PROBE. Synchronous read of the
+                // SAME invocation signal the approval wait already consumes; it is
+                // NOT durable identity (the scope, the request identity, the PA
+                // manifest and every ledger payload are unchanged by its presence).
+                //
+                // A trip is an EXECUTION-LIFECYCLE event, never an approver's deny:
+                // the durable `allow` is left exactly as the decider wrote it, NO
+                // `control-allow-consumed` fact is written, and the request is closed
+                // with the ordinary terminal `control-request-abandoned` fact under
+                // this same per-team lock. The prepared sequence is deliberately not
+                // reused — the abandon path allocates its own inside the shared
+                // exactly-once writer, so the ledger shows a gap rather than a
+                // consumption row at a sequence no consumption ever had.
+                if (guardOptions?.signal?.aborted === true) {
+                    await commitAbandonmentFact(root, request.payload.requestId, GUARD_CANCELLED_ABANDON_REASON);
+                    return {
+                        allowed: false,
+                        reason: CONTROL_GUARD_BLOCK_REASONS.INVOCATION_CANCELLED,
+                        requestId: request.payload.requestId,
+                        decisionSequence: decision.entry.sequence,
+                    };
+                }
                 await putEntry({
                     schemaVersion: 2,
-                    sequence: await allocateSequence(),
+                    sequence: consumptionSequence,
                     rootSessionId: root,
                     factType: FACT_CONSUMPTION,
                     payload: {

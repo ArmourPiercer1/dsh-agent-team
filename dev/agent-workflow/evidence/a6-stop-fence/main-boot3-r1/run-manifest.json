@@ -1,0 +1,16 @@
+{
+  "runId": "2026-11-11T07-13-36",
+  "productSha": "920981375b45fd520c76ce27ca13a4e5050f38d7",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/stop-fence2",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "blueprintHash": "sha256:36f727e1e3a660469516e18cbb84c6e540eb97efed030ffd78501a6ccbb88e5e",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-11T07-13-36",
+  "optIn": {
+    "alpha6Officer": true,
+    "planeTakeover": true,
+    "stickyStop": false,
+    "inboxReconcile": false,
+    "timeoutMs": 0
+  }
+}

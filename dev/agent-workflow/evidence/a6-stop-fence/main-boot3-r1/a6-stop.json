@@ -1,0 +1,82 @@
+{
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-662wuyd255",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "lateAllow": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-p1swi5qev3",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: request 'ctrl-1xph1cv0t2gujs15vq11t06o' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: request 'ctrl-1xph1cv0t2gujs15vq11t06o' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+            "details": {
+              "rootSessionId": "session-c1-smoke-a6-2026-11-11T07-13-36",
+              "requestId": "ctrl-1xph1cv0t2gujs15vq11t06o"
+            }
+          }
+        }
+      }
+    }
+  },
+  "humanLeg": {
+    "sequence": 13,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-1xph1cv0t2gujs15vq11t06o",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-1sx8i3t0agfn",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-11T07-13-36:inst-1sx8i3t0agfn:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1sx8i3t0agfn-bash:hexec:9b821973-ab34-4fa6-bd65-0905fd34ad49-1",
+    "approvalCaseId": "case-0dkyrj5037ikwu0nfajeb19j",
+    "legOrdinal": 2,
+    "reviewAuthority": "human-user",
+    "createdAt": "2026-11-11T07:13:47.015Z"
+  },
+  "lateDecision": {
+    "sequence": 14,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-1xph1cv0t2gujs15vq11t06o",
+    "decision": "allow",
+    "decider": {
+      "humanId": "session-c1-smoke-a6-2026-11-11T07-13-36",
+      "kind": "human"
+    },
+    "createdAt": "2026-11-11T07:13:47.104Z"
+  },
+  "lateConsumption": null,
+  "abandonments": [
+    {
+      "sequence": 16,
+      "factType": "control-request-abandoned",
+      "requestId": "ctrl-1xph1cv0t2gujs15vq11t06o",
+      "reason": "invocation-cancelled-before-consumption",
+      "createdAt": "2026-11-11T07:13:47.211Z"
+    }
+  ],
+  "humanAbandonment": {
+    "sequence": 16,
+    "factType": "control-request-abandoned",
+    "requestId": "ctrl-1xph1cv0t2gujs15vq11t06o",
+    "reason": "invocation-cancelled-before-consumption",
+    "createdAt": "2026-11-11T07:13:47.211Z"
+  },
+  "fileAfter": "",
+  "revived": false
+}

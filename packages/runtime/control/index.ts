@@ -180,6 +180,7 @@ export type {
   ControlExecutionCoupling,
   ControlExternalVerdict,
   ControlGuardBlockReason,
+  ControlGuardOperationOptions,
   ControlGuardVerdict,
   ControlLegTerminalReason,
   ControlOperationScope,
