@@ -94,6 +94,16 @@ offset family, only the classification differs. (The run's `productSha` is the b
 the product change was still uncommitted at run time; `--keep` was not used and the run manifest
 records the tree path.)
 
+**Second run, on the committed tree** (`wp3-committed-373/pd41-committed/`, `productSha`
+`9ac471678d54`, same flags, ports `17002/17052`): verdict `residual-consumed`, **1 consumption**,
+shell line `exit=not-observed timedOut=false cancelled=true`, and the durable execution fact
+`{"sequence": 16, "outcome": "unknown"}`. In THIS run the effect file **was** written before the
+cancellation landed (`file="c1-a6-allow-…"`, so the instrument's zero-side-effect requirement
+fails for the trial), unlike run 1 where it was absent (`file=""`). That difference is the point
+rather than a contradiction: the two runs bracket "the body may or may not have got far enough",
+and the fact says `unknown` in **both** — it claims neither a completion (`succeeded`) nor the
+absence of an effect. Pre-fix both shapes would have said `succeeded`.
+
 ## 2. Condition 2 — the typed Binding refusal (shipped)
 
 Two additive pieces, no decision changed, no message re-worded:
@@ -138,10 +148,10 @@ Binding verification then refuses.** Two things are measured and one is inherite
    (`packages/runtime/test/pd41-allow-semantics.test.ts` asserts `bodyExecs() === 0` on all three refusal classes). The
    typed refusal is thrown at the dispatch door, which is after the durable allow/consumption in the
    product order and before any body.
-3. **Re-measured on this tree (real host):** the consumed-allow arm in §1 shows 1 consumption, 0
-   side effects (`file=""`), and — because a body *did* start and was cancelled — `unknown` rather
-   than `succeeded`. That is the "never say succeeded without an observed completion" half of
-   condition 3, measured live.
+3. **Re-measured on this tree (real host, twice):** the consumed-allow arms in §1 each show 1
+   consumption, and — because a body *did* start and was cancelled, once before and once after
+   writing its effect file — `unknown` rather than `succeeded`. That is the "never say succeeded
+   without an observed completion" half of condition 3, measured live.
 
 ## 3. Condition 3 — "no execution fact ⇒ not `succeeded`"
 
@@ -185,7 +195,7 @@ unchanged, and no no-replay rule moved.
 | `pnpm typecheck` | PASS (10/10 workspace projects) |
 | `node_modules/.bin/vitest run packages/tools/a5p5-tools/test/a5p5-execution-outcome.test.ts packages/runtime/test/pd41-allow-semantics.test.ts` | PASS 6/6 + 3/3 (9) |
 | affected suites (`a5p5-tools/test` incl. `a5p5-parity` + the dormant audit, `a5p1-guard-install`, `a5p1-scoped-dispatcher`, `a5pbr2-binding-feed`, `a5natexe-native-takeover`, `a5mcp-native-trust-filter`, `a5-m1-auth-bridge`, the two PD-41 specs, `p4t6-session-event-scan`) | PASS 16 files / 169 tests, and the booking suite 20/20 |
-| real-host WP3 probe (above) | ran; classification measured (exit 3 = a consumed trial is a finding, by the instrument's contract) |
+| real-host WP3 probe (above, two runs) | ran; `unknown` measured in both (exit 3 = a consumed trial is a finding, by the instrument's contract) |
 | `node scripts/doc-checks.mjs` | see the commit message / PR body |
 | `node --test tests/world-factory/a5sf-debt-register.test.mjs` | see the commit message / PR body |
 | `node scripts/check-artifacts-committed.mjs` | required (tracked `packages/runtime/dist` rebuilt in this commit) |
@@ -196,7 +206,8 @@ unchanged, and no no-replay rule moved.
 | path | what it is |
 | --- | --- |
 | `wp3-remeasure-373/SUMMARY-pd41-s373.json` | driver aggregate for the one real-host boot |
-| `wp3-remeasure-373/pd41-s373/` | the run's durable classification (`wp3-classification.json`), seq table, `instance.log`, `kit.stdout.log`, manifest |
+| `wp3-remeasure-373/pd41-s373/` | run 1 (pre-commit tree) durable classification (`wp3-classification.json`), seq table, `instance.log`, `kit.stdout.log`, manifest |
+| `wp3-committed-373/pd41-committed/` | run 2 on the committed tree (`productSha` `9ac471678d54`) — same verdict, `unknown`, effect file present |
 
 Register: the row this record is cited by is **PD-41 (EXEC-FACT)** in
 `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md`; the p4t6 booking for the two new
