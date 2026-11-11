@@ -1,0 +1,1256 @@
+{
+  "a": {
+    "sessionId": "session-team-child-c63faae83d9a80429d3002bf9e60facf",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-c63faae83d9a80429d3002bf9e60facf/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 113,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 2,
+      "turn/start": 1,
+      "step/start": 19,
+      "system/message": 1,
+      "user/message": 4,
+      "request/header": 1,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 19,
+      "tool/call": 18,
+      "tool/result": 18,
+      "step/end": 19,
+      "deliverables/presented": 1,
+      "workspace/changes": 1,
+      "turn/end": 1
+    },
+    "goalRounds": [],
+    "goalChanges": [],
+    "calls": [
+      {
+        "at": 1794326364097,
+        "name": "read",
+        "callId": "call-pd33-a-read"
+      },
+      {
+        "at": 1794326364154,
+        "name": "grep",
+        "callId": "call-pd33-a-grep"
+      },
+      {
+        "at": 1794326367544,
+        "name": "glob",
+        "callId": "call-pd33-a-glob"
+      },
+      {
+        "at": 1794326367622,
+        "name": "write",
+        "callId": "call-pd33-a-write"
+      },
+      {
+        "at": 1794326367822,
+        "name": "edit",
+        "callId": "call-pd33-a-edit"
+      },
+      {
+        "at": 1794326367935,
+        "name": "bash",
+        "callId": "call-pd33-a-bash"
+      },
+      {
+        "at": 1794326368078,
+        "name": "skill",
+        "callId": "call-pd33-a-skill"
+      },
+      {
+        "at": 1794326368200,
+        "name": "present",
+        "callId": "call-pd33-a-present"
+      },
+      {
+        "at": 1794326368265,
+        "name": "read",
+        "callId": "call-pd33-a-read-out"
+      },
+      {
+        "at": 1794326368338,
+        "name": "web_fetch",
+        "callId": "call-pd33-a-web-out"
+      },
+      {
+        "at": 1794326368525,
+        "name": "bash",
+        "callId": "call-pd33-a-bash-out"
+      },
+      {
+        "at": 1794326368676,
+        "name": "workflow",
+        "callId": "call-pd33-a-closed-workflow"
+      },
+      {
+        "at": 1794326368751,
+        "name": "subagent",
+        "callId": "call-pd33-a-closed-subagent"
+      },
+      {
+        "at": 1794326368830,
+        "name": "subagent_fork",
+        "callId": "call-pd33-a-closed-subagent_fork"
+      },
+      {
+        "at": 1794326368928,
+        "name": "send_message",
+        "callId": "call-pd33-a-closed-send_message"
+      },
+      {
+        "at": 1794326369120,
+        "name": "interrupt_agent",
+        "callId": "call-pd33-a-closed-interrupt_agent"
+      },
+      {
+        "at": 1794326369260,
+        "name": "list_agents",
+        "callId": "call-pd33-a-closed-list_agents"
+      },
+      {
+        "at": 1794326369326,
+        "name": "ask_user_question",
+        "callId": "call-pd33-a-closed-ask_user_question"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326364118,
+        "callId": "call-pd33-a-read",
+        "isError": false
+      },
+      {
+        "at": 1794326367408,
+        "callId": "call-pd33-a-grep",
+        "isError": false
+      },
+      {
+        "at": 1794326367589,
+        "callId": "call-pd33-a-glob",
+        "isError": false
+      },
+      {
+        "at": 1794326367644,
+        "callId": "call-pd33-a-write",
+        "isError": false
+      },
+      {
+        "at": 1794326367849,
+        "callId": "call-pd33-a-edit",
+        "isError": false
+      },
+      {
+        "at": 1794326367986,
+        "callId": "call-pd33-a-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326368108,
+        "callId": "call-pd33-a-skill",
+        "isError": false
+      },
+      {
+        "at": 1794326368232,
+        "callId": "call-pd33-a-present",
+        "isError": false
+      },
+      {
+        "at": 1794326368287,
+        "callId": "call-pd33-a-read-out",
+        "isError": false
+      },
+      {
+        "at": 1794326368429,
+        "callId": "call-pd33-a-web-out",
+        "isError": false
+      },
+      {
+        "at": 1794326368601,
+        "callId": "call-pd33-a-bash-out",
+        "isError": false
+      },
+      {
+        "at": 1794326368683,
+        "callId": "call-pd33-a-closed-workflow",
+        "isError": false
+      },
+      {
+        "at": 1794326368755,
+        "callId": "call-pd33-a-closed-subagent",
+        "isError": false
+      },
+      {
+        "at": 1794326368843,
+        "callId": "call-pd33-a-closed-subagent_fork",
+        "isError": false
+      },
+      {
+        "at": 1794326369024,
+        "callId": "call-pd33-a-closed-send_message",
+        "isError": false
+      },
+      {
+        "at": 1794326369144,
+        "callId": "call-pd33-a-closed-interrupt_agent",
+        "isError": false
+      },
+      {
+        "at": 1794326369276,
+        "callId": "call-pd33-a-closed-list_agents",
+        "isError": false
+      },
+      {
+        "at": 1794326369332,
+        "callId": "call-pd33-a-closed-ask_user_question",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326369734,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `pd33-inlane`: PD-33 in-lane fixture skill\n- `pd33-outlane`: PD-33 out-of-lane fixture skill\n- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity fro",
+    "lastAssistant": "A5SF_PD33_A_DONE n tool \"subagent\"\nError: unknown tool \"subagent_fork\"\nError: unknown tool \"send_message\"\nError: unknown tool \"interrupt_agent\"\nError: unknown tool \"list_agents\"\nError: unknown tool \"ask_user_question\""
+  },
+  "b": {
+    "sessionId": "session-team-child-601eb61ddb9c29453cfd84348361e067",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-601eb61ddb9c29453cfd84348361e067/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 93,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 10,
+      "turn/start": 4,
+      "step/start": 12,
+      "system/message": 1,
+      "user/message": 8,
+      "request/header": 4,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 12,
+      "tool/call": 8,
+      "tool/result": 8,
+      "step/end": 12,
+      "goal/change": 2,
+      "turn/end": 4
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-2b71c31c-778a-4722-bc9d-b9363405222e",
+        "revision": 1,
+        "at": 1794326368070
+      },
+      {
+        "round": 2,
+        "goalId": "goal-2b71c31c-778a-4722-bc9d-b9363405222e",
+        "revision": 1,
+        "at": 1794326368635
+      },
+      {
+        "round": 3,
+        "goalId": "goal-2b71c31c-778a-4722-bc9d-b9363405222e",
+        "revision": 1,
+        "at": 1794326369280
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326367865,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-2b71c31c-778a-4722-bc9d-b9363405222e",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      },
+      {
+        "at": 1794326369307,
+        "operation": "complete",
+        "phase": "complete",
+        "revision": 2,
+        "id": "goal-2b71c31c-778a-4722-bc9d-b9363405222e",
+        "roundsStarted": 3,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326367542,
+        "name": "web_fetch",
+        "callId": "call-pd33-b-fetch"
+      },
+      {
+        "at": 1794326367596,
+        "name": "web_search",
+        "callId": "call-pd33-b-search"
+      },
+      {
+        "at": 1794326367641,
+        "name": "skill",
+        "callId": "call-pd33-b-skill-out"
+      },
+      {
+        "at": 1794326367691,
+        "name": "read_image",
+        "callId": "call-pd33-b-read-image"
+      },
+      {
+        "at": 1794326367858,
+        "name": "create_goal",
+        "callId": "call-pd33-b-create-goal"
+      },
+      {
+        "at": 1794326368104,
+        "name": "bash",
+        "callId": "call-pd33-b-round-1"
+      },
+      {
+        "at": 1794326368678,
+        "name": "bash",
+        "callId": "call-pd33-b-round-2"
+      },
+      {
+        "at": 1794326369293,
+        "name": "update_goal",
+        "callId": "call-pd33-b-complete"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326367567,
+        "callId": "call-pd33-b-fetch",
+        "isError": false
+      },
+      {
+        "at": 1794326367604,
+        "callId": "call-pd33-b-search",
+        "isError": false
+      },
+      {
+        "at": 1794326367648,
+        "callId": "call-pd33-b-skill-out",
+        "isError": false
+      },
+      {
+        "at": 1794326367729,
+        "callId": "call-pd33-b-read-image",
+        "isError": false
+      },
+      {
+        "at": 1794326367866,
+        "callId": "call-pd33-b-create-goal",
+        "isError": false
+      },
+      {
+        "at": 1794326368340,
+        "callId": "call-pd33-b-round-1",
+        "isError": false
+      },
+      {
+        "at": 1794326368902,
+        "callId": "call-pd33-b-round-2",
+        "isError": false
+      },
+      {
+        "at": 1794326369308,
+        "callId": "call-pd33-b-complete",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326367990,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326368573,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326369201,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326369451,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_complete>\nObjective: \"PD-33 preview goal: at least three automatic rounds, then converge.\"\nThe goal is marked complete and this autonomous run is ending. Write the closing message to the user now: state the outcome, summarize what was done and how it was verified, and point to the concrete results (files, commits, or other artifacts). Report only what earlier rounds and tool results in this ",
+    "lastAssistant": "A5SF_PD33_B_DONE created"
+  },
+  "s1": {
+    "sessionId": "session-team-child-c98107c8db0087de6f75d58677283fbc",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-c98107c8db0087de6f75d58677283fbc/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 52,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 6,
+      "turn/start": 3,
+      "step/start": 6,
+      "system/message": 1,
+      "user/message": 6,
+      "request/header": 3,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 5,
+      "tool/call": 3,
+      "goal/change": 1,
+      "tool/result": 3,
+      "step/end": 5,
+      "turn/end": 2
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-8ff754fd-f751-438a-aaa2-e59a62380786",
+        "revision": 1,
+        "at": 1794326368099
+      },
+      {
+        "round": 2,
+        "goalId": "goal-8ff754fd-f751-438a-aaa2-e59a62380786",
+        "revision": 1,
+        "at": 1794326368719
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326367861,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-8ff754fd-f751-438a-aaa2-e59a62380786",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326367853,
+        "name": "create_goal",
+        "callId": "call-pd29-s1-create"
+      },
+      {
+        "at": 1794326368132,
+        "name": "bash",
+        "callId": "call-pd29-s1-round-1-bash"
+      },
+      {
+        "at": 1794326368731,
+        "name": "bash",
+        "callId": "call-pd29-s1-round-2-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326367863,
+        "callId": "call-pd29-s1-create",
+        "isError": false
+      },
+      {
+        "at": 1794326368424,
+        "callId": "call-pd29-s1-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372784,
+        "callId": "call-pd29-s1-round-2-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326367999,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326368621,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for s1.\"\nRound: 2/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective i",
+    "lastAssistant": "A5SF_PD29_S1_CREATED"
+  },
+  "s2": {
+    "sessionId": "session-team-child-d7c127890591a07df6eee9044a8b88eb",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-d7c127890591a07df6eee9044a8b88eb/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 146,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 20,
+      "turn/start": 10,
+      "step/start": 19,
+      "system/message": 1,
+      "user/message": 13,
+      "request/header": 10,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 18,
+      "tool/call": 9,
+      "goal/change": 1,
+      "tool/result": 9,
+      "step/end": 18,
+      "turn/end": 9,
+      "workspace/changes": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326368519
+      },
+      {
+        "round": 2,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326369124
+      },
+      {
+        "round": 3,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326369778
+      },
+      {
+        "round": 4,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326370368
+      },
+      {
+        "round": 5,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326370951
+      },
+      {
+        "round": 6,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326371433
+      },
+      {
+        "round": 7,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326371870
+      },
+      {
+        "round": 8,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326372345
+      },
+      {
+        "round": 9,
+        "goalId": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "revision": 1,
+        "at": 1794326372833
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326368240,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-9f80c288-9350-49e9-b606-214110050cae",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326368227,
+        "name": "create_goal",
+        "callId": "call-pd29-s2-create"
+      },
+      {
+        "at": 1794326368561,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-1-bash"
+      },
+      {
+        "at": 1794326369152,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-2-bash"
+      },
+      {
+        "at": 1794326369806,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-3-bash"
+      },
+      {
+        "at": 1794326370397,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-4-bash"
+      },
+      {
+        "at": 1794326370996,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-5-bash"
+      },
+      {
+        "at": 1794326371474,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-6-bash"
+      },
+      {
+        "at": 1794326371882,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-7-bash"
+      },
+      {
+        "at": 1794326372358,
+        "name": "bash",
+        "callId": "call-pd29-s2-round-8-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326368241,
+        "callId": "call-pd29-s2-create",
+        "isError": false
+      },
+      {
+        "at": 1794326368787,
+        "callId": "call-pd29-s2-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326369370,
+        "callId": "call-pd29-s2-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326370020,
+        "callId": "call-pd29-s2-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326370617,
+        "callId": "call-pd29-s2-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371230,
+        "callId": "call-pd29-s2-round-5-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371730,
+        "callId": "call-pd29-s2-round-6-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372144,
+        "callId": "call-pd29-s2-round-7-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372608,
+        "callId": "call-pd29-s2-round-8-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326368432,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326368931,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326369557,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370174,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370773,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371331,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371830,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372311,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372787,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for s2.\"\nRound: 9/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective i",
+    "lastAssistant": "A5SF_PD29_S2_CREATED"
+  },
+  "cold": {
+    "sessionId": "session-team-child-421a8ea96efdea7a541eb5594f6cffce",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-421a8ea96efdea7a541eb5594f6cffce/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 120,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 16,
+      "turn/start": 8,
+      "step/start": 15,
+      "system/message": 1,
+      "user/message": 11,
+      "request/header": 8,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 15,
+      "tool/call": 8,
+      "goal/change": 1,
+      "tool/result": 7,
+      "step/end": 14,
+      "turn/end": 7,
+      "workspace/changes": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326369256
+      },
+      {
+        "round": 2,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326369880
+      },
+      {
+        "round": 3,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326370458
+      },
+      {
+        "round": 4,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326371136
+      },
+      {
+        "round": 5,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326371691
+      },
+      {
+        "round": 6,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326372205
+      },
+      {
+        "round": 7,
+        "goalId": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "revision": 1,
+        "at": 1794326372730
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326368917,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-5c79cdb7-74ad-4fb8-9114-ef3f58378307",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326368881,
+        "name": "create_goal",
+        "callId": "call-pd29-cold-create"
+      },
+      {
+        "at": 1794326369284,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-1-bash"
+      },
+      {
+        "at": 1794326369893,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-2-bash"
+      },
+      {
+        "at": 1794326370487,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-3-bash"
+      },
+      {
+        "at": 1794326371165,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-4-bash"
+      },
+      {
+        "at": 1794326371705,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-5-bash"
+      },
+      {
+        "at": 1794326372218,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-6-bash"
+      },
+      {
+        "at": 1794326372767,
+        "name": "bash",
+        "callId": "call-pd29-cold-round-7-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326368918,
+        "callId": "call-pd29-cold-create",
+        "isError": false
+      },
+      {
+        "at": 1794326369491,
+        "callId": "call-pd29-cold-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326370102,
+        "callId": "call-pd29-cold-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326370687,
+        "callId": "call-pd29-cold-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371371,
+        "callId": "call-pd29-cold-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371922,
+        "callId": "call-pd29-cold-round-5-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372458,
+        "callId": "call-pd29-cold-round-6-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326369170,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326369783,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370314,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370999,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371602,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372109,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372640,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for cold.\"\nRound: 7/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective",
+    "lastAssistant": "A5SF_PD29_COLD_CREATED"
+  },
+  "stop2": {
+    "sessionId": "session-team-child-2f1eae16018a06cee9a40eda2e85408a",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-2f1eae16018a06cee9a40eda2e85408a/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 106,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 14,
+      "turn/start": 7,
+      "step/start": 13,
+      "system/message": 1,
+      "user/message": 10,
+      "request/header": 7,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 13,
+      "tool/call": 7,
+      "goal/change": 1,
+      "tool/result": 6,
+      "step/end": 12,
+      "turn/end": 6,
+      "workspace/changes": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326369899
+      },
+      {
+        "round": 2,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326370481
+      },
+      {
+        "round": 3,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326371143
+      },
+      {
+        "round": 4,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326371659
+      },
+      {
+        "round": 5,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326372194
+      },
+      {
+        "round": 6,
+        "goalId": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "revision": 1,
+        "at": 1794326372672
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326369498,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-98c0506f-8710-4449-b35a-45347d6fe6d3",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326369489,
+        "name": "create_goal",
+        "callId": "call-pd29-stop2-create"
+      },
+      {
+        "at": 1794326369931,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-1-bash"
+      },
+      {
+        "at": 1794326370499,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-2-bash"
+      },
+      {
+        "at": 1794326371172,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-3-bash"
+      },
+      {
+        "at": 1794326371695,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-4-bash"
+      },
+      {
+        "at": 1794326372209,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-5-bash"
+      },
+      {
+        "at": 1794326372683,
+        "name": "bash",
+        "callId": "call-pd29-stop2-round-6-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326369499,
+        "callId": "call-pd29-stop2-create",
+        "isError": false
+      },
+      {
+        "at": 1794326370130,
+        "callId": "call-pd29-stop2-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326370722,
+        "callId": "call-pd29-stop2-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371373,
+        "callId": "call-pd29-stop2-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371904,
+        "callId": "call-pd29-stop2-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372406,
+        "callId": "call-pd29-stop2-round-5-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326369840,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370395,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371022,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371578,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372082,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372566,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for stop2.\"\nRound: 6/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objectiv",
+    "lastAssistant": "A5SF_PD29_STOP2_CREATED"
+  },
+  "stop3": {
+    "sessionId": "session-team-child-3241d9a92f4dd2e657724b49359fbf7a",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfpd33-20261110T15-57-16Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-c2-tests-homes-u5u5a5sfpd33-20261110T15-57-16Z-workspace--/session-team-child-3241d9a92f4dd2e657724b49359fbf7a/session.v4.jsonl.zstd",
+    "agentPreset": null,
+    "lineCount": 95,
+    "types": {
+      "session": 1,
+      "permission/preset": 1,
+      "sandbox/mode": 1,
+      "approval/policy": 1,
+      "agent/inbox/spliced": 12,
+      "turn/start": 6,
+      "step/start": 12,
+      "system/message": 1,
+      "user/message": 9,
+      "request/header": 6,
+      "request/context": 1,
+      "session/title": 2,
+      "session/title-llm-request": 1,
+      "assistant/message": 11,
+      "tool/call": 6,
+      "goal/change": 1,
+      "tool/result": 6,
+      "step/end": 11,
+      "turn/end": 5,
+      "workspace/changes": 1
+    },
+    "goalRounds": [
+      {
+        "round": 1,
+        "goalId": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "revision": 1,
+        "at": 1794326370400
+      },
+      {
+        "round": 2,
+        "goalId": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "revision": 1,
+        "at": 1794326371016
+      },
+      {
+        "round": 3,
+        "goalId": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "revision": 1,
+        "at": 1794326371609
+      },
+      {
+        "round": 4,
+        "goalId": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "revision": 1,
+        "at": 1794326372090
+      },
+      {
+        "round": 5,
+        "goalId": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "revision": 1,
+        "at": 1794326372562
+      }
+    ],
+    "goalChanges": [
+      {
+        "at": 1794326370082,
+        "operation": "create",
+        "phase": "active",
+        "revision": 1,
+        "id": "goal-60a07180-d977-4d26-8c3f-c3bd1d6613ab",
+        "roundsStarted": 0,
+        "maxGoalRounds": 100000,
+        "blockedCode": null
+      }
+    ],
+    "calls": [
+      {
+        "at": 1794326370037,
+        "name": "create_goal",
+        "callId": "call-pd34-stop3-create"
+      },
+      {
+        "at": 1794326370429,
+        "name": "bash",
+        "callId": "call-pd29-stop3-round-1-bash"
+      },
+      {
+        "at": 1794326371077,
+        "name": "bash",
+        "callId": "call-pd29-stop3-round-2-bash"
+      },
+      {
+        "at": 1794326371641,
+        "name": "bash",
+        "callId": "call-pd29-stop3-round-3-bash"
+      },
+      {
+        "at": 1794326372122,
+        "name": "bash",
+        "callId": "call-pd29-stop3-round-4-bash"
+      },
+      {
+        "at": 1794326372575,
+        "name": "bash",
+        "callId": "call-pd29-stop3-round-5-bash"
+      }
+    ],
+    "results": [
+      {
+        "at": 1794326370083,
+        "callId": "call-pd34-stop3-create",
+        "isError": false
+      },
+      {
+        "at": 1794326370634,
+        "callId": "call-pd29-stop3-round-1-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371292,
+        "callId": "call-pd29-stop3-round-2-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326371855,
+        "callId": "call-pd29-stop3-round-3-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372353,
+        "callId": "call-pd29-stop3-round-4-bash",
+        "isError": false
+      },
+      {
+        "at": 1794326372812,
+        "callId": "call-pd29-stop3-round-5-bash",
+        "isError": false
+      }
+    ],
+    "aborts": [
+      {
+        "at": 1794326370251,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326370829,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371439,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326371971,
+        "kind": "completed"
+      },
+      {
+        "at": 1794326372477,
+        "kind": "completed"
+      }
+    ],
+    "lastUser": "<goal_round>\nObjective: \"PD-29 stop probe for stop3.\"\nRound: 5/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objectiv",
+    "lastAssistant": "A5SF_PD29_STOP3_CREATED"
+  }
+}

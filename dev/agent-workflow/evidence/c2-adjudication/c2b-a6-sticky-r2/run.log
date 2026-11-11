@@ -1,0 +1,20 @@
+[2026-11-10T16:12:41.613Z] c1 real-host smoke — stamp 2026-11-10T16-12-41
+[2026-11-10T16:12:41.613Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2
+[2026-11-10T16:12:41.613Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-10T16:12:41.613Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/dev/agent-workflow/evidence/c2-adjudication/c2b-a6-sticky-r2
+[2026-11-10T16:12:43.150Z] ports: host=13006 mock=13057
+[2026-11-10T16:12:48.160Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-10T16:12:48.161Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-10T16:12:48.166Z] mock model listening on 13057
+[2026-11-10T16:12:50.862Z] host booted at http://127.0.0.1:13006; row ready — toolCount=15
+[2026-11-10T16:12:50.862Z] ── L0: discovery ──
+[2026-11-10T16:12:51.282Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-10T16:12:51.282Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-10T16:12:51.282Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-10T16:12:51.284Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-10T16:12:52.101Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-8651q69jt0","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-10T16-12-41","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:8b1d4b4976c0d80d3200ef629cb90c6e87b2a1e56e2e3a72b362ccb2e065c882"},"createdAt":"2026-11-10T16:12:51.327Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-10T16:12:55.614Z] FAIL A6-22: a real Host user Stop leaves a durable Sticky Stop marker, withdraws the queued wake row, and does not re-deliver — cancel=true markers= wakeRows= wakes=1->1
+[2026-11-10T16:13:01.622Z] FAIL A6-26: A56: a machine relay to a stopped reviewer does not clear the human Sticky Stop and does not re-deliver the wake — relayStatus=200 relayClaimed=false markers= wakes=1->1
+[2026-11-10T16:13:09.633Z] FAIL A6-27: A56: a machine WORK delivery (human-attributed for A5 goal authority) does not clear the Stop either — followupStatus=200 workClaimed=false markers= wakes=1->1
+[2026-11-10T16:14:19.782Z] FAIL A6-23: the Sticky Stop survives a real Host restart and does not re-deliver the withdrawn wake — restart=ok markers= wakes=1->1
+[2026-11-10T16:14:19.783Z] FAIL A6-24: an explicit user interaction clears the durable Stop and re-plans the wake without reviving the historical call — markers= wakes=1->1 historicalExecuted=false

@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6h-mj8mpi27x9",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-1lis45x17x9jtm07t0nf71jl",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-c1-smoke-a6-2026-11-10T16-09-24"
+          },
+          "scope": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-10T16-09-24",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-09ujj531rrj6"
+            },
+            "targetInstanceId": "inst-09ujj531rrj6",
+            "actionName": "team-tool-execute",
+            "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-10T16-09-24:inst-09ujj531rrj6:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-09ujj531rrj6-bash:hexec:cd41496d-e552-4296-a8e5-3145307daa4a-1",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:6c3ad3a59810efbd7f90cbaf2cecb5e3fdb6341aba4d2f9e94b5a582eb536595",
+            "authorityScope": {
+              "operationClass": "tool-invoke",
+              "matcher": {
+                "kind": "exact",
+                "resource": "c1-plane-realm-2026-11-10T16-09-24|tool:bash"
+              }
+            }
+          },
+          "requestSequence": 13,
+          "decisionSequence": 14,
+          "createdAt": "2026-11-10T16:09:35.230Z",
+          "note": "c1 smoke A6 human final approval"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

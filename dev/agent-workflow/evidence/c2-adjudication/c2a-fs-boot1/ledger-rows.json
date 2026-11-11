@@ -1,0 +1,30 @@
+{
+  "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/dev/agent-workflow/evidence/c2-adjudication/fs/run-ledger.jsonl",
+  "rowCount": 2,
+  "rows": [
+    {
+      "at": "2026-11-10T16:03:12.173Z",
+      "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+      "suite": "a5sf-read",
+      "recordClass": "DEV-LIVE",
+      "kind": "budget-intent",
+      "scope": "dev-live",
+      "phase": "a5sf-read-dev-live-intent",
+      "world": "intent:devlive-fs-search-1",
+      "grantId": "devlive-fs-search-1",
+      "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+      "face": "FS Provider",
+      "worldLine": "u5a5sfdev1",
+      "headCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+      "plannedStarts": 1
+    },
+    {
+      "at": "2026-11-10T16:04:20.493Z",
+      "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+      "suite": "a5sf-fs-devlive",
+      "recordClass": "DEV-LIVE",
+      "world": "u5u5a5sfdev1-20261110T16-03-12Z",
+      "phase": "a5sf-fs-devlive-boot1"
+    }
+  ]
+}

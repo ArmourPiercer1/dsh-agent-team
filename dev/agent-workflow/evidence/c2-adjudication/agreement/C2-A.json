@@ -1,0 +1,310 @@
+{
+ "schema": "c2-agreement/1",
+ "scope": "C2-A",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateRef": "refs/heads/candidate/v0.1.6-1",
+ "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+ "hostVersion": "0.2.0-rc.2",
+ "authoritySnapshot": "as20261109r1",
+ "instruments": {
+  "pd33": {
+   "instrument": "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs",
+   "boots": [
+    {
+     "runId": "a5sf-pd33-preview-e2e-2026-11-10T15-57-16-605Z-b1",
+     "dir": "c2a-pd33-e2e-pair/runs/boot01",
+     "world": "u5u5a5sfpd33-20261110T15-57-16Z",
+     "overall": "PASS",
+     "selected": "10/19 (arms=e2e)"
+    },
+    {
+     "runId": "a5sf-pd33-preview-e2e-2026-11-10T15-59-33-124Z-b2",
+     "dir": "c2a-pd33-e2e-pair/runs/boot02",
+     "world": "u5u5a5sfpd33-20261110T15-59-33Z",
+     "overall": "PASS",
+     "selected": "10/19 (arms=e2e)"
+    }
+   ],
+   "cases": [
+    {
+     "id": "pd33:leader-creates-two-members",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:member-a-io-chain",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:member-a-authorization",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:shell-write-boundary",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:read-image-route",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:member-b-web",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:member-b-goal-converges",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:deferred-tools-typed",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:skill-lane",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "pd33:no-base-web",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "fs": {
+   "instrument": "dev/agent-workflow/evidence/c2-adjudication/fs/run-boot.mjs (relocated byte-identical g2-live/fs)",
+   "sha256": "ad1e4a4dfc82d6737e53c2f2d7aa04d6b7b2d45eaa12bb09ad71fb52dd766633",
+   "boots": [
+    {
+     "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+     "dir": "c2a-fs-boot1",
+     "overall": "NOT_REACHED (13 PASS + 1 NOT_REACHED)"
+    },
+    {
+     "runId": "a5sf-fs-devlive-2026-11-10T16-12-41-682Z",
+     "dir": "c2a-fs-boot2",
+     "overall": "NOT_REACHED (13 PASS + 1 NOT_REACHED)"
+    }
+   ],
+   "cases": [
+    {
+     "id": "live:search-row1-grep-in-lane-allowed",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:search-row2-grep-outside-ceiling-refused",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:search-row3-grep-outside-restriction-refused",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:search-row5-invalid-pattern-is-error",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:search-row4-cancelled-search-settles-cancelled",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:row1-read-a-inside-both-allowed",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:row2-read-b-binding-deny-on-read-path",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:row3-read-c-refused-no-widening",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "fs:edit-in-lane",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "fs:edit-outside-ceiling",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "fs:read-image-observation",
+     "boot1": "NOT_REACHED",
+     "boot2": "NOT_REACHED",
+     "agree": true
+    },
+    {
+     "id": "live:search-row6-archive-boundary-no-callable-shadow",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  }
+ },
+ "adjudicatedCases": [
+  {
+   "id": "C2-A/read-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/read-negative",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/write-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/write-negative",
+   "verdict": "PARTIAL",
+   "note": "refused by host read-before-write observation policy, not by the lane algebra (guardFacts:1 allow)",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2"
+   ]
+  },
+  {
+   "id": "C2-A/edit-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/edit-negative",
+   "verdict": "PARTIAL",
+   "note": "refused by host read-before-write observation policy (guardFacts:0)",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2"
+   ]
+  },
+  {
+   "id": "C2-A/grep-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/grep-negative",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2"
+   ]
+  },
+  {
+   "id": "C2-A/glob-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot2/glob-face.json",
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/glob-negative",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-fs-boot2/glob-face.json"
+   ]
+  },
+  {
+   "id": "C2-A/web-positive",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/web-negative",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-pd33-e2e-pair"
+   ]
+  },
+  {
+   "id": "C2-A/e2e-ledger-flow",
+   "verdict": "PASS",
+   "evidence": [
+    "c2a-pd33-e2e-pair"
+   ]
+  }
+ ],
+ "agreeing": true,
+ "disagreements": [],
+ "scopeVerdict": "PASS (write/edit minimal-permission negatives PARTIAL)"
+}

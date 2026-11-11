@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-pd33-preview-e2e-2026-11-10T15-59-33-124Z-b2 suite=a5sf-pd33-preview-e2e overall=PASS cases=19 NOT_SELECTED:9 PASS:10 worlds=u5u5a5sfpd33-20261110T15-59-33Z subset=true arms=e2e selected=10/19 recordClass=DEV-LIVE (not candidate evidence)
