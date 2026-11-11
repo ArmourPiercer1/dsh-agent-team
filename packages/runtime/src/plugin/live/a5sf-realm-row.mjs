@@ -1064,6 +1064,56 @@ function confinedTerminalSpecOf(realm, nativeSpecs, surface) {
 }
 
 /**
+ * The NATIVE persistent-`bash` module (NATIVE-BASH-PRESERVATION, 2026-11-11),
+ * resolved from THIS file's own location: it rides the dist mirror beside this
+ * row, so source and installed faces use the same relative specifier. The
+ * module itself imports the PINNED host `@deepseek-ai/dsh-tool-bash-persistent`
+ * and registers that package's own definition — this seam adds no tool body.
+ */
+const A5SF_NATIVE_BASH_TOOL = new URL('./native-bash-tool.mjs', import.meta.url).href
+
+/**
+ * NATIVE-BASH-PRESERVATION — decide whether THIS realm's `bash` must be the
+ * PINNED host persistent-shell definition over the governed PTY face, and
+ * answer the module spec to append.
+ *
+ * WHY THIS SUPERSEDES PD-12/PD-13 (A5-NATIVE-01/02). PD-12 and PD-13 were Team
+ * ToolDefinitions that re-implemented the model-visible `bash`; the invariant
+ * allows replacing a native tool's EXECUTION BACKEND, never the tool. The
+ * governed PTY face (`team-services/terminal-pty.ts`) is that backend: the
+ * pinned definition is registered unchanged, and `ctx.terminals` on this scope
+ * is the Member's own confined PTY.
+ *
+ * The conditions mirror PD-13's, each a refusal to guess:
+ *   1. the agent can SEE `bash` (the attach is surface-neutral);
+ *   2. the realm OWNS a GOVERNED PTY terminal face (`faces.terminals` carries
+ *      the `governedPty` marker). A PD-13-style confined (non-PTY) face does not
+ *      qualify — this spec must never select the native tool over a face that
+ *      cannot keep its state contract;
+ *   3. the composition has not already configured a `bash` owner (this module,
+ *      PD-12's, PD-13's, or any entry declaring `expectedTools: ['bash']`).
+ *
+ * @param {object} realm - the mounted realm (`installation.members[].faces`).
+ * @param {readonly object[]} nativeSpecs - the configured module specs.
+ * @param {ReadonlySet<string>} surface - the POST-DENY tool names.
+ * @returns {{url: string, expectedTools: readonly string[]} | undefined}
+ */
+function nativeBashPtySpecOf(realm, nativeSpecs, surface) {
+  if (!surface.has('bash')) return undefined
+  const faces = realm?.installation?.members?.[0]?.faces
+  if (faces === undefined || faces === null) return undefined
+  const terminals = faces.terminals
+  if (terminals === undefined || terminals === null || terminals.governedPty === undefined) return undefined
+  for (const spec of nativeSpecs) {
+    if (spec?.url === A5SF_NATIVE_BASH_TOOL) return undefined
+    if (spec?.url === A5SF_CONFINED_TERMINAL_TOOL) return undefined
+    if (spec?.url === A5SF_CONFINED_BASH_TOOL) return undefined
+    if (Array.isArray(spec?.expectedTools) && spec.expectedTools.includes('bash')) return undefined
+  }
+  return Object.freeze({ url: A5SF_NATIVE_BASH_TOOL, expectedTools: Object.freeze(['bash']) })
+}
+
+/**
  * The confined SEARCH native module (PD-16), resolved from THIS file's own
  * location: the row rides the dist mirror beside it, so source and installed
  * faces use the same relative specifier. Never a host path, never a guess.
@@ -1480,8 +1530,12 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // PD-13 (2026-11-11): a confined terminal face supersedes the PD-12 bash
   // shadow — one `bash` name, one serving face, and the terminal face is the
   // one with a read axis.
-  const terminalSpec = confinedTerminalSpecOf(realm, nativeSpecs, before)
-  const bashSpec = terminalSpec === undefined ? confinedBashSpecOf(realm, nativeSpecs, before) : undefined
+  // NATIVE-BASH-PRESERVATION (2026-11-11): the governed PTY face takes
+  // precedence over both Team-authored shadows — one `bash` name, and the
+  // native definition is the only one the invariant permits.
+  const nativeBashSpec = nativeBashPtySpecOf(realm, nativeSpecs, before)
+  const terminalSpec = nativeBashSpec === undefined ? confinedTerminalSpecOf(realm, nativeSpecs, before) : undefined
+  const bashSpec = (nativeBashSpec ?? terminalSpec) === undefined ? confinedBashSpecOf(realm, nativeSpecs, before) : undefined
   // PD-16 (2026-11-13): the model-visible `grep`/`glob` must ride the confined
   // `subprocess` face too. The 2026-11 `a5sf-recon-search` measurement is the
   // reason: the host search row injects `subprocess` (not `fs`), the realm
@@ -1490,7 +1544,7 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // an absolute out-of-lane directory. Search and shell are independent names,
   // so BOTH shadows may be appended in one attach.
   const searchSpec = confinedSearchSpecOf(realm, nativeSpecs, before)
-  const shellSpec = terminalSpec ?? bashSpec
+  const shellSpec = nativeBashSpec ?? terminalSpec ?? bashSpec
   // PD-17 (2026-11-13): the model-visible `read`/`write`/`edit`/`read_image`
   // must ride the confined `fs` face. The 2026-11 `a5sf-recon-fs` measurement
   // (confirmed across two Members by `a5sf-recon-review`) is the reason: the

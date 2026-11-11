@@ -2,6 +2,23 @@
  * confined-terminal-tool.mjs — the model-visible `bash` tool, served by the
  * Member's CONFINED `terminals` face (PD-13).
  *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * RETIRED FROM THE PRODUCT PATH (NATIVE-BASH-PRESERVATION, 2026-11-11).
+ * Alpha.5's invariant (A5-NATIVE-01/02, A5-BOUNDARY-01) allows replacing a
+ * native tool's EXECUTION BACKEND, never the model-visible tool. This module is
+ * a Team-authored `bash` DEFINITION, i.e. the shape the invariant forbids, so
+ * the shipped composition no longer selects it: the product's `bash` is the
+ * PINNED `@deepseek-ai/dsh-tool-bash-persistent` definition mounted by
+ * `native-bash-tool.mjs` over the governed persistent PTY
+ * (`team-services/terminal-pty.ts`). Nothing here is deleted — the file and its
+ * contract stay as history and as the fallback a composition may still DECLARE
+ * explicitly (`confinedTerminalSpecOf`/`confinedBashSpecOf` are reached only
+ * when no governed PTY face carries the `governedPty` marker), and its own
+ * suite (`a5sf-pd13-terminal-read-axis.test.mjs` / `a5sf-pd12-bash-governance
+ * .test.mjs`) keeps pinning that historical contract. A governed Member never
+ * gets both: `nativeBashPtySpecOf` wins the selection when the PTY face exists.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
  * WHY THIS EXISTS (PD-13, 2026-11-11). The register's hole: a Member's shell
  * had no READ axis. Its `bash` was the preset's inherited persistent PTY
  * (`/dev/pts/N`, one shell across commands, `0` confined spawns, `0` guard

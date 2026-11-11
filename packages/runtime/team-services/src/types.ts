@@ -155,6 +155,8 @@ export const TEAM_SERVICE_INSTALL_CODES = [
    * removes the preset's persistent-shell/`dsh-terminal` row for Members.
    */
   'TERMINALS_DOUBLE_TERMINAL_REFUSED',
+  /** A governed PTY face was declared without the exact Member session it serves. */
+  'TERMINALS_OWNER_UNBOUND',
   /**
    * PRODUCT ASSEMBLY (2026-11-05): a product declaration narrows the NETWORK
    * axis (a ceiling/restriction `network: deny`, or a `delegated-remote`

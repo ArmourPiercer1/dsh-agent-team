@@ -1472,6 +1472,14 @@ export async function apply(ctx, config) {
                 // Absent service = no `web` face (the pre-PD-30 answer), so a
                 // deployment that never mounts the row keeps its exact behaviour.
                 webTransport: () => ctx.get('teamA5sfWebTransport'),
+                // NATIVE-BASH-PRESERVATION (2026-11-11): the SHIPPED governed realm
+                // carries a persistent PTY, because the model-visible `bash` is the
+                // PINNED host definition over it (A5-NATIVE-01/02: replace a native
+                // tool's execution backend, never the tool). PD-13's per-command
+                // confined terminal face is retired from this path; a deployment
+                // that cannot host the PTY (no `sandbox` provider / no base
+                // `subprocess`) is REFUSED at install rather than downgraded.
+                nativeBashPty: true,
             })
             : undefined;
         // PR4 ROUND 5 (FIX-2a): the ONE server-side canonicalizer over the row's

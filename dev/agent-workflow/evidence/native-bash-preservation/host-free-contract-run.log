@@ -1,0 +1,23 @@
+✔ P1 definition identity: the registered bash is the pinned host definition, only execute is wrapped (294.198294ms)
+✔ P2 one Member shares ONE PTY across calls: cd and export persist (368.611195ms)
+✔ P3 exact identity: a foreign session is refused and NO PTY is created (2.234018ms)
+✔ P3b unbound face: no Member session bound = typed refusal, zero PTYs (1.034198ms)
+✔ P3c two Members get two PTYs and cannot see each other (479.358101ms)
+✔ P4 ceiling: the confined policy is the Member root, danger-full-access is clamped (216.743328ms)
+✔ P4b enforcement refusal: a confiner that refuses means NO PTY and a failed call (227.835027ms)
+(node:12) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ P5 policy generation: a retained PTY from a stale revision is refused and killed (3225.82673ms)
+✔ P5b a face serving a superseded install revision refuses at the boundary (217.686335ms)
+✔ P6 allow: the native body runs exactly once and the settle reports succeeded (268.842438ms)
+✔ P6b deny: ZERO native execution and ZERO PTY — no side effect (2.236584ms)
+✔ P6c no published edge: typed refusal, zero execution (1.471536ms)
+✔ P7 route C selects the native bash ONLY for a governed PTY face (172.265725ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 32683.601613
