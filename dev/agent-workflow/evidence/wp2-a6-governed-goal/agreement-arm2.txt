@@ -1,0 +1,6 @@
+| case | run1 | run2 | agreement |
+| --- | --- | --- | --- |
+| wp2-a6:arm2-create-refused | PROVEN | PROVEN | agree |
+| wp2-a6:arm2-no-goal | PROVEN | PROVEN | agree |
+| wp2-a6:arm2-nothing-pretends-human | PROVEN | PROVEN | agree |
+| wp2-a6:arm2-refusal-scoped | PROVEN | PROVEN | agree |
