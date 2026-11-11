@@ -1,0 +1,31 @@
+{
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "wp1a-qi4xm90ini",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "markerFile": "stopped-6d24ff71.json",
+  "markerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-a2-2026-11-11T15-55-58/alpha6-wake-intents/stopped-6d24ff71.json",
+  "marker": {
+    "stopped": true,
+    "key": {
+      "rootSessionId": "session-wp1-team-2026-11-11T15-55-58",
+      "reviewerInstanceId": "inst-0oibn9512460",
+      "sessionGeneration": 1
+    },
+    "targetSessionId": "session-team-child-6e781f0999242399e54f96ef43bd3385",
+    "ownerRootSessionId": "session-wp1-root-2026-11-11T15-55-58"
+  },
+  "expectedName": "stopped-6d24ff71.json",
+  "wakeIntentRows": [],
+  "wakesBefore": 1,
+  "returnValue": {
+    "observed": "inferred-true",
+    "why": "production discards the boolean (host.ts:3113-3120); root.ts:2755-2762 returns false only when no coordinator exists, BEFORE markStopped writes. The marker exists, so that branch was not taken; every post-write path returns true."
+  }
+}

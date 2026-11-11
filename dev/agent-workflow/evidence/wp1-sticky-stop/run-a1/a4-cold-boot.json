@@ -1,0 +1,56 @@
+{
+  "markerBytesBefore": "{\"stopped\":true,\"key\":{\"rootSessionId\":\"session-wp1-team-2026-11-11T15-53-42\",\"reviewerInstanceId\":\"inst-0oe8p9h1dxat\",\"sessionGeneration\":1},\"targetSessionId\":\"session-team-child-5fad3fe7e0385ae5ea420364927ea6c5\",\"ownerRootSessionId\":\"session-wp1-root-2026-11-11T15-53-42\"}\n",
+  "markerSurvives": true,
+  "wakesBeforeRestart": 1,
+  "wakesAtRestart": 1,
+  "humanWork": {
+    "pending": true
+  },
+  "workerAskSeq": 17,
+  "legsBefore": 2,
+  "legActions": [
+    "parameter-permission",
+    "team-tool-execute",
+    "parameter-permission",
+    "team-tool-execute"
+  ],
+  "controlRequests": [
+    {
+      "sequence": 7,
+      "requestId": "ctrl-1rjaere06xq5291ak4fpg02s",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-1ltrrlp0jspm"
+    },
+    {
+      "sequence": 11,
+      "requestId": "ctrl-0fncfc51561mey09qqxvf078",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-1ltrrlp0jspm"
+    },
+    {
+      "sequence": 20,
+      "requestId": "ctrl-1daucrh19a5bv60bq0r671o0",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-1lgxwm902j5l"
+    },
+    {
+      "sequence": 23,
+      "requestId": "ctrl-0v327za0zo8uql0wz2oyo0g5",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-1lgxwm902j5l"
+    }
+  ],
+  "stoppedAfterWakeAttempt": [
+    "stopped-4d0d4438.json"
+  ],
+  "wakesAfterWakeAttempt": 1,
+  "consultationWitness": "a new durable review leg exists but no new [team-review-wake] turn reached the model; the marker was not cleared; dispatch skips a stopped coordinator (wake-dispatch.ts:351) and boot recovery registered the marker latch as stopped (root.ts:2936-2952)"
+}

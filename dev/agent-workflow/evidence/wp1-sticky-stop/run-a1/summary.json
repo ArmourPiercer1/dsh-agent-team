@@ -1,0 +1,48 @@
+{
+  "runLabel": "a1",
+  "arm": "a",
+  "evidenceClass": "CANDIDATE-C2",
+  "runStamp": "2026-11-11T15-53-42",
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "ok": true,
+  "criteria": [
+    {
+      "id": "A1",
+      "name": "a real review wake is dispatched for the Officer (latch coordinator exists): durable wake intent row + model-visible wake turn",
+      "ok": true,
+      "detail": "intent=wake-4d0d4438.json wakeTurnSeq=14"
+    },
+    {
+      "id": "A3",
+      "name": "the human Stop writes exactly one durable latch-scoped marker at the documented path with the documented content (function `true` inferred: the only `false` path returns before any write)",
+      "ok": true,
+      "detail": "cancel=true markers=[stopped-4d0d4438.json] pathOk=true keyOk=true contentOk=true"
+    },
+    {
+      "id": "A5a",
+      "name": "a machine `team_send_message` (member.send, caller instance = Leader) does NOT clear the human Sticky Stop and does NOT re-deliver the withdrawn review wake (the message itself is still delivered by the team layer)",
+      "ok": true,
+      "detail": "relayStatus=200 relayOutcome=delivered modelSawRelay=true markers=[stopped-4d0d4438.json] wakes=1->1"
+    },
+    {
+      "id": "A5b",
+      "name": "a machine WORK delivery (member.followup) does NOT clear the Stop and does NOT re-deliver the withdrawn review wake (the work unit is still admitted by the team layer)",
+      "ok": true,
+      "detail": "followupStatus=200 workOutcome=executed modelSawWork=false markers=[stopped-4d0d4438.json] wakes=1->1"
+    },
+    {
+      "id": "A4a",
+      "name": "the Sticky Stop marker survives SIGKILL + cold boot byte-identical and is not re-delivered at boot",
+      "ok": true,
+      "detail": "markers=[stopped-4d0d4438.json] wakes=1->1"
+    },
+    {
+      "id": "A4b",
+      "name": "after cold boot a NEW review leg for the SAME reviewer is suppressed (no new wake turn) — the recovered marker is consulted",
+      "ok": true,
+      "detail": "humanWork=-1 workerAsk=true legActions=[parameter-permission,team-tool-execute,parameter-permission,team-tool-execute] legs=2->4 markers=[stopped-4d0d4438.json] wakes=1->1"
+    }
+  ],
+  "homeRetained": null,
+  "note": "n=2 per arm is agreement, not stability"
+}

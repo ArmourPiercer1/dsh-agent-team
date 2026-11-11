@@ -1,0 +1,21 @@
+[2026-11-11T15:55:58.436Z] WP1 sticky stop — arm A — run a2 — stamp 2026-11-11T15-55-58
+[2026-11-11T15:55:58.436Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky
+[2026-11-11T15:55:58.436Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T15:55:58.436Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/dev/agent-workflow/evidence/wp1-sticky-stop/run-a2
+[2026-11-11T15:56:01.844Z] ports: host=15002 mock=15052
+[2026-11-11T15:56:01.853Z] stable :3080 pre-probe = 401 (read-only; never touched)
+[2026-11-11T15:56:01.854Z] world materialized: home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-a2-2026-11-11T15-55-58
+[2026-11-11T15:56:01.859Z] mock model listening on 127.0.0.1:15052
+[2026-11-11T15:56:04.135Z] host booted at http://127.0.0.1:15002; row ready — toolCount=15
+[2026-11-11T15:56:04.405Z] L0 surface 20 tools; denyList 0 names
+[2026-11-11T15:56:05.215Z] ARM A: officer instance=inst-0oibn9512460 session=session-team-child-6e781f0999242399e54f96ef43bd3385; worker instance=inst-0r2axe71pj3c; idleWorker=inst-0c5spof1fatl
+[2026-11-11T15:56:05.716Z] PASS A1: a real review wake is dispatched for the Officer (latch coordinator exists): durable wake intent row + model-visible wake turn — intent=wake-6d24ff71.json wakeTurnSeq=14
+[2026-11-11T15:56:05.728Z] ARM A: session/cancel officer -> HTTP 200 ok=true
+[2026-11-11T15:56:05.728Z] PASS A3: the human Stop writes exactly one durable latch-scoped marker at the documented path with the documented content (function `true` inferred: the only `false` path returns before any write) — cancel=true markers=[stopped-6d24ff71.json] pathOk=true keyOk=true contentOk=true
+[2026-11-11T15:56:13.792Z] PASS A5a: a machine `team_send_message` (member.send, caller instance = Leader) does NOT clear the human Sticky Stop and does NOT re-deliver the withdrawn review wake (the message itself is still delivered by the team layer) — relayStatus=200 relayOutcome=delivered modelSawRelay=true markers=[stopped-6d24ff71.json] wakes=1->1
+[2026-11-11T15:57:33.884Z] PASS A5b: a machine WORK delivery (member.followup) does NOT clear the Stop and does NOT re-deliver the withdrawn review wake (the work unit is still admitted by the team layer) — followupStatus=200 workOutcome=executed modelSawWork=false markers=[stopped-6d24ff71.json] wakes=1->1
+[2026-11-11T15:57:41.453Z] cold boot ready at http://127.0.0.1:15002
+[2026-11-11T15:57:41.454Z] PASS A4a: the Sticky Stop marker survives SIGKILL + cold boot byte-identical and is not re-delivered at boot — markers=[stopped-6d24ff71.json] wakes=1->1
+[2026-11-11T15:58:12.713Z] PASS A4b: after cold boot a NEW review leg for the SAME reviewer is suppressed (no new wake turn) — the recovered marker is consulted — humanWork=-1 workerAsk=true legActions=[parameter-permission,team-tool-execute,parameter-permission,team-tool-execute] legs=2->4 markers=[stopped-6d24ff71.json] wakes=1->1
+[2026-11-11T15:58:12.722Z] world torn down (home + blueprint scratch removed)
+[2026-11-11T15:58:12.722Z] SUMMARY arm=A run=a2 ok=true pass=6/6

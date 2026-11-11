@@ -1,0 +1,47 @@
+{
+  "wakeRows": [],
+  "stopped": [],
+  "wakeTurns": 0,
+  "ledger": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": [],
+    "error": null
+  },
+  "memberRows": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-11T15:58:45.366Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "session-wp1-team-2026-11-11T15-58-39",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-59d0d62f7fc16b5cd528be033020e5b2",
+      "createdAt": "2026-11-11T15:58:45.676Z",
+      "instanceId": "inst-0zmgqt41q9jp",
+      "label": "officer",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-wp1-team-2026-11-11T15-58-39",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-b2-2026-11-11T15-58-39/workspace"
+    },
+    {
+      "activityVersion": 3,
+      "childSessionId": "session-team-child-423d04446d9db232bdecdcc47a230ab6",
+      "createdAt": "2026-11-11T15:58:45.771Z",
+      "instanceId": "inst-14zd4tc0m4vl",
+      "label": "w-wp1",
+      "lifecycle": "SETTLED",
+      "rootSessionId": "session-wp1-team-2026-11-11T15-58-39",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-b2-2026-11-11T15-58-39/workspace"
+    }
+  ]
+}
