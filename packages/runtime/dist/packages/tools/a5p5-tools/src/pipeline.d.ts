@@ -95,35 +95,23 @@ export interface RunToolCallDeps {
      *
      *  The outcome vocabulary is the Control ledger's own
      *  (`succeeded | failed | unknown`), and it means EXECUTION, not authorization:
-     *  `succeeded` is reserved for a body whose end was observed; a cancelled or
-     *  timed-out body reports `unknown` (it started, its end was never observed —
-     *  separately from whether it produced side effects). */
+     *  `succeeded` is reserved for a body whose end was observed (the backend's
+     *  `settlement.kind === 'completed'`); every OTHER settlement is `unknown` —
+     *  not only a body whose rendered `cancelled`/`timedOut` bit is set, because
+     *  that bit is minted for the `user`/`parent` cancel causes alone while the
+     *  settlement covers every abort reason. An abort-shaped throw is `unknown`
+     *  too (a stop is not an observed execution failure). */
     readonly onExecutionResult?: (input: {
         readonly callId: string;
         readonly outcome: 'succeeded' | 'failed' | 'unknown';
     }) => void;
 }
-/**
- * PD-41 (owner ruling 2026-11-11) — the execution-fact outcome of an ANSWERED
- * backend call. `result.ok` is the backend's "I answered" bit; it is NOT "the
- * body completed". A shell the host cancelled (or killed at its timeout)
- * answers `ok: true` with `cancelled: true` / `timedOut: true` and
- * `exitCode: null` — the payload never reported an end (see
- * `process-family/src/confined-shell-executor.mjs`, whose settlement for that
- * arm is `{kind:'cancelled'}`). Recording that as `succeeded` would state a
- * completion nobody measured: the measured shape was
- * `cancelled=true exit=not-observed` in the shell log next to a durable
- * `succeeded`, with no side effect on disk.
- *
- * The honest value is the ledger's existing `unknown` — the body was admitted
- * and may have had effects, but its end was never observed. This invents no
- * new outcome and changes no admission, consumption or replay behaviour.
- */
+/** The execution fact of an ANSWERED call (see the classification above). */
 export declare function executionOutcomeOfAnsweredCall(result: {
     readonly ok: true;
     readonly outcome: SearchOutcome | ShellOutcome;
-    /** Carried by the real backend answer; not consulted here (the outcome is). */
-    readonly settlement?: unknown;
+    /** The terminal fact the backend observed. Absent only on archived fixtures. */
+    readonly settlement?: LeaseSettlement;
 }): 'succeeded' | 'unknown';
 export interface SpillPointerFact {
     readonly spillId: string;

@@ -87,6 +87,8 @@ function fakeCtx(options: FakeCtxOptions = {}) {
   return {
     ctx,
     bodyExecs: () => bodyExecs,
+    /** The registered `tools/execute` chain (the door is one of its listeners). */
+    listeners,
     /** Drive one call the way the pinned registry does: the `tools/guard` stage
      *  first, then the `tools/execute` waterfall, then the Body. */
     runDoor: driveExecute,
@@ -116,7 +118,58 @@ function fakeCtx(options: FakeCtxOptions = {}) {
   }
 }
 
-function armedGuard(world: ReturnType<typeof fakeCtx>, over: Record<string, unknown> = {}) {
+/**
+ * A world where `bash` actually BINDS AND VERIFIES (same definition object in
+ * the trusted global view and in the Agent's scoped view, declared as a trusted
+ * native name). The refusals that live AFTER the Guard's denial need a call
+ * that got that far; the default `fakeCtx` deliberately cannot.
+ */
+function verifiedCtx() {
+  const definition = { name: 'bash', execute: () => 'native:bash' }
+  const guards: ((exec: { name: string; agent?: unknown }) => string | undefined)[] = []
+  const listeners = new Map<string, ((...args: never[]) => unknown)[]>()
+  let bodyExecs = 0
+  const ctx = {
+    tools: {
+      guard: (guard: (exec: { name: string; agent?: unknown }) => string | undefined) => {
+        guards.push(guard)
+        return () => {
+          const at = guards.indexOf(guard)
+          if (at >= 0) guards.splice(at, 1)
+        }
+      },
+      schemas: () => [{ name: 'bash' }],
+      get: (name: string) => (name === 'bash' ? definition : undefined),
+    },
+    on: (event: string, listener: (...args: never[]) => unknown) => {
+      const list = listeners.get(event) ?? []
+      list.push(listener)
+      listeners.set(event, list)
+      return () => {
+        const at = list.indexOf(listener)
+        if (at >= 0) list.splice(at, 1)
+      }
+    },
+  } as unknown as ScopedGuardAgentCtx
+  const runDoor = (input: { callId: string; name: string }, body: () => Promise<unknown>) => {
+    const exec = { ...input, agent: { id: 'agent-m1' } }
+    const list = listeners.get('tools/execute') ?? []
+    let index = 0
+    const next = async (): Promise<unknown> => {
+      const listener = list[index]
+      index += 1
+      if (listener === undefined) {
+        bodyExecs += 1
+        return await body()
+      }
+      return await (listener as unknown as (...a: unknown[]) => Promise<unknown>)(exec, next)
+    }
+    return next()
+  }
+  return { ctx, bodyExecs: () => bodyExecs, runDoor, listeners }
+}
+
+function armedGuard(world: { readonly ctx: ScopedGuardAgentCtx }, over: Record<string, unknown> = {}) {
   const outcome = installScopedToolGuard({
     agentCtx: world.ctx,
     runtimeAgent: { id: 'agent-m1', session: { header: { id: 'session-m1' } } },
@@ -207,5 +260,68 @@ describe('PD-41 B — a Tool Binding failure is an explicit TYPED refusal', () =
       message: VERBATIM_BASH_REFUSAL,
     })
     expect(handle.dispatcher.guard({ name: 'bash', agentIdentity: 'agent-m1', })?.includes('refused at the dispatch door')).toBe(false)
+  })
+})
+
+/**
+ * PD41-ABORT-CLASS — the audit found four door refusals still throwing a bare
+ * `Error` after PD-41's notes said "every dispatch refusal is a
+ * ToolDispatchRefusalError". Three are Binding/definition-verification facts
+ * and now carry the typed shape with the byte-identical sentence; the fourth
+ * (an execution object that cannot hold a cancellable signal) is deliberately
+ * still prose because no §5 code truthfully describes it — pinned below.
+ */
+describe('PD41-ABORT-CLASS B — the remaining door refusals are typed where the class is a Binding fact', () => {
+  it('the kernel-table pre-body refusal is a TYPED Binding refusal with its own reason and an unchanged sentence', async () => {
+    // A world where `bash` binds and verifies; the kernel port then answers a
+    // table identity that no longer backs the live Body (the U6 PR2 K1 delta).
+    const world = verifiedCtx()
+    armedGuard(world, {
+      nativeNames: ['bash'],
+      kernelGuard: { owns: (name: string) => name === 'bash', identityFor: () => 'table-other-identity' },
+    })
+    let caught: unknown
+    try {
+      await world.runDoor({ callId: 'pd41-kernel-drift', name: 'bash' }, async () => 'body-ran')
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(ToolDispatchRefusalError)
+    if (!(caught instanceof ToolDispatchRefusalError)) throw new Error('unreachable')
+    expect(caught.code).toBe('TOOL_BINDING_UNVERIFIED')
+    expect(caught.reason).toBe('definition-drift')
+    expect(caught.toolName).toBe('bash')
+    // byte-identical sentence, plus the same positional suffix
+    expect(caught.message).toMatch(/^team tool guard: "bash" is kernel-owned and the center approval table no longer backs its live definition \(table table-other-identity, resolving def#\d+\); the call is refused before its Body — an approval that moved is not an approval \[refused at the dispatch door, the stage nearest the Body\]$/)
+    expect(isToolBindingRefusal(caught)).toBe(true)
+    expect(world.bodyExecs()).toBe(0)
+  })
+
+  it('an execution object that cannot hold a cancellable signal stays PROSE (no §5 code describes it)', async () => {
+    // `exec` is frozen: the wrapper write cannot take effect, so the call is
+    // refused instead of running unguarded. This is not a Binding fact — the
+    // Binding verified — so it must NOT be dressed as one.
+    const world = verifiedCtx()
+    armedGuard(world, { nativeNames: ['bash'] })
+    const exec = Object.freeze({ callId: 'pd41-wrapper-prose', name: 'bash', agent: { id: 'agent-m1' } })
+    const list = world.listeners.get('tools/execute') ?? []
+    let index = 0
+    const next = async (): Promise<unknown> => {
+      const listener = list[index]
+      index += 1
+      if (listener === undefined) return 'body-ran'
+      return await (listener as unknown as (...a: unknown[]) => Promise<unknown>)(exec, next)
+    }
+    let caught: unknown
+    try {
+      await next()
+    } catch (error) {
+      caught = error
+    }
+    expect(caught).toBeInstanceOf(Error)
+    expect(caught).not.toBeInstanceOf(ToolDispatchRefusalError)
+    expect((caught as Error).message).toContain('cannot be made cancellable on this execution')
+    expect((caught as Error).message).toContain('[refused at the dispatch door, the stage nearest the Body]')
+    expect(world.bodyExecs()).toBe(0)
   })
 })

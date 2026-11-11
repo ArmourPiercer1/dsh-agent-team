@@ -302,6 +302,20 @@ async function main() {
     const result = classify(run.runDir, trial)
     result.kitExit = run.code
     result.wallMs = Date.now() - started
+    // A kit that died before the arm wrote no `a6-stop.json`: classify() returns
+    // the short {verdict,detail} shape, which has no rows/timings to tabulate.
+    // Report it and keep the remaining trials running instead of crashing on
+    // `result.rows.decisions` (the classification, not the table, is the point).
+    if (result.rows === undefined) {
+      writeFileSync(join(run.runDir, 'wp3-classification.json'), JSON.stringify(result, null, 2))
+      results.push(result)
+      console.log(`   → ${result.verdict}: ${String(result.detail)}`)
+      if (run.code === 1) {
+        writeFileSync(join(EVIDENCE_DIR, `SUMMARY-${LABEL}.json`), JSON.stringify({ trials: results }, null, 2))
+        fail(2, `kit failed fatally in ${trial.label} (see ${run.runDir})`)
+      }
+      continue
+    }
     const table = [
       `# ${trial.label} — durable sequence table (CANDIDATE-C2, ${result.productSha ?? 'NO MANIFEST'})`,
       '',

@@ -1993,11 +1993,25 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       if (timingAnchorMs !== null) await sleepUntilWallClock(timingAnchorMs + A6_STOP_TIMING.stopAt)
       const worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'worker' && row.label === 'w-a6')
       stopTiming.stopSentAt = new Date().toISOString()
+      // PD41-ABORT-CLASS: the Stop's ABORT CAUSE is a property of the action,
+      // not of the timing. The host's `session/cancel` RPC is hard-wired to
+      // `{kind:'user'}`; `C1_A6_STOP_VIA=archive` reaches the SAME parked call
+      // through the Team lifecycle instead, whose interrupt is
+      // `{kind:'hook', reason:'team-member-interrupt'}` — a non-user/non-parent
+      // cause, i.e. the abort class the WP3 arm's user Stop could never drive.
+      // Instrument only: same offset, same durable reads, no product change.
+      const stopVia = String(process.env['C1_A6_STOP_VIA'] ?? 'cancel')
+      stopTiming.stopVia = stopVia
       const cancel = worker === undefined
         ? { status: 0, body: { error: 'no member child session' } }
-        : await apiCancel(booted.origin, booted.cookie, worker.childSessionId, 'c1a6stop')
+        : stopVia === 'archive'
+          ? await remoteCall(booted.origin, booted.cookie, 'member.archive', {
+              teamSessionId: CREATE_ROOT_A6,
+              instanceId: worker.instanceId,
+            }, 'c1a6stop', 4)
+          : await apiCancel(booted.origin, booted.cookie, worker.childSessionId, 'c1a6stop')
       stopTiming.stopReturnedAt = new Date().toISOString()
-      writeEvidence('a6-stop-cancel.json', cancel.body ?? cancel)
+      writeEvidence('a6-stop-cancel.json', { stopVia, response: cancel.body ?? cancel })
       await new Promise((resolve) => setTimeout(resolve, 2500))
       const afterCancel = readControlLedger(CREATE_ROOT_A6)
       const late = humanLeg === null ? null : await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
@@ -2747,7 +2761,22 @@ function makeDecide() {
         if (tools === 4) return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
       }
       switch (tools) {
-        case 0: return toolCall('bash', bashArgs(process.env['C1_A6_CRASH'] === 'body' ? CMD_A6_BODY : CMD_A6_ALLOW))
+        // PD41-ABORT-CLASS: the archive/lifecycle Stop reaches the call a few
+        // async steps later than `session/cancel`, so the body must still be
+        // ALIVE when the non-user cause lands. `C1_A6_STOP_CMD=linger` keeps
+        // the canonical allow command (so the notification summary still
+        // carries `SUM_A6_ALLOW` — the branch below routes on it) and just
+        // makes the body sleep afterwards: the effect file lands and the body
+        // is still running when the hook/cancel cause arrives. An instrument
+        // choice about the STOPPED body, never a product change; the offset is
+        // still `C1_A6_STOP_TIMING_MS`.
+        case 0: return toolCall('bash', bashArgs(
+          process.env['C1_A6_CRASH'] === 'body'
+            ? CMD_A6_BODY
+            : process.env['C1_A6_STOP_CMD'] === 'linger'
+              ? `${CMD_A6_ALLOW} && sleep 20`
+              : CMD_A6_ALLOW,
+        ))
         case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
         default: return { kind: 'text', content: `C1_A6_MEMBER_FALLTHROUGH tools=${String(tools)}` }
       }
