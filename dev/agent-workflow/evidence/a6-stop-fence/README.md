@@ -9,7 +9,7 @@ implemented on `task/a6-stop-fence-20261109` from `master` @ `f31e3d9e2` (candid
 | field | value |
 | --- | --- |
 | tree | `master` @ `f31e3d9e2` (candidate content `168266dbf`) |
-| branch | `task/a6-stop-fence-20261109` |
+| branch / PR | `task/a6-stop-fence-20261109` / **draft PR #710** (base `master`, not merged) |
 | host pin | `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (DSH `0.2.0-rc.2`) — **not patched** (`CORE PATCH BUDGET = 0`) |
 | mechanism note read | `dev/agent-workflow/evidence/a6-stop-race-mechanism/README.md` @ `task/a6-stop-race-20261109` |
 | measurement read | `dev/agent-workflow/evidence/c2-adjudication/README.md` §11.2 @ `task/c2-adjudication-20261109` |

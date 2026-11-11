@@ -347,25 +347,25 @@
   {
    "path": "packages/runtime/control/index.ts",
    "sha256": "727d1d22c260b71935bbe1f1ac3d643b362fbe42c4b06d290c159df54399b390",
-   "pr": "A6-STOP-FENCE draft PR on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
+   "pr": "PR #710 (A6-STOP-FENCE, draft) on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
    "reason": "A6-STOP-FENCE (owner ruling A, narrow cancellation barrier + disclosed residual window): the last-mile consumption boundary now reads the SAME invocation cancellation signal the approval wait already consumes, as an OPTIONAL second argument (never a scope field, never durable identity), immediately before the durable consumption write; on a trip it writes ZERO control-allow-consumed, leaves the durable allow untouched, executes nothing and closes the request with one terminal control-request-abandoned (reason invocation-cancelled-before-consumption). The ledger sequence allocation moved BEFORE the probe so only the consumption putEntry await remains after it (the disclosed residual window, measured in the host-free suite). No atomic cross-process per-invocation Stop state is claimed and CORE PATCH BUDGET stays 0. Evidence dev/agent-workflow/evidence/a6-stop-fence/; tests packages/runtime/test/a6-stop-fence.test.ts (8 arms, RED before the fence)."
   },
   {
    "path": "packages/runtime/control/service.ts",
    "sha256": "8f337571f4f55f92969bf4df58909227a369caa098c1c8dac90238d993e2ffc8",
-   "pr": "A6-STOP-FENCE draft PR on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
+   "pr": "PR #710 (A6-STOP-FENCE, draft) on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
    "reason": "A6-STOP-FENCE (owner ruling A, narrow cancellation barrier + disclosed residual window): the last-mile consumption boundary now reads the SAME invocation cancellation signal the approval wait already consumes, as an OPTIONAL second argument (never a scope field, never durable identity), immediately before the durable consumption write; on a trip it writes ZERO control-allow-consumed, leaves the durable allow untouched, executes nothing and closes the request with one terminal control-request-abandoned (reason invocation-cancelled-before-consumption). The ledger sequence allocation moved BEFORE the probe so only the consumption putEntry await remains after it (the disclosed residual window, measured in the host-free suite). No atomic cross-process per-invocation Stop state is claimed and CORE PATCH BUDGET stays 0. Evidence dev/agent-workflow/evidence/a6-stop-fence/; tests packages/runtime/test/a6-stop-fence.test.ts (8 arms, RED before the fence)."
   },
   {
    "path": "packages/runtime/control/types.ts",
    "sha256": "d7a655495fd558c47823398de6c4bdb8c0dd285c5aa9784474b6a4bc3c3a3eab",
-   "pr": "A6-STOP-FENCE draft PR on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
+   "pr": "PR #710 (A6-STOP-FENCE, draft) on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
    "reason": "A6-STOP-FENCE (owner ruling A, narrow cancellation barrier + disclosed residual window): the last-mile consumption boundary now reads the SAME invocation cancellation signal the approval wait already consumes, as an OPTIONAL second argument (never a scope field, never durable identity), immediately before the durable consumption write; on a trip it writes ZERO control-allow-consumed, leaves the durable allow untouched, executes nothing and closes the request with one terminal control-request-abandoned (reason invocation-cancelled-before-consumption). The ledger sequence allocation moved BEFORE the probe so only the consumption putEntry await remains after it (the disclosed residual window, measured in the host-free suite). No atomic cross-process per-invocation Stop state is claimed and CORE PATCH BUDGET stays 0. Evidence dev/agent-workflow/evidence/a6-stop-fence/; tests packages/runtime/test/a6-stop-fence.test.ts (8 arms, RED before the fence)."
   },
   {
    "path": "packages/runtime/operation-permission/pa-control-bridge.ts",
    "sha256": "ff6f5e5469d9b4b2a2071d79907a5117c29b9526ee3135cce122ec43439a5a61",
-   "pr": "A6-STOP-FENCE draft PR on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
+   "pr": "PR #710 (A6-STOP-FENCE, draft) on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
    "reason": "A6-STOP-FENCE (owner ruling A, narrow cancellation barrier + disclosed residual window): the last-mile consumption boundary now reads the SAME invocation cancellation signal the approval wait already consumes, as an OPTIONAL second argument (never a scope field, never durable identity), immediately before the durable consumption write; on a trip it writes ZERO control-allow-consumed, leaves the durable allow untouched, executes nothing and closes the request with one terminal control-request-abandoned (reason invocation-cancelled-before-consumption). The ledger sequence allocation moved BEFORE the probe so only the consumption putEntry await remains after it (the disclosed residual window, measured in the host-free suite). No atomic cross-process per-invocation Stop state is claimed and CORE PATCH BUDGET stays 0. Evidence dev/agent-workflow/evidence/a6-stop-fence/; tests packages/runtime/test/a6-stop-fence.test.ts (8 arms, RED before the fence)."
   }
  ]
