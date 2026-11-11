@@ -54,7 +54,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import { TerminalSessionService } from '@deepseek-ai/dsh-terminal'
 import { Config as BashTerminalConfig, apply as applyBashTerminalBackend } from '@deepseek-ai/dsh-terminal-bash'
-import type { EffectiveIoPolicy, PathRuleSet } from '../../member-io-policy/src/types.js'
+import type { PathRuleSet } from '../../member-io-policy/src/types.js'
 
 /** The closed refusal vocabulary of THIS face (never a bare `Error`). */
 export const PTY_FACE_REFUSAL_CODES = [
