@@ -1,0 +1,464 @@
+{
+ "schema": "c2-agreement/1",
+ "scope": "C2-B",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateRef": "refs/heads/candidate/v0.1.6-1",
+ "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+ "hostVersion": "0.2.0-rc.2",
+ "authoritySnapshot": "as20261109r1",
+ "instrument": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+ "optIn": {
+  "alpha6Officer": true,
+  "planeTakeover": true
+ },
+ "instruments": {
+  "allowdeny": {
+   "boots": [
+    {
+     "dir": "c2b-a6-allowdeny-r1",
+     "runId": "2026-11-10T15-57-52"
+    },
+    {
+     "dir": "c2b-a6-allowdeny-r1b",
+     "runId": "2026-11-10T16-03-12"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-2",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-3",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-4",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-5",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-6",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-27",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-28",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-29",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "stop": {
+   "boots": [
+    {
+     "dir": "c2b-a6-stop-r1",
+     "runId": "2026-11-10T16-07-49"
+    },
+    {
+     "dir": "c2b-a6-stop-r2",
+     "runId": "2026-11-10T16-09-24"
+    },
+    {
+     "dir": "c2b-a6-stop-r3",
+     "runId": "2026-11-10T16-56-12"
+    },
+    {
+     "dir": "c2b-a6-stop-r4",
+     "runId": "2026-11-10T17-05-22"
+    },
+    {
+     "dir": "c2b-a6-stop-r5",
+     "runId": "2026-11-10T17-05-46"
+    },
+    {
+     "dir": "c2b-a6-stop-r6",
+     "runId": "2026-11-10T17-06-08"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-11",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true,
+     "note": "cancel admitted 6/6"
+    },
+    {
+     "id": "A6-12",
+     "boot1": "FAIL",
+     "boot2": "PASS",
+     "agree": false,
+     "distribution": {
+      "consumed_true": 4,
+      "consumed_false": 2,
+      "total": 6,
+      "runs": [
+       "r1",
+       "r3",
+       "r5",
+       "r6"
+      ]
+     },
+     "perBoot": {
+      "r1": "FAIL consumed=true file=\"\"",
+      "r2": "PASS consumed=false file=\"\"",
+      "r3": "FAIL consumed=true file=\"\"",
+      "r4": "PASS consumed=false file=\"\"",
+      "r5": "FAIL consumed=true file=\"\"",
+      "r6": "FAIL consumed=true file=\"\""
+     }
+    }
+   ],
+   "agreeing": false,
+   "originalBoots": [
+    {
+     "dir": "c2b-a6-stop-r1",
+     "runId": "2026-11-10T16-07-49"
+    },
+    {
+     "dir": "c2b-a6-stop-r2",
+     "runId": "2026-11-10T16-09-24"
+    }
+   ]
+  },
+  "sticky": {
+   "boots": [
+    {
+     "dir": "c2b-a6-sticky-r1",
+     "runId": "2026-11-10T16-10-01"
+    },
+    {
+     "dir": "c2b-a6-sticky-r2",
+     "runId": "2026-11-10T16-12-41"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-22",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-26",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-27",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-23",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    },
+    {
+     "id": "A6-24",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "crash": {
+   "boots": [
+    {
+     "dir": "c2b-a6-crash-r1",
+     "runId": "2026-11-10T16-15-28"
+    },
+    {
+     "dir": "c2b-a6-crash-r2",
+     "runId": "2026-11-10T16-16-50"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-13",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-14",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "unclaimed": {
+   "boots": [
+    {
+     "dir": "c2b-a6-unclaimed-r1",
+     "runId": "2026-11-10T16-19-11"
+    },
+    {
+     "dir": "c2b-a6-unclaimed-r2",
+     "runId": "2026-11-10T16-21-22"
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-26",
+     "boot1": "FAIL",
+     "boot2": "FAIL",
+     "agree": true
+    }
+   ],
+   "agreeing": true
+  },
+  "denyfix": {
+   "instrument": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+   "invocation": "C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_EXEC_NEG=1 C1_A6_RECIPIENTS=1",
+   "boots": [
+    {
+     "dir": "c2b-a6-denyfix-r1",
+     "runId": "2026-11-10T16-57-40",
+     "exit": 0
+    },
+    {
+     "dir": "c2b-a6-denyfix-r2",
+     "runId": "2026-11-10T16-59-06",
+     "exit": 0
+    }
+   ],
+   "cases": [
+    {
+     "id": "A6-1",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-2",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-3",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-4",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-5",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-6",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-27",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-28",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-29",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A6-7",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    }
+   ],
+   "agreeing": true,
+   "note": "corrected invocation after the a6-deny-diagnosis 2x2; without C1_A6_RECIPIENTS the Officer ask rule does not exist and request=none is structurally guaranteed"
+  }
+ },
+ "adjudicatedCases": [
+  {
+   "id": "C2-B/officer-allow",
+   "verdict": "PASS",
+   "cases": [
+    "A6-2",
+    "A6-3",
+    "A6-4",
+    "A6-5"
+   ]
+  },
+  {
+   "id": "C2-B/single-consumption-single-execution",
+   "verdict": "PASS",
+   "cases": [
+    "A6-6",
+    "A6-27"
+   ]
+  },
+  {
+   "id": "C2-B/officer-deny",
+   "verdict": "PASS",
+   "note": "the earlier FAIL was an incomplete recorded invocation (no Officer ask rule => static fallback deny => request=none), not the product; a6-deny-diagnosis 2x2 (PR #708) identical on c66fa8b03 and 168266dbf",
+   "cases": [
+    "A6-28"
+   ],
+   "previousVerdict": "FAIL",
+   "supersededBy": "revision 2 (2026-11-10) \u2014 corrected invocation C1_A6_RECIPIENTS=1",
+   "decisive": "PASS A6-28 request=ctrl-0h0jf3d1nmbzde0p3zjwf19f decision=deny consumed=false execFacts=0 file=false done=true (r1); request=ctrl-06pc7ad0inarny11ylrgf0n4 consumed=false execFacts=0 (r2)"
+  },
+  {
+   "id": "C2-B/post-consumption-throw",
+   "verdict": "PASS",
+   "note": "same precondition failure",
+   "cases": [
+    "A6-29"
+   ],
+   "previousVerdict": "FAIL",
+   "supersededBy": "revision 2 (2026-11-10) \u2014 corrected invocation",
+   "decisive": "PASS A6-29 request=ctrl-1kji77e1kdhh791c3ag1k1n1 consumed=true execFacts=failed callId=team-inst-13ej0rh0dkz1-bash:hexec:...-2 (r1); request=ctrl-02oml390nrka3q06l3gj70hs consumed=true execFacts=failed (r2)"
+  },
+  {
+   "id": "C2-B/goal-authorisation",
+   "verdict": "NOT-ESTABLISHED (exact A6-on conjunction)",
+   "note": "A5-governed convergence PROVEN via pd33; A6-on human attribution PASS via A6-27; no joint instrument",
+   "cases": []
+  },
+  {
+   "id": "C2-B/stop",
+   "verdict": "DISAGREE / PRODUCT RACE (4 of 6 consumed)",
+   "note": "race between the Stop acknowledgement and the consumption step of the allow that precedes it; no side effect in any boot; rate 67% consumed",
+   "cases": [
+    "A6-11",
+    "A6-12"
+   ],
+   "previousVerdict": "DISAGREE (2 boots)",
+   "supersededBy": "revision 2 (2026-11-10) \u2014 six boots",
+   "decisive": "A6-11 PASS 6/6; A6-12 4 FAIL consumed=true file=\"\" / 2 PASS consumed=false file=\"\"; late allow rejected CONTROL_REQUEST_DECIDED 6/6; consumption at +83..110 ms after the allow decision, simultaneous with the cancel; effect file \"\" 6/6"
+  },
+  {
+   "id": "C2-B/sticky-stop",
+   "verdict": "FAIL",
+   "note": "no durable marker in either boot; consistent with RELEASE-NOTES 4.7 latch-scoped limit",
+   "cases": [
+    "A6-22",
+    "A6-23",
+    "A6-24",
+    "A6-26",
+    "A6-27"
+   ]
+  },
+  {
+   "id": "C2-B/cold-recovery-sigkill",
+   "verdict": "PASS",
+   "cases": [
+    "A6-13",
+    "A6-14"
+   ]
+  },
+  {
+   "id": "C2-B/a6-26-accepted-not-claimed",
+   "verdict": "REPRODUCED-AS-DOCUMENTED",
+   "note": "verdict=abandoned-terminal, recoveryCode=CONTROL_REQUEST_ABANDONED, discoverable=true, abandoned=1",
+   "cases": [
+    "A6-26"
+   ]
+  }
+ ],
+ "agreeing": false,
+ "disagreements": [
+  {
+   "case": "A6-12 / C2-B/stop",
+   "boot1": "FAIL consumed=true",
+   "boot2": "PASS consumed=false",
+   "distribution": "4 consumed / 2 not consumed over 6 boots",
+   "treatment": "race, reported with the observed rate; not averaged"
+  }
+ ],
+ "scopeVerdict": "NOT PASS (Stop consumption race 4/6; Sticky Stop and exact Goal-authorisation conjunction unestablished). Deny arm PASS on corrected invocation.",
+ "revision": 2,
+ "updatedAt": "2026-11-10T17:10:00Z",
+ "revisionHistory": [
+  {
+   "revision": 1,
+   "date": "2026-11-10",
+   "summary": "initial C2-B: deny/throw FAIL as instrumented, Stop DISAGREE over 2 boots"
+  },
+  {
+   "revision": 2,
+   "date": "2026-11-10",
+   "summary": "corrected deny invocation PASS 2/2; Stop extended to 6 boots, 4/6 consumed = product race; other arms unchanged"
+  }
+ ]
+}

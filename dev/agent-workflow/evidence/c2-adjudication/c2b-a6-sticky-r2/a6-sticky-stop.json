@@ -1,0 +1,23 @@
+{
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "c1a6sticky-55njyfk3d2",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "rows": [],
+  "stoppedRows": [],
+  "wakeRows": [],
+  "wakeSeen": 1,
+  "wakesAfter": 1,
+  "markersAfterRestart": [],
+  "wakesAfterRestart": 1,
+  "markersAfterResume": [],
+  "wakesAfterResume": 1,
+  "executedAfterResume": false,
+  "restartError": null
+}

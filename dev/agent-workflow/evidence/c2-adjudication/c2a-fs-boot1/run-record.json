@@ -1,0 +1,588 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+  "suite": "a5sf-fs-devlive",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-10T16:03:12.139Z",
+  "selectedCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-archive-boundary-no-callable-shadow",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-on-read-path",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied",
+    "fs:edit-in-lane",
+    "fs:edit-outside-ceiling",
+    "fs:read-image-observation"
+  ],
+  "allCases": [
+    "live:search-row1-grep-in-lane-allowed",
+    "live:search-row2-grep-outside-ceiling-refused",
+    "live:search-row3-grep-outside-restriction-refused",
+    "live:search-row4-cancelled-search-settles-cancelled",
+    "live:search-row5-invalid-pattern-is-error",
+    "live:search-row6-archive-boundary-no-callable-shadow",
+    "live:row1-read-a-inside-both-allowed",
+    "live:row2-read-b-binding-deny-on-read-path",
+    "live:row3-read-c-refused-no-widening",
+    "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+    "live:row4b-write-b-ceiling-allowed-read-not-implied",
+    "fs:edit-in-lane",
+    "fs:edit-outside-ceiling",
+    "fs:read-image-observation"
+  ],
+  "subset": false,
+  "selected": 14,
+  "totalCases": 14,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "teamSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "line": "u5a5sfdev1",
+    "sink": "world-home a5sf-consult.jsonl (copy: consultations.jsonl)",
+    "recordClass": "DEV-LIVE",
+    "allocation": "DEV-LIVE pilot of the owner 2026-11-09 workflow ruling on the FS/Search face: repeated self-authorised development starts in an isolated World; development evidence only, never a candidate claim and never V@B",
+    "grantId": "devlive-fs-search-1",
+    "allocationItem": "FS/Search dev-live pilot: read/write/edit/grep/glob measured on current master",
+    "devLiveAuthorisation": {
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1",
+      "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap"
+    },
+    "providerComposition": "test row dev/agent-workflow/evidence/c2-adjudication/fs/a5sf-fs-devlive-realm-row.mjs (the accepted search row + an fs ToolBinding, so one Member carries both faces)",
+    "laneAlgebra": "packages/runtime/member-io-policy/src/path-rules.ts # intersectPathRuleSets / matchLocator (the product algebra; the lane INPUTS are fixtures)",
+    "providerCounter": "installed by the SAME evidence row (config.counterPath): the shipped services have no counter; in-memory prototype wrap, pass-through",
+    "cancelTrigger": "the SHIPPED client route /api/session/cancel (session-controller/commands.ts -> agent.cancel({kind:\"user\"})); no test route composes a cancel",
+    "negativeControl": "the ANCHOR leader (no Member realm exists) greps the same outside file: it must succeed and leak, otherwise row 2 is vacuous"
+  },
+  "cases": [
+    {
+      "id": "live:search-row1-grep-in-lane-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:16.943Z",
+      "status": "judged",
+      "reason": "IN_LANE_GREP_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row2-grep-outside-ceiling-refused",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:16.943Z",
+      "status": "judged",
+      "reason": "OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row3-grep-outside-restriction-refused",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:16.944Z",
+      "status": "judged",
+      "reason": "RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row5-invalid-pattern-is-error",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:16.944Z",
+      "status": "judged",
+      "reason": "INVALID_PATTERN_SURFACED_AS_TOOL_ERROR",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "delegate-dispatch"
+    },
+    {
+      "id": "live:search-row4-cancelled-search-settles-cancelled",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.050Z",
+      "status": "judged",
+      "reason": "CANCELLED_SEARCH_ABORTED_WITH_KILLED_CHILD_NO_RESULT",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row1-read-a-inside-both-allowed",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.050Z",
+      "status": "judged",
+      "reason": "READ_A_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "READ_A_ALLOWED_AND_CONFINED",
+        "checks": {
+          "notError": true,
+          "claimReturned": true,
+          "bindingAllowFact": true,
+          "providerServed": true,
+          "providerConfined": true
+        },
+        "allowFacts": 2,
+        "bindingAllowFacts": 2,
+        "counterRows": 1
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row2-read-b-binding-deny-on-read-path",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.050Z",
+      "status": "judged",
+      "reason": "BINDING_DENY_ON_READ_PATH",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "BINDING_DENY_ON_READ_PATH",
+        "checks": {
+          "isError": true,
+          "typedLaneRefusal": true,
+          "noClaimLeak": true,
+          "noWriteContentLeak": true,
+          "readPathConsulted": true,
+          "everyReadPathConsultationDenied": true,
+          "everyReadPathFactOnBindingLane": true,
+          "bindingDenyOnReadPath": true,
+          "noProviderRead": true
+        },
+        "failed": [],
+        "readPathFacts": 1,
+        "readPathMethods": [
+          "stat"
+        ],
+        "readPathDecisions": [
+          "deny"
+        ],
+        "nonReadPathFacts": [],
+        "bindingReadPathFacts": 1,
+        "factsForB": 1,
+        "counterRows": 0,
+        "observed": "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/fs/outside-restriction.txt' is outside every allow subtree of the lane"
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row3-read-c-refused-no-widening",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.050Z",
+      "status": "judged",
+      "reason": "REFUSED_WITHOUT_WIDENING",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "REFUSED_WITHOUT_WIDENING",
+        "checks": {
+          "isError": true,
+          "typedLaneRefusal": true,
+          "noClaimLeak": true,
+          "exactlyOneBindingDeny": true,
+          "noProviderRead": true,
+          "ceilingDenies": true,
+          "restrictionAllows": true,
+          "effectiveDenies": true,
+          "noWidenedAllow": true
+        },
+        "effectiveReadAllow": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside"
+        ]
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.051Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_IN_LANE_READABLE",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "CEILING_WRITE_IN_LANE_READABLE",
+        "checks": {
+          "notError": true,
+          "diskMatches": true,
+          "allowFactPresent": true,
+          "everyWriteFactOnCeiling": true,
+          "confinedProviderServed": true
+        },
+        "failed": [],
+        "isError": false,
+        "disk": "A5SF_CAND1_WRITE_4A_u5u5a5sfdev1-20261110T16-03-12Z\n",
+        "expectedContent": "A5SF_CAND1_WRITE_4A_u5u5a5sfdev1-20261110T16-03-12Z\n",
+        "observed": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/w4a.txt</path>\n<type>file</type>\n<content>\nUpdated file\n</content>",
+        "writeFacts": 1,
+        "ceilingFacts": 1,
+        "readLaneWriteFacts": 0,
+        "counterRows": 1
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.051Z",
+      "status": "judged",
+      "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "judgeVerdict": "PROVEN",
+      "detail": {
+        "reason": "CEILING_WRITE_ALLOWED_READ_NOT_IMPLIED",
+        "checks": {
+          "isError": true,
+          "ceilingWriteAllowed": true,
+          "noReadLaneWriteAllow": true,
+          "notTeamLaneRefusal": true,
+          "notReadCouplingRefusal": true,
+          "noPlantedBytesReturned": true,
+          "diskUnchanged": true
+        },
+        "failed": [],
+        "isError": true,
+        "disk": "A5SF_CAND1_W4B_ORIG_u5u5a5sfdev1-20261110T16-03-12Z\n",
+        "plantedContent": "A5SF_CAND1_W4B_ORIG_u5u5a5sfdev1-20261110T16-03-12Z\n",
+        "observed": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/w4b.txt\": file has not been read — read the file, then retry",
+        "writeFacts": 1,
+        "writeDecisions": [
+          {
+            "method": "writeText",
+            "decision": "allow",
+            "realm": "member"
+          }
+        ],
+        "ceilingWriteAllowFacts": 1,
+        "readLaneWriteAllowFacts": 0,
+        "counterRows": 1,
+        "providerWrote": true
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "fs:edit-in-lane",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.051Z",
+      "status": "judged",
+      "reason": "CEILING_EDIT_ALLOWED_AND_CONFINED",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "detail": {
+        "isError": false,
+        "writeCalls": 1,
+        "facts": 3,
+        "text": "The file /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/edit.txt has been updated successfully."
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "fs:edit-outside-ceiling",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.051Z",
+      "status": "judged",
+      "reason": "OUTSIDE_CEILING_EDIT_REFUSED_BEFORE_PROVIDER_LOCUS_host-read-before-write-observation-policy",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [],
+      "detail": {
+        "isError": true,
+        "locus": "host-read-before-write-observation-policy",
+        "guardFacts": 0,
+        "writeCalls": 0,
+        "text": "Error: cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside-edit/secret.txt\": file has not been read — read the file, then retry"
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "fs:read-image-observation",
+      "verdict": "NOT_REACHED",
+      "at": "2026-11-10T16:10:19.051Z",
+      "status": "not-reached",
+      "reason": "READ_IMAGE_ROUTE_REFUSED_MODEL_DECLARES_NO_IMAGE_INPUT",
+      "failed": [],
+      "sampleComplete": true,
+      "missing": [
+        "confined-read"
+      ],
+      "detail": {
+        "isError": true,
+        "confinedRead": false,
+        "guardFacts": 0,
+        "fileBytes": 70,
+        "text": "Error: cannot read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/pixel.png\" as an image: model \"a5sf-search-model\" does not declare image input; switch to an image-capable model to read images"
+      },
+      "judgedAtStage": "evidence-collection"
+    },
+    {
+      "id": "live:search-row6-archive-boundary-no-callable-shadow",
+      "verdict": "PASS",
+      "at": "2026-11-10T16:10:19.293Z",
+      "status": "judged",
+      "reason": "NO_USABLE_CALLABLE_SHADOW_AFTER_STOP",
+      "failed": [],
+      "detail": {
+        "checks": {
+          "archivedLifecycle": true,
+          "noActiveMemberLeft": true,
+          "everyDispatchExplained": true,
+          "noSuccessAfterStop": true,
+          "noCallableShadow": true,
+          "noManagedDisposeFault": true,
+          "noUnattributedRealmFault": true,
+          "factsAreTimestamped": true,
+          "noFactAfterStop": true,
+          "probeFactsAreRefusals": true,
+          "noProcessAfterStop": true,
+          "hostDead": true,
+          "portReleased": true,
+          "homeDeleted": true,
+          "noOrphanProcess": true
+        },
+        "identity": {
+          "managed": [],
+          "foreign": [],
+          "unattributed": [],
+          "ignoredNonFaultCount": 72,
+          "liveSurfaceChanges": [],
+          "identity": {
+            "sessionId": "session-team-child-48973fbd6f6bb615d57047d1467cdae4",
+            "instanceId": null,
+            "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+            "duringManagedDisposal": true,
+            "managedRealmCount": 1
+          }
+        },
+        "archive": {
+          "status": 200,
+          "ok": true
+        },
+        "stopInstant": "2026-11-10T16:10:19.112Z",
+        "factsObserved": 18,
+        "factsAfterStop": [],
+        "probeFactsObserved": 0,
+        "probeFacts": [],
+        "postStop": [
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          },
+          {
+            "status": 422,
+            "ok": null,
+            "code": null
+          }
+        ],
+        "host": {
+          "hostAlive": false,
+          "portStillListening": false,
+          "homeDeleted": true
+        },
+        "orphanPids": [],
+        "confinedSpawnsAfterStop": 0,
+        "baseSpawnsAfterStop": 0
+      },
+      "sampleComplete": true,
+      "missing": [],
+      "judgedAtStage": "teardown"
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/dev/agent-workflow/evidence/c2-adjudication/fs/run-ledger.jsonl",
+    "thisRunCount": 2,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-10T16:03:12.173Z",
+        "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+        "plannedStarts": 1
+      },
+      {
+        "at": "2026-11-10T16:04:20.493Z",
+        "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+        "suite": "a5sf-fs-devlive",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261110T16-03-12Z",
+        "phase": "a5sf-fs-devlive-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-fs-devlive-boot1",
+      "world": "u5u5a5sfdev1-20261110T16-03-12Z",
+      "port": 3191,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/dev/agent-workflow/evidence/c2-adjudication/fs/logs/u5u5a5sfdev1-20261110T16-03-12Z/instance-port3191.log"
+    }
+  ],
+  "runVerdict": {
+    "overall": "NOT_REACHED",
+    "partial": false,
+    "abortedAt": null,
+    "judged": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:edit-outside-ceiling"
+    ],
+    "passed": [
+      "live:search-row1-grep-in-lane-allowed",
+      "live:search-row2-grep-outside-ceiling-refused",
+      "live:search-row3-grep-outside-restriction-refused",
+      "live:search-row4-cancelled-search-settles-cancelled",
+      "live:search-row5-invalid-pattern-is-error",
+      "live:search-row6-archive-boundary-no-callable-shadow",
+      "live:row1-read-a-inside-both-allowed",
+      "live:row2-read-b-binding-deny-on-read-path",
+      "live:row3-read-c-refused-no-widening",
+      "live:row4a-write-in-lane-readable-allowed-ceiling-only",
+      "live:row4b-write-b-ceiling-allowed-read-not-implied",
+      "fs:edit-in-lane",
+      "fs:edit-outside-ceiling"
+    ],
+    "neverObserved": [
+      "fs:read-image-observation"
+    ],
+    "note": "the run completed; overall is the worst case verdict"
+  },
+  "negativeControl": {
+    "verdict": "PROVEN",
+    "reason": "UNCONFINED_CONTROL_LEAKS",
+    "failed": [],
+    "detail": {
+      "result": {
+        "isError": false,
+        "text": "Found 2 matches\n\n/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside/secret.txt\nLine 1: A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261110T16-03-12Z\nLine 2: A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261110T16-03-12Z"
+      },
+      "leakedTokens": [
+        "A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261110T16-03-12Z",
+        "A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261110T16-03-12Z"
+      ],
+      "baseSpawns": 11,
+      "confinedSpawns": 0,
+      "guardFactsBeforeRealm": 0,
+      "note": "this control is what makes row 2 discriminating: the SAME search leaks when nothing confines it"
+    }
+  },
+  "globFace": {
+    "inLane": "PROVEN",
+    "outsideCeiling": "PROVEN"
+  },
+  "fixtures": {
+    "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace",
+    "inLaneDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside",
+    "inLaneFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/needle.txt",
+    "restrictedFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/outside-restriction.txt",
+    "outsideDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside",
+    "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside/secret.txt",
+    "outsideGlobDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside-glob",
+    "invalidDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/invalid",
+    "globDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/glob",
+    "fifo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/blocking.fifo",
+    "readA": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/needle.txt",
+    "readB": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/fs/outside-restriction.txt",
+    "readC": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside/secret.txt",
+    "w4a": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/w4a.txt",
+    "w4b": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/w4b.txt",
+    "editInLane": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/edit.txt",
+    "editOutside": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside-edit/secret.txt",
+    "imageFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside/pixel.png",
+    "ceiling": {
+      "read": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace",
+      "write": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace"
+    },
+    "restrictionReadAllow": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/workspace/lane/inside",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/ceiling-outside"
+    ],
+    "effectiveRead": "product intersection of ceiling ∩ restriction; the per-path dispositions are in lane-report.json probePaths.effectiveRead"
+  },
+  "claims": {
+    "needle": "A5SF_SEARCH_NEEDLE_u5u5a5sfdev1-20261110T16-03-12Z",
+    "outsideClaim": "A5SF_SEARCH_OUTSIDE_SECRET_u5u5a5sfdev1-20261110T16-03-12Z",
+    "outsideSecond": "A5SF_SEARCH_OUTSIDE_SECOND_u5u5a5sfdev1-20261110T16-03-12Z",
+    "outsidePattern": "A5SF_SEARCH_OUTSIDE",
+    "restrictedClaim": "A5SF_SEARCH_RESTRICTION_ONLY_u5u5a5sfdev1-20261110T16-03-12Z",
+    "restrictedPattern": "A5SF_SEARCH_RESTRICTION",
+    "fifoPattern": "A5SF_SEARCH_FIFO",
+    "w4aOrig": "A5SF_CAND1_W4A_ORIG_u5u5a5sfdev1-20261110T16-03-12Z",
+    "w4aNew": "A5SF_CAND1_WRITE_4A_u5u5a5sfdev1-20261110T16-03-12Z\n",
+    "w4bOrig": "A5SF_CAND1_W4B_ORIG_u5u5a5sfdev1-20261110T16-03-12Z",
+    "w4bNew": "A5SF_CAND1_WRITE_4B_u5u5a5sfdev1-20261110T16-03-12Z\n",
+    "editOrig": "A5SF_DEVLIVE_EDIT_ORIG_u5u5a5sfdev1-20261110T16-03-12Z",
+    "editNew": "A5SF_DEVLIVE_EDIT_NEW_u5u5a5sfdev1-20261110T16-03-12Z",
+    "editOutsideMutated": "A5SF_DEVLIVE_EDIT_OUTSIDE_MUTATED_u5u5a5sfdev1-20261110T16-03-12Z"
+  },
+  "sink": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-03-12Z/a5sf-consult.jsonl",
+    "facts": 18,
+    "copy": {
+      "copied": true,
+      "sha256": "aa0dec91c91c46b830302f964fa0e9a8ffdc76d357d2c163663fb90a2fd1fcdb",
+      "bytes": 9528
+    }
+  },
+  "archive": {
+    "previousRun": "runs/2026-11-10T16-03-12-137Z"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-fs-devlive-2026-11-10T16-03-12-138Z' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "NOT_REACHED",
+  "partial": false,
+  "finishedAt": "2026-11-10T16:10:19.295Z"
+}
