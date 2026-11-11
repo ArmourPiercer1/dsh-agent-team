@@ -1,0 +1,11 @@
+{
+  "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2-2/dev/agent-workflow/evidence/c2-adjudication-2/dev-live-grant.json",
+  "scope": "DEV-LIVE",
+  "face": "FS Provider",
+  "world": "u5a5sfdev1",
+  "grantId": "devlive-fs-search-1",
+  "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+  "headAtThisStart": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "bootSequence": 1,
+  "note": "dev-live start #1 of the FS/Search pilot at bb3c158eb1f76f8db429da01e9a4c5a0e118ca90; the authorisation is reusable and uncapped, the executed commit is recorded here and in the ledger"
+}

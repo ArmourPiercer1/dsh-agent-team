@@ -1,0 +1,66 @@
+# v016 PACKAGED ACCEPTANCE — OPERATOR CONFIG (not a product change).
+# The plugin row itself comes from the INSTALLED tarball bundle layer
+# (dsh-agent-team/cordis.patch.yml). This profile layer overrides its
+# config only: the documented governed-Member preset enablement, the
+# documented Alpha.6 opt-in, the Team design and the mock model.
+- id: "dsh-agent-team"
+  name: "dsh-agent-team/host"
+  config:
+    {
+      "bootPhase": "create-or-open",
+      "rootSessionId": "team-boot-v016pack-r2",
+      "blueprintSource": "---\n{\n  \"schemaVersion\": 5,\n  \"blueprintId\": \"v016-pack-bp-r2\",\n  \"revision\": \"1\",\n  \"leader\": {\n    \"templateId\": \"leader\",\n    \"persona\": \"You lead the V016PACK_R2 packaged acceptance team. Follow the operator instruction exactly, once.\"\n  },\n  \"members\": [\n    {\n      \"templateId\": \"officer\",\n      \"displayName\": \"Officer\",\n      \"persona\": \"You are the V016PACK_R2 Officer. Resolve the review legs routed to you; do not execute work.\",\n      \"capabilities\": {\n        \"teamTools\": {\n          \"kind\": \"allow\",\n          \"items\": [\n            \"team_list_pending_control\",\n            \"team_resolve_control\"\n          ]\n        },\n        \"builtinToolDeny\": [\n          \"ask_user_question\",\n          \"create_goal\",\n          \"exit_plan_mode\",\n          \"get_goal\",\n          \"glob\",\n          \"grep\",\n          \"interrupt_agent\",\n          \"job_kill\",\n          \"job_list\",\n          \"job_output\",\n          \"list_agents\",\n          \"present\",\n          \"send_message\",\n          \"skill\",\n          \"subagent_fork\",\n          \"update_goal\",\n          \"web_fetch\",\n          \"web_search\",\n          \"workflow\"\n        ],\n        \"skills\": {\n          \"kind\": \"allow\",\n          \"items\": []\n        },\n        \"mcp\": {\n          \"kind\": \"allow\",\n          \"items\": []\n        },\n        \"permissions\": {\n          \"default\": \"deny\",\n          \"allow\": [],\n          \"ask\": [],\n          \"deny\": []\n        }\n      }\n    },\n    {\n      \"templateId\": \"worker\",\n      \"displayName\": \"Worker\",\n      \"persona\": \"You are the V016PACK_R2 Worker. Do exactly the delegated task once, then report.\",\n      \"capabilities\": {\n        \"teamTools\": {\n          \"kind\": \"deny\"\n        },\n        \"builtinToolDeny\": [\n          \"ask_user_question\",\n          \"create_goal\",\n          \"exit_plan_mode\",\n          \"get_goal\",\n          \"glob\",\n          \"grep\",\n          \"interrupt_agent\",\n          \"job_kill\",\n          \"job_list\",\n          \"job_output\",\n          \"list_agents\",\n          \"present\",\n          \"send_message\",\n          \"skill\",\n          \"subagent_fork\",\n          \"update_goal\",\n          \"web_fetch\",\n          \"web_search\",\n          \"workflow\"\n        ],\n        \"skills\": {\n          \"kind\": \"allow\",\n          \"items\": []\n        },\n        \"mcp\": {\n          \"kind\": \"allow\",\n          \"items\": []\n        },\n        \"permissions\": {\n          \"default\": \"ask\",\n          \"allow\": [\n            {\n              \"tool\": \"read\",\n              \"resource\": {\n                \"kind\": \"subtree\",\n                \"path\": \"team\"\n              }\n            }\n          ],\n          \"ask\": [\n            {\n              \"tool\": \"bash\",\n              \"resource\": {\n                \"kind\": \"any\"\n              }\n            }\n          ],\n          \"deny\": []\n        }\n      }\n    },\n    {\n      \"templateId\": \"goal\",\n      \"displayName\": \"Goal Worker\",\n      \"persona\": \"You are the V016PACK_R2 Goal Worker. Create and advance your Goal exactly as instructed.\"\n    }\n  ],\n  \"requirements\": [],\n  \"memberEnvelopes\": [\n    {\n      \"templateId\": \"worker\",\n      \"envelope\": {\n        \"allow\": [\n          \"send-message\",\n          \"report-progress\",\n          \"request-control\"\n        ],\n        \"deny\": []\n      }\n    },\n    {\n      \"templateId\": \"officer\",\n      \"envelope\": {\n        \"allow\": [\n          \"resolve-control\"\n        ],\n        \"deny\": []\n      }\n    }\n  ],\n  \"policyStates\": [\n    {\n      \"id\": \"default\",\n      \"description\": \"Default state.\"\n    }\n  ],\n  \"permissionMutationEnvelope\": {\n    \"rules\": []\n  },\n  \"teamHardEnvelope\": {\n    \"rules\": []\n  },\n  \"teamEnvelope\": {\n    \"allow\": [\n      \"assign-task\",\n      \"create-member\",\n      \"send-message\",\n      \"report-progress\",\n      \"request-control\",\n      \"resolve-control\"\n    ],\n    \"deny\": []\n  },\n  \"metadata\": {},\n  \"reviewRouting\": {\n    \"enabled\": true,\n    \"officerTemplateId\": \"officer\",\n    \"ordinaryToolApprovals\": {\n      \"default\": \"officer\",\n      \"leaderExceptions\": []\n    },\n    \"whenOfficerUnavailable\": \"hold\"\n  }\n}\n---\n",
+      "seedMembers": [],
+      "generation": 1,
+      "deniedSelection": null,
+      "mcpServers": [],
+      "staticModel": {
+        "provider": "deepseek-official",
+        "model": "v016pack_r2-model"
+      },
+      "environmentFacts": [
+        {
+          "domain": "tool",
+          "subject": "web",
+          "available": true,
+          "generation": 1
+        },
+        {
+          "domain": "skill",
+          "subject": "base",
+          "available": true,
+          "generation": 1
+        },
+        {
+          "domain": "persona",
+          "subject": "standard",
+          "available": true,
+          "generation": 1
+        }
+      ],
+      "externalPolicyFacts": {
+        "hard": {},
+        "capabilityExists": {}
+      },
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/workspace",
+      "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/blueprints",
+      "mcpServer": null,
+      "teamToolPlane": {
+        "realmId": "v016-plane-realm-r2",
+        "names": {
+          "bash": "bash"
+        },
+        "workingDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/workspace",
+        "confinedProvider": {
+          "trustRoot": "sha256:f418831915c624fb#/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+          "assembly": {
+            "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+            "launcherSha256": "f418831915c624fbabfc534d4bc4f6b07e04e55670f728450c316adca05094b4",
+            "minAbiVersion": 3
+          }
+        }
+      },
+      "alpha6ReviewRouting": true,
+      "alpha6WakeIntentPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-2-2026-11-11T12-46-10/alpha6-wake-intents"
+    }
+

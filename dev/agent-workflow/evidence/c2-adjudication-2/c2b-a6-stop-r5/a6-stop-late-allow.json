@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6stop-oq44wkafpd",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "CONTROL_REQUEST_DECIDED",
+      "message": "ControlService: request 'ctrl-0ogw6ew10lfxjr07mtu8e1vs' already carries a durable decision (the first decision is authoritative)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_DECIDED",
+          "message": "ControlService: request 'ctrl-0ogw6ew10lfxjr07mtu8e1vs' already carries a durable decision (the first decision is authoritative)",
+          "details": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-11T11-10-16",
+            "requestId": "ctrl-0ogw6ew10lfxjr07mtu8e1vs"
+          }
+        }
+      }
+    }
+  }
+}

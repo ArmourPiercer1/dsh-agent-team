@@ -46,7 +46,13 @@
  * carry the run-record schema, not on arbitrary json (PR #394 spent 400 on every `.json` in name
  * order, so at f3f415aa0 it graded 24 of the 50 committed records and dropped the rest). Measured
  * at origin/master f3f415aa0: 174 tracked `.json` under the evidence root, 55 mention the schema,
- * 50 are records; 200 is 4× that. Candidate `.json` blobs read ≤ 4000, each ≤ 512 KiB (over the cap:
+ * 50 are records; 200 is 4× that. Candidate `.json` blobs read ≤ 6000 (raised from 4000 on
+ * 2026-11-11 with the measurement below — the tree reached 4068 of the old 4000 when the C2
+ * adjudication for cand-v0.1.6-2 committed 205 per-run artifacts under
+ * `evidence/c2-adjudication-2/`: measured, origin/master carries 3863 tracked `.json` under the
+ * evidence root and that branch 4068. The bound is a capacity budget, not a safety assertion,
+ * so it is raised with a measurement rather than by trimming committed evidence; 6000 leaves
+ * room for two more adjudication rounds of that size), each ≤ 512 KiB (over the cap:
  * NOT GRADED by name and size, never read). Rows reported ≤ 40 per class; stdout ≤ 24 KiB; one
  * memoized git call per distinct SHA; no child process other than `git`.
  *
@@ -61,7 +67,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const BOUNDS = Object.freeze({ maxRecords: 400, maxCandidates: 4000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+export const BOUNDS = Object.freeze({ maxRecords: 400, maxCandidates: 6000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 

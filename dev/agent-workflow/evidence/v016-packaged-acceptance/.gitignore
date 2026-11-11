@@ -1,0 +1,3 @@
+# The packed artifact is recorded by IDENTITY (name, bytes, sha256, member list) in
+# summary.json and pack/members.txt — never committed (4.3 MB binary).
+*.tgz

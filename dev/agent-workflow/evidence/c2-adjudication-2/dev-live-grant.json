@@ -1,0 +1,8 @@
+{
+  "grantId": "devlive-fs-search-1",
+  "scope": "DEV-LIVE",
+  "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+  "face": "FS Provider",
+  "world": "u5a5sfdev1",
+  "note": "pilot of the dev-live workflow on the FS/Search face: build the live driver, boot repeatedly, measure read/write/edit/grep/glob on current master. Development evidence only: this class can never produce V@B=yes and no candidate claim is made."
+}

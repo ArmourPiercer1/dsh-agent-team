@@ -76,3 +76,7 @@ OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
 OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L680=v5, L869=v5, L2361=v5, L3124=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
+OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L862=v5
+# 2026-11-11 (V016-PACKAGED-ACCEPTANCE, task/pack-accept-20261111): one new identity line,
+# the new kit's v5 Team-create fixture. Nothing else moved: re-recorded by re-running
+# scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
