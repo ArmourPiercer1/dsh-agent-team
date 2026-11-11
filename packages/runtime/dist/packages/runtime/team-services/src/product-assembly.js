@@ -381,24 +381,47 @@ function authorityRefOf(raw, where) {
     }
     return Object.freeze({ revision, admitted: authority['admitted'] });
 }
+/** The document versions whose core face carries `memberIoCeilings`. */
+const MEMBER_IO_CEILINGS_SCHEMA_VERSIONS = Object.freeze([4, 5]);
 /**
- * Read the v4 `memberIoCeilings` family out of an already-parsed blueprint.
+ * Read the `memberIoCeilings` family out of an already-parsed blueprint.
  *
- * The ONLY derivation step: no lane is recomputed, no default is invented. The
+ * SOURCE-OF-DOCUMENT WIDENING (PD-42, owner ruling 2026-11-11). Both accepted
+ * versions carry the SAME family: `TeamBlueprintV5Core` is
+ * `Omit<TeamBlueprintV4Core, 'schemaVersion'>` plus the optional
+ * `reviewRouting`, the v5 validator hands its whole core face to the v4
+ * validator (restamped), and `toHashableBlueprintV5()` delegates to
+ * `toHashableBlueprintV4()` — so the family read here is content-hashed by the
+ * v5 document exactly as it is by the v4 one. Nothing else changes: this gate
+ * chooses WHICH DOCUMENTS may be a source of a ceiling; the lanes, the
+ * `ToolRestriction` projection, the Authority reference and the realm plan are
+ * computed by the same code below for either version.
+ *
+ * The ONE derivation step: no lane is recomputed, no default is invented. The
  * leader template is excluded (it is not a Member and never gets a Member
  * ceiling); an optional `templateIds` subset lets a caller derive for exactly
  * the templates it manages.
  */
 function derivedMembersOf(bound, instanceGenerations, templateIds) {
-    if (bound.schemaVersion !== 4) {
-        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `the bound blueprint for team '${bound.blueprintId}' is schemaVersion ${String(bound.schemaVersion)} and declares `
-            + `no v4 memberIoCeilings family; there is no Member ceiling to derive, so a declaration has no blueprint to narrow`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
+    if (!MEMBER_IO_CEILINGS_SCHEMA_VERSIONS.includes(bound.schemaVersion)) {
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `the bound blueprint for team '${bound.blueprintId}' is schemaVersion ${String(bound.schemaVersion)}; `
+            + `only schemaVersion 4 and 5 declare the memberIoCeilings family this realm derives Member ceilings from, `
+            + 'so a declaration has no blueprint ceiling to narrow', `${A5SF_MEMBER_POLICIES_KEY}.members`);
     }
     const core = bound;
     const family = core.memberIoCeilings ?? [];
     if (family.length === 0) {
-        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', `the bound blueprint for team '${bound.blueprintId}' declares an empty memberIoCeilings family; `
-            + 'there is no Member ceiling to derive, so a declaration has no blueprint to narrow', `${A5SF_MEMBER_POLICIES_KEY}.members`);
+        // The version-specific wording is load-bearing (PD-42 instruction): a v5
+        // document WITHOUT the family must say exactly that, never "schemaVersion 5
+        // is unsupported" — v5 IS supported, the family is what is absent.
+        refuse('MEMBER_POLICY_WITHOUT_BLUEPRINT', bound.schemaVersion === 5
+            ? `the bound blueprint for team '${bound.blueprintId}' is schemaVersion 5 and declares no `
+                + 'memberIoCeilings family (absent or empty); the v5 face is the v4 face plus the optional '
+                + '`reviewRouting` family, so a v5 document that omits `memberIoCeilings` carries no Member '
+                + 'ceiling to derive, so a declaration has no blueprint to narrow'
+            : `the bound blueprint for team '${bound.blueprintId}' is schemaVersion 4 and declares no `
+                + 'memberIoCeilings family (absent or empty); a v4 document without the family has no Member '
+                + 'ceiling to derive, so a declaration has no blueprint to narrow', `${A5SF_MEMBER_POLICIES_KEY}.members`);
     }
     const wanted = templateIds === undefined ? undefined : new Set(templateIds);
     const leaderTemplateId = bound.leader.templateId;

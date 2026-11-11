@@ -1,0 +1,26 @@
+[2026-11-11T18:19:27.945Z] c1 real-host smoke — stamp 2026-11-11T18-19-27
+[2026-11-11T18:19:27.946Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42
+[2026-11-11T18:19:27.946Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T18:19:27.946Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/.artifacts/tmp/c1pd42-run1
+[2026-11-11T18:19:27.987Z] ports: host=3182 mock=3491
+[2026-11-11T18:19:32.998Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-11T18:19:32.999Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-11T18:19:33.006Z] mock model listening on 3491
+[2026-11-11T18:19:35.949Z] host booted at http://127.0.0.1:3182; row ready — toolCount=15
+[2026-11-11T18:19:35.950Z] ── L0: discovery ──
+[2026-11-11T18:19:36.375Z] discovery surface (32 tools): bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, job_kill, job_list, job_output, present, read, read_image, skill, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, todo_write, update_goal, write
+[2026-11-11T18:19:36.376Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=32 missingTeam=[] denyList=[create_goal,exit_plan_mode,get_goal,glob,grep,job_kill,job_list,job_output,present,skill,update_goal]
+[2026-11-11T18:19:36.377Z] saved blueprints X + Y + Z written (deny list = 11 names)
+[2026-11-11T18:19:36.379Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-11T18:19:37.352Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-do514wbspj","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-11T18-19-27","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:ac39a8aff5f5ee34e4b2d3f8ef9feaf2086a7653f7f380748005037e4c68bb4c"},"createdAt":"2026-11-11T18:19:36.437Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-11T18:19:41.770Z] A6: wakes=3 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-11T18:19:41.771Z] PASS A6-2: the Member ask produced a model-visible Officer review wake — wakes=3 notifications=0 requests=20
+[2026-11-11T18:19:41.771Z] PASS A6-3: the Officer resolved through team_resolve_control — resolveCalls=1 wakeTools=team_list_pending_control | team_resolve_control | 
+[2026-11-11T18:19:41.771Z] PASS A6-4: the original Member command executed after the Officer allow — file=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/workspace/c1-a6-allow-2026-11-11T18-19-27.txt text="c1-a6-allow-2026-11-11T18-19-27\n"
+[2026-11-11T18:19:41.771Z] PASS A6-5: the Leader was not woken for a leg routed to the Officer — wakes=3 leaderWakes=0 notifications=0
+[2026-11-11T18:19:41.771Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=
+[2026-11-11T18:19:41.771Z] PASS A6-27: the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request — executed=true pa=ctrl-0axln1t1li1o8e1uu40tb045 callId=team-inst-180kjp51566j-bash:hexec:dfe63e81-9438-4ba0-9dee-91fe8d39a9b5-1 outcome=succeeded facts=1
+[2026-11-11T18:19:41.771Z] FAIL PD42-1: a REAL fs write INSIDE the v5-compiled ceiling succeeded through the governed realm — file=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/workspace/pd42-inside-2026-11-11T18-19-27.txt text="" allows=0 facts=0
+[2026-11-11T18:19:41.771Z] FAIL PD42-2: a REAL fs write OUTSIDE the ceiling was refused `IO_WRITE_DENIED` with zero bytes on disk — denies=0 outsideExists=false path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/pd42-outside-2026-11-11T18-19-27.txt decidedBy=
+[2026-11-11T18:19:41.771Z] FAIL PD42-3: a REAL fs read OUTSIDE the ceiling was refused `IO_READ_DENIED` with a guard fact — denies=0 decidedBy= methods=
+[2026-11-11T18:19:41.771Z] FAIL PD42-4: the Member turn that produced the Officer-approved plane execution is the SAME turn that hit the ceiling — executed=true wakes=3 consumptions=2
