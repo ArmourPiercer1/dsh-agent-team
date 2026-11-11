@@ -1,0 +1,121 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      dsh-agent-team:
+        specifier: file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/dev/agent-workflow/evidence/v016-packaged-acceptance/run-1/pack/dsh-agent-team-0.1.6.tgz
+        version: file:../../../../../dev/agent-workflow/evidence/v016-packaged-acceptance/run-1/pack/dsh-agent-team-0.1.6.tgz
+
+packages:
+
+  '@deepseek-ai/cosmokit@1.8.6':
+    resolution: {integrity: sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==}
+
+  '@deepseek-ai/dsh-web-search-exa@0.2.0-rc.2':
+    resolution: {integrity: sha512-n0W1136/PDGd8Qz1S/dNrhAfx7HJfGbtvU8pTDEt97foYpADLn6ijSHB9TaRaksGpT+4O0yd18EPS/RMUWySbw==}
+    peerDependencies:
+      '@deepseek-ai/cordis': ~4.0.4
+      '@deepseek-ai/dsh-launch-environment': 0.2.0-rc.2
+      '@deepseek-ai/dsh-web': 0.2.0-rc.2
+
+  '@deepseek-ai/schemastery@3.18.5':
+    resolution: {integrity: sha512-Mnobvqf9rHsZYv4g5edj5ddxS1oF1kIdSlz0DunUgnY3LWG5F26MqvH3YOOsSaodCgyzJ16OMN9O99/s5Crtdw==}
+
+  '@standard-schema/spec@1.1.0':
+    resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  dsh-agent-team@file:../../../../../dev/agent-workflow/evidence/v016-packaged-acceptance/run-1/pack/dsh-agent-team-0.1.6.tgz:
+    resolution: {integrity: sha512-N1Tc7Pa//OjVUjYAdBKwtjvOJ4pX316pc1KrkkIBJT5O6IgPEMGOM/iIvsA2w+MY+5coEAm9rO3PZxlVvOV3wg==, tarball: file:../../../../../dev/agent-workflow/evidence/v016-packaged-acceptance/run-1/pack/dsh-agent-team-0.1.6.tgz}
+    version: 0.1.6
+    engines: {node: ^22.19.0 || >=24.0.0}
+    peerDependencies:
+      '@deepseek-ai/dsh': 0.2.0-rc.2
+      '@deepseek-ai/dsh-agent': 0.2.0-rc.2
+      '@deepseek-ai/dsh-home-paths': 0.2.0-rc.2
+      '@deepseek-ai/dsh-llm': 0.2.0-rc.2
+      '@deepseek-ai/dsh-mcp-client': 0.2.0-rc.2
+      '@deepseek-ai/dsh-scope': 0.2.0-rc.2
+      '@deepseek-ai/dsh-session': 0.2.0-rc.2
+      '@deepseek-ai/dsh-skill': 0.2.0-rc.2
+      '@deepseek-ai/dsh-spill-local': 0.2.0-rc.2
+      '@deepseek-ai/dsh-storage-domain': 0.2.0-rc.2
+      '@deepseek-ai/dsh-tool-fs': 0.2.0-rc.2
+      '@deepseek-ai/dsh-tool-fs-search': 0.2.0-rc.2
+      '@deepseek-ai/dsh-tool-web': 0.2.0-rc.2
+      '@deepseek-ai/dsh-tools': 0.2.0-rc.2
+      '@deepseek-ai/dsh-web-fetch-http': 0.2.0-rc.2
+    peerDependenciesMeta:
+      '@deepseek-ai/dsh':
+        optional: true
+      '@deepseek-ai/dsh-agent':
+        optional: true
+      '@deepseek-ai/dsh-home-paths':
+        optional: true
+      '@deepseek-ai/dsh-llm':
+        optional: true
+      '@deepseek-ai/dsh-mcp-client':
+        optional: true
+      '@deepseek-ai/dsh-scope':
+        optional: true
+      '@deepseek-ai/dsh-session':
+        optional: true
+      '@deepseek-ai/dsh-skill':
+        optional: true
+      '@deepseek-ai/dsh-spill-local':
+        optional: true
+      '@deepseek-ai/dsh-storage-domain':
+        optional: true
+      '@deepseek-ai/dsh-tool-fs':
+        optional: true
+      '@deepseek-ai/dsh-tool-fs-search':
+        optional: true
+      '@deepseek-ai/dsh-tool-web':
+        optional: true
+      '@deepseek-ai/dsh-tools':
+        optional: true
+      '@deepseek-ai/dsh-web-fetch-http':
+        optional: true
+
+  yaml@2.9.0:
+    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
+snapshots:
+
+  '@deepseek-ai/cosmokit@1.8.6': {}
+
+  '@deepseek-ai/dsh-web-search-exa@0.2.0-rc.2':
+    dependencies:
+      '@deepseek-ai/schemastery': 3.18.5
+
+  '@deepseek-ai/schemastery@3.18.5':
+    dependencies:
+      '@deepseek-ai/cosmokit': 1.8.6
+      '@standard-schema/spec': 1.1.0
+
+  '@standard-schema/spec@1.1.0': {}
+
+  dsh-agent-team@file:../../../../../dev/agent-workflow/evidence/v016-packaged-acceptance/run-1/pack/dsh-agent-team-0.1.6.tgz:
+    dependencies:
+      '@deepseek-ai/dsh-web-search-exa': 0.2.0-rc.2
+      yaml: 2.9.0
+      zod: 4.4.3
+    transitivePeerDependencies:
+      - '@deepseek-ai/cordis'
+      - '@deepseek-ai/dsh-launch-environment'
+      - '@deepseek-ai/dsh-web'
+
+  yaml@2.9.0: {}
+
+  zod@4.4.3: {}
+

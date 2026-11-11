@@ -1,0 +1,10 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R2-cancel-pkt1917e",
+  "result": {
+    "ok": true,
+    "value": {
+      "accepted": true
+    }
+  }
+}
