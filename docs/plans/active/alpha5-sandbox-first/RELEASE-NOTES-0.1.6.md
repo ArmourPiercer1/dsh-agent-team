@@ -6,6 +6,12 @@
 **Distribution:** annotated Git tag + GitHub Release + installable tarball produced by `pnpm pack`. **No npm publish.**
 The root package remains `private: true`.
 
+**Revision note (2026-11-12, CLOSEOUT-DOCS rebase).** This branch was rebased onto `origin/master` after
+#729/#733/#734/#736/#720 merged. The 2026-11-11 appended blocks below are corrected **in place** where those
+merges made them false (each correction is dated and says what was wrong), and the earlier merged sentences
+they narrow are kept, marked **superseded**, with a dated erratum next to them. No tag, no RC, no candidate
+claim is added.
+
 **Phase names are not product versions.** Alpha.5 and Alpha.6 are engineering phase names. Neither appears in
 the package version, the tag, or a distribution name. The version line is `0.1.6`.
 
@@ -35,6 +41,26 @@ defined in §2; the second is **opt-in experimental** and is off by default.
 The two planes are not separate products and are not shipped as separate tarballs. Alpha.6 does not
 become the default by being present in the artifact.
 
+**Composition limit, stated here because the sentence above is easy to read too far (appended
+2026-11-11, F-1 / PD-42).** One bundle carries both planes, and a single Team can now declare both
+families: the gate accepts a v5 blueprint carrying the `memberIoCeilings` family and reads it from
+the same bound, content-hashed document. It is **not** true that the planes are disjoint modes. What
+is **not** yet true is that the ceiling is *enforced* on an approved Alpha.6 execution inside that
+exact composition: the approval plane's execute leg dispatches the Team tool plane, which owns
+`bash` and displaces the realm's confined terminal (`read`/`write` come back
+`TOOL_BINDING_UNVERIFIED` with **zero** Alpha.5 guard facts). Closing that pre-#734 shape took two product
+changes — **#734** (an adopted native name is not the tool plane's to own, so the dispatch door binds the
+native admission edge instead of refusing every call) and **#736** (a cold boot owns the
+`parameter-permission` lane's settlement). On the merged tree the joint acceptance is **11/11, twice,
+field-by-field identical** (`dev/agent-workflow/evidence/joint-acceptance/`), and the gate fix itself is
+**#720, merged as `b29e10582`**. What is still **not** measured is the ceiling on an approved Alpha.6
+`bash` call: the arm that passes (`J04`) proves the model-visible definition is the pinned native one and
+that the body ran, not that the call was bounded by the Member's compiled ceiling — its
+`realmTerminalFacts=0` is disclosed in every run. That arm is **A1**, and it stays **OPEN** pending the
+dedicated real-Host bash-governance negative-control acceptance. Read this as a disclosed composition
+limit, **not** as proof of the conjunction. *(Corrected 2026-11-12: the 2026-11-11 text said #720 was open
+and that P0-1 was "still being fixed"; both statements were true on 2026-11-11 and are false now.)*
+
 ---
 
 ## 2. Stability split
@@ -61,9 +87,11 @@ acceptance matrix moved: no `V@B` cell is changed by these notes and no `CANDIDA
 > `create_goal`/`get_goal`/`update_goal` on this artifact: the A2C-2 coverage gate refuses any tool
 > outside the managed vocabulary, so declaring the ask lane forces `builtinToolDeny` for the 19
 > unmanaged names, and the Goal tools are among them. In the packaged acceptance the Goal arm
-> therefore ran on a **third Member without `capabilities`**. The product allocation is **different
-> Members for different capabilities**; the artifact offers no single fully-capable Member, and this
-> note claims none.
+> therefore ran on a **third Member without `capabilities`**. That split is a **v0.1.6 limitation forced by
+> the coverage gate — not the target architecture**; the artifact offers no single fully-capable Member and
+> this note claims none. The next-phase design proposes a host-domain Goal-authority classification instead
+> (`WP-F2-GOAL-DOMAIN-AUTHORITY.md`), and it is not shipped. *(Corrected 2026-11-12: the earlier sentence
+> called the split "the product allocation", which reads as a design principle rather than a limitation.)*
 
 ### 2.2 Experimental (opt-in; not on the default path)
 
@@ -77,8 +105,35 @@ and it may refuse to boot rather than degrade silently.
 | **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. The accepted-but-unclaimed abandonment defect applies (§5). |
 | **Sticky Stop** (human-Stop marker for **review wakes**; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. It stops the **review wake**, not every message (see §4.7). |
 | **v5 blueprints** (`schemaVersion: 5`, `TeamBlueprintV5Core`) | Experimental. v5 extends v4 and one blueprint still carries the v4 I/O ceilings; v3/v4 documents remain supported and byte-identical. |
-| **Member capability allocation** (F-2) | Experimental / a limit, not a promise. One Member cannot both declare the `bash` ask lane and own the Goal tools: the A2C-2 coverage gate is fatal for a tool outside the managed vocabulary on an agent that declares `capabilities.permissions`, so the ask lane forces `builtinToolDeny` over the 19 unmanaged names and `create_goal`/`update_goal` go with them. The product allocation is **different Members for different capabilities**; there is no single fully-capable Member on this artifact. |
-| **What "Officer approval" covers** (F-3) | Experimental, **plane leg only**. Officer routing applies to the `team-tool-execute` **plane** leg. The `parameter-permission` leg is built by the pre-execute adapter **without** `blueprintContentHash`/`blueprintRevision`, so `resolveAssignedOfficer` refuses it and that wake goes to the **Leader** (or the human), not the Officer. "Officer approval" never means every tool approval is Officer-handled. |
+| **Member capability allocation** (F-2) | Experimental / a limit, not a promise. One Member cannot both declare the `bash` ask lane and own the Goal tools: the A2C-2 coverage gate is fatal for a tool outside the managed vocabulary on an agent that declares `capabilities.permissions`, so the ask lane forces `builtinToolDeny` over the 19 unmanaged names and `create_goal`/`update_goal` go with them. **v0.1.6 limitation, not an architecture principle**: the split across different Members is what the coverage gate forces; there is no single fully-capable Member on this artifact and none is promised. *(Clarified 2026-11-12 — see the erratum below.)* |
+| **What "Officer approval" covers** (F-3) | Experimental. Officer routing applies to the `team-tool-execute` **plane** leg **and, since #733, to the `parameter-permission` leg**: that leg now carries the frozen `BoundBlueprintIdentity` (blueprintId/revision/schemaVersion/contentHash), the owner template and the verified tool coordinate, so `resolveAssignedOfficer` returns the Officer and a real `bash` ask wakes it (two runs; `dev/agent-workflow/evidence/j05j06-approval-lane-20261111/`). A field that cannot be supplied is refused by name at the route gate, never silently handed to the Leader. **Remaining gap:** the Officer's own `team_resolve_control` can still be refused by the trusted review-facts port when the operation-owner member row is not `RUNNING` (row `CREATED` for a relayed first turn, `SETTLED` for a second work unit) — that is register **PD-43**, open. "Officer approval" still never means every tool approval is Officer-decided: `hold` and `leader` are real declared outcomes. *(Corrected 2026-11-12: this row said the leg carried no Blueprint identity and the wake went to the Leader — true before #733, false now.)* |
+
+> **Erratum, 2026-11-12 (CLOSEOUT-DOCS rebase; F-3 / PD-43).** The F-3 row above is a 2026-11-11 measurement
+> and is superseded by **#733** (`49a66fea3`). The `parameter-permission` leg now carries the frozen
+> `BoundBlueprintIdentity` (blueprintId/revision/schemaVersion/contentHash), the operation-owner template and
+> the verified tool coordinate through the existing composition seam; `resolveAssignedOfficer` returns the
+> **Officer**, a real `bash` ask wakes the Officer, and a field that cannot be supplied is refused **by name**
+> at the route gate (`unroutable` / `operation-tool-identity-unavailable`), never silently handed to the
+> Leader. Evidence: `dev/agent-workflow/evidence/j05j06-approval-lane-20261111/`, two agreeing real-Host runs
+> (both legs decided by the same Officer member instance). **What is still open is a different defect**
+> (register **PD-43**): the Officer can be routed and woken yet refused at the decision gate when the
+> operation-owner member row is `CREATED` (a relayed first turn) or `SETTLED` (a second work unit) —
+> `assigned-officer-facts.ts:444` requires `RUNNING`. That is not the identity carry, and it is not claimed
+> fixed here. "Officer approval" still never means every tool approval is Officer-decided: `hold` and
+> `leader` are declared, honoured outcomes.
+>
+> **Erratum, 2026-11-12 (F-2).** The F-2 row's "different Members for different capabilities" sentence is a
+> **v0.1.6 limitation**, not the future architecture: the coverage gate forces the split today, and the
+> next-phase `WP-F2-GOAL-DOMAIN-AUTHORITY.md` proposes replacing it with a host-domain Goal-authority class.
+> The limitation itself is unchanged and still disclosed (§4.9).
+
+> **Appended 2026-11-11 (F-1 / PD-42, the v5 row).** The v5 row's "one blueprint still carries the
+> v4 I/O ceilings" sentence predates the gate fix: a v5 document may now also carry the
+> `memberIoCeilings` family, and a v5 document that declares no family is refused with its own
+> v5-specific message — still under the single typed code `MEMBER_POLICY_WITHOUT_BLUEPRINT`, i.e.
+> three distinguishable messages, not three machine-readable codes. The gate admitting the family
+> is **not** the same as the ceiling being enforced on an approved call in that composition; see
+> §1 and §4.13.
 
 **Default-off proof, not a promise:** the Alpha.6 opt-in is the boolean
 `config.alpha6ReviewRouting === true`. With it absent or `false`, the code does not invoke the Alpha.6
@@ -177,28 +232,91 @@ closes.
 9. **One Member cannot hold every capability (F-2, measured on the packaged artifact).** A Member that
    declares the `bash` ask lane has already accepted the A2C-2 coverage gate, which is fatal for any
    tool outside the managed vocabulary; the required `builtinToolDeny` for those names removes the
-   Goal tools. So shell-asking and Goal-owning are two different Members. The product allocation is
-   **different Members for different capabilities**; a single Member that both asks for shell and
-   owns a Goal is not offered, and must not be promised by these notes. The measured run is
-   `dev/agent-workflow/evidence/v016-packaged-acceptance/` (§6 F-2).
+   Goal tools. So shell-asking and Goal-owning are two different Members. That split is a **v0.1.6
+   limitation forced by the coverage gate — not the target architecture**; a single Member that both
+   asks for shell and owns a Goal is not offered, must not be promised by these notes, and the
+   next-phase `WP-F2-GOAL-DOMAIN-AUTHORITY.md` proposes replacing the forced split with a host-domain
+   Goal-authority class. The measured run is
+   `dev/agent-workflow/evidence/v016-packaged-acceptance/` (§6 F-2). *(Corrected 2026-11-12: the earlier
+   sentence called the split "the product allocation".)*
 10. **"Officer approval" is a plane-leg statement (F-3, measured).** Alpha.6 routes the
-    `team-tool-execute` plane leg to the assigned Officer. The `parameter-permission` leg is built by
-    the adapter without `blueprintContentHash`/`blueprintRevision`
-    (`pre-execute-adapter.ts` → `control/service.ts`), so `resolveAssignedOfficer` refuses it and the
-    wake goes to the Leader. This is the exact coverage of the phrase; Alpha.6 does **not** make
-    every tool approval Officer-handled, and a release note that says otherwise would be false.
-11. **A second governed ask on the same root may be refused by the review-facts port (F-5, A6
-    experimental limit).** On the Stop arm the Officer's `team_resolve_control{decision:'escalate'}`
+    `team-tool-execute` plane leg to the assigned Officer **and — since #733 — the
+    `parameter-permission` leg too**: the leg now carries the frozen bound Blueprint identity
+    (`blueprintContentHash`/`blueprintRevision`), the owner template and the verified tool coordinate, so
+    `resolveAssignedOfficer` returns the Officer and a real `bash` ask wakes it (two runs,
+    `dev/agent-workflow/evidence/j05j06-approval-lane-20261111/`). This is the exact coverage of the
+    phrase; Alpha.6 does **not** make every tool approval Officer-handled (`hold` and `leader` are real
+    declared outcomes), and a release note that says otherwise would be false. **What is still open is a
+    different defect (register PD-43):** the facts port can refuse the woken Officer's decision when the
+    operation-owner row is `CREATED`/`SETTLED`. *(Corrected 2026-11-12: this item said the adapter built
+    the leg without an identity and the wake went to the Leader — true before #733, false now.)*
+11. **A second governed ask on the same root may be refused by the review-facts port (F-5; a defect,
+    not a designed limit — see the erratum at the end of this item).** On the Stop arm the Officer's `team_resolve_control{decision:'escalate'}`
     is refused with `CONTROL_RESOLVER_NOT_AUTHORIZED … the trusted review-facts port produced no
     facts for this leg`; the **human fallback remains** and resolved that leg. The fence assertions
     are unaffected (the leg is a real governed leg). See §5 for why this is *not* the A6-26
-    abandonment.
+    abandonment. **Erratum, 2026-11-12:** this is **not** an "A6 experimental limit" — it is a defect in
+    the trusted review-facts port (`assigned-officer-facts.ts:444` requires the owner row `RUNNING`),
+    tracked as register **PD-43** and still **open**; see §4.15 for the approved semantics. The
+    limitation framing in the first sentence of this item is withdrawn, not the measurement.
 12. **The Stop terminal shape varies while the safety result does not (F-6).** Across runs the
     A6-12 family can end `already-decided` (no abandonment row) or with
     `control-request-abandoned` (e.g. reason `invocation-cancelled-before-consumption`). Both are
     recorded as what they are and are **not normalised** into one state. What is constant and
     asserted is the safety result: **no consumption, no execution, no side effect**, late allow
     refused.
+
+13. **One Team can carry both families; the ceiling on an approved Alpha.6 call is not proven
+    (F-1 / PD-42, appended 2026-11-11).** Alpha.5 and Alpha.6 used to be mutually exclusive
+    modally: the governed realm derived Member ceilings only from a `schemaVersion: 4` blueprint,
+    so a v5 blueprint that declared `memberIoCeilings` was refused
+    (`MEMBER_POLICY_WITHOUT_BLUEPRINT`). The gate accepts v4 **and** v5 for that family and still
+    reads it from the same bound, content-hashed document; it is **merged** (#720, `b29e10582`). The
+    two planes are **not** disjoint modes. The `read`/`write` shape this item originally described —
+    `TOOL_BINDING_UNVERIFIED`, 0 Alpha.5 guard facts — was a pre-#734 mount/ownership defect, repaired
+    by #734, with the cold-boot settlement repaired by #736; on the merged tree the joint acceptance is
+    **11/11 twice** (`dev/agent-workflow/evidence/joint-acceptance/`). So the gate is fixed and the
+    composition runs, but the **conjunction is still not proven**: the approved `bash` arm (`J04`)
+    asserts the pinned definition and a real execution, not that the call was bounded by the Member's
+    compiled ceiling (`realmTerminalFacts=0` is disclosed in every run). That missing arm is **A1** and
+    it is **OPEN**; it is not "a fix in progress" that can be assumed. The historical runs are
+    `dev/agent-workflow/evidence/wp2-a6-governed-goal/` (the v5 refusal and the closest honest
+    conjunction), the PD-42 lane's two fresh-HOME runs (gate admitted, ceiling arm FAIL ×4 in each) and
+    the joint acceptance's three measurements. *(Corrected 2026-11-12: this item said #720 was
+    unmerged, that the `read`/`write` refusal was the current shape, and that ceiling enforcement was
+    "being fixed".)*
+14. **An approval authorises one constrained dispatch attempt, not execution success (F-4 /
+    PD-41, appended 2026-11-11).** `control-allow-consumed` means the one-shot authorisation was
+    consumed — never "the body ran". With no observed completion the call must not be presented as
+    `succeeded`: a cancelled/timed-out body reports `unknown`, and a Binding failure is a typed
+    refusal (`TOOL_BINDING_UNVERIFIED`), refused at the dispatch door **after** the allow was
+    consumed — measured as **1 consumption / 0 executions / 0 side effects**. A consumed allow is
+    never auto-replayed; the operator raises a **new** request after repairing the Binding (never a
+    resume of the consumed one). **Corrected 2026-11-12: the abort-class gap described in the first
+    version of this item is CLOSED by #729 (`d8bdb0ce2`).** Classification now reads the backend's
+    `settlement`: only `settlement.kind === 'completed'` is `succeeded`; every other settlement is
+    `unknown`, and an abort-shaped throw (`AbortError` / `code:'ABORT_ERR'`, e.g. a host deadline or a
+    forwarded inherited signal) is `unknown` too. The earlier sentence — "`succeeded` only on observed
+    completion is the intended rule, not a total guarantee" — was true on 2026-11-11 and is no longer
+    the state of the code; the rule is now the implementation, with a live `hook`-cause falsifier in
+    `dev/agent-workflow/evidence/pd41-abort-class/`.
+15. **F-5 is a defect in the facts port, not a policy limit (re-measured 2026-11-11; open as PD-43).** The declared
+    `whenOfficerUnavailable` policy **is** honoured on a second ask: `hold` holds (no Officer wake,
+    no Leader notification, no escalation — the only decision is an explicit human resolve) and
+    `leader` hands both legs to the Leader, each arm 2/2 runs agreeing. The live-Officer second ask
+    fails one gate earlier: the trusted review-facts port refuses at
+    `packages/runtime/alpha6/assigned-officer-facts.ts:444` because the operation owner's lifecycle
+    is `SETTLED` for the second work unit, so the Officer's escalation is refused with
+    `CONTROL_RESOLVER_NOT_AUTHORIZED`. That is a **defect in the facts port**, not a violation of
+    the declared policy, and it is **not fixed** (register **PD-43**). F-3's identity-carry defect is
+    **fixed by #733** (`49a66fea3`): the parameter-permission leg carries the bound Blueprint identity
+    and the assigned Officer receives the ask — see §4.10. **The approved semantics for the
+    F-5/PD-43 fix, not yet implemented:** the subject of validity is the durable **pending approval
+    leg**, with **all identity, generation and frozen-identity checks preserved**, and the answer stays
+    **fail-closed** for archived, mismatched or unbound owners — the owner instance's `CREATED`/
+    `SETTLED` phase alone must not manufacture "no facts" for a genuinely pending leg. Two
+    reproductions are named in the register: the joint `JOINT_J10_RELAY=1` diagnostic (row `CREATED`)
+    and the F-5 two-ask lane, PR #723 (row `SETTLED` on the second work unit).
 
 ---
 
@@ -245,12 +363,22 @@ accepted-but-unclaimed crash window:
   review-facts port: `CONTROL_RESOLVER_NOT_AUTHORIZED … the trusted review-facts port produced no
   facts for this leg`. That is a typed refusal of a resolver, not an abandonment; the leg is a real
   governed leg and the **human fallback remains** (the human resolved it in the packaged acceptance).
-  Listed as an A6 experimental limit in §4.11.
+  Listed as a **defect** in §4.11 and §4.15 (register **PD-43**), not as a designed policy limit.
 - **F-6** — the **Stop** terminal shape varies (`already-decided` vs an abandonment row such as
   `invocation-cancelled-before-consumption`) across runs. This is the A6-12 Stop family, not the
   A6-26 unclaimed-wake window: in both shapes the safety result is constant — no consumption, no
   execution, no side effect, late allow refused. The notes state both shapes instead of normalising
   them; see §4.12.
+
+**F-5 re-measured (appended 2026-11-11).** The §4.15 measurement keeps F-5 apart from A6-26 and
+narrows the shape: the declared policy branches are honoured on a second ask; the refusal on the
+live-Officer second ask comes from the facts port's `owner.lifecycle !== 'RUNNING'` gate
+(`packages/runtime/alpha6/assigned-officer-facts.ts:444`, owner `SETTLED` on the second work unit)
+and is a **defect to fix**, not a documented limit — tracked as register **PD-43** and still **open**
+(the approved semantics are stated in §4.15; this build does not contain the fix). The two-policy matrix
+and the gate trace are in `dev/agent-workflow/evidence/f5-two-asks/` (the F-5 lane,
+`task/f5-two-asks-20261111`, PR #723; not merged on this notes' baseline).
+
 **"Discoverable" does not mean it shows up where an operator looks first**: the abandoned request is
 readable by id on the ledger page, but it does **not** appear in `team_list_pending_control`
 (`pendingControlCount` reads 0) and `team_resolve_control` refuses it with
@@ -284,6 +412,22 @@ This is a deliberate version-line jump, not a sequence of five releases:
   plane the default.
 - They do not promise that an accepted review wake is always delivered or decidable: see A6-26 in §5.
 
+**Appended 2026-11-11 — what these notes do not claim, stated explicitly (F-1/F-4/PD-42/PD-41).**
+
+- They do not claim that the Alpha.6 approval plane runs inside the Alpha.5 governed realm today:
+  the ceiling enforcement on an approved Alpha.6 execution has **not been measured** (A1 open; `J04`
+  does not assert it), as stated in §1 and §4.13. **The conjunction in one Team is not proven.**
+- They do not claim that Leader or Root sessions are inside the Alpha.5 governed realm. In this
+  release the realm is **Member-scoped**; an Agent Execution Realm covering Root/Leader and Officer
+  is next-phase design work (`WP-AGENT-EXECUTION-REALM.md`), not a property of this artifact.
+- They do not claim OS-level network isolation. The network axis remains one admission-layer
+  boolean (§4.1), not a netns or a per-host ACL.
+- They do not claim that one Member can hold both a `bash` ask lane and the full Goal trio (F-2 /
+  §4.9), and they do not claim a single fully-capable Member.
+- They do not claim a machine-readable error code on the Host UI or on the RPC surface, and they do
+  not claim that every dispatch refusal is typed today (see §10).
+- They do not claim that the Preview is a security boundary against a malicious agent (§4.6).
+
 ## Evidence pointers
 
 - Preview contract and stability boundary:
@@ -298,6 +442,15 @@ This is a deliberate version-line jump, not a sequence of five releases:
   `dev/agent-workflow/evidence/a6-gaps-g2-claimed-r10/`
 - Alpha.5 Goal authority × Alpha.6 message identity:
   `dev/agent-workflow/evidence/a56-semantics/`
+- The two-plane composition limit and the closest honest conjunction (F-1 / PD-42):
+  `dev/agent-workflow/evidence/wp2-a6-governed-goal/`
+- PD-41 dispatch semantics and the typed-refusal scope:
+  `dev/agent-workflow/evidence/pd41-allow-semantics/`
+- F-5 two-ask policy matrix and the facts-port defect:
+  `dev/agent-workflow/evidence/f5-two-asks/` (the F-5 lane; not yet merged on this notes'
+  baseline)
+- The closeout order that turns these disclosures into a release decision:
+  `docs/plans/active/alpha5-sandbox-first/V016-PREVIEW-CLOSEOUT-PLAN.md`
 
 ---
 
@@ -472,3 +625,48 @@ no-replay rule moved.
 coverage statements (§2.1 clarification, §2.2 rows, §4.9/§4.10) and the F-5/F-6 experimental limits
 (§4.11/§4.12, §5) are disclosures of what the packaged artifact actually does; they change no
 `V@B` cell, no matrix grade, and no claim that Alpha.6 is stable.
+
+---
+
+## 10. 2026-11-11 — what the typed refusal is, and is not (F-4 / PD-41 scope; append-only)
+
+This section is appended. It deletes or rewords nothing in §9; where §9 reads broader than the code,
+the narrower statement here is the one to quote.
+
+**Where the type is observable.** A Tool Binding failure raises a typed
+`ToolDispatchRefusalError` (`TOOL_BINDING_UNVERIFIED`, with the measured reason and the governed
+name) **inside the Team process**, and it is distinguishable there from `TEAM_TOOL_UNGOVERNED` and
+`ADAPTER_DRAINING`. The Host's `tools.guard` seam keeps its public shape
+`(exec) => string | undefined`, and the Host's tool-error conversion carries only `message` for a
+throw that is not a `HarnessError`. So the Host UI, the Host RPC result and the model still receive
+the **byte-identical prose**, not a machine-readable code. The code appears in the plugin's own
+`guard-denial` observation line as text (`… code=TOOL_BINDING_UNVERIFIED`). **Do not read this
+release as "the Host UI exposes `TOOL_BINDING_UNVERIFIED`"** — no Host UI field, ledger row or RPC
+payload carries it today.
+
+**The §9 sentences on cancellation were narrower than they read on 2026-11-11 — and #729 has since
+closed the gap.** On this tree the classifier reads the backend's **settlement**, not the rendered
+`cancelled`/`timedOut` flags: `settlement.kind === 'completed'` is the only `succeeded`, every other
+settlement is `unknown`, and an abort-shaped throw (`AbortError` / `code:'ABORT_ERR'`) is `unknown` too
+(`packages/tools/a5p5-tools/src/pipeline.ts`). The counter-example this section used to disclose — an
+abort whose reason is not `user`/`parent` being recorded `succeeded` — no longer exists; it is kept as
+the measured pre-fix falsifier and re-tested live with a `hook` cause
+(`dev/agent-workflow/evidence/pd41-abort-class/`). *(Corrected 2026-11-12: this paragraph previously
+said the abort-class fix was "scheduled" and that the absolute was "a target".)*
+
+**"Every dispatch refusal is typed" is still not true, by exactly one.** Typed refusals cover **Guard
+denials**, the not-ACTIVE class, and — since **#729** — three of the four dispatch-door arms that used to
+throw a bare `Error`: unreadable definition, kernel approval table no longer backing the definition, and
+re-entry under one call id against two definitions. **One** refusal deliberately remains prose: the host
+execution object cannot hold a cancellable signal, and no §5 code truthfully names it
+(`packages/runtime/tool-dispatch/install.ts`). This release does not claim that one. *(Corrected
+2026-11-12: this paragraph previously said four refusals were untyped; #729 typed three of them.)*
+
+**No production recovery path reads the typed predicate.** `isToolBindingRefusal()` /
+`dispatchRefusalOf()` are called by tests today, not by a daemon, an RPC response or a UI
+projection. The operator recovery remains the one in §9 item 5: inspect for side effects, repair
+the Binding, raise a **new** request.
+
+**Scope correction.** The refusal is a product answer, but it is an answer *inside the Team
+process*. Nothing here upgrades the experimental Alpha.6 plane, and nothing here moves a `V@B`
+cell or a matrix grade.
