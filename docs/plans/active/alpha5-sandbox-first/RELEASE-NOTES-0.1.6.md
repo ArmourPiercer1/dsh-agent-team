@@ -65,7 +65,7 @@ and it may refuse to boot rather than degrade silently.
 | **Approval routing** (`reviewRouting`) | Experimental. Requires a v5 blueprint and the opt-in; absent/false keeps the Alpha.5 path. |
 | **Officer plane** (assigned-Officer review, transfer, escalation) | Experimental. Needs exactly one legal Officer template in the routing; zero or multiple live Officers is refused **per query** when a review is attempted (the Team itself boots — the boot only checks the template declaration). |
 | **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. The accepted-but-unclaimed abandonment defect applies (§5). |
-| **Sticky Stop** (human-Stop marker; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. |
+| **Sticky Stop** (human-Stop marker for **review wakes**; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. It stops the **review wake**, not every message (see §4.7). |
 | **v5 blueprints** (`schemaVersion: 5`, `TeamBlueprintV5Core`) | Experimental. v5 extends v4 and one blueprint still carries the v4 I/O ceilings; v3/v4 documents remain supported and byte-identical. |
 
 **Default-off proof, not a promise:** the Alpha.6 opt-in is the boolean
@@ -136,7 +136,7 @@ closes.
 6. **This is not a security boundary against a malicious Member.** It is governance with
    attribution, not isolation with non-escape. A malicious Member is the subject of a later phase,
    not a property this release claims.
-7. **The Alpha.6 Sticky Stop is latch-scoped, not session-scoped (PD-40).** A human Stop writes its
+7. **The Alpha.6 Sticky Stop is latch-scoped, not session-scoped, and it governs review wakes (PD-40).** A human Stop writes its
    durable marker only when a wake coordinator already exists for that reviewer session (a wake was
    dispatched, or boot recovery adopted an intent/stopped row). A Stop issued **between asks**, or
    **after a restart before the next ask**, finds no coordinator, writes nothing and returns
@@ -145,6 +145,16 @@ closes.
    call the stop hook on a session with no latch and observe a `stopped-*` marker; or show a
    production path that creates a coordinator for every live reviewer at boot. Making the marker
    session-scoped is a design change with crash semantics and is tracked as PD-40, not attempted here.
+   **Measured 2026-11-11 (WP1, `dev/agent-workflow/evidence/wp1-sticky-stop/`), two arms twice:** with a
+   real latch the marker is written at `<DSH_HOME>/alpha6-wake-intents/stopped-<hash>.json`, is
+   **byte-identical after SIGKILL + cold boot**, and is consulted (the same reviewer gains new ledger legs
+   but zero new wake turns). Without a latch, no marker and no "protected" claim appears anywhere, and one
+   ordinary human turn later the next review wake activates the reviewer — the disclosed limit, observed.
+   Two scope corrections, both measured: (a) **a Stop stops review wakes, not all traffic** — a machine
+   `member.send` / `member.followup` is still delivered and the work unit still admitted; only the review
+   wake is withdrawn. (b) `ownerRootSessionId` in the marker is the **mount/boot root that wrote it**, not
+   necessarily the Team root that created the reviewer. The supported path is a proven, latch-scoped
+   protection; the unsupported path is not durable protection at all.
 8. **With Alpha.6 ON, a relay-started turn cannot authorize `create_goal`.** A machine
    `team_send_message` / Leader relay carries the producer kind `plugin:dsh-agent-team`, so upstream
    `hasDirectHumanInput` refuses `create_goal` on that turn. Work delivery, root work and a human

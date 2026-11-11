@@ -1,0 +1,109 @@
+{
+ "scope": "C2-B",
+ "candidateCommit": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+ "candidateId": "cand-v0.1.6-2",
+ "recordClass": "CANDIDATE-C2",
+ "cases": [
+  {
+   "id": "C2-B/officer-allow",
+   "verdict": "PASS",
+   "boots": [
+    "c2b-a6-allow-r1",
+    "c2b-a6-allow-r2"
+   ],
+   "decisive": "A6-2 PASS wakes=3 notifications=0 requests=16 (both boots); A6-4 PASS effect file written; A6-5 PASS wakes=3 leaderWakes=0; A6-3 PASS resolveCalls=1"
+  },
+  {
+   "id": "C2-B/single-consumption-single-execution",
+   "verdict": "PASS",
+   "boots": [
+    "c2b-a6-allow-r1",
+    "c2b-a6-allow-r2"
+   ],
+   "decisive": "A6-6 PASS requests=2 decisions=2 consumptions=2 pending= (both boots); A6-27 PASS executed=true pa=ctrl-0o1nel31wjaa940hzguxl0tz outcome=succeeded facts=1 (r1), pa=ctrl-0kfb2tc1fpqm5n0drih1y189 outcome=succeeded facts=1 (r2)"
+  },
+  {
+   "id": "C2-B/officer-deny",
+   "verdict": "PASS",
+   "boots": [
+    "c2b-a6-deny-r1",
+    "c2b-a6-deny-r2"
+   ],
+   "decisive": "A6-28 PASS request=ctrl-1upulzo196o7pv1hx8k0y03b decision=deny consumed=false execFacts=0 file=false done=true (r1); request=ctrl-0p0hr2508cycyu0rxxz2z17t decision=deny consumed=false execFacts=0 file=false (r2)"
+  },
+  {
+   "id": "C2-B/post-consumption-throw",
+   "verdict": "PASS",
+   "boots": [
+    "c2b-a6-deny-r1",
+    "c2b-a6-deny-r2"
+   ],
+   "decisive": "A6-29 PASS request=ctrl-1fy65w01lldcy70wi3lby1sy consumed=true execFacts=failed (r1); request=ctrl-1ymzjmc1vo2xzb1ri4f4u0dw consumed=true execFacts=failed (r2)"
+  },
+  {
+   "id": "C2-B/stop",
+   "verdict": "PASS (11/11 no consumption) with the mechanism split reported",
+   "boots": [
+    "c2b-a6-stop-r1",
+    "c2b-a6-stop-r2",
+    "c2b-a6-stop-r3",
+    "c2b-a6-stop-r4",
+    "c2b-a6-stop-r5",
+    "c2b-a6-stop-r6",
+    "c2b-a6-stop-r7",
+    "c2b-a6-stop-r8",
+    "c2b-a6-stop-r9",
+    "c2b-a6-stop-r10",
+    "c2b-a6-stop-r11"
+   ],
+   "decisive": "A6-11 PASS 11/11; A6-12 PASS 11/11: consumed=false and file=\"\" in all 11 boots; late allow refused in all 11 \u2014 CONTROL_REQUEST_DECIDED in 10, CONTROL_REQUEST_ABANDONED in r9; fence trip observed in 1/11 (r9: abandonment seq 16, reason invocation-cancelled-before-consumption, +74 ms after the allow decision, seq 15 gap)"
+  },
+  {
+   "id": "C2-B/a6-26",
+   "verdict": "REPRODUCED-AS-DOCUMENTED (never rewritten PASS)",
+   "boots": [
+    "c2b-a6-a626-r1",
+    "c2b-a6-a626-r2"
+   ],
+   "decisive": "A6-26 FAIL (kit) both boots: verdict=abandoned-terminal recoveryCode=CONTROL_REQUEST_ABANDONED restart=ok abandoned=1 pendingBefore=1 pendingAfter=0 discoverable=true pendingCount=0; pending ids ctrl-06ku55n1lwue1c0jnqi7d1s3 / ctrl-08vmd3z0j6wix00uvdh4d0vx"
+  },
+  {
+   "id": "C2-B/sticky-stop",
+   "verdict": "NOT PASS \u2014 latch-scoped as documented (no durable marker)",
+   "boots": [
+    "c2b-a6-sticky-r1",
+    "c2b-a6-sticky-r2"
+   ],
+   "decisive": "A6-22/23/24/26/27 FAIL both boots with markers= (empty) and wakes=1->1; cancel=true; restart=ok in A6-23"
+  },
+  {
+   "id": "C2-B/cold-recovery",
+   "verdict": "PASS",
+   "boots": [
+    "c2b-a6-crash-r1",
+    "c2b-a6-crash-r2"
+   ],
+   "decisive": "A6-13 PASS exited=true restart=ok decision=null consumed=false file=false (both); A6-14 PASS abandon=invocation-abandoned consumed=false file=false"
+  },
+  {
+   "id": "C2-B/goal-authorisation",
+   "verdict": "NOT ESTABLISHED (no shipped instrument boots the conjunction)",
+   "boots": [
+    "c2a-pd33-e2e-pair/boot01",
+    "c2a-pd33-e2e-pair/boot02",
+    "c2b-a6-allow-r1",
+    "c2b-a6-allow-r2"
+   ],
+   "decisive": "A6-off governed half: pd33 rounds=3 finalPhase=complete (both boots); A6-on half: A6-27 outcome=succeeded facts=1 (both). No driver enables alpha6ReviewRouting on the governed preset, so the conjunction is unmeasured"
+  }
+ ],
+ "stopDistribution": {
+  "boots": 11,
+  "consumed": 0,
+  "abandoned": 1,
+  "preFenceDecided": 10,
+  "fileEmpty": 11
+ },
+ "agreeing": "true for allow/deny/throw/a6-26/sticky/crash case-for-case; Stop is reported as a distribution (0/11 consumed, 1/11 fence trip), not an average",
+ "disagreements": []
+}

@@ -1,0 +1,16 @@
+{
+  "runId": "2026-11-11T11-13-14",
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2-2",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "blueprintHash": "sha256:35f9acd6d6a7eee17d0224dddfb4c32a2a06f5dd040286332401ceb301e01356",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-11T11-13-14",
+  "optIn": {
+    "alpha6Officer": true,
+    "planeTakeover": true,
+    "stickyStop": true,
+    "inboxReconcile": false,
+    "timeoutMs": 0
+  }
+}

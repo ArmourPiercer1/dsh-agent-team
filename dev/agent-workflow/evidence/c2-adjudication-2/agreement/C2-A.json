@@ -1,0 +1,228 @@
+{
+ "scope": "C2-A",
+ "candidateCommit": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+ "candidateId": "cand-v0.1.6-2",
+ "recordClass": "CANDIDATE-C2",
+ "instruments": {
+  "pd33": {
+   "driver": "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs",
+   "invocation": "--arms e2e --boots 2",
+   "boots": [
+    "c2a-pd33-e2e-pair/boot01",
+    "c2a-pd33-e2e-pair/boot02"
+   ],
+   "driverResult": "RESULT PASS (2/2 boots; agreeing pair=true)",
+   "cases": [
+    {
+     "id": "A1",
+     "case": "read positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A2",
+     "case": "read negative (out-of-lane)",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A3",
+     "case": "write positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A4",
+     "case": "write minimal-permission negative",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A5",
+     "case": "edit positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A6",
+     "case": "edit minimal-permission negative",
+     "boot1": "PASS",
+     "boot2": "PASS",
+     "agree": true
+    },
+    {
+     "id": "A7",
+     "case": "grep positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A8",
+     "case": "grep negative (out-of-lane)",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A9",
+     "case": "glob positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A10",
+     "case": "glob negative",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A11",
+     "case": "web positive",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A12",
+     "case": "web negative (out-of-lane)",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    },
+    {
+     "id": "A13",
+     "case": "full E2E ledger flow",
+     "boot1": "PROVEN",
+     "boot2": "PROVEN",
+     "agree": true
+    }
+   ]
+  },
+  "fs": {
+   "driver": "dev/agent-workflow/evidence/c2-adjudication-2/c2a-fs-bootN/run-boot.mjs",
+   "boots": [
+    "c2a-fs-boot1",
+    "c2a-fs-boot2"
+   ],
+   "rows": 14,
+   "result": "14/14 row verdicts identical (13 PASS + 1 NOT_REACHED)"
+  }
+ },
+ "cases": [
+  {
+   "id": "A1",
+   "case": "read positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A2",
+   "case": "read negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A3",
+   "case": "write positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A4",
+   "case": "write minimal-permission negative",
+   "boot1": "PASS",
+   "boot2": "PASS",
+   "agree": true,
+   "verdict": "PARTIAL \u2014 refusal locus is the host read-before-write policy, not the lane algebra"
+  },
+  {
+   "id": "A5",
+   "case": "edit positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A6",
+   "case": "edit minimal-permission negative",
+   "boot1": "PASS",
+   "boot2": "PASS",
+   "agree": true,
+   "verdict": "PARTIAL \u2014 locus is the host policy"
+  },
+  {
+   "id": "A7",
+   "case": "grep positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A8",
+   "case": "grep negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A9",
+   "case": "glob positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A10",
+   "case": "glob negative",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A11",
+   "case": "web positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A12",
+   "case": "web negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  },
+  {
+   "id": "A13",
+   "case": "full E2E ledger flow",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "agree": true,
+   "verdict": "PASS"
+  }
+ ],
+ "agreeing": true,
+ "disagreements": [],
+ "note": "The pd33 driver prints agreement over its 10 selected cases; the FS row tables are compared row-by-row here. A4/A6 are PASS at the driver level but PARTIAL in the adjudication because the refusal locus is the host read-before-write policy."
+}

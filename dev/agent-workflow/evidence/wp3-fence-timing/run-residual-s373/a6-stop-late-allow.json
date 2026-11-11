@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6stop-u24y616lyt",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "CONTROL_REQUEST_DECIDED",
+      "message": "ControlService: request 'ctrl-0iknvyp1vzf4li1kbc3z70d4' already carries a durable decision (the first decision is authoritative)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_DECIDED",
+          "message": "ControlService: request 'ctrl-0iknvyp1vzf4li1kbc3z70d4' already carries a durable decision (the first decision is authoritative)",
+          "details": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-11T14-40-16",
+            "requestId": "ctrl-0iknvyp1vzf4li1kbc3z70d4"
+          }
+        }
+      }
+    }
+  }
+}

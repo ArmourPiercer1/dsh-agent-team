@@ -1,0 +1,372 @@
+{
+  "trials": [
+    {
+      "verdict": "fence-reached",
+      "label": "s3-s330",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 330
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-07hl76m0o2542l1teiwk411z",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:28:30.511Z",
+        "resolveSentAt": "2026-11-11T14:28:30.631Z",
+        "resolveReturnedAt": "2026-11-11T14:28:30.703Z",
+        "decisionCreatedAt": "2026-11-11T14:28:30.684Z",
+        "stopSentAt": "2026-11-11T14:28:30.841Z",
+        "stopReturnedAt": "2026-11-11T14:28:30.895Z",
+        "stopAfterDecisionMs": 157,
+        "stopAfterResolveSentMs": 210,
+        "decisionAfterStopSentMs": -157,
+        "abandonmentCreatedAt": "2026-11-11T14:28:30.906Z",
+        "decisionToAbandonmentMs": 222,
+        "decisionToConsumptionMs": null
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": null,
+        "abandonment": 16,
+        "burned": {
+          "expectedGap": 15,
+          "abandonmentAt": 16
+        }
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-07hl76m0o2542l1teiwk411z",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-28-19",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:28:30.684Z"
+          }
+        ],
+        "consumptions": [],
+        "abandonments": [
+          {
+            "sequence": 16,
+            "factType": "control-request-abandoned",
+            "requestId": "ctrl-07hl76m0o2542l1teiwk411z",
+            "reason": "invocation-cancelled-before-consumption",
+            "createdAt": "2026-11-11T14:28:30.906Z"
+          }
+        ],
+        "executionResults": []
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true,
+        "lateAllowRefusedDecided": false
+      },
+      "suite": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true
+      },
+      "failedRequirements": [
+        "lateAllowRefusedDecided"
+      ],
+      "kitExit": 0,
+      "wallMs": 17409
+    },
+    {
+      "verdict": "fence-reached",
+      "label": "s3-s345",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 345
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-0cw3ocr10ewt6o1ve4bnd1ai",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:28:47.665Z",
+        "resolveSentAt": "2026-11-11T14:28:47.785Z",
+        "resolveReturnedAt": "2026-11-11T14:28:47.854Z",
+        "decisionCreatedAt": "2026-11-11T14:28:47.839Z",
+        "stopSentAt": "2026-11-11T14:28:48.010Z",
+        "stopReturnedAt": "2026-11-11T14:28:48.035Z",
+        "stopAfterDecisionMs": 171,
+        "stopAfterResolveSentMs": 225,
+        "decisionAfterStopSentMs": -171,
+        "abandonmentCreatedAt": "2026-11-11T14:28:48.045Z",
+        "decisionToAbandonmentMs": 206,
+        "decisionToConsumptionMs": null
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": null,
+        "abandonment": 16,
+        "burned": {
+          "expectedGap": 15,
+          "abandonmentAt": 16
+        }
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-0cw3ocr10ewt6o1ve4bnd1ai",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-28-36",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:28:47.839Z"
+          }
+        ],
+        "consumptions": [],
+        "abandonments": [
+          {
+            "sequence": 16,
+            "factType": "control-request-abandoned",
+            "requestId": "ctrl-0cw3ocr10ewt6o1ve4bnd1ai",
+            "reason": "invocation-cancelled-before-consumption",
+            "createdAt": "2026-11-11T14:28:48.045Z"
+          }
+        ],
+        "executionResults": []
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true,
+        "lateAllowRefusedDecided": false
+      },
+      "suite": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true
+      },
+      "failedRequirements": [
+        "lateAllowRefusedDecided"
+      ],
+      "kitExit": 0,
+      "wallMs": 17141
+    },
+    {
+      "verdict": "fence-reached",
+      "label": "s3-s360",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 360
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-1etfw5802ky29b1njkjwa1w2",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:29:04.828Z",
+        "resolveSentAt": "2026-11-11T14:29:04.948Z",
+        "resolveReturnedAt": "2026-11-11T14:29:05.019Z",
+        "decisionCreatedAt": "2026-11-11T14:29:05.003Z",
+        "stopSentAt": "2026-11-11T14:29:05.188Z",
+        "stopReturnedAt": "2026-11-11T14:29:05.196Z",
+        "stopAfterDecisionMs": 185,
+        "stopAfterResolveSentMs": 240,
+        "decisionAfterStopSentMs": -185,
+        "abandonmentCreatedAt": "2026-11-11T14:29:05.206Z",
+        "decisionToAbandonmentMs": 203,
+        "decisionToConsumptionMs": null
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": null,
+        "abandonment": 16,
+        "burned": {
+          "expectedGap": 15,
+          "abandonmentAt": 16
+        }
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-1etfw5802ky29b1njkjwa1w2",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-28-53",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:29:05.003Z"
+          }
+        ],
+        "consumptions": [],
+        "abandonments": [
+          {
+            "sequence": 16,
+            "factType": "control-request-abandoned",
+            "requestId": "ctrl-1etfw5802ky29b1njkjwa1w2",
+            "reason": "invocation-cancelled-before-consumption",
+            "createdAt": "2026-11-11T14:29:05.206Z"
+          }
+        ],
+        "executionResults": []
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true,
+        "lateAllowRefusedDecided": false
+      },
+      "suite": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true
+      },
+      "failedRequirements": [
+        "lateAllowRefusedDecided"
+      ],
+      "kitExit": 0,
+      "wallMs": 17162
+    },
+    {
+      "verdict": "residual-consumed",
+      "label": "s3-s375",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 375
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-1jxo0bq0z2w24x10f8i201qm",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:29:20.324Z",
+        "resolveSentAt": "2026-11-11T14:29:20.444Z",
+        "resolveReturnedAt": "2026-11-11T14:29:20.509Z",
+        "decisionCreatedAt": "2026-11-11T14:29:20.491Z",
+        "stopSentAt": "2026-11-11T14:29:20.699Z",
+        "stopReturnedAt": "2026-11-11T14:29:20.704Z",
+        "stopAfterDecisionMs": 208,
+        "stopAfterResolveSentMs": 255,
+        "decisionAfterStopSentMs": -208,
+        "abandonmentCreatedAt": null,
+        "decisionToAbandonmentMs": null,
+        "decisionToConsumptionMs": 208
+      },
+      "sequences": {
+        "counterAtFinalRead": 17,
+        "request": 13,
+        "decision": 14,
+        "consumption": 15,
+        "abandonment": null,
+        "burned": null
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-1jxo0bq0z2w24x10f8i201qm",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-29-10",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:29:20.491Z"
+          }
+        ],
+        "consumptions": [
+          {
+            "sequence": 15,
+            "factType": "control-allow-consumed",
+            "requestId": "ctrl-1jxo0bq0z2w24x10f8i201qm",
+            "createdAt": "2026-11-11T14:29:20.699Z"
+          }
+        ],
+        "abandonments": [],
+        "executionResults": []
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": false,
+        "exactlyOneAbandonment": false,
+        "fenceReason": false,
+        "burnedSequence": false,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": false,
+        "lateAllowRefusedDecided": true
+      },
+      "suite": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedDecided": true
+      },
+      "failedRequirements": [
+        "zeroConsumption",
+        "exactlyOneAbandonment",
+        "fenceReason",
+        "burnedSequence",
+        "lateAllowRefusedAbandoned"
+      ],
+      "kitExit": 2,
+      "wallMs": 15506
+    }
+  ]
+}

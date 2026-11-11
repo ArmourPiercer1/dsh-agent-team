@@ -1,0 +1,16 @@
+{
+  "runId": "2026-11-11T14-36-25",
+  "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "blueprintHash": "sha256:40c0dcdaf24ed0686aae21494784e5d97e2654db904be06c379942274e9fb1fb",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-11T14-36-25",
+  "optIn": {
+    "alpha6Officer": true,
+    "planeTakeover": true,
+    "stickyStop": false,
+    "inboxReconcile": false,
+    "timeoutMs": 0
+  }
+}

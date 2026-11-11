@@ -1,0 +1,10 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6stop-vw0f0ceq3q",
+  "result": {
+    "ok": true,
+    "value": {
+      "accepted": true
+    }
+  }
+}

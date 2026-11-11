@@ -308,6 +308,47 @@ const A6_HANDOFF = process.env['C1_A6_HANDOFF'] === '1'
 const A6_HUMAN = process.env['C1_A6_HUMAN'] === '1'
 const A6_EXCEPTION = process.env['C1_A6_EXCEPTION'] === '1'
 const A6_STOP = process.env['C1_A6_STOP'] === '1'
+// ── WP3-FENCE-TIMING (2026-11-11; tracked test infrastructure) ──────────────
+// TIMING CONTROL FOR THE A6-12 STOP ARM (instrument, not product).
+//
+// Historically the A6-12 arm resolved the human `allow` and then sent
+// `session/cancel` as fast as it could: whether the Stop landed before the
+// guard's consumption boundary (pre-fence arm), inside the new fence, or
+// after the final consumption probe (the disclosed residual window) was pure
+// luck — 1 fence trip in 11 boots on cand-v0.1.6-2 (`c2-adjudication-2` §4).
+//
+// `C1_A6_STOP_TIMING_MS='{"resolve":R,"stop":S}'` places both events at a
+// chosen point measured from a DURABLE FACT THE SERVICE WROTE: the human
+// leg's `control-request-recorded` row `createdAt`, read back from
+// `<DSH_HOME>/storages/team_domain.json`. The allow is issued at
+// `createdAt + R` ms, the Stop at `createdAt + S` ms — same machine, same
+// `Date.now()` the service's `now()` uses.
+//
+// WHY THAT ROW IS THE PRODUCTION-EQUIVALENT SEAM (no product change): the
+// guarded invocation parks in `ControlService.awaitControlDecision`, which
+// polls the durable control state at `DEFAULT_WAIT_POLL_INTERVAL_MS = 250`
+// ms (first poll synchronous at wait start, `control/service.ts`), and the
+// wait starts immediately after the request row is durably written by the
+// same code path. So the guard's post-decision run begins on the 250 ms grid
+// anchored at that row. An external instrument can therefore put the Stop at
+// a chosen point on that grid using a DOCUMENTED product constant, without a
+// test hook, a sleep in product code, or any upstream patch.
+//
+// Unset or empty ⇒ the historical arm (250 ms discovery poll, resolve
+// immediately, cancel immediately); behaviour is byte-identical.
+const A6_STOP_TIMING = (() => {
+  const raw = process.env['C1_A6_STOP_TIMING_MS']
+  if (raw === undefined || raw === '') return null
+  let parsed
+  try { parsed = JSON.parse(raw) } catch { throw new Error(`C1_A6_STOP_TIMING_MS must be JSON, got ${raw}`) }
+  const resolveAt = Number(parsed?.resolve)
+  const stopAt = Number(parsed?.stop)
+  if (!Number.isFinite(resolveAt) || !Number.isFinite(stopAt)) {
+    throw new Error(`C1_A6_STOP_TIMING_MS needs numeric {"resolve","stop"}, got ${raw}`)
+  }
+  if (stopAt < resolveAt) throw new Error(`C1_A6_STOP_TIMING_MS stop (${stopAt}) must be >= resolve (${resolveAt})`)
+  return { resolveAt, stopAt }
+})()
 const A6_CRASH = ['1', 'allow', 'consume', 'body', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
 const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
@@ -1719,13 +1760,18 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
   let humanConsumption = null
   if (A6_HUMAN || A6_STOP) {
     const deadline = Date.now() + Number(process.env['C1_A6_WAIT_MS'] ?? 300_000)
+    // WP3-FENCE-TIMING: in timing mode the discovery poll must be fast enough
+    // to observe the request row BEFORE its anchored resolve target; the
+    // target itself is computed from the row's own durable `createdAt`, so
+    // discovery latency never shifts the schedule.
+    const discoverPollMs = A6_STOP_TIMING === null ? 250 : 2
     while (Date.now() < deadline) {
       const current = readControlLedger(CREATE_ROOT_A6)
       humanLeg = current.requests.find((r) => r.reviewAuthority === 'human-user'
         && !current.decisions.some((d) => d.requestId === r.requestId)) ?? null
       humanEscalation = humanLeg === null ? null : current.escalations.find((e) => e.approvalCaseId === humanLeg.approvalCaseId) ?? null
       if (humanLeg !== null) break
-      await new Promise((resolve) => setTimeout(resolve, 250))
+      await new Promise((resolve) => setTimeout(resolve, discoverPollMs))
     }
     if (humanLeg !== null) {
       // RULING 5: the human leg must be DISCOVERABLE through the remote
@@ -1760,20 +1806,50 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       }
       writeEvidence('a6-human-discovery.json', humanDiscovery)
     }
+    // WP3-FENCE-TIMING: the ONE durable anchor both scheduled events are
+    // measured from (the service's own request-row createdAt).
+    const timingAnchorMs = A6_STOP_TIMING === null || humanLeg === null
+      ? null
+      : Date.parse(humanLeg.createdAt)
+    const stopTiming = {
+      mode: A6_STOP_TIMING === null ? 'immediate' : 'anchored',
+      config: A6_STOP_TIMING,
+      anchorRow: humanLeg === null ? null : { requestId: humanLeg.requestId, sequence: humanLeg.sequence, createdAt: humanLeg.createdAt },
+      discoveredAt: humanLeg === null ? null : new Date().toISOString(),
+      resolveTargetAt: timingAnchorMs === null ? null : new Date(timingAnchorMs + A6_STOP_TIMING.resolveAt).toISOString(),
+      resolveSentAt: null,
+      resolveReturnedAt: null,
+      decisionCreatedAt: null,
+      stopTargetAt: timingAnchorMs === null ? null : new Date(timingAnchorMs + A6_STOP_TIMING.stopAt).toISOString(),
+      stopSentAt: null,
+      stopReturnedAt: null,
+    }
     if (humanLeg !== null) {
+      if (timingAnchorMs !== null) await sleepUntilWallClock(timingAnchorMs + A6_STOP_TIMING.resolveAt)
+      stopTiming.resolveSentAt = new Date().toISOString()
       const response = await remoteCall(booted.origin, booted.cookie, 'team.resolveControl', {
         teamSessionId: CREATE_ROOT_A6,
         requestId: humanDiscovery?.remoteOnlyRequestId ?? humanLeg.requestId,
         decision: 'allow',
         note: 'c1 smoke A6 human final approval',
       }, 'c1a6h', 4)
+      stopTiming.resolveReturnedAt = new Date().toISOString()
+      // The decision row's own durable timestamp, not the kit's intent.
+      const afterResolve = readControlLedger(CREATE_ROOT_A6)
+      stopTiming.decisionCreatedAt = afterResolve.decisions
+        .filter((d) => d.requestId === humanLeg.requestId).at(-1)?.createdAt ?? null
       writeEvidence('a6-human-response.json', response.body ?? response)
     }
     if (A6_STOP) {
+      // WP3-FENCE-TIMING: place the Stop at `anchor + stop` ms — on the
+      // waiter's 250 ms poll grid — instead of "as fast as possible".
+      if (timingAnchorMs !== null) await sleepUntilWallClock(timingAnchorMs + A6_STOP_TIMING.stopAt)
       const worker = readMemberRows(CREATE_ROOT_A6).find((row) => row.templateId === 'worker' && row.label === 'w-a6')
+      stopTiming.stopSentAt = new Date().toISOString()
       const cancel = worker === undefined
         ? { status: 0, body: { error: 'no member child session' } }
         : await apiCancel(booted.origin, booted.cookie, worker.childSessionId, 'c1a6stop')
+      stopTiming.stopReturnedAt = new Date().toISOString()
       writeEvidence('a6-stop-cancel.json', cancel.body ?? cancel)
       await new Promise((resolve) => setTimeout(resolve, 2500))
       const afterCancel = readControlLedger(CREATE_ROOT_A6)
@@ -1813,6 +1889,12 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
         humanAbandonment,
         fileAfter,
         revived,
+        // WP3-FENCE-TIMING: the run's own timing record (durable anchor +
+        // when each scheduled event was actually sent) and the full durable
+        // ledger for the seq table the driver asserts on.
+        timing: stopTiming,
+        ledgerCounter: readLedgerCounter(),
+        ledger: final,
       })
       return cancelOk && !revived
     }
@@ -2795,9 +2877,36 @@ function readControlLedger(root) {
   return out
 }
 
-/** The durable member rows for one root (the real child sessions). */
-function readMemberRows(root) {
+/**
+ * WP3-FENCE-TIMING helper: the durable ledger sequence counter
+ * (`__ledger_sequence_counter`), i.e. the highest sequence the service has
+ * ALLOCATED (not necessarily written). Reading it lets the driver prove that
+ * a fence trip BURNED exactly one sequence: the trip allocates the
+ * consumption sequence and then commits the abandonment at its own, so the
+ * counter is `decisionSequence + 2` while the ledger has no row at
+ * `decisionSequence + 1`.
+ */
+function readLedgerCounter() {
   try {
+    const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
+    const raw = parsed?.tables?.ledger?.['__ledger_sequence_counter']
+    if (typeof raw !== 'string') return null
+    const counter = JSON.parse(raw)
+    return typeof counter?.value === 'number' ? counter.value : null
+  } catch { return null }
+}
+
+/** Sleep until the given wall-clock ms; the last ~12 ms are a spin so the
+ *  sub-millisecond offsets the fence instrument steers on are not rounded by
+ *  the timer wheel. */
+async function sleepUntilWallClock(targetMs) {
+  const coarse = targetMs - Date.now() - 12
+  if (coarse > 0) await new Promise((resolve) => setTimeout(resolve, coarse))
+  while (Date.now() < targetMs) { /* spin the last few ms */ }
+}
+
+/** The durable member rows for one root (the real child sessions). */
+function readMemberRows(root) {  try {
     const parsed = JSON.parse(readFileSync(join(HOME, 'storages', 'team_domain.json'), 'utf8'))
     const rows = parsed?.tables?.member_instances
     if (rows === null || typeof rows !== 'object') return []

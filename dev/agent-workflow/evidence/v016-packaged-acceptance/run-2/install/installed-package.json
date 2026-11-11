@@ -1,0 +1,130 @@
+{
+  "name": "dsh-agent-team",
+  "version": "0.1.6",
+  "private": true,
+  "description": "DSH Agent Team vNext plugin set — public-seam only, CORE PATCH BUDGET = 0.",
+  "type": "module",
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "exports": {
+    ".": "./packages/client/composition-shim/index.js",
+    "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
+    "./web-tool": "./packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
+    "./client": "./packages/client/composition-shim/client-bundle.js",
+    "./package.json": "./package.json",
+    "./web-transport": "./packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs"
+  },
+  "files": [
+    ".agents/skills",
+    "cordis.patch.yml",
+    "packages/client/composition-shim",
+    "packages/runtime/dist",
+    "packages/runtime/root-binding",
+    "packages/runtime/src/plugin/upstream-resolver.mjs"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-agent": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-home-paths": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-llm": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-mcp-client": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-scope": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-session": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-skill": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-spill-local": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-storage-domain": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-fs": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-fs-search": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tool-web": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-tools": "0.2.0-rc.2",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.0-rc.2"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-agent": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-home-paths": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-llm": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-mcp-client": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-scope": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-session": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-skill": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-spill-local": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-storage-domain": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tool-fs": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tool-fs-search": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tool-web": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-tools": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-web-fetch-http": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^16.0.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.1.8"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-web-search-exa": "0.2.0-rc.2",
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "build:composition": "node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs",
+    "setup": "pnpm build && pnpm build:composition",
+    "check:artifacts": "node scripts/check-artifacts-committed.mjs",
+    "check:artifacts:head": "node scripts/check-artifacts-at-head.mjs",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "eslint .",
+    "lint:identities": "node scripts/lint-identities.mjs",
+    "test": "vitest run",
+    "test:node": "node scripts/run-tests.mjs",
+    "smoke:composition": "node scripts/composition-smoke.mjs",
+    "check:install-manifest": "node scripts/check-install-manifest.mjs",
+    "docs:probe": "node scripts/docs-probe.mjs",
+    "docs:sync": "node scripts/docs-sync.mjs",
+    "docs:controls": "node scripts/doc-consistency-controls.mjs",
+    "ci:local": "node scripts/ci-local.mjs"
+  }
+}
