@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6STOPFENCE",
+  "paths": [
+    "packages/runtime/test/a6-stop-fence.test.ts",
+    "packages/tools/test/a6-stop-fence-wiring.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1502,
+    "to": 1504
+  },
+  "reason": "A6 Stop fence (PR #710, owner ruling A 2026-11-09, landed 2026-11-11): TWO new scannable suites, both owned by this lane — the guard's cancellation-fence suite (`packages/runtime/test/a6-stop-fence.test.ts`, six cancellation points plus S7/S8/S9) and the wiring suite that exercises the `team_*` guarded-tool lane end to end (`packages/tools/test/a6-stop-fence-wiring.test.ts`, W1/W2). No denylist vocabulary: the suites assert ledger facts (`control-allow-consumed`, `control-request-abandoned`) and a closed lifecycle reason; the frozen scanner's quarantine hit set is unchanged.",
+  "tieNote": "MEASURED on THIS tree, not copied: with both suites on disk and no booking, the p4t6 suite read `scanner counts 1504, ledger derives 983 + 519 = 1502` — the previous 1502 plus exactly the two new paths — and the coverage assertion failed `expected 1502 to be 1504`. Booking both paths by name moves the sum to 521 and the tie re-anchors to {from: 1502, to: 1504}. Re-run after booking: 20/20 (dev/agent-workflow/evidence/a6-stop-fence/README.md §6.2). Nothing is retired, no other path is touched, and the PR's product edits ride ALREADY-COUNTED paths (`packages/runtime/control/service.ts`, `control/types.ts`, `control/index.ts`, `operation-permission/pre-execute-adapter.ts`, `operation-permission/pa-control-bridge.ts`, `packages/tools/src/guard.ts`, `packages/tools/src/tools.ts`), so the delta is exactly the two suites."
+}

@@ -286,3 +286,14 @@ the `consultGuard`/team-tools no-signal default path (W2); the sequence-gap asse
 arm; the `commitAbandonmentFact` fault path (§2 and `RELEASE-NOTES-0.1.6.md` §8); and an explicit
 statement that "zero execution" in S1–S7 means "the plane was never asked to execute", with real body
 spies in S9/W1.
+
+### 6.2 p4t6 scannable-file ledger: the two new suites are booked (2026-11-11)
+
+The census leg (`census-runtime`) refused on the first CI pass with
+`scanner counts 1504, ledger derives 983 + 519 = 1502` — the tree gained exactly the two
+suites this PR adds (`packages/runtime/test/a6-stop-fence.test.ts`,
+`packages/tools/test/a6-stop-fence-wiring.test.ts`) and the exact-total law has no tolerance.
+Booked as a NEW lane file (`packages/testkit/test/p4t6-bookings/a6stopfence.json`) rather than
+by editing the test, per that suite's own instruction ("a NEW LANE ADDS ONE FILE THERE AND
+EDITS NOTHING HERE"), with `expectedDelta {from: 1502, to: 1504}` and a tie note measured on
+this tree. Re-run: **20/20 pass**.
