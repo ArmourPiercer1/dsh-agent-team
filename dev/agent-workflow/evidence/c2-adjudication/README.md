@@ -515,3 +515,43 @@ because not every arm in this table is a pass.
 
 Re-run verifier after this revision: `exit 0`, `PASS=146` (records unchanged in class/binding;
 `verifier-output.txt` regenerated below).
+
+## 12. Update 2026-11-11 — instrument state (the kit needs `C1_PLANE_TAKEOVER=1`)
+
+Asked to say whether the stop arm still boots and what state the instrument needs. It does; the
+requirement is **`C1_PLANE_TAKEOVER=1`**, not `node_modules` and not the tree.
+
+A run that omits it fails before any A6 case:
+
+```
+PASS L0 … saved blueprints X + Y + Z written (deny list = 0 names)
+FAIL A6-1: … MALFORMED_DTO "blueprint not found in catalog: team.c1-a6-officer"
+```
+
+That is not a catalog or module-resolution fault. The base YAML emitter's worker `deny` block
+(`tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:747-752`) indents the
+`resource:` key of its `- tool: read` item at 10 spaces instead of 12 **in the
+`PLANE_TAKEOVER=false` branch only**, so `c1-x/y/z.yaml` and `c1-a6.yaml` are invalid YAML and the
+saved-source index classifies every one of them `rejected` (`yaml-invalid`, "All mapping items
+must start at the same column"); the anchor alone parses, and every `team.create` reports
+`blueprint-not-found`. Verified with the tree's own index:
+
+```
+c1-a6.yaml {"status":"rejected","diagnostics":[{"reason":"yaml-invalid", … "line 79"}]}
+c1-anchor.yaml {"status":"ok","identity":{… "team.c1-anchor" …}}
+```
+
+Exact working invocation (candidate worktree; `node_modules` absent; `--keep` optional):
+
+```
+C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_STOP=1 \
+  node tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs \
+  --worktree <tree> --testuse <repo>/tests/deepseek-harness-test-use \
+  --host-port 1302x --mock-port 1307x --evidence-dir <dir>
+```
+
+`PLANE_TAKEOVER` also sets the leader/worker `permissions.deny` to `[]`, which is the shape the
+recorded acceptance boots used. One missing-flag run and one corrected run are kept in
+`instrument-2026-11-11/`. This is a kit defect, not a product one; the
+two-character fix is `'            resource:'` at line 750. It is reported here, not patched —
+the kit is tracked test infrastructure and its owner should decide.

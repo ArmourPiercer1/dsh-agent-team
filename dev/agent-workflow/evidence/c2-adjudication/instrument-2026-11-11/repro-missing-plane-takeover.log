@@ -1,0 +1,15 @@
+[2026-11-11T05:52:07.315Z] c1 real-host smoke — stamp 2026-11-11T05-52-07
+[2026-11-11T05:52:07.315Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2
+[2026-11-11T05:52:07.315Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T05:52:07.315Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/dev/agent-workflow/evidence/c2-adjudication/c2b-repro-recip-stop
+[2026-11-11T05:52:08.847Z] ports: host=13018 mock=13069
+[2026-11-11T05:52:13.858Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-11T05:52:13.859Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-11T05:52:13.866Z] mock model listening on 13069
+[2026-11-11T05:52:16.436Z] host booted at http://127.0.0.1:13018; row ready — toolCount=15
+[2026-11-11T05:52:16.436Z] ── L0: discovery ──
+[2026-11-11T05:52:16.858Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-11T05:52:16.858Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-11T05:52:16.859Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-11T05:52:16.861Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-11T05:52:16.875Z] FAIL A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-w3alopmpz7","result":{"ok":false,"error":{"code":"MALFORMED_DTO","message":"blueprint not found in catalog: team.c1-a6-officer","details":{"method":"team.create","endpoint":"team.create","contractVersion":1,"requestToken":null,"reason":"domain-error","cause":{"code":"MALFORMED_DTO","message":"blueprint not found in catalog: team.c1-a6-officer","details":{"blueprintId":"team.c1-a6-officer","reason":"blueprint-not-found"}}}}}}
