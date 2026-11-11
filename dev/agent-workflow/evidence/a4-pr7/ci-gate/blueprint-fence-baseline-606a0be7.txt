@@ -80,3 +80,7 @@ OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L86
 # 2026-11-11 (V016-PACKAGED-ACCEPTANCE, task/pack-accept-20261111): one new identity line,
 # the new kit's v5 Team-create fixture. Nothing else moved: re-recorded by re-running
 # scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
+OFFENDING tests/kits/wp1-sticky-stop/wp1-sticky-stop.mjs :: L422=v5, L566=v5
+# 2026-11-11 (WP1-STICKY-STOP, task/wp1-sticky-20261111): one new identity line — the kit authors
+# two v5 Blueprints (the Alpha.6 anchor and the per-run Team) because the review-wake subject
+# only exists on a v5 document. Appended in the open from a re-run of the verifier on this tree.
