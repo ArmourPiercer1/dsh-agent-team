@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3190/?token=<redacted>
+[dsh-agent-team] bootstrap FAILED: TypeError: agent-bindings: config.a5sfGovernedRealm must be the boolean true when present (it enables the composition-provided `teamA5sfRealm` as this row's ONLY compiled-realm source; false is refused so a half-written opt-out can never look like a clean default)
+    at a5sfRealmConfigOf (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-realm-row.mjs:401:11)
+    at Module.createAgentBindings (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs:945:25)
+    at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/runtime/dist/packages/runtime/src/plugin/host.js:1632:27)

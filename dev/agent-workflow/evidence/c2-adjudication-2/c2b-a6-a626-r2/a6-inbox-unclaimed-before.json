@@ -1,0 +1,30 @@
+{
+  "acceptedRow": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-11T11-11-04",
+      "reviewerInstanceId": "inst-1b7ee410mq62",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-11T11-11-04:inst-1b7ee410mq62:1:a6wake%3Av1%3A1%3A9080d9cf",
+    "workFingerprint": "a6wake:v1:1:9080d9cf",
+    "ownerRootSessionId": "session-c1-smoke-root-2026-11-11T11-11-04",
+    "status": "accepted"
+  },
+  "wakeRows": [
+    "wake-5b63c844.json"
+  ],
+  "wakesBefore": 0,
+  "busySeen": true,
+  "pendingBefore": [
+    "ctrl-08vmd3z0j6wix00uvdh4d0vx"
+  ],
+  "requestsAtRestart": 17,
+  "wakeTraceBefore": [
+    {
+      "index": 16,
+      "wakeId": "review-wake:session-c1-smoke-a6-2026-11-11T11-11-04:inst-1b7ee410mq62:1:a6wake%3Av1%3A1%3A9080d9cf",
+      "messageCount": 5,
+      "lastRole": "user"
+    }
+  ]
+}
