@@ -36,6 +36,22 @@
  * verifier, ledger sequence allocation). No test sleeps 80–100 ms to
  * "reproduce" the race.
  *
+ * WIRING (review finding, 2026-11-11). S1–S8 call `service.guardOperation`
+ * directly, so they prove the GUARD; they do not prove that a lane HANDS it
+ * the invocation signal. S9 drives the A4/A5 ask lane through the real
+ * `installParameterPermissionListener` pipeline (`pre-execute-adapter.ts`)
+ * and holds the (4c') authority-facts await open between the durable decision
+ * and the guard call — the lane the independent review found unwired
+ * (`pre-execute-adapter.ts:2130`). The `team_*` tool lane's wiring is covered
+ * host-free in `packages/tools/test/a6-stop-fence-wiring.test.ts`.
+ *
+ * "NO EXECUTION" — READ THIS BEFORE QUOTING THE COUNTERS. In S1–S7 the
+ * `executions` counter is incremented only when the verdict is `allowed`,
+ * i.e. it says "the plane was never ASKED to execute", not "a spy on the
+ * tool body counted zero calls". S6/S7 never reach a body either. Only S9
+ * (and the tools wiring test) drive a real (faked) body through `next()`, so
+ * only there is zero execution observed at the body boundary.
+ *
  * RUNNER CONSTRAINTS: this repo's plain-node shim runs async scenarios at
  * module level (top-level await); `it` bodies are synchronous and use only
  * the audited matchers (toBe / toEqual, each with .not).
@@ -66,6 +82,9 @@ import {
 } from '../control/types.js'
 import type { PaEffectsVerifier } from '../control/types.js'
 import { canonicalJsonFingerprint } from '../../domain/tool-governance/src/index.js'
+import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
+import { installParameterPermissionListener } from '../operation-permission/index.js'
+import type { PreExecuteExec, PreToolDecisionLike } from '../operation-permission/index.js'
 import type { TeamDomain } from '../../storage/repositories/index.js'
 import type { P6T1World } from './p6t1-helpers.js'
 import {
@@ -295,31 +314,36 @@ async function createEnv(name: string, ports: GatedPorts = {}): Promise<Env> {
 
 interface Rows {
   readonly consumptions: number
-  readonly abandonments: { readonly reason?: string }[]
+  readonly abandonments: { readonly reason?: string; readonly sequence: number }[]
   readonly decisions: { readonly value: string; readonly sequence: number }[]
+  /** Every ledger sequence this request owns a row at (the gap probe). */
+  readonly sequences: number[]
 }
 
 function rowsOf(world: P6T1World, requestId: string): Rows {
   const ledger = world.domain.repositories.ledger.list()
   let consumptions = 0
-  const abandonments: { reason?: string }[] = []
+  const abandonments: { reason?: string; sequence: number }[] = []
   const decisions: { value: string; sequence: number }[] = []
+  const sequences: number[] = []
   for (const entry of ledger) {
     if (String(entry.rootSessionId) !== P6T4_ROOT) continue
     const payload = entry.payload as Record<string, unknown>
     if (payload['requestId'] !== requestId) continue
+    sequences.push(entry.sequence)
     if (entry.factType === 'control-allow-consumed') consumptions += 1
     if (entry.factType === 'control-request-abandoned') {
       const reason = payload['reason']
       abandonments.push({
         ...(typeof reason === 'string' ? { reason } : {}),
+        sequence: entry.sequence,
       })
     }
     if (entry.factType === 'control-decision-recorded') {
       decisions.push({ value: String(payload['decision']), sequence: entry.sequence })
     }
   }
-  return { consumptions, abandonments, decisions }
+  return { consumptions, abandonments, decisions, sequences }
 }
 
 // ---------------------------------------------------------------------------
@@ -496,6 +520,12 @@ async function runAndCancel(
   // The same composition the tool plane performs: the body runs ONLY on
   // `allowed: true` (and the real plane has its own execution-edge cancel
   // check, which this scenario deliberately does not need to reach).
+  //
+  // NOTE ON "NO EXECUTION" (review finding, 2026-11-11): in THIS scenario
+  // `executions` is a counter over the verdict, i.e. "no execution" means
+  // "the plane was never asked to execute" — it is NOT a body spy. The
+  // A5 ask-lane arm (S9) is the one that drives a real (faked) body through
+  // `next()`, so the claim there is observed at the body boundary itself.
   const verdict = await env.service.guardOperation(granted.scope, { signal })
   if (verdict.allowed) executions += 1
   const replay = await env.service.guardOperation(granted.scope)
@@ -512,7 +542,7 @@ async function runAndCancel(
 function assertCancelled(outcome: CancelledOutcome): void {
   if (outcome.verdict.allowed) throw new Error(`${outcome.label}: the guard allowed a cancelled invocation`)
   expect(outcome.verdict.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.INVOCATION_CANCELLED)
-  // nothing consumed, nothing executed
+  // nothing consumed, nothing executed (see the "no execution" note above)
   expect(outcome.rows.consumptions).toBe(0)
   expect(outcome.executions).toBe(0)
   // exactly ONE terminal abandonment, with the lifecycle reason
@@ -522,6 +552,15 @@ function assertCancelled(outcome: CancelledOutcome): void {
   expect(outcome.rows.decisions.length).toBe(1)
   expect(outcome.rows.decisions[0]?.value).toBe(CONTROL_DECISION_VALUES.ALLOW)
   expect(outcome.rows.decisions[0]?.sequence).toBe(outcome.expectedDecisionSequence)
+  // THE TRIP BURNS A SEQUENCE — deliberately. The guard prepares the
+  // consumption sequence before the final probe; a trip does not reuse it
+  // (the abandonment allocates its own inside the shared exactly-once
+  // writer), so the ledger shows a GAP at decisionSequence+1 and the
+  // abandonment lands at decisionSequence+2. A future reader must not
+  // "fix" the gap: reusing the prepared sequence would write a terminal row
+  // at a sequence the consumption was already bound to.
+  expect(outcome.rows.abandonments[0]?.sequence).toBe(outcome.expectedDecisionSequence + 2)
+  expect(outcome.rows.sequences.includes(outcome.expectedDecisionSequence + 1)).toBe(false)
   // replay refused by the terminal mark
   if (outcome.replay.allowed) throw new Error(`${outcome.label}: a replay re-consumed after a Stop`)
   expect(outcome.replay.reason).toBe(CONTROL_GUARD_BLOCK_REASONS.REQUEST_ABANDONED)
@@ -748,6 +787,153 @@ const s8 = await (async () => {
 })()
 
 // ---------------------------------------------------------------------------
+// S9 — the A4/A5 ASK lane (pre-execute-adapter): a Stop that lands AFTER the
+//      durable decision but BEFORE the last-mile consumption
+//
+// This is the lane the independent review blocked PR #710 on
+// (pre-execute-adapter.ts:2130): the adapter consulted the guard with NO
+// options even though the invocation signal was already in scope and already
+// handed to `awaitControlDecision`. The boot ledger showed the lane is live
+// and CONSUMING (a6-human-discovery.json: seq 6 control-request-recorded
+// actionName `parameter-permission` -> seq 8 allow -> seq 9 consumed), so a
+// Stop in this lane wrote `control-allow-consumed` before the fix.
+//
+// Here the body is a REAL (faked) `next()` spy, so "no execution" is observed
+// at the body boundary instead of inferred from the verdict.
+// ---------------------------------------------------------------------------
+
+interface AskLaneOutcome {
+  readonly decision: PreToolDecisionLike
+  readonly nextCalls: number
+  readonly rows: Rows
+  readonly observations: Record<string, unknown>[]
+  readonly decisionSequence: number
+}
+
+const s9 = await (async (): Promise<AskLaneOutcome> => {
+  const gate = barrier()
+  const world = await createP6T4World('a6-stop-s9', ['leader', 'worker'])
+  const service = createControlService({
+    teamDomain: world.domain,
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => P6T4_NOW,
+    waitPollIntervalMs: 10,
+    // The guard-side persisted-point recheck must be answerable, or the
+    // guard would refuse with `authority-undetermined` BEFORE its final
+    // probe and this scenario would never exercise the fence.
+    authorityRevalidation: (async (): Promise<ControlAuthorityRecheck> => ({
+      kind: CONTROL_AUTHORITY_RECHECK_KINDS.STILL_SUFFICIENT,
+    })) as ControlAuthorityRecheckPort,
+  })
+  try {
+    type Listener = (
+      exec: PreExecuteExec,
+      next: () => Promise<PreToolDecisionLike>,
+    ) => Promise<PreToolDecisionLike>
+    const listeners: Listener[] = []
+    const ctx = {
+      on: (_event: string, listener: Listener): (() => void) => {
+        listeners.push(listener)
+        return (): void => undefined
+      },
+      tools: { guard: (_guard: (exec: { readonly name: string }) => string | undefined): (() => void) => (): void => undefined },
+    }
+    const observations: Record<string, unknown>[] = []
+    // Disarm during setup: the request and the allow run ungated. The
+    // barrier is armed exactly when the adapter observes `decision-arrived`,
+    // so the NEXT authority-facts read — the (4c') await that sits BETWEEN
+    // the durable decision and the guard call — is the one held open. The
+    // pre-ask routing call happens while disarmed.
+    let armed = false
+    let routingSeen = false
+    let routingCalls = 0
+    const policy: TemplatePermissionPolicy = { default: 'ask', allow: [], ask: [], deny: [] }
+    installParameterPermissionListener(ctx, {
+      policy,
+      resolveTarget: async (path: string) => ({
+        key: `file:///${path.replace(/^\.\//, '').replace(/\/{2,}/g, '/')}`,
+        display: path,
+      }),
+      controlService: service,
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(WORKER_ID),
+      targetInstanceId: WORKER_ID,
+      isLeader: false,
+      onObserve: (observation) => {
+        observations.push(observation)
+        if (observation['stage'] === 'decision-arrived') armed = true
+      },
+      operationApprovalRouting: async () => {
+        routingCalls += 1
+        if (armed && !routingSeen) {
+          routingSeen = true
+          gate.hit()
+          await gate.released
+        }
+        // The v3 documents arm: an APPROVAL CASE is created (a legacy row
+        // would carry no `reviewAuthority`, so the adapter's (4c') recheck —
+        // the await this scenario holds open — would simply not run).
+        return {
+          beneficiaryAuthority: 'member',
+          documents: {
+            teamHardEnvelope: { status: 'absent' },
+            permissionMutationEnvelope: { status: 'absent' },
+          },
+        }
+      },
+    })
+    const listener = listeners[0]
+    if (listener === undefined) throw new Error('S9: no pre-execute listener installed')
+    const controller = new AbortController()
+    let nextCalls = 0
+    const callId = 'corr-a6-stop-s9'
+    const pending = listener(
+      {
+        callId,
+        name: 'write',
+        arguments: { file_path: 'fileA.txt', content: 'payload' },
+        signal: signalOf(controller),
+      },
+      async (): Promise<PreToolDecisionLike> => {
+        nextCalls += 1
+        return { kind: 'allow' }
+      },
+    )
+    // The adapter created the durable ask; resolve it with a real allow
+    // while the listener waits on the decision.
+    let requestId: string | undefined
+    for (let attempt = 0; attempt < 400; attempt += 1) {
+      const state = await service.listControlState(P6T4_ROOT)
+      requestId = state.requests.find((r) => r.correlation === callId)?.requestId
+      if (requestId !== undefined) break
+      await new Promise<void>((resolve) => { setTimeout(resolve, 5) })
+    }
+    if (requestId === undefined) throw new Error('S9: the adapter never created a durable ask')
+    const resolution = await service.resolveControl({
+      rootSessionId: P6T4_ROOT,
+      caller: leaderCaller(),
+      requestId,
+      decision: CONTROL_DECISION_VALUES.ALLOW,
+    })
+    // The decision arrived; the adapter is now held on the (4c') await.
+    await gate.reached
+    controller.abort()
+    gate.release()
+    const decision = await pending
+    return {
+      decision,
+      nextCalls,
+      rows: rowsOf(world, requestId),
+      observations,
+      decisionSequence: resolution.decisionSequence,
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})()
+
+// ---------------------------------------------------------------------------
 // Assertions
 // ---------------------------------------------------------------------------
 
@@ -814,5 +1000,31 @@ describe('A6-STOP-FENCE — cancellation observed at the consumption boundary', 
     expect(s8.denyRows.consumptions).toBe(0)
     expect(s8.denyRows.abandonments.length).toBe(0)
     expect(s8.denyRows.decisions[0]?.value).toBe(CONTROL_DECISION_VALUES.DENY)
+  })
+
+  it('S9 A5 ask lane: a Stop after the decision and before consumption is fenced — the body is never invoked', () => {
+    // The adapter's own deny (not a guard-verdict consumer): the invocation
+    // terminates with the guard's `invocation-cancelled` block reason.
+    expect(s9.decision.kind).toBe('deny')
+    // THE BODY SPY: `next()` is the body boundary of this lane and it was
+    // never called. "No execution" is observed here, not inferred.
+    expect(s9.nextCalls).toBe(0)
+    // zero consumption, one terminal abandonment with the lifecycle reason
+    expect(s9.rows.consumptions).toBe(0)
+    expect(s9.rows.abandonments.length).toBe(1)
+    expect(s9.rows.abandonments[0]?.reason).toBe(STOP_ABANDON_REASON)
+    // the trip burns the prepared sequence: a gap at decisionSequence+1,
+    // the abandonment at decisionSequence+2 (never a consumption row there)
+    expect(s9.rows.abandonments[0]?.sequence).toBe(s9.decisionSequence + 2)
+    expect(s9.rows.sequences.includes(s9.decisionSequence + 1)).toBe(false)
+    // the human's allow is left exactly as written, still the only decision
+    expect(s9.rows.decisions.length).toBe(1)
+    expect(s9.rows.decisions[0]?.value).toBe(CONTROL_DECISION_VALUES.ALLOW)
+    expect(s9.rows.decisions[0]?.sequence).toBe(s9.decisionSequence)
+    // the guard's block reason is visible in the adapter's observation, so
+    // the refusal is named for the Stop, not for a generic guard block
+    const guardVerdict = s9.observations.find((o) => o['stage'] === 'guard-verdict')
+    expect(guardVerdict?.['allowed']).toBe(false)
+    expect(guardVerdict?.['reason']).toBe(CONTROL_GUARD_BLOCK_REASONS.INVOCATION_CANCELLED)
   })
 })
