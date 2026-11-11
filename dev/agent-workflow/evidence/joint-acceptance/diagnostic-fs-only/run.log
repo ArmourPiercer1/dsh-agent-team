@@ -1,0 +1,26 @@
+[2026-11-11T21:34:10.832Z] c1 real-host smoke — stamp 2026-11-11T21-34-10-h3189-r8e7c91
+[2026-11-11T21:34:10.833Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc
+[2026-11-11T21:34:10.833Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T21:34:10.833Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/dev/agent-workflow/evidence/joint-acceptance/diagnostic-fs-only
+[2026-11-11T21:34:12.649Z] ports: host=3189 mock=3498
+[2026-11-11T21:34:17.661Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-11T21:34:17.662Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-11T21:34:17.669Z] mock model listening on 3498
+[2026-11-11T21:34:25.351Z] host booted at http://127.0.0.1:3189; row ready — toolCount=15
+[2026-11-11T21:34:25.351Z] ── L0: discovery ──
+[2026-11-11T21:34:25.773Z] discovery surface (32 tools): bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, job_kill, job_list, job_output, present, read, read_image, skill, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, todo_write, update_goal, write
+[2026-11-11T21:34:25.773Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=32 missingTeam=[] denyList=[create_goal,exit_plan_mode,get_goal,glob,grep,job_kill,job_list,job_output,present,skill,update_goal]
+[2026-11-11T21:34:25.774Z] saved blueprints X + Y + Z written (deny list = 11 names)
+[2026-11-11T21:34:25.775Z] ── JOINT-ACCEPTANCE: one v5 Team, both families, preset=fs-only ──
+[2026-11-11T21:34:27.032Z] PASS J01: team.create=200 admitted=true blueprintHash=sha256:69274dd4e3b10f0db21c194a1e1df761ce29fa3bd3abf83be9d6748e687f5ad3 memberIoCeilings=true reviewRouting=true schemaVersion=5
+[2026-11-11T21:34:27.474Z] FAIL J04: bashCalls=1 realmTerminalFacts=0
+[2026-11-11T21:34:27.475Z] PASS J02: inside="pd42-inside-2026-11-11T21-34-10-h3189-r8e7c91" allowFacts=1
+[2026-11-11T21:34:27.475Z] PASS J03: writeDenies=1 outsideExists=false
+[2026-11-11T21:34:27.475Z] FAIL J05: request=ctrl-0zusz2v0e6l23017jxl211yg consumption=1 executionResults=0 outcomes=
+[2026-11-11T21:34:27.475Z] PASS J11: one-shot consumption facts for ctrl-0zusz2v0e6l23017jxl211yg: 1
+[2026-11-11T21:34:27.475Z] FAIL J06: parameter-permission request=ctrl-0zusz2v0e6l23017jxl211yg reviewAuthority=leader decider={"instanceId":"inst-leader","kind":"instance","role":"leader"} team-tool-execute leg=false (F-3 is recorded, never fixed here)
+[2026-11-11T21:34:27.475Z] NOT_REACHED J07: the joint driver did not drive this arm in this composition (see the README for the exact next step)
+[2026-11-11T21:34:27.475Z] NOT_REACHED J08: the joint driver did not drive this arm in this composition (see the README for the exact next step)
+[2026-11-11T21:34:27.475Z] NOT_REACHED J09: the joint driver did not drive this arm in this composition (see the README for the exact next step)
+[2026-11-11T21:34:27.475Z] NOT_REACHED J10: the joint driver did not drive this arm in this composition (see the README for the exact next step)
+[2026-11-11T21:34:27.477Z] teardown: DSH_HOME removed=true host stopped=true

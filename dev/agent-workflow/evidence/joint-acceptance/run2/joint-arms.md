@@ -1,0 +1,13 @@
+| arm | verdict | proposition | measured detail |
+|---|---|---|---|
+| J01 | **PASS** | Team + routing: v5 both families admitted; Officer routed, one team_resolve_control | team.create=200 admitted=true blueprintHash=sha256:3c67e3f0e6d094ec4aac6e68c8ce78436d1b2e9961597d2563d26ec132cbfb5d memberIoCeilings=true reviewRouting=true schemaVersion=5 |
+| J02 | **NOT_REACHED** | Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact | no governed Member turn existed; the ceiling was never consulted |
+| J03 | **NOT_REACHED** | Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable | no governed Member turn existed; the ceiling was never consulted |
+| J04 | **FAIL** | Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY | the native bash module never mounted: rejected: TEAM_RUNTIME_DURABLE_WRITE_FAILED activation: child-session creation failed for member 'inst-13pe9890nxe3': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module re-mount failed: Cannot read properties of undefined (reading 'validate') |
+| J05 | **NOT_REACHED** | Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero | no guarded call reached the approval lane in this composition |
+| J06 | **NOT_REACHED** | Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured | parameter-permission request=none reviewAuthority=none decider=null team-tool-execute leg=false (F-3 is recorded, never fixed here) |
+| J07 | **NOT_REACHED** | Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation | no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one |
+| J08 | **NOT_REACHED** | Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs | no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one |
+| J09 | **NOT_REACHED** | Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs | no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one |
+| J10 | **NOT_REACHED** | Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution | no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one |
+| J11 | **NOT_REACHED** | No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED) | no consumed allow existed to replay |

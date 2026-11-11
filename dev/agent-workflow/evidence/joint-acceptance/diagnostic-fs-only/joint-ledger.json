@@ -1,0 +1,45 @@
+{
+  "requests": [
+    {
+      "sequence": 6,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0zusz2v0e6l23017jxl211yg",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-1sla9wj1t2uj",
+      "correlation": "call-c1-m6e2o89q",
+      "approvalCaseId": "case-0n5361316mjoqg0ev2oqh0tv",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-11T21:34:26.632Z"
+    }
+  ],
+  "decisions": [
+    {
+      "sequence": 7,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-0zusz2v0e6l23017jxl211yg",
+      "decision": "allow",
+      "decider": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "createdAt": "2026-11-11T21:34:26.788Z"
+    }
+  ],
+  "consumptions": [
+    {
+      "sequence": 8,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-0zusz2v0e6l23017jxl211yg",
+      "createdAt": "2026-11-11T21:34:26.997Z"
+    }
+  ],
+  "abandonments": [],
+  "transfers": [],
+  "escalations": [],
+  "executionResults": [],
+  "error": null
+}
