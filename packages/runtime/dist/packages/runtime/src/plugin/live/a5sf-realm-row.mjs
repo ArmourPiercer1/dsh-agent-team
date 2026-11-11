@@ -1696,6 +1696,113 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
 }
 
 /**
+ * P01 (2026-11-11) — the tool names a route-C attach FORWARDED onto the
+ * Member's CEILING realm, read from the registration receipts the mount itself
+ * publishes (`NATIVE_REGISTRATION_ROUTING`, mount.ts:1906-1926).
+ *
+ * WHY THIS EXISTS. The realm's forwarded Definitions are REGISTERED but never
+ * DECLARED to the closed-world Guard: they are not in the global `nativeNames`
+ * (which carries no scope) and not in `bindOwnTools`' name list, so
+ * `bindInheritedSurface` pins them `verified:false` and every call is refused
+ * `TOOL_BINDING_UNVERIFIED` (the measured PD-42 `read`/`write` refusal). The
+ * receipt is the mount's OWN claim about which names this fiber replaced, so it
+ * is the only admissible source for "these are the realm's own definitions".
+ *
+ * THE PREDICATE IS DELIBERATELY NARROW (fail closed):
+ *   - only `routing.forwarded` — never `observed` (which also lists names the
+ *     router DROPPED for another fiber), never a module's `expectedTools`
+ *     (a declaration, not a measurement);
+ *   - only `routing.realm === 'ceiling'` — a binding-targeted fiber forwards
+ *     exactly one tool owned by that binding's realm, and binding realms are
+ *     not the Member ceiling this set describes.
+ * The CALLER still owes the rest of the predicate (on the post-attach surface,
+ * not a plane-owned/placement name, and readable at `tools.get(name, scope)`):
+ * this helper reports the receipt, it does not decide admissibility.
+ *
+ * @param {readonly object[] | undefined} fibers - the fibers the attach returned.
+ * @returns {readonly string[]} forwarded ceiling names, in fiber order, deduped.
+ */
+export function a5sfAttachedToolNames(fibers) {
+  if (!Array.isArray(fibers)) return Object.freeze([])
+  const names = []
+  const seen = new Set()
+  for (const fiber of fibers) {
+    const routing = fiber?.[NATIVE_REGISTRATION_ROUTING]
+    if (routing === undefined || routing === null) continue
+    if (routing.realm !== 'ceiling') continue
+    const forwarded = Array.isArray(routing.forwarded) ? routing.forwarded : []
+    for (const name of forwarded) {
+      if (typeof name !== 'string' || name === '' || seen.has(name)) continue
+      seen.add(name)
+      names.push(name)
+    }
+  }
+  return Object.freeze(names)
+}
+
+/**
+ * P01 (2026-11-11) — WHICH realm-forwarded names may be DECLARED bindable.
+ *
+ * Deliverable A of the P01 fix: the route-C attach registers the realm's
+ * confined `read`/`write`/`edit`/`read_image` definitions, but the closed-world
+ * Guard was never told they exist, so `bindInheritedSurface` pinned them
+ * `verified:false` and every call was refused `TOOL_BINDING_UNVERIFIED`. This
+ * function is the ONE admission predicate, kept here (pure, dependency-free) so
+ * the wiring and a host-free proof judge the SAME table.
+ *
+ * EVERY condition must hold; a name that fails ANY of them is NOT declared and
+ * therefore keeps the pre-P01 refusal — fail closed, never a wider bind:
+ *
+ *   1. SOURCE: the name came from a `realm === 'ceiling'` fiber's
+ *      `routing.forwarded` (see `a5sfAttachedToolNames`; never `observed`,
+ *      which also lists names the router DROPPED for another fiber, and never a
+ *      module's `expectedTools`, which is a declaration rather than a
+ *      measurement).
+ *   2. SURFACE: the name is still on the POST-ATTACH model-visible surface.
+ *   3. ATTRIBUTION: it is NOT a plane-owned / placement name — that name's
+ *      binding is the plane's, and a second claim would be an attribution lie.
+ *   4. READABLE: `tools.get(name, scope)` answers a definition (the same gate
+ *      `bindAll` applies at install.ts:1173-1185). A name the public seam cannot
+ *      read is never declared bindable.
+ *
+ * @param {object} input
+ * @param {readonly string[]} input.attachedNames - `a5sfAttachedToolNames` output.
+ * @param {ReadonlySet<string>} input.surface - the post-attach tool surface.
+ * @param {ReadonlySet<string>} input.planeOwned - plane own + placement names.
+ * @param {(name: string) => unknown} input.lookup - `tools.get(name, scope)`.
+ * @returns {{ declared: string[], skipped: { name: string, reason: string }[] }}
+ */
+export function a5sfBindableRealmNames(input) {
+  const { attachedNames, surface, planeOwned, lookup } = input ?? {}
+  const declared = []
+  const skipped = []
+  if (!Array.isArray(attachedNames) || attachedNames.length === 0) {
+    return Object.freeze({ declared: Object.freeze(declared), skipped: Object.freeze(skipped) })
+  }
+  for (const name of attachedNames) {
+    if (typeof name !== 'string' || name === '') {
+      skipped.push({ name: String(name), reason: 'not-a-name' })
+      continue
+    }
+    if (planeOwned instanceof Set && planeOwned.has(name)) {
+      skipped.push({ name, reason: 'plane-owned' })
+      continue
+    }
+    if (!(surface instanceof Set) || !surface.has(name)) {
+      skipped.push({ name, reason: 'not-on-post-attach-surface' })
+      continue
+    }
+    const definition = typeof lookup === 'function' ? lookup(name) : undefined
+    if (definition === undefined || definition === null) {
+      skipped.push({ name, reason: 'definition-unreadable' })
+      continue
+    }
+    declared.push(name)
+  }
+  return Object.freeze({ declared: Object.freeze(declared), skipped: Object.freeze(skipped) })
+}
+
+/**
  * The names a router reported as FORWARDED whose definition is still the
  * pre-attach (preset) one, or whose definition is gone.
  *
