@@ -1,0 +1,25 @@
+F-5 two-asks — policy=leader officerAtAsk2=disposed run=1
+worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f5-asks
+testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539 (0.2.0-rc.2)
+evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f5-asks/dev/agent-workflow/evidence/f5-two-asks/leader-disposed-run1-2026-11-11T19-23-21
+stable probes (read-only): 3080=401 3180=unreachable
+preflight PASS (selected arms: ask-1, ask-2, policy:leader, officer-disposed-at-ask-2; NOT_SELECTED: none)
+mock model on 127.0.0.1:3497
+[boot] row health ok, toolCount=15
+host booted at http://127.0.0.1:3182 on :3182
+PASS L0 — the real Host booted and the Leader surface was discovered
+PASS CREATE-1 — team.create admits the v5 Officer + reviewRouting on the real Host
+PASS CREATE-2 — exactly one live Officer carries the routing template (the Alpha.6 unique-Officer law)
+── ask #1: governed worker bash, Officer wake → escalate → human leg ──
+PASS ASK1-1 — ask #1 produced the governed two-leg chain and the requested side effect executed exactly once
+PASS ASK1-2 — ask #1 was escalated by the OFFICER and the successor human leg was decided by the HUMAN
+officer disposed: status=200 lifecycle=DISPOSED
+── ask #2: same root, second governed ask (officer disposed, policy leader) ──
+ask #2 → resolver=instance policyInvoked=true honoured=true discoverable=true executed=true
+PASS ASK2-1 — ask #2 on the SAME root produced its own durable plane leg
+PASS ASK2-2 — ask #2's request stayed discoverable after the decision point (remote ledger page + projection)
+PASS ASK2-3 — ask #2 was decided by a legal resolver and the approval authority was not silently changed
+PASS ASK2-4 — the declared whenOfficerUnavailable policy was honoured on ask #2
+PASS ASK2-5 — ask #2 executed its approved body exactly once (no silent second authority)
+PASS ARM-OFFICER-UNAVAILABLE — the Officer was disposed before ask #2 and the router saw it as unavailable (leader)
+PASS HUMAN-EXPLICIT — every human decision on this run was an explicit team.resolveControl by the operator (no implied/automatic human resolution)

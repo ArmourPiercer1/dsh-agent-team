@@ -1,0 +1,127 @@
+{
+  "policy": "leader",
+  "expectation": "the ask may go to the Leader; the Leader is the resolver and the human leg is not silently substituted",
+  "officerAtAsk2": "live",
+  "officerRowNow": {
+    "instanceId": "inst-1h4moyr0l9ih",
+    "lifecycle": "CREATED",
+    "templateId": "officer"
+  },
+  "officerAvailable": true,
+  "policyInvoked": false,
+  "policyHonoured": null,
+  "policyReason": "the configured Officer is CREATED and was woken as the reviewer; the router's whenOfficerUnavailable branch is not reached, so the policy is NOT INVOKED (recorded as such rather than marked honoured)",
+  "ask2": {
+    "permissionLeg": {
+      "requestId": "ctrl-1y3lgly0v8twc30ffrotg1fy",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-0b30deo1sfy31t0jecbh61xs"
+    },
+    "planeLeg": {
+      "requestId": "ctrl-1rauupx0v20nu20crafmz18b",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-1jfvplg00jy7sj03xumgy1yo",
+      "legOrdinal": 1,
+      "correlation": "pa:tadm:session-f5-team-leader-2026-11-11T19-21-57:inst-0isjb2l1s9us:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0isjb2l1s9us-bash:hexec:746b704c-90db-46c0-866a-720104f38f93-2",
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:83befe5094242fc068fd3731f32e2cdcaab161660f8ee089eeb5b309e2627fae",
+      "authorityGeneration": 0
+    },
+    "escalations": [],
+    "transfer": null,
+    "humanLeg": null,
+    "decision": {
+      "sequence": 23,
+      "factType": "control-decision-recorded",
+      "createdAt": "2026-11-11T19:22:40.160Z",
+      "decider": {
+        "humanId": "session-f5-team-leader-2026-11-11T19-21-57",
+        "kind": "human"
+      },
+      "decision": "allow",
+      "note": "F-5 ask2: explicit human operator allow (leader/live)",
+      "requestId": "ctrl-1rauupx0v20nu20crafmz18b",
+      "requestSequence": 22,
+      "scope": {
+        "actionName": "team-tool-execute",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-11T19-21-57|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "correlation": "pa:tadm:session-f5-team-leader-2026-11-11T19-21-57:inst-0isjb2l1s9us:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0isjb2l1s9us-bash:hexec:746b704c-90db-46c0-866a-720104f38f93-2",
+        "operationFingerprint": "sha256:6107ad95487057fbc3551ee8190714c0adeb2fd9fd5a386315a823439bb2e9cb",
+        "rootSessionId": "session-f5-team-leader-2026-11-11T19-21-57",
+        "subject": {
+          "instanceId": "inst-0isjb2l1s9us",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-0isjb2l1s9us",
+        "toolName": "bash"
+      }
+    },
+    "decisionCount": 1,
+    "consumptions": 1,
+    "executions": 1,
+    "abandonments": 0,
+    "executed": true
+  },
+  "discoverability": {
+    "requestId": "ctrl-1rauupx0v20nu20crafmz18b",
+    "ledgerPageVisible": true,
+    "pendingControlCount": 0,
+    "modelPendingListObserved": true,
+    "remoteDiscovery": {
+      "pageStatus": 200,
+      "projectionStatus": 200,
+      "entries": 25
+    }
+  },
+  "resolver": {
+    "deciderKind": "human",
+    "deciderInstanceId": null,
+    "deciderHumanId": "session-f5-team-leader-2026-11-11T19-21-57",
+    "leaderInstance": "inst-leader",
+    "officerInstance": "inst-1h4moyr0l9ih",
+    "humanAllowedByDriver": [
+      {
+        "requestId": "ctrl-1y3lgly0v8twc30ffrotg1fy",
+        "kind": "leader-approval",
+        "actionName": "parameter-permission",
+        "status": 200,
+        "ok": true,
+        "error": null
+      },
+      {
+        "requestId": "ctrl-1rauupx0v20nu20crafmz18b",
+        "kind": "leader-approval",
+        "actionName": "team-tool-execute",
+        "status": 200,
+        "ok": true,
+        "error": null
+      }
+    ],
+    "gateFactsPresent": true,
+    "refusalGateAuditPresent": true,
+    "failingGatesAtRefusal": [
+      "owner-running"
+    ]
+  },
+  "mockObservation": {
+    "wakeTurns": 3,
+    "notificationTurns": 1,
+    "listCalls": 1,
+    "resolveCalls": 1,
+    "refusalTraceCount": 1,
+    "refusalTraces": [
+      "uupx0v20nu20crafmz18b\",\"decision\":\"escalate\"}}]},{\"role\":\"user\",\"content\":[{\"type\":\"tool_result\",\"tool_use_id\":\"call-f5-7y2evs7h\",\"content\":[{\"type\":\"text\",\"text\":\"{\\\"status\\\":\\\"rejected\\\",\\\"code\\\":\\\"CONTROL_RESOLVER_NOT_AUTHORIZED\\\",\\\"message\\\":\\\"ControlService: caller is not a resolver for kind 'leader-approval' — Member escalation requires a valid ReviewCapability (caller is not a resolver for kind 'leader-approval' — the trusted review-facts port produced no facts for this leg); the global resolver table is unchanged\\\",\\\"details\\\":{\\\"rootSessionId\\\":\\\"session-f5-team-leader-2026-11-11T19-21-57\\\",\\\"requestId\\\":\\\"ctrl-1rauupx0v20nu20crafmz18b\\\",\\\"kind\\\":\\\"leader-approval\\\",\\\"role\\\":\\\"member\\\",\\\"allowedRoles\\\":[\\\"leader\\\",\\\"human\\\"],\\\"problem\\\":\\\"caller is not a resolver for kind 'leader-approval' — the trusted review-facts port produced no facts for this leg\\\"}}\"}],\"is_error\":false}]}]"
+    ]
+  },
+  "disposeResult": null,
+  "observedAt": "2026-11-11T19:22:41.899Z",
+  "observerHostPid": 39
+}

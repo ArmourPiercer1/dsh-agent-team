@@ -89,6 +89,11 @@ import {
 import net from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
+// Boot Preflight (shared, host-free classification). Migrated 2026-11-11: this
+// kit is the demonstration call site; the module owns the closed-set grading.
+import { assertBootPreflight, runBootPreflight } from '../_shared/boot-preflight.mjs'
+import { isSanctionedTestPort } from '../../../tests/paths.mjs'
+const isSanctionedPort = (port) => isSanctionedTestPort(port)
 
 // ── constants ───────────────────────────────────────────────────────────────
 
@@ -276,6 +281,11 @@ function rewriteWorldProfile() {
 // ── host lifecycle ──────────────────────────────────────────────────────────
 
 function spawnHost({ port, home, logPath, mockPort: mp }) {
+  // THE REFUSAL POINT. Both boots pass through here; a non-PASS preflight
+  // throws BootPreflightRefusal (typed reason + blocking checks) and NO child
+  // is spawned. This is deliberate: a driver cannot "check and then start
+  // anyway".
+  assertBootPreflight(PREFLIGHT)
   mkdirSync(EVIDENCE_DIR, { recursive: true })
   const outFd = openSync(logPath, 'a')
   const errFd = openSync(logPath, 'a')
@@ -414,6 +424,8 @@ function overrideValue(capability, item) {
 
 const MOCK = { port: null, close: async () => {} }
 let HOST = null
+/** The shared boot preflight record (set in G0; asserted in spawnHost). */
+let PREFLIGHT = null
 let host2 = null
 
 try {
@@ -421,6 +433,14 @@ try {
   log(`world=${WORLD} (seed from ${SRC_WORLD})`)
 
   // ── G0 preflight ───────────────────────────────────────────────────────────
+  //
+  // MIGRATED 2026-11-11 (Boot Preflight work package): the measurements below
+  // are still this kit's (built dist, seed world, stable-instance probes), but
+  // the CLASSIFICATION now belongs to `tests/kits/_shared/boot-preflight.mjs`.
+  // The Host is started only after `assertBootPreflight` (called again inside
+  // `spawnHost`, the one choke point both boots pass through) returned PASS;
+  // otherwise the run refuses with a typed reason instead of spending a start.
+  // Every arm this kit does not select is NOT_SELECTED, never FAIL.
   const head = gitIn(TESTUSE, ['rev-parse', 'HEAD'])
   const porcelain = gitIn(TESTUSE, ['status', '--porcelain'])
   const distChecks = [
@@ -431,20 +451,71 @@ try {
   ]
   const distOk = distChecks.every((p) => existsSync(p))
   const srcOk = existsSync(join(SRC_WORLD, 'storages', 'team_domain.json'))
+  const hostProbes = []
   for (let p = HOST_PORT_MIN; p <= HOST_PORT_MAX; p += 1) {
-    if (hostPort === null && (await isPortFree(p))) hostPort = p
+    const free = await isPortFree(p)
+    hostProbes.push({ port: p, free })
+    if (hostPort === null && free) hostPort = p
   }
+  const mockProbes = []
   for (const p of MOCK_PORTS) {
-    if (mockPort === null && (await isPortFree(p))) mockPort = p
+    const free = await isPortFree(p)
+    mockProbes.push({ port: p, free })
+    if (mockPort === null && free) mockPort = p
   }
   stablePre = Object.fromEntries(await Promise.all(STABLE_PROBES.map(async (u) => [u, await probe(u)])))
-  const g0 = head.status === 0 && head.out === HOST_BASELINE_SHA
-    && porcelain.status === 0 && porcelain.out === ''
-    && distOk && srcOk && hostPort !== null && mockPort !== null
+  const worktreeHead = gitIn(WORKTREE, ['rev-parse', 'HEAD'])
+  const expectedSha = process.env['PRA_EXPECT_SHA'] ?? (worktreeHead.status === 0 ? worktreeHead.out : '')
+  PREFLIGHT = runBootPreflight({
+    env: {
+      required: ['DSH_HOME', 'DSH_CLIENT_COMMIT_HASH', 'DEEPSEEK_BASE_URL'],
+      // The values this kit WILL export to the child, not the ambient shell.
+      provided: {
+        DSH_HOME: WORLD,
+        DSH_CLIENT_COMMIT_HASH: HOST_BASELINE_SHA,
+        DEEPSEEK_BASE_URL: mockPort === null ? '' : `http://127.0.0.1:${mockPort}`,
+      },
+    },
+    hostPin: {
+      declared: HOST_BASELINE_SHA,
+      actual: head.status === 0 && head.out.length > 0 ? head.out : null,
+      checkout: TESTUSE,
+      porcelainClean: porcelain.status === 0 && porcelain.out === '',
+    },
+    candidate: {
+      // LIVE CLASS, not a frozen candidate: this kit boots the WORKTREE it
+      // lives in. A frozen-candidate run supplies PRA_EXPECT_SHA (the
+      // candidate manifest SHA) and the same gate then proves the identity.
+      expectedSha,
+      actualSha: worktreeHead.status === 0 ? worktreeHead.out : '',
+      source: process.env['PRA_EXPECT_SHA'] === undefined ? 'the worktree under test (LIVE class)' : 'PRA_EXPECT_SHA (candidate manifest)',
+    },
+    modalities: [{ id: 'text', supported: true }],
+    officer: { required: false },
+    // Grade the ports this run WILL BIND, not every port in the band: the
+    // sweep above only selects a free pair, so another lane holding an
+    // unrelated sanctioned port must not block this boot (the preflight is
+    // about this run's start, not about policing the whole band).
+    ports: [
+      { port: hostPort, free: hostProbes.find((p) => p.port === hostPort)?.free === true },
+      { port: mockPort, free: mockProbes.find((p) => p.port === mockPort)?.free === true },
+    ],
+    isSanctionedPort,
+    world: { dshHome: WORLD, workspaceRoot: MAIN, exists: existsSync(WORLD), seed: { path: SRC_WORLD, exists: srcOk } },
+    arms: { selected: ['g0-governance-wire'], known: ['g0-governance-wire'] },
+  })
+  writeEvidence('boot-preflight.json', PREFLIGHT)
+  if (PREFLIGHT.verdict !== 'PASS') {
+    for (const blocked of PREFLIGHT.blocking) log(`preflight ${blocked.state}: ${blocked.id} — ${blocked.detail}`)
+  }
+  // `srcOk` is now graded by the preflight itself (world.seed → ENV_BLOCK when
+  // the prepared world this kit copies is absent), so G0 only adds the build
+  // and port facts the preflight cannot see.
+  const g0 = PREFLIGHT.verdict === 'PASS' && distOk && hostPort !== null && mockPort !== null
   mark('G0', g0,
-    `testuse HEAD=${head.out} porcelain='${porcelain.out.slice(0, 80)}' dist=${distOk} seed=${srcOk} hostPort=${hostPort} mockPort=${mockPort} stable=${JSON.stringify(stablePre)}`)
-  writeEvidence('preflight.json', { head: head.out, porcelain: porcelain.out, distOk, srcOk, hostPort, mockPort, stablePre, worktree: WORKTREE })
-  if (!g0) failCriteria('G0 preflight')
+    `preflight=${PREFLIGHT.verdict} testuse HEAD=${head.out} porcelain='${porcelain.out.slice(0, 80)}' dist=${distOk} seed=${srcOk} hostPort=${hostPort} mockPort=${mockPort} stable=${JSON.stringify(stablePre)}`)
+  writeEvidence('preflight.json', { head: head.out, porcelain: porcelain.out, distOk, srcOk, hostPort, mockPort, stablePre, worktree: WORKTREE, bootPreflightVerdict: PREFLIGHT.verdict, bootPreflightReason: PREFLIGHT.reason })
+  if (!g0) failCriteria(`G0 preflight (${PREFLIGHT.reason})`)
 
   // ── seed the world ─────────────────────────────────────────────────────────
   if (existsSync(WORLD)) rmSync(WORLD, { recursive: true, force: true })
