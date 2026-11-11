@@ -43,6 +43,10 @@
  *        check-and-reserve UNDER the per-team lock — the bridge consumes the
  *        allow exactly once and NEVER re-enters, never mints a second grant.
  *        Blocked/failed → deny and the minted grant is NOT handed back.
+ *        A6-STOP-FENCE: it also passes the SAME combined cancellation signal
+ *        the wait above consumed (the optional SECOND argument, never a scope
+ *        field), so a Stop that lands between the mint and the durable
+ *        consumption consumes nothing and executes nothing.
  *   7. all green → { decision:'approve', requestId, approval, grant }
  *        (minted AND guard-consumed; the center must never mint on this path
  *        a second time — the seam contract pins exactly this shape).
@@ -260,7 +264,10 @@ export interface PaControlServiceLike {
     readonly requestId: string
     readonly signal?: ControlWaitSignal
   }): Promise<ControlDecisionRecord>
-  guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict>
+  guardOperation(
+    scope: ControlOperationScope,
+    options?: { readonly signal?: ControlWaitSignal },
+  ): Promise<ControlGuardVerdict>
   listControlState(rootSessionId: string): Promise<{
     readonly requests: readonly ControlRequestRecord[]
     readonly decisions: readonly ControlDecisionRecord[]
@@ -543,13 +550,18 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     let controller: AbortController | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     let timedOut = false
+    // A6-STOP-FENCE: the SAME combined invocation signal the wait below
+    // consumes is kept so the durable consumption point can probe it. It is
+    // hoisted (not minted twice) and it rides the guard call as an OPTIONAL
+    // second argument — never as a scope field, never on a durable row.
+    let waitSignal: ControlWaitSignal | undefined
     try {
       if (deps.waitTimeoutMs !== undefined) {
         controller = new AbortController()
         timer = setTimeout(() => { timedOut = true; controller?.abort() }, deps.waitTimeoutMs)
         signals.push(controller.signal as unknown as ControlWaitSignal)
       }
-      const waitSignal = signals.length === 1
+      waitSignal = signals.length === 1
         ? signals[0] as ControlWaitSignal
         : signals.length > 1
           ? AbortSignal.any(signals.map((s) => s as unknown as AbortSignal)) as unknown as ControlWaitSignal
@@ -702,7 +714,14 @@ export function createPaControlLeg(deps: PaControlBridgeDeps): (input: PaControl
     })
     let verdict: ControlGuardVerdict
     try {
-      verdict = await deps.controlService.guardOperation(scope)
+      // A6-STOP-FENCE: the SAME invocation signal the approval wait above
+      // consumed goes to the guard's final consumption probe, so a Stop that
+      // lands after the mint (but before the durable consumption) consumes
+      // nothing, executes nothing and leaves the durable allow untouched.
+      verdict = await deps.controlService.guardOperation(
+        scope,
+        waitSignal === undefined ? undefined : { signal: waitSignal },
+      )
     } catch (error: unknown) {
       // The grant stays behind the deny (never handed back); the one-shot
       // ledgers make a replay impossible.

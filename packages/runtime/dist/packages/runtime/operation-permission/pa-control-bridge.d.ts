@@ -43,6 +43,10 @@
  *        check-and-reserve UNDER the per-team lock — the bridge consumes the
  *        allow exactly once and NEVER re-enters, never mints a second grant.
  *        Blocked/failed → deny and the minted grant is NOT handed back.
+ *        A6-STOP-FENCE: it also passes the SAME combined cancellation signal
+ *        the wait above consumed (the optional SECOND argument, never a scope
+ *        field), so a Stop that lands between the mint and the durable
+ *        consumption consumes nothing and executes nothing.
  *   7. all green → { decision:'approve', requestId, approval, grant }
  *        (minted AND guard-consumed; the center must never mint on this path
  *        a second time — the seam contract pins exactly this shape).
@@ -225,7 +229,9 @@ export interface PaControlServiceLike {
         readonly requestId: string;
         readonly signal?: ControlWaitSignal;
     }): Promise<ControlDecisionRecord>;
-    guardOperation(scope: ControlOperationScope): Promise<ControlGuardVerdict>;
+    guardOperation(scope: ControlOperationScope, options?: {
+        readonly signal?: ControlWaitSignal;
+    }): Promise<ControlGuardVerdict>;
     listControlState(rootSessionId: string): Promise<{
         readonly requests: readonly ControlRequestRecord[];
         readonly decisions: readonly ControlDecisionRecord[];
