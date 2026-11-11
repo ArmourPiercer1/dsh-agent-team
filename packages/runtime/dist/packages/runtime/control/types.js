@@ -844,6 +844,22 @@ export const CONTROL_GUARD_BLOCK_REASONS = {
      * exists. ZERO consumption, the same discipline as `authority-risen`.
      */
     PA_AUTHORITY_DRIFT: 'pa-authority-drift',
+    /**
+     * A6-STOP-FENCE (2026-11-09 owner ruling A): the invocation was CANCELLED
+     * before the guard's final consumption probe. This is an
+     * EXECUTION-LIFECYCLE event, not an approver's decision: the durable
+     * `allow` is left EXACTLY as the decider wrote it, no
+     * `control-allow-consumed` fact is written (ZERO consumption) and the
+     * tool body is not executed. The request is closed with the ordinary
+     * terminal `control-request-abandoned` fact (reason
+     * `invocation-cancelled-before-consumption`), so a later replay finds the
+     * terminal mark, not a spendable allow.
+     *
+     * It is deliberately SEPARATE from every crash/undetermined reason
+     * (`invocation-abandoned`): a Stop is observable and intended, and must
+     * not read back as a recovery fault.
+     */
+    INVOCATION_CANCELLED: 'invocation-cancelled',
 };
 /** Every guard block reason value, for membership checks. */
 export const CONTROL_GUARD_BLOCK_REASON_VALUES = Object.values(CONTROL_GUARD_BLOCK_REASONS);
