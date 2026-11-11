@@ -465,6 +465,7 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // edges those contracts drafted (P-A/P-B/P-C stayed DORMANT at this layer on
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
+import { publishNativeAdmission } from './native-tool-admission.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { ci05GovernedGatewayRow } from './jobs-family-bridge.mjs'
 // U6 PR4 (ARC-C): the governed jobs bridge is its own named-bridge module —
@@ -3117,6 +3118,13 @@ export function createAgentBindings(deps) {
       if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
         const planeCfg = config.teamToolPlane
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
+        // NATIVE-BASH-PRESERVATION (2026-11-11): the plane must not place its
+        // own shell row when THIS Member's realm adopts the pinned persistent
+        // `bash` (A5-NATIVE-01/02 — a native tool's BACKEND may be replaced,
+        // the tool may not). The fact is read from the MOUNTED realm's own
+        // faces, never guessed from config: only a governed PTY face declares
+        // `governedPty`, and only that face serves the native definition.
+        const a5NativeBashAdopted = a5sfRealm?.installation?.members?.[0]?.faces?.terminals?.governedPty !== undefined
         // B-ACT-1-PR C2: the governed jobs bridge for the fixed `job_*`
         // management trio. Built ONLY when the closed `jobsEnabled` key says
         // on (absent = no rows, byte-for-byte zero flip). Everything it
@@ -3319,7 +3327,7 @@ export function createAgentBindings(deps) {
           // TOOL_BINDING_UNVERIFIED). The kernel answers EVERY subtree
           // coverage question through this predicate from here on.
           fs: { subtreeContains: a5PlaneSubtreeContains },
-          plane: planeCfg,
+          plane: a5NativeBashAdopted ? { ...planeCfg, nativeBashAdopted: true } : planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: {
             jobs: a5JobsBridge,
             ...(a5BackgroundProducer === null ? {} : { backgroundJobs: a5BackgroundProducer }),
@@ -3353,6 +3361,26 @@ export function createAgentBindings(deps) {
         // build-time snapshot was measured live refusing a legitimate
         // team.create). No plane placement = no handle = pre-feed path.
         a5PlaneValue = built.value
+        // NATIVE-BASH-PRESERVATION (2026-11-11): hand the plane's admission
+        // authority to the NATIVE `bash` definition's `execute`. The plane
+        // mounts AFTER the native module (route C attaches the module during
+        // setup, the plane mounts here), so the edge cannot be a mount input:
+        // it is published per runtime Agent and looked up at CALL time. No
+        // edge published => the wrapper refuses the call (never an
+        // unapproved execution), which is why this publication is part of the
+        // same disposer scope as the placement itself.
+        if (a5NativeBashAdopted && typeof built.value.admitNative === 'function') {
+          const published = publishNativeAdmission(runtimeAgent, {
+            admit: async (input) => await built.value.admitNative({
+              toolName: input?.toolName,
+              args: input?.args,
+              exec: input?.exec,
+            }),
+            settle: (input) => built.value.settleNative?.({ callId: input?.callId, outcome: input?.outcome }),
+          })
+          toolDisposers.push(published)
+          observations.push(`a5nb: native admission published for ${sessionId}`)
+        }
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)

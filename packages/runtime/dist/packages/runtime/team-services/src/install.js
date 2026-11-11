@@ -26,6 +26,7 @@ import { createConfinedFileSystemClass, createMemberFsGuard, } from './fs.js';
 import { createConfinedSubprocessClass, } from './subprocess.js';
 import { createConfinedWebClass, } from './web.js';
 import { createConfinedTerminalFace, } from './terminal.js';
+import { createGovernedPtyTerminalFace } from './terminal-pty.js';
 import { attachGuardToolCallAttribution, observeGuard } from './guard-observability.js';
 import { TeamServiceInstallError, } from './types.js';
 /** Member id → installed, per root Context. Guards double installation. */
@@ -142,8 +143,34 @@ export async function installMemberIoProviders(input) {
     // fall back to the inherited shell: the exact PD-13 hole. Refuse before any
     // scope exists.
     const terminalSpec = input.terminal;
-    if (terminalSpec !== undefined) {
-        if (typeof terminalSpec.program !== 'string' || !terminalSpec.program.startsWith('/')) {
+    // NATIVE-BASH-PRESERVATION (2026-11-11): a GOVERNED PTY face takes a
+    // different seam. The pinned `terminal-bash` backend allocates a real PTY
+    // through the BASE `subprocess` service and confines the shell argv with
+    // `sandbox.confine`, so it neither needs nor may use the confined child face
+    // (whose `spawnTerminal` refuses by construction). Its install requirements
+    // are therefore: an absolute program, the deployment `sandbox` provider, the
+    // base `subprocess` service, and the EXACT Member session it serves.
+    const ptyTerminalSpec = terminalSpec !== undefined && terminalSpec.mode === 'pty' ? terminalSpec : undefined;
+    const confinedTerminalSpec = ptyTerminalSpec === undefined ? terminalSpec : undefined;
+    if (ptyTerminalSpec !== undefined) {
+        if (typeof ptyTerminalSpec.program !== 'string' || !ptyTerminalSpec.program.startsWith('/')) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a governed PTY terminal face needs an ABSOLUTE shell program (a PATH name is never admitted)');
+        }
+        if (root.get('sandbox') === undefined) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a governed PTY terminal face was declared but this deployment mounts no `sandbox` provider; without one the PTY'
+                + ' would run with no OS ceiling, so the face is refused instead of being mounted unconfined');
+        }
+        if (root.get('subprocess') === undefined) {
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a governed PTY terminal face was declared but this deployment mounts no base `subprocess` service; a PTY cannot'
+                + ' ride the confined child face, so there is nothing to allocate the terminal on');
+        }
+        if (typeof ptyTerminalSpec.memberSessionId !== 'string' || ptyTerminalSpec.memberSessionId === '') {
+            throw new TeamServiceInstallError('TERMINALS_OWNER_UNBOUND', 'a governed PTY terminal face was declared without the EXACT Member session it serves; an unbound PTY face would'
+                + ' have to guess its owner, which is the identity hole this face exists to close');
+        }
+    }
+    if (confinedTerminalSpec !== undefined) {
+        if (typeof confinedTerminalSpec.program !== 'string' || !confinedTerminalSpec.program.startsWith('/')) {
             throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', 'a confined terminal face needs an ABSOLUTE shell program (a PATH name is never admitted)');
         }
         if (input.subprocess === undefined) {
@@ -151,9 +178,9 @@ export async function installMemberIoProviders(input) {
                 + ' every command as a confined child of THAT face and never falls back to the inherited shell');
         }
         const programs = input.subprocess.shellClass?.programs;
-        const programName = terminalSpec.program.slice(terminalSpec.program.lastIndexOf('/') + 1).toLowerCase();
+        const programName = confinedTerminalSpec.program.slice(confinedTerminalSpec.program.lastIndexOf('/') + 1).toLowerCase();
         if (programs === undefined || !programs.includes(programName)) {
-            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', `the confined terminal face runs ${JSON.stringify(terminalSpec.program)}, but the realm's confined subprocess face declares`
+            throw new TeamServiceInstallError('TERMINALS_UNCONFINED_REALM', `the confined terminal face runs ${JSON.stringify(confinedTerminalSpec.program)}, but the realm's confined subprocess face declares`
                 + ` no shell class admitting ${JSON.stringify(programName)}; the terminal's commands could never be admitted, so the face`
                 + ' is refused instead of being mounted as a shell that cannot run');
         }
@@ -272,7 +299,54 @@ export async function installMemberIoProviders(input) {
         let disposeTerminal;
         let terminals;
         const terminalSubprocess = input.subprocess;
-        if (terminalSpec !== undefined && terminalSubprocess !== undefined && subprocess !== undefined) {
+        // NATIVE-BASH-PRESERVATION (2026-11-11): the PTY face is a DIFFERENT
+        // backend, not a different policy. It needs the BASE subprocess (a PTY
+        // cannot ride the confined child face) and the deployment `sandbox`
+        // provider the pinned backend confines with; the confined child face above
+        // is not on its path. PD-13's face stays for `mode` absent (historical
+        // compositions), but the PRODUCT path now selects `mode: 'pty'`.
+        if (ptyTerminalSpec !== undefined) {
+            const ptyFace = createGovernedPtyTerminalFace({
+                effective: {
+                    memberIdentity: spec.identity.memberInstanceId,
+                    read: policy.read,
+                    write: policy.write,
+                },
+                memberIdentity: spec.identity.memberInstanceId,
+                memberSessionId: ptyTerminalSpec.memberSessionId,
+                policyRevision: policy.revision,
+                program: ptyTerminalSpec.program,
+                backendType: ptyTerminalSpec.backendType ?? 'a5sf-governed-shell',
+                sandboxPolicy: root.get('sandboxPolicy'),
+                baseSubprocess: root.get('subprocess'),
+                sandboxProvider: () => root.get('sandbox'),
+                ...(ptyTerminalSpec.backendConfig === undefined ? {} : { backendConfig: ptyTerminalSpec.backendConfig }),
+                ...(ptyTerminalSpec.revisionNow === undefined ? {} : { revisionNow: ptyTerminalSpec.revisionNow }),
+            });
+            try {
+                const mountPlugin = scoped.plugin;
+                const fiber = await mountPlugin(ptyFace, {});
+                disposeTerminal = async () => {
+                    await fiber.dispose();
+                };
+            }
+            catch (error) {
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' governed PTY terminal mount failed: ${error instanceof Error ? error.message : String(error)}`);
+            }
+            const mountedPty = scoped.get('terminals');
+            if (mountedPty === undefined) {
+                await disposeTerminal?.();
+                await disposeSubprocess?.();
+                await disposeMount();
+                await rollback();
+                throw new TeamServiceInstallError('SERVICE_MOUNT_FAILED', `Member '${spec.identity.memberInstanceId}' mounted no governed PTY terminal service`);
+            }
+            terminals = mountedPty;
+        }
+        else if (confinedTerminalSpec !== undefined && terminalSubprocess !== undefined && subprocess !== undefined) {
             const terminalEffective = terminalSubprocess.effective;
             const terminalGuard = input.onGuardConsult === undefined
                 ? createMemberFsGuard(terminalEffective)
@@ -284,13 +358,13 @@ export async function installMemberIoProviders(input) {
                 });
             const terminalFace = createConfinedTerminalFace({
                 effective: terminalEffective,
-                program: terminalSpec.program,
+                program: confinedTerminalSpec.program,
                 shellClass: terminalSubprocess.shellClass,
                 guard: terminalGuard,
                 subprocess: subprocess,
-                ...(terminalSpec.maxOutputBytes === undefined ? {} : { maxOutputBytes: terminalSpec.maxOutputBytes }),
-                ...(terminalSpec.graceMs === undefined ? {} : { graceMs: terminalSpec.graceMs }),
-                ...(terminalSpec.motd === undefined ? {} : { motd: terminalSpec.motd }),
+                ...(confinedTerminalSpec.maxOutputBytes === undefined ? {} : { maxOutputBytes: confinedTerminalSpec.maxOutputBytes }),
+                ...(confinedTerminalSpec.graceMs === undefined ? {} : { graceMs: confinedTerminalSpec.graceMs }),
+                ...(confinedTerminalSpec.motd === undefined ? {} : { motd: confinedTerminalSpec.motd }),
             });
             try {
                 const mountPlugin = scoped.plugin;
