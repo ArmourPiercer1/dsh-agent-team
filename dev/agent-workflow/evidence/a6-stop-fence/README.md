@@ -139,7 +139,22 @@ No new signal is minted in the tool layer; absent `ctx.signal` the call is byte-
 
 ## 6. Gates run in this session
 
-See the PR body for the honest verdict of each command. Notes that must survive review:
+All on the committed tree (`d5c352c60` + the gate-log commit), from this worktree:
+
+| command | verdict |
+| --- | --- |
+| `pnpm -r typecheck` | **PASS** (9 projects, exit 0) |
+| `vitest run packages/runtime packages/tools` (full, `--no-file-parallelism`) | **6558 passed / 6559**, 533/535 files. The two non-green suites are ENVIRONMENTAL and reproduce identically on the untouched baseline: `a5sf-os-runner` P1-07 (no Landlock backend on this host) and `u7-f-agent-control-native-output-schema-c1` (needs the gitignored pristine `tests/deepseek-harness-test-use` checkout, absent in a worktree) |
+| targeted suites (`a2c4`, `a4p7`, `control-guard-coupling`, `f9`, `p6t6-guard`, `a4-corrupt-leg-guard`, `a6-stop-fence`) | **87/87 PASS** |
+| `eslint .` | **RED at baseline**: 130 errors, every one on untouched files (unused vars etc.); **zero** on any line this PR adds or changes (`control/service.ts` only flags its pre-existing lines 174/284) |
+| `node scripts/doc-checks.mjs` | **PASS** |
+| `node scripts/eb3-tool-acceptance.mjs` | **PASS** (`tools=31 L4-proven=19`) |
+| `node scripts/lint-identities.mjs` | **PASS** (162 identity lines, 0 gitignored) |
+| `node scripts/check-artifacts-committed.mjs` | **OK** (2082 files, tree == index) |
+| `node scripts/check-artifacts-at-head.mjs --store-dir …` | **OK** — HEAD carries its own build (2082 compared, drift 0) |
+| `node scripts/check-install-manifest.mjs` | **RED at baseline**: 14 computed `new URL()` / `import()` refusals inside committed `packages/runtime/dist` artifacts; issue count identical before/after this PR (a pre-existing finding, the lock leg passes) |
+
+Notes that must survive review:
 
 - `node scripts/check-install-manifest.mjs` is **RED on the untouched baseline too** (14 computed
   `new URL()` / `import()` refusals inside the committed `packages/runtime/dist` artifacts; the lock
