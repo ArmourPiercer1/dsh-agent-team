@@ -1,0 +1,168 @@
+{
+  "archive": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "archive-member",
+        "rootSessionId": "session-a5sf-acceptance-team",
+        "callerRole": "leader",
+        "targetInstanceId": "inst-04rpvjb0z9pv",
+        "effect": {
+          "kind": "lifecycle-changed",
+          "instanceId": "inst-04rpvjb0z9pv",
+          "from": "SETTLED",
+          "to": "ARCHIVED",
+          "sequence": 8
+        },
+        "requestToken": "a5sfsrch-archive"
+      }
+    }
+  },
+  "membersAfterArchive": [
+    {
+      "instanceId": "inst-04rpvjb0z9pv",
+      "templateId": "worker",
+      "lifecycle": "ARCHIVED"
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined"
+    }
+  ],
+  "observations": [
+    "a5p1-guard: dispatcher-preparing agent=session-a5sf-acceptance-team to=PREPARING",
+    "a5p1-guard: guard-installed agent=session-a5sf-acceptance-team scope=session-a5sf-acceptance-team",
+    "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/pre-execute armed=1 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/post-execute armed=2 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/result armed=3 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools/execute armed=4 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-a5sf-acceptance-team seam=tools.guard armed=5 required=5",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"team_follow_up\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-a5sf-acceptance-team denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_archive_member\",\"team_delegate\",\"team_follow_up\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-bind-inherited agent=session-a5sf-acceptance-team verified=0 surface=8",
+    "a5p1-guard: published-surface-unverified agent=session-a5sf-acceptance-team note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+    "a5p1-guard: surface-inherited agent=session-a5sf-acceptance-team verified=0",
+    "a5p1-guard: dispatcher-active agent=session-a5sf-acceptance-team to=ACTIVE",
+    "a5p1-guard: agent-published agent=session-a5sf-acceptance-team surface=8 masked=4 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-a5sf-acceptance-team",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "a5p1-guard: dispatcher-call-begin agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfsrch-delegate inFlight=1",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-result-observed agent=session-a5sf-acceptance-team callId=call-a5sfsrch-delegate inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-a5sf-acceptance-team tool=team_delegate callId=call-a5sfsrch-delegate inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-a5sf-acceptance-team tool=team_archive_member callId=a5sfsrch-archive inFlight=1",
+    "pd29: stop of 'inst-04rpvjb0z9pv' found no current goal; nothing to disarm",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-a5sf-acceptance-team state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-result-observed agent=session-a5sf-acceptance-team callId=a5sfsrch-archive inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-a5sf-acceptance-team tool=team_archive_member callId=a5sfsrch-archive inFlight=0"
+  ],
+  "disposeFaultsAtArchive": {
+    "managed": [],
+    "foreign": [],
+    "unattributed": [],
+    "ignoredNonFaultCount": 72,
+    "liveSurfaceChanges": [],
+    "identity": {
+      "sessionId": "session-team-child-48973fbd6f6bb615d57047d1467cdae4",
+      "instanceId": null,
+      "matchedBy": "exact session id for identity-bearing faults; managed disposal window (single managed realm) for the identity-less realm-dispose fault",
+      "duringManagedDisposal": true,
+      "managedRealmCount": 1
+    }
+  },
+  "postStopDispatches": [
+    {
+      "status": 422,
+      "body": {
+        "error": "no live agent for 'session-team-child-48973fbd6f6bb615d57047d1467cdae4': agent-bindings: session 'session-team-child-48973fbd6f6bb615d57047d1467cdae4' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "error": "no live agent for 'session-team-child-48973fbd6f6bb615d57047d1467cdae4': agent-bindings: session 'session-team-child-48973fbd6f6bb615d57047d1467cdae4' belongs to a ARCHIVED MemberInstance — an explicit restore is required before any cold resume (the durable lifecycle is the authority; residency is volatile; Architecture §41.6/§30.2/§29.4)"
+      }
+    }
+  ],
+  "probeFacts": [],
+  "consultCopy": {
+    "copied": true,
+    "sha256": "7e7a9a69a8b4997e666f1a72e6db598c545a5a740150affb5059e64c0c303ea0",
+    "bytes": 9528
+  },
+  "processSeam": {
+    "hostPid": null,
+    "hostChildExitCode": null,
+    "portStillListening": false,
+    "homeExistsAfterTeardown": false,
+    "orphanPids": [],
+    "worldTeardown": {
+      "host": {
+        "wasRunning": true,
+        "pid": 57,
+        "killed": true,
+        "portFree": true
+      },
+      "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2/tests/homes/u5u5a5sfdev1-20261110T16-12-41Z",
+      "releasedPorts": [
+        3191,
+        13054,
+        3191
+      ],
+      "killedPids": [
+        57
+      ],
+      "notes": []
+    }
+  }
+}

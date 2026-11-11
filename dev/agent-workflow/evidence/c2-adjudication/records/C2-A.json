@@ -1,0 +1,178 @@
+{
+ "schema": "c2-adjudication-record/1",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateSha": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+ "candidateRef": "refs/heads/candidate/v0.1.6-1",
+ "candidateId": "cand-v0.1.6-1",
+ "manifest": {
+  "path": "dev/engineering/candidates/cand-v0.1.6-1.json",
+  "commit": "f31e3d9e2e56b04fba4720f4749621bd0ff6086b",
+  "content_digest": "sha256:7a6c8dbd512d8ef7ba29668dcdd06342a1f665904aed13f284f7b3700c0518bd"
+ },
+ "host": {
+  "version": "0.2.0-rc.2",
+  "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "tree": "tests/deepseek-harness-test-use"
+ },
+ "authority": {
+  "pointer": "dev/engineering/current-authority.json",
+  "snapshot_version": "as20261109r1",
+  "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+  "baseline": "cb2e41483af8447700fb3c2a25c2686705320692"
+ },
+ "measurementWorktree": ".worktrees/c2",
+ "adjudicator": {
+  "role": "independent C2 adjudicator",
+  "session": "c2-adjudication-20261109",
+  "authored_product_code": false,
+  "moved_authority_pointer": false,
+  "moved_candidate_ref": false,
+  "merged": false
+ },
+ "oraclePolicy": "The tool return value is never its own correctness evidence. Channels read: durable guard-consult facts, confined-spawn counters, on-disk markers, World transcript/ledger, mock connection counters, /proc tripwire, host-pid liveness. tests/world-factory/lib/oracle.mjs was not directly wired (see README section 7.6).",
+ "runId": "c2-a-2026-11-10T15-57-16Z",
+ "scope": "C2-A",
+ "scopeDefinition": "governed preset a5sf-governed-member, a5sfGovernedRealm on, alpha6ReviewRouting absent/false",
+ "boots": [
+  {
+   "instrument": "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs",
+   "runId": "a5sf-pd33-preview-e2e-2026-11-10T15-57-16-605Z-b1",
+   "dir": "c2a-pd33-e2e-pair/runs/boot01",
+   "overall": "PASS",
+   "subordinateRecordClass": "DEV-LIVE"
+  },
+  {
+   "instrument": "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs",
+   "runId": "a5sf-pd33-preview-e2e-2026-11-10T15-59-33-124Z-b2",
+   "dir": "c2a-pd33-e2e-pair/runs/boot02",
+   "overall": "PASS",
+   "subordinateRecordClass": "DEV-LIVE"
+  },
+  {
+   "instrument": "dev/agent-workflow/evidence/c2-adjudication/fs/run-boot.mjs",
+   "sha256": "ad1e4a4dfc82d6737e53c2f2d7aa04d6b7b2d45eaa12bb09ad71fb52dd766633",
+   "runId": "a5sf-fs-devlive-2026-11-10T16-03-12-138Z",
+   "dir": "c2a-fs-boot1",
+   "overall": "NOT_REACHED (13 PASS + 1 NOT_REACHED read_image)",
+   "subordinateRecordClass": "DEV-LIVE"
+  },
+  {
+   "instrument": "dev/agent-workflow/evidence/c2-adjudication/fs/run-boot.mjs",
+   "sha256": "ad1e4a4dfc82d6737e53c2f2d7aa04d6b7b2d45eaa12bb09ad71fb52dd766633",
+   "runId": "a5sf-fs-devlive-2026-11-10T16-12-41-682Z",
+   "dir": "c2a-fs-boot2",
+   "overall": "NOT_REACHED (13 PASS + 1 NOT_REACHED read_image)",
+   "subordinateRecordClass": "DEV-LIVE"
+  }
+ ],
+ "cases": [
+  {
+   "id": "C2-A/read-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "live:row1-read-a-inside-both-allowed PASS READ_A_ALLOWED_AND_CONFINED bindingAllowFact=true providerServed=true providerConfined=true",
+   "oracle": "guard allow fact + confined provider counter + returned bytes",
+   "falsifier": "allow without provider spawn or bytes without a guard fact"
+  },
+  {
+   "id": "C2-A/read-negative",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "live:row2-read-b-binding-deny-on-read-path PASS readPathDecisions=[deny] counterRows=0; live:row3-read-c-refused-no-widening PASS exactlyOneBindingDeny=true noProviderRead=true; pd33 IO_READ_DENIED facts=1",
+   "oracle": "binding deny fact on the read path + zero provider reads/bytes",
+   "falsifier": "allow fact, provider read, or leaked byte"
+  },
+  {
+   "id": "C2-A/write-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "live:row4a-write-in-lane-readable-allowed-ceiling-only PASS diskMatches=true everyWriteFactOnCeiling=true counterRows=1",
+   "oracle": "on-disk marker equals expected bytes + write fact on ceiling lane",
+   "falsifier": "disk mismatch or no write fact"
+  },
+  {
+   "id": "C2-A/write-negative",
+   "verdict": "PARTIAL",
+   "bootsAgree": true,
+   "decisive": "live:row4b-write-b-ceiling-allowed-read-not-implied PASS ceilingWriteAllowed=true noReadLaneWriteAllow=true; observed=\"file has not been read \u2014 read the file, then retry\"",
+   "oracle": "guard facts: 1 write decision allow on ceiling; refusal came after the guard",
+   "falsifier": "a lane deny fact / zero write fact would be needed for a clean lane negative"
+  },
+  {
+   "id": "C2-A/edit-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "fs:edit-in-lane PASS isError=false writeCalls=1 facts=3; pd33 counts edit=1",
+   "oracle": "write fact + 3 guard facts + updated file text",
+   "falsifier": "no write fact or no file change"
+  },
+  {
+   "id": "C2-A/edit-negative",
+   "verdict": "PARTIAL",
+   "bootsAgree": true,
+   "decisive": "fs:edit-outside-ceiling PASS isError=true locus=host-read-before-write-observation-policy guardFacts=0 writeCalls=0",
+   "oracle": "guard facts (0) prove the request never reached the Team guard",
+   "falsifier": "a lane deny fact on the edit path would be needed"
+  },
+  {
+   "id": "C2-A/grep-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "live:search-row1-grep-in-lane-allowed PASS IN_LANE_GREP_ALLOWED_AND_CONFINED; pd33 grep=1",
+   "oracle": "allow fact + confined spawn counter + match text",
+   "falsifier": "base-spawn instead of confined, or no fact"
+  },
+  {
+   "id": "C2-A/grep-negative",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "live:search-row2 OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS; live:search-row3 RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION",
+   "oracle": "deny fact + zero confined/base spawn",
+   "falsifier": "any spawn or success result"
+  },
+  {
+   "id": "C2-A/glob-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "glob-face.json inLane verdict=PROVEN matchReturned=true exactlyOneAllowFact=true; pd33 glob=1",
+   "oracle": "allow fact + exactly one rg --files spawn + named match",
+   "falsifier": "match with no allow fact or spawn outside lane"
+  },
+  {
+   "id": "C2-A/glob-negative",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "glob-face.json outside verdict=PROVEN exactlyOneDenyFact=true denyDecidedByReadDenied=true noConfinedProcess=true",
+   "oracle": "one IO_READ_DENIED deny fact and no spawn",
+   "falsifier": "any returned path or spawn"
+  },
+  {
+   "id": "C2-A/web-positive",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "pd33 fetch-body-verbatim true; fetch-one-connection connections=1; fetch-allow-fact facts=1; search POST /search=0 typed-unavailable",
+   "oracle": "mock connection counter + verbatim body + web allow fact",
+   "falsifier": "second connection or body not equal to served bytes"
+  },
+  {
+   "id": "C2-A/web-negative",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "pd33 out-of-lane-host-refused codes=[WEB_DESTINATION_FORBIDDEN]; out-of-lane-host-zero-connections hits=0",
+   "oracle": "typed refusal + zero host connections",
+   "falsifier": "any connection or body"
+  },
+  {
+   "id": "C2-A/e2e-ledger-flow",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "RUN-SUMMARY overall=PASS cases=19 selected=10/19; facts-per-tool factless=[] counts={read:3,grep:1,web_fetch:2,glob:1,web_search:1,write:1,skill:2,edit:1,bash:64,present:2}; no-base-web host-web-calls-zero",
+   "oracle": "durable per-tool facts + transcript + mock counters + /proc tripwire",
+   "falsifier": "a dispatch with no fact or a base web call"
+  }
+ ],
+ "verdict": "PASS (write/edit minimal-permission negatives PARTIAL)",
+ "agreementFile": "agreement/C2-A.json",
+ "notes": "13 adjudicated C2-A cases drawn from 4 boots (2 pd33 + 2 FS). All 10 pd33 cases agreed across boots; all 14 FS cases agreed across boots (read_image NOT_REACHED, out of C2-A scope). Write/edit outside-lane refusals are real but their locus is the host read-before-write policy, not the Alpha.5 lane algebra; recorded PARTIAL, not PASS."
+}

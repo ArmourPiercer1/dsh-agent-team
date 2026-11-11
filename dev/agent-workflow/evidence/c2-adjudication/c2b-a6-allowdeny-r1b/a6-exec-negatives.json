@@ -1,0 +1,24 @@
+{
+  "schema": "a6-exec-negatives/1",
+  "deny": {
+    "request": null,
+    "decision": null,
+    "consumption": null,
+    "executionResults": [],
+    "responses": [],
+    "fileExisted": false,
+    "done": true,
+    "ok": false
+  },
+  "throw": {
+    "request": null,
+    "consumption": null,
+    "executionResults": [],
+    "responses": [],
+    "consumedBeforeDone": false,
+    "memberToolResults": [
+      "Error: permission denied: exec fingerprint sha256:38ced3cbcdfe7e2a0ed93b7b10b9a49fb866b82ca824df2dc50451af2de97339 answered deny from the fallback"
+    ],
+    "ok": false
+  }
+}

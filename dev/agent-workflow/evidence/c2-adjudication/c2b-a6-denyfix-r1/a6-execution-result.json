@@ -1,0 +1,40 @@
+{
+  "schema": "a6-execution-result/1",
+  "pathRead": "team_domain.json#tables.ledger[factType=control-execution-result]",
+  "paRequest": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-08f96uv0u08cog1m5c5c90rt",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0yfh3ox0jg1t",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-10T16-57-40:inst-0yfh3ox0jg1t:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0yfh3ox0jg1t-bash:hexec:26723145-cfa5-4e30-ba32-f12baeb842fb-1",
+    "approvalCaseId": "case-0e3yg430drvb8417zqjbl03k",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-10T16:57:51.884Z"
+  },
+  "paExecution": {
+    "sequence": 13,
+    "factType": "control-execution-result",
+    "requestId": "ctrl-08f96uv0u08cog1m5c5c90rt",
+    "callId": "team-inst-0yfh3ox0jg1t-bash:hexec:26723145-cfa5-4e30-ba32-f12baeb842fb-1",
+    "outcome": "succeeded",
+    "recordedAt": "2026-11-10T16:57:55.517Z",
+    "createdAt": "2026-11-10T16:57:55.517Z"
+  },
+  "allExecutionResults": [
+    {
+      "sequence": 13,
+      "factType": "control-execution-result",
+      "requestId": "ctrl-08f96uv0u08cog1m5c5c90rt",
+      "callId": "team-inst-0yfh3ox0jg1t-bash:hexec:26723145-cfa5-4e30-ba32-f12baeb842fb-1",
+      "outcome": "succeeded",
+      "recordedAt": "2026-11-10T16:57:55.517Z",
+      "createdAt": "2026-11-10T16:57:55.517Z"
+    }
+  ],
+  "executed": true,
+  "execResultOk": true
+}
