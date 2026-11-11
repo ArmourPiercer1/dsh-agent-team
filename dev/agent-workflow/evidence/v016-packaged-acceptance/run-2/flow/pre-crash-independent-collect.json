@@ -1,0 +1,7 @@
+{
+  "label": "pre-crash-independent",
+  "requestToken": "v016pack_r2-delegate-work",
+  "toolResult": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r2\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0kc39c71kemt\",\"admittedSequence\":5,\"settledSequence\":19,\"memberResult\":{\"body\":\"V016PACK_R2_WORK1_DONE V016PACK_R2_ARM1_RESULT\",\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\"}}]},\"requestToken\":\"v016pack_r2-collect\"}",
+  "hasWorkerMarker": true,
+  "hasWorkResult": true
+}

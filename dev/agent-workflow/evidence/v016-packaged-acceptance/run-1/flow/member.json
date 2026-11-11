@@ -1,0 +1,107 @@
+{
+  "members": [
+    {
+      "instanceId": "inst-0lpp79y0l2tx",
+      "templateId": "goal",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0mzzhtj0zr0b",
+      "templateId": "worker",
+      "label": "w-1",
+      "lifecycle": "RUNNING",
+      "childSessionId": "session-team-child-52b89f19fd675b05f24d06ebdb91c559",
+      "result": null
+    },
+    {
+      "instanceId": "inst-12vvgyh1rzbg",
+      "templateId": "officer",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-dc56699fb5d7c035680da275412c876d",
+      "result": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "lifecycle": "RUNNING",
+      "childSessionId": null,
+      "result": null
+    }
+  ],
+  "officer": {
+    "instanceId": "inst-12vvgyh1rzbg",
+    "templateId": "officer",
+    "label": "officer-1",
+    "lifecycle": "CREATED",
+    "childSessionId": "session-team-child-dc56699fb5d7c035680da275412c876d",
+    "result": null
+  },
+  "worker": {
+    "instanceId": "inst-0mzzhtj0zr0b",
+    "templateId": "worker",
+    "label": "w-1",
+    "lifecycle": "RUNNING",
+    "childSessionId": "session-team-child-52b89f19fd675b05f24d06ebdb91c559",
+    "result": null
+  },
+  "goalWorker": {
+    "instanceId": "inst-0lpp79y0l2tx",
+    "templateId": "goal",
+    "label": "g-1",
+    "lifecycle": "CREATED",
+    "childSessionId": "session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc",
+    "result": null
+  },
+  "durableMembers": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-11T12:45:19.085Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "team-v016pack-r1",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-dc56699fb5d7c035680da275412c876d",
+      "createdAt": "2026-11-11T12:45:19.363Z",
+      "instanceId": "inst-12vvgyh1rzbg",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r1",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10/workspace"
+    },
+    {
+      "activityVersion": 2,
+      "childSessionId": "session-team-child-52b89f19fd675b05f24d06ebdb91c559",
+      "createdAt": "2026-11-11T12:45:19.477Z",
+      "instanceId": "inst-0mzzhtj0zr0b",
+      "label": "w-1",
+      "lifecycle": "RUNNING",
+      "rootSessionId": "team-v016pack-r1",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc",
+      "createdAt": "2026-11-11T12:45:19.582Z",
+      "instanceId": "inst-0lpp79y0l2tx",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r1",
+      "schemaVersion": 1,
+      "templateId": "goal",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10/workspace"
+    }
+  ]
+}

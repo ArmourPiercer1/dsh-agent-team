@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R2-team.resolveControl-mn790gjm",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "CONTROL_REQUEST_DECIDED",
+      "message": "ControlService: request 'ctrl-0ectayo1m1dor31cjqlca190' already carries a durable decision (the first decision is authoritative)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_DECIDED",
+          "message": "ControlService: request 'ctrl-0ectayo1m1dor31cjqlca190' already carries a durable decision (the first decision is authoritative)",
+          "details": {
+            "rootSessionId": "team-v016pack-r2",
+            "requestId": "ctrl-0ectayo1m1dor31cjqlca190"
+          }
+        }
+      }
+    }
+  }
+}

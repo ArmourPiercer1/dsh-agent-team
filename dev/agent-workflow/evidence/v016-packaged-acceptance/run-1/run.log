@@ -1,0 +1,81 @@
+[2026-11-11T12:45:10.956Z] v016 packaged acceptance — run 1 — stamp 2026-11-11T12-45-10
+[2026-11-11T12:45:10.956Z] repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept
+[2026-11-11T12:45:10.956Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+[2026-11-11T12:45:10.956Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/dev/agent-workflow/evidence/v016-packaged-acceptance/run-1
+[2026-11-11T12:45:10.956Z] world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10
+[2026-11-11T12:45:10.956Z] PASS ENV-1: the pristine host build entry exists — /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+[2026-11-11T12:45:10.992Z] PASS ID-1: the driver runs on the frozen candidate commit — repo=bb3c158eb1f76f8db429da01e9a4c5a0e118ca90 expected=bb3c158eb1f76f8db429da01e9a4c5a0e118ca90
+[2026-11-11T12:45:10.993Z] PASS ID-2: the host checkout is the pinned pristine host and byte-clean — host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=""
+[2026-11-11T12:45:13.231Z] PASS PACK-1: pnpm pack produced the 0.1.6 artifact — mode=fresh bytes=4363426
+[2026-11-11T12:45:13.231Z] PASS PACK-2: the tarball carries the built host entry, governed realm and sandbox launcher — present=5/5 sha256=2cc63ee134cd3471e21e09120156b9c64fe3e340f45eef570dd0b4c5a1955692
+[2026-11-11T12:45:16.864Z] PASS INST-1: the real CLI installed the tarball into a fresh profile — exit=0 installedVersion=0.1.6
+[2026-11-11T12:45:16.864Z] PASS INST-2: the installed host entry is byte-identical to the packed one (the artifact is what boots) — installed=b021149749a448ab49ae898962b527fae97ac62edca9b2190eba4eb4570c32ed tarball=b021149749a448ab49ae898962b527fae97ac62edca9b2190eba4eb4570c32ed
+[2026-11-11T12:45:16.864Z] PASS INST-3: the profile resolves the plugin by package name, not a worktree plugin path — bundleRowName=true worktreeRefs=[]
+[2026-11-11T12:45:16.865Z] PASS INST-4: the installed profile lock identifies the artifact by tarball integrity — integrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==
+[2026-11-11T12:45:16.870Z] mock: mock: listening on 127.0.0.1:14071
+[2026-11-11T12:45:16.905Z] booting packaged host on :14001 with mock model :14071
+[2026-11-11T12:45:19.055Z] [boot-1] host ready at http://127.0.0.1:14001 (token redacted); projection ok
+[2026-11-11T12:45:19.056Z] PASS BOOT-1: the installed 0.1.6 artifact + pristine host boots a real Team Host — origin=http://127.0.0.1:14001 port=14001
+[2026-11-11T12:45:19.289Z] mock: mock: 1 [messages] text reply (19 chars): "V016PACK_R1 session"
+[2026-11-11T12:45:19.291Z] mock: mock: 2 [messages] tool-call reply: team_create_member
+[2026-11-11T12:45:19.426Z] mock: mock: 3 [messages] tool-call reply: team_create_member
+[2026-11-11T12:45:19.533Z] mock: mock: 4 [messages] tool-call reply: team_create_member
+[2026-11-11T12:45:19.638Z] mock: mock: 5 [messages] tool-call reply: team_delegate
+[2026-11-11T12:45:19.744Z] mock: mock: 6 [messages] text reply (23 chars): "V016PACK_R1_LEADER_DONE"
+[2026-11-11T12:45:19.751Z] mock: mock: 7 [messages] tool-call reply: bash
+[2026-11-11T12:45:19.764Z] mock: mock: 8 [messages] text reply (19 chars): "V016PACK_R1 session"
+[2026-11-11T12:45:19.902Z] mock: mock: 9 [messages] text reply (29 chars): "V016PACK_R1_NOTIFICATION_SEEN"
+[2026-11-11T12:45:19.960Z] PASS TEAM-0: team.create admits the v5 blueprint (Officer + reviewRouting) on the packaged artifact — status=200 body={"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"team-v016pack-r1","blueprint":{"blueprintId":"v016-pack-bp-r1","revision":"1","contentHash":"sha256:289c1e7070c1573c4d44c02fbf5a100e07b6ba0dc753a5dd61ceae1671e9fc83"},"createdAt":"2026-11-11T12:45:19.071Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10/workspace"},"binding":{"schemaVersion":1,"kind":"team-root","sessionId":"team-v016pack-r1"},"wrote":true,"leaderRow":{"schemaVersion":2,"ro
+[2026-11-11T12:45:19.970Z] PASS TEAM-1: the boot created a durable TeamSession on the installed artifact — teamRows=1 root=team-v016pack-r1
+[2026-11-11T12:45:19.970Z] PASS TEAM-2: the durable Leader member row exists — leader={"activityVersion":1,"createdAt":"2026-11-11T12:45:19.085Z","instanceId":"inst-leader","label":"leader","rootSessionId":"team-v016pack-r1","schemaVersion":2,"templateId":"leader"}
+[2026-11-11T12:45:19.980Z] PASS MEM-1: the Member exists durably (member_instances row + live child session) — instance=inst-0mzzhtj0zr0b child=session-team-child-52b89f19fd675b05f24d06ebdb91c559 row=true
+[2026-11-11T12:45:19.980Z] PASS MEM-2: the Officer exists durably (the Alpha.6 routing recipient) — instance=inst-12vvgyh1rzbg child=session-team-child-dc56699fb5d7c035680da275412c876d
+[2026-11-11T12:45:19.980Z] PASS MEM-3: the Goal Member exists durably (the Member whose surface carries the Goal tools) — instance=inst-0lpp79y0l2tx child=session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc
+[2026-11-11T12:45:19.981Z] [approval-permission] pending leg ctrl-1s9jd1w0xoytpr1u3e1pq0dy kind=leader-approval reviewAuthority=leader case=case-07xtstg13qdipf1o4zfrq0c1
+[2026-11-11T12:45:19.991Z] PASS APP-1: the governed ask produced a durable approval leg discoverable over the remote surface and decidable by the human — requestId=ctrl-1s9jd1w0xoytpr1u3e1pq0dy kind=leader-approval reviewAuthority=leader visible=true pendingCount=1
+[2026-11-11T12:45:20.252Z] mock: mock: 10 [messages] tool-call reply: team_list_pending_control
+[2026-11-11T12:45:20.324Z] mock: mock: 11 [messages] tool-call reply: team_resolve_control
+[2026-11-11T12:45:20.408Z] mock: mock: 12 [messages] text reply (24 chars): "V016PACK_R1_OFFICER_DONE"
+[2026-11-11T12:45:20.517Z] [approval-plane-human] pending leg ctrl-1s66cpy0e3d8jx1jomw8w03n kind=leader-approval reviewAuthority=human-user case=case-0eiu55f09npvsq1mxf8d51im
+[2026-11-11T12:45:20.534Z] PASS APP-2: the governed plane leg was routed to the Officer and escalated to a durable HUMAN leg — requestId=ctrl-1s66cpy0e3d8jx1jomw8w03n kind=leader-approval reviewAuthority=human-user escalated=true visible=true
+[2026-11-11T12:45:24.024Z] mock: mock: 13 [messages] text reply (46 chars): "V016PACK_R1_WORK1_DONE V016PACK_R1_ARM1_RESULT"
+[2026-11-11T12:45:24.076Z] PASS APP-3: the human allow on the escalated leg is the durable decision (decider=human) and was consumed exactly once — decision={"sequence":15,"requestId":"ctrl-1s66cpy0e3d8jx1jomw8w03n","decision":"allow","decider":{"humanId":"team-v016pack-r1","kind":"human"},"createdAt":"2026-11-11T12:45:20.557Z"} consumptions=1
+[2026-11-11T12:45:24.076Z] PASS APP-4: the approved body executed exactly once (single, attributed side effect) — file="V016PACK_R1_ARM1_EXECUTED" abandonments=0
+[2026-11-11T12:45:24.216Z] mock: mock: 14 [messages] text reply (29 chars): "V016PACK_R1_NOTIFICATION_SEEN"
+[2026-11-11T12:45:27.186Z] mock: mock: 15 [messages] tool-call reply: create_goal
+[2026-11-11T12:45:27.186Z] mock: mock: 16 [messages] text reply (19 chars): "V016PACK_R1 session"
+[2026-11-11T12:45:27.259Z] mock: mock: 17 [messages] text reply (24 chars): "V016PACK_R1_GOAL_CREATED"
+[2026-11-11T12:45:27.414Z] mock: mock: 18 [messages] text reply (23 chars): "V016PACK_R1_GENERIC_ACK"
+[2026-11-11T12:45:27.494Z] mock: mock: 19 [messages] text reply (23 chars): "V016PACK_R1_GENERIC_ACK"
+[2026-11-11T12:45:27.573Z] mock: mock: 20 [messages] text reply (23 chars): "V016PACK_R1_GENERIC_ACK"
+[2026-11-11T12:45:27.685Z] mock: mock: 21 [messages] tool-call reply: update_goal
+[2026-11-11T12:45:27.788Z] mock: mock: 22 [messages] text reply (24 chars): "V016PACK_R1_GOAL_UPDATED"
+[2026-11-11T12:45:28.160Z] PASS GOAL-1: the Member created a durable Goal — goalId=goal-cab86928-b48d-4eb6-bc7c-bd611a8be347 phase=paused
+[2026-11-11T12:45:28.161Z] PASS GOAL-2: the Goal advanced by its own automatic rounds (>=2) — roundsStarted=3
+[2026-11-11T12:45:28.161Z] PASS GOAL-3: the Member updated the Goal (revision advanced) — revision=1->3
+[2026-11-11T12:45:28.197Z] mock: mock: 23 [messages] tool-call reply: bash
+[2026-11-11T12:45:28.325Z] mock: mock: 24 [messages] text reply (29 chars): "V016PACK_R1_NOTIFICATION_SEEN"
+[2026-11-11T12:45:28.367Z] [stop-permission] pending leg ctrl-148ykl11g4g86c1eglvkf1my kind=leader-approval reviewAuthority=leader case=case-0zp33eo03row2x19ucfde0ba
+[2026-11-11T12:45:28.382Z] PASS STOP-1: the stop-arm governed ask produced a durable approval leg discoverable over the remote surface — requestId=ctrl-148ykl11g4g86c1eglvkf1my kind=leader-approval reviewAuthority=leader visible=true pendingCount=1
+[2026-11-11T12:45:28.659Z] mock: mock: 25 [messages] tool-call reply: team_list_pending_control
+[2026-11-11T12:45:28.728Z] mock: mock: 26 [messages] tool-call reply: team_resolve_control
+[2026-11-11T12:45:28.759Z] mock: mock: 27 [messages] text reply (24 chars): "V016PACK_R1_OFFICER_DONE"
+[2026-11-11T12:45:28.907Z] [stop-plane-leg] pending leg ctrl-1fm7i2713lhzo019gkt391ro kind=leader-approval reviewAuthority=leader case=case-1ry62l41tyz25l12dor720wd
+[2026-11-11T12:45:28.965Z] PASS STOP-2: session/cancel (the Stop RPC) is admitted after the human allow on the governed plane leg — status=200 ok=true escalated=false kind=leader-approval reviewAuthority=leader body={"ok":true,"value":{"accepted":true}}
+[2026-11-11T12:45:33.978Z] PASS STOP-3: Stop before consumption: the governed plane leg has NO consumption fact, NO execution and NO side effect — consumptions=0 executions=0 fileExists=false abandonments=0
+[2026-11-11T12:45:33.978Z] PASS STOP-4: the stop-arm human leg is terminal (late allow refused, or durably abandoned) — lateAllowOk=false code=CONTROL_REQUEST_DECIDED abandonments=0 shape=already-decided
+[2026-11-11T12:45:33.994Z] PASS STOP-5: the Goal is durably paused by Stop (no continuation) — pauseOk=false phase=paused rounds=3
+[2026-11-11T12:45:34.044Z] mock: mock: 28 [messages] tool-call reply: team_collect
+[2026-11-11T12:45:34.139Z] mock: mock: 29 [messages] text reply (24 chars): "V016PACK_R1_COLLECT_DONE"
+[2026-11-11T12:45:34.254Z] PASS COLL-1: the Leader collected the Member: the durable result is retrievable and carries the Member marker — body="{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r1\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r1-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0mzzhtj0zr0b\",\"admittedSequence\":5,\"settledSequence\":19,\"memberResult\":{\""
+[2026-11-11T12:45:34.386Z] PASS CRASH-1: the Host was really killed (SIGKILL) before recovery — exited=true code=null signal=SIGKILL
+[2026-11-11T12:45:36.028Z] [boot-2-cold] host ready at http://127.0.0.1:14001 (token redacted); projection ok
+[2026-11-11T12:45:36.028Z] PASS CRASH-2: the same DSH_HOME boots cold on the same installed artifact — origin=http://127.0.0.1:14001
+[2026-11-11T12:46:06.484Z] PASS REC-1: the Team and the Member survived cold recovery durably — team=true member=true lifecycle=SETTLED
+[2026-11-11T12:46:06.484Z] PASS REC-2: the Goal survived (phase/revision/rounds unchanged) — phase=paused revision=3 rounds=3 durableRecords=3
+[2026-11-11T12:46:06.484Z] PASS REC-3: the collected Member result is retrievable after restart (same marker) — body="{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r1\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r1-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0mzzhtj0zr0b\",\"admittedSequence\":5,\"settledSequence\":19,\"memberResult\":{\""
+[2026-11-11T12:46:06.485Z] PASS REC-4: the per-leg consumption facts survived the cold restart exactly (approval 1+1, stop 1+0) — legs=[["approval-permission",1,1],["approval-human",1,1],["stop-permission",1,1],["stop-human",0,0]]
+[2026-11-11T12:46:06.485Z] PASS REC-5: the collected Member was not resurrected into a running turn after restart — recordsDelta=0 mockRequestsDelta=0 lifecycle=SETTLED
+[2026-11-11T12:46:08.019Z] PASS HYG-1: the pristine host checkout stayed byte-clean — porcelain=""
+[2026-11-11T12:46:08.042Z] teardown: world removed (/home/armourpiercer/projects/dsh-agent-team/.worktrees/pack-accept/tests/homes/v016-pack-1-2026-11-11T12-45-10)
+[2026-11-11T12:46:08.043Z] RESULT PASS checks=37/37

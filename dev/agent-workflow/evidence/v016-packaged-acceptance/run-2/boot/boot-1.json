@@ -1,0 +1,13 @@
+{
+  "url": "http://127.0.0.1:14002/?token=<redacted>",
+  "authStatus": 303,
+  "pid": 96,
+  "command": [
+    "node",
+    "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+    "web",
+    "--port",
+    "14002",
+    "--no-open"
+  ]
+}
