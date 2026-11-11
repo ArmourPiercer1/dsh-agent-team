@@ -397,6 +397,30 @@
    "sha256": "916dee39986cfdfe36ad5a4875ee702409fd41d58ee6ac9ef1221cf0fbd629e3",
    "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
    "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "04e22be9ec9ad29b993967e55d55a8e3c24f168e9e134428df9223411557e365",
+   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change on the control plane's execution-result matcher; owner authorisation 2026-11-11.",
+   "reason": "J05: `recordExecutionResult` matched only `reviewPayload.callId`, a fact only the PA plane carries. A `parameter-permission` ask has no PA manifest, so a consumed human allow, a body that ran, and a body that died between were all the same silence. The matcher now also accepts the durable `payload.correlation` (the request creator's own invocation id; never model-supplied). No consumption, replay, fence or authority path moves: the function still only appends ONE idempotent `control-execution-result` for a request that already exists, and an unknown correlation still records nothing."
+  },
+  {
+   "path": "packages/runtime/operation-permission/index.ts",
+   "sha256": "a014c69d9b514dca23bc5a59aa27ede3e4fac70f4c996ee3be9bd666610df1f9",
+   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change: the identity-carry types become public surface; owner authorisation 2026-11-11.",
+   "reason": "J06: the `Alpha6AskIdentity` / `BoundBlueprintIdentity` / `OperationToolBindingIdentity` types the pre-execute adapter's install parameter consumes are re-exported from the operation-permission entry (a type-only re-export; no runtime symbol, no behaviour). The composition glue and the test doubles must be able to name the frozen input contract they pass."
+  },
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "6fb39deea6dbd560f107282c340b94adf472b10713b1499b1235a86ba1535ae2",
+   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change on the pre-execute adapter seam; owner authorisation 2026-11-11: \"Pass an immutable BoundBlueprintIdentity through the existing Team composition / pre-execute adapter seam\".",
+   "reason": "J06: the ask lane now CARRIES the frozen bound-Blueprint identity (blueprintId/revision/schemaVersion/contentHash), the OperationOwner template, the verdict-time authority generation and the VERIFIED tool triple onto its requestApprovalLeg row, so `parameter-permission` and `team-tool-execute` reference the SAME bound identity and the SAME Alpha.6 route decides both. Nothing is re-resolved and nothing is inferred from a mutable row anchor: every field is a copy of a value the caller already froze, an absent binding leaves the coordinate ABSENT (the route refuses that leg by name), and with no identity supplied the row is byte-identical to today's.\nJ05: the same install now OWES one truthful `control-execution-result` after a consumed allow and settles it from the host's `tools/result` terminal leg (succeeded/failed/unknown by PD-41: only an observed completion is `succeeded`; a cancelled, timed-out or unobserved execution is `unknown`; an answered failure is `failed`; a dispatch refused after consumption still writes a fact). The observer is registered LAZILY on the first consumed allow, so an install that never reaches the ask lane adds no registration. Consumption timing, replay refusal and the guard fence are untouched."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "f3326ccc3206f612f97e054b3c8617b8b413a0c0a304ae804e1bd656c5b44c6a",
+   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change in the composition glue; owner authorisation 2026-11-11 (same ruling: pass the identity through the existing composition seam).",
+   "reason": "J06: the glue BUILDS the frozen `alpha6AskIdentity` from sources that are already authoritative for each fact — the bound/hashed Blueprint the Alpha.6 composition reads (`getBoundBlueprint`, the same object the PA lane freezes), this Agent's own durable template (`boundTemplate.templateId`), the SAME durable generation reader the PA lane uses (called at ask time), and the VERIFIED governance binding on this Agent's guard surface (`providerId`/`toolName`/`definitionIdentity` of a verified entry; no verified entry answers null, which is the honest answer for a host builtin the Team assembly never placed). Gated on `alpha6ReviewRouting === true` AND schemaVersion 5; absent = pre-J06 behaviour byte for byte. No product seam, no authority derivation and no routing decision is added here."
   }
  ]
 }
