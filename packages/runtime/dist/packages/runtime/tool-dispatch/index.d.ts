@@ -33,8 +33,8 @@
  * @module @dsh-agent-team/runtime/tool-dispatch
  */
 export { createPendingCallLedger, type PendingCall, type PendingCallLedger, type CancelledCall, } from './pending-calls.js';
-export { GOVERNED_UNVERIFIED_REASONS, GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, GOVERNED_ORIGINS, createGovernedSurface, guardDecision, guardDenialMessage, ASSURANCE_REALM_TRUSTED_ASSEMBLY, untestedAssurance, } from './closed-world-guard.js';
-export type { GovernedEntry, GovernedOrigin, GovernedUnverifiedReason, InheritedSurfaceBinding, GovernedSurface, GovernedSurfaceOptions, GuardDecisionInput, GuardDenialReason, GuardExecView, GuardScopeIdentity, GuardVerdict, } from './closed-world-guard.js';
+export { GOVERNED_UNVERIFIED_REASONS, GUARD_DENIAL_REASONS, GUARD_ERROR_CODES, GOVERNED_ORIGINS, createGovernedSurface, dispatchRefusalOf, guardDecision, guardDenialMessage, isToolBindingRefusal, ToolDispatchRefusalError, ASSURANCE_REALM_TRUSTED_ASSEMBLY, untestedAssurance, } from './closed-world-guard.js';
+export type { GuardDenial, GovernedEntry, GovernedOrigin, GovernedUnverifiedReason, InheritedSurfaceBinding, GovernedSurface, GovernedSurfaceOptions, GuardDecisionInput, GuardDenialReason, GuardExecView, GuardScopeIdentity, GuardVerdict, } from './closed-world-guard.js';
 export { createScopedDispatcher } from './scoped-dispatcher.js';
 export type { CallToken, DispatcherObservation, ScopedDispatcher, ScopedDispatcherOptions, } from './scoped-dispatcher.js';
 export { hostExecToView, installScopedToolGuard, requireService, definitionIdentityOf } from './install.js';
