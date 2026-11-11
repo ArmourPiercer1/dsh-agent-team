@@ -1,0 +1,294 @@
+{
+  "trials": [
+    {
+      "verdict": "fence-reached",
+      "label": "run-probe-369-1",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 369
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-0x7xaha12skt5d05ska940rh",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:43:33.135Z",
+        "resolveSentAt": "2026-11-11T14:43:33.255Z",
+        "resolveReturnedAt": "2026-11-11T14:43:33.320Z",
+        "decisionCreatedAt": "2026-11-11T14:43:33.306Z",
+        "stopSentAt": "2026-11-11T14:43:33.504Z",
+        "stopReturnedAt": "2026-11-11T14:43:33.508Z",
+        "stopAfterDecisionMs": 198,
+        "stopAfterResolveSentMs": 249,
+        "decisionAfterStopSentMs": -198,
+        "abandonmentCreatedAt": "2026-11-11T14:43:33.515Z",
+        "decisionToAbandonmentMs": 209,
+        "decisionToConsumptionMs": null
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": null,
+        "abandonment": 16,
+        "burned": {
+          "expectedGap": 15,
+          "abandonmentAt": 16
+        }
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-0x7xaha12skt5d05ska940rh",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-43-21",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:43:33.306Z"
+          }
+        ],
+        "consumptions": [],
+        "abandonments": [
+          {
+            "sequence": 16,
+            "factType": "control-request-abandoned",
+            "requestId": "ctrl-0x7xaha12skt5d05ska940rh",
+            "reason": "invocation-cancelled-before-consumption",
+            "createdAt": "2026-11-11T14:43:33.515Z"
+          }
+        ],
+        "executionResults": []
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": true,
+        "exactlyOneAbandonment": true,
+        "fenceReason": true,
+        "burnedSequence": true,
+        "noExecutionFact": true,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": true,
+        "lateAllowRefusedDecided": false
+      },
+      "offsets": {
+        "decision": 171,
+        "stopSent": 369,
+        "stopReturned": 373,
+        "consumptionWrite": null,
+        "abandonmentWrite": 380,
+        "stopSentMinusConsumptionWriteMs": null,
+        "stopSentMinusAbandonmentWriteMs": -11
+      },
+      "failedRequirements": [],
+      "kitExit": 0,
+      "wallMs": 17114
+    },
+    {
+      "verdict": "residual-consumed",
+      "label": "run-probe-369-2",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 369
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-000guya08xi1l91ork28w0jj",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:43:50.033Z",
+        "resolveSentAt": "2026-11-11T14:43:50.153Z",
+        "resolveReturnedAt": "2026-11-11T14:43:50.222Z",
+        "decisionCreatedAt": "2026-11-11T14:43:50.202Z",
+        "stopSentAt": "2026-11-11T14:43:50.402Z",
+        "stopReturnedAt": "2026-11-11T14:43:53.619Z",
+        "stopAfterDecisionMs": 200,
+        "stopAfterResolveSentMs": 249,
+        "decisionAfterStopSentMs": -200,
+        "abandonmentCreatedAt": null,
+        "decisionToAbandonmentMs": null,
+        "decisionToConsumptionMs": 172
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": 15,
+        "abandonment": null,
+        "burned": null
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-000guya08xi1l91ork28w0jj",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-43-39",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:43:50.202Z"
+          }
+        ],
+        "consumptions": [
+          {
+            "sequence": 15,
+            "factType": "control-allow-consumed",
+            "requestId": "ctrl-000guya08xi1l91ork28w0jj",
+            "createdAt": "2026-11-11T14:43:50.374Z"
+          }
+        ],
+        "abandonments": [],
+        "executionResults": [
+          {
+            "sequence": 16,
+            "factType": "control-execution-result",
+            "requestId": "ctrl-000guya08xi1l91ork28w0jj",
+            "callId": "team-inst-1l1jjh509b10-bash:hexec:77e9a5ad-4ec6-4348-8308-2048e7a0c8be-1",
+            "outcome": "succeeded",
+            "recordedAt": "2026-11-11T14:43:53.687Z",
+            "createdAt": "2026-11-11T14:43:53.687Z"
+          }
+        ]
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": false,
+        "exactlyOneAbandonment": false,
+        "fenceReason": false,
+        "burnedSequence": false,
+        "noExecutionFact": false,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": false,
+        "lateAllowRefusedDecided": true
+      },
+      "offsets": {
+        "decision": 169,
+        "stopSent": 369,
+        "stopReturned": 3586,
+        "consumptionWrite": 341,
+        "abandonmentWrite": null,
+        "stopSentMinusConsumptionWriteMs": 28,
+        "stopSentMinusAbandonmentWriteMs": null
+      },
+      "failedRequirements": [
+        "zeroConsumption",
+        "exactlyOneAbandonment",
+        "fenceReason",
+        "burnedSequence",
+        "noExecutionFact",
+        "lateAllowRefusedAbandoned"
+      ],
+      "kitExit": 2,
+      "wallMs": 20108
+    },
+    {
+      "verdict": "residual-consumed",
+      "label": "run-probe-369-3",
+      "planned": {
+        "resolveOffsetMs": 120,
+        "stopOffsetMs": 369
+      },
+      "productSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp3-fence",
+      "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "requestId": "ctrl-1cyewjt1tykp9i0arl6wf162",
+      "timings": {
+        "anchorCreatedAt": "2026-11-11T14:44:10.174Z",
+        "resolveSentAt": "2026-11-11T14:44:10.294Z",
+        "resolveReturnedAt": "2026-11-11T14:44:10.364Z",
+        "decisionCreatedAt": "2026-11-11T14:44:10.345Z",
+        "stopSentAt": "2026-11-11T14:44:10.543Z",
+        "stopReturnedAt": "2026-11-11T14:44:13.785Z",
+        "stopAfterDecisionMs": 198,
+        "stopAfterResolveSentMs": 249,
+        "decisionAfterStopSentMs": -198,
+        "abandonmentCreatedAt": null,
+        "decisionToAbandonmentMs": null,
+        "decisionToConsumptionMs": 173
+      },
+      "sequences": {
+        "counterAtFinalRead": 18,
+        "request": 13,
+        "decision": 14,
+        "consumption": 15,
+        "abandonment": null,
+        "burned": null
+      },
+      "rows": {
+        "decisions": [
+          {
+            "sequence": 14,
+            "factType": "control-decision-recorded",
+            "requestId": "ctrl-1cyewjt1tykp9i0arl6wf162",
+            "decision": "allow",
+            "decider": {
+              "humanId": "session-c1-smoke-a6-2026-11-11T14-43-59",
+              "kind": "human"
+            },
+            "createdAt": "2026-11-11T14:44:10.345Z"
+          }
+        ],
+        "consumptions": [
+          {
+            "sequence": 15,
+            "factType": "control-allow-consumed",
+            "requestId": "ctrl-1cyewjt1tykp9i0arl6wf162",
+            "createdAt": "2026-11-11T14:44:10.518Z"
+          }
+        ],
+        "abandonments": [],
+        "executionResults": [
+          {
+            "sequence": 16,
+            "factType": "control-execution-result",
+            "requestId": "ctrl-1cyewjt1tykp9i0arl6wf162",
+            "callId": "team-inst-0gn24ux1sn9k-bash:hexec:eabceda6-02ba-467d-81c3-626366212895-1",
+            "outcome": "succeeded",
+            "recordedAt": "2026-11-11T14:44:13.845Z",
+            "createdAt": "2026-11-11T14:44:13.845Z"
+          }
+        ]
+      },
+      "requirements": {
+        "decisionAllow": true,
+        "stopAfterDecision": true,
+        "resolveBeforeStop": true,
+        "zeroConsumption": false,
+        "exactlyOneAbandonment": false,
+        "fenceReason": false,
+        "burnedSequence": false,
+        "noExecutionFact": false,
+        "zeroSideEffect": true,
+        "lateAllowRefusedAbandoned": false,
+        "lateAllowRefusedDecided": true
+      },
+      "offsets": {
+        "decision": 171,
+        "stopSent": 369,
+        "stopReturned": 3611,
+        "consumptionWrite": 344,
+        "abandonmentWrite": null,
+        "stopSentMinusConsumptionWriteMs": 25,
+        "stopSentMinusAbandonmentWriteMs": null
+      },
+      "failedRequirements": [
+        "zeroConsumption",
+        "exactlyOneAbandonment",
+        "fenceReason",
+        "burnedSequence",
+        "noExecutionFact",
+        "lateAllowRefusedAbandoned"
+      ],
+      "kitExit": 2,
+      "wallMs": 20167
+    }
+  ]
+}
