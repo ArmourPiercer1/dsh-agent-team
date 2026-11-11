@@ -220,7 +220,7 @@ export function createScopedDispatcher(options) {
         }
         return verdict;
     };
-    const guard = (exec) => {
+    const denial = (exec) => {
         const verdict = decide(exec);
         if (verdict.kind === 'abstain')
             return undefined;
@@ -231,13 +231,15 @@ export function createScopedDispatcher(options) {
             code: verdict.error.code,
             state: status,
         });
-        return verdict.error.message;
+        return { toolName: exec.name, code: verdict.error.code, reason: verdict.reason, message: verdict.error.message };
     };
+    const guard = (exec) => denial(exec)?.message;
     return {
         surface,
         state: () => status,
         active: () => status === 'ACTIVE',
         guard,
+        denial,
         decide,
         armSeam: (seam) => {
             seams.add(seam);

@@ -28,6 +28,26 @@ import { UNREADABLE_SETTLEMENT } from './backend-contract.js';
 import { deriveToolEffectSet } from './effects-schema.js';
 import { RenderClosedValueViolation, renderSearchResult, renderShellResult } from './render.js';
 import { createSpillLease } from './spill.js';
+/**
+ * PD-41 (owner ruling 2026-11-11) — the execution-fact outcome of an ANSWERED
+ * backend call. `result.ok` is the backend's "I answered" bit; it is NOT "the
+ * body completed". A shell the host cancelled (or killed at its timeout)
+ * answers `ok: true` with `cancelled: true` / `timedOut: true` and
+ * `exitCode: null` — the payload never reported an end (see
+ * `process-family/src/confined-shell-executor.mjs`, whose settlement for that
+ * arm is `{kind:'cancelled'}`). Recording that as `succeeded` would state a
+ * completion nobody measured: the measured shape was
+ * `cancelled=true exit=not-observed` in the shell log next to a durable
+ * `succeeded`, with no side effect on disk.
+ *
+ * The honest value is the ledger's existing `unknown` — the body was admitted
+ * and may have had effects, but its end was never observed. This invents no
+ * new outcome and changes no admission, consumption or replay behaviour.
+ */
+export function executionOutcomeOfAnsweredCall(result) {
+    const outcome = result.outcome;
+    return outcome.cancelled === true || outcome.timedOut === true ? 'unknown' : 'succeeded';
+}
 export async function runToolCall(deps) {
     const { request } = deps;
     const derived = deriveToolEffectSet(request.realmId, request.parsedArgs, request.effectAnchorRoot);
@@ -111,7 +131,13 @@ export async function runToolCall(deps) {
         deps.onExecutionResult?.({ callId: request.callId, outcome: 'failed' });
         throw error;
     }
-    deps.onExecutionResult?.({ callId: request.callId, outcome: result.ok ? 'succeeded' : 'failed' });
+    // PD-41: an ANSWERED call is not automatically a COMPLETED one — the outcome
+    // helper keeps a cancelled/timed-out body at `unknown` instead of claiming a
+    // completion its own rendered shape contradicts.
+    deps.onExecutionResult?.({
+        callId: request.callId,
+        outcome: result.ok ? executionOutcomeOfAnsweredCall(result) : 'failed',
+    });
     const settlement = result.ok ? result.settlement : UNREADABLE_SETTLEMENT;
     const settled = lease.settle(settlement);
     if (!settled.ok)
