@@ -1,0 +1,16 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:15004/?token=RlZ7_F9Wrtm8Pyys5cLLx67lRwRjxbzuDtbW4G4B08g
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-58-39 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-58-39
+[dsh-agent-team] a5ptc: census-boot root=session-wp1-team-2026-11-11T15-58-39 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=wp1-plane-realm-2026-11-11T15-58-39 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-58-39
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-58-39 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-58-39
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-14zd4tc0m4vl-bash:hexec:5ab6b4ae-8968-4a03-862a-0ab3879bdecf-1 approvalCaseId=tadm:session-wp1-team-2026-11-11T15-58-39:inst-14zd4tc0m4vl:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader

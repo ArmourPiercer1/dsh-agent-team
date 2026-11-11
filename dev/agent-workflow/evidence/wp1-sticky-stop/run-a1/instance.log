@@ -1,0 +1,33 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:15001/?token=4ZCtpkKTXZ3FECtpDIK_6dBxvRf8oFVJdNqVOdK7ChQ
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5ptc: census-boot root=session-wp1-team-2026-11-11T15-53-42 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1ltrrlp0jspm-bash:hexec:d06a4af2-b7fe-4a96-a1f1-af75a8278097-1 approvalCaseId=tadm:session-wp1-team-2026-11-11T15-53-42:inst-1ltrrlp0jspm:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:15001/?token=4PF_bj7zkp_nhyMgxuwto8M1xSo4qLpxSMwAhhxlolU
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 104ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5ptc: census-boot root=session-wp1-team-2026-11-11T15-53-42 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=wp1-plane-realm-2026-11-11T15-53-42 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=wp1-plane-realm-2026-11-11T15-53-42
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1lgxwm902j5l-bash:hexec:dd91d7a5-90ad-4764-92e3-1ca2beedec98-1 approvalCaseId=tadm:session-wp1-team-2026-11-11T15-53-42:inst-1lgxwm902j5l:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader

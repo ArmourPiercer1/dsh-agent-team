@@ -1,0 +1,8 @@
+| case | run1 | run2 | agreement |
+| --- | --- | --- | --- |
+| wp2-a6:arm1-create-authorized | PROVEN | PROVEN | agree |
+| wp2-a6:arm1-goal-durable | PROVEN | PROVEN | agree |
+| wp2-a6:arm1-update-advances | PROVEN | PROVEN | agree |
+| wp2-a6:arm1-rounds | PROVEN | PROVEN | agree |
+| wp2-a6:arm1-human-stop-terminal | PROVEN | PROVEN | agree |
+| wp2-a6:arm1-governed-facts | PROVEN | PROVEN | agree |
