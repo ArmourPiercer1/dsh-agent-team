@@ -29,24 +29,62 @@ import { deriveToolEffectSet } from './effects-schema.js';
 import { RenderClosedValueViolation, renderSearchResult, renderShellResult } from './render.js';
 import { createSpillLease } from './spill.js';
 /**
- * PD-41 (owner ruling 2026-11-11) — the execution-fact outcome of an ANSWERED
- * backend call. `result.ok` is the backend's "I answered" bit; it is NOT "the
- * body completed". A shell the host cancelled (or killed at its timeout)
- * answers `ok: true` with `cancelled: true` / `timedOut: true` and
- * `exitCode: null` — the payload never reported an end (see
- * `process-family/src/confined-shell-executor.mjs`, whose settlement for that
- * arm is `{kind:'cancelled'}`). Recording that as `succeeded` would state a
- * completion nobody measured: the measured shape was
- * `cancelled=true exit=not-observed` in the shell log next to a durable
- * `succeeded`, with no side effect on disk.
+ * PD-41 / PD41-ABORT-CLASS (owner ruling 2026-11-11; audit follow-up) — the
+ * execution-fact outcome of an ANSWERED backend call. `result.ok` is the
+ * backend's "I answered" bit; it is NOT "the body completed".
  *
- * The honest value is the ledger's existing `unknown` — the body was admitted
- * and may have had effects, but its end was never observed. This invents no
- * new outcome and changes no admission, consumption or replay behaviour.
+ * THE OBSERVATION THAT DECIDES is the SETTLEMENT the backend returned, not only
+ * the outcome's two convenience flags. The settlement union
+ * (`spill.ts` `LeaseSettlement`) has exactly two members — `completed` and
+ * `cancelled` — and the confined shell uses `cancelled` for EVERY abort it
+ * terminated a body for: a `user`/`parent` Stop, a `hook`/`disposed` cause, a
+ * forwarded inherited signal, a host deadline, an `AbortError`. The rendered
+ * `cancelled` bit is narrower: `shellCancelled()` mints it only for the
+ * `user`/`parent` arms of the host's closed cancel-cause union. So a
+ * non-`user`/`parent` abort answers `ok:true, cancelled:false, timedOut:false,
+ * exitCode:null, settlement:{kind:'cancelled'}` — and reading only the two
+ * flags wrote that "end never observed" body as `succeeded`. Consulting the
+ * settlement closes the whole class, not just the measured `user` arm.
+ *
+ * CLASSIFICATION (the ledger's closed `succeeded | failed | unknown`):
+ *  - `settlement.kind !== 'completed'` (today: `cancelled`, whatever its
+ *    reason) → `unknown` — the body was admitted, its end was never observed;
+ *  - a `cancelled`/`timedOut` outcome → `unknown` too (defence in depth: even
+ *    a backend that mislabels its settlement cannot make a cancel a success);
+ *  - an observed completion (`settlement.kind === 'completed'`, i.e. the
+ *    payload reported its own end) → `succeeded`, including a NON-ZERO exit —
+ *    the code is data, not a verdict;
+ *  - a missing settlement keeps the historical flag-only reading (the
+ *    archived fixture backends predate the settlement field).
+ *
+ * This invents no new outcome value and changes no admission, consumption or
+ * replay behaviour.
  */
-export function executionOutcomeOfAnsweredCall(result) {
+function observedCompletion(result) {
+    if (result.settlement !== undefined && result.settlement.kind !== 'completed')
+        return false;
     const outcome = result.outcome;
-    return outcome.cancelled === true || outcome.timedOut === true ? 'unknown' : 'succeeded';
+    return outcome.cancelled !== true && outcome.timedOut !== true;
+}
+/** The execution fact of an ANSWERED call (see the classification above). */
+export function executionOutcomeOfAnsweredCall(result) {
+    return observedCompletion(result) ? 'succeeded' : 'unknown';
+}
+/**
+ * A THROW from the backend is not automatically an execution FAILURE. An
+ * abort-shaped throw (`AbortError` / `code: 'ABORT_ERR'`, e.g. a DOMException
+ * raised by a deadline or a forwarded inherited signal) says the call was
+ * stopped, not that the body reported a failure: nothing was observed about
+ * its end, so `failed` would state an execution failure nobody measured and
+ * would invite a retry of an already-consumed allow. It is recorded `unknown`
+ * (the ledger's "admitted, end never observed"), exactly like an answered
+ * cancel. Every other throw keeps `failed`.
+ */
+function isAbortShapedThrow(error) {
+    if (error === null || typeof error !== 'object')
+        return false;
+    const shape = error;
+    return shape.name === 'AbortError' || shape.code === 'ABORT_ERR';
 }
 export async function runToolCall(deps) {
     const { request } = deps;
@@ -126,14 +164,19 @@ export async function runToolCall(deps) {
     catch (error) {
         // A THROW is a terminal execution outcome too: the call was admitted and
         // consumed, and the backend refused/aborted before answering. Report it
-        // ONCE as `failed` (observation only), then rethrow unchanged — the row's
-        // own presentation error stays the caller's fact.
-        deps.onExecutionResult?.({ callId: request.callId, outcome: 'failed' });
+        // ONCE (observation only), then rethrow unchanged — the row's own
+        // presentation error stays the caller's fact.
+        //
+        // PD41-ABORT-CLASS: an ABORT-SHAPED throw is not an observed execution
+        // failure, so it is `unknown` (see `isAbortShapedThrow`). Anything else
+        // keeps the historical `failed`.
+        deps.onExecutionResult?.({ callId: request.callId, outcome: isAbortShapedThrow(error) ? 'unknown' : 'failed' });
         throw error;
     }
-    // PD-41: an ANSWERED call is not automatically a COMPLETED one — the outcome
-    // helper keeps a cancelled/timed-out body at `unknown` instead of claiming a
-    // completion its own rendered shape contradicts.
+    // PD-41 / PD41-ABORT-CLASS: an ANSWERED call is not automatically a COMPLETED
+    // one — the helper reads the backend's SETTLEMENT, so every abort reason
+    // (not only the rendered `cancelled` bit) stays at `unknown` instead of
+    // claiming a completion its own rendered shape contradicts.
     deps.onExecutionResult?.({
         callId: request.callId,
         outcome: result.ok ? executionOutcomeOfAnsweredCall(result) : 'failed',
