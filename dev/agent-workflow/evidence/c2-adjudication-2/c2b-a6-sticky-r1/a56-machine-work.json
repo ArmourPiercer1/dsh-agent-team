@@ -1,0 +1,28 @@
+{
+  "followup": {
+    "type": "server-response",
+    "rpcId": "c1a6mwork-b8rlevs4xw",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "TEAM_REMOTE_PRINCIPAL_INVALID",
+        "message": "remote method 'member.followup' claims instance principal 'instance-c1-a6-leader' that does not resolve to a durable member of this host's owned roots (bound root 'session-c1-smoke-root-2026-11-11T11-13-11')",
+        "details": {
+          "method": "member.followup",
+          "endpoint": "member.followup",
+          "contractVersion": 4,
+          "requestToken": "c1-a6-machine-work-1794395611642",
+          "reason": "domain-error",
+          "cause": {
+            "code": "TEAM_REMOTE_PRINCIPAL_INVALID",
+            "message": "remote method 'member.followup' claims instance principal 'instance-c1-a6-leader' that does not resolve to a durable member of this host's owned roots (bound root 'session-c1-smoke-root-2026-11-11T11-13-11')"
+          }
+        }
+      }
+    }
+  },
+  "markersAfterMachineWork": [],
+  "wakesAfterMachineWork": 1,
+  "workClaimed": false,
+  "wakesBeforeMachine": 1
+}
