@@ -1,0 +1,40 @@
+{
+  "officer": {
+    "ok": true,
+    "value": {
+      "status": "rejected",
+      "code": "TEAM_RUNTIME_DURABLE_WRITE_FAILED",
+      "message": "activation: child-session creation failed for member 'inst-13pe9890nxe3': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module re-mount failed: Cannot read properties of undefined (reading 'validate')",
+      "details": {
+        "source": "activation-provider",
+        "providerCode": "ACTIVATION_CHILD_SESSION_CREATION_FAILED",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-11T21-33-54-h3188-ra9371f",
+        "instanceId": "inst-13pe9890nxe3"
+      }
+    }
+  },
+  "worker": {
+    "ok": true,
+    "value": {
+      "status": "rejected",
+      "code": "TEAM_RUNTIME_DURABLE_WRITE_FAILED",
+      "message": "activation: child-session creation failed for member 'inst-0kgylcr0d3vk': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module re-mount failed: Cannot read properties of undefined (reading 'validate')",
+      "details": {
+        "source": "activation-provider",
+        "providerCode": "ACTIVATION_CHILD_SESSION_CREATION_FAILED",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-11T21-33-54-h3188-ra9371f",
+        "instanceId": "inst-0kgylcr0d3vk"
+      }
+    }
+  },
+  "delegate": {
+    "ok": true,
+    "value": {
+      "status": "blocked",
+      "toolName": "team_delegate",
+      "correlation": "joint-delegate-2026-11-11T21-33-54-h3188-ra9371f",
+      "reason": "target-stale"
+    }
+  },
+  "workerId": "inst-0kgylcr0d3vk"
+}
