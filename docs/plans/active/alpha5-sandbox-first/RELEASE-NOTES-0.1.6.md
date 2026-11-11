@@ -55,6 +55,16 @@ acceptance matrix moved: no `V@B` cell is changed by these notes and no `CANDIDA
 | **`read_image` on an `image` route** | On a model route that declares `image`, `read_image` reads through the governed fs face. On a default `['text']` route it is refused **before** provider I/O (0 facts / 0 bytes), which is the measured stable behaviour. |
 | **Ordinary install** | `pnpm pack` → `dsh plugin --profile web add <tarball>` → `dsh web` executes tools with a real model. The measured run covered `web_fetch`, fs write/read, a goal of two rounds and Stop; `n=1` is an existence proof, not a stability claim. The install path does not patch the host (`CORE PATCH BUDGET = 0`). |
 
+> **Appended clarification, 2026-11-11 (F-2, packaged acceptance `#713`).** The **Goals** row above is
+> about a Member that owns the Goal tools; it must not be read as "one Member can do everything". A
+> Member that declares the `bash` ask lane (`capabilities.permissions`) cannot also own
+> `create_goal`/`get_goal`/`update_goal` on this artifact: the A2C-2 coverage gate refuses any tool
+> outside the managed vocabulary, so declaring the ask lane forces `builtinToolDeny` for the 19
+> unmanaged names, and the Goal tools are among them. In the packaged acceptance the Goal arm
+> therefore ran on a **third Member without `capabilities`**. The product allocation is **different
+> Members for different capabilities**; the artifact offers no single fully-capable Member, and this
+> note claims none.
+
 ### 2.2 Experimental (opt-in; not on the default path)
 
 The whole Alpha.6 plane is **opt-in experimental**. It is not covered by the Alpha.5 Preview contract
@@ -67,6 +77,8 @@ and it may refuse to boot rather than degrade silently.
 | **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. The accepted-but-unclaimed abandonment defect applies (§5). |
 | **Sticky Stop** (human-Stop marker for **review wakes**; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. It stops the **review wake**, not every message (see §4.7). |
 | **v5 blueprints** (`schemaVersion: 5`, `TeamBlueprintV5Core`) | Experimental. v5 extends v4 and one blueprint still carries the v4 I/O ceilings; v3/v4 documents remain supported and byte-identical. |
+| **Member capability allocation** (F-2) | Experimental / a limit, not a promise. One Member cannot both declare the `bash` ask lane and own the Goal tools: the A2C-2 coverage gate is fatal for a tool outside the managed vocabulary on an agent that declares `capabilities.permissions`, so the ask lane forces `builtinToolDeny` over the 19 unmanaged names and `create_goal`/`update_goal` go with them. The product allocation is **different Members for different capabilities**; there is no single fully-capable Member on this artifact. |
+| **What "Officer approval" covers** (F-3) | Experimental, **plane leg only**. Officer routing applies to the `team-tool-execute` **plane** leg. The `parameter-permission` leg is built by the pre-execute adapter **without** `blueprintContentHash`/`blueprintRevision`, so `resolveAssignedOfficer` refuses it and that wake goes to the **Leader** (or the human), not the Officer. "Officer approval" never means every tool approval is Officer-handled. |
 
 **Default-off proof, not a promise:** the Alpha.6 opt-in is the boolean
 `config.alpha6ReviewRouting === true`. With it absent or `false`, the code does not invoke the Alpha.6
@@ -162,6 +174,32 @@ closes.
    relay attribution is the base `{kind:'user'}` (and no Sticky Stop listener exists), so the
    Alpha.5 Goals row in §2.1 is unchanged.
 
+9. **One Member cannot hold every capability (F-2, measured on the packaged artifact).** A Member that
+   declares the `bash` ask lane has already accepted the A2C-2 coverage gate, which is fatal for any
+   tool outside the managed vocabulary; the required `builtinToolDeny` for those names removes the
+   Goal tools. So shell-asking and Goal-owning are two different Members. The product allocation is
+   **different Members for different capabilities**; a single Member that both asks for shell and
+   owns a Goal is not offered, and must not be promised by these notes. The measured run is
+   `dev/agent-workflow/evidence/v016-packaged-acceptance/` (§6 F-2).
+10. **"Officer approval" is a plane-leg statement (F-3, measured).** Alpha.6 routes the
+    `team-tool-execute` plane leg to the assigned Officer. The `parameter-permission` leg is built by
+    the adapter without `blueprintContentHash`/`blueprintRevision`
+    (`pre-execute-adapter.ts` → `control/service.ts`), so `resolveAssignedOfficer` refuses it and the
+    wake goes to the Leader. This is the exact coverage of the phrase; Alpha.6 does **not** make
+    every tool approval Officer-handled, and a release note that says otherwise would be false.
+11. **A second governed ask on the same root may be refused by the review-facts port (F-5, A6
+    experimental limit).** On the Stop arm the Officer's `team_resolve_control{decision:'escalate'}`
+    is refused with `CONTROL_RESOLVER_NOT_AUTHORIZED … the trusted review-facts port produced no
+    facts for this leg`; the **human fallback remains** and resolved that leg. The fence assertions
+    are unaffected (the leg is a real governed leg). See §5 for why this is *not* the A6-26
+    abandonment.
+12. **The Stop terminal shape varies while the safety result does not (F-6).** Across runs the
+    A6-12 family can end `already-decided` (no abandonment row) or with
+    `control-request-abandoned` (e.g. reason `invocation-cancelled-before-consumption`). Both are
+    recorded as what they are and are **not normalised** into one state. What is constant and
+    asserted is the safety result: **no consumption, no execution, no side effect**, late allow
+    refused.
+
 ---
 
 ## 5. Known defect A6-GAPS-26 — read before relying on review wake
@@ -198,6 +236,21 @@ have had side effects. The operator procedure, including when re-issuing is **no
 This defect is why the release-notes promise for review wake is narrow: an accepted wake may end in a
 durable, discoverable **in the team ledger page**, side-effect-free abandonment; it is not a promise
 that every accepted wake is eventually delivered or decidable on this base.
+
+**Appended 2026-11-11 — two refusals that are NOT A6-26 (F-5, F-6).** Keep these apart from the
+abandonment above, because both are correct, discoverable product answers rather than the
+accepted-but-unclaimed crash window:
+
+- **F-5** — a **second** governed ask on the same root may have its Officer escalation refused by the
+  review-facts port: `CONTROL_RESOLVER_NOT_AUTHORIZED … the trusted review-facts port produced no
+  facts for this leg`. That is a typed refusal of a resolver, not an abandonment; the leg is a real
+  governed leg and the **human fallback remains** (the human resolved it in the packaged acceptance).
+  Listed as an A6 experimental limit in §4.11.
+- **F-6** — the **Stop** terminal shape varies (`already-decided` vs an abandonment row such as
+  `invocation-cancelled-before-consumption`) across runs. This is the A6-12 Stop family, not the
+  A6-26 unclaimed-wake window: in both shapes the safety result is constant — no consumption, no
+  execution, no side effect, late allow refused. The notes state both shapes instead of normalising
+  them; see §4.12.
 **"Discoverable" does not mean it shows up where an operator looks first**: the abandoned request is
 readable by id on the ledger page, but it does **not** appear in `team_list_pending_control`
 (`pendingControlCount` reads 0) and `team_resolve_control` refuses it with
@@ -370,3 +423,52 @@ So the trip is now a captured artifact, not an inference, and the terminal-fact 
 for r1. r2 is recorded as the arm it is, not merged into the trip. Two clean boots still do **not**
 prove the 4/6 rate measured on the unfenced candidate is zero; the rate claim belongs to the next
 candidate's re-measurement (§7).
+
+---
+
+## 9. 2026-11-11 — PD-41: what a human `allow` authorises (owner ruling, append-only)
+
+The owner ruled on 2026-11-11 that the durable consumption order is **kept** and its semantics are
+adopted formally. This section is appended; it deletes no earlier sentence.
+
+**Semantics (adopted).** A human `allow` authorises **one constrained dispatch attempt**, not a
+guarantee of execution. Corollaries, each of which this build must satisfy:
+
+1. `control-allow-consumed` means **"the one-shot authorisation was consumed"** — never "execution
+   succeeded". A consumption fact exists whether or not a body ever started.
+2. A **Tool Binding failure returns an explicit typed refusal** (`TOOL_BINDING_UNVERIFIED`, with the
+   measured reason and the governed name), distinguishable from "never governed"
+   (`TEAM_TOOL_UNGOVERNED`) and "dispatcher not ACTIVE" (`ADAPTER_DRAINING`). The refusal sentence
+   worlds already met is byte-identical; the typing is additive.
+3. With **no observed execution completion** the product must not present the call as `succeeded`.
+   A cancelled or timed-out body reports `unknown` (the ledger's existing value for "admitted, end
+   never observed"); `succeeded` is reserved for a body whose end was observed. This fixed a real
+   mis-report: the confined shell logged `cancelled=true exit=not-observed` with no side effect while
+   the execution fact said `succeeded` (measured 29/29 in
+   `dev/agent-workflow/evidence/wp3-fence-timing/`, decisive run `run-residual-s373`).
+4. A consumed allow is **never auto-replayed**. There is no retry, no redelivery of a consumed
+   authorisation.
+5. After inspecting the **absence of side effects** and repairing the Binding, the operator may raise
+   a **new** approval request. That is a new request id, not a resume of the consumed one.
+
+**What the binding-failure path looks like (measured).** When a governed call's Tool Binding cannot
+be verified, the human `allow` is consumed first and the dispatch is then refused at the dispatch
+door: **1 consumption, 0 execution results, 0 side effects**. The exact refusal is
+`team tool guard: the Tool Binding for "bash" cannot be verified at dispatch time (no fallback to the
+native body)` (+ the positional suffix `[refused at the dispatch door, the stage nearest the Body]`
+for the door form). The packaged acceptance measured the consumption/execution pair and the worktree
+bundle measured the refusal; the PD-41 evidence record restates both on this tree
+(`dev/agent-workflow/evidence/pd41-allow-semantics/README.md`).
+
+**The pre-approval preflight (authorised "only if small").** It is **deferred**, not shipped: refusing
+an already-unverified tool *before* the approval request exists requires the approval-request creator
+(the pre-execute adapter's parameter-permission leg) to consult the closed-world dispatcher surface —
+a different component from the one that owns the Binding facts, with no seam between them today.
+Reaching it would be a cross-component resolver, which the ruling forbids; details and the one-line
+reason are in the PD-41 evidence record §4. The final dispatch-time verification is unchanged and no
+no-replay rule moved.
+
+**Unexperimental surfaces are not upgraded by this section.** The F-2/F-3 allocation and Officer
+coverage statements (§2.1 clarification, §2.2 rows, §4.9/§4.10) and the F-5/F-6 experimental limits
+(§4.11/§4.12, §5) are disclosures of what the packaged artifact actually does; they change no
+`V@B` cell, no matrix grade, and no claim that Alpha.6 is stable.

@@ -1,0 +1,177 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "wp2-a6-governed-goal-arm2-r1-2026-11-11T15-04-45-845Z",
+  "suite": "wp2-a6-governed-goal",
+  "recordClass": "CANDIDATE-C2",
+  "startedAt": "2026-11-11T15:04:45.845Z",
+  "selectedCases": [
+    "wp2-a6:arm2-create-refused",
+    "wp2-a6:arm2-no-goal",
+    "wp2-a6:arm2-nothing-pretends-human",
+    "wp2-a6:arm2-refusal-scoped"
+  ],
+  "allCases": [
+    "wp2-a6:arm2-create-refused",
+    "wp2-a6:arm2-no-goal",
+    "wp2-a6:arm2-nothing-pretends-human",
+    "wp2-a6:arm2-refusal-scoped"
+  ],
+  "subset": false,
+  "selected": 4,
+  "totalCases": 4,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "recordClass": "CANDIDATE-C2",
+    "teamSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "repo": "dsh-agent-team",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "note": "CANDIDATE-C2: the PRODUCT under test is the candidate commit (teamSha); the instrument is this task branch's new kit. The class is necessary, not sufficient: this run makes no V@B=yes claim"
+  },
+  "cases": [
+    {
+      "id": "wp2-a6:arm2-create-refused",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:07:07.267Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "relay-provenance-machine",
+          "ok": true,
+          "detail": "relay user/message source.kind=plugin:dsh-agent-team"
+        },
+        {
+          "id": "create-is-error",
+          "ok": true,
+          "detail": "create_goal isError=true"
+        },
+        {
+          "id": "typed-code",
+          "ok": true,
+          "detail": "tool/result error.code=GOAL_TOOL_AUTHORITY_REQUIRED"
+        },
+        {
+          "id": "authority-text",
+          "ok": true,
+          "detail": "refusal text=Error: this goal operation requires a direct human turn on a top-level agent"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-no-goal",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:07:07.267Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-create-return",
+          "ok": true,
+          "detail": "create_goal result goal=null"
+        },
+        {
+          "id": "service-has-no-goal",
+          "ok": true,
+          "detail": "goals/get goal=null"
+        },
+        {
+          "id": "no-durable-goal-row",
+          "ok": true,
+          "detail": "goal/change rows=[]"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-nothing-pretends-human",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:07:07.267Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-human-attributed-relay-text",
+          "ok": true,
+          "detail": "user/message with relay text and source.kind=user: null"
+        },
+        {
+          "id": "machine-kind-recorded",
+          "ok": true,
+          "detail": "machine relay message recorded=true"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-refusal-scoped",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:07:07.267Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "governed-bash-executed",
+          "ok": true,
+          "detail": "governed bash isError=false text={\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\\n\",\"st"
+        },
+        {
+          "id": "governed-bash-allow-fact",
+          "ok": true,
+          "detail": "a5sf-guard-consult allow facts=11"
+        },
+        {
+          "id": "work-delivery-authorises",
+          "ok": true,
+          "detail": "WORK-delivery create_goal goal={\"id\":\"goal-ba91e67f-9ece-4a2c-b16e-87edc2d96181\",\"revision\":1} (source.kind=user)"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/dev/agent-workflow/evidence/wp2-a6-governed-goal/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-11T15:06:03.195Z",
+        "runId": "wp2-a6-governed-goal-arm2-r1-2026-11-11T15-04-45-845Z",
+        "suite": "wp2-a6-governed-goal",
+        "recordClass": "CANDIDATE-C2",
+        "world": "u5wp2a6goal-20261111T15-04-45Z",
+        "phase": "wp2-a6-governed-goal-arm2-1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "arm2",
+      "world": "u5wp2a6goal-20261111T15-04-45Z",
+      "port": 3192,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/dev/agent-workflow/evidence/wp2-a6-governed-goal/driver/logs/u5wp2a6goal-20261111T15-04-45Z/instance-port3192.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": true,
+    "code": null,
+    "reason": "recordClass=CANDIDATE-C2: the record class permits a candidate claim. The class is NECESSARY, NOT SUFFICIENT — the existing C2 checks (immutable SHA, Authority snapshot, real Host, independent Oracle, independent adjudication) still apply unchanged."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-11T15:07:07.267Z"
+}

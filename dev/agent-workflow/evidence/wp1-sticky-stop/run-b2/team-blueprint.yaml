@@ -1,0 +1,121 @@
+---
+schemaVersion: 5
+blueprintId: team.wp1-a6
+revision: "1"
+requirements: []
+leader:
+  templateId: leader
+  persona: "You are the WP1 leader. WP1MKA_2026-11-11T15-58-39"
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_list_pending_control
+        - team_resolve_control
+        - team_request_control
+    builtinToolDeny: []
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      ask:
+        - tool: bash
+          resource:
+            kind: any
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+members:
+  - templateId: worker
+    persona: "You are the WP1 worker. WP1MKAM_2026-11-11T15-58-39"
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: subtree
+              path: team
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: officer
+    persona: "You are the WP1 Officer. Resolve the review legs routed to you; do not execute work."
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_list_pending_control
+          - team_resolve_control
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+  - templateId: officer
+    envelope:
+      allow:
+        - resolve-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+reviewRouting:
+  enabled: true
+  officerTemplateId: officer
+  ordinaryToolApprovals:
+    default: officer
+    leaderExceptions: []
+  whenOfficerUnavailable: hold
+---

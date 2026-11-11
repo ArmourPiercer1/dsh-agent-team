@@ -1,0 +1,33 @@
+{
+  "prompt": {
+    "type": "server-response",
+    "rpcId": "wp1-c98j97tgd1",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "holdTurnSeq": 11,
+  "cancel": {
+    "type": "server-response",
+    "rpcId": "wp1b-b25d4njj96",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "markers": [],
+  "wakeRows": [],
+  "returnValue": {
+    "observed": "inferred-false",
+    "why": "root.ts:2755-2762 returns false when alpha6WakeBySession has no coordinator for the target session, before markStopped; production discards the boolean (host.ts:3113-3120). No marker exists."
+  },
+  "stopClaims": {
+    "hits": [],
+    "sessionFiles": []
+  }
+}

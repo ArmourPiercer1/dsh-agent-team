@@ -1,0 +1,22 @@
+{
+  "intentRow": {
+    "file": "wake-4d0d4438.json",
+    "content": {
+      "key": {
+        "rootSessionId": "session-wp1-team-2026-11-11T15-53-42",
+        "reviewerInstanceId": "inst-0oe8p9h1dxat",
+        "sessionGeneration": 1
+      },
+      "wakeId": "review-wake:session-wp1-team-2026-11-11T15-53-42:inst-0oe8p9h1dxat:1:a6wake%3Av1%3A1%3Aa3a79e53",
+      "workFingerprint": "a6wake:v1:1:a3a79e53",
+      "ownerRootSessionId": "session-wp1-root-2026-11-11T15-53-42",
+      "status": "accepted"
+    }
+  },
+  "wakeTurn": {
+    "seq": 14,
+    "lastUserText": "[team-review-wake wakeId=review-wake:session-wp1-team-2026-11-11T15-53-42:inst-0oe8p9h1dxat:1:a6wake%3Av1%3A1%3Aa3a79e53]\nNew review work is ready.\n\nreviewer: inst-0oe8p9h1dxat\nrootSession: session-wp1-team-2026-11-11T15-53-42\nrequestId:\n- ctrl-0fncfc51561mey09qqxvf078\nDecide or escalate with `team_resolve_control` using the EXACT requestId above; `team_list_pending_control` may be Leader-only for a delegated reviewer.\nCurrent runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-a1-2026-11-11T15-53-42/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+    "messageCount": 1
+  },
+  "note": "the intent row is written by wake-dispatch as part of the dispatch that registers the coordinator in alpha6WakeBySession (root.ts:2587-2620); the wake turn proves delivery"
+}

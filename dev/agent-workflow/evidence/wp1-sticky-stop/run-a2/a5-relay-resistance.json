@@ -1,0 +1,98 @@
+{
+  "relay": {
+    "status": 200,
+    "outcome": "delivered",
+    "modelSawRelay": true,
+    "body": {
+      "type": "server-response",
+      "rpcId": "wp1relay-dmjj19801b",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-wp1-team-2026-11-11T15-55-58",
+              "action": "send-message",
+              "callerRole": "leader",
+              "recipientInstanceId": "inst-0oibn9512460",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-0oibn9512460",
+              "deliveredToSessionId": "session-team-child-6e781f0999242399e54f96ef43bd3385",
+              "factSequence": 12,
+              "deliveredSequence": 13,
+              "requestToken": "wp1-relay-1794412565729"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "wp1-relay-1794412565729",
+            "projectionGeneration": null,
+            "effectSequence": 12
+          }
+        }
+      }
+    }
+  },
+  "work": {
+    "status": 200,
+    "outcome": "executed",
+    "modelSawWork": false,
+    "body": {
+      "type": "server-response",
+      "rpcId": "wp1work-jhnsays1uq",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "executed",
+              "action": "follow-up",
+              "rootSessionId": "session-wp1-team-2026-11-11T15-55-58",
+              "callerRole": "leader",
+              "targetInstanceId": "inst-0oibn9512460",
+              "effect": {
+                "kind": "work-admitted",
+                "instanceId": "inst-0oibn9512460",
+                "fromLifecycle": "CREATED",
+                "lifecycleCommitted": true,
+                "sequence": 14,
+                "replayed": false,
+                "settled": true,
+                "settledSequence": 17,
+                "memberResult": {
+                  "requestToken": "wp1-work-1794412573792",
+                  "status": "succeeded",
+                  "body": "WP1_ARM_A_WAKE_HELD"
+                }
+              },
+              "requestToken": "wp1-work-1794412573792"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.followup",
+            "endpoint": "member.followup",
+            "contractVersion": 4,
+            "requestToken": "wp1-work-1794412573792",
+            "projectionGeneration": null,
+            "effectSequence": 14
+          }
+        }
+      }
+    }
+  },
+  "markersAfterRelay": [
+    "stopped-6d24ff71.json"
+  ],
+  "markersAfterWork": [
+    "stopped-6d24ff71.json"
+  ],
+  "wakesBeforeRelay": 1,
+  "wakesAfterRelay": 1,
+  "wakesAfterWork": 1,
+  "scope": "resistance = the marker persists and the withdrawn REVIEW wake is not re-delivered; the team layer still delivers/admits the machine message/work (observed, not assumed)"
+}

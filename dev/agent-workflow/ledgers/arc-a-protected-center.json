@@ -373,6 +373,30 @@
    "sha256": "6116c496d1c728dbed265d5b0789555df0280cebb09c9f96ae280b40859e58c3",
    "pr": "PR #710 (A6-STOP-FENCE, draft, review-fix r2) on task/a6-stop-fence-20261109, base master @ f31e3d9e2 - NAMED center-interface change, owner ruling A (2026-11-09), coordinator-assigned",
    "reason": "Review-fix r2 of the SAME A6-STOP-FENCE interface: the A4/A5 ask lane (pre-execute-adapter enforce step 4d) now hands the invocation's own exec.signal to guardOperation as the optional second argument. The lane is live and consuming on a real boot, and the missing option let a Stop after the human allow still write control-allow-consumed; the signal is liveness only (never scope, manifest, request identity or ledger payload) and absent-signal callers are byte-identical. No new authority, decision or durable write. Evidence dev/agent-workflow/evidence/a6-stop-fence/ section 8; test packages/runtime/test/a6-stop-fence.test.ts arm S9 (RED against the unwired call)."
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+   "sha256": "cb8dcd0919b67be6e87fde2bd00000e23e756f67aa80a6da2947ab781660c3e2",
+   "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
+   "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/index.ts",
+   "sha256": "d5c061ea3df97230e3ec0383496ae8688dd67fff73c1567cde0587ca6beacab9",
+   "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
+   "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/install.ts",
+   "sha256": "5ad0f13365cc462715881ad1d02f5f12d6fc2ac3cf39c2784c786ed3baecf00d",
+   "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
+   "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
+  },
+  {
+   "path": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+   "sha256": "916dee39986cfdfe36ad5a4875ee702409fd41d58ee6ac9ef1221cf0fbd629e3",
+   "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
+   "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
   }
  ]
 }

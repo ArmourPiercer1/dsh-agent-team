@@ -1,0 +1,20 @@
+[2026-11-11T15:58:12.771Z] WP1 sticky stop — arm B — run b1 — stamp 2026-11-11T15-58-12
+[2026-11-11T15:58:12.771Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky
+[2026-11-11T15:58:12.771Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T15:58:12.771Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/dev/agent-workflow/evidence/wp1-sticky-stop/run-b1
+[2026-11-11T15:58:16.192Z] ports: host=15003 mock=15053
+[2026-11-11T15:58:16.204Z] stable :3080 pre-probe = 401 (read-only; never touched)
+[2026-11-11T15:58:16.205Z] world materialized: home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp1-sticky/tests/homes/wp1-sticky-b1-2026-11-11T15-58-12
+[2026-11-11T15:58:16.212Z] mock model listening on 127.0.0.1:15053
+[2026-11-11T15:58:18.849Z] host booted at http://127.0.0.1:15003; row ready — toolCount=15
+[2026-11-11T15:58:19.118Z] L0 surface 20 tools; denyList 0 names
+[2026-11-11T15:58:23.791Z] ARM B: worker warmed with one text-only work unit (no ask, no wake)
+[2026-11-11T15:58:23.791Z] ARM B: officer instance=inst-1t6464806sla session=session-team-child-f8e1ec17375d75b8dfe533e023c70f28; worker instance=inst-1hhx6cm0843l
+[2026-11-11T15:58:23.792Z] PASS B1: no review wake was dispatched and no intent/stopped row exists: no wake coordinator for the Officer (documented-unsupported path) — wakeRows=[] stopped=[] wakeTurns=0 controlRequests=0
+[2026-11-11T15:58:31.066Z] ARM B: officer turn started=true; session/cancel -> HTTP 200 ok=true
+[2026-11-11T15:58:31.067Z] PASS B3: the same human Stop on a session with NO latch returns false / writes NO marker: no durable protection is created (false inferred from the coordinator-undefined branch + absent marker) — cancel=true markers=[] wakeRows=[]
+[2026-11-11T15:58:31.068Z] PASS B3b: nothing on the no-latch path CLAIMS durable protection: no fact, log line or UI state asserting "stopped" — hits=0
+[2026-11-11T15:58:31.329Z] ARM B: reviewer re-engaged by one human turn (status=200); no marker existed to clear
+[2026-11-11T15:58:39.356Z] PASS B4: after the no-latch Stop and one ordinary human re-engagement turn, the next review wake ACTIVATES the reviewer: a new [team-review-wake] turn starts at the model, with no marker anywhere — leaderPrompt=200 wakeSeq=21 wakes=0->1 wakeIds=[review-wake:session-wp1-team-2026-11-11T15-58-12:inst-1t6464806sla:1:a6wake%3Av1%3A1%3A219771ed] newLegs=2 markers=[]
+[2026-11-11T15:58:39.362Z] world torn down (home + blueprint scratch removed)
+[2026-11-11T15:58:39.362Z] SUMMARY arm=B run=b1 ok=true pass=4/4

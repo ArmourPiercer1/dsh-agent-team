@@ -1,0 +1,39 @@
+[
+  {
+    "id": "dsh-agent-team",
+    "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+    "configKeys": [
+      "bootPhase",
+      "rootSessionId",
+      "blueprintSource",
+      "seedMembers",
+      "generation",
+      "deniedSelection",
+      "mcpServers",
+      "staticModel",
+      "environmentFacts",
+      "externalPolicyFacts",
+      "blueprintDir",
+      "memberPresetId",
+      "a5sfGovernedRealm",
+      "a5sfEvidencePath",
+      "alpha6ReviewRouting",
+      "alpha6WakeIntentPath",
+      "mcpServer"
+    ]
+  },
+  {
+    "id": "preset-a5sf-governed-member",
+    "name": "@deepseek-ai/dsh-agent-preset",
+    "configKeys": [
+      "id",
+      "order",
+      "plugins"
+    ]
+  },
+  {
+    "id": "p6t6-team-tools",
+    "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/packages/tools/harness/plugin.mjs",
+    "configKeys": []
+  }
+]

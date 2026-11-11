@@ -140,8 +140,13 @@ export interface A5P5Assembly {
    *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
    *  byte-identical). Never model-visible: it rides the assembly, not args. */
   readonly effectAnchorRoot?: string
-  /** Optional A6 post-backend observation (never changes execution). */
-  readonly onExecutionResult?: (input: { readonly callId: string; readonly outcome: 'succeeded' | 'failed' }) => void
+  /** Optional A6 post-backend observation (never changes execution). The
+   *  vocabulary is the Control ledger's `succeeded | failed | unknown`; an
+   *  answered-but-cancelled/timed-out body is `unknown` (PD-41). */
+  readonly onExecutionResult?: (input: {
+    readonly callId: string
+    readonly outcome: 'succeeded' | 'failed' | 'unknown'
+  }) => void
 }
 
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */
@@ -270,7 +275,7 @@ function createRowExecutionState(assembly: A5P5Assembly) {
         ...(assembly.pa === undefined ? {} : { pa: assembly.pa }),
         backend,
         // A6 exec-result observation rides the DEPS, never the request: the
-        // pipeline reads `deps.onExecutionResult` (pipeline.ts:186). Placing
+        // pipeline reads `deps.onExecutionResult` (`RunToolCallDeps` in pipeline.ts). Placing
         // it in the request literal (the pre-fix shape) was dead data that a
         // spread kept invisible to TypeScript.
         ...(assembly.onExecutionResult === undefined ? {} : { onExecutionResult: assembly.onExecutionResult }),
