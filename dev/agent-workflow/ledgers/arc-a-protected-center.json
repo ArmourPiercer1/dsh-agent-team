@@ -397,6 +397,12 @@
    "sha256": "916dee39986cfdfe36ad5a4875ee702409fd41d58ee6ac9ef1221cf0fbd629e3",
    "pr": "PR #719 (PD41-ALLOW-SEMANTICS, named center-interface PR)",
    "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "d0c4549c83f29c471d0d3f004b332f5f708a44244f4887af4117b74e3a016670",
+   "pr": "P01-PLANE-REALM (lane task/p01-plane-realm-20261111)",
+   "reason": "P01 fix (2026-11-11), assigned lane: a Member realm's OWN forwarded native tools must be BINDABLE, so an approved call can run on the Member realm instead of being refused at the dispatch door. The route-C attach's returned fibers are now captured and their `routing.forwarded` ceiling names are admitted to BOTH own-name faces (the Guard's assembly-owned/native exclusion AND the list that becomes `bindOwnTools`) - never to the coverage `teamToolNames` list, so `read`/`write` keep their native PERMISSION_TOOL_NAMES management fact. The admission predicate is the pure `a5sfBindableRealmNames` (forwarded n ceiling n post-attach surface n not-plane-owned n readable at `tools.get(name, runtimeAgent)`); a name failing ANY arm is not declared and keeps the pre-P01 TOOL_BINDING_UNVERIFIED refusal. THIS PR ADDS NO EXECUTION PATH: no decision, no consumption, no replay and no backend semantics change (pipeline / PA / dispatch untouched), and the plane's own `bash` still executes on the plane's provider - that ownership defect is REPORTED to the native-preservation lane, never papered over here. Evidence dev/agent-workflow/evidence/p01-plane-realm/."
   }
  ]
 }
