@@ -223,15 +223,19 @@ current TODO list will re-run measurements that already exist. **This is a findi
 
 `packages/runtime/team-services/src/web.ts`:
 
-- `createWebNetworkGuard` (`:273-305`) runs, in order:
+- `createWebNetworkGuard` (`:273-345`) actually does:
   1. **shape** — `assertDeclaredUrl` / `assertDeclaredQuery` → `WEB_REQUEST_MALFORMED`;
-  2. **lane** — if `effective.network.access !== 'deny'`, it falls through to destination/availability;
-     otherwise it asks the backend's own `probeNetworkDenial` and refuses anything but `enforced`
+  2. **lane** — if `effective.network.access !== 'deny'`, it runs the method's own admission and
+     returns: for `search`, `assertSearchAvailable` (`:424-443`, typed `WEB_PROVIDER_UNAVAILABLE`
+     when `provider.search` is absent or `searchAvailable()` is false); for `fetch`,
+     `assertDestinationAllowed` (SSRF ranges, exact-origin test exemption). It does **not** run both;
+  3. **deny path** — it asks the backend's own `probeNetworkDenial`, refuses anything but `enforced`
      with `NETWORK_UNCONFINED_REALM`, then requires a **web-face** proof (PD-15), refusing
-     `NETWORK_PROOF_FACE_MISMATCH` otherwise;
-  3. **destination** — `assertDestinationAllowed` (SSRF ranges, exact-origin test exemption);
-  4. **availability** — `assertSearchAvailable` (`:424-443`) throws typed `WEB_PROVIDER_UNAVAILABLE`
-     when `provider.search` is absent or `searchAvailable()` is false.
+     `NETWORK_PROOF_FACE_MISMATCH` otherwise.
+
+  The header comment at `:285-295` advertises "SHAPE -> LANE -> DESTINATION -> AVAILABILITY"; the
+  implementation collapses the last two into one method-specific check, so the comment is one stage
+  wider than the code. The security-relevant order (lane before any provider entry) is real.
 - `createConfinedWebClass` (`:589-658`) wraps that guard with `observeGuard` and then:
   - `fetch` (`:624-632`): `await guard(...)` **then** `return provider.fetch(...)`;
   - `search` (`:635-650`): `await guard(...)` **then** `provider.search(...)` and `capSearchSources`.
@@ -306,7 +310,7 @@ the frozen documents:
   mock 路由是 `text`）". That is no longer the complete truth: PD-31 measured the positive branch on a
   declared-`image` route, and the release notes' stable table
   (`RELEASE-NOTES-0.1.6.md:56`) claims the positive path as stable.
-- `PREVIEW-READINESS-2026-11-15.md:96` and §5.3 repeat the refusal-only claim.
+- `PREVIEW-READINESS-2026-11-15.md:98` and §5.3 repeat the refusal-only claim.
 
 So the **contract understates** the product while the **release notes overstate the C2 coverage**
 implicitly (no C2 reaches the positive path). Both need the same dated correction.
@@ -445,7 +449,7 @@ user turns it on.
 | --- | --- | --- | --- | --- |
 | D1 | Release notes stable table: `bash` is one of the governed I/O tools whose "out-of-lane access is refused at the admission layer with a typed denial and a guard fact, **before a provider call or a process exists**" | The confined `bash` face admits the **spawn only by the declared cwd**; the command body is not parsed (`confined-terminal-tool.mjs:118-125` passes `{type:'confined-shell', cwd}` to `terminals.spawn`, then `startSend({text: command})`). The contract itself says "shell 体不由服务轴归属" and readiness §6.2.3 says "不解析命令体，越界写由 OS profile 兜住". A `bash -c 'cat /etc/passwd'` exists as a process; the refusal, if any, is the OS profile's, not a typed admission denial. | `RELEASE-NOTES-0.1.6.md:51` vs `PREVIEW-CONTRACT-2026-11-16.md:192-193`, `PREVIEW-READINESS-2026-11-15.md:301-303`, `confined-terminal-tool.mjs:118-125` | **P0** (user-facing overclaim) |
 | D2 | Contract "explicit is-not" #5: "不是'普通安装即可用'… **当前只在 WorldFactory harness 形态下有 live 证据**" | §2.3.1/§2.3.2 (same file) and §5.3 say the opposite: PD-37 fixed the manifest and a real model executed fetch/fs/goal/Stop on the installed artifact; the release notes' stable table also claims "Ordinary install". §5.3 corrects §1 and §2.3 but **does not name §4 item 5**, so the "is-not" list still tells a reader the install is not live. | `PREVIEW-CONTRACT-2026-11-16.md:194` (and `:24`) vs `:100-177`, `:231-246` | **P1** (same document contradicts itself) |
-| D3 | Contract §2.2 says the capability is promised **when the route declares `image`**, but also that "本 Preview 的实测只覆盖**拒绝分支**（脚本化 mock 路由是 `text`）" | PD-31's DEV-LIVE pair measures a **declared-`image`** route positive branch (2 allow facts, base64 image part on the wire, decoded sha256 match) and the negative branch, so the measurement-coverage sentence is stale; release notes §2.1 treats the positive path as stable. The capability sentence is not the problem. | `PREVIEW-CONTRACT-2026-11-16.md:47-51`, `PREVIEW-READINESS-2026-11-15.md:96` vs `a5sf-pd31-read-image/README.md:3-17`, `RELEASE-NOTES-0.1.6.md:56` | **P1** |
+| D3 | Contract §2.2 says the capability is promised **when the route declares `image`**, but also that "本 Preview 的实测只覆盖**拒绝分支**（脚本化 mock 路由是 `text`）" | PD-31's DEV-LIVE pair measures a **declared-`image`** route positive branch (2 allow facts, base64 image part on the wire, decoded sha256 match) and the negative branch, so the measurement-coverage sentence is stale; release notes §2.1 treats the positive path as stable. The capability sentence is not the problem. | `PREVIEW-CONTRACT-2026-11-16.md:47-51`, `PREVIEW-READINESS-2026-11-15.md:98` vs `a5sf-pd31-read-image/README.md:3-17`, `RELEASE-NOTES-0.1.6.md:56` | **P1** |
 | D4 | Matrix §0: every restricted call satisfies `EffectiveIo ⊆ MemberCeiling ∩ ToolRestriction`; matrix rows list restriction denies | The shipped Preview path derives ceilings only and records `blueprint-tool-bindings-not-member-scoped`; every Preview fact has `toolBindingIdentity: null`. The restriction-denies are measured with a **fixture** realm provider (`a5sf-preflight`, C2-A FS), not the shipped preset. | `TOOL-ACCEPTANCE-MATRIX.md:15`, `product-assembly.ts:774-782`, `:1076`, `a5sf-pd33-preview-e2e/runs/boot02/guard-facts.json` | **P1** |
 | D5 | Matrix §1.8.6 lists `read_image` live and `ask_user_question` answered as unmeasured; `PREVIEW-READINESS` §2 says 7 deferred names are closed but the contract/release notes never enumerate them | PD-31 closes `read_image`'s live branch (DEV-LIVE); PD-25 removes `ask_user_question`; PD-18/21 remove the other six. The deferred set is only in the internal readiness table (§2, §6.2). | `TOOL-ACCEPTANCE-MATRIX.md:958-968` vs `:1235-1257`; `RELEASE-NOTES-0.1.6.md` (no occurrence of `subagent`/`workflow`/`ask_user`) | **P1** (internal inconsistency + user-facing omission) |
 | D6 | Backlog BL-16/BL-18 still describe the live half of search/web as unmeasured ("0/6 行未测得", "live 半场仍未测") | Matrix §1.3.1/§1.3.4 and §1.8.10/§1.8.11 record live DEV-LIVE allow/deny for search and web. | `ALPHA5-SANDBOX-BACKLOG.md:128`, `:319` vs `TOOL-ACCEPTANCE-MATRIX.md:362-434`, `:1023-1069` | **P1** (stale TODO source) |
@@ -487,8 +491,8 @@ user turns it on.
 
 - **Sites:** `packages/runtime/team-services/src/product-assembly.ts:774-782` (derives ceilings only),
   `:977-1007` (restrictions only from the explicit `a5sfMemberPolicies` exception), `:1076` (residual
-  `blueprint-tool-bindings-not-member-scoped`); shipped preset has no `a5sfMemberPolicies`
-  (`cordis.patch.yml:184-188` is comment only).
+  `blueprint-tool-bindings-not-member-scoped`); the shipped preset sets no `a5sfMemberPolicies`
+  (the key occurs nowhere in `cordis.patch.yml`).
 - **Evidence:** `a5sf-pd33-preview-e2e/runs/boot02/guard-facts.json` — all facts
   `toolBindingIdentity: null`.
 - **Why it blocks a Preview GO:** the acceptance matrix's central invariant is advertised as
@@ -543,7 +547,7 @@ user turns it on.
 
 ### P1-5 — `read_image` scope statements are stale in both directions
 
-- **Sites:** contract §2.2 (`:47-51`) and readiness §5.3 (`:96`) say only the refusal branch was
+- **Sites:** contract §2.2 (`:47-51`) and readiness §2 disclosure 3 (`:98`) say only the refusal branch was
   measured; release notes §2.1 (`:56`) treats the positive path as stable; C2-2 still says
   `NOT_REACHED` (`c2-adjudication-2/README.md:63`).
 - **Why it blocks a Preview GO:** the stable table and the contract assign different scope to the same
