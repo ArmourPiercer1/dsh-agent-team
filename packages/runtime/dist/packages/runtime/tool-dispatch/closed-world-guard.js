@@ -384,6 +384,43 @@ export function guardDecision(input) {
     }
     return { kind: 'abstain', reason: 'governed-and-verified' };
 }
+export class ToolDispatchRefusalError extends Error {
+    /** The §5 code this refusal carries (`TOOL_BINDING_UNVERIFIED` for every
+     *  Binding-verification failure; `TEAM_TOOL_UNGOVERNED` / `ADAPTER_DRAINING`
+     *  keep their own codes so the three classes stay distinguishable). */
+    code;
+    /** The precise measured condition (never inferred at the throw site). */
+    reason;
+    /** The governed name the call named. */
+    toolName;
+    constructor(input) {
+        super(input.suffix === undefined ? input.message : `${input.message} ${input.suffix}`);
+        this.name = 'ToolDispatchRefusalError';
+        this.code = input.code;
+        this.reason = input.reason;
+        this.toolName = input.toolName;
+    }
+}
+/** The ONE question a recovery path asks: is this a Binding-verification
+ *  refusal (repair the Binding, then NEW approval request), or a different
+ *  refusal class? Narrowing only; it grants nothing. */
+export function isToolBindingRefusal(error) {
+    return error instanceof ToolDispatchRefusalError && error.code === 'TOOL_BINDING_UNVERIFIED';
+}
+/**
+ * Build the typed refusal from a Guard verdict. The message is exactly the
+ * verdict's own sentence (plus the caller's positional suffix); nothing is
+ * re-worded here.
+ */
+export function dispatchRefusalOf(toolName, verdict, suffix) {
+    return new ToolDispatchRefusalError({
+        toolName,
+        code: verdict.error.code,
+        reason: verdict.reason,
+        message: verdict.error.message,
+        ...(suffix === undefined ? {} : { suffix }),
+    });
+}
 /** The §5 codes this Guard is allowed to surface (pinned by test). */
 export const GUARD_ERROR_CODES = Object.freeze(GOVERNANCE_ERROR_CODES.filter((c) => c === 'TEAM_TOOL_UNGOVERNED' || c === 'TOOL_BINDING_UNVERIFIED' || c === 'ADAPTER_DRAINING'));
 //# sourceMappingURL=closed-world-guard.js.map

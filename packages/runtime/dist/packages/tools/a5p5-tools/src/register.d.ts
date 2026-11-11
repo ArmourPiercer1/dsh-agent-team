@@ -97,10 +97,12 @@ export interface A5P5Assembly {
      *  Absent ⇒ the historical target-scoped law (every pre-U7-6 consumer,
      *  byte-identical). Never model-visible: it rides the assembly, not args. */
     readonly effectAnchorRoot?: string;
-    /** Optional A6 post-backend observation (never changes execution). */
+    /** Optional A6 post-backend observation (never changes execution). The
+     *  vocabulary is the Control ledger's `succeeded | failed | unknown`; an
+     *  answered-but-cancelled/timed-out body is `unknown` (PD-41). */
     readonly onExecutionResult?: (input: {
         readonly callId: string;
-        readonly outcome: 'succeeded' | 'failed';
+        readonly outcome: 'succeeded' | 'failed' | 'unknown';
     }) => void;
 }
 /** The prefix every refusal this face emits wears (renderer structure never leaks into refusals). */

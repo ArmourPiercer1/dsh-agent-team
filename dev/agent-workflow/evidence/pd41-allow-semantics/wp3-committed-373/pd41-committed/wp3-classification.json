@@ -1,0 +1,102 @@
+{
+  "verdict": "residual-consumed",
+  "label": "pd41-committed",
+  "planned": {
+    "resolveOffsetMs": 120,
+    "stopOffsetMs": 373
+  },
+  "productSha": "9ac471678d545e0e94745d2ad0d35ff85cac4a3e",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd41",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "requestId": "ctrl-1up0kjo12gmtn31fcl3vm1jo",
+  "timings": {
+    "anchorCreatedAt": "2026-11-11T17:39:59.552Z",
+    "resolveSentAt": "2026-11-11T17:39:59.672Z",
+    "resolveReturnedAt": "2026-11-11T17:39:59.762Z",
+    "decisionCreatedAt": "2026-11-11T17:39:59.736Z",
+    "stopSentAt": "2026-11-11T17:39:59.925Z",
+    "stopReturnedAt": "2026-11-11T17:40:03.209Z",
+    "stopAfterDecisionMs": 189,
+    "stopAfterResolveSentMs": 253,
+    "decisionAfterStopSentMs": -189,
+    "abandonmentCreatedAt": null,
+    "decisionToAbandonmentMs": null,
+    "decisionToConsumptionMs": 173
+  },
+  "sequences": {
+    "counterAtFinalRead": 18,
+    "request": 13,
+    "decision": 14,
+    "consumption": 15,
+    "abandonment": null,
+    "burned": null
+  },
+  "rows": {
+    "decisions": [
+      {
+        "sequence": 14,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1up0kjo12gmtn31fcl3vm1jo",
+        "decision": "allow",
+        "decider": {
+          "humanId": "session-c1-smoke-a6-2026-11-11T17-39-48",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-11T17:39:59.736Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 15,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1up0kjo12gmtn31fcl3vm1jo",
+        "createdAt": "2026-11-11T17:39:59.909Z"
+      }
+    ],
+    "abandonments": [],
+    "executionResults": [
+      {
+        "sequence": 16,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-1up0kjo12gmtn31fcl3vm1jo",
+        "callId": "team-inst-071qr2x1qb1d-bash:hexec:577984d7-5ca9-43f7-868e-312875086e18-1",
+        "outcome": "unknown",
+        "recordedAt": "2026-11-11T17:40:03.272Z",
+        "createdAt": "2026-11-11T17:40:03.272Z"
+      }
+    ]
+  },
+  "requirements": {
+    "decisionAllow": true,
+    "stopAfterDecision": true,
+    "resolveBeforeStop": true,
+    "zeroConsumption": false,
+    "exactlyOneAbandonment": false,
+    "fenceReason": false,
+    "burnedSequence": false,
+    "noExecutionFact": false,
+    "zeroSideEffect": false,
+    "lateAllowRefusedAbandoned": false,
+    "lateAllowRefusedDecided": true
+  },
+  "offsets": {
+    "decision": 184,
+    "stopSent": 373,
+    "stopReturned": 3657,
+    "consumptionWrite": 357,
+    "abandonmentWrite": null,
+    "stopSentMinusConsumptionWriteMs": 16,
+    "stopSentMinusAbandonmentWriteMs": null
+  },
+  "failedRequirements": [
+    "zeroConsumption",
+    "exactlyOneAbandonment",
+    "fenceReason",
+    "burnedSequence",
+    "noExecutionFact",
+    "zeroSideEffect",
+    "lateAllowRefusedAbandoned"
+  ],
+  "kitExit": 2,
+  "wallMs": 20699
+}
