@@ -1188,11 +1188,18 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     return false
   }
   {
-    const sha = spawnSync('git', ['-C', process.cwd(), 'rev-parse', 'HEAD'], { encoding: 'utf8' })
+    // INSTRUMENT FIX (2026-11-11, review finding on PR #710). This used to
+    // read `git -C process.cwd() rev-parse HEAD`, i.e. the kit PROCESS's
+    // cwd — the repo root or main checkout — while `--worktree` selects the
+    // tree that is actually booted. The A6 boot manifests therefore recorded
+    // the BASE tree's sha (1964cb71c/master) instead of the PR head. Read the
+    // WORKTREE that `--worktree` named; that is the build which was loaded.
+    const sha = spawnSync('git', ['-C', WORKTREE, 'rev-parse', 'HEAD'], { encoding: 'utf8' })
     const blueprintHash = create.body?.result?.value?.data?.durable?.teamSession?.blueprint?.contentHash ?? null
     writeEvidence('run-manifest.json', {
       runId: RUN_STAMP,
       productSha: sha.status === 0 ? sha.stdout.trim() : null,
+      productTree: WORKTREE,
       hostVersion: DSH_BASELINE_VERSION,
       hostBaselineSha: HOST_BASELINE_SHA,
       blueprintHash,
@@ -1781,6 +1788,14 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       const final = readControlLedger(CREATE_ROOT_A6)
       const lateDecision = humanLeg === null ? null : final.decisions.filter((d) => d.requestId === humanLeg.requestId).at(-1) ?? null
       const lateConsumption = humanLeg === null ? null : final.consumptions.find((c) => c.requestId === humanLeg.requestId) ?? null
+      // INSTRUMENT FIX (2026-11-11, review finding on PR #710): the fence
+      // trips into a terminal `control-request-abandoned` row, and the kit
+      // already READS that row (`readControlLedger().abandonments`) but used
+      // to drop it from the kept artifact. Persist it so the trip is CAPTURED
+      // instead of inferred from the code path.
+      const humanAbandonment = humanLeg === null
+        ? null
+        : final.abandonments.find((a) => a.requestId === humanLeg.requestId) ?? null
       const fileAfter = existsSync(FILE_A6_ALLOW) ? readFileSync(FILE_A6_ALLOW, 'utf8') : ''
       const revived = fileAfter.includes(SUM_A6_ALLOW) || lateConsumption !== null
       const cancelOk = (cancel.status === 200 && (cancel.body?.result?.ok === true || cancel.body?.result?.accepted === true))
@@ -1794,6 +1809,8 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
         humanLeg,
         lateDecision,
         lateConsumption,
+        abandonments: final.abandonments,
+        humanAbandonment,
         fileAfter,
         revived,
       })
