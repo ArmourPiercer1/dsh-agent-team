@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6stop-1s58wzf69c",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "CONTROL_REQUEST_ABANDONED",
+      "message": "ControlService: request 'ctrl-0x9y0f90wwgi1m09f283713m' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_ABANDONED",
+          "message": "ControlService: request 'ctrl-0x9y0f90wwgi1m09f283713m' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+          "details": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-11T06-12-33",
+            "requestId": "ctrl-0x9y0f90wwgi1m09f283713m"
+          }
+        }
+      }
+    }
+  }
+}

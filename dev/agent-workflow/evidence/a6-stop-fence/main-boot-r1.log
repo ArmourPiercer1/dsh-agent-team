@@ -1,0 +1,17 @@
+[2026-11-11T06:12:33.818Z] c1 real-host smoke — stamp 2026-11-11T06-12-33
+[2026-11-11T06:12:33.818Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/stop-fence
+[2026-11-11T06:12:33.818Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T06:12:33.818Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/stop-fence/dev/agent-workflow/evidence/a6-stop-fence/main-boot-r1
+[2026-11-11T06:12:35.631Z] ports: host=13021 mock=13071
+[2026-11-11T06:12:40.643Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-11T06:12:40.645Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-11T06:12:40.652Z] mock model listening on 13071
+[2026-11-11T06:12:44.004Z] host booted at http://127.0.0.1:13021; row ready — toolCount=15
+[2026-11-11T06:12:44.005Z] ── L0: discovery ──
+[2026-11-11T06:12:44.429Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-11T06:12:44.429Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-11T06:12:44.429Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-11T06:12:44.431Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-11T06:12:45.262Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-578qt5jryh","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-11T06-12-33","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:0fb5ecf3b7ff9418bfa142f4da3e23843c956592a1726d157534a3ffa978639c"},"createdAt":"2026-11-11T06:12:44.477Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-11T06:12:50.931Z] PASS A6-11: session/cancel is admitted after the human allow, before the allow is consumed/executed — status=200 body={"type":"server-response","rpcId":"c1a6stop-v0kqnd7k8d","result":{"ok":true,"value":{"accepted":true}}} afterCancelPending=0
+[2026-11-11T06:12:50.931Z] PASS A6-12: Stop before consumption prevents execution; a second allow is rejected as already decided — lateStatus=200 lateDecision={"sequence":14,"factType":"control-decision-recorded","requestId":"ctrl-0x9y0f90wwgi1m09f283713m","decision":"allow","decider":{"humanId":"session-c1-smoke-a6-2026-11-11T06-12-33","kind":"human"},"createdAt":"2026-11-11T06:12:45.838Z"} consumed=false file=""
