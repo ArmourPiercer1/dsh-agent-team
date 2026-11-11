@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-11T15:12:40.491Z",
+  "blueprints": {
+    "v4-governed(main)": {
+      "ok": true,
+      "schemaVersion": 4,
+      "members": [
+        "worker"
+      ]
+    },
+    "v5-alpha6(anchor)": {
+      "ok": false,
+      "schemaVersion": 5,
+      "code": "MEMBER_POLICY_WITHOUT_BLUEPRINT",
+      "reveal": "a5sfMemberPolicies.members",
+      "message": "MEMBER_POLICY_WITHOUT_BLUEPRINT: the bound blueprint for team 'team.wp2.a6.anchor' is schemaVersion 5 and declares no v4 memberIoCeilings family; there is no Member ceiling to derive, so a declaration has no blueprint to narrow",
+      "detail": "the bound blueprint for team 'team.wp2.a6.anchor' is schemaVersion 5 and declares no v4 memberIoCeilings family; there is no Member ceiling to derive, so a declaration has no blueprint to narrow"
+    }
+  },
+  "conclusion": "PLANES_DISJOINT: the governed realm derives from a v4 memberIoCeilings family and REFUSES a v5 (Alpha.6) blueprint; one Team cannot carry both planes"
+}

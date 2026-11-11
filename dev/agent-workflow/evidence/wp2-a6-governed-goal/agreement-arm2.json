@@ -1,0 +1,9 @@
+{
+  "arm": "arm2",
+  "agreeing": true,
+  "runs": 2,
+  "outcomes": [
+    "PASS",
+    "PASS"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "host": {
+    "wasRunning": true,
+    "pid": 431,
+    "killed": true,
+    "portFree": true
+  },
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z",
+  "releasedPorts": [
+    3192,
+    13055,
+    3192
+  ],
+  "killedPids": [
+    431
+  ],
+  "notes": []
+}

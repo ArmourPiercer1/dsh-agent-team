@@ -1,0 +1,1 @@
+RUN-SUMMARY run=wp2-a6-governed-goal-arm2-r2-2026-11-11T15-07-07-392Z suite=wp2-a6-governed-goal overall=PASS cases=4 PASS:4 worlds=none

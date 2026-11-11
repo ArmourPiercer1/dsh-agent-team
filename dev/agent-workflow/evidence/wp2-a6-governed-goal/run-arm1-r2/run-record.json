@@ -1,0 +1,227 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "wp2-a6-governed-goal-arm1-r2-2026-11-11T15-06-51-311Z",
+  "suite": "wp2-a6-governed-goal",
+  "recordClass": "CANDIDATE-C2",
+  "startedAt": "2026-11-11T15:06:51.311Z",
+  "selectedCases": [
+    "wp2-a6:arm1-create-authorized",
+    "wp2-a6:arm1-goal-durable",
+    "wp2-a6:arm1-update-advances",
+    "wp2-a6:arm1-rounds",
+    "wp2-a6:arm1-human-stop-terminal",
+    "wp2-a6:arm1-governed-facts"
+  ],
+  "allCases": [
+    "wp2-a6:arm1-create-authorized",
+    "wp2-a6:arm1-goal-durable",
+    "wp2-a6:arm1-update-advances",
+    "wp2-a6:arm1-rounds",
+    "wp2-a6:arm1-human-stop-terminal",
+    "wp2-a6:arm1-governed-facts"
+  ],
+  "subset": false,
+  "selected": 6,
+  "totalCases": 6,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "devLiveAuthorization": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "recordClass": "CANDIDATE-C2",
+    "teamSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "repo": "dsh-agent-team",
+    "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+    "note": "CANDIDATE-C2: the PRODUCT under test is the candidate commit (teamSha); the instrument is this task branch's new kit. The class is necessary, not sufficient: this run makes no V@B=yes claim"
+  },
+  "cases": [
+    {
+      "id": "wp2-a6:arm1-create-authorized",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.678Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "human-turn-provenance",
+          "ok": true,
+          "detail": "starting user/message source.kind=user (the human member.send attribution)"
+        },
+        {
+          "id": "create-not-error",
+          "ok": true,
+          "detail": "create_goal isError=false text={\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"ma"
+        },
+        {
+          "id": "create-returned-goal",
+          "ok": true,
+          "detail": "create_goal result goal={\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1}"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-goal-durable",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.678Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "durable-create-row",
+          "ok": true,
+          "detail": "goal/change create={\"at\":1794409749313,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}"
+        },
+        {
+          "id": "get-tool-same-id",
+          "ok": true,
+          "detail": "get_goal tool id=goal-95649b06-926a-4776-bda5-2febf6febe9b create id=goal-95649b06-926a-4776-bda5-2febf6febe9b"
+        },
+        {
+          "id": "get-goal-not-error",
+          "ok": true,
+          "detail": "get_goal isError=false"
+        },
+        {
+          "id": "get-tool-same-revision",
+          "ok": true,
+          "detail": "get_goal tool revision=1 create revision=1"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-update-advances",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.678Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "edit-not-error",
+          "ok": true,
+          "detail": "update_goal edit isError=false text={\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":2,\"objective\":\"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\",\"phase\":\"active\",\"roundsStarted\":0,\"max"
+        },
+        {
+          "id": "durable-edit-row",
+          "ok": true,
+          "detail": "goal/change edit={\"at\":1794409749401,\"operation\":\"edit\",\"phase\":\"active\",\"revision\":2,\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}"
+        },
+        {
+          "id": "revision-advanced",
+          "ok": true,
+          "detail": "revision 1 -> 2"
+        },
+        {
+          "id": "phase-preserved-active",
+          "ok": true,
+          "detail": "phase after edit=active"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-rounds",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.678Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "rounds-count",
+          "ok": true,
+          "detail": "automatic rounds=2"
+        },
+        {
+          "id": "round-goal-id-matches",
+          "ok": true,
+          "detail": "round goal ids=[\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"goal-95649b06-926a-4776-bda5-2febf6febe9b\"]"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-human-stop-terminal",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.679Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "stop-accepted",
+          "ok": true,
+          "detail": "session/cancel status=200"
+        },
+        {
+          "id": "durable-paused",
+          "ok": true,
+          "detail": "durable phase after Stop=paused"
+        },
+        {
+          "id": "no-round-after-stop",
+          "ok": true,
+          "detail": "goal rounds after the Stop=0 (window 6000 ms)"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-governed-facts",
+      "verdict": "PASS",
+      "at": "2026-11-11T15:09:19.679Z",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "guard-facts-present",
+          "ok": true,
+          "detail": "a5sf-guard-consult allow facts for the Member=4 of rows=4 tools={\"bash\":4}"
+        },
+        {
+          "id": "facts-share-the-goal-turns",
+          "ok": true,
+          "detail": "bash consult facts=4"
+        }
+      ]
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/dev/agent-workflow/evidence/wp2-a6-governed-goal/run-ledger.jsonl",
+    "thisRunCount": 1,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-11T15:08:09.302Z",
+        "runId": "wp2-a6-governed-goal-arm1-r2-2026-11-11T15-06-51-311Z",
+        "suite": "wp2-a6-governed-goal",
+        "recordClass": "CANDIDATE-C2",
+        "world": "u5wp2a6goal-20261111T15-06-51Z",
+        "phase": "wp2-a6-governed-goal-arm1-2"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "arm1",
+      "world": "u5wp2a6goal-20261111T15-06-51Z",
+      "port": 3192,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/dev/agent-workflow/evidence/wp2-a6-governed-goal/driver/logs/u5wp2a6goal-20261111T15-06-51Z/instance-port3192.log"
+    }
+  ],
+  "candidateClaimEligibility": {
+    "eligible": true,
+    "code": null,
+    "reason": "recordClass=CANDIDATE-C2: the record class permits a candidate claim. The class is NECESSARY, NOT SUFFICIENT — the existing C2 checks (immutable SHA, Authority snapshot, real Host, independent Oracle, independent adjudication) still apply unchanged."
+  },
+  "overall": "PASS",
+  "partial": false,
+  "finishedAt": "2026-11-11T15:09:19.679Z"
+}

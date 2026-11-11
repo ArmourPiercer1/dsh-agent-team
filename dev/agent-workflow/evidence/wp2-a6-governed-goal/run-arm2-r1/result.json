@@ -1,0 +1,653 @@
+{
+  "runId": "wp2-a6-governed-goal-arm2-r1-2026-11-11T15-04-45-845Z",
+  "arm": "arm2",
+  "run": 1,
+  "outcome": "PASS",
+  "verdicts": [
+    {
+      "id": "wp2-a6:arm2-create-refused",
+      "verdict": "PROVEN",
+      "proposition": "a machine Team relay on the Alpha.6-on governed Member is REFUSED create_goal by the existing upstream authority, with the typed refusal",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "relay-provenance-machine",
+          "ok": true,
+          "detail": "relay user/message source.kind=plugin:dsh-agent-team"
+        },
+        {
+          "id": "create-is-error",
+          "ok": true,
+          "detail": "create_goal isError=true"
+        },
+        {
+          "id": "typed-code",
+          "ok": true,
+          "detail": "tool/result error.code=GOAL_TOOL_AUTHORITY_REQUIRED"
+        },
+        {
+          "id": "authority-text",
+          "ok": true,
+          "detail": "refusal text=Error: this goal operation requires a direct human turn on a top-level agent"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-no-goal",
+      "verdict": "PROVEN",
+      "proposition": "the refusal creates NO goal",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-create-return",
+          "ok": true,
+          "detail": "create_goal result goal=null"
+        },
+        {
+          "id": "service-has-no-goal",
+          "ok": true,
+          "detail": "goals/get goal=null"
+        },
+        {
+          "id": "no-durable-goal-row",
+          "ok": true,
+          "detail": "goal/change rows=[]"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-nothing-pretends-human",
+      "verdict": "PROVEN",
+      "proposition": "nothing in the run pretends the relay was a human turn",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "no-human-attributed-relay-text",
+          "ok": true,
+          "detail": "user/message with relay text and source.kind=user: null"
+        },
+        {
+          "id": "machine-kind-recorded",
+          "ok": true,
+          "detail": "machine relay message recorded=true"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm2-refusal-scoped",
+      "verdict": "PROVEN",
+      "proposition": "the refusal is scoped: ordinary tool work still runs on that turn, and a WORK delivery still authorises a goal",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "governed-bash-executed",
+          "ok": true,
+          "detail": "governed bash isError=false text={\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\\n\",\"st"
+        },
+        {
+          "id": "governed-bash-allow-fact",
+          "ok": true,
+          "detail": "a5sf-guard-consult allow facts=11"
+        },
+        {
+          "id": "work-delivery-authorises",
+          "ok": true,
+          "detail": "WORK-delivery create_goal goal={\"id\":\"goal-ba91e67f-9ece-4a2c-b16e-87edc2d96181\",\"revision\":1} (source.kind=user)"
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "arm": "arm2",
+    "run": 1,
+    "startedAt": "2026-11-11T15:04:45.879Z",
+    "member": {
+      "templateId": "worker",
+      "instanceId": "inst-1kw4t9c128ya",
+      "childSessionId": "session-team-child-93d9dd66821d7ffe62dc280e6749aae9",
+      "lifecycle": "SETTLED"
+    },
+    "leaderInstanceId": "inst-leader",
+    "relaySend": {
+      "status": 200,
+      "ok": true,
+      "body": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-wp2-governed-team",
+              "action": "send-message",
+              "callerRole": "leader",
+              "recipientInstanceId": "inst-1kw4t9c128ya",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-1kw4t9c128ya",
+              "deliveredToSessionId": "session-team-child-93d9dd66821d7ffe62dc280e6749aae9",
+              "factSequence": 8,
+              "deliveredSequence": 9,
+              "requestToken": "wp2-arm2-relay-1794409621835"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 1,
+            "requestToken": "wp2-arm2-relay-1794409621835",
+            "projectionGeneration": null,
+            "effectSequence": 8
+          }
+        }
+      },
+      "caller": {
+        "kind": "instance",
+        "instanceId": "inst-leader"
+      }
+    },
+    "createResult": {
+      "at": 1794409621951,
+      "callId": "call-wp2-a2-create-goal",
+      "isError": true,
+      "text": "Error: this goal operation requires a direct human turn on a top-level agent",
+      "code": "GOAL_TOOL_AUTHORITY_REQUIRED",
+      "errorName": "HarnessError"
+    },
+    "bashResult": {
+      "at": 1794409625222,
+      "callId": "call-wp2-a2-governed-bash",
+      "isError": false,
+      "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\\n\",\"stderr\":\"\",\"scrollback\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\"}",
+      "code": null,
+      "errorName": null
+    },
+    "createGoal": null,
+    "startSourceKind": "plugin:dsh-agent-team",
+    "startMsg": {
+      "at": 1794409621899,
+      "seq": 24,
+      "kind": "plugin:dsh-agent-team",
+      "text": "[team-relay] from=inst-leader (label: leader) to=inst-1kw4t9c128ya (label: wp2-worker)\nWP2_ARM2_MACHINE_RELAY",
+      "round": null,
+      "goalId": null
+    },
+    "facts": {
+      "sessionId": "session-team-child-93d9dd66821d7ffe62dc280e6749aae9",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-wp2-goal-tests-homes-u5wp2a6goal-20261111T15-04-45Z-workspace--/session-team-child-93d9dd66821d7ffe62dc280e6749aae9/session.v4.jsonl.zstd",
+      "agentPreset": null,
+      "lineCount": 36,
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 4,
+        "turn/start": 2,
+        "step/start": 4,
+        "system/message": 1,
+        "user/message": 5,
+        "request/header": 1,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 3,
+        "step/end": 3,
+        "turn/end": 1,
+        "tool/call": 2,
+        "tool/result": 2
+      },
+      "userMessages": [
+        {
+          "at": 1794409621657,
+          "seq": 8,
+          "kind": "user",
+          "text": "[team-work requestToken=wp2-delegate-1794409621387] WP2_WORKER_READY: worker probe. Reply with the marker only.",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409621657,
+          "seq": 9,
+          "kind": "agent-instructions",
+          "text": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\n<!-- phase-identity: alpha5-sandbox-first -->\n\n\n本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH ",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409621657,
+          "seq": 10,
+          "kind": "runtime-context",
+          "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409621657,
+          "seq": 11,
+          "kind": "skill-catalog",
+          "text": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, a",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409621899,
+          "seq": 24,
+          "kind": "plugin:dsh-agent-team",
+          "text": "[team-relay] from=inst-leader (label: leader) to=inst-1kw4t9c128ya (label: wp2-worker)\nWP2_ARM2_MACHINE_RELAY",
+          "round": null,
+          "goalId": null
+        }
+      ],
+      "goalRounds": [],
+      "goalChanges": [],
+      "calls": [
+        {
+          "at": 1794409621909,
+          "name": "create_goal",
+          "callId": "call-wp2-a2-create-goal",
+          "input": "{\"objective\":\"WP2 Arm 2: this must be refused — the turn is a machine relay.\",\"max_goal_rounds\":100000}"
+        },
+        {
+          "at": 1794409621974,
+          "name": "bash",
+          "callId": "call-wp2-a2-governed-bash",
+          "input": "{\"command\":\"echo WP2_ARM2_GOVERNED_BASH_OK; test -d \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace\\\" && echo WP2_WORKSPACE_VISIBLE\",\"description\":\"WP2 governed probe\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace\"}"
+        }
+      ],
+      "results": [
+        {
+          "at": 1794409621951,
+          "callId": "call-wp2-a2-create-goal",
+          "isError": true,
+          "text": "Error: this goal operation requires a direct human turn on a top-level agent",
+          "code": "GOAL_TOOL_AUTHORITY_REQUIRED",
+          "errorName": "HarnessError"
+        },
+        {
+          "at": 1794409625222,
+          "callId": "call-wp2-a2-governed-bash",
+          "isError": false,
+          "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\\n\",\"stderr\":\"\",\"scrollback\":\"WP2_ARM2_GOVERNED_BASH_OK\\nWP2_WORKSPACE_VISIBLE\"}",
+          "code": null,
+          "errorName": null
+        }
+      ],
+      "aborts": [
+        {
+          "at": 1794409621725,
+          "kind": "completed"
+        }
+      ],
+      "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-1kw4t9c128ya (label: wp2-worker)\nWP2_ARM2_MACHINE_RELAY",
+      "lastAssistant": "WP2_DONE worker-ready"
+    },
+    "serviceGoal": null,
+    "consult": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/a5sf-consult.jsonl",
+      "rows": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "shellRead",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:07:01.979Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:07:01.984Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 2,
+          "observedAt": "2026-11-11T15:07:01.986Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 3,
+          "observedAt": "2026-11-11T15:07:05.612Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 4,
+          "observedAt": "2026-11-11T15:07:05.615Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 5,
+          "observedAt": "2026-11-11T15:07:06.004Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 6,
+          "observedAt": "2026-11-11T15:07:06.007Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 7,
+          "observedAt": "2026-11-11T15:07:06.385Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-3"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 8,
+          "observedAt": "2026-11-11T15:07:06.388Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-3"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 9,
+          "observedAt": "2026-11-11T15:07:06.764Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-4"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 10,
+          "observedAt": "2026-11-11T15:07:06.766Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-4"
+        }
+      ],
+      "forMember": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "shellRead",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:07:01.979Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:07:01.984Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 2,
+          "observedAt": "2026-11-11T15:07:01.986Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2-governed-bash"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 3,
+          "observedAt": "2026-11-11T15:07:05.612Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 4,
+          "observedAt": "2026-11-11T15:07:05.615Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 5,
+          "observedAt": "2026-11-11T15:07:06.004Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 6,
+          "observedAt": "2026-11-11T15:07:06.007Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 7,
+          "observedAt": "2026-11-11T15:07:06.385Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-3"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 8,
+          "observedAt": "2026-11-11T15:07:06.388Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-3"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 9,
+          "observedAt": "2026-11-11T15:07:06.764Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-4"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1kw4t9c128ya",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:a68146f0812b55d43dc12cdc2d3a751e",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-04-45Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 10,
+          "observedAt": "2026-11-11T15:07:06.766Z",
+          "tool": "bash",
+          "callId": "call-wp2-a2work-round-4"
+        }
+      ],
+      "summary": {
+        "rows": 11,
+        "forMember": 11,
+        "allow": 11,
+        "deny": 0,
+        "ask": 0,
+        "tools": {
+          "bash": 11
+        }
+      }
+    },
+    "workControl": {
+      "followupStatus": 200,
+      "followupOk": true,
+      "workSeen": true,
+      "createResult": {
+        "at": 1794409625418,
+        "callId": "call-wp2-a2work-create-goal",
+        "isError": false,
+        "text": "{\"goal\":{\"id\":\"goal-ba91e67f-9ece-4a2c-b16e-87edc2d96181\",\"revision\":1,\"objective\":\"WP2 Arm 2 control: a WORK delivery still authorises create_goal.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+        "code": null,
+        "errorName": null
+      },
+      "createGoal": {
+        "id": "goal-ba91e67f-9ece-4a2c-b16e-87edc2d96181",
+        "revision": 1
+      },
+      "startSourceKind": "user",
+      "startText": "[team-work requestToken=wp2-arm2-work-1794409625263] WP2_ARM2_WORK_CONTROL",
+      "stopStatus": 200
+    }
+  }
+}

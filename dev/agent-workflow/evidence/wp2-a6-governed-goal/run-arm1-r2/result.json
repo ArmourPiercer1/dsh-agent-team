@@ -1,0 +1,646 @@
+{
+  "runId": "wp2-a6-governed-goal-arm1-r2-2026-11-11T15-06-51-311Z",
+  "arm": "arm1",
+  "run": 2,
+  "outcome": "PASS",
+  "verdicts": [
+    {
+      "id": "wp2-a6:arm1-create-authorized",
+      "verdict": "PROVEN",
+      "proposition": "a direct-human member.send on the Alpha.6-on governed Member AUTHORISES the upstream create_goal",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "human-turn-provenance",
+          "ok": true,
+          "detail": "starting user/message source.kind=user (the human member.send attribution)"
+        },
+        {
+          "id": "create-not-error",
+          "ok": true,
+          "detail": "create_goal isError=false text={\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"ma"
+        },
+        {
+          "id": "create-returned-goal",
+          "ok": true,
+          "detail": "create_goal result goal={\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1}"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-goal-durable",
+      "verdict": "PROVEN",
+      "proposition": "the goal is durably created and the goal service agrees with the tool result",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "durable-create-row",
+          "ok": true,
+          "detail": "goal/change create={\"at\":1794409749313,\"operation\":\"create\",\"phase\":\"active\",\"revision\":1,\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}"
+        },
+        {
+          "id": "get-tool-same-id",
+          "ok": true,
+          "detail": "get_goal tool id=goal-95649b06-926a-4776-bda5-2febf6febe9b create id=goal-95649b06-926a-4776-bda5-2febf6febe9b"
+        },
+        {
+          "id": "get-goal-not-error",
+          "ok": true,
+          "detail": "get_goal isError=false"
+        },
+        {
+          "id": "get-tool-same-revision",
+          "ok": true,
+          "detail": "get_goal tool revision=1 create revision=1"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-update-advances",
+      "verdict": "PROVEN",
+      "proposition": "update_goal advances a phase/revision (edit is the direct-human update)",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "edit-not-error",
+          "ok": true,
+          "detail": "update_goal edit isError=false text={\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":2,\"objective\":\"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\",\"phase\":\"active\",\"roundsStarted\":0,\"max"
+        },
+        {
+          "id": "durable-edit-row",
+          "ok": true,
+          "detail": "goal/change edit={\"at\":1794409749401,\"operation\":\"edit\",\"phase\":\"active\",\"revision\":2,\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"roundsStarted\":0,\"maxGoalRounds\":100000,\"blockedCode\":null}"
+        },
+        {
+          "id": "revision-advanced",
+          "ok": true,
+          "detail": "revision 1 -> 2"
+        },
+        {
+          "id": "phase-preserved-active",
+          "ok": true,
+          "detail": "phase after edit=active"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-rounds",
+      "verdict": "PROVEN",
+      "proposition": "the goal runs >= 2 automatic rounds on the real upstream goal-round driver",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "rounds-count",
+          "ok": true,
+          "detail": "automatic rounds=2"
+        },
+        {
+          "id": "round-goal-id-matches",
+          "ok": true,
+          "detail": "round goal ids=[\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"goal-95649b06-926a-4776-bda5-2febf6febe9b\"]"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-human-stop-terminal",
+      "verdict": "PROVEN",
+      "proposition": "a human Stop leaves the durable goal non-active and starts no further round",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "stop-accepted",
+          "ok": true,
+          "detail": "session/cancel status=200"
+        },
+        {
+          "id": "durable-paused",
+          "ok": true,
+          "detail": "durable phase after Stop=paused"
+        },
+        {
+          "id": "no-round-after-stop",
+          "ok": true,
+          "detail": "goal rounds after the Stop=0 (window 6000 ms)"
+        }
+      ]
+    },
+    {
+      "id": "wp2-a6:arm1-governed-facts",
+      "verdict": "PROVEN",
+      "proposition": "the Member's governed tool calls are recorded in the same run",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "guard-facts-present",
+          "ok": true,
+          "detail": "a5sf-guard-consult allow facts for the Member=4 of rows=4 tools={\"bash\":4}"
+        },
+        {
+          "id": "facts-share-the-goal-turns",
+          "ok": true,
+          "detail": "bash consult facts=4"
+        }
+      ]
+    }
+  ],
+  "facts": {
+    "arm": "arm1",
+    "run": 2,
+    "startedAt": "2026-11-11T15:06:51.346Z",
+    "member": {
+      "templateId": "worker",
+      "instanceId": "inst-1ycjn2l1e5au",
+      "childSessionId": "session-team-child-fa8d3fb8d87b7218fc897c68314b90ca",
+      "lifecycle": "RUNNING"
+    },
+    "leaderInstanceId": "inst-leader",
+    "relaySend": {
+      "status": 200,
+      "ok": true,
+      "body": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-wp2-governed-team",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-1ycjn2l1e5au",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-1ycjn2l1e5au",
+              "deliveredToSessionId": "session-team-child-fa8d3fb8d87b7218fc897c68314b90ca",
+              "factSequence": 6,
+              "deliveredSequence": 7,
+              "requestToken": "wp2-arm1-relay-1794409749379"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 1,
+            "requestToken": "wp2-arm1-relay-1794409749379",
+            "projectionGeneration": null,
+            "effectSequence": 6
+          }
+        }
+      },
+      "caller": {
+        "kind": "human",
+        "humanId": "session-wp2-governed-team"
+      }
+    },
+    "getGoalTool": {
+      "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+      "revision": 1
+    },
+    "createCall": {
+      "at": 1794409749261,
+      "name": "create_goal",
+      "callId": "call-wp2-a1-create-goal",
+      "input": "{\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"max_goal_rounds\":100000}"
+    },
+    "createResult": {
+      "at": 1794409749315,
+      "callId": "call-wp2-a1-create-goal",
+      "isError": false,
+      "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+      "code": null,
+      "errorName": null
+    },
+    "getResult": {
+      "at": 1794409749361,
+      "callId": "call-wp2-a1-get-goal",
+      "isError": false,
+      "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+      "code": null,
+      "errorName": null
+    },
+    "editResult": {
+      "at": 1794409749401,
+      "callId": "call-wp2-a1-edit-goal",
+      "isError": false,
+      "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":2,\"objective\":\"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+      "code": null,
+      "errorName": null
+    },
+    "createGoal": {
+      "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+      "revision": 1
+    },
+    "startMsg": {
+      "at": 1794409749555,
+      "seq": 42,
+      "kind": "user",
+      "text": "[team-relay] from=human:session-wp2-governed-team to=inst-1ycjn2l1e5au (label: wp2-worker)\nWP2_ARM1_HUMAN_GOAL",
+      "round": null,
+      "goalId": null
+    },
+    "startSourceKind": "user",
+    "getGoal": {
+      "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+      "revision": 2,
+      "objective": "WP2 Arm 1: objective edited by the same direct-human turn (revision probe).",
+      "phase": "active",
+      "maxGoalRounds": 100000,
+      "roundsStarted": 2,
+      "createdAt": 1794409749312,
+      "updatedAt": 1794409749401,
+      "activation": "armed"
+    },
+    "serviceGoalBeforeStop": {
+      "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+      "revision": 2,
+      "objective": "WP2 Arm 1: objective edited by the same direct-human turn (revision probe).",
+      "phase": "active",
+      "maxGoalRounds": 100000,
+      "roundsStarted": 2,
+      "createdAt": 1794409749312,
+      "updatedAt": 1794409749401,
+      "activation": "armed"
+    },
+    "stopStatus": 200,
+    "stopAt": 1794409753408,
+    "pausedSeen": true,
+    "finalPhase": "paused",
+    "roundsAtStop": 2,
+    "roundsAfterStop": 0,
+    "silentWindowMs": 6000,
+    "facts": {
+      "sessionId": "session-team-child-fa8d3fb8d87b7218fc897c68314b90ca",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-wp2-goal-tests-homes-u5wp2a6goal-20261111T15-06-51Z-workspace--/session-team-child-fa8d3fb8d87b7218fc897c68314b90ca/session.v4.jsonl.zstd",
+      "agentPreset": null,
+      "lineCount": 74,
+      "types": {
+        "session": 1,
+        "permission/preset": 1,
+        "sandbox/mode": 1,
+        "approval/policy": 1,
+        "agent/inbox/spliced": 8,
+        "turn/start": 4,
+        "step/start": 8,
+        "system/message": 1,
+        "user/message": 7,
+        "request/header": 3,
+        "request/context": 1,
+        "session/title": 2,
+        "session/title-llm-request": 1,
+        "assistant/message": 8,
+        "tool/call": 5,
+        "goal/change": 3,
+        "tool/result": 5,
+        "step/end": 8,
+        "workspace/changes": 2,
+        "turn/end": 4
+      },
+      "userMessages": [
+        {
+          "at": 1794409749241,
+          "seq": 8,
+          "kind": "user",
+          "text": "[team-work requestToken=wp2-delegate-1794409748980] WP2_WORKER_READY: worker probe. Reply with the marker only.",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409749241,
+          "seq": 9,
+          "kind": "agent-instructions",
+          "text": "<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\n<!-- phase-identity: alpha5-sandbox-first -->\n\n\n本仓库是 DSH Team-mode **vNext** 的 authoritative repository。**CORE PATCH BUDGET = 0**：upstream DSH ",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409749242,
+          "seq": 10,
+          "kind": "runtime-context",
+          "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409749242,
+          "seq": 11,
+          "kind": "skill-catalog",
+          "text": "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `team-blueprint-authoring`: Author a DSH Agent Team blueprint (a saved-source YAML document) and run pre-flight checks before creating a team — identity frontmatter, the frozen closed field sets, exactly one complete LeaderTemplate, member templates, capabilities (teamTools/builtinToolDeny/skills/mcp/permissions with allow-ask-deny lanes, exact/subtree/any resources, shell-class rules), envelopes, policyStates, quotas, the draft-file convention, a",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409749555,
+          "seq": 42,
+          "kind": "user",
+          "text": "[team-relay] from=human:session-wp2-governed-team to=inst-1ycjn2l1e5au (label: wp2-worker)\nWP2_ARM1_HUMAN_GOAL",
+          "round": null,
+          "goalId": null
+        },
+        {
+          "at": 1794409749639,
+          "seq": 50,
+          "kind": "goal",
+          "text": "<goal_round>\nObjective: \"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\"\nRound: 1/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective is achieved, read the current goal, and mark it complete. If work remains, leave the goal active for the next round. Follow the configured goal-tool p",
+          "round": 1,
+          "goalId": "goal-95649b06-926a-4776-bda5-2febf6febe9b"
+        },
+        {
+          "at": 1794409753276,
+          "seq": 64,
+          "kind": "goal",
+          "text": "<goal_round>\nObjective: \"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\"\nRound: 2/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming completion, gather evidence that the whole objective is achieved, read the current goal, and mark it complete. If work remains, leave the goal active for the next round. Follow the configured goal-tool p",
+          "round": 2,
+          "goalId": "goal-95649b06-926a-4776-bda5-2febf6febe9b"
+        }
+      ],
+      "goalRounds": [
+        {
+          "round": 1,
+          "goalId": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+          "revision": 2,
+          "at": 1794409749639
+        },
+        {
+          "round": 2,
+          "goalId": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+          "revision": 2,
+          "at": 1794409753276
+        }
+      ],
+      "goalChanges": [
+        {
+          "at": 1794409749313,
+          "operation": "create",
+          "phase": "active",
+          "revision": 1,
+          "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794409749401,
+          "operation": "edit",
+          "phase": "active",
+          "revision": 2,
+          "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+          "roundsStarted": 0,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        },
+        {
+          "at": 1794409753536,
+          "operation": "pause",
+          "phase": "paused",
+          "revision": 3,
+          "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+          "roundsStarted": 2,
+          "maxGoalRounds": 100000,
+          "blockedCode": null
+        }
+      ],
+      "calls": [
+        {
+          "at": 1794409749261,
+          "name": "create_goal",
+          "callId": "call-wp2-a1-create-goal",
+          "input": "{\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"max_goal_rounds\":100000}"
+        },
+        {
+          "at": 1794409749356,
+          "name": "get_goal",
+          "callId": "call-wp2-a1-get-goal",
+          "input": "{}"
+        },
+        {
+          "at": 1794409749396,
+          "name": "update_goal",
+          "callId": "call-wp2-a1-edit-goal",
+          "input": "{\"goal_id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"action\":\"edit\",\"objective\":\"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\"}"
+        },
+        {
+          "at": 1794409749652,
+          "name": "bash",
+          "callId": "call-wp2-a1-round-1",
+          "input": "{\"command\":\"echo WP2_GOVERNED_ROUND_1; sleep 0.15\",\"description\":\"WP2 governed probe\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace\"}"
+        },
+        {
+          "at": 1794409753288,
+          "name": "bash",
+          "callId": "call-wp2-a1-round-2",
+          "input": "{\"command\":\"echo WP2_GOVERNED_ROUND_2; sleep 0.15\",\"description\":\"WP2 governed probe\",\"workdir\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace\"}"
+        }
+      ],
+      "results": [
+        {
+          "at": 1794409749315,
+          "callId": "call-wp2-a1-create-goal",
+          "isError": false,
+          "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+          "code": null,
+          "errorName": null
+        },
+        {
+          "at": 1794409749361,
+          "callId": "call-wp2-a1-get-goal",
+          "isError": false,
+          "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":1,\"objective\":\"WP2 Arm 1: a governed Member runs a human-authorised goal to the Stop probe.\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+          "code": null,
+          "errorName": null
+        },
+        {
+          "at": 1794409749401,
+          "callId": "call-wp2-a1-edit-goal",
+          "isError": false,
+          "text": "{\"goal\":{\"id\":\"goal-95649b06-926a-4776-bda5-2febf6febe9b\",\"revision\":2,\"objective\":\"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":100000},\"activation\":\"armed\"}",
+          "code": null,
+          "errorName": null
+        },
+        {
+          "at": 1794409753121,
+          "callId": "call-wp2-a1-round-1",
+          "isError": false,
+          "text": "{\"kind\":\"confined-terminal\",\"sessionId\":\"confined-pty-1\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"cancelled\":false,\"stdout\":\"WP2_GOVERNED_ROUND_1\\n\",\"stderr\":\"\",\"scrollback\":\"WP2_GOVERNED_ROUND_1\"}",
+          "code": null,
+          "errorName": null
+        },
+        {
+          "at": 1794409753534,
+          "callId": "call-wp2-a1-round-2",
+          "isError": true,
+          "text": "Error: tool call aborted",
+          "code": "ABORTED",
+          "errorName": "AbortError"
+        }
+      ],
+      "aborts": [
+        {
+          "at": 1794409749522,
+          "kind": "completed"
+        },
+        {
+          "at": 1794409749600,
+          "kind": "completed"
+        },
+        {
+          "at": 1794409753236,
+          "kind": "completed"
+        },
+        {
+          "at": 1794409753535,
+          "kind": "aborted"
+        }
+      ],
+      "lastUser": "<goal_round>\nObjective: \"WP2 Arm 1: objective edited by the same direct-human turn (revision probe).\"\nRound: 2/100000\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of assuming earlier narration is still current. Make concrete progress and verify the result. Before claiming com",
+      "lastAssistant": "WP2_DONE round 1"
+    },
+    "finalGoal": {
+      "id": "goal-95649b06-926a-4776-bda5-2febf6febe9b",
+      "revision": 3,
+      "objective": "WP2 Arm 1: objective edited by the same direct-human turn (revision probe).",
+      "phase": "paused",
+      "maxGoalRounds": 100000,
+      "roundsStarted": 2,
+      "createdAt": 1794409749312,
+      "updatedAt": 1794409753536,
+      "activation": "disarmed"
+    },
+    "consult": {
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/a5sf-consult.jsonl",
+      "rows": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:09:09.708Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 2,
+          "observedAt": "2026-11-11T15:09:09.712Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 3,
+          "observedAt": "2026-11-11T15:09:13.339Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 4,
+          "observedAt": "2026-11-11T15:09:13.342Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-2"
+        }
+      ],
+      "forMember": [
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 1,
+          "observedAt": "2026-11-11T15:09:09.708Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 2,
+          "observedAt": "2026-11-11T15:09:09.712Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-1"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 3,
+          "observedAt": "2026-11-11T15:09:13.339Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-2"
+        },
+        {
+          "schema": "a5sf-guard-consult/1",
+          "realm": "member",
+          "memberIdentity": "inst-1ycjn2l1e5au",
+          "toolBindingIdentity": null,
+          "policyRevision": "a5sf1:6e4c6f2945cacc4752b7e3db18af5c21",
+          "method": "spawn:write",
+          "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/tests/homes/u5wp2a6goal-20261111T15-06-51Z/workspace",
+          "decision": "allow",
+          "decidedBy": "ALLOW",
+          "sequence": 4,
+          "observedAt": "2026-11-11T15:09:13.342Z",
+          "tool": "bash",
+          "callId": "call-wp2-a1-round-2"
+        }
+      ],
+      "summary": {
+        "rows": 4,
+        "forMember": 4,
+        "allow": 4,
+        "deny": 0,
+        "ask": 0,
+        "tools": {
+          "bash": 4
+        }
+      }
+    },
+    "afterStopRounds": 2
+  }
+}
