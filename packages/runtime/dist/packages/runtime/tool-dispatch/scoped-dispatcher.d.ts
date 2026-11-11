@@ -42,7 +42,7 @@
  * @module @dsh-agent-team/runtime/tool-dispatch/scoped-dispatcher
  */
 import { type BindingState, type GovernanceResult, type ToolBinding } from '../../domain/tool-governance/src/index.js';
-import { type GovernedUnverifiedReason, type GuardExecView, type GovernedOrigin, type GovernedSurface, type GuardVerdict, type InheritedSurfaceBinding } from './closed-world-guard.js';
+import { type GovernedUnverifiedReason, type GuardExecView, type GovernedOrigin, type GovernedSurface, type GuardDenial, type GuardVerdict, type InheritedSurfaceBinding } from './closed-world-guard.js';
 /** One outstanding call the Dispatcher handed out (self-counted). */
 export interface CallToken {
     readonly callId: string;
@@ -100,6 +100,13 @@ export interface ScopedDispatcher {
     readonly active: () => boolean;
     /** The Guard body to register on the public `tools.guard` seam. */
     readonly guard: (exec: GuardExecView) => string | undefined;
+    /**
+     * PD-41: the SAME decision as {@link guard}, returned typed instead of as
+     * prose. One code path (the denial is computed once, observed once, and its
+     * message is what `guard` hands the host seam); the dispatch door uses this
+     * form so its refusal carries `code`/`reason` for the operator.
+     */
+    readonly denial: (exec: GuardExecView) => GuardDenial | undefined;
     /** The per-call verdict (exposed for tests and the dispatcher body path). */
     readonly decide: (exec: GuardExecView) => GuardVerdict;
     /**

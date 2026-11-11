@@ -51,7 +51,7 @@
  */
 
 import type { GovernanceError, GovernanceResult, ToolBinding } from '../../domain/tool-governance/src/index.js'
-import { untestedAssurance, type GuardExecView } from './closed-world-guard.js'
+import { GUARD_DENIAL_REASONS, ToolDispatchRefusalError, untestedAssurance, type GuardExecView } from './closed-world-guard.js'
 import { createPendingCallLedger, type PendingCall, type PendingCallLedger } from './pending-calls.js'
 import {
   createScopedDispatcher,
@@ -665,9 +665,16 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
 
   const refuse = (edge: string, exec: unknown): never => {
     const view = exec as { name?: unknown }
-    throw new Error(
-      `team tool guard: "${String(view?.name)}" reached the ${edge} stage while this Agent's Tool Dispatcher is ${dispatcher.state()} (not ACTIVE); the body is not reachable`,
-    )
+    const name = String(view?.name)
+    // PD-41: the same typed refusal family as the dispatch door, so a caller can
+    // tell "the dispatcher is not ACTIVE" (an assembly state) from a Binding
+    // failure without parsing the sentence. The sentence is unchanged.
+    throw new ToolDispatchRefusalError({
+      toolName: name,
+      code: 'ADAPTER_DRAINING',
+      reason: GUARD_DENIAL_REASONS.NOT_ACTIVE,
+      message: `team tool guard: "${name}" reached the ${edge} stage while this Agent's Tool Dispatcher is ${dispatcher.state()} (not ACTIVE); the body is not reachable`,
+    })
   }
 
   /** Arm one required seam, or fail the whole assembly with nothing left on the ctx. */
@@ -980,12 +987,23 @@ export function installScopedToolGuard(input: InstallScopedGuardInput): Governan
         dispatcher.endCallById(callIdOf(exec), 'refused')
         refuse('execute', exec)
       }
-      const doorDenial = dispatcher.guard(hostExecToView(exec))
+      const doorDenial = dispatcher.denial(hostExecToView(exec))
       if (doorDenial !== undefined) {
         // Same reasoning as above: the Body is provably unreachable from here,
         // so the lease ends at the door that refused it.
         dispatcher.endCallById(callIdOf(exec), 'refused')
-        throw new Error(`${doorDenial} [refused at the dispatch door, the stage nearest the Body]`)
+        // PD-41: the refusal keeps the Guard's own sentence byte-for-byte and
+        // now also carries the §5 code and the measured reason. An operator (or
+        // a recovery path) can tell a Binding-verification failure — repair the
+        // Binding, then raise a NEW approval request — from "never governed" or
+        // "dispatcher draining", without parsing the sentence.
+        throw new ToolDispatchRefusalError({
+          toolName: doorDenial.toolName,
+          code: doorDenial.code,
+          reason: doorDenial.reason,
+          message: doorDenial.message,
+          suffix: '[refused at the dispatch door, the stage nearest the Body]',
+        })
       }
       // B3: the door is not only the last CHECK before the Body, it is now also
       // the place a call becomes CANCELLABLE. The registry resolves this call's
