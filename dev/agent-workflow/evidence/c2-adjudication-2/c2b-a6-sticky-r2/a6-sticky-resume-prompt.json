@@ -1,0 +1,33 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6resume-pg2s9hnc1d",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "outcome": {
+          "status": "delivered",
+          "rootSessionId": "session-c1-smoke-a6-2026-11-11T11-13-14",
+          "action": "send-message",
+          "callerRole": "human",
+          "recipientInstanceId": "inst-0mupa9h0rfil",
+          "deliveryMode": "direct",
+          "deliveredToInstanceId": "inst-0mupa9h0rfil",
+          "deliveredToSessionId": "session-team-child-f213da7d13ca1042105af23339cf2c5e",
+          "factSequence": 11,
+          "deliveredSequence": 12,
+          "requestToken": "c1-a6-resume-1794395632305"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "member.send",
+        "endpoint": "member.send",
+        "contractVersion": 4,
+        "requestToken": "c1-a6-resume-1794395632305",
+        "projectionGeneration": null,
+        "effectSequence": 11
+      }
+    }
+  }
+}

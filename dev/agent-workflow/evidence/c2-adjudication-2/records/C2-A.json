@@ -1,0 +1,205 @@
+{
+ "schema": "c2-adjudication-record/1",
+ "recordClass": "CANDIDATE-C2",
+ "candidateCommit": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+ "candidateSha": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+ "candidateRef": "refs/heads/candidate/v0.1.6-2",
+ "candidateId": "cand-v0.1.6-2",
+ "manifest": {
+  "path": "dev/engineering/candidates/cand-v0.1.6-2.json",
+  "commit": "96131fa9c",
+  "content_digest": "sha256:1fecf63404f8c8a8294239760d4b30313b3d58e9ae264c93f3d08f2a8111f8a8"
+ },
+ "host": {
+  "version": "0.2.0-rc.2",
+  "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "tree": "tests/deepseek-harness-test-use"
+ },
+ "authority": {
+  "pointer": "dev/engineering/current-authority.json",
+  "snapshot_version": "as20261109r1",
+  "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+  "baseline": "cb2e41483af8447700fb3c2a25c2686705320692"
+ },
+ "measurementWorktree": ".worktrees/c2-2",
+ "adjudicator": {
+  "role": "independent C2 adjudicator",
+  "session": "c2-adjudication-2-20261111",
+  "authored_product_code": false,
+  "moved_authority_pointer": false,
+  "moved_candidate_ref": false,
+  "merged": false
+ },
+ "oraclePolicy": "The tool return value is never its own correctness evidence. Channels read: durable control/guard facts, confined-spawn counters, on-disk markers, World transcript/ledger, mock connection counters, /proc tripwire, host-pid liveness. A6-12 additionally reads the durable control ledger row set (decision/consumption/abandonment sequences), not the kit check label.",
+ "runId": "c2-a-2026-11-11T10-51-38Z",
+ "scope": "C2-A",
+ "scopeDefinition": "governed preset a5sf-governed-member, a5sfGovernedRealm on, alpha6ReviewRouting absent/false",
+ "boots": [
+  {
+   "run": "c2a-pd33-e2e-pair/boot01",
+   "runId": "a5sf-pd33-preview-e2e-2026-11-11T10-51-38-268Z-b1",
+   "world": "u5u5a5sfpd33-20261111T10-51-38Z",
+   "overall": "PASS (10/10 selected)",
+   "recordClass_instrument": "DEV-LIVE",
+   "used_as": "CANDIDATE-C2 evidence (re-adjudicated per case)"
+  },
+  {
+   "run": "c2a-pd33-e2e-pair/boot02",
+   "runId": "a5sf-pd33-preview-e2e-2026-11-11T10-53-47-353Z-b2",
+   "world": "u5u5a5sfpd33-20261111T10-53-47Z",
+   "overall": "PASS (10/10 selected)",
+   "recordClass_instrument": "DEV-LIVE",
+   "used_as": "CANDIDATE-C2 evidence (re-adjudicated per case)"
+  },
+  {
+   "run": "c2a-fs-boot1",
+   "runId": "a5sf-fs-devlive-2026-11-11T10-51-56-072Z",
+   "overall": "13 PASS + 1 NOT_REACHED (read_image)",
+   "recordClass_instrument": "DEV-LIVE",
+   "used_as": "CANDIDATE-C2 evidence (re-adjudicated per case)"
+  },
+  {
+   "run": "c2a-fs-boot2",
+   "runId": "a5sf-fs-devlive-2026-11-11T10-59-30-933Z",
+   "overall": "13 PASS + 1 NOT_REACHED (read_image)",
+   "recordClass_instrument": "DEV-LIVE",
+   "used_as": "CANDIDATE-C2 evidence (re-adjudicated per case)"
+  }
+ ],
+ "cases": [
+  {
+   "id": "A1",
+   "case": "read positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "live:row1-read-a-inside-both-allowed PASS (READ_A_ALLOWED_AND_CONFINED, bindingAllowFact=true, providerServed=true, providerConfined=true); pd33 facts-per-tool counts.read=3",
+   "oracle": "allow fact + confined provider counter + returned bytes",
+   "falsifier": "an allow decision without a provider spawn, or bytes without a fact"
+  },
+  {
+   "id": "A2",
+   "case": "read negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "live:row2-read-b-binding-deny-on-read-path PASS readPathDecisions=[\"deny\"] counterRows=0; live:row3 PASS exactlyOneBindingDeny=true noProviderRead=true; pd33 out-of-lane-read-typed codes=[\"IO_READ_DENIED\"] facts=1",
+   "oracle": "one binding deny fact + zero provider reads/bytes",
+   "falsifier": "any allow fact, provider read or leaked byte"
+  },
+  {
+   "id": "A3",
+   "case": "write positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "live:row4a-write-in-lane-readable-allowed-ceiling-only PASS diskMatches=true everyWriteFactOnCeiling=true counterRows=1; pd33 artefact content=\"probe line\\nA5SF_PD33_A_EDIT_AFTER\"",
+   "oracle": "on-disk bytes + write fact on the ceiling lane",
+   "falsifier": "disk mismatch or no write fact"
+  },
+  {
+   "id": "A4",
+   "case": "write minimal-permission negative",
+   "boot1": "PASS",
+   "boot2": "PASS",
+   "verdict": "PARTIAL \u2014 refusal locus is the host read-before-write policy, not the lane algebra",
+   "decisive": "live:row4b PASS ceilingWriteAllowed=true noReadLaneWriteAllow=true; observed=\"Error: cannot modify \u2026 file has not been read \u2014 read the file, then retry\"",
+   "oracle": "guard facts: 1 write decision (allow, ceiling lane)",
+   "falsifier": "a lane deny fact / zero write fact would make it a clean lane negative"
+  },
+  {
+   "id": "A5",
+   "case": "edit positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "fs:edit-in-lane PASS isError=false writeCalls=1 facts=3",
+   "oracle": "edit write fact + 3 guard facts + updated text",
+   "falsifier": "no write fact / no file change"
+  },
+  {
+   "id": "A6",
+   "case": "edit minimal-permission negative",
+   "boot1": "PASS",
+   "boot2": "PASS",
+   "verdict": "PARTIAL \u2014 locus is the host policy",
+   "decisive": "fs:edit-outside-ceiling PASS isError=true locus=\"host-read-before-write-observation-policy\" guardFacts=0 writeCalls=0",
+   "oracle": "the request never reached the Team guard",
+   "falsifier": "a lane deny fact on the edit path"
+  },
+  {
+   "id": "A7",
+   "case": "grep positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "live:search-row1-grep-in-lane-allowed PASS (IN_LANE_GREP_ALLOWED_AND_CONFINED); pd33 counts.grep=1",
+   "oracle": "allow consult fact + confined spawn counter + match text",
+   "falsifier": "base-spawn instead of confined, or no fact"
+  },
+  {
+   "id": "A8",
+   "case": "grep negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "live:search-row2 PASS (OUT_OF_LANE_REFUSED_BEFORE_ANY_PROCESS); live:search-row3 PASS (RESTRICTION_NARROWER_THAN_CEILING_REFUSED_AT_ADMISSION)",
+   "oracle": "deny fact + zero confined/base spawn",
+   "falsifier": "any spawn or success result"
+  },
+  {
+   "id": "A9",
+   "case": "glob positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "glob-face.json inLane verdict=PROVEN matchReturned=true exactlyOneAllowFact=true; pd33 counts.glob=1",
+   "oracle": "allow fact + one rg --files spawn + named match",
+   "falsifier": "match with no allow fact"
+  },
+  {
+   "id": "A10",
+   "case": "glob negative",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "glob-face.json outside verdict=PROVEN exactlyOneDenyFact=true denyDecidedByReadDenied=true noConfinedProcess=true",
+   "oracle": "one IO_READ_DENIED deny fact and no spawn",
+   "falsifier": "any returned path or spawn"
+  },
+  {
+   "id": "A11",
+   "case": "web positive",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "pd33 fetch-body-verbatim true (A5SF_PD33_KNOWN_BODY_BYTES), fetch-one-connection connections=1, fetch-allow-fact facts=1, search branch=typed-unavailable POST /search=0",
+   "oracle": "mock connection counter + verbatim body + web allow fact",
+   "falsifier": "a second connection or a different body"
+  },
+  {
+   "id": "A12",
+   "case": "web negative (out-of-lane)",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "pd33 out-of-lane-host-refused codes=[\"WEB_DESTINATION_FORBIDDEN\"], out-of-lane-host-zero-connections hits=0",
+   "oracle": "typed refusal + zero host connections",
+   "falsifier": "any connection or body"
+  },
+  {
+   "id": "A13",
+   "case": "full E2E ledger flow",
+   "boot1": "PROVEN",
+   "boot2": "PROVEN",
+   "verdict": "PASS",
+   "decisive": "pd33 boot1/boot2 10/10 PROVEN; facts-per-tool factless=[] counts={\"read\":3,\"grep\":1,\"glob\":1,\"web_fetch\":2,\"write\":1,\"web_search\":1,\"skill\":2,\"edit\":1,\"bash\":64,\"present\":2}; no-base-web hostWebCalls=0; goal rounds=3 finalPhase=complete",
+   "oracle": "durable facts per tool + transcript + mock counters + tripwire",
+   "falsifier": "a dispatch with no fact or a base web call"
+  }
+ ],
+ "casesAgree": true,
+ "disagreements": [],
+ "verdict": "PASS (write/edit minimal-permission negatives PARTIAL: the refusal is the host read-before-write policy, not the lane algebra)",
+ "notes": "The two pd33 boots are one driver invocation (--boots 2) and agree case-for-case; the two FS boots are separate boots with identical 14-row tables. The driver record class is DEV-LIVE; this record is the CANDIDATE-C2 adjudication of those runs, not a relabelling of the driver manifest."
+}
