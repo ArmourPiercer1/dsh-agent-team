@@ -56,6 +56,7 @@ import {
   type GuardExecView,
   type GovernedOrigin,
   type GovernedSurface,
+  type GuardDenial,
   type GuardVerdict,
   type InheritedSurfaceBinding,
 } from './closed-world-guard.js'
@@ -115,6 +116,13 @@ export interface ScopedDispatcher {
   readonly active: () => boolean
   /** The Guard body to register on the public `tools.guard` seam. */
   readonly guard: (exec: GuardExecView) => string | undefined
+  /**
+   * PD-41: the SAME decision as {@link guard}, returned typed instead of as
+   * prose. One code path (the denial is computed once, observed once, and its
+   * message is what `guard` hands the host seam); the dispatch door uses this
+   * form so its refusal carries `code`/`reason` for the operator.
+   */
+  readonly denial: (exec: GuardExecView) => GuardDenial | undefined
   /** The per-call verdict (exposed for tests and the dispatcher body path). */
   readonly decide: (exec: GuardExecView) => GuardVerdict
   /**
@@ -431,7 +439,7 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
     return verdict
   }
 
-  const guard = (exec: GuardExecView): string | undefined => {
+  const denial = (exec: GuardExecView): GuardDenial | undefined => {
     const verdict = decide(exec)
     if (verdict.kind === 'abstain') return undefined
     observe({
@@ -441,14 +449,17 @@ export function createScopedDispatcher(options: ScopedDispatcherOptions): Scoped
       code: verdict.error.code,
       state: status,
     })
-    return verdict.error.message
+    return { toolName: exec.name, code: verdict.error.code, reason: verdict.reason, message: verdict.error.message }
   }
+
+  const guard = (exec: GuardExecView): string | undefined => denial(exec)?.message
 
   return {
     surface,
     state: () => status,
     active: () => status === 'ACTIVE',
     guard,
+    denial,
     decide,
     armSeam: (seam) => {
       seams.add(seam)

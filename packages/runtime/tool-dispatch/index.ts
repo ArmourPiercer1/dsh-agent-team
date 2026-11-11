@@ -45,12 +45,16 @@ export {
   GUARD_ERROR_CODES,
   GOVERNED_ORIGINS,
   createGovernedSurface,
+  dispatchRefusalOf,
   guardDecision,
   guardDenialMessage,
+  isToolBindingRefusal,
+  ToolDispatchRefusalError,
   ASSURANCE_REALM_TRUSTED_ASSEMBLY,
   untestedAssurance,
 } from './closed-world-guard.js'
 export type {
+  GuardDenial,
   GovernedEntry,
   GovernedOrigin,
   GovernedUnverifiedReason,
