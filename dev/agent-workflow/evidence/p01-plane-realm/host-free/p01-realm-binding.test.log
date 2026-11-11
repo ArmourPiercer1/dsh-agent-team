@@ -1,0 +1,17 @@
+✔ A1 the receipt reader takes ONLY forwarded names from ceiling fibers (2.037277ms)
+✔ A1b an empty/absent attach answers an empty set (the no-realm world) (0.087325ms)
+✔ A2 a forwarded name on the surface, not plane-owned and readable IS declared (0.187034ms)
+✔ A3 a PLANE-OWNED name is not double-bound (0.111672ms)
+✔ A3b a name off the post-attach surface, or unreadable at the public seam, is refused (0.098877ms)
+✔ A3c an empty receipt declares nothing at all (never a wide bind) (0.05297ms)
+✔ A4 DECLARED (verified) dispatches; the SAME name on the inherited lane is refused unverified (2.023521ms)
+✔ A4b a name ABSENT from `forwarded` is never declared => it keeps the pre-P01 refusal (0.158029ms)
+✔ A5 no attach => no declared names and no skipped names (byte-identical path) (0.233733ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 278.773519
