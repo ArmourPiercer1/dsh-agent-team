@@ -281,8 +281,10 @@ field, never durable identity). That signal is read once, synchronously, **by** 
 check — inside the per-team lock, after the authority / external-policy / PA-manifest checks, with
 the ledger sequence already prepared. Earlier checkpoints in the same guard (team liveness, target
 lifecycle, scope candidacy, external policy, corruption) return an ordinary block or an
-undetermined/deny verdict and write **no** abandonment; the terminal `control-request-abandoned` is
-written only by the fence trip itself.
+undetermined/deny verdict and write **no** abandonment; within this guard path, and with this
+reason, the terminal `control-request-abandoned` is written only by the fence trip itself. (The fact
+type is also written by other abandonment paths — the inline `abandonControlRequest` and the
+A6-26 crash abandon — which carry different reasons; see the note below.)
 
 **Which lanes are wired — verified per lane, not asserted globally.** The fence exists in
 `guardOperation`; whether a caller benefits depends on that caller handing it a signal. As of this
@@ -308,17 +310,21 @@ abandonment.
   abandonment row is durable** (see the fault path below).
 - **cancellation arriving AFTER that check may race the durable write.** The window that remains is
   the single consumption write await (`await putEntry(...)` → `repositories.ledger.put`). If the
-  write commits, the consumption fact is KEPT and is never rewritten as un-consumed; the execution
-  edge still refuses the body. In-process on the author/review hosts the natural write await measured
-  **≈0.3–0.6 ms** (author ≈0.23–0.43 ms, reviewer 0.585 ms — an order of magnitude, not a stable
-  band), and the window was deliberately held open (≈1–2 ms on both hosts) only to prove that a
-  cancel landing inside it still commits. **No atomic Stop is claimed.** These are in-process
+  write commits, the consumption fact is KEPT and is never rewritten as un-consumed. The host
+  execution edge does check `signal.aborted` before the body, but **this PR does not exercise the
+  post-consumption body**: the host-free arm S7 proves only that a cancel landing inside the write
+  still commits and is kept. In-process on the author/review hosts the natural write await measured
+  **sub-millisecond** (author ≈0.23–0.43 ms, reviewer 0.348–0.585 ms — a factor of ≈2.5 across hosts,
+  not a stable band), and the window was deliberately held open (≈1–2 ms on both hosts) only to prove
+  that a cancel landing inside it still commits. **No atomic Stop is claimed.** These are in-process
   numbers from the host-free suite, not production latency.
 - **fault path (durability of the trip).** `commitAbandonmentFact` is not best-effort: if the
   abandonment write fails durably, the guard **throws** instead of returning a verdict. The allow is
   then unspent and still spendable — so "a replay cannot re-consume" holds only once the terminal
-  abandonment is durable. A failed trip is a failed fence, not a silent one; the consuming lane maps
-  the throw to a deny/block and never executes the body.
+  abandonment is durable. A failed trip is a failed fence, not a silent one. The A4/A5 parameter
+  lane and the PA bridge catch the throw and map it to a deny/block; the `team_*` guarded-tool lane
+  does not catch it, so the failure propagates as a thrown tool error. In all three the body never
+  runs.
 
 **Not claimed / not attempted.** No durable per-invocation Stop state and no cross-process atomic
 fence is introduced; that remains the design change PD-40 declined (see §4.7). The Alpha.6 Sticky
@@ -331,13 +337,26 @@ cancellation signal at all (only the runtime action received it). That branch no
 invocation signal to the same probe, so it is fenced at the same point; callers that pass no signal
 behave exactly as before.
 
-**Stale boot evidence (correction, 2026-11-11).** The kept boot artifacts under
-`dev/agent-workflow/evidence/a6-stop-fence/` and `.../a6-stop-fence-c2/` were produced by a kit that
-recorded `git -C process.cwd() rev-parse HEAD`, i.e. the tree the kit process ran in, not the tree
-`--worktree` booted. Their `run-manifest.json#productSha` therefore names the base/main tree
-(`1964cb71c…`) and does **not** bind the PR head; they are marked **instrument-defective** in
-`a6-stop-fence/README.md` and `BOOT-2026-11-11.md`. No kept artifact contains the terminal
-`control-request-abandoned` row either. The kit is fixed (worktree HEAD, plus
-`final.abandonments` in `a6-stop.json`); a re-boot is required to produce an artifact that binds the
-PR head, and until it exists this section cites the host-free arms for the trip and the boots only
-for "Stop admitted / no consumption / no execution".
+**Boot evidence (correction, 2026-11-11; superseded by the re-boot below).** The *first* kept boot
+artifacts under `dev/agent-workflow/evidence/a6-stop-fence/` (`main-boot-r1`, `main-boot-r2`) and
+`.../a6-stop-fence-c2/` were produced by a kit that recorded `git -C process.cwd() rev-parse HEAD`,
+i.e. the tree the kit process ran in, not the tree `--worktree` booted. Their
+`run-manifest.json#productSha` therefore names the base/main tree (`1964cb71c…`) and does **not**
+bind the PR head, and `a6-stop.json` did not persist the abandonment rows. They are marked
+**instrument-defective** in `a6-stop-fence/README.md` and `BOOT-2026-11-11.md`; their "Stop admitted,
+no consumption, no execution" observation stands, their reason/sequence claim does not.
+
+**Binding re-boot (2026-11-11, `re-boot` on the review-fixed head).** The kit now records the
+`--worktree` HEAD and `final.abandonments`. Two main-agent boots on the review-fixed head
+(`920981375…`, recorded as `productSha`/`productTree` in their manifests, evidence-only commits
+after it) are the binding artifacts:
+
+| run | A6-12 | what it shows |
+| --- | --- | --- |
+| `main-boot3-r1` | PASS | **the fence trip itself**: ledger `seq 16 control-request-abandoned`, reason `invocation-cancelled-before-consumption`, late re-allow refused `CONTROL_REQUEST_ABANDONED`, zero consumption, `file=""` |
+| `main-boot3-r2` | PASS | **a different arm**: the Stop cancelled the invocation *before* the guard's final check — zero consumption, zero execution, **no** abandonment row and late re-allow refused `CONTROL_REQUEST_DECIDED` |
+
+So the trip is now a captured artifact, not an inference, and the terminal-fact sentence above holds
+for r1. r2 is recorded as the arm it is, not merged into the trip. Two clean boots still do **not**
+prove the 4/6 rate measured on the unfenced candidate is zero; the rate claim belongs to the next
+candidate's re-measurement (§7).

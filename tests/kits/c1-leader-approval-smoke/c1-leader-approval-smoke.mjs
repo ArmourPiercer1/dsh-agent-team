@@ -1801,7 +1801,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       const cancelOk = (cancel.status === 200 && (cancel.body?.result?.ok === true || cancel.body?.result?.accepted === true))
       check('A6-11', 'session/cancel is admitted after the human allow, before the allow is consumed/executed', cancelOk,
         `status=${cancel.status} body=${JSON.stringify(cancel.body ?? cancel).slice(0, 500)} afterCancelPending=${afterCancel.requests.filter((r) => !afterCancel.decisions.some((d) => d.requestId === r.requestId)).length}`)
-      check('A6-12', 'Stop before consumption prevents execution; a second allow is rejected as already decided', !revived,
+      check('A6-12', 'Stop before consumption prevents execution; a second allow is refused (decided or abandoned — the arm decides which)', !revived,
         `lateStatus=${late?.status} lateDecision=${JSON.stringify(lateDecision)} consumed=${lateConsumption !== null} file=${JSON.stringify(fileAfter.slice(0, 200))}`)
       writeEvidence('a6-stop.json', {
         cancel: cancel.body ?? cancel,

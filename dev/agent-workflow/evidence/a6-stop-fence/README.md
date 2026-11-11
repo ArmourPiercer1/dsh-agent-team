@@ -169,7 +169,7 @@ holds only while the abandonment row is durable (a failed `commitAbandonmentFact
 
 No new signal is minted in the tool layer; absent `ctx.signal` the call is byte-identical to before.
 
-### 5.1 Every `guardOperation` call site in the repository (2026-11-11 audit)
+### 5.1 Every `guardOperation` call site (2026-11-11 audit; retitled after review — see note)
 
 | # | call site | invocation signal in scope? | wired? |
 | --- | --- | --- | --- |
@@ -182,10 +182,12 @@ No new signal is minted in the tool layer; absent `ctx.signal` the call is byte-
 | 7 | `packages/tools/test/a4-corrupt-leg-guard.test.ts` (4 sites) | no | not wired — test fixtures |
 | 8 | `packages/runtime/test/a5-m1-auth-bridge.test.ts` (multiple) | no (some are `guardOperation: (s) => …` spy adapters) | not wired — test doubles |
 | 9 | every other `packages/runtime/test/*.test.ts` direct call | no | not wired — the tests construct durable state and call the guard directly |
-| 10 | `packages/runtime/test/a6-stop-fence.test.ts` S1–S7 (and `packages/tools/test/a6-stop-fence-wiring.test.ts` via the tool) | yes (explicit `{ signal }`) | wired by the test, on purpose |
+| 10 | `packages/runtime/test/a6-stop-fence.test.ts` S1–S7/S9 (and `packages/tools/test/a6-stop-fence-wiring.test.ts` W1 via the tool) | yes (explicit `{ signal }`) | wired by the test, on purpose |
+| 11 | `packages/tools/harness/plugin.mjs:920` — the **TEST-ONLY** seam route (`guardOperation(scope)`, no signal) | no (test seam; header says removal candidate) | not wired — test seam, not a production lane |
 
-There is no other production call site. Sites 6–9 have no invocation signal in scope (they are test
-doubles/fixtures); none of them can consume a real allow after a real decision, so no signal is
+There is no other **production** call site; the heading says "every call site", which is why row 11
+is listed rather than omitted. Sites 6–9 and 11 have no invocation signal in scope (they are test
+doubles/fixtures/seams); none of them can consume a real allow after a real decision, so no signal is
 invented for them.
 
 ## 6. Gates run in this session
@@ -195,7 +197,7 @@ All on the committed tree (`d5c352c60` + the gate-log commit), from this worktre
 | command | verdict |
 | --- | --- |
 | `pnpm -r typecheck` | **PASS** (9 projects, exit 0) |
-| `vitest run packages/runtime packages/tools` (full, `--no-file-parallelism`) | **6558 passed / 6559**, 533/535 files. The two non-green suites are ENVIRONMENTAL and reproduce identically on the untouched baseline: `a5sf-os-runner` P1-07 (no Landlock backend on this host) and `u7-f-agent-control-native-output-schema-c1` (needs the gitignored pristine `tests/deepseek-harness-test-use` checkout, absent in a worktree) |
+| `vitest run packages/runtime packages/tools` (full, `--no-file-parallelism`) | **6561 passed / 6562**, 534/536 files (the count moved when S9/W1 were added; the reviewer measured the same set). The two non-green suites are ENVIRONMENTAL and reproduce identically on the untouched baseline: `a5sf-os-runner` P1-07 (no Landlock backend on this host) and `u7-f-agent-control-native-output-schema-c1` (needs the gitignored pristine `tests/deepseek-harness-test-use` checkout, absent in a worktree) |
 | targeted suites (`a2c4`, `a4p7`, `control-guard-coupling`, `f9`, `p6t6-guard`, `a4-corrupt-leg-guard`, `a6-stop-fence`) | **87/87 PASS** |
 | `eslint .` | **RED at baseline**: 130 errors, every one on untouched files (unused vars etc.); **zero** on any line this PR adds or changes (`control/service.ts` only flags its pre-existing lines 174/284) |
 | `node scripts/doc-checks.mjs` | **PASS** |
