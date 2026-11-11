@@ -27,7 +27,7 @@ import type { RequestedEffectSet } from '../../../domain/tool-governance/src/ind
 import type { ToolContractProblem } from '../../../domain/tool-governance/src/parse-util.js';
 import { type BackendFailure, type ToolCancelSignal, type ToolEffectBackend } from './backend-contract.js';
 import { type LeaseSettlement, type SpillRefusal, type SpillStore } from './spill.js';
-import type { ParsedToolArgs, RenderedPresentation } from './types.js';
+import type { ParsedToolArgs, RenderedPresentation, SearchOutcome, ShellOutcome } from './types.js';
 /** The admission verdict this lane consumes (the decision lives elsewhere — no second authorization fact). */
 export type AdmissionVerdict = {
     readonly kind: 'allow';
@@ -89,12 +89,42 @@ export interface RunToolCallDeps {
     };
     /** Optional A6 execution-result observation: called ONCE after the backend
      *  answered (success or failure), with the callId. It observes only; it can
-     *  never change the result. Cancelled/refused paths do not call it. */
+     *  never change the result. Refused paths (schema/admission/PA/cancel before
+     *  the body) do not call it: no body was admitted, so there is no execution
+     *  to report.
+     *
+     *  The outcome vocabulary is the Control ledger's own
+     *  (`succeeded | failed | unknown`), and it means EXECUTION, not authorization:
+     *  `succeeded` is reserved for a body whose end was observed; a cancelled or
+     *  timed-out body reports `unknown` (it started, its end was never observed —
+     *  separately from whether it produced side effects). */
     readonly onExecutionResult?: (input: {
         readonly callId: string;
-        readonly outcome: 'succeeded' | 'failed';
+        readonly outcome: 'succeeded' | 'failed' | 'unknown';
     }) => void;
 }
+/**
+ * PD-41 (owner ruling 2026-11-11) — the execution-fact outcome of an ANSWERED
+ * backend call. `result.ok` is the backend's "I answered" bit; it is NOT "the
+ * body completed". A shell the host cancelled (or killed at its timeout)
+ * answers `ok: true` with `cancelled: true` / `timedOut: true` and
+ * `exitCode: null` — the payload never reported an end (see
+ * `process-family/src/confined-shell-executor.mjs`, whose settlement for that
+ * arm is `{kind:'cancelled'}`). Recording that as `succeeded` would state a
+ * completion nobody measured: the measured shape was
+ * `cancelled=true exit=not-observed` in the shell log next to a durable
+ * `succeeded`, with no side effect on disk.
+ *
+ * The honest value is the ledger's existing `unknown` — the body was admitted
+ * and may have had effects, but its end was never observed. This invents no
+ * new outcome and changes no admission, consumption or replay behaviour.
+ */
+export declare function executionOutcomeOfAnsweredCall(result: {
+    readonly ok: true;
+    readonly outcome: SearchOutcome | ShellOutcome;
+    /** Carried by the real backend answer; not consulted here (the outcome is). */
+    readonly settlement?: unknown;
+}): 'succeeded' | 'unknown';
 export interface SpillPointerFact {
     readonly spillId: string;
     readonly bytes: number;

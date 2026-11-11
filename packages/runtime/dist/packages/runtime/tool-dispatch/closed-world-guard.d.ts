@@ -322,6 +322,60 @@ export interface GuardDecisionInput {
  * that bound a name at setup and then changed it cannot be raced).
  */
 export declare function guardDecision(input: GuardDecisionInput): GuardVerdict;
+/**
+ * PD-41 (owner ruling 2026-11-11, condition 2) — the TYPED dispatch refusal.
+ *
+ * The Guard already decides in a closed vocabulary (`GUARD_DENIAL_REASONS`) and
+ * already names the §5 code on its observation row, but the value that left the
+ * dispatch door was a bare `Error`/string carrying only prose. An operator could
+ * not tell, programmatically, "the dispatchable surface cannot verify this tool's
+ * Binding" from "this tool was never governed" or "the dispatcher is draining" —
+ * and on the F-4 path (a human allow consumed, then the dispatch refused at the
+ * door) that distinction is the whole recovery instruction: repair the Binding
+ * and raise a NEW approval request; never replay the consumed allow.
+ *
+ * This class is additive metadata on the refusal, not a new decision: the
+ * message stays byte-identical to {@link guardDenialMessage} (the text worlds
+ * already met), while `code` / `reason` / `toolName` are readable by any caller
+ * that holds the error. It never allows, consumes, or changes the Guard's answer.
+ */
+export interface GuardDenial {
+    readonly toolName: string;
+    readonly code: GovernanceError['code'];
+    readonly reason: GuardDenialReason;
+    readonly message: string;
+}
+export declare class ToolDispatchRefusalError extends Error {
+    /** The §5 code this refusal carries (`TOOL_BINDING_UNVERIFIED` for every
+     *  Binding-verification failure; `TEAM_TOOL_UNGOVERNED` / `ADAPTER_DRAINING`
+     *  keep their own codes so the three classes stay distinguishable). */
+    readonly code: GovernanceError['code'];
+    /** The precise measured condition (never inferred at the throw site). */
+    readonly reason: GuardDenialReason;
+    /** The governed name the call named. */
+    readonly toolName: string;
+    constructor(input: {
+        readonly toolName: string;
+        readonly code: GovernanceError['code'];
+        readonly reason: GuardDenialReason;
+        readonly message: string;
+        readonly suffix?: string;
+    });
+}
+/** The ONE question a recovery path asks: is this a Binding-verification
+ *  refusal (repair the Binding, then NEW approval request), or a different
+ *  refusal class? Narrowing only; it grants nothing. */
+export declare function isToolBindingRefusal(error: unknown): error is ToolDispatchRefusalError & {
+    readonly code: 'TOOL_BINDING_UNVERIFIED';
+};
+/**
+ * Build the typed refusal from a Guard verdict. The message is exactly the
+ * verdict's own sentence (plus the caller's positional suffix); nothing is
+ * re-worded here.
+ */
+export declare function dispatchRefusalOf(toolName: string, verdict: Extract<GuardVerdict, {
+    readonly kind: 'deny';
+}>, suffix?: string): ToolDispatchRefusalError;
 /** The §5 codes this Guard is allowed to surface (pinned by test). */
 export declare const GUARD_ERROR_CODES: readonly ("TOOL_BINDING_UNVERIFIED" | "TEAM_TOOL_UNGOVERNED" | "ADAPTER_DRAINING")[];
 //# sourceMappingURL=closed-world-guard.d.ts.map

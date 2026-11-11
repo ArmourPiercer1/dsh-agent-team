@@ -1,0 +1,19 @@
+{
+  "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "head": "bb3c158eb1f76f8db429da01e9a4c5a0e118ca90",
+  "composition": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/wp2-goal/cordis.patch.yml",
+    "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097"
+  },
+  "startedAt": "2026-11-11T15:04:45.806Z",
+  "argv": [
+    "--arm",
+    "arm2",
+    "--runs",
+    "2"
+  ],
+  "arm": "arm2"
+}

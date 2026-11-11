@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "PD41",
+  "paths": [
+    "packages/tools/a5p5-tools/test/a5p5-execution-outcome.test.ts",
+    "packages/runtime/test/pd41-allow-semantics.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1504,
+    "to": 1506
+  },
+  "reason": "PD-41 (owner ruling 2026-11-11, branch task/pd41-allow-semantics-20261111): the TWO new scannable files are the PD-41 lane specs — the execution-fact classification spec in the governed tool lane's own test directory (cancelled/timedOut => unknown, completed => succeeded, answered-failure/throw => failed) and the runtime typed-dispatch-refusal spec (TOOL_BINDING_UNVERIFIED / ADAPTER_DRAINING distinguishable, the verbatim sentence preserved, the body never runs). The production edits (the governed tool pipeline + its registration face, the closed-world guard + scoped dispatcher + install + barrel) ride ALREADY-COUNTED files; dist mirrors and dev/agent-workflow evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED on this tree with both lane specs present and this booking absent: the scanner run reads `scanner counts 1506, ledger derives 983 + 521 = 1504` (packages/testkit/test/p4t6-session-event-scan.test.ts run, 2026-11-11) — exactly these two paths. No chain value copied."
+}

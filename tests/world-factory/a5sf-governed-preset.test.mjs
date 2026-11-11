@@ -109,13 +109,15 @@ function lane(allow) {
 }
 
 /**
- * A schemaVersion 4 bound blueprint carrying the Member ceiling family. The
- * read lane is the Member WORKSPACE; the sibling `write-only` directory is
- * outside it — the same shape the PTY dev-live lane measured.
+ * A bound blueprint carrying the Member ceiling family. The read lane is the
+ * Member WORKSPACE; the sibling `write-only` directory is outside it — the same
+ * shape the PTY dev-live lane measured. Defaults to the v4 face; PD-42 cases
+ * pass `schemaVersion: 5` (and may add `reviewRouting`) to prove the SAME
+ * family is read from either document version.
  */
-function v4Blueprint({ workspace, blueprintId = TEAM, revision = '1', ceilings = true } = {}) {
+function v4Blueprint({ workspace, blueprintId = TEAM, revision = '1', ceilings = true, schemaVersion = 4, reviewRouting } = {}) {
   const document = {
-    schemaVersion: 4,
+    schemaVersion,
     blueprintId,
     revision,
     leader: { templateId: 'leader', persona: 'Lead.' },
@@ -126,6 +128,7 @@ function v4Blueprint({ workspace, blueprintId = TEAM, revision = '1', ceilings =
     permissionMutationEnvelope: { rules: [] },
     teamHardEnvelope: { rules: [] },
     metadata: {},
+    ...(reviewRouting === undefined ? {} : { reviewRouting }),
     ...(ceilings
       ? {
           memberIoCeilings: [{
@@ -328,9 +331,11 @@ function presetTopology(root, workspace) {
  * row was kinder than production and could not see the window (the #649
  * lesson). Tests that need a durable row pass one explicitly.
  */
-async function makeGovernedWorld(label, { blueprintSource, legacyTerminal = false, state = { generation: 0, lifecycle: undefined } } = {}) {
+async function makeGovernedWorld(label, { blueprintSource, blueprintFor, legacyTerminal = false, state = { generation: 0, lifecycle: undefined } } = {}) {
   const { dir, workspace, writeOnly, secret } = makeWorldDirs(label)
-  const source = blueprintSource ?? v4Blueprint({ workspace })
+  // `blueprintFor` lets a case build the source from the World's OWN workspace
+  // (the ceiling locators must name it); a fixed `blueprintSource` still wins.
+  const source = blueprintSource ?? (blueprintFor === undefined ? v4Blueprint({ workspace }) : blueprintFor(workspace))
   const boundBlueprint = blueprintModule.parseBlueprint(source)
   const root = new Context()
   await root.plugin(SystemPrompt)
@@ -612,10 +617,126 @@ test('G2b a v4 blueprint WITHOUT memberIoCeilings also refuses (no implicit ceil
     () => provider.compiledFor(memberOf(world)),
     (error) => {
       assert.equal(error.code, 'MEMBER_POLICY_WITHOUT_BLUEPRINT')
-      assert.match(error.message, /empty memberIoCeilings family/)
+      assert.match(error.message, /declares no memberIoCeilings family/)
+      assert.match(error.message, /schemaVersion 4/)
       return true
     },
   )
+})
+
+// ===========================================================================
+// G2- PD42 — the SOURCE-OF-DOCUMENT widening (owner ruling 2026-11-11)
+//
+// `TeamBlueprintV5Core` is the v4 core face (minus the stamp) plus the optional
+// `reviewRouting`; the v5 validator hands its core to the v4 validator and the
+// v5 hash projection delegates to the v4 one. So a v5 document with
+// `memberIoCeilings` MUST be as good a source of Member ceilings as a v4 one —
+// and a v5 document WITHOUT the family must refuse with its own truthful
+// wording, never "schemaVersion 5 is unsupported".
+// ===========================================================================
+
+test('G2d a v5 blueprint with BOTH memberIoCeilings and reviewRouting DERIVES ceilings and mounts the governed realm (PD-42)', async () => {
+  const world = await makeGovernedWorld('g2-v5-both', {
+    blueprintFor: (workspace) => v4Blueprint({
+      workspace,
+      schemaVersion: 5,
+      reviewRouting: {
+        enabled: true,
+        officerTemplateId: TEMPLATE,
+        ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+        whenOfficerUnavailable: 'hold',
+      },
+    }),
+  })
+  // The bound document really is v5 AND really carries BOTH families: the
+  // positive arm cannot pass by silently falling back to a v4 document.
+  assert.equal(world.boundBlueprint.schemaVersion, 5)
+  assert.equal(world.boundBlueprint.reviewRouting?.officerTemplateId, TEMPLATE)
+  assert.equal(world.boundBlueprint.memberIoCeilings?.length, 1)
+
+  const sinkPath = join(world.dir, 'consult-pd42.jsonl')
+  await mountAndAttach(world, governedConfig({ a5sfEvidencePath: sinkPath }))
+  try {
+    const allow = await runBash(world, 'cat in-lane.txt')
+    assert.equal(allow.result.isError, false, `the v5-derived in-lane read must succeed: ${allow.result.text.slice(0, 400)}`)
+    assert.equal(JSON.parse(allow.result.text).kind, 'confined-terminal')
+    assert.equal(allow.delta.confined, 1)
+    assert.equal(allow.delta.base, 0)
+
+    const deny = await runBash(world, `cat ${world.secret}`)
+    assert.equal(deny.result.isError, true)
+    assert.match(deny.result.text, /IO_READ_DENIED/)
+    assert.equal(deny.delta.confined, 0, 'the refusal happened before any confined child')
+
+    const facts = readFacts(sinkPath)
+    assert.equal(facts.filter((fact) => fact.decision === 'allow').length, 1, `one ALLOW fact: ${JSON.stringify(facts)}`)
+    assert.equal(facts.filter((fact) => fact.decision === 'deny').length, 1, `one DENY fact: ${JSON.stringify(facts)}`)
+  } finally {
+    await world.root.dispose?.()
+  }
+})
+
+test('G2e a v5 blueprint WITHOUT memberIoCeilings refuses with v5-specific wording (never "unsupported")', async () => {
+  const world = await makeGovernedWorld('g2-v5-empty', {
+    blueprintFor: (workspace) => v4Blueprint({
+      workspace,
+      schemaVersion: 5,
+      ceilings: false,
+      reviewRouting: {
+        enabled: true,
+        officerTemplateId: TEMPLATE,
+        ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+        whenOfficerUnavailable: 'hold',
+      },
+    }),
+  })
+  assert.equal(world.boundBlueprint.schemaVersion, 5)
+  assert.equal(world.boundBlueprint.memberIoCeilings, undefined)
+  await assert.rejects(
+    () => world.provider.compiledFor(memberOf(world)),
+    (error) => {
+      assert.equal(error.code, 'MEMBER_POLICY_WITHOUT_BLUEPRINT', 'the refusal stays typed')
+      assert.match(error.message, /schemaVersion 5/)
+      assert.match(error.message, /declares no memberIoCeilings family/)
+      assert.match(error.message, /v5 face is the v4 face plus the optional `reviewRouting` family/)
+      assert.doesNotMatch(error.message, /unsupported/iu, 'a v5 document is NOT an unsupported version')
+      return true
+    },
+    'a v5 document without the family has no ceiling to derive',
+  )
+})
+
+test('G2f deriveProductRealmDeclaration reads the SAME family out of a v5 document (host-free, PD-42)', () => {
+  const workspace = mkdtempSync(join(tmpdir(), 'a5sf-pd42-derive-'))
+  dirs.push(workspace)
+  const source = v4Blueprint({
+    workspace,
+    ceilings: false,
+    schemaVersion: 5,
+    reviewRouting: {
+      enabled: true,
+      officerTemplateId: TEMPLATE,
+      ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
+      whenOfficerUnavailable: 'hold',
+    },
+  })
+  // Same document, with the family re-inserted into the JSON body.
+  const withFamily = source.replace(
+    '"metadata": {}',
+    `"metadata": {}, "memberIoCeilings": [{"templateId": "${TEMPLATE}", "io": {`
+      + `"read": {"mode": "restricted", "allow": ${JSON.stringify([workspace])}, "ask": [], "deny": []},`
+      + `"write": {"mode": "restricted", "allow": ${JSON.stringify([workspace])}, "ask": [], "deny": []},`
+      + '"network": {"mode": "allow"}}}]',
+  )
+  const derived = assembly.deriveProductRealmDeclaration({
+    blueprintSource: withFamily,
+    authority: { revision: 'a4:pd42', admitted: true },
+  })
+  assert.equal(derived.teamId, TEAM)
+  assert.equal(derived.blueprintRevision, '1')
+  assert.equal(derived.members.length, 1)
+  assert.equal(derived.members[0].templateId, TEMPLATE)
+  assert.deepEqual(derived.members[0].ceiling.read.allow, [workspace], 'the ceiling came from the v5 document')
 })
 
 test('G2c a NON-opt-in v3 row keeps the legacy path (mounts nothing)', async () => {

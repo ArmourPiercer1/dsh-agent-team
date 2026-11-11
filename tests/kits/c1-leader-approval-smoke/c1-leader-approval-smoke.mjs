@@ -137,6 +137,7 @@
  */
 
 import { createHash } from 'node:crypto'
+import { createRequire } from 'node:module'
 import { spawn, spawnSync } from 'node:child_process'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, statSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
@@ -169,6 +170,19 @@ const PLANE_TAKEOVER = process.env['C1_PLANE_TAKEOVER'] === '1'
 // through the opt-in review-routing plane. Requires the plane takeover so an
 // approved bash can actually execute.
 const ALPHA6_OFFICER = process.env['C1_ALPHA6_OFFICER'] === '1'
+// PD42 (owner ruling 2026-11-11): run the SAME A6 Officer world with the
+// Alpha.5 governed Member realm ENABLED. The created Team's v5 blueprint then
+// carries BOTH `memberIoCeilings` and `reviewRouting`, the row opts into the
+// shipped governed preset, and the Member's tool calls are served by the
+// compiled realm (guard facts + typed denies). Off by default: the pre-PD42
+// arms stay byte-identical.
+const PD42_CELLINGS = process.env['C1_PD42_CELLINGS'] === '1'
+const GOVERNED_PRESET_ID = 'a5sf-governed-member'
+/** The governed preset's faces the smoke discovery surface never shows. */
+const PD42_GOVERNED_EXTRA_TOOLS = Object.freeze([
+  'create_goal', 'exit_plan_mode', 'get_goal', 'glob', 'grep',
+  'job_kill', 'job_list', 'job_output', 'present', 'skill', 'update_goal',
+])
 
 const KIT_DIR = dirname(new URL(import.meta.url).pathname)
 const WORKTREE = resolve(argValue('worktree', resolve(KIT_DIR, '..', '..', '..')))
@@ -250,6 +264,7 @@ const RUN_DIR = EVIDENCE_DIR_ARG
 const HOME = join(WORKTREE, 'tests', 'homes', `c1-smoke-${RUN_STAMP}`)
 const WORKSPACE = join(HOME, 'workspace')
 const BLUEPRINT_DIR = join(WORKTREE, `.c1-smoke-blueprints-${RUN_STAMP}`)
+const A5SF_CONSULT_SINK = join(HOME, 'a5sf-consult.jsonl')
 
 const ROOT = `session-c1-smoke-root-${RUN_STAMP}`
 const CREATE_ROOT_X = `session-c1-smoke-x-${RUN_STAMP}`
@@ -380,6 +395,12 @@ const FILE_Z = join(WORKSPACE, `c1-z-${RUN_STAMP}.txt`)
 const CMD_X_ALLOW = `echo ${SUM_X_ALLOW} > ${FILE_X_ALLOW} && echo x-allow-executed`
 const CMD_X_DENY = `echo ${SUM_X_DENY} > ${FILE_X_DENY} && echo x-deny-executed`
 const CMD_A6_ALLOW = `echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW} && echo a6-allow-executed`
+// PD42 ceiling arm locators: INSIDE is under the ceiling's read/write lane
+// (WORKSPACE); OUTSIDE is a sibling of WORKSPACE and is outside BOTH lanes.
+const SUM_PD42_INSIDE = `pd42-inside-${RUN_STAMP}`
+const SUM_PD42_OUTSIDE = `pd42-outside-${RUN_STAMP}`
+const FILE_PD42_INSIDE = join(WORKSPACE, `pd42-inside-${RUN_STAMP}.txt`)
+const FILE_PD42_OUTSIDE = join(HOME, `pd42-outside-${RUN_STAMP}.txt`)
 // body-started-but-result-unknown probe: the start marker is durable BEFORE the
 // result write; a crash between them must never replay the body.
 const CMD_A6_BODY = `echo body-started > ${FILE_A6_BODY_START} && sleep 20 && echo ${SUM_A6_ALLOW} > ${FILE_A6_ALLOW}`
@@ -623,8 +644,11 @@ function teamRowConfig() {
     bootPhase: 'create',
     blueprintSource: (ALPHA6_BOOT_ONLY || ALPHA6_OFFICER) ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
     blueprintDir: BLUEPRINT_DIR,
-    rootPresetId: SMOKE_PRESET_ID,
-    memberPresetId: SMOKE_PRESET_ID,
+    rootPresetId: PD42_CELLINGS ? GOVERNED_PRESET_ID : SMOKE_PRESET_ID,
+    // PD42: the Member preset is the SHIPPED governed preset, so the realm's
+    // confined `bash` (not the smoke preset's isolated persistent PTY) is the
+    // model-visible face the compiled ceiling governs.
+    memberPresetId: PD42_CELLINGS ? GOVERNED_PLANE_PRESET_ID : SMOKE_PRESET_ID,
     seedMembers: [],
     generation: 1,
     staticModel: { provider: 'deepseek-official', model: 'c1-smoke-model' },
@@ -640,6 +664,12 @@ function teamRowConfig() {
     glueUrl: GLUE_URL,
     seamUrl: SEAM_URL,
     ...(plane === undefined ? {} : { teamToolPlane: plane }),
+    // PD42: the Alpha.5 governed realm, derived from the SAME bound blueprint
+    // (`a5sfGovernedRealm` is the neutral key; no policy is typed here). The
+    // evidence sink is where the product guard writes its consult facts.
+    ...(PD42_CELLINGS
+      ? { a5sfGovernedRealm: true, a5sfEvidencePath: A5SF_CONSULT_SINK }
+      : {}),
     ...(ALPHA6_BOOT_ONLY || ALPHA6_OFFICER
       ? {
           alpha6ReviewRouting: true,
@@ -781,6 +811,20 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     '            resource:',
     '              kind: subtree',
     '              path: team',
+    // PD42 ceiling arm: the PERMISSION layer allows read/write `any`, so the
+    // compiled CEILING (memberIoCeilings read/write restricted to WORKSPACE) is
+    // the only thing that can refuse the out-of-lane calls — that is what makes
+    // the refusal evidence about the ceiling rather than about permissions.
+    ...(PD42_CELLINGS
+      ? [
+          '          - tool: read',
+          '            resource:',
+          '              kind: any',
+          '          - tool: write',
+          '            resource:',
+          '              kind: any',
+        ]
+      : []),
     '        ask:',
     '          - tool: bash',
     '            resource:',
@@ -788,9 +832,9 @@ function savedBlueprintYaml(bpId, leaderPersona, workerPersona, denyList) {
     ...(PLANE_TAKEOVER ? ['        deny: []'] : [
       '        deny:',
       '          - tool: read',
-      '          resource:',
-      '            kind: subtree',
-      '            path: runtime',
+      '            resource:',
+      '              kind: subtree',
+      '              path: runtime',
     ]),
   ]
   const teamEnvelope = [
@@ -845,7 +889,11 @@ function savedBlueprintA6Yaml(denyList) {
     '        items:',
     '          - team_list_pending_control',
     '          - team_resolve_control',
-    '      builtinToolDeny: []',
+    // PD42: the Officer runs on the governed preset too; its out-of-vocabulary
+    // faces must be removed for the coverage gate (same list as the worker).
+    ...(PD42_CELLINGS
+      ? ['      builtinToolDeny:', ...denyList.map((name) => `        - ${name}`)]
+      : ['      builtinToolDeny: []']),
     '      skills:',
     '        kind: allow',
     '        items: []',
@@ -885,6 +933,43 @@ function savedBlueprintA6Yaml(denyList) {
   text = text.replace(
     'metadata: {}',
     [
+      // PD42: the Alpha.5 Member ceiling family on the SAME v5 document that
+      // carries `reviewRouting` below. Read and write are the kit WORKSPACE;
+      // `PD42_OUTSIDE` (one directory up) is outside both lanes and is the
+      // refusal arm's locator.
+      ...(PD42_CELLINGS
+        ? [
+            'memberIoCeilings:',
+            '  - templateId: worker',
+            '    io:',
+            '      read:',
+            '        mode: restricted',
+            `        allow: ["${WORKSPACE}"]`,
+            '        ask: []',
+            '        deny: []',
+            '      write:',
+            '        mode: restricted',
+            `        allow: ["${WORKSPACE}"]`,
+            '        ask: []',
+            '        deny: []',
+            '      network:',
+            '        mode: allow',
+            '  - templateId: officer',
+            '    io:',
+            '      read:',
+            '        mode: restricted',
+            `        allow: ["${WORKSPACE}"]`,
+            '        ask: []',
+            '        deny: []',
+            '      write:',
+            '        mode: restricted',
+            `        allow: ["${WORKSPACE}"]`,
+            '        ask: []',
+            '        deny: []',
+            '      network:',
+            '        mode: allow',
+          ]
+        : []),
       'reviewRouting:',
       '  enabled: true',
       '  officerTemplateId: officer',
@@ -922,6 +1007,64 @@ function smokePresetDeclaration() {
   })
 }
 
+/**
+ * PD42 — the SHIPPED governed Member preset row, read from the repository's own
+ * `cordis.patch.yml` (the ONE shipped composition), with its single `!!js`
+ * platform predicate evaluated in this process. The row is mounted verbatim:
+ * this kit never authors a second governed preset.
+ */
+function shippedGovernedPresetRow({ id = GOVERNED_PRESET_ID, planeOwnedBash = false } = {}) {
+  const YAML = createRequire(join(WORKTREE, 'package.json'))('yaml')
+  const raw = readFileSync(join(WORKTREE, 'cordis.patch.yml'), 'utf8')
+  const substituted = raw.replace(/!!js[ \t]+([^\n]+)/gu, (_m, expr) => {
+    // eslint-disable-next-line no-new-func
+    const value = new Function(`"use strict";return (${expr.trim()})`)()
+    return JSON.stringify(value)
+  })
+  const doc = YAML.parse(substituted)
+  const rows = []
+  const visit = (list) => {
+    for (const row of list ?? []) {
+      if (Array.isArray(row?.insert)) { visit(row.insert); continue }
+      rows.push(row)
+    }
+  }
+  visit(doc)
+  const preset = rows.find((row) => row?.config?.id === GOVERNED_PRESET_ID)
+  if (preset === undefined) {
+    throw new Error(`the shipped layer carries no preset '${GOVERNED_PRESET_ID}' row (PD42)`)
+  }
+  // ENVIRONMENT ACCOMMODATION, disclosed: this kit's bare `dsh web` profile
+  // provides no `web` service, so the shipped preset's `tool-web` row (whose
+  // `inject` REQUIRES `web`) never starts and the Member activation fails. The
+  // row is a name-holder for a network face; the PD42 proof is the Member I/O
+  // realm + the A6 route, so the unavailable face is dropped HERE (kit-side),
+  // never in the shipped preset. The dropped row is recorded in the evidence.
+  //
+  // PLANE-OWNED BASH, disclosed: the A6 execute leg re-dispatches the approved
+  // call through the Alpha.5 Team tool PLANE, which owns the `bash` binding. A
+  // second `bash` from the preset is a placement conflict, so the MEMBER copy of
+  // the preset drops `tool-bash` and the plane's guarded binding is the only
+  // bash on that scope. The ROOT copy keeps it (the boot Leader has no plane).
+  const filtered = {
+    ...preset,
+    id: id === GOVERNED_PRESET_ID ? preset.id : preset.id.replace(GOVERNED_PRESET_ID, id),
+    config: {
+      ...preset.config,
+      id,
+      plugins: (preset.config.plugins ?? []).filter((plugin) => {
+        if (plugin?.id === 'tool-web') return false
+        if (planeOwnedBash && plugin?.id === 'tool-bash') return false
+        return true
+      }),
+    },
+  }
+  return filtered
+}
+
+/** The plane-owned-bash member copy of the shipped preset (PLANE TAKEOVER only). */
+const GOVERNED_PLANE_PRESET_ID = `${GOVERNED_PRESET_ID}-plane`
+
 function writePatchFile(home) {
   mkdirSync(join(home, 'profiles', 'web'), { recursive: true })
   const lines = [
@@ -930,6 +1073,10 @@ function writePatchFile(home) {
     '- insert:',
     ...yamlEmitItem({ id: 'dsh-agent-team', name: PRODUCTION_ROW_NAME, config: teamRowConfig() }, 2),
     ...yamlEmitItem({ id: 'p6t6-team-tools', name: P6T6_ROW_NAME }, 2),
+    ...(PD42_CELLINGS ? yamlEmitItem(shippedGovernedPresetRow(), 2) : []),
+    ...(PD42_CELLINGS
+      ? yamlEmitItem(shippedGovernedPresetRow({ id: GOVERNED_PLANE_PRESET_ID, planeOwnedBash: true }), 2)
+      : []),
     ...yamlEmitItem(smokePresetDeclaration(), 2),
     '',
   ]
@@ -2213,6 +2360,45 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     execResultOk,
   })
 
+  // ── PD42 same-Team ceiling arm (v5 `memberIoCeilings` on the SAME document
+  // that carries `reviewRouting`) ──────────────────────────────────────────
+  if (PD42_CELLINGS) {
+    const facts = existsSync(A5SF_CONSULT_SINK)
+      ? readFileSync(A5SF_CONSULT_SINK, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => {
+          try { return JSON.parse(line) } catch { return null }
+        }).filter((fact) => fact !== null)
+      : []
+    const writeDenies = facts.filter((fact) => fact.decision === 'deny' && fact.decidedBy === 'IO_WRITE_DENIED')
+    const readDenies = facts.filter((fact) => fact.decision === 'deny' && fact.decidedBy === 'IO_READ_DENIED')
+    const allows = facts.filter((fact) => fact.decision === 'allow')
+    const insideText = existsSync(FILE_PD42_INSIDE) ? readFileSync(FILE_PD42_INSIDE, 'utf8') : ''
+    const outsideExists = existsSync(FILE_PD42_OUTSIDE)
+    check('PD42-1', 'a REAL fs write INSIDE the v5-compiled ceiling succeeded through the governed realm',
+      insideText.includes(SUM_PD42_INSIDE) && allows.length > 0,
+      `file=${FILE_PD42_INSIDE} text=${JSON.stringify(insideText.slice(0, 120))} allows=${allows.length} facts=${facts.length}`)
+    check('PD42-2', 'a REAL fs write OUTSIDE the ceiling was refused `IO_WRITE_DENIED` with zero bytes on disk',
+      writeDenies.length > 0 && !outsideExists,
+      `denies=${writeDenies.length} outsideExists=${String(outsideExists)} path=${FILE_PD42_OUTSIDE} decidedBy=${writeDenies.map((f) => f.decidedBy).join(',')}`)
+    check('PD42-3', 'a REAL fs read OUTSIDE the ceiling was refused `IO_READ_DENIED` with a guard fact',
+      readDenies.length > 0,
+      `denies=${readDenies.length} decidedBy=${readDenies.map((f) => f.decidedBy).join(',')} methods=${facts.map((f) => f.method).join(',')}`)
+    check('PD42-4', 'the Member turn that produced the Officer-approved plane execution is the SAME turn that hit the ceiling',
+      executed && insideText.includes(SUM_PD42_INSIDE) && writeDenies.length > 0,
+      `executed=${String(executed)} wakes=${wakes.length} consumptions=${ledger.consumptions.length}`)
+    writeEvidence('pd42-ceiling.json', {
+      schema: 'pd42-ceiling/1',
+      sink: A5SF_CONSULT_SINK,
+      facts,
+      insidePath: FILE_PD42_INSIDE,
+      outsidePath: FILE_PD42_OUTSIDE,
+      insideText,
+      outsideExists,
+      writeDenies: writeDenies.length,
+      readDenies: readDenies.length,
+      allows: allows.length,
+    })
+  }
+
   let execNegOk = true
   if (A6_EXEC_NEG) {
     // The Officer is the LIVE member instance (the worker's session may be
@@ -2549,6 +2735,17 @@ function makeDecide() {
       // that turn starts. Hold this request briefly so the Officer is already
       // in its long tool turn when the PA ask is steered into the Inbox.
       if (A6_INBOX_ACTIVE && !a6BusyDone) await new Promise((resolve) => setTimeout(resolve, 6000))
+      // PD42 same-Team ceiling arm, on the SAME Member turn that already
+      // produced the Officer-approved plane execution: a REAL fs write inside
+      // the ceiling (must succeed + one ALLOW guard fact), a write outside it
+      // (must be refused `IO_WRITE_DENIED`, zero bytes on disk) and a read
+      // outside it (refused `IO_READ_DENIED`).
+      if (PD42_CELLINGS) {
+        if (tools === 1) return toolCall('write', { file_path: FILE_PD42_INSIDE, content: SUM_PD42_INSIDE })
+        if (tools === 2) return toolCall('write', { file_path: FILE_PD42_OUTSIDE, content: SUM_PD42_OUTSIDE })
+        if (tools === 3) return toolCall('read', { file_path: FILE_PD42_OUTSIDE })
+        if (tools === 4) return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
+      }
       switch (tools) {
         case 0: return toolCall('bash', bashArgs(process.env['C1_A6_CRASH'] === 'body' ? CMD_A6_BODY : CMD_A6_ALLOW))
         case 1: return { kind: 'text', content: 'C1_A6_MEMBER_DONE' }
@@ -3110,6 +3307,15 @@ async function main() {
       const denyList = surface.filter(
         (n) => !MANAGED_TOOL_NAMES.includes(n) && !SAFE_UNMANAGED_TOOL_NAMES.includes(n) && !TEAM_TOOL_CATALOG.includes(n),
       )
+      // PD42: the MEMBER surface is the shipped governed preset, whose extra
+      // faces (goal/plan/jobs/search/skill/present) the smoke discovery turn
+      // never sees. They are removed from the A6 worker/officer/leader
+      // templates through `builtinToolDeny` so the A2C-2 coverage gate passes;
+      // the Goal arm runs on its OWN template, which declares no permissions
+      // policy and therefore keeps them.
+      for (const name of (PD42_CELLINGS ? PD42_GOVERNED_EXTRA_TOOLS : [])) {
+        if (!denyList.includes(name)) denyList.push(name)
+      }
       const missingTeam = TEAM_TOOL_CATALOG.filter((n) => !surface.includes(n))
       check('L0', 'discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)',
         surface.includes('read') && surface.includes('bash') && missingTeam.length === 0,

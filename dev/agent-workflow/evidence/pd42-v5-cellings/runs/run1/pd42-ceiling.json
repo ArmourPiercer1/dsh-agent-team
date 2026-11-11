@@ -1,0 +1,12 @@
+{
+  "schema": "pd42-ceiling/1",
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/a5sf-consult.jsonl",
+  "facts": [],
+  "insidePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/workspace/pd42-inside-2026-11-11T18-19-27.txt",
+  "outsidePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42/tests/homes/c1-smoke-2026-11-11T18-19-27/pd42-outside-2026-11-11T18-19-27.txt",
+  "insideText": "",
+  "outsideExists": false,
+  "writeDenies": 0,
+  "readDenies": 0,
+  "allows": 0
+}
