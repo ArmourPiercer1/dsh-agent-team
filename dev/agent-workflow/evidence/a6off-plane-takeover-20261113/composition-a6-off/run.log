@@ -1,0 +1,12 @@
+[2026-11-12T19:40:39.595Z] A1 bash-governance — stamp 2026-11-12T19-40-39-h0-r0f81b5
+[2026-11-12T19:40:39.596Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113
+[2026-11-12T19:40:39.596Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T19:40:39.596Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/dev/agent-workflow/evidence/a6off-plane-takeover-20261113/composition-a6-off
+[2026-11-12T19:40:39.596Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-12T19:40:39.596Z] mode: a6-on (alpha6ReviewRouting: true)
+[2026-11-12T19:40:47.105Z] A1 bash-governance — stamp 2026-11-12T19-40-47-h0-rcea1e7
+[2026-11-12T19:40:47.106Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113
+[2026-11-12T19:40:47.106Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T19:40:47.106Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/dev/agent-workflow/evidence/a6off-plane-takeover-20261113/composition-a6-off
+[2026-11-12T19:40:47.106Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-12T19:40:47.106Z] mode: a6-off (alpha6ReviewRouting: false)

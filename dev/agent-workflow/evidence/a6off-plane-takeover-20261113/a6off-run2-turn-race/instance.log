@@ -1,0 +1,38 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3188/?token=sQ8q8eKwR-KLKCoWLosERfXbug0pSxZzP1GXZuqJY-M
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-12T19-45-05-h0-r9f5941 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941 templateId=w-deny
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T19-45-05-h0-r9f5941
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-1 approvalCaseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-1 grantId=grant:fca57c45d966339373df7b2856ef68e2 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-1 grantId=grant:fca57c45d966339373df7b2856ef68e2 caseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-2 approvalCaseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-2 grantId=grant:926b53b57b648a3167e6f162e86cc627 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-2 grantId=grant:926b53b57b648a3167e6f162e86cc627 caseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-3 approvalCaseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-3 grantId=grant:77cee2d82d769abadd422182b6825038 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-3 grantId=grant:77cee2d82d769abadd422182b6825038 caseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-4 approvalCaseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-4 grantId=grant:fb9b434478a282db1ad8a3fac4d87218 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0xul97v095hy-native-bash:hexec:nb-1794512721003-2067731673-4 grantId=grant:fb9b434478a282db1ad8a3fac4d87218 caseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-0xul97v095hy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1pv1se81n2fh-native-bash:hexec:nb-1794512721115-2056606826-1 approvalCaseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-1pv1se81n2fh:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-1pv1se81n2fh-native-bash:hexec:nb-1794512721115-2056606826-1 grantId=grant:3db5198e9934f174b5a543380007428d effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-1pv1se81n2fh-native-bash:hexec:nb-1794512721115-2056606826-1 grantId=grant:3db5198e9934f174b5a543380007428d caseId=tadm:session-a1-root-2026-11-12T19-45-05-h0-r9f5941:inst-1pv1se81n2fh:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0

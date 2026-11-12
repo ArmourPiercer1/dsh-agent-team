@@ -67,8 +67,17 @@
  *   node tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs \
  *     --worktree <path> --testuse <path> --host-port N --mock-port N \
  *     --evidence-dir <path> [--keep]
+ *   node tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs \
+ *     ... --a6-off            # SAME composition, alpha6ReviewRouting: false
+ *   node tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs \
+ *     ... --print-composition # hash the emitted composition, no Host/world
  *   node tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs \
  *     <run1-dir> <run2-dir> <agreement.json>
+ *
+ * `--a6-off` (added 2026-11-13, evidence `a6off-plane-takeover-20261113`) flips
+ * ONLY the product's `alpha6ReviewRouting` opt-in to an explicit `false`; the
+ * seven clause propositions are unchanged and approvals then travel the
+ * product's legacy Leader path. The four recorded A6-on runs are untouched.
  *
  * EXIT: 0 = all seven clauses PASS; 2 = a clause FAILed; 1 = fatal
  * (preflight / boot / row).
@@ -95,6 +104,28 @@ function argValue(name, dflt) {
   return v
 }
 const FLAG_KEEP = args.includes('--keep')
+// A6-OFF (2026-11-13): measure the SAME plane-takeover composition with the
+// product's Alpha.6 review-routing opt-in OFF. The ONLY product switch flipped
+// is `alpha6ReviewRouting` (explicit `false` in the row config — the product
+// treats absent/false identically, so an explicit false is the honest OFF
+// value); the v5 blueprint (`memberIoCeilings` + `reviewRouting`), the shipped
+// governed preset, the plane takeover and the Host's `danger-full-access`
+// default are held IDENTICAL to the A6-on runs. The blueprint's
+// `reviewRouting` block stays in the document but is INERT with the opt-in off
+// (the Alpha.6 parser is never invoked), which is exactly the state a release
+// that toggles this flag ships.
+//
+// CONSEQUENCE THE DRIVER HANDLES, NOT HIDES: with A6 off there is no Officer
+// review wake. A governed `bash` ask goes down the product's legacy Leader path
+// (durable `[team-control requestId=...]` notification to the Root/Leader), so
+// the Leader model turn below LISTs and RESOLVEs the durable row through the
+// production `team_list_pending_control` / `team_resolve_control` tools — the
+// same approval loop the legacy C1 smoke measures. The clause propositions do
+// not move.
+const A6_OFF = args.includes('--a6-off')
+// Static composition fingerprint: build the row config + emitted profile patch
+// for the selected mode, hash it, print it, exit. No Host, no world.
+const PRINT_COMPOSITION = args.includes('--print-composition')
 // Boot-only Alpha.6 check: mount the SAME production row with a v5 routing
 // source + the opt-in config, prove the Host boots it (durable wake-intent
 // path present, live wake seam present), then stop after L0. The model
@@ -112,8 +143,10 @@ const JOINT_PRESET = process.env['JOINT_PRESET'] === 'fs-only' ? 'fs-only' : 'na
 const PLANE_TAKEOVER = true
 // A6-OFFICER: the same real Host, but the ask is routed to a live Officer
 // through the opt-in review-routing plane. Requires the plane takeover so an
-// approved bash can actually execute.
-const ALPHA6_OFFICER = true
+// approved bash can actually execute. With `--a6-off` this pilot is false (the
+// product flag below is what actually changes; this constant selects the
+// instrument's A6-on arm and its mock branch).
+const ALPHA6_OFFICER = !A6_OFF
 // PD42 (owner ruling 2026-11-11): run the SAME A6 Officer world with the
 // Alpha.5 governed Member realm ENABLED. The created Team's v5 blueprint then
 // carries BOTH `memberIoCeilings` and `reviewRouting`, the row opts into the
@@ -654,7 +687,7 @@ function teamRowConfig() {
   return {
     rootSessionId: ROOT,
     bootPhase: 'create',
-    blueprintSource: (ALPHA6_BOOT_ONLY || ALPHA6_OFFICER) ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
+    blueprintSource: (ALPHA6_BOOT_ONLY || ALPHA6_OFFICER || A6_OFF) ? BP_A6_ANCHOR_YAML : BP_ANCHOR_YAML,
     blueprintDir: BLUEPRINT_DIR,
     rootPresetId: PD42_CELLINGS ? GOVERNED_PRESET_ID : SMOKE_PRESET_ID,
     // PD42: the Member preset is the SHIPPED governed preset, so the realm's
@@ -688,7 +721,13 @@ function teamRowConfig() {
           alpha6WakeIntentPath: join(HOME, 'alpha6-wake-intents'),
           ...(A6_TIMEOUT_MS > 0 ? { alpha6WaitTimeoutMs: A6_TIMEOUT_MS } : {}),
         }
-      : {}),
+      : A6_OFF
+        // The exact OFF value: an explicit `false`. No wake-intent path is
+        // emitted, because nothing durable is being written in this mode. The
+        // product's own opt-in test is `=== true`, so this row takes the
+        // pre-Alpha.6 code path verbatim.
+        ? { alpha6ReviewRouting: false }
+        : {}),
   }
 }
 
@@ -1817,6 +1856,32 @@ async function runA1Scenario({ booted, mock, denyList }) {
     { w1: a, w2: c, ptyCountGrew })
 
   // ── A1-5: a wrong / prefixed session id is refused BEFORE a PTY exists ───
+  // Quiescence barrier (2026-11-13, A6-off): the clause counts MODEL calls
+  // before/after the three refused calls, so any turn that was already in
+  // flight when the window opened would be misread as caused by the refusal.
+  // The legacy approval path can deliver a late Leader notification turn for an
+  // ALREADY-DECIDED leg (observed once: `a6off-run2-turn-race`, request #45,
+  // reply `A1_LEGACY_APPROVAL_DONE`, after the w2 leg had been resolved); the
+  // barrier waits for the world to go quiet first. The proposition is
+  // unchanged and, if anything, stricter: after quiescence, a turn caused by
+  // the refused id still lands inside the 2 s window and still fails.
+  const quiesce = async (idleMs, timeoutMs) => {
+    const started = Date.now()
+    let lastCount = mock.requests.length
+    let lastChange = Date.now()
+    while (Date.now() - started < timeoutMs) {
+      await new Promise((r) => setTimeout(r, 200))
+      if (mock.requests.length !== lastCount) {
+        lastCount = mock.requests.length
+        lastChange = Date.now()
+      }
+      if (Date.now() - lastChange >= idleMs) {
+        return { quiesced: true, waitedMs: Date.now() - started, requests: lastCount }
+      }
+    }
+    return { quiesced: false, waitedMs: Date.now() - started, requests: mock.requests.length }
+  }
+  const preQuiesce = await quiesce(2000, 15_000)
   const ptyBefore5 = hostPid === null ? [] : ptyFdList(hostPid)
   const turnsBefore5 = mock.requests.length
   const wrongSufficed = await apiPrompt(booted.origin, booted.cookie, `${CREATE_ROOT_A1}x`, MK_W1)
@@ -1831,6 +1896,26 @@ async function runA1Scenario({ booted, mock, denyList }) {
   await new Promise((r) => setTimeout(r, 2000))
   const ptyAfter5 = hostPid === null ? [] : ptyFdList(hostPid)
   const turnsAfter5 = mock.requests.length
+  // A1-5's "no NEW model turn" is only meaningful if nothing unrelated is in
+  // flight. Dump every request that arrived inside the observation window so a
+  // late, UNRELATED turn (e.g. a stray notification turn) is named rather than
+  // silently failing the clause — this became necessary with the legacy
+  // approval path, where a Leader notification turn can land between the
+  // A1-4 wait and this probe.
+  const windowTurns = mock.requests.slice(turnsBefore5).map((r) => ({
+    seq: r.seq,
+    messages: (r.body?.messages ?? []).length,
+    tools: toolMsgsOf(r).length,
+    lastUser: lastUserTextOf(r).slice(0, 300),
+  }))
+  writeEvidence('a1-precreation-window.json', {
+    turnsBefore: turnsBefore5,
+    turnsAfter: turnsAfter5,
+    quiesce: preQuiesce,
+    windowTurns,
+    ptyBefore: ptyBefore5,
+    ptyAfter: ptyAfter5,
+  })
   const refusalText = (res) => JSON.stringify(res?.body ?? res).slice(0, 400)
   const refused = (res) => !(res?.status === 200 && JSON.stringify(res?.body ?? {}).includes('"ok":true'))
   const preCreation = ptyAfter5.length === ptyBefore5.length && turnsAfter5 === turnsBefore5
@@ -1838,8 +1923,8 @@ async function runA1Scenario({ booted, mock, denyList }) {
   const gateCodes = [codeOf(wrongSufficed), codeOf(wrongTruncated), codeOf(wrongRelay)]
   const gate = gateCodes.filter((c) => c !== null).join(',') || null
   note('A1-5', refused(wrongSufficed) && refused(wrongTruncated) && refused(wrongRelay) && preCreation ? 'PASS' : 'FAIL',
-    `sufficedStatus=${String(wrongSufficed.status)} truncatedStatus=${String(wrongTruncated.status)} relayStatus=${String(wrongRelay.status)} gate=${String(gate)} allRefused=${String(refused(wrongSufficed) && refused(wrongTruncated) && refused(wrongRelay))} ptyFdsBefore=${String(ptyBefore5.length)} ptyFdsAfter=${String(ptyAfter5.length)} turnsBefore=${String(turnsBefore5)} turnsAfter=${String(turnsAfter5)}`,
-    { gate, ptyBefore: ptyBefore5, ptyAfter: ptyAfter5, refusals: [refusalText(wrongSufficed), refusalText(wrongTruncated), refusalText(wrongRelay)] })
+    `sufficedStatus=${String(wrongSufficed.status)} truncatedStatus=${String(wrongTruncated.status)} relayStatus=${String(wrongRelay.status)} gate=${String(gate)} allRefused=${String(refused(wrongSufficed) && refused(wrongTruncated) && refused(wrongRelay))} ptyFdsBefore=${String(ptyBefore5.length)} ptyFdsAfter=${String(ptyAfter5.length)} turnsBefore=${String(turnsBefore5)} turnsAfter=${String(turnsAfter5)} quiesced=${String(preQuiesce.quiesced)} precreationQuiesceMs=${String(preQuiesce.waitedMs)}${windowTurns.length > 0 ? ` windowTurns=${JSON.stringify(windowTurns.map((t) => `seq${t.seq}:msgs${t.messages}:tools${t.tools}`))}` : ''}`,
+    { gate, ptyBefore: ptyBefore5, ptyAfter: ptyAfter5, windowTurns, refusals: [refusalText(wrongSufficed), refusalText(wrongTruncated), refusalText(wrongRelay)] })
 
   // ── A1-6: the full-access default is narrowed, not inherited ─────────────
   const rootWrite = await p6t6Tool(booted.origin, 'bash', {
@@ -1906,6 +1991,46 @@ async function runA1Scenario({ booted, mock, denyList }) {
   return [...verdicts.values()].every((row) => row.verdict === 'PASS')
 }
 
+function sha256Text(text) {
+  return createHash('sha256').update(text).digest('hex')
+}
+
+/**
+ * The composition under test, as a comparable fingerprint. The emitted profile
+ * patch carries the row config (including the Alpha.6 flag) verbatim; the only
+ * run-varying substrings are normalized (`DSH_HOME` absolute path and the run
+ * stamp), so an A6-on / A6-off pair differs exactly where the product flag
+ * changed and nowhere else. The blueprint text is hashed alongside it.
+ */
+function compositionEvidence() {
+  const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+  const raw = existsSync(patchPath) ? readFileSync(patchPath, 'utf8') : null
+  const normalize = (text) => (text === null
+    ? null
+    : text.split(HOME).join('<DSH_HOME>').split(RUN_STAMP).join('<RUN_STAMP>'))
+  const text = normalize(raw)
+  const blueprintPath = join(BLUEPRINT_DIR, 'a1.yaml')
+  const rawBlueprint = existsSync(blueprintPath) ? readFileSync(blueprintPath, 'utf8') : null
+  const blueprint = normalize(rawBlueprint)
+  return {
+    schema: 'a1-composition/1',
+    mode: A6_OFF ? 'a6-off' : 'a6-on',
+    alpha6ReviewRouting: !A6_OFF,
+    flags: { A6_OFF, ALPHA6_OFFICER, PLANE_TAKEOVER, PD42_CELLINGS, JOINT_PRESET },
+    normalization: 'the DSH_HOME absolute path and the per-run stamp are replaced with <DSH_HOME>/<RUN_STAMP>; every other byte is verbatim',
+    patch: {
+      rawSha256: raw === null ? null : sha256Text(raw),
+      normalizedSha256: text === null ? null : sha256Text(text),
+      text,
+    },
+    blueprint: {
+      rawSha256: rawBlueprint === null ? null : sha256Text(rawBlueprint),
+      normalizedSha256: blueprint === null ? null : sha256Text(blueprint),
+      text: blueprint,
+    },
+  }
+}
+
 async function finishA1({ verdicts, blueprintHash = null }) {
   const arms = A1_ARMS.map(([id, proposition]) => verdicts.get(id) ?? { arm: id, proposition, verdict: 'NOT_REACHED', detail: 'not evaluated' })
   const counts = {}
@@ -1916,9 +2041,13 @@ async function finishA1({ verdicts, blueprintHash = null }) {
     tree: { ...TREE_FACTS, blueprintHash },
     composition: {
       preset: JOINT_PRESET,
+      mode: A6_OFF ? 'a6-off' : 'a6-on',
       blueprint: 'schemaVersion: 5, memberIoCeilings + reviewRouting on ONE document',
       planeTakeover: true,
-      alpha6ReviewRouting: true,
+      alpha6ReviewRouting: !A6_OFF,
+      alpha6WakeIntentPathConfigured: !A6_OFF,
+      reviewRoutingBlocksInert: A6_OFF,
+      approvalPath: A6_OFF ? 'legacy Leader notification (durable [team-control] -> team_list_pending_control + team_resolve_control)' : 'Alpha.6 Officer review wake',
       governedRealm: true,
       hostDefaultSandboxMode: HOST_SANDBOX_MODE,
       nativeBash: 'the PINNED persistent bash over the governed PTY (cd/export persist; the plane adopts it and mounts no shell row)',
@@ -1930,6 +2059,7 @@ async function finishA1({ verdicts, blueprintHash = null }) {
     note: 'DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim.',
   }
   writeEvidence('a1-verdicts.json', document)
+  writeEvidence('a1-composition.json', compositionEvidence())
   writeEvidence('a1-arms.md', [
     '| clause | verdict | proposition | measured detail |',
     '|---|---|---|---|',
@@ -2113,6 +2243,33 @@ function makeDecideA1() {
       return { kind: 'text', content: 'A1_OFFICER_DONE' }
     }
 
+    // A6-OFF: the SAME ask, resolved through the product's legacy Leader path.
+    // With `alpha6ReviewRouting: false` the Host delivers a durable
+    // `[team-control requestId=<id>]` notification to the Team's Leader; the
+    // Leader model turn lists the durable row and resolves EXACTLY the id the
+    // notification names, through the same production tools the Officer arm
+    // uses. A1-7's deny window flips the decision here just as it does there,
+    // so "approved => executed" and "denied => zero executions" are exercised
+    // on a real approval path in both modes.
+    if (lastUser.startsWith('[team-control requestId=')) {
+      try { appendFileSync(join(RUN_DIR, 'a1-leader-notifications.log'), `${lastUser}\n===\n`) } catch { /* best-effort */ }
+      const requestId = /^\[team-control requestId=([^\]\s]+)\]/.exec(lastUser)?.[1] ?? ''
+      if (tools === 0) {
+        return toolCall('team_list_pending_control', { rootSessionId: CREATE_ROOT_A1, requestToken: `a1-legacy-list-${String(mockWakeSeq++)}` })
+      }
+      if (tools === 1) {
+        const listText = contentText(toolMsgsOf(req).slice(-1)[0]?.content ?? '')
+        const listed = /"requestId"\s*:\s*"([^"]+)"/.exec(listText)?.[1] ?? ''
+        return toolCall('team_resolve_control', {
+          rootSessionId: CREATE_ROOT_A1,
+          requestToken: `a1-legacy-res-${String(mockWakeSeq++)}`,
+          requestId: requestId !== '' ? requestId : listed,
+          decision: A1_DENY_WINDOW ? 'deny' : 'allow',
+        })
+      }
+      return { kind: 'text', content: 'A1_LEGACY_APPROVAL_DONE' }
+    }
+
     if (lastUser.includes(MK_W1)) {
       switch (tools) {
         // 1. INSIDE the ceiling (absolute path inside the kit workspace).
@@ -2183,6 +2340,19 @@ async function main() {
   log(`testuse=${TESTUSE} @ ${HOST_BASELINE_SHA.slice(0, 10)}`)
   log(`evidence=${RUN_DIR}`)
   log(`host default sandbox mode: ${HOST_SANDBOX_MODE} (A1-6 needs a FULL-access default to narrow)`)
+  log(`mode: ${A6_OFF ? 'a6-off (alpha6ReviewRouting: false)' : 'a6-on (alpha6ReviewRouting: true)'}`)
+
+  // `--print-composition`: the emitted row config, hashed, with no Host and no
+  // world. Used to record the before/after composition digest of the flag flip.
+  if (PRINT_COMPOSITION) {
+    mkdirSync(join(HOME, 'profiles', 'web'), { recursive: true })
+    writePatchFile(HOME)
+    const evidence = compositionEvidence()
+    writeEvidence('a1-composition.json', evidence)
+    console.log(JSON.stringify(evidence, null, 2))
+    rmSync(HOME, { recursive: true, force: true })
+    process.exit(0)
+  }
 
   preflight()
   const backend = sandboxBackendProbe()

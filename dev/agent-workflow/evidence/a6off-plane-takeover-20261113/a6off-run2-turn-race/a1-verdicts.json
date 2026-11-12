@@ -1,0 +1,125 @@
+{
+  "schema": "a1-bash-governance/1",
+  "recordClass": "DEV-LIVE",
+  "tree": {
+    "branch": "task/a6off-plane-takeover-20261113",
+    "productSha": "1a677c5d4f29cbedd28ced94ff29c46a33eda3de",
+    "masterTipAtRun": "1a677c5d4f29cbedd28ced94ff29c46a33eda3de",
+    "blueprintHash": "sha256:578b06ee1b95666f6bfb505d9e2965643deb62830d48f6c6786a1b4c39bfb622"
+  },
+  "composition": {
+    "preset": "native",
+    "mode": "a6-off",
+    "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting on ONE document",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": false,
+    "alpha6WakeIntentPathConfigured": false,
+    "reviewRoutingBlocksInert": true,
+    "approvalPath": "legacy Leader notification (durable [team-control] -> team_list_pending_control + team_resolve_control)",
+    "governedRealm": true,
+    "hostDefaultSandboxMode": "danger-full-access",
+    "nativeBash": "the PINNED persistent bash over the governed PTY (cd/export persist; the plane adopts it and mounts no shell row)"
+  },
+  "counts": {
+    "PASS": 6,
+    "FAIL": 1
+  },
+  "arms": [
+    {
+      "arm": "A1-1",
+      "proposition": "a write INSIDE the Member root is allowed and its bytes are on disk",
+      "verdict": "PASS",
+      "detail": "path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true",
+      "facts": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-inside-2026-11-12T19-45-05-h0-r9f5941.txt",
+        "size": 40
+      }
+    },
+    {
+      "arm": "A1-2",
+      "proposition": "a write OUTSIDE the Member ceiling is refused by the OS sandbox — zero bytes on disk",
+      "verdict": "PASS",
+      "detail": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/a1-outside-2026-11-12T19-45-05-h0-r9f5941.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+      "facts": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/a1-outside-2026-11-12T19-45-05-h0-r9f5941.txt",
+        "statExists": false
+      }
+    },
+    {
+      "arm": "A1-3",
+      "proposition": "the same Member keeps `cd` + `export` state across consecutive calls",
+      "verdict": "PASS",
+      "detail": "callA=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub var=a1-value pid=2 file=persisted-2026-11-12T19-45-05-h0-r9f5941 tty=/dev/console] markerReadBack=true",
+      "facts": {
+        "stateA": "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub|2|/dev/console|112565362\n[Command finished with exit code 0]",
+        "stateB": "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub|a1-value|2|persisted-2026-11-12T19-45-05-h0-r9f5941|/dev/console\n[Command finished with exit code 0]"
+      }
+    },
+    {
+      "arm": "A1-4",
+      "proposition": "a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid)",
+      "verdict": "PASS",
+      "detail": "w1=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub tty=/dev/console] w2=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false",
+      "facts": {
+        "w1": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace/a1-sub",
+          "2",
+          "/dev/console",
+          "112565362"
+        ],
+        "w2": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/workspace",
+          "",
+          "2",
+          "/dev/console",
+          "112565803"
+        ],
+        "ptyCountGrew": true
+      }
+    },
+    {
+      "arm": "A1-5",
+      "proposition": "a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named)",
+      "verdict": "FAIL",
+      "detail": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=44 turnsAfter=45",
+      "facts": {
+        "gate": "session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM",
+        "ptyBefore": [
+          "/dev/pts/ptmx",
+          "/dev/pts/ptmx"
+        ],
+        "ptyAfter": [
+          "/dev/pts/ptmx",
+          "/dev/pts/ptmx"
+        ],
+        "refusals": [
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-gz6ameaxz6\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T19-45-05-h0-r9f5941x\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T19-45-05-h0-r9f5941x\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-q5pidbasm0\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T19-45-05-h0-r9f59\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T19-45-05-h0-r9f59\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"a1-wrong-relay-936nlpky80\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'member.send' addresses TeamSession 'session-a1-root-2026-11-12T19-45-05-h0-r9f5941x' which this host does not own (bound root 'session-c1-smoke-root-2026-11-12T19-45-05-h0-r9f5941')\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contr"
+        ]
+      }
+    },
+    {
+      "arm": "A1-6",
+      "proposition": "with the Host default at danger-full-access the Member ceiling still narrows it (root writes, Member refused)",
+      "verdict": "PASS",
+      "detail": "hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true",
+      "facts": {
+        "rootFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/a1-root-outside-2026-11-12T19-45-05-h0-r9f5941.txt",
+        "memberFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-45-05-h0-r9f5941/a1-outside-2026-11-12T19-45-05-h0-r9f5941.txt"
+      }
+    },
+    {
+      "arm": "A1-7",
+      "proposition": "a DENIED approval produces zero native bash executions (no marker, no fact, no bytes)",
+      "verdict": "PASS",
+      "detail": "legOwner=inst-0c2fp691is1s isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-04nnemb1ddrbca0x6sel113l toolRefusal=Error: the approval was denied",
+      "facts": {
+        "requestId": "ctrl-04nnemb1ddrbca0x6sel113l"
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "readScopeClaim": "none — this PTY path carries no PD-13 lexical read allowlist; read scope rests on the OS profile",
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

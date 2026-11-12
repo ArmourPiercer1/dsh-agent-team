@@ -1,0 +1,32 @@
+{
+  "row": {
+    "sequence": 57,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0usg0cl0ywlah41xflgbb08n",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "parameter-permission",
+    "targetInstanceId": "inst-1f63oxx1id9m",
+    "correlation": "call-c1-ccussz13",
+    "approvalCaseId": "case-13h9nkw0jld7x50zv3zyq0bg",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-12T19:53:00.814Z"
+  },
+  "decision": {
+    "sequence": 58,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-0usg0cl0ywlah41xflgbb08n",
+    "decision": "deny",
+    "decider": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "createdAt": "2026-11-12T19:53:00.955Z"
+  },
+  "executions": [],
+  "consumptions": [],
+  "file": null,
+  "toolRefusal": "Error: the approval was denied"
+}

@@ -95,6 +95,68 @@ hash are in `a1-verdicts.json` under `tree`, and in the evidence README.
 `a1-agreement-current-tip.json` (the current tip `29e4b1b38`), and the README
 that names both trees and prints both seven-row tables.
 
+## A6-off mode (`--a6-off`, added 2026-11-13)
+
+**Why it exists.** The four recorded runs above mount the Alpha.6 opt-in
+(`alpha6ReviewRouting: true`) and resolve approvals through a live Officer.
+`a5sf-pd33-preview-e2e` measures A6-off, but its composition mounts **no**
+`config.teamToolPlane`, so its governed `bash` is typed-shut by design; the
+instruments that mount the plane takeover pinned Alpha.6 **on**. The
+conjunction *"plane takeover ∧ Alpha.6 routing OFF ∧ governed bash works"* was
+therefore unmeasured. This mode measures exactly that conjunction on the SAME
+seven clauses. Evidence:
+`dev/agent-workflow/evidence/a6off-plane-takeover-20261113/`.
+
+**The one switch flipped.** `alpha6ReviewRouting` in the row config:
+`true` → an explicit `false` (no `alpha6WakeIntentPath` line, since nothing
+durable is written in this mode). Every other composition element — the v5
+blueprint with `memberIoCeilings` + `reviewRouting` on one document, the shipped
+`a5sf-governed-member` preset (and its `-plane` variant), the plane takeover
+that adopts the pinned native `bash` over the governed PTY, the Host's
+`DSH_PERMISSION_MODE=danger-full-access`, the host pin, the ports family — is
+held identical. The blueprint's `reviewRouting` block remains in the document
+and is **inert** with the opt-in off (Alpha.6's parser is never invoked), which
+is the state a release that toggles this flag ships. The emitted composition is
+hashed per run under `a1-composition.json` (normalized only for `DSH_HOME` and
+the run stamp); the A6-on/A6-off diff is the flag line and the now-unused
+wake-intent line, nothing else.
+
+**What changes in the driver, and why that is not a product change.** With A6
+off there is no Officer wake. A governed `bash` ask travels the product's legacy
+Leader path: a durable `[team-control requestId=…]` notification to the Team's
+Leader. The Leader model turn therefore lists and resolves the durable row
+through the production `team_list_pending_control` / `team_resolve_control`
+tools — the same approval loop the legacy `c1-leader-approval-smoke` kit
+measures. The clause propositions and the closed verdict vocabulary do not
+move, and A1-7 keeps a real deny (the same pre-armed window flips the decision
+on the Leader path). The notification text is captured in
+`a1-leader-notifications.log` in each A6-off run, including its
+`reviewAuthority: leader` line.
+
+One **measurement**-only consequence follows from that path: A1-5 counts global
+model calls across the 2 s window around the three refused ids, so a late
+Leader notification turn for an ALREADY-DECIDED leg can be misread as a turn
+caused by the refusal. That happened once while building this evidence
+(`a6off-run2-turn-race`, request #45, reply `A1_LEGACY_APPROVAL_DONE`, after the
+w2 leg had already been resolved). A1-5 therefore waits for a **quiescence
+barrier** (2 s without a new model request, 15 s cap) before opening the
+window; the proposition and the 2 s observation window are unchanged, a turn
+caused by the refused id still lands inside it and still fails, and
+`a1-precreation-window.json` now names every request that lands in the window.
+
+**The four recorded A6-on runs are untouched.** `--a6-off` is an additional mode;
+with the flag absent the driver's behaviour for the A6-on arm is unchanged
+(verified by `a6on-control-run1` on the same tree, whose seven verdicts and
+normalized details agree with the A6-off runs). `--print-composition` renders
+and hashes the emitted composition without booting a Host.
+
+```bash
+node tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs \
+  --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
+  --a6-off --host-port 3187 --mock-port 3496 \
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/a6off-plane-takeover-20261113/a6off-run1"
+```
+
 ## Notes on the instrument
 
 - The Officer is a real model turn resolved through the production

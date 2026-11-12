@@ -1,0 +1,6 @@
+[2026-11-12T19:40:40.071Z] A1 bash-governance — stamp 2026-11-12T19-40-40-h0-r0beea9
+[2026-11-12T19:40:40.071Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113
+[2026-11-12T19:40:40.071Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T19:40:40.071Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/dev/agent-workflow/evidence/a6off-plane-takeover-20261113/composition-a6-on
+[2026-11-12T19:40:40.072Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-12T19:40:40.072Z] mode: a6-on (alpha6ReviewRouting: true)

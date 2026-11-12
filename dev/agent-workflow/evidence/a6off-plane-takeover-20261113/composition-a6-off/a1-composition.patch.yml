@@ -1,0 +1,221 @@
+# C1 real-host smoke patch layer (run <RUN_STAMP>): production dsh-agent-team row (worktree dist — the C1 branch build) + p6t6 observability row — mounted ONLY through the public profile-patch seam.
+# (0.2.0-rc.2: a preset is a declaration row mounted on this seam; the retired user-preset directory is not read by the host.)
+- insert:
+    - id: "dsh-agent-team"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      config:
+        rootSessionId: "session-c1-smoke-root-<RUN_STAMP>"
+        bootPhase: "create"
+        blueprintSource: "---\nschemaVersion: 5\nblueprintId: team.c1-anchor\nrevision: \"1\"\nleader: { templateId: leader, persona: C1 Alpha.6 boot anchor. }\nmembers:\n  - templateId: officer\n    persona: Review asks for this team.\n  - templateId: worker\n    persona: Worker of the C1 smoke boot team.\nrequirements: []\nmemberEnvelopes: []\npolicyStates: []\npermissionMutationEnvelope: { rules: [] }\nteamHardEnvelope: { rules: [] }\nteamEnvelope:\n  allow:\n    - request-control\n  deny: []\nmetadata: {}\nreviewRouting:\n  enabled: true\n  officerTemplateId: officer\n  ordinaryToolApprovals:\n    default: officer\n    leaderExceptions: []\n  whenOfficerUnavailable: hold\n---\n"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/.c1-smoke-blueprints-<RUN_STAMP>"
+        rootPresetId: "a5sf-governed-member"
+        memberPresetId: "a5sf-governed-member-plane"
+        seedMembers: []
+        generation: 1
+        staticModel:
+          provider: "deepseek-official"
+          model: "c1-smoke-model"
+        deniedSelection: null
+        mcpServers: []
+        mcpServer: null
+        environmentFacts:
+          - domain: "tool"
+            subject: "web"
+            available: true
+            generation: 1
+          - domain: "skill"
+            subject: "base"
+            available: true
+            generation: 1
+          - domain: "persona"
+            subject: "standard"
+            available: true
+            generation: 1
+        externalPolicyFacts:
+          hard: {}
+          capabilityExists: {}
+        glueUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+        seamUrl: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/root-binding/harness/seam.mjs"
+        teamToolPlane:
+          realmId: "c1-plane-realm-<RUN_STAMP>"
+          names:
+            bash: "bash"
+          workingDir: "<DSH_HOME>/workspace"
+          confinedProvider:
+            trustRoot: "sha256:f418831915c624fb#/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+            assembly:
+              launcherPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py"
+              launcherSha256: "f418831915c624fbabfc534d4bc4f6b07e04e55670f728450c316adca05094b4"
+              minAbiVersion: 3
+        a5sfGovernedRealm: true
+        a5sfEvidencePath: "<DSH_HOME>/a5sf-consult.jsonl"
+        alpha6ReviewRouting: false
+    - id: "p6t6-team-tools"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/tools/harness/plugin.mjs"
+    - id: "preset-a5sf-governed-member"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-governed-member"
+        order: 50
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              suffix: "Your working directory is {{cwd}}. Each bash call runs in a fresh confined shell; pass `workdir` instead of using `cd`."
+              prefix: "You are a coding agent powered by the {{model}} model."
+          - id: "agent-instructions"
+            name: "@deepseek-ai/dsh-agent-instructions"
+            config:
+              maxBytes: 65536
+          - id: "tool-bash"
+            name: "@deepseek-ai/dsh-tool-bash"
+            disabled: false
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+          - id: "tool-jobs"
+            name: "@deepseek-ai/dsh-tool-jobs"
+          - id: "tool-skill"
+            name: "@deepseek-ai/dsh-tool-skill"
+          - id: "tool-present"
+            name: "@deepseek-ai/dsh-tool-present"
+          - id: "command-goal"
+            name: "@deepseek-ai/dsh-command-goal"
+          - id: "tool-goal"
+            name: "@deepseek-ai/dsh-tool-goal"
+          - id: "planning"
+            name: "cordis:group"
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: "plan-mode"
+                name: "@deepseek-ai/dsh-plan-mode"
+                config:
+                  section: "You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.\n\nExplore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.\n\nThe tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.\n\nResolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.\n\nMake the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.\n\nWhen ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask \"should I proceed?\" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.\n"
+          - id: "compaction"
+            name: "cordis:group"
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: "compaction-basic"
+                name: "@deepseek-ai/dsh-compaction-basic"
+              - id: "command-compact"
+                name: "@deepseek-ai/dsh-command-compact"
+              - id: "tool-result-pruner"
+                name: "@deepseek-ai/dsh-compaction-tool-result-pruner"
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: "tool-todo"
+            name: "@deepseek-ai/dsh-tool-todo"
+            config:
+              allowParallelInProgress: true
+          - id: "tool-plugin-manager"
+            name: "@deepseek-ai/dsh-plugin-manager/tools"
+            disabled: true
+    - id: "preset-a5sf-governed-member-plane"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "a5sf-governed-member-plane"
+        order: 50
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              suffix: "Your working directory is {{cwd}}. Each bash call runs in a fresh confined shell; pass `workdir` instead of using `cd`."
+              prefix: "You are a coding agent powered by the {{model}} model."
+          - id: "agent-instructions"
+            name: "@deepseek-ai/dsh-agent-instructions"
+            config:
+              maxBytes: 65536
+          - id: "tool-bash"
+            name: "@deepseek-ai/dsh-tool-bash"
+            disabled: false
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "tool-fs-search"
+            name: "@deepseek-ai/dsh-tool-fs-search"
+            config:
+              sampleOverCapGlobResults: false
+          - id: "tool-jobs"
+            name: "@deepseek-ai/dsh-tool-jobs"
+          - id: "tool-skill"
+            name: "@deepseek-ai/dsh-tool-skill"
+          - id: "tool-present"
+            name: "@deepseek-ai/dsh-tool-present"
+          - id: "command-goal"
+            name: "@deepseek-ai/dsh-command-goal"
+          - id: "tool-goal"
+            name: "@deepseek-ai/dsh-tool-goal"
+          - id: "planning"
+            name: "cordis:group"
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: "plan-mode"
+                name: "@deepseek-ai/dsh-plan-mode"
+                config:
+                  section: "You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.\n\nExplore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.\n\nThe tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.\n\nResolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.\n\nMake the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.\n\nWhen ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask \"should I proceed?\" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.\n"
+          - id: "compaction"
+            name: "cordis:group"
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: "compaction-basic"
+                name: "@deepseek-ai/dsh-compaction-basic"
+              - id: "command-compact"
+                name: "@deepseek-ai/dsh-command-compact"
+              - id: "tool-result-pruner"
+                name: "@deepseek-ai/dsh-compaction-tool-result-pruner"
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: "tool-todo"
+            name: "@deepseek-ai/dsh-tool-todo"
+            config:
+              allowParallelInProgress: true
+          - id: "tool-plugin-manager"
+            name: "@deepseek-ai/dsh-plugin-manager/tools"
+            disabled: true
+    - id: "preset-rc2-smoke"
+      name: "@deepseek-ai/dsh-agent-preset"
+      config:
+        id: "rc2-smoke"
+        name: "c1 smoke"
+        description: "C1 real-host smoke preset (run <RUN_STAMP>); mounted through the public profile-patch seam."
+        order: 900
+        plugins:
+          - id: "persona"
+            name: "@deepseek-ai/dsh-persona"
+            config:
+              prefix: "You are a coding agent powered by the {{model}} model."
+              suffix: "Your working directory is {{cwd}}."
+          - id: "tool-fs"
+            name: "@deepseek-ai/dsh-tool-fs"
+          - id: "persistent-shell"
+            name: "cordis:group"
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: "pty"
+                name: "@deepseek-ai/dsh-terminal"
+              - id: "terminal-bash"
+                name: "@deepseek-ai/dsh-terminal-bash"
+                config:
+                  timeoutMs: 300000
+              - id: "persistent-bash"
+                name: "@deepseek-ai/dsh-tool-bash-persistent"
+                config:
+                  timeoutMs: 300000

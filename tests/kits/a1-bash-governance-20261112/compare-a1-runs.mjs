@@ -42,6 +42,7 @@ const NORMALIZATIONS = [
   ['blueprint dir', /\/[^"\s]*\.c1-smoke-blueprints-[^/\s"]*/g, '<blueprints>'],
   ['fact wait ms', /executionFactWaitMs=\d+/g, 'executionFactWaitMs=<ms>'],
   ['decision wait ms', /decisionWaitMs=\d+/g, 'decisionWaitMs=<ms>'],
+  ['A1-5 pre-creation quiesce wait ms', /precreationQuiesceMs=\d+/g, 'precreationQuiesceMs=<ms>'],
   ['round counters (threshold is the clause)', /roundsStarted=\d+->\d+/g, 'roundsStarted=<n>-><n>'],
   ['mock round requests (timing artefact)', /mockRoundRequests=\d+->\d+/g, 'mockRoundRequests=<n>-><n>'],
 ]
