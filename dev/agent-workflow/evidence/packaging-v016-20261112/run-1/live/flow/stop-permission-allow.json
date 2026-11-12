@@ -1,0 +1,69 @@
+{
+  "resolved": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "V016PACK_R1-team.resolveControl-e01n76ko",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "decision": {
+              "requestId": "ctrl-0jb5a6b1dd1j4u1gxy06x0cp",
+              "decision": "allow",
+              "decider": {
+                "kind": "human",
+                "humanId": "team-v016pack-r1"
+              },
+              "scope": {
+                "rootSessionId": "team-v016pack-r1",
+                "subject": {
+                  "kind": "instance",
+                  "instanceId": "inst-0mzzhtj0zr0b"
+                },
+                "targetInstanceId": "inst-0mzzhtj0zr0b",
+                "actionName": "parameter-permission",
+                "correlation": "call-v016pack-1-12",
+                "toolName": "bash",
+                "operationFingerprint": "sha256:8aa5fcf2858573877bb5a870c8f7ea185db679652dd2a610d359c9ae64582d6d",
+                "authorityScope": {
+                  "operationClass": "bash",
+                  "matcher": {
+                    "kind": "exact",
+                    "resource": "bash"
+                  }
+                }
+              },
+              "requestSequence": 21,
+              "decisionSequence": 22,
+              "createdAt": "2026-11-12T15:35:22.498Z",
+              "note": "v016 packaged acceptance human allow, stop-arm permission leg (V016PACK_R1)"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.resolveControl",
+            "endpoint": "team.resolveControl",
+            "contractVersion": 4,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    },
+    "headers": {}
+  },
+  "ok": true,
+  "decision": {
+    "sequence": 22,
+    "requestId": "ctrl-0jb5a6b1dd1j4u1gxy06x0cp",
+    "decision": "allow",
+    "decider": {
+      "humanId": "team-v016pack-r1",
+      "kind": "human"
+    },
+    "createdAt": "2026-11-12T15:35:22.487Z"
+  },
+  "error": null
+}

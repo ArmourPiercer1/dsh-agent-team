@@ -1,0 +1,267 @@
+[
+  {
+    "seq": 1,
+    "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator ac",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 1
+  },
+  {
+    "seq": 2,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [
+      "team_create_member"
+    ],
+    "replyKind": "tool-call",
+    "messages": 1
+  },
+  {
+    "seq": 3,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [
+      "team_create_member"
+    ],
+    "replyKind": "tool-call",
+    "messages": 3
+  },
+  {
+    "seq": 4,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [
+      "team_create_member"
+    ],
+    "replyKind": "tool-call",
+    "messages": 5
+  },
+  {
+    "seq": 5,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [
+      "team_delegate"
+    ],
+    "replyKind": "tool-call",
+    "messages": 7
+  },
+  {
+    "seq": 6,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 9
+  },
+  {
+    "seq": 7,
+    "lastUser": "[team-work requestToken=v016pack_r2-delegate-work] V016PACK_R2_WORK1 Use the bash tool to run exactly: printf '%s' 'V016PACK_R2_ARM1_EXECUTED' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2",
+    "replyTools": [
+      "bash"
+    ],
+    "replyKind": "tool-call",
+    "messages": 1
+  },
+  {
+    "seq": 8,
+    "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-work requestToken=v016pack_r2-delegate-work] V016PACK_R2_WORK1 Use the bash tool to run exactly: printf '%s' 'V016PACK_R2_ARM1_EXECUTED' > /home/armo",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 1
+  },
+  {
+    "seq": 9,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A68dd5d6c]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0min2ma0sqyhv102q3l9w1pf\nDecide or ",
+    "replyTools": [
+      "team_list_pending_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 1
+  },
+  {
+    "seq": 10,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A68dd5d6c]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0min2ma0sqyhv102q3l9w1pf\nDecide or ",
+    "replyTools": [
+      "team_resolve_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 3
+  },
+  {
+    "seq": 11,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A68dd5d6c]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0min2ma0sqyhv102q3l9w1pf\nDecide or ",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 5
+  },
+  {
+    "seq": 12,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A5b482ebd]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-17cwpp60szlxzh0s7il740xs\nDecide or ",
+    "replyTools": [
+      "team_list_pending_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 7
+  },
+  {
+    "seq": 13,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A5b482ebd]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-17cwpp60szlxzh0s7il740xs\nDecide or ",
+    "replyTools": [
+      "team_resolve_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 9
+  },
+  {
+    "seq": 14,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A5b482ebd]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-17cwpp60szlxzh0s7il740xs\nDecide or ",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 11
+  },
+  {
+    "seq": 15,
+    "lastUser": "[team-work requestToken=v016pack_r2-delegate-work] V016PACK_R2_WORK1 Use the bash tool to run exactly: printf '%s' 'V016PACK_R2_ARM1_EXECUTED' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 3
+  },
+  {
+    "seq": 16,
+    "lastUser": "[team-root-work requestToken=team-create:initial-work:sha256:17b915215c0324efe05d2ece34197b71c82293d25cd0d5767044ce7f32ef4ee7] V016PACK_R2_LEAD Operator acceptance run 2. Do exactly this, once:\n1. Create ONE member from template \"officer\" w",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 11
+  },
+  {
+    "seq": 17,
+    "lastUser": "V016PACK_R2_GOAL_CREATE Call create_goal with objective \"ship V016PACK_R2_GOAL_OBJECTIVE\" and max_goal_rounds 3.\nAnswer with one short line. Do not run any command.\n<system-reminder>\nThe following workspace instructions may be relevant to y",
+    "replyTools": [
+      "create_goal"
+    ],
+    "replyKind": "tool-call",
+    "messages": 1
+  },
+  {
+    "seq": 18,
+    "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"V016PACK_R2_GOAL_CREATE Call create_goal with objective \\\"ship V016PACK_R2_GOAL_OBJECTIVE\\\" and max_goal_rounds 3.\\nAnswer with one short line. Do not run ",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 1
+  },
+  {
+    "seq": 19,
+    "lastUser": "V016PACK_R2_GOAL_CREATE Call create_goal with objective \"ship V016PACK_R2_GOAL_OBJECTIVE\" and max_goal_rounds 3.\nAnswer with one short line. Do not run any command.\n<system-reminder>\nThe following workspace instructions may be relevant to y",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 3
+  },
+  {
+    "seq": 20,
+    "lastUser": "<goal_round>\nObjective: \"ship V016PACK_R2_GOAL_OBJECTIVE\"\nRound: 1/6\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 5
+  },
+  {
+    "seq": 21,
+    "lastUser": "<goal_round>\nObjective: \"ship V016PACK_R2_GOAL_OBJECTIVE\"\nRound: 2/6\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 7
+  },
+  {
+    "seq": 22,
+    "lastUser": "<goal_round>\nObjective: \"ship V016PACK_R2_GOAL_OBJECTIVE\"\nRound: 3/6\n\nContinue working toward the objective in this same session. Treat the current workspace, tool results, and durable session state as authoritative; inspect them instead of",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 9
+  },
+  {
+    "seq": 23,
+    "lastUser": "V016PACK_R2_GOAL_UPDATE Call update_goal now: goal_id=goal-3578fe99-481f-43d3-89f2-11777cf5aed5 revision=2 action=edit\nobjective=\"ship V016PACK_R2_GOAL_OBJECTIVE (revised)\". Answer with one short line.",
+    "replyTools": [
+      "update_goal"
+    ],
+    "replyKind": "tool-call",
+    "messages": 11
+  },
+  {
+    "seq": 24,
+    "lastUser": "V016PACK_R2_GOAL_UPDATE Call update_goal now: goal_id=goal-3578fe99-481f-43d3-89f2-11777cf5aed5 revision=2 action=edit\nobjective=\"ship V016PACK_R2_GOAL_OBJECTIVE (revised)\". Answer with one short line.",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 13
+  },
+  {
+    "seq": 25,
+    "lastUser": "V016PACK_R2_WORK2 Use the bash tool to run exactly: printf '%s' 'V016PACK_R2_ARM2_EXECUTED' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace/V016PACK_R2-arm2.txt &",
+    "replyTools": [
+      "bash"
+    ],
+    "replyKind": "tool-call",
+    "messages": 5
+  },
+  {
+    "seq": 26,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3Aabc5da67]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-02noanf0fbg15m08q8ald0mq\nDecide or ",
+    "replyTools": [
+      "team_list_pending_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 13
+  },
+  {
+    "seq": 27,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3Aabc5da67]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-02noanf0fbg15m08q8ald0mq\nDecide or ",
+    "replyTools": [
+      "team_resolve_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 15
+  },
+  {
+    "seq": 28,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3Aabc5da67]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-02noanf0fbg15m08q8ald0mq\nDecide or ",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 17
+  },
+  {
+    "seq": 29,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A3b6ec177]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0vh014q1wikxn11h7tuf000f\nDecide or ",
+    "replyTools": [
+      "team_list_pending_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 19
+  },
+  {
+    "seq": 30,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A3b6ec177]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0vh014q1wikxn11h7tuf000f\nDecide or ",
+    "replyTools": [
+      "team_resolve_control"
+    ],
+    "replyKind": "tool-call",
+    "messages": 21
+  },
+  {
+    "seq": 31,
+    "lastUser": "[team-review-wake wakeId=review-wake:team-v016pack-r2:inst-0y1bmfd1fegn:1:a6wake%3Av1%3A1%3A3b6ec177]\nNew review work is ready.\n\nreviewer: inst-0y1bmfd1fegn\nrootSession: team-v016pack-r2\nrequestId:\n- ctrl-0vh014q1wikxn11h7tuf000f\nDecide or ",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 23
+  },
+  {
+    "seq": 32,
+    "lastUser": "V016PACK_R2_COLLECT Call team_collect for request token \"v016pack_r2-delegate-work\" and reply with the collected body verbatim.",
+    "replyTools": [
+      "team_collect"
+    ],
+    "replyKind": "tool-call",
+    "messages": 13
+  },
+  {
+    "seq": 33,
+    "lastUser": "V016PACK_R2_COLLECT Call team_collect for request token \"v016pack_r2-delegate-work\" and reply with the collected body verbatim.",
+    "replyTools": [],
+    "replyKind": "text",
+    "messages": 15
+  }
+]

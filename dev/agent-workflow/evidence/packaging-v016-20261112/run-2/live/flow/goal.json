@@ -1,0 +1,49 @@
+{
+  "created": {
+    "id": "goal-3578fe99-481f-43d3-89f2-11777cf5aed5",
+    "revision": 1,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE",
+    "phase": "active",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794497802135,
+    "updatedAt": 1794497802135,
+    "activation": "armed"
+  },
+  "beforeUpdate": {
+    "id": "goal-3578fe99-481f-43d3-89f2-11777cf5aed5",
+    "revision": 2,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794497802135,
+    "updatedAt": 1794497802548,
+    "activation": "disarmed"
+  },
+  "afterUpdate": {
+    "id": "goal-3578fe99-481f-43d3-89f2-11777cf5aed5",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794497802135,
+    "updatedAt": 1794497802645,
+    "activation": "disarmed"
+  },
+  "final": {
+    "id": "goal-3578fe99-481f-43d3-89f2-11777cf5aed5",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794497802135,
+    "updatedAt": 1794497802645,
+    "activation": "disarmed"
+  },
+  "roundsStarted": 3,
+  "revision": 3,
+  "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)"
+}

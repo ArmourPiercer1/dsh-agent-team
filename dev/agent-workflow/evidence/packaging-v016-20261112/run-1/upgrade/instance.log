@@ -1,0 +1,4 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-1-2026-11-12T15-35-07/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=7nOy1i54E0Lg_GDPUxC4P7JJy3o9uYkLGlDeG83TgII
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 107ms — the connection service appeared after the mount step)
+[dsh-agent-team] durable permission authority ACTIVE for row team-boot-v016pack-r1: anchor templates declaring capabilities.permissions = ["officer","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor v016-pack-bp-r1@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)

@@ -1,0 +1,19 @@
+{
+  "roundsStarted": 3,
+  "pause": {
+    "status": 200,
+    "ok": true,
+    "value": {
+      "id": "goal-5401e0ca-3fef-4c5f-9168-9b569e5a8fce",
+      "revision": 2,
+      "objective": "ship V016PACK_R1_GOAL_OBJECTIVE",
+      "phase": "paused",
+      "maxGoalRounds": 6,
+      "roundsStarted": 3,
+      "createdAt": 1794497721313,
+      "updatedAt": 1794497721711,
+      "activation": "disarmed"
+    },
+    "error": null
+  }
+}
