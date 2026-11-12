@@ -1,0 +1,40 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (16 chars): "C1 smoke session"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] text reply (16 chars): "C1 smoke session"
+mock: 4 [messages] text reply (17 chars): "C1_A6_LEADER_IDLE"
+mock: 5 [messages] tool-call reply: bash
+mock: 6 [messages] text reply (16 chars): "C1 smoke session"
+mock: 7 [messages] tool-call reply: team_list_pending_control
+mock: 8 [messages] tool-call reply: team_resolve_control
+mock: 9 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 10 [messages] tool-call reply: team_list_pending_control
+mock: 11 [messages] tool-call reply: team_resolve_control
+mock: 12 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 13 [messages] tool-call reply: write
+mock: 14 [messages] tool-call reply: write
+mock: 15 [messages] tool-call reply: read
+mock: 16 [messages] text reply (17 chars): "C1_A6_MEMBER_DONE"
+mock: 17 [messages] text reply (17 chars): "C1_A6_LEADER_IDLE"
+mock: 18 [messages] tool-call reply: create_goal
+mock: 19 [messages] text reply (16 chars): "C1 smoke session"
+mock: 20 [messages] tool-call reply: get_goal
+mock: 21 [messages] tool-call reply: update_goal
+mock: 22 [messages] text reply (22 chars): "C1_J07_HUMAN_TURN_DONE"
+mock: 23 [messages] text reply (15 chars): "C1_J07_ROUND_OK"
+mock: 24 [messages] text reply (15 chars): "C1_J07_ROUND_OK"
+mock: 25 [messages] tool-call reply: create_goal
+mock: 26 [messages] tool-call reply: bash
+mock: 27 [messages] text reply (11 chars): "C1_J08_DONE"
+mock: 28 [messages] tool-call reply: bash
+mock: 29 [messages] text reply (16 chars): "C1 smoke session"
+mock: 30 [messages] tool-call reply: team_list_pending_control
+mock: 31 [messages] tool-call reply: team_resolve_control
+mock: 32 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 33 [messages] tool-call reply: team_list_pending_control
+mock: 34 [messages] tool-call reply: team_resolve_control
+mock: 35 [messages] text reply (18 chars): "C1_A6_OFFICER_DONE"
+mock: 36 [messages] tool-call reply: bash
+mock: 37 [messages] tool-call reply: team_list_pending_control
+mock: 38 [messages] tool-call reply: bash
+mock: 39 [messages] text reply (16 chars): "C1 smoke session"

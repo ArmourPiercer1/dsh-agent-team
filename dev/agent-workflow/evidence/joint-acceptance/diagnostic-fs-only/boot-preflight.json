@@ -1,0 +1,105 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-11T21:34:22.717Z",
+  "selectedArms": [
+    "J01",
+    "J02",
+    "J03",
+    "J04",
+    "J05",
+    "J06",
+    "J07",
+    "J08",
+    "J09",
+    "J10",
+    "J11"
+  ],
+  "knownArms": [
+    "J01",
+    "J02",
+    "J03",
+    "J04",
+    "J05",
+    "J06",
+    "J07",
+    "J08",
+    "J09",
+    "J10",
+    "J11"
+  ],
+  "verdict": "PASS",
+  "reason": "every check passed",
+  "counts": {
+    "PASS": 10,
+    "FAIL": 0,
+    "NOT_REACHED": 0,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 0
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[J01, J02, J03, J04, J05, J06, J07, J08, J09, J10, J11]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "0 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (dirtiness not measured)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate c661e789e798 matches DEV-LIVE branch head (not a frozen candidate)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "modality.tool-call",
+      "arm": null,
+      "state": "PASS",
+      "detail": "tool-call supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": "J01",
+      "state": "PASS",
+      "detail": "exactly one live Officer"
+    },
+    {
+      "id": "port.3189",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3189 free (loopback)"
+    },
+    {
+      "id": "port.3498",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3498 free (loopback)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-11T21-34-10-h3189-r8e7c91 (fresh world, not yet created)"
+    }
+  ],
+  "blocking": [],
+  "skipped": [],
+  "startAllowed": true
+}

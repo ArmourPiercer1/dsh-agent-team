@@ -1,0 +1,47 @@
+{
+  "stopVia": "archive",
+  "response": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-kt3pdbkd58",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "member": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-c1-smoke-a6-2026-11-11T20-12-15",
+            "instanceId": "inst-1u0q05n0yjdw",
+            "templateId": "worker",
+            "label": "w-a6",
+            "childSessionId": "session-team-child-bcfc72474e03f6d665d879e0280c9b5e",
+            "lifecycle": "ARCHIVED",
+            "createdAt": "2026-11-11T20:12:25.330Z",
+            "activityVersion": 4,
+            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd41b/tests/homes/c1-smoke-2026-11-11T20-12-15/workspace"
+          },
+          "steps": [
+            "close-admission",
+            "interrupt",
+            "drain-descendants",
+            "wait-quiescence",
+            "release-residency",
+            "commit-settle",
+            "commit-archive"
+          ],
+          "settledCommitted": true,
+          "drained": 0,
+          "residencyDropped": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.archive",
+          "endpoint": "member.archive",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}
