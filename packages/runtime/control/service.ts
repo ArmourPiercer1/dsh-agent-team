@@ -3557,6 +3557,17 @@ export function createControlService(options: ControlServiceOptions): ControlSer
    * the request ledger; an unknown callId records nothing. Idempotent: a
    * second observation of the same request returns the existing fact without
    * a second write. This never authorizes, consumes, or replays anything.
+   *
+   * J05 (2026-11-11) — the correlation matcher is not PA-only. A
+   * `parameter-permission` ask has no PA manifest, so it has no
+   * `reviewPayload.callId`; its durable correlation IS `payload.correlation`
+   * (the adapter passes the exec `callId` there, and the last-mile guard's scope
+   * matches on the same field). Matching only the PA payload made the highest
+   * volume ask lane unable to record any execution fact at all: the allow was
+   * consumed, the body ran, and the ledger could not tell "ran" from "refused"
+   * from "died between". Both carriers name the SAME logical invocation, and
+   * neither is model-supplied: `correlation` is written by the request creator
+   * and `reviewPayload.callId` by the PA bridge.
    */
   async function recordExecutionResult(args: {
     readonly rootSessionId: string
@@ -3576,10 +3587,16 @@ export function createControlService(options: ControlServiceOptions): ControlSer
       let matched: RequestPayload | undefined
       for (const entry of state.requests) {
         const payload = entry.payload
+        // The PA carrier: the manifest's own logical call id.
         const review = payload.reviewPayload
-        if (review === null || typeof review !== 'object' || Array.isArray(review)) continue
-        const callId = (review as Record<string, unknown>)['callId']
-        if (callId !== args.callId) continue
+        const payloadCallId = review !== null && typeof review === 'object' && !Array.isArray(review)
+          ? (review as Record<string, unknown>)['callId']
+          : undefined
+        // The parameter-permission carrier: the durable correlation the request
+        // was created with (the adapter's exec callId). ONE of the two must
+        // name this invocation; a row with neither is not a candidate.
+        const matches = payloadCallId === args.callId || payload.correlation === args.callId
+        if (!matches) continue
         if (args.instanceId !== undefined && payload.targetInstanceId !== args.instanceId) continue
         matched = payload
       }

@@ -245,12 +245,17 @@ describe('a5p5-dormant-audit', () => {
     // shell-row face NEXT TO the trio face (two symbols, still ONE barrel
     // line, one file) — the process-family lane receives the transport
     // INJECTED from here, so no second consumer ever forms.
+    // NATIVE-BASH-PRESERVATION (2026-11-11): the SAME line gains the effect-set
+    // derivation and the bash argument parser, because the native admission edge
+    // must decide and admit in the plane's own vocabulary. Still ONE barrel line,
+    // still one file, still no deep import — the edge count (namedLines) is what
+    // this test pins, and it stays 1.
     const row = readFileSync(join(packagesRoot, 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
     let namedLines = 0
     for (const line of row.split('\n')) {
       if (!line.includes('a5p5-tools')) continue
       namedLines += 1
-      expect(line.trim(), line.trim()).toBe(`import { createGovernedShellRowDefinition, createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'`)
+      expect(line.trim(), line.trim()).toBe(`import { createGovernedShellRowDefinition, createGovernedToolDefinitions, deriveToolEffectSet, parseBashArgs } from '../../../../tools/a5p5-tools/src/index.js'`)
     }
     expect(namedLines).toBe(1)
   })
