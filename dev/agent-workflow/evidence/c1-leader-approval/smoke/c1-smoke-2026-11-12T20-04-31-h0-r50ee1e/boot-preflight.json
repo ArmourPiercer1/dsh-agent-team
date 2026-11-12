@@ -1,0 +1,116 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-12T20:04:44.920Z",
+  "selectedArms": [
+    "A1-1",
+    "A1-2",
+    "A1-3",
+    "A1-4",
+    "A1-5",
+    "A1-6",
+    "A1-7"
+  ],
+  "knownArms": [
+    "A1-1",
+    "A1-2",
+    "A1-3",
+    "A1-4",
+    "A1-5",
+    "A1-6",
+    "A1-7"
+  ],
+  "verdict": "FAIL",
+  "reason": "FAIL at port.3501 (3501 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED))",
+  "counts": {
+    "PASS": 7,
+    "FAIL": 2,
+    "NOT_REACHED": 1,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 0
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "0 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (dirtiness not measured)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate 3c586a33dbc6 matches DEV-LIVE branch head (not a frozen candidate)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "modality.tool-call",
+      "arm": null,
+      "state": "PASS",
+      "detail": "tool-call supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": "A1-6",
+      "state": "NOT_REACHED",
+      "detail": "exactly one live Officer; core preflight did not pass"
+    },
+    {
+      "id": "port.3501",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "3501 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"
+    },
+    {
+      "id": "port.3506",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "3506 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-04-31-h0-r50ee1e (fresh world, not yet created)"
+    }
+  ],
+  "blocking": [
+    {
+      "id": "officer.count",
+      "arm": "A1-6",
+      "state": "NOT_REACHED",
+      "detail": "exactly one live Officer; core preflight did not pass"
+    },
+    {
+      "id": "port.3501",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "3501 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"
+    },
+    {
+      "id": "port.3506",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "3506 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"
+    }
+  ],
+  "skipped": [],
+  "startAllowed": false
+}

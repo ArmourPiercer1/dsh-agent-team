@@ -114,7 +114,7 @@ OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L7
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L137=v5
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
-OFFENDING tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs :: L722=v5, L962=v5, L1618=v5, L1919=v5
+OFFENDING tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs :: L761=v5, L1001=v5, L1657=v5, L2045=v5
 OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L715=v5, L922=v5, L2592=v5, L3397=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
@@ -140,3 +140,6 @@ OFFENDING tests/kits/f5-two-asks/run-f5-two-asks.mjs :: L463=v5, L515=v5
 # 2026-11-12 (PD39-INBOX): LINE SHIFT only - the same four v5 literals in the same fixture moved
 # when the kit gained the C1_A6_BUSY_HOLD_MS arm and the pending-at-restart capture order fix.
 # No new v5 site, no semantic change to the document the kit authors.
+# 2026-11-12 (A6-OFF): LINE SHIFT only - the same four v5 literals in the same fixture moved when
+# the kit gained its --a6-off mode (explicit alpha6ReviewRouting: false). No new v5 site; the
+# blueprint the kit authors is byte-identical between the A6-on and A6-off modes.
