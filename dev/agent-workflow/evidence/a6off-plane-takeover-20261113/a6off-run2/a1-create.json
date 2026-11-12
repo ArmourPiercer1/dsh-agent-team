@@ -1,6 +1,6 @@
 {
   "type": "server-response",
-  "rpcId": "a1-create-6jjdhc2t5f",
+  "rpcId": "a1-create-tzemwuqrpm",
   "result": {
     "ok": true,
     "value": {
@@ -9,29 +9,29 @@
         "durable": {
           "teamSession": {
             "schemaVersion": 1,
-            "rootSessionId": "session-a1-root-2026-11-12T19-53-09-h0-r018bab",
+            "rootSessionId": "session-a1-root-2026-11-12T22-44-47-h0-r5e446b",
             "blueprint": {
               "blueprintId": "team.a1-gov",
               "revision": "1",
-              "contentHash": "sha256:743067fdf3a0546bb98fbca2c6cccda89fc2adf149620f75c8ec2be9c82206a9"
+              "contentHash": "sha256:2ebc87215386ac2e169bf2c22545669727c694f29ecd3f8abb011b1cad80eddc"
             },
-            "createdAt": "2026-11-12T19:53:24.259Z",
+            "createdAt": "2026-11-12T22:45:02.739Z",
             "generation": 1,
-            "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace"
+            "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace"
           },
           "binding": {
             "schemaVersion": 1,
             "kind": "team-root",
-            "sessionId": "session-a1-root-2026-11-12T19-53-09-h0-r018bab"
+            "sessionId": "session-a1-root-2026-11-12T22-44-47-h0-r5e446b"
           },
           "wrote": true,
           "leaderRow": {
             "schemaVersion": 2,
-            "rootSessionId": "session-a1-root-2026-11-12T19-53-09-h0-r018bab",
+            "rootSessionId": "session-a1-root-2026-11-12T22-44-47-h0-r5e446b",
             "instanceId": "inst-leader",
             "templateId": "leader",
             "label": "leader",
-            "createdAt": "2026-11-12T19:53:24.278Z",
+            "createdAt": "2026-11-12T22:45:02.755Z",
             "activityVersion": 1
           }
         },
@@ -41,8 +41,8 @@
           "installed": true,
           "identity": {
             "kind": "root",
-            "sessionId": "session-a1-root-2026-11-12T19-53-09-h0-r018bab",
-            "rootSessionId": "session-a1-root-2026-11-12T19-53-09-h0-r018bab"
+            "sessionId": "session-a1-root-2026-11-12T22-44-47-h0-r5e446b",
+            "rootSessionId": "session-a1-root-2026-11-12T22-44-47-h0-r5e446b"
           },
           "admitted": true,
           "admissionCode": "ADMISSION_OPEN",

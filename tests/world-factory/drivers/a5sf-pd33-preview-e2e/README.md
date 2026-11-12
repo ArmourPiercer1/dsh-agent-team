@@ -55,3 +55,29 @@ record discloses the subset (`subset: true`, `arms: [...]`, `selected: n`, `tota
 and the summary line carries `subset=true arms=… selected=n/m`, so a subset can never be
 read as a full run. A **full** run (no `--arms`) still fails closed: a selected case that
 produces no verdict is recorded `FAIL` and `overall=FAIL`.
+
+## The `PD33-SUPERSEDED` composition pin is a source-text tripwire — its limit (2026-11-13)
+
+The pin in `a5sf-pd33-preview-e2e.test.mjs` is a **source-text tripwire**, not a
+semantic check of the mounted composition. Concretely, it asserts
+`doesNotMatch(DRIVER, /teamToolPlane\s*:/)` and
+`doesNotMatch(DRIVER, /capabilities:\s*\{[^}]*permissions/)` against the driver
+*text*. It is strong enough to stop the obvious silent plane mount (a literal
+`teamToolPlane:` key written in the driver), which is the failure it was added
+for, and it does not delete or soften any case.
+
+It would **not** catch a plane mount expressed in a way that does not match that
+literal text — for example a **computed key**
+(`{ ['team' + 'ToolPlane']: … }`, or a config object spread that gains the field
+from another module), or a **multi-line `capabilities` block** whose
+`permissions` field is not on the same line as `capabilities:`. Such a change
+could re-class this instrument (plane takeover, or the Alpha.4 strict lane)
+while the pin stays green.
+
+The pin is therefore a cheap invariant against the common edit, not proof that
+the composition is plane-free. The real composition claim is carried by the
+`--plan` output and by the measured `a5sfGovernedRealm` opt-in the pin also
+requires; a reviewer who needs the semantic guarantee must read the plan and the
+emitted composition, not rely on this `doesNotMatch`. The pin is deliberately
+**not weakened** (no broader regex, no whitelist) — the limit is disclosed here
+instead.

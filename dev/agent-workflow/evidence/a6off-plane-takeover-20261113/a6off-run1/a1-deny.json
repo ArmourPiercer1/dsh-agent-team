@@ -2,28 +2,28 @@
   "row": {
     "sequence": 57,
     "factType": "control-request-recorded",
-    "requestId": "ctrl-0usg0cl0ywlah41xflgbb08n",
+    "requestId": "ctrl-0koy51504wqjh00uqq9un051",
     "kind": "leader-approval",
     "toolName": "bash",
     "actionName": "parameter-permission",
-    "targetInstanceId": "inst-1f63oxx1id9m",
-    "correlation": "call-c1-ccussz13",
-    "approvalCaseId": "case-13h9nkw0jld7x50zv3zyq0bg",
+    "targetInstanceId": "inst-16qignd12c31",
+    "correlation": "call-c1-3numsi2l",
+    "approvalCaseId": "case-0bb746r07h346y14c42r11i5",
     "legOrdinal": 1,
     "reviewAuthority": "leader",
-    "createdAt": "2026-11-12T19:53:00.814Z"
+    "createdAt": "2026-11-12T22:44:04.674Z"
   },
   "decision": {
     "sequence": 58,
     "factType": "control-decision-recorded",
-    "requestId": "ctrl-0usg0cl0ywlah41xflgbb08n",
+    "requestId": "ctrl-0koy51504wqjh00uqq9un051",
     "decision": "deny",
     "decider": {
       "instanceId": "inst-leader",
       "kind": "instance",
       "role": "leader"
     },
-    "createdAt": "2026-11-12T19:53:00.955Z"
+    "createdAt": "2026-11-12T22:44:04.839Z"
   },
   "executions": [],
   "consumptions": [],

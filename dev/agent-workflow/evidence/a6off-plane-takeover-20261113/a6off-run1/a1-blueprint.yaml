@@ -5,7 +5,7 @@ revision: "1"
 requirements: []
 leader:
   templateId: leader
-  persona: "You are the A1 acceptance leader. A1MK_DISC_2026-11-12T19-52-34-h0-r0b4673 is the discovery marker."
+  persona: "You are the A1 acceptance leader. A1MK_DISC_2026-11-12T22-43-40-h0-r052229 is the discovery marker."
   capabilities:
     teamTools:
       kind: allow
@@ -179,12 +179,12 @@ memberIoCeilings:
     io:
       read:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       write:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       network:
@@ -193,12 +193,12 @@ memberIoCeilings:
     io:
       read:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       write:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       network:
@@ -207,12 +207,12 @@ memberIoCeilings:
     io:
       read:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       write:
         mode: restricted
-        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-52-34-h0-r0b4673/workspace"]
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-43-40-h0-r052229/workspace"]
         ask: []
         deny: []
       network:

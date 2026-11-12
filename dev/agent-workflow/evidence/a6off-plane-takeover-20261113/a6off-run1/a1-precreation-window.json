@@ -3,7 +3,7 @@
   "turnsAfter": 45,
   "quiesce": {
     "quiesced": true,
-    "waitedMs": 2003,
+    "waitedMs": 2204,
     "requests": 45
   },
   "windowTurns": [],
