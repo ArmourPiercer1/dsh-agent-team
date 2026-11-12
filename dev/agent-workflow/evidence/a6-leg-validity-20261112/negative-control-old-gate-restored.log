@@ -1,0 +1,82 @@
+npm warn Unknown project config "auto-install-peers". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-leg-validity
+
+ ❯ packages/runtime/test/a6-assigned-officer-facts.test.ts (31 tests | 3 failed | 25 skipped) 93ms
+     ↓ accepts the unique live Officer through both trusted ports and records canonical evidence
+     ↓ refuses the Worker: the resolved reviewer is the distinct Officer, not the caller
+     ↓ refuses the Officer's own ask (self-review) in the single evaluator
+     ↓ refuses a declared Leader exception even though the Officer is assigned
+     ↓ refuses a transferred leg: no former-Officer signing authority
+     ↓ refuses a cross-root query even with a real row from another team
+     ↓ refuses when the authority generation is missing or does not match the leg
+     ↓ refuses when the frozen Blueprint identity is not the parsed routing's Blueprint
+     ↓ resolves a SETTLED Officer (the normal idle state is still a live reviewer)
+     ↓ refuses a stale Officer (no live RUNNING instance of the Officer template)
+     ↓ refuses when the composition cannot classify the fixed Leader/Human category
+     ↓ classifies the closed control kinds without inventing taxonomy
+     ↓ parses once, refuses non-v5, and assembles both ports for the unique live Officer
+     ↓ keeps disabled legacy and refuses an invalid v5 source without inventing a fallback
+     ↓ answers 0 only for the legal no-port/no-row world and throws on a non-generation
+     ↓ resolves a CREATED team root through its own frozen routing, never the boot policy
+     ↓ refuses a root when routingForRoot explicitly answers null (even if the boot policy would resolve)
+     ↓ live root composition pins no startup Officer and resolves the current unique one at query time
+     ↓ readControlState reports leg AND transfer rows with listControlState parity, without taking the lock
+     ↓ createAlpha6ControlPorts resolves a real assigned-Officer allow from INSIDE the running control operation (no deadlock)
+     ↓ the composed ports refuse a transferred leg through the same snapshot (no former-Officer authority)
+     ↓ reads the generation for the subject Member, never for the Leader requester or the Officer
+     ↓ accepts the legal initial generation 0 when the frozen leg also carries 0
+     ↓ binds a same-template different instance to the subject, not the requester
+     ↓ refuses a leg whose trusted identity names no instance, even when the requester is an instance
+     × accepts CREATED, RUNNING and SETTLED owners and refuses revoked/terminal/unknown ones — NEGATIVE CONTROL for the old RUNNING-only gate 29ms
+     × lets a CREATED owner own a valid leg end to end — defect 1: the first, relayed turn 15ms
+     × lets a SETTLED owner own a valid leg end to end — defect 2: the second ask after a finished work unit 12ms
+     ✓ still refuses an ARCHIVED owner with the typed downstream refusal, never a guess 14ms
+     ✓ refuses an owner row that does not identify the leg subject (foreign root, other instance, other template) 12ms
+     ✓ refuses a missing leg, a decided leg, a wrong generation and a missing generation 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  packages/runtime/test/a6-assigned-officer-facts.test.ts > A6 facts — the pending leg is the subject, not the owner lifecycle > accepts CREATED, RUNNING and SETTLED owners and refuses revoked/terminal/unknown ones — NEGATIVE CONTROL for the old RUNNING-only gate
+AssertionError: CREATED owner must own a valid pending leg: expected null not to be null
+ ❯ packages/runtime/test/a6-assigned-officer-facts.test.ts:1136:14
+    1134|       // these are the two states the two measured defects own their l…
+    1135|       expect(await portWithOwner(world, mirror, { ...row, lifecycle: '…
+    1136|         .not.toBeNull()
+       |              ^
+    1137|       expect(await portWithOwner(world, mirror, { ...row, lifecycle: '…
+    1138|         .not.toBeNull()
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  packages/runtime/test/a6-assigned-officer-facts.test.ts > A6 facts — the pending leg is the subject, not the owner lifecycle > lets a CREATED owner own a valid leg end to end — defect 1: the first, relayed turn
+AssertionError: expected null not to be null
+ ❯ packages/runtime/test/a6-assigned-officer-facts.test.ts:1170:44
+    1168|
+    1169|       expect(await port.resolveCurrentReviewer(queryOf(leg))).toEqual(…
+    1170|       expect(await port(queryOf(leg))).not.toBeNull()
+       |                                            ^
+    1171|
+    1172|       const allowed = await service.resolveControl({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  packages/runtime/test/a6-assigned-officer-facts.test.ts > A6 facts — the pending leg is the subject, not the owner lifecycle > lets a SETTLED owner own a valid leg end to end — defect 2: the second ask after a finished work unit
+AssertionError: expected null not to be null
+ ❯ packages/runtime/test/a6-assigned-officer-facts.test.ts:1202:44
+    1200|       await mirror.refresh(service)
+    1201|
+    1202|       expect(await port(queryOf(leg))).not.toBeNull()
+       |                                            ^
+    1203|       const allowed = await service.resolveControl({
+    1204|         rootSessionId: P6T4_ROOT,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 3 passed | 25 skipped (31)
+   Start at  20:44:19
+   Duration  1.45s (transform 1.01s, setup 0ms, import 1.25s, tests 93ms, environment 0ms)
+
+NEGCTRL_EXIT=1
