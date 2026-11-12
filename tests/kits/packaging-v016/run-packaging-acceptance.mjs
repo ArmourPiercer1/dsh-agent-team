@@ -642,23 +642,38 @@ function durableSnapshot(root) {
 }
 
 async function bootAndReadTeam(world, label, hostPort, mockPort, teamRoot) {
+  // LAYOUT: the packaged instrument's world root IS its DSH_HOME
+  // (`tests/homes/v016-pack-<run>-<stamp>/` with `workspace/` beside the
+  // profile). Passing `<world>/home` here would boot an EMPTY profile — the
+  // install would look successful and the Team would look missing, which is
+  // exactly the kind of self-inflicted false failure this driver must not
+  // produce.
+  const dshHome = world
+  const workspace = join(world, 'workspace')
   const instanceLog = join(RUN_DIR, label, 'instance.log')
   mkdirSync(dirname(instanceLog), { recursive: true })
-  const mock = await startMockModel({
-    port: Number(mockPort),
-    decide: () => ({ kind: 'text', content: `${label}_ACK` }),
-    log: (line) => log(`mock[${label}]: ${line}`),
-  })
+  let mock = null
+  try {
+    mock = await startMockModel({
+      port: Number(mockPort),
+      decide: () => ({ kind: 'text', content: `${label}_ACK` }),
+      log: (line) => log(`mock[${label}]: ${line}`),
+    })
+  } catch (error) {
+    const failed = { label, hostPort, mockPort, booted: false, error: `mock model failed to start: ${String(error?.message ?? error)}` }
+    writeEvidence(join(label, 'boot.json'), failed)
+    return failed
+  }
   const out = openSync(instanceLog, 'a')
   const err = openSync(instanceLog, 'a')
   let child
   try {
     child = spawn(process.execPath, [HOST_BIN, 'web', '--port', String(hostPort), '--no-open'], {
-      cwd: join(world, 'workspace'),
+      cwd: workspace,
       stdio: ['ignore', out, err],
       env: {
         ...process.env,
-        DSH_HOME: join(world, 'home'),
+        DSH_HOME: dshHome,
         DSH_CLIENT_COMMIT_HASH: CLIENT_COMMIT_HASH,
         DEEPSEEK_BASE_URL: `http://127.0.0.1:${mockPort}`,
         DEEPSEEK_API_KEY: `${label}-mock-key`,
@@ -667,7 +682,10 @@ async function bootAndReadTeam(world, label, hostPort, mockPort, teamRoot) {
   } finally {
     closeSync(out); closeSync(err)
   }
-  const result = { label, hostPort, mockPort, booted: false, authStatus: null, projectionStatus: null, teamReadable: false, error: null, instanceLog }
+  const result = {
+    label, hostPort, mockPort, dshHome, booted: false, authStatus: null, projectionStatus: null,
+    teamReadable: false, durableTeamRows: null, error: null, instanceLog,
+  }
   try {
     const deadline = Date.now() + 240_000
     let url = null
@@ -697,6 +715,7 @@ async function bootAndReadTeam(world, label, hostPort, mockPort, teamRoot) {
       })
       result.projectionStatus = rpc.status
       const body = await rpc.json().catch(() => null)
+      result.projectionBody = body === null ? null : JSON.stringify(body).slice(0, 600)
       const projection = body?.result?.value?.data?.projection ?? body?.result?.value ?? null
       result.teamReadable = rpc.status === 200 && body?.result?.ok === true && projection !== null
       result.projectionMembers = (projection?.members ?? []).length
@@ -704,6 +723,16 @@ async function bootAndReadTeam(world, label, hostPort, mockPort, teamRoot) {
   } catch (error) {
     result.error = String(error?.message ?? error)
   } finally {
+    // CORROBORATION: the durable store is a second, independent reader of
+    // "is the Team still there". A projection can fail for a transport reason
+    // while the durable row is intact; report both rather than one.
+    try {
+      const domainPath = join(dshHome, 'storages', 'team_domain.json')
+      if (existsSync(domainPath)) {
+        const domain = JSON.parse(readFileSync(domainPath, 'utf8'))
+        result.durableTeamRows = Object.keys(domain?.tables?.team_sessions ?? {}).length
+      }
+    } catch { /* recorded as null */ }
     try { child?.kill('SIGKILL') } catch { /* gone */ }
     await sleep(800)
     try { await mock.close?.() } catch { /* closed */ }
@@ -757,9 +786,9 @@ async function phaseUpgrade(teamRoot, upgradePorts) {
     dataSameUpgrade, `files=${Object.keys(dataBefore).length}→${Object.keys(dataAfterUpgrade).length} identical=${String(dataSameUpgrade)}`)
   const bootUpgraded = await bootAndReadTeam(world, 'upgrade', upgradePorts.upgradeHost, upgradePorts.upgradeMock, teamRoot)
   SUMMARY.upgrade.boot = bootUpgraded
-  check('UPG-4', 'a Host booted on the second artifact still reads the existing durable Team',
-    bootUpgraded.booted === true && bootUpgraded.teamReadable === true,
-    `booted=${String(bootUpgraded.booted)} auth=${String(bootUpgraded.authStatus)} projection=${String(bootUpgraded.projectionStatus)} readable=${String(bootUpgraded.teamReadable)} error=${String(bootUpgraded.error)}`)
+  check('UPG-4', 'a Host booted on the second artifact still boots on the existing DSH_HOME and the durable Team is present',
+    bootUpgraded.booted === true && bootUpgraded.teamReadable === true && (bootUpgraded.durableTeamRows ?? 0) > 0,
+    `booted=${String(bootUpgraded.booted)} auth=${String(bootUpgraded.authStatus)} projection=${String(bootUpgraded.projectionStatus)} readable=${String(bootUpgraded.teamReadable)} durableTeamRows=${String(bootUpgraded.durableTeamRows)} error=${String(bootUpgraded.error)} body=${String(bootUpgraded.projectionBody).slice(0, 180)}`)
 
   log('── ROLLBACK: re-install the first tarball ──')
   const dataBeforeRollback = durableSnapshot(world)
@@ -787,8 +816,8 @@ async function phaseUpgrade(teamRoot, upgradePorts) {
   const bootRolled = await bootAndReadTeam(world, 'rollback', upgradePorts.rollbackHost, upgradePorts.rollbackMock, teamRoot)
   SUMMARY.rollback.boot = bootRolled
   check('RBK-4', 'a Host booted after rollback reads the same durable Team',
-    bootRolled.booted === true && bootRolled.teamReadable === true,
-    `booted=${String(bootRolled.booted)} auth=${String(bootRolled.authStatus)} projection=${String(bootRolled.projectionStatus)} readable=${String(bootRolled.teamReadable)} error=${String(bootRolled.error)}`)
+    bootRolled.booted === true && bootRolled.teamReadable === true && (bootRolled.durableTeamRows ?? 0) > 0,
+    `booted=${String(bootRolled.booted)} auth=${String(bootRolled.authStatus)} projection=${String(bootRolled.projectionStatus)} readable=${String(bootRolled.teamReadable)} durableTeamRows=${String(bootRolled.durableTeamRows)} error=${String(bootRolled.error)} body=${String(bootRolled.projectionBody).slice(0, 180)}`)
   // The honest limit: there is no version negotiation, so an OLDER artifact may
   // read newer data without any guarantee. Record what was observed instead.
   SUMMARY.upgrade.dataUnchangedAcrossAll = dataSameUpgrade && dataSameRollback && survived
@@ -851,6 +880,8 @@ async function main() {
     const upgradePorts = {
       upgradeHost: await pickSanctionedPort({ mock: false }),
       upgradeMock: await pickSanctionedPort({ mock: true }),
+      rollbackHost: await pickSanctionedPort({ mock: false }),
+      rollbackMock: await pickSanctionedPort({ mock: true }),
     }
     // never collide with the live arm's still-released ports
     await phaseUpgrade(teamRoot, upgradePorts)
