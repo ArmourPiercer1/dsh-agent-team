@@ -1,0 +1,16 @@
+{
+  "productSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "branch": "task/c2a-cand3-20261113",
+  "porcelainBefore": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json",
+  "packedCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPorcelain": "",
+  "testuse": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use",
+  "node": "v24.21.0",
+  "pnpm": "11.7.0",
+  "at": "2026-11-12T18:20:11.048Z",
+  "evidenceClass": "DEV-LIVE",
+  "fullPorcelainBefore": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json"
+}

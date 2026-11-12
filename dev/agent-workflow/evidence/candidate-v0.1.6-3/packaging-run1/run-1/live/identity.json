@@ -1,0 +1,12 @@
+{
+  "productSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "expectedCandidateSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "headMatchesCandidate": true,
+  "branch": "task/c2a-cand3-20261113",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPorcelain": "",
+  "testuse": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use",
+  "node": "v24.21.0"
+}

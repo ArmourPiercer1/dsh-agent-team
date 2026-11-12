@@ -1,0 +1,52 @@
+[2026-11-12T18:20:10.576Z] packaging-v016 lane — run 2 — phase=all
+[2026-11-12T18:20:10.577Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3
+[2026-11-12T18:20:10.577Z] testuse=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use
+[2026-11-12T18:20:10.577Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/dev/agent-workflow/evidence/candidate-v0.1.6-3/packaging-run2/run-2
+[2026-11-12T18:20:10.577Z] world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10
+[2026-11-12T18:20:10.577Z] PASS ENV-1: the pinned pristine host build entry exists — /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+[2026-11-12T18:20:10.581Z] driver sha256=41cd87f1ef16de9ccb28913250b26d98b441e52d3217a42c2dff3648e769cc06 commit=17a24e2c302cd991c3ba495ae29576b58a6c1069
+[2026-11-12T18:20:10.581Z] ── GATES: version consistency, clean tree, rebuild, artifact freshness ──
+[2026-11-12T18:20:10.583Z] PASS VER-1: the root manifest is version 0.1.6 — root=0.1.6
+[2026-11-12T18:20:10.583Z] PASS VER-2: every shipping workspace package carries the SAME version as the root — packages=9 mismatched=[]
+[2026-11-12T18:20:11.136Z] PASS PROV-1: the shipped product surface is clean (the pack will describe a commit, not a worktree) — productPorcelain="" fullPorcelain="?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json"
+[2026-11-12T18:20:11.136Z] PASS PROV-2: the pristine host checkout is the pin and byte-clean — host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=""
+[2026-11-12T18:20:11.136Z] GATES: rebuilding (pnpm -r run build) …
+[2026-11-12T18:20:18.747Z] PASS ART-1: every workspace package rebuilds — exit=0 tail=""
+[2026-11-12T18:20:18.747Z] GATES: rebuilding composition (pnpm run build:composition) …
+[2026-11-12T18:20:19.322Z] PASS ART-2: the composition build (place-dist-glue + client bundle) succeeds — exit=0 tail="$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs\n"
+[2026-11-12T18:20:19.431Z] PASS ART-3: the rebuild left NO product drift: the committed artifacts equal freshly built bytes (no stale dist) — productPorcelain="" fullPorcelain="?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json"
+[2026-11-12T18:20:19.431Z] PASS PROV-3: the rebuild did not move the commit being packed — before=17a24e2c302cd991c3ba495ae29576b58a6c1069 after=17a24e2c302cd991c3ba495ae29576b58a6c1069
+[2026-11-12T18:20:19.588Z] PASS ART-4: node scripts/check-artifacts-committed.mjs reports verdict=ok — exit=0 verdict=DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2088 glue=113
+[2026-11-12T18:20:19.589Z] ── PACK: pnpm pack, internal version, sha256, provenance ──
+[2026-11-12T18:20:22.239Z] PASS PACK-1: pnpm pack produced the 0.1.6 tarball — bytes=4405634 members=2113 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba
+[2026-11-12T18:20:22.239Z] PASS PACK-2: the tarball internal package.json names the SAME version — internal=0.1.6 file=dsh-agent-team-0.1.6.tgz
+[2026-11-12T18:20:22.239Z] PASS PACK-3: the tarball carries the built install surface (host entry, governed realm, launcher, client shim) — missing=[]
+[2026-11-12T18:20:22.239Z] PASS PACK-4: the packed provenance is the exact commit and the tree was clean at pack time — commit=17a24e2c302cd991c3ba495ae29576b58a6c1069 clean=true
+[2026-11-12T18:20:22.239Z] ── INSTALL: fresh dir + fresh DSH_HOME, pinned host CLI ──
+[2026-11-12T18:20:24.606Z] PASS INST-1: the pinned host CLI installed the tarball into a FRESH profile (no repo node_modules) — exit=0 installed=0.1.6 world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10
+[2026-11-12T18:20:24.606Z] PASS INST-2: the installed package identifies the SAME version as the tarball internal package.json — installed=0.1.6 tarball=0.1.6
+[2026-11-12T18:20:24.606Z] PASS INST-3: the installed host entry is byte-identical to the packed one (the artifact is what boots) — installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 packed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6
+[2026-11-12T18:20:24.606Z] PASS INST-4: the profile resolves the plugin by package name with a tarball integrity in the lock — bundleRow=true integrity=sha512-ZSD/fN52L498LBIOY…
+[2026-11-12T18:20:24.606Z] PASS INST-6: the WHOLE installed package tree is byte-identical to the packed tree (not just the host entry) — installed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b packed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b
+[2026-11-12T18:20:24.606Z] PASS INST-5: no worktree source path leaked into the installed profile — refs=[]
+[2026-11-12T18:20:24.607Z] ── LIVE: installed tarball → real Host → v5 Team (both families) → Member → execute ──
+[2026-11-12T18:20:24.624Z] PASS LIVE-0: the Host and mock ports are free and inside the sanctioned test bands — host=3190 mock=3500
+[2026-11-12T18:21:18.437Z] PASS LIVE-1: the proven packaged instrument runs to completion on the INSTALLED artifact — exit=0 checks=39/39 failed=[]
+[2026-11-12T18:21:18.438Z] PASS LIVE-2: the durable v5 blueprint froze BOTH families (memberIoCeilings + reviewRouting) — typed surface read from the registry row — schemaVersion=5 memberIoCeilings=true reviewRouting=true contentHash=sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8
+[2026-11-12T18:21:18.438Z] PASS LIVE-3: a real Member turn executed through the installed artifact and the result was collected — worker=inst-0kc39c71kemt durable=true COLL-1=true
+[2026-11-12T18:21:18.493Z] ── UPGRADE / ROLLBACK: second tarball over the installation, then back ──
+[2026-11-12T18:21:20.609Z] PASS UPG-1: the second tarball installs over the existing installation (the only upgrade primitive the product has) — exit=0 second=4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f
+[2026-11-12T18:21:20.609Z] PASS UPG-2: the installed artifact identity became the second tarball TREE (observed, not assumed; same version, different bytes) — installedTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 secondTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b sameVersion=true
+[2026-11-12T18:21:20.609Z] PASS UPG-3: the plugin install did NOT touch durable world data (no migration step exists to run) — files=27→27 identical=true
+[2026-11-12T18:21:20.611Z] mock[upgrade]: mock: listening on 127.0.0.1:3491
+[2026-11-12T18:21:23.463Z] PASS UPG-4: a Host booted on the second artifact still boots on the existing DSH_HOME and the durable Team is present — booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={"type":"server-response","rpcId":"upgrade-proj-1","result":{"ok":true,"value":{"data":{"projection":{"schemaVersion":2,"teamSessionId":"team-v016pack-r2","blueprint":{"blueprintId
+[2026-11-12T18:21:23.463Z] ── ROLLBACK: re-install the first tarball ──
+[2026-11-12T18:21:25.329Z] PASS RBK-1: rolling back is re-installing the first tarball, and it succeeds — exit=0
+[2026-11-12T18:21:25.329Z] PASS RBK-2: the installed artifact identity returned to the first tarball byte-for-byte — installedTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b
+[2026-11-12T18:21:25.329Z] PASS RBK-3: the rollback install did not rewrite durable world data, and every pre-swap durable file survived — files=27 installRewroteData=false allPreSwapFilesPresent=true
+[2026-11-12T18:21:25.332Z] mock[rollback]: mock: listening on 127.0.0.1:3491
+[2026-11-12T18:21:28.176Z] PASS RBK-4: a Host booted after rollback reads the same durable Team — booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={"type":"server-response","rpcId":"rollback-proj-1","result":{"ok":true,"value":{"data":{"projection":{"schemaVersion":2,"teamSessionId":"team-v016pack-r2","blueprint":{"blueprintI
+[2026-11-12T18:21:28.220Z] PASS HYG-1: the pristine host checkout stayed byte-clean — porcelain=""
+[2026-11-12T18:21:28.247Z] teardown: world removed (/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10)
+[2026-11-12T18:21:28.276Z] teardown: world removed (/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24)
+[2026-11-12T18:21:28.277Z] RESULT PASS checks=33/33

@@ -1,0 +1,116 @@
+{
+  "requests": [
+    {
+      "sequence": 7,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0isxul31m7oa2y1pcoyip1pd",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-08za7i91da4h",
+      "correlation": "call-c1-fdxsna5c",
+      "approvalCaseId": "case-0qtokvl0nzc0aw0118t6z1g8",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#34",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:888fc44b8003916a652102ce02fed2a3c3096500ff16090c873cb20ec38db226",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T18:00:28.095Z"
+    },
+    {
+      "sequence": 10,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1ein4vh0vbw2te1pfmixj1tq",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-08za7i91da4h",
+      "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T18-00-12-h0-racbd82:inst-08za7i91da4h:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-08za7i91da4h-native-bash:hexec:nb-1794506427818-1206105537-1",
+      "approvalCaseId": "case-1agrgcv06rnfhi0wmg0mp0jm",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#34",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:888fc44b8003916a652102ce02fed2a3c3096500ff16090c873cb20ec38db226",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T18:00:28.517Z"
+    }
+  ],
+  "decisions": [
+    {
+      "sequence": 8,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-0isxul31m7oa2y1pcoyip1pd",
+      "decision": "allow",
+      "decider": {
+        "instanceId": "inst-1qdohlb13klq",
+        "kind": "instance",
+        "role": "member"
+      },
+      "createdAt": "2026-11-12T18:00:28.262Z"
+    },
+    {
+      "sequence": 11,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-1ein4vh0vbw2te1pfmixj1tq",
+      "decision": "allow",
+      "decider": {
+        "instanceId": "inst-1qdohlb13klq",
+        "kind": "instance",
+        "role": "member"
+      },
+      "createdAt": "2026-11-12T18:00:28.690Z"
+    }
+  ],
+  "consumptions": [
+    {
+      "sequence": 9,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-0isxul31m7oa2y1pcoyip1pd",
+      "createdAt": "2026-11-12T18:00:28.452Z"
+    },
+    {
+      "sequence": 12,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-1ein4vh0vbw2te1pfmixj1tq",
+      "createdAt": "2026-11-12T18:00:28.875Z"
+    }
+  ],
+  "abandonments": [],
+  "transfers": [],
+  "escalations": [],
+  "executionResults": [
+    {
+      "sequence": 13,
+      "factType": "control-execution-result",
+      "requestId": "ctrl-1ein4vh0vbw2te1pfmixj1tq",
+      "callId": "team-inst-08za7i91da4h-native-bash:hexec:nb-1794506427818-1206105537-1",
+      "outcome": "succeeded",
+      "recordedAt": "2026-11-12T18:00:29.274Z",
+      "createdAt": "2026-11-12T18:00:29.274Z"
+    },
+    {
+      "sequence": 14,
+      "factType": "control-execution-result",
+      "requestId": "ctrl-0isxul31m7oa2y1pcoyip1pd",
+      "callId": "call-c1-fdxsna5c",
+      "outcome": "succeeded",
+      "recordedAt": "2026-11-12T18:00:29.292Z",
+      "createdAt": "2026-11-12T18:00:29.292Z"
+    }
+  ],
+  "error": null
+}

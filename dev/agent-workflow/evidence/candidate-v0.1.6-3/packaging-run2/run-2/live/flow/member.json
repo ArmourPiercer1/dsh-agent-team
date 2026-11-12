@@ -1,0 +1,107 @@
+{
+  "members": [
+    {
+      "instanceId": "inst-0kc39c71kemt",
+      "templateId": "worker",
+      "label": "w-1",
+      "lifecycle": "RUNNING",
+      "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0ofnbt205ssz",
+      "templateId": "goal",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0y1bmfd1fegn",
+      "templateId": "officer",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+      "result": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "lifecycle": "RUNNING",
+      "childSessionId": null,
+      "result": null
+    }
+  ],
+  "officer": {
+    "instanceId": "inst-0y1bmfd1fegn",
+    "templateId": "officer",
+    "label": "officer-1",
+    "lifecycle": "CREATED",
+    "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+    "result": null
+  },
+  "worker": {
+    "instanceId": "inst-0kc39c71kemt",
+    "templateId": "worker",
+    "label": "w-1",
+    "lifecycle": "RUNNING",
+    "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+    "result": null
+  },
+  "goalWorker": {
+    "instanceId": "inst-0ofnbt205ssz",
+    "templateId": "goal",
+    "label": "g-1",
+    "lifecycle": "CREATED",
+    "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+    "result": null
+  },
+  "durableMembers": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-12T18:20:29.092Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+      "createdAt": "2026-11-12T18:20:29.393Z",
+      "instanceId": "inst-0y1bmfd1fegn",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24/workspace"
+    },
+    {
+      "activityVersion": 2,
+      "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "createdAt": "2026-11-12T18:20:29.510Z",
+      "instanceId": "inst-0kc39c71kemt",
+      "label": "w-1",
+      "lifecycle": "RUNNING",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "createdAt": "2026-11-12T18:20:29.627Z",
+      "instanceId": "inst-0ofnbt205ssz",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "goal",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24/workspace"
+    }
+  ]
+}

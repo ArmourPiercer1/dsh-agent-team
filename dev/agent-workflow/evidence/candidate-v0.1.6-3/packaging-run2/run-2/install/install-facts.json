@@ -1,0 +1,22 @@
+{
+  "command": "DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/home node /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+  "exit": 0,
+  "tarball": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+  "tarballSha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+  "installedVersion": "0.1.6",
+  "installedName": "dsh-agent-team",
+  "installedHostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+  "installedTreeDigest": "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+  "profileDependency": "file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+  "profileBundles": [
+    "@deepseek-ai/dsh-base",
+    "@deepseek-ai/dsh-web-app",
+    "dsh-agent-team"
+  ],
+  "lockIntegrity": "sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==",
+  "bundleRowUsesPackageName": true,
+  "worktreeRefsInProfile": [],
+  "freshWorld": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10",
+  "freshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/home",
+  "freshProject": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/project"
+}

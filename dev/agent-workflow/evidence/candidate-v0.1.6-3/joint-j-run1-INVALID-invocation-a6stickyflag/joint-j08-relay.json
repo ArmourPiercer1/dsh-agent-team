@@ -1,0 +1,111 @@
+{
+  "member": {
+    "label": "g-joint-8",
+    "instanceId": "inst-1te64bc0807z",
+    "childSessionId": "session-team-child-c01c989625b32e4d3515e3b3e544772d",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T17-46-33-h0-r3d885c",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-1te64bc0807z",
+          "templateId": "goal-worker",
+          "childSessionId": "session-team-child-c01c989625b32e4d3515e3b3e544772d",
+          "operationId": "op-0yzazac0pwi38t1ktbqb20mk",
+          "replayed": false,
+          "ledgerSequence": 11,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-8-2026-11-12T17-46-33-h0-r3d885c"
+      }
+    }
+  },
+  "machineRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j08-machine-zobsiohoo9",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T17-46-33-h0-r3d885c",
+              "action": "send-message",
+              "callerRole": "leader",
+              "recipientInstanceId": "inst-1te64bc0807z",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-1te64bc0807z",
+              "deliveredToSessionId": "session-team-child-c01c989625b32e4d3515e3b3e544772d",
+              "factSequence": 12,
+              "deliveredSequence": 13,
+              "requestToken": "joint-j08-machine-2026-11-12T17-46-33-h0-r3d885c"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j08-machine-2026-11-12T17-46-33-h0-r3d885c",
+            "projectionGeneration": null,
+            "effectSequence": 12
+          }
+        }
+      }
+    }
+  },
+  "refusalText": null,
+  "bashText": null,
+  "goal": null,
+  "ledgerBefore": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1qja8ik0msylax1x3ol5i0xq",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-15sq4c100nie",
+        "correlation": "call-c1-253br8tf",
+        "approvalCaseId": "case-0sg4m5h0i04fns12id0qn082",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:70e811ce6870ee31bba28037a1d508616d62d9bf5761cbbd371c3b62fb8a604e",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T17:46:49.157Z"
+      }
+    ],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [],
+    "error": null
+  },
+  "turnSeen": true,
+  "texts": [
+    "Error: this goal operation requires a direct human turn on a top-level agent",
+    "Error: A5_NATIVE_ADMISSION_UNAVAILABLE: the Team admission edge is not published for this agent, so this native `bash` call cannot be decided or consumed; refusing instead of executing an unapproved native call"
+  ],
+  "refusalForm": "sentence",
+  "refusalObserved": "Error: this goal operation requires a direct human turn on a top-level agent",
+  "bashFile": null,
+  "askLegs": 0
+}
