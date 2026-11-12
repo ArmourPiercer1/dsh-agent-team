@@ -1,0 +1,60 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3185/?token=oz4XMlUzHHJr1s1-pCTvlK094TiWv2hLrnNBT00ZM8w
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=4 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1v04o9d0wwtl-native-bash:hexec:nb-1794506093889-1255711774-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5:inst-1v04o9d0wwtl:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-1v04o9d0wwtl-native-bash:hexec:nb-1794506093889-1255711774-1 grantId=grant:a1e6482dcbd26051982872163476250d effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-1v04o9d0wwtl-native-bash:hexec:nb-1794506093889-1255711774-1 grantId=grant:a1e6482dcbd26051982872163476250d caseId=tadm:session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5:inst-1v04o9d0wwtl:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,grep,glob,read,write,edit,read_image,present]
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,grep,glob,read,write,edit,read_image,present]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=4 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-12d7btp0edsh-native-bash:hexec:nb-1794506175821-1029116129-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5:inst-12d7btp0edsh:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-12d7btp0edsh-native-bash:hexec:nb-1794506175821-1029116129-1 grantId=grant:b791ce466053dd6bbc44bf19dd9e1f63 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-12d7btp0edsh-native-bash:hexec:nb-1794506175821-1029116129-1 grantId=grant:b791ce466053dd6bbc44bf19dd9e1f63 caseId=tadm:session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5:inst-12d7btp0edsh:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 105ms — the connection service appeared after the mount step)
+dsh web: http://127.0.0.1:3185/?token=oEmr6aWChZ8uJisymrNvNiVAfhDiKVwPj8Jcr-JPo-U
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5ptc: census-boot root=session-c1-smoke-a6-2026-11-12T17-54-38-h0-r3708b5 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=4 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=4 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-54-38-h0-r3708b5
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]

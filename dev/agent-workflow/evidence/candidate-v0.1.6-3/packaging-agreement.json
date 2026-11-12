@@ -1,0 +1,869 @@
+{
+  "schema": "packaging-run-agreement/1",
+  "run1": "dev/agent-workflow/evidence/candidate-v0.1.6-3/packaging-run1/run-1",
+  "run2": "dev/agent-workflow/evidence/candidate-v0.1.6-3/packaging-run2/run-2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "artifactsAgree": true,
+  "artifactIdentity": {
+    "tarballSha256": [
+      "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+      "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+    ],
+    "tarballBytes": [
+      4405634,
+      4405634
+    ],
+    "packedHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    ],
+    "installedHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    ],
+    "secondTarballSha": [
+      "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f",
+      "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f"
+    ],
+    "secondTree": [
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4"
+    ],
+    "firstTree": [
+      "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+      "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+    ],
+    "installedAfterSwap": [
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4"
+    ],
+    "rollbackHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    ]
+  },
+  "artifactAgree": {
+    "tarballSha256": true,
+    "tarballBytes": true,
+    "packedHostEntry": true,
+    "installedHostEntry": true,
+    "secondTarballSha": true,
+    "secondTree": true,
+    "firstTree": true,
+    "installedAfterSwap": true,
+    "rollbackHostEntry": true
+  },
+  "normalization": [
+    "ISO timestamp -> <iso>",
+    "world stamp -> <stamp>",
+    "run label r1/r2 -> $1-<n>",
+    "run token r1/r2 -> $1_r<n>",
+    "run token R1/R2 -> V016PACK_R<n>_",
+    "blueprint content hash (hash over a run-labelled document) -> $1sha256:<hash>",
+    "port -> $1<port>",
+    "control id -> ctrl-<id>",
+    "goal id -> goal-<id>",
+    "case id -> case-<id>",
+    "instance id -> inst-<id>",
+    "session id -> session-<id>",
+    "world/home path -> <home>",
+    "worktree path -> <worktree>",
+    "blueprint scratch dir -> <blueprints>",
+    "rpc id -> \"rpcId\":\"<id>\""
+  ],
+  "checks": [
+    {
+      "layer": "driver",
+      "check": "ART-1",
+      "name": "every workspace package rebuilds",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 tail=\"\"",
+      "detail2": "exit=0 tail=\"\""
+    },
+    {
+      "layer": "driver",
+      "check": "ART-2",
+      "name": "the composition build (place-dist-glue + client bundle) succeeds",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 tail=\"$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs\\n\"",
+      "detail2": "exit=0 tail=\"$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs\\n\""
+    },
+    {
+      "layer": "driver",
+      "check": "ART-3",
+      "name": "the rebuild left NO product drift: the committed artifacts equal freshly built bytes (no stale dist)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\"",
+      "detail2": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\""
+    },
+    {
+      "layer": "driver",
+      "check": "ART-4",
+      "name": "node scripts/check-artifacts-committed.mjs reports verdict=ok",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 verdict=DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2088 glue=113",
+      "detail2": "exit=0 verdict=DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2088 glue=113"
+    },
+    {
+      "layer": "driver",
+      "check": "ENV-1",
+      "name": "the pinned pristine host build entry exists",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "<worktree>/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+      "detail2": "<worktree>/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"
+    },
+    {
+      "layer": "driver",
+      "check": "HYG-1",
+      "name": "the pristine host checkout stayed byte-clean",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "porcelain=\"\"",
+      "detail2": "porcelain=\"\""
+    },
+    {
+      "layer": "driver",
+      "check": "INST-1",
+      "name": "the pinned host CLI installed the tarball into a FRESH profile (no repo node_modules)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 installed=0.1.6 world=<home>",
+      "detail2": "exit=0 installed=0.1.6 world=<home>"
+    },
+    {
+      "layer": "driver",
+      "check": "INST-2",
+      "name": "the installed package identifies the SAME version as the tarball internal package.json",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installed=0.1.6 tarball=0.1.6",
+      "detail2": "installed=0.1.6 tarball=0.1.6"
+    },
+    {
+      "layer": "driver",
+      "check": "INST-3",
+      "name": "the installed host entry is byte-identical to the packed one (the artifact is what boots)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 packed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "detail2": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 packed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    },
+    {
+      "layer": "driver",
+      "check": "INST-4",
+      "name": "the profile resolves the plugin by package name with a tarball integrity in the lock",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "bundleRow=true integrity=sha512-ZSD/fN52L498LBIOY…",
+      "detail2": "bundleRow=true integrity=sha512-ZSD/fN52L498LBIOY…"
+    },
+    {
+      "layer": "driver",
+      "check": "INST-5",
+      "name": "no worktree source path leaked into the installed profile",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "refs=[]",
+      "detail2": "refs=[]"
+    },
+    {
+      "layer": "driver",
+      "check": "INST-6",
+      "name": "the WHOLE installed package tree is byte-identical to the packed tree (not just the host entry)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b packed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+      "detail2": "installed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b packed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+    },
+    {
+      "layer": "driver",
+      "check": "LIVE-0",
+      "name": "the Host and mock ports are free and inside the sanctioned test bands",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "host=<port> mock=<port>",
+      "detail2": "host=<port> mock=<port>"
+    },
+    {
+      "layer": "driver",
+      "check": "LIVE-1",
+      "name": "the proven packaged instrument runs to completion on the INSTALLED artifact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 checks=39/39 failed=[]",
+      "detail2": "exit=0 checks=39/39 failed=[]"
+    },
+    {
+      "layer": "driver",
+      "check": "LIVE-2",
+      "name": "the durable v5 blueprint froze BOTH families (memberIoCeilings + reviewRouting) — typed surface read from the registry row",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "schemaVersion=5 memberIoCeilings=true reviewRouting=true contentHash=sha256:<hash>",
+      "detail2": "schemaVersion=5 memberIoCeilings=true reviewRouting=true contentHash=sha256:<hash>"
+    },
+    {
+      "layer": "driver",
+      "check": "LIVE-3",
+      "name": "a real Member turn executed through the installed artifact and the result was collected",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "worker=inst-<id> durable=true COLL-1=true",
+      "detail2": "worker=inst-<id> durable=true COLL-1=true"
+    },
+    {
+      "layer": "driver",
+      "check": "PACK-1",
+      "name": "pnpm pack produced the 0.1.6 tarball",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "bytes=4405634 members=2113 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+      "detail2": "bytes=4405634 members=2113 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+    },
+    {
+      "layer": "driver",
+      "check": "PACK-2",
+      "name": "the tarball internal package.json names the SAME version",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "internal=0.1.6 file=dsh-agent-team-0.1.6.tgz",
+      "detail2": "internal=0.1.6 file=dsh-agent-team-0.1.6.tgz"
+    },
+    {
+      "layer": "driver",
+      "check": "PACK-3",
+      "name": "the tarball carries the built install surface (host entry, governed realm, launcher, client shim)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "missing=[]",
+      "detail2": "missing=[]"
+    },
+    {
+      "layer": "driver",
+      "check": "PACK-4",
+      "name": "the packed provenance is the exact commit and the tree was clean at pack time",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "commit=17a24e2c302cd991c3ba495ae29576b58a6c1069 clean=true",
+      "detail2": "commit=17a24e2c302cd991c3ba495ae29576b58a6c1069 clean=true"
+    },
+    {
+      "layer": "driver",
+      "check": "PROV-1",
+      "name": "the shipped product surface is clean (the pack will describe a commit, not a worktree)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\"",
+      "detail2": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\""
+    },
+    {
+      "layer": "driver",
+      "check": "PROV-2",
+      "name": "the pristine host checkout is the pin and byte-clean",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\"",
+      "detail2": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+    },
+    {
+      "layer": "driver",
+      "check": "PROV-3",
+      "name": "the rebuild did not move the commit being packed",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "before=17a24e2c302cd991c3ba495ae29576b58a6c1069 after=17a24e2c302cd991c3ba495ae29576b58a6c1069",
+      "detail2": "before=17a24e2c302cd991c3ba495ae29576b58a6c1069 after=17a24e2c302cd991c3ba495ae29576b58a6c1069"
+    },
+    {
+      "layer": "driver",
+      "check": "RBK-1",
+      "name": "rolling back is re-installing the first tarball, and it succeeds",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0",
+      "detail2": "exit=0"
+    },
+    {
+      "layer": "driver",
+      "check": "RBK-2",
+      "name": "the installed artifact identity returned to the first tarball byte-for-byte",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installedTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+      "detail2": "installedTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+    },
+    {
+      "layer": "driver",
+      "check": "RBK-3",
+      "name": "the rollback install did not rewrite durable world data, and every pre-swap durable file survived",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "files=27 installRewroteData=false allPreSwapFilesPresent=true",
+      "detail2": "files=27 installRewroteData=false allPreSwapFilesPresent=true"
+    },
+    {
+      "layer": "driver",
+      "check": "RBK-4",
+      "name": "a Host booted after rollback reads the same durable Team",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintI",
+      "detail2": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintI"
+    },
+    {
+      "layer": "driver",
+      "check": "UPG-1",
+      "name": "the second tarball installs over the existing installation (the only upgrade primitive the product has)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 second=4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f",
+      "detail2": "exit=0 second=4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f"
+    },
+    {
+      "layer": "driver",
+      "check": "UPG-2",
+      "name": "the installed artifact identity became the second tarball TREE (observed, not assumed; same version, different bytes)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installedTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 secondTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b sameVersion=true",
+      "detail2": "installedTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 secondTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b sameVersion=true"
+    },
+    {
+      "layer": "driver",
+      "check": "UPG-3",
+      "name": "the plugin install did NOT touch durable world data (no migration step exists to run)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "files=27→27 identical=true",
+      "detail2": "files=27→27 identical=true"
+    },
+    {
+      "layer": "driver",
+      "check": "UPG-4",
+      "name": "a Host booted on the second artifact still boots on the existing DSH_HOME and the durable Team is present",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintId",
+      "detail2": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintId"
+    },
+    {
+      "layer": "driver",
+      "check": "VER-1",
+      "name": "the root manifest is version 0.1.6",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "root=0.1.6",
+      "detail2": "root=0.1.6"
+    },
+    {
+      "layer": "driver",
+      "check": "VER-2",
+      "name": "every shipping workspace package carries the SAME version as the root",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "packages=9 mismatched=[]",
+      "detail2": "packages=9 mismatched=[]"
+    },
+    {
+      "layer": "live",
+      "check": "APP-1",
+      "name": "the governed ask produced a durable approval leg discoverable over the remote surface and decidable by the human",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=leader visible=true pendingCount=1",
+      "detail2": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+    },
+    {
+      "layer": "live",
+      "check": "APP-2",
+      "name": "the governed plane leg was routed to the Officer and escalated to a durable HUMAN leg",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=human-user escalated=true visible=true",
+      "detail2": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=human-user escalated=true visible=true"
+    },
+    {
+      "layer": "live",
+      "check": "APP-3",
+      "name": "the human allow on the escalated leg is the durable decision (decider=human) and was consumed exactly once",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "decision={\"sequence\":15,\"requestId\":\"ctrl-<id>\",\"decision\":\"allow\",\"decider\":{\"humanId\":\"team-v016pack-<n>\",\"kind\":\"human\"},\"createdAt\":\"<iso>\"} consumptions=1",
+      "detail2": "decision={\"sequence\":15,\"requestId\":\"ctrl-<id>\",\"decision\":\"allow\",\"decider\":{\"humanId\":\"team-v016pack-<n>\",\"kind\":\"human\"},\"createdAt\":\"<iso>\"} consumptions=1"
+    },
+    {
+      "layer": "live",
+      "check": "APP-4",
+      "name": "the approved body executed exactly once (single, attributed side effect)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "file=\"V016PACK_R<n>_ARM1_EXECUTED\" abandonments=0",
+      "detail2": "file=\"V016PACK_R<n>_ARM1_EXECUTED\" abandonments=0"
+    },
+    {
+      "layer": "live",
+      "check": "BOOT-1",
+      "name": "the installed 0.1.6 artifact + pristine host boots a real Team Host",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "origin=http://127.0.0.1:<port> port=<port>",
+      "detail2": "origin=http://127.0.0.1:<port> port=<port>"
+    },
+    {
+      "layer": "live",
+      "check": "COLL-1",
+      "name": "the Leader collected the Member: the durable result is retrievable and carries the Member marker",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-<n>\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r<n>-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-<id>\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\"",
+      "detail2": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-<n>\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r<n>-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-<id>\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+    },
+    {
+      "layer": "live",
+      "check": "CRASH-1",
+      "name": "the Host was really killed (SIGKILL) before recovery",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exited=true code=null signal=SIGKILL",
+      "detail2": "exited=true code=null signal=SIGKILL"
+    },
+    {
+      "layer": "live",
+      "check": "CRASH-2",
+      "name": "the same DSH_HOME boots cold on the same installed artifact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "origin=http://127.0.0.1:<port>",
+      "detail2": "origin=http://127.0.0.1:<port>"
+    },
+    {
+      "layer": "live",
+      "check": "ENV-1",
+      "name": "the pristine host build entry exists",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "<worktree>/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+      "detail2": "<worktree>/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"
+    },
+    {
+      "layer": "live",
+      "check": "GOAL-1",
+      "name": "the Member created a durable Goal",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "goalId=goal-<id> phase=paused",
+      "detail2": "goalId=goal-<id> phase=paused"
+    },
+    {
+      "layer": "live",
+      "check": "GOAL-2",
+      "name": "the Goal advanced by its own automatic rounds (>=2)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "roundsStarted=2",
+      "detail2": "roundsStarted=2"
+    },
+    {
+      "layer": "live",
+      "check": "GOAL-3",
+      "name": "the Member updated the Goal (revision advanced)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "revision=1->3",
+      "detail2": "revision=1->3"
+    },
+    {
+      "layer": "live",
+      "check": "HYG-1",
+      "name": "the pristine host checkout stayed byte-clean",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "porcelain=\"\"",
+      "detail2": "porcelain=\"\""
+    },
+    {
+      "layer": "live",
+      "check": "ID-1",
+      "name": "the driver runs on the frozen candidate commit",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "repo=17a24e2c302cd991c3ba495ae29576b58a6c1069 expected=17a24e2c302cd991c3ba495ae29576b58a6c1069",
+      "detail2": "repo=17a24e2c302cd991c3ba495ae29576b58a6c1069 expected=17a24e2c302cd991c3ba495ae29576b58a6c1069"
+    },
+    {
+      "layer": "live",
+      "check": "ID-2",
+      "name": "the host checkout is the pinned pristine host and byte-clean",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\"",
+      "detail2": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+    },
+    {
+      "layer": "live",
+      "check": "INST-1",
+      "name": "the real CLI installed the tarball into a fresh profile",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exit=0 installedVersion=0.1.6",
+      "detail2": "exit=0 installedVersion=0.1.6"
+    },
+    {
+      "layer": "live",
+      "check": "INST-2",
+      "name": "the installed host entry is byte-identical to the packed one (the artifact is what boots)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 tarball=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "detail2": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 tarball=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    },
+    {
+      "layer": "live",
+      "check": "INST-3",
+      "name": "the profile resolves the plugin by package name, not a worktree plugin path",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "bundleRowName=true worktreeRefs=[]",
+      "detail2": "bundleRowName=true worktreeRefs=[]"
+    },
+    {
+      "layer": "live",
+      "check": "INST-4",
+      "name": "the installed profile lock identifies the artifact by tarball integrity",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "integrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==",
+      "detail2": "integrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ=="
+    },
+    {
+      "layer": "live",
+      "check": "MEM-1",
+      "name": "the Member exists durably (member_instances row + live child session)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "instance=inst-<id> child=session-<id> row=true",
+      "detail2": "instance=inst-<id> child=session-<id> row=true"
+    },
+    {
+      "layer": "live",
+      "check": "MEM-2",
+      "name": "the Officer exists durably (the Alpha.6 routing recipient)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "instance=inst-<id> child=session-<id>",
+      "detail2": "instance=inst-<id> child=session-<id>"
+    },
+    {
+      "layer": "live",
+      "check": "MEM-3",
+      "name": "the Goal Member exists durably (the Member whose surface carries the Goal tools)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "instance=inst-<id> child=session-<id>",
+      "detail2": "instance=inst-<id> child=session-<id>"
+    },
+    {
+      "layer": "live",
+      "check": "PACK-1",
+      "name": "pnpm pack produced the 0.1.6 artifact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "mode=reused bytes=4405634",
+      "detail2": "mode=reused bytes=4405634"
+    },
+    {
+      "layer": "live",
+      "check": "PACK-2",
+      "name": "the tarball carries the built host entry, governed realm and sandbox launcher",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "present=5/5 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+      "detail2": "present=5/5 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+    },
+    {
+      "layer": "live",
+      "check": "REC-1",
+      "name": "the Team and the Member survived cold recovery durably",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "team=true member=true lifecycle=SETTLED",
+      "detail2": "team=true member=true lifecycle=SETTLED"
+    },
+    {
+      "layer": "live",
+      "check": "REC-2",
+      "name": "the Goal survived (phase/revision/rounds unchanged)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "phase=paused revision=3 rounds=2 durableRecords=3",
+      "detail2": "phase=paused revision=3 rounds=2 durableRecords=3"
+    },
+    {
+      "layer": "live",
+      "check": "REC-3",
+      "name": "the collected Member result is retrievable after restart (same marker)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-<n>\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r<n>-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-<id>\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\"",
+      "detail2": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-<n>\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r<n>-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-<id>\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+    },
+    {
+      "layer": "live",
+      "check": "REC-4",
+      "name": "the per-leg consumption facts survived the cold restart exactly (approval 1+1, stop 1+0)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "legs=[[\"approval-permission\",1,1],[\"approval-human\",1,1],[\"stop-permission\",1,1],[\"stop-human\",0,0]]",
+      "detail2": "legs=[[\"approval-permission\",1,1],[\"approval-human\",1,1],[\"stop-permission\",1,1],[\"stop-human\",0,0]]"
+    },
+    {
+      "layer": "live",
+      "check": "REC-5",
+      "name": "the collected Member was not resurrected into a running turn after restart",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "recordsDelta=0 mockRequestsDelta=0 lifecycle=SETTLED",
+      "detail2": "recordsDelta=0 mockRequestsDelta=0 lifecycle=SETTLED"
+    },
+    {
+      "layer": "live",
+      "check": "STOP-1",
+      "name": "the stop-arm governed ask produced a durable approval leg discoverable over the remote surface",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=leader visible=true pendingCount=1",
+      "detail2": "requestId=ctrl-<id> kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+    },
+    {
+      "layer": "live",
+      "check": "STOP-2",
+      "name": "session/cancel (the Stop RPC) is admitted after the human allow on the governed plane leg",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "status=200 ok=true escalated=true kind=leader-approval reviewAuthority=human-user body={\"ok\":true,\"value\":{\"accepted\":true}}",
+      "detail2": "status=200 ok=true escalated=true kind=leader-approval reviewAuthority=human-user body={\"ok\":true,\"value\":{\"accepted\":true}}"
+    },
+    {
+      "layer": "live",
+      "check": "STOP-3",
+      "name": "Stop before consumption: the governed plane leg has NO consumption fact, NO execution and NO side effect",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "consumptions=0 executions=0 fileExists=false abandonments=0",
+      "detail2": "consumptions=0 executions=0 fileExists=false abandonments=0"
+    },
+    {
+      "layer": "live",
+      "check": "STOP-4",
+      "name": "the stop-arm human leg is terminal (late allow refused, or durably abandoned)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "lateAllowOk=false code=CONTROL_REQUEST_DECIDED abandonments=0 shape=already-decided",
+      "detail2": "lateAllowOk=false code=CONTROL_REQUEST_DECIDED abandonments=0 shape=already-decided"
+    },
+    {
+      "layer": "live",
+      "check": "STOP-5",
+      "name": "the Goal is durably paused by Stop (no continuation)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "pauseOk=false phase=paused rounds=2",
+      "detail2": "pauseOk=false phase=paused rounds=2"
+    },
+    {
+      "layer": "live",
+      "check": "SURF-1",
+      "name": "the durable blueprint registry froze the schemaVersion-5 document the installed artifact admitted",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "row=true schemaVersion=5 contentHash=sha256:<hash>",
+      "detail2": "row=true schemaVersion=5 contentHash=sha256:<hash>"
+    },
+    {
+      "layer": "live",
+      "check": "SURF-2",
+      "name": "the frozen durable document carries BOTH v5 families (memberIoCeilings + reviewRouting)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "memberIoCeilings=true reviewRouting=true ceilingTemplates=[\"worker\",\"officer\"]",
+      "detail2": "memberIoCeilings=true reviewRouting=true ceilingTemplates=[\"worker\",\"officer\"]"
+    },
+    {
+      "layer": "live",
+      "check": "TEAM-0",
+      "name": "team.create admits the v5 blueprint (Officer + reviewRouting) on the packaged artifact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "status=200 body={\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-<n>\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<home>/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"team-v016pack-<n>\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"root",
+      "detail2": "status=200 body={\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"team-v016pack-<n>\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-<n>\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<home>/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"team-v016pack-<n>\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"root"
+    },
+    {
+      "layer": "live",
+      "check": "TEAM-1",
+      "name": "the boot created a durable TeamSession on the installed artifact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "teamRows=1 root=team-v016pack-<n>",
+      "detail2": "teamRows=1 root=team-v016pack-<n>"
+    },
+    {
+      "layer": "live",
+      "check": "TEAM-2",
+      "name": "the durable Leader member row exists",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "leader={\"activityVersion\":1,\"createdAt\":\"<iso>\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"team-v016pack-<n>\",\"schemaVersion\":2,\"templateId\":\"leader\"}",
+      "detail2": "leader={\"activityVersion\":1,\"createdAt\":\"<iso>\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"team-v016pack-<n>\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    }
+  ]
+}

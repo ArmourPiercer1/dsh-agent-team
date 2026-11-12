@@ -1,0 +1,62 @@
+{
+  "officer": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "create-member",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T18-00-12-h0-racbd82",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-1qdohlb13klq",
+        "templateId": "officer",
+        "childSessionId": "session-team-child-9bcdd2348890dbdbc4a574eca6c69ec8",
+        "operationId": "op-1hmt1441wfkftl1ofltw210i",
+        "replayed": false,
+        "ledgerSequence": 3,
+        "admissionCode": "ADMISSION_OPEN"
+      },
+      "requestToken": "joint-officer-2026-11-12T18-00-12-h0-racbd82"
+    }
+  },
+  "worker": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "create-member",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T18-00-12-h0-racbd82",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "member-activated",
+        "instanceId": "inst-08za7i91da4h",
+        "templateId": "worker",
+        "childSessionId": "session-team-child-9542c163494b430df520f15e45d34f0a",
+        "operationId": "op-1jwk2yv1618ap21dzlpkl038",
+        "replayed": false,
+        "ledgerSequence": 4,
+        "admissionCode": "ADMISSION_OPEN"
+      },
+      "requestToken": "joint-worker-2026-11-12T18-00-12-h0-racbd82"
+    }
+  },
+  "delegate": {
+    "ok": true,
+    "value": {
+      "status": "executed",
+      "action": "delegate",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T18-00-12-h0-racbd82",
+      "callerRole": "leader",
+      "effect": {
+        "kind": "work-admitted",
+        "instanceId": "inst-08za7i91da4h",
+        "fromLifecycle": "CREATED",
+        "lifecycleCommitted": true,
+        "sequence": 5,
+        "settled": false,
+        "workStatus": "admitted"
+      },
+      "requestToken": "joint-delegate-2026-11-12T18-00-12-h0-racbd82"
+    }
+  },
+  "workerId": "inst-08za7i91da4h"
+}

@@ -1,0 +1,11 @@
+{
+  "path": "tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs",
+  "sha256": "2e14ccaf711543bb26bd530f11188e041a3e46036615883d5425914e00245b18",
+  "flags": [
+    "--member-io-ceilings",
+    "--keep",
+    "--tarball",
+    "--evidence-dir"
+  ],
+  "note": "The proven packaged-acceptance instrument drives the live arm. Its default (no --member-io-ceilings) evidence is unchanged; this run passes the opt-in ceiling family."
+}

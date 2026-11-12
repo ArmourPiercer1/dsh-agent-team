@@ -1,0 +1,67 @@
+{
+  "schema": "a6-run-agreement/1",
+  "run1": "dev/agent-workflow/evidence/candidate-v0.1.6-3/a6-crash-run1",
+  "run2": "dev/agent-workflow/evidence/candidate-v0.1.6-3/a6-crash-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "normalization": [
+    "ISO timestamp -> <iso>",
+    "run stamp (2026-11-12T18-04-25) -> <stamp>",
+    "defaultWorkspace path (may be log-truncated) -> \"defaultWorkspace\":\"<path>\"",
+    "home/workspace path -> <home>",
+    "blueprint scratch dir -> <blueprints>",
+    "rpc id (per-RPC random) -> \"rpcId\":\"<id>\"",
+    "control id -> ctrl-<id>",
+    "case id -> case-<id>",
+    "instance id -> inst-<id>",
+    "session id -> session-<id>",
+    "sha256 -> sha256:<hash>",
+    "native bash hexec call id -> :hexec:<id>",
+    "mock tool call id -> call-c1-<id>",
+    "requestToken -> <token>",
+    "ledger sequence numbers -> $1=<n>",
+    "absolute worktree path -> <worktree>"
+  ],
+  "checks": [
+    {
+      "check": "A6-1",
+      "proposition": "v5 team.create admits the Officer + routing on the real Host",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-<id><stamp>\",\"blueprint\":{\"blueprintId\":\"team.c1-a6-officer\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<path>\"",
+      "detail2": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-<id><stamp>\",\"blueprint\":{\"blueprintId\":\"team.c1-a6-officer\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<path>\""
+    },
+    {
+      "check": "A6-13",
+      "proposition": "a Host crash after the PA request write leaves the durable request recoverable, with no execution before/after restart",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exited=true pa=ctrl-<id> restart=ok decision=null consumed=false file=false",
+      "detail2": "exited=true pa=ctrl-<id> restart=ok decision=null consumed=false file=false"
+    },
+    {
+      "check": "A6-14",
+      "proposition": "after a Host crash the dead invocation is settled without a deny rewrite and a late human allow cannot execute it",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "decision=undefined abandon=invocation-abandoned consumed=false file=false",
+      "detail2": "decision=undefined abandon=invocation-abandoned consumed=false file=false"
+    },
+    {
+      "check": "L0",
+      "proposition": "discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "surface=20 missingTeam=[] denyList=[]",
+      "detail2": "surface=20 missingTeam=[] denyList=[]"
+    }
+  ]
+}

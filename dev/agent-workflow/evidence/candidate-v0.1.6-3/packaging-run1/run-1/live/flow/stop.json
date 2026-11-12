@@ -1,0 +1,131 @@
+{
+  "permissionLeg": {
+    "requestId": "ctrl-0az0v0s1pkb3tx1eb5s0q1ck",
+    "request": {
+      "sequence": 21,
+      "requestId": "ctrl-0az0v0s1pkb3tx1eb5s0q1ck",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "correlation": "call-v016pack-1-12",
+      "approvalCaseId": "case-0v8xkoe0lnoszr0xqtawc09p",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-12T18:18:08.825Z"
+    },
+    "decisions": [
+      {
+        "sequence": 22,
+        "requestId": "ctrl-0az0v0s1pkb3tx1eb5s0q1ck",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r1",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T18:18:08.941Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 23,
+        "requestId": "ctrl-0az0v0s1pkb3tx1eb5s0q1ck",
+        "createdAt": "2026-11-12T18:18:09.146Z"
+      }
+    ],
+    "abandonments": [],
+    "executions": [
+      {
+        "sequence": 29,
+        "requestId": "ctrl-0az0v0s1pkb3tx1eb5s0q1ck",
+        "callId": "call-v016pack-1-12",
+        "outcome": "failed",
+        "createdAt": "2026-11-12T18:18:09.572Z"
+      }
+    ],
+    "escalations": []
+  },
+  "humanLeg": {
+    "requestId": "ctrl-0sgx1wt0mwm26m1hayxnf03v",
+    "request": {
+      "sequence": 27,
+      "requestId": "ctrl-0sgx1wt0mwm26m1hayxnf03v",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "correlation": "pa:tadm:team-v016pack-r1:inst-0mzzhtj0zr0b:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0mzzhtj0zr0b-bash:hexec:3a2c5f49-1d59-47b0-8dc9-e482821275b2-2",
+      "approvalCaseId": "case-0evljby1stdxnz1v89j7o07c",
+      "legOrdinal": 2,
+      "reviewAuthority": "human-user",
+      "createdAt": "2026-11-12T18:18:09.365Z"
+    },
+    "decisions": [
+      {
+        "sequence": 28,
+        "requestId": "ctrl-0sgx1wt0mwm26m1hayxnf03v",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r1",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T18:18:09.534Z"
+      }
+    ],
+    "consumptions": [],
+    "abandonments": [],
+    "executions": [],
+    "escalations": [
+      {
+        "sequence": 26,
+        "approvalCaseId": "case-0evljby1stdxnz1v89j7o07c",
+        "escalatedBy": {
+          "instanceId": "inst-12vvgyh1rzbg",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0rmy8tw0mmmghn1hkyjce04p"
+      }
+    ]
+  },
+  "cancel": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "lateAllow": {
+    "status": 200,
+    "ok": false,
+    "code": "CONTROL_REQUEST_DECIDED",
+    "body": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_DECIDED",
+        "message": "ControlService: request 'ctrl-0sgx1wt0mwm26m1hayxnf03v' already carries a durable decision (the first decision is authoritative)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_DECIDED",
+            "message": "ControlService: request 'ctrl-0sgx1wt0mwm26m1hayxnf03v' already carries a durable decision (the first decision is authoritative)",
+            "details": {
+              "rootSessionId": "team-v016pack-r1",
+              "requestId": "ctrl-0sgx1wt0mwm26m1hayxnf03v"
+            }
+          }
+        }
+      }
+    }
+  },
+  "escalationRecorded": true,
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-1-2026-11-12T18-17-54/workspace/V016PACK_R1-arm2.txt",
+  "fileExists": false,
+  "terminalShape": "already-decided"
+}

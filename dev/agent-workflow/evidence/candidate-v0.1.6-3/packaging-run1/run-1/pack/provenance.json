@@ -1,0 +1,14 @@
+{
+  "packedCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "branch": "task/c2a-cand3-20261113",
+  "cleanAtPack": true,
+  "productPorcelainAtPack": "",
+  "fullPorcelainAtPack": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json",
+  "tarballSha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+  "tarballBytes": 4405634,
+  "internalVersion": "0.1.6",
+  "internalName": "dsh-agent-team",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "at": "2026-11-12T18:17:52.425Z"
+}

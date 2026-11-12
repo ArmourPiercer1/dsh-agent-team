@@ -1,0 +1,23 @@
+[2026-11-12T17:46:33.399Z] c1 real-host smoke — stamp 2026-11-12T17-46-33-h0-r3d885c
+[2026-11-12T17:46:33.399Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3
+[2026-11-12T17:46:33.399Z] testuse=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T17:46:33.399Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/dev/agent-workflow/evidence/candidate-v0.1.6-3/joint-j-run1
+[2026-11-12T17:46:34.938Z] ports: host=3185 mock=3494
+[2026-11-12T17:46:40.301Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-12T17:46:40.303Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-12T17:46:40.308Z] mock model listening on 3494
+[2026-11-12T17:46:47.925Z] host booted at http://127.0.0.1:3185; row ready — toolCount=15
+[2026-11-12T17:46:47.925Z] ── L0: discovery ──
+[2026-11-12T17:46:48.349Z] discovery surface (32 tools): bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, job_kill, job_list, job_output, present, read, read_image, skill, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, todo_write, update_goal, write
+[2026-11-12T17:46:48.349Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=32 missingTeam=[] denyList=[create_goal,exit_plan_mode,get_goal,glob,grep,job_kill,job_list,job_output,present,skill,update_goal]
+[2026-11-12T17:46:48.349Z] saved blueprints X + Y + Z written (deny list = 11 names)
+[2026-11-12T17:46:48.351Z] ── JOINT-ACCEPTANCE: one v5 Team, both families, preset=native ──
+[2026-11-12T17:46:48.687Z] PASS J01: team.create=200 admitted=true blueprintHash=sha256:70e811ce6870ee31bba28037a1d508616d62d9bf5761cbbd371c3b62fb8a604e memberIoCeilings=true reviewRouting=true schemaVersion=5
+[2026-11-12T17:50:09.913Z] FAIL J04: bashCalls=1 pinnedDefinition=true bashExecuted=false realmTerminalFacts=0 (disclosure: the shipped post-#730 path audits bash in the control ledger, not the realm sink)
+[2026-11-12T17:50:09.913Z] FAIL J02: inside="" allowFacts=0
+[2026-11-12T17:50:09.913Z] FAIL J03: writeDenies=0 outsideExists=false
+[2026-11-12T17:50:09.913Z] FAIL J05: request=ctrl-1qja8ik0msylax1x3ol5i0xq consumption=0 executionResults=0 outcomes= executionFactWaitMs=20100
+[2026-11-12T17:50:09.913Z] FAIL J11: one-shot consumption facts for ctrl-1qja8ik0msylax1x3ol5i0xq: 0
+[2026-11-12T17:50:09.913Z] FAIL J06: parameter-permission request=ctrl-1qja8ik0msylax1x3ol5i0xq reviewAuthority=leader blueprintContentHash=sha256:70e811ce6870ee31bba28037a1d508616d62d9bf5761cbbd371c3b62fb8a604e operationTool=dsh-agent-team/bash authorityGeneration=0 decider=null officer=inst-0r2tkhl1skqr routedToOfficer=false routedAwayFromOfficer=false identityCarried=true legDecided=false decisionWaitMs=120265 whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=false
+[2026-11-12T17:50:22.640Z] PASS J07: member=inst-1y0ula70ocbw relay=200/ok goal={"id":"goal-d230f07a-455f-45e7-a6fa-4e6f51567368","revision":2,"phase":"active","objective":"C1_J07 human goal C1MK_J07_2026-11-12T17-46-33-h0-r3d885c ed"} roundsStarted=2->2 (mockRoundRequests=2->2) stopLandedMidRound=true holdReleasedBy=driver stop=200 phase=paused->paused toolResults=["{\"goal\":{\"id\":\"goal-d230f07a-455f-45e7-a6fa-4e6f51567368\",\"revision\":1,\"objective\":\"C1_J07 human goal C1MK_J07_2026-11-12T17-46-33-h0-r3d885c\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":6},\"activation\":\"armed\"}","{\"goal\":{\"id\":\"goal-d230f07a-455f-45e7-a6fa-4e6f51567368\",\"revision\":1,\"objective\":\"C1_J07 human goal C1MK_J07_2026-11-12T17-46-33-h0-r3d885c\",\"phase\":\"active\",\"roundsStarted\":0,\"maxGoalRounds\":6},\"activation\":\"armed\"}","{\"goal\":{\"id\":\"goal-d230f07a-455f-45e7-a6fa-4e6f51567368\",\"revision\":
+[2026-11-12T17:51:29.266Z] PASS J08: member=inst-1te64bc0807z relay=200 caller=instance/inst-leader refusal=GOAL_TOOL_AUTHORITY_REQUIRED(sentence) refusalObserved="Error: this goal operation requires a direct human turn on a top-level agent" goal=null governedBashStillRuns=false (disclosure; the shell lane is J04/J05's clause) file=null askLegsMinted=0

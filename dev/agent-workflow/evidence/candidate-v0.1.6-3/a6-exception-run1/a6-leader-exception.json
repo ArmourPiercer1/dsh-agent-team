@@ -1,0 +1,32 @@
+{
+  "paRequest": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0en5rpl1t3e3oq0sup6nr1wo",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0emgr9h1fswg",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T18-09-18:inst-0emgr9h1fswg:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0emgr9h1fswg-bash:hexec:f1b42d0c-8ff4-4f3c-bfd7-24a8b127e7a5-1",
+    "approvalCaseId": "case-14sai0r04srp081xcz8kx19v",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-12T18:09:29.191Z"
+  },
+  "paDecision": {
+    "sequence": 11,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-0en5rpl1t3e3oq0sup6nr1wo",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-leader",
+      "kind": "instance",
+      "role": "leader"
+    },
+    "createdAt": "2026-11-12T18:09:29.341Z"
+  },
+  "notifications": 3,
+  "wakes": 0,
+  "executed": true,
+  "execText": "c1-a6-allow-2026-11-12T18-09-18\n"
+}

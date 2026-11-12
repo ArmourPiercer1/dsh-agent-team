@@ -1,0 +1,51 @@
+{
+  "type": "server-response",
+  "rpcId": "c1a6h-jl89rrqnl0",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "decision": {
+          "requestId": "ctrl-1um4n5l12nk59e1n1ekt71fg",
+          "decision": "allow",
+          "decider": {
+            "kind": "human",
+            "humanId": "session-c1-smoke-a6-2026-11-12T18-11-24"
+          },
+          "scope": {
+            "rootSessionId": "session-c1-smoke-a6-2026-11-12T18-11-24",
+            "subject": {
+              "kind": "instance",
+              "instanceId": "inst-1p00rw11mx5u"
+            },
+            "targetInstanceId": "inst-1p00rw11mx5u",
+            "actionName": "parameter-permission",
+            "correlation": "call-c1-dvshrf7g",
+            "toolName": "bash",
+            "operationFingerprint": "sha256:95804eba764ff2f14bfe8fabac768355cc3c47e849c864b9f619b058b3d530fc",
+            "authorityScope": {
+              "operationClass": "bash",
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              }
+            }
+          },
+          "requestSequence": 10,
+          "decisionSequence": 11,
+          "createdAt": "2026-11-12T18:11:35.634Z",
+          "note": "c1 smoke A6 human final approval"
+        }
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}
