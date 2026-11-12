@@ -503,11 +503,15 @@ test('F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE f
 test('F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it', () => {
   const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
   const pins = [
+    // P01-PLANE-REALM (2026-11-11) added three names to this SAME import: the
+    // surface snapshot, the forwarded-name reader and the one admission
+    // predicate. Additive again - the mount, the naming call and the disposer
+    // are untouched; the pin tracks the import because the import is the claim.
     // ROUTE C (2026-11-03) added `attachA5sfNativeToolModules` to this SAME
     // import: the native shadow is attached AFTER the capability deny lane, on
     // the realm object this mount returns. Additive: the ONE mount, the naming
     // call and the safe disposer factory are unchanged.
-    ["import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'", 'the tool-plane naming import'],
+    ["import { a5sfAgentToolSurface, a5sfAttachedToolNames, a5sfBindableRealmNames, a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'", 'the tool-plane naming import'],
     ['a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)', 'the per-setup tool-plane assignment'],
     ['const toolPlaneCtx = a5sfToolPlane === undefined ? agentCtx : a5sfToolPlane.ctx', 'the default-path ternary (ctx)'],
     ['const toolPlaneFsBackend = a5sfToolPlane === undefined ? fsBackend : () => a5sfToolPlane.fs', 'the default-path ternary (fs)'],
