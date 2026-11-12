@@ -347,6 +347,7 @@ import type {
   ControlWaitSignal,
 } from '../control/index.js'
 import type { ActionCaller } from '../admission/index.js'
+import type { RemoteSafeJsonValue } from '../../contracts/src/index.js'
 import type { TemplatePermissionPolicy } from '../../domain/blueprint/src/index.js'
 
 // ---------------------------------------------------------------------------
@@ -719,12 +720,86 @@ export interface InstallParameterPermissionListenerParams {
     readonly resourceKey: string
   }) => Promise<OperationApprovalFacts | undefined>
   /**
+   * J06 (`parameter-permission` identity carry; owner authorisation
+   * 2026-11-11) — the IMMUTABLE bound identity plus the trusted
+   * owner/tool facts this install's asks must carry, so the SAME Alpha.6
+   * review route that decides a `team-tool-execute` leg can decide a
+   * `parameter-permission` leg.
+   *
+   * The glue builds ONE frozen object from the SAME bound/hashed Blueprint
+   * document the rest of Alpha.6 reads, the SAME durable authority-generation
+   * reader the PA lane freezes from, and the SAME tool-binding surface the
+   * Guard verified. The Blueprint identity and the OperationOwner template
+   * are captured values (never re-parsed, never read from a row anchor at
+   * ask time); the two callables are read at ask time because a generation
+   * is a moving fact and a binding identity must be live-verified.
+   *
+   * ABSENT (every pre-J06 installer, every factory world, every spec that
+   * predates the carry): the ask path below is byte-for-byte the frozen one
+   * — the row is a case leg with NO Alpha.6 identity fields, exactly as
+   * measured before this change.
+   */
+  readonly alpha6AskIdentity?: Alpha6AskIdentity
+  /**
    * The optional diagnostics hook (the A6 glue wires it to its
    * observation surface). Small structured rows only (no file contents,
    * no full argument payloads); a throwing hook never affects the
    * decision.
    */
   readonly onObserve?: (observation: Record<string, unknown>) => void
+}
+
+/**
+ * J06 — the IMMUTABLE bound-Blueprint identity carried through the install
+ * seam (owner authorisation: "Pass an immutable `BoundBlueprintIdentity`
+ * (blueprintId, revision, schemaVersion, contentHash) through the existing
+ * Team composition / pre-execute adapter seam, so that
+ * `parameter-permission` and `team-tool-execute` reference the same bound
+ * Blueprint identity").
+ *
+ * It is a COPY of the frozen fields of the parsed document, deep-frozen at
+ * construction: the adapter never receives the document itself, so it can
+ * never re-derive policy from it.
+ */
+export interface BoundBlueprintIdentity {
+  readonly blueprintId: string
+  readonly revision: string
+  readonly schemaVersion: number
+  readonly contentHash: string
+}
+
+/**
+ * J06 — the TRUSTED tool coordinate of one governed tool: the provider
+ * (`owner`) and name the Blueprint's `reviewRouting` exceptions are keyed by,
+ * plus the definition identity the Guard verified for that placement.
+ *
+ * A tool with NO governance binding (a host builtin the Team assembly never
+ * placed and never verified) has no `definitionIdentity` that means anything,
+ * which is why the port that produces this answer may answer `null`: the
+ * honest outcome is then a TYPED refusal at the route gate, never an invented
+ * coordinate and never a silent Leader fallback.
+ */
+export interface OperationToolBindingIdentity {
+  readonly owner: string
+  readonly name: string
+  readonly definitionIdentity: string
+}
+
+/**
+ * J06 — the trusted inputs of the identity carry, all supplied by the glue.
+ *
+ * `authorityGeneration` is read at ask time from the durable overlay (the
+ * SAME reader the PA lane freezes from); every other member is a frozen
+ * value or a live-verified lookup.
+ */
+export interface Alpha6AskIdentity {
+  readonly blueprint: BoundBlueprintIdentity
+  /** The executing Member's durable template (the OperationOwner). */
+  readonly operationOwnerTemplateId: string
+  /** The OperationOwner's durable authority generation at ask time. */
+  readonly authorityGeneration: () => Promise<number | undefined> | number | undefined
+  /** The verified governance binding of one tool name; `null` = none exists. */
+  readonly toolBindingFor: (toolName: string) => OperationToolBindingIdentity | null | undefined
 }
 
 /** The closed action name the adapter uses for its control scopes. */
@@ -747,6 +822,63 @@ export const END_CAP_DENIAL_REASON =
  * command preview in the control request summary (H2 P1-2; A2C-1).
  */
 const SHELL_COMMAND_PREVIEW_MAX = 120
+
+/**
+ * J06 — read the OperationOwner's durable authority generation through the
+ * glue's reader. A faulting/absent/malformed answer is `undefined` (NEVER a
+ * fabricated `0`): the caller then leaves the tool coordinate off the row, so
+ * the route gate refuses the leg by name instead of routing it at a guessed
+ * generation.
+ */
+async function resolveAlpha6AuthorityGeneration(
+  identity: Alpha6AskIdentity,
+): Promise<number | undefined> {
+  let generation: number | undefined
+  try {
+    generation = await identity.authorityGeneration()
+  } catch {
+    return undefined
+  }
+  if (typeof generation !== 'number' || !Number.isInteger(generation) || generation < 0) {
+    return undefined
+  }
+  return generation
+}
+
+/**
+ * J05 / PD-41 — classify the OBSERVED terminal result of one tool invocation
+ * into the ledger's closed outcome vocabulary. The classification is about
+ * what was observed, never about what the backend answered:
+ *
+ * - `succeeded` — the body returned a completed, non-error result (the end was
+ *   observed; a non-zero exit is still a completion and stays `succeeded`);
+ * - `unknown` — the invocation was cancelled/aborted or its end was never
+ *   observed (the PD-41 abort class: `TOOL_ABORTED`,
+ *   `TOOL_ABORTED_BEFORE_DISPATCH`, an `AbortError`), and any shape this
+ *   module does not recognise;
+ * - `failed` — an ANSWERED failure: the body ran and reported an error, or the
+ *   dispatch itself was refused after the allow was consumed.
+ *
+ * A result this classifier cannot read is `unknown`, never `succeeded`: the
+ * ledger may not claim a completion nobody watched.
+ */
+function outcomeOfTerminalResult(result: unknown): 'succeeded' | 'failed' | 'unknown' {
+  if (result === null || typeof result !== 'object') return 'unknown'
+  const record = result as { isError?: unknown; error?: unknown }
+  if (record.isError === false) return 'succeeded'
+  if (record.isError !== true) return 'unknown'
+  const error = record.error
+  if (error !== null && typeof error === 'object') {
+    const info = (error as { info?: unknown }).info
+    if (info !== null && typeof info === 'object') {
+      const code = (info as { code?: unknown }).code
+      if (code === 'TOOL_ABORTED' || code === 'TOOL_ABORTED_BEFORE_DISPATCH') return 'unknown'
+    }
+    const name = (error as { name?: unknown }).name
+    if (name === 'AbortError') return 'unknown'
+  }
+  return 'failed'
+}
 
 /**
  * H2 P1-2 — the bounded NON-authority command preview of the tool-level
@@ -931,6 +1063,7 @@ export function installParameterPermissionListener(
     execEnvelopeOps,
     authorizeArtifactRead,
     operationApprovalRouting,
+    alpha6AskIdentity,
   } = params
 
   /** The request kind this install routes asks to (plan §9.5). */
@@ -952,6 +1085,75 @@ export function installParameterPermissionListener(
    * WeakSet-able), which is why the marker lives on the object.
    */
   const authorizedExecutions = new WeakSet<object>()
+
+  /**
+   * J05 / PD-41 — the invocations that OWE a durable `control-execution-result`
+   * fact: this listener's ask lane consumed the human `allow` at the last-mile
+   * guard, so the ledger must be able to tell "ran" / "dispatch refused" /
+   * "died between" apart afterwards. Keyed by exec object identity (the SAME
+   * object reaches the `'tools/result'` terminal leg), holding the durable
+   * correlation (`callId`/correlation) and the owning request.
+   *
+   * A `WeakMap`, not a `Map`: the exec objects are pipeline transients and this
+   * table is not an authority ledger — the durable fact is.
+   */
+  const pendingExecutionFacts = new WeakMap<object, {
+    readonly requestId: string
+    readonly callId: string
+    readonly instanceId: string
+  }>()
+
+  /**
+   * J05 — write the ONE durable execution fact for one consumed allow.
+   *
+   * It never authorizes, consumes or replays anything (the consumption already
+   * happened at the guard); it records what was OBSERVED. `recordExecutionResult`
+   * is idempotent per request, so a racing duplicate observation cannot mint a
+   * second row. A fault is a diagnostics row, never a pipeline failure: the
+   * invocation's own outcome is what the caller is waiting on.
+   */
+  const writeExecutionFact = async (
+    pending: { readonly requestId: string; readonly callId: string; readonly instanceId: string },
+    outcome: 'succeeded' | 'failed' | 'unknown',
+    via: string,
+  ): Promise<void> => {
+    const service = controlService as unknown as {
+      recordExecutionResult?: (args: {
+        readonly rootSessionId: string
+        readonly callId: string
+        readonly instanceId?: string
+        readonly outcome: 'succeeded' | 'failed' | 'unknown'
+      }) => Promise<{ readonly recorded: boolean; readonly requestId?: string }>
+    }
+    if (typeof service.recordExecutionResult !== 'function') {
+      observe({ stage: 'execution-result-unavailable', callId: pending.callId, requestId: pending.requestId, via })
+      return
+    }
+    try {
+      const recorded = await service.recordExecutionResult({
+        rootSessionId,
+        callId: pending.callId,
+        instanceId: pending.instanceId,
+        outcome,
+      })
+      observe({
+        stage: 'execution-result',
+        callId: pending.callId,
+        requestId: pending.requestId,
+        outcome,
+        recorded: recorded.recorded,
+        via,
+      })
+    } catch (error: unknown) {
+      observe({
+        stage: 'execution-result-failed',
+        callId: pending.callId,
+        requestId: pending.requestId,
+        via,
+        detail: error instanceof Error ? error.message : String(error),
+      })
+    }
+  }
 
   /**
    * Emit one small diagnostics row (never throws into the pipeline —
@@ -1899,6 +2101,24 @@ export function installParameterPermissionListener(
     // the scope the human was shown and nothing else.
     const authorityPoint =
       approvalRouting.kind === 'approval-required' ? authorityPointOf(operation) : undefined
+    // J06 — the identity carry. Resolved ONCE, immediately before the row is
+    // created, from the frozen values the glue supplied:
+    //   - the Blueprint identity / OperationOwner template are captured
+    //     values (never re-parsed, never read from a row anchor);
+    //   - the tool coordinate comes from the verified governance binding of
+    //     THIS tool name; when no binding exists (a host builtin the Team
+    //     assembly never placed) the coordinate stays ABSENT, which makes the
+    //     row an Alpha.6 ask with no trusted tool identity — the route gate
+    //     refuses it with a named reason instead of letting it look like a
+    //     pre-Alpha.6 row that may legally fall to the Leader;
+    //   - the authority generation is the SAME durable read the PA lane
+    //     freezes from, taken at ask time because it is a moving fact.
+    const askToolIdentity = alpha6AskIdentity === undefined
+      ? null
+      : (alpha6AskIdentity.toolBindingFor(name) ?? null)
+    const askAuthorityGeneration = alpha6AskIdentity === undefined
+      ? undefined
+      : await resolveAlpha6AuthorityGeneration(alpha6AskIdentity)
     let record
     try {
       if (approvalRouting.kind === 'approval-required') {
@@ -1920,6 +2140,50 @@ export function installParameterPermissionListener(
           toolName: name,
           summary: requestSummary,
           executionCoupling: CONTROL_EXECUTION_COUPLINGS.GUARDED,
+          // J06 identity carry (see `Alpha6AskIdentity`): the SAME bound
+          // Blueprint + OperationOwner + generation the `team-tool-execute`
+          // lane freezes, plus the verified tool coordinate. ABSENT when the
+          // installer supplied no identity — the pre-J06 row, byte for byte.
+          ...(alpha6AskIdentity === undefined
+            ? {}
+            : {
+                operationOwnerTemplateId: alpha6AskIdentity.operationOwnerTemplateId,
+                // The tool coordinate is carried ONLY when the whole triple the
+                // two gates consume is available: a verified binding AND a
+                // readable generation. Half an identity would route a leg to the
+                // Officer that the decision gate must then refuse — a wake
+                // nobody can use. `null` here means the row is still an Alpha.6
+                // ask (Blueprint identity present) but carries no trusted tool
+                // identity, which the route gate refuses BY NAME.
+                ...(askToolIdentity === null || askAuthorityGeneration === undefined
+                  ? {}
+                  : {
+                      operationToolDefinitionIdentity: askToolIdentity.definitionIdentity,
+                      operationToolOwner: askToolIdentity.owner,
+                      operationToolName: askToolIdentity.name,
+                    }),
+                ...(askAuthorityGeneration === undefined
+                  ? {}
+                  : { authorityGeneration: askAuthorityGeneration }),
+                blueprintContentHash: alpha6AskIdentity.blueprint.contentHash,
+                blueprintRevision: alpha6AskIdentity.blueprint.revision,
+                // The rung THIS case is about. A `parameter-permission` ask is
+                // ONE effect — "allow this operation class on this resource" —
+                // and `approvalRouting.requiredAuthority` is that effect's rung
+                // as the ONE evaluator derived it for this very invocation. It
+                // is NOT PA's multi-effect enumerate (that lane carries its own
+                // manifest); claiming PA's set here would be inventing facts.
+                perEffectRequiredAuthorities: [approvalRouting.requiredAuthority],
+                // The PROJECTED view of the same authority point the leg's
+                // typed `authorityScope` already carries (the guard's
+                // consumption recheck reads THAT field; Alpha.6's router reads
+                // the review payload, exactly as it does for a PA leg whose
+                // manifest carries the point). One computation, one answer —
+                // never a second derivation.
+                ...(authorityPoint === undefined
+                  ? {}
+                  : { reviewPayload: { authorityScope: authorityPoint } as unknown as RemoteSafeJsonValue }),
+              }),
         })
         if (legOutcome.kind !== 'leg') {
           // The case was BORN terminal (ADR A1-12: `human-admin` has no
@@ -2251,11 +2515,51 @@ export function installParameterPermissionListener(
     // R6 / H1 — the resolved ask-allow is the second (and final)
     // authorization point; mark before next().
     authorizedExecutions.add(exec)
-    const executed = await next()
+    // J05 / PD-41 — the allow is CONSUMED at the guard above (the durable
+    // `control-allow-consumed` fact is already written), so this invocation now
+    // OWES exactly one truthful `control-execution-result`. The end of a tool
+    // body cannot be seen from a waterfall listener — the body runs AFTER this
+    // returns — so the obligation is registered here and settled by the
+    // `'tools/result'` terminal leg (the ONE funnel that receives the SAME exec
+    // object). A dispatch refused downstream settles here instead, because no
+    // body will ever run to settle it.
+    //
+    // OWNERSHIP: a row that carries a PA manifest (`reviewPayload.callId`) is
+    // already settled by the PA bridge's own observation. Two writers for one
+    // request would be idempotent (one row survives) but it would also mean two
+    // lanes claiming the same fact; the PA lane keeps it, and this lane writes
+    // only for rows it created with a bare correlation.
+    const paManifestOwnsFact = (() => {
+      const payload = record.reviewPayload
+      if (payload === null || typeof payload !== 'object' || Array.isArray(payload)) return false
+      const paCallId = (payload as Record<string, unknown>)['callId']
+      return typeof paCallId === 'string' && paCallId.length > 0
+    })()
+    const pendingExecutionFact = { requestId: record.requestId, callId, instanceId: targetInstanceId }
+    if (!paManifestOwnsFact) {
+      pendingExecutionFacts.set(exec, pendingExecutionFact)
+      ensureTerminalObserver()
+    }
+    let executed: PreToolDecisionLike
+    try {
+      executed = await next()
+    } catch (error: unknown) {
+      // A downstream listener threw: the pipeline materializes an error result
+      // BEFORE dispatch, so the body never ran while the allow IS consumed.
+      // The fact says so (`failed`) rather than leaving the ledger silent.
+      pendingExecutionFacts.delete(exec)
+      await writeExecutionFact(pendingExecutionFact, 'failed', 'dispatch-threw')
+      throw error
+    }
     // The terminal outcome is recorded AFTER the body ran, and it claims only
     // what is known: the guard consumed the one-shot either way, so a tool
     // body that itself refused is recorded as `execution-unavailable`
     // (did-not-execute, cause named by `via`) and never as a success.
+    if (executed.kind !== 'allow') {
+      // Consumed allow + no dispatch: a typed `failed` fact, not silence.
+      pendingExecutionFacts.delete(exec)
+      await writeExecutionFact(pendingExecutionFact, 'failed', `dispatch-${executed.kind}`)
+    }
     observe({
       stage: 'terminal-outcome',
       callId,
@@ -2331,10 +2635,44 @@ export function installParameterPermissionListener(
   const disposeTerminal = paHandoffPorts === undefined
     ? null
     : paHandoffPorts.onTerminal((exec) => onExecutionSettled(exec as object))
+  // J05 — the PERMISSION-lane execution fact. Registered independently of the
+  // A5-M2 hand-off (that port exists only for a mount's governed read): every
+  // invocation whose consumed allow this install registered above is settled
+  // here, by the ONE terminal funnel, from what the result actually says.
+  const onToolResult = (exec: object, result: unknown): undefined => {
+    const pending = pendingExecutionFacts.get(exec)
+    if (pending === undefined) return undefined
+    pendingExecutionFacts.delete(exec)
+    // Fire-and-forget is the host's own shape for this observation (the port is
+    // an emit, not a waterfall); the durable write is idempotent per request, so
+    // a fault here can only lose an observation, never mint a second fact.
+    void writeExecutionFact(pending, outcomeOfTerminalResult(result), 'terminal-result')
+    return undefined
+  }
+  // The terminal funnel is the SAME agent-scoped `on` the pre-execute listener
+  // rides (upstream emits `'tools/result'` once per execution with the SAME
+  // frozen exec object and the final result). It is registered LAZILY, on the
+  // first consumed allow, for two reasons: an install that never reaches the
+  // ask lane adds no registration at all (today's surface, byte for byte), and
+  // the pre-execute listener stays the FIRST registration on the ctx.
+  let disposeResult: (() => void) | null = null
+  const ensureTerminalObserver = (): void => {
+    if (disposeResult !== null) return
+    const registrar = (agentCtx as unknown as {
+      on?: (event: string, listener: (exec: object, result: unknown) => undefined) => () => void
+    }).on
+    if (typeof registrar !== 'function') return
+    try {
+      disposeResult = registrar.call(agentCtx, 'tools/result', onToolResult)
+    } catch {
+      disposeResult = null
+    }
+  }
   const disposeListener = agentCtx.on('tools/pre-execute', listener)
   const disposeGuard = agentCtx.tools.guard(endCapGuard)
   return () => {
     disposeTerminal?.()
+    disposeResult?.()
     disposeListener()
     disposeGuard()
   }

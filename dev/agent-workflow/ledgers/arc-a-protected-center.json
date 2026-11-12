@@ -405,16 +405,52 @@
    "reason": "P01 fix (2026-11-11), assigned lane: a Member realm's OWN forwarded native tools must be BINDABLE, so an approved call can run on the Member realm instead of being refused at the dispatch door. The route-C attach's returned fibers are now captured and their `routing.forwarded` ceiling names are admitted to BOTH own-name faces (the Guard's assembly-owned/native exclusion AND the list that becomes `bindOwnTools`) - never to the coverage `teamToolNames` list, so `read`/`write` keep their native PERMISSION_TOOL_NAMES management fact. The admission predicate is the pure `a5sfBindableRealmNames` (forwarded n ceiling n post-attach surface n not-plane-owned n readable at `tools.get(name, runtimeAgent)`); a name failing ANY arm is not declared and keeps the pre-P01 TOOL_BINDING_UNVERIFIED refusal. THIS PR ADDS NO EXECUTION PATH: no decision, no consumption, no replay and no backend semantics change (pipeline / PA / dispatch untouched), and the plane's own `bash` still executes on the plane's provider - that ownership defect is REPORTED to the native-preservation lane, never papered over here. Evidence dev/agent-workflow/evidence/p01-plane-realm/."
   },
   {
-   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "6260f934f810301846cba50816e3e9ad3177f5dfbc559fd5d15af6c318514847",
-   "pr": "PR #730 (NATIVE-BASH-PRESERVATION, named centre-interface PR)",
-   "reason": "Native bash preservation (owner ruling 2026-11-11): the governed Member bash must be the pinned dsh-tool-bash-persistent definition with only its execute wrapped, never a re-implemented body. This file gains the adoption wiring: the native module is mounted through the pinned module own apply at the plane admission edge (the plane own decide/paAdmit decide, so no second authorisation fact is introduced), the governed PTY face is installed from the terminal-bash backend through its own apply, and PD-12/PD-13/the plane shell row are retired from the PRODUCT path additively (files and suites kept). Exactly-once and no-replay are untouched: the admission edge runs once per admitted call, the body once, and no durable fact, decision or consumption is changed. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the row assembly."
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "04e22be9ec9ad29b993967e55d55a8e3c24f168e9e134428df9223411557e365",
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): the one matcher that settles an execution fact now also accepts the leg's own durable invocation correlation (payload.correlation), because the permission lane carries no reviewPayload callId; PA-owned rows still settle their single fact by reviewPayload.callId, so exactly one fact per leg survives, and consumption/replay/the fence are untouched."
+  },
+  {
+   "path": "packages/runtime/operation-permission/index.ts",
+   "sha256": "a014c69d9b514dca23bc5a59aa27ede3e4fac70f4c996ee3be9bd666610df1f9",
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): a re-export only: the pre-execute adapter now owes the execution fact through the existing seam, and the index must surface it."
+  },
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "6fb39deea6dbd560f107282c340b94adf472b10713b1499b1235a86ba1535ae2",
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): F-3: the frozen BoundBlueprintIdentity + OperationOwner template + verdict-time authority generation + the VERIFIED tool triple travel through this existing seam all-or-nothing, and the adapter owes/settles exactly one execution fact from the host terminal leg with PD-41 semantics (succeeded only on observed completion; unknown for cancelled/timed-out/unobserved)."
   },
   {
    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "590f9b6e4c6880d432a332609843163e9004065402c535a307b22bdb8249757d",
-   "pr": "PR #728 + PR #730 (P01-PLANE-REALM + NATIVE-BASH-PRESERVATION), merged at f096736fd",
-   "reason": "This is the MERGED digest of the two named centre-interface changes: P01 makes a Member realm's own forwarded native tools bindable (the receipt reader, the one fail-closed predicate and the two own-name faces), and native-bash preservation adopts the pinned dsh-tool-bash-persistent definition with only its execute wrapped, backed by a governed persistent-PTY face, with PD-12/PD-13/the plane shell row retired from the product path additively. Both are interface changes to the row assembly. Exactly-once and no-replay are untouched by either: the admission edge runs once per admitted call, the body once, and no durable fact, decision or consumption is changed. The two per-lane entries above remain as the record of each lane's own digest."
+   "sha256": "b018fa204aaadc1ba3ad88bbee6930d65a42c969659d62c283b4fef8fcf567f0",
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): the identity carry is wired where the row is assembled; no re-resolution, no row-anchor inference, and no durable fact or consumption is introduced here."
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "04e22be9ec9ad29b993967e55d55a8e3c24f168e9e134428df9223411557e365",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 matcher change (execution facts settle from the leg's own durable correlation too). Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/operation-permission/index.ts",
+   "sha256": "a014c69d9b514dca23bc5a59aa27ede3e4fac70f4c996ee3be9bd666610df1f9",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 re-export; no behavioural change from this lane. Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "6fb39deea6dbd560f107282c340b94adf472b10713b1499b1235a86ba1535ae2",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 identity carry; the governed bash admission still consumes the plane's decision here and invents none. Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "a03c6a97b9da18381f09d3124506160e9b42a689a30970e7aaa113020043312a",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: the merge of the native-bash adoption with master's binding repair and identity carry. The adoption adds no authorisation: the admission edge runs once per admitted call and the body once. Exactly-once and no-replay are untouched."
   }
  ]
 }

@@ -4077,11 +4077,79 @@ export function createAgentBindings(deps) {
                 if (facts === undefined || facts === null) return undefined
                 return { ...facts, subtreeContains: containOverlayKeys }
               }
+        // J06 (owner authorisation 2026-11-11) — the IDENTITY CARRY.
+        //
+        // A `parameter-permission` ask must reference the SAME bound Blueprint
+        // identity as a `team-tool-execute` leg, or the Alpha.6 route cannot
+        // decide it (it degrades to "not an ordinary ask" and the Leader
+        // receives it by default, contradicting `default: officer`). Every
+        // member below is read from a source that is already the authority for
+        // that fact — never re-derived here:
+        //   - the Blueprint identity is a COPY of the bound/hashed document the
+        //     whole Alpha.6 composition reads (`getBoundBlueprint`, the same
+        //     object the PA lane freezes from), deep-frozen at construction;
+        //   - the OperationOwner template is this Agent's own durable template
+        //     (`boundTemplate`), the same value the PA leg freezes;
+        //   - the authority generation is the SAME durable reader the PA lane
+        //     uses, called at ask time (a generation is a moving fact);
+        //   - the tool coordinate is the VERIFIED governance binding on this
+        //     Agent's guard surface (`providerId`/`toolName`/
+        //     `definitionIdentity` of a verified entry). A name with no
+        //     verified binding answers `null`, which is exactly the honest
+        //     answer for a host builtin the Team assembly never placed: the
+        //     route gate then refuses that leg BY NAME instead of inventing a
+        //     coordinate or falling back to the Leader.
+        //
+        // Off unless Alpha.6 review routing is opted in AND the bound document
+        // is v5 — the same gate the PA case leg uses. Absent = pre-J06 rows,
+        // byte for byte.
+        const a6AskIdentity = (() => {
+          if (config?.alpha6ReviewRouting !== true) return undefined
+          const a6Blueprint = getBoundBlueprint(String(teamRoot))
+          if (a6Blueprint === null || a6Blueprint === undefined) return undefined
+          if (Number(a6Blueprint.schemaVersion) !== 5) return undefined
+          const contentHash = a6Blueprint.contentHash
+          const revision = a6Blueprint.revision
+          const blueprintId = a6Blueprint.blueprintId
+          const ownerTemplateId = boundTemplate?.templateId
+          if (typeof contentHash !== 'string' || contentHash.length === 0) return undefined
+          if (typeof revision !== 'string' || revision.length === 0) return undefined
+          if (typeof blueprintId !== 'string' || blueprintId.length === 0) return undefined
+          if (typeof ownerTemplateId !== 'string' || ownerTemplateId.length === 0) return undefined
+          return Object.freeze({
+            blueprint: Object.freeze({
+              blueprintId,
+              revision,
+              schemaVersion: 5,
+              contentHash,
+            }),
+            operationOwnerTemplateId: ownerTemplateId,
+            authorityGeneration: () => readAuthorityGeneration(String(teamRoot), String(instanceId)),
+            toolBindingFor: (toolName) => {
+              const surface = a5p1Guard?.dispatcher?.surface
+              const entry = typeof surface?.entryOf === 'function' ? surface.entryOf(String(toolName)) : undefined
+              if (entry === undefined || entry === null) return null
+              // An UNVERIFIED binding is not a trusted identity: the definition
+              // moved or was never pinned, so naming it would be a guess.
+              if (entry.verified !== true) return null
+              const binding = entry.binding
+              if (binding === null || typeof binding !== 'object') return null
+              const owner = binding.providerId
+              const name = binding.toolName
+              const definitionIdentity = binding.definitionIdentity
+              if (typeof owner !== 'string' || owner.length === 0) return null
+              if (typeof name !== 'string' || name.length === 0) return null
+              if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) return null
+              return Object.freeze({ owner, name, definitionIdentity })
+            },
+          })
+        })()
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
           containsTargets,
           ...(operationApprovalRouting === undefined ? {} : { operationApprovalRouting }),
+          ...(a6AskIdentity === undefined ? {} : { alpha6AskIdentity: a6AskIdentity }),
           ...(permissionPlane === undefined || permissionPlane === null
             ? {}
             : {
