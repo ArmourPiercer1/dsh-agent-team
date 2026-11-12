@@ -252,13 +252,20 @@ function treeDigest(dir) {
   return `sha256:${sha256Text(rows.map(([rel, sha]) => `${rel}\u0000${sha}`).join('\n'))}`
 }
 
+/** The tarball's content identity. Extracted into gitignored scratch
+ *  (`.artifacts/tmp/`), digested, then removed: a 4.4 MB binary and its
+ *  expansion are IDENTITY, never committed evidence. */
 function tarballTreeDigest(tarball, label) {
-  const dest = join(RUN_DIR, 'pack', `extract-${label}`)
+  const dest = join(REPO, '.artifacts', 'tmp', `packaging-v016-extract-${label}-${RUN}`)
   rmSync(dest, { recursive: true, force: true })
   mkdirSync(dest, { recursive: true })
-  const r = spawnSync('tar', ['-xzf', tarball, '-C', dest], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
-  if (r.status !== 0) return null
-  return treeDigest(join(dest, 'package'))
+  try {
+    const r = spawnSync('tar', ['-xzf', tarball, '-C', dest], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+    if (r.status !== 0) return null
+    return treeDigest(join(dest, 'package'))
+  } finally {
+    rmSync(dest, { recursive: true, force: true })
+  }
 }
 
 // ── phase 1: gates (versions, clean tree, rebuild, artifact freshness) ──────
@@ -385,7 +392,9 @@ function tarballFacts(tarball) {
 
 function phasePack() {
   log('── PACK: pnpm pack, internal version, sha256, provenance ──')
-  const packDir = join(RUN_DIR, 'pack')
+  // The tarball itself is a 4.4 MB binary: it lives in gitignored scratch and
+  // only its IDENTITY is written to evidence. Pack logs stay in evidence.
+  const packDir = join(REPO, '.artifacts', 'tmp', `packaging-v016-pack-run-${RUN}`)
   rmSync(packDir, { recursive: true, force: true })
   mkdirSync(packDir, { recursive: true })
   const head = git(['rev-parse', 'HEAD']).stdout
