@@ -8572,3 +8572,45 @@ blueprint-fence 基线（A6 的 `=v5` 是**新工作**，公开重录并写明�
 **下一步（阻塞项，按序）**：G2–G5 逐工具验收（`TOOL-ACCEPTANCE-MATRIX` 的 BL-14…BL-37）与独立 `CANDIDATE-C2`
 （不可变 SHA + Authority + Host + Oracle + 独立裁决）；`A6-26` 的收窄承诺与 runbook 已入档但缺陷仍在；
 `v0.1.6-rc.1` 在上述门通过前不得打 tag。
+
+## 2026-11-13 — C2-B 裁决落地：PD-33 的 governed-bash 臂是**陈旧组合**（16/19），+ D2 的 PD-43 过期状态
+
+> 裁决台：C2-B 在冻结候选 `17a24e2c3` 上测到 `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`
+> 的 `pd33:member-a-io-chain` / `pd33:member-a-authorization` / `pd33:shell-write-boundary` 三例
+> 每次都 `A5_NATIVE_ADMISSION_UNAVAILABLE`，因此拒绝签署「A6 关闭时 Alpha.5 行为不变」。本轮
+> **DEV-LIVE**（`CORE PATCH BUDGET = 0`，`eligible=false`，无 `V@B`，不动 `:3080`/基线/Authority/候选 ref/tag）。
+> 分支 `task/pd33-stale-instrument-20261113` @ `.worktrees/c2b-pd33fix`（base `origin/master` `32f2629dc`，
+> 候选 `17a24e2c3` 是其祖先）。
+
+**1. 这是仪器陈旧还是产品回归？——证据判定为仪器陈旧。** pd33 组合 = shipped `a5sf-governed-member`
+preset + `a5sfGovernedRealm: true`，**无** `config.teamToolPlane`，模板**无** `capabilities.permissions`。
+**#730**（`d8490f74d`，2026-11-12 合并）把模型可见 `bash` 换成 pinned 原生定义，其 `execute` 需要 plane 的
+admission edge；该 edge 只在 plane 挂载时发布（`agent-bindings.mjs:3135` 条件、`:3389` 发布、`:3144` 需
+realm adopted），**#734**（`4fd279276`）明写它是 adopted 名字的 *only gate*（`team-tool-plane.mjs:1909-1916`）；
+`docs/INSTALL.md` §3.5 从运维侧写明「无 plane = native bash typed-shut」。结论：**今天没有任何 shipped
+组合能在无 plane takeover 下跑通 governed bash**，所以 pd33 的 bash 臂是 pre-#730 的陈旧组合，不是 P0 回归。
+证据锚点：`packages/runtime/src/plugin/live/native-tool-admission.mjs:29`、`agent-bindings.mjs:3135/:3389/:3144`。
+
+**2. 处理方式（不删失败例、不弱化断言）**：保留三例并继续判定；driver 增加 `SUPERSEDED_BASH_ARM`
+披露常量（日期/`#730`/typed token/三例 id/承接仪器）写入 `preset-effective.json`；host-free pin
+`PD33-SUPERSEDED` 钉住披露与**组合不得改动**（`teamToolPlane:`/`capabilities.permissions` 必须缺席）。
+**没有**去挂 plane takeover：那需要 Alpha.4 strict lane（`capabilities.permissions`），会触发 A2C-2 对 36 个
+surface 名的覆盖门，把仪器从「Alpha.5-only」变成「Alpha.5+Alpha.4」——那是另一支仪器，不是组合修正。
+
+**3. 复测（本分支，`--boots 2`，真实 2026-11-12T18:2x–18:3xZ）**：每 boot **16/19**，两 boot 逐例一致；
+三例 REFUTED，typed 码 `A5_NATIVE_ADMISSION_UNAVAILABLE`，其余 16 例 PROVEN。**顺带修正仪器里一个把
+「稳定」与「成功」混为一谈的比较器**：`agreementOf` 原先还要求 `cells[0] === 'PROVEN'`，于是两 boot
+**一致地** REFUTED 的案例被印成 `DISAGREE`、令 `agreeing=false`；现改为只比较判定是否相等，另报
+`stablyRefuted`，PASS 门槛仍由 `allOk` 承担（所以 RESULT 仍是 FAIL 16/19）。新增 pin `PD33-AGREEMENT`。
+
+**4. D2 修正（只追加）**：`PRODUCT-DEBT-REGISTER.md` PD-43 行 + 详情块、`RELEASE-NOTES-0.1.6.md` §4.10/§4.11
+仍写「OPEN」，而 **#738**（`76293c79f`，2026-11-12 合并，早于冻结）已把 valid 主体改为 durable pending leg，
+live 集 `CREATED`/`RUNNING`/`SETTLED`（`assigned-officer-facts.ts:341`，gate `:495`）；`ARCHIVED`/`DISPOSED`/
+unknown 仍 fail-closed。**寄存器 gate 在 master 上本就是红的**（PD-43 anchor 指向 `:444` 的旧行 + §6 仍声明
+f5-two-asks 证据未合并），本轮按规则修好：anchor 跟到新法、§6 声明撤销、evidence README 追加 PD-43 身份
+与 #738 追记。`tests/world-factory/a5sf-debt-register.test.mjs` 现 **10/10 绿**。
+
+**5. 诚实的发布口径（A6 关闭时）**：pd33 的 16 个 non-bash 例仍支持「Alpha.5 realm 面在 A6 关闭时不变」；
+**governed bash 的 A6-off 声明今天无法从 pd33 签出**——只有在 plane-takeover 组合上才有意义，而现有
+plane-takeover 仪器（A1 kit）把 `ALPHA6_OFFICER = true` 钉死，**没有 A6-off 的 plane-takeover 仪器**。
+这是残余测量缺口，必须如实写进报告，不能拿 pd33 的三例 REFUTED 说成「A6 关闭时 bash 行为不变」。

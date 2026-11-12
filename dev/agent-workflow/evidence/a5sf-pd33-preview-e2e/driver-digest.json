@@ -1,14 +1,14 @@
 {
-  "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e",
+  "repo": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
   "hostHead": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "head": "a2e0df3c90b8a29cab238072661a0da21ad2b834",
+  "head": "32f2629dc393b13ffbcae28f6c3182b03ecbbdc8",
   "composition": {
-    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/cordis.patch.yml",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/cordis.patch.yml",
     "sha256": "0774297f7e90b249ff4df673a4adbf49466eda1b4b8c4f7b2062b342a4f44097"
   },
-  "startedAt": "2026-11-08T22:12:16.020Z",
+  "startedAt": "2026-11-12T18:57:16.077Z",
   "argv": [
     "--boots",
     "2"

@@ -1,5 +1,21 @@
 {
   "note": "NO shipped row name is rewritten. The transport row carries the World fixture origins in place of the production env expressions; the host row carries the opt-in governed-realm key and the declared skill catalog (DATA). The mutation control removes the realm key only.",
+  "supersededBashArm": {
+    "since": "2026-11-13",
+    "change": "#730 d8490f74d (NATIVE-BASH-PRESERVATION, merged 2026-11-12)",
+    "followUp": "#734 4fd279276 (the plane native admission is the adopted name's only gate)",
+    "typedToken": "A5_NATIVE_ADMISSION_UNAVAILABLE",
+    "why": "no teamToolPlane mount in this composition, so nothing publishes the admission edge for the runtime Agent",
+    "supersededCases": [
+      "pd33:member-a-io-chain",
+      "pd33:member-a-authorization",
+      "pd33:shell-write-boundary"
+    ],
+    "carriedBy": [
+      "tests/kits/a1-bash-governance-20261112/ (plane takeover ON; 7/7 x4)",
+      "tests/kits/joint-acceptance-20261111/ (realm + Alpha.6 route + plane takeover; J04; 11/11 x2)"
+    ]
+  },
   "mutation": null,
   "installGraph": {
     "link": "profiles/web/node_modules/dsh-agent-team -> repo root",
@@ -8,7 +24,7 @@
   "rows": [
     {
       "id": "dsh-agent-team",
-      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/packages/runtime/dist/packages/runtime/src/plugin/host.js",
       "config": {
         "bootPhase": "create",
         "rootSessionId": "session-a5sf-pd33-boot",
@@ -45,20 +61,20 @@
           "hard": {},
           "capabilityExists": {}
         },
-        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-12-16Z/blueprints",
+        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/blueprints",
         "memberPresetId": "a5sf-governed-member",
         "a5sfGovernedRealm": true,
-        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-12-16Z/a5sf-consult.jsonl",
+        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/a5sf-consult.jsonl",
         "a5sfSkillCatalog": [
           {
             "name": "pd33-inlane",
             "description": "PD-33 in-lane fixture skill",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-12-16Z/workspace/skills/pd33-inlane/SKILL.md"
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/workspace/skills/pd33-inlane/SKILL.md"
           },
           {
             "name": "pd33-outlane",
             "description": "PD-33 out-of-lane fixture skill",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md"
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/AGENTS.md"
           }
         ],
         "mcpServer": null
@@ -191,10 +207,10 @@
       "name": "dsh-agent-team/web-transport",
       "config": {
         "testEndpoints": [
-          "http://127.0.0.1:45369"
+          "http://127.0.0.1:45719"
         ],
         "search": {
-          "baseURL": "http://127.0.0.1:44983",
+          "baseURL": "http://127.0.0.1:45381",
           "apiKey": "pd33-live-key"
         },
         "fetch": {
@@ -205,14 +221,14 @@
     },
     {
       "id": "a5sf-pd33-base-web-tripwire",
-      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs",
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs",
       "config": {
-        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-12-16Z/a5sf-pd33-host-web-calls.jsonl"
+        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/a5sf-pd33-host-web-calls.jsonl"
       }
     },
     {
       "id": "p6t6-team-tools",
-      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/tools/harness/plugin.mjs"
+      "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/packages/tools/harness/plugin.mjs"
     }
   ]
 }

@@ -6,9 +6,9 @@
     "rootSessionId": "session-a5sf-pd33-team",
     "blueprintId": "team.a5sf.pd33.main",
     "revision": "1",
-    "contentHash": "sha256:ebd3b3c37c63895f0f43c1331d0f69598964ef590f9e3544b5cb28af724b3d97",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/homes/u5u5a5sfpd33-20261108T22-16-39Z/workspace",
-    "createdAt": "2026-11-08T22:18:47.825Z",
+    "contentHash": "sha256:d1d579834470f2f9f823d06f9c6ad0914200f482984df4efaa94c6ed457f8bf0",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-01-42Z/workspace",
+    "createdAt": "2026-11-12T19:03:53.205Z",
     "generation": 44
   },
   "members": [
@@ -131,17 +131,6 @@
     {
       "globalSequence": 14,
       "factType": "activity-interval-closed",
-      "instanceId": "inst-0jy83041n72a",
-      "subject": "work-unit",
-      "sequence": 2,
-      "op": "interval-close",
-      "progress": "completed",
-      "correlation": "a5sf-pd33-b-delegate",
-      "requestToken": "a5sf-pd33-b-delegate"
-    },
-    {
-      "globalSequence": 16,
-      "factType": "activity-interval-closed",
       "instanceId": "inst-0ihp8zd1q197",
       "subject": "work-unit",
       "sequence": 2,
@@ -149,6 +138,17 @@
       "progress": "completed",
       "correlation": "a5sf-pd29-s1-delegate",
       "requestToken": "a5sf-pd29-s1-delegate"
+    },
+    {
+      "globalSequence": 16,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0jy83041n72a",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd33-b-delegate",
+      "requestToken": "a5sf-pd33-b-delegate"
     },
     {
       "globalSequence": 20,
@@ -208,17 +208,6 @@
     {
       "globalSequence": 31,
       "factType": "activity-interval-closed",
-      "instanceId": "inst-0u1dugv0ojhv",
-      "subject": "work-unit",
-      "sequence": 2,
-      "op": "interval-close",
-      "progress": "completed",
-      "correlation": "a5sf-pd33-a-delegate",
-      "requestToken": "a5sf-pd33-a-delegate"
-    },
-    {
-      "globalSequence": 33,
-      "factType": "activity-interval-closed",
       "instanceId": "inst-08hcx210odtc",
       "subject": "work-unit",
       "sequence": 2,
@@ -226,6 +215,17 @@
       "progress": "completed",
       "correlation": "a5sf-pd29-stop2-delegate",
       "requestToken": "a5sf-pd29-stop2-delegate"
+    },
+    {
+      "globalSequence": 33,
+      "factType": "activity-interval-closed",
+      "instanceId": "inst-0u1dugv0ojhv",
+      "subject": "work-unit",
+      "sequence": 2,
+      "op": "interval-close",
+      "progress": "completed",
+      "correlation": "a5sf-pd33-a-delegate",
+      "requestToken": "a5sf-pd33-a-delegate"
     },
     {
       "globalSequence": 35,
@@ -246,8 +246,8 @@
       "sequence": 3,
       "op": "interval-open",
       "progress": "in-progress",
-      "correlation": "pd29-followup-cold-1794176429624",
-      "requestToken": "pd29-followup-cold-1794176429624"
+      "correlation": "pd29-followup-cold-1794510337124",
+      "requestToken": "pd29-followup-cold-1794510337124"
     },
     {
       "globalSequence": 41,
@@ -257,8 +257,8 @@
       "sequence": 4,
       "op": "interval-close",
       "progress": "completed",
-      "correlation": "pd29-followup-cold-1794176429624",
-      "requestToken": "pd29-followup-cold-1794176429624"
+      "correlation": "pd29-followup-cold-1794510337124",
+      "requestToken": "pd29-followup-cold-1794510337124"
     }
   ],
   "pendingDeliveries": {
@@ -365,5 +365,7 @@
       }
     }
   },
-  "observations": []
+  "observations": [
+    "a5sf-bind: realm-forwarded names declared=[bash,grep,glob,read,write,edit,read_image,present,web_search,web_fetch] realm=a5-realm-session-a5sf-pd33-team"
+  ]
 }

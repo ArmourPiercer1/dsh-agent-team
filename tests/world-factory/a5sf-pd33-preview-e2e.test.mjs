@@ -122,6 +122,49 @@ test('PD33-EVIDENCE: the report and the evidence README state the class and the 
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
+// PD33-SUPERSEDED (2026-11-13, C2-B adjudication): the governed-BASH arm of this
+// instrument predates #730. The driver must SAY so, must keep measuring the same
+// composition, and must keep the three affected cases (no deletion, no softening).
+// A future plane-takeover mount is a DIFFERENT instrument and must update this pin.
+// ─────────────────────────────────────────────────────────────────────────────
+test('PD33-SUPERSEDED: the governed-bash arm is disclosed, dated, and carried by named instruments', () => {
+  const block = /const SUPERSEDED_BASH_ARM = Object\.freeze\(\{([\s\S]*?)\n\}\)/u.exec(DRIVER)
+  assert.ok(block, 'the driver must declare SUPERSEDED_BASH_ARM')
+  const src = block[1]
+  assert.match(src, /2026-11-13/u, 'the disclosure must be dated')
+  assert.match(src, /#730/u, 'the change that invalidated the composition must be named')
+  assert.match(src, /A5_NATIVE_ADMISSION_UNAVAILABLE/u, 'the typed refusal must be named, never paraphrased')
+  for (const id of ['pd33:member-a-io-chain', 'pd33:member-a-authorization', 'pd33:shell-write-boundary']) {
+    assert.ok(src.includes(id), `${id} must stay listed as a superseded (not deleted) case`)
+    assert.ok(DRIVER.includes(`verdictOf('${id}'`), `${id} must still be judged by the driver`)
+  }
+  assert.match(src, /a1-bash-governance-20261112/u, 'the successor instrument must be named')
+  assert.match(src, /joint-acceptance-20261111/u, 'the joint successor must be named')
+
+  // The composition is UNCHANGED: no plane takeover, no Alpha.4 strict lane.
+  // (Mounting one re-classes the instrument; the pin forces that decision to be
+  // explicit rather than a silent green.)
+  assert.doesNotMatch(DRIVER, /teamToolPlane\s*:/u, 'this instrument must not silently mount the tool plane')
+  assert.doesNotMatch(DRIVER, /capabilities:\s*\{[^}]*permissions/u, 'this instrument must not silently arm the strict lane')
+  assert.match(DRIVER, /a5sfGovernedRealm/u, 'the realm opt-in it does mount must stay explicit')
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PD33-AGREEMENT (2026-11-13): pair agreement means "the boots said the same
+// thing", NOT "everything passed". The old comparator required PROVEN as well,
+// so a stably-REFUTED case printed DISAGREE and made an agreeing pair look
+// unstable. `allOk` still fails the run on any REFUTED case.
+// ─────────────────────────────────────────────────────────────────────────────
+test('PD33-AGREEMENT: the pair comparator grades verdict equality, and the pass bar stays separate', () => {
+  const fn = /function agreementOf\(runs\) \{([\s\S]*?)\n\}/u.exec(DRIVER)
+  assert.ok(fn, 'agreementOf must exist')
+  assert.match(fn[1], /const same = cells\.every\(\(c\) => c === cells\[0\]\)/u, 'agreement must be verdict equality')
+  assert.doesNotMatch(fn[1], /cells\[0\] === 'PROVEN'/u, 'agreement must not require PROVEN (that is allOk\'s job)')
+  assert.match(fn[1], /stablyRefuted/u, 'the stable-REFUTED count must be reported')
+  assert.match(DRIVER, /const allOk = results\.length === BOOTS_WANTED[^\n]*overall === 'PASS'/u, 'the pass bar must remain all-cases-PASS')
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 // PD33-SUBSET (2026-11-09): `--arms e2e` is an instrument, not a product run.
 // "not selected" is not "failed": the unselected lifecycle cases carry
 // NOT_SELECTED, `overall` grades only the selection, and the record says it is

@@ -250,6 +250,14 @@ closes.
     different defect (register PD-43):** the facts port can refuse the woken Officer's decision when the
     operation-owner row is `CREATED`/`SETTLED`. *(Corrected 2026-11-12: this item said the adapter built
     the leg without an identity and the wake went to the Leader — true before #733, false now.)*
+    *(Corrected 2026-11-13: the "still open … register PD-43" sentence was true when written and is
+    false on this tree — **#738** (`76293c79f`, A6-LEG-VALIDITY, merged 2026-11-12, before the
+    `cand-v0.1.6-3` freeze) fixed it. The subject of validity is the durable **pending approval leg**;
+    the live operation-owner set is `CREATED`/`RUNNING`/`SETTLED`
+    (`packages/runtime/alpha6/assigned-officer-facts.ts:341`, gate at `:495`). What remains is
+    unchanged and still fail-closed: no pending leg, a decided/abandoned leg, an identity or
+    generation mismatch, an unknown/absent lifecycle, `ARCHIVED` (revoked) and `DISPOSED` (terminal)
+    all still produce "no facts" and the same typed refusal. Nothing else in this item changes.)*
 11. **A second governed ask on the same root may be refused by the review-facts port (F-5; a defect,
     not a designed limit — see the erratum at the end of this item).** On the Stop arm the Officer's `team_resolve_control{decision:'escalate'}`
     is refused with `CONTROL_RESOLVER_NOT_AUTHORIZED … the trusted review-facts port produced no
@@ -259,6 +267,14 @@ closes.
     the trusted review-facts port (`assigned-officer-facts.ts:444` requires the owner row `RUNNING`),
     tracked as register **PD-43** and still **open**; see §4.15 for the approved semantics. The
     limitation framing in the first sentence of this item is withdrawn, not the measurement.
+    *(Corrected 2026-11-13: the erratum's last clause — "still **open**" — is false on this tree.
+    **#738** (`76293c79f`, merged 2026-11-12, before the `cand-v0.1.6-3` freeze) implemented the
+    approved semantics: the durable **pending approval leg** is the subject of validity, and the live
+    operation-owner set is `CREATED`/`RUNNING`/`SETTLED`
+    (`packages/runtime/alpha6/assigned-officer-facts.ts:341`, gate at `:495`). The measurement in the
+    first sentence is kept as the historical F-5 reproduction; the fix is #738's, not this item's.
+    The fail-closed answers — no pending leg, decided/abandoned leg, identity/generation mismatch,
+    unknown/absent lifecycle, `ARCHIVED`, `DISPOSED` — are unchanged.)*
 12. **The Stop terminal shape varies while the safety result does not (F-6).** Across runs the
     A6-12 family can end `already-decided` (no abandonment row) or with
     `control-request-abandoned` (e.g. reason `invocation-cancelled-before-consumption`). Both are

@@ -1,9 +1,9 @@
-| case | boot1 | boot2 | agreement |
+| case | boot1 | boot2 | agreement (verdict equality, NOT pass) |
 | --- | --- | --- | --- |
 | pd33:leader-creates-two-members | PROVEN | PROVEN | agree |
-| pd33:member-a-io-chain | PROVEN | PROVEN | agree |
-| pd33:member-a-authorization | PROVEN | PROVEN | agree |
-| pd33:shell-write-boundary | PROVEN | PROVEN | agree |
+| pd33:member-a-io-chain | REFUTED | REFUTED | agree |
+| pd33:member-a-authorization | REFUTED | REFUTED | agree |
+| pd33:shell-write-boundary | REFUTED | REFUTED | agree |
 | pd33:read-image-route | PROVEN | PROVEN | agree |
 | pd33:member-b-web | PROVEN | PROVEN | agree |
 | pd33:member-b-goal-converges | PROVEN | PROVEN | agree |
