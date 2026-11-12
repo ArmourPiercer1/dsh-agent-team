@@ -358,6 +358,24 @@ boot02 在 `runs/boot02/`。
 （`RESULT PASS (2/2 boots; agreeing pair=true)`，boot1/boot2 各 **19/19**；S1c 见 §4.2），
 测量树 = master `a2e0df3c9` + 本判定提交，相对 master **0 个产品文件**。
 
+> **2026-11-13 更正（只追加；上面 19/19 的测量原文与判定都不改写）**：该测量树 **早于 #730**
+> （`d8490f74d`，NATIVE-BASH-PRESERVATION，2026-11-12 合并）。#730 之后，模型可见的 `bash` 是 pinned
+> host 定义，其 `execute` 需要 Team tool plane 的 admission edge；该 edge 只在 plane 挂载时由
+> `agent-bindings.mjs:3389` 发布（条件：`permissionPolicy` + `config.teamToolPlane`），#734
+> （`4fd279276`）明写它是 adopted native name 的 **only gate**（`team-tool-plane.mjs:1909-1916`）。
+> **本报告测的组合**（shipped preset + `a5sfGovernedRealm: true`，**无** `teamToolPlane`）在今天的树上
+> 每次 governed `bash` 都以 **`A5_NATIVE_ADMISSION_UNAVAILABLE`** fail-closed 拒绝、零执行；
+> `docs/INSTALL.md` §3.5 从运维侧写明同一规则（无 plane = native `bash` typed-shut）。因此
+> **`pd33:member-a-io-chain` / `pd33:member-a-authorization` / `pd33:shell-write-boundary`** 三例
+> 在今天的树上按本组合**不可复现 19/19**：2026-11-13 在 `task/pd33-stale-instrument-20261113`
+> 上 `--boots 2` 复测得 **每 boot 16/19、两 boot 逐例一致**，恰好这三例 REFUTED，typed 码即上述 token。
+> 其余 **16** 例仍成立。治理 `bash` 的 shipped 组合（realm + plane takeover）由
+> `tests/kits/a1-bash-governance-20261112/`（7/7 ×4）与 `tests/kits/joint-acceptance-20261111/`
+> （11/11 ×2）承载。**`PREVIEW-GO` 的其余范围不变**；本次更正只把上述三例的归属从本报告移到那两个仪器，
+> 并把「本组合能跑 governed bash」这一条从 `PREVIEW-GO` 的依据里移除（它从来不是 shipped 的
+> governed-bash 组合）。
+
+
 - **M1 已关闭**：`#681` 合并后，本 lane 丢弃叠加 base、在 master 上重跑两 boot。
 - **M2 已关闭**：`#683` 合并，Member 行控件按 `goals/get → goals.pause → session.cancel → goals/get` 发出停止，
   `pd34:control-stops-member` 在本 pair 中 PROVEN（§4.2）。**关闭时点名了一条判错的子句**：

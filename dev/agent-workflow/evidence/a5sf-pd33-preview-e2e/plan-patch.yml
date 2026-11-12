@@ -1,7 +1,7 @@
 # a5sf-pd33-preview-e2e plan (no World)
 - insert:
     - id: "dsh-agent-team"
-      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/runtime/dist/packages/runtime/src/plugin/host.js"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/packages/runtime/dist/packages/runtime/src/plugin/host.js"
       config:
         bootPhase: "create"
         rootSessionId: "session-a5sf-pd33-boot"
@@ -29,17 +29,17 @@
         externalPolicyFacts:
           hard: {}
           capabilityExists: {}
-        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/blueprints"
+        blueprintDir: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/blueprints"
         memberPresetId: "a5sf-governed-member"
         a5sfGovernedRealm: true
-        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/a5sf-consult.jsonl"
+        a5sfEvidencePath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/a5sf-consult.jsonl"
         a5sfSkillCatalog:
           - name: "pd33-inlane"
             description: "PD-33 in-lane fixture skill"
-            path: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-workspace/skills/pd33-inlane/SKILL.md"
+            path: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-workspace/skills/pd33-inlane/SKILL.md"
           - name: "pd33-outlane"
             description: "PD-33 out-of-lane fixture skill"
-            path: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/AGENTS.md"
+            path: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/AGENTS.md"
         mcpServer: null
     - id: "preset-a5sf-governed-member"
       name: "@deepseek-ai/dsh-agent-preset"
@@ -123,8 +123,8 @@
           userAgent: "dsh-agent-team/pd33-preview"
           timeoutMs: 20000
     - id: "a5sf-pd33-base-web-tripwire"
-      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs"
       config:
-        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/a5sf-pd33-host-web-calls.jsonl"
+        counterPath: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/plan-home/a5sf-pd33-host-web-calls.jsonl"
     - id: "p6t6-team-tools"
-      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/pd33-preview-e2e/packages/tools/harness/plugin.mjs"
+      name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/packages/tools/harness/plugin.mjs"

@@ -361,3 +361,20 @@ node --test tests/kits/_shared/boot-preflight.test.mjs
 # the migrated kit
 node tests/kits/pr-a-governance-smoke/pr-a-governance-smoke.mjs
 ```
+
+---
+
+## 9. Register identity and the fix that followed (appended 2026-11-13)
+
+The finding this package reports is register **PD-43**, source id **`LIFECYCLE-GATE`**
+(`docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md`): the trusted review-facts port
+refused a valid operation owner whose row was `CREATED`/`SETTLED`, so the woken Officer's decision
+was refused `CONTROL_RESOLVER_NOT_AUTHORIZED`. The measurement above is unchanged and stands as the
+finding's evidence.
+
+**Fixed after this record, in a separate lane:** **#738** (`76293c79f`, A6-LEG-VALIDITY, merged
+2026-11-12) makes the durable **pending approval leg** the subject of validity; the live owner set is
+`LEG_OWNER_LIVE_LIFECYCLES = ['CREATED','RUNNING','SETTLED']`
+(`packages/runtime/alpha6/assigned-officer-facts.ts:341`, gate at `:495`). The fail-closed answers
+(no pending leg, decided/abandoned leg, identity mismatch, unknown/absent lifecycle, `ARCHIVED`,
+`DISPOSED`) are unchanged. This appendix records the fix; it does not alter the measured arms above.
