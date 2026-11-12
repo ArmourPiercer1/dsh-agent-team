@@ -1,4 +1,14 @@
 # A4-PR7 §7.6 blueprint-fence BASELINE for scripts/ci-pr-gate.mjs
+# RE-RECORDED (open, 2026-11-12, packaging-v016 lane) on
+#   task/packaging-v016-20261112 = master@84baf304c + the lane's opt-in
+#   `--member-io-ceilings` on the packaged-acceptance instrument: ONE identity
+#   line, a LINE-SHIFT of the SAME v5 site in
+#   tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs
+#   L862=v5 -> L871=v5. Cause: the lane added the opt-in flag and the
+#   memberIoCeilings block ABOVE that literal, so the same blueprint document
+#   moved down 9 lines. Same identity, same fixture, same `=v5` digit, no new
+#   offending content, nothing resolved. Every other identity line is
+#   verbatim-unchanged.
 # RE-RECORDED (open, 2026-11-12, A6-LEG-VALIDITY host measurement) on
 #   task/a6-leg-validity-host-20261112 = master@29e4b1b38 + #738:
 #   ONE identity line, a LINE-SHIFT: a6-assigned-officer-facts.test.ts
@@ -108,7 +118,7 @@ OFFENDING tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs :: L722=
 OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L710=v5, L917=v5, L2561=v5, L3359=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
-OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L862=v5
+OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L871=v5
 # 2026-11-11 (V016-PACKAGED-ACCEPTANCE, task/pack-accept-20261111): one new identity line,
 # the new kit's v5 Team-create fixture. Nothing else moved: re-recorded by re-running
 # scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
