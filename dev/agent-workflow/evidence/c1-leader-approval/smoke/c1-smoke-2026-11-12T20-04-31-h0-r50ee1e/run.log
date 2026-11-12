@@ -1,0 +1,14 @@
+[2026-11-12T20:04:31.419Z] A1 bash-governance — stamp 2026-11-12T20-04-31-h0-r50ee1e
+[2026-11-12T20:04:31.420Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113
+[2026-11-12T20:04:31.420Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T20:04:31.420Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/dev/agent-workflow/evidence/c1-leader-approval/smoke/c1-smoke-2026-11-12T20-04-31-h0-r50ee1e
+[2026-11-12T20:04:31.420Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-12T20:04:31.420Z] mode: a6-off (alpha6ReviewRouting: false)
+[2026-11-12T20:04:31.889Z] sandbox backend in use: full (usable=true)
+[2026-11-12T20:04:34.893Z] ports: host=3501 mock=3506
+[2026-11-12T20:04:39.904Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-12T20:04:39.916Z] mock model listening on 3506
+[2026-11-12T20:04:44.921Z] PREFLIGHT FAIL: [{"id":"officer.count","arm":"A1-6","state":"NOT_REACHED","detail":"exactly one live Officer; core preflight did not pass"},{"id":"port.3501","arm":null,"state":"FAIL","detail":"3501 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"},{"id":"port.3506","arm":null,"state":"FAIL","detail":"3506 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED)"}]
+[2026-11-12T20:04:44.921Z] FATAL uncaught: BootPreflightRefusal: BootPreflightRefusal: FAIL at port.3501 (3501 is outside TEST_PORT_RANGES or is the stable instance (PORT_UNSANCTIONED))
+    at assertBootPreflight (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/kits/_shared/boot-preflight.mjs:561:9)
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs:2422:3)

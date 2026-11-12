@@ -1,0 +1,544 @@
+[team-control requestId=ctrl-0tigli511iorc40c9p96z1wh]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0tigli511iorc40c9p96z1wh
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-inside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-t…
+approvalCase: case-1kizr9q06zvzcr1h43exw11g
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1kizr9q06zvzcr1h43exw11g, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0tigli511iorc40c9p96z1wh]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0tigli511iorc40c9p96z1wh
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-inside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-t…
+approvalCase: case-1kizr9q06zvzcr1h43exw11g
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1kizr9q06zvzcr1h43exw11g, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0tigli511iorc40c9p96z1wh]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0tigli511iorc40c9p96z1wh
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-inside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-t…
+approvalCase: case-1kizr9q06zvzcr1h43exw11g
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1kizr9q06zvzcr1h43exw11g, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0m9t2jk0swmsux1bz1vxi1kq]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0m9t2jk0swmsux1bz1vxi1kq
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0m9t2jk0swmsux1bz1vxi1kq]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0m9t2jk0swmsux1bz1vxi1kq
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0m9t2jk0swmsux1bz1vxi1kq]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0m9t2jk0swmsux1bz1vxi1kq
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-09tvw3y10m16l71vkndtc1xn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-09tvw3y10m16l71vkndtc1xn
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-outside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-…
+approvalCase: case-0mr3v7r0hqwzum1pcerzx0p3
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0mr3v7r0hqwzum1pcerzx0p3, you cannot act on this case again.
+===
+[team-control requestId=ctrl-09tvw3y10m16l71vkndtc1xn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-09tvw3y10m16l71vkndtc1xn
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-outside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-…
+approvalCase: case-0mr3v7r0hqwzum1pcerzx0p3
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0mr3v7r0hqwzum1pcerzx0p3, you cannot act on this case again.
+===
+[team-control requestId=ctrl-09tvw3y10m16l71vkndtc1xn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-09tvw3y10m16l71vkndtc1xn
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-outside-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-…
+approvalCase: case-0mr3v7r0hqwzum1pcerzx0p3
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0mr3v7r0hqwzum1pcerzx0p3, you cannot act on this case again.
+===
+[team-control requestId=ctrl-05fnshx13qh1fw0woatrv1u7]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-05fnshx13qh1fw0woatrv1u7
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-05fnshx13qh1fw0woatrv1u7]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-05fnshx13qh1fw0woatrv1u7
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-05fnshx13qh1fw0woatrv1u7]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-05fnshx13qh1fw0woatrv1u7
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0sasrln1p13en20qpkihh0g2]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0sasrln1p13en20qpkihh0g2
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] mkdir -p /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tes…
+approvalCase: case-0ijfj760swzcoz1n7xpd01w9
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ijfj760swzcoz1n7xpd01w9, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0sasrln1p13en20qpkihh0g2]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0sasrln1p13en20qpkihh0g2
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] mkdir -p /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tes…
+approvalCase: case-0ijfj760swzcoz1n7xpd01w9
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ijfj760swzcoz1n7xpd01w9, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0sasrln1p13en20qpkihh0g2]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0sasrln1p13en20qpkihh0g2
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] mkdir -p /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tes…
+approvalCase: case-0ijfj760swzcoz1n7xpd01w9
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ijfj760swzcoz1n7xpd01w9, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1ltasz30bdqt120djj32515x]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ltasz30bdqt120djj32515x
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-1ltasz30bdqt120djj32515x]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ltasz30bdqt120djj32515x
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-1ltasz30bdqt120djj32515x]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ltasz30bdqt120djj32515x
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-18z6m0c1nj75th1vnj2u21rk]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-18z6m0c1nj75th1vnj2u21rk
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_STATE_2|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(cat marker.txt)" "$(tty 2>/dev/null)"
+approvalCase: case-0l7jyul15htf400wgsh1v0sm
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0l7jyul15htf400wgsh1v0sm, you cannot act on this case again.
+===
+[team-control requestId=ctrl-18z6m0c1nj75th1vnj2u21rk]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-18z6m0c1nj75th1vnj2u21rk
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_STATE_2|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(cat marker.txt)" "$(tty 2>/dev/null)"
+approvalCase: case-0l7jyul15htf400wgsh1v0sm
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0l7jyul15htf400wgsh1v0sm, you cannot act on this case again.
+===
+[team-control requestId=ctrl-18z6m0c1nj75th1vnj2u21rk]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-18z6m0c1nj75th1vnj2u21rk
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_STATE_2|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(cat marker.txt)" "$(tty 2>/dev/null)"
+approvalCase: case-0l7jyul15htf400wgsh1v0sm
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0l7jyul15htf400wgsh1v0sm, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0b7pkid082sxvk14g55lr0ru]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0b7pkid082sxvk14g55lr0ru
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0b7pkid082sxvk14g55lr0ru]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0b7pkid082sxvk14g55lr0ru
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0b7pkid082sxvk14g55lr0ru]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0b7pkid082sxvk14g55lr0ru
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0b7pkid082sxvk14g55lr0ru]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0b7pkid082sxvk14g55lr0ru
+requester: inst-0wcczi71i4kd
+subject: instance inst-0wcczi71i4kd
+target: inst-0wcczi71i4kd
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0wcczi71i4kd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-1gricq00mt36ll14ovt8y0mn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1gricq00mt36ll14ovt8y0mn
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_W2_STATE|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(tty 2>/dev/null)" "$(cut -d' ' -f22…
+approvalCase: case-0ggjshs1ww8lop1vghj520zy
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ggjshs1ww8lop1vghj520zy, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1gricq00mt36ll14ovt8y0mn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1gricq00mt36ll14ovt8y0mn
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_W2_STATE|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(tty 2>/dev/null)" "$(cut -d' ' -f22…
+approvalCase: case-0ggjshs1ww8lop1vghj520zy
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ggjshs1ww8lop1vghj520zy, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1gricq00mt36ll14ovt8y0mn]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1gricq00mt36ll14ovt8y0mn
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf 'A1_W2_STATE|%s|%s|%s|%s|%s\n' "$PWD" "$A1VAR" "$$" "$(tty 2>/dev/null)" "$(cut -d' ' -f22…
+approvalCase: case-0ggjshs1ww8lop1vghj520zy
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-0ggjshs1ww8lop1vghj520zy, you cannot act on this case again.
+===
+[team-control requestId=ctrl-0qdu1iw03f7dld0zjckc60bp]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0qdu1iw03f7dld0zjckc60bp
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0arh0yk126i9:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0qdu1iw03f7dld0zjckc60bp]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0qdu1iw03f7dld0zjckc60bp
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0arh0yk126i9:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0qdu1iw03f7dld0zjckc60bp]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0qdu1iw03f7dld0zjckc60bp
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0arh0yk126i9:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-0qdu1iw03f7dld0zjckc60bp]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-0qdu1iw03f7dld0zjckc60bp
+requester: inst-0arh0yk126i9
+subject: instance inst-0arh0yk126i9
+target: inst-0arh0yk126i9
+tool: bash
+summary: PA ask case=tadm:session-a1-root-2026-11-12T20-14-39-h0-rc0fd43:inst-0arh0yk126i9:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+===
+[team-control requestId=ctrl-1ezfj7u01e5on31cdoy7009q]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ezfj7u01e5on31cdoy7009q
+requester: inst-1fmt6290h5nw
+subject: instance inst-1fmt6290h5nw
+target: inst-1fmt6290h5nw
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-deny-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-tea…
+approvalCase: case-1l64xyb13fly721qe8amx064
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1l64xyb13fly721qe8amx064, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1ezfj7u01e5on31cdoy7009q]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ezfj7u01e5on31cdoy7009q
+requester: inst-1fmt6290h5nw
+subject: instance inst-1fmt6290h5nw
+target: inst-1fmt6290h5nw
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-deny-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-tea…
+approvalCase: case-1l64xyb13fly721qe8amx064
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1l64xyb13fly721qe8amx064, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1ezfj7u01e5on31cdoy7009q]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ezfj7u01e5on31cdoy7009q
+requester: inst-1fmt6290h5nw
+subject: instance inst-1fmt6290h5nw
+target: inst-1fmt6290h5nw
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-deny-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-tea…
+approvalCase: case-1l64xyb13fly721qe8amx064
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1l64xyb13fly721qe8amx064, you cannot act on this case again.
+===
+[team-control requestId=ctrl-1ezfj7u01e5on31cdoy7009q]
+A Team member operation is waiting for Leader approval.
+
+requestId: ctrl-1ezfj7u01e5on31cdoy7009q
+requester: inst-1fmt6290h5nw
+subject: instance inst-1fmt6290h5nw
+target: inst-1fmt6290h5nw
+tool: bash
+summary: bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T20-14-39-h0-rc0fd43/workspace] printf '%s' 'a1-deny-2026-11-12T20-14-39-h0-rc0fd43' > /home/armourpiercer/projects/dsh-agent-tea…
+approvalCase: case-1l64xyb13fly721qe8amx064
+leg: 1
+reviewAuthority: leader
+
+Decide with `team_resolve_control` using this EXACT requestId and a `decision` of `allow` or `deny`.
+Recover or inspect pending requests with `team_list_pending_control`.
+If you already decided or escalated an earlier leg of approvalCase case-1l64xyb13fly721qe8amx064, you cannot act on this case again.
+===

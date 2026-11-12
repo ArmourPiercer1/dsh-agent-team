@@ -1,0 +1,108 @@
+{
+  "schema": "a1-bash-governance-agreement/1",
+  "run1": "a6on-control-run1",
+  "run2": "a6off-run1",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "counts": {
+    "run1": {
+      "PASS": 7
+    },
+    "run2": {
+      "PASS": 7
+    }
+  },
+  "recordClass": "DEV-LIVE",
+  "normalization": [
+    "run stamp (2026-11-12T03-36-55) -> <stamp>",
+    "home suffix (the per-world 6-hex id) -> -h<n>-r<hex>",
+    "ISO timestamp -> <iso>",
+    "marker file (stopped-<hash>.json) -> stopped-<hash>.json",
+    "marker key -> \"key\":\"<hash>\"",
+    "goal id -> goal-<id>",
+    "control id -> ctrl-<id>",
+    "instance id -> inst-<id>",
+    "session id -> session-<id>",
+    "definition fingerprint -> def#<n>",
+    "content hash -> sha256:<hash>",
+    "home path -> <home>",
+    "blueprint dir -> <blueprints>",
+    "fact wait ms -> executionFactWaitMs=<ms>",
+    "decision wait ms -> decisionWaitMs=<ms>",
+    "A1-5 pre-creation quiesce wait ms -> precreationQuiesceMs=<ms>",
+    "round counters (threshold is the clause) -> roundsStarted=<n>-><n>",
+    "mock round requests (timing artefact) -> mockRoundRequests=<n>-><n>"
+  ],
+  "arms": [
+    {
+      "arm": "A1-1",
+      "proposition": "a write INSIDE the Member root is allowed and its bytes are on disk",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true",
+      "detail2": "path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true"
+    },
+    {
+      "arm": "A1-2",
+      "proposition": "a write OUTSIDE the Member ceiling is refused by the OS sandbox — zero bytes on disk",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: <home>/a1-outside-<stamp>-h<n>-r<hex>.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+      "detail2": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: <home>/a1-outside-<stamp>-h<n>-r<hex>.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]"
+    },
+    {
+      "arm": "A1-3",
+      "proposition": "the same Member keeps `cd` + `export` state across consecutive calls",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "callA=[pwd=<home>/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=<home>/workspace/a1-sub var=a1-value pid=2 file=persisted-<stamp>-h<n>-r<hex> tty=/dev/console] markerReadBack=true",
+      "detail2": "callA=[pwd=<home>/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=<home>/workspace/a1-sub var=a1-value pid=2 file=persisted-<stamp>-h<n>-r<hex> tty=/dev/console] markerReadBack=true"
+    },
+    {
+      "arm": "A1-4",
+      "proposition": "a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "w1=[pwd=<home>/workspace/a1-sub tty=/dev/console] w2=[pwd=<home>/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false",
+      "detail2": "w1=[pwd=<home>/workspace/a1-sub tty=/dev/console] w2=[pwd=<home>/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false"
+    },
+    {
+      "arm": "A1-5",
+      "proposition": "a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45 quiesced=true precreationQuiesceMs=<ms>",
+      "detail2": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45 quiesced=true precreationQuiesceMs=<ms>"
+    },
+    {
+      "arm": "A1-6",
+      "proposition": "with the Host default at danger-full-access the Member ceiling still narrows it (root writes, Member refused)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true",
+      "detail2": "hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true"
+    },
+    {
+      "arm": "A1-7",
+      "proposition": "a DENIED approval produces zero native bash executions (no marker, no fact, no bytes)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "legOwner=inst-<id> isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-<id> toolRefusal=Error: the approval was denied",
+      "detail2": "legOwner=inst-<id> isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-<id> toolRefusal=Error: the approval was denied"
+    }
+  ]
+}
