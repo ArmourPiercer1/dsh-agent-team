@@ -1,0 +1,232 @@
+{
+  "member": {
+    "label": "g-joint-10",
+    "instanceId": "inst-1alfazp1xu7i",
+    "childSessionId": "session-team-child-5c4575b119ac8ad37d20cf7f1c6368ad",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T05-36-41-h0-ra3f1cd",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-1alfazp1xu7i",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-5c4575b119ac8ad37d20cf7f1c6368ad",
+          "operationId": "op-1wzsikp1vp9zzo0jykvbr1n6",
+          "replayed": false,
+          "ledgerSequence": 23,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-10-2026-11-12T05-36-41-h0-ra3f1cd"
+      }
+    }
+  },
+  "relay": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "delegate",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T05-36-41-h0-ra3f1cd",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "work-admitted",
+          "instanceId": "inst-1alfazp1xu7i",
+          "fromLifecycle": "CREATED",
+          "lifecycleCommitted": true,
+          "sequence": 24,
+          "settled": false,
+          "workStatus": "admitted"
+        },
+        "requestToken": "joint-j10-delegate-2026-11-12T05-36-41-h0-ra3f1cd"
+      }
+    }
+  },
+  "before": {
+    "pp": "ctrl-0sfo3gn099uyoy163z26p100",
+    "pa": "ctrl-0oqs2p40q4uagt0j9o4g60oy",
+    "ppConsumed": 1,
+    "paConsumed": 1,
+    "ppFacts": 0,
+    "paFacts": 0,
+    "bodyStarted": "body-started\n",
+    "requests": 4
+  },
+  "after": {
+    "ppConsumed": 1,
+    "paConsumed": 1,
+    "ppFacts": [],
+    "paFacts": [
+      {
+        "sequence": 32,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-0oqs2p40q4uagt0j9o4g60oy",
+        "callId": "team-inst-1alfazp1xu7i-native-bash:hexec:nb-1794461899656-781497563-1",
+        "outcome": "unknown",
+        "recordedAt": "2026-11-12T05:38:25.482Z",
+        "createdAt": "2026-11-12T05:38:25.482Z"
+      }
+    ],
+    "abandonments": [
+      {
+        "sequence": 33,
+        "factType": "control-request-abandoned",
+        "requestId": "ctrl-0oqs2p40q4uagt0j9o4g60oy",
+        "reason": "execution-outcome-unknown",
+        "createdAt": "2026-11-12T05:38:25.499Z"
+      }
+    ],
+    "requests": 4
+  },
+  "restartOk": true,
+  "booted": {
+    "origin": "http://127.0.0.1:3187",
+    "cookie": "dsh-auth-TpyCVJkGwoJVq1RgjUOFnOoXlRh0E-zW8PeunCCOvX8=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE4NyIsImlzc3VlZEF0IjoxNzk0NDYxOTA1NTE4LCJleHBpcmVzQXQiOjE3OTcwNTM5MDU1MTh9.JrBsVaENztmX23vcRKkbgoQQb5GeEuDykS_AHRG3EeM",
+    "host": {
+      "child": {
+        "_events": {},
+        "_eventsCount": 2,
+        "_closesNeeded": 1,
+        "_closesGot": 0,
+        "connected": false,
+        "signalCode": null,
+        "exitCode": null,
+        "killed": false,
+        "spawnfile": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node",
+        "_handle": {
+          "pid": 604
+        },
+        "spawnargs": [
+          "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+          "web",
+          "--port",
+          "3187",
+          "--no-open"
+        ],
+        "pid": 604,
+        "stdin": null,
+        "stdout": null,
+        "stderr": null,
+        "stdio": [
+          null,
+          null,
+          null
+        ]
+      },
+      "exitInfo": {
+        "exited": false
+      },
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/dev/agent-workflow/evidence/joint-acceptance/joint-v2-postfix-run1/instance.log"
+    }
+  },
+  "mockRequestsAtKill": 2,
+  "mockRequestsAfterRestart": 2,
+  "samples": [
+    {
+      "at": "2026-11-12T05:38:19.785Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-19h6ndw0c6zzx50tdxb2a1oo",
+        "team-tool-execute:ctrl-0zvjgte0ummqqf016w5e413b"
+      ],
+      "consumptions": 2,
+      "mockRequests": 27,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T05:38:20.036Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-19h6ndw0c6zzx50tdxb2a1oo",
+        "team-tool-execute:ctrl-0zvjgte0ummqqf016w5e413b"
+      ],
+      "consumptions": 2,
+      "mockRequests": 29,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T05:38:20.287Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-19h6ndw0c6zzx50tdxb2a1oo",
+        "team-tool-execute:ctrl-0zvjgte0ummqqf016w5e413b"
+      ],
+      "consumptions": 2,
+      "mockRequests": 29,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T05:38:20.538Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0zvjgte0ummqqf016w5e413b",
+        "parameter-permission:ctrl-0sfo3gn099uyoy163z26p100"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T05:38:20.789Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-0sfo3gn099uyoy163z26p100",
+        "team-tool-execute:ctrl-0oqs2p40q4uagt0j9o4g60oy"
+      ],
+      "consumptions": 3,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T05:38:21.041Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-0sfo3gn099uyoy163z26p100",
+        "team-tool-execute:ctrl-0oqs2p40q4uagt0j9o4g60oy"
+      ],
+      "consumptions": 3,
+      "mockRequests": 35,
+      "bodyStart": false,
+      "wakes": 12
+    },
+    {
+      "at": "2026-11-12T05:38:21.292Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-0sfo3gn099uyoy163z26p100",
+        "team-tool-execute:ctrl-0oqs2p40q4uagt0j9o4g60oy"
+      ],
+      "consumptions": 4,
+      "mockRequests": 35,
+      "bodyStart": false,
+      "wakes": 12
+    },
+    {
+      "at": "2026-11-12T05:38:21.544Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-0sfo3gn099uyoy163z26p100",
+        "team-tool-execute:ctrl-0oqs2p40q4uagt0j9o4g60oy"
+      ],
+      "consumptions": 4,
+      "mockRequests": 35,
+      "bodyStart": true,
+      "wakes": 12
+    }
+  ],
+  "membersAfterRestart": 6,
+  "memberSurvived": true,
+  "officerSurvived": true,
+  "bodyStartAfter": "body-started\n"
+}

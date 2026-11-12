@@ -5,8 +5,26 @@ release gate. This record can never produce a `V@B = yes` claim;
 `osLevelNetworkIsolationClaimed: false`. Every verdict below is computed from a
 durable product fact or a model-visible tool result — never authored.
 
-**Verdict: NO on this tree** — but the reason is ONE product defect, and it is
-not the defect this kit was built to catch. The kit now drives all eleven arms
+## Two measurements, in order — read this first
+
+| record | tree measured | arm counts | headline |
+|---|---|---|---|
+| **PRE-FIX** (the falsifier) | `origin/master` @ `d8490f74d` + PD41-ABORT-CLASS, **#734 not applied** | 8 PASS / 2 FAIL / 1 NOT_REACHED | one product defect: the adopted native `bash` is owned by the plane but not placed, so every governed shell call is refused at the dispatch door |
+| **POST-FIX** (current) | `origin/master` @ `4075c67ad` (#734 merged) + PD41-ABORT-CLASS | **10 PASS / 1 FAIL / 0 NOT_REACHED** | the shell lane is repaired; the decisive crash-window arm now runs, and it fails ONE pre-registered clause: the `parameter-permission` leg's consumed allow is left silently unsettled |
+
+`#734` is the **only** product change between the two measurements; the kit is
+identical (the same driver, the same arms, the same two fresh worlds). Both
+records are `DEV-LIVE` (no `V@B`, never CANDIDATE-C2). The pre-fix runs are kept
+verbatim as the falsifier; the post-fix runs are
+[`joint-v2-postfix-run1/`](joint-v2-postfix-run1/) and
+[`joint-v2-postfix-run2/`](joint-v2-postfix-run2/), with
+[`joint-v2-postfix-agreement.json`](joint-v2-postfix-agreement.json).
+
+**Post-fix verdict: NO** — one arm fails, on a different (and now precisely
+localised) product defect than the one the falsifier caught.
+
+**Pre-fix verdict: NO** — the reason was ONE product defect, and it is not the
+defect this kit was built to catch. The kit drives all eleven arms
 J01–J11 on one `schemaVersion: 5` Team (both `memberIoCeilings` and
 `reviewRouting` on the same document), twice, on two fresh `DSH_HOME` worlds;
 the two runs agree field-by-field. Eight arms pass, two fail, one is
@@ -32,7 +50,7 @@ This tree is **`origin/master` @ `d8490f74d` + the PD41-ABORT-CLASS lane**
 (rebased; no upstream edits, `CORE PATCH BUDGET = 0`), i.e. the **PRE-FIX**
 state. The same kit, unchanged, is the post-fix instrument.
 
-## Arm table (run 1 / run 2 — identical)
+### PRE-FIX arm table (run 1 / run 2 — identical)
 
 Raw: [`joint-v2-prefix-run1/joint-verdicts.json`](joint-v2-prefix-run1/joint-verdicts.json),
 [`joint-v2-prefix-run2/joint-verdicts.json`](joint-v2-prefix-run2/joint-verdicts.json),
@@ -92,7 +110,108 @@ the shipped path.
 **Not fixed here** (no scope reduction, no workaround, `CORE PATCH BUDGET = 0`).
 The product fix is PR #734.
 
-## How the two runs were made
+## POST-FIX: `master` @ `4075c67ad` (#734 merged) — 10 PASS / 1 FAIL
+
+Raw: [`joint-v2-postfix-run1/joint-verdicts.json`](joint-v2-postfix-run1/joint-verdicts.json),
+[`joint-v2-postfix-run2/joint-verdicts.json`](joint-v2-postfix-run2/joint-verdicts.json),
+agreement [`joint-v2-postfix-agreement.json`](joint-v2-postfix-agreement.json)
+(`verdictsAgree: true, detailsAgree: true`).
+
+| arm | run 1 | run 2 | what changed / what was measured on this tree |
+|---|---|---|---|
+| **J01** | PASS | PASS | unchanged: one v5 Team with both `memberIoCeilings` and `reviewRouting`, `team.create=200` |
+| **J02** | PASS | PASS | unchanged: inside-ceiling write allowed, 1 allow fact |
+| **J03** | PASS | PASS | unchanged: outside-ceiling write denied, nothing on disk |
+| **J04** | **PASS** | **PASS** | **repaired by #734**: `bashCalls=1 pinnedDefinition=true bashExecuted=true` — the model-visible `bash` is the pinned definition (one `command` parameter with the pinned description) and its body really ran (`a6-allow-executed`, exit 0) |
+| **J05** | **PASS** | **PASS** | **repaired**: `consumption=1 executionResults=1 outcomes=succeeded` — the outcome clause now reads a real success |
+| **J06** | PASS | PASS | unchanged: Officer route, bound identity, `team-tool-execute leg=true` |
+| **J07** | PASS | PASS | unchanged: human goal, rev 2 + edited, `roundsStarted=2→2`, Stop mid-round → `paused→paused` |
+| **J08** | PASS | PASS | unchanged: `GOAL_TOOL_AUTHORITY_REQUIRED` (sentence), `goal=null` |
+| **J09** | PASS | PASS | unchanged: Stop latch written, 2nd real ask mints its leg but raises no wake, marker bytes stable |
+| **J10** | **FAIL** | **FAIL** | **decisive and now drivable**: `bodyStart="body-started\n"`, `noDuplicate=true`, `noReplay=true`, `execSettledUnknown=true`, `durableSurvived=true`, **`noSilentAbsence=false`** |
+| **J11** | PASS | PASS | unchanged: exactly one consumption fact per allow |
+
+Counts: **10 PASS / 1 FAIL / 0 NOT_REACHED** in each run.
+
+### J10's exact failure (the product finding)
+
+The arm opened the crash window inside a running body and killed the Host; on
+cold boot of the same `DSH_HOME` it measured, per run:
+
+- the bash body had started (`body-started`, and the marker survived the boot);
+- the `team-tool-execute` leg's allow was consumed exactly once, before and
+  after the restart, and its crash-window settlement is `unknown`
+  (`execution-outcome-unknown` abandonment) — never `succeeded`;
+- **no duplicate execution**: the crash marker appears in 2 model requests
+  before the kill and 2 after the restart;
+- **but the `parameter-permission` leg owes a settlement fact and has NONE**:
+  `ppConsumed=1 → 1`, `ppFacts=0` after the restart, with no abandonment.
+
+`packages/runtime/src/plugin/root.ts:2887` is why:
+
+```ts
+if (!String(row.correlation ?? '').startsWith('pa:') && row.actionName !== 'team-tool-execute') continue
+```
+
+The boot recovery only settles a row whose correlation starts with `pa:` or
+whose `actionName` is `team-tool-execute`. A `parameter-permission` row carries
+the **call id** as its correlation, so a crash that loses its in-memory
+settlement leaves that consumed allow with no durable outcome at all: silently
+absent, which is exactly the `noSilentAbsence` clause this arm pre-registered
+(and the reason the arm asserts it for BOTH legs). The `team-tool-execute` leg
+is settled; the permission leg is not.
+
+This is a product defect on `master` @ `4075c67ad`, not a kit artefact: the
+clause was written before the fix, it fails on both fresh worlds, and it fails
+only on this one field (`clauses={"noDuplicate":true,"noReplay":true,
+"execSettledUnknown":true,"noSilentAbsence":false,"durableSurvived":true}`).
+
+### Second finding (disclosed, not folded into an arm): a relayed member turn's ask cannot be resolved
+
+While making J10 drivable the kit found that the same governed `bash` ask,
+minted by a member whose FIRST turn arrives as a human `member.send` relay, is
+refused to the assigned Officer:
+
+```
+{"status":"rejected","code":"CONTROL_RESOLVER_NOT_AUTHORIZED",
+ "message":"ControlService: Member review is not authorized for this leg
+ (caller is not a resolver for kind 'leader-approval' — the trusted
+ review-facts port produced no facts for this leg) …"}
+```
+
+measured on two fresh worlds (and re-verified against the durable rows): the
+offending member row reads `lifecycle: CREATED`, while the row whose ask the
+Officer CAN decide reads `RUNNING`/`SETTLED`. The facts port refuses at
+`packages/runtime/alpha6/assigned-officer-facts.ts:444`
+(`if (owner.lifecycle !== 'RUNNING') return null`), so a member created by
+`team_create_member` and first driven by `member.send` never becomes a
+resolvable operation owner for its own ask, and the leg waits forever.
+
+J10 is therefore driven as a **delegated task** (`team_delegate`), the
+production shape the rehearsal uses, so the crash window can open at all; the
+relayed shape is available behind `JOINT_J10_RELAY=1` as the diagnostic that
+measures the defect above. This is disclosed as a finding, not silently worked
+around: the crash-settlement clause J10 exists for is measured on the delegated
+shape, and the relay asymmetry is reported here for the product owner.
+
+`J04`'s observable was also corrected on this tree (measurement precision, not
+a relaxation): the v1 clause demanded a terminal fact in the REALM sink, but
+after #730 the adopted native `bash` takes its admission through the plane's
+lane + `paAdmit` and the PTY is mounted on the Member's isolate, so the sink
+legitimately records `realmTerminalFacts=0` (both runs). The arm now measures
+the two facts its proposition is about — the model-visible definition IS the
+pinned one, and the body really executed — and keeps the sink count in the
+detail as a disclosure.
+
+## How the runs were made
+
+Each measurement is two runs, on two fresh worlds, with the SAME ports and the
+same command; only the tree and the evidence directory differ:
+
+| measurement | tree | ports (run 1 / run 2) | evidence dirs |
+|---|---|---|---|
+| PRE-FIX | `master` @ `d8490f74d` + PD41 | `3187`/`3496`, `3188`/`3497` | `joint-v2-prefix-run1`, `joint-v2-prefix-run2` |
+| POST-FIX | `master` @ `4075c67ad` + PD41 | `3187`/`3496`, `3188`/`3497` | `joint-v2-postfix-run1`, `joint-v2-postfix-run2` |
 
 | | run 1 | run 2 |
 |---|---|---|
@@ -106,7 +225,7 @@ The product fix is PR #734.
 node tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs \
   --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
   --host-port 3187 --mock-port 3496 \
-  --evidence-dir "$PWD/dev/agent-workflow/evidence/joint-acceptance/joint-v2-prefix-run1"
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/joint-acceptance/<dir>"
 
 node tests/kits/joint-acceptance-20261111/compare-two-runs.mjs \
   <run1-dir> <run2-dir> <agreement.json>

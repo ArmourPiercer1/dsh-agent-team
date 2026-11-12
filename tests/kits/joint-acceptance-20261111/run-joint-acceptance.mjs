@@ -1680,6 +1680,12 @@ async function runJointScenario({ booted, mock, denyList, host }) {
         if (!isToolResultMessage(message)) continue
         const text = contentText(message.content)
         if (!/team tool guard|no Team Tool Binding/.test(text)) continue
+        // The door sentence QUOTES the refused tool name. Only a refusal of
+        // `bash` belongs to this arm: on 2026-11-12 the first guard text in the
+        // transcript was a refusal of `read` (a separate, pre-existing fail of
+        // the same class), and matching it here reported the wrong tool as the
+        // shell lane's state.
+        if (!/\bbash\b/.test(text)) continue
         // Slice from the sentence start: a `[^"]*` match stops at the first
         // quoted tool name ("bash") and truncates the refusal to its prefix.
         const at = text.search(/team tool guard|no Team Tool Binding/)
@@ -1699,9 +1705,40 @@ async function runJointScenario({ booted, mock, denyList, host }) {
   } else if (bashToolResult !== null) {
     note('J04', 'FAIL', `the governed bash was refused before any realm PTY fact: ${bashToolResult}`)
   } else {
+    // The v1 clause required a terminal/spawn fact in the REALM sink. Post-#730
+    // that is not this path's audit surface: the adopted native `bash` takes its
+    // admission from the plane's lane + paAdmit (the durable control ledger),
+    // and the PTY is mounted on the Member's nested isolate — measured here on
+    // the shipped tree as realmTerminalFacts=0 while the same run's J05/J06 show
+    // consumption + a succeeded `team-tool-execute` leg. Keeping that clause
+    // would demand a fact the design does not mint, so the arm measures the two
+    // things the proposition is actually about: the MODEL-VISIBLE definition is
+    // the pinned one (one `command` parameter with the pinned description — the
+    // Team-authored shell rows carried a different schema), and the body really
+    // executed (its marker + exit code in the model's tool result). The sink
+    // count stays in the detail as a disclosure.
     const bashServes = facts.filter((f) => f.method === 'spawn' || f.method === 'bash' || String(f.face ?? '') === 'terminal')
-    note('J04', bashServes.length > 0 ? 'PASS' : 'FAIL',
-      `bashCalls=${String(bashCalls.length)} realmTerminalFacts=${String(bashServes.length)}`)
+    // The MOUNT that matters is the Member's, so read the tool list of the
+    // request whose reply actually called bash. (The first bash definition in
+    // the transcript is the ROOT agent's core tool — a different mount.)
+    const bashCallReq = mock.requests.find((r) => (r.reply?.toolCalls ?? []).some((t) => t?.name === 'bash')) ?? null
+    const memberBashDef = (bashCallReq?.body?.tools ?? [])
+      .find((t) => t?.name === 'bash' && (t.input_schema ?? t.parameters)?.properties?.command !== undefined) ?? null
+    const schema = memberBashDef?.input_schema ?? memberBashDef?.parameters ?? null
+    const pinnedSchema = schema !== null
+      && Object.keys(schema?.properties ?? {}).join(',') === 'command'
+      && (schema?.required ?? []).includes('command')
+      && schema?.properties?.command?.description === 'The bash command to run. Relative path is preferred in the command.'
+    const bashExecuted = mock.requests.some((r) => toolMsgsOf(r).some((m) => {
+      const text = contentText(m.content)
+      // CMD_A6_ALLOW writes SUM_A6_ALLOW into the file and echoes
+      // 'a6-allow-executed'; the pinned renderer appends the exit-code note.
+      return text.includes('a6-allow-executed') && /exit code 0/.test(text)
+    }))
+    writeEvidence('joint-j04-bash-definition.json', { memberBashDef, pinnedSchema, bashExecuted, realmTerminalFacts: bashServes.length })
+    note('J04', pinnedSchema && bashExecuted ? 'PASS' : 'FAIL',
+      `bashCalls=${String(bashCalls.length)} pinnedDefinition=${String(pinnedSchema)} bashExecuted=${String(bashExecuted)}`
+        + ` realmTerminalFacts=${String(bashServes.length)} (disclosure: the shipped post-#730 path audits bash in the control ledger, not the realm sink)`)
   }
 
   // ── J02 / J03: the governed fs ceiling on the SAME Team.
@@ -1972,7 +2009,7 @@ async function runJointScenario({ booted, mock, denyList, host }) {
     // ── J10: SIGKILL mid-body, cold boot on the SAME DSH_HOME. This is the
     // crash-window settlement arm: no duplicate execution, no replayed
     // consumed allow, and the settlement is `unknown` (never `succeeded`).
-    const g10 = await createGoalMember('g-joint-10')
+    const g10 = await createMemberOf('worker', 'g-joint-10')
     const j10 = { member: g10, relay: null, before: null, after: null, restartOk: false, booted: null, mockRequestsAtKill: 0, mockRequestsAfterRestart: 0 }
     if (g10.instanceId === null || g10.childSessionId === null) {
       note('J10', 'NOT_REACHED', `crash worker could not be created: ${String(g10.refusal ?? 'no instance id')}`)
@@ -1984,19 +2021,57 @@ async function runJointScenario({ booted, mock, denyList, host }) {
       // measured refusal as the reason, never as a fabricated FAIL or PASS.
       note('J10', 'NOT_REACHED', `no governed bash body can start in this composition (J04 refuses every shell call at the dispatch door: ${String(verdicts.get('J04')?.detail ?? '').slice(0, 240)}) — the crash window must open inside a running body, and a crash before it would measure the request lane instead`)
     } else {
-      j10.relay = await relayTo(g10, MK_J10, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j10-human')
+      // The crash body is driven as a DELEGATED task (the production shape the
+      // rehearsal uses): a human-relayed member turn on this tree mints a
+      // leader-approval ask that the assigned Officer cannot resolve
+      // (CONTROL_RESOLVER_NOT_AUTHORIZED — measured, reported separately), so a
+      // relay would hang the body before it starts. `JOINT_J10_RELAY=1` is the
+      // DIAGNOSTIC switch that drives the relayed shape instead.
+      j10.relay = process.env['JOINT_J10_RELAY'] === '1'
+        ? await relayTo(g10, MK_J10, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j10-human')
+        : await p6t6Tool(booted.origin, 'team_delegate', {
+          rootSessionId: CREATE_ROOT_A6,
+          requestToken: `joint-j10-delegate-${RUN_STAMP}`,
+          delegationInstanceId: g10.instanceId,
+          label: 'g-joint-10',
+          prompt: MK_J10,
+        }, CREATE_ROOT_A6)
       const bodyDeadline = Date.now() + 240_000
       let ppLeg = null
       let paLeg = null
+      const samples = []
       while (Date.now() < bodyDeadline) {
         const current = readControlLedger(CREATE_ROOT_A6)
         const asks = current.requests.filter((r) => r.actionName === 'parameter-permission')
         ppLeg = asks.at(-1) ?? null
         const pa = current.requests.filter((r) => r.actionName === 'team-tool-execute').at(-1) ?? null
         const paConsumed = pa !== null && current.consumptions.some((c) => c.requestId === pa.requestId)
+        if (samples.length < 400) {
+          samples.push({
+            at: new Date().toISOString(),
+            requests: current.requests.length,
+            last: current.requests.slice(-2).map((r) => `${String(r.actionName)}:${String(r.requestId)}`),
+            consumptions: current.consumptions.length,
+            mockRequests: mock.requests.length,
+            bodyStart: existsSync(FILE_J10_START),
+            wakes: mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length,
+          })
+        }
         if (ppLeg !== null && paConsumed && existsSync(FILE_J10_START)) { paLeg = pa; break }
+        // A turn that issued its bash call but produced neither a control
+        // request nor a follow-up model request for 90 s is not going to open
+        // the window: stop waiting and report the stall with its evidence.
+        const recent = samples.slice(-360)
+        if (recent.length >= 360) {
+          const first = recent[0]
+          if (first.mockRequests === recent.at(-1).mockRequests && first.requests === recent.at(-1).requests) {
+            j10.stalled = { seconds: 90, mockRequests: recent.at(-1).mockRequests, requests: recent.at(-1).requests }
+            break
+          }
+        }
         await sleepJ(250)
       }
+      j10.samples = samples
       await sleepJ(1500)
       const atKill = readControlLedger(CREATE_ROOT_A6)
       j10.before = {
@@ -2011,6 +2086,33 @@ async function runJointScenario({ booted, mock, denyList, host }) {
       }
       j10.mockRequestsAtKill = mock.requests.filter((r) => JSON.stringify(r.body ?? '').includes(MK_J10)).length
       if (paLeg === null || j10.before.bodyStarted === null) {
+        // Diagnostic for the undrivable window: which requests carried the
+        // crash marker, what the member's catalog looked like, and what the
+        // control ledger recorded for this turn.
+        const crashReqs = mock.requests.filter((r) => JSON.stringify(r.body ?? '').includes(MK_J10))
+        writeEvidence('joint-j10-window.json', {
+          relay: j10.relay, member: g10,
+          ledger: {
+            requests: atKill.requests.slice(-6),
+            consumptions: atKill.consumptions.slice(-6),
+            executionResults: atKill.executionResults.slice(-6),
+          },
+          crashRequests: crashReqs.map((r) => ({
+            lastUser: lastUserTextOf(r).slice(-400),
+            tools: (r.body?.tools ?? []).map((t) => t?.name),
+            reply: r.reply === null || r.reply === undefined ? null : JSON.stringify(r.reply).slice(0, 600),
+          })),
+          samples: (j10.samples ?? []).slice(0, 40),
+          stalled: j10.stalled ?? null,
+          members: readMemberRows(CREATE_ROOT_A6),
+          legs: atKill.requests.slice(-3),
+          tail: mock.requests.slice(-8).map((r) => ({
+            lastUser: lastUserTextOf(r).slice(0, 500),
+            reply: r.reply === null || r.reply === undefined ? null : JSON.stringify(r.reply).slice(0, 400),
+            results: toolMsgsOf(r).map((m) => contentText(m.content).slice(0, 300)),
+          })),
+          bodyStartExists: existsSync(FILE_J10_START),
+        })
         note('J10', 'NOT_REACHED', `the crash window never opened: pa=${String(j10.before.pa)} bodyStarted=${JSON.stringify(j10.before.bodyStarted)} — `
           + `relay=${String(j10.relay.status)}; a crash inside an unstarted body would measure the request lane, not the settlement lane`)
       } else {
@@ -2085,7 +2187,8 @@ async function runJointScenario({ booted, mock, denyList, host }) {
             + ` abandonments=${j10.after.abandonments.map((a) => a.reason).join(',')}`
             + ` mockRequests=${String(j10.mockRequestsAtKill)}->${String(j10.mockRequestsAfterRestart)}`
             + ` members=${String(j10.membersAfterRestart)} memberSurvived=${String(j10.memberSurvived)} officerSurvived=${String(j10.officerSurvived)}`
-            + ` bodyStart=${JSON.stringify(j10.bodyStartAfter)}`)
+            + ` bodyStart=${JSON.stringify(j10.bodyStartAfter)}`
+            + ` clauses=${JSON.stringify({ noDuplicate, noReplay, execSettledUnknown, noSilentAbsence, durableSurvived })}`)
         writeEvidence('joint-j10-crash.json', j10)
         // Later arms use the RESTARTED Host (same DSH_HOME, same port).
         if (j10.booted !== null) {

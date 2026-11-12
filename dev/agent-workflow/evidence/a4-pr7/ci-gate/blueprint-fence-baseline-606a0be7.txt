@@ -6,6 +6,13 @@
 #   L106 (pin flip #324 item 5) shifted the SAME v1-fixture line down by 3.
 #   Same identity (=v1), same fixture, no new offending content, nothing
 #   resolved. All other six identities verbatim-unchanged.
+# RE-RECORDED (open, 2026-11-12, joint-acceptance POST-FIX measurement) on
+#   task/joint-acceptance-20261111 rebased onto master@4075c67ad (#734):
+#   ONE identity line, a LINE-SHIFT of the same five `=v5` sites in
+#   run-joint-acceptance.mjs (L741/L981/L2189/L3411/L4370 ->
+#   L751/L991/L2302/L3524/L4483) because the J10 crash-window diagnostic,
+#   clause names and the J04 definition probe added lines above them. Same
+#   identity, same fixtures, no new offending content, nothing resolved.
 # RE-RECORDED (open, 2026-11-12, joint-acceptance pre-fix measurement) on
 #   task/joint-acceptance-20261111 rebased onto master@d8490f74d:
 #   TWO identity lines only, both LINE-SHIFTS of the same `=v5` sites, no new
@@ -99,6 +106,6 @@ OFFENDING tests/kits/wp2-a6-governed-goal/wp2-a6-governed-goal.mjs :: L294=v5, L
 # anchor and a v4 governed realm because its subject is the plane asymmetry.
 # 2026-11-11 (PD42-V5-CEILINGS): the same four v5 sites in the same c1 driver, moved by
 # this PR's added turns; no new file, no new literal, recorded from the verifier output.
-OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L741=v5, L981=v5, L2189=v5, L3411=v5, L4370=v5
+OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L751=v5, L991=v5, L2302=v5, L3524=v5, L4483=v5
 # 2026-11-11 (JOINT-ACCEPTANCE / J05J06): one new kit identity — the joint driver authors a v5
 # blueprint carrying BOTH families, which is the subject of the acceptance, not an incidental literal.
