@@ -72,18 +72,28 @@ node tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs \
 compares the measured detail after normalizing only what necessarily differs
 between two worlds (run stamp, home suffix, ids, paths, hashes, wait ms).
 
-## The tree the recorded runs measured
+## The trees the recorded runs measured
 
-`origin/master` tip `0d74121ae` (the branch `task/a1-bash-governance-20261112`
-is a NEW branch off that tip — the joint kit's branch was not reused). The host
-is the pinned `0.2.0-rc.2 @ 639ed01539`; both runs report the OS backend as
-`full` (usable). The measured tree sha and the blueprint content hash are in
-`a1-verdicts.json` under `tree`, and in the evidence README.
+Two trees, because the record must not be a rebase-only claim:
 
-## The two measured records
+- **runs 1–2 (earlier tree):** `origin/master` tip `0d74121ae`.
+- **runs 3–4 (current tip):** `origin/master` tip `29e4b1b38`
+  (`F5-TWO-ASKS-PREFLIGHT … #723`). The delta between the two trees is `#723`
+  alone and it changes **no runtime product code** (a kit, its evidence, one
+  testkit fence-pin line, fence baseline lines), so the same seven clauses are
+  expected to — and do — reproduce identically.
 
-`dev/agent-workflow/evidence/a1-bash-governance/` — `a1-run1/`, `a1-run2/`,
-`a1-agreement.json`, and the README that names the tree and the seven-row table.
+Each recorded run is a NEW branch off its tip (the joint kit's branch was never
+reused). The host is the pinned `0.2.0-rc.2 @ 639ed01539`; every run reports the
+OS backend as `full` (usable). The measured tree sha and the blueprint content
+hash are in `a1-verdicts.json` under `tree`, and in the evidence README.
+
+## The measured records
+
+`dev/agent-workflow/evidence/a1-bash-governance/` — `a1-run1/`+`a1-run2/` with
+`a1-agreement.json` (the earlier tree `0d74121ae`), `a1-run3/`+`a1-run4/` with
+`a1-agreement-current-tip.json` (the current tip `29e4b1b38`), and the README
+that names both trees and prints both seven-row tables.
 
 ## Notes on the instrument
 

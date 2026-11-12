@@ -13,7 +13,7 @@ Kit: `tests/kits/a1-bash-governance-20261112/` (`a1-bash-governance.mjs`, `compa
 - blueprint content hash: `sha256:17e44288a0a59a01a3cc57221a2d74a3d4c5466dd6b4a89ac3e2dd898e1e61cb` (identical in both runs)
 - OS sandbox backend actually in use: **`full`** (usable=True), from the shipped provisioner's own `--check` (`a1-run1/a1-sandbox-backend.json`)
 
-## The seven clauses — run1 / run2
+## The seven clauses — run1 / run2 (the earlier tree, `0d74121ae`)
 
 | clause | proposition | run1 | run2 | measured (run1 detail, world-specific values elided) |
 |---|---|---|---|---|
@@ -26,6 +26,39 @@ Kit: `tests/kits/a1-bash-governance-20261112/` (`a1-bash-governance.mjs`, `compa
 | **A1-7** | a DENIED approval produces zero native bash executions (no marker, no fact, no bytes) | **PASS** | **PASS** | the deny-Member leg: `decision=deny`, 0 executions, 0 consumptions, 0 bytes, tool said `the approval was denied` |
 
 Agreement file: `a1-agreement.json` — `verdictsAgree=True`, `detailsAgree=True` (details compared after normalizing only the run stamp, home suffix, ids, hashes, paths and wait ms).
+
+## The SECOND tree (the current tip) — runs 3 and 4
+
+`origin/master` advanced after runs 1–2 to **`29e4b1b38626b264f70ad1428b42e1dfb2fa8361`**
+(`F5-TWO-ASKS-PREFLIGHT: two governed asks per policy + shared boot preflight`,
+#723). Because a rebase-only record would be dishonest, the SAME seven clauses
+were re-run TWICE on that tip (fresh `DSH_HOME` each, same pinned host), and
+runs 1–2 are kept untouched as the earlier-tree record.
+
+**The delta between the two trees, measured** (`git diff --stat 0d74121ae 29e4b1b38`):
+`#723` adds the `tests/kits/f5-two-asks/` driver, its evidence, one testkit
+blueprint-fence pin line, and the fence baseline lines. It changes **no runtime
+product code** — the ask path is MEASURED by that kit, not modified by it. The
+A1 record therefore measures the same product law on both trees, which is
+exactly what the re-run shows: identical verdicts, identical normalized details.
+
+- branch: `task/a1-bash-governance-current-20261112` (a NEW branch off `29e4b1b38626b264f70ad1428b42e1dfb2fa8361`; the earlier-tree branch was not reused)
+- measured tree sha: `32fa7d6d6e98ca3f5e4a35141846ca95fe13f2dd`
+- blueprint content hash: `sha256:c31efec53d612e1154b932c590f9542773813fdb3f029c80ec4d1fcb410c4c32`
+- OS sandbox backend: **`full`** (usable=True)
+
+| clause | proposition | run3 | run4 | measured (run3 detail, world-specific values elided) |
+|---|---|---|---|---|
+| **A1-1** | a write INSIDE the Member root is allowed and its bytes are on disk | **PASS** | **PASS** | inside write allowed, file read back: 40 bytes, content equal, exit 0 |
+| **A1-2** | a write OUTSIDE the Member ceiling is refused by the OS sandbox — zero bytes on disk | **PASS** | **PASS** | outside write refused (`Read-only file system`, exit 1); file absent after a real read (ENOENT, 0 bytes) |
+| **A1-3** | the same Member keeps `cd` + `export` state across consecutive calls | **PASS** | **PASS** | 2nd call: `$PWD`=…/workspace/a1-sub, `$A1VAR`=a1-value, `marker.txt`=persisted-… |
+| **A1-4** | a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid) | **PASS** | **PASS** | W2 own `$PWD`=…/workspace, `$A1VAR` empty, start-time differs, host PTY fds 1→2 |
+| **A1-5** | a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named) | **PASS** | **PASS** | `session/not-found` ×2 + `TEAM_REMOTE_FOREIGN_TEAM`; PTY fds 2→2, turns 45→45 |
+| **A1-6** | with the Host default at danger-full-access the Member ceiling still narrows it (root writes, Member refused) | **PASS** | **PASS** | root write under `danger-full-access` = 41 bytes at DSH_HOME; Member write absent |
+| **A1-7** | a DENIED approval produces zero native bash executions (no marker, no fact, no bytes) | **PASS** | **PASS** | deny-Member leg: `decision=deny`, 0 executions, 0 consumptions, 0 bytes, `the approval was denied` |
+
+Agreement (runs 3↔4): `a1-agreement-current-tip.json` —
+`verdictsAgree=True`, `detailsAgree=True`.
 
 ## What is NOT claimed
 

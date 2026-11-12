@@ -1,0 +1,16 @@
+{
+  "requests": 6,
+  "turnDone": true,
+  "results": [
+    "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
+    "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/a1-outside-2026-11-12T13-00-04-h0-r1c0afe.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/a1-outside-2026-11-12T13-00-04-h0-r1c0afe.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/workspace/a1-sub|2|/dev/console|110135215\n[Command finished with exit code 0]",
+    "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/a1-outside-2026-11-12T13-00-04-h0-r1c0afe.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/workspace/a1-sub|2|/dev/console|110135215\n[Command finished with exit code 0]",
+    "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-00-04-h0-r1c0afe/workspace/a1-sub|a1-value|2|persisted-2026-11-12T13-00-04-h0-r1c0afe|/dev/console\n[Command finished with exit code 0]"
+  ]
+}

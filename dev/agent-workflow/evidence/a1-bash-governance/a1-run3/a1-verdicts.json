@@ -1,0 +1,120 @@
+{
+  "schema": "a1-bash-governance/1",
+  "recordClass": "DEV-LIVE",
+  "tree": {
+    "branch": "task/a1-bash-governance-current-20261112",
+    "productSha": "32fa7d6d6e98ca3f5e4a35141846ca95fe13f2dd",
+    "masterTipAtRun": "29e4b1b38626b264f70ad1428b42e1dfb2fa8361",
+    "blueprintHash": "sha256:c31efec53d612e1154b932c590f9542773813fdb3f029c80ec4d1fcb410c4c32"
+  },
+  "composition": {
+    "preset": "native",
+    "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting on ONE document",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "governedRealm": true,
+    "hostDefaultSandboxMode": "danger-full-access",
+    "nativeBash": "the PINNED persistent bash over the governed PTY (cd/export persist; the plane adopts it and mounts no shell row)"
+  },
+  "counts": {
+    "PASS": 7
+  },
+  "arms": [
+    {
+      "arm": "A1-1",
+      "proposition": "a write INSIDE the Member root is allowed and its bytes are on disk",
+      "verdict": "PASS",
+      "detail": "path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true",
+      "facts": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-inside-2026-11-12T12-59-28-h0-rece5fa.txt",
+        "size": 40
+      }
+    },
+    {
+      "arm": "A1-2",
+      "proposition": "a write OUTSIDE the Member ceiling is refused by the OS sandbox — zero bytes on disk",
+      "verdict": "PASS",
+      "detail": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/a1-outside-2026-11-12T12-59-28-h0-rece5fa.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+      "facts": {
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/a1-outside-2026-11-12T12-59-28-h0-rece5fa.txt",
+        "statExists": false
+      }
+    },
+    {
+      "arm": "A1-3",
+      "proposition": "the same Member keeps `cd` + `export` state across consecutive calls",
+      "verdict": "PASS",
+      "detail": "callA=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub var=a1-value pid=2 file=persisted-2026-11-12T12-59-28-h0-rece5fa tty=/dev/console] markerReadBack=true",
+      "facts": {
+        "stateA": "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub|2|/dev/console|110131646\n[Command finished with exit code 0]",
+        "stateB": "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub|a1-value|2|persisted-2026-11-12T12-59-28-h0-rece5fa|/dev/console\n[Command finished with exit code 0]"
+      }
+    },
+    {
+      "arm": "A1-4",
+      "proposition": "a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid)",
+      "verdict": "PASS",
+      "detail": "w1=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub tty=/dev/console] w2=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false",
+      "facts": {
+        "w1": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace/a1-sub",
+          "2",
+          "/dev/console",
+          "110131646"
+        ],
+        "w2": [
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/workspace",
+          "",
+          "2",
+          "/dev/console",
+          "110132095"
+        ],
+        "ptyCountGrew": true
+      }
+    },
+    {
+      "arm": "A1-5",
+      "proposition": "a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named)",
+      "verdict": "PASS",
+      "detail": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45",
+      "facts": {
+        "gate": "session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM",
+        "ptyBefore": [
+          "/dev/pts/ptmx",
+          "/dev/pts/ptmx"
+        ],
+        "ptyAfter": [
+          "/dev/pts/ptmx",
+          "/dev/pts/ptmx"
+        ],
+        "refusals": [
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-jqg77gop2o\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T12-59-28-h0-rece5fax\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T12-59-28-h0-rece5fax\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-u46yjxu0tp\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T12-59-28-h0-rece5\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T12-59-28-h0-rece5\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"a1-wrong-relay-ptmj8z74xz\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'member.send' addresses TeamSession 'session-a1-root-2026-11-12T12-59-28-h0-rece5fax' which this host does not own (bound root 'session-c1-smoke-root-2026-11-12T12-59-28-h0-rece5fa')\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contr"
+        ]
+      }
+    },
+    {
+      "arm": "A1-6",
+      "proposition": "with the Host default at danger-full-access the Member ceiling still narrows it (root writes, Member refused)",
+      "verdict": "PASS",
+      "detail": "hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true",
+      "facts": {
+        "rootFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/a1-root-outside-2026-11-12T12-59-28-h0-rece5fa.txt",
+        "memberFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T12-59-28-h0-rece5fa/a1-outside-2026-11-12T12-59-28-h0-rece5fa.txt"
+      }
+    },
+    {
+      "arm": "A1-7",
+      "proposition": "a DENIED approval produces zero native bash executions (no marker, no fact, no bytes)",
+      "verdict": "PASS",
+      "detail": "legOwner=inst-0z3c9zp1eobj isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-0hvx6sl0c0gjfc0uc2frv11i toolRefusal=Error: the approval was denied",
+      "facts": {
+        "requestId": "ctrl-0hvx6sl0c0gjfc0uc2frv11i"
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "readScopeClaim": "none — this PTY path carries no PD-13 lexical read allowlist; read scope rests on the OS profile",
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}
