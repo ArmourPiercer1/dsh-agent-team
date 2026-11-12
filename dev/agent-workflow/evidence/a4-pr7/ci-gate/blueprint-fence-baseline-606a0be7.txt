@@ -1,5 +1,13 @@
 # A4-PR7 §7.6 blueprint-fence BASELINE for scripts/ci-pr-gate.mjs
 # recorded at: master@606a0be7 (porcelain 0), main checkout, 2026-10-09
+# RE-RECORDED (open, 2026-11-12, A1 bash-governance acceptance) on
+#   task/a1-bash-governance-current-20261112 = master@29e4b1b38 + the A1 kit:
+#   FOUR new identities, every one a `=v5` authored blueprint document inside
+#   tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs (L722/L962/
+#   L1618/L1919: the v5 Team the acceptance creates, its saved-source form, the
+#   clause-6 root probe's document and the arm table's fixture). v5 is the
+#   version this product RUNS — the fence exists to catch RETIRED documents —
+#   so these are recorded, not resolved. Nothing was removed.
 # RE-RECORDED (coordinator act in the open, 2026-10-18) on alpha5-v4-flip:
 #   ONE identity line moved `L156=v1` -> `L159=v1` for blueprint-v1-frozen-
 #   resume.test.ts. Cause: the flip round's disclosed re-pin at that file's
@@ -90,6 +98,7 @@ OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L7
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
+OFFENDING tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs :: L722=v5, L962=v5, L1618=v5, L1919=v5
 OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L710=v5, L917=v5, L2561=v5, L3359=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
