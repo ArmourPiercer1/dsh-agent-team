@@ -67,6 +67,53 @@
  * negative control: same rows, realm key dropped, and the base-host `web`
  * tripwire must then go non-zero.
  *
+ * ── GOVERNED-BASH ARM SUPERSEDED (2026-11-13, C2-B adjudication) ───────────
+ * This driver mounts the governed realm WITHOUT the Team tool plane takeover:
+ * `a5sfGovernedRealm: true` is set, `config.teamToolPlane` is not, and no
+ * Member template declares `capabilities.permissions`. That was a WORKING
+ * composition until **#730** (`d8490f74d`, NATIVE-BASH-PRESERVATION, merged
+ * 2026-11-12) made the model-visible `bash` the PINNED host definition: its
+ * `execute` now needs the plane's admission edge, and `agent-bindings.mjs`
+ * publishes that edge ONLY on a plane mount (it needs `permissionPolicy` AND
+ * `config.teamToolPlane`: agent-bindings.mjs:3135, :3389; the realm must have
+ * adopted the native shell: :3144). `native-tool-admission.mjs` is a
+ * publication SLOT with no policy of its own, so an unpublished slot is a
+ * fail-closed refusal; #734 (`4fd279276`) names the boundary — the plane's
+ * native admission is "this name's only gate" (team-tool-plane.mjs:1909-1916).
+ * `docs/INSTALL.md` §3.5 documents the same fact from the operator side: with
+ * no `teamToolPlane`, the native `bash` stays a typed-shut refusal in a
+ * governed world. **No shipped composition runs a WORKING governed `bash`
+ * without the plane takeover.** The instruments that measure that shipped
+ * composition are the A1 negative-control acceptance
+ * (`tests/kits/a1-bash-governance-20261112/`, plane takeover ON, 7/7 x4) and
+ * the joint acceptance (`tests/kits/joint-acceptance-20261111/`, realm +
+ * Alpha.6 route + plane takeover, J04, 11/11 x2).
+ *
+ * Therefore THREE cases below are REFUTED by a STALE COMPOSITION, not by a
+ * product regression, and they are KEPT (never deleted, never softened):
+ *   - `pd33:member-a-io-chain`       (its `bash` clause)
+ *   - `pd33:member-a-authorization`  (its out-of-lane `bash` clause)
+ *   - `pd33:shell-write-boundary`
+ * On this tree every governed `bash` answers `A5_NATIVE_ADMISSION_UNAVAILABLE`
+ * ("the Team admission edge is not published for this agent") and executes
+ * NOTHING. Mounting the plane takeover here is not a composition-only edit:
+ * the plane also requires the Alpha.4 strict lane (`capabilities.permissions`),
+ * which arms the A2C-2 coverage gate over all 36 surface names and re-classes
+ * this instrument from Alpha.5-only to Alpha.5+Alpha.4. That would be a
+ * DIFFERENT instrument, not a correction of this one, so the composition stays
+ * as measured and the disclosure is explicit. The 16 non-bash cases keep
+ * carrying the Alpha.5 realm claim. See {@link SUPERSEDED_BASH_ARM}.
+ *
+ * ── PAIR-AGREEMENT COMPARATOR CORRECTED (2026-11-13, same adjudication) ────
+ * `agreementOf` used to require `cells[0] === 'PROVEN'` besides verdict
+ * equality, so a case that was STABLY REFUTED on both boots printed `DISAGREE`
+ * and forced `agreeing=false`. That answers "did every case pass", not "did the
+ * boots agree", and it labelled the three superseded-bash cases above as an
+ * unstable pair when the two boots agreed exactly on the refusal. It now
+ * compares verdict equality only, reports `stablyRefuted`, and leaves the PASS
+ * requirement to `allOk` (a run with a REFUTED case is still `RESULT FAIL`).
+ * No assertion was weakened: the same three cases still fail the run.
+ *
  * NON-GOALS: no upstream patch (`CORE PATCH BUDGET = 0`), no round budget
  * invented, no `V@B` change, no claim of candidate acceptance
  * (`recordClass: 'DEV-LIVE'`).
@@ -112,6 +159,32 @@ const ACCEPTANCE_ROOT = 'session-a5sf-pd33-team'
 const BP_ANCHOR_ID = 'team.a5sf.pd33.anchor'
 const BP_MAIN_ID = 'team.a5sf.pd33.main'
 const PRESET_ID = 'a5sf-governed-member'
+
+/**
+ * The governed-bash arm of THIS instrument is SUPERSEDED (2026-11-13). It is
+ * machine-readable so the host-free pin and `preset-effective.json` can state
+ * it without a human remembering: #730 made the model-visible `bash` the pinned
+ * host definition, whose admission edge only a Team tool plane mount publishes,
+ * and this composition deliberately does not mount that plane (it would also
+ * need the Alpha.4 strict lane and would re-class the instrument). The three
+ * affected case ids are KEPT — the arm is disclosed, not deleted.
+ */
+const SUPERSEDED_BASH_ARM = Object.freeze({
+  since: '2026-11-13',
+  change: '#730 d8490f74d (NATIVE-BASH-PRESERVATION, merged 2026-11-12)',
+  followUp: '#734 4fd279276 (the plane native admission is the adopted name\'s only gate)',
+  typedToken: 'A5_NATIVE_ADMISSION_UNAVAILABLE',
+  why: 'no teamToolPlane mount in this composition, so nothing publishes the admission edge for the runtime Agent',
+  supersededCases: Object.freeze([
+    'pd33:member-a-io-chain',
+    'pd33:member-a-authorization',
+    'pd33:shell-write-boundary',
+  ]),
+  carriedBy: Object.freeze([
+    'tests/kits/a1-bash-governance-20261112/ (plane takeover ON; 7/7 x4)',
+    'tests/kits/joint-acceptance-20261111/ (realm + Alpha.6 route + plane takeover; J04; 11/11 x2)',
+  ]),
+})
 
 const MK_DISC = 'A5SF_PD29_DISC'
 const MK_L1 = 'A5SF_PD29_L1_DRIVE'
@@ -1208,6 +1281,7 @@ ${INLANE_SKILL_BODY}
       world.u6Fs.rows.push(...composed.rows)
       writeFileSync(join(bootDir, 'preset-effective.json'), JSON.stringify({
         note: 'NO shipped row name is rewritten. The transport row carries the World fixture origins in place of the production env expressions; the host row carries the opt-in governed-realm key and the declared skill catalog (DATA). The mutation control removes the realm key only.',
+        supersededBashArm: SUPERSEDED_BASH_ARM,
         mutation: MUTATION === '' ? null : MUTATION,
         installGraph: { link: 'profiles/web/node_modules/dsh-agent-team -> repo root', exports: Object.keys(JSON.parse(readFileSync(join(REPO_ROOT, 'package.json'), 'utf8')).exports ?? {}).length },
         rows: composed.rows.map((r) => ({ id: r.id, name: r.name, config: r.config })),
@@ -2175,20 +2249,34 @@ function hostDigest() {
   try { return execFileSync('git', ['-C', HOST_TREE, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim() } catch { return null }
 }
 
+/**
+ * Pair agreement asks ONE question: did the boots return the SAME verdict for every
+ * case? It is not "did every case pass" — that is `allOk` and the RESULT line.
+ * Before 2026-11-13 this comparator also required `cells[0] === 'PROVEN'`, so a case
+ * that was stably REFUTED on both boots printed `DISAGREE` and forced
+ * `agreeing=false`: stability and success were conflated. That mislabelled exactly
+ * the three superseded-bash cases (see the header note) as "the boots disagree"
+ * when the boots agreed on the refusal. The correction keeps `allOk` as the pass
+ * requirement (the run still reports FAIL 16/19) and reports `stablyRefuted` so a
+ * reader can see the stable REFUTED count instead of inferring instability.
+ */
 function agreementOf(runs) {
-  if (runs.length < 2) return { agreeing: null, table: 'single boot (no pair agreement required)' }
+  if (runs.length < 2) return { agreeing: null, stablyRefuted: 0, table: 'single boot (no pair agreement required)' }
   const ids = new Set(runs.flatMap((r) => (r?.verdicts ?? []).map((v) => v.id)))
   const rows = []
   let agreeing = true
+  let stablyRefuted = 0
   for (const id of ids) {
     const cells = runs.map((r) => (r?.verdicts ?? []).find((v) => v.id === id)?.verdict ?? '<absent>')
-    const same = cells.every((c) => c === cells[0]) && cells[0] === 'PROVEN'
+    const same = cells.every((c) => c === cells[0])
     if (!same) agreeing = false
+    if (same && cells[0] === 'REFUTED') stablyRefuted += 1
     rows.push(`| ${id} | ${cells.join(' | ')} | ${same ? 'agree' : 'DISAGREE'} |`)
   }
   return {
     agreeing,
-    table: ['| case | ' + runs.map((r) => `boot${String(r.index)}`).join(' | ') + ' | agreement |',
+    stablyRefuted,
+    table: ['| case | ' + runs.map((r) => `boot${String(r.index)}`).join(' | ') + ' | agreement (verdict equality, NOT pass) |',
       '| --- | ' + runs.map(() => '---').join(' | ') + ' | --- |', ...rows].join('\n'),
   }
 }
@@ -2213,7 +2301,12 @@ async function main() {
     results.push(await bootOnce({ index: i, head, authorization, layer, composition }))
   }
   const agreement = agreementOf(results)
-  writeFileSync(join(EVIDENCE, 'agreement.json'), JSON.stringify({ agreeing: agreement.agreeing, boots: results.length }, null, 2) + '\n')
+  writeFileSync(join(EVIDENCE, 'agreement.json'), JSON.stringify({
+    agreeing: agreement.agreeing,
+    stablyRefuted: agreement.stablyRefuted,
+    bootVerdictsAgree: 'verdict equality only; a stably-REFUTED case agrees and is still a failure',
+    boots: results.length,
+  }, null, 2) + '\n')
   if (agreement.agreeing !== null) writeFileSync(join(EVIDENCE, 'agreement.txt'), agreement.table + '\n')
   log(agreement.table)
   const porcelain = hostPorcelain()
@@ -2222,7 +2315,7 @@ async function main() {
   if (porcelain.length !== 0) process.exitCode = 1
   const allOk = results.length === BOOTS_WANTED && results.every((r) => r?.failed !== true && r?.overall === 'PASS')
   const pairOk = BOOTS_WANTED < 2 || agreement.agreeing === true
-  log(`RESULT ${allOk ? 'PASS' : 'FAIL'} (${String(results.length)}/${String(BOOTS_WANTED)} boots; agreeing pair=${String(agreement.agreeing)})`)
+  log(`RESULT ${allOk ? 'PASS' : 'FAIL'} (${String(results.length)}/${String(BOOTS_WANTED)} boots; agreeing pair=${String(agreement.agreeing)}; stably-REFUTED cases=${String(agreement.stablyRefuted ?? 0)})`)
   if (!allOk || !pairOk) process.exitCode = 1
 }
 

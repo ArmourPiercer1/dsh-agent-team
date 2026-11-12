@@ -1,4 +1,6 @@
 {
   "agreeing": true,
+  "stablyRefuted": 3,
+  "bootVerdictsAgree": "verdict equality only; a stably-REFUTED case agrees and is still a failure",
   "boots": 2
 }
