@@ -173,6 +173,7 @@ function check(id, name, ok, detail) {
   return ok === true
 }
 const SUMMARY = { schema: 'packaging-v016/1', run: RUN, world: null, gates: {}, pack: {}, install: {}, live: {}, upgrade: {}, rollback: {} }
+const DRIVER_FILE = fileURLToPath(import.meta.url)
 
 function sha256File(path) {
   return createHash('sha256').update(readFileSync(path)).digest('hex')
@@ -859,6 +860,14 @@ async function main() {
     return
   }
   check('ENV-1', 'the pinned pristine host build entry exists', true, HOST_BIN)
+  SUMMARY.driver = {
+    path: relative(REPO, DRIVER_FILE),
+    sha256: sha256File(DRIVER_FILE),
+    gitCommit: git(['rev-parse', 'HEAD']).stdout,
+    evidenceClass: 'DEV-LIVE',
+    note: 'DEV-LIVE packaging-lane record. Not CANDIDATE-C2, never a V@B claim.',
+  }
+  log(`driver sha256=${SUMMARY.driver.sha256} commit=${SUMMARY.driver.gitCommit}`)
 
   let tarball = null
   if (['all', 'gates', 'pack'].includes(PHASE)) phaseGates()
@@ -899,16 +908,16 @@ async function main() {
   // Teardown by path (the driver owns the worlds it created). The live
   // instrument's world is kept by --keep so upgrade could use it; remove it now
   // unless the operator asked to keep the evidence world.
-  const liveWorlds = (SUMMARY.live.worlds ?? [SUMMARY.live.world]).filter((d) => typeof d === 'string' && d !== '')
+  const liveWorlds = [...new Set((SUMMARY.live.worlds ?? [SUMMARY.live.world]).filter((d) => typeof d === 'string' && d !== ''))]
   const finalHostPorcelain = spawnSync('git', ['-C', TESTUSE, 'status', '--porcelain'], { encoding: 'utf8' }).stdout ?? ''
   check('HYG-1', 'the pristine host checkout stayed byte-clean', finalHostPorcelain.trim() === '',
     `porcelain=${JSON.stringify(finalHostPorcelain.trim())}`)
   if (!FLAG_KEEP) {
-    for (const dir of [WORLD, ...liveWorlds]) {
+    for (const dir of [...new Set([WORLD, ...liveWorlds])]) {
       rmSync(dir, { recursive: true, force: true })
       log(`teardown: world removed (${dir})`)
     }
-    SUMMARY.teardown = { kept: false, worlds: [WORLD, ...liveWorlds] }
+    SUMMARY.teardown = { kept: false, worlds: [...new Set([WORLD, ...liveWorlds])] }
   } else {
     log(`teardown: worlds KEPT (${[WORLD, ...liveWorlds].join(', ')})`)
     SUMMARY.teardown = { kept: true, worlds: [WORLD, ...liveWorlds] }
