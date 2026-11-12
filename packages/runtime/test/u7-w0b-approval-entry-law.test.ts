@@ -104,6 +104,68 @@ async function mountAll(): Promise<PlaneValue> {
   return built.value as PlaneValue
 }
 
+describe('u7-w0b P+ — an ADOPTED native name is neither placed nor owned by the plane', () => {
+  // 2026-11-12 regression pin (found by the joint acceptance, twice, on a real
+  // Host): with `plane.nativeBashAdopted` set, this plane deliberately does NOT
+  // place the shell row — the model-visible `bash` is the pinned host definition
+  // mounted by route C. Ownership was left behind, so `owns('bash')` was true,
+  // the enforcing path asked the centre approval table for a PLACED definition
+  // that does not exist on this mount, and EVERY governed `bash` refused before
+  // its body ("kernel-owned … table unbound, resolving def#34"). Ownership and
+  // placement are the same fact; this is the leg that says so.
+  it('P+1 the adopted name is not owned, and every other seam name still is', async () => {
+    const plane = (await import(new URL('../src/plugin/live/team-tool-plane.mjs', import.meta.url).href)) as {
+      createTeamToolPlaneAssembly(i: Record<string, unknown>): { ok: boolean; value?: unknown; code?: string; message?: string }
+    }
+    const bridgeMod = (await import(new URL('../src/plugin/live/jobs-family-bridge.mjs', import.meta.url).href)) as {
+      createGovernedJobsBridge(o: Record<string, unknown>): unknown
+    }
+    const bridge = bridgeMod.createGovernedJobsBridge({
+      scopeKey: 'u7w0b-adopted-scope', viewer: { rootSessionId: ROOT, instanceId: 'u7w0b-adopted' },
+      gatewayRow: () => null, planeRow: () => null, jobsService: () => undefined,
+    })
+    const built = plane.createTeamToolPlaneAssembly({
+      dispatcherLifecycle: { inflight: () => 0 },
+      teamSessionId: ROOT,
+      controlLeg: approvingControlLeg(),
+      permissionPolicy: { default: 'deny', allow: [], ask: [], deny: [] },
+      realmId: REALM,
+      templateId: 'u7w0b-tpl',
+      role: 'member',
+      instanceId: 'u7w0b-adopted',
+      onObserve: () => {},
+      plane: {
+        fsInstance: { fs: 'u7w0b-ctl', rootDir: '/u7w0b-unit-root', realmId: REALM, kind: 'absolute-path' },
+        jobsEnabled: true,
+        nativeBashAdopted: true,
+        // The shipped governed realm spells the shell row `bash` (the
+        // model-visible native name), so the adopted name and the family's
+        // claim are the SAME string — which is the whole point of the pin.
+        names: { bash: 'bash' },
+      },
+      backends: { jobs: bridge },
+    })
+    if (built.ok !== true) throw new Error(`assembly refused: ${String(built.code)} ${String(built.message ?? '')}`)
+    const v = built.value as PlaneValue
+    // The adopted name has no placed definition here, so it must not be owned:
+    // an owned-but-unplaced name is exactly the shape that refused every call.
+    expect(v.definitions.some((d: { name: string }) => d.name === 'bash')).toBe(false)
+    // The process family still CLAIMS `bash` on this mount (the lane decision is
+    // still the plane's) — if that ever stops being true this pin is vacuous, so
+    // the claim is asserted, not assumed.
+    expect(v.centerKernel.registry.candidateFor('bash')?.familyId).toBe('dsh.process-family')
+    expect(v.kernelGuard.owns('bash')).toBe(false)
+    // Every family that IS placed keeps its ownership (the law is unchanged for
+    // the shipped names; this is not a general ownership relaxation).
+    for (const familyId of FAMILY_IDS) {
+      for (const name of FAMILIES[familyId]) {
+        if (name === 'bash' || name === 'team_bash') continue
+        expect(v.kernelGuard.owns(name)).toBe(true)
+      }
+    }
+  })
+})
+
 describe('u7-w0b P — the plane binds every family through the ONE binder', () => {
   it('P0 the mount registers all four families on ONE kernel (the universe the law is checked over)', async () => {
     const v = await mountAll()
