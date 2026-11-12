@@ -1,0 +1,110 @@
+{
+  "first": {
+    "instanceId": "inst-0r8jrdt0mpl6",
+    "templateId": "worker"
+  },
+  "second": {
+    "instanceId": "inst-163x89n07k2q",
+    "templateId": "worker"
+  },
+  "firstRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j09-first-u3pp4hc23g",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-24-35-h0-r88c5c6",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-0r8jrdt0mpl6",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-0r8jrdt0mpl6",
+              "deliveredToSessionId": "session-team-child-22ad742e84d08632e9f841778bcdc43b",
+              "factSequence": 37,
+              "deliveredSequence": 38,
+              "requestToken": "joint-j09-first-2026-11-12T08-24-35-h0-r88c5c6"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j09-first-2026-11-12T08-24-35-h0-r88c5c6",
+            "projectionGeneration": null,
+            "effectSequence": 37
+          }
+        }
+      }
+    }
+  },
+  "secondRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j09-second-lmimjy3c6p",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-24-35-h0-r88c5c6",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-163x89n07k2q",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-163x89n07k2q",
+              "deliveredToSessionId": "session-team-child-fcfcaa20a845f9b2c39a0c00b57dc221",
+              "factSequence": 40,
+              "deliveredSequence": 41,
+              "requestToken": "joint-j09-second-2026-11-12T08-24-35-h0-r88c5c6"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j09-second-2026-11-12T08-24-35-h0-r88c5c6",
+            "projectionGeneration": null,
+            "effectSequence": 40
+          }
+        }
+      }
+    }
+  },
+  "wakeSeen": 13,
+  "cancel": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j09-stop-ztl8bhjyrz",
+      "result": {
+        "ok": true,
+        "value": {
+          "accepted": true
+        }
+      }
+    }
+  },
+  "markers": [
+    "stopped-2a8d397a.json"
+  ],
+  "markersAfterSecondAsk": [
+    "stopped-2a8d397a.json"
+  ],
+  "wakesBefore": 12,
+  "wakesAfter": 13,
+  "markerBytesStable": true,
+  "secondAskLegs": 1,
+  "gate": {
+    "holding": true,
+    "releasedBy": "driver"
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "member": {
+    "label": "g-joint-7",
+    "instanceId": "inst-14nz6p70hw53",
+    "childSessionId": "session-team-child-382f6cfa4a4ffd40d1d8246bb9bb4af9",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-26-50-h0-r32e170",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-14nz6p70hw53",
+          "templateId": "goal-worker",
+          "childSessionId": "session-team-child-382f6cfa4a4ffd40d1d8246bb9bb4af9",
+          "operationId": "op-14mo8fn0azohhm1dqx1791dz",
+          "replayed": false,
+          "ledgerSequence": 17,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-7-2026-11-12T08-26-50-h0-r32e170"
+      }
+    }
+  },
+  "humanRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j07-human-4mgdojpbge",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-26-50-h0-r32e170",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-14nz6p70hw53",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-14nz6p70hw53",
+              "deliveredToSessionId": "session-team-child-382f6cfa4a4ffd40d1d8246bb9bb4af9",
+              "factSequence": 18,
+              "deliveredSequence": 19,
+              "requestToken": "joint-j07-human-2026-11-12T08-26-50-h0-r32e170"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j07-human-2026-11-12T08-26-50-h0-r32e170",
+            "projectionGeneration": null,
+            "effectSequence": 18
+          }
+        }
+      }
+    }
+  },
+  "goalBefore": null,
+  "goalAfterEdit": {
+    "ok": true,
+    "goal": {
+      "id": "goal-ad53869a-bcbf-4e39-bfaa-7bc71b560b3d",
+      "revision": 2,
+      "objective": "C1_J07 human goal C1MK_J07_2026-11-12T08-26-50-h0-r32e170 edited",
+      "phase": "active",
+      "maxGoalRounds": 6,
+      "roundsStarted": 2,
+      "createdAt": 1794472028221,
+      "updatedAt": 1794472028275,
+      "activation": "armed"
+    },
+    "raw": {
+      "type": "server-response",
+      "rpcId": "joint-j07-get-slbohcwtg6",
+      "result": {
+        "ok": true,
+        "value": {
+          "id": "goal-ad53869a-bcbf-4e39-bfaa-7bc71b560b3d",
+          "revision": 2,
+          "objective": "C1_J07 human goal C1MK_J07_2026-11-12T08-26-50-h0-r32e170 edited",
+          "phase": "active",
+          "maxGoalRounds": 6,
+          "roundsStarted": 2,
+          "createdAt": 1794472028221,
+          "updatedAt": 1794472028275,
+          "activation": "armed"
+        }
+      }
+    }
+  },
+  "roundRequests": 2,
+  "stop": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j07-stop-mn2duiepd6",
+      "result": {
+        "ok": true,
+        "value": {
+          "accepted": true
+        }
+      }
+    }
+  },
+  "goalAfterStop": {
+    "id": "goal-ad53869a-bcbf-4e39-bfaa-7bc71b560b3d",
+    "revision": 3,
+    "objective": "C1_J07 human goal C1MK_J07_2026-11-12T08-26-50-h0-r32e170 edited",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 2,
+    "createdAt": 1794472028221,
+    "updatedAt": 1794472028583,
+    "activation": "disarmed"
+  },
+  "phaseAfterStop": "paused",
+  "roundsAfterStop": 2,
+  "humanTurnSeen": true,
+  "roundsAtStop": 2,
+  "gateHeld": true,
+  "gate": {
+    "holding": true,
+    "releasedBy": "driver"
+  },
+  "goalAfterWindow": {
+    "id": "goal-ad53869a-bcbf-4e39-bfaa-7bc71b560b3d",
+    "revision": 3,
+    "objective": "C1_J07 human goal C1MK_J07_2026-11-12T08-26-50-h0-r32e170 edited",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 2,
+    "createdAt": 1794472028221,
+    "updatedAt": 1794472028583,
+    "activation": "disarmed"
+  },
+  "roundsStartedAtStop": 2,
+  "roundsStartedAfterWindow": 2,
+  "phaseAfterWindow": "paused",
+  "roundTrace": [
+    {
+      "round": 1,
+      "at": "2026-11-12T08:27:08.433Z"
+    },
+    {
+      "round": 2,
+      "at": "2026-11-12T08:27:08.517Z"
+    }
+  ]
+}

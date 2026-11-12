@@ -1,0 +1,13 @@
+| arm | verdict | proposition | measured detail |
+|---|---|---|---|
+| J01 | **PASS** | Team + routing: v5 both families admitted; Officer routed, one team_resolve_control | team.create=200 admitted=true blueprintHash=sha256:69274dd4e3b10f0db21c194a1e1df761ce29fa3bd3abf83be9d6748e687f5ad3 memberIoCeilings=true reviewRouting=true schemaVersion=5 |
+| J02 | **PASS** | Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact | inside="pd42-inside-2026-11-11T21-34-10-h3189-r8e7c91" allowFacts=1 |
+| J03 | **PASS** | Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable | writeDenies=1 outsideExists=false |
+| J04 | **FAIL** | Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY | bashCalls=1 realmTerminalFacts=0 |
+| J05 | **FAIL** | Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero | request=ctrl-0zusz2v0e6l23017jxl211yg consumption=1 executionResults=0 outcomes= |
+| J06 | **FAIL** | Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured | parameter-permission request=ctrl-0zusz2v0e6l23017jxl211yg reviewAuthority=leader decider={"instanceId":"inst-leader","kind":"instance","role":"leader"} team-tool-execute leg=false (F-3 is recorded, never fixed here) |
+| J07 | **NOT_REACHED** | Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
+| J08 | **NOT_REACHED** | Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
+| J09 | **NOT_REACHED** | Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
+| J10 | **NOT_REACHED** | Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
+| J11 | **PASS** | No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED) | one-shot consumption facts for ctrl-0zusz2v0e6l23017jxl211yg: 1 |

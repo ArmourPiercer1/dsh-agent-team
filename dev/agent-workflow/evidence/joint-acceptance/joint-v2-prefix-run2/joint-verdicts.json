@@ -1,0 +1,86 @@
+{
+  "schema": "joint-acceptance/1",
+  "recordClass": "DEV-LIVE",
+  "composition": {
+    "preset": "native",
+    "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "governedRealm": true
+  },
+  "counts": {
+    "PASS": 8,
+    "FAIL": 2,
+    "NOT_REACHED": 1
+  },
+  "arms": [
+    {
+      "arm": "J01",
+      "proposition": "Team + routing: v5 both families admitted; Officer routed, one team_resolve_control",
+      "verdict": "PASS",
+      "detail": "team.create=200 admitted=true blueprintHash=sha256:0ec429e2fb1b007a69e3eaf9bb30f14352c62641f711ab3a5401a2e7e794a7a3 memberIoCeilings=true reviewRouting=true schemaVersion=5"
+    },
+    {
+      "arm": "J02",
+      "proposition": "Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact",
+      "verdict": "PASS",
+      "detail": "inside=\"pd42-inside-2026-11-12T04-14-51-h0-r36b77c\" allowFacts=1"
+    },
+    {
+      "arm": "J03",
+      "proposition": "Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable",
+      "verdict": "PASS",
+      "detail": "writeDenies=1 outsideExists=false"
+    },
+    {
+      "arm": "J04",
+      "proposition": "Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY",
+      "verdict": "FAIL",
+      "detail": "the governed bash was refused before any realm PTY fact: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]"
+    },
+    {
+      "arm": "J05",
+      "proposition": "Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero",
+      "verdict": "FAIL",
+      "detail": "request=ctrl-0l4jlzr1ybpwxe0k3tzk91xg consumption=1 executionResults=1 outcomes=failed executionFactWaitMs=300"
+    },
+    {
+      "arm": "J06",
+      "proposition": "Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured",
+      "verdict": "PASS",
+      "detail": "parameter-permission request=ctrl-0l4jlzr1ybpwxe0k3tzk91xg reviewAuthority=leader blueprintContentHash=sha256:0ec429e2fb1b007a69e3eaf9bb30f14352c62641f711ab3a5401a2e7e794a7a3 operationTool=dsh-agent-team/bash authorityGeneration=0 decider={\"instanceId\":\"inst-09r320p1rf1v\",\"kind\":\"instance\",\"role\":\"member\"} officer=inst-09r320p1rf1v routedToOfficer=true routedAwayFromOfficer=false identityCarried=true legDecided=true decisionWaitMs=1 whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=false"
+    },
+    {
+      "arm": "J07",
+      "proposition": "Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation",
+      "verdict": "PASS",
+      "detail": "member=inst-08wh08f15k1u relay=200/ok goal={\"id\":\"goal-0f6b5885-875e-4721-8c21-b1d8d35cf196\",\"revision\":2,\"phase\":\"active\",\"objective\":\"C1_J07 human goal C1MK_J07_2026-11-12T04-14-51-h0-r36b77c ed\"} roundsStarted=2->2 (mockRoundRequests=2->2) stopLandedMidRound=true holdReleasedBy=driver stop=200 phase=paused->paused toolResults=[\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-0f6b5885-875e-4721-8c21-b1d8d35cf196\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_2026-11-12T04-14-51-h0-r36b77c\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-0f6b5885-875e-4721-8c21-b1d8d35cf196\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_2026-11-12T04-14-51-h0-r36b77c\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-0f6b5885-875e-4721-8c21-b1d8d35cf196\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_2026-11-12T04-14-51-h0-r36b77c edited\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\"]"
+    },
+    {
+      "arm": "J08",
+      "proposition": "Relay refusal: a machine relay turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED) and no Goal row exists",
+      "verdict": "PASS",
+      "detail": "member=inst-1hpxg0w0ifb0 relay=200 caller=instance/inst-leader refusal=GOAL_TOOL_AUTHORITY_REQUIRED(sentence) refusalObserved=\"Error: this goal operation requires a direct human turn on a top-level agent\" goal=null governedBashStillRuns=false (disclosure; the shell lane is J04/J05's clause) file=null askLegsMinted=0"
+    },
+    {
+      "arm": "J09",
+      "proposition": "Sticky Stop on the review-wake path: live latch -> human Stop -> durable stopped-<hash>.json, and a subsequent review ask wakes nobody",
+      "verdict": "PASS",
+      "detail": "wakeSeen=4 firstRelay=200 cancel=200 markers=[\"stopped-5645602b.json\"] bytes=\"{\\\"stopped\\\":true,\\\"key\\\":{\\\"rootSessionId\\\":\\\"session-c1-smoke-a6-2026-11-12T04-14-51-h0-r36b77c\\\",\\\"reviewerInstanceId\\\":\\\"inst-09r320p1rf1v\\\",\\\"sessionGeneration\\\":1},\\\"targetSessionId\\\":\\\"session-team-child-56e079\" wakes=4->4 markerStable=true secondAskLegs=1 askIsReal=true secondRelay=200 holdReleasedBy=driver"
+    },
+    {
+      "arm": "J10",
+      "proposition": "Cold recovery: SIGKILL mid-body, cold boot on the same DSH_HOME, no duplicate execution, no replayed consumed allow, crash-window settlement unknown",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed bash body can start in this composition (J04 refuses every shell call at the dispatch door: the governed bash was refused before any realm PTY fact: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an a) — the crash window must open inside a running body, and a crash before it would measure the request lane instead"
+    },
+    {
+      "arm": "J11",
+      "proposition": "No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED)",
+      "verdict": "PASS",
+      "detail": "one-shot consumption facts for ctrl-0l4jlzr1ybpwxe0k3tzk91xg: 1"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

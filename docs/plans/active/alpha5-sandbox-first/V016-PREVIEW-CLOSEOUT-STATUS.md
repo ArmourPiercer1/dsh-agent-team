@@ -1,5 +1,30 @@
 # V016-PREVIEW-CLOSEOUT-STATUS — what the four audits and the joint driver actually established
 
+> **UPDATE — 2026-11-12 (Integration Owner). The joint surface is GREEN.** The verdict below is the record of
+> the NO-GO round and stands as written; what changed since is a small, named set of product commits and one
+> re-measurement, so the honest current state is stated here first and the original text kept intact.
+>
+> **Joint acceptance: 11 PASS / 0 FAIL / 0 NOT_REACHED, twice, field-by-field identical**
+> (`dev/agent-workflow/evidence/joint-acceptance/`, README = a three-way record):
+>
+> | tree | verdict | product delta |
+> | --- | --- | --- |
+> | `d8490f74d` + PD41 | 8 PASS / 2 FAIL / 1 NOT_REACHED | the falsifier: #730's adopted-native `bash` was owned but never placed |
+> | `4075c67ad` | 10 PASS / 1 FAIL / 0 NOT_REACHED | #734 — ownership and placement became one fact |
+> | `6ea7d8dd4` | **11 PASS / 0 FAIL / 0 NOT_REACHED** | #736 — a cold boot owns the `parameter-permission` lane |
+>
+> Both failures were **product defects found by measurement on a real Host, not by the host-free suite**, and
+> both are now fixed with host-free pins (`u7-w0b-approval-entry-law.test.ts` P+1 with a negative control;
+> `a6-boot-settlement-lanes.test.ts` 3 clauses). No arm was relaxed, no clause was weakened, no kit change was
+> needed to consume either fix.
+>
+> **Still NO-GO, for two reasons that are not the joint surface:** (1) the **C2 gate has not been re-run** on
+> the fixed tree — no new candidate has been frozen, and `cand-v0.1.6-1`/`-2` do not contain these fixes;
+> (2) one disclosed product finding remains open — a governed ask minted by a member whose first turn is a
+> human `member.send` relay is refused to the assigned Officer (`CONTROL_RESOLVER_NOT_AUTHORIZED`, asking row
+> `lifecycle: CREATED` vs the gate at `packages/runtime/alpha6/assigned-officer-facts.ts:444`), re-measured on
+> the final tree via `JOINT_J10_RELAY=1`. Authority pointer `as20261109r1` still unmoved; no tag; no RC.
+
 **Written:** 2026-11-11 (real UTC clock) by the Integration Owner, after the four read-only audits
 (A: Alpha.5 surface, B: Alpha.6 lifecycle, C: plane/realm ownership, D: release truth + candidates) and the
 first run of the joint acceptance driver. This file is the honest state, not a plan: **every row below was
@@ -136,3 +161,34 @@ over an hour while newer runs are graded, and the six evidence/docs PRs (#722, #
 currently report **zero checks** because their runs were superseded by `update-branch` and never re-ran. They
 are content-complete and settled; they need a re-trigger (empty commit) or a queue drain, not more work. Any
 merge gate that depends on Required CI should be planned around that, not fought.
+
+---
+
+## 8. Update of 2026-11-12 — what the fixes were, and what is still owed
+
+**The two product defects the joint acceptance found (and their fixes).**
+
+1. **#730 shipped a governed `bash` nobody could call.** It adopted the pinned Host definition and excluded it
+   from placement, but left the name in the plane's ownership set, so the centre approval entry could never
+   bind and the dispatch door refused every call *before the body ran*
+   (`team-tool-plane.mjs` placement vs `owns:` predicates → `install.ts` binder). Measured: J04 `bashCalls=1
+   realmTerminalFacts=0`, and the door sentence `table unbound, resolving def#34` in two consecutive runs.
+   Fixed by #734: an adopted native name is not the plane's to own — one predicate, both claim sites, pinned by
+   a test that mounts the real assembly with the shipped spelling and is negative-controlled (with the fix
+   removed it fails `expected true to be false`).
+2. **A cold boot lost the permission lane's settlement.** Boot recovery owned `pa:`-correlated rows and
+   `team-tool-execute` only; the `parameter-permission` lane's correlation *is* the exec call id, so a consumed
+   allow whose in-memory settlement died with the process left **no result and no abandon** — the J10 clause
+   `noSilentAbsence` caught it (`ppConsumed=1→1`, `ppFacts=0`). Fixed by #736: `isExecutionAskLane()` names the
+   three execution ask lanes and `settlementCallIdOf()` reads `reviewPayload.callId` then the durable
+   correlation (never the `pa:` namespace), which is the carrier the live matcher already uses.
+
+**What is still owed to close `v0.1.6-preview`** (unchanged in shape from §5, minus what is now done):
+
+1. Freeze `cand-v0.1.6-3` from the fixed tree, and run **C2-A and C2-B independently on that one SHA/tarball/
+   host** — the joint acceptance is DEV-LIVE evidence and is never CANDIDATE-C2 evidence.
+2. Decide the status of the second finding (relayed-member authorisation). It is disclosed in the README and
+   the PR; it blocks no acceptance arm, but a shipped operator path hits it.
+3. Release notes must separate the stable surface from the Alpha.6 opt-in experimental surface, and must not
+   claim the typed refusal is machine-readable in the Host UI (`tools.guard` is `string | undefined`).
+4. Then, and only then, the GO/NO-GO question goes to the owner. No tag, no RC, no Authority move before that.
