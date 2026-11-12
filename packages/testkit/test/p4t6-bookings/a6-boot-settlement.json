@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "A6-BOOT-SETTLEMENT",
+  "paths": [
+    "packages/runtime/test/a6-boot-settlement-lanes.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1509,
+    "to": 1510
+  },
+  "reason": "A6 boot settlement (J10 fix, 2026-11-12): the ONE new scannable file is the lane's spec - it pins which durable ask lanes a cold boot owns (pa:, team-tool-execute, parameter-permission) and which call-id carrier each one uses (reviewPayload.callId first, then the durable correlation, never the pa: namespace). The production change rides ALREADY-COUNTED files (plugin/root.ts and its dist mirror, control/service.ts); dist mirrors and dev/agent-workflow evidence are outside the scan; zero new denylist vocabulary.",
+  "tieNote": "MEASURED on this tree with the spec present and this booking absent: the scanner run reads `scanner counts 1510, ledger derives 983 + 526 = 1509` (packages/testkit/test/p4t6-session-event-scan.test.ts run, 2026-11-12) - exactly this one path. No chain value copied."
+}
