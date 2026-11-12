@@ -241,6 +241,16 @@ const EXPECTED_HOST_PEERS: Record<string, string> = Object.freeze({
   '@deepseek-ai/dsh-skill': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-spill-local': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-storage-domain': EXPECTED_PEER_RANGE,
+  // 2026-11-11 (NATIVE-BASH-PRESERVATION, PR #730): the governed Member's
+  // bash must be the pinned native definition on the pinned persistent-PTY
+  // backend, so the host-provided terminal surface, its bash backend and the
+  // bash-persistent tool definition are now consumed peers. Audited by the
+  // same rule as the twelve: exact RC, optional, never a regular dependency -
+  // the three were already present in the pinned checkout, so this adds no
+  // supply-chain surface, only an honest declaration of what the plugin reads.
+  '@deepseek-ai/dsh-terminal': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-terminal-bash': EXPECTED_PEER_RANGE,
+  '@deepseek-ai/dsh-tool-bash-persistent': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-tool-fs': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-tool-fs-search': EXPECTED_PEER_RANGE,
   '@deepseek-ai/dsh-tool-web': EXPECTED_PEER_RANGE,
@@ -328,7 +338,7 @@ describe('F1 plugin DSH peer compatibility (real ' + EXPECTED_RUNTIME + ' evalua
     expect(getDshRuntimeVersion()).toBe(EXPECTED_RUNTIME)
   })
 
-  it('the root manifest declares exactly the audited fifteen host-provided DSH peers (each exact-RC, optional, none as a regular dependency) and no other @deepseek-ai copy can reach a profile', () => {
+  it('the root manifest declares exactly the audited host-provided DSH peers (fifteen + the three terminal/bash peers this round added) (each exact-RC, optional, none as a regular dependency) and no other @deepseek-ai copy can reach a profile', () => {
     const peers = manifest.peerDependencies ?? {}
     const dshPeers = Object.entries(peers).filter(([name]) => name === '@deepseek-ai/dsh' || name.startsWith('@deepseek-ai/dsh-'))
     // Exact set: the fifteen audited names, each at the exact RC — nothing more,

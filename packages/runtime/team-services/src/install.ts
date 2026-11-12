@@ -52,6 +52,7 @@ import {
   type ConfinedTerminalProcessSurface,
   type ConfinedTerminalSurface,
 } from './terminal.js'
+import { createGovernedPtyTerminalFace } from './terminal-pty.js'
 import { attachGuardToolCallAttribution, observeGuard, type GuardConsultObserver, type GuardToolCallEventContext } from './guard-observability.js'
 import {
   TeamServiceInstallError,
@@ -115,7 +116,7 @@ export interface InstallMemberIoProvidersInput {
    * refused at composition time (default-preserving: no product composition
    * declares one yet).
    */
-  readonly terminal?: ConfinedTerminalRealmSpec
+  readonly terminal?: TerminalRealmSpec
 }
 
 /**
@@ -128,6 +129,8 @@ export interface InstallMemberIoProvidersInput {
  * It can never introduce a second policy source.
  */
 export interface ConfinedTerminalRealmSpec {
+  /** Discriminator; the product path selects `'pty'` instead. */
+  readonly mode?: 'confined'
   /** The admitted shell program (absolute; the subprocess face's shell class must cover it). */
   readonly program: string
   /** Bounded stdout/stderr collection per command (default 256 KiB). */
@@ -137,6 +140,39 @@ export interface ConfinedTerminalRealmSpec {
   /** Optional MOTD the session snapshots carry. */
   readonly motd?: string
 }
+
+/**
+ * The GOVERNED PERSISTENT-PTY `terminals` face of ONE Member realm
+ * (NATIVE-BASH-PRESERVATION, 2026-11-11).
+ *
+ * This face keeps the pinned host PTY semantics (one live shell per Member,
+ * `cd`/`export` survive a call) and replaces only the EXECUTION BACKEND's
+ * policy: the pinned `terminal-bash` backend resolves
+ * `sandboxPolicy.resolve({session})` per spawn, and this face hands it the
+ * Member's ceiling. It is the ONLY terminal face a routed native
+ * `tool-bash-persistent` may ride; a Member never gets the inherited host PTY.
+ *
+ * `memberSessionId` is the EXACT agent session this face is bound to. Absent
+ * means the composition never bound one, and every spawn is refused (fail
+ * closed) — a prefix or fuzzy match is never used.
+ */
+export interface GovernedPtyTerminalRealmSpec {
+  /** Discriminator against {@link ConfinedTerminalRealmSpec}. */
+  readonly mode: 'pty'
+  /** The absolute shell program the PTY runs (never a PATH name). */
+  readonly program: string
+  /** The ONE agent session this face serves; absent = refuse every spawn. */
+  readonly memberSessionId?: string
+  /** Registry type the PTY backend is registered under. */
+  readonly backendType?: string
+  /** Optional pinned-backend config passthrough (rows/cols/timeouts). */
+  readonly backendConfig?: Readonly<Record<string, unknown>>
+  /** Reads the CURRENT policy revision at a call boundary (default: install revision). */
+  readonly revisionNow?: () => string
+}
+
+/** Any terminal face a Member realm may mount. */
+export type TerminalRealmSpec = ConfinedTerminalRealmSpec | GovernedPtyTerminalRealmSpec
 
 /**
  * The confined `subprocess` face of ONE Member realm.
@@ -346,8 +382,48 @@ export async function installMemberIoProviders(
   // fall back to the inherited shell: the exact PD-13 hole. Refuse before any
   // scope exists.
   const terminalSpec = input.terminal
-  if (terminalSpec !== undefined) {
-    if (typeof terminalSpec.program !== 'string' || !terminalSpec.program.startsWith('/')) {
+  // NATIVE-BASH-PRESERVATION (2026-11-11): a GOVERNED PTY face takes a
+  // different seam. The pinned `terminal-bash` backend allocates a real PTY
+  // through the BASE `subprocess` service and confines the shell argv with
+  // `sandbox.confine`, so it neither needs nor may use the confined child face
+  // (whose `spawnTerminal` refuses by construction). Its install requirements
+  // are therefore: an absolute program, the deployment `sandbox` provider, the
+  // base `subprocess` service, and the EXACT Member session it serves.
+  const ptyTerminalSpec: GovernedPtyTerminalRealmSpec | undefined =
+    terminalSpec !== undefined && terminalSpec.mode === 'pty' ? terminalSpec : undefined
+  const confinedTerminalSpec: ConfinedTerminalRealmSpec | undefined =
+    ptyTerminalSpec === undefined ? terminalSpec as ConfinedTerminalRealmSpec | undefined : undefined
+  if (ptyTerminalSpec !== undefined) {
+    if (typeof ptyTerminalSpec.program !== 'string' || !ptyTerminalSpec.program.startsWith('/')) {
+      throw new TeamServiceInstallError(
+        'TERMINALS_UNCONFINED_REALM',
+        'a governed PTY terminal face needs an ABSOLUTE shell program (a PATH name is never admitted)',
+      )
+    }
+    if (root.get('sandbox') === undefined) {
+      throw new TeamServiceInstallError(
+        'TERMINALS_UNCONFINED_REALM',
+        'a governed PTY terminal face was declared but this deployment mounts no `sandbox` provider; without one the PTY'
+        + ' would run with no OS ceiling, so the face is refused instead of being mounted unconfined',
+      )
+    }
+    if (root.get('subprocess') === undefined) {
+      throw new TeamServiceInstallError(
+        'TERMINALS_UNCONFINED_REALM',
+        'a governed PTY terminal face was declared but this deployment mounts no base `subprocess` service; a PTY cannot'
+        + ' ride the confined child face, so there is nothing to allocate the terminal on',
+      )
+    }
+    if (typeof ptyTerminalSpec.memberSessionId !== 'string' || ptyTerminalSpec.memberSessionId === '') {
+      throw new TeamServiceInstallError(
+        'TERMINALS_OWNER_UNBOUND',
+        'a governed PTY terminal face was declared without the EXACT Member session it serves; an unbound PTY face would'
+        + ' have to guess its owner, which is the identity hole this face exists to close',
+      )
+    }
+  }
+  if (confinedTerminalSpec !== undefined) {
+    if (typeof confinedTerminalSpec.program !== 'string' || !confinedTerminalSpec.program.startsWith('/')) {
       throw new TeamServiceInstallError(
         'TERMINALS_UNCONFINED_REALM',
         'a confined terminal face needs an ABSOLUTE shell program (a PATH name is never admitted)',
@@ -361,11 +437,11 @@ export async function installMemberIoProviders(
       )
     }
     const programs = input.subprocess.shellClass?.programs
-    const programName = terminalSpec.program.slice(terminalSpec.program.lastIndexOf('/') + 1).toLowerCase()
+    const programName = confinedTerminalSpec.program.slice(confinedTerminalSpec.program.lastIndexOf('/') + 1).toLowerCase()
     if (programs === undefined || !programs.includes(programName)) {
       throw new TeamServiceInstallError(
         'TERMINALS_UNCONFINED_REALM',
-        `the confined terminal face runs ${JSON.stringify(terminalSpec.program)}, but the realm's confined subprocess face declares`
+        `the confined terminal face runs ${JSON.stringify(confinedTerminalSpec.program)}, but the realm's confined subprocess face declares`
         + ` no shell class admitting ${JSON.stringify(programName)}; the terminal's commands could never be admitted, so the face`
         + ' is refused instead of being mounted as a shell that cannot run',
       )
@@ -499,7 +575,58 @@ export async function installMemberIoProviders(
     let disposeTerminal: (() => Promise<void>) | undefined
     let terminals: ConfinedTerminalSurface | undefined
     const terminalSubprocess = input.subprocess
-    if (terminalSpec !== undefined && terminalSubprocess !== undefined && subprocess !== undefined) {
+    // NATIVE-BASH-PRESERVATION (2026-11-11): the PTY face is a DIFFERENT
+    // backend, not a different policy. It needs the BASE subprocess (a PTY
+    // cannot ride the confined child face) and the deployment `sandbox`
+    // provider the pinned backend confines with; the confined child face above
+    // is not on its path. PD-13's face stays for `mode` absent (historical
+    // compositions), but the PRODUCT path now selects `mode: 'pty'`.
+    if (ptyTerminalSpec !== undefined) {
+      const ptyFace = createGovernedPtyTerminalFace({
+        effective: {
+          memberIdentity: spec.identity.memberInstanceId,
+          read: policy.read,
+          write: policy.write,
+        },
+        memberIdentity: spec.identity.memberInstanceId,
+        memberSessionId: ptyTerminalSpec.memberSessionId,
+        policyRevision: policy.revision,
+        program: ptyTerminalSpec.program,
+        backendType: ptyTerminalSpec.backendType ?? 'a5sf-governed-shell',
+        sandboxPolicy: root.get('sandboxPolicy') as never,
+        baseSubprocess: root.get('subprocess') as never,
+        sandboxProvider: () => root.get('sandbox') as never,
+        ...(ptyTerminalSpec.backendConfig === undefined ? {} : { backendConfig: ptyTerminalSpec.backendConfig }),
+        ...(ptyTerminalSpec.revisionNow === undefined ? {} : { revisionNow: ptyTerminalSpec.revisionNow }),
+      })
+      try {
+        const mountPlugin = scoped.plugin as unknown as (plugin: unknown, config?: unknown) => Promise<{ dispose(): Promise<void> }>
+        const fiber = await mountPlugin(ptyFace, {})
+        disposeTerminal = async () => {
+          await fiber.dispose()
+        }
+      } catch (error) {
+        await disposeSubprocess?.()
+        await disposeMount()
+        await rollback()
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `Member '${spec.identity.memberInstanceId}' governed PTY terminal mount failed: ${error instanceof Error ? error.message : String(error)}`,
+        )
+      }
+      const mountedPty = scoped.get('terminals') as ConfinedTerminalSurface | undefined
+      if (mountedPty === undefined) {
+        await disposeTerminal?.()
+        await disposeSubprocess?.()
+        await disposeMount()
+        await rollback()
+        throw new TeamServiceInstallError(
+          'SERVICE_MOUNT_FAILED',
+          `Member '${spec.identity.memberInstanceId}' mounted no governed PTY terminal service`,
+        )
+      }
+      terminals = mountedPty
+    } else if (confinedTerminalSpec !== undefined && terminalSubprocess !== undefined && subprocess !== undefined) {
       const terminalEffective = terminalSubprocess.effective
       const terminalGuard = input.onGuardConsult === undefined
         ? createMemberFsGuard(terminalEffective)
@@ -511,13 +638,13 @@ export async function installMemberIoProviders(
         })
       const terminalFace = createConfinedTerminalFace({
         effective: terminalEffective,
-        program: terminalSpec.program,
+        program: confinedTerminalSpec.program,
         shellClass: terminalSubprocess.shellClass as never,
         guard: terminalGuard,
         subprocess: subprocess as unknown as ConfinedTerminalProcessSurface,
-        ...(terminalSpec.maxOutputBytes === undefined ? {} : { maxOutputBytes: terminalSpec.maxOutputBytes }),
-        ...(terminalSpec.graceMs === undefined ? {} : { graceMs: terminalSpec.graceMs }),
-        ...(terminalSpec.motd === undefined ? {} : { motd: terminalSpec.motd }),
+        ...(confinedTerminalSpec.maxOutputBytes === undefined ? {} : { maxOutputBytes: confinedTerminalSpec.maxOutputBytes }),
+        ...(confinedTerminalSpec.graceMs === undefined ? {} : { graceMs: confinedTerminalSpec.graceMs }),
+        ...(confinedTerminalSpec.motd === undefined ? {} : { motd: confinedTerminalSpec.motd }),
       })
       try {
         const mountPlugin = scoped.plugin as unknown as (plugin: unknown, config?: unknown) => Promise<{ dispose(): Promise<void> }>

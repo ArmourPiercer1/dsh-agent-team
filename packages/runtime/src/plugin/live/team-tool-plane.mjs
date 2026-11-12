@@ -72,7 +72,7 @@
  *
  * @module runtime/plugin/live/team-tool-plane
  */
-import { createGovernedShellRowDefinition, createGovernedToolDefinitions } from '../../../../tools/a5p5-tools/src/index.js'
+import { createGovernedShellRowDefinition, createGovernedToolDefinitions, deriveToolEffectSet, parseBashArgs } from '../../../../tools/a5p5-tools/src/index.js'
 import { createProductionAdmissionAssembly, evaluateEffectSetExpansion } from '../../../tool-admission/index.js'
 import { createProductionControlledFsProvider } from '../../../controlled-fs/src/index.js'
 import { definitionIdentityOf, untestedAssurance } from '../../../tool-dispatch/index.js'
@@ -710,6 +710,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
 
   const names = { ...DEFAULT_PLANE_NAMES, ...(input.plane?.names ?? {}) }
   const readName = input.plane?.readName ?? 'read'
+  // NATIVE-BASH-PRESERVATION (2026-11-11): when the Member's realm adopts the
+  // PINNED persistent-shell definition, this plane must NOT place its own
+  // shell row. A5-NATIVE-01/02 allow replacing a native tool's execution
+  // backend, never the tool: the model-visible `bash` is the host definition
+  // over the governed PTY face, and a second Team-authored shell (today
+  // `team_bash`) would be exactly the shadow this round retires. `pwsh` is
+  // unaffected — no native owner exists for it.
+  const nativeBashAdopted = input.plane?.nativeBashAdopted === true
+  const adoptedShellNames = new Set([names.bash, 'bash'])
   // Gate 0b: the closed mount-name domain, checked BEFORE any construction
   // (natexe ③; see verifyPlaneNames — anomalous names never reach a mount).
   const namesCheck = verifyPlaneNames(names, readName)
@@ -1738,7 +1747,14 @@ export function createTeamToolPlaneAssembly(input = {}) {
   // u7-w0b S3: the PA placement spelling of every seam-claimed name IS the
   // placement name; at most one family may offer the PA read hand-off.
   for (const entry of seamFamilies) {
-    if (entry.enabled) for (const n of entry.claims) seamPlacementNames.add(n)
+    if (!entry.enabled) continue
+    for (const n of entry.claims) {
+      // An adopted native name is NOT this plane's to place: the claim stays
+      // declared on the family (it still owns the lane decision for it) but
+      // the placement spelling is the native module's.
+      if (nativeBashAdopted && n === names.bash) continue
+      seamPlacementNames.add(n)
+    }
   }
   const seamHandoffs = seamFamilies.filter((e) => e.enabled && e.built.handoff !== undefined)
   if (seamHandoffs.length > 1) {
@@ -1750,7 +1766,8 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const placedSeam = seamFamilies
     .filter((e) => e.enabled)
     .sort((a, b) => a.descriptor.placement - b.descriptor.placement)
-  const defs = Object.freeze(placedSeam.flatMap((e) => e.built.definitions))
+  const defs = Object.freeze(placedSeam.flatMap((e) => e.built.definitions)
+    .filter((def) => !(nativeBashAdopted && adoptedShellNames.has(def.name))))
 
   // GLUE-5/C2 JOBS-MANAGEMENT ROW (B-ACT-1-PR): the three host `job_*`
   // management tools, takeover-mounted at FIXED native spellings behind the
@@ -2001,11 +2018,56 @@ export function createTeamToolPlaneAssembly(input = {}) {
     return identity === null ? undefined : Object.freeze({ definitionIdentity: identity, realmId })
   }
 
+  // NATIVE-BASH-PRESERVATION (2026-11-11): the admission edge a NATIVE tool
+  // definition wraps around its own `execute`. It reuses THIS plane's
+  // authority — the same lane `decide`, the same `paAdmit` (admitCall → real
+  // Control ask → issueApprovedGrant → one-shot consume) — and adds NO second
+  // authorization fact. What it deliberately does NOT reuse is the row
+  // pipeline: no Team renderer, no spill, no presentation may wrap a native
+  // tool's value (A5-NATIVE-02).
+  let nativeBashCallSeq = 0
+  const nativeCallNonce = `nb-${String(Date.now())}-${String(Math.floor(Math.random() * 2 ** 31))}`
+  const admitNative = async ({ toolName, args, exec }) => {
+    if (toolName !== 'bash') {
+      return { kind: 'deny', code: 'A5_NATIVE_TOOL_UNKNOWN', detail: `this plane admits only the adopted native shell, not ${JSON.stringify(toolName)}` }
+    }
+    const parsed = parseBashArgs(args)
+    if (parsed.ok !== true) {
+      return { kind: 'deny', code: 'refused-schema', detail: String(parsed.problems?.[0]?.code ?? 'invalid-arguments') }
+    }
+    const derived = deriveToolEffectSet(realmId, parsed.value)
+    if (derived.ok !== true) {
+      return { kind: 'deny', code: 'refused-schema', detail: String(derived.problems?.[0]?.code ?? 'unrepresentable-effect') }
+    }
+    const verdict = decide(derived.value)
+    if (verdict.kind === 'deny') {
+      return { kind: 'deny', code: String(verdict.code), detail: 'the lane policy denied this shell call before any backend or PTY work' }
+    }
+    nativeBashCallSeq += 1
+    const callId = `${`team-${String(input.instanceId ?? templateId)}`}-native-bash:hexec:${nativeCallNonce}-${String(nativeBashCallSeq)}`
+    const pa = await paAdmit({
+      realmId,
+      callId,
+      parametersFingerprint: derived.value.fingerprint,
+      requestedEffects: derived.value,
+      toolName: 'bash',
+      ...(exec?.signal === undefined ? {} : { signal: exec.signal }),
+    })
+    if (pa.kind !== 'allow') {
+      return { kind: 'deny', code: String(pa.code), detail: String(pa.detail ?? 'the admission edge refused this native shell call') }
+    }
+    if (pa.cancelled === true) {
+      return { kind: 'deny', code: 'A5_NATIVE_CALL_CANCELLED', detail: 'the invocation was already cancelled, so nothing was admitted or consumed' }
+    }
+    return { kind: 'allow', callId }
+  }
   return {
     ok: true,
     value: {
       fsProvider,
       definitions: allDefs,
+      /** The native-tool admission edge (see `admitNative` above). */
+      admitNative,
       /** The mounted model-facing names — the own-layer bind list. */
       ownNames: Object.freeze(allDefs.map((d) => d.name)),
       decide,
@@ -2023,6 +2085,17 @@ export function createTeamToolPlaneAssembly(input = {}) {
       /** M1 CENTER PA WIRING: the async production edge every row now walks
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
+      /**
+       * NATIVE-BASH-PRESERVATION: settle ONE native call. `succeeded` is
+       * reported ONLY when the native body completed AND was not cancelled
+       * (PD-41: an abort is never a completion); `cancelled` reports NOTHING,
+       * which is the durable "unknown" fact the kit asserts.
+       */
+      settleNative: ({ callId, outcome }) => {
+        if (outcome !== 'succeeded' && outcome !== 'failed') return
+        if (typeof onExecutionResult !== 'function') return
+        onExecutionResult({ callId, outcome })
+      },
       /** A5-M2: the governed-read hand-off face for THIS mount. The plane
        *  stores nothing here: the row holds the token-keyed flight and the
        *  correlation law, and the adapter's `tools/result` observer is what

@@ -427,6 +427,30 @@
    "sha256": "b018fa204aaadc1ba3ad88bbee6930d65a42c969659d62c283b4fef8fcf567f0",
    "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
    "reason": "J05/J06 fix (2026-11-11): the identity carry is wired where the row is assembled; no re-resolution, no row-anchor inference, and no durable fact or consumption is introduced here."
+  },
+  {
+   "path": "packages/runtime/control/service.ts",
+   "sha256": "04e22be9ec9ad29b993967e55d55a8e3c24f168e9e134428df9223411557e365",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 matcher change (execution facts settle from the leg's own durable correlation too). Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/operation-permission/index.ts",
+   "sha256": "a014c69d9b514dca23bc5a59aa27ede3e4fac70f4c996ee3be9bd666610df1f9",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 re-export; no behavioural change from this lane. Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "6fb39deea6dbd560f107282c340b94adf472b10713b1499b1235a86ba1535ae2",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: merged with master's J05/J06 identity carry; the governed bash admission still consumes the plane's decision here and invents none. Exactly-once and no-replay are untouched."
+  },
+  {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "a03c6a97b9da18381f09d3124506160e9b42a689a30970e7aaa113020043312a",
+   "pr": "PR #730 (NATIVE-BASH-PRESERVATION) merged with master after #728/#733",
+   "reason": "Merged digest. This lane: the merge of the native-bash adoption with master's binding repair and identity carry. The adoption adds no authorisation: the admission edge runs once per admitted call and the body once. Exactly-once and no-replay are untouched."
   }
  ]
 }

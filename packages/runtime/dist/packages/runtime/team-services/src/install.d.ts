@@ -82,7 +82,7 @@ export interface InstallMemberIoProvidersInput {
      * refused at composition time (default-preserving: no product composition
      * declares one yet).
      */
-    readonly terminal?: ConfinedTerminalRealmSpec;
+    readonly terminal?: TerminalRealmSpec;
 }
 /**
  * The confined `terminals` face of ONE Member realm (PD-13).
@@ -94,6 +94,8 @@ export interface InstallMemberIoProvidersInput {
  * It can never introduce a second policy source.
  */
 export interface ConfinedTerminalRealmSpec {
+    /** Discriminator; the product path selects `'pty'` instead. */
+    readonly mode?: 'confined';
     /** The admitted shell program (absolute; the subprocess face's shell class must cover it). */
     readonly program: string;
     /** Bounded stdout/stderr collection per command (default 256 KiB). */
@@ -103,6 +105,37 @@ export interface ConfinedTerminalRealmSpec {
     /** Optional MOTD the session snapshots carry. */
     readonly motd?: string;
 }
+/**
+ * The GOVERNED PERSISTENT-PTY `terminals` face of ONE Member realm
+ * (NATIVE-BASH-PRESERVATION, 2026-11-11).
+ *
+ * This face keeps the pinned host PTY semantics (one live shell per Member,
+ * `cd`/`export` survive a call) and replaces only the EXECUTION BACKEND's
+ * policy: the pinned `terminal-bash` backend resolves
+ * `sandboxPolicy.resolve({session})` per spawn, and this face hands it the
+ * Member's ceiling. It is the ONLY terminal face a routed native
+ * `tool-bash-persistent` may ride; a Member never gets the inherited host PTY.
+ *
+ * `memberSessionId` is the EXACT agent session this face is bound to. Absent
+ * means the composition never bound one, and every spawn is refused (fail
+ * closed) — a prefix or fuzzy match is never used.
+ */
+export interface GovernedPtyTerminalRealmSpec {
+    /** Discriminator against {@link ConfinedTerminalRealmSpec}. */
+    readonly mode: 'pty';
+    /** The absolute shell program the PTY runs (never a PATH name). */
+    readonly program: string;
+    /** The ONE agent session this face serves; absent = refuse every spawn. */
+    readonly memberSessionId?: string;
+    /** Registry type the PTY backend is registered under. */
+    readonly backendType?: string;
+    /** Optional pinned-backend config passthrough (rows/cols/timeouts). */
+    readonly backendConfig?: Readonly<Record<string, unknown>>;
+    /** Reads the CURRENT policy revision at a call boundary (default: install revision). */
+    readonly revisionNow?: () => string;
+}
+/** Any terminal face a Member realm may mount. */
+export type TerminalRealmSpec = ConfinedTerminalRealmSpec | GovernedPtyTerminalRealmSpec;
 /**
  * The confined `subprocess` face of ONE Member realm.
  *
