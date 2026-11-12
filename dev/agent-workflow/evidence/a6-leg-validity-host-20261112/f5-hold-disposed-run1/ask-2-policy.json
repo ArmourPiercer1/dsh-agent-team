@@ -1,0 +1,163 @@
+{
+  "policy": "hold",
+  "expectation": "no Leader hand-off: the ask stays pending, discoverable and human-decidable; any decision is an explicit human action",
+  "officerAtAsk2": "disposed",
+  "officerRowNow": {
+    "instanceId": "inst-1xyzuyp0spa3",
+    "lifecycle": "DISPOSED",
+    "templateId": "officer"
+  },
+  "officerAvailable": false,
+  "policyInvoked": true,
+  "policyHonoured": true,
+  "policyReason": "hold: transfer=none escalations=0 decider=human discoverable=true",
+  "ask2": {
+    "permissionLeg": {
+      "requestId": "ctrl-0e9tmv31bjnc9i1rwt46517z",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-1d23w5i1tfieqb1l3ybdg1oz"
+    },
+    "planeLeg": {
+      "requestId": "ctrl-15aj1q71n5fsbc0zycaah1rt",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-1k1gx5218gico11ehnbzo09a",
+      "legOrdinal": 1,
+      "correlation": "pa:tadm:session-f5-team-hold-2026-11-12T13-03-02:inst-09dgfv903no0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-09dgfv903no0-bash:hexec:2fc3b7e6-0927-46af-97f4-411857bb4225-2",
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:f43677e4fe11e35ca70e9447593a3af38a14faa479e1c65f813cb5c9ebf8f73e",
+      "authorityGeneration": 0
+    },
+    "escalations": [],
+    "transfer": null,
+    "humanLeg": null,
+    "decision": {
+      "sequence": 25,
+      "factType": "control-decision-recorded",
+      "createdAt": "2026-11-12T13:03:24.893Z",
+      "decider": {
+        "humanId": "session-f5-team-hold-2026-11-12T13-03-02",
+        "kind": "human"
+      },
+      "decision": "allow",
+      "note": "F-5 ask2: explicit human operator allow (hold/disposed)",
+      "requestId": "ctrl-15aj1q71n5fsbc0zycaah1rt",
+      "requestSequence": 24,
+      "scope": {
+        "actionName": "team-tool-execute",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-12T13-03-02|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "correlation": "pa:tadm:session-f5-team-hold-2026-11-12T13-03-02:inst-09dgfv903no0:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-09dgfv903no0-bash:hexec:2fc3b7e6-0927-46af-97f4-411857bb4225-2",
+        "operationFingerprint": "sha256:994ee614455885d5b7a8ff2279be7f5a00afdfb6c012b4fc425889f45469391f",
+        "rootSessionId": "session-f5-team-hold-2026-11-12T13-03-02",
+        "subject": {
+          "instanceId": "inst-09dgfv903no0",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-09dgfv903no0",
+        "toolName": "bash"
+      }
+    },
+    "decisionCount": 1,
+    "consumptions": 1,
+    "executions": 1,
+    "abandonments": 0,
+    "executed": true
+  },
+  "discoverability": {
+    "requestId": "ctrl-15aj1q71n5fsbc0zycaah1rt",
+    "ledgerPageVisible": true,
+    "pendingControlCount": 0,
+    "modelPendingListObserved": false,
+    "remoteDiscovery": {
+      "pageStatus": 200,
+      "projectionStatus": 200,
+      "entries": 28
+    }
+  },
+  "resolver": {
+    "deciderKind": "human",
+    "deciderInstanceId": null,
+    "deciderHumanId": "session-f5-team-hold-2026-11-12T13-03-02",
+    "leaderInstance": "inst-leader",
+    "officerInstance": "inst-1xyzuyp0spa3",
+    "humanAllowedByDriver": [
+      {
+        "requestId": "ctrl-0e9tmv31bjnc9i1rwt46517z",
+        "kind": "leader-approval",
+        "actionName": "parameter-permission",
+        "status": 200,
+        "ok": true,
+        "error": null
+      },
+      {
+        "requestId": "ctrl-15aj1q71n5fsbc0zycaah1rt",
+        "kind": "leader-approval",
+        "actionName": "team-tool-execute",
+        "status": 200,
+        "ok": true,
+        "error": null
+      }
+    ],
+    "gateFactsPresent": true,
+    "refusalGateAuditPresent": false,
+    "failingGatesAtRefusal": []
+  },
+  "mockObservation": {
+    "wakeTurns": 0,
+    "notificationTurns": 0,
+    "listCalls": 0,
+    "resolveCalls": 0,
+    "refusalTraceCount": 0,
+    "refusalTraces": []
+  },
+  "disposeResult": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "data": {
+          "member": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-f5-team-hold-2026-11-12T13-03-02",
+            "instanceId": "inst-1xyzuyp0spa3",
+            "templateId": "officer",
+            "label": "officer",
+            "childSessionId": "session-team-child-a7e83fa578a125ed3d623f46c4cda6a3",
+            "lifecycle": "DISPOSED",
+            "createdAt": "2026-11-12T13:03:12.771Z",
+            "activityVersion": 2,
+            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-hold-disposed-r1-2026-11-12T13-03-02/workspace"
+          },
+          "steps": [
+            "close-admission",
+            "interrupt",
+            "drain-descendants",
+            "wait-quiescence",
+            "release-residency",
+            "commit-dispose"
+          ],
+          "drained": 0,
+          "residencyDropped": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.dispose",
+          "endpoint": "member.dispose",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "observedAt": "2026-11-12T13:03:26.841Z",
+  "observerHostPid": 511
+}

@@ -1,0 +1,87 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-12T13:02:48.823Z",
+  "selectedArms": [
+    "ask-1",
+    "ask-2",
+    "policy:leader",
+    "officer-live-at-ask-2"
+  ],
+  "knownArms": [
+    "ask-1",
+    "ask-2",
+    "policy:hold",
+    "policy:leader",
+    "officer-live-at-ask-2",
+    "officer-disposed-at-ask-2"
+  ],
+  "verdict": "PASS",
+  "reason": "every check passed",
+  "counts": {
+    "PASS": 9,
+    "FAIL": 0,
+    "NOT_REACHED": 0,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 0
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[ask-1, ask-2, policy:leader, officer-live-at-ask-2]; not selected (NOT_SELECTED, never FAIL): [policy:hold, officer-disposed-at-ask-2]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (porcelain clean)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate ea2d4a1dc1d5 matches the worktree under test (LIVE class)"
+    },
+    {
+      "id": "modality.text",
+      "arm": "ask-1",
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": null,
+      "state": "PASS",
+      "detail": "exactly one declared Officer template"
+    },
+    {
+      "id": "port.3190",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3190 free (loopback)"
+    },
+    {
+      "id": "port.3499",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3499 free (loopback)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-leader-live-r1-2026-11-12T13-02-41"
+    }
+  ],
+  "blocking": [],
+  "skipped": [],
+  "startAllowed": true
+}
