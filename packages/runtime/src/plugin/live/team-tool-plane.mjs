@@ -1895,9 +1895,25 @@ export function createTeamToolPlaneAssembly(input = {}) {
   const seamOwned = new Set(seamFamilies.flatMap((e) => (e.enabled
     ? e.claims
     : e.descriptor.disabledOwned(familyCapabilities(familyBackends)))))
+  // NATIVE-BASH-PRESERVATION follow-up (2026-11-12): ownership and placement are
+  // the SAME fact on this mount. `owns(name)` selects the enforcing path whose
+  // centre approval table binds to a PLACED definition (approval-entry-binder's
+  // `placedDefinition` -> undefined for an adopted name), so a name this plane
+  // deliberately does NOT place must not stay kernel-owned either. Keeping it
+  // owned refused every governed `bash` BEFORE its body on a real Host, twice:
+  //   team tool guard: "bash" is kernel-owned and the center approval table no
+  //   longer backs its live definition (table unbound, resolving def#34)
+  // The adopted definition's admission edge is the native one the row assembly
+  // publishes (agent-bindings' `nativeBashAdmission`), which is enforcing and
+  // runs the plane's own lane decision + paAdmit; that is this name's only gate.
+  if (nativeBashAdopted) for (const n of adoptedShellNames) seamOwned.delete(n)
   // The mount-time claim table (u7-w0b S2): which registered candidate
   // claims which native name, read once from the registered descriptors.
   const mountClaims = claimTableOf(registry)
+  // The adopted native names are NOT this plane's to own or place (see above):
+  // the claim stays declared on its family — the lane decision is still the
+  // plane's — but ownership, like placement, belongs to the native module.
+  const adoptedNativeNames = new Set(nativeBashAdopted ? adoptedShellNames : [])
   // FIX-K K4 (R-REM-2.1): every kernel call site below carries the
   // mount's scopeKey — the scoped resolution this plane IS (the same
   // `teamRoot:instanceId` law the shadow row audits under). Name-only
@@ -1965,7 +1981,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
       // table gate and post-success drift veto then treat every name
       // through the SAME code path (data, not family branches; §10.2's
       // trace law is family-count independent by design).
-      owns: (name) => typeof name === 'string' && (seamOwned.has(name) || mountClaims.has(name)),
+      owns: (name) => typeof name === 'string' && !adoptedNativeNames.has(name) && (seamOwned.has(name) || mountClaims.has(name)),
       identityFor: (name) => {
         if (typeof name !== 'string') return null
         const entry = ensureApprovalEntry(name)
@@ -2176,7 +2192,7 @@ export function createTeamToolPlaneAssembly(input = {}) {
         // ride.
         : {
             kernelGuard: Object.freeze({
-              owns: (name) => typeof name === 'string' && seamOwned.has(name),
+              owns: (name) => typeof name === 'string' && !adoptedNativeNames.has(name) && seamOwned.has(name),
               identityFor: () => null,
             }),
           }),
