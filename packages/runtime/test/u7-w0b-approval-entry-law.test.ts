@@ -158,7 +158,7 @@ describe('u7-w0b P+ — an ADOPTED native name is neither placed nor owned by th
     // Every family that IS placed keeps its ownership (the law is unchanged for
     // the shipped names; this is not a general ownership relaxation).
     for (const familyId of FAMILY_IDS) {
-      for (const name of FAMILIES[familyId]) {
+      for (const name of FAMILIES[familyId] as readonly string[]) {
         if (name === 'bash' || name === 'team_bash') continue
         expect(v.kernelGuard.owns(name)).toBe(true)
       }
