@@ -1,4 +1,10 @@
 # A4-PR7 §7.6 blueprint-fence BASELINE for scripts/ci-pr-gate.mjs
+# RE-RECORDED (open, 2026-11-12, A6-LEG-VALIDITY host measurement) on
+#   task/a6-leg-validity-host-20261112 = master@29e4b1b38 + #738:
+#   ONE identity line, a LINE-SHIFT: a6-assigned-officer-facts.test.ts
+#   L136=v5 -> L137=v5 (the #738 facts-port tests added a line above the same
+#   blueprint fixture). Same identity, same fixture, no new offending content,
+#   nothing resolved; every other identity is verbatim-unchanged.
 # recorded at: master@606a0be7 (porcelain 0), main checkout, 2026-10-09
 # RE-RECORDED (coordinator act in the open, 2026-10-18) on alpha5-v4-flip:
 #   ONE identity line moved `L156=v1` -> `L159=v1` for blueprint-v1-frozen-
@@ -87,7 +93,7 @@ OFFENDING packages/domain/test/blueprint-v1-frozen-resume.test.ts :: L159=v1
 OFFENDING packages/domain/test/t2-blueprint-v2-requirements.test.ts :: L356=v1
 OFFENDING packages/legacy/test/p7t6-teammates-adapter.test.ts :: L119=v1, L258=v1, L285=v1, L390=v2, L408=v1, L426=v1, L468=v1, L470=v1, L472=v1
 OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L726=v1
-OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
+OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L137=v5
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
 OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L710=v5, L917=v5, L2561=v5, L3359=v5
