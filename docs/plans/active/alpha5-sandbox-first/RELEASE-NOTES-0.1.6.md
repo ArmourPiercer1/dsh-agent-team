@@ -355,6 +355,41 @@ This defect is why the release-notes promise for review wake is narrow: an accep
 durable, discoverable **in the team ledger page**, side-effect-free abandonment; it is not a promise
 that every accepted wake is eventually delivered or decidable on this base.
 
+**Correction, 2026-11-12 — the promise sentence, and what the accepted-not-claimed window actually
+does on this tree (PD-39 Gap 2 re-measurement, tree `84baf304c`).**
+
+- **The sentence "every accepted review wake is delivered or decidable" is FALSE today.** It was
+  never a promise of `0.1.6`, and it is not one after this correction. The true promise of this
+  artifact is: **every accepted review wake is delivered, decidable, or terminally abandoned with a
+  typed `control-request-abandoned` fact naming the request and an operator-visible re-issue path.**
+  "Abandoned" is a third, terminal outcome — not a fourth kind of delivery, and not a silent loss:
+  the row names the request and the runbook below is the re-issue path.
+- **The accepted-but-unclaimed window measured on this tree ends DECIDABLE, not abandoned.** Two
+  fresh-`DSH_HOME` real-Host runs of the exact window (same construction, field-by-field comparison)
+  show: wake intent rows `1 → 0 → 0`, **0** claimed wake turns after restart, the
+  `control-request-recorded` row still present with **no** decision and **no** abandonment,
+  `pendingControlCount: 1`, the request readable by id on the ledger page, and a
+  `team.resolveControl` allow from the boot-root operator principal accepted (`status: 200`, a
+  `control-decision-recorded allow`; zero consumption, zero execution, no duplicate). That is the
+  audit's acceptable outcome (ii) — stranded but discoverable and resolvable. Evidence:
+  `dev/agent-workflow/evidence/pd39-inbox-window-20261112/` (`run-1/`, `run-2/`,
+  `compare-two-runs.mjs`).
+- **The terminal abandonment is real, but on a different trigger.** A decision (`allow`) recorded
+  before the crash with the invocation dead before consumption is closed by boot settlement on the
+  restart: `control-request-abandoned`, reason `invocation-abandoned`, zero consumption, zero
+  execution, no revival (measured once: `run-3-crash-after-allow/`: `sequence 11 allow` → kill →
+  `sequence 14 abandonment`). The 0.1.6 abandonment in `a6-gaps-g2-unclaimed-r11` was a *resolve-time*
+  classifier outcome on a `parameter-permission` row carrying `reviewPayloadDigest ===
+  operationFingerprint` (`PA_MANIFEST_CORRUPT`); that row shape is absent on this tree, so the window
+  no longer takes that path. See the corrected
+  [RUNBOOK-CONTROL-ABANDONED.md](./RUNBOOK-CONTROL-ABANDONED.md) and the new
+  [REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md](../../runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md).
+- **P2, the count, is not wrong — it is narrower than the sentence above.** `pendingControlCount`
+  (and `team_list_pending_control`) counts **live-undecided** requests only. An abandoned request is
+  terminal and deliberately excluded; it remains readable by id on the ledger page. The
+  operator-facing tool description now says exactly that (abandoned → terminal, not listed, find it
+  by id, re-issue). A count of `0` therefore never means "nothing happened".
+
 **Appended 2026-11-11 — two refusals that are NOT A6-26 (F-5, F-6).** Keep these apart from the
 abandonment above, because both are correct, discoverable product answers rather than the
 accepted-but-unclaimed crash window:
@@ -410,7 +445,10 @@ This is a deliberate version-line jump, not a sequence of five releases:
   claim. The formal release gate remains where the repository records it.
 - They do not upgrade the experimental Alpha.6 plane to stable, and they do not make the Alpha.6
   plane the default.
-- They do not promise that an accepted review wake is always delivered or decidable: see A6-26 in §5.
+- They do not promise that an accepted review wake is always delivered or decidable (**false as
+  stated**; corrected 2026-11-12): the true promise is delivered, decidable, **or terminally
+  abandoned with a typed fact and an operator-visible re-issue path**. See A6-26 in §5 and the
+  correction there.
 
 **Appended 2026-11-11 — what these notes do not claim, stated explicitly (F-1/F-4/PD-42/PD-41).**
 

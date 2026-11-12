@@ -1,0 +1,16 @@
+{
+  "runId": "2026-11-12T15-29-15",
+  "productSha": "84baf304c4c7d721d41312a4d240092e033fbfd6",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd39-inbox-window",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "blueprintHash": "sha256:450d51eb4d7424fc4b118c2bba3519da7fe36f85888d506444396f29e36be242",
+  "rootSessionId": "session-c1-smoke-a6-2026-11-12T15-29-15",
+  "optIn": {
+    "alpha6Officer": true,
+    "planeTakeover": true,
+    "stickyStop": false,
+    "inboxReconcile": false,
+    "timeoutMs": 0
+  }
+}

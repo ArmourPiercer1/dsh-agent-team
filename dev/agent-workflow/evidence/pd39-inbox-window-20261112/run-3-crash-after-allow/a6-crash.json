@@ -1,0 +1,187 @@
+{
+  "mode": "allow",
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-0n3nfh502t8j",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T15-31-18:inst-0n3nfh502t8j:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0n3nfh502t8j-bash:hexec:426c9292-6736-4eb7-b9c5-26729c12439a-1",
+    "approvalCaseId": "case-0gg80k41gjtglr1sg32um04l",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-12T15:31:29.238Z"
+  },
+  "beforeKill": {
+    "requests": [
+      {
+        "sequence": 6,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0n3nfh502t8j",
+        "correlation": "call-c1-2ht3mles",
+        "approvalCaseId": "case-0o66tkq00wzwrl1w1th7g1im",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T15:31:28.840Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0n3nfh502t8j",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T15-31-18:inst-0n3nfh502t8j:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0n3nfh502t8j-bash:hexec:426c9292-6736-4eb7-b9c5-26729c12439a-1",
+        "approvalCaseId": "case-0gg80k41gjtglr1sg32um04l",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T15:31:29.238Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0yex1i91m2ho",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T15:31:29.007Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0yex1i91m2ho",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T15:31:29.403Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "createdAt": "2026-11-12T15:31:29.184Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [],
+    "error": null
+  },
+  "durable": {
+    "requests": [
+      {
+        "sequence": 6,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0n3nfh502t8j",
+        "correlation": "call-c1-2ht3mles",
+        "approvalCaseId": "case-0o66tkq00wzwrl1w1th7g1im",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T15:31:28.840Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0n3nfh502t8j",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T15-31-18:inst-0n3nfh502t8j:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0n3nfh502t8j-bash:hexec:426c9292-6736-4eb7-b9c5-26729c12439a-1",
+        "approvalCaseId": "case-0gg80k41gjtglr1sg32um04l",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T15:31:29.238Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0yex1i91m2ho",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T15:31:29.007Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0yex1i91m2ho",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T15:31:29.403Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0vdywd50vjf9sq0z9o5c71e7",
+        "createdAt": "2026-11-12T15:31:29.184Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [],
+    "error": null
+  },
+  "restart": {
+    "error": null
+  },
+  "decisionAfter": {
+    "sequence": 11,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+    "decision": "allow",
+    "decider": {
+      "instanceId": "inst-0yex1i91m2ho",
+      "kind": "instance",
+      "role": "member"
+    },
+    "createdAt": "2026-11-12T15:31:29.403Z"
+  },
+  "abandonment": {
+    "sequence": 14,
+    "factType": "control-request-abandoned",
+    "requestId": "ctrl-1yitkxs062hys305s2uga0a9",
+    "reason": "invocation-abandoned",
+    "createdAt": "2026-11-12T15:31:31.277Z"
+  },
+  "revived": false,
+  "consBefore": 0,
+  "consAfter": 0,
+  "beforeFileCount": 0,
+  "fileCount": 0,
+  "bodyStart": false
+}
