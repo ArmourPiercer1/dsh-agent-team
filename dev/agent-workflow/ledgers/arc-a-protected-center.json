@@ -399,28 +399,34 @@
    "reason": "PD-41 ruling (owner, 2026-11-11): a human allow authorises ONE constrained dispatch attempt, not execution success. This file carries the dispatch door that must refuse an unverifiable Tool Binding with a TYPED error (TOOL_BINDING_UNVERIFIED / TEAM_TOOL_UNGOVERNED / ADAPTER_DRAINING + reason + toolName) while the host `tools.guard` sentence stays byte-identical. No authority is widened: the same decision and the same observation feed the typed denial, the final dispatch-time verification is unchanged, an already-consumed allow is still never replayed, and the body still never runs on refusal. Family-addition PRs never add overrides; this entry exists because the change IS an interface change to the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-allow-semantics/)."
   },
   {
+   "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+   "sha256": "d0c4549c83f29c471d0d3f004b332f5f708a44244f4887af4117b74e3a016670",
+   "pr": "P01-PLANE-REALM (lane task/p01-plane-realm-20261111)",
+   "reason": "P01 fix (2026-11-11), assigned lane: a Member realm's OWN forwarded native tools must be BINDABLE, so an approved call can run on the Member realm instead of being refused at the dispatch door. The route-C attach's returned fibers are now captured and their `routing.forwarded` ceiling names are admitted to BOTH own-name faces (the Guard's assembly-owned/native exclusion AND the list that becomes `bindOwnTools`) - never to the coverage `teamToolNames` list, so `read`/`write` keep their native PERMISSION_TOOL_NAMES management fact. The admission predicate is the pure `a5sfBindableRealmNames` (forwarded n ceiling n post-attach surface n not-plane-owned n readable at `tools.get(name, runtimeAgent)`); a name failing ANY arm is not declared and keeps the pre-P01 TOOL_BINDING_UNVERIFIED refusal. THIS PR ADDS NO EXECUTION PATH: no decision, no consumption, no replay and no backend semantics change (pipeline / PA / dispatch untouched), and the plane's own `bash` still executes on the plane's provider - that ownership defect is REPORTED to the native-preservation lane, never papered over here. Evidence dev/agent-workflow/evidence/p01-plane-realm/."
+  },
+  {
    "path": "packages/runtime/control/service.ts",
    "sha256": "04e22be9ec9ad29b993967e55d55a8e3c24f168e9e134428df9223411557e365",
-   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change on the control plane's execution-result matcher; owner authorisation 2026-11-11.",
-   "reason": "J05: `recordExecutionResult` matched only `reviewPayload.callId`, a fact only the PA plane carries. A `parameter-permission` ask has no PA manifest, so a consumed human allow, a body that ran, and a body that died between were all the same silence. The matcher now also accepts the durable `payload.correlation` (the request creator's own invocation id; never model-supplied). No consumption, replay, fence or authority path moves: the function still only appends ONE idempotent `control-execution-result` for a request that already exists, and an unknown correlation still records nothing."
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): the one matcher that settles an execution fact now also accepts the leg's own durable invocation correlation (payload.correlation), because the permission lane carries no reviewPayload callId; PA-owned rows still settle their single fact by reviewPayload.callId, so exactly one fact per leg survives, and consumption/replay/the fence are untouched."
   },
   {
    "path": "packages/runtime/operation-permission/index.ts",
    "sha256": "a014c69d9b514dca23bc5a59aa27ede3e4fac70f4c996ee3be9bd666610df1f9",
-   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change: the identity-carry types become public surface; owner authorisation 2026-11-11.",
-   "reason": "J06: the `Alpha6AskIdentity` / `BoundBlueprintIdentity` / `OperationToolBindingIdentity` types the pre-execute adapter's install parameter consumes are re-exported from the operation-permission entry (a type-only re-export; no runtime symbol, no behaviour). The composition glue and the test doubles must be able to name the frozen input contract they pass."
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): a re-export only: the pre-execute adapter now owes the execution fact through the existing seam, and the index must surface it."
   },
   {
    "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
    "sha256": "6fb39deea6dbd560f107282c340b94adf472b10713b1499b1235a86ba1535ae2",
-   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change on the pre-execute adapter seam; owner authorisation 2026-11-11: \"Pass an immutable BoundBlueprintIdentity through the existing Team composition / pre-execute adapter seam\".",
-   "reason": "J06: the ask lane now CARRIES the frozen bound-Blueprint identity (blueprintId/revision/schemaVersion/contentHash), the OperationOwner template, the verdict-time authority generation and the VERIFIED tool triple onto its requestApprovalLeg row, so `parameter-permission` and `team-tool-execute` reference the SAME bound identity and the SAME Alpha.6 route decides both. Nothing is re-resolved and nothing is inferred from a mutable row anchor: every field is a copy of a value the caller already froze, an absent binding leaves the coordinate ABSENT (the route refuses that leg by name), and with no identity supplied the row is byte-identical to today's.\nJ05: the same install now OWES one truthful `control-execution-result` after a consumed allow and settles it from the host's `tools/result` terminal leg (succeeded/failed/unknown by PD-41: only an observed completion is `succeeded`; a cancelled, timed-out or unobserved execution is `unknown`; an answered failure is `failed`; a dispatch refused after consumption still writes a fact). The observer is registered LAZILY on the first consumed allow, so an install that never reaches the ask lane adds no registration. Consumption timing, replay refusal and the guard fence are untouched."
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): F-3: the frozen BoundBlueprintIdentity + OperationOwner template + verdict-time authority generation + the VERIFIED tool triple travel through this existing seam all-or-nothing, and the adapter owes/settles exactly one execution fact from the host terminal leg with PD-41 semantics (succeeded only on observed completion; unknown for cancelled/timed-out/unobserved)."
   },
   {
    "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
-   "sha256": "f3326ccc3206f612f97e054b3c8617b8b413a0c0a304ae804e1bd656c5b44c6a",
-   "pr": "PR J05J06-APPROVAL-LANE (draft, branch task/j05j06-approval-lane-20261111) — NAMED centre-interface change in the composition glue; owner authorisation 2026-11-11 (same ruling: pass the identity through the existing composition seam).",
-   "reason": "J06: the glue BUILDS the frozen `alpha6AskIdentity` from sources that are already authoritative for each fact — the bound/hashed Blueprint the Alpha.6 composition reads (`getBoundBlueprint`, the same object the PA lane freezes), this Agent's own durable template (`boundTemplate.templateId`), the SAME durable generation reader the PA lane uses (called at ask time), and the VERIFIED governance binding on this Agent's guard surface (`providerId`/`toolName`/`definitionIdentity` of a verified entry; no verified entry answers null, which is the honest answer for a host builtin the Team assembly never placed). Gated on `alpha6ReviewRouting === true` AND schemaVersion 5; absent = pre-J06 behaviour byte for byte. No product seam, no authority derivation and no routing decision is added here."
+   "sha256": "b018fa204aaadc1ba3ad88bbee6930d65a42c969659d62c283b4fef8fcf567f0",
+   "pr": "PR #733 (J05J06-APPROVAL-LANE) on the merged master",
+   "reason": "J05/J06 fix (2026-11-11): the identity carry is wired where the row is assembled; no re-resolution, no row-anchor inference, and no durable fact or consumption is introduced here."
   }
  ]
 }

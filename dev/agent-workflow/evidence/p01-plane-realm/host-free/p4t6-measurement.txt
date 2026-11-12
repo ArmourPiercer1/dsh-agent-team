@@ -1,0 +1,2 @@
+scanned 1506 expected 1506 bookings 130 violations 0
+[]

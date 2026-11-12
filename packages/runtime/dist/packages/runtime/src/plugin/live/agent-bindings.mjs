@@ -499,7 +499,7 @@ import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // plane's fs family uses its own hardened root provider rather than `ctx.fs`.
 // Evidence: dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7
 // + the BEFORE/AFTER probe over the committed dist).
-import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
+import { a5sfAgentToolSurface, a5sfAttachedToolNames, a5sfBindableRealmNames, a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
 // dependency-injected below).
@@ -2782,6 +2782,17 @@ export function createAgentBindings(deps) {
       // 1062-1063: owned names never ride the inherited-native lane, so a
       // global-face same-name can never credit this placement).
       const a5PlaneOwnedNames = []
+      // P01 (2026-11-11) — the realm's FORWARDED names, admitted to the two
+      // own-name faces BELOW (the Guard's assembly-owned/native exclusion and
+      // `bindOwnTools`) but deliberately NOT to the coverage `teamToolNames`
+      // list: `read`/`write`/`edit`/`read_image` keep their native
+      // PERMISSION_TOOL_NAMES classification, which is their management fact.
+      // An array (not a spread at declaration) because the route-C attach runs
+      // AFTER this point and its receipts are only readable there.
+      const a5sfRealmOwnedNames = []
+      /** The fibers the route-C attach created (empty when no realm / no
+       *  append): the receipts `a5sfAttachedToolNames` reads. */
+      let a5sfAttachedFibers = []
       // GLUE-7 (pb §6 provider side): the placement feed map for the plane's
       // placed Definitions. The Guard gets a CLOSURE over this map at install
       // and the plane assembly fills it at placement time — BEFORE
@@ -3025,7 +3036,13 @@ export function createAgentBindings(deps) {
       // The attach falls back to the tag only when this is absent, and still
       // refuses when neither yields a key.
       if (a5sfRealm !== undefined) {
-        await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)
+        // P01: the returned fibers carry the registration receipts
+        // (`a5sfRegistrationRouting`), which are this setup's ONLY admissible
+        // evidence of which names the realm actually forwarded. They are kept
+        // for the admission below — AFTER the plane has placed, so its own
+        // names/placement feed can be excluded from the binding set.
+        const attached = await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)
+        a5sfAttachedFibers = Array.isArray(attached) ? attached : []
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
@@ -3521,6 +3538,55 @@ export function createAgentBindings(deps) {
           observations.push(`a5ptc: member-UNREGISTERED session=${sessionId} (no durable instanceId yet)`)
         }
       }
+      // P01 (2026-11-11) — DECLARE THE REALM'S FORWARDED NAMES (Deliverable A).
+      //
+      // The route-C attach REGISTERS the realm's confined `read`/`write`/
+      // `edit`/`read_image` definitions but the closed-world Guard was never
+      // told they exist: they are absent from the global `nativeNames` (which
+      // carries no scope) and from `bindOwnTools`' list, so
+      // `bindInheritedSurface` pinned them `verified:false` and every call was
+      // refused `TOOL_BINDING_UNVERIFIED` (the measured PD-42 refusal). The
+      // receipts the attach published are the ONLY admissible source of "this
+      // realm forwarded these", so the set is built from them here — AFTER the
+      // plane placed, so the plane's own names and placement feed are excluded.
+      //
+      // The predicate itself is `a5sfBindableRealmNames` (pure, in the row
+      // module, host-free tested): forwarded∩ceiling ∩ post-attach surface ∩
+      // not-plane-owned ∩ readable at `tools.get(name, runtimeAgent)`. A name
+      // that fails ANY arm is NOT declared and keeps the pre-P01 refusal.
+      //
+      // THE TWO OWN-NAME FACES (the load-bearing pair):
+      //   - `a5PlaneOwnedNames` is the Guard's `assemblyOwnedNames`: it keeps
+      //     the name OFF the inherited-native lane, so `bindInheritedSurface`
+      //     cannot pin it `unverified`;
+      //   - `ownNames` below is what actually MINTS the verified bind.
+      // NEITHER is the coverage `teamToolNames` list: these names keep their
+      // native PERMISSION_TOOL_NAMES classification, which is their management
+      // fact (`read`/`write` must not become "team-tool-owned" to the A2C-2
+      // gate).
+      if (a5sfAttachedFibers.length > 0) {
+        const attachedNames = a5sfAttachedToolNames(a5sfAttachedFibers)
+        if (attachedNames.length > 0) {
+          const toolService = agentCtx.get('tools')
+          const admission = a5sfBindableRealmNames({
+            attachedNames,
+            surface: a5sfAgentToolSurface(agentCtx, runtimeAgent),
+            planeOwned: new Set([...a5PlaneOwnNames, ...a5PlanePlacementFeed.keys()]),
+            lookup: (name) => (typeof toolService?.get === 'function' ? toolService.get(name, runtimeAgent ?? undefined) : undefined),
+          })
+          for (const skip of admission.skipped) {
+            observations.push(`a5sf-bind: '${skip.name}' NOT declared as a realm-forwarded bind (${skip.reason})`)
+          }
+          for (const name of admission.declared) {
+            a5sfRealmOwnedNames.push(name)
+            a5PlaneOwnedNames.push(name)
+          }
+          if (a5sfRealmOwnedNames.length > 0) {
+            observations.push(`a5sf-bind: realm-forwarded names declared=[${a5sfRealmOwnedNames.join(',')}] realm=${a5PlaneRealmId}`)
+            globalThis.console?.log(`[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[${a5sfRealmOwnedNames.join(',')}]`)
+          }
+        }
+      }
       // alpha.1 (plan §10.7): the Team-managed skills — the catalog
       // definitions the template's skills entry allows, registered in
       // this agent's scope (allow(items) = catalog lookup; deny = none;
@@ -3647,7 +3713,10 @@ export function createAgentBindings(deps) {
         // registered (install.ts bindAll), which is exactly the verified-
         // through-placement fact the Q4 route prescribes (never a discovery
         // compare; the R5 falsification stays closed).
-        const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames]
+        // P01: the realm's forwarded names ride the SAME verified bind (the
+        // load-bearing half of Deliverable A). They are NOT in
+        // `selectedTeamToolNames` and never enter the coverage list above.
+        const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames, ...a5sfRealmOwnedNames]
         const ownBound = a5p1Guard.bindOwnTools(ownNames)
         if (ownBound.ok !== true) {
           const error = new Error(
