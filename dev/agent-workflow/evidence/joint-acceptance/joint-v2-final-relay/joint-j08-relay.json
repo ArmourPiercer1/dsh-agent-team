@@ -1,0 +1,192 @@
+{
+  "member": {
+    "label": "g-joint-8",
+    "instanceId": "inst-19gp2qc0ja6d",
+    "childSessionId": "session-team-child-8fd7cab0b0f2222d07c1333163eac67a",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-19gp2qc0ja6d",
+          "templateId": "goal-worker",
+          "childSessionId": "session-team-child-8fd7cab0b0f2222d07c1333163eac67a",
+          "operationId": "op-0y40luy0zamrsn1ldbvko072",
+          "replayed": false,
+          "ledgerSequence": 20,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-8-2026-11-12T08-29-08-h0-r5c288d"
+      }
+    }
+  },
+  "machineRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j08-machine-mi5xc7zpd2",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+              "action": "send-message",
+              "callerRole": "leader",
+              "recipientInstanceId": "inst-19gp2qc0ja6d",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-19gp2qc0ja6d",
+              "deliveredToSessionId": "session-team-child-8fd7cab0b0f2222d07c1333163eac67a",
+              "factSequence": 21,
+              "deliveredSequence": 22,
+              "requestToken": "joint-j08-machine-2026-11-12T08-29-08-h0-r5c288d"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j08-machine-2026-11-12T08-29-08-h0-r5c288d",
+            "projectionGeneration": null,
+            "effectSequence": 21
+          }
+        }
+      }
+    }
+  },
+  "refusalText": null,
+  "bashText": null,
+  "goal": null,
+  "ledgerBefore": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0duxnop0zbhr",
+        "correlation": "call-c1-gbdaols1",
+        "approvalCaseId": "case-13okcxj0b540om1ggxard0j7",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T08:29:24.108Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0duxnop0zbhr",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-0duxnop0zbhr:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0duxnop0zbhr-native-bash:hexec:nb-1794472163827-1015797680-1",
+        "approvalCaseId": "case-123k30o0o2zi890gu59ve1p6",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T08:29:24.540Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-011xwk11vhr2",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T08:29:24.279Z"
+      },
+      {
+        "sequence": 11,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-011xwk11vhr2",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T08:29:24.715Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "createdAt": "2026-11-12T08:29:24.473Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "createdAt": "2026-11-12T08:29:24.902Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [
+      {
+        "sequence": 13,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "callId": "team-inst-0duxnop0zbhr-native-bash:hexec:nb-1794472163827-1015797680-1",
+        "outcome": "succeeded",
+        "recordedAt": "2026-11-12T08:29:25.256Z",
+        "createdAt": "2026-11-12T08:29:25.256Z"
+      },
+      {
+        "sequence": 14,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "callId": "call-c1-gbdaols1",
+        "outcome": "succeeded",
+        "recordedAt": "2026-11-12T08:29:25.273Z",
+        "createdAt": "2026-11-12T08:29:25.273Z"
+      }
+    ],
+    "error": null
+  },
+  "turnSeen": true,
+  "texts": [
+    "Error: this goal operation requires a direct human turn on a top-level agent",
+    "Error: A5_NATIVE_ADMISSION_UNAVAILABLE: the Team admission edge is not published for this agent, so this native `bash` call cannot be decided or consumed; refusing instead of executing an unapproved native call"
+  ],
+  "refusalForm": "sentence",
+  "refusalObserved": "Error: this goal operation requires a direct human turn on a top-level agent",
+  "bashFile": null,
+  "askLegs": 0
+}

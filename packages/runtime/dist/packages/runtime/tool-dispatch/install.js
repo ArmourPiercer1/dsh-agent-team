@@ -774,7 +774,18 @@ export function installScopedToolGuard(input) {
         const pinned = readDefinition(name);
         if (!pinned.ok) {
             dispatcher.endCallById(callId, 'refused');
-            throw new Error(`team tool guard: "${name}" cannot be made cancellable at the dispatch door: its definition became unreadable (${pinned.detail}); a call this lane cannot re-verify is not a call it may let through [refused at the dispatch door, the stage nearest the Body]`);
+            // PD41-ABORT-CLASS: the four door refusals below are the same class as
+            // the typed Guard refusal above — a dispatch refusal, decided before
+            // the Body. Three of them are a Binding/definition verification fact
+            // and now carry the typed shape too (same sentence, byte-identical):
+            // the definition became unreadable here.
+            throw new ToolDispatchRefusalError({
+                toolName: name,
+                code: 'TOOL_BINDING_UNVERIFIED',
+                reason: GUARD_DENIAL_REASONS.DEFINITION_UNREADABLE,
+                message: `team tool guard: "${name}" cannot be made cancellable at the dispatch door: its definition became unreadable (${pinned.detail}); a call this lane cannot re-verify is not a call it may let through`,
+                suffix: '[refused at the dispatch door, the stage nearest the Body]',
+            });
         }
         if (input.kernelGuard?.owns(name) === true) {
             // U6 PR2 / FIX-K K1 (R-REM-2.1): BEFORE the Body, the center TABLE
@@ -795,7 +806,16 @@ export function installScopedToolGuard(input) {
                     note: 'the kernel approval table no longer backs this definition (revoked, rebound, or moved source); the call is refused before its Body (U6 PR2, FIX-K K1)',
                 });
                 dispatcher.endCallById(callId, 'refused');
-                throw new Error(`team tool guard: "${name}" is kernel-owned and the center approval table no longer backs its live definition (table ${tableIdentity ?? 'unbound'}, resolving ${pinned.fingerprint}); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]`);
+                // PD41-ABORT-CLASS: a definition/table identity disagreement is a
+                // Binding-verification failure (the table binds a Body the live name
+                // no longer resolves), so it carries the typed shape.
+                throw new ToolDispatchRefusalError({
+                    toolName: name,
+                    code: 'TOOL_BINDING_UNVERIFIED',
+                    reason: GUARD_DENIAL_REASONS.DEFINITION_DRIFT,
+                    message: `team tool guard: "${name}" is kernel-owned and the center approval table no longer backs its live definition (table ${tableIdentity ?? 'unbound'}, resolving ${pinned.fingerprint}); the call is refused before its Body — an approval that moved is not an approval`,
+                    suffix: '[refused at the dispatch door, the stage nearest the Body]',
+                });
             }
         }
         const { record, reentry } = pendingCalls.arm({
@@ -808,7 +828,16 @@ export function installScopedToolGuard(input) {
             // Two doors, two different Bodies under one call id: the honest reading
             // is that this call is not the one that was validated.
             dispatcher.endCallById(callId, 'refused');
-            throw new Error(`team tool guard: "${name}" reached the dispatch door twice under one call id against two different ToolDefinitions; the call is refused [refused at the dispatch door, the stage nearest the Body]`);
+            // PD41-ABORT-CLASS: two Bodies under one call id means no single
+            // verification holds for the re-entered call — a Binding-verification
+            // failure, typed like the door refusal above.
+            throw new ToolDispatchRefusalError({
+                toolName: name,
+                code: 'TOOL_BINDING_UNVERIFIED',
+                reason: GUARD_DENIAL_REASONS.BINDING_UNVERIFIED,
+                message: `team tool guard: "${name}" reached the dispatch door twice under one call id against two different ToolDefinitions; the call is refused`,
+                suffix: '[refused at the dispatch door, the stage nearest the Body]',
+            });
         }
         const handoff = armWrapperSignal(exec, record);
         if (!handoff.ok) {
@@ -816,6 +845,16 @@ export function installScopedToolGuard(input) {
             // the call is refused instead of running through it.
             observe({ event: 'dispatcher-signal-wrapper-unavailable', callId, tool: name, detail: handoff.detail });
             dispatcher.endCallById(callId, 'refused');
+            // PD41-ABORT-CLASS — DELIBERATELY STILL PROSE (the one door refusal not
+            // given the typed shape). This is not a Binding fact: the Binding was
+            // verified and the Body is fine; what failed is the HOST EXECUTION
+            // OBJECT's signal surface (not writable / not retaining the wrapper).
+            // Every existing §5 code would misdescribe it — `TOOL_BINDING_UNVERIFIED`
+            // would send an operator to repair a Binding that is intact,
+            // `TEAM_TOOL_UNGOVERNED` would call a governed name ungoverned, and
+            // `ADAPTER_DRAINING` would claim a lifecycle state nobody observed.
+            // Until a code exists for "this execution cannot be made cancellable",
+            // the honest form is the sentence alone. Reported in the PR body.
             throw new Error(`team tool guard: "${name}" cannot be made cancellable on this execution (${handoff.detail}); without a cancellable signal a Definition that moves after this door could not be refused before its Body, and this lane does not run calls it cannot stop [refused at the dispatch door, the stage nearest the Body]`);
         }
         try {

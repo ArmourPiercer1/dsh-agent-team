@@ -1,0 +1,12 @@
+{
+  "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95",
+  "dshHomeRemoved": true,
+  "blueprintDirRemoved": true,
+  "hostStopped": true,
+  "hostExit": {
+    "exited": false
+  },
+  "restartHostStopped": false,
+  "mockClosed": true,
+  "keptForDebug": false
+}

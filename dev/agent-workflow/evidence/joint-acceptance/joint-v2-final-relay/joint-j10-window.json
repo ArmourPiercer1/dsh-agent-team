@@ -1,0 +1,881 @@
+{
+  "relay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j10-human-yrn30karup",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-1vu0f3p1b287",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-1vu0f3p1b287",
+              "deliveredToSessionId": "session-team-child-457c4d05f51eb80acf09eb2288f93804",
+              "factSequence": 24,
+              "deliveredSequence": 25,
+              "requestToken": "joint-j10-human-2026-11-12T08-29-08-h0-r5c288d"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j10-human-2026-11-12T08-29-08-h0-r5c288d",
+            "projectionGeneration": null,
+            "effectSequence": 24
+          }
+        }
+      }
+    }
+  },
+  "member": {
+    "label": "g-joint-10",
+    "instanceId": "inst-1vu0f3p1b287",
+    "childSessionId": "session-team-child-457c4d05f51eb80acf09eb2288f93804",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-1vu0f3p1b287",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-457c4d05f51eb80acf09eb2288f93804",
+          "operationId": "op-170pbzl0r49llo0s5xb0r0mn",
+          "replayed": false,
+          "ledgerSequence": 23,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-10-2026-11-12T08-29-08-h0-r5c288d"
+      }
+    }
+  },
+  "ledger": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0duxnop0zbhr",
+        "correlation": "call-c1-gbdaols1",
+        "approvalCaseId": "case-13okcxj0b540om1ggxard0j7",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T08:29:24.108Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-0duxnop0zbhr",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-0duxnop0zbhr:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0duxnop0zbhr-native-bash:hexec:nb-1794472163827-1015797680-1",
+        "approvalCaseId": "case-123k30o0o2zi890gu59ve1p6",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T08:29:24.540Z"
+      },
+      {
+        "sequence": 26,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-03a7czs10nkm891va91ry06s",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1vu0f3p1b287",
+        "correlation": "call-c1-cubk56dk",
+        "approvalCaseId": "case-15esnx10iszz701syxj2r1hq",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#42",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T08:30:46.163Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "createdAt": "2026-11-12T08:29:24.473Z"
+      },
+      {
+        "sequence": 12,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "createdAt": "2026-11-12T08:29:24.902Z"
+      }
+    ],
+    "executionResults": [
+      {
+        "sequence": 13,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+        "callId": "team-inst-0duxnop0zbhr-native-bash:hexec:nb-1794472163827-1015797680-1",
+        "outcome": "succeeded",
+        "recordedAt": "2026-11-12T08:29:25.256Z",
+        "createdAt": "2026-11-12T08:29:25.256Z"
+      },
+      {
+        "sequence": 14,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+        "callId": "call-c1-gbdaols1",
+        "outcome": "succeeded",
+        "recordedAt": "2026-11-12T08:29:25.273Z",
+        "createdAt": "2026-11-12T08:29:25.273Z"
+      }
+    ]
+  },
+  "crashRequests": [
+    {
+      "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-relay] from=human:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d to=inst-1vu0f3p1b287 (label: g-joint-10)\\nC1MK_J10_2026-11-12T08-29-08-h0-r5c288d\"}]",
+      "tools": [],
+      "reply": "{\"kind\":\"text\",\"content\":\"C1 smoke session\"}"
+    },
+    {
+      "lastUser": " DSH file sandbox may modify files under the session workspace: \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+      "tools": [
+        "bash",
+        "edit",
+        "pwsh",
+        "read",
+        "read_image",
+        "team_glob",
+        "team_grep",
+        "todo_write",
+        "write"
+      ],
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-cubk56dk\",\"name\":\"bash\",\"arguments\":{\"command\":\"echo body-started > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace/c1-j10-body-start-2026-11-12T08-29-08-h0-r5c288d.txt && sleep 60 && echo body-done > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace/c1-j10-body-done-2026-11-12T08-29-08-h0-r5c288d.txt\",\"timeout\":30000}}]}"
+    }
+  ],
+  "samples": [
+    {
+      "at": "2026-11-12T08:30:45.534Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-1duvy7i03k6ziv0cccnow111",
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew"
+      ],
+      "consumptions": 2,
+      "mockRequests": 27,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T08:30:45.786Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-1duvy7i03k6ziv0cccnow111",
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew"
+      ],
+      "consumptions": 2,
+      "mockRequests": 29,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T08:30:46.038Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-1duvy7i03k6ziv0cccnow111",
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew"
+      ],
+      "consumptions": 2,
+      "mockRequests": 29,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T08:30:46.287Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 30,
+      "bodyStart": false,
+      "wakes": 7
+    },
+    {
+      "at": "2026-11-12T08:30:46.539Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:46.790Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:47.041Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:47.292Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:47.543Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:47.794Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:48.046Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:48.298Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:48.549Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:48.800Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:49.052Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:49.303Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:49.554Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:49.807Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:50.058Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:50.309Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:50.562Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:50.813Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:51.064Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:51.316Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:51.567Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:51.819Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:52.070Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:52.321Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:52.573Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:52.825Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:53.076Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:53.327Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:53.579Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:53.831Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:54.082Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:54.334Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:54.585Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:54.836Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:55.088Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T08:30:55.340Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0nscz2m0sh0rod0jprc340ew",
+        "parameter-permission:ctrl-03a7czs10nkm891va91ry06s"
+      ],
+      "consumptions": 2,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    }
+  ],
+  "stalled": {
+    "seconds": 90,
+    "mockRequests": 32,
+    "requests": 3
+  },
+  "members": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-12T08:29:23.360Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-36a1b80b8fd35b580f3bee646b237e99",
+      "createdAt": "2026-11-12T08:29:23.743Z",
+      "instanceId": "inst-011xwk11vhr2",
+      "label": "officer",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace"
+    },
+    {
+      "activityVersion": 3,
+      "childSessionId": "session-team-child-4d02b4c12a2ee83a3efbe8dcf26d4c17",
+      "createdAt": "2026-11-12T08:29:23.853Z",
+      "instanceId": "inst-0duxnop0zbhr",
+      "label": "w-joint",
+      "lifecycle": "SETTLED",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-2047c120bca9913647707fa23dbff7ff",
+      "createdAt": "2026-11-12T08:29:25.944Z",
+      "instanceId": "inst-1bp9n970ebkr",
+      "label": "g-joint-7",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 1,
+      "templateId": "goal-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-8fd7cab0b0f2222d07c1333163eac67a",
+      "createdAt": "2026-11-12T08:29:38.639Z",
+      "instanceId": "inst-19gp2qc0ja6d",
+      "label": "g-joint-8",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 1,
+      "templateId": "goal-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-457c4d05f51eb80acf09eb2288f93804",
+      "createdAt": "2026-11-12T08:30:45.400Z",
+      "instanceId": "inst-1vu0f3p1b287",
+      "label": "g-joint-10",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace"
+    }
+  ],
+  "legs": [
+    {
+      "sequence": 7,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1duvy7i03k6ziv0cccnow111",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-0duxnop0zbhr",
+      "correlation": "call-c1-gbdaols1",
+      "approvalCaseId": "case-13okcxj0b540om1ggxard0j7",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#34",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T08:29:24.108Z"
+    },
+    {
+      "sequence": 10,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0nscz2m0sh0rod0jprc340ew",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-0duxnop0zbhr",
+      "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-0duxnop0zbhr:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0duxnop0zbhr-native-bash:hexec:nb-1794472163827-1015797680-1",
+      "approvalCaseId": "case-123k30o0o2zi890gu59ve1p6",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#34",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T08:29:24.540Z"
+    },
+    {
+      "sequence": 26,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-03a7czs10nkm891va91ry06s",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-1vu0f3p1b287",
+      "correlation": "call-c1-cubk56dk",
+      "approvalCaseId": "case-15esnx10iszz701syxj2r1hq",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#42",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:5acdfae669e5d4fe097e1ed582647dd3e0ec25afb50ad1c1f3617e2eb9f40706",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T08:30:46.163Z"
+    }
+  ],
+  "tail": [
+    {
+      "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-19gp2qc0ja6d (label: g-joint-8)\nC1MK_J08_2026-11-12T08-29-08-h0-r5c288d\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-auth",
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-n2yl80ss\",\"name\":\"create_goal\",\"arguments\":{\"objective\":\"C1_J08 machine relay goal C1MK_J08_2026-11-12T08-29-08-h0-r5c288d\"}}]}",
+      "results": []
+    },
+    {
+      "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-19gp2qc0ja6d (label: g-joint-8)\nC1MK_J08_2026-11-12T08-29-08-h0-r5c288d\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-auth",
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-x8fpg2qb\",\"name\":\"bash\",\"arguments\":{\"command\":\"printf '%s' 'c1-j08-bash-2026-11-12T08-29-08-h0-r5c288d' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace/c1-j08-2026-11-12T08-29-08-h0-r5c288d.txt\",\"timeout\":30000}}]}",
+      "results": [
+        "Error: this goal operation requires a direct human turn on a top-level agent"
+      ]
+    },
+    {
+      "lastUser": "[team-relay] from=inst-leader (label: leader) to=inst-19gp2qc0ja6d (label: g-joint-8)\nC1MK_J08_2026-11-12T08-29-08-h0-r5c288d\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref: dev/engineering/current-auth",
+      "reply": "{\"kind\":\"text\",\"content\":\"C1_J08_DONE\"}",
+      "results": [
+        "Error: this goal operation requires a direct human turn on a top-level agent",
+        "Error: A5_NATIVE_ADMISSION_UNAVAILABLE: the Team admission edge is not published for this agent, so this native `bash` call cannot be decided or consumed; refusing instead of executing an unapproved native call"
+      ]
+    },
+    {
+      "lastUser": "Generate the session title from this JSON array of human messages:\n[{\"seq\":8,\"text\":\"[team-relay] from=human:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d to=inst-1vu0f3p1b287 (label: g-joint-10)\\nC1MK_J10_2026-11-12T08-29-08-h0-r5c288d\"}]",
+      "reply": "{\"kind\":\"text\",\"content\":\"C1 smoke session\"}",
+      "results": []
+    },
+    {
+      "lastUser": "[team-relay] from=human:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d to=inst-1vu0f3p1b287 (label: g-joint-10)\nC1MK_J10_2026-11-12T08-29-08-h0-r5c288d\n<system-reminder>\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\n\nInstructions from: AGENTS.md\n\n# AGENTS.md — dsh-agent-team 仓库代理规则\n<!-- phase-baseline-ref",
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-cubk56dk\",\"name\":\"bash\",\"arguments\":{\"command\":\"echo body-started > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T08-29-08-h0-r5c288d/workspace/c1-j10-body-start-2026-11-12T08-29-08-h0-r5c288d.txt && sleep 60 && echo body-done > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/h",
+      "results": []
+    },
+    {
+      "lastUser": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-011xwk11vhr2:1:a6wake%3Av1%3A1%3Aa83eb9fe]\nNew review work is ready.\n\nreviewer: inst-011xwk11vhr2\nrootSession: session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\nrequestId:\n- ctrl-03a7czs10nkm891va91ry06s\nDecide or escalate with `team_resolve_control` using the EXACT requestId above; `team_list_pending_control` may be Leader-only for a delegated reviewer.",
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-u56dxhfi\",\"name\":\"team_list_pending_control\",\"arguments\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"requestToken\":\"c1-a6-list-4\"}}]}",
+      "results": []
+    },
+    {
+      "lastUser": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-011xwk11vhr2:1:a6wake%3Av1%3A1%3Aa83eb9fe]\nNew review work is ready.\n\nreviewer: inst-011xwk11vhr2\nrootSession: session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\nrequestId:\n- ctrl-03a7czs10nkm891va91ry06s\nDecide or escalate with `team_resolve_control` using the EXACT requestId above; `team_list_pending_control` may be Leader-only for a delegated reviewer.",
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-c1-3w9ocp0o\",\"name\":\"team_resolve_control\",\"arguments\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"requestToken\":\"c1-a6-res-5\",\"requestId\":\"ctrl-03a7czs10nkm891va91ry06s\",\"decision\":\"allow\"}}]}",
+      "results": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"pending\":[{\"requestId\":\"ctrl-03a7czs10nkm891va91ry06s\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-12T08-29-08-h0-r5c2"
+      ]
+    },
+    {
+      "lastUser": "[team-review-wake wakeId=review-wake:session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d:inst-011xwk11vhr2:1:a6wake%3Av1%3A1%3Aa83eb9fe]\nNew review work is ready.\n\nreviewer: inst-011xwk11vhr2\nrootSession: session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\nrequestId:\n- ctrl-03a7czs10nkm891va91ry06s\nDecide or escalate with `team_resolve_control` using the EXACT requestId above; `team_list_pending_control` may be Leader-only for a delegated reviewer.",
+      "reply": "{\"kind\":\"text\",\"content\":\"C1_A6_OFFICER_DONE\"}",
+      "results": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"pending\":[{\"requestId\":\"ctrl-03a7czs10nkm891va91ry06s\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T08-29-08-h0-r5c288d\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-12T08-29-08-h0-r5c2",
+        "{\"status\":\"rejected\",\"code\":\"CONTROL_RESOLVER_NOT_AUTHORIZED\",\"message\":\"ControlService: Member review is not authorized for this leg (caller is not a resolver for kind 'leader-approval' — the trusted review-facts port produced no facts for this leg); the global resolver table is unchanged and a del"
+      ]
+    }
+  ],
+  "bodyStartExists": false
+}
