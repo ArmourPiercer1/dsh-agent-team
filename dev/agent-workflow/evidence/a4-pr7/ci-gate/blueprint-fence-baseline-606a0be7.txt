@@ -6,6 +6,16 @@
 #   L106 (pin flip #324 item 5) shifted the SAME v1-fixture line down by 3.
 #   Same identity (=v1), same fixture, no new offending content, nothing
 #   resolved. All other six identities verbatim-unchanged.
+# RE-RECORDED (open, 2026-11-12, joint-acceptance pre-fix measurement) on
+#   task/joint-acceptance-20261111 rebased onto master@d8490f74d:
+#   TWO identity lines only, both LINE-SHIFTS of the same `=v5` sites, no new
+#   offending content and nothing resolved:
+#   c1-leader-approval-smoke.mjs  L2547/L3330 -> L2561/L3359 (the
+#   PD41-ABORT-CLASS lane's +14 lines above them), and
+#   run-joint-acceptance.mjs      L682/L889/L1648/L2870/L3738 ->
+#   L741/L981/L2189/L3411/L4370 (the four driven arms J07-J10 and the
+#   goal-worker template added above the two blueprint literals). Every other
+#   identity is verbatim-unchanged.
 # RE-RECORDED (coordinator act in the open, 2026-11-09) for the joint
 #   Alpha.5+Alpha.6 candidate: FOUR new identities, every one of them a `=v5`
 #   (or `=v5, =v4` on the same line) fixture in the Alpha.6 test/kit surfaces
@@ -73,7 +83,7 @@ OFFENDING packages/runtime/test/a3p4-r4-authority-binding.test.ts :: L722=v1, L7
 OFFENDING packages/runtime/test/a6-assigned-officer-facts.test.ts :: L136=v5
 OFFENDING packages/runtime/test/a6-pr6-wiring.test.ts :: L6=v5, L30=v5, L30=v4
 OFFENDING packages/runtime/test/a6-root-wiring.test.ts :: L39=v5, L70=v5, L70=v4
-OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L710=v5, L917=v5, L2547=v5, L3330=v5
+OFFENDING tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs :: L710=v5, L917=v5, L2561=v5, L3359=v5
 OFFENDING tests/kits/pr-e-requirement-recovery-smoke/pr-e-requirement-recovery-smoke.mjs :: L447=v1
 OFFENDING tests/kits/pr-f-closure-smoke/pr-f-closure-smoke.mjs :: L376=v1
 OFFENDING tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs :: L862=v5
@@ -89,6 +99,6 @@ OFFENDING tests/kits/wp2-a6-governed-goal/wp2-a6-governed-goal.mjs :: L294=v5, L
 # anchor and a v4 governed realm because its subject is the plane asymmetry.
 # 2026-11-11 (PD42-V5-CEILINGS): the same four v5 sites in the same c1 driver, moved by
 # this PR's added turns; no new file, no new literal, recorded from the verifier output.
-OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L682=v5, L889=v5, L1648=v5, L2870=v5, L3738=v5
+OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L741=v5, L981=v5, L2189=v5, L3411=v5, L4370=v5
 # 2026-11-11 (JOINT-ACCEPTANCE / J05J06): one new kit identity — the joint driver authors a v5
 # blueprint carrying BOTH families, which is the subject of the acceptance, not an incidental literal.

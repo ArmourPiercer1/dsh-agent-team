@@ -1,0 +1,47 @@
+{
+  "entries": [
+    {
+      "request": 7,
+      "results": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\",\"pending\":[{\"requestId\":\"ctrl-0vfjosh15tzcfw1gnje5r1tp\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-12T04-12-53-h0-re84f95\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1mt286l02xns\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1mt286l02xns\"},\"targetInstanceId\":\"inst-1mt286l02xns\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-mm0sliun\",\"status\":\"pending\",\"createdAt\":\"2026-11-12T04:13:09.097Z\",\"requestSequence\":7,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:89edeb39b0f64ccdb770f9ad60fdd7970e100004ce05b72237122774a8fa61aa\",\"summary\":\"bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/workspace] echo c1-a6-allow-2026-11-12T04-12-53-h0-re84f95 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests...\",\"reviewPayload\":{\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"bash\"},\"operationClass\":\"bash\"}},\"executionCoupling\":\"guarded\",\"approvalCaseId\":\"case-0srzswu1qd0lzj1e2muhg0dz\",\"legOrdinal\":1,\"reviewAuthority\":\"leader\",\"requiredAuthorityAtCreation\":\"leader\",\"beneficiaryAuthority\":\"member\",\"requestedEffect\":\"allow\",\"operationOwnerTemplateId\":\"worker\",\"operationToolDefinitionIdentity\":\"def#34\",\"operationToolOwner\":\"dsh-agent-team\",\"operationToolName\":\"bash\",\"authorityGeneration\":0,\"blueprintContentHash\":\"sha256:22651e64d0da3ab0cb7d9ce442528972e8c4e536f8ab34319f64603806c2b1bb\",\"blueprintRevision\":\"1\",\"perEffectRequiredAuthorities\":[\"leader\"]}],\"count\":1,\"truncated\":false}"
+      ]
+    },
+    {
+      "request": 8,
+      "results": [
+        "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\",\"pending\":[{\"requestId\":\"ctrl-0vfjosh15tzcfw1gnje5r1tp\",\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-12T04-12-53-h0-re84f95\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1mt286l02xns\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1mt286l02xns\"},\"targetInstanceId\":\"inst-1mt286l02xns\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-mm0sliun\",\"status\":\"pending\",\"createdAt\":\"2026-11-12T04:13:09.097Z\",\"requestSequence\":7,\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:89edeb39b0f64ccdb770f9ad60fdd7970e100004ce05b72237122774a8fa61aa\",\"summary\":\"bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/workspace] echo c1-a6-allow-2026-11-12T04-12-53-h0-re84f95 > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests...\",\"reviewPayload\":{\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"bash\"},\"operationClass\":\"bash\"}},\"executionCoupling\":\"guarded\",\"approvalCaseId\":\"case-0srzswu1qd0lzj1e2muhg0dz\",\"legOrdinal\":1,\"reviewAuthority\":\"leader\",\"requiredAuthorityAtCreation\":\"leader\",\"beneficiaryAuthority\":\"member\",\"requestedEffect\":\"allow\",\"operationOwnerTemplateId\":\"worker\",\"operationToolDefinitionIdentity\":\"def#34\",\"operationToolOwner\":\"dsh-agent-team\",\"operationToolName\":\"bash\",\"authorityGeneration\":0,\"blueprintContentHash\":\"sha256:22651e64d0da3ab0cb7d9ce442528972e8c4e536f8ab34319f64603806c2b1bb\",\"blueprintRevision\":\"1\",\"perEffectRequiredAuthorities\":[\"leader\"]}],\"count\":1,\"truncated\":false}",
+        "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0vfjosh15tzcfw1gnje5r1tp\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-02afvjj0ya1c\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1mt286l02xns\"},\"targetInstanceId\":\"inst-1mt286l02xns\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-mm0sliun\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:89edeb39b0f64ccdb770f9ad60fdd7970e100004ce05b72237122774a8fa61aa\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kind\":\"exact\",\"resource\":\"bash\"}}},\"requestSequence\":7,\"decisionSequence\":8,\"createdAt\":\"2026-11-12T04:13:09.286Z\",\"reviewCapability\":{\"source\":\"blueprint-officer\",\"entry\":\"allow\",\"effectiveReviewAuthority\":\"leader\",\"approvalCaseId\":\"case-0srzswu1qd0lzj1e2muhg0dz\",\"currentLegRequestId\":\"ctrl-0vfjosh15tzcfw1gnje5r1tp\",\"legOrdinal\":1,\"scopeFingerprint\":\"session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95\\u0000instance:inst-1mt286l02xns\\u0000parameter-permission\\u0000bash\\u0000call-c1-mm0sliun\\u0000sha256:89edeb39b0f64ccdb770f9ad60fdd7970e100004ce05b72237122774a8fa61aa\",\"blueprintContentHash\":\"sha256:22651e64d0da3ab0cb7d9ce442528972e8c4e536f8ab34319f64603806c2b1bb\",\"blueprintRevision\":\"1\",\"authorityGeneration\":0,\"operationOwnerInstanceId\":\"inst-1mt286l02xns\",\"operationOwnerTemplateId\":\"worker\",\"operationToolDefinitionIdentity\":\"def#34\"}}}"
+      ]
+    },
+    {
+      "request": 9,
+      "results": [
+        "Error: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]"
+      ]
+    },
+    {
+      "request": 10,
+      "results": [
+        "Error: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]",
+        "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/workspace/pd42-inside-2026-11-12T04-12-53-h0-re84f95.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>"
+      ]
+    },
+    {
+      "request": 11,
+      "results": [
+        "Error: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]",
+        "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/workspace/pd42-inside-2026-11-12T04-12-53-h0-re84f95.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+        "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/pd42-outside-2026-11-12T04-12-53-h0-re84f95.txt' is outside every allow subtree of the lane"
+      ]
+    },
+    {
+      "request": 12,
+      "results": [
+        "Error: team tool guard: \"bash\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#34); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]",
+        "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/workspace/pd42-inside-2026-11-12T04-12-53-h0-re84f95.txt</path>\n<type>file</type>\n<content>\nCreated file\n</content>",
+        "Error: authored locator '/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T04-12-53-h0-re84f95/pd42-outside-2026-11-12T04-12-53-h0-re84f95.txt' is outside every allow subtree of the lane",
+        "Error: team tool guard: \"read\" is kernel-owned and the center approval table no longer backs its live definition (table unbound, resolving def#35); the call is refused before its Body — an approval that moved is not an approval [refused at the dispatch door, the stage nearest the Body]"
+      ]
+    }
+  ]
+}

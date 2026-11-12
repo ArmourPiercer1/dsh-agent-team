@@ -28,6 +28,16 @@
  *     is the DIAGNOSTIC control that isolates the fs/goal arcs from the
  *     native-bash mount. The two acceptance runs are BOTH `native`.
  *
+ * TWO-RUN AGREEMENT: run the same kit twice on two fresh `DSH_HOME` worlds and
+ * diff the results with `compare-two-runs.mjs <run1> <run2> [<out.json>]` — it
+ * requires an exact verdict match for every arm and compares the measured
+ * detail after normalizing only per-world identifiers (documented there).
+ *
+ * DIAGNOSTIC CONTROL: `JOINT_NO_GOAL_TEMPLATE=1` compiles the J07/J08 goal
+ * worker template out of the blueprint (J07/J08/J10 then read NOT_REACHED with
+ * that reason). It exists to prove an unrelated arm's state is not caused by
+ * the goal template; it is never used for an acceptance record.
+ *
  * THE ELEVEN ARMS (verdict vocabulary is the owner's closed set from
  * `tests/kits/_shared/boot-preflight.mjs`: PASS / FAIL / NOT_REACHED /
  * NOT_SELECTED / UNSUPPORTED / ENV_BLOCK):
@@ -53,12 +63,14 @@
  *   J08 Relay refusal — a machine `team_send_message`-started turn cannot
  *       create_goal (`GOAL_TOOL_AUTHORITY_REQUIRED`) while its governed tool
  *       call still runs.
- *   J09 Sticky Stop on the review-wake path — real review wake (latch exists)
- *       → human Stop writes `stopped-<hash>.json` → SIGKILL + cold boot →
- *       marker byte-identical, no new wakes/legs.
- *   J10 Cold recovery — Team + Member + Goal + per-leg consumption facts
- *       survive SIGKILL + restart; no resurrected turn, no duplicate
- *       execution, cancelled execution not auto-resumed.
+ *   J09 Sticky Stop on the review-wake path — a live review latch (a real wake)
+ *       + the human Stop writes `stopped-<hash>.json`; a SUBSEQUENT review ask
+ *       from a different Member wakes nobody and leaves the marker
+ *       byte-identical (the latch-scoped Stop is still in force).
+ *   J10 Cold recovery — SIGKILL mid-body (the body provably started), cold boot
+ *       on the SAME DSH_HOME: no duplicate execution, no replayed consumed
+ *       allow, and the crash-window settlement is `unknown` — never
+ *       `succeeded`, never silently absent.
  *   J11 No replay — a consumed allow cannot be re-dispatched; a late allow is
  *       refused (`CONTROL_REQUEST_DECIDED`).
  *
@@ -279,6 +291,39 @@ const FILE_X_DENY = join(WORKSPACE, `c1-x-deny-${RUN_STAMP}.txt`)
 const SUM_A6_ALLOW = `c1-a6-allow-${RUN_STAMP}`
 const FILE_A6_ALLOW = join(WORKSPACE, `c1-a6-allow-${RUN_STAMP}.txt`)
 const FILE_A6_BODY_START = join(WORKSPACE, `c1-a6-body-start-${RUN_STAMP}.txt`)
+
+// ── J07–J10 (2026-11-12, this lane): the four arms the v1 driver declared but
+// never drove. Every marker is unique so no branch can bleed into another arm.
+//   J07  human member.send → goal worker → create/get/edit → >=2 rounds → Stop
+//   J08  machine member.send → goal worker → create_goal REFUSED, bash runs
+//   J09  Sticky Stop: a held review wake, the human Stop, then a second ask
+//   J10  SIGKILL mid-body → cold boot on the same DSH_HOME → settlement facts
+const MK_J07 = `C1MK_J07_${RUN_STAMP}`
+const MK_J08 = `C1MK_J08_${RUN_STAMP}`
+const MK_J09 = `C1MK_J09_${RUN_STAMP}`
+const MK_J09B = `C1MK_J09B_${RUN_STAMP}`
+const MK_J10 = `C1MK_J10_${RUN_STAMP}`
+const SUM_J08 = `c1-j08-bash-${RUN_STAMP}`
+const FILE_J08 = join(WORKSPACE, `c1-j08-${RUN_STAMP}.txt`)
+const FILE_J10_START = join(WORKSPACE, `c1-j10-body-start-${RUN_STAMP}.txt`)
+const FILE_J10_DONE = join(WORKSPACE, `c1-j10-body-done-${RUN_STAMP}.txt`)
+// The J09 wake hold: the driver ARMS this immediately before the first J09 ask,
+// so the very next review wake is held open while the human Stop lands (the
+// latch a Sticky Stop is scoped to must still be LIVE). A text-marker match
+// would depend on the renderer keeping the command in the wake summary; the
+// arm flag is the driver's own event. `releasedBy` records why the hold ended,
+// so a timeout is visible in the evidence instead of silent.
+const J09_GATE = { armed: false, holding: false, release: null, releasedBy: null }
+// J07: the goal-round loop is FAST under an instant mock model (a 2026-11-12
+// run burned all six rounds in the few hundred ms between the second round
+// request and the Stop landing, so the goal settled `blocked` and the Stop had
+// nothing to pause). The second round's reply is therefore HELD until the
+// driver has issued the human Stop: the Stop must land while a round is in
+// flight — the realistic shape — and the round count at the Stop is then
+// exactly the durable `roundsStarted` the arm claims.
+const J07_GATE = { armed: false, holding: false, release: null, releasedBy: null }
+/** Every round turn the mock model actually answered, in arrival order. */
+const J07_ROUND_TRACE = []
 // Optional recipient probe: the OFFICER itself asks for a governed bash tool.
 // The current-leg OperationOwner is then the Officer template, so the router
 // must route the self-ask to the Leader (never back to the Officer).
@@ -382,6 +427,10 @@ const CMD_Z = `echo ${SUM_Z_FILE} > ${FILE_Z} && echo z-executed`
 // ── logging / criteria / fatals ─────────────────────────────────────────────
 
 let RUN_LOG = null
+// J10 (cold recovery) SIGKILLs the booted Host and cold-boots a REPLACEMENT on
+// the same DSH_HOME/port. Teardown must stop the live process, not the corpse:
+// a leaked replacement would keep the port and keep writing after the run.
+let LIVE_HOST_AFTER_RESTART = null
 function log(line) {
   const stamped = `[${new Date().toISOString()}] ${line}`
   console.log(stamped)
@@ -484,8 +533,28 @@ async function apiCancel(origin, cookie, sessionId, tag = 'c1cancel') {
   }, 30_000)
 }
 
-async function p6t6State(port) {
-  return fetchJson(`http://127.0.0.1:${port}/__p6t6/state`, undefined, 30_000)
+/**
+ * The DURABLE goal row of one child session, over the public Host RPC
+ * (`goals/get`). J07/J08 read the product's own durable state for the goal
+ * verdict — never the model's claim and never a mock-side guess.
+ */
+async function goalGet(origin, cookie, agentId, tag = 'c1goalget') {
+  const res = await fetchJson(`${origin}/api/goals/get`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', cookie },
+    body: JSON.stringify({
+      type: 'client-request',
+      rpcId: `${tag}-${Math.random().toString(36).slice(2, 12)}`,
+      method: 'goals/get',
+      payload: { args: { agentId } },
+    }),
+  }, 30_000)
+  const value = res.body?.result?.value ?? null
+  const goal = value ?? null
+  return { ok: res.body?.result?.ok === true && goal !== null, goal, raw: res.body ?? res }
+}
+
+async function p6t6State(port) {  return fetchJson(`http://127.0.0.1:${port}/__p6t6/state`, undefined, 30_000)
 }
 
 async function p6t6Health(port) {
@@ -880,6 +949,39 @@ function savedBlueprintA6Yaml(denyList) {
       : ['        ask: []']),
     '        deny: []',
   ]
+  // J07/J08 — the GOAL template. Upstream `create_goal`/`get_goal`/`update_goal`
+  // come from the governed preset's `tool-goal` row. The worker/officer/leader
+  // templates deny them because a STRICT template (one that declares
+  // `capabilities.permissions`) must account for every tool on the final
+  // surface (the A2C-2 ownership gate) and the joint smoke surface never
+  // exercised the goal family. This template declares NO permissions policy —
+  // the gate is absent by contract (`capabilities.permissions` is what arms it),
+  // so the goal tools stay on the surface and the arm measures the REAL upstream
+  // authority (`hasDirectHumanInput`) rather than a kit-side denial. The Member
+  // still rides the governed preset and the `memberIoCeilings` entry below.
+  // Diagnostic knob: `JOINT_NO_GOAL_TEMPLATE=1` drops the goal template from the
+  // document (isolation control when the governed plane's mount is in question).
+  const goalTemplateEnabled = process.env['JOINT_NO_GOAL_TEMPLATE'] !== '1'
+  const goalWorker = !goalTemplateEnabled ? [] : [
+    '  - templateId: goal-worker',
+    '    persona: "You are the C1 smoke goal worker. Drive the goal tools you are given; do not delegate."',
+    '    capabilities:',
+    '      teamTools:',
+    '        kind: deny',
+    // The four base sub-fields are REQUIRED whenever `capabilities` is
+    // present; an EMPTY deny list is the honest declaration here: this
+    // template denies no built-in tool, so `create_goal`/`get_goal`/
+    // `update_goal` stay on the surface and the arm measures upstream
+    // authority instead of a kit-side denial. (The coverage gate is armed by
+    // `capabilities.permissions`, which this template deliberately omits.)
+    '      builtinToolDeny: []',
+    '      skills:',
+    '        kind: allow',
+    '        items: []',
+    '      mcp:',
+    '        kind: allow',
+    '        items: []',
+  ]
   let text = savedBlueprintYaml(
     BP_A6_ID,
     `You are the A6 leader of the C1 smoke team. ${MK_A6}`,
@@ -888,18 +990,22 @@ function savedBlueprintA6Yaml(denyList) {
   )
   text = text.replace('schemaVersion: 3', 'schemaVersion: 5')
   text = text.replace('revision: "1"', 'revision: "1"\nrequirements: []')
-  text = text.replace('memberEnvelopes:', officer.join('\n') + '\nmemberEnvelopes:')
-  // The worker envelope follows `memberEnvelopes:`; append the Officer entry
-  // under the SAME key (a second mapping key would be duplicate YAML).
+  text = text.replace('memberEnvelopes:', [...officer, ...goalWorker].join('\n') + '\nmemberEnvelopes:')
+  // The worker envelope follows `memberEnvelopes:`; append the Officer and the
+  // J07/J08 goal-worker entries under the SAME key (a second mapping key would
+  // be duplicate YAML). The goal worker keeps the ordinary member envelope: a
+  // human/machine relay starts its turn, and the arm's question is the GOAL
+  // authority, not the Team mutation envelope.
+  const goalWorkerEnvelope = !goalTemplateEnabled ? '' : ['  - templateId: goal-worker', '    envelope:', '      allow:', '        - send-message', '        - report-progress', '        - request-control', '      deny: []'].join('\n')
   if (A6_EXTRA) {
     text = text.replace(
       '      deny: []\npermissionMutationEnvelope:',
-      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - request-control\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - request-control\n        - resolve-control\n      deny: []\n' + goalWorkerEnvelope + '\npermissionMutationEnvelope:',
     )
   } else {
     text = text.replace(
       '      deny: []\npermissionMutationEnvelope:',
-      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\npermissionMutationEnvelope:',
+      '      deny: []\n  - templateId: officer\n    envelope:\n      allow:\n        - resolve-control\n      deny: []\n' + goalWorkerEnvelope + '\npermissionMutationEnvelope:',
     )
   }
   text = text.replace(
@@ -940,6 +1046,26 @@ function savedBlueprintA6Yaml(denyList) {
             '        deny: []',
             '      network:',
             '        mode: allow',
+            // J07/J08: the goal worker is a governed Member too (same one
+            // ceiling family on the same v5 document), so its bash is the
+            // plane's governed face and a relay turn's refusal cannot be
+            // confused with an ungoverned composition.
+            ...(goalTemplateEnabled ? [
+              '  - templateId: goal-worker',
+              '    io:',
+              '      read:',
+              '        mode: restricted',
+              `        allow: ["${WORKSPACE}"]`,
+              '        ask: []',
+              '        deny: []',
+              '      write:',
+              '        mode: restricted',
+              `        allow: ["${WORKSPACE}"]`,
+              '        ask: []',
+              '        deny: []',
+              '      network:',
+              '        mode: allow',
+            ] : []),
           ]
         : []),
       'reviewRouting:',
@@ -1273,9 +1399,25 @@ function contentText(content) {
   return JSON.stringify(content ?? '')
 }
 
+/**
+ * The LAST goal ref (`{id, revision}`) carried by the tool RESULTS of one mock
+ * request. J07's mock drives create_goal → get_goal → update_goal inside ONE
+ * turn; `update_goal` requires the EXACT `(goal_id, revision)` get_goal
+ * returned, so the value must come from the product's own result text, never
+ * from a kit constant (that would make the arm measure the kit).
+ */
+function lastGoalRefIn(req) {
+  const texts = toolMsgsOf(req).map((message) => contentText(message?.content))
+  for (let i = texts.length - 1; i >= 0; i -= 1) {
+    const m = /"goal"\s*:\s*\{[^}]*?"id"\s*:\s*"(goal-[^"]+)"[^}]*?"revision"\s*:\s*(\d+)/.exec(texts[i])
+      ?? /"id"\s*:\s*"(goal-[^"]+)"[^}]*?"revision"\s*:\s*(\d+)/.exec(texts[i])
+    if (m !== null) return { id: m[1], revision: Number(m[2]) }
+  }
+  return null
+}
+
 /** The instance id from a team_create_member / team_delegate tool result. */
-function extractInstanceId(content) {
-  const text = contentText(content)
+function extractInstanceId(content) {  const text = contentText(content)
   const m =
     /"targetInstanceId"\s*:\s*"([^"]+)"/.exec(text) ??
     /"instanceId"\s*:\s*"([^"]+)"/.exec(text) ??
@@ -1341,9 +1483,9 @@ const JOINT_ARMS = Object.freeze([
   ['J05', 'Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero'],
   ['J06', 'Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured'],
   ['J07', 'Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation'],
-  ['J08', 'Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs'],
-  ['J09', 'Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs'],
-  ['J10', 'Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution'],
+  ['J08', 'Relay refusal: a machine relay turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED) and no Goal row exists'],
+  ['J09', 'Sticky Stop on the review-wake path: live latch -> human Stop -> durable stopped-<hash>.json, and a subsequent review ask wakes nobody'],
+  ['J10', 'Cold recovery: SIGKILL mid-body, cold boot on the same DSH_HOME, no duplicate execution, no replayed consumed allow, crash-window settlement unknown'],
   ['J11', 'No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED)'],
 ])
 
@@ -1529,12 +1671,19 @@ async function runJointScenario({ booted, mock, denyList, host }) {
   // `mock.requests` by the time the turn settles).
   const bashCalls = mock.requests.flatMap((r) => (r.reply?.toolCalls ?? []).filter((t) => t?.name === 'bash'))
   const bashToolResult = (() => {
+    // 0.2.0-rc.2 delivers tool results as `user` + `tool_result` blocks, so the
+    // old `"tool"`/`tool_call_id` probe never matched and J04 always fell to its
+    // generic branch. Reuse the kit's own predicates; the text is the model's
+    // own view of the refusal.
     for (const request of mock.requests) {
-      for (const message of request.body?.messages ?? []) {
-        const text = JSON.stringify(message)
-        if (!text.includes('"tool"') && !text.includes('tool_call_id')) continue
-        const m = /no Team Tool Binding[^"]*|team tool guard[^"]*/.exec(text)
-        if (m !== null) return m[0]
+      for (const message of messagesOf(request)) {
+        if (!isToolResultMessage(message)) continue
+        const text = contentText(message.content)
+        if (!/team tool guard|no Team Tool Binding/.test(text)) continue
+        // Slice from the sentence start: a `[^"]*` match stops at the first
+        // quoted tool name ("bash") and truncates the refusal to its prefix.
+        const at = text.search(/team tool guard|no Team Tool Binding/)
+        return text.slice(at, at + 400).trim()
       }
     }
     return null
@@ -1578,7 +1727,12 @@ async function runJointScenario({ booted, mock, denyList, host }) {
   } else {
     const cons = ledger.consumptions.filter((c) => c.requestId === paAsk.requestId)
     const exec = ledger.executionResults.filter((e) => e.requestId === paAsk.requestId)
-    note('J05', cons.length === 1 && exec.length === 1 ? 'PASS' : 'FAIL',
+    // The outcome is part of the proposition: "one execution" means one
+    // OBSERVED execution of the approved body. A consumed allow whose body was
+    // refused at the dispatch door is `failed` — counting the fact without its
+    // outcome let a refused execution read as a pass in the 2026-11-12 probe.
+    const executedOnce = exec.length === 1 && exec[0]?.outcome === 'succeeded'
+    note('J05', cons.length === 1 && executedOnce ? 'PASS' : 'FAIL',
       `request=${paAsk.requestId} consumption=${String(cons.length)} executionResults=${String(exec.length)} outcomes=${exec.map((e) => e.outcome).join(',')} executionFactWaitMs=${String(executionFactWaitMs)}`)
     note('J11', cons.length === 1 ? 'PASS' : 'FAIL', `one-shot consumption facts for ${paAsk.requestId}: ${String(cons.length)}`)
   }
@@ -1624,11 +1778,408 @@ async function runJointScenario({ booted, mock, denyList, host }) {
       + ` whenOfficerUnavailable=hold(unit-pinned, not exercised here)`
       + ` team-tool-execute leg=${String(ledger.requests.some((r) => r.actionName === 'team-tool-execute'))}`)
 
-  // ── J07..J10: Goal, relay refusal, sticky Stop, cold recovery.
-  for (const id of ['J07', 'J08', 'J09', 'J10']) {
-    note(id, 'NOT_REACHED', memberLive
-      ? 'the joint driver did not drive this arm in this composition (see the README for the exact next step)'
-      : 'no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one')
+  // ═════════════════════════════════════════════════════════════════════════
+  // J07–J10 (2026-11-12, this lane): the four arms the v1 driver declared and
+  // never drove. ONE Team, ONE v5 document, every verdict computed from durable
+  // facts (the control ledger, the goal RPC, the wake-intent directory, the
+  // session transcript) — never from a mock claim and never from a constant.
+  //
+  // ARM ORDER is product-driven, not cosmetic: J09 (Sticky Stop) permanently
+  // Stops the Team's review-wake recipient, so it MUST be last; J10 (cold
+  // recovery) needs a live Officer to approve the body it crashes inside, so it
+  // runs before J09. J07/J08 only need the Team.
+  // ═════════════════════════════════════════════════════════════════════════
+  const sleepJ = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+  /** Create one goal-worker Member over the production tool route. */
+  const createMemberOf = async (templateId, label) => {
+    const call = await p6t6Tool(booted.origin, 'team_create_member', {
+      rootSessionId: CREATE_ROOT_A6,
+      requestToken: `joint-${label}-${RUN_STAMP}`,
+      delegationTemplateId: templateId,
+      label,
+    }, CREATE_ROOT_A6)
+    const instanceId = extractInstanceId(JSON.stringify(call?.body?.value ?? call?.body ?? ''))
+    let childSessionId = null
+    for (let attempt = 0; attempt < 100 && instanceId !== null; attempt += 1) {
+      const row = readMemberRows(CREATE_ROOT_A6).find((r) => r.instanceId === instanceId)
+      if (typeof row?.childSessionId === 'string') { childSessionId = row.childSessionId; break }
+      await sleepJ(100)
+    }
+    return { label, instanceId, childSessionId, refusal: p6t6ErrorText(call), raw: call?.body ?? call }
+  }
+  const createGoalMember = async (label) => await createMemberOf('goal-worker', label)
+  const relayTo = async (target, body, caller, tag, version = 4) => remoteCall(booted.origin, booted.cookie, 'member.send', {
+    teamSessionId: CREATE_ROOT_A6,
+    caller,
+    recipientInstanceId: target.instanceId,
+    body,
+    requestToken: `${tag}-${RUN_STAMP}`,
+  }, tag, version)
+
+  if (!memberLive) {
+    for (const id of ['J07', 'J08', 'J09', 'J10']) {
+      note(id, 'NOT_REACHED', 'no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one')
+    }
+  } else {
+    // ── J07: a Goal created from a DIRECT HUMAN input, >=2 rounds, then Stop.
+    const g7 = await createGoalMember('g-joint-7')
+    const j07 = { member: g7, humanRelay: null, goalBefore: null, goalAfterEdit: null, roundRequests: 0, stop: null, goalAfterStop: null, phaseAfterStop: null, roundsAfterStop: 0 }
+    if (g7.instanceId === null || g7.childSessionId === null) {
+      note('J07', 'NOT_REACHED', `goal-worker could not be created: ${String(g7.refusal ?? 'no instance id')}`)
+    } else {
+      // `humanId` is the Team ROOT session id — the same identity the Team
+      // surfaces as the direct human; `kind:'human'` is what makes the turn's
+      // user/message carry `source.kind='user'` (upstream `hasDirectHumanInput`).
+      J07_GATE.armed = true
+      J07_GATE.holding = false
+      J07_GATE.releasedBy = null
+      j07.humanRelay = await relayTo(g7, MK_J07, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j07-human')
+      const humanTurn = await waitForMock(mock, (r) => JSON.stringify(r.body ?? '').includes(MK_J07) && lastUserTextOf(r).includes(MK_J07) && !lastUserTextOf(r).includes('<goal_round>'), 180_000, 'J07 human turn')
+      // The goal row is the product's own durable read (not the model's claim).
+      const goalDeadline = Date.now() + 120_000
+      while (Date.now() < goalDeadline) {
+        j07.goalAfterEdit = await goalGet(booted.origin, booted.cookie, g7.childSessionId, 'joint-j07-get')
+        if (j07.goalAfterEdit.goal !== null) break
+        await sleepJ(500)
+      }
+      j07.humanTurnSeen = humanTurn !== null
+      // Tool RESULTS live on the request that FOLLOWS the call, so the turn's
+      // transcript is the LAST request of that turn (the mock records each
+      // request on arrival). The first matching request carries no result at
+      // all — reading it made the disclosure field empty in the 2026-11-12
+      // probe while the durable goal row proved the calls had run.
+      const j07Turn = [...mock.requests].reverse().find((r) => lastUserTextOf(r).includes(MK_J07) && !lastUserTextOf(r).includes('<goal_round>')) ?? null
+
+      // >= 2 automatic rounds: each round is ONE model request whose instruction
+      // carries `Round: N/M` (the product's own continuation counter).
+      const roundText = (r) => `${lastUserTextOf(r)}\n${JSON.stringify(r.body ?? '')}`
+      const roundsDeadline = Date.now() + 180_000
+      while (Date.now() < roundsDeadline) {
+        j07.roundRequests = mock.requests.filter((r) => roundText(r).includes('<goal_round>') && roundText(r).includes(MK_J07)).length
+        if (j07.roundRequests >= 2) break
+        await sleepJ(500)
+      }
+      j07.roundsAtStop = j07.roundRequests
+      // Wait until the second round's reply is actually HELD, so the Stop is
+      // issued against an in-flight round (never against an already-exhausted
+      // goal) and the durable counter at the Stop is the one this arm reports.
+      const holdDeadline = Date.now() + 30_000
+      while (Date.now() < holdDeadline && !J07_GATE.holding) await sleepJ(100)
+      j07.gateHeld = J07_GATE.holding
+      // The human Stop: the production `session/cancel` channel on the Member's
+      // own session. A goal rounds driver pause is the documented settlement.
+      j07.stop = await apiCancel(booted.origin, booted.cookie, g7.childSessionId, 'joint-j07-stop')
+      J07_GATE.armed = false
+      if (J07_GATE.holding) J07_GATE.release?.()
+      j07.gate = { holding: j07.gateHeld, releasedBy: J07_GATE.releasedBy }
+      const stopDeadline = Date.now() + 90_000
+      while (Date.now() < stopDeadline) {
+        const current = await goalGet(booted.origin, booted.cookie, g7.childSessionId, 'joint-j07-get2')
+        j07.goalAfterStop = current.goal
+        j07.phaseAfterStop = current.goal?.phase ?? null
+        if (j07.phaseAfterStop === 'paused') break
+        await sleepJ(500)
+      }
+      // A silent window: a continued round after the Stop would falsify it. The
+      // COUNT is the product's durable `roundsStarted`, not the mock's request
+      // list: a mock request can be recorded a few ms BEFORE the Stop lands and
+      // be counted after it (the probe run measured exactly that), which would
+      // have graded the driver's timing instead of the product's continuation.
+      await sleepJ(12_000)
+      const afterWindow = await goalGet(booted.origin, booted.cookie, g7.childSessionId, 'joint-j07-get3')
+      j07.goalAfterWindow = afterWindow.goal
+      j07.roundsAfterStop = mock.requests.filter((r) => roundText(r).includes('<goal_round>') && roundText(r).includes(MK_J07)).length
+      j07.roundsStartedAtStop = Number(j07.goalAfterStop?.roundsStarted ?? 0)
+      j07.roundsStartedAfterWindow = Number(afterWindow.goal?.roundsStarted ?? 0)
+      j07.phaseAfterWindow = afterWindow.goal?.phase ?? null
+      j07.roundTrace = J07_ROUND_TRACE.slice()
+      writeEvidence('joint-j07-round-trace.json', { rounds: j07.roundTrace })
+      const createRefused = j07Turn === null ? null : toolMsgsOf(j07Turn).map((m) => contentText(m?.content)).find((t) => t.includes('GOAL_TOOL_')) ?? null
+      const goalToolResults = j07Turn === null ? [] : toolMsgsOf(j07Turn).map((m) => contentText(m?.content).slice(0, 400))
+      const goalVisible = j07.goalAfterEdit.goal !== null
+        && String(j07.goalAfterEdit.goal?.objective ?? '').includes('edited')
+        && Number(j07.goalAfterEdit.goal?.revision ?? 0) >= 2
+      const stopOk = j07.stop.status === 200 && j07.stop.body?.result?.ok === true
+      const settled = j07.phaseAfterStop === 'paused' && j07.phaseAfterWindow === 'paused'
+      const roundsEnough = j07.roundsStartedAtStop >= 2
+      const noContinuation = j07.roundsStartedAfterWindow === j07.roundsStartedAtStop
+      note('J07', createRefused === null && goalVisible && stopOk && settled && roundsEnough && noContinuation ? 'PASS' : 'FAIL',
+        `member=${String(g7.instanceId)} relay=${String(j07.humanRelay.status)}${j07.humanRelay.body?.result?.ok === true ? '/ok' : ''}`
+          + ` goal=${JSON.stringify(j07.goalAfterEdit.goal === null ? null : { id: j07.goalAfterEdit.goal.id, revision: j07.goalAfterEdit.goal.revision, phase: j07.goalAfterEdit.goal.phase, objective: String(j07.goalAfterEdit.goal.objective ?? '').slice(0, 60) })}`
+          + ` roundsStarted=${String(j07.roundsStartedAtStop)}->${String(j07.roundsStartedAfterWindow)} (mockRoundRequests=${String(j07.roundsAtStop)}->${String(j07.roundsAfterStop)})`
+          + ` stopLandedMidRound=${String(j07.gateHeld)} holdReleasedBy=${String(j07.gate?.releasedBy)}`
+          + ` stop=${String(j07.stop.status)} phase=${String(j07.phaseAfterStop)}->${String(j07.phaseAfterWindow)}`
+          + ` toolResults=${JSON.stringify(goalToolResults)}`)
+      writeEvidence('joint-j07-goal.json', j07)
+    }
+
+    // ── J08: a relayed/non-user Goal call is REFUSED; the same turn's governed
+    // bash still runs (the refusal is scoped to the goal operation).
+    const g8 = await createGoalMember('g-joint-8')
+    const j08 = { member: g8, machineRelay: null, refusalText: null, bashText: null, goal: null, ledgerBefore: readControlLedger(CREATE_ROOT_A6) }
+    if (g8.instanceId === null || g8.childSessionId === null) {
+      note('J08', 'NOT_REACHED', `goal-worker could not be created: ${String(g8.refusal ?? 'no instance id')}`)
+    } else {
+      // The MACHINE caller: the Leader instance, the production relay surface.
+      const leaderRow = readMemberRows(CREATE_ROOT_A6).find((r) => r.templateId === 'leader')
+      const leaderInstance = leaderRow?.instanceId ?? 'instance-c1-a6-leader'
+      j08.machineRelay = await relayTo(g8, MK_J08, { kind: 'instance', instanceId: String(leaderInstance) }, 'joint-j08-machine')
+      const firstResult = await waitForMock(mock, (r) => lastUserTextOf(r).includes(MK_J08) && toolMsgsOf(r).length >= 1, 180_000, 'J08 relay turn result')
+      j08.turnSeen = firstResult !== null
+      await sleepJ(6000)
+      const turn = [...mock.requests].reverse().find((r) => lastUserTextOf(r).includes(MK_J08)) ?? null
+      const texts = turn === null ? [] : toolMsgsOf(turn).map((m) => contentText(m?.content))
+      j08.texts = texts.map((t) => t.slice(0, 300))
+      // `reject()` throws HarnessError(message, 'GOAL_TOOL_AUTHORITY_REQUIRED'):
+      // the CODE is a structured field of the tool result, the SENTENCE is what
+      // the model reads. Accept either form — never `GOAL_TOOL_DRIVER_REQUIRED`,
+      // which would mean the calling turn was not live at all — and record which
+      // form was observed so the evidence does not overclaim.
+      j08.refusalText = texts.find((t) => t.includes('GOAL_TOOL_AUTHORITY_REQUIRED')) ?? null
+      const refusalSentence = texts.find((t) => t.includes('requires a direct human turn on a top-level agent')) ?? null
+      j08.refusalForm = j08.refusalText !== null ? 'code' : refusalSentence !== null ? 'sentence' : 'absent'
+      j08.refusalObserved = (j08.refusalText ?? refusalSentence ?? '').slice(0, 300)
+      j08.bashText = texts.find((t) => t.includes('C1_J08_BASH_OK')) ?? null
+      j08.bashFile = existsSync(FILE_J08) ? readFileSync(FILE_J08, 'utf8') : null
+      const goalDeadline = Date.now() + 60_000
+      while (Date.now() < goalDeadline) {
+        const current = await goalGet(booted.origin, booted.cookie, g8.childSessionId, 'joint-j08-get')
+        j08.goal = current.goal
+        if (j08.goal !== null) break
+        await sleepJ(500)
+      }
+      const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+      j08.askLegs = ledgerAfter.requests.length - j08.ledgerBefore.requests.length
+      const typedRefusal = j08.refusalForm !== 'absent'
+      const noGoal = j08.goal === null
+      // The ARM's proposition is the typed refusal + no Goal row. Whether the
+      // same turn's governed bash still runs is a SEPARATE product property
+      // (J04/J05 own the shell lane), so it is measured and disclosed here
+      // rather than folded into this verdict: on 2026-11-12 the shell lane is
+      // refused at the dispatch door for an unrelated #730 defect, and making
+      // the relay-refusal arm depend on it would report two findings as one.
+      const bashRan = j08.bashText !== null && j08.bashFile === SUM_J08
+      note('J08', typedRefusal && noGoal ? 'PASS' : 'FAIL',
+        `member=${String(g8.instanceId)} relay=${String(j08.machineRelay.status)} caller=instance/${String(leaderInstance)}`
+          + ` refusal=${typedRefusal ? 'GOAL_TOOL_AUTHORITY_REQUIRED(' + j08.refusalForm + ')' : 'ABSENT'}`
+          + ` refusalObserved=${JSON.stringify(String(j08.refusalObserved).slice(0, 200))}`
+          + ` goal=${JSON.stringify(j08.goal === null ? null : { id: j08.goal.id, revision: j08.goal.revision })}`
+          + ` governedBashStillRuns=${String(bashRan)} (disclosure; the shell lane is J04/J05's clause)`
+          + ` file=${JSON.stringify(j08.bashFile)} askLegsMinted=${String(j08.askLegs)}`)
+      writeEvidence('joint-j08-relay.json', j08)
+    }
+
+    // ── J10: SIGKILL mid-body, cold boot on the SAME DSH_HOME. This is the
+    // crash-window settlement arm: no duplicate execution, no replayed
+    // consumed allow, and the settlement is `unknown` (never `succeeded`).
+    const g10 = await createGoalMember('g-joint-10')
+    const j10 = { member: g10, relay: null, before: null, after: null, restartOk: false, booted: null, mockRequestsAtKill: 0, mockRequestsAfterRestart: 0 }
+    if (g10.instanceId === null || g10.childSessionId === null) {
+      note('J10', 'NOT_REACHED', `crash worker could not be created: ${String(g10.refusal ?? 'no instance id')}`)
+    } else if ((verdicts.get('J04')?.verdict ?? '') === 'FAIL' && /team tool guard|no Team Tool Binding/.test(verdicts.get('J04')?.detail ?? '')) {
+      // The crash window must open INSIDE a running body: a SIGKILL before the
+      // body starts would measure the request lane, not the settlement lane.
+      // When the dispatch door refuses the governed shell (J04's clause), no
+      // body can ever start, so the arm is measured as undrivable — with the
+      // measured refusal as the reason, never as a fabricated FAIL or PASS.
+      note('J10', 'NOT_REACHED', `no governed bash body can start in this composition (J04 refuses every shell call at the dispatch door: ${String(verdicts.get('J04')?.detail ?? '').slice(0, 240)}) — the crash window must open inside a running body, and a crash before it would measure the request lane instead`)
+    } else {
+      j10.relay = await relayTo(g10, MK_J10, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j10-human')
+      const bodyDeadline = Date.now() + 240_000
+      let ppLeg = null
+      let paLeg = null
+      while (Date.now() < bodyDeadline) {
+        const current = readControlLedger(CREATE_ROOT_A6)
+        const asks = current.requests.filter((r) => r.actionName === 'parameter-permission')
+        ppLeg = asks.at(-1) ?? null
+        const pa = current.requests.filter((r) => r.actionName === 'team-tool-execute').at(-1) ?? null
+        const paConsumed = pa !== null && current.consumptions.some((c) => c.requestId === pa.requestId)
+        if (ppLeg !== null && paConsumed && existsSync(FILE_J10_START)) { paLeg = pa; break }
+        await sleepJ(250)
+      }
+      await sleepJ(1500)
+      const atKill = readControlLedger(CREATE_ROOT_A6)
+      j10.before = {
+        pp: ppLeg?.requestId ?? null,
+        pa: paLeg?.requestId ?? null,
+        ppConsumed: ppLeg === null ? 0 : atKill.consumptions.filter((c) => c.requestId === ppLeg.requestId).length,
+        paConsumed: paLeg === null ? 0 : atKill.consumptions.filter((c) => c.requestId === paLeg.requestId).length,
+        ppFacts: ppLeg === null ? 0 : atKill.executionResults.filter((e) => e.requestId === ppLeg.requestId).length,
+        paFacts: paLeg === null ? 0 : atKill.executionResults.filter((e) => e.requestId === paLeg.requestId).length,
+        bodyStarted: existsSync(FILE_J10_START) ? readFileSync(FILE_J10_START, 'utf8') : null,
+        requests: atKill.requests.length,
+      }
+      j10.mockRequestsAtKill = mock.requests.filter((r) => JSON.stringify(r.body ?? '').includes(MK_J10)).length
+      if (paLeg === null || j10.before.bodyStarted === null) {
+        note('J10', 'NOT_REACHED', `the crash window never opened: pa=${String(j10.before.pa)} bodyStarted=${JSON.stringify(j10.before.bodyStarted)} — `
+          + `relay=${String(j10.relay.status)}; a crash inside an unstarted body would measure the request lane, not the settlement lane`)
+      } else {
+        // SIGKILL: the in-process observer cannot write its terminal fact.
+        host.child.kill('SIGKILL')
+        const deadDeadline = Date.now() + 30_000
+        while (host.alive() && Date.now() < deadDeadline) await sleepJ(50)
+        const exited = !host.alive()
+        // Cold boot #2 on the SAME DSH_HOME (the documented recovery surface).
+        try {
+          const offset = statSync(booted.instanceLog).size
+          const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+          const patchText = readFileSync(patchPath, 'utf8')
+          if (!patchText.includes('bootPhase: "create-or-open"')) {
+            writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+          }
+          const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: mock.port })
+          let parsed = null
+          const bootDeadline = Date.now() + 180_000
+          while (Date.now() < bootDeadline && h2.alive()) {
+            const text = readFileSync(booted.instanceLog, 'utf8').slice(offset)
+            const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+            if (matches.length > 0) { parsed = matches.at(-1); break }
+            await sleepJ(200)
+          }
+          if (parsed === null) throw new Error('no restart boot URL')
+          const origin2 = `http://127.0.0.1:${parsed[1]}`
+          let cookie2 = null
+          for (let attempt = 0; attempt < 120; attempt += 1) {
+            try { cookie2 = await authenticate(origin2, parsed[2]); break } catch { await sleepJ(500) }
+          }
+          if (cookie2 === null) throw new Error('restart auth failed')
+          j10.booted = { origin: origin2, cookie: cookie2, host: h2 }
+          j10.restartOk = true
+        } catch (error) {
+          j10.restartError = String(error?.message ?? error)
+        }
+        // Give boot recovery its bounded settlement window before reading.
+        await sleepJ(j10.restartOk ? 8000 : 0)
+        const after = readControlLedger(CREATE_ROOT_A6)
+        j10.after = {
+          ppConsumed: after.consumptions.filter((c) => c.requestId === j10.before.pp).length,
+          paConsumed: after.consumptions.filter((c) => c.requestId === j10.before.pa).length,
+          ppFacts: after.executionResults.filter((e) => e.requestId === j10.before.pp),
+          paFacts: after.executionResults.filter((e) => e.requestId === j10.before.pa),
+          abandonments: after.abandonments.filter((a) => a.requestId === j10.before.pp || a.requestId === j10.before.pa),
+          requests: after.requests.length,
+        }
+        j10.mockRequestsAfterRestart = mock.requests.filter((r) => JSON.stringify(r.body ?? '').includes(MK_J10)).length
+        // Team + Member durable rows survive a cold boot (the recovery context).
+        const rowsAfter = readMemberRows(CREATE_ROOT_A6)
+        j10.membersAfterRestart = rowsAfter.length
+        j10.memberSurvived = rowsAfter.some((r) => r.instanceId === g10.instanceId)
+        j10.officerSurvived = rowsAfter.some((r) => r.templateId === 'officer')
+        j10.bodyStartAfter = existsSync(FILE_J10_START) ? readFileSync(FILE_J10_START, 'utf8') : null
+        // Clause set (each one a distinct product promise):
+        const noDuplicate = j10.after.paConsumed === 1 && j10.after.ppConsumed === 1
+          && j10.after.paFacts.length <= 1 && j10.after.ppFacts.length <= 1
+        const noReplay = j10.mockRequestsAfterRestart === j10.mockRequestsAtKill
+        const execSettledUnknown = j10.after.paFacts.length === 1 && j10.after.paFacts[0].outcome === 'unknown'
+        // "not silently absent": EVERY allow consumed in the crash window owes a
+        // settlement fact. The permission lane (the party that consumed the ask)
+        // is included on purpose — see the product-defect report if it is not.
+        const noSilentAbsence = j10.after.paFacts.length === 1 && j10.after.ppFacts.length === 1
+        const durableSurvived = j10.restartOk && j10.memberSurvived === true && j10.officerSurvived === true
+        note('J10', exited && durableSurvived && noDuplicate && noReplay && execSettledUnknown && noSilentAbsence ? 'PASS' : 'FAIL',
+          `exited=${String(exited)} restart=${j10.restartOk ? 'ok' : String(j10.restartError ?? 'no')}`
+            + ` legs=pp:${String(j10.before.pp)}/pa:${String(j10.before.pa)}`
+            + ` consumed=${String(j10.before.ppConsumed)}/${String(j10.before.paConsumed)}->${String(j10.after.ppConsumed)}/${String(j10.after.paConsumed)}`
+            + ` facts=pa:${String(j10.after.paFacts.length)}x${j10.after.paFacts.map((f) => f.outcome).join(',')}`
+            + ` pp:${String(j10.after.ppFacts.length)}x${j10.after.ppFacts.map((f) => f.outcome).join(',')}`
+            + ` abandonments=${j10.after.abandonments.map((a) => a.reason).join(',')}`
+            + ` mockRequests=${String(j10.mockRequestsAtKill)}->${String(j10.mockRequestsAfterRestart)}`
+            + ` members=${String(j10.membersAfterRestart)} memberSurvived=${String(j10.memberSurvived)} officerSurvived=${String(j10.officerSurvived)}`
+            + ` bodyStart=${JSON.stringify(j10.bodyStartAfter)}`)
+        writeEvidence('joint-j10-crash.json', j10)
+        // Later arms use the RESTARTED Host (same DSH_HOME, same port).
+        if (j10.booted !== null) {
+          booted.origin = j10.booted.origin
+          booted.cookie = j10.booted.cookie
+          host = j10.booted.host
+          LIVE_HOST_AFTER_RESTART = j10.booted.host
+        }
+      }
+    }
+
+    // ── J09: the Sticky Stop survives an Alpha.6 review wake. Runs LAST: the
+    // Stop is permanent for the reviewer it is scoped to, and every later ask
+    // routed to that reviewer must stay suppressed.
+    // The ask that mints the review wake must be a GOVERNED ask, so this arm
+    // uses the strict `worker` template (J05 measures its parameter-permission
+    // leg). A template with no `permissions` policy (the goal worker) is
+    // allow-by-default and mints no ask at all — measured on 2026-11-12 as
+    // `askLegsMinted=0` in the J08 relay turn, which is why the first J09
+    // attempt waited for a wake that could never exist.
+    const workerRows = readMemberRows(CREATE_ROOT_A6).filter((r) => r.templateId === 'worker' && typeof r.childSessionId === 'string')
+    const g9 = workerRows[0] ?? { instanceId: null, childSessionId: null }
+    // The SECOND ask must come from a DIFFERENT member: the first ask leaves
+    // its member's turn open on the now-Stopped approval, so a second message
+    // to that member queues behind the open turn and never reaches the model
+    // (measured 2026-11-12: relay delivered, zero new mock requests). A fresh
+    // worker is idle and raises the same governed ask.
+    const g9b = g9.instanceId === null ? { instanceId: null, childSessionId: null } : await createMemberOf('worker', 'g-joint-9b')
+    const j09 = { first: { instanceId: g9.instanceId, templateId: 'worker' }, second: { instanceId: g9b.instanceId, templateId: 'worker' }, firstRelay: null, secondRelay: null, wakeSeen: 0, cancel: null, markers: [], markersAfterSecondAsk: [], wakesBefore: 0, wakesAfter: 0, markerBytesStable: false, secondAskLegs: 0, gate: null }
+    const officerRow = readMemberRows(CREATE_ROOT_A6).find((r) => r.templateId === 'officer' && typeof r.childSessionId === 'string')
+    if (g9.instanceId === null || g9b.instanceId === null || officerRow?.childSessionId === undefined) {
+      note('J09', 'NOT_REACHED', `prerequisites missing: g9=${String(g9.instanceId)} g9b=${String(g9b.instanceId)} officerSession=${String(officerRow?.childSessionId ?? 'none')}`)
+    } else {
+      const markerDir = join(HOME, 'alpha6-wake-intents')
+      const stoppedMarkers = () => (existsSync(markerDir) ? readdirSync(markerDir) : []).filter((n) => n.startsWith('stopped-') && n.endsWith('.json'))
+      const wakeCount = () => mock.requests.filter((r) => lastUserTextOf(r).startsWith('[team-review-wake')).length
+      // The FIRST ask mints a review leg; the mock holds its wake turn open so
+      // the Stop lands while the wake coordinator (the latch) is LIVE.
+      j09.wakesBefore = wakeCount()
+      // Arm the hold, then send the FIRST ask: the next wake is J09's, and the
+      // mock holds its turn open until the Stop below has landed.
+      const wakeFloor = mock.requests.length
+      J09_GATE.armed = true
+      j09.firstRelay = await relayTo(g9, MK_J09, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j09-first')
+      const wakeReq = await waitForMock(mock, (r) => lastUserTextOf(r).startsWith('[team-review-wake') && mock.requests.indexOf(r) >= wakeFloor, 180_000, 'J09 wake')
+      j09.wakeSeen = wakeReq === null ? 0 : wakeCount()
+      const ledgerBeforeSecond = readControlLedger(CREATE_ROOT_A6)
+      // The human Stop on the review-wake RECIPIENT (the Team's approval lane).
+      // This is the production Stop button, never a direct function call.
+      j09.cancel = await apiCancel(booted.origin, booted.cookie, officerRow.childSessionId, 'joint-j09-stop')
+      const markerDeadline = Date.now() + 60_000
+      while (Date.now() < markerDeadline) {
+        j09.markers = stoppedMarkers()
+        if (j09.markers.length > 0) break
+        await sleepJ(500)
+      }
+      const markerBytes = j09.markers.length === 0 ? null : readFileSync(join(markerDir, j09.markers[0]), 'utf8')
+      // Disarm only now: any decide of the held wake that was still in flight
+      // must see the hold, and the Stop already landed.
+      J09_GATE.armed = false
+      if (J09_GATE.holding) J09_GATE.release?.()
+      j09.gate = { holding: J09_GATE.holding, releasedBy: J09_GATE.releasedBy }
+      await sleepJ(3000)
+      // The SECOND ask: a real governed ask for the SAME (now Stopped) reviewer.
+      j09.secondRelay = await relayTo(g9b, MK_J09B, { kind: 'human', humanId: CREATE_ROOT_A6 }, 'joint-j09-second')
+      const suppressDeadline = Date.now() + 60_000
+      while (Date.now() < suppressDeadline) {
+        j09.wakesAfter = wakeCount()
+        j09.markersAfterSecondAsk = stoppedMarkers()
+        const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
+        j09.secondAskLegs = ledgerAfter.requests.length - ledgerBeforeSecond.requests.length
+        if (j09.secondAskLegs > 0 && Date.now() > suppressDeadline - 45_000) break
+        await sleepJ(500)
+      }
+      const markerAfterBytes = j09.markersAfterSecondAsk.length === 0
+        ? null
+        : readFileSync(join(markerDir, j09.markersAfterSecondAsk[0]), 'utf8')
+      j09.markerBytesStable = markerBytes !== null && markerBytes === markerAfterBytes
+      const cancelOk = j09.cancel.status === 200 && j09.cancel.body?.result?.ok === true
+      const markerOk = j09.markers.length === 1 && markerBytes !== null && /"stopped"\s*:\s*true/.test(markerBytes)
+      const suppressed = j09.wakesAfter === j09.wakeSeen && j09.markersAfterSecondAsk.length === 1 && j09.markerBytesStable
+      // The second ask must be REAL: the member's turn must have issued the
+      // governed bash call. Without this the "no new wake" clause would also
+      // pass for an ask that was never raised (a vacuous measurement).
+      const askIsReal = mock.requests.some((r) => lastUserTextOf(r).includes(MK_J09B)
+        && (r.reply?.toolCalls ?? []).some((t) => t?.name === 'bash'))
+      note('J09', cancelOk && markerOk && suppressed && askIsReal ? 'PASS' : 'FAIL',
+        `wakeSeen=${String(j09.wakeSeen)} firstRelay=${String(j09.firstRelay.status)} cancel=${String(j09.cancel.status)}`
+          + ` markers=${JSON.stringify(j09.markers)} bytes=${JSON.stringify(String(markerBytes ?? '').slice(0, 200))}`
+          + ` wakes=${String(j09.wakeSeen)}->${String(j09.wakesAfter)} markerStable=${String(j09.markerBytesStable)}`
+          + ` secondAskLegs=${String(j09.secondAskLegs)} askIsReal=${String(askIsReal)} secondRelay=${String(j09.secondRelay.status)}`
+          + ` holdReleasedBy=${String(j09.gate.releasedBy)}`)
+      writeEvidence('joint-j09-sticky-stop.json', j09)
+    }
   }
 
   await finishJoint({ verdicts })
@@ -2950,6 +3501,78 @@ function makeDecide() {
     if (lastUser.includes(MK_A6_OFFICER_READY)) {
       return { kind: 'text', content: 'C1_A6_OFFICER_READY' }
     }
+    // ── J07 (2026-11-12): round turns of the human-created goal. The round
+    // instruction carries `Round: N/M`; the objective (and its marker) rides
+    // in the same text. The mock ends the round without tools, so each round
+    // is exactly one model request and the round COUNT is the product's own
+    // continuation count.
+    if (lastUser.includes('<goal_round>') && lastUser.includes(MK_J07)) {
+      // The round number is IN the prompt (`Round: N/M`), so the trace does not
+      // depend on how many earlier requests happen to be recorded yet.
+      const roundNo = Number(/Round: (\d+)\//.exec(lastUser)?.[1] ?? 0)
+      J07_ROUND_TRACE.push({ round: roundNo, at: new Date().toISOString() })
+      if (J07_GATE.armed && roundNo >= 2) {
+        J07_GATE.holding = true
+        await new Promise((resolve) => {
+          J07_GATE.release = () => {
+            if (J07_GATE.releasedBy === null) J07_GATE.releasedBy = 'driver'
+            resolve()
+          }
+          setTimeout(() => {
+            if (J07_GATE.releasedBy === null) J07_GATE.releasedBy = 'timeout'
+            resolve()
+          }, 60_000)
+        })
+        J07_GATE.holding = false
+      }
+      return { kind: 'text', content: 'C1_J07_ROUND_OK' }
+    }
+    // ── J07: the DIRECT HUMAN relay turn on the goal worker. create_goal is
+    // the product's own authority decision (hasDirectHumanInput); get/update
+    // prove the goal is real and editable through the same tools.
+    if (lastUser.includes(MK_J07)) {
+      switch (tools) {
+        case 0: return toolCall('create_goal', { objective: `C1_J07 human goal ${MK_J07}`, max_goal_rounds: 6 })
+        case 1: return toolCall('get_goal', {})
+        case 2: {
+          const ref = lastGoalRefIn(req)
+          return ref === null
+            ? { kind: 'text', content: 'C1_J07_NO_GOAL_REF' }
+            : toolCall('update_goal', {
+                goal_id: ref.id,
+                revision: ref.revision,
+                action: 'edit',
+                objective: `C1_J07 human goal ${MK_J07} edited`,
+              })
+        }
+        default: return { kind: 'text', content: 'C1_J07_HUMAN_TURN_DONE' }
+      }
+    }
+    // ── J08: the MACHINE relay turn. create_goal must be REFUSED with the
+    // typed authority code; the governed bash on the SAME turn must still run
+    // (the refusal is scoped to the goal operation, not the turn).
+    if (lastUser.includes(MK_J08)) {
+      switch (tools) {
+        case 0: return toolCall('create_goal', { objective: `C1_J08 machine relay goal ${MK_J08}` })
+        case 1: return toolCall('bash', bashArgs(`printf '%s' '${SUM_J08}' > ${FILE_J08}`))
+        default: return { kind: 'text', content: 'C1_J08_DONE' }
+      }
+    }
+    // ── J10: the long governed body. The first write proves the body STARTED
+    // (the crash window is open); `sleep 60` keeps it in flight until the
+    // driver SIGKILLs the Host.
+    if (lastUser.includes(MK_J10)) {
+      return tools === 0
+        ? toolCall('bash', bashArgs(`echo body-started > ${FILE_J10_START} && sleep 60 && echo body-done > ${FILE_J10_DONE}`))
+        : { kind: 'text', content: 'C1_J10_TURN_DONE' }
+    }
+    // ── J09: the two review asks that bracket the human Stop. Each is a
+    // governed bash ask; the FIRST one's wake is held open by J09_GATE above.
+    if (lastUser.includes(MK_J09) || lastUser.includes(MK_J09B)) {
+      return tools === 0
+        ? toolCall('bash', bashArgs(`printf '%s' '${lastUser.includes(MK_J09B) ? 'j09b' : 'j09'}' # ${lastUser.includes(MK_J09B) ? MK_J09B : MK_J09}`))
+        : { kind: 'text', content: 'C1_J09_ASK_TURN_DONE' }
+    }
     // (2c) keep the Officer BUSY on a long tool turn so the review wake is
     // ACCEPTED into the native Inbox but cannot be claimed yet.
     if (lastUser.includes('C1_A6_BUSY')) {
@@ -2968,6 +3591,25 @@ function makeDecide() {
       // A6-INBOX: hold the wake turn open long enough to SIGKILL the Host
       // AFTER the native Inbox claimed the message.
       if (A6_INBOX) await new Promise((resolve) => setTimeout(resolve, 30_000))
+      // J09 (Sticky Stop): hold THIS wake until the driver has issued the
+      // human Stop, so the Stop lands while the wake coordinator (the latch)
+      // is LIVE — the documented precondition of the Sticky Stop marker. The
+      // hard ceiling keeps a driver bug from hanging the run: a timeout is
+      // recorded, never silently "released".
+      if (J09_GATE.armed) {
+        J09_GATE.holding = true
+        await new Promise((resolve) => {
+          J09_GATE.release = () => {
+            if (J09_GATE.releasedBy === null) J09_GATE.releasedBy = 'driver'
+            resolve()
+          }
+          setTimeout(() => {
+            if (J09_GATE.releasedBy === null) J09_GATE.releasedBy = 'timeout'
+            resolve()
+          }, 45_000)
+        })
+        J09_GATE.holding = false
+      }
       if (A6_TIMEOUT_MS > 0) return { kind: 'text', content: 'C1_A6_TIMEOUT_NO_DECISION' }
       if (A6_STICKY_STOP && !a6ResumePhase) return { kind: 'text', content: 'C1_A6_STICKY_STOP_PENDING' }
       const named = [...lastUser.matchAll(/^-\s*(ctrl-[A-Za-z0-9_-]+)\s*$/gm)][0]?.[1]
@@ -3762,7 +4404,7 @@ async function main() {
 
       if (JOINT) {
         const ok = await runJointScenario({ booted, mock, denyList, host })
-        stopHost(host)
+        stopHost(LIVE_HOST_AFTER_RESTART ?? host)
         await mock.close()
         if (!FLAG_KEEP) {
           rmSync(HOME, { recursive: true, force: true })
@@ -3773,7 +4415,10 @@ async function main() {
           dshHomeRemoved: !FLAG_KEEP && !existsSync(HOME),
           blueprintDirRemoved: !FLAG_KEEP && !existsSync(BLUEPRINT_DIR),
           hostStopped: true,
-          hostExit: host.exitInfo ?? null,
+          // J10 cold-boots a replacement; `host.exitInfo` on the ORIGINAL only
+          // records the SIGKILL, so name the process that teardown stopped.
+          hostExit: (LIVE_HOST_AFTER_RESTART ?? host).exitInfo ?? null,
+          restartHostStopped: LIVE_HOST_AFTER_RESTART !== null,
           mockClosed: true,
           keptForDebug: FLAG_KEEP,
         })

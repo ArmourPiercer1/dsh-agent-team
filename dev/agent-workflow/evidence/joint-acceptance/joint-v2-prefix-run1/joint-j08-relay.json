@@ -1,0 +1,141 @@
+{
+  "member": {
+    "label": "g-joint-8",
+    "instanceId": "inst-15xr5ii1na6y",
+    "childSessionId": "session-team-child-f36aa4dca951f4ee8d605d92075dbc6f",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-15xr5ii1na6y",
+          "templateId": "goal-worker",
+          "childSessionId": "session-team-child-f36aa4dca951f4ee8d605d92075dbc6f",
+          "operationId": "op-1m3umyv1ns38ne1vqeq2t18h",
+          "replayed": false,
+          "ledgerSequence": 16,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-8-2026-11-12T04-12-53-h0-re84f95"
+      }
+    }
+  },
+  "machineRelay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j08-machine-kfpsv30ek9",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T04-12-53-h0-re84f95",
+              "action": "send-message",
+              "callerRole": "leader",
+              "recipientInstanceId": "inst-15xr5ii1na6y",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-15xr5ii1na6y",
+              "deliveredToSessionId": "session-team-child-f36aa4dca951f4ee8d605d92075dbc6f",
+              "factSequence": 17,
+              "deliveredSequence": 18,
+              "requestToken": "joint-j08-machine-2026-11-12T04-12-53-h0-re84f95"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j08-machine-2026-11-12T04-12-53-h0-re84f95",
+            "projectionGeneration": null,
+            "effectSequence": 17
+          }
+        }
+      }
+    }
+  },
+  "refusalText": null,
+  "bashText": null,
+  "goal": null,
+  "ledgerBefore": {
+    "requests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0vfjosh15tzcfw1gnje5r1tp",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-1mt286l02xns",
+        "correlation": "call-c1-mm0sliun",
+        "approvalCaseId": "case-0srzswu1qd0lzj1e2muhg0dz",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "worker",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#34",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:22651e64d0da3ab0cb7d9ce442528972e8c4e536f8ab34319f64603806c2b1bb",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-12T04:13:09.097Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0vfjosh15tzcfw1gnje5r1tp",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-02afvjj0ya1c",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T04:13:09.276Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-0vfjosh15tzcfw1gnje5r1tp",
+        "createdAt": "2026-11-12T04:13:09.461Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [
+      {
+        "sequence": 10,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-0vfjosh15tzcfw1gnje5r1tp",
+        "callId": "call-c1-mm0sliun",
+        "outcome": "failed",
+        "recordedAt": "2026-11-12T04:13:09.495Z",
+        "createdAt": "2026-11-12T04:13:09.495Z"
+      }
+    ],
+    "error": null
+  },
+  "turnSeen": true,
+  "texts": [
+    "Error: this goal operation requires a direct human turn on a top-level agent",
+    "Error: A5_NATIVE_ADMISSION_UNAVAILABLE: the Team admission edge is not published for this agent, so this native `bash` call cannot be decided or consumed; refusing instead of executing an unapproved native call"
+  ],
+  "refusalForm": "sentence",
+  "refusalObserved": "Error: this goal operation requires a direct human turn on a top-level agent",
+  "bashFile": null,
+  "askLegs": 0
+}

@@ -1,199 +1,182 @@
-# Joint acceptance — JS-1 (2026-11-11)
-
-**Verdict: NO.** The single joint driver now exists and ran twice on a real,
-pinned Host, but the product composition it exists to prove does not reach its
-own arms: with the governed preset carrying `tool-bash` (so the realm can
-shadow it with the pinned persistent definition), **no Member can activate**.
-The native-bash module re-mount fails with
-`Cannot read properties of undefined (reading 'validate')`
-(`packages/runtime/src/plugin/live/native-bash-tool.mjs:51` exports
-`Config = Object.freeze({})`; the loader resolves
-`runtime.Config["~standard"].validate(config)` at
-`tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:958`). The
-host-free native-bash suite (13/13 PASS) never exercises that path because it
-calls `nativeBash.apply()` directly.
+# Joint acceptance — the Preview surface (JS-1 / JS-2, 2026-11-12)
 
 **Evidence class: DEV-LIVE.** Not CANDIDATE-C2, not a frozen candidate, not a
-release gate. `osLevelNetworkIsolationClaimed: false`.
+release gate. This record can never produce a `V@B = yes` claim;
+`osLevelNetworkIsolationClaimed: false`. Every verdict below is computed from a
+durable product fact or a model-visible tool result — never authored.
 
-- Branch: `task/joint-acceptance-20261111`
-- Base: `origin/master` @ `b29e10582` (PD-42 gate + PD-41 §719)
-- Integration branch consumed as-is: `integration/joint-acc-20261111`
-  (origin/master + rebased `task/p01-plane-realm-20261111` (PR #728) +
-  `task/pd41-abort-class-20261111` (PR #729) + merged
-  `task/native-bash-preservation-20261111` (PR #730))
-- Host: pristine `tests/deepseek-harness-test-use` @ `639ed01539`, porcelain
-  status recorded per run (`preflight-host-clean.json`)
-- Driver: `tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs`
-  (derived from the merged C1 Alpha.6/PD-42 instrument; see its header)
-- `CORE PATCH BUDGET = 0` — no product file was edited to make an arm pass.
+**Verdict: NO on this tree** — but the reason is ONE product defect, and it is
+not the defect this kit was built to catch. The kit now drives all eleven arms
+J01–J11 on one `schemaVersion: 5` Team (both `memberIoCeilings` and
+`reviewRouting` on the same document), twice, on two fresh `DSH_HOME` worlds;
+the two runs agree field-by-field. Eight arms pass, two fail, one is
+`NOT_REACHED`, and all three non-PASS arms trace to the same root cause:
 
-## The two runs
+> **#730's adopted-native `bash` is never bound into the centre approval
+> table.** The model-visible `bash` is the pinned native definition, and under
+> `nativeBashAdopted` the plane deliberately places no `bash` definition — but
+> it still declares the name kernel-owned, so the dispatch door finds
+> `identityFor('bash') === null` and refuses every governed shell call BEFORE
+> its Body. The ask → allow → consume → decision lane is intact; only the
+> execution is refused.
 
-Both runs are the SAME composition (`JOINT_PRESET=native`, i.e. `tool-bash`
-kept so the realm selects `native-bash-tool.mjs`), one Team, one
-`schemaVersion: 5` blueprint carrying BOTH `memberIoCeilings` and
-`reviewRouting`, plane takeover on, fresh `DSH_HOME` under `tests/homes/`,
-sanctioned loopback ports only (3187/3496 and 3188/3497; never `:3080`).
+That is `FAIL J04` (the arm that exists to prove the native mount) and
+`FAIL J05` (its consumed allow settles `failed`, never `succeeded`). `J10`
+then has no window to crash inside: a governed body never starts, so the
+crash-settlement arm is `NOT_REACHED` with the measured refusal as its reason,
+not a fabricated verdict. The fix is a product change — the adopted native name
+must stop being plane-owned so the native admission edge published by the row
+assembly is the only gate — tracked as **PR #734**, not applied on this tree.
 
-```sh
+This tree is **`origin/master` @ `d8490f74d` + the PD41-ABORT-CLASS lane**
+(rebased; no upstream edits, `CORE PATCH BUDGET = 0`), i.e. the **PRE-FIX**
+state. The same kit, unchanged, is the post-fix instrument.
+
+## Arm table (run 1 / run 2 — identical)
+
+Raw: [`joint-v2-prefix-run1/joint-verdicts.json`](joint-v2-prefix-run1/joint-verdicts.json),
+[`joint-v2-prefix-run2/joint-verdicts.json`](joint-v2-prefix-run2/joint-verdicts.json),
+and the field-by-field agreement
+[`joint-v2-prefix-agreement.json`](joint-v2-prefix-agreement.json)
+(`verdictsAgree: true, detailsAgree: true`).
+
+| arm | run 1 | run 2 | proposition | measured |
+|---|---|---|---|---|
+| **J01** | **PASS** | **PASS** | one v5 Team carries both families: `memberIoCeilings` + `reviewRouting` | `team.create=200 admitted`, `schemaVersion: 5`, both families read back true, blueprint hash measured per run |
+| **J02** | **PASS** | **PASS** | the Member ceiling mods the realm's fs: a write inside the root is allowed | inside file written; 1 `allow` guard fact |
+| **J03** | **PASS** | **PASS** | the same ceiling denies outside the root | 1 write deny; the outside path does not exist |
+| **J04** | **FAIL** | **FAIL** | a governed Member's `bash` is the pinned native definition with only `execute` wrapped, over a Member-bound PTY | `bashCalls=1`, `realmTerminalFacts=0`; the call is refused at the dispatch door (see the defect) |
+| **J05** | **FAIL** | **FAIL** | one approval request → one consumption → one OBSERVED execution | `consumption=1 executionResults=1 outcomes=failed` — the allow was consumed and the body was refused |
+| **J06** | **PASS** | **PASS** | the review ask is routed to the Officer, decided by the Officer, and carries the bound identity | `reviewAuthority=leader`, `routedToOfficer=true`, `identityCarried=true`, `legDecided=true`, `whenOfficerUnavailable=hold` (unit-pinned) |
+| **J07** | **PASS** | **PASS** | Goal from a DIRECT HUMAN input: create → get → edit, ≥2 automatic rounds, human Stop → durable paused, no continuation | revision 2 + `edited` objective, `roundsStarted=2→2`, Stop 200, `paused→paused`, the 2nd round held in flight while the Stop lands |
+| **J08** | **PASS** | **PASS** | a relayed (non-human) turn cannot create a Goal and no Goal row exists | `GOAL_TOOL_AUTHORITY_REQUIRED` (the exact sentence `this goal operation requires a direct human turn on a top-level agent`), `goal=null`; the same turn's shell is refused by J04's defect (disclosed, not folded into this verdict) |
+| **J09** | **PASS** | **PASS** | the Sticky Stop survives a review wake: the latch is written on the Stop and a SECOND real ask raises no new wake | `stopped-*.json` present, marker bytes identical after the second ask, `wakes=4→4`, `secondAskLegs=1`, `askIsReal=true`, the held wake released by the driver after the Stop |
+| **J10** | **NOT_REACHED** | **NOT_REACHED** | cold recovery: SIGKILL mid-body, restart the same `DSH_HOME`, no duplicate execution, no replayed consumed allow, crash-window settlement `unknown` | **undrivable on this tree**: every governed shell body is refused before it starts (J04), so there is no mid-body window to crash inside. A crash before the body would measure the request lane, not the settlement lane — refused as a measurement, not redefined |
+| **J11** | **PASS** | **PASS** | an approval allow is one-shot: exactly one consumption fact per request | `consumption facts = 1` for the request |
+
+Counts: **8 PASS / 2 FAIL / 1 NOT_REACHED** in each run.
+
+Everything above is `DEV-LIVE`. No arm produces, and none may be cited as, a
+`V@B` or CANDIDATE-C2 record.
+
+## The defect, precisely (falsifier for a merged regression)
+
+Measured twice, on two fresh worlds, and independently with the kit's goal
+template compiled out (the shell lane's state is identical), so this is neither
+a kit bug nor an environment artefact:
+
+1. The shipped composition sets `nativeBashPty: true`
+   (`packages/runtime/src/plugin/host.ts:2155-2176`), so
+   `a5NativeBashAdopted` is true
+   (`packages/runtime/src/plugin/live/agent-bindings.mjs:3144,3347`).
+2. Under adoption the plane excludes its own placed `bash` definition
+   (`packages/runtime/src/plugin/live/team-tool-plane.mjs:1755,1770`), so
+   `placedByName.get('bash')` is `undefined`.
+3. The plane still declares `bash` kernel-owned (`seamOwned` keeps the shell
+   family's claim, `team-tool-plane.mjs:1895-1900`) and `identityFor` resolves
+   through `ensureApprovalEntry`
+   (`team-tool-plane.mjs:1968-1972` → `approval-entry-binder.mjs`), whose
+   `placedDefinition('bash')` is `undefined` ⇒ `null`.
+4. The dispatch door refuses: `packages/runtime/tool-dispatch/install.ts:1041-1059`,
+   code `TOOL_BINDING_UNVERIFIED`, reason `DEFINITION_DRIFT`, message
+   `team tool guard: "bash" is kernel-owned and the center approval table no
+   longer backs its live definition (table unbound, resolving def#34)`.
+
+Why it was not caught earlier: #730's own verification is a host-free contract
+suite (`tests/world-factory/a5sf-native-bash-preservation.test.mjs`, 15/15) that
+mounts the native terminal face and the plane, never the dispatch door; and the
+2026-11-11 `j05j06-run1/run2` evidence that shows `PASS J04` was produced
+**before** #730 merged. This kit is the falsifier: it fails the merged change on
+the shipped path.
+
+**Not fixed here** (no scope reduction, no workaround, `CORE PATCH BUDGET = 0`).
+The product fix is PR #734.
+
+## How the two runs were made
+
+| | run 1 | run 2 |
+|---|---|---|
+| host port / mock port | `3187` / `3496` | `3188` / `3497` |
+| `DSH_HOME` | fresh world under `tests/homes/` (removed at teardown) | fresh world, same |
+| host runtime | `tests/deepseek-harness-test-use` @ `639ed015397290b3745d163aafe02ffee4aa3f84` (0.2.0-rc.2) | same |
+| composition | `JOINT_PRESET=native`, plane takeover, governed realm, Alpha.6 review routing, **one** `schemaVersion: 5` blueprint with `memberIoCeilings` + `reviewRouting` | same |
+| driver | `tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs` | same |
+
+```bash
 node tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs \
-  --worktree "$PWD" \
-  --testuse /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use \
+  --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
   --host-port 3187 --mock-port 3496 \
-  --evidence-dir dev/agent-workflow/evidence/joint-acceptance/run1
-# run2: the same command with 3188/3497 and …/run2
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/joint-acceptance/joint-v2-prefix-run1"
+
+node tests/kits/joint-acceptance-20261111/compare-two-runs.mjs \
+  <run1-dir> <run2-dir> <agreement.json>
 ```
 
-Preflight ran on measured facts and refused nothing: see
-`run1/boot-preflight.json` and `run2/boot-preflight.json`
-(`verdict: PASS`, host pin, sanctioned ports, world containment, selected
-arms J01–J11).
+`compare-two-runs.mjs` requires the VERDICT to agree exactly for every arm and
+compares the measured detail after normalizing only identifiers that necessarily
+differ between two worlds: the run stamp and the per-world 6-hex home suffix,
+ISO timestamps, session/instance/control/goal ids, the blueprint content hash,
+`def#N`, home and blueprint paths, the marker hash, observed wait milliseconds,
+and the exact round counters where the proposition is a threshold. A semantic
+difference survives normalization and would be reported; the normalizations are
+listed in the agreement file.
 
-## Two-run field table (the acceptance composition, `JOINT_PRESET=native`)
+## What the kit measures, and what it deliberately does not
 
-Every cell is the verdict the driver wrote into `run1/joint-verdicts.json` and
-`run2/joint-verdicts.json`. Agreement is exact per arm; the two runs differ
-only in port, run id and blueprint hash.
+- **J07's Stop** is the production `session/cancel` on the Member's own session
+  (the human Stop button), not a direct function call. The second automatic
+  round is held in flight (the mock model's reply is withheld) so the Stop lands
+  while a round is running — a real Stop, measured by the product's durable
+  `roundsStarted`, never by the mock's request list. Without the hold, an
+  instant mock model can burn all six rounds in the few hundred ms before the
+  Stop lands, and the goal settles `blocked` for a reason the arm is not about.
+- **J08's caller** is the real Leader instance id (a machine
+  `member.send`/caller `{kind:'instance'}`), and the goal is read back through
+  the product's `goals/get` RPC. The refusal CODE is a structured field on the
+  tool result; the model sees the sentence, so the arm accepts the code OR the
+  exact authority sentence — never `GOAL_TOOL_DRIVER_REQUIRED` (which would mean
+  the calling turn was not live at all). The disclosure field records which form
+  was observed.
+- **J09's "stop the Team"** is measured as the human Stop of the Team's approval
+  lane (the review-wake RECIPIENT, i.e. the Officer), because the latch is
+  scoped to a reviewer session. The arm proves: the Stop writes
+  `stopped-<fnv>.json`, a second REAL ask (a fresh worker, governed bash) mints
+  its ask leg but raises no new review wake, and the marker bytes are unchanged.
+  The fresh member is required: the first ask leaves its member's turn open on
+  the now-Stopped approval, so a second message to the same member queues
+  behind the open turn and never reaches the model (measured).
+- **J10's clauses** are pre-registered in the driver: no duplicate execution,
+  no replayed consumed allow, the crash-window settlement is `unknown` (not
+  `succeeded`, not silently absent) for BOTH approval legs, and the durable
+  world survived the restart. On a tree where the body starts, the arm is
+  drivable; here it is refused as undrivable with the reason printed.
+- **The goal worker carries no `permissions` policy.** The A2C-2 permission
+  coverage gate (`packages/runtime/src/plugin/live/agent-bindings.mjs`,
+  `SAFE_UNMANAGED_TOOL_NAMES = ['todo_write']`) has no reviewed owner for
+  `create_goal`/`get_goal`/`update_goal`, so a strict template must deny them —
+  which removes the goal family from the template. The arm therefore measures
+  the goal tools' own authority on a governed Member, and says so; it does not
+  pretend the goal worker is a strict-covered template.
+- A template with no `permissions` policy is allow-by-default for shell, so its
+  bash mints no approval leg (`askLegsMinted=0` in J08's detail). The review
+  lanes are measured on the strict `worker` template (J05/J06/J09).
+- **The host sandbox assets were provisioned out of band.** The manifest
+  (`tests/world-factory/lib/host-sandbox-assets-manifest.json`) pins
+  `bin/glibc/system.node` at `54a9c25c…`/17360 bytes while the clone carried
+  `75450f92…`/17352; `provision-host-sandbox.mjs` failed closed on that digest,
+  so the working tree's existing `system.node` was kept and the missing
+  `bin/landlock-run` was copied from the main checkout. `--check` then reports
+  `before-provision=full -> after-provision=full`, `backend: full (usable: true)`.
+  This is a test-infra observation (asset manifest drift), not a product fact;
+  the two runs record it in each `boot-preflight.json`/`preflight-host-clean.json`.
+- **Not claimed**: OS-level network isolation, CANDIDATE-C2 status, `V@B`, or
+  any frozen-candidate semantics. `whenOfficerUnavailable: hold` is unit-pinned,
+  not exercised here (recorded in J06's detail).
 
-| arm (field) | run1 | run2 | agree |
-|---|---|---|---|
-| J01 — Team + routing: v5 both families admitted; Officer routed, one team_resolve_control | `PASS` | `PASS` | yes |
-| J02 — Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J03 — Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J04 — Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY | `FAIL` | `FAIL` | yes |
-| J05 — Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J06 — Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J07 — Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J08 — Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J09 — Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J10 — Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution | `NOT_REACHED` | `NOT_REACHED` | yes |
-| J11 — No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED) | `NOT_REACHED` | `NOT_REACHED` | yes |
+## Superseded records (kept, append-only)
 
-Counts — run1: `{"PASS": 1, "NOT_REACHED": 9, "FAIL": 1}`, run2: `{"PASS": 1, "NOT_REACHED": 9, "FAIL": 1}`.
-
-`NOT_REACHED` here is the closed-set word for "the prerequisite observable
-never existed": with no activating Member, no ceiling consult, approval lane,
-Goal turn or review wake can occur. It is not a pass and not a soft fail.
-
-## Raw records (per run)
-
-| file | what it is |
-|---|---|
-| `boot-preflight.json` | the shared zero-boot preflight over this run's measured facts (`verdict: PASS`) |
-| `preflight-host-clean.json` | host pin `639ed01539` + porcelain status at boot time |
-| `joint-blueprint.yaml` | the ONE `schemaVersion: 5` blueprint (both families) |
-| `joint-create.json` | `team.create` remote response (`fresh-root`, blueprint content hash) |
-| `joint-setup.json` | the two `team_create_member` results and the `team_delegate` result — the activation refusal is verbatim here |
-| `joint-ledger.json` | the durable control ledger read back from `<DSH_HOME>/storages/team_domain.json` |
-| `joint-guard-facts.json` | `a5sf-guard-consult/1` facts on the realm sink |
-| `joint-state.json` | p6t6 durable read-back (members, projection) |
-| `joint-verdicts.json` | the machine-readable arm table |
-| `joint-arms.md` | the human-readable arm table |
-| `teardown.json` | DSH_HOME removed, blueprint dir removed, host stopped, mock closed |
-| `instance.log` | the Host's own output for the run |
-| `mock.log` | the in-process mock model's log |
-
-## Preflight
-
-`boot-preflight.mjs` gates the spawn: the driver writes
-`boot-preflight.json` and calls `assertBootPreflight()` BEFORE `spawnHost`.
-Both acceptance runs graded `PASS` (host pin `639ed01539`, sanctioned ports
-inside `TEST_PORT_RANGES`, fresh `DSH_HOME` under `tests/homes/`, all eleven
-arms selected, one declared Officer template). A non-PASS record is a hard
-refusal, not a warning.
-
-## Teardown
-
-Each run writes `teardown.json` after the Host is stopped:
-`dshHomeRemoved: true`, `blueprintDirRemoved: true`, `hostStopped: true`,
-`mockClosed: true`, `keptForDebug: false`. `tests/homes/` therefore contains
-no world from these runs.
-
-## NOT MET — why the answer is NO
-
-1. **J04 (and, through it, every Member-dependent arm in the acceptance
-   composition).** With `tool-bash` present so the governed realm can shadow it
-   with the pinned persistent definition, the realm's route-C re-mount of
-   `native-bash-tool.mjs` throws
-   `Cannot read properties of undefined (reading 'validate')`.
-   `packages/runtime/src/plugin/live/native-bash-tool.mjs:51` exports
-   `Config = Object.freeze({})` — an object with no `~standard` validator —
-   while the Cordis loader calls
-   `runtime.Config["~standard"].validate(config)`
-   (`tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:958`). The
-   refusal is wrapped as `SERVICE_MOUNT_FAILED` at
-   `packages/runtime/team-services/src/mount.ts:1881` and surfaces as
-   `TEAM_RUNTIME_DURABLE_WRITE_FAILED` on BOTH the Officer and the worker; the
-   `team_delegate` that follows is `target-stale`. The host-free native-bash
-   suite (13/13) never catches this because it calls `nativeBash.apply()`
-   directly and never goes through plugin-config resolution.
-2. **J07–J10 are NOT_REACHED for a second, independent reason:** the joint
-   driver in this round does not drive the Goal, relay-refusal, sticky-Stop or
-   cold-recovery arcs at all (in the acceptance composition they had no live
-   Member either, and the diagnostic composition's live Member was not used to
-   drive them). That is a driver gap, recorded here rather than hidden; it
-   would have to be closed even after the mount defect is fixed.
-3. The two-run agreement is exact, so the failure is deterministic, not a
-   flake.
-
-### What the diagnostic composition shows about the rest
-
-`JOINT_PRESET=fs-only` drops `tool-bash` (the plane-owned spelling) and lets
-the Member activate. That run is a DIAGNOSTIC control, not one of the two
-acceptance runs, and it shows the P01/PD-42 repair is real — and what remains
-broken underneath (`diagnostic-fs-only/joint-verdicts.json`):
-
-| arm | verdict | measured detail |
+| record | what it measured | why superseded |
 |---|---|---|
-| J01 | `PASS` | team.create=200 admitted=true blueprintHash=sha256:69274dd4e3b10f0db21c194a1e1df761ce29fa3bd3abf83be9d6748e687f5ad3 memberIoCeilings=true reviewRouting=true schemaVersion=5 |
-| J02 | `PASS` | inside="pd42-inside-2026-11-11T21-34-10-h3189-r8e7c91" allowFacts=1 |
-| J03 | `PASS` | writeDenies=1 outsideExists=false |
-| J04 | `FAIL` | bashCalls=1 realmTerminalFacts=0 |
-| J05 | `FAIL` | request=ctrl-0zusz2v0e6l23017jxl211yg consumption=1 executionResults=0 outcomes= |
-| J06 | `FAIL` | parameter-permission request=ctrl-0zusz2v0e6l23017jxl211yg reviewAuthority=leader decider={"instanceId":"inst-leader","kind":"instance","role":"leader"} team-tool-execute leg=false (F-3 is recorded, never fixed here) |
-| J07 | `NOT_REACHED` | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
-| J08 | `NOT_REACHED` | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
-| J09 | `NOT_REACHED` | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
-| J10 | `NOT_REACHED` | the joint driver did not drive this arm in this composition (see the README for the exact next step) |
-| J11 | `PASS` | one-shot consumption facts for ctrl-0zusz2v0e6l23017jxl211yg: 1 |
-
-## F-3 — Officer identity (recorded, never fixed here)
-
-In the diagnostic run the guarded ask's `parameter-permission` leg is routed to
-**the Leader**, not the Officer: `reviewAuthority: "leader"`, decider
-`{"instanceId":"inst-leader","kind":"instance","role":"leader"}`, with
-`wakes: 0` on the Officer and **no `team-tool-execute` leg at all**. The
-blueprint declared `reviewRouting.officerTemplateId: officer`,
-`ordinaryToolApprovals.default: officer` and `whenOfficerUnavailable: hold`;
-`hold` was therefore never exercised, and the observed routing contradicts the
-declaration. The same observation was made on this integration branch by the
-pre-driver probe archived under `diagnostic-fs-only/probe1/`.
-
-## What would have to change
-
-| arm | change required |
-|---|---|
-| J04 | `native-bash-tool.mjs` must export a real `Config` schema (or omit `Config`), so Cordis' `Config["~standard"].validate()` has a validator; then a live run can test the pinned identity, the shared PTY and the second-Member PTY. |
-| J02 / J03 / J11 | nothing known-broken beyond the blocker: they become reachable the moment a Member activates in the native composition. |
-| J05 | in the diagnostic composition the allow is consumed once but **no `control-execution-result` fact** is written (`consumption=1`, `executionResults=0`); that is a separate product defect to fix. |
-| J06 | `whenOfficerUnavailable` / `officerTemplateId` are not honoured for `parameter-permission`: the Leader receives the leg. Routing must be repaired (or the declaration must fail loudly) before the Officer arc can be CANDIDATE-C2. |
-| J07–J10 | the driver must implement the Goal (create/get/update, >=2 auto rounds, human Stop), relay-refusal, sticky-Stop and cold-recovery arcs on the live Member — not implemented in this round. |
-
-## Release-notes paragraph (text only — `RELEASE-NOTES-0.1.6.md` was not edited)
-
-> **Joint acceptance (DEV-LIVE, 2026-11-11) — not met.** The first single joint
-> driver (11 arms, one `schemaVersion: 5` blueprint carrying both
-> `memberIoCeilings` and `reviewRouting`, governed realm + Alpha.6 route +
-> plane takeover) ran twice on the pinned Host and agreed exactly: `team.create`
-> admits the two-family document, but with `tool-bash` present — the
-> composition that lets the realm shadow the shell with the pinned persistent
-> definition — every Member activation fails at the native-tool re-mount
-> (`Cannot read properties of undefined (reading 'validate')`;
-> `native-bash-tool.mjs` exports a non-schema `Config`). The fs-only diagnostic
-> composition confirms the PD-42 ceiling repair (inside write + ALLOW fact;
-> outside write `IO_WRITE_DENIED`, zero bytes), but shows the
-> `parameter-permission` leg routed to the Leader instead of the Officer and an
-> allow consumed without a durable `control-execution-result`. The joint promise
-> therefore remains NOT MET; this record is DEV-LIVE and is not a candidate
-> claim.
+| [`run1/`](run1/), [`run2/`](run2/) | the v1 driver: `J04`–`J11` were declared but undriven (`NOT_REACHED`), and the composition failed at the native-bash module (`Config` export, `native-bash-tool.mjs:51` → loader `~standard.validate`) | that mount defect was fixed by #730; the v1 verdict text is obsolete |
+| [`j05j06-run1/`](j05j06-run1/), [`j05j06-run2/`](j05j06-run2/) | #733's approval-lane evidence: `PASS J04` on the pre-#730 tree, one bound identity per leg | produced BEFORE #730 merged; its `PASS J04` no longer describes the shipped tree, which is exactly what the two runs above falsify |
+| [`diagnostic-fs-only/`](diagnostic-fs-only/) | a diagnostic composition with the plane's shell row dropped | not the shipped composition; kept as history |
