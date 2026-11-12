@@ -21,6 +21,7 @@ import type {
   Alpha6ControlPorts,
   AssignedOfficerFactsPort,
   AssignedOfficerMemberLookup,
+  AssignedOfficerMemberSnapshot,
   AssignedOfficerParsedRouting,
   AuthorityGenerationSource,
 } from '../alpha6/assigned-officer-facts.js'
@@ -198,17 +199,38 @@ function factsPort(
     readonly routing?: AssignedOfficerParsedRouting
     readonly generation?: AuthorityGenerationSource
     readonly classify?: () => boolean | null
+    /**
+     * Rewrite the durable member row the provider reads, for identity and
+     * lifecycle probes a real repository row cannot express (a foreign root,
+     * a bogus lifecycle spelling, an ABSENT lifecycle). Never mutates the row.
+     */
+    readonly memberOverride?: (row: AssignedOfficerMemberSnapshot) => AssignedOfficerMemberSnapshot
+    /** Rewrite the durable leg row the provider reads (e.g. mark it decided). */
+    readonly legOverride?: (leg: ControlRequestRecord) => ControlRequestRecord
   } = {},
 ): AssignedOfficerFactsPort {
   const repository = world.domain.repositories.memberInstances
+  const getMember = (
+    root: string,
+    instanceId: string,
+  ): AssignedOfficerMemberSnapshot | undefined => {
+    const row = repository.get(root, instanceId)
+    if (row === undefined || options.memberOverride === undefined) return row
+    return options.memberOverride(row)
+  }
+  const leg = async (query: { readonly currentLegRequestId: string }): Promise<ControlRequestRecord | null> => {
+    const row = await mirror.leg(query)
+    if (row === null || options.legOverride === undefined) return row
+    return options.legOverride(row)
+  }
   return createAssignedOfficerFactsPort({
     rootSessionId: P6T4_ROOT,
     routing: options.routing ?? BASE_ROUTING,
     members: {
-      get: (root, instanceId) => repository.get(root, instanceId),
+      get: getMember,
       list: (root) => repository.list(root),
     },
-    leg: mirror.leg,
+    leg,
     transfer: mirror.transfer,
     ...(options.generation === undefined ? {} : { authorityGeneration: options.generation }),
     fixedLeaderOrHumanCategory: options.classify ?? (() => false),
@@ -1048,6 +1070,220 @@ describe('A6 facts — OperationOwner identity and generation are the trusted op
       await mirror.refresh(service)
 
       expect(await port(queryOf(leg))).toBeNull()
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+})
+
+/**
+ * THE LAW UNDER TEST — the durable PENDING APPROVAL LEG is the subject of
+ * validity, not the OperationOwner's transient lifecycle.
+ *
+ * The two measured defects (both on real Hosts):
+ *
+ *  1. joint acceptance `JOINT_J10_RELAY=1`: a member whose FIRST turn is a
+ *     human `member.send` relay asks for review; the durable row reads
+ *     `CREATED` and the port refused (`CONTROL_RESOLVER_NOT_AUTHORIZED`).
+ *  2. F-5 two-ask lane (`task/f5-two-asks-20261111`): the same member, after
+ *     finishing one work unit, asks a SECOND time; the row reads `SETTLED`
+ *     and the port refused again.
+ *
+ * The first test below is the NEGATIVE CONTROL: with the old
+ * `if (owner.lifecycle !== 'RUNNING') return null` line restored, the CREATED
+ * and SETTLED assertions fail (both states are not `RUNNING`); it cannot pass
+ * by accident. The end-to-end tests then prove the downstream control service
+ * resolves the leg, and the fail-closed tests prove the change widened
+ * nothing.
+ */
+describe('A6 facts — the pending leg is the subject, not the owner lifecycle', () => {
+  /**
+   * The worker's REAL durable row, so an override changes only the probed
+   * field and every identity check still reads the true fixture values.
+   */
+  function workerRow(world: P6T1World): AssignedOfficerMemberSnapshot {
+    const row = world.domain.repositories.memberInstances.get(P6T4_ROOT, WORKER)
+    if (row === undefined) throw new Error('fixture worker row missing')
+    return row
+  }
+
+  /** A port whose owner row is `row` (all other members read the repository). */
+  function portWithOwner(
+    world: P6T1World,
+    mirror: ControlRowMirror,
+    row: AssignedOfficerMemberSnapshot,
+  ): AssignedOfficerFactsPort {
+    return factsPort(world, mirror, {
+      generation: GENERATION,
+      memberOverride: (current) => current.instanceId === WORKER ? row : current,
+    })
+  }
+
+  it('accepts CREATED, RUNNING and SETTLED owners and refuses revoked/terminal/unknown ones — NEGATIVE CONTROL for the old RUNNING-only gate', async () => {
+    const world = await makeWorld('a6-leg-owner-states')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-leg-owner-states')
+      await mirror.refresh(service)
+      const query = queryOf(leg)
+      const row = workerRow(world)
+
+      // With `lifecycle !== 'RUNNING'` restored, the first two assertions fail:
+      // these are the two states the two measured defects own their legs in.
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'CREATED' })(query), 'CREATED owner must own a valid pending leg')
+        .not.toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'RUNNING' })(query), 'RUNNING owner must own a valid pending leg')
+        .not.toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'SETTLED' })(query), 'SETTLED owner must own a valid pending leg')
+        .not.toBeNull()
+
+      // Revoked, terminal, unknown and absent lifecycles stay refused.
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'ARCHIVED' })(query), 'ARCHIVED owner must be refused')
+        .toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'DISPOSED' })(query), 'DISPOSED owner must be refused')
+        .toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, lifecycle: 'REVOKED' })(query), 'unknown lifecycle must be refused')
+        .toBeNull()
+      const { lifecycle: _omitted, ...withoutLifecycle } = row
+      expect(await portWithOwner(world, mirror, withoutLifecycle)(query), 'absent lifecycle must be refused')
+        .toBeNull()
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('lets a CREATED owner own a valid leg end to end — defect 1: the first, relayed turn', async () => {
+    const world = await makeWorld('a6-leg-created')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+
+      // The member has not taken a turn yet when the ask is minted.
+      await flipLifecycle(world, WORKER, 'CREATED')
+      const leg = await makeLeg(service, 'corr-a6-leg-created')
+      await mirror.refresh(service)
+
+      expect(await port.resolveCurrentReviewer(queryOf(leg))).toEqual({ instanceId: OFFICER })
+      expect(await port(queryOf(leg))).not.toBeNull()
+
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({
+        source: 'blueprint-officer',
+        operationOwnerInstanceId: WORKER,
+        operationOwnerTemplateId: 'worker',
+      })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('lets a SETTLED owner own a valid leg end to end — defect 2: the second ask after a finished work unit', async () => {
+    const world = await makeWorld('a6-leg-settled')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+
+      // Ask #1's work unit finished; the row is idle SETTLED for ask #2.
+      await flipLifecycle(world, WORKER, 'SETTLED')
+      const leg = await makeLeg(service, 'corr-a6-leg-settled')
+      await mirror.refresh(service)
+
+      expect(await port(queryOf(leg))).not.toBeNull()
+      const allowed = await service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })
+      expect(allowed.decision).toBe('allow')
+      expect(allowed.reviewCapability).toMatchObject({
+        source: 'blueprint-officer',
+        operationOwnerInstanceId: WORKER,
+      })
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('still refuses an ARCHIVED owner with the typed downstream refusal, never a guess', async () => {
+    const world = await makeWorld('a6-leg-archived')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-leg-archived')
+      await mirror.refresh(service)
+      const query = queryOf(leg)
+
+      await flipLifecycle(world, WORKER, 'ARCHIVED')
+      expect(await port(query)).toBeNull()
+      await expect(service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: memberCaller(OFFICER),
+        requestId: leg.requestId,
+        decision: 'allow',
+        assignedOfficer: true,
+      })).rejects.toThrow(/produced no facts/)
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('refuses an owner row that does not identify the leg subject (foreign root, other instance, other template)', async () => {
+    const world = await makeWorld('a6-leg-identity-mismatch')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-leg-identity-mismatch')
+      await mirror.refresh(service)
+      const query = queryOf(leg)
+      const row = workerRow(world)
+
+      expect(await port(query), 'control: the true row passes').not.toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, rootSessionId: 'session-a6-other-team' })(query), 'foreign root must be refused').toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, instanceId: WORKER2 })(query), 'other instance must be refused').toBeNull()
+      expect(await portWithOwner(world, mirror, { ...row, templateId: 'scout' })(query), 'other template must be refused').toBeNull()
+    } finally {
+      await destroyP6T1World(world)
+    }
+  })
+
+  it('refuses a missing leg, a decided leg, a wrong generation and a missing generation', async () => {
+    const world = await makeWorld('a6-leg-pending-and-generation')
+    try {
+      const mirror = new ControlRowMirror()
+      const port = factsPort(world, mirror, { generation: GENERATION })
+      const service = officerService(world, port)
+      const leg = await makeLeg(service, 'corr-a6-leg-pending-and-generation')
+      await mirror.refresh(service)
+      const query = queryOf(leg)
+
+      expect(await port(query), 'control: the pending leg passes').not.toBeNull()
+
+      // No durable row at all.
+      expect(await factsPort(world, new ControlRowMirror(), { generation: GENERATION })(query), 'missing leg must be refused').toBeNull()
+      // A row that exists but is no longer pending.
+      const decided = factsPort(world, mirror, {
+        generation: GENERATION,
+        legOverride: (row) => ({ ...row, status: 'decided' }),
+      })
+      expect(await decided(query), 'decided leg must be refused').toBeNull()
+      // The frozen generation must still equal the composition's CURRENT one.
+      expect(await factsPort(world, mirror, { generation: GENERATION + 1 })(query), 'wrong generation must be refused').toBeNull()
+      expect(await factsPort(world, mirror, {})(query), 'missing generation must be refused').toBeNull()
     } finally {
       await destroyP6T1World(world)
     }

@@ -42,10 +42,13 @@
  * - the frozen authority generation is present and equals the composition's
  *   CURRENT generation FOR THE OPERATION OWNER (not the Officer's). `0` is a
  *   legal initial generation; absence (`undefined`) refuses;
- * - the actual OperationOwner resolves to a live member of THIS team whose
- *   durable template is exactly the leg's frozen `operationOwnerTemplateId`;
- *   the owner is the leg's trusted SUBJECT instance (or legacy
- *   `targetInstanceId`), never the Requester (a Leader proxy may ask);
+ * - the actual OperationOwner resolves to a member of THIS team whose durable
+ *   template is exactly the leg's frozen `operationOwnerTemplateId` and whose
+ *   lifecycle is not revoked/terminal (`CREATED`/`RUNNING`/`SETTLED` all own
+ *   a valid pending leg — the LEG is the subject of validity; see the law at
+ *   `LEG_OWNER_LIVE_LIFECYCLES`); the owner is the leg's trusted SUBJECT
+ *   instance (or legacy `targetInstanceId`), never the Requester (a Leader
+ *   proxy may ask);
  * - the frozen tool binding (`definitionIdentity`/owner/name) is complete;
  * - the composition's fixed Leader/Human-category classifier answers
  *   explicitly (no answer = refusal, never an implicit `false`).

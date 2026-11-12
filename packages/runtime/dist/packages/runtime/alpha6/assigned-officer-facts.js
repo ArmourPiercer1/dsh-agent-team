@@ -38,6 +38,48 @@ export function createAlpha6CategoryLookup() {
 function nonEmpty(value) {
     return typeof value === 'string' && value.trim().length > 0;
 }
+/**
+ * THE LAW — the durable PENDING APPROVAL LEG is the subject of validity, not
+ * the OperationOwner's transient lifecycle.
+ *
+ * A leg is valid because the persisted control row is still `pending`, belongs
+ * to THIS root/case/ordinal/kind/rung, was frozen under EXACTLY this parsed
+ * Blueprint (content hash + revision), has no current-leg transfer, routes to
+ * exactly one Officer, and names a COMPLETE frozen operation identity (owner
+ * instance + template, tool definition identity/owner/name, authority
+ * generation). Those are the facts that say "this approval request exists and
+ * this member is the one it was opened for". They are all checked before this
+ * point, all-or-nothing.
+ *
+ * The owner row's lifecycle says only what that member is doing at THIS
+ * instant. It is not identity, and it is not the leg's validity:
+ *
+ *   - CREATED — the member exists and has not taken its first turn yet. A
+ *     human `member.send` relay can open a governed ask in exactly this state
+ *     (joint-acceptance J10). The leg is valid.
+ *   - RUNNING — the member is mid-turn. Valid.
+ *   - SETTLED — the member finished a work unit and is idle, not gone. A
+ *     second ask opened after that work unit reads exactly this state (F-5).
+ *     The leg is valid.
+ *
+ * STILL REFUSED here and everywhere above, fail-closed (`null`, which the
+ * control service turns into a typed refusal): no durable pending leg; a
+ * decided/abandoned leg; a different root/case/ordinal/kind/rung; a Blueprint
+ * hash/revision mismatch; a transferred leg; zero or multiple Officers; a
+ * missing/changed authority generation; an owner row from another team, a
+ * different instance, or a different template; an incomplete frozen tool
+ * triple; an unknown or ABSENT lifecycle value; and the revoked (ARCHIVED) or
+ * terminal (DISPOSED) states. A refusal is never a guess and never a widened
+ * authority.
+ *
+ * DO NOT reintroduce `lifecycle === 'RUNNING'` as a validity test: it refuses
+ * the two legal states above for no identity reason. This set is deliberately
+ * the same work-accepting set the control plane already uses at execution time
+ * (`GUARD_LIVE_LIFECYCLES`, control/service.ts) and at admission
+ * (`LIVE_CALLER_LIFECYCLES`, admission/resolve.ts): "live" means not revoked
+ * and not terminal, NOT "currently executing".
+ */
+const LEG_OWNER_LIVE_LIFECYCLES = ['CREATED', 'RUNNING', 'SETTLED'];
 function isGeneration(value) {
     return typeof value === 'number' && Number.isInteger(value) && value >= 0;
 }
@@ -192,7 +234,12 @@ export function createAssignedOfficerFactsPort(input) {
             return null;
         if (owner.instanceId !== ownerInstanceId)
             return null;
-        if (owner.lifecycle !== 'RUNNING')
+        // THE GATE (law in `LEG_OWNER_LIVE_LIFECYCLES` above): the PENDING LEG is
+        // the subject of validity; the owner row only has to IDENTIFY the member
+        // the leg was opened for. CREATED (ask on the member's first, relayed
+        // turn) and SETTLED (second ask after a finished work unit) both own a
+        // valid pending leg. Only revoked / terminal / unattributable rows refuse.
+        if (!LEG_OWNER_LIVE_LIFECYCLES.includes(String(owner.lifecycle)))
             return null;
         if (owner.templateId !== leg.operationOwnerTemplateId)
             return null;

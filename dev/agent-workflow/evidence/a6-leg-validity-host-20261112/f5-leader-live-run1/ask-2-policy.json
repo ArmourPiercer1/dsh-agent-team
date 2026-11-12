@@ -1,0 +1,157 @@
+{
+  "policy": "leader",
+  "expectation": "the ask may go to the Leader; the Leader is the resolver and the human leg is not silently substituted",
+  "officerAtAsk2": "live",
+  "officerRowNow": {
+    "instanceId": "inst-0i1ebrl1mu7g",
+    "lifecycle": "CREATED",
+    "templateId": "officer"
+  },
+  "officerAvailable": true,
+  "policyInvoked": false,
+  "policyHonoured": null,
+  "policyReason": "the configured Officer is CREATED and was woken as the reviewer; the router's whenOfficerUnavailable branch is not reached, so the policy is NOT INVOKED (recorded as such rather than marked honoured)",
+  "ask2": {
+    "permissionLeg": {
+      "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-1ix6a790oyfj481yufywv0n4"
+    },
+    "planeLeg": {
+      "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+      "legOrdinal": 1,
+      "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "authorityGeneration": 0
+    },
+    "escalations": [
+      {
+        "sequence": 25,
+        "factType": "control-escalation-recorded",
+        "createdAt": "2026-11-12T13:02:58.981Z",
+        "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+        "escalatedBy": {
+          "instanceId": "inst-0i1ebrl1mu7g",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0avzrbd1phyage0be5yfn0qp"
+      }
+    ],
+    "transfer": null,
+    "humanLeg": {
+      "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+      "legOrdinal": 2
+    },
+    "decision": {
+      "sequence": 24,
+      "factType": "control-decision-recorded",
+      "createdAt": "2026-11-12T13:02:58.966Z",
+      "decider": {
+        "instanceId": "inst-0i1ebrl1mu7g",
+        "kind": "instance",
+        "role": "member"
+      },
+      "decision": "deny",
+      "reason": "escalated",
+      "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+      "requestSequence": 23,
+      "reviewCapability": {
+        "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+        "blueprintRevision": "1",
+        "currentLegRequestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+        "effectSetFingerprint": "sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+        "effectiveReviewAuthority": "leader",
+        "entry": "escalate",
+        "legOrdinal": 1,
+        "operationOwnerInstanceId": "inst-1447bl90y1ah",
+        "operationOwnerTemplateId": "worker",
+        "operationToolDefinitionIdentity": "def#27",
+        "scopeFingerprint": "session-f5-team-leader-2026-11-12T13-02-41\u0000instance:inst-1447bl90y1ah\u0000team-tool-execute\u0000bash\u0000pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2\u0000sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+        "source": "blueprint-officer"
+      },
+      "scope": {
+        "actionName": "team-tool-execute",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+        "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+        "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+        "subject": {
+          "instanceId": "inst-1447bl90y1ah",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-1447bl90y1ah",
+        "toolName": "bash"
+      }
+    },
+    "decisionCount": 1,
+    "consumptions": 0,
+    "executions": 0,
+    "abandonments": 0,
+    "executed": true
+  },
+  "discoverability": {
+    "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+    "ledgerPageVisible": true,
+    "pendingControlCount": 0,
+    "modelPendingListObserved": true,
+    "remoteDiscovery": {
+      "pageStatus": 200,
+      "projectionStatus": 200,
+      "entries": 30
+    }
+  },
+  "resolver": {
+    "deciderKind": "instance",
+    "deciderInstanceId": "inst-0i1ebrl1mu7g",
+    "deciderHumanId": null,
+    "leaderInstance": "inst-leader",
+    "officerInstance": "inst-0i1ebrl1mu7g",
+    "humanAllowedByDriver": [
+      {
+        "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+        "kind": "leader-approval",
+        "actionName": "parameter-permission",
+        "status": 200,
+        "ok": true,
+        "error": null
+      },
+      {
+        "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+        "kind": "leader-approval",
+        "actionName": "team-tool-execute",
+        "status": 200,
+        "ok": true,
+        "error": null
+      }
+    ],
+    "gateFactsPresent": true,
+    "refusalGateAuditPresent": false,
+    "failingGatesAtRefusal": []
+  },
+  "mockObservation": {
+    "wakeTurns": 6,
+    "notificationTurns": 0,
+    "listCalls": 2,
+    "resolveCalls": 2,
+    "refusalTraceCount": 0,
+    "refusalTraces": []
+  },
+  "disposeResult": null,
+  "observedAt": "2026-11-12T13:03:01.183Z",
+  "observerHostPid": 40
+}

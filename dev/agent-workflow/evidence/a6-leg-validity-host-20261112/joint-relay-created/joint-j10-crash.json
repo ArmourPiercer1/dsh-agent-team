@@ -1,0 +1,239 @@
+{
+  "member": {
+    "label": "g-joint-10",
+    "instanceId": "inst-0imh1lt1qc60",
+    "childSessionId": "session-team-child-af84c30f901c63c7aa55f8bd36879718",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-c1-smoke-a6-2026-11-12T13-04-05-h0-r37df58",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-0imh1lt1qc60",
+          "templateId": "worker",
+          "childSessionId": "session-team-child-af84c30f901c63c7aa55f8bd36879718",
+          "operationId": "op-0547trj1fjz2ze0d9bod10gj",
+          "replayed": false,
+          "ledgerSequence": 23,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "joint-g-joint-10-2026-11-12T13-04-05-h0-r37df58"
+      }
+    }
+  },
+  "relay": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "joint-j10-human-276v9vyzbc",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T13-04-05-h0-r37df58",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-0imh1lt1qc60",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-0imh1lt1qc60",
+              "deliveredToSessionId": "session-team-child-af84c30f901c63c7aa55f8bd36879718",
+              "factSequence": 24,
+              "deliveredSequence": 25,
+              "requestToken": "joint-j10-human-2026-11-12T13-04-05-h0-r37df58"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "joint-j10-human-2026-11-12T13-04-05-h0-r37df58",
+            "projectionGeneration": null,
+            "effectSequence": 24
+          }
+        }
+      }
+    }
+  },
+  "before": {
+    "pp": "ctrl-12ajdzl1wm6fek05ppyxz00c",
+    "pa": "ctrl-1v197gt1xqmh4w1o1xs8n0sz",
+    "ppConsumed": 1,
+    "paConsumed": 1,
+    "ppFacts": 0,
+    "paFacts": 0,
+    "bodyStarted": "body-started\n",
+    "requests": 4
+  },
+  "after": {
+    "ppConsumed": 1,
+    "paConsumed": 1,
+    "ppFacts": [
+      {
+        "sequence": 32,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-12ajdzl1wm6fek05ppyxz00c",
+        "callId": "call-c1-koph6646",
+        "outcome": "unknown",
+        "recordedAt": "2026-11-12T13:05:46.913Z",
+        "createdAt": "2026-11-12T13:05:46.914Z"
+      }
+    ],
+    "paFacts": [
+      {
+        "sequence": 34,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-1v197gt1xqmh4w1o1xs8n0sz",
+        "callId": "team-inst-0imh1lt1qc60-native-bash:hexec:nb-1794488742187-705920108-1",
+        "outcome": "unknown",
+        "recordedAt": "2026-11-12T13:05:46.946Z",
+        "createdAt": "2026-11-12T13:05:46.946Z"
+      }
+    ],
+    "abandonments": [
+      {
+        "sequence": 33,
+        "factType": "control-request-abandoned",
+        "requestId": "ctrl-12ajdzl1wm6fek05ppyxz00c",
+        "reason": "execution-outcome-unknown",
+        "createdAt": "2026-11-12T13:05:46.930Z"
+      },
+      {
+        "sequence": 35,
+        "factType": "control-request-abandoned",
+        "requestId": "ctrl-1v197gt1xqmh4w1o1xs8n0sz",
+        "reason": "execution-outcome-unknown",
+        "createdAt": "2026-11-12T13:05:46.964Z"
+      }
+    ],
+    "requests": 4
+  },
+  "restartOk": true,
+  "booted": {
+    "origin": "http://127.0.0.1:3191",
+    "cookie": "dsh-auth-YqAGOAZJG4oYKfuSq2wfjEJ-TWPMMh9DhCWcS3XtuhI=v1.eyJ2ZXJzaW9uIjoxLCJhdXRob3JpdHkiOiIxMjcuMC4wLjE6MzE5MSIsImlzc3VlZEF0IjoxNzk0NDg4NzQ2OTY5LCJleHBpcmVzQXQiOjE3OTcwODA3NDY5Njl9.ajmnJGPqYyRwsicN5l6VXBBx5MX-Y2V7_A4k7iatVDg",
+    "host": {
+      "child": {
+        "_events": {},
+        "_eventsCount": 2,
+        "_closesNeeded": 1,
+        "_closesGot": 0,
+        "connected": false,
+        "signalCode": null,
+        "exitCode": null,
+        "killed": false,
+        "spawnfile": "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node",
+        "_handle": {
+          "pid": 604
+        },
+        "spawnargs": [
+          "/home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/deepseek-harness-test-use/apps/cli/lib/bin.js",
+          "web",
+          "--port",
+          "3191",
+          "--no-open"
+        ],
+        "pid": 604,
+        "stdin": null,
+        "stdout": null,
+        "stderr": null,
+        "stdio": [
+          null,
+          null,
+          null
+        ]
+      },
+      "exitInfo": {
+        "exited": false
+      },
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/dev/agent-workflow/evidence/a6-leg-validity-host-20261112/joint-relay-created/instance.log"
+    }
+  },
+  "mockRequestsAtKill": 2,
+  "mockRequestsAfterRestart": 2,
+  "samples": [
+    {
+      "at": "2026-11-12T13:05:42.344Z",
+      "requests": 2,
+      "last": [
+        "parameter-permission:ctrl-0m6caf41sl21w91n5pmuy1xr",
+        "team-tool-execute:ctrl-0are55k1mm02c50ivwpf21c0"
+      ],
+      "consumptions": 2,
+      "mockRequests": 27,
+      "bodyStart": false,
+      "wakes": 6
+    },
+    {
+      "at": "2026-11-12T13:05:42.597Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0are55k1mm02c50ivwpf21c0",
+        "parameter-permission:ctrl-12ajdzl1wm6fek05ppyxz00c"
+      ],
+      "consumptions": 2,
+      "mockRequests": 31,
+      "bodyStart": false,
+      "wakes": 8
+    },
+    {
+      "at": "2026-11-12T13:05:42.848Z",
+      "requests": 3,
+      "last": [
+        "team-tool-execute:ctrl-0are55k1mm02c50ivwpf21c0",
+        "parameter-permission:ctrl-12ajdzl1wm6fek05ppyxz00c"
+      ],
+      "consumptions": 3,
+      "mockRequests": 32,
+      "bodyStart": false,
+      "wakes": 9
+    },
+    {
+      "at": "2026-11-12T13:05:43.100Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-12ajdzl1wm6fek05ppyxz00c",
+        "team-tool-execute:ctrl-1v197gt1xqmh4w1o1xs8n0sz"
+      ],
+      "consumptions": 3,
+      "mockRequests": 34,
+      "bodyStart": false,
+      "wakes": 11
+    },
+    {
+      "at": "2026-11-12T13:05:43.351Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-12ajdzl1wm6fek05ppyxz00c",
+        "team-tool-execute:ctrl-1v197gt1xqmh4w1o1xs8n0sz"
+      ],
+      "consumptions": 4,
+      "mockRequests": 35,
+      "bodyStart": false,
+      "wakes": 12
+    },
+    {
+      "at": "2026-11-12T13:05:43.602Z",
+      "requests": 4,
+      "last": [
+        "parameter-permission:ctrl-12ajdzl1wm6fek05ppyxz00c",
+        "team-tool-execute:ctrl-1v197gt1xqmh4w1o1xs8n0sz"
+      ],
+      "consumptions": 4,
+      "mockRequests": 35,
+      "bodyStart": true,
+      "wakes": 12
+    }
+  ],
+  "membersAfterRestart": 6,
+  "memberSurvived": true,
+  "officerSurvived": true,
+  "bodyStartAfter": "body-started\n"
+}
