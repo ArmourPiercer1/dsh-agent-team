@@ -81,7 +81,7 @@ export type { CanonicalizeOperationInput } from './canonical-operation.js';
 export { resolveOperationPermission, } from './permission-resolver.js';
 export type { CanonicalRule, CanonicalRules, PermissionDecision, PermissionLane, PermissionProvenance, } from './permission-resolver.js';
 export { END_CAP_DENIAL_REASON, installParameterPermissionListener, } from './pre-execute-adapter.js';
-export type { AgentPreExecuteCtx, GuardExecLike, InstallParameterPermissionListenerParams, PreExecuteExec, PreToolDecisionLike, } from './pre-execute-adapter.js';
+export type { AgentPreExecuteCtx, GuardExecLike, InstallParameterPermissionListenerParams, PreExecuteExec, PreToolDecisionLike, Alpha6AskIdentity, BoundBlueprintIdentity, OperationToolBindingIdentity, } from './pre-execute-adapter.js';
 export { PERMISSION_COVERAGE_CLASSIFICATIONS, SAFE_UNMANAGED_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_NAMES, KNOWN_SENSITIVE_TOOL_PREFIXES, SENSITIVE_REMEDIATION, UNKNOWN_REMEDIATION, UNKNOWN_REASON, classifyPermissionCoverageTool, evaluatePermissionCoverage, mcpIntroducedToolNames, permissionCoverageGateEnabled, buildPermissionCoverageErrorDetail, } from './permission-coverage.js';
 export type { PermissionCoverageClassification, PermissionCoverageFacts, ClassifiedTool, UnmanagedToolEntry, PermissionCoverageVerdict, } from './permission-coverage.js';
 export { PERMISSION_COVERAGE_ERROR_CODES, PermissionCoverageUnmanagedError, isPermissionCoverageUnmanagedError, } from './errors.js';

@@ -1,0 +1,16 @@
+{
+  "schema": "dist-placements/1",
+  "family": "a5sf-native-bash-preservation",
+  "summary": "NATIVE-BASH-PRESERVATION (2026-11-11): the product's governed `bash` is the PINNED host `@deepseek-ai/dsh-tool-bash-persistent` definition, mounted by `src/plugin/live/native-bash-tool.mjs` through the route-C seam. That module and the admission slot it publishes into (`native-tool-admission.mjs`) are plain JS, which tsc never emits, and the byte-copied realm row resolves them with `new URL('./native-bash-tool.mjs', import.meta.url)`; without these entries the installed face would fail at member setup with ERR_MODULE_NOT_FOUND — not at build time.",
+  "migratedFrom": "new lane (NATIVE-BASH-PRESERVATION) — no in-file PLACEMENTS predecessor",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/live/native-bash-tool.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/native-bash-tool.mjs"
+    },
+    {
+      "src": "packages/runtime/src/plugin/live/native-tool-admission.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/live/native-tool-admission.mjs"
+    }
+  ]
+}

@@ -487,4 +487,68 @@ describe('A6 root router — recipient comes from the SHARED router, never "the 
     const route = await (await makeRouter([baseRow], [leader, worker])).route('req-1')
     expect(route?.kind).toBe('hold')
   })
+
+  // J06 (2026-11-11) — the `parameter-permission` leg is the same ordinary ask.
+  //
+  // It has no PA manifest, so its authority point rides the review payload's
+  // projected `authorityScope` (written by the adapter from the SAME operation
+  // the typed leg field carries) and its correlation is the adapter's exec
+  // callId. With the identity carry in place it is delegable exactly like a
+  // `team-tool-execute` leg — the measured defect was that it was NOT, so the
+  // Leader received it by default.
+  const permissionRow = {
+    ...baseRow,
+    requestId: 'req-param',
+    actionName: 'parameter-permission',
+    toolName: 'bash',
+    correlation: 'call-c1-param',
+    operationOwnerTemplateId: 'worker',
+    operationToolOwner: 'dsh-agent-team',
+    operationToolName: 'bash',
+    blueprintContentHash: 'sha256-parameter-identity',
+    blueprintRevision: '7',
+  }
+
+  it('J06 routes a parameter-permission ask carrying the bound identity to the Officer', async () => {
+    const route = await (await makeRouter([permissionRow], [leader, officer, worker])).route('req-param')
+    expect(route).toMatchObject({
+      kind: 'recipient',
+      target: { kind: 'instance', instanceId: 'inst-officer', routeRole: 'officer' },
+    })
+  })
+
+  it('J06 honours a declared Leader exception on the parameter-permission leg', async () => {
+    const route = await (await makeRouter([permissionRow], [leader, officer, worker], {
+      exceptions: [{ memberTemplateId: 'worker', tool: { owner: 'dsh-agent-team', name: 'bash' } }],
+    })).route('req-param')
+    expect(route).toMatchObject({ kind: 'recipient', target: { instanceId: 'inst-leader', routeRole: 'leader' } })
+  })
+
+  it('J06 honours whenOfficerUnavailable: hold on the parameter-permission leg', async () => {
+    // The Officer row exists but is retired with admission history: the
+    // blueprint's `hold` must win over any Leader fallback.
+    const archivedOfficer = { ...officer, lifecycle: 'ARCHIVED' }
+    const route = await (await makeRouter([permissionRow], [leader, archivedOfficer, worker])).route('req-param')
+    expect(route).toMatchObject({ kind: 'hold' })
+  })
+
+  it('J06 refuses a bound-identity ask with NO tool coordinate by name (never a Leader fallback)', async () => {
+    const unidentified = { ...permissionRow }
+    delete (unidentified as { operationToolOwner?: string }).operationToolOwner
+    delete (unidentified as { operationToolName?: string }).operationToolName
+    const route = await (await makeRouter([unidentified], [leader, officer, worker])).route('req-param')
+    expect(route?.kind).toBe('unroutable')
+    expect(String((route as { reason?: string }).reason)).toContain('operation-tool-identity-unavailable')
+  })
+
+  it('J06 keeps a genuinely pre-Alpha.6 row non-delegable (no identity, no tool coordinate)', async () => {
+    const legacy = { ...permissionRow }
+    delete (legacy as { operationToolOwner?: string }).operationToolOwner
+    delete (legacy as { operationToolName?: string }).operationToolName
+    delete (legacy as { blueprintContentHash?: string }).blueprintContentHash
+    delete (legacy as { blueprintRevision?: string }).blueprintRevision
+    const route = await (await makeRouter([legacy], [leader, officer, worker])).route('req-param')
+    expect(route?.kind).toBe('unroutable')
+    expect(String((route as { reason?: string }).reason)).not.toContain('operation-tool-identity-unavailable')
+  })
 })
