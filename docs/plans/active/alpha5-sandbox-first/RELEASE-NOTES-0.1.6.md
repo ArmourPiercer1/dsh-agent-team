@@ -383,7 +383,7 @@ does on this tree (PD-39 Gap 2 re-measurement, tree `84baf304c`).**
   operationFingerprint` (`PA_MANIFEST_CORRUPT`); that row shape is absent on this tree, so the window
   no longer takes that path. See the corrected
   [RUNBOOK-CONTROL-ABANDONED.md](./RUNBOOK-CONTROL-ABANDONED.md) and the new
-  [REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md](../../runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md).
+  [REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md](../../../runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md).
 - **P2, the count, is not wrong — it is narrower than the sentence above.** `pendingControlCount`
   (and `team_list_pending_control`) counts **live-undecided** requests only. An abandoned request is
   terminal and deliberately excluded; it remains readable by id on the ledger page. The
