@@ -434,5 +434,41 @@ export interface TeamProductionRootParams {
  * @param params - the injected root inputs.
  * @returns the complete {@link TeamProductionRoot} surface.
  */
+/**
+ * Which durable ASK rows a boot's scheme-A settlement owns.
+ *
+ * A consumed allow on a TOOL-EXECUTION ask lane is an authorisation whose
+ * outcome this boot may have to settle when the process died before the result
+ * became durable. Everything else (a Goal hand-off, a member requirement) is not
+ * an execution and is left alone — she settled nothing she cannot attribute.
+ *
+ * The lanes are exactly three:
+ *   - `pa:`-correlated rows (the PA plane's own invocation namespace);
+ *   - `team-tool-execute` (the plane's Team-tool leg);
+ *   - `parameter-permission` (the pre-execute adapter's ask).
+ *
+ * The third lane is named because its CORRELATION is the exec callId rather than
+ * a `pa:` spelling, so a lane test written only against the correlation silently
+ * excluded it: a consumed allow whose in-memory settlement was lost then vanished
+ * with NO result and NO abandon. The joint acceptance measured exactly that on a
+ * real Host after a cold boot (`ppFacts=0`, `ppConsumed=1 -> 1`).
+ */
+export declare function isExecutionAskLane(row: {
+    readonly correlation?: string;
+    readonly actionName?: string;
+}): boolean;
+/**
+ * The exec call id a boot settlement should record its `unknown` against.
+ *
+ * `reviewPayload.callId` is the PA plane's carrier. The parameter-permission lane
+ * has no such field — its durable CORRELATION IS the call id the adapter mints,
+ * which is the same fallback `control.recordExecutionResult`'s matcher reads.
+ * A `pa:` correlation is a namespace, never a call id, so it is not used.
+ */
+export declare function settlementCallIdOf(row: {
+    readonly correlation?: string;
+    readonly actionName?: string;
+    readonly reviewPayload?: unknown;
+}): string | undefined;
 export declare function createTeamProductionRoot(params: TeamProductionRootParams): TeamProductionRoot;
 //# sourceMappingURL=root.d.ts.map

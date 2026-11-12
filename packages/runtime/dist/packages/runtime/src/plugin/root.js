@@ -364,6 +364,51 @@ function staticTemplateOf(blueprint, teamSessionId, instanceId, memberInstances)
  * @param params - the injected root inputs.
  * @returns the complete {@link TeamProductionRoot} surface.
  */
+/**
+ * Which durable ASK rows a boot's scheme-A settlement owns.
+ *
+ * A consumed allow on a TOOL-EXECUTION ask lane is an authorisation whose
+ * outcome this boot may have to settle when the process died before the result
+ * became durable. Everything else (a Goal hand-off, a member requirement) is not
+ * an execution and is left alone — she settled nothing she cannot attribute.
+ *
+ * The lanes are exactly three:
+ *   - `pa:`-correlated rows (the PA plane's own invocation namespace);
+ *   - `team-tool-execute` (the plane's Team-tool leg);
+ *   - `parameter-permission` (the pre-execute adapter's ask).
+ *
+ * The third lane is named because its CORRELATION is the exec callId rather than
+ * a `pa:` spelling, so a lane test written only against the correlation silently
+ * excluded it: a consumed allow whose in-memory settlement was lost then vanished
+ * with NO result and NO abandon. The joint acceptance measured exactly that on a
+ * real Host after a cold boot (`ppFacts=0`, `ppConsumed=1 -> 1`).
+ */
+export function isExecutionAskLane(row) {
+    const correlation = String(row.correlation ?? '');
+    return (correlation.startsWith('pa:') ||
+        row.actionName === 'team-tool-execute' ||
+        row.actionName === 'parameter-permission');
+}
+/**
+ * The exec call id a boot settlement should record its `unknown` against.
+ *
+ * `reviewPayload.callId` is the PA plane's carrier. The parameter-permission lane
+ * has no such field — its durable CORRELATION IS the call id the adapter mints,
+ * which is the same fallback `control.recordExecutionResult`'s matcher reads.
+ * A `pa:` correlation is a namespace, never a call id, so it is not used.
+ */
+export function settlementCallIdOf(row) {
+    const review = row.reviewPayload;
+    const payloadCallId = review !== null && typeof review === 'object' && !Array.isArray(review)
+        ? review['callId']
+        : undefined;
+    if (typeof payloadCallId === 'string' && payloadCallId.length > 0)
+        return payloadCallId;
+    const correlation = String(row.correlation ?? '');
+    if (correlation.length === 0 || correlation.startsWith('pa:'))
+        return undefined;
+    return correlation;
+}
 export function createTeamProductionRoot(params) {
     const { config, domain, storageSeam, live, now, teamToolsRef, controlServiceRef, legacyInspect, getSessionQuery, workspaceAttach, blueprintCatalog, blueprintAuthority, resolveBoundBlueprint, requirementFacts, permissionOverlay, fsContainsKeys, permissionPlaneRef, permissionAuthorityFactsForRef, permissionAuthorityCeiling, permissionEnvelope, permissionStaticLayers, permissionCanonicalize, } = params;
     const repos = domain.repositories;
@@ -2093,7 +2138,9 @@ export function createTeamProductionRoot(params) {
                         // unowned, never ours to close — fail closed.
                         if (row.ownerRootSessionId !== rootSid)
                             continue;
-                        if (!String(row.correlation ?? '').startsWith('pa:') && row.actionName !== 'team-tool-execute')
+                        // WHICH rows this recovery owns (see `isExecutionAskLane`): the
+                        // three tool-execution ask lanes only, never a Goal hand-off.
+                        if (!isExecutionAskLane(row))
                             continue;
                         const decision = [...state.decisions].reverse().find((entry) => entry.requestId === row.requestId);
                         if (decision === undefined || decision.decision !== 'allow')
@@ -2108,10 +2155,7 @@ export function createTeamProductionRoot(params) {
                         if (result !== undefined && result.outcome !== 'unknown')
                             continue;
                         if (consumed && result === undefined) {
-                            const review = row.reviewPayload;
-                            const callId = review !== null && typeof review === 'object' && !Array.isArray(review)
-                                ? review['callId']
-                                : undefined;
+                            const callId = settlementCallIdOf(row);
                             if (typeof callId === 'string' && callId.length > 0 && control.recordExecutionResult !== undefined) {
                                 try {
                                     await control.recordExecutionResult({
