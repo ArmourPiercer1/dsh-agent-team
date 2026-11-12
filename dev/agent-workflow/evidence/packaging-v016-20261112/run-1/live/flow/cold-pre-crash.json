@@ -1,0 +1,63 @@
+{
+  "members": [
+    {
+      "instanceId": "inst-0lpp79y0l2tx",
+      "templateId": "goal",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0mzzhtj0zr0b",
+      "templateId": "worker",
+      "label": "w-1",
+      "lifecycle": "SETTLED",
+      "childSessionId": "session-team-child-52b89f19fd675b05f24d06ebdb91c559",
+      "result": null
+    },
+    {
+      "instanceId": "inst-12vvgyh1rzbg",
+      "templateId": "officer",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-dc56699fb5d7c035680da275412c876d",
+      "result": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "lifecycle": "RUNNING",
+      "childSessionId": null,
+      "result": null
+    }
+  ],
+  "goal": {
+    "id": "goal-5401e0ca-3fef-4c5f-9168-9b569e5a8fce",
+    "revision": 3,
+    "objective": "ship V016PACK_R1_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794497721313,
+    "updatedAt": 1794497721800,
+    "activation": "disarmed"
+  },
+  "collect": {
+    "label": "pre-crash",
+    "requestToken": "v016pack_r1-delegate-work",
+    "toolResult": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r1\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r1-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0mzzhtj0zr0b\",\"admittedSequence\":5,\"settledSequence\":20,\"memberResult\":{\"body\":\"V016PACK_R1_WORK1_DONE V016PACK_R1_ARM1_RESULT\",\"requestToken\":\"v016pack_r1-delegate-work\",\"status\":\"succeeded\"}}]},\"requestToken\":\"v016pack_r1-collect\"}",
+    "hasWorkerMarker": true,
+    "hasWorkResult": true
+  },
+  "records": 41,
+  "mockRequests": 33,
+  "ledgerCounts": {
+    "requests": 6,
+    "decisions": 6,
+    "consumptions": 3,
+    "abandonments": 0,
+    "executions": 3
+  }
+}

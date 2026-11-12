@@ -1,0 +1,234 @@
+---
+{
+  "schemaVersion": 5,
+  "blueprintId": "v016-pack-bp-r2",
+  "revision": "1",
+  "leader": {
+    "templateId": "leader",
+    "persona": "You lead the V016PACK_R2 packaged acceptance team. Follow the operator instruction exactly, once."
+  },
+  "members": [
+    {
+      "templateId": "officer",
+      "displayName": "Officer",
+      "persona": "You are the V016PACK_R2 Officer. Resolve the review legs routed to you; do not execute work.",
+      "capabilities": {
+        "teamTools": {
+          "kind": "allow",
+          "items": [
+            "team_list_pending_control",
+            "team_resolve_control"
+          ]
+        },
+        "builtinToolDeny": [
+          "ask_user_question",
+          "create_goal",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "present",
+          "send_message",
+          "skill",
+          "subagent_fork",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow"
+        ],
+        "skills": {
+          "kind": "allow",
+          "items": []
+        },
+        "mcp": {
+          "kind": "allow",
+          "items": []
+        },
+        "permissions": {
+          "default": "deny",
+          "allow": [],
+          "ask": [],
+          "deny": []
+        }
+      }
+    },
+    {
+      "templateId": "worker",
+      "displayName": "Worker",
+      "persona": "You are the V016PACK_R2 Worker. Do exactly the delegated task once, then report.",
+      "capabilities": {
+        "teamTools": {
+          "kind": "deny"
+        },
+        "builtinToolDeny": [
+          "ask_user_question",
+          "create_goal",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "present",
+          "send_message",
+          "skill",
+          "subagent_fork",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow"
+        ],
+        "skills": {
+          "kind": "allow",
+          "items": []
+        },
+        "mcp": {
+          "kind": "allow",
+          "items": []
+        },
+        "permissions": {
+          "default": "ask",
+          "allow": [
+            {
+              "tool": "read",
+              "resource": {
+                "kind": "subtree",
+                "path": "team"
+              }
+            }
+          ],
+          "ask": [
+            {
+              "tool": "bash",
+              "resource": {
+                "kind": "any"
+              }
+            }
+          ],
+          "deny": []
+        }
+      }
+    },
+    {
+      "templateId": "goal",
+      "displayName": "Goal Worker",
+      "persona": "You are the V016PACK_R2 Goal Worker. Create and advance your Goal exactly as instructed."
+    }
+  ],
+  "requirements": [],
+  "memberEnvelopes": [
+    {
+      "templateId": "worker",
+      "envelope": {
+        "allow": [
+          "send-message",
+          "report-progress",
+          "request-control"
+        ],
+        "deny": []
+      }
+    },
+    {
+      "templateId": "officer",
+      "envelope": {
+        "allow": [
+          "resolve-control"
+        ],
+        "deny": []
+      }
+    }
+  ],
+  "policyStates": [
+    {
+      "id": "default",
+      "description": "Default state."
+    }
+  ],
+  "permissionMutationEnvelope": {
+    "rules": []
+  },
+  "teamHardEnvelope": {
+    "rules": []
+  },
+  "teamEnvelope": {
+    "allow": [
+      "assign-task",
+      "create-member",
+      "send-message",
+      "report-progress",
+      "request-control",
+      "resolve-control"
+    ],
+    "deny": []
+  },
+  "metadata": {},
+  "reviewRouting": {
+    "enabled": true,
+    "officerTemplateId": "officer",
+    "ordinaryToolApprovals": {
+      "default": "officer",
+      "leaderExceptions": []
+    },
+    "whenOfficerUnavailable": "hold"
+  },
+  "memberIoCeilings": [
+    {
+      "templateId": "worker",
+      "io": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "network": {
+          "mode": "allow"
+        }
+      }
+    },
+    {
+      "templateId": "officer",
+      "io": {
+        "read": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "write": {
+          "mode": "restricted",
+          "allow": [
+            "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace"
+          ],
+          "ask": [],
+          "deny": []
+        },
+        "network": {
+          "mode": "allow"
+        }
+      }
+    }
+  ]
+}
+---
+

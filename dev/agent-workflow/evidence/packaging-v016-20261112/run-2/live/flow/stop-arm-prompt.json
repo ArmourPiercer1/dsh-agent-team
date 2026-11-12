@@ -1,0 +1,10 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R2-prompt-d2dx63w0",
+  "result": {
+    "ok": true,
+    "value": {
+      "accepted": true
+    }
+  }
+}

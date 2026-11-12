@@ -1,0 +1,26 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R2-team.resolveControl-lfwxc1jq",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "CONTROL_REQUEST_DECIDED",
+      "message": "ControlService: request 'ctrl-0v70ffr1vom4k41i1snhx00p' already carries a durable decision (the first decision is authoritative)",
+      "details": {
+        "method": "team.resolveControl",
+        "endpoint": "team.resolveControl",
+        "contractVersion": 4,
+        "requestToken": null,
+        "reason": "domain-error",
+        "cause": {
+          "code": "CONTROL_REQUEST_DECIDED",
+          "message": "ControlService: request 'ctrl-0v70ffr1vom4k41i1snhx00p' already carries a durable decision (the first decision is authoritative)",
+          "details": {
+            "rootSessionId": "team-v016pack-r2",
+            "requestId": "ctrl-0v70ffr1vom4k41i1snhx00p"
+          }
+        }
+      }
+    }
+  }
+}

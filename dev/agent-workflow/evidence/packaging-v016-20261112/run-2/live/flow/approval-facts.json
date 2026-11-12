@@ -1,0 +1,113 @@
+{
+  "permissionLeg": {
+    "requestId": "ctrl-0min2ma0sqyhv102q3l9w1pf",
+    "request": {
+      "sequence": 7,
+      "requestId": "ctrl-0min2ma0sqyhv102q3l9w1pf",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "correlation": "call-v016pack-2-5",
+      "approvalCaseId": "case-02tf1sy1ytg8oh0ew7mfs1n7",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-12T15:36:34.937Z"
+    },
+    "decisions": [
+      {
+        "sequence": 9,
+        "requestId": "ctrl-0min2ma0sqyhv102q3l9w1pf",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T15:36:35.111Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 10,
+        "requestId": "ctrl-0min2ma0sqyhv102q3l9w1pf",
+        "createdAt": "2026-11-12T15:36:35.285Z"
+      }
+    ],
+    "abandonments": [],
+    "executions": [],
+    "escalations": []
+  },
+  "humanLeg": {
+    "requestId": "ctrl-172x4070s5n4wk0t1hea10y2",
+    "request": {
+      "sequence": 14,
+      "requestId": "ctrl-172x4070s5n4wk0t1hea10y2",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:e1d69c67-5c83-427d-b891-748f963e12e4-1",
+      "approvalCaseId": "case-17h8ov31qt6z2e1yxrkg11sp",
+      "legOrdinal": 2,
+      "reviewAuthority": "human-user",
+      "createdAt": "2026-11-12T15:36:35.535Z"
+    },
+    "decisions": [
+      {
+        "sequence": 15,
+        "requestId": "ctrl-172x4070s5n4wk0t1hea10y2",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T15:36:35.716Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 16,
+        "requestId": "ctrl-172x4070s5n4wk0t1hea10y2",
+        "createdAt": "2026-11-12T15:36:35.912Z"
+      }
+    ],
+    "abandonments": [],
+    "executions": [
+      {
+        "sequence": 17,
+        "requestId": "ctrl-172x4070s5n4wk0t1hea10y2",
+        "callId": "team-inst-0kc39c71kemt-bash:hexec:e1d69c67-5c83-427d-b891-748f963e12e4-1",
+        "outcome": "succeeded",
+        "createdAt": "2026-11-12T15:36:39.230Z"
+      }
+    ],
+    "escalations": [
+      {
+        "sequence": 13,
+        "approvalCaseId": "case-17h8ov31qt6z2e1yxrkg11sp",
+        "escalatedBy": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-17cwpp60szlxzh0s7il740xs"
+      }
+    ]
+  },
+  "escalationRows": [
+    {
+      "sequence": 13,
+      "approvalCaseId": "case-17h8ov31qt6z2e1yxrkg11sp",
+      "escalatedBy": {
+        "instanceId": "inst-0y1bmfd1fegn",
+        "kind": "instance",
+        "role": "member"
+      },
+      "legOrdinal": 1,
+      "previousRequestId": "ctrl-17cwpp60szlxzh0s7il740xs"
+    }
+  ],
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace/V016PACK_R2-arm1.txt",
+  "fileBody": "V016PACK_R2_ARM1_EXECUTED",
+  "decisions": [],
+  "abandonments": []
+}
