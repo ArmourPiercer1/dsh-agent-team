@@ -5,23 +5,31 @@ release gate. This record can never produce a `V@B = yes` claim;
 `osLevelNetworkIsolationClaimed: false`. Every verdict below is computed from a
 durable product fact or a model-visible tool result — never authored.
 
-## Two measurements, in order — read this first
+## Three measurements, in order — read this first
 
 | record | tree measured | arm counts | headline |
 |---|---|---|---|
 | **PRE-FIX** (the falsifier) | `origin/master` @ `d8490f74d` + PD41-ABORT-CLASS, **#734 not applied** | 8 PASS / 2 FAIL / 1 NOT_REACHED | one product defect: the adopted native `bash` is owned by the plane but not placed, so every governed shell call is refused at the dispatch door |
-| **POST-FIX** (current) | `origin/master` @ `4075c67ad` (#734 merged) + PD41-ABORT-CLASS | **10 PASS / 1 FAIL / 0 NOT_REACHED** | the shell lane is repaired; the decisive crash-window arm now runs, and it fails ONE pre-registered clause: the `parameter-permission` leg's consumed allow is left silently unsettled |
+| **POST-FIX** | `origin/master` @ `4075c67ad` (#734 merged) + PD41-ABORT-CLASS | 10 PASS / 1 FAIL / 0 NOT_REACHED | the shell lane is repaired; the decisive crash-window arm now runs, and it fails ONE pre-registered clause: the `parameter-permission` leg's consumed allow is left silently unsettled |
+| **FINAL** (current) | `origin/master` @ `6ea7d8dd4` (#736 merged) + PD41-ABORT-CLASS | **11 PASS / 0 FAIL / 0 NOT_REACHED** | every arm passes, including all five pre-registered J10 crash clauses (`pp:1xunknown pa:1xunknown`, two abandonments); one product finding remains OUTSIDE the arm vocabulary (the relayed-turn resolver, below) |
 
-`#734` is the **only** product change between the two measurements; the kit is
-identical (the same driver, the same arms, the same two fresh worlds). Both
-records are `DEV-LIVE` (no `V@B`, never CANDIDATE-C2). The pre-fix runs are kept
-verbatim as the falsifier; the post-fix runs are
-[`joint-v2-postfix-run1/`](joint-v2-postfix-run1/) and
-[`joint-v2-postfix-run2/`](joint-v2-postfix-run2/), with
-[`joint-v2-postfix-agreement.json`](joint-v2-postfix-agreement.json).
+Each step changed exactly one product commit: `#734` between pre-fix and
+post-fix, `#736` between post-fix and final. The kit is identical in all three
+(the same driver, the same arms, the same clauses, the same two fresh worlds per
+measurement); the only differences are the disclosed measurement corrections
+noted at the end of the FINAL section. All three records are `DEV-LIVE` (no
+`V@B`, never CANDIDATE-C2). Every run directory is kept verbatim:
 
-**Post-fix verdict: NO** — one arm fails, on a different (and now precisely
-localised) product defect than the one the falsifier caught.
+- pre-fix: [`joint-v2-prefix-run1/`](joint-v2-prefix-run1/), [`joint-v2-prefix-run2/`](joint-v2-prefix-run2/), [`joint-v2-prefix-agreement.json`](joint-v2-prefix-agreement.json)
+- post-fix: [`joint-v2-postfix-run1/`](joint-v2-postfix-run1/), [`joint-v2-postfix-run2/`](joint-v2-postfix-run2/), [`joint-v2-postfix-agreement.json`](joint-v2-postfix-agreement.json)
+- final: [`joint-v2-final-run1/`](joint-v2-final-run1/), [`joint-v2-final-run2/`](joint-v2-final-run2/), [`joint-v2-final-agreement.json`](joint-v2-final-agreement.json), plus the relay diagnostic [`joint-v2-final-relay/`](joint-v2-final-relay/)
+
+**Final verdict: PASS on all eleven arms** — the shipped composition now meets
+every arm's proposition on a real Host, twice, agreeing field-by-field. This is
+a `DEV-LIVE` measurement, not a release gate and not a `V@B`.
+
+**Post-fix verdict: NO** — one arm failed, on a different (and precisely
+localised) product defect than the one the falsifier caught; `#736` fixed it.
 
 **Pre-fix verdict: NO** — the reason was ONE product defect, and it is not the
 defect this kit was built to catch. The kit drives all eleven arms
@@ -203,6 +211,99 @@ the two facts its proposition is about — the model-visible definition IS the
 pinned one, and the body really executed — and keeps the sink count in the
 detail as a disclosure.
 
+## FINAL: `master` @ `6ea7d8dd4` (#736 merged) — 11 PASS / 0 FAIL
+
+Raw: [`joint-v2-final-run1/joint-verdicts.json`](joint-v2-final-run1/joint-verdicts.json),
+[`joint-v2-final-run2/joint-verdicts.json`](joint-v2-final-run2/joint-verdicts.json),
+agreement [`joint-v2-final-agreement.json`](joint-v2-final-agreement.json)
+(`verdictsAgree: true, detailsAgree: true`).
+
+| arm | run 1 | run 2 | measured |
+|---|---|---|---|
+| **J01** | PASS | PASS | `team.create=200`, `schemaVersion: 5`, both `memberIoCeilings` and `reviewRouting` read back |
+| **J02** | PASS | PASS | inside-ceiling write allowed, 1 allow guard fact |
+| **J03** | PASS | PASS | outside-ceiling write denied, nothing on disk |
+| **J04** | PASS | PASS | `bashCalls=1 pinnedDefinition=true bashExecuted=true` — the model-visible `bash` is the pinned definition and its body ran (`a6-allow-executed`, exit 0) |
+| **J05** | PASS | PASS | `consumption=1 executionResults=1 outcomes=succeeded` (outcome clause in force) |
+| **J06** | PASS | PASS | `reviewAuthority=leader`, routed to the Officer, `identityCarried=true`, `legDecided=true`, `team-tool-execute leg=true` |
+| **J07** | PASS | PASS | human goal, revision 2 + `edited`, `roundsStarted=2→2`, Stop mid-round, `paused→paused` |
+| **J08** | PASS | PASS | `GOAL_TOOL_AUTHORITY_REQUIRED` (sentence), `goal=null` |
+| **J09** | PASS | PASS | `stopped-*.json` written, 2nd real ask mints a leg but `wakes=13→13`, marker bytes stable |
+| **J10** | PASS | PASS | all five clauses true — see below |
+| **J11** | PASS | PASS | exactly one consumption fact per allow |
+
+Counts: **11 PASS / 0 FAIL / 0 NOT_REACHED** in each run.
+
+### J10, clause by clause (`clauses={"noDuplicate":true,"noReplay":true,"execSettledUnknown":true,"noSilentAbsence":true,"durableSurvived":true}`)
+
+Measured identically in both runs: the SIGKILL lands inside a running body
+(`bodyStart="body-started\n"`, the marker survives the cold boot), and after
+the restart of the same `DSH_HOME`:
+
+- **no duplicate execution** — the crash marker appears in `mockRequests=2→2`;
+  the body is not re-run;
+- **no replayed consumed allow** — `consumed=1/1→1/1` for BOTH legs; nothing is
+  consumed twice;
+- **crash-window settlement `unknown` for both legs** —
+  `facts=pa:1xunknown pp:1xunknown`, i.e. the `team-tool-execute` leg AND the
+  `parameter-permission` leg each carry exactly one `unknown` result, never
+  `succeeded`;
+- **no silent absence** — the permission lane is no longer skipped:
+  `abandonments=execution-outcome-unknown,execution-outcome-unknown` (one per
+  leg), so every allow consumed in the crash window owns a durable outcome;
+- **durable survival** — `memberSurvived=true officerSurvived=true`
+  (`members=6` after the restart).
+
+`#736` is the diff that makes the fourth clause true. The boot recovery now
+names the permission lane and reads its durable correlation as the exec call id
+(`packages/runtime/src/plugin/root.ts:951-1000` — `isExecutionAskLane()` adds
+`actionName === 'parameter-permission'`, and `settlementCallIdOf()` falls back
+to the non-`pa:` correlation, which IS the adapter's call id). Before it, the
+same measurement produced `ppFacts=0` with no abandonment (recorded as FAIL in
+the post-fix section above).
+
+### The disclosed finding that remains: a relayed first turn cannot be resolved
+
+Re-measured on the FINAL tree with `JOINT_J10_RELAY=1`
+([`joint-v2-final-relay/`](joint-v2-final-relay/), a diagnostic run, not an
+acceptance record): J10's crash body cannot be driven through a human
+`member.send` relay, because the ask it mints is refused to the assigned
+Officer —
+
+```
+{"status":"rejected","code":"CONTROL_RESOLVER_NOT_AUTHORIZED",
+ "message":"ControlService: Member review is not authorized for this leg
+ (caller is not a resolver for kind 'leader-approval' — the trusted
+ review-facts port produced no facts for this leg); the global resolver table is
+ unchanged …"}
+```
+
+— and the durable rows captured in the same run show why: the member that raised
+the ask reads `lifecycle: CREATED`, while the member row whose ask the Officer
+CAN decide reads `RUNNING`/`SETTLED`. The facts port refuses at
+`packages/runtime/alpha6/assigned-officer-facts.ts:444`
+(`if (owner.lifecycle !== 'RUNNING') return null`). A member created by
+`team_create_member` and first driven by `member.send` therefore never becomes a
+resolvable operation owner for its own ask, and the review leg waits forever
+(the crash window never opens: the same run records
+`NOT_REACHED J10 … pa=null bodyStarted=null`).
+
+This is a **disclosed product finding**, not an arm result and not something
+this kit fixes or routes around: the acceptance arms are measured on the
+delegated shape (`team_delegate`), the relayed shape is kept as the diagnostic
+that measures the defect, and the finding is reported with file:line for the
+product owner.
+
+### Measurement corrections carried by the kit (both previously disclosed)
+
+`J04` measures the pinned model-visible definition + a real execution rather
+than a terminal fact in the realm sink (post-#730 the sink legitimately records
+`realmTerminalFacts=0`, reported as a disclosure in every run), and `J10`'s
+acceptance shape is the delegated task. Neither weakens a clause: `J05`'s
+outcome clause, `J07`'s durable-round clause, `J08`'s refusal + no-Goal clause,
+`J09`'s wake-suppression clause and all five `J10` clauses are computed from
+durable product facts in all three measurements.
+
 ## How the runs were made
 
 Each measurement is two runs, on two fresh worlds, with the SAME ports and the
@@ -212,6 +313,8 @@ same command; only the tree and the evidence directory differ:
 |---|---|---|---|
 | PRE-FIX | `master` @ `d8490f74d` + PD41 | `3187`/`3496`, `3188`/`3497` | `joint-v2-prefix-run1`, `joint-v2-prefix-run2` |
 | POST-FIX | `master` @ `4075c67ad` + PD41 | `3187`/`3496`, `3188`/`3497` | `joint-v2-postfix-run1`, `joint-v2-postfix-run2` |
+| FINAL | `master` @ `6ea7d8dd4` + PD41 | `3187`/`3496`, `3188`/`3497` | `joint-v2-final-run1`, `joint-v2-final-run2` |
+| FINAL relay diagnostic | same | `3189`/`3498` | `joint-v2-final-relay` (`JOINT_J10_RELAY=1`) |
 
 | | run 1 | run 2 |
 |---|---|---|
