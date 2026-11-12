@@ -1,0 +1,41 @@
+{
+  "members": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-12T13:03:12.508Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "session-f5-team-hold-2026-11-12T13-03-02",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-a7e83fa578a125ed3d623f46c4cda6a3",
+      "createdAt": "2026-11-12T13:03:12.771Z",
+      "instanceId": "inst-1xyzuyp0spa3",
+      "label": "officer",
+      "lifecycle": "CREATED",
+      "rootSessionId": "session-f5-team-hold-2026-11-12T13-03-02",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-hold-disposed-r1-2026-11-12T13-03-02/workspace"
+    },
+    {
+      "activityVersion": 2,
+      "childSessionId": "session-team-child-4f59b92ebdafbb39bc1b9abd0a04958d",
+      "createdAt": "2026-11-12T13:03:12.882Z",
+      "instanceId": "inst-09dgfv903no0",
+      "label": "w-f5",
+      "lifecycle": "RUNNING",
+      "rootSessionId": "session-f5-team-hold-2026-11-12T13-03-02",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-hold-disposed-r1-2026-11-12T13-03-02/workspace"
+    }
+  ],
+  "workerSession": "session-team-child-4f59b92ebdafbb39bc1b9abd0a04958d",
+  "officerInstance": "inst-1xyzuyp0spa3",
+  "leaderInstance": "inst-leader",
+  "liveOfficerCount": 1
+}

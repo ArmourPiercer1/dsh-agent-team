@@ -1,0 +1,658 @@
+{
+  "mark": "F5MK_ASK2_2026-11-12T13-02-41",
+  "label": "ask2",
+  "humanDecides": true,
+  "promptedStatus": 200,
+  "ownerLifecycleBeforePrompt": "SETTLED",
+  "wakeAudit": {
+    "leg": {
+      "requestId": "ctrl-1bcxoxf1bcbv381ou5nml046",
+      "kind": "leader-approval",
+      "reviewAuthority": "human-user",
+      "approvalCaseId": "case-08kj0sd1gwo2qu03rzcdr02d",
+      "legOrdinal": 2,
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "authorityGeneration": 0,
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "subject": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance"
+      },
+      "targetInstanceId": "inst-1447bl90y1ah"
+    },
+    "sessionBlueprint": {
+      "blueprintId": "team.f5-two-asks",
+      "contentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "revision": "1"
+    },
+    "registryRevisions": [
+      {
+        "revision": "1",
+        "contentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00"
+      }
+    ],
+    "officerCount": 1,
+    "officers": [
+      {
+        "instanceId": "inst-0i1ebrl1mu7g",
+        "lifecycle": "CREATED",
+        "templateId": "officer"
+      }
+    ],
+    "owner": {
+      "instanceId": "inst-1447bl90y1ah",
+      "lifecycle": "SETTLED",
+      "templateId": "worker"
+    },
+    "ownerGeneration": 0,
+    "gates": {
+      "leg-present": true,
+      "leg-pending": false,
+      "blueprint-hash-present": true,
+      "blueprint-revision-present": true,
+      "leg-blueprint-matches-session": true,
+      "registry-has-session-blueprint": true,
+      "unique-live-officer": true,
+      "officer-child-session": true,
+      "owner-running": false,
+      "owner-template-matches": true,
+      "generation-frozen": true,
+      "generation-current-matches": true,
+      "tool-binding-complete": true
+    }
+  },
+  "refusalAudit": null,
+  "error": null,
+  "startedAt": "2026-11-12T13:02:58.344Z",
+  "humanAllowed": [
+    {
+      "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+      "kind": "leader-approval",
+      "actionName": "parameter-permission",
+      "status": 200,
+      "ok": true,
+      "error": null
+    },
+    {
+      "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+      "kind": "leader-approval",
+      "actionName": "team-tool-execute",
+      "status": 200,
+      "ok": true,
+      "error": null
+    }
+  ],
+  "legs": [
+    {
+      "sequence": 20,
+      "factType": "control-request-recorded",
+      "createdAt": "2026-11-12T13:02:58.468Z",
+      "actionName": "parameter-permission",
+      "approvalCaseId": "case-1ix6a790oyfj481yufywv0n4",
+      "authorityGeneration": 0,
+      "authorityScope": {
+        "matcher": {
+          "kind": "exact",
+          "resource": "bash"
+        },
+        "operationClass": "bash"
+      },
+      "beneficiaryAuthority": "member",
+      "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "blueprintRevision": "1",
+      "correlation": "call-f5-0g1f3qkf",
+      "executionCoupling": "guarded",
+      "kind": "leader-approval",
+      "legOrdinal": 1,
+      "operationFingerprint": "sha256:bb96702331b80c13bc3555aae46dce79f35767242492960c72a61c105d2977a6",
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolName": "bash",
+      "operationToolOwner": "dsh-agent-team",
+      "ownerRootSessionId": "session-f5-root-leader-2026-11-12T13-02-41",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+      "requestedEffect": "allow",
+      "requester": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance",
+        "role": "member"
+      },
+      "requiredAuthorityAtCreation": "leader",
+      "reviewAuthority": "leader",
+      "reviewPayload": {
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "bash"
+          },
+          "operationClass": "bash"
+        }
+      },
+      "subject": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance"
+      },
+      "summary": "bash [cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-leader-live-r1-2026-11-12T13-02-41/workspace] printf '%s' 'f5-ask2-2026-11-12T13-02-41' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes...",
+      "targetInstanceId": "inst-1447bl90y1ah",
+      "toolName": "bash"
+    },
+    {
+      "sequence": 23,
+      "factType": "control-request-recorded",
+      "createdAt": "2026-11-12T13:02:58.825Z",
+      "actionName": "team-tool-execute",
+      "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+      "authorityGeneration": 0,
+      "authorityScope": {
+        "matcher": {
+          "kind": "exact",
+          "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+        },
+        "operationClass": "tool-invoke"
+      },
+      "beneficiaryAuthority": "member",
+      "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "blueprintRevision": "1",
+      "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+      "kind": "leader-approval",
+      "legOrdinal": 1,
+      "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolName": "bash",
+      "operationToolOwner": "dsh-agent-team",
+      "ownerRootSessionId": "session-f5-root-leader-2026-11-12T13-02-41",
+      "paApprovalCaseId": "tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+      "requestedEffect": "allow",
+      "requester": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance",
+        "role": "member"
+      },
+      "requiredAuthorityAtCreation": "leader",
+      "reviewAuthority": "leader",
+      "reviewPayload": {
+        "approvalCaseId": "tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0",
+        "authorityGeneration": 0,
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "binding": {
+          "agentScopeKey": "session-team-child-191743d913942a9c2afd75dfa43a268b",
+          "assurance": {
+            "assurance": {
+              "alias": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "content-read": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "directory-metadata": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "inherit-cancel": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "network-destination": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "write": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              }
+            },
+            "executionBoundary": "trusted-host",
+            "implementationOrigin": "team-trusted-extension"
+          },
+          "authorityGeneration": 0,
+          "bindingId": "team-own:session-team-child-191743d913942a9c2afd75dfa43a268b:bash",
+          "definitionIdentity": "def#27",
+          "executionBoundary": "trusted-host",
+          "implementationOrigin": "team-trusted-extension",
+          "policyGeneration": 0,
+          "providerId": "dsh-agent-team",
+          "revision": 1,
+          "status": "ACTIVE",
+          "toolName": "bash"
+        },
+        "callId": "team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+        "deniedEffects": [],
+        "effectSetFingerprint": "sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+        "effects": [
+          {
+            "kind": "tool-invoke",
+            "resource": null,
+            "toolName": "bash"
+          }
+        ],
+        "member": {
+          "instanceId": "inst-1447bl90y1ah",
+          "teamSessionId": "session-f5-team-leader-2026-11-12T13-02-41"
+        },
+        "parametersFingerprint": "sha256:7fc6b9fa524365cfb1ad3b36d00885f347bbe181ef4e9a4d49c4327f7f4c3ee2",
+        "perEffectRequired": [
+          "leader"
+        ],
+        "realmId": "f5-plane-realm-2026-11-12T13-02-41",
+        "requiredAuthority": "leader",
+        "schema": "a5m1.pa-control-manifest.v2"
+      },
+      "reviewPayloadDigest": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+      "subject": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance"
+      },
+      "summary": "PA ask case=tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+      "targetInstanceId": "inst-1447bl90y1ah",
+      "toolName": "bash"
+    },
+    {
+      "sequence": 26,
+      "factType": "control-request-recorded",
+      "createdAt": "2026-11-12T13:02:58.997Z",
+      "actionName": "team-tool-execute",
+      "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+      "authorityGeneration": 0,
+      "authorityScope": {
+        "matcher": {
+          "kind": "exact",
+          "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+        },
+        "operationClass": "tool-invoke"
+      },
+      "beneficiaryAuthority": "member",
+      "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+      "blueprintRevision": "1",
+      "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+      "kind": "leader-approval",
+      "legOrdinal": 2,
+      "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolName": "bash",
+      "operationToolOwner": "dsh-agent-team",
+      "paApprovalCaseId": "tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "previousRequestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+      "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+      "requestedEffect": "allow",
+      "requester": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance",
+        "role": "member"
+      },
+      "requiredAuthorityAtCreation": "leader",
+      "reviewAuthority": "human-user",
+      "reviewPayload": {
+        "approvalCaseId": "tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0",
+        "authorityGeneration": 0,
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "binding": {
+          "agentScopeKey": "session-team-child-191743d913942a9c2afd75dfa43a268b",
+          "assurance": {
+            "assurance": {
+              "alias": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "content-read": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "directory-metadata": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "inherit-cancel": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "network-destination": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              },
+              "write": {
+                "evidence": null,
+                "level": "untested",
+                "mechanism": null,
+                "realmId": "dsh-host-realm:team-trusted-assembly",
+                "trustRoot": null
+              }
+            },
+            "executionBoundary": "trusted-host",
+            "implementationOrigin": "team-trusted-extension"
+          },
+          "authorityGeneration": 0,
+          "bindingId": "team-own:session-team-child-191743d913942a9c2afd75dfa43a268b:bash",
+          "definitionIdentity": "def#27",
+          "executionBoundary": "trusted-host",
+          "implementationOrigin": "team-trusted-extension",
+          "policyGeneration": 0,
+          "providerId": "dsh-agent-team",
+          "revision": 1,
+          "status": "ACTIVE",
+          "toolName": "bash"
+        },
+        "callId": "team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+        "deniedEffects": [],
+        "effectSetFingerprint": "sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+        "effects": [
+          {
+            "kind": "tool-invoke",
+            "resource": null,
+            "toolName": "bash"
+          }
+        ],
+        "member": {
+          "instanceId": "inst-1447bl90y1ah",
+          "teamSessionId": "session-f5-team-leader-2026-11-12T13-02-41"
+        },
+        "parametersFingerprint": "sha256:7fc6b9fa524365cfb1ad3b36d00885f347bbe181ef4e9a4d49c4327f7f4c3ee2",
+        "perEffectRequired": [
+          "leader"
+        ],
+        "realmId": "f5-plane-realm-2026-11-12T13-02-41",
+        "requiredAuthority": "leader",
+        "schema": "a5m1.pa-control-manifest.v2"
+      },
+      "reviewPayloadDigest": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+      "subject": {
+        "instanceId": "inst-1447bl90y1ah",
+        "kind": "instance"
+      },
+      "summary": "PA ask case=tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 rung=leader tool=bash effects=1",
+      "targetInstanceId": "inst-1447bl90y1ah",
+      "toolName": "bash"
+    }
+  ],
+  "executions": [
+    {
+      "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+      "decisions": [
+        {
+          "sequence": 21,
+          "factType": "control-decision-recorded",
+          "createdAt": "2026-11-12T13:02:58.574Z",
+          "decider": {
+            "humanId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "kind": "human"
+          },
+          "decision": "allow",
+          "note": "F-5 ask2: explicit human operator allow (leader/live)",
+          "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+          "requestSequence": 20,
+          "scope": {
+            "actionName": "parameter-permission",
+            "authorityScope": {
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              },
+              "operationClass": "bash"
+            },
+            "correlation": "call-f5-0g1f3qkf",
+            "operationFingerprint": "sha256:bb96702331b80c13bc3555aae46dce79f35767242492960c72a61c105d2977a6",
+            "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "subject": {
+              "instanceId": "inst-1447bl90y1ah",
+              "kind": "instance"
+            },
+            "targetInstanceId": "inst-1447bl90y1ah",
+            "toolName": "bash"
+          }
+        }
+      ],
+      "consumptions": [
+        {
+          "sequence": 22,
+          "factType": "control-allow-consumed",
+          "createdAt": "2026-11-12T13:02:58.783Z",
+          "consumedAt": "2026-11-12T13:02:58.783Z",
+          "decisionSequence": 21,
+          "requestId": "ctrl-0nws1nh0eewh8412wot8b1px",
+          "scope": {
+            "actionName": "parameter-permission",
+            "authorityScope": {
+              "matcher": {
+                "kind": "exact",
+                "resource": "bash"
+              },
+              "operationClass": "bash"
+            },
+            "correlation": "call-f5-0g1f3qkf",
+            "operationFingerprint": "sha256:bb96702331b80c13bc3555aae46dce79f35767242492960c72a61c105d2977a6",
+            "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "subject": {
+              "instanceId": "inst-1447bl90y1ah",
+              "kind": "instance"
+            },
+            "targetInstanceId": "inst-1447bl90y1ah",
+            "toolName": "bash"
+          }
+        }
+      ],
+      "abandonments": [],
+      "executions": [
+        {
+          "sequence": 30,
+          "factType": "control-execution-result",
+          "createdAt": "2026-11-12T13:02:59.487Z",
+          "callId": "call-f5-0g1f3qkf",
+          "outcome": "succeeded",
+          "recordedAt": "2026-11-12T13:02:59.487Z",
+          "requestId": "ctrl-0nws1nh0eewh8412wot8b1px"
+        }
+      ]
+    },
+    {
+      "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+      "decisions": [
+        {
+          "sequence": 24,
+          "factType": "control-decision-recorded",
+          "createdAt": "2026-11-12T13:02:58.966Z",
+          "decider": {
+            "instanceId": "inst-0i1ebrl1mu7g",
+            "kind": "instance",
+            "role": "member"
+          },
+          "decision": "deny",
+          "reason": "escalated",
+          "requestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+          "requestSequence": 23,
+          "reviewCapability": {
+            "approvalCaseId": "case-0dfsog41xqev0n09be5x615w",
+            "authorityGeneration": 0,
+            "blueprintContentHash": "sha256:394bbbb2927a6d2ee0f65dfd629006cf769f723c2eec27b8b1dd75710f170e00",
+            "blueprintRevision": "1",
+            "currentLegRequestId": "ctrl-0avzrbd1phyage0be5yfn0qp",
+            "effectSetFingerprint": "sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56",
+            "effectiveReviewAuthority": "leader",
+            "entry": "escalate",
+            "legOrdinal": 1,
+            "operationOwnerInstanceId": "inst-1447bl90y1ah",
+            "operationOwnerTemplateId": "worker",
+            "operationToolDefinitionIdentity": "def#27",
+            "scopeFingerprint": "session-f5-team-leader-2026-11-12T13-02-41\u0000instance:inst-1447bl90y1ah\u0000team-tool-execute\u0000bash\u0000pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2\u0000sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+            "source": "blueprint-officer"
+          },
+          "scope": {
+            "actionName": "team-tool-execute",
+            "authorityScope": {
+              "matcher": {
+                "kind": "exact",
+                "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+              },
+              "operationClass": "tool-invoke"
+            },
+            "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+            "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+            "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "subject": {
+              "instanceId": "inst-1447bl90y1ah",
+              "kind": "instance"
+            },
+            "targetInstanceId": "inst-1447bl90y1ah",
+            "toolName": "bash"
+          }
+        }
+      ],
+      "consumptions": [],
+      "abandonments": [],
+      "executions": []
+    },
+    {
+      "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+      "decisions": [
+        {
+          "sequence": 27,
+          "factType": "control-decision-recorded",
+          "createdAt": "2026-11-12T13:02:59.235Z",
+          "decider": {
+            "humanId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "kind": "human"
+          },
+          "decision": "allow",
+          "note": "F-5 ask2: explicit human operator allow (leader/live)",
+          "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+          "requestSequence": 26,
+          "scope": {
+            "actionName": "team-tool-execute",
+            "authorityScope": {
+              "matcher": {
+                "kind": "exact",
+                "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+              },
+              "operationClass": "tool-invoke"
+            },
+            "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+            "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+            "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "subject": {
+              "instanceId": "inst-1447bl90y1ah",
+              "kind": "instance"
+            },
+            "targetInstanceId": "inst-1447bl90y1ah",
+            "toolName": "bash"
+          }
+        }
+      ],
+      "consumptions": [
+        {
+          "sequence": 28,
+          "factType": "control-allow-consumed",
+          "createdAt": "2026-11-12T13:02:59.397Z",
+          "consumedAt": "2026-11-12T13:02:59.397Z",
+          "decisionSequence": 27,
+          "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj",
+          "scope": {
+            "actionName": "team-tool-execute",
+            "authorityScope": {
+              "matcher": {
+                "kind": "exact",
+                "resource": "f5-plane-realm-2026-11-12T13-02-41|tool:bash"
+              },
+              "operationClass": "tool-invoke"
+            },
+            "correlation": "pa:tadm:session-f5-team-leader-2026-11-12T13-02-41:inst-1447bl90y1ah:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+            "operationFingerprint": "sha256:9c489b402146a5497638f6269e5b48a3d351d9da230060eb74e38e84c033d7e6",
+            "rootSessionId": "session-f5-team-leader-2026-11-12T13-02-41",
+            "subject": {
+              "instanceId": "inst-1447bl90y1ah",
+              "kind": "instance"
+            },
+            "targetInstanceId": "inst-1447bl90y1ah",
+            "toolName": "bash"
+          }
+        }
+      ],
+      "abandonments": [],
+      "executions": [
+        {
+          "sequence": 29,
+          "factType": "control-execution-result",
+          "createdAt": "2026-11-12T13:02:59.470Z",
+          "callId": "team-inst-1447bl90y1ah-bash:hexec:37d296b8-8ad6-4893-9571-b72757b64b65-2",
+          "outcome": "succeeded",
+          "recordedAt": "2026-11-12T13:02:59.470Z",
+          "requestId": "ctrl-0a20y8g1p7yorf0bo5k4m0rj"
+        }
+      ]
+    }
+  ],
+  "file": {
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-leader-live-r1-2026-11-12T13-02-41/workspace/f5-ask2-2026-11-12T13-02-41.txt",
+    "exists": true,
+    "body": "f5-ask2-2026-11-12T13-02-41"
+  },
+  "mock": {
+    "requests": 8,
+    "wakeTurns": 6,
+    "notificationTurns": 0,
+    "listCalls": 2,
+    "resolveCalls": 2,
+    "refusalTraces": [],
+    "commandSeen": true
+  }
+}

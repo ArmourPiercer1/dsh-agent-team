@@ -1,0 +1,42 @@
+{
+  "type": "server-response",
+  "rpcId": "f5dispose-byl589eisj",
+  "result": {
+    "ok": true,
+    "value": {
+      "data": {
+        "member": {
+          "schemaVersion": 1,
+          "rootSessionId": "session-f5-team-leader-2026-11-12T13-03-27",
+          "instanceId": "inst-0n6esxb0qsp0",
+          "templateId": "officer",
+          "label": "officer",
+          "childSessionId": "session-team-child-3fa44bd79525d68e62afceb8a6792c23",
+          "lifecycle": "DISPOSED",
+          "createdAt": "2026-11-12T13:03:38.333Z",
+          "activityVersion": 2,
+          "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-leader-disposed-r1-2026-11-12T13-03-27/workspace"
+        },
+        "steps": [
+          "close-admission",
+          "interrupt",
+          "drain-descendants",
+          "wait-quiescence",
+          "release-residency",
+          "commit-dispose"
+        ],
+        "drained": 0,
+        "residencyDropped": true
+      },
+      "provenance": {
+        "origin": "team-remote",
+        "method": "member.dispose",
+        "endpoint": "member.dispose",
+        "contractVersion": 4,
+        "requestToken": null,
+        "projectionGeneration": null,
+        "effectSequence": null
+      }
+    }
+  }
+}

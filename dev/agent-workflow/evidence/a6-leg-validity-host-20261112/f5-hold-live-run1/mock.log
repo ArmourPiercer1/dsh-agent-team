@@ -1,0 +1,26 @@
+mock: listening on 127.0.0.1:3498
+mock: 1 [messages] text reply (11 chars): "F5 two-asks"
+mock: 2 [messages] text reply (14 chars): "F5_GENERIC_ACK"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] text reply (11 chars): "F5 two-asks"
+mock: 5 [messages] tool-call reply: team_create_member
+mock: 6 [messages] tool-call reply: team_delegate
+mock: 7 [messages] text reply (14 chars): "F5_LEADER_DONE"
+mock: 8 [messages] text reply (11 chars): "F5 two-asks"
+mock: 9 [messages] tool-call reply: bash
+mock: 10 [messages] tool-call reply: team_list_pending_control
+mock: 11 [messages] tool-call reply: team_resolve_control
+mock: 12 [messages] text reply (16 chars): "F5_REVIEWER_DONE"
+mock: 13 [messages] tool-call reply: team_list_pending_control
+mock: 14 [messages] tool-call reply: team_resolve_control
+mock: 15 [messages] text reply (16 chars): "F5_REVIEWER_DONE"
+mock: 16 [messages] text reply (12 chars): "F5_ASK1_DONE"
+mock: 17 [messages] text reply (14 chars): "F5_LEADER_DONE"
+mock: 18 [messages] tool-call reply: bash
+mock: 19 [messages] tool-call reply: team_list_pending_control
+mock: 20 [messages] tool-call reply: team_resolve_control
+mock: 21 [messages] text reply (16 chars): "F5_REVIEWER_DONE"
+mock: 22 [messages] tool-call reply: team_list_pending_control
+mock: 23 [messages] tool-call reply: team_resolve_control
+mock: 24 [messages] text reply (16 chars): "F5_REVIEWER_DONE"
+mock: 25 [messages] text reply (12 chars): "F5_ASK2_DONE"

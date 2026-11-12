@@ -1,0 +1,222 @@
+---
+schemaVersion: 5
+blueprintId: team.c1-a6-officer
+revision: "1"
+requirements: []
+leader:
+  templateId: leader
+  persona: "You are the A6 leader of the C1 smoke team. C1MK_A6LEAD_2026-11-12T13-04-05-h0-r37df58"
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_collect
+        - team_list_pending_control
+        - team_resolve_control
+        - team_request_control
+    builtinToolDeny:
+      - create_goal
+      - exit_plan_mode
+      - get_goal
+      - glob
+      - grep
+      - job_kill
+      - job_list
+      - job_output
+      - present
+      - skill
+      - update_goal
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow:
+        - tool: read
+          resource:
+            kind: subtree
+            path: team
+      ask:
+        - tool: bash
+          resource:
+            kind: any
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+members:
+  - templateId: worker
+    persona: "You are worker-a6 of the C1 smoke team. C1MK_A6MEM_2026-11-12T13-04-05-h0-r37df58"
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - present
+        - skill
+        - update_goal
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: ask
+        allow:
+          - tool: read
+            resource:
+              kind: subtree
+              path: team
+          - tool: read
+            resource:
+              kind: any
+          - tool: write
+            resource:
+              kind: any
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: officer
+    persona: "You are the C1 smoke Officer. Resolve the review legs routed to you; do not execute work."
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_list_pending_control
+          - team_resolve_control
+      builtinToolDeny:
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - present
+        - skill
+        - update_goal
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+  - templateId: goal-worker
+    persona: "You are the C1 smoke goal worker. Drive the goal tools you are given; do not delegate."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny: []
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+memberEnvelopes:
+  - templateId: worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+  - templateId: officer
+    envelope:
+      allow:
+        - resolve-control
+      deny: []
+  - templateId: goal-worker
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+memberIoCeilings:
+  - templateId: worker
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+  - templateId: officer
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+  - templateId: goal-worker
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T13-04-05-h0-r37df58/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+reviewRouting:
+  enabled: true
+  officerTemplateId: officer
+  ordinaryToolApprovals:
+    default: officer
+    leaderExceptions: []
+  whenOfficerUnavailable: hold
+metadata: {}
+---

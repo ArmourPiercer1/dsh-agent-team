@@ -1,0 +1,126 @@
+{
+  "atWake": {
+    "leg": {
+      "requestId": "ctrl-0eaz7da1r6of4119tpuzw1n9",
+      "kind": "leader-approval",
+      "reviewAuthority": "human-user",
+      "approvalCaseId": "case-1xjrew806rhl7v0gh2xhq0pj",
+      "legOrdinal": 2,
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85",
+      "authorityGeneration": 0,
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "subject": {
+        "instanceId": "inst-17dbp210fg3j",
+        "kind": "instance"
+      },
+      "targetInstanceId": "inst-17dbp210fg3j"
+    },
+    "sessionBlueprint": {
+      "blueprintId": "team.f5-two-asks",
+      "contentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85",
+      "revision": "1"
+    },
+    "registryRevisions": [
+      {
+        "revision": "1",
+        "contentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85"
+      }
+    ],
+    "officerCount": 1,
+    "officers": [
+      {
+        "instanceId": "inst-121q2il0tvo4",
+        "lifecycle": "CREATED",
+        "templateId": "officer"
+      }
+    ],
+    "owner": {
+      "instanceId": "inst-17dbp210fg3j",
+      "lifecycle": "SETTLED",
+      "templateId": "worker"
+    },
+    "ownerGeneration": 0,
+    "gates": {
+      "leg-present": true,
+      "leg-pending": false,
+      "blueprint-hash-present": true,
+      "blueprint-revision-present": true,
+      "leg-blueprint-matches-session": true,
+      "registry-has-session-blueprint": true,
+      "unique-live-officer": true,
+      "officer-child-session": true,
+      "owner-running": false,
+      "owner-template-matches": true,
+      "generation-frozen": true,
+      "generation-current-matches": true,
+      "tool-binding-complete": true
+    }
+  },
+  "atRefusal": null,
+  "afterDecision": {
+    "leg": {
+      "requestId": "ctrl-08rdms50p02jbq1hi2y7j036",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-0oi5svq1xyp1wp1nfri6w1kv",
+      "legOrdinal": 1,
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85",
+      "authorityGeneration": 0,
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "subject": {
+        "instanceId": "inst-17dbp210fg3j",
+        "kind": "instance"
+      },
+      "targetInstanceId": "inst-17dbp210fg3j"
+    },
+    "sessionBlueprint": {
+      "blueprintId": "team.f5-two-asks",
+      "contentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85",
+      "revision": "1"
+    },
+    "registryRevisions": [
+      {
+        "revision": "1",
+        "contentHash": "sha256:1180f28c9e139ed3149b48df968e90bea2c63d66249f9f1e9fd9defbd3826a85"
+      }
+    ],
+    "officerCount": 1,
+    "officers": [
+      {
+        "instanceId": "inst-121q2il0tvo4",
+        "lifecycle": "CREATED",
+        "templateId": "officer"
+      }
+    ],
+    "owner": {
+      "instanceId": "inst-17dbp210fg3j",
+      "lifecycle": "SETTLED",
+      "templateId": "worker"
+    },
+    "ownerGeneration": 0,
+    "gates": {
+      "leg-present": true,
+      "leg-pending": true,
+      "blueprint-hash-present": true,
+      "blueprint-revision-present": true,
+      "leg-blueprint-matches-session": true,
+      "registry-has-session-blueprint": true,
+      "unique-live-officer": true,
+      "officer-child-session": true,
+      "owner-running": false,
+      "owner-template-matches": true,
+      "generation-frozen": true,
+      "generation-current-matches": true,
+      "tool-binding-complete": true
+    }
+  },
+  "note": "atWake is the durable gate state captured while the ask-#2 reviewer was composing its resolve (owner still blocked in the guard); atRefusal is the same audit one model turn later when the typed refusal became observable; afterDecision is the audit after the human decided (owner SETTLED / leg no longer pending, so several gates necessarily flip). The provider itself reports only \"produced no facts\"; this audit names which durable gate would answer null."
+}

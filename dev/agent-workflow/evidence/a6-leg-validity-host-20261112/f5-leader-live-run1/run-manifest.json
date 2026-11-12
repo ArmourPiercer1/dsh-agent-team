@@ -1,0 +1,30 @@
+{
+  "schema": "f5-two-asks/1",
+  "recordClass": "DEV-LIVE",
+  "candidateClass": "live (worktree under test; NOT a frozen CANDIDATE-C2)",
+  "policy": "leader",
+  "policySchema": "blueprint-v5 reviewRouting.whenOfficerUnavailable ∈ {'hold','leader'} (two declared values; no third)",
+  "officerAtAsk2": "live",
+  "run": "1",
+  "productSha": "ea2d4a1dc1d527c55d73f1e2cd80012f3e491bb6",
+  "productTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc",
+  "hostVersion": "0.2.0-rc.2",
+  "hostBaselineSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPort": 3190,
+  "mockPort": 3499,
+  "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/f5-leader-live-r1-2026-11-12T13-02-41",
+  "hostSessionRoot": "session-f5-root-leader-2026-11-12T13-02-41",
+  "createdTeamRoot": "session-f5-team-leader-2026-11-12T13-02-41",
+  "stableProbes": {
+    "p3080": {
+      "url": "http://127.0.0.1:3080/",
+      "status": 401
+    },
+    "p3180": {
+      "url": "http://127.0.0.1:3180/",
+      "status": "unreachable"
+    }
+  },
+  "preflightVerdict": "PASS",
+  "startedAt": "2026-11-12T13:02:48.824Z"
+}
