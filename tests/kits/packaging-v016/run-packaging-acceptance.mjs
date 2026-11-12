@@ -714,21 +714,49 @@ async function bootAndReadTeam(world, label, hostPort, mockPort, teamRoot) {
     const cookie = (auth.headers.get('set-cookie') ?? '').split(';', 1)[0]
     const origin = url.replace(/\/\?token=.*$/u, '')
     if (teamRoot !== null) {
-      const rpc = await fetch(`${origin}/team-remote/team.getProjection`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', cookie },
-        body: JSON.stringify({
-          type: 'client-request', rpcId: `${label}-proj`, method: 'team.getProjection',
-          payload: { version: 4, params: { teamSessionId: teamRoot } },
-        }),
-        signal: AbortSignal.timeout(60_000),
-      })
-      result.projectionStatus = rpc.status
-      const body = await rpc.json().catch(() => null)
-      result.projectionBody = body === null ? null : JSON.stringify(body).slice(0, 600)
-      const projection = body?.result?.value?.data?.projection ?? body?.result?.value ?? null
-      result.teamReadable = rpc.status === 200 && body?.result?.ok === true && projection !== null
-      result.projectionMembers = (projection?.members ?? []).length
+      // READINESS IS PART OF THE MEASUREMENT. The route is registered before the
+      // team runtime is ready and answers a typed `runtime-not-ready` (state:
+      // starting) until it is; a single early call would turn a slow boot into a
+      // false "the Team did not survive". Poll, and record the attempts.
+      const deadline = Date.now() + 120_000
+      let attempts = 0
+      let lastBody = null
+      let lastStatus = null
+      while (Date.now() < deadline) {
+        attempts += 1
+        // eslint-disable-next-line no-await-in-loop
+        const rpc = await fetch(`${origin}/team-remote/team.getProjection`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', cookie },
+          body: JSON.stringify({
+            type: 'client-request', rpcId: `${label}-proj-${attempts}`, method: 'team.getProjection',
+            payload: { version: 4, params: { teamSessionId: teamRoot } },
+          }),
+          signal: AbortSignal.timeout(60_000),
+        })
+        lastStatus = rpc.status
+        // eslint-disable-next-line no-await-in-loop
+        lastBody = await rpc.json().catch(() => null)
+        const projection = lastBody?.result?.value?.data?.projection ?? lastBody?.result?.value ?? null
+        const ready = rpc.status === 200 && lastBody?.result?.ok === true && projection !== null
+        result.projectionMembers = (projection?.members ?? []).length
+        if (ready) {
+          result.projectionStatus = rpc.status
+          result.projectionBody = JSON.stringify(lastBody).slice(0, 600)
+          result.teamReadable = true
+          break
+        }
+        const notReady = /runtime is not ready|runtime-not-ready/u.test(JSON.stringify(lastBody ?? {}))
+        if (!notReady) break
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(500)
+      }
+      if (result.projectionStatus === null) {
+        result.projectionStatus = lastStatus
+        result.projectionBody = lastBody === null ? null : JSON.stringify(lastBody).slice(0, 600)
+        result.teamReadable = false
+      }
+      result.projectionAttempts = attempts
     }
   } catch (error) {
     result.error = String(error?.message ?? error)
@@ -798,7 +826,7 @@ async function phaseUpgrade(teamRoot, upgradePorts) {
   SUMMARY.upgrade.boot = bootUpgraded
   check('UPG-4', 'a Host booted on the second artifact still boots on the existing DSH_HOME and the durable Team is present',
     bootUpgraded.booted === true && bootUpgraded.teamReadable === true && (bootUpgraded.durableTeamRows ?? 0) > 0,
-    `booted=${String(bootUpgraded.booted)} auth=${String(bootUpgraded.authStatus)} projection=${String(bootUpgraded.projectionStatus)} readable=${String(bootUpgraded.teamReadable)} durableTeamRows=${String(bootUpgraded.durableTeamRows)} error=${String(bootUpgraded.error)} body=${String(bootUpgraded.projectionBody).slice(0, 180)}`)
+    `booted=${String(bootUpgraded.booted)} auth=${String(bootUpgraded.authStatus)} projection=${String(bootUpgraded.projectionStatus)} attempts=${String(bootUpgraded.projectionAttempts)} readable=${String(bootUpgraded.teamReadable)} durableTeamRows=${String(bootUpgraded.durableTeamRows)} error=${String(bootUpgraded.error)} body=${String(bootUpgraded.projectionBody).slice(0, 180)}`)
 
   log('── ROLLBACK: re-install the first tarball ──')
   const dataBeforeRollback = durableSnapshot(world)
@@ -827,7 +855,7 @@ async function phaseUpgrade(teamRoot, upgradePorts) {
   SUMMARY.rollback.boot = bootRolled
   check('RBK-4', 'a Host booted after rollback reads the same durable Team',
     bootRolled.booted === true && bootRolled.teamReadable === true && (bootRolled.durableTeamRows ?? 0) > 0,
-    `booted=${String(bootRolled.booted)} auth=${String(bootRolled.authStatus)} projection=${String(bootRolled.projectionStatus)} readable=${String(bootRolled.teamReadable)} durableTeamRows=${String(bootRolled.durableTeamRows)} error=${String(bootRolled.error)} body=${String(bootRolled.projectionBody).slice(0, 180)}`)
+    `booted=${String(bootRolled.booted)} auth=${String(bootRolled.authStatus)} projection=${String(bootRolled.projectionStatus)} attempts=${String(bootRolled.projectionAttempts)} readable=${String(bootRolled.teamReadable)} durableTeamRows=${String(bootRolled.durableTeamRows)} error=${String(bootRolled.error)} body=${String(bootRolled.projectionBody).slice(0, 180)}`)
   // The honest limit: there is no version negotiation, so an OLDER artifact may
   // read newer data without any guarantee. Record what was observed instead.
   SUMMARY.upgrade.dataUnchangedAcrossAll = dataSameUpgrade && dataSameRollback && survived
