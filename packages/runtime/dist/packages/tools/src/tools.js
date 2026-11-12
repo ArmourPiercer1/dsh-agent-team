@@ -971,7 +971,7 @@ function resolveControlSpec() {
 function listPendingControlSpec() {
     return {
         name: 'team_list_pending_control',
-        description: 'List the approvals visible to THIS caller: the Leader sees every open case at its CURRENT leg plus pending legacy requests; an assigned Officer sees only the open cases whose current leg is assigned to that Officer. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request.',
+        description: 'List the approvals visible to THIS caller: the Leader sees every open case at its CURRENT leg plus pending legacy requests; an assigned Officer sees only the open cases whose current leg is assigned to that Officer. Read-only: it creates no request and grants no authority. Use the returned exact `requestId` with `team_resolve_control` to allow or deny a request. An ABANDONED request is terminal and is deliberately NOT listed here: its invocation was closed by `control-request-abandoned` (boot settlement of a dead execution ask, or the pre-consumption guard), it can never become an allow, and the projection count excludes it exactly as this list does. Find it by id on the ledger page (`team.getLedgerPage`) and re-issue the ask; do not try to resolve it.',
         properties: {
             rootSessionId: ROOT_SESSION_ID_ARG,
             requestToken: REQUEST_TOKEN_ARG,

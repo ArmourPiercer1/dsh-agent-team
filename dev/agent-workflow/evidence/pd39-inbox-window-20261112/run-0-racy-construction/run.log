@@ -1,0 +1,16 @@
+[2026-11-12T15:11:52.644Z] c1 real-host smoke — stamp 2026-11-12T15-11-52
+[2026-11-12T15:11:52.645Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd39-inbox-window
+[2026-11-12T15:11:52.645Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T15:11:52.645Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd39-inbox-window/dev/agent-workflow/evidence/pd39-inbox-window-20261112/run-1
+[2026-11-12T15:11:54.183Z] ports: host=3186 mock=3491
+[2026-11-12T15:11:59.196Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-12T15:11:59.197Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-12T15:11:59.206Z] mock model listening on 3491
+[2026-11-12T15:12:02.146Z] host booted at http://127.0.0.1:3186; row ready — toolCount=15
+[2026-11-12T15:12:02.146Z] ── L0: discovery ──
+[2026-11-12T15:12:02.566Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-12T15:12:02.566Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-12T15:12:02.567Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-12T15:12:02.569Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-12T15:12:03.352Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-62ciz48ybl","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-12T15-11-52","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:24a69b846be1cf66891b7c66fe6acd71af0a30d021feac77fa26debbfbb8042b"},"createdAt":"2026-11-12T15:12:02.617Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-12T15:13:49.532Z] FAIL A6-26: an ACCEPTED-but-never-CLAIMED wake after restart is claimed EXACTLY once, or stranded with a discoverable durable request (never duplicated) — accepted=review-wake:session-c1-smoke-a6-2026-11-12T15-11-52:inst-1txrhfd0dhdq:1:a6wake%3Av1%3A1%3A619ffe45 busy=true wakes=0->0->0 rows=1->0->0 pendingBefore=1 pendingAfter=0 discoverable=false pendingCount=0 abandoned=0 recoveryCode=undefined restart=ok verdict=stranded-undiscoverable

@@ -366,6 +366,11 @@ const A6_STOP_TIMING = (() => {
 })()
 const A6_CRASH = ['1', 'allow', 'consume', 'body', 'before'].includes(String(process.env['C1_A6_CRASH']))
 const A6_TIMEOUT_MS = Number(process.env['C1_A6_TIMEOUT_MS'] ?? '0')
+// A6-INBOX-UNCLAIMED determinism (PD-39 lane): hold the Officer's BUSY turn
+// at the MOCK for this many ms, so the review wake is delivered (steered into
+// the running turn and ACCEPTED into the native Inbox) while the turn cannot
+// advance to claim it. 0 = off (the historical racy construction unchanged).
+const A6_BUSY_HOLD_MS = Number(process.env['C1_A6_BUSY_HOLD_MS'] ?? '0')
 const A6_STICKY_STOP = process.env['C1_A6_STICKY_STOP'] === '1'
 const A6_INBOX = process.env['C1_A6_INBOX'] === '1'
 // A6-INBOX-UNCLAIMED: the window the audit never injected — the native Inbox
@@ -1264,6 +1269,17 @@ function lastTriggerIndex(req) {
  * therefore appears as `messageCount > 1`, while a newly delivered wake
  * appears as `messageCount === 1`. Two starts = two deliveries.
  */
+/** Raw count of model requests whose trigger is the wake text, at ANY message
+ * count. `wakeStartCount` deliberately counts only fresh deliveries
+ * (messageCount === 1); an existing session's wake turn starts with the
+ * session history, so a claimed wake in a non-empty session is invisible to it.
+ * The PD-39 lane uses THIS count to prove zero claims before the kill and to
+ * count claims after the restart. */
+function wakeTurnCount(requests) {
+  return requests.filter((request) =>
+    /^\[team-review-wake wakeId=([^\]]+)\]/.test(lastUserTextOf(request))).length
+}
+
 function wakeStartCount(requests) {
   return requests.filter((request) =>
     /^\[team-review-wake wakeId=([^\]]+)\]/.test(lastUserTextOf(request))
@@ -2091,8 +2107,10 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
           if (row?.status === 'accepted' && wakesBefore === 0 && busySeen) { acceptedRow = row; break }
         } catch { /* rewritten mid-read: retry */ }
       }
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 20))
     }
+    const acceptedObservedAt = new Date().toISOString()
+    const wakeTurnsBefore = wakeTurnCount(mock.requests)
     const ledgerBefore = readControlLedger(CREATE_ROOT_A6)
     const pendingBefore = ledgerBefore.requests.filter(
       (r) => !ledgerBefore.decisions.some((d) => d.requestId === r.requestId),
@@ -2104,6 +2122,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     }).filter((row) => row !== null)
     writeEvidence('a6-inbox-unclaimed-before.json', {
       acceptedRow, wakeRows, wakesBefore, busySeen, pendingBefore, requestsAtRestart, wakeTraceBefore,
+      acceptedObservedAt, wakeTurnsBefore,
     })
     let restartError = null
     let wakesAfterRestart = wakesBefore
@@ -2111,6 +2130,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     let rowsAfterRestart = wakeRows
     let rowsAfterDrain = wakeRows
     let pendingAfter = pendingBefore
+    let pendingAfterRestart = pendingBefore
     let discoveryAfter = null
     let postRestartError = null
     try {
@@ -2160,11 +2180,17 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       rowsAfterDrain = existsSync(markerDir)
         ? readdirSync(markerDir).filter((name) => name.startsWith('wake-') && name.endsWith('.json'))
         : []
+      // PD-39 lane fix: the pending set at RESTART, captured before the
+      // operator recovery below writes its allow. The pre-fix code recomputed
+      // `pendingAfter` from the ledger AFTER that decision, so a request that
+      // was pending-and-resolvable could never satisfy criterion (ii): it read
+      // as pendingAfter=0 and the run was misclassified `stranded-undiscoverable`.
+      pendingAfterRestart = [...pendingAfter]
       // Acceptance criterion (ii): a stranded wake is acceptable ONLY if the
       // durable request is discoverable through the public remote surface and
       // an operator can resolve it by id. Read the page + projection BEFORE
       // tearing the restarted Host down.
-      const strandedPendingId = pendingAfter[0] ?? null
+      const strandedPendingId = pendingAfterRestart[0] ?? null
       const pageAfter = await remoteCall(origin2, cookie2, 'team.getLedgerPage', {
         teamSessionId: CREATE_ROOT_A6,
         afterSequence: 0,
@@ -2205,6 +2231,9 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       restartError = String(error?.message ?? error)
     }
     const delivered = wakesAfterDrain - wakesBefore
+    // Raw claim truth: a wake turn the model was actually asked to run,
+    // regardless of messageCount (see wakeTurnCount).
+    const claimedWakeTurnsAfterRestart = wakeTurnCount(mock.requests) - wakeTurnsBefore
     const ledgerAfter = readControlLedger(CREATE_ROOT_A6)
     const acceptedRequestId = acceptedRow?.requestId ?? pendingBefore[0] ?? null
     const abandonedAfter = acceptedRequestId === null ? [] : ledgerAfter.abandonments.filter((a) => a.requestId === acceptedRequestId)
@@ -2218,7 +2247,7 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
     // pending AND discoverable through the public remote surface (page +
     // projection), so an operator can resolve it by id.
     const strandedAcceptable = acceptedRow !== null && restartError === null && busySeen
-      && wakesBefore === 0 && delivered === 0 && pendingAfter.length > 0
+      && wakesBefore === 0 && delivered === 0 && pendingAfterRestart.length > 0
       && discoveryAfter !== null && discoveryAfter.requestFactVisible === true
       && discoveryAfter.recovery?.decision?.decision === 'allow'
     // The measured outcome on this base: the accepted wake is never claimed,
@@ -2255,11 +2284,13 @@ async function runAlpha6OfficerScenario({ booted, mock, denyList, host }) {
       wakesAfterRestart,
       wakesAfterDrain,
       deliveredAfterRestart: delivered,
+      claimedWakeTurnsAfterRestart,
       rowsBefore: wakeRows,
       rowsAfterRestart,
       rowsAfterDrain,
       pendingBefore,
       pendingAfter,
+      pendingAfterRestart,
       abandonedAfter,
       discoveryAfter,
       restartError,
@@ -2589,6 +2620,7 @@ let a6HandoffPhase = false
 let a6HumanPhase = A6_HUMAN || A6_STOP
 let a6ResumePhase = false
 let a6BusyDone = false
+let a6BusyHeld = false
 // The deny control defers the Officer's wake resolution: the kit resolves the
 // durable request with `deny` over the remote channel instead, so the refusal
 // is a real decision (not a mock shortcut).
@@ -2642,9 +2674,15 @@ function makeDecide() {
       // After the crash/restart this marker must retire fast: the queued
       // next-step wake cannot be claimed while a fresh 45 s turn runs.
       if (a6BusyDone) return { kind: 'text', content: 'C1_A6_BUSY_DONE' }
-      return tools === 0
-        ? toolCall('bash', bashArgs('sleep 45 && echo c1-a6-busy-done'))
-        : { kind: 'text', content: 'C1_A6_BUSY_DONE' }
+      if (tools === 0) return toolCall('bash', bashArgs('sleep 45 && echo c1-a6-busy-done'))
+      // PD-39 lane: hold the turn at the model so the accepted wake cannot be
+      // claimed, making the ACCEPTED-but-not-CLAIMED window deterministic
+      // instead of depending on the Officer's bash latency. Default 0 = off.
+      if (A6_BUSY_HOLD_MS > 0 && !a6BusyHeld) {
+        a6BusyHeld = true
+        await new Promise((resolve) => setTimeout(resolve, A6_BUSY_HOLD_MS))
+      }
+      return { kind: 'text', content: 'C1_A6_BUSY_DONE' }
     }
 
     // (2a) the Alpha.6 Officer wake. Both the guard ask and the plane PA ask

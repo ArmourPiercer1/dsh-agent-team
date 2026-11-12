@@ -364,6 +364,47 @@ const S = await (async () => {
   const after = ledger.list().length
   const stateAfter = await env.control.listControlState(P6T4_ROOT)
 
+  // (case 11 — PD-39 Gap 2 / the P2 count semantics, measured 2026-11-12)
+  // A request that is UNDECIDED but TERMINALLY ABANDONED is not "pending" in
+  // either surface: the projection count and this list both exclude it, by
+  // the same terminal-mark rule. The operator-facing description must SAY so,
+  // because the request stays readable by id on the ledger page and an
+  // operator who trusts only the list would see it vanish.
+  const abandonLeg = await env.control.requestApprovalLeg({
+    rootSessionId: P6T4_ROOT,
+    caller: workerCaller,
+    kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+    reviewAuthority: 'leader',
+    requiredAuthorityAtCreation: 'leader',
+    identity: {
+      subject: { kind: 'instance', instanceId: WORKER_ID },
+      beneficiaryAuthority: 'member',
+      requestedEffect: 'allow',
+      operationFingerprint: 'a4p4-c1-abandon-operation-fingerprint',
+      authorityScope: C1_AUTHORITY_SCOPE,
+      correlation: 'c1-corr-abandon',
+    },
+    actionName: 'write-file',
+    toolName: 'fs.write',
+  })
+  if (abandonLeg.kind !== 'leg') {
+    throw new Error(`case 11 setup: expected a durable leg, got '${abandonLeg.kind}'`)
+  }
+  const abandonedRecord = await env.control.abandonControlRequest({
+    rootSessionId: P6T4_ROOT,
+    caller: { kind: 'instance', instanceId: LEADER_ID },
+    requestId: abandonLeg.leg.requestId,
+    reason: 'invocation-abandoned',
+  })
+  const stateAfterAbandon = await env.control.listControlState(P6T4_ROOT)
+  const afterAbandon = await runTool(
+    env,
+    'team_list_pending_control',
+    { rootSessionId: P6T4_ROOT, requestToken: 'c1-l-11', limit: 100 },
+    P6T4_ROOT,
+  )
+  const listToolDescription = env.findTool('team_list_pending_control').description
+
   await destroyP6T1World(env.world)
 
   return {
@@ -389,6 +430,10 @@ const S = await (async () => {
     stateBefore,
     stateAfter,
     audit,
+    abandonedRecord,
+    stateAfterAbandon,
+    afterAbandon,
+    listToolDescription,
   }
 })()
 
@@ -436,6 +481,30 @@ describe('team_list_pending_control (C1) — the Leader pending-approval discove
     expect(ids).not.toContain(S.decided.requestId)
     expect(ids).toContain(S.one.requestId)
     expect(r.count).toBe(1)
+  })
+
+  it('case 11 (PD-39 P2): an abandoned request is NOT listed and the tool description names the terminal exclusion + ledger lookup', () => {
+    expect(S.abandonedRecord.reason).toBe('invocation-abandoned')
+    const r = S.afterAbandon
+    expect(r.status).toBe('pending-control-listed')
+    if (r.status !== 'pending-control-listed') return
+    const ids = r.pending.map((p) => p.requestId)
+    // The request survives durably (readable by id) with its terminal mark,
+    // but is NOT pending in the list.
+    expect(
+      S.stateAfterAbandon.requests.some((row) => row.requestId === S.abandonedRecord.requestId),
+    ).toBe(true)
+    expect(
+      S.stateAfterAbandon.abandonments.some(
+        (row) => row.requestId === S.abandonedRecord.requestId && row.reason === 'invocation-abandoned',
+      ),
+    ).toBe(true)
+    expect(ids).not.toContain(S.abandonedRecord.requestId)
+    // The surface must disclose that the count/list is live-undecided only,
+    // and that the abandoned row is found on the ledger page instead.
+    expect(S.listToolDescription).toContain('ABANDONED')
+    expect(S.listToolDescription).toContain('ledger page')
+    expect(S.listToolDescription).toContain('re-issue')
   })
 
   it('case 4 (A1-11 inversion): a pending user-approval is now listed (the carrier filter is gone)', () => {

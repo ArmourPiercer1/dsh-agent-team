@@ -2,9 +2,24 @@
 
 **Applies to:** the opt-in experimental Alpha.6 approval plane in `0.1.6`.
 **Defect:** A6-26 (see `RELEASE-NOTES-0.1.6.md` §5).
-**Scope:** one durable control request that an Inbox wake accepted, but no turn ever claimed, and a
-crash converted into a terminal abandonment. This page is the operator procedure; it does not change
-any product behaviour.
+**Scope:** one durable control request whose invocation was closed by a
+`control-request-abandoned` fact (`reason: "invocation-abandoned"`). This page is the operator
+procedure; it does not change any product behaviour.
+
+> **Correction, 2026-11-12 (PD-39 Gap 2 re-measurement, tree `84baf304c`).** The sentence that used
+> to stand here — "an Inbox wake accepted, but no turn ever claimed, and a crash converted into a
+> terminal abandonment" — was **wrong about the cause**. On the current tree, boot settlement only
+> abandons a request that already carries an `allow`; an *undecided* accepted-unclaimed request
+> survives the restart **pending and decidable** (`pendingControlCount: 1`, `team_resolve_control` by
+> id succeeds). Measured twice: `dev/agent-workflow/evidence/pd39-inbox-window-20261112/`.
+> The abandonment in the original 0.1.6 evidence (`a6-gaps-g2-unclaimed-r11`) was written when the
+> resumed Officer turn resolved `allow` on a `parameter-permission` row whose
+> `reviewPayloadDigest === operationFingerprint` and whose payload lacked the PA schema marker
+> (`PA_MANIFEST_CORRUPT`); that row shape is absent on the current tree. See
+> [REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md](../../../runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md) for the
+> accepted-never-claimed window, which is **outcome A (decidable)**, and this page for the terminal
+> shape. `pendingControlCount` is **live-undecided only**: an abandoned request is excluded by design
+> while remaining readable by id.
 
 ---
 
@@ -47,6 +62,15 @@ A `control-request-abandoned` row closes a control request. It is **not** the sa
 The distinguishing payload for A6-26 is `reason: "invocation-abandoned"`. An abandonment with a
 different reason (for example `wait-aborted`) has a different cause and may not have the same
 at-most-once story; read the row's payload and the surrounding ledger before reusing this runbook.
+
+**Which writer produced it (measured 2026-11-12).** Two writers can emit `invocation-abandoned`:
+(a) **boot settlement** on restart, for a request that has an `allow` but no consumption and no
+non-unknown execution result — the dead-invocation shape (`sequence 11 allow` → kill → `sequence 14
+control-request-abandoned`, `consumed = 0`, no execution result; measured in
+`run-3-crash-after-allow/`); and (b) an **A6 resolve** whose PA manifest is undetermined
+(`PA_MANIFEST_CORRUPT`) — the 0.1.6 shape. The request's own rows tell them apart: (a) always has a
+preceding `control-decision-recorded allow`; (b) can occur with no prior decision. An *undecided*
+accepted-unclaimed request is never abandoned by either, and is decided by id instead.
 
 The public `team_list_pending_control` view lists live pending cases. An abandoned request is
 terminal, so it is **not** expected to appear there. Use the ledger, not the pending list, to prove

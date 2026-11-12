@@ -1,0 +1,25 @@
+{
+  "acceptedRow": {
+    "key": {
+      "rootSessionId": "session-c1-smoke-a6-2026-11-12T15-29-15",
+      "reviewerInstanceId": "inst-00480o91bdwc",
+      "sessionGeneration": 1
+    },
+    "wakeId": "review-wake:session-c1-smoke-a6-2026-11-12T15-29-15:inst-00480o91bdwc:1:a6wake%3Av1%3A1%3A524f7a01",
+    "workFingerprint": "a6wake:v1:1:524f7a01",
+    "ownerRootSessionId": "session-c1-smoke-root-2026-11-12T15-29-15",
+    "status": "accepted"
+  },
+  "wakeRows": [
+    "wake-649a077a.json"
+  ],
+  "wakesBefore": 0,
+  "busySeen": true,
+  "pendingBefore": [
+    "ctrl-0urz8vx138g6hy14jzkbf1er"
+  ],
+  "requestsAtRestart": 13,
+  "wakeTraceBefore": [],
+  "acceptedObservedAt": "2026-11-12T15:29:31.993Z",
+  "wakeTurnsBefore": 0
+}
