@@ -92,3 +92,6 @@ OFFENDING tests/kits/wp2-a6-governed-goal/wp2-a6-governed-goal.mjs :: L294=v5, L
 OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L682=v5, L889=v5, L1648=v5, L2870=v5, L3738=v5
 # 2026-11-11 (JOINT-ACCEPTANCE / J05J06): one new kit identity — the joint driver authors a v5
 # blueprint carrying BOTH families, which is the subject of the acceptance, not an incidental literal.
+OFFENDING tests/kits/f5-two-asks/run-f5-two-asks.mjs :: L463=v5, L515=v5
+# 2026-11-11 (F5-TWO-ASKS): one new kit identity - the driver authors the v5 document it measures (two
+# consecutive asks per declared policy); the literals are the SUBJECT, not incidental carriers.

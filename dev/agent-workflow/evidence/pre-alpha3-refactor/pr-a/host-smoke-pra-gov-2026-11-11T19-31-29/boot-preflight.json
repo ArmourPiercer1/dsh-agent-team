@@ -1,0 +1,86 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-11T19:31:34.997Z",
+  "selectedArms": [
+    "g0-governance-wire"
+  ],
+  "knownArms": [
+    "g0-governance-wire"
+  ],
+  "verdict": "FAIL",
+  "reason": "FAIL at candidate.sha (candidate is 94d5293ef6f2 but PRA_EXPECT_SHA (candidate manifest) is 0123456789ab (CANDIDATE_SHA_MISMATCH))",
+  "counts": {
+    "PASS": 8,
+    "FAIL": 1,
+    "NOT_REACHED": 0,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 0
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[g0-governance-wire]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (porcelain clean)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "candidate is 94d5293ef6f2 but PRA_EXPECT_SHA (candidate manifest) is 0123456789ab (CANDIDATE_SHA_MISMATCH)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": null,
+      "state": "PASS",
+      "detail": "the run does not require an Officer"
+    },
+    {
+      "id": "port.3182",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3182 free (loopback)"
+    },
+    {
+      "id": "port.3496",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3496 free (loopback)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/tests/homes/pra-gov-2026-11-11T19-31-29 (fresh world, not yet created)"
+    }
+  ],
+  "blocking": [
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "FAIL",
+      "detail": "candidate is 94d5293ef6f2 but PRA_EXPECT_SHA (candidate manifest) is 0123456789ab (CANDIDATE_SHA_MISMATCH)"
+    }
+  ],
+  "skipped": [],
+  "startAllowed": false
+}

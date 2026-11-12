@@ -1,0 +1,122 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-11T19:26:21.731Z",
+  "selectedArms": [
+    "g0-governance-wire"
+  ],
+  "knownArms": [
+    "g0-governance-wire"
+  ],
+  "verdict": "ENV_BLOCK",
+  "reason": "ENV_BLOCK at port.3181 (port 3181 is already bound (PORT_BUSY))",
+  "counts": {
+    "PASS": 14,
+    "FAIL": 0,
+    "NOT_REACHED": 0,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 1
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[g0-governance-wire]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (porcelain clean)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate 94d5293ef6f2 matches the worktree under test (LIVE class)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": null,
+      "state": "PASS",
+      "detail": "the run does not require an Officer"
+    },
+    {
+      "id": "port.3181",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "port 3181 is already bound (PORT_BUSY)"
+    },
+    {
+      "id": "port.3182",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3182 free (loopback)"
+    },
+    {
+      "id": "port.3183",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3183 free (loopback)"
+    },
+    {
+      "id": "port.3184",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3184 free (loopback)"
+    },
+    {
+      "id": "port.3185",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3185 free (loopback)"
+    },
+    {
+      "id": "port.3186",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3186 free (loopback)"
+    },
+    {
+      "id": "port.3496",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3496 free (loopback)"
+    },
+    {
+      "id": "port.3497",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3497 free (loopback)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/tests/homes/pra-gov-2026-11-11T19-26-16 (fresh world, not yet created)"
+    }
+  ],
+  "blocking": [
+    {
+      "id": "port.3181",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "port 3181 is already bound (PORT_BUSY)"
+    }
+  ],
+  "skipped": [],
+  "startAllowed": false
+}
