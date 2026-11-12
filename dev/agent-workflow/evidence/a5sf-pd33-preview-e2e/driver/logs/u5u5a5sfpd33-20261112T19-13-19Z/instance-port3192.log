@@ -1,0 +1,4 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3192/?token=a2jTwO61h7KD8Uh_NJm8zjdVDwGIKcK9XNpJ_OXY0ro
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 106ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,grep,glob,read,write,edit,read_image,present,web_search,web_fetch]

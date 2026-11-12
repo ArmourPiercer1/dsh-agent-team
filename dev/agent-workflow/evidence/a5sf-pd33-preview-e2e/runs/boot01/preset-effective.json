@@ -61,15 +61,15 @@
           "hard": {},
           "capabilityExists": {}
         },
-        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/blueprints",
+        "blueprintDir": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-08-53Z/blueprints",
         "memberPresetId": "a5sf-governed-member",
         "a5sfGovernedRealm": true,
-        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/a5sf-consult.jsonl",
+        "a5sfEvidencePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-08-53Z/a5sf-consult.jsonl",
         "a5sfSkillCatalog": [
           {
             "name": "pd33-inlane",
             "description": "PD-33 in-lane fixture skill",
-            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/workspace/skills/pd33-inlane/SKILL.md"
+            "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-08-53Z/workspace/skills/pd33-inlane/SKILL.md"
           },
           {
             "name": "pd33-outlane",
@@ -207,10 +207,10 @@
       "name": "dsh-agent-team/web-transport",
       "config": {
         "testEndpoints": [
-          "http://127.0.0.1:45719"
+          "http://127.0.0.1:46261"
         ],
         "search": {
-          "baseURL": "http://127.0.0.1:45381",
+          "baseURL": "http://127.0.0.1:46117",
           "apiKey": "pd33-live-key"
         },
         "fetch": {
@@ -223,7 +223,7 @@
       "id": "a5sf-pd33-base-web-tripwire",
       "name": "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/world-factory/drivers/a5sf-pd33-preview-e2e/pd33-base-web-tripwire.mjs",
       "config": {
-        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T18-57-16Z/a5sf-pd33-host-web-calls.jsonl"
+        "counterPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-08-53Z/a5sf-pd33-host-web-calls.jsonl"
       }
     },
     {

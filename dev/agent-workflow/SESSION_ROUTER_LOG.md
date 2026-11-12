@@ -8597,11 +8597,18 @@ realm adopted），**#734**（`4fd279276`）明写它是 adopted 名字的 *only
 **没有**去挂 plane takeover：那需要 Alpha.4 strict lane（`capabilities.permissions`），会触发 A2C-2 对 36 个
 surface 名的覆盖门，把仪器从「Alpha.5-only」变成「Alpha.5+Alpha.4」——那是另一支仪器，不是组合修正。
 
-**3. 复测（本分支，`--boots 2`，真实 2026-11-12T18:2x–18:3xZ）**：每 boot **16/19**，两 boot 逐例一致；
+**3. 复测（本分支，`--boots 2`，真实 2026-11-12T18:2x–19:1xZ；共 5 对）**：每 boot **16/19**，
 三例 REFUTED，typed 码 `A5_NATIVE_ADMISSION_UNAVAILABLE`，其余 16 例 PROVEN。**顺带修正仪器里一个把
 「稳定」与「成功」混为一谈的比较器**：`agreementOf` 原先还要求 `cells[0] === 'PROVEN'`，于是两 boot
 **一致地** REFUTED 的案例被印成 `DISAGREE`、令 `agreeing=false`；现改为只比较判定是否相等，另报
 `stablyRefuted`，PASS 门槛仍由 `allOk` 承担（所以 RESULT 仍是 FAIL 16/19）。新增 pin `PD33-AGREEMENT`。
+**必须披露的第二次尝试**：第 2、3 对在 boot2 上额外 REFUTED 三个 Stop 臂（`pd29:stop-during-round`
+`rounds-after-stop-zero: rounds after stop=47`、`pd29:cold-recovery-no-revival`、第 2 对还有
+`pd34:control-stops-member`），形态是 raw `session/cancel` 落下后 goal 仍在产轮；本 lane **未改任何产品
+代码，也不声称解释该臂**，按既有披露把它记为 Stop 臂的**先存不稳定性**（对照 Release Notes §4 第 4 条
+的毫秒窗口），与三例 bash 无关（三例在全部 5 对、10 个 boot 里都是 REFUTED）。不稳定的两对未进 `runs/`，
+逐例判定行留在 append-only `driver.log`、phase 行留在 `run-ledger.jsonl`。第 4 对与**第 5 对**是干净对
+（第 5 对跑在已提交的 `bca4796fb` 上，`driver-digest.json#head` 即该 sha）。
 
 **4. D2 修正（只追加）**：`PRODUCT-DEBT-REGISTER.md` PD-43 行 + 详情块、`RELEASE-NOTES-0.1.6.md` §4.10/§4.11
 仍写「OPEN」，而 **#738**（`76293c79f`，2026-11-12 合并，早于冻结）已把 valid 主体改为 durable pending leg，

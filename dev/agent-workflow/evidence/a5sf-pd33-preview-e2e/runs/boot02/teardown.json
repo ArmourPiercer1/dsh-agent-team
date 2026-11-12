@@ -1,11 +1,11 @@
 {
   "host": {
     "wasRunning": true,
-    "pid": 72840,
+    "pid": 76881,
     "killed": true,
     "portFree": true
   },
-  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-01-42Z",
+  "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-pd33fix/tests/homes/u5u5a5sfpd33-20261112T19-13-19Z",
   "releasedPorts": [
     3192,
     3192,
@@ -13,8 +13,8 @@
     3192
   ],
   "killedPids": [
-    37894,
-    72840
+    39510,
+    76881
   ],
   "notes": []
 }

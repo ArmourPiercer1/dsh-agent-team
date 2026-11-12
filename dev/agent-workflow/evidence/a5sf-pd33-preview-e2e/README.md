@@ -31,14 +31,15 @@ commit `edca478bd`.
 > plane takeover; J04; 11/11 ×2). `docs/INSTALL.md` §3.5 documents the operator-side rule: with no
 > `teamToolPlane`, the native `bash` stays a typed-shut refusal in a governed world.
 >
-> **The number on this branch.** Four `--boots 2` pairs were run on branch
+> **The number on this branch.** Five `--boots 2` pairs were run on branch
 > `task/pd33-stale-instrument-20261113` (`c2b-pd33fix`), all on the same composition; every run is in
 > the append-only `driver.log`/`run-ledger.jsonl` and the pairs under `runs/` are the last one
-> (`2026-11-12T18:57Z`–`19:06Z` real UTC). **The committed pair: 16/19 on each boot, `agreeing=true`,
-> `stablyRefuted=3`** — exactly `pd33:member-a-io-chain`, `pd33:member-a-authorization` and
-> `pd33:shell-write-boundary` REFUTED with `A5_NATIVE_ADMISSION_UNAVAILABLE`, the other 16 PROVEN.
-> `RESULT FAIL` is the honest verdict: three cases are REFUTED, and this record does not turn a
-> REFUTED case green.
+> (`2026-11-12T19:08Z`–`19:17Z` real UTC, run against the branch commit `bca4796fb` — the evidence
+> was then committed in the next commit, so `driver-digest.json#head` names the tree that ran).
+> **The committed pair: 16/19 on each boot, `agreeing=true`, `stablyRefuted=3`** — exactly
+> `pd33:member-a-io-chain`, `pd33:member-a-authorization` and `pd33:shell-write-boundary` REFUTED
+> with `A5_NATIVE_ADMISSION_UNAVAILABLE`, the other 16 PROVEN. `RESULT FAIL` is the honest verdict:
+> three cases are REFUTED, and this record does not turn a REFUTED case green.
 >
 > - **Attempt 1** (18:22–18:31Z, before the comparator correction below): 16/19 on both boots, but the
 >   table printed `DISAGREE` for the three stably-REFUTED cases and `agreeing=false` — the comparator
@@ -50,10 +51,11 @@ commit `edca478bd`.
 >   `session/cancel` landed while the goal kept producing rounds. **This lane did not change any
 >   product code and does not claim to explain that arm**; it is a pre-existing instability of the
 >   Stop arms under load (compare release note §4 item 4 on the millisecond window), and it is
->   **unrelated to the three bash cases**, which were REFUTED in all six boots of all four pairs.
+>   **unrelated to the three bash cases**, which were REFUTED in every boot of all five pairs.
 >   The two unstable pairs were not selected for `runs/`; their per-case verdict lines remain in
 >   `driver.log` and their phase rows in `run-ledger.jsonl`.
-> - **Attempt 4** is the committed pair above.
+> - **Attempts 4 and 5** are clean pairs at 16/19 each boot; attempt 5 is committed because it ran
+>   from the committed branch HEAD.
 >
 > **Pair-comparator correction (same date, disclosed).** `agreementOf` required `cells[0] === 'PROVEN'`
 > besides verdict equality, so a case stably REFUTED on both boots printed `DISAGREE` and set
