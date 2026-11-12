@@ -1,0 +1,86 @@
+{
+  "schema": "joint-acceptance/1",
+  "recordClass": "DEV-LIVE",
+  "composition": {
+    "preset": "native",
+    "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "governedRealm": true
+  },
+  "counts": {
+    "PASS": 1,
+    "NOT_REACHED": 9,
+    "FAIL": 1
+  },
+  "arms": [
+    {
+      "arm": "J01",
+      "proposition": "Team + routing: v5 both families admitted; Officer routed, one team_resolve_control",
+      "verdict": "PASS",
+      "detail": "team.create=200 admitted=true blueprintHash=sha256:c3739d41432ff29afec020f13c8b1677d6a687a36d668e79ae0f11efea74ca7c memberIoCeilings=true reviewRouting=true schemaVersion=5"
+    },
+    {
+      "arm": "J02",
+      "proposition": "Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed; the ceiling was never consulted"
+    },
+    {
+      "arm": "J03",
+      "proposition": "Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed; the ceiling was never consulted"
+    },
+    {
+      "arm": "J04",
+      "proposition": "Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY",
+      "verdict": "FAIL",
+      "detail": "the native bash module never mounted: rejected: TEAM_RUNTIME_DURABLE_WRITE_FAILED activation: child-session creation failed for member 'inst-079bpot0ezm2': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module re-mount failed: Cannot read properties of undefined (reading 'validate')"
+    },
+    {
+      "arm": "J05",
+      "proposition": "Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero",
+      "verdict": "NOT_REACHED",
+      "detail": "no guarded call reached the approval lane in this composition"
+    },
+    {
+      "arm": "J06",
+      "proposition": "Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured",
+      "verdict": "NOT_REACHED",
+      "detail": "parameter-permission request=none reviewAuthority=none decider=null team-tool-execute leg=false (F-3 is recorded, never fixed here)"
+    },
+    {
+      "arm": "J07",
+      "proposition": "Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one"
+    },
+    {
+      "arm": "J08",
+      "proposition": "Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one"
+    },
+    {
+      "arm": "J09",
+      "proposition": "Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one"
+    },
+    {
+      "arm": "J10",
+      "proposition": "Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution",
+      "verdict": "NOT_REACHED",
+      "detail": "no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one"
+    },
+    {
+      "arm": "J11",
+      "proposition": "No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED)",
+      "verdict": "NOT_REACHED",
+      "detail": "no consumed allow existed to replay"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

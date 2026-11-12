@@ -1,0 +1,35 @@
+{
+  "sink": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T05-36-41-h0-ra3f1cd/a5sf-consult.jsonl",
+  "facts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-16rc9zl0hd2o",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:cdf548cbe7034e38593faf706427e658",
+      "method": "writeText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T05-36-41-h0-ra3f1cd/workspace/pd42-inside-2026-11-12T05-36-41-h0-ra3f1cd.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-12T05:36:59.695Z",
+      "tool": "write",
+      "callId": "call-c1-dahp3ftk"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-16rc9zl0hd2o",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:cdf548cbe7034e38593faf706427e658",
+      "method": "writeText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/tests/homes/c1-smoke-2026-11-12T05-36-41-h0-ra3f1cd/pd42-outside-2026-11-12T05-36-41-h0-ra3f1cd.txt",
+      "decision": "deny",
+      "decidedBy": "IO_WRITE_DENIED",
+      "sequence": 2,
+      "observedAt": "2026-11-12T05:36:59.737Z",
+      "tool": "write",
+      "callId": "call-c1-1lohbmko"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+[2026-11-11T21:33:24.157Z] c1 real-host smoke — stamp 2026-11-11T21-33-24-h3187-reb8be4
+[2026-11-11T21:33:24.157Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc
+[2026-11-11T21:33:24.157Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-11T21:33:24.157Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/joint-acc/dev/agent-workflow/evidence/joint-acceptance/run1
+[2026-11-11T21:33:24.193Z] ports: host=3187 mock=3496
+[2026-11-11T21:33:29.201Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-11T21:33:29.202Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-11T21:33:29.208Z] mock model listening on 3496
+[2026-11-11T21:33:31.543Z] host booted at http://127.0.0.1:3187; row ready — toolCount=15
+[2026-11-11T21:33:31.543Z] ── L0: discovery ──
+[2026-11-11T21:33:31.965Z] discovery surface (32 tools): bash, create_goal, edit, exit_plan_mode, get_goal, glob, grep, job_kill, job_list, job_output, present, read, read_image, skill, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, todo_write, update_goal, write
+[2026-11-11T21:33:31.966Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=32 missingTeam=[] denyList=[create_goal,exit_plan_mode,get_goal,glob,grep,job_kill,job_list,job_output,present,skill,update_goal]
+[2026-11-11T21:33:31.966Z] saved blueprints X + Y + Z written (deny list = 11 names)
+[2026-11-11T21:33:31.967Z] ── JOINT-ACCEPTANCE: one v5 Team, both families, preset=native ──
+[2026-11-11T21:33:32.590Z] PASS J01: team.create=200 admitted=true blueprintHash=sha256:c3739d41432ff29afec020f13c8b1677d6a687a36d668e79ae0f11efea74ca7c memberIoCeilings=true reviewRouting=true schemaVersion=5
+[2026-11-11T21:33:32.675Z] FAIL J04: the native bash module never mounted: rejected: TEAM_RUNTIME_DURABLE_WRITE_FAILED activation: child-session creation failed for member 'inst-079bpot0ezm2': TeamServiceInstallError: SERVICE_MOUNT_FAILED: native tool module re-mount failed: Cannot read properties of undefined (reading 'validate')
+[2026-11-11T21:33:32.676Z] NOT_REACHED J02: no governed Member turn existed; the ceiling was never consulted
+[2026-11-11T21:33:32.676Z] NOT_REACHED J03: no governed Member turn existed; the ceiling was never consulted
+[2026-11-11T21:33:32.676Z] NOT_REACHED J05: no guarded call reached the approval lane in this composition
+[2026-11-11T21:33:32.676Z] NOT_REACHED J11: no consumed allow existed to replay
+[2026-11-11T21:33:32.676Z] NOT_REACHED J06: parameter-permission request=none reviewAuthority=none decider=null team-tool-execute leg=false (F-3 is recorded, never fixed here)
+[2026-11-11T21:33:32.676Z] NOT_REACHED J07: no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one
+[2026-11-11T21:33:32.676Z] NOT_REACHED J08: no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one
+[2026-11-11T21:33:32.676Z] NOT_REACHED J09: no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one
+[2026-11-11T21:33:32.676Z] NOT_REACHED J10: no governed Member turn existed: a Goal/Stop/cold-recovery arm needs one
+[2026-11-11T21:33:32.677Z] teardown: DSH_HOME removed=true host stopped=true

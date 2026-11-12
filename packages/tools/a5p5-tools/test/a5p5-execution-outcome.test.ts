@@ -162,3 +162,110 @@ describe('PD-41 A — an answered call is not automatically a completed one', ()
     expect(observed).toEqual(['succeeded'])
   })
 })
+
+/**
+ * PD41-ABORT-CLASS — the audit's narrower arm. `shellCancelled()` mints the
+ * rendered `cancelled` bit ONLY for the `user`/`parent` arms of the host's
+ * closed cancel-cause union, so an abort with any other reason (a forwarded
+ * inherited signal, a host deadline's DOMException, a plain AbortError, a
+ * `hook`/`disposed` cause) answered the pipeline as
+ * `cancelled:false, timedOut:false, exitCode:null, settlement:{kind:'cancelled'}`
+ * and was durably recorded `succeeded` before this classification. The
+ * settlement is the backend's own terminal fact; it decides now.
+ */
+describe('PD41-ABORT-CLASS — a non-user/non-parent abort is never `succeeded`', () => {
+  const shell = (over: Partial<ShellOutcome> = {}): ShellOutcome => ({
+    exitCode: 0,
+    stdout: '',
+    stderr: '',
+    timedOut: false,
+    cancelled: false,
+    truncated: false,
+    ...over,
+  })
+  const cancelledSettlement = {
+    kind: 'cancelled' as const,
+    event: 'dispatcher-call-terminated-after-body-start' as const,
+  }
+  /** The exact shape the confined shell answers for ANY abort it terminated:
+   *  the settlement says `cancelled`; the rendered bit is minted only for
+   *  user/parent, so these three differ only in what the reason WOULD be. */
+  const abortedButNotMarked = (): { ok: true; outcome: ShellOutcome; settlement: typeof cancelledSettlement } => ({
+    ok: true as const,
+    outcome: shell({ cancelled: false, timedOut: false, exitCode: null }),
+    settlement: cancelledSettlement,
+  })
+
+  it('a forwarded inherited-signal abort (cancelled=false, settlement=cancelled) is `unknown`', () => {
+    expect(executionOutcomeOfAnsweredCall(abortedButNotMarked())).toBe('unknown')
+  })
+
+  it('a host-deadline abort (a DOMException reason, cancelled=false) is `unknown`', () => {
+    // The rendered bits are identical to the inherited-signal arm; the
+    // distinction lives in the reason, which the row never minted a flag for.
+    const result = abortedButNotMarked()
+    expect(new DOMException('deadline', 'TimeoutError').name).toBe('TimeoutError')
+    expect(executionOutcomeOfAnsweredCall(result)).toBe('unknown')
+  })
+
+  it('a plain AbortError abort (cancelled=false, settlement=cancelled) is `unknown`', () => {
+    expect(executionOutcomeOfAnsweredCall(abortedButNotMarked())).toBe('unknown')
+  })
+
+  it('a settlement that is not `completed` wins over a mislabelled outcome (defence in depth)', () => {
+    expect(executionOutcomeOfAnsweredCall({
+      ok: true,
+      outcome: shell({ cancelled: false, timedOut: false, exitCode: 0 }),
+      settlement: cancelledSettlement,
+    })).toBe('unknown')
+  })
+
+  it('a completed settlement still succeeds on a NON-ZERO exit (the code is data)', () => {
+    expect(executionOutcomeOfAnsweredCall({
+      ok: true,
+      outcome: shell({ exitCode: 7, stderr: 'boom' }),
+      settlement: { kind: 'completed' as const },
+    })).toBe('succeeded')
+  })
+
+  it('an ABORT-SHAPED THROW is `unknown`; any other throw stays `failed` (the existing arm)', async () => {
+    const observed: string[] = []
+    const throwBackend = (thrown: Error): Parameters<typeof runToolCall>[0] => ({
+      request: { realmId: 'realm-pd41', callId: 'pd41-abort-throw', parsedArgs: { tool: 'bash', command: 'echo hi', cwd, background: false, timeoutMs: 1000 } },
+      decide: () => ({ kind: 'allow' }),
+      backend: {
+        backendId: 'pd41-abort-throw-backend',
+        execCount: () => 0,
+        lastStageTrace: [],
+        run: async () => { throw thrown },
+      },
+      onExecutionResult: (input) => observed.push(input.outcome),
+    })
+    await expect(runToolCall(throwBackend(new DOMException('deadline', 'AbortError')))).rejects.toThrow('deadline')
+    expect(observed).toEqual(['unknown'])
+    observed.length = 0
+    const abortErr = Object.assign(new Error('aborted by signal'), { code: 'ABORT_ERR' })
+    await expect(runToolCall(throwBackend(abortErr))).rejects.toThrow('aborted by signal')
+    expect(observed).toEqual(['unknown'])
+    observed.length = 0
+    await expect(runToolCall(throwBackend(new Error('PD41_BACKEND_THROW')))).rejects.toThrow('PD41_BACKEND_THROW')
+    expect(observed).toEqual(['failed'])
+  })
+
+  it('the non-user abort reaches the pipeline as `unknown` (one row, one observation)', async () => {
+    const observed: string[] = []
+    const result = await runToolCall({
+      request: { realmId: 'realm-pd41', callId: 'pd41-inherited', parsedArgs: { tool: 'bash', command: 'sleep 5', cwd, background: false, timeoutMs: 1000 } },
+      decide: () => ({ kind: 'allow' }),
+      backend: {
+        backendId: 'pd41-inherited-backend',
+        execCount: () => 0,
+        lastStageTrace: [],
+        run: async () => abortedButNotMarked(),
+      },
+      onExecutionResult: (input) => observed.push(input.outcome),
+    })
+    expect(result.kind).toBe('presented')
+    expect(observed).toEqual(['unknown'])
+  })
+})
