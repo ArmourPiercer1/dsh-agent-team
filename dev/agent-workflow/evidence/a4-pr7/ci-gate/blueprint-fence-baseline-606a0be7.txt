@@ -89,3 +89,6 @@ OFFENDING tests/kits/wp2-a6-governed-goal/wp2-a6-governed-goal.mjs :: L294=v5, L
 # anchor and a v4 governed realm because its subject is the plane asymmetry.
 # 2026-11-11 (PD42-V5-CEILINGS): the same four v5 sites in the same c1 driver, moved by
 # this PR's added turns; no new file, no new literal, recorded from the verifier output.
+OFFENDING tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs :: L682=v5, L889=v5, L1648=v5, L2870=v5, L3738=v5
+# 2026-11-11 (JOINT-ACCEPTANCE / J05J06): one new kit identity — the joint driver authors a v5
+# blueprint carrying BOTH families, which is the subject of the acceptance, not an incidental literal.

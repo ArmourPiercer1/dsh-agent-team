@@ -209,6 +209,34 @@ export function createAlpha6RootRouter(input: Alpha6RootRouterInput): Alpha6Root
       if (row === undefined || row.approvalCaseId === undefined || row.legOrdinal === undefined) {
         return null
       }
+      // J06 (2026-11-11) — a TYPED refusal, not a silent Leader fallback.
+      //
+      // A row that carries the bound-Blueprint identity was opened by an
+      // Alpha.6-aware ask lane, so it is IN scope for ordinary-tool review: the
+      // blueprint's `ordinaryToolApprovals` is supposed to decide it. If its
+      // tool coordinate is missing anyway, the identity carry could not name a
+      // verified governance binding for that tool (a host builtin the Team
+      // assembly never placed and never verified). Inventing a coordinate would
+      // be fabricating authority; quietly handing the leg to the Leader would
+      // contradict `default: officer`. Neither is acceptable: the route refuses
+      // BY NAME and the ask stays pending (the pending-list tool and the GUI
+      // remain the recovery paths, and a Leader may still resolve it as a
+      // human-visible exception), because a leg nobody is told about is still
+      // better than a leg routed to the wrong decider under a false pretext.
+      if (
+        row.blueprintContentHash !== undefined &&
+        row.reviewAuthority === 'leader' &&
+        row.kind === 'leader-approval' &&
+        (row.operationToolOwner === undefined || row.operationToolName === undefined)
+      ) {
+        return {
+          kind: 'unroutable',
+          reason:
+            'operation-tool-identity-unavailable (the Alpha.6 identity carry found no verified governance ' +
+            'ToolBinding for this ask’s tool, so there is no trusted tool coordinate to route on — refusing ' +
+            'to invent one and refusing to fall back to the Leader)',
+        }
+      }
       const members = await input.members.list(rootSessionIdForRead)
       const categoryAnswer = await input.fixedLeaderOrHumanCategory({
         kind: row.kind,

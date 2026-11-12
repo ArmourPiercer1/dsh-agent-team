@@ -68,6 +68,7 @@ import {
   createOperationApprovalFactsReader,
 } from '../operation-permission/index.js'
 import type {
+  Alpha6AskIdentity,
   OperationApprovalFacts,
   PreExecuteExec,
   PreToolDecisionLike,
@@ -355,7 +356,10 @@ interface Env {
 
 async function createEnv(
   basename: string,
-  options: { readonly facts?: OperationApprovalFacts | undefined },
+  options: {
+    readonly facts?: OperationApprovalFacts | undefined
+    readonly askIdentity?: Alpha6AskIdentity | undefined
+  },
 ): Promise<Env> {
   const world = await createP6T4World(basename, ['leader', 'worker'])
   const service = createControlService({
@@ -368,6 +372,7 @@ async function createEnv(
   const ctx = makeFakeAgentCtx()
   const observations: Record<string, unknown>[] = []
   const facts = options.facts
+  const askIdentity = options.askIdentity
   const disposer = installParameterPermissionListener(ctx, {
     policy: ASK_POLICY,
     resolveTarget: fakeResolve,
@@ -381,6 +386,7 @@ async function createEnv(
       : {
           operationApprovalRouting: async (): Promise<OperationApprovalFacts | undefined> => facts,
         }),
+    ...(askIdentity === undefined ? {} : { alpha6AskIdentity: askIdentity }),
     onObserve: (observation) => {
       observations.push(observation)
     },
@@ -489,8 +495,64 @@ const a13 = await (async () => {
   }
 })()
 
-describe('a4p4 lane A — an ask routes to the minimum authority the documents require', () => {
-  it('A1: a Member ask answers at Leader, and an absent document never causes a rise', () => {
+// ---------------------------------------------------------------------------
+// A17/A18 — J06 (2026-11-11): the identity carry onto the parameter-permission
+// leg. The ask must reference the SAME bound Blueprint identity the Alpha.6
+// route reads, plus the trusted OperationOwner/tool coordinate — never a
+// re-resolved Blueprint and never a coordinate invented from the tool name.
+// ---------------------------------------------------------------------------
+
+/** A frozen bound-Blueprint identity, as the composition hands it over. */
+const ASK_IDENTITY: Alpha6AskIdentity = {
+  blueprint: {
+    blueprintId: 'BP-J06-ASK',
+    revision: '7',
+    schemaVersion: 5,
+    contentHash: 'sha256-j06-bound-identity',
+  },
+  operationOwnerTemplateId: 'worker',
+  authorityGeneration: async () => 3,
+  toolBindingFor: (toolName) =>
+    toolName === 'read'
+      ? { owner: 'dsh-agent-team', name: 'read', definitionIdentity: 'def#42' }
+      : null,
+}
+
+/** The same identity, but this host holds NO verified binding for `read`. */
+const ASK_IDENTITY_UNBOUND: Alpha6AskIdentity = {
+  ...ASK_IDENTITY,
+  toolBindingFor: () => null,
+}
+
+const ASK_FACTS: OperationApprovalFacts = {
+  beneficiaryAuthority: 'member',
+  documents: docs(
+    { status: 'declared', document: PERMISSIVE },
+    { status: 'declared', document: cappedAtAsk('read', FILE_A_KEY) },
+  ),
+}
+
+const a17 = await (async () => {
+  const env = await createEnv('a4p4-a17', { facts: ASK_FACTS, askIdentity: ASK_IDENTITY })
+  try {
+    return await driveAsk(env, 'a17')
+  } finally {
+    env.disposer()
+    await destroyP6T1World(env.world)
+  }
+})()
+
+const a18 = await (async () => {
+  const env = await createEnv('a4p4-a18', { facts: ASK_FACTS, askIdentity: ASK_IDENTITY_UNBOUND })
+  try {
+    return await driveAsk(env, 'a18')
+  } finally {
+    env.disposer()
+    await destroyP6T1World(env.world)
+  }
+})()
+
+describe('a4p4 lane A — an ask routes to the minimum authority the documents require', () => {  it('A1: a Member ask answers at Leader, and an absent document never causes a rise', () => {
     expect(a1.kind).toBe('approval-required')
     if (a1.kind !== 'approval-required') return
     expect(a1.requiredAuthority).toBe('leader')
@@ -626,6 +688,50 @@ describe('a4p4 lane A — an ask routes to the minimum authority the documents r
     // And the outcome is the frozen one: the approval wait, cancelled by the
     // bounded timer — never a capability denial.
     expect(a13.reason).toBe('the approval wait was cancelled')
+  })
+
+  it('A17: the ask freezes the bound Blueprint identity, the owner and the verified tool triple onto its leg', () => {
+    expect(a17.requests).toHaveLength(1)
+    const row = a17.requests[0]
+    if (row === undefined) return
+    // The bound identity is CARRIED, not re-resolved: every field equals the
+    // frozen object the composition handed over.
+    expect(row.blueprintContentHash).toBe(ASK_IDENTITY.blueprint.contentHash)
+    expect(row.blueprintRevision).toBe(ASK_IDENTITY.blueprint.revision)
+    expect(row.operationOwnerTemplateId).toBe('worker')
+    expect(row.authorityGeneration).toBe(3)
+    // The trusted tool coordinate (the ROUTE gate's third and fourth facts).
+    expect(row.operationToolOwner).toBe('dsh-agent-team')
+    expect(row.operationToolName).toBe('read')
+    expect(row.operationToolDefinitionIdentity).toBe('def#42')
+    // The leg's own effect set: ONE effect — this operation, at the rung the
+    // documents require (the carrier document caps this scope at `ask`, so the
+    // Leader's ceiling is exceeded and the answer rises to the Human User).
+    expect(row.perEffectRequiredAuthorities).toEqual(['human-user'])
+    // The projected authority point the Alpha.6 router reads (the same value
+    // the typed leg scope carries; a parameter-permission row has no PA
+    // manifest to carry it otherwise).
+    expect((row.reviewPayload as { authorityScope?: unknown } | undefined)?.authorityScope).toEqual({
+      operationClass: 'read',
+      matcher: { kind: 'exact', resource: FILE_A_KEY },
+    })
+    // The routed rung is still the documents' answer, not the identity's.
+    expect(row.reviewAuthority).toBe('human-user')
+  })
+
+  it('A18: with NO verified binding the leg keeps the Blueprint identity but no invented tool coordinate', () => {
+    expect(a18.requests).toHaveLength(1)
+    const row = a18.requests[0]
+    if (row === undefined) return
+    expect(row.blueprintContentHash).toBe(ASK_IDENTITY_UNBOUND.blueprint.contentHash)
+    expect(row.blueprintRevision).toBe(ASK_IDENTITY_UNBOUND.blueprint.revision)
+    // The triple is all-or-nothing: naming a tool this host never verified
+    // would be fabricating authority, and the route gate must be able to
+    // refuse BY NAME (`operation-tool-identity-unavailable`) instead.
+    expect(row.operationToolOwner).toBe(undefined)
+    expect(row.operationToolName).toBe(undefined)
+    expect(row.operationToolDefinitionIdentity).toBe(undefined)
+    expect(row.reviewAuthority).toBe('human-user')
   })
 
   it('A14: the facts reader hands over the plane’s OWN documents, and a pre-v3 read is `undefined` (the legacy arm)', () => {
