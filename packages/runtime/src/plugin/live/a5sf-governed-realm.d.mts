@@ -67,6 +67,16 @@ export interface CreateGovernedRealmProviderOptions {
   readonly shellClass?: Readonly<{ programs: readonly string[] }>
   readonly maxOutputBytes?: number
   readonly graceMs?: number
+  /**
+   * NATIVE-BASH-PRESERVATION (2026-11-11): answer a GOVERNED PERSISTENT PTY
+   * terminal face (`mode: 'pty'`) instead of PD-13's per-command confined
+   * child. The shipped composition sets it because the model-visible `bash` is
+   * the pinned `@deepseek-ai/dsh-tool-bash-persistent` definition over that
+   * face (A5-NATIVE-01/02). Absent/false keeps the historical face verbatim.
+   * A declared PTY face whose deployment lacks the `sandbox` or base
+   * `subprocess` seam is REFUSED at install — never downgraded.
+   */
+  readonly nativeBashPty?: boolean
   readonly launcherPath?: string
   readonly pythonPath?: string
   /** Tests only: an already-built confined process provider (a double must be labelled by its caller). */

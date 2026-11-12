@@ -366,6 +366,43 @@ describe('A6 root notifier — the shared router is the recipient authority', ()
     expect(deliver).not.toHaveBeenCalled()
   })
 
+  // J06 (2026-11-11) — the measured defect, pinned.
+  //
+  // An Alpha.6-identified ask whose identity carry could NOT name a verified
+  // tool coordinate used to satisfy the legacy carve-out (no tool owner/name,
+  // and no blueprint facts were being written on this lane at all), so the
+  // Leader received it by default. Once the bound-Blueprint identity is written
+  // the row is provably Alpha.6's, and the typed refusal must surface instead of
+  // the fallback.
+  it('J06 refuses a bound-identity unroutable ask instead of falling back to the Leader', async () => {
+    const deliver = vi.fn(async () => {})
+    const notifyLeader = vi.fn(async () => {})
+    const notifier = createAlpha6RootControlNotifier({
+      rootSessionId: 'root-a6-route',
+      resolveCurrentReviewer: async () => ({ instanceId: 'inst-officer' }),
+      memberSession: () => ({ childSessionId: 'session-officer' }),
+      deliver,
+      route: async () => ({
+        kind: 'unroutable',
+        reason: 'operation-tool-identity-unavailable (no verified governance ToolBinding)',
+      }),
+      notifyLeader,
+    })
+    const boundNoTool = {
+      ...request,
+      requestId: 'req-route-a6-no-tool',
+      approvalCaseId: 'case-route-a6-no-tool',
+      legOrdinal: 1,
+      reviewAuthority: 'leader' as const,
+      actionName: 'parameter-permission',
+      blueprintContentHash: 'sha256-bound-identity',
+      blueprintRevision: '3',
+    } as ControlRequestRecord
+    await expect(notifier.notifyLeaderRequest(boundNoTool)).rejects.toThrow(/operation-tool-identity-unavailable/)
+    expect(notifyLeader).not.toHaveBeenCalled()
+    expect(deliver).not.toHaveBeenCalled()
+  })
+
   it('resolves a non-route wake against the REQUEST root, not the boot root', async () => {
     const deliver = vi.fn(async () => {})
     const resolve = vi.fn(async () => ({ instanceId: 'inst-officer' }))

@@ -2,6 +2,23 @@
  * confined-bash-tool.mjs — the model-visible `bash` tool, served by the
  * Member's CONFINED `subprocess` face.
  *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * RETIRED FROM THE PRODUCT PATH (NATIVE-BASH-PRESERVATION, 2026-11-11).
+ * Alpha.5's invariant (A5-NATIVE-01/02, A5-BOUNDARY-01) allows replacing a
+ * native tool's EXECUTION BACKEND, never the model-visible tool. This module is
+ * a Team-authored `bash` DEFINITION, i.e. the shape the invariant forbids, so
+ * the shipped composition no longer selects it: the product's `bash` is the
+ * PINNED `@deepseek-ai/dsh-tool-bash-persistent` definition mounted by
+ * `native-bash-tool.mjs` over the governed persistent PTY
+ * (`team-services/terminal-pty.ts`). Nothing here is deleted — the file and its
+ * contract stay as history and as the fallback a composition may still DECLARE
+ * explicitly (`confinedTerminalSpecOf`/`confinedBashSpecOf` are reached only
+ * when no governed PTY face carries the `governedPty` marker), and its own
+ * suite (`a5sf-pd13-terminal-read-axis.test.mjs` / `a5sf-pd12-bash-governance
+ * .test.mjs`) keeps pinning that historical contract. A governed Member never
+ * gets both: `nativeBashPtySpecOf` wins the selection when the PTY face exists.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
  * WHY THIS EXISTS (PD-12, 2026-11-10). The register's hole: a Member whose
  * compiled ceiling declares `network: deny` could still run a shell command
  * through the model-visible `bash` tool, because that tool was the preset's

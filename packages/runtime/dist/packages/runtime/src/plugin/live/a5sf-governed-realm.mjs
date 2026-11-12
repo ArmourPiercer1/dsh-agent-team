@@ -202,6 +202,16 @@ export function createGovernedRealmProvider(options = {}) {
     launcherPath: launcherOverride,
     pythonPath,
     webTransport,
+    // NATIVE-BASH-PRESERVATION (2026-11-11): when true, the `terminal` face is
+    // the GOVERNED PERSISTENT PTY (`mode: 'pty'`) instead of PD-13's
+    // per-command confined child. The PRODUCT composition sets it
+    // (`host.ts`), because the model-visible `bash` is then the PINNED
+    // `@deepseek-ai/dsh-tool-bash-persistent` definition (A5-NATIVE-01/02).
+    // A composition that does not set it keeps the historical face
+    // byte-for-byte, so this is a declared choice, never a silent fallback —
+    // and a declared PTY face whose deployment lacks the `sandbox` or base
+    // `subprocess` seam is REFUSED at install (TERMINALS_UNCONFINED_REALM).
+    nativeBashPty = false,
     program = GOVERNED_FACE.program,
     shellClass = GOVERNED_FACE.shellClass,
     maxOutputBytes = GOVERNED_FACE.maxOutputBytes,
@@ -444,11 +454,25 @@ export function createGovernedRealmProvider(options = {}) {
           memberScope: effective.memberIdentity,
           shellClass,
         }),
-        terminal: Object.freeze({
-          program,
-          maxOutputBytes,
-          graceMs,
-        }),
+        // NATIVE-BASH-PRESERVATION (2026-11-11): the terminal face is a
+        // GOVERNED PERSISTENT PTY, not PD-13's per-command confined child.
+        // `memberSessionId` is the EXACT agent session this face serves (the
+        // face refuses any other owner and refuses every spawn when it is
+        // absent), and `mode: 'pty'` is what makes install mount the PTY face
+        // instead of the retired confined-terminal one.
+        terminal: nativeBashPty === true
+          ? Object.freeze({
+              mode: 'pty',
+              program,
+              maxOutputBytes,
+              graceMs,
+              ...(nonBlank(sessionId) ? { memberSessionId: sessionId } : {}),
+            })
+          : Object.freeze({
+              program,
+              maxOutputBytes,
+              graceMs,
+            }),
       })
     },
   })

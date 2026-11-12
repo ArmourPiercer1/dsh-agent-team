@@ -2655,4 +2655,57 @@ describe('A6 closing settlement ownership', () => {
       outcome: 'unknown',
     })).recorded).toBe(false)
   })
+
+  // J05 (2026-11-11) — the correlation matcher is not PA-only.
+  //
+  // A `parameter-permission` ask carries NO review payload (no PA manifest ⇒ no
+  // `reviewPayload.callId`); its durable correlation IS the adapter's exec
+  // callId. Before this, the allow was consumed and the body ran while the
+  // ledger recorded NOTHING — "ran", "refused" and "died between" were the same
+  // silence. The matcher must resolve the row from either carrier, and stay
+  // exactly-once per request.
+  it('J05 records one truthful execution fact for an ask matched by durable correlation', async () => {
+    const row = await a.requestControl({
+      rootSessionId: P6T4_ROOT,
+      caller: memberCaller(String(WORKER)),
+      kind: CONTROL_REQUEST_KINDS.LEADER_APPROVAL,
+      targetInstanceId: String(WORKER),
+      actionName: 'parameter-permission',
+      toolName: 'bash',
+      correlation: 'call-param-1',
+    })
+    expect(row.requestId).toBeTypeOf('string')
+
+    const first = await a.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-param-1',
+      instanceId: String(WORKER),
+      outcome: 'succeeded',
+    })
+    expect(first.recorded).toBe(true)
+    expect(first.requestId).toBe(row.requestId)
+
+    // Exactly-once: the second observation returns the existing fact and writes
+    // nothing, whatever outcome it claims.
+    expect((await a.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-param-1',
+      instanceId: String(WORKER),
+      outcome: 'failed',
+    })).recorded).toBe(false)
+
+    // A DIFFERENT invocation never matches this row.
+    expect((await a.recordExecutionResult({
+      rootSessionId: P6T4_ROOT,
+      callId: 'call-param-2',
+      instanceId: String(WORKER),
+      outcome: 'unknown',
+    })).recorded).toBe(false)
+
+    const after = await a.listControlState(P6T4_ROOT)
+    const facts = after.executionResults.filter((r) => r.requestId === row.requestId)
+    expect(facts).toHaveLength(1)
+    expect(facts[0]?.outcome).toBe('succeeded')
+    expect(facts[0]?.callId).toBe('call-param-1')
+  })
 })
