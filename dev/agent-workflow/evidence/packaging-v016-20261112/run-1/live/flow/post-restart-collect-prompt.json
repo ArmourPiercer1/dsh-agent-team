@@ -1,0 +1,12 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R1-prompt-qekfdy2c",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "gateway/internal",
+      "message": "resume failed for session \"team-v016pack-r1\": TeamSessionActivationInterceptedError: dsh-agent-team: intercepted foreign Agent activation for Team-managed session \"team-v016pack-r1\"",
+      "details": {}
+    }
+  }
+}

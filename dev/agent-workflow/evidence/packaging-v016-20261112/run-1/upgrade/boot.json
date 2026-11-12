@@ -1,0 +1,16 @@
+{
+  "label": "upgrade",
+  "hostPort": 3182,
+  "mockPort": 3491,
+  "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-1-2026-11-12T15-35-07",
+  "booted": true,
+  "authStatus": 303,
+  "projectionStatus": 200,
+  "teamReadable": true,
+  "durableTeamRows": 2,
+  "error": null,
+  "instanceLog": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/dev/agent-workflow/evidence/packaging-v016-20261112/run-1/upgrade/instance.log",
+  "projectionMembers": 4,
+  "projectionBody": "{\"type\":\"server-response\",\"rpcId\":\"upgrade-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r1\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r1\",\"revision\":\"1\",\"contentHash\":\"sha256:9d191a55c314b9e66919e59a92d5f35212efa1c64af57cb0028b6139889cd749\"},\"generation\":31,\"generatedAt\":\"2026-11-12T15:36:07.694Z\",\"root\":{\"teamSessionId\":\"team-v016pack-r1\",\"createdAt\":\"2026-11-12T15:35:13.116Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-",
+  "projectionAttempts": 1
+}

@@ -1,0 +1,32 @@
+{
+  "count": 27,
+  "files": {
+    "storages/session_projcache/sessions/session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc.json": "e30fbb52dc6e74fb2fd12e6f087330d19d9ee5fc17254c04a9ed376cfe667f28",
+    "storages/session_projcache/sessions/session-team-child-52b89f19fd675b05f24d06ebdb91c559.json": "0d865a7d16cba325d8bf98c3138969ccf95afb92b216688784b6ec0cb166c767",
+    "storages/session_projcache/sessions/session-team-child-dc56699fb5d7c035680da275412c876d.json": "b26a50751e7faf2f4c1268e853c8a977a9222effb172d1886dc66b457ad01ecc",
+    "storages/session_projcache/sessions/team-boot-v016pack-r1.json": "e995ddbf980705c912fa22e59554ea53a22f4d8eb036929adfd2f96972490bf8",
+    "storages/session_projcache/sessions/team-v016pack-r1.json": "d92d4475df10b462fe769aa4189d65cd209fd165af9c454ba71a5094f1f96264",
+    "storages/team_domain.json": "cbce250432f02afc7e48709b064853dbed25144b9c6fd59b49dba9f7587ca68d",
+    "storages/workspace.json": "8332e072a55f6c6ac287e41ac1a57640d630c2143cd55eeba907a3a33fb3240e",
+    "sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-packaging-v016-tests-homes-v016-pack-1-2026-11-12T15-35-07-workspace--/session-team-child-0ebdcf0ea5ad281a5683f83b6bd6f7dc/session.v4.jsonl.zstd": "63ecfd994325e7e8bdcb14f39f7ad0349786c9504be2c3bddce63b4e6cd19a7f",
+    "sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-packaging-v016-tests-homes-v016-pack-1-2026-11-12T15-35-07-workspace--/session-team-child-52b89f19fd675b05f24d06ebdb91c559/session.v4.jsonl.zstd": "912636eb0a772e983f57349a42edecaa7ec456eb02c1e8b82ea53cde26af8687",
+    "sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-packaging-v016-tests-homes-v016-pack-1-2026-11-12T15-35-07-workspace--/session-team-child-dc56699fb5d7c035680da275412c876d/session.v4.jsonl.zstd": "4e6fe1df7ada78fc590ba27c6398c57e3908cff66ff911e76a4747284cca8751",
+    "sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-packaging-v016-tests-homes-v016-pack-1-2026-11-12T15-35-07-workspace--/team-boot-v016pack-r1/session.v4.jsonl.zstd": "7dc0b674ef5121810f8702b3ee4afe22d4e24e69c8c5283c26f4f345757b63cb",
+    "sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-packaging-v016-tests-homes-v016-pack-1-2026-11-12T15-35-07-workspace--/team-v016pack-r1/session.v4.jsonl.zstd": "4e116bd36db7fc62055fc948a0cbe8a772eee9c178ecd355a926edbd28b20400",
+    "workspace/V016PACK_R1-arm1.txt": "71363ef1953fa0448f40808f5f83bd620f716872a9fde23ad7432db94d49b5e9",
+    "workspace/out/plan-mwdplwz7-eprwpk/exit.json": "bfe5bad059609cf320efa6293e20de65984716f478b06c4c78a354ba2d05f8cb",
+    "workspace/plans/plan-mwdplwz7-eprwpk.json": "e0cd7b6c512075173330e2bbcfa6e4fe8dd53fe2943c8555a73caf72d16f9c79",
+    "workspace/probe-mwdpluj4-39btzs/badhandled/allowed/ok.txt": "369c1f700c55dc4c11624125f1bb980dca9060b348361b3297bbd113271add40",
+    "workspace/probe-mwdpluj4-39btzs/badhandled/other/outside.txt": "f4e5fbfe309c9476de6386a889005a73e77a9726c8a763edcc888ebf6e13fb39",
+    "workspace/probe-mwdpluj4-39btzs/badhandled/private/secret.txt": "e681878892b80988ad67873c0857bdbb2b6036b012eff17a40724c0de6d75818",
+    "workspace/probe-mwdpluj4-39btzs/denyall/allowed/ok.txt": "369c1f700c55dc4c11624125f1bb980dca9060b348361b3297bbd113271add40",
+    "workspace/probe-mwdpluj4-39btzs/denyall/other/outside.txt": "f4e5fbfe309c9476de6386a889005a73e77a9726c8a763edcc888ebf6e13fb39",
+    "workspace/probe-mwdpluj4-39btzs/denyall/private/secret.txt": "e681878892b80988ad67873c0857bdbb2b6036b012eff17a40724c0de6d75818",
+    "workspace/probe-mwdpluj4-39btzs/selective/allowed/exec-leg.out": "86c90c310cfc6c57d26b7a4e2df9066c7bf75a60517e889bd254125cc44e066b",
+    "workspace/probe-mwdpluj4-39btzs/selective/allowed/new.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workspace/probe-mwdpluj4-39btzs/selective/allowed/ok.txt": "369c1f700c55dc4c11624125f1bb980dca9060b348361b3297bbd113271add40",
+    "workspace/probe-mwdpluj4-39btzs/selective/other/outside.txt": "f4e5fbfe309c9476de6386a889005a73e77a9726c8a763edcc888ebf6e13fb39",
+    "workspace/probe-mwdpluj4-39btzs/selective/private/secret.txt": "e681878892b80988ad67873c0857bdbb2b6036b012eff17a40724c0de6d75818",
+    "blueprints/v016-pack-bp-r1.yaml": "283eefc26fda59587c69091fc8df2a3df770d9dca939e672234e168788167ab2"
+  }
+}

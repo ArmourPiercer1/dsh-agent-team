@@ -1,0 +1,25 @@
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Progress: resolved 6, reused 1, downloaded 0, added 0
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/.artifacts/tmp/packaging-v016-pack-run-1/dsh-agent-team-0.1.6.tgz
+
+Packages: +7
++++++++
+Progress: resolved 7, reused 2, downloaded 0, added 0
+Progress: resolved 7, reused 7, downloaded 0, added 7, done
+Done in 2.5s using pnpm v11.7.0
+
+--- stderr ---
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-1-2026-11-12T15-35-07/profiles/web
+

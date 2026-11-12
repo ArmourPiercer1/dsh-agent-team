@@ -130,6 +130,15 @@ function argValue(name, dflt) {
 }
 const RUN = String(argValue('run', '1'))
 const FLAG_KEEP = ARGS.includes('--keep')
+// Opt-in (packaging-v016 lane, 2026-11-12): compile the Alpha.5 Member ceiling
+// family INTO the same v5 blueprint that carries `reviewRouting`. Default OFF
+// keeps this instrument's historical evidence comparable (the candidate this
+// file was authored for could not admit the family — finding F-1, since fixed
+// by PD-42: `derivedMembersOf` now accepts schemaVersion 4 AND 5). With the
+// flag the document proves the two families TRAVEL together through the
+// INSTALLED artifact; enforcement additionally needs the governed realm row,
+// which this instrument does not compose (recorded, not claimed).
+const FLAG_MEMBER_IO_CEILINGS = ARGS.includes('--member-io-ceilings')
 const HOST_PORT_ARG = argValue('port', null)
 const MOCK_PORT_ARG = argValue('mock-port', null)
 const TARBALL_ARG = argValue('tarball', null)
@@ -939,12 +948,33 @@ function blueprint() {
       ordinaryToolApprovals: { default: 'officer', leaderExceptions: [] },
       whenOfficerUnavailable: 'hold',
     },
-    // NO memberIoCeilings: on this candidate a v5 blueprint is refused by the
-    // derived product path (`derivedMembersOf` requires schemaVersion === 4),
-    // so the A6 route and the A5 governed-realm route are DISJOINT. The gate
-    // names both routes; this driver takes the v5/A6 Officer route because it
-    // is the only one that can produce a human approval at all. The refusal is
-    // recorded as finding F-1 in the evidence README, not worked around.
+    // memberIoCeilings is opt-in (--member-io-ceilings). The historical default
+    // was OFF because the candidate this file was authored for refused a v5
+    // document carrying the family (finding F-1); PD-42 later widened the
+    // source-of-document path to schemaVersion 4 AND 5, so the same v5 document
+    // can now carry both families. When the flag is set the ceiling lanes are
+    // the kit WORKSPACE (read+write restricted), which is the narrowest honest
+    // declaration for a Member whose only filesystem arm is that workspace.
+    ...(FLAG_MEMBER_IO_CEILINGS ? {
+      memberIoCeilings: [
+        {
+          templateId: 'worker',
+          io: {
+            read: { mode: 'restricted', allow: [WS], ask: [], deny: [] },
+            write: { mode: 'restricted', allow: [WS], ask: [], deny: [] },
+            network: { mode: 'allow' },
+          },
+        },
+        {
+          templateId: 'officer',
+          io: {
+            read: { mode: 'restricted', allow: [WS], ask: [], deny: [] },
+            write: { mode: 'restricted', allow: [WS], ask: [], deny: [] },
+            network: { mode: 'allow' },
+          },
+        },
+      ],
+    } : {}),
   }
 }
 
@@ -1224,6 +1254,39 @@ async function stepTeamAndMember() {
   check('TEAM-0', 'team.create admits the v5 blueprint (Officer + reviewRouting) on the packaged artifact',
     createOk, `status=${create.status} body=${JSON.stringify(create.body?.result ?? create.body ?? create).slice(0, 600)}`)
   if (!createOk) throw new Error('team.create failed')
+  // ── TYPED SURFACES (packaging-v016 lane) ────────────────────────────────
+  // The durable `blueprint_registry` row is the typed surface that proves what
+  // the INSTALLED artifact actually froze: `source` is the document
+  // `team.create` read, `contentHash` is the identity the TeamSession binds,
+  // and the document's own `schemaVersion` is what the product decided on.
+  // Nothing here is inferred from the request the driver sent.
+  const registryRow = rowsOf('blueprint_registry').find((row) => row?.blueprintId === BP_ID)
+  let frozenDocument = null
+  try {
+    if (registryRow !== undefined) {
+      const body = String(registryRow.source).replace(/^---\s*/u, '').replace(/\s*---\s*$/u, '')
+      frozenDocument = JSON.parse(body)
+    }
+  } catch { frozenDocument = null }
+  const typedSurfaces = {
+    registryRowPresent: registryRow !== undefined,
+    registryContentHash: registryRow?.contentHash ?? null,
+    frozenDocumentSchemaVersion: frozenDocument?.schemaVersion ?? null,
+    frozenHasReviewRouting: frozenDocument?.reviewRouting !== undefined,
+    frozenHasMemberIoCeilings: frozenDocument?.memberIoCeilings !== undefined,
+    frozenMemberCeilingTemplateIds: Array.isArray(frozenDocument?.memberIoCeilings)
+      ? frozenDocument.memberIoCeilings.map((entry) => entry?.templateId ?? null) : [],
+    teamSessionBlueprint: create.body?.result?.value?.data?.durable?.teamSession?.blueprint ?? null,
+  }
+  writeEvidence(join('flow', 'typed-surfaces.json'), typedSurfaces)
+  SUMMARY.flow.typedSurfaces = typedSurfaces
+  check('SURF-1', 'the durable blueprint registry froze the schemaVersion-5 document the installed artifact admitted',
+    typedSurfaces.registryRowPresent && typedSurfaces.frozenDocumentSchemaVersion === 5 && typedSurfaces.registryContentHash !== null,
+    `row=${String(typedSurfaces.registryRowPresent)} schemaVersion=${String(typedSurfaces.frozenDocumentSchemaVersion)} contentHash=${String(typedSurfaces.registryContentHash)}`)
+  check('SURF-2', 'the frozen durable document carries BOTH v5 families (memberIoCeilings + reviewRouting)',
+    typedSurfaces.frozenHasMemberIoCeilings && typedSurfaces.frozenHasReviewRouting,
+    `memberIoCeilings=${String(typedSurfaces.frozenHasMemberIoCeilings)} reviewRouting=${String(typedSurfaces.frozenHasReviewRouting)} ceilingTemplates=${JSON.stringify(typedSurfaces.frozenMemberCeilingTemplateIds)}`)
+
   const teamRows = readTeamRows()
   const projection = await readProjection()
   const membersBefore = projectionMembers(projection)

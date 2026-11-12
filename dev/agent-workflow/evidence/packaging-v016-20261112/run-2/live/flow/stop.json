@@ -1,0 +1,131 @@
+{
+  "permissionLeg": {
+    "requestId": "ctrl-02noanf0fbg15m08q8ald0mq",
+    "request": {
+      "sequence": 21,
+      "requestId": "ctrl-02noanf0fbg15m08q8ald0mq",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "correlation": "call-v016pack-2-12",
+      "approvalCaseId": "case-1139vg71ul8wsi1rr0bu10ht",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-12T15:36:43.203Z"
+    },
+    "decisions": [
+      {
+        "sequence": 22,
+        "requestId": "ctrl-02noanf0fbg15m08q8ald0mq",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T15:36:43.318Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 23,
+        "requestId": "ctrl-02noanf0fbg15m08q8ald0mq",
+        "createdAt": "2026-11-12T15:36:43.525Z"
+      }
+    ],
+    "abandonments": [],
+    "executions": [
+      {
+        "sequence": 29,
+        "requestId": "ctrl-02noanf0fbg15m08q8ald0mq",
+        "callId": "call-v016pack-2-12",
+        "outcome": "failed",
+        "createdAt": "2026-11-12T15:36:43.949Z"
+      }
+    ],
+    "escalations": []
+  },
+  "humanLeg": {
+    "requestId": "ctrl-0v70ffr1vom4k41i1snhx00p",
+    "request": {
+      "sequence": 27,
+      "requestId": "ctrl-0v70ffr1vom4k41i1snhx00p",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:e1d69c67-5c83-427d-b891-748f963e12e4-2",
+      "approvalCaseId": "case-1kpdcbb0qeoq9u13fjbhh0jo",
+      "legOrdinal": 2,
+      "reviewAuthority": "human-user",
+      "createdAt": "2026-11-12T15:36:43.742Z"
+    },
+    "decisions": [
+      {
+        "sequence": 28,
+        "requestId": "ctrl-0v70ffr1vom4k41i1snhx00p",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-12T15:36:43.910Z"
+      }
+    ],
+    "consumptions": [],
+    "abandonments": [],
+    "executions": [],
+    "escalations": [
+      {
+        "sequence": 26,
+        "approvalCaseId": "case-1kpdcbb0qeoq9u13fjbhh0jo",
+        "escalatedBy": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0vh014q1wikxn11h7tuf000f"
+      }
+    ]
+  },
+  "cancel": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "lateAllow": {
+    "status": 200,
+    "ok": false,
+    "code": "CONTROL_REQUEST_DECIDED",
+    "body": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_DECIDED",
+        "message": "ControlService: request 'ctrl-0v70ffr1vom4k41i1snhx00p' already carries a durable decision (the first decision is authoritative)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_DECIDED",
+            "message": "ControlService: request 'ctrl-0v70ffr1vom4k41i1snhx00p' already carries a durable decision (the first decision is authoritative)",
+            "details": {
+              "rootSessionId": "team-v016pack-r2",
+              "requestId": "ctrl-0v70ffr1vom4k41i1snhx00p"
+            }
+          }
+        }
+      }
+    }
+  },
+  "escalationRecorded": true,
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/packaging-v016/tests/homes/v016-pack-2-2026-11-12T15-36-28/workspace/V016PACK_R2-arm2.txt",
+  "fileExists": false,
+  "terminalShape": "already-decided"
+}

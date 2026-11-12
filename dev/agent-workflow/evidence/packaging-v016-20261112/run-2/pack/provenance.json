@@ -1,0 +1,14 @@
+{
+  "packedCommit": "f86a259be53f4e172a5b69e74b2791fa11b42990",
+  "branch": "task/packaging-v016-20261112",
+  "cleanAtPack": true,
+  "productPorcelainAtPack": "",
+  "fullPorcelainAtPack": "?? dev/agent-workflow/evidence/packaging-v016-20261112/",
+  "tarballSha256": "cf781b922b6fcb22a404dd84d3928f23538b5cd6f97ec92303a7a4c6f8cb6b67",
+  "tarballBytes": 4405498,
+  "internalVersion": "0.1.6",
+  "internalName": "dsh-agent-team",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "at": "2026-11-12T15:36:25.718Z"
+}
