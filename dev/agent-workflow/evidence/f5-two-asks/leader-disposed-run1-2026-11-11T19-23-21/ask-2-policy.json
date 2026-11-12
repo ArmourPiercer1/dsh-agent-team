@@ -1,0 +1,146 @@
+{
+  "policy": "leader",
+  "expectation": "the ask may go to the Leader; the Leader is the resolver and the human leg is not silently substituted",
+  "officerAtAsk2": "disposed",
+  "officerRowNow": {
+    "instanceId": "inst-05v9d2x0ij0l",
+    "lifecycle": "DISPOSED",
+    "templateId": "officer"
+  },
+  "officerAvailable": false,
+  "policyInvoked": true,
+  "policyHonoured": true,
+  "policyReason": "leader: deciderKind=instance deciderInstance=inst-leader leaderInstance=inst-leader humanLeg=none",
+  "ask2": {
+    "permissionLeg": {
+      "requestId": "ctrl-0qletdv0bcnhmq1qpj5u10z4",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-0b0sk050cjqj340exhbyn1yx"
+    },
+    "planeLeg": {
+      "requestId": "ctrl-1grgwj50h8odki12ucwk71vu",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-1y5p2ni0ie0v0h10m0gmk0zm",
+      "legOrdinal": 1,
+      "correlation": "pa:tadm:session-f5-team-leader-2026-11-11T19-23-21:inst-0nn8xtp07b2q:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0nn8xtp07b2q-bash:hexec:4052b8cf-e55a-441f-af88-45021ab234f5-2",
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:21aaa8c6b6cbf018ce8e448366d2f16b45609d161b181b3af58a78c1f75f32fe",
+      "authorityGeneration": 0
+    },
+    "escalations": [],
+    "transfer": null,
+    "humanLeg": null,
+    "decision": {
+      "sequence": 24,
+      "factType": "control-decision-recorded",
+      "createdAt": "2026-11-11T19:23:39.313Z",
+      "decider": {
+        "instanceId": "inst-leader",
+        "kind": "instance",
+        "role": "leader"
+      },
+      "decision": "allow",
+      "requestId": "ctrl-1grgwj50h8odki12ucwk71vu",
+      "requestSequence": 23,
+      "scope": {
+        "actionName": "team-tool-execute",
+        "authorityScope": {
+          "matcher": {
+            "kind": "exact",
+            "resource": "f5-plane-realm-2026-11-11T19-23-21|tool:bash"
+          },
+          "operationClass": "tool-invoke"
+        },
+        "correlation": "pa:tadm:session-f5-team-leader-2026-11-11T19-23-21:inst-0nn8xtp07b2q:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0nn8xtp07b2q-bash:hexec:4052b8cf-e55a-441f-af88-45021ab234f5-2",
+        "operationFingerprint": "sha256:f710bfa1f82911a263257ed6ba22389f05d9ce996e81b3659ee63814bb9a9768",
+        "rootSessionId": "session-f5-team-leader-2026-11-11T19-23-21",
+        "subject": {
+          "instanceId": "inst-0nn8xtp07b2q",
+          "kind": "instance"
+        },
+        "targetInstanceId": "inst-0nn8xtp07b2q",
+        "toolName": "bash"
+      }
+    },
+    "decisionCount": 1,
+    "consumptions": 1,
+    "executions": 1,
+    "abandonments": 0,
+    "executed": true
+  },
+  "discoverability": {
+    "requestId": "ctrl-1grgwj50h8odki12ucwk71vu",
+    "ledgerPageVisible": true,
+    "pendingControlCount": 0,
+    "modelPendingListObserved": true,
+    "remoteDiscovery": {
+      "pageStatus": 200,
+      "projectionStatus": 200,
+      "entries": 26
+    }
+  },
+  "resolver": {
+    "deciderKind": "instance",
+    "deciderInstanceId": "inst-leader",
+    "deciderHumanId": null,
+    "leaderInstance": "inst-leader",
+    "officerInstance": "inst-05v9d2x0ij0l",
+    "humanAllowedByDriver": [],
+    "gateFactsPresent": true,
+    "refusalGateAuditPresent": false,
+    "failingGatesAtRefusal": []
+  },
+  "mockObservation": {
+    "wakeTurns": 0,
+    "notificationTurns": 6,
+    "listCalls": 2,
+    "resolveCalls": 2,
+    "refusalTraceCount": 0,
+    "refusalTraces": []
+  },
+  "disposeResult": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "value": {
+        "data": {
+          "member": {
+            "schemaVersion": 1,
+            "rootSessionId": "session-f5-team-leader-2026-11-11T19-23-21",
+            "instanceId": "inst-05v9d2x0ij0l",
+            "templateId": "officer",
+            "label": "officer",
+            "childSessionId": "session-team-child-f15e855836bfb2d5951c0d698010bf95",
+            "lifecycle": "DISPOSED",
+            "createdAt": "2026-11-11T19:23:32.360Z",
+            "activityVersion": 2,
+            "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/f5-asks/tests/homes/f5-leader-disposed-r1-2026-11-11T19-23-21/workspace"
+          },
+          "steps": [
+            "close-admission",
+            "interrupt",
+            "drain-descendants",
+            "wait-quiescence",
+            "release-residency",
+            "commit-dispose"
+          ],
+          "drained": 0,
+          "residencyDropped": true
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "member.dispose",
+          "endpoint": "member.dispose",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": null,
+          "effectSequence": null
+        }
+      }
+    }
+  },
+  "observedAt": "2026-11-11T19:23:41.240Z",
+  "observerHostPid": 38
+}

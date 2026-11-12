@@ -1,0 +1,15 @@
+{
+  "head": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "porcelain": "",
+  "distOk": true,
+  "srcOk": false,
+  "hostPort": 3182,
+  "mockPort": 3496,
+  "stablePre": {
+    "http://127.0.0.1:3080/": 401,
+    "http://127.0.0.1:3180/": "unreachable"
+  },
+  "worktree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/f5-asks",
+  "bootPreflightVerdict": "ENV_BLOCK",
+  "bootPreflightReason": "ENV_BLOCK at world.seed (prepared seed world is absent at /home/armourpiercer/projects/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52 (this kit cannot start without it))"
+}

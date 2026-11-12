@@ -1,0 +1,60 @@
+{
+  "atWake": null,
+  "atRefusal": null,
+  "afterDecision": {
+    "leg": {
+      "requestId": "ctrl-0zic3d11mb04ni1g1qtsv03o",
+      "kind": "leader-approval",
+      "reviewAuthority": "leader",
+      "approvalCaseId": "case-0f4qgje1wkjqol0v2k2u80ym",
+      "legOrdinal": 1,
+      "blueprintRevision": "1",
+      "blueprintContentHash": "sha256:4db95dd671ecca665cc5f90105cfdb33d0c8d00105e17f1cb94f3cd7a7377e8c",
+      "authorityGeneration": 0,
+      "operationOwnerTemplateId": "worker",
+      "operationToolDefinitionIdentity": "def#27",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "subject": {
+        "instanceId": "inst-0p4qtb90ukca",
+        "kind": "instance"
+      },
+      "targetInstanceId": "inst-0p4qtb90ukca"
+    },
+    "sessionBlueprint": {
+      "blueprintId": "team.f5-two-asks",
+      "contentHash": "sha256:4db95dd671ecca665cc5f90105cfdb33d0c8d00105e17f1cb94f3cd7a7377e8c",
+      "revision": "1"
+    },
+    "registryRevisions": [
+      {
+        "revision": "1",
+        "contentHash": "sha256:4db95dd671ecca665cc5f90105cfdb33d0c8d00105e17f1cb94f3cd7a7377e8c"
+      }
+    ],
+    "officerCount": 0,
+    "officers": [],
+    "owner": {
+      "instanceId": "inst-0p4qtb90ukca",
+      "lifecycle": "SETTLED",
+      "templateId": "worker"
+    },
+    "ownerGeneration": 0,
+    "gates": {
+      "leg-present": true,
+      "leg-pending": true,
+      "blueprint-hash-present": true,
+      "blueprint-revision-present": true,
+      "leg-blueprint-matches-session": true,
+      "registry-has-session-blueprint": true,
+      "unique-live-officer": false,
+      "officer-child-session": false,
+      "owner-running": false,
+      "owner-template-matches": true,
+      "generation-frozen": true,
+      "generation-current-matches": true,
+      "tool-binding-complete": true
+    }
+  },
+  "note": "atWake is the durable gate state captured while the ask-#2 reviewer was composing its resolve (owner still blocked in the guard); atRefusal is the same audit one model turn later when the typed refusal became observable; afterDecision is the audit after the human decided (owner SETTLED / leg no longer pending, so several gates necessarily flip). The provider itself reports only \"produced no facts\"; this audit names which durable gate would answer null."
+}

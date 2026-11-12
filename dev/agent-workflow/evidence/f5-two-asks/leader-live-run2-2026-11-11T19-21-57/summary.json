@@ -1,0 +1,82 @@
+{
+  "policy": "leader",
+  "officerAtAsk2": "live",
+  "run": "2",
+  "criteria": [
+    {
+      "id": "L0",
+      "name": "the real Host booted and the Leader surface was discovered",
+      "verdict": "PASS",
+      "detail": "tools=41"
+    },
+    {
+      "id": "CREATE-1",
+      "name": "team.create admits the v5 Officer + reviewRouting on the real Host",
+      "verdict": "PASS",
+      "detail": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"f5create-n9fvpojh1z\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-f5-team-leader-2026-11-11T19-21-57\",\"blueprint\":{\"blueprintId\":\"team.f5-two-asks\",\"revision\":\"1\",\"contentHash\":\"sha256:83befe5094242fc068fd3731f32e2cdcaab161660f8ee089eeb5b309e2627fae\"},\"createdAt\":\"2026-11-11T19:22:07.847Z\",\"generation\":1,\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/f5-asks/tests/homes/f5-leader-live-r2-2026-11-11T19-21-57/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"session-f5-team-leader-2026-11-11T19-21-57\"},\"wrote\":true,\"leaderRow\":{\""
+    },
+    {
+      "id": "CREATE-2",
+      "name": "exactly one live Officer carries the routing template (the Alpha.6 unique-Officer law)",
+      "verdict": "PASS",
+      "detail": "liveOfficers=1"
+    },
+    {
+      "id": "ASK1-1",
+      "name": "ask #1 produced the governed two-leg chain and the requested side effect executed exactly once",
+      "verdict": "PASS",
+      "detail": "file=true plane=ctrl-11v70o61mo4a4h0a6cqv81yz escalated=true humanLeg=ctrl-11l7ez71lu5h1k0b0bjy5008 humanConsumptions=1 error=none"
+    },
+    {
+      "id": "ASK1-2",
+      "name": "ask #1 was escalated by the OFFICER and the successor human leg was decided by the HUMAN",
+      "verdict": "PASS",
+      "detail": "escalation=null originalDecision={\"sequence\":11,\"factType\":\"control-decision-recorded\",\"createdAt\":\"2026-11-11T19:22:09.157Z\",\"decider\":{\"instanceId\":\"inst-1h4moyr0l9ih\",\"kind\":\"instance\",\"role\":\"member\"},\"decision\":\"deny\",\"reason\":\"escalated\",\"requestId\":\"ctrl-11v70o61mo4a4h0a6cqv81yz\",\"requestSequence\":10,\"reviewCapability\":{\"approvalCaseId\":\"case-0mpzl0h0syqyri1tn17y70gi\",\"authorityGeneration\":0,\"blueprintContentHash\":\"sha256:83befe5094242fc068fd3731f32e2cdcaab161660f8ee089eeb5b309e2627fae\",\"blueprintRevision\":\"1\",\"currentLegRequestId\":\"ctrl-11v70o61mo4a4h0a6cqv81yz\",\"effectSetFingerprint\":\"sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56\",\"effectiveReviewAuthority\":\"leader\",\"entry\":\"escalate\",\"legOrdinal\":1,\"operationOwnerInstanceId\":\"inst-0isjb2l1s9us\",\"operationOwnerTemplateId\":\"worker\",\"operationToolDefinitionIdentity\":\"def#27\",\"scopeFingerprint\":\"session-f5-team-leader-2026-11-11T19-21-57\\u0000instance:inst-0isjb2l1s9us\\u0000team-tool-execute\\u0000bash\\u0000pa:tadm:session-f5-team-leader-2026-11-11T19-21-57:inst-0isjb2l1s9us:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0isjb2l1s9us-bash:hexec:746b704c-90db-46c0-866a-720104f38f93-1\\u0000sha256:cbe701fa284524cead38710ab0fbe5dbe4a799443dfff212b8190f98e00cfcf0\",\"source\":\"blueprint-officer\"},\"scope\":{\"actionName\":\"team-tool-execute\",\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"f5-plane-realm-2026-11-11T19-21-57|tool:bash\"},\"operationClass\":\"tool-invoke\"},\"correlation\":\"pa:tadm:session-f5-team-leader-2026-11-11T19-21-57:inst-0isjb2l1s9us:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0isjb2l1s9us-bash:hexec:746b704c-90db-46c0-866a-720104f38f93-1\",\"operationFingerprint\":\"sha256:cbe701fa284524cead38710ab0fbe5dbe4a799443dfff212b8190f98e00cfcf0\",\"rootSessionId\":\"session-f5-team-leader-2026-11-11T19-21-57\",\"subject\":{\"instanceId\":\"inst-0isjb2l1s9us\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-0isjb2l1s9us\",\"toolName\":\"bash\"}} humanDecision={\"sequence\":14,\"factType\":\"control-decision-recorded\",\"createdAt\":\"2026-11-11T19:22:09.363Z\",\"decider\":{\"humanId\":\"session-f5-team-leader-2026-11-11T19-21-57\",\"kind\":\"human\"},\"decision\":\"allow\",\"note\":\"F-5 ask1: explicit human operator allow (leader/live)\",\"requestId\":\"ctrl-11l7ez71lu5h1k0b0bjy5008\",\"requestSequence\":13,\"scope\":{\"actionName\":\"team-tool-execute\",\"authorityScope\":{\"matcher\":{\"kind\":\"exact\",\"resource\":\"f5-plane-realm-2026-11-11T19-21-57|tool:bash\"},\"operationClass\":\"tool-invoke\"},\"correlation\":\"pa:tadm:session-f5-team-leader-2026-11-11T19-21-57:inst-0isjb2l1s9us:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0isjb2l1s9us-bash:hexec:746b704c-90db-46c0-866a-720104f38f93-1\",\"operationFingerprint\":\"sha256:cbe701fa284524cead38710ab0fbe5dbe4a799443dfff212b8190f98e00cfcf0\",\"rootSessionId\":\"session-f5-team-leader-2026-11-11T19-21-57\",\"subject\":{\"instanceId\":\"inst-0isjb2l1s9us\",\"kind\":\"instance\"},\"targetInstanceId\":\"inst-0isjb2l1s9us\",\"toolName\":\"bash\"}}"
+    },
+    {
+      "id": "ASK2-1",
+      "name": "ask #2 on the SAME root produced its own durable plane leg",
+      "verdict": "PASS",
+      "detail": "plane=ctrl-1rauupx0v20nu20crafmz18b newLegs=2"
+    },
+    {
+      "id": "ASK2-2",
+      "name": "ask #2's request stayed discoverable after the decision point (remote ledger page + projection)",
+      "verdict": "PASS",
+      "detail": "requestId=ctrl-1rauupx0v20nu20crafmz18b pageVisible=true pendingCount=0 entries=25"
+    },
+    {
+      "id": "ASK2-3",
+      "name": "ask #2 was decided by a legal resolver and the approval authority was not silently changed",
+      "verdict": "PASS",
+      "detail": "decider={\"humanId\":\"session-f5-team-leader-2026-11-11T19-21-57\",\"kind\":\"human\"} transfers=0"
+    },
+    {
+      "id": "ASK2-4",
+      "name": "the declared whenOfficerUnavailable policy was honoured on ask #2",
+      "verdict": "PASS",
+      "detail": "invoked=false honoured=null reason=the configured Officer is CREATED and was woken as the reviewer; the router's whenOfficerUnavailable branch is not reached, so the policy is NOT INVOKED (recorded as such rather than marked honoured)"
+    },
+    {
+      "id": "ASK2-5",
+      "name": "ask #2 executed its approved body exactly once (no silent second authority)",
+      "verdict": "PASS",
+      "detail": "executed=true consumptions=1 executions=1"
+    },
+    {
+      "id": "F5-OBSERVED",
+      "name": "the live-Officer arm reproduces F-5 (Officer wake, refused escalation, human resolves the leg)",
+      "verdict": "PASS",
+      "detail": "refusals=1 escalations=0 decider=human"
+    },
+    {
+      "id": "HUMAN-EXPLICIT",
+      "name": "every human decision on this run was an explicit team.resolveControl by the operator (no implied/automatic human resolution)",
+      "verdict": "PASS",
+      "detail": "ask1 humanAllows=2 ask2 humanAllows=2"
+    }
+  ],
+  "verdict": "PASS",
+  "criteriaFailed": 0,
+  "finishedAt": "2026-11-11T19:22:42.702Z"
+}
