@@ -1,0 +1,86 @@
+{
+  "schema": "joint-acceptance/1",
+  "recordClass": "DEV-LIVE",
+  "composition": {
+    "preset": "fs-only",
+    "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "governedRealm": true
+  },
+  "counts": {
+    "PASS": 4,
+    "FAIL": 3,
+    "NOT_REACHED": 4
+  },
+  "arms": [
+    {
+      "arm": "J01",
+      "proposition": "Team + routing: v5 both families admitted; Officer routed, one team_resolve_control",
+      "verdict": "PASS",
+      "detail": "team.create=200 admitted=true blueprintHash=sha256:989c05561ca4d8f5fad79c8ca0be3513bd2ca29d4e0b2c40710f7e42d373a02d memberIoCeilings=true reviewRouting=true schemaVersion=5"
+    },
+    {
+      "arm": "J02",
+      "proposition": "Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact",
+      "verdict": "FAIL",
+      "detail": "inside=\"\" allowFacts=0"
+    },
+    {
+      "arm": "J03",
+      "proposition": "Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable",
+      "verdict": "FAIL",
+      "detail": "writeDenies=0 outsideExists=false"
+    },
+    {
+      "arm": "J04",
+      "proposition": "Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY",
+      "verdict": "FAIL",
+      "detail": "bashCalls=1 realmTerminalFacts=0"
+    },
+    {
+      "arm": "J05",
+      "proposition": "Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero",
+      "verdict": "PASS",
+      "detail": "request=ctrl-12w0i5y12z949t1m9ur6k09i consumption=1 executionResults=1 outcomes=succeeded executionFactWaitMs=300"
+    },
+    {
+      "arm": "J06",
+      "proposition": "Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured",
+      "verdict": "PASS",
+      "detail": "parameter-permission request=ctrl-12w0i5y12z949t1m9ur6k09i reviewAuthority=leader blueprintContentHash=sha256:989c05561ca4d8f5fad79c8ca0be3513bd2ca29d4e0b2c40710f7e42d373a02d operationTool=dsh-agent-team/bash authorityGeneration=0 decider={\"instanceId\":\"inst-0ncu7ql16az7\",\"kind\":\"instance\",\"role\":\"member\"} officer=inst-0ncu7ql16az7 routedToOfficer=true routedAwayFromOfficer=false identityCarried=true legDecided=true decisionWaitMs=301 whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=true"
+    },
+    {
+      "arm": "J07",
+      "proposition": "Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation",
+      "verdict": "NOT_REACHED",
+      "detail": "the joint driver did not drive this arm in this composition (see the README for the exact next step)"
+    },
+    {
+      "arm": "J08",
+      "proposition": "Relay refusal: machine team_send_message turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED), governed call still runs",
+      "verdict": "NOT_REACHED",
+      "detail": "the joint driver did not drive this arm in this composition (see the README for the exact next step)"
+    },
+    {
+      "arm": "J09",
+      "proposition": "Sticky Stop on the review-wake path: latch -> Stop marker -> SIGKILL + cold boot -> identical marker, no wakes/legs",
+      "verdict": "NOT_REACHED",
+      "detail": "the joint driver did not drive this arm in this composition (see the README for the exact next step)"
+    },
+    {
+      "arm": "J10",
+      "proposition": "Cold recovery: Team + Member + Goal + per-leg consumption facts survive SIGKILL; no resurrected turn, no duplicate execution",
+      "verdict": "NOT_REACHED",
+      "detail": "the joint driver did not drive this arm in this composition (see the README for the exact next step)"
+    },
+    {
+      "arm": "J11",
+      "proposition": "No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED)",
+      "verdict": "PASS",
+      "detail": "one-shot consumption facts for ctrl-12w0i5y12z949t1m9ur6k09i: 1"
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

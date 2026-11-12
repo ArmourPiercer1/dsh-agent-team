@@ -169,16 +169,27 @@ export function createAlpha6RootControlNotifier(ports: {
         }
         if (route.kind === 'no-work') return
         if (route.kind === 'unroutable' || route.kind === 'hold') {
-          // A LEGACY row whose OWN durable authority is the Leader (the
-          // parameter-permission ask carries no Alpha.6 ordinary-tool facts)
-          // is legally the Leader's to settle. An authored policy `hold` is
-          // NEVER overridden, and an A6 ordinary ask (tool owner/name
-          // present) is never handed to the Leader.
+          // A LEGACY row whose OWN durable authority is the Leader is legally
+          // the Leader's to settle: it was authored before the identity carry
+          // existed and carries NO Alpha.6 facts at all (no bound-Blueprint
+          // identity, no operation tool coordinate). An authored policy `hold`
+          // is NEVER overridden.
+          //
+          // J06 (2026-11-11): the carve-out is keyed on the row being
+          // genuinely pre-Alpha.6. A row that DOES carry the bound-Blueprint
+          // identity is an Alpha.6 ask — its routing is the blueprint's to
+          // decide, so an unroutable answer (e.g. `operation-tool-identity-
+          // unavailable`) is a TYPED REFUSAL that surfaces, never a silent
+          // Leader fallback. Before this, the missing tool coordinate made an
+          // Alpha.6 ask look legacy and the Leader received it by default,
+          // contradicting `ordinaryToolApprovals.default: officer`.
           const legacyLeaderRow =
             request.kind === 'leader-approval' &&
             request.reviewAuthority === 'leader' &&
             request.operationToolOwner === undefined &&
-            request.operationToolName === undefined
+            request.operationToolName === undefined &&
+            request.blueprintContentHash === undefined &&
+            request.blueprintRevision === undefined
           if (route.kind === 'unroutable' && legacyLeaderRow && ports.notifyLeader !== undefined) {
             await ports.notifyLeader(request)
             return

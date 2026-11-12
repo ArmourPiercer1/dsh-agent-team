@@ -465,6 +465,7 @@ import { installScopedToolGuard } from '../../../tool-dispatch/index.js'
 // edges those contracts drafted (P-A/P-B/P-C stayed DORMANT at this layer on
 // purpose: the GLUE owner lands them, nobody else).
 import { createTeamToolPlaneAssembly } from './team-tool-plane.mjs'
+import { publishNativeAdmission } from './native-tool-admission.mjs'
 import { createLiveJobsGatewayAssembly, jobsBridgeScopeKey } from './jobs-gateway-assembly.mjs'
 import { ci05GovernedGatewayRow } from './jobs-family-bridge.mjs'
 // U6 PR4 (ARC-C): the governed jobs bridge is its own named-bridge module —
@@ -499,7 +500,7 @@ import { createPtcEscalationRowAssembly } from './ptc-escalation-row.mjs'
 // plane's fs family uses its own hardened root provider rather than `ctx.fs`.
 // Evidence: dev/agent-workflow/evidence/a5sf-f1-ctx/ (host-free arms F1-1..F1-7
 // + the BEFORE/AFTER probe over the committed dist).
-import { a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
+import { a5sfAgentToolSurface, a5sfAttachedToolNames, a5sfBindableRealmNames, a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'
 // The host.ts install line creates the router through this re-export (the
 // glue is the only module surface host.ts loads; the row module stays
 // dependency-injected below).
@@ -2782,6 +2783,17 @@ export function createAgentBindings(deps) {
       // 1062-1063: owned names never ride the inherited-native lane, so a
       // global-face same-name can never credit this placement).
       const a5PlaneOwnedNames = []
+      // P01 (2026-11-11) — the realm's FORWARDED names, admitted to the two
+      // own-name faces BELOW (the Guard's assembly-owned/native exclusion and
+      // `bindOwnTools`) but deliberately NOT to the coverage `teamToolNames`
+      // list: `read`/`write`/`edit`/`read_image` keep their native
+      // PERMISSION_TOOL_NAMES classification, which is their management fact.
+      // An array (not a spread at declaration) because the route-C attach runs
+      // AFTER this point and its receipts are only readable there.
+      const a5sfRealmOwnedNames = []
+      /** The fibers the route-C attach created (empty when no realm / no
+       *  append): the receipts `a5sfAttachedToolNames` reads. */
+      let a5sfAttachedFibers = []
       // GLUE-7 (pb §6 provider side): the placement feed map for the plane's
       // placed Definitions. The Guard gets a CLOSURE over this map at install
       // and the plane assembly fills it at placement time — BEFORE
@@ -3025,7 +3037,13 @@ export function createAgentBindings(deps) {
       // The attach falls back to the tag only when this is absent, and still
       // refuses when neither yields a key.
       if (a5sfRealm !== undefined) {
-        await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)
+        // P01: the returned fibers carry the registration receipts
+        // (`a5sfRegistrationRouting`), which are this setup's ONLY admissible
+        // evidence of which names the realm actually forwarded. They are kept
+        // for the admission below — AFTER the plane has placed, so its own
+        // names/placement feed can be excluded from the binding set.
+        const attached = await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)
+        a5sfAttachedFibers = Array.isArray(attached) ? attached : []
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
@@ -3117,6 +3135,13 @@ export function createAgentBindings(deps) {
       if (permissionPolicy !== undefined && config?.teamToolPlane !== undefined && config?.teamToolPlane !== null) {
         const planeCfg = config.teamToolPlane
         const planeTemplateId = boundTemplate?.templateId ?? templateIdHint
+        // NATIVE-BASH-PRESERVATION (2026-11-11): the plane must not place its
+        // own shell row when THIS Member's realm adopts the pinned persistent
+        // `bash` (A5-NATIVE-01/02 — a native tool's BACKEND may be replaced,
+        // the tool may not). The fact is read from the MOUNTED realm's own
+        // faces, never guessed from config: only a governed PTY face declares
+        // `governedPty`, and only that face serves the native definition.
+        const a5NativeBashAdopted = a5sfRealm?.installation?.members?.[0]?.faces?.terminals?.governedPty !== undefined
         // B-ACT-1-PR C2: the governed jobs bridge for the fixed `job_*`
         // management trio. Built ONLY when the closed `jobsEnabled` key says
         // on (absent = no rows, byte-for-byte zero flip). Everything it
@@ -3319,7 +3344,7 @@ export function createAgentBindings(deps) {
           // TOOL_BINDING_UNVERIFIED). The kernel answers EVERY subtree
           // coverage question through this predicate from here on.
           fs: { subtreeContains: a5PlaneSubtreeContains },
-          plane: planeCfg,
+          plane: a5NativeBashAdopted ? { ...planeCfg, nativeBashAdopted: true } : planeCfg,
           ...(a5JobsBridge === null ? {} : { backends: {
             jobs: a5JobsBridge,
             ...(a5BackgroundProducer === null ? {} : { backgroundJobs: a5BackgroundProducer }),
@@ -3353,6 +3378,26 @@ export function createAgentBindings(deps) {
         // build-time snapshot was measured live refusing a legitimate
         // team.create). No plane placement = no handle = pre-feed path.
         a5PlaneValue = built.value
+        // NATIVE-BASH-PRESERVATION (2026-11-11): hand the plane's admission
+        // authority to the NATIVE `bash` definition's `execute`. The plane
+        // mounts AFTER the native module (route C attaches the module during
+        // setup, the plane mounts here), so the edge cannot be a mount input:
+        // it is published per runtime Agent and looked up at CALL time. No
+        // edge published => the wrapper refuses the call (never an
+        // unapproved execution), which is why this publication is part of the
+        // same disposer scope as the placement itself.
+        if (a5NativeBashAdopted && typeof built.value.admitNative === 'function') {
+          const published = publishNativeAdmission(runtimeAgent, {
+            admit: async (input) => await built.value.admitNative({
+              toolName: input?.toolName,
+              args: input?.args,
+              exec: input?.exec,
+            }),
+            settle: (input) => built.value.settleNative?.({ callId: input?.callId, outcome: input?.outcome }),
+          })
+          toolDisposers.push(published)
+          observations.push(`a5nb: native admission published for ${sessionId}`)
+        }
         for (const name of built.value.placementNames) a5PlanePlacementFeed.set(name, name)
         observations.push(`a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
         globalThis.console?.log(`[dsh-agent-team] a5g7: placement-feed rows=[${built.value.placementNames.join(',')}] realm=${a5PlaneRealmId}`)
@@ -3521,6 +3566,55 @@ export function createAgentBindings(deps) {
           observations.push(`a5ptc: member-UNREGISTERED session=${sessionId} (no durable instanceId yet)`)
         }
       }
+      // P01 (2026-11-11) — DECLARE THE REALM'S FORWARDED NAMES (Deliverable A).
+      //
+      // The route-C attach REGISTERS the realm's confined `read`/`write`/
+      // `edit`/`read_image` definitions but the closed-world Guard was never
+      // told they exist: they are absent from the global `nativeNames` (which
+      // carries no scope) and from `bindOwnTools`' list, so
+      // `bindInheritedSurface` pinned them `verified:false` and every call was
+      // refused `TOOL_BINDING_UNVERIFIED` (the measured PD-42 refusal). The
+      // receipts the attach published are the ONLY admissible source of "this
+      // realm forwarded these", so the set is built from them here — AFTER the
+      // plane placed, so the plane's own names and placement feed are excluded.
+      //
+      // The predicate itself is `a5sfBindableRealmNames` (pure, in the row
+      // module, host-free tested): forwarded∩ceiling ∩ post-attach surface ∩
+      // not-plane-owned ∩ readable at `tools.get(name, runtimeAgent)`. A name
+      // that fails ANY arm is NOT declared and keeps the pre-P01 refusal.
+      //
+      // THE TWO OWN-NAME FACES (the load-bearing pair):
+      //   - `a5PlaneOwnedNames` is the Guard's `assemblyOwnedNames`: it keeps
+      //     the name OFF the inherited-native lane, so `bindInheritedSurface`
+      //     cannot pin it `unverified`;
+      //   - `ownNames` below is what actually MINTS the verified bind.
+      // NEITHER is the coverage `teamToolNames` list: these names keep their
+      // native PERMISSION_TOOL_NAMES classification, which is their management
+      // fact (`read`/`write` must not become "team-tool-owned" to the A2C-2
+      // gate).
+      if (a5sfAttachedFibers.length > 0) {
+        const attachedNames = a5sfAttachedToolNames(a5sfAttachedFibers)
+        if (attachedNames.length > 0) {
+          const toolService = agentCtx.get('tools')
+          const admission = a5sfBindableRealmNames({
+            attachedNames,
+            surface: a5sfAgentToolSurface(agentCtx, runtimeAgent),
+            planeOwned: new Set([...a5PlaneOwnNames, ...a5PlanePlacementFeed.keys()]),
+            lookup: (name) => (typeof toolService?.get === 'function' ? toolService.get(name, runtimeAgent ?? undefined) : undefined),
+          })
+          for (const skip of admission.skipped) {
+            observations.push(`a5sf-bind: '${skip.name}' NOT declared as a realm-forwarded bind (${skip.reason})`)
+          }
+          for (const name of admission.declared) {
+            a5sfRealmOwnedNames.push(name)
+            a5PlaneOwnedNames.push(name)
+          }
+          if (a5sfRealmOwnedNames.length > 0) {
+            observations.push(`a5sf-bind: realm-forwarded names declared=[${a5sfRealmOwnedNames.join(',')}] realm=${a5PlaneRealmId}`)
+            globalThis.console?.log(`[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[${a5sfRealmOwnedNames.join(',')}]`)
+          }
+        }
+      }
       // alpha.1 (plan §10.7): the Team-managed skills — the catalog
       // definitions the template's skills entry allows, registered in
       // this agent's scope (allow(items) = catalog lookup; deny = none;
@@ -3647,7 +3741,10 @@ export function createAgentBindings(deps) {
         // registered (install.ts bindAll), which is exactly the verified-
         // through-placement fact the Q4 route prescribes (never a discovery
         // compare; the R5 falsification stays closed).
-        const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames]
+        // P01: the realm's forwarded names ride the SAME verified bind (the
+        // load-bearing half of Deliverable A). They are NOT in
+        // `selectedTeamToolNames` and never enter the coverage list above.
+        const ownNames = [...selectedTeamToolNames, ...a5PlaneOwnNames, ...a5sfRealmOwnedNames]
         const ownBound = a5p1Guard.bindOwnTools(ownNames)
         if (ownBound.ok !== true) {
           const error = new Error(
@@ -3980,11 +4077,79 @@ export function createAgentBindings(deps) {
                 if (facts === undefined || facts === null) return undefined
                 return { ...facts, subtreeContains: containOverlayKeys }
               }
+        // J06 (owner authorisation 2026-11-11) — the IDENTITY CARRY.
+        //
+        // A `parameter-permission` ask must reference the SAME bound Blueprint
+        // identity as a `team-tool-execute` leg, or the Alpha.6 route cannot
+        // decide it (it degrades to "not an ordinary ask" and the Leader
+        // receives it by default, contradicting `default: officer`). Every
+        // member below is read from a source that is already the authority for
+        // that fact — never re-derived here:
+        //   - the Blueprint identity is a COPY of the bound/hashed document the
+        //     whole Alpha.6 composition reads (`getBoundBlueprint`, the same
+        //     object the PA lane freezes from), deep-frozen at construction;
+        //   - the OperationOwner template is this Agent's own durable template
+        //     (`boundTemplate`), the same value the PA leg freezes;
+        //   - the authority generation is the SAME durable reader the PA lane
+        //     uses, called at ask time (a generation is a moving fact);
+        //   - the tool coordinate is the VERIFIED governance binding on this
+        //     Agent's guard surface (`providerId`/`toolName`/
+        //     `definitionIdentity` of a verified entry). A name with no
+        //     verified binding answers `null`, which is exactly the honest
+        //     answer for a host builtin the Team assembly never placed: the
+        //     route gate then refuses that leg BY NAME instead of inventing a
+        //     coordinate or falling back to the Leader.
+        //
+        // Off unless Alpha.6 review routing is opted in AND the bound document
+        // is v5 — the same gate the PA case leg uses. Absent = pre-J06 rows,
+        // byte for byte.
+        const a6AskIdentity = (() => {
+          if (config?.alpha6ReviewRouting !== true) return undefined
+          const a6Blueprint = getBoundBlueprint(String(teamRoot))
+          if (a6Blueprint === null || a6Blueprint === undefined) return undefined
+          if (Number(a6Blueprint.schemaVersion) !== 5) return undefined
+          const contentHash = a6Blueprint.contentHash
+          const revision = a6Blueprint.revision
+          const blueprintId = a6Blueprint.blueprintId
+          const ownerTemplateId = boundTemplate?.templateId
+          if (typeof contentHash !== 'string' || contentHash.length === 0) return undefined
+          if (typeof revision !== 'string' || revision.length === 0) return undefined
+          if (typeof blueprintId !== 'string' || blueprintId.length === 0) return undefined
+          if (typeof ownerTemplateId !== 'string' || ownerTemplateId.length === 0) return undefined
+          return Object.freeze({
+            blueprint: Object.freeze({
+              blueprintId,
+              revision,
+              schemaVersion: 5,
+              contentHash,
+            }),
+            operationOwnerTemplateId: ownerTemplateId,
+            authorityGeneration: () => readAuthorityGeneration(String(teamRoot), String(instanceId)),
+            toolBindingFor: (toolName) => {
+              const surface = a5p1Guard?.dispatcher?.surface
+              const entry = typeof surface?.entryOf === 'function' ? surface.entryOf(String(toolName)) : undefined
+              if (entry === undefined || entry === null) return null
+              // An UNVERIFIED binding is not a trusted identity: the definition
+              // moved or was never pinned, so naming it would be a guess.
+              if (entry.verified !== true) return null
+              const binding = entry.binding
+              if (binding === null || typeof binding !== 'object') return null
+              const owner = binding.providerId
+              const name = binding.toolName
+              const definitionIdentity = binding.definitionIdentity
+              if (typeof owner !== 'string' || owner.length === 0) return null
+              if (typeof name !== 'string' || name.length === 0) return null
+              if (typeof definitionIdentity !== 'string' || definitionIdentity.length === 0) return null
+              return Object.freeze({ owner, name, definitionIdentity })
+            },
+          })
+        })()
         const disposePermission = installParameterPermissionListener(agentCtx, {
           policy: permissionPolicy,
           resolveTarget,
           containsTargets,
           ...(operationApprovalRouting === undefined ? {} : { operationApprovalRouting }),
+          ...(a6AskIdentity === undefined ? {} : { alpha6AskIdentity: a6AskIdentity }),
           ...(permissionPlane === undefined || permissionPlane === null
             ? {}
             : {

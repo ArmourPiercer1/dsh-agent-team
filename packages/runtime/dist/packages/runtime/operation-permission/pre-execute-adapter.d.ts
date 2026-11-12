@@ -666,12 +666,83 @@ export interface InstallParameterPermissionListenerParams {
         readonly resourceKey: string;
     }) => Promise<OperationApprovalFacts | undefined>;
     /**
+     * J06 (`parameter-permission` identity carry; owner authorisation
+     * 2026-11-11) — the IMMUTABLE bound identity plus the trusted
+     * owner/tool facts this install's asks must carry, so the SAME Alpha.6
+     * review route that decides a `team-tool-execute` leg can decide a
+     * `parameter-permission` leg.
+     *
+     * The glue builds ONE frozen object from the SAME bound/hashed Blueprint
+     * document the rest of Alpha.6 reads, the SAME durable authority-generation
+     * reader the PA lane freezes from, and the SAME tool-binding surface the
+     * Guard verified. The Blueprint identity and the OperationOwner template
+     * are captured values (never re-parsed, never read from a row anchor at
+     * ask time); the two callables are read at ask time because a generation
+     * is a moving fact and a binding identity must be live-verified.
+     *
+     * ABSENT (every pre-J06 installer, every factory world, every spec that
+     * predates the carry): the ask path below is byte-for-byte the frozen one
+     * — the row is a case leg with NO Alpha.6 identity fields, exactly as
+     * measured before this change.
+     */
+    readonly alpha6AskIdentity?: Alpha6AskIdentity;
+    /**
      * The optional diagnostics hook (the A6 glue wires it to its
      * observation surface). Small structured rows only (no file contents,
      * no full argument payloads); a throwing hook never affects the
      * decision.
      */
     readonly onObserve?: (observation: Record<string, unknown>) => void;
+}
+/**
+ * J06 — the IMMUTABLE bound-Blueprint identity carried through the install
+ * seam (owner authorisation: "Pass an immutable `BoundBlueprintIdentity`
+ * (blueprintId, revision, schemaVersion, contentHash) through the existing
+ * Team composition / pre-execute adapter seam, so that
+ * `parameter-permission` and `team-tool-execute` reference the same bound
+ * Blueprint identity").
+ *
+ * It is a COPY of the frozen fields of the parsed document, deep-frozen at
+ * construction: the adapter never receives the document itself, so it can
+ * never re-derive policy from it.
+ */
+export interface BoundBlueprintIdentity {
+    readonly blueprintId: string;
+    readonly revision: string;
+    readonly schemaVersion: number;
+    readonly contentHash: string;
+}
+/**
+ * J06 — the TRUSTED tool coordinate of one governed tool: the provider
+ * (`owner`) and name the Blueprint's `reviewRouting` exceptions are keyed by,
+ * plus the definition identity the Guard verified for that placement.
+ *
+ * A tool with NO governance binding (a host builtin the Team assembly never
+ * placed and never verified) has no `definitionIdentity` that means anything,
+ * which is why the port that produces this answer may answer `null`: the
+ * honest outcome is then a TYPED refusal at the route gate, never an invented
+ * coordinate and never a silent Leader fallback.
+ */
+export interface OperationToolBindingIdentity {
+    readonly owner: string;
+    readonly name: string;
+    readonly definitionIdentity: string;
+}
+/**
+ * J06 — the trusted inputs of the identity carry, all supplied by the glue.
+ *
+ * `authorityGeneration` is read at ask time from the durable overlay (the
+ * SAME reader the PA lane freezes from); every other member is a frozen
+ * value or a live-verified lookup.
+ */
+export interface Alpha6AskIdentity {
+    readonly blueprint: BoundBlueprintIdentity;
+    /** The executing Member's durable template (the OperationOwner). */
+    readonly operationOwnerTemplateId: string;
+    /** The OperationOwner's durable authority generation at ask time. */
+    readonly authorityGeneration: () => Promise<number | undefined> | number | undefined;
+    /** The verified governance binding of one tool name; `null` = none exists. */
+    readonly toolBindingFor: (toolName: string) => OperationToolBindingIdentity | null | undefined;
 }
 /**
  * R6 / H1 — the STABLE end-cap denial reason (model-visible: the
