@@ -1,0 +1,491 @@
+{
+  "schema": "v016-packaged-acceptance/1",
+  "run": "2",
+  "at": "2026-11-12T18:21:18.375Z",
+  "ok": true,
+  "exitCode": 0,
+  "checks": [
+    {
+      "id": "ENV-1",
+      "name": "the pristine host build entry exists",
+      "ok": true,
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"
+    },
+    {
+      "id": "ID-1",
+      "name": "the driver runs on the frozen candidate commit",
+      "ok": true,
+      "detail": "repo=17a24e2c302cd991c3ba495ae29576b58a6c1069 expected=17a24e2c302cd991c3ba495ae29576b58a6c1069"
+    },
+    {
+      "id": "ID-2",
+      "name": "the host checkout is the pinned pristine host and byte-clean",
+      "ok": true,
+      "detail": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+    },
+    {
+      "id": "PACK-1",
+      "name": "pnpm pack produced the 0.1.6 artifact",
+      "ok": true,
+      "detail": "mode=reused bytes=4405634"
+    },
+    {
+      "id": "PACK-2",
+      "name": "the tarball carries the built host entry, governed realm and sandbox launcher",
+      "ok": true,
+      "detail": "present=5/5 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+    },
+    {
+      "id": "INST-1",
+      "name": "the real CLI installed the tarball into a fresh profile",
+      "ok": true,
+      "detail": "exit=0 installedVersion=0.1.6"
+    },
+    {
+      "id": "INST-2",
+      "name": "the installed host entry is byte-identical to the packed one (the artifact is what boots)",
+      "ok": true,
+      "detail": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 tarball=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    },
+    {
+      "id": "INST-3",
+      "name": "the profile resolves the plugin by package name, not a worktree plugin path",
+      "ok": true,
+      "detail": "bundleRowName=true worktreeRefs=[]"
+    },
+    {
+      "id": "INST-4",
+      "name": "the installed profile lock identifies the artifact by tarball integrity",
+      "ok": true,
+      "detail": "integrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ=="
+    },
+    {
+      "id": "BOOT-1",
+      "name": "the installed 0.1.6 artifact + pristine host boots a real Team Host",
+      "ok": true,
+      "detail": "origin=http://127.0.0.1:3190 port=3190"
+    },
+    {
+      "id": "TEAM-0",
+      "name": "team.create admits the v5 blueprint (Officer + reviewRouting) on the packaged artifact",
+      "ok": true,
+      "detail": "status=200 body={\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r2\",\"revision\":\"1\",\"contentHash\":\"sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8\"},\"createdAt\":\"2026-11-12T18:20:29.075Z\",\"generation\":1,\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"team-v016pack-r2\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"root"
+    },
+    {
+      "id": "SURF-1",
+      "name": "the durable blueprint registry froze the schemaVersion-5 document the installed artifact admitted",
+      "ok": true,
+      "detail": "row=true schemaVersion=5 contentHash=sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8"
+    },
+    {
+      "id": "SURF-2",
+      "name": "the frozen durable document carries BOTH v5 families (memberIoCeilings + reviewRouting)",
+      "ok": true,
+      "detail": "memberIoCeilings=true reviewRouting=true ceilingTemplates=[\"worker\",\"officer\"]"
+    },
+    {
+      "id": "TEAM-1",
+      "name": "the boot created a durable TeamSession on the installed artifact",
+      "ok": true,
+      "detail": "teamRows=1 root=team-v016pack-r2"
+    },
+    {
+      "id": "TEAM-2",
+      "name": "the durable Leader member row exists",
+      "ok": true,
+      "detail": "leader={\"activityVersion\":1,\"createdAt\":\"2026-11-12T18:20:29.092Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"team-v016pack-r2\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+    },
+    {
+      "id": "MEM-1",
+      "name": "the Member exists durably (member_instances row + live child session)",
+      "ok": true,
+      "detail": "instance=inst-0kc39c71kemt child=session-team-child-f567ec1003976f72b77cdd4b51e19b6f row=true"
+    },
+    {
+      "id": "MEM-2",
+      "name": "the Officer exists durably (the Alpha.6 routing recipient)",
+      "ok": true,
+      "detail": "instance=inst-0y1bmfd1fegn child=session-team-child-1af8f847a81e5885d8e54228e1c9ef5f"
+    },
+    {
+      "id": "MEM-3",
+      "name": "the Goal Member exists durably (the Member whose surface carries the Goal tools)",
+      "ok": true,
+      "detail": "instance=inst-0ofnbt205ssz child=session-team-child-5facbd540c110dfcf471baa546f76451"
+    },
+    {
+      "id": "APP-1",
+      "name": "the governed ask produced a durable approval leg discoverable over the remote surface and decidable by the human",
+      "ok": true,
+      "detail": "requestId=ctrl-0ch23n61j7aw4d1jxw1f81vn kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+    },
+    {
+      "id": "APP-2",
+      "name": "the governed plane leg was routed to the Officer and escalated to a durable HUMAN leg",
+      "ok": true,
+      "detail": "requestId=ctrl-0wwfqmu01uug5109vn4i00q4 kind=leader-approval reviewAuthority=human-user escalated=true visible=true"
+    },
+    {
+      "id": "APP-3",
+      "name": "the human allow on the escalated leg is the durable decision (decider=human) and was consumed exactly once",
+      "ok": true,
+      "detail": "decision={\"sequence\":15,\"requestId\":\"ctrl-0wwfqmu01uug5109vn4i00q4\",\"decision\":\"allow\",\"decider\":{\"humanId\":\"team-v016pack-r2\",\"kind\":\"human\"},\"createdAt\":\"2026-11-12T18:20:30.660Z\"} consumptions=1"
+    },
+    {
+      "id": "APP-4",
+      "name": "the approved body executed exactly once (single, attributed side effect)",
+      "ok": true,
+      "detail": "file=\"V016PACK_R2_ARM1_EXECUTED\" abandonments=0"
+    },
+    {
+      "id": "GOAL-1",
+      "name": "the Member created a durable Goal",
+      "ok": true,
+      "detail": "goalId=goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b phase=paused"
+    },
+    {
+      "id": "GOAL-2",
+      "name": "the Goal advanced by its own automatic rounds (>=2)",
+      "ok": true,
+      "detail": "roundsStarted=2"
+    },
+    {
+      "id": "GOAL-3",
+      "name": "the Member updated the Goal (revision advanced)",
+      "ok": true,
+      "detail": "revision=1->3"
+    },
+    {
+      "id": "STOP-1",
+      "name": "the stop-arm governed ask produced a durable approval leg discoverable over the remote surface",
+      "ok": true,
+      "detail": "requestId=ctrl-1c0qwpm0a2suiz07mywus1aa kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+    },
+    {
+      "id": "STOP-2",
+      "name": "session/cancel (the Stop RPC) is admitted after the human allow on the governed plane leg",
+      "ok": true,
+      "detail": "status=200 ok=true escalated=true kind=leader-approval reviewAuthority=human-user body={\"ok\":true,\"value\":{\"accepted\":true}}"
+    },
+    {
+      "id": "STOP-3",
+      "name": "Stop before consumption: the governed plane leg has NO consumption fact, NO execution and NO side effect",
+      "ok": true,
+      "detail": "consumptions=0 executions=0 fileExists=false abandonments=0"
+    },
+    {
+      "id": "STOP-4",
+      "name": "the stop-arm human leg is terminal (late allow refused, or durably abandoned)",
+      "ok": true,
+      "detail": "lateAllowOk=false code=CONTROL_REQUEST_DECIDED abandonments=0 shape=already-decided"
+    },
+    {
+      "id": "STOP-5",
+      "name": "the Goal is durably paused by Stop (no continuation)",
+      "ok": true,
+      "detail": "pauseOk=false phase=paused rounds=2"
+    },
+    {
+      "id": "COLL-1",
+      "name": "the Leader collected the Member: the durable result is retrievable and carries the Member marker",
+      "ok": true,
+      "detail": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-r2\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r2-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0kc39c71kemt\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+    },
+    {
+      "id": "CRASH-1",
+      "name": "the Host was really killed (SIGKILL) before recovery",
+      "ok": true,
+      "detail": "exited=true code=null signal=SIGKILL"
+    },
+    {
+      "id": "CRASH-2",
+      "name": "the same DSH_HOME boots cold on the same installed artifact",
+      "ok": true,
+      "detail": "origin=http://127.0.0.1:3190"
+    },
+    {
+      "id": "REC-1",
+      "name": "the Team and the Member survived cold recovery durably",
+      "ok": true,
+      "detail": "team=true member=true lifecycle=SETTLED"
+    },
+    {
+      "id": "REC-2",
+      "name": "the Goal survived (phase/revision/rounds unchanged)",
+      "ok": true,
+      "detail": "phase=paused revision=3 rounds=2 durableRecords=3"
+    },
+    {
+      "id": "REC-3",
+      "name": "the collected Member result is retrievable after restart (same marker)",
+      "ok": true,
+      "detail": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-r2\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r2-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0kc39c71kemt\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+    },
+    {
+      "id": "REC-4",
+      "name": "the per-leg consumption facts survived the cold restart exactly (approval 1+1, stop 1+0)",
+      "ok": true,
+      "detail": "legs=[[\"approval-permission\",1,1],[\"approval-human\",1,1],[\"stop-permission\",1,1],[\"stop-human\",0,0]]"
+    },
+    {
+      "id": "REC-5",
+      "name": "the collected Member was not resurrected into a running turn after restart",
+      "ok": true,
+      "detail": "recordsDelta=0 mockRequestsDelta=0 lifecycle=SETTLED"
+    },
+    {
+      "id": "HYG-1",
+      "name": "the pristine host checkout stayed byte-clean",
+      "ok": true,
+      "detail": "porcelain=\"\""
+    }
+  ],
+  "identity": {
+    "productSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+    "expectedCandidateSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+    "headMatchesCandidate": true,
+    "branch": "task/c2a-cand3-20261113",
+    "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostVersion": "0.2.0-rc.2",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostPorcelain": "",
+    "testuse": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use",
+    "node": "v24.21.0"
+  },
+  "tarball": {
+    "mode": "reused",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "name": "dsh-agent-team-0.1.6.tgz",
+    "bytes": 4405634,
+    "sha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+    "memberCount": 2113,
+    "requiredMembers": [
+      "package/cordis.patch.yml",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "package/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    ],
+    "requiredPresent": [
+      "package/cordis.patch.yml",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "package/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs"
+    ],
+    "hostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+  },
+  "host": {
+    "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "version": "0.2.0-rc.2",
+    "porcelainBefore": "",
+    "porcelainAfter": "",
+    "cleanAfter": true
+  },
+  "install": {
+    "command": "dsh plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "exit": 0,
+    "profileBundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app",
+      "dsh-agent-team"
+    ],
+    "profileDependency": "file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "installedVersion": "0.1.6",
+    "installedHostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "tarballHostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "lockIntegrity": "sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==",
+    "bundleRowUsesPackageName": true,
+    "worktreeRefsInProfile": []
+  },
+  "flow": {
+    "typedSurfaces": {
+      "registryRowPresent": true,
+      "registryContentHash": "sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8",
+      "frozenDocumentSchemaVersion": 5,
+      "frozenHasReviewRouting": true,
+      "frozenHasMemberIoCeilings": true,
+      "frozenMemberCeilingTemplateIds": [
+        "worker",
+        "officer"
+      ],
+      "teamSessionBlueprint": {
+        "blueprintId": "v016-pack-bp-r2",
+        "revision": "1",
+        "contentHash": "sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8"
+      }
+    },
+    "team": {
+      "teamSessionId": "team-v016pack-r2",
+      "teamRows": 1
+    },
+    "member": {
+      "workerInstanceId": "inst-0kc39c71kemt",
+      "workerTemplateId": "worker",
+      "workerChildSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "officerInstanceId": "inst-0y1bmfd1fegn",
+      "officerTemplateId": "officer",
+      "durableMemberRows": 4,
+      "workerDurable": true,
+      "officerDurable": true,
+      "workerLifecycle": "RUNNING",
+      "goalWorkerInstanceId": "inst-0ofnbt205ssz",
+      "goalWorkerChildSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "goalWorkerDurable": true
+    },
+    "approval": {
+      "permissionLegId": "ctrl-0ch23n61j7aw4d1jxw1f81vn",
+      "permissionLegDecision": "allow",
+      "permissionLegConsumptions": 1,
+      "humanLegId": "ctrl-0wwfqmu01uug5109vn4i00q4",
+      "humanLegKind": "leader-approval",
+      "humanLegReviewAuthority": "human-user",
+      "humanLegDecision": "allow",
+      "humanLegDeciderKind": "human",
+      "humanLegConsumptions": 1,
+      "humanLegExecutions": 1,
+      "escalationRecorded": true,
+      "bodyExecuted": true,
+      "bodyMarker": "V016PACK_R2_ARM1_EXECUTED"
+    },
+    "goal": {
+      "goalId": "goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b",
+      "phase": "paused",
+      "revision": 3,
+      "roundsStarted": 2,
+      "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+      "updated": true
+    },
+    "stop": {
+      "requestId": "ctrl-01w6fy81eay42b134x17y1g5",
+      "permissionLegId": "ctrl-1c0qwpm0a2suiz07mywus1aa",
+      "permissionLegConsumptions": 1,
+      "escalated": true,
+      "cancelOk": true,
+      "decision": "allow",
+      "deciderKind": "human",
+      "consumptions": 0,
+      "executions": 0,
+      "abandonments": 0,
+      "abandonmentReason": null,
+      "lateAllowOk": false,
+      "lateAllowCode": "CONTROL_REQUEST_DECIDED",
+      "terminalShape": "already-decided",
+      "fileExists": false
+    },
+    "goalPause": {
+      "ok": false,
+      "phase": "paused",
+      "revision": 3,
+      "roundsStarted": 2
+    },
+    "collect": {
+      "label": "pre-crash-independent",
+      "requestToken": "v016pack_r2-delegate-work",
+      "toolResult": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r2\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0kc39c71kemt\",\"admittedSequence\":5,\"settledSequence\":20,\"memberResult\":{\"body\":\"V016PACK_R2_WORK1_DONE V016PACK_R2_ARM1_RESULT\",\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\"}}]},\"requestToken\":\"v016pack_r2-collect\"}",
+      "hasWorkerMarker": true,
+      "hasWorkResult": true
+    },
+    "coldRecovery": {
+      "teamPresent": true,
+      "memberPresent": true,
+      "memberLifecycle": "SETTLED",
+      "goalBefore": {
+        "id": "goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b",
+        "revision": 3,
+        "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+        "phase": "paused",
+        "maxGoalRounds": 6,
+        "roundsStarted": 2,
+        "createdAt": 1794507637111,
+        "updatedAt": 1794507637630,
+        "activation": "disarmed"
+      },
+      "goalAfterRestart": {
+        "id": "goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b",
+        "revision": 3,
+        "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+        "phase": "paused",
+        "maxGoalRounds": 6
+      },
+      "goalDurableRecords": {
+        "changes": 3,
+        "goal": {
+          "id": "goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b",
+          "revision": 3,
+          "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+          "phase": "paused",
+          "maxGoalRounds": 6
+        },
+        "roundsStarted": 2,
+        "operation": "edit"
+      },
+      "goalPhaseSurvived": true,
+      "goalRevisionSurvived": true,
+      "goalRoundsSurvived": true,
+      "consumptionFacts": [
+        {
+          "leg": "approval-permission",
+          "requestId": "ctrl-0ch23n61j7aw4d1jxw1f81vn",
+          "expectedConsumptions": 1,
+          "consumptions": 1,
+          "abandonments": 0,
+          "abandonedReason": null
+        },
+        {
+          "leg": "approval-human",
+          "requestId": "ctrl-0wwfqmu01uug5109vn4i00q4",
+          "expectedConsumptions": 1,
+          "consumptions": 1,
+          "abandonments": 0,
+          "abandonedReason": null
+        },
+        {
+          "leg": "stop-permission",
+          "requestId": "ctrl-1c0qwpm0a2suiz07mywus1aa",
+          "expectedConsumptions": 1,
+          "consumptions": 1,
+          "abandonments": 0,
+          "abandonedReason": null
+        },
+        {
+          "leg": "stop-human",
+          "requestId": "ctrl-01w6fy81eay42b134x17y1g5",
+          "expectedConsumptions": 0,
+          "consumptions": 0,
+          "abandonments": 0,
+          "abandonedReason": null
+        }
+      ],
+      "legsAgree": true,
+      "collectOk": true,
+      "collectBody": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r2\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0kc39c71kemt\",\"admittedSequence\":5,\"settledSequence\":20,\"memberResult\":{\"body\":\"V016PACK_R2_WORK1_DONE V016PACK_R2_ARM1_RESULT\",\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\"}}]},\"requestToken\":\"v016pack_r2-collect\"}",
+      "recordsStart": 41,
+      "recordsEnd": 41,
+      "mockStart": 32,
+      "mockEnd": 32,
+      "resurrection": {
+        "recordsDelta": 0,
+        "mockRequestsDelta": 0
+      },
+      "ledgerCountsBefore": {
+        "requests": 6,
+        "decisions": 6,
+        "consumptions": 3,
+        "abandonments": 0,
+        "executions": 3
+      },
+      "ledgerCountsAfter": {
+        "requests": 6,
+        "decisions": 6,
+        "consumptions": 3,
+        "abandonments": 0,
+        "executions": 3
+      }
+    }
+  },
+  "teardown": {
+    "kept": true,
+    "world": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24"
+  }
+}

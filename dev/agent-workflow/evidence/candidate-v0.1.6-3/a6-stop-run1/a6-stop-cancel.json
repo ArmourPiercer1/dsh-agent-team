@@ -1,0 +1,13 @@
+{
+  "stopVia": "cancel",
+  "response": {
+    "type": "server-response",
+    "rpcId": "c1a6stop-o158er18pr",
+    "result": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  }
+}

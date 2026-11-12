@@ -1,0 +1,23 @@
+[2026-11-12T18:09:18.454Z] c1 real-host smoke — stamp 2026-11-12T18-09-18
+[2026-11-12T18:09:18.454Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3
+[2026-11-12T18:09:18.454Z] testuse=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-12T18:09:18.454Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/dev/agent-workflow/evidence/candidate-v0.1.6-3/a6-exception-run1
+[2026-11-12T18:09:19.987Z] ports: host=3187 mock=3496
+[2026-11-12T18:09:24.999Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-12T18:09:25.000Z] world materialized (scratch workspace; the preset rides the patch layer written at boot)
+[2026-11-12T18:09:25.007Z] mock model listening on 3496
+[2026-11-12T18:09:27.625Z] host booted at http://127.0.0.1:3187; row ready — toolCount=15
+[2026-11-12T18:09:27.626Z] ── L0: discovery ──
+[2026-11-12T18:09:28.047Z] discovery surface (20 tools): bash, edit, read, read_image, team_archive_member, team_collect, team_create_member, team_delegate, team_follow_up, team_grant_permission, team_inspect_config, team_list_members, team_list_pending_control, team_list_templates, team_report_progress, team_request_control, team_resolve_control, team_revoke_permission, team_send_message, write
+[2026-11-12T18:09:28.047Z] PASS L0: discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder) — surface=20 missingTeam=[] denyList=[]
+[2026-11-12T18:09:28.047Z] saved blueprints X + Y + Z written (deny list = 0 names)
+[2026-11-12T18:09:28.049Z] ── A6-OFFICER: Member ask -> Officer wake -> allow -> plane execute ──
+[2026-11-12T18:09:28.876Z] PASS A6-1: v5 team.create admits the Officer + routing on the real Host — status=200 body={"type":"server-response","rpcId":"c1a6-4ifqj3ufsc","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-c1-smoke-a6-2026-11-12T18-09-18","blueprint":{"blueprintId":"team.c1-a6-officer","revision":"1","contentHash":"sha256:53a5b385211192cc24114e4a54706ffa866720b8b86a366b734aa4b8f1261244"},"createdAt":"2026-11-12T18:09:28.092Z","generation":1,"defaultWorkspace":"/home/armourpiercer/projects/dsh-agent-team/.wo
+[2026-11-12T18:09:32.884Z] A6: wakes=0 leaderWakes=0 resolves=1 executed=true requests=2 decisions=2 consumptions=2 pending=0
+[2026-11-12T18:09:32.884Z] PASS A6-2: the declared Leader exception produced a model-visible Leader notification, not an Officer wake — wakes=0 notifications=3 requests=16
+[2026-11-12T18:09:32.884Z] PASS A6-3: the Leader resolved the exception leg through team_resolve_control — resolveCalls=1 wakeTools=
+[2026-11-12T18:09:32.884Z] PASS A6-4: the original Member command executed after the Leader exception allow — file=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T18-09-18/workspace/c1-a6-allow-2026-11-12T18-09-18.txt text="c1-a6-allow-2026-11-12T18-09-18\n"
+[2026-11-12T18:09:32.884Z] PASS A6-5: the Leader exception reached the Leader and no Officer review wake was created — wakes=0 leaderWakes=0 notifications=3
+[2026-11-12T18:09:32.884Z] PASS A6-10: the PA leg of a declared Leader exception was decided by the Leader, never the Officer — pa={"sequence":10,"factType":"control-request-recorded","requestId":"ctrl-0en5rpl1t3e3oq0sup6nr1wo","kind":"leader-approval","toolName":"bash","actionName":"team-tool-execute","targetInstanceId":"inst-0emgr9h1fswg","correlation":"pa:tadm:session-c1-smoke-a6-2026-11-12T18-09-18:inst-0emgr9h1fswg:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0emgr9h1fswg-bash:hexec:f1b42d0c-8ff4-4f3c-bfd7-24a8b127e7a5-1","approvalCaseId":"case-14sai0r04srp081xcz8kx19v","legOr
+[2026-11-12T18:09:32.885Z] PASS A6-6: every durable request at the end is settled (no lost pending leg) — requests=2 decisions=2 consumptions=2 pending=
+[2026-11-12T18:09:32.885Z] PASS A6-27: the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request — executed=true pa=ctrl-0en5rpl1t3e3oq0sup6nr1wo callId=team-inst-0emgr9h1fswg-bash:hexec:f1b42d0c-8ff4-4f3c-bfd7-24a8b127e7a5-1 outcome=succeeded facts=2

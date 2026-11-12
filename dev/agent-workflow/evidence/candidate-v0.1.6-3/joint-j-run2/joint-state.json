@@ -1,0 +1,407 @@
+{
+  "boot": 1,
+  "phase": "create",
+  "rootSessionId": "session-c1-smoke-root-2026-11-12T17-57-23-h0-rf71014",
+  "teamSession": {
+    "rootSessionId": "session-c1-smoke-root-2026-11-12T17-57-23-h0-rf71014",
+    "blueprintId": "team.c1-anchor",
+    "revision": "1",
+    "contentHash": "sha256:3b93243c6b63ed28c7518f88caca30650af573cb08df51cc5d8f107ab30345df",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/workspace",
+    "createdAt": "2026-11-12T17:57:36.894Z",
+    "generation": 2
+  },
+  "members": [
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "childSessionId": "undefined",
+      "lifecycle": "undefined",
+      "activityVersion": 1
+    }
+  ],
+  "control": {
+    "requests": [],
+    "decisions": [],
+    "consumptions": [],
+    "abandonments": []
+  },
+  "activity": [],
+  "pendingDeliveries": {
+    "recovered": [],
+    "skipped": []
+  },
+  "governance": {
+    "overrides": [],
+    "sessions": {
+      "session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-c1-smoke-root-2026-11-12T17-57-23-h0-rf71014": {
+        "instanceId": "inst-leader",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-team-child-044494a8f9b79de234be3461871c7a82": {
+        "instanceId": "inst-1l1vfoz07mzn",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      },
+      "session-team-child-bd370bc68307f1139c3ea55f958a022a": {
+        "instanceId": "inst-0e8sz4l0ff51",
+        "model": {
+          "current": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "assembled": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "selection": {
+            "provider": "deepseek-official",
+            "model": "c1-smoke-model"
+          },
+          "source": {
+            "layer": "unspecified",
+            "origin": "static",
+            "recordId": null
+          },
+          "suppressed": [],
+          "unavailable": false,
+          "deniedBy": {
+            "by": "team",
+            "reason": "unspecifiedFailClosed"
+          },
+          "pendingNextBoundary": [],
+          "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+        },
+        "mcp": {
+          "servers": {}
+        }
+      }
+    }
+  },
+  "observations": [
+    "a5p1-guard: dispatcher-preparing agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 to=PREPARING",
+    "a5p1-guard: guard-installed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 scope=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "a5p1-guard: dispatcher-seam-armed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 seam=tools/pre-execute armed=1 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 seam=tools/post-execute armed=2 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 seam=tools/result armed=3 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 seam=tools/execute armed=4 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 seam=tools.guard armed=5 required=5",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_members\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_members\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_create_member\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_create_member\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_wri… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"todo_wri… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_req… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_req… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_req… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_templates\",\"team_req… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"te… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_control\",\"te… note=these names are refused at dispatch by the Guard",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014 templateId=leader",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_list_pending_… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_l… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_l… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_l… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",\"team_l… note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",… removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 denied=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_collect\",\"team_create_member\",\"team_delegate\",\"team_glob\",\"team_grep\",\"team_inspect_config\",\"team_list_members\",… note=these names are refused at dispatch by the Guard",
+    "a5-plane: placed [team_grep,team_glob,bash,pwsh]",
+    "a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014",
+    "a5ptc: census-boot root=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "a5ptc: census-boot root=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)",
+    "a5ptc: member-registered root=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 (source-reviewed closed registry)",
+    "a5p1-guard: binding-feed-verified agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_grep note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_glob note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=bash note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=pwsh note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: dispatcher-bind-inherited agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 verified=0 surface=18",
+    "a5p1-guard: published-surface-unverified agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+    "a5p1-guard: surface-inherited agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 verified=0",
+    "a5p1-guard: dispatcher-active agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 to=ACTIVE",
+    "a5p1-guard: agent-published agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 surface=18 masked=11 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "a5p1-guard: dispatcher-call-begin agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_create_member callId=p6t6-call-1 inFlight=1",
+    "a5p1-guard: dispatcher-preparing agent=session-team-child-044494a8f9b79de234be3461871c7a82 to=PREPARING",
+    "a5p1-guard: guard-installed agent=session-team-child-044494a8f9b79de234be3461871c7a82 scope=session-team-child-044494a8f9b79de234be3461871c7a82",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-044494a8f9b79de234be3461871c7a82 seam=tools/pre-execute armed=1 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-044494a8f9b79de234be3461871c7a82 seam=tools/post-execute armed=2 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-044494a8f9b79de234be3461871c7a82 seam=tools/result armed=3 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-044494a8f9b79de234be3461871c7a82 seam=tools/execute armed=4 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-044494a8f9b79de234be3461871c7a82 seam=tools.guard armed=5 required=5",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_resolve_control\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_resolve_control\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014 templateId=officer",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-044494a8f9b79de234be3461871c7a82 denied=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"team_list_pending_control\",\"team_resolve_control\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5-plane: placed [team_grep,team_glob,pwsh]",
+    "a5nb: native admission published for session-team-child-044494a8f9b79de234be3461871c7a82",
+    "a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014",
+    "a5ptc: member-registered root=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image] realm=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014",
+    "alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-team-child-044494a8f9b79de234be3461871c7a82 (source-reviewed closed registry)",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_grep note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_glob note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=pwsh note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: dispatcher-bind-inherited agent=session-team-child-044494a8f9b79de234be3461871c7a82 verified=0 surface=11",
+    "a5p1-guard: published-surface-unverified agent=session-team-child-044494a8f9b79de234be3461871c7a82 note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+    "a5p1-guard: surface-inherited agent=session-team-child-044494a8f9b79de234be3461871c7a82 verified=0",
+    "a5p1-guard: dispatcher-active agent=session-team-child-044494a8f9b79de234be3461871c7a82 to=ACTIVE",
+    "a5p1-guard: agent-published agent=session-team-child-044494a8f9b79de234be3461871c7a82 surface=11 masked=11 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-team-child-044494a8f9b79de234be3461871c7a82",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "a5p1-guard: dispatcher-result-observed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 callId=p6t6-call-1 inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_create_member callId=p6t6-call-1 inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_create_member callId=p6t6-call-2 inFlight=1",
+    "a5p1-guard: dispatcher-preparing agent=session-team-child-bd370bc68307f1139c3ea55f958a022a to=PREPARING",
+    "a5p1-guard: guard-installed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a scope=session-team-child-bd370bc68307f1139c3ea55f958a022a",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a seam=tools/pre-execute armed=1 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a seam=tools/post-execute armed=2 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a seam=tools/result armed=3 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a seam=tools/execute armed=4 required=5",
+    "a5p1-guard: dispatcher-seam-armed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a seam=tools.guard armed=5 required=5",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-note",
+    "a5-admission: event=production-admission-constructed templateDefault=ask notes=4 realmId=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014 templateId=worker",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_grep\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_grep\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-044494a8f9b79de234be3461871c7a82 state=ACTIVE drifted=[] added=[] removed=[]",
+    "a5p1-guard: dispatcher-surface-revalidated agent=session-team-child-bd370bc68307f1139c3ea55f958a022a state=PREPARING drifted=[] added=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"todo_write\",\"write\"] removed=[]",
+    "a5p1-guard: tools-change-unbound-names agent=session-team-child-bd370bc68307f1139c3ea55f958a022a denied=[\"bash\",\"edit\",\"pwsh\",\"read\",\"read_image\",\"team_glob\",\"team_grep\",\"todo_write\",\"write\"] note=these names are refused at dispatch by the Guard",
+    "a5-plane: placed [team_grep,team_glob,pwsh]",
+    "a5nb: native admission published for session-team-child-bd370bc68307f1139c3ea55f958a022a",
+    "a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014",
+    "a5ptc: member-registered root=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014",
+    "a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image] realm=c1-plane-realm-2026-11-12T17-57-23-h0-rf71014",
+    "alpha2-perm: coverage PASS safe-unmanaged tool 'todo_write' on session-team-child-bd370bc68307f1139c3ea55f958a022a (source-reviewed closed registry)",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=team_grep note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=team_glob note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: binding-feed-verified agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=pwsh note=the live scoped read resolved exactly the Definition this assembly placed; the provider record is now the identity every call is compared against",
+    "a5p1-guard: dispatcher-bind-inherited agent=session-team-child-bd370bc68307f1139c3ea55f958a022a verified=0 surface=9",
+    "a5p1-guard: published-surface-unverified agent=session-team-child-bd370bc68307f1139c3ea55f958a022a note=observed on the publish surface, not attributable to a trusted native source and not bound by this assembly: governed and refused at dispatch",
+    "a5p1-guard: surface-inherited agent=session-team-child-bd370bc68307f1139c3ea55f958a022a verified=0",
+    "a5p1-guard: dispatcher-active agent=session-team-child-bd370bc68307f1139c3ea55f958a022a to=ACTIVE",
+    "a5p1-guard: agent-published agent=session-team-child-bd370bc68307f1139c3ea55f958a022a surface=9 masked=11 seams=[\"tools.guard\",\"tools/execute\",\"tools/post-execute\",\"tools/pre-execute\",\"tools/result\"] scope=session-team-child-bd370bc68307f1139c3ea55f958a022a",
+    "alpha2-artifact-grant: shell-result-observer installed",
+    "a5p1-guard: dispatcher-result-observed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 callId=p6t6-call-2 inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_create_member callId=p6t6-call-2 inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_delegate callId=p6t6-call-3 inFlight=1",
+    "a5p1-guard: dispatcher-result-observed agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 callId=p6t6-call-3 inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014 tool=team_delegate callId=p6t6-call-3 inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=bash callId=call-c1-25xmlse6 inFlight=1",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-c1-25xmlse6\",\"tool\":\"bash\",\"resourceKind\":\"tool\",\"resourceDisplay\":\"bash\",\"fingerprint\":\"sha256:7fc824b95d57f95be38e72cc74971ec2538c9197dd2b3b109c238d6fe20a7dc4\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-c1-25xmlse6\",\"decision\":\"ask\",\"provenance\":{\"source\":\"rule\",\"effect\":\"ask\",\"lane\":\"ask\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"dynamic-decision\",\"callId\":\"call-c1-25xmlse6\",\"tool\":\"bash\",\"plane\":\"exec\",\"decision\":\"ask\",\"winningLayer\":\"template\",\"overlayGeneration\":null,\"source\":\"rule\",\"staticDecision\":\"ask\",\"explanation\":\"exec fingerprint sha256:7fc824b95d57f95be38e72cc74971ec2538c9197dd2b3b109c238d6fe20a7dc4 answered ask from the layer\"}",
+    "alpha2-perm: {\"stage\":\"request-created\",\"callId\":\"call-c1-25xmlse6\",\"requestId\":\"ctrl-1jwgs8a1swx1zr0vw01qc0db\",\"kind\":\"leader-approval\",\"correlation\":\"call-c1-25xmlse6\"}",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_list_pending_control callId=call-c1-1zxmcilr inFlight=1",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-044494a8f9b79de234be3461871c7a82 callId=call-c1-1zxmcilr inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_list_pending_control callId=call-c1-1zxmcilr inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_resolve_control callId=call-c1-5eyom4nr inFlight=1",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-044494a8f9b79de234be3461871c7a82 callId=call-c1-5eyom4nr inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_resolve_control callId=call-c1-5eyom4nr inFlight=0",
+    "alpha2-perm: {\"stage\":\"decision-arrived\",\"callId\":\"call-c1-25xmlse6\",\"requestId\":\"ctrl-1jwgs8a1swx1zr0vw01qc0db\",\"decision\":\"allow\",\"decisionSequence\":8}",
+    "alpha2-perm: {\"stage\":\"guard-verdict\",\"callId\":\"call-c1-25xmlse6\",\"allowed\":true,\"requestId\":\"ctrl-1jwgs8a1swx1zr0vw01qc0db\",\"decisionSequence\":8}",
+    "alpha2-perm: {\"stage\":\"terminal-outcome\",\"callId\":\"call-c1-25xmlse6\",\"outcome\":\"execution-succeeded\",\"requestId\":\"ctrl-1jwgs8a1swx1zr0vw01qc0db\"}",
+    "a5-admission: event=admission-requires-approval callId=team-inst-0e8sz4l0ff51-native-bash:hexec:nb-1794506258865-498855935-1 approvalCaseId=tadm:session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014:inst-0e8sz4l0ff51:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader",
+    "a5-pa-bridge: request-created ",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_list_pending_control callId=call-c1-5r6c8h6f inFlight=1",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-044494a8f9b79de234be3461871c7a82 callId=call-c1-5r6c8h6f inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_list_pending_control callId=call-c1-5r6c8h6f inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_resolve_control callId=call-c1-j7ce29dz inFlight=1",
+    "a5-pa-verifier: resolve/covered ",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-044494a8f9b79de234be3461871c7a82 callId=call-c1-j7ce29dz inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-044494a8f9b79de234be3461871c7a82 tool=team_resolve_control callId=call-c1-j7ce29dz inFlight=0",
+    "a5-pa-bridge: decision-arrived ",
+    "a5-admission: event=admission-grant-minted callId=team-inst-0e8sz4l0ff51-native-bash:hexec:nb-1794506258865-498855935-1 grantId=grant:f75c8a547718d46e0c0accdd1a70c358 effects=1",
+    "a5-admission: event=admission-approved-grant-issued callId=team-inst-0e8sz4l0ff51-native-bash:hexec:nb-1794506258865-498855935-1 grantId=grant:f75c8a547718d46e0c0accdd1a70c358 caseId=tadm:session-c1-smoke-a6-2026-11-12T17-57-23-h0-rf71014:inst-0e8sz4l0ff51:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0",
+    "a5-pa-bridge: grant-minted ",
+    "a5-pa-verifier: guard/covered ",
+    "a5-pa-bridge: guard-consumed ",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a callId=call-c1-25xmlse6 inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=bash callId=call-c1-25xmlse6 inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=write callId=call-c1-0oay968h inFlight=1",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-c1-0oay968h\",\"tool\":\"write\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/workspace/pd42-inside-2026-11-12T17-57-23-h0-rf71014.txt\",\"fingerprint\":\"sha256:167145e4dc2c3216449e0519e0ab92b3d2cd04e7f636db1ab84eafc88d9318a9\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-c1-0oay968h\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"dynamic-decision\",\"callId\":\"call-c1-0oay968h\",\"tool\":\"write\",\"plane\":\"file\",\"decision\":\"allow\",\"winningLayer\":\"template\",\"overlayGeneration\":null,\"source\":\"rule\",\"staticDecision\":\"allow\",\"explanation\":\"write[/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/workspace/pd42-inside-2026-11-12T17-57-23-h0-rf71014.txt]: effective allow; decided by template(worker) allow[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}",
+    "alpha2-perm: {\"stage\":\"execution-result\",\"callId\":\"call-c1-25xmlse6\",\"requestId\":\"ctrl-1jwgs8a1swx1zr0vw01qc0db\",\"outcome\":\"succeeded\",\"recorded\":true,\"via\":\"terminal-result\"}",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a callId=call-c1-0oay968h inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=write callId=call-c1-0oay968h inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=write callId=call-c1-0cbyqjz3 inFlight=1",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-c1-0cbyqjz3\",\"tool\":\"write\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/pd42-outside-2026-11-12T17-57-23-h0-rf71014.txt\",\"fingerprint\":\"sha256:db5f55d6fe215e91bc107662b7e4ab4d2bffd3115c85da70f560f1d196cc78fe\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-c1-0cbyqjz3\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":0}}",
+    "alpha2-perm: {\"stage\":\"dynamic-decision\",\"callId\":\"call-c1-0cbyqjz3\",\"tool\":\"write\",\"plane\":\"file\",\"decision\":\"allow\",\"winningLayer\":\"template\",\"overlayGeneration\":null,\"source\":\"rule\",\"staticDecision\":\"allow\",\"explanation\":\"write[/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/pd42-outside-2026-11-12T17-57-23-h0-rf71014.txt]: effective allow; decided by template(worker) allow[lane index 0, source 0]; layers (highest first): template=matched; overridden lower: none\"}",
+    "a5p1-guard: dispatcher-result-observed agent=session-team-child-bd370bc68307f1139c3ea55f958a022a callId=call-c1-0cbyqjz3 inFlight=1 note=a result exists; the Body return is not yet proven, so the lease stays",
+    "a5p1-guard: dispatcher-call-end agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=write callId=call-c1-0cbyqjz3 inFlight=0",
+    "a5p1-guard: dispatcher-call-begin agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=read callId=call-c1-gztymqbl inFlight=1",
+    "alpha2-perm: {\"stage\":\"canonicalized\",\"callId\":\"call-c1-gztymqbl\",\"tool\":\"read\",\"resourceKind\":\"file\",\"resourceDisplay\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/pd42-outside-2026-11-12T17-57-23-h0-rf71014.txt\",\"fingerprint\":\"sha256:8ee9e5fd413a1586cc1b607b0bb3ceb9c58523da2c1d936cfebc418e45496e56\"}",
+    "alpha2-perm: {\"stage\":\"decision\",\"callId\":\"call-c1-gztymqbl\",\"decision\":\"allow\",\"provenance\":{\"source\":\"rule\",\"effect\":\"allow\",\"lane\":\"allow\",\"ruleIndex\":1}}",
+    "alpha2-perm: {\"stage\":\"dynamic-decision\",\"callId\":\"call-c1-gztymqbl\",\"tool\":\"read\",\"plane\":\"file\",\"decision\":\"allow\",\"winningLayer\":\"template\",\"overlayGeneration\":null,\"source\":\"rule\",\"staticDecision\":\"allow\",\"explanation\":\"read[/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/c1-smoke-2026-11-12T17-57-23-h0-rf71014/pd42-outside-2026-11-12T17-57-23-h0-rf71014.txt]: effective allow; decided by template(worker) allow[lane index 1, source 1]; layers (highest first): template=matched; overridden lower: none\"}",
+    "a5p1-guard: kernel-pre-body-table-refusal agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=read callId=call-c1-gztymqbl note=the kernel approval table no longer backs this definition (revoked, rebound, or moved source); the call is refused before its Body (U6 PR2, FIX-K K1)",
+    "a5p1-guard: dispatcher-call-refused agent=session-team-child-bd370bc68307f1139c3ea55f958a022a tool=read state=ACTIVE callId=call-c1-gztymqbl inFlight=0"
+  ]
+}

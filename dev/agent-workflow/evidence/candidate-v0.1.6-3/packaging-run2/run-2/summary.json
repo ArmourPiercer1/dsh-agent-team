@@ -1,0 +1,706 @@
+{
+  "schema": "packaging-v016/1",
+  "run": "2",
+  "world": null,
+  "gates": {
+    "versionCensus": {
+      "root": {
+        "name": "dsh-agent-team",
+        "version": "0.1.6"
+      },
+      "subPackages": [
+        {
+          "path": "packages/client",
+          "name": "@dsh-agent-team/client",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/contracts",
+          "name": "@dsh-agent-team/contracts",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/domain",
+          "name": "@dsh-agent-team/domain",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/legacy",
+          "name": "@dsh-agent-team/legacy",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/remote",
+          "name": "@dsh-agent-team/remote",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/runtime",
+          "name": "@dsh-agent-team/runtime",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/storage",
+          "name": "@dsh-agent-team/storage",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/testkit",
+          "name": "@dsh-agent-team/testkit",
+          "version": "0.1.6",
+          "private": true
+        },
+        {
+          "path": "packages/tools",
+          "name": "@dsh-agent-team/tools",
+          "version": "0.1.6",
+          "private": true
+        }
+      ],
+      "mismatched": [],
+      "versions": [
+        "0.1.6"
+      ]
+    },
+    "identity": {
+      "productSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+      "branch": "task/c2a-cand3-20261113",
+      "porcelainBefore": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json",
+      "packedCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+      "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostVersion": "0.2.0-rc.2",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "hostPorcelain": "",
+      "testuse": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use",
+      "node": "v24.21.0",
+      "pnpm": "11.7.0",
+      "at": "2026-11-12T18:20:11.048Z",
+      "evidenceClass": "DEV-LIVE",
+      "fullPorcelainBefore": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json"
+    },
+    "rebuild": {
+      "buildExit": 0,
+      "compositionExit": 0,
+      "porcelainAfter": "",
+      "artifactVerdict": "DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2088 glue=113"
+    }
+  },
+  "pack": {
+    "packedCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+    "branch": "task/c2a-cand3-20261113",
+    "cleanAtPack": true,
+    "productPorcelainAtPack": "",
+    "fullPorcelainAtPack": "?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\n?? dev/engineering/candidates/cand-v0.1.6-3.json",
+    "tarballSha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+    "tarballBytes": 4405634,
+    "internalVersion": "0.1.6",
+    "internalName": "dsh-agent-team",
+    "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "hostVersion": "0.2.0-rc.2",
+    "at": "2026-11-12T18:20:22.238Z",
+    "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "memberCount": 2113,
+    "requiredMembers": [
+      "package/package.json",
+      "package/cordis.patch.yml",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/host.js",
+      "package/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+      "package/packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-governed-realm.mjs",
+      "package/packages/client/composition-shim/index.js",
+      "package/packages/runtime/root-binding/index.ts"
+    ],
+    "missingMembers": [],
+    "hostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "treeDigest": "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+  },
+  "install": {
+    "command": "DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/home node /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "exit": 0,
+    "tarball": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "tarballSha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+    "installedVersion": "0.1.6",
+    "installedName": "dsh-agent-team",
+    "installedHostEntrySha256": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "installedTreeDigest": "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+    "profileDependency": "file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "profileBundles": [
+      "@deepseek-ai/dsh-base",
+      "@deepseek-ai/dsh-web-app",
+      "dsh-agent-team"
+    ],
+    "lockIntegrity": "sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==",
+    "bundleRowUsesPackageName": true,
+    "worktreeRefsInProfile": [],
+    "freshWorld": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10",
+    "freshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/home",
+    "freshProject": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10/project"
+  },
+  "live": {
+    "instrument": "tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs",
+    "instrumentSha256": "2e14ccaf711543bb26bd530f11188e041a3e46036615883d5425914e00245b18",
+    "hostPort": "3190",
+    "mockPort": "3500",
+    "instrumentExit": 0,
+    "instrumentOk": true,
+    "instrumentChecks": [
+      {
+        "id": "ENV-1",
+        "name": "the pristine host build entry exists",
+        "ok": true,
+        "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"
+      },
+      {
+        "id": "ID-1",
+        "name": "the driver runs on the frozen candidate commit",
+        "ok": true,
+        "detail": "repo=17a24e2c302cd991c3ba495ae29576b58a6c1069 expected=17a24e2c302cd991c3ba495ae29576b58a6c1069"
+      },
+      {
+        "id": "ID-2",
+        "name": "the host checkout is the pinned pristine host and byte-clean",
+        "ok": true,
+        "detail": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+      },
+      {
+        "id": "PACK-1",
+        "name": "pnpm pack produced the 0.1.6 artifact",
+        "ok": true,
+        "detail": "mode=reused bytes=4405634"
+      },
+      {
+        "id": "PACK-2",
+        "name": "the tarball carries the built host entry, governed realm and sandbox launcher",
+        "ok": true,
+        "detail": "present=5/5 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+      },
+      {
+        "id": "INST-1",
+        "name": "the real CLI installed the tarball into a fresh profile",
+        "ok": true,
+        "detail": "exit=0 installedVersion=0.1.6"
+      },
+      {
+        "id": "INST-2",
+        "name": "the installed host entry is byte-identical to the packed one (the artifact is what boots)",
+        "ok": true,
+        "detail": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 tarball=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+      },
+      {
+        "id": "INST-3",
+        "name": "the profile resolves the plugin by package name, not a worktree plugin path",
+        "ok": true,
+        "detail": "bundleRowName=true worktreeRefs=[]"
+      },
+      {
+        "id": "INST-4",
+        "name": "the installed profile lock identifies the artifact by tarball integrity",
+        "ok": true,
+        "detail": "integrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ=="
+      },
+      {
+        "id": "BOOT-1",
+        "name": "the installed 0.1.6 artifact + pristine host boots a real Team Host",
+        "ok": true,
+        "detail": "origin=http://127.0.0.1:3190 port=3190"
+      },
+      {
+        "id": "TEAM-0",
+        "name": "team.create admits the v5 blueprint (Officer + reviewRouting) on the packaged artifact",
+        "ok": true,
+        "detail": "status=200 body={\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r2\",\"revision\":\"1\",\"contentHash\":\"sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8\"},\"createdAt\":\"2026-11-12T18:20:29.075Z\",\"generation\":1,\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24/workspace\"},\"binding\":{\"schemaVersion\":1,\"kind\":\"team-root\",\"sessionId\":\"team-v016pack-r2\"},\"wrote\":true,\"leaderRow\":{\"schemaVersion\":2,\"root"
+      },
+      {
+        "id": "SURF-1",
+        "name": "the durable blueprint registry froze the schemaVersion-5 document the installed artifact admitted",
+        "ok": true,
+        "detail": "row=true schemaVersion=5 contentHash=sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8"
+      },
+      {
+        "id": "SURF-2",
+        "name": "the frozen durable document carries BOTH v5 families (memberIoCeilings + reviewRouting)",
+        "ok": true,
+        "detail": "memberIoCeilings=true reviewRouting=true ceilingTemplates=[\"worker\",\"officer\"]"
+      },
+      {
+        "id": "TEAM-1",
+        "name": "the boot created a durable TeamSession on the installed artifact",
+        "ok": true,
+        "detail": "teamRows=1 root=team-v016pack-r2"
+      },
+      {
+        "id": "TEAM-2",
+        "name": "the durable Leader member row exists",
+        "ok": true,
+        "detail": "leader={\"activityVersion\":1,\"createdAt\":\"2026-11-12T18:20:29.092Z\",\"instanceId\":\"inst-leader\",\"label\":\"leader\",\"rootSessionId\":\"team-v016pack-r2\",\"schemaVersion\":2,\"templateId\":\"leader\"}"
+      },
+      {
+        "id": "MEM-1",
+        "name": "the Member exists durably (member_instances row + live child session)",
+        "ok": true,
+        "detail": "instance=inst-0kc39c71kemt child=session-team-child-f567ec1003976f72b77cdd4b51e19b6f row=true"
+      },
+      {
+        "id": "MEM-2",
+        "name": "the Officer exists durably (the Alpha.6 routing recipient)",
+        "ok": true,
+        "detail": "instance=inst-0y1bmfd1fegn child=session-team-child-1af8f847a81e5885d8e54228e1c9ef5f"
+      },
+      {
+        "id": "MEM-3",
+        "name": "the Goal Member exists durably (the Member whose surface carries the Goal tools)",
+        "ok": true,
+        "detail": "instance=inst-0ofnbt205ssz child=session-team-child-5facbd540c110dfcf471baa546f76451"
+      },
+      {
+        "id": "APP-1",
+        "name": "the governed ask produced a durable approval leg discoverable over the remote surface and decidable by the human",
+        "ok": true,
+        "detail": "requestId=ctrl-0ch23n61j7aw4d1jxw1f81vn kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+      },
+      {
+        "id": "APP-2",
+        "name": "the governed plane leg was routed to the Officer and escalated to a durable HUMAN leg",
+        "ok": true,
+        "detail": "requestId=ctrl-0wwfqmu01uug5109vn4i00q4 kind=leader-approval reviewAuthority=human-user escalated=true visible=true"
+      },
+      {
+        "id": "APP-3",
+        "name": "the human allow on the escalated leg is the durable decision (decider=human) and was consumed exactly once",
+        "ok": true,
+        "detail": "decision={\"sequence\":15,\"requestId\":\"ctrl-0wwfqmu01uug5109vn4i00q4\",\"decision\":\"allow\",\"decider\":{\"humanId\":\"team-v016pack-r2\",\"kind\":\"human\"},\"createdAt\":\"2026-11-12T18:20:30.660Z\"} consumptions=1"
+      },
+      {
+        "id": "APP-4",
+        "name": "the approved body executed exactly once (single, attributed side effect)",
+        "ok": true,
+        "detail": "file=\"V016PACK_R2_ARM1_EXECUTED\" abandonments=0"
+      },
+      {
+        "id": "GOAL-1",
+        "name": "the Member created a durable Goal",
+        "ok": true,
+        "detail": "goalId=goal-9f7489d9-af50-4de7-852e-b2ce2dd0b01b phase=paused"
+      },
+      {
+        "id": "GOAL-2",
+        "name": "the Goal advanced by its own automatic rounds (>=2)",
+        "ok": true,
+        "detail": "roundsStarted=2"
+      },
+      {
+        "id": "GOAL-3",
+        "name": "the Member updated the Goal (revision advanced)",
+        "ok": true,
+        "detail": "revision=1->3"
+      },
+      {
+        "id": "STOP-1",
+        "name": "the stop-arm governed ask produced a durable approval leg discoverable over the remote surface",
+        "ok": true,
+        "detail": "requestId=ctrl-1c0qwpm0a2suiz07mywus1aa kind=leader-approval reviewAuthority=leader visible=true pendingCount=1"
+      },
+      {
+        "id": "STOP-2",
+        "name": "session/cancel (the Stop RPC) is admitted after the human allow on the governed plane leg",
+        "ok": true,
+        "detail": "status=200 ok=true escalated=true kind=leader-approval reviewAuthority=human-user body={\"ok\":true,\"value\":{\"accepted\":true}}"
+      },
+      {
+        "id": "STOP-3",
+        "name": "Stop before consumption: the governed plane leg has NO consumption fact, NO execution and NO side effect",
+        "ok": true,
+        "detail": "consumptions=0 executions=0 fileExists=false abandonments=0"
+      },
+      {
+        "id": "STOP-4",
+        "name": "the stop-arm human leg is terminal (late allow refused, or durably abandoned)",
+        "ok": true,
+        "detail": "lateAllowOk=false code=CONTROL_REQUEST_DECIDED abandonments=0 shape=already-decided"
+      },
+      {
+        "id": "STOP-5",
+        "name": "the Goal is durably paused by Stop (no continuation)",
+        "ok": true,
+        "detail": "pauseOk=false phase=paused rounds=2"
+      },
+      {
+        "id": "COLL-1",
+        "name": "the Leader collected the Member: the durable result is retrievable and carries the Member marker",
+        "ok": true,
+        "detail": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-r2\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r2-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0kc39c71kemt\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+      },
+      {
+        "id": "CRASH-1",
+        "name": "the Host was really killed (SIGKILL) before recovery",
+        "ok": true,
+        "detail": "exited=true code=null signal=SIGKILL"
+      },
+      {
+        "id": "CRASH-2",
+        "name": "the same DSH_HOME boots cold on the same installed artifact",
+        "ok": true,
+        "detail": "origin=http://127.0.0.1:3190"
+      },
+      {
+        "id": "REC-1",
+        "name": "the Team and the Member survived cold recovery durably",
+        "ok": true,
+        "detail": "team=true member=true lifecycle=SETTLED"
+      },
+      {
+        "id": "REC-2",
+        "name": "the Goal survived (phase/revision/rounds unchanged)",
+        "ok": true,
+        "detail": "phase=paused revision=3 rounds=2 durableRecords=3"
+      },
+      {
+        "id": "REC-3",
+        "name": "the collected Member result is retrievable after restart (same marker)",
+        "ok": true,
+        "detail": "body=\"{\\\"status\\\":\\\"executed\\\",\\\"action\\\":\\\"work-status\\\",\\\"rootSessionId\\\":\\\"team-v016pack-r2\\\",\\\"callerRole\\\":\\\"leader\\\",\\\"effect\\\":{\\\"kind\\\":\\\"work-status\\\",\\\"entries\\\":[{\\\"requestToken\\\":\\\"v016pack_r2-delegate-work\\\",\\\"status\\\":\\\"succeeded\\\",\\\"instanceId\\\":\\\"inst-0kc39c71kemt\\\",\\\"admittedSequence\\\":5,\\\"settledSequence\\\":20,\\\"memberResult\\\":{\\\"\""
+      },
+      {
+        "id": "REC-4",
+        "name": "the per-leg consumption facts survived the cold restart exactly (approval 1+1, stop 1+0)",
+        "ok": true,
+        "detail": "legs=[[\"approval-permission\",1,1],[\"approval-human\",1,1],[\"stop-permission\",1,1],[\"stop-human\",0,0]]"
+      },
+      {
+        "id": "REC-5",
+        "name": "the collected Member was not resurrected into a running turn after restart",
+        "ok": true,
+        "detail": "recordsDelta=0 mockRequestsDelta=0 lifecycle=SETTLED"
+      },
+      {
+        "id": "HYG-1",
+        "name": "the pristine host checkout stayed byte-clean",
+        "ok": true,
+        "detail": "porcelain=\"\""
+      }
+    ],
+    "typedSurfaces": {
+      "registryRowPresent": true,
+      "registryContentHash": "sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8",
+      "frozenDocumentSchemaVersion": 5,
+      "frozenHasReviewRouting": true,
+      "frozenHasMemberIoCeilings": true,
+      "frozenMemberCeilingTemplateIds": [
+        "worker",
+        "officer"
+      ],
+      "teamSessionBlueprint": {
+        "blueprintId": "v016-pack-bp-r2",
+        "revision": "1",
+        "contentHash": "sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8"
+      }
+    },
+    "team": {
+      "teamSessionId": "team-v016pack-r2",
+      "teamRows": 1
+    },
+    "member": {
+      "workerInstanceId": "inst-0kc39c71kemt",
+      "workerTemplateId": "worker",
+      "workerChildSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "officerInstanceId": "inst-0y1bmfd1fegn",
+      "officerTemplateId": "officer",
+      "durableMemberRows": 4,
+      "workerDurable": true,
+      "officerDurable": true,
+      "workerLifecycle": "RUNNING",
+      "goalWorkerInstanceId": "inst-0ofnbt205ssz",
+      "goalWorkerChildSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "goalWorkerDurable": true
+    },
+    "world": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24",
+    "worlds": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24"
+    ]
+  },
+  "upgrade": {
+    "secondTarball": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3-second/.artifacts/tmp/pack-b/dsh-agent-team-0.1.6.tgz",
+    "secondSha256": "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f",
+    "secondBytes": 4403356,
+    "secondTreeDigest": "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+    "firstTreeDigest": "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+    "installedTreeDigestAfterSwap": "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+    "secondInternalVersion": "0.1.6",
+    "secondCommit": "6ea7d8dd4679ed48d1fd6e7d92ba30ee311fabad",
+    "exit": 0,
+    "installedVersionBefore": "0.1.6",
+    "installedVersionAfter": "0.1.6",
+    "hostEntryBefore": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "hostEntryAfter": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "secondHostEntry": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "dataFilesBefore": 27,
+    "dataFilesAfter": 27,
+    "dataUnchanged": true,
+    "boot": {
+      "label": "upgrade",
+      "hostPort": 3182,
+      "mockPort": 3491,
+      "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24",
+      "booted": true,
+      "authStatus": 303,
+      "projectionStatus": 200,
+      "teamReadable": true,
+      "durableTeamRows": 2,
+      "error": null,
+      "instanceLog": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/dev/agent-workflow/evidence/candidate-v0.1.6-3/packaging-run2/run-2/upgrade/instance.log",
+      "projectionMembers": 4,
+      "projectionBody": "{\"type\":\"server-response\",\"rpcId\":\"upgrade-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r2\",\"revision\":\"1\",\"contentHash\":\"sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8\"},\"generation\":31,\"generatedAt\":\"2026-11-12T18:21:22.654Z\",\"root\":{\"teamSessionId\":\"team-v016pack-r2\",\"createdAt\":\"2026-11-12T18:20:29.075Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-",
+      "projectionAttempts": 1
+    },
+    "dataUnchangedAcrossAll": true
+  },
+  "rollback": {
+    "tarball": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz",
+    "exit": 0,
+    "installedVersion": "0.1.6",
+    "hostEntry": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "expectedHostEntry": "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+    "dataUnchanged": true,
+    "boot": {
+      "label": "rollback",
+      "hostPort": 3182,
+      "mockPort": 3491,
+      "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24",
+      "booted": true,
+      "authStatus": 303,
+      "projectionStatus": 200,
+      "teamReadable": true,
+      "durableTeamRows": 2,
+      "error": null,
+      "instanceLog": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/dev/agent-workflow/evidence/candidate-v0.1.6-3/packaging-run2/run-2/rollback/instance.log",
+      "projectionMembers": 4,
+      "projectionBody": "{\"type\":\"server-response\",\"rpcId\":\"rollback-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r2\",\"revision\":\"1\",\"contentHash\":\"sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8\"},\"generation\":31,\"generatedAt\":\"2026-11-12T18:21:27.368Z\",\"root\":{\"teamSessionId\":\"team-v016pack-r2\",\"createdAt\":\"2026-11-12T18:20:29.075Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp",
+      "projectionAttempts": 1
+    },
+    "dataSurvivedFromBeforeSwap": true
+  },
+  "driver": {
+    "path": "tests/kits/packaging-v016/run-packaging-acceptance.mjs",
+    "sha256": "41cd87f1ef16de9ccb28913250b26d98b441e52d3217a42c2dff3648e769cc06",
+    "gitCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+    "evidenceClass": "DEV-LIVE",
+    "note": "DEV-LIVE packaging-lane record. Not CANDIDATE-C2, never a V@B claim."
+  },
+  "teardown": {
+    "kept": false,
+    "worlds": [
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10",
+      "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/v016-pack-2-2026-11-12T18-20-24"
+    ]
+  },
+  "at": "2026-11-12T18:21:28.277Z",
+  "ok": true,
+  "exitCode": 0,
+  "checks": [
+    {
+      "id": "ENV-1",
+      "name": "the pinned pristine host build entry exists",
+      "ok": true,
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/deepseek-harness-test-use/apps/cli/lib/bin.js"
+    },
+    {
+      "id": "VER-1",
+      "name": "the root manifest is version 0.1.6",
+      "ok": true,
+      "detail": "root=0.1.6"
+    },
+    {
+      "id": "VER-2",
+      "name": "every shipping workspace package carries the SAME version as the root",
+      "ok": true,
+      "detail": "packages=9 mismatched=[]"
+    },
+    {
+      "id": "PROV-1",
+      "name": "the shipped product surface is clean (the pack will describe a commit, not a worktree)",
+      "ok": true,
+      "detail": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\""
+    },
+    {
+      "id": "PROV-2",
+      "name": "the pristine host checkout is the pin and byte-clean",
+      "ok": true,
+      "detail": "host=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=\"\""
+    },
+    {
+      "id": "ART-1",
+      "name": "every workspace package rebuilds",
+      "ok": true,
+      "detail": "exit=0 tail=\"\""
+    },
+    {
+      "id": "ART-2",
+      "name": "the composition build (place-dist-glue + client bundle) succeeds",
+      "ok": true,
+      "detail": "exit=0 tail=\"$ node scripts/place-dist-glue.mjs && node scripts/build-client-composition.mjs packages/client packages/client/composition-shim && node scripts/check-artifacts-committed.mjs\\n\""
+    },
+    {
+      "id": "ART-3",
+      "name": "the rebuild left NO product drift: the committed artifacts equal freshly built bytes (no stale dist)",
+      "ok": true,
+      "detail": "productPorcelain=\"\" fullPorcelain=\"?? dev/agent-workflow/evidence/candidate-v0.1.6-3/\\n?? dev/engineering/candidates/cand-v0.1.6-3.json\""
+    },
+    {
+      "id": "PROV-3",
+      "name": "the rebuild did not move the commit being packed",
+      "ok": true,
+      "detail": "before=17a24e2c302cd991c3ba495ae29576b58a6c1069 after=17a24e2c302cd991c3ba495ae29576b58a6c1069"
+    },
+    {
+      "id": "ART-4",
+      "name": "node scripts/check-artifacts-committed.mjs reports verdict=ok",
+      "ok": true,
+      "detail": "exit=0 verdict=DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2088 glue=113"
+    },
+    {
+      "id": "PACK-1",
+      "name": "pnpm pack produced the 0.1.6 tarball",
+      "ok": true,
+      "detail": "bytes=4405634 members=2113 sha256=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+    },
+    {
+      "id": "PACK-2",
+      "name": "the tarball internal package.json names the SAME version",
+      "ok": true,
+      "detail": "internal=0.1.6 file=dsh-agent-team-0.1.6.tgz"
+    },
+    {
+      "id": "PACK-3",
+      "name": "the tarball carries the built install surface (host entry, governed realm, launcher, client shim)",
+      "ok": true,
+      "detail": "missing=[]"
+    },
+    {
+      "id": "PACK-4",
+      "name": "the packed provenance is the exact commit and the tree was clean at pack time",
+      "ok": true,
+      "detail": "commit=17a24e2c302cd991c3ba495ae29576b58a6c1069 clean=true"
+    },
+    {
+      "id": "INST-1",
+      "name": "the pinned host CLI installed the tarball into a FRESH profile (no repo node_modules)",
+      "ok": true,
+      "detail": "exit=0 installed=0.1.6 world=/home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand3/tests/homes/packaging-v016-2-2026-11-12T18-20-10"
+    },
+    {
+      "id": "INST-2",
+      "name": "the installed package identifies the SAME version as the tarball internal package.json",
+      "ok": true,
+      "detail": "installed=0.1.6 tarball=0.1.6"
+    },
+    {
+      "id": "INST-3",
+      "name": "the installed host entry is byte-identical to the packed one (the artifact is what boots)",
+      "ok": true,
+      "detail": "installed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6 packed=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+    },
+    {
+      "id": "INST-4",
+      "name": "the profile resolves the plugin by package name with a tarball integrity in the lock",
+      "ok": true,
+      "detail": "bundleRow=true integrity=sha512-ZSD/fN52L498LBIOY…"
+    },
+    {
+      "id": "INST-6",
+      "name": "the WHOLE installed package tree is byte-identical to the packed tree (not just the host entry)",
+      "ok": true,
+      "detail": "installed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b packed=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+    },
+    {
+      "id": "INST-5",
+      "name": "no worktree source path leaked into the installed profile",
+      "ok": true,
+      "detail": "refs=[]"
+    },
+    {
+      "id": "LIVE-0",
+      "name": "the Host and mock ports are free and inside the sanctioned test bands",
+      "ok": true,
+      "detail": "host=3190 mock=3500"
+    },
+    {
+      "id": "LIVE-1",
+      "name": "the proven packaged instrument runs to completion on the INSTALLED artifact",
+      "ok": true,
+      "detail": "exit=0 checks=39/39 failed=[]"
+    },
+    {
+      "id": "LIVE-2",
+      "name": "the durable v5 blueprint froze BOTH families (memberIoCeilings + reviewRouting) — typed surface read from the registry row",
+      "ok": true,
+      "detail": "schemaVersion=5 memberIoCeilings=true reviewRouting=true contentHash=sha256:1e0180bb351896036675512b9a27b4536f3946fe3c031a6d2d5ac601d52addc8"
+    },
+    {
+      "id": "LIVE-3",
+      "name": "a real Member turn executed through the installed artifact and the result was collected",
+      "ok": true,
+      "detail": "worker=inst-0kc39c71kemt durable=true COLL-1=true"
+    },
+    {
+      "id": "UPG-1",
+      "name": "the second tarball installs over the existing installation (the only upgrade primitive the product has)",
+      "ok": true,
+      "detail": "exit=0 second=4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f"
+    },
+    {
+      "id": "UPG-2",
+      "name": "the installed artifact identity became the second tarball TREE (observed, not assumed; same version, different bytes)",
+      "ok": true,
+      "detail": "installedTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 secondTree=sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4 firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b sameVersion=true"
+    },
+    {
+      "id": "UPG-3",
+      "name": "the plugin install did NOT touch durable world data (no migration step exists to run)",
+      "ok": true,
+      "detail": "files=27→27 identical=true"
+    },
+    {
+      "id": "UPG-4",
+      "name": "a Host booted on the second artifact still boots on the existing DSH_HOME and the durable Team is present",
+      "ok": true,
+      "detail": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"upgrade-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintId"
+    },
+    {
+      "id": "RBK-1",
+      "name": "rolling back is re-installing the first tarball, and it succeeds",
+      "ok": true,
+      "detail": "exit=0"
+    },
+    {
+      "id": "RBK-2",
+      "name": "the installed artifact identity returned to the first tarball byte-for-byte",
+      "ok": true,
+      "detail": "installedTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b firstTree=sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+    },
+    {
+      "id": "RBK-3",
+      "name": "the rollback install did not rewrite durable world data, and every pre-swap durable file survived",
+      "ok": true,
+      "detail": "files=27 installRewroteData=false allPreSwapFilesPresent=true"
+    },
+    {
+      "id": "RBK-4",
+      "name": "a Host booted after rollback reads the same durable Team",
+      "ok": true,
+      "detail": "booted=true auth=303 projection=200 attempts=1 readable=true durableTeamRows=2 error=null body={\"type\":\"server-response\",\"rpcId\":\"rollback-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r2\",\"blueprint\":{\"blueprintI"
+    },
+    {
+      "id": "HYG-1",
+      "name": "the pristine host checkout stayed byte-clean",
+      "ok": true,
+      "detail": "porcelain=\"\""
+    }
+  ]
+}

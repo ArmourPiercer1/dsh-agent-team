@@ -1,0 +1,35 @@
+{
+  "requests": [
+    {
+      "sequence": 7,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-1qja8ik0msylax1x3ol5i0xq",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "targetInstanceId": "inst-15sq4c100nie",
+      "correlation": "call-c1-253br8tf",
+      "approvalCaseId": "case-0sg4m5h0i04fns12id0qn082",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "operationOwnerTemplateId": "worker",
+      "operationToolOwner": "dsh-agent-team",
+      "operationToolName": "bash",
+      "operationToolDefinitionIdentity": "def#34",
+      "authorityGeneration": 0,
+      "blueprintContentHash": "sha256:70e811ce6870ee31bba28037a1d508616d62d9bf5761cbbd371c3b62fb8a604e",
+      "blueprintRevision": "1",
+      "perEffectRequiredAuthorities": [
+        "leader"
+      ],
+      "createdAt": "2026-11-12T17:46:49.157Z"
+    }
+  ],
+  "decisions": [],
+  "consumptions": [],
+  "abandonments": [],
+  "transfers": [],
+  "escalations": [],
+  "executionResults": [],
+  "error": null
+}

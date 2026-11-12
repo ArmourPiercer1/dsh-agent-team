@@ -1,0 +1,353 @@
+{
+  "schema": "c2-adjudication-record/1",
+  "recordClass": "CANDIDATE-C2",
+  "candidateCommit": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "candidateSha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+  "candidateRef": "refs/heads/candidate/v0.1.6-3",
+  "candidateId": "cand-v0.1.6-3",
+  "candidateCommitSubject": "PD39-INBOX: the accepted-but-not-claimed window no longer strands on this tree — and the promise is narrowed to what is measured (#740)",
+  "manifest": {
+    "path": "dev/engineering/candidates/cand-v0.1.6-3.json",
+    "status": "FROZEN",
+    "frozen_at_utc": "2026-11-12T17:39:54Z",
+    "content_digest": "sha256:06b2bad8ec565039600ee5faf33e8940e04dc7ffc689f6b42ee5eca5335c65d7"
+  },
+  "host": {
+    "version": "0.2.0-rc.2",
+    "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "tree": "tests/deepseek-harness-test-use",
+    "pin_source": "tests/paths.mjs#TEST_USE_BASELINE_SHA",
+    "asserted_on_every_boot": true
+  },
+  "authority": {
+    "pointer": "dev/engineering/current-authority.json",
+    "snapshot_version": "as20261109r1",
+    "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+    "baseline": "cb2e41483af8447700fb3c2a25c2686705320692",
+    "moved_by_this_adjudication": false,
+    "note": "read-only; resolved via scripts/current-authority.mjs, ok=true status=POINTER"
+  },
+  "measurementWorktree": ".worktrees/c2b-cand3",
+  "measurementBranch": "task/c2b-adjudication-20261116",
+  "adjudicator": {
+    "role": "independent C2-B adjudicator (second, deliberately different angle from C2-A)",
+    "session": "c2b-cand3-adjudication-20261116",
+    "date_utc": "2026-11-12",
+    "authored_product_code": false,
+    "edited_tracked_product_files": false,
+    "committed_product_changes": false,
+    "moved_authority_pointer": false,
+    "moved_candidate_ref": false,
+    "tagged_or_published": false,
+    "changed_required_ci": false,
+    "core_patch_budget": 0,
+    "coordination_with_C2_A": "none; C2-A's in-progress files were not read as authority"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "scope": "this record claims CANDIDATE-C2 only for the measurements below, all run on 17a24e2c302cd991c3ba495ae29576b58a6c1069",
+    "basis": "Not eligible for a release claim from this record alone: attack A4 (Alpha.6-off zero regression) is NOT established (3/19 pd33 cases refuse the governed bash on an Alpha.5-only composition with A5_NATIVE_ADMISSION_UNAVAILABLE); PD-40 is REPRODUCED; and the PD-42 A1 conjunction (approved bash bounded by the ceiling) stays unmeasured by the instruments used here. Everything listed under signedClaims is signed; everything under refusedClaims is refused."
+  },
+  "runId": "c2-b-cand-v0.1.6-3-20261112",
+  "scope": "C2-B — adversarial adjudication of the frozen v0.1.6-3 candidate",
+  "oraclePolicy": "The tool return value is never its own correctness evidence. Channels read: the durable control ledger (requests/decisions/consumptions/abandonments/executionResults with sequence numbers), on-disk file existence+bytes, OS-level errno/exit, the mock model's request transcript, the Host process exit, and independently recomputed tarball sha256 / tree digests. A kit's own PASS line is quoted only together with the durable rows behind it.",
+  "independence": {
+    "worktree": "own git worktree from the frozen SHA; no writes outside .worktrees/c2b-cand3, tests/homes/, this evidence directory",
+    "ports": "sanctioned families only (3187-3194 host, 3491-3500 mock, 13055 world-owned); :3080 read-only probe returned 401 before and after every boot; never contacted",
+    "boots": 9,
+    "max_concurrent_own_boots": 2,
+    "shared_baseline_touched": false,
+    "other_worktrees_touched": false
+  },
+  "boots": [
+    {
+      "arm": "A1-run1",
+      "dir": "a1-run1",
+      "ports": "3187/3496",
+      "overall": "VERDICT PASS 7/7 clauses",
+      "log": "a1-run1.stdout.log"
+    },
+    {
+      "arm": "A1-run2",
+      "dir": "a1-run2",
+      "ports": "3188/3497",
+      "overall": "VERDICT PASS 7/7 clauses",
+      "log": "a1-run2.stdout.log"
+    },
+    {
+      "arm": "joint-run1",
+      "dir": "joint-run1",
+      "ports": "3189/3498",
+      "overall": "11/11 PASS",
+      "log": "joint-run1.stdout.log"
+    },
+    {
+      "arm": "joint-run2",
+      "dir": "joint-run2",
+      "ports": "3190/3499",
+      "overall": "11/11 PASS",
+      "log": "joint-run2.stdout.log"
+    },
+    {
+      "arm": "pd33-A6off",
+      "dir": "runs/boot01 (tracked copy in pd33-a6off/)",
+      "ports": "13055 world-owned",
+      "overall": "16/19 PASS; FAIL: member-a-io-chain, member-a-authorization, shell-write-boundary",
+      "log": "pd33-a6off.stdout.log"
+    },
+    {
+      "arm": "c1-unclaimed",
+      "dir": "c1-unclaimed",
+      "ports": "3191/3500",
+      "overall": "PASS A6-26 verdict=stranded-discoverable",
+      "log": "c1-unclaimed.stdout.log"
+    },
+    {
+      "arm": "c1-crash-allow",
+      "dir": "c1-crash-allow",
+      "ports": "3193/3492",
+      "overall": "PASS A6-15",
+      "log": "c1-crash-allow.stdout.log"
+    },
+    {
+      "arm": "wp1-armB (PD-40, no latch)",
+      "dir": "wp1-armB",
+      "ports": "3192/3491",
+      "overall": "4/4 PASS (B1,B3,B3b,B4)",
+      "log": "wp1-armB.stdout.log"
+    },
+    {
+      "arm": "wp1-armA (control, latch)",
+      "dir": "wp1-armA",
+      "ports": "3194/3493",
+      "overall": "6/6 PASS (A1, A3, A5a, A5b, A4a, A4b)",
+      "log": "wp1-armA.stdout.log"
+    }
+  ],
+  "attacks": [
+    {
+      "id": "A1",
+      "name": "Invariant: EffectiveIo(member,tool,call) ⊆ MemberCeiling(member) ∩ ToolRestriction(member,tool)",
+      "instrument": "adjudicator-written host-free suite packages/runtime/test/c2b-adv-attack-20261116.test.ts (ATTACK A, 6 cases) + the shipped A1 bash-governance kit, two independent boots",
+      "expectation": "no non-happy route yields an effective lane wider than the intersection; a refusal is typed and precedes any execution",
+      "observed": "6/6 host-free routes refuse or narrow: null restriction, all-allow with deny, broader tool lane, adopted native name, unsupported network, re-bind to a wider revision. Live: A1 7/7 PASS twice with detail agreement; A1-2 outside write refused by the OS (`Read-only file system`, exit 1, exists=false, size=0); A1-7 a denied approval yields 0 consumptions, 0 executionResults and no bytes on disk; A1-1 inside write lands 40 bytes.",
+      "durableRows": [
+        "a1-run1/a1-verdicts.json A1-2: exists=false size=0 readErr=ENOENT osSignal=bash: <home>/a1-outside-<stamp>.txt: Read-only file system / A1_OUTSIDE_EXIT=1",
+        "a1-run1/a1-ledger.json request seq=57 ctrl-0vyvs8j1toac5m0z3nii51fy kind=leader-approval toolName=bash blueprintContentHash=sha256:94b2e5a1… blueprintRevision=1; decision seq=58 decision=deny; consumptions=[]; executionResults=[]",
+        "a1-run1/a1-verdicts.json A1-6: hostDefault=danger-full-access rootWrite=bytes-on-disk memberOutsideFileAbsent=true"
+      ],
+      "verdict": "NOT FALSIFIED (bounded)",
+      "bound": "The exact PD-42 conjunction — an APPROVED bash call executing a body that then reaches OUTSIDE the compiled ceiling — is not measured by A1 (its approval arm denies) nor by the joint kit (J04's bash is in-lane). PD-42's residual therefore stays OPEN; this record does not close it."
+    },
+    {
+      "id": "A2",
+      "name": "Approval validity (#738 A6-LEG-VALIDITY): an invalid leg never produces a valid decision",
+      "instrument": "same adjudicator suite, ATTACK B (10 cases: 8 invalid shapes + 2 positive controls) against the live ControlService + assigned-officer facts port, plus the shipped a6-assigned-officer-facts suite (31 tests)",
+      "expectation": "each invalid shape is refused before any decision row is written; the global resolver table is unchanged",
+      "observed": "8/8 invalid shapes refused: archived owner (port null; refusal text contains `Member review is not authorized for this leg`, `produced no facts for this leg`, `global resolver table is unchanged`), DISPOSED owner (null), mismatched blueprint hash (null), mismatched blueprint revision (null), missing leg (null), already-decided leg (refused, second resolve refuses with CONTROL_REQUEST_DECIDED/already), wrong authority generation (null), non-current leg ordinal (null). Positive controls: a RUNNING owner (the fixture's ordinary state) and a SETTLED owner both still validate their pending leg and the SETTLED one's allow is accepted and recorded as decided. Shipped suite 31/31 PASS.",
+      "durableRows": [
+        "attacks/c2b-adv-attack.log: 16 passed (14 + 2 default-off probes), EXIT=0",
+        "attacks/c2b-adv-attack.log: 18 passed (16 + 2 default-off probes), EXIT=0",
+        "c1-unclaimed run: real leg ctrl-0mpa2ja1k3vu9111zkcu81sa minted by a SETTLED worker, delivered to the Officer and resolvable — the #738 acceptance path on a real Host"
+      ],
+      "verdict": "NOT FALSIFIED",
+      "disclosure": "The register row PD-43 and RELEASE-NOTES §4.10 still describe this defect as OPEN on a tree that carries its fix (#738). Documentation, not code — see disclosures[1]."
+    },
+    {
+      "id": "A3",
+      "name": "PD-40 Sticky Stop: does a human Stop between asks durably protect the reviewer?",
+      "instrument": "tests/kits/wp1-sticky-stop, arm B (no latch) with arm A (latch) as control; fresh DSH_HOME per arm",
+      "expectation": "if the claim holds, the Stop writes a durable marker and the next review ask wakes nobody",
+      "observed": "ARM B: 4/4 PASS. No marker is written (markers=[] at both points), the Stop returns through the coordinator-undefined branch, nothing claims durable protection (stopClaims.hits=[]), and after ONE ordinary human re-engagement turn the next review ask ACTIVATES the reviewer at the model (wakes 0->1, wakeId review-wake:…:1:a6wake%3Av1%3A1%3A4b574e25, markersAfter=[]). ARM A control: 6/6 PASS — the latch path writes exactly one marker (stopped-a525fde5.json, pathOk/keyOk/contentOk true), a machine relay and a machine work delivery do not clear it (wakes 1->1 both), the marker survives SIGKILL + cold boot byte-identical, and after cold boot a NEW review leg for the same reviewer is suppressed (legs 1->2, wakes 1->1).",
+      "durableRows": [
+        "wp1-armB/b3-no-marker.json: markers=[] wakeRows=[] returnValue.observed=inferred-false why=root.ts:2755-2762 returns false when alpha6WakeBySession has no coordinator",
+        "wp1-armB/b4-next-wake.json: wakesBefore=0 wakesAfter=1 requestId=ctrl-048vrp70maj6r81kenot516i markersAfter=[] note=“the disclosed limit, observed”",
+        "wp1-armA/wp1 summary: A1 PASS intent=wake-a525fde5.json; A3 PASS markers=[stopped-a525fde5.json]"
+      ],
+      "verdict": "REPRODUCED (already disclosed)",
+      "bound": "The marker is latch-scoped and has no session-scoped durability; nothing on this tree changes that conclusion (the writer is still gated on `coordinator === undefined`). RELEASE-NOTES §4.7 and register PD-40 already carry this disclosure, so the defect does not falsify a promise the notes make — it falsifies any reading of “Sticky Stop” as session-scoped protection."
+    },
+    {
+      "id": "A4",
+      "name": "Alpha.6 default-off zero regression, then opt-in approvals + Goals",
+      "instrument": "host-free structural probes (ATTACK C in the adjudicator suite) + the A5-only pd33 world (alpha6ReviewRouting absent) + the joint kit (alpha6-on) twice",
+      "expectation": "with the opt-in absent nothing Alpha.6 runs and Alpha.5 behaviour is unchanged; with the opt-in on, approvals and Goals both work in two fresh worlds",
+      "observed": "STRUCTURE: createAlpha6RootWiring(false|undefined|1) returns {mode:'legacy'} without invoking the composition thunk (0 invocations), and controlRequestNotification with the opt-in absent keeps the Alpha.5 Leader notifier; opt-in present without a wake seam refuses instead of falling back to the Leader. A6-ON: joint 11/11 PASS twice, detail agreement true (approvals J05, Goals J07, identity J06, relay refusal J08). A6-OFF: pd33 16/19 — three cases FAIL because every governed `bash` call is refused with `A5_NATIVE_ADMISSION_UNAVAILABLE: the Team admission edge is not published for this agent, so this native bash call cannot be decided or consumed; refusing instead of executing an unapproved native call` (member-a-io-chain: none-errored + facts-per-tool factless=[bash]; member-a-authorization: out-of-bounds-command-zero-side-effect; shell-write-boundary: guard-admits-the-spawn + os-profile-stops-the-write).",
+      "durableRows": [
+        "attacks/c2b-adv-attack.log: C1 legacy without thunk invocation; C2 Alpha.5 notifier preserved",
+        "runs/boot01/run-record.json: overall=FAIL, 3 failing cases, clause detail quoted above",
+        "runs/boot01/summary.txt: overall=FAIL cases=19 FAIL:3 PASS:16",
+        "joint-agreement.json: 11/11 both runs, verdictsAgree=true detailsAgree=true"
+      ],
+      "verdict": "PARTIAL — NOT ESTABLISHED",
+      "bound": "The structural default-off gate is proven. The measured consequence of default-off is NOT indistinguishable from the Alpha.5 baseline the pd33 instrument recorded on a2e0df3c9 (19/19): the governed bash now refuses before execution on a composition that does not mount the plane takeover. Both compositions that passed (A1, joint) set the takeover explicitly. Whether this is instrument staleness (the world predates #730's native admission slot) or a default-path product regression is NOT decidable from my runs; I did not find a shipped Alpha.5-only composition that mounts the takeover."
+    },
+    {
+      "id": "A5",
+      "name": "Promise boundaries (PD-39 / #740): count vs readable-by-id, abandoned terminal, non-resolvable, re-issue",
+      "instrument": "c1 kit C1_A6_INBOX_UNCLAIMED=1 (accepted-not-claimed) with C1_A6_BUSY_HOLD_MS=15000; c1 kit C1_A6_CRASH=allow (decision before crash); shipped host-free pins for the abandoned code",
+      "expectation": "the stranded request must be counted, readable by id and resolvable; an abandoned request must be terminal and non-resolvable; a re-issued ask must work",
+      "observed": "STRANDED: verdict=stranded-discoverable — 0 wake turns after restart, durable request survives PENDING, pendingControlCount=1, readable by id on the ledger page (requestFactVisible=true), operator team.resolveControl allow accepted with HTTP 200 and a durable decision row (seq 8, decision=allow, decider human). ABANDONED: seq 10 request recorded, seq 11 decision=allow, SIGKILL, seq 14 control-request-abandoned reason=invocation-abandoned, consAfter=0, fileCount=0, revived=false; the shipped pins prove a late allow is refused with the typed CONTROL_REQUEST_ABANDONED through the remote boundary, and an abandoned request is excluded from the listing while still found on the ledger page.",
+      "durableRows": [
+        "c1-unclaimed/a6-inbox-unclaimed.json: discoveryAfter={pendingControlCount:1, requestFactVisible:true, requestIdOccurrences:1, recovery.status:200, recovery.decision:{sequence:8, decision:'allow', decider.kind:'human'}}, abandonedAfter=[]",
+        "c1-crash-allow/a6-crash.json: pa seq=10, decisionAfter seq=11 allow, abandonment seq=14 reason=invocation-abandoned, consAfter=0, revived=false",
+        "attacks/abandoned-pins.log: 20 passed (remote-control-abandoned-code 4, c1-list-pending-control 16), EXIT=0"
+      ],
+      "verdict": "PASS for the narrowed promise; NOT MEASURED for re-issue",
+      "bound": "I measured resolve-by-id of the stranded request, not an operator RE-ISSUE of a new ask. The claim “every accepted review wake is delivered or decidable” is already declared FALSE by #740 (§5 correction) and my runs do not revive it: they support the replacement, “delivered, decidable, or terminally abandoned with a typed fact”."
+    },
+    {
+      "id": "A6",
+      "name": "Packaging identity: packed tree == installed tree, version, independently recomputed sha256",
+      "instrument": "fresh `pnpm pack` in the worktree + tests/kits/packaging-v016/run-packaging-acceptance.mjs --phase all --skip-rebuild --skip-live --skip-upgrade --run c2b2; sha256 and tree digests recomputed by the adjudicator, not read from the driver",
+      "expectation": "one tarball, version 0.1.6, installed package identical to the packed tree, no worktree leak",
+      "observed": "RESULT PASS checks=16/16. sha256 reproduced exactly: 7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba (4405634 bytes, 2113 members). Internal package.json name=dsh-agent-team version=0.1.6 private=true, no bundled dependencies. Host entry file sha256 187bc363…d612b6 identical before/after install; installed tree digest sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b equal to the packed tree digest; no worktree path in the installed tree; host pinned tree porcelain empty.",
+      "durableRows": [
+        "pack/dsh-agent-team-0.1.6.tgz + pack/tarball.sha256",
+        "packaging-install2.stdout.log: PACK-1 sha256=7a1d754c… bytes=4405634 members=2113; INST-3 187bc363…; INST-6 packed==installed sha256:deba287d…; RESULT PASS checks=16/16"
+      ],
+      "verdict": "PASS"
+    }
+  ],
+  "measurements": {
+    "host_free": {
+      "adjudicator_suite": {
+        "file": "packages/runtime/test/c2b-adv-attack-20261116.test.ts",
+        "tests": 18,
+        "passed": 18,
+        "log": "attacks/c2b-adv-attack.log",
+        "committed": false,
+        "note": "adjudicator-written probe, left uncommitted in the adjudication worktree; includes two positive controls for #738 (RUNNING and SETTLED owners)"
+      },
+      "shipped_suites": {
+        "tests": 48,
+        "passed": 48,
+        "log": "attacks/shipped-suites.log"
+      },
+      "abandoned_pins": {
+        "tests": 20,
+        "passed": 20,
+        "log": "attacks/abandoned-pins.log"
+      }
+    },
+    "live": {
+      "a1": {
+        "runs": 2,
+        "clauses": 7,
+        "pass_each": 7,
+        "agreement": "verdictsAgree=true detailsAgree=true",
+        "file": "a1-agreement.json"
+      },
+      "joint": {
+        "runs": 2,
+        "cases": 11,
+        "pass_each": 11,
+        "agreement": "verdictsAgree=true detailsAgree=true",
+        "file": "joint-agreement.json"
+      },
+      "pd33_a6_off": {
+        "cases": 19,
+        "pass": 16,
+        "fail": 3,
+        "fail_ids": [
+          "pd33:member-a-io-chain",
+          "pd33:member-a-authorization",
+          "pd33:shell-write-boundary"
+        ],
+        "typed_code": "A5_NATIVE_ADMISSION_UNAVAILABLE",
+        "file": "runs/boot01/run-record.json"
+      },
+      "c1_unclaimed": {
+        "case": "A6-26",
+        "verdict": "PASS",
+        "outcome": "stranded-discoverable",
+        "file": "c1-unclaimed/a6-inbox-unclaimed.json"
+      },
+      "c1_crash_allow": {
+        "case": "A6-15",
+        "verdict": "PASS",
+        "abandonment_reason": "invocation-abandoned",
+        "file": "c1-crash-allow/a6-crash.json"
+      },
+      "wp1_arm_b": {
+        "cases": 4,
+        "pass": 4,
+        "pd40": "reproduced",
+        "file": "wp1-armB/summary.json"
+      },
+      "wp1_arm_a": {
+        "cases": 6,
+        "pass": 6,
+        "file": "wp1-armA/summary.json"
+      },
+      "packaging": {
+        "checks": 16,
+        "pass": 16,
+        "tarball_sha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+        "installed_tree_digest": "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+      }
+    }
+  },
+  "signedClaims": [
+    "On the routes measured, the compiled effective lane never exceeds MemberCeiling(member) ∩ ToolRestriction(member,tool); refusals are typed and precede execution (0 bytes, 0 consumptions, 0 execution results).",
+    "A durable PENDING leg is the subject of validity: ARCHIVED/DISPOSED owners, mismatched Blueprint hash or revision, missing legs, decided legs, wrong authority generation and non-current ordinals are all refused; RUNNING (ordinary path) and SETTLED owners both pass.",
+    "The Alpha.6 opt-in is a structural gate: absent/false does not invoke the composition thunk and keeps the Alpha.5 Leader notifier.",
+    "With the opt-in on, one tarball serves approvals and Goals end to end: joint 11/11 twice with detail agreement.",
+    "The accepted-but-not-claimed window is counted (pendingControlCount=1), readable by id and resolvable by an operator allow.",
+    "A request decided before the crash is terminally abandoned with a typed fact, executes nothing, is not revived, and a late allow is refused with CONTROL_REQUEST_ABANDONED.",
+    "The packed tree and the installed tree are identical; tarball sha256 7a1d754c… reproduced independently; version 0.1.6.",
+    "PD-40 is real and is disclosed in RELEASE-NOTES §4.7: a human Stop between asks is latch-scoped, not session-scoped."
+  ],
+  "refusedClaims": [
+    "R1 “With alpha6ReviewRouting off, Alpha.5 behaviour is unchanged (zero regression).” Refused: the A5-only pd33 world reddens 3/19 on governed bash with A5_NATIVE_ADMISSION_UNAVAILABLE. Instrument staleness vs product regression is not decided here.",
+    "R2 “PD-42's A1 is closed: an approved bash call is bounded by the compiled ceiling.” Refused: no instrument I ran measures allow → body executes → out-of-lane target; A1's approval arm denies and joint's bash is in-lane.",
+    "R3 “A human Stop between asks protects the reviewer durably (Sticky Stop).” Refused: PD-40 reproduced; no marker on the no-latch path, next ask wakes the reviewer.",
+    "R4 “Every accepted review wake is delivered or decidable.” Refused (and already withdrawn by #740 §5): abandoned-terminal is a third outcome.",
+    "R5 “PD-43 / RELEASE-NOTES §4.10 accurately describe this tree.” Refused: both still say the lifecycle gate is OPEN although #738 on this SHA fixes it.",
+    "R6 “The operator re-issue path works.” Not measured: I exercised resolve-by-id of the stranded request, not re-issue of a new ask."
+  ],
+  "disclosures": [
+    {
+      "id": "D1",
+      "severity": "high",
+      "subject": "A5-only composition refuses governed bash after #730/#739",
+      "detail": "pd33 (alpha6ReviewRouting absent, memberPresetId=a5sf-governed-member, plane takeover NOT mounted) has 16/19 cases PASS; the 3 failures are all the same refusal: A5_NATIVE_ADMISSION_UNAVAILABLE from packages/runtime/src/plugin/live/native-tool-admission.mjs (the plane never published admitNative for that Agent). The recorded pd33 pair on a2e0df3c9 was 19/19. The two compositions that pass here (A1, joint) set the plane takeover explicitly. Consequence: the Alpha.5 Preview's bash row is not reproducible on the composition its own evidence was recorded on. Owner must decide whether the shipped A5-only path is required to work without the takeover (then this is a real regression), or whether every supported composition now must mount it (then the pd33 instrument is stale and must be updated before it can carry a zero-regression claim)."
+    },
+    {
+      "id": "D2",
+      "severity": "medium",
+      "subject": "Documentation stale on the fixed lifecycle gate",
+      "detail": "PRODUCT-DEBT-REGISTER PD-43 row says OPEN — not fixed, and RELEASE-NOTES §4.10 still calls it open, while #738 (76293c79f, on this SHA) fixes exactly that gate and changed no docs. My A2 measurements (8/8 refusals plus the 31-test suite) corroborate the code, not the prose."
+    },
+    {
+      "id": "D3",
+      "severity": "low",
+      "subject": "wp1 arm A first launch aborted, reported run is the completed rerun",
+      "detail": "The first wp1 arm A launch was detached with a shell `&` and died with its parent shell after four log lines; it produced no verdict and is not cited. The reported arm A run is a clean rerun that completed 6/6 PASS. No product behaviour is inferred from the aborted attempt."
+    },
+    {
+      "id": "D4",
+      "severity": "low",
+      "subject": "Packaging driver gap, adjudication-side workaround",
+      "detail": "`--phase install --tarball <prebuilt>` cannot evaluate INST-6 (reused-tarball mode omits treeDigest). I ran `--phase all` so the driver packed and hashed its own tree, and independently recomputed the tarball sha256 and internal version."
+    },
+    {
+      "id": "D5",
+      "severity": "low",
+      "subject": "Adjudicator test file is uncommitted",
+      "detail": "packages/runtime/test/c2b-adv-attack-20261116.test.ts exists only in .worktrees/c2b-cand3 (untracked). It is probe code, not product code; the record cites it by path and log."
+    },
+    {
+      "id": "D6",
+      "severity": "low",
+      "subject": "PD-39 promise wording",
+      "detail": "The stranded window is now countable and resolvable (measured), but “delivered” is not what I measured, and the terminal-abandonment trigger (decision before crash) is real. The §5 narrow wording is the only one this record supports."
+    }
+  ],
+  "verdict": "NOT PASS (candidate claim not eligible from this record)",
+  "verdictBasis": "Two independent reasons: (1) A4 is not established — the default-off Alpha.5 world reddens on governed bash; (2) PD-40 is reproduced. The invariant, approval-validity, promise-boundary and packaging claims measured here do survive, with the explicit bounds recorded in each attack.",
+  "agreementFile": null,
+  "agreementNote": "n=2 agreement was computed per instrument pair (A1, joint); single-boot arms (pd33, c1, wp1) are reported as measured, not as stability.",
+  "revision": 1,
+  "updatedAt": "2026-11-12T18:20:00Z"
+}

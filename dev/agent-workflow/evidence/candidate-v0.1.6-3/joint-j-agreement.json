@@ -1,0 +1,147 @@
+{
+  "schema": "joint-acceptance-agreement/1",
+  "run1": "dev/agent-workflow/evidence/candidate-v0.1.6-3/joint-j-run1",
+  "run2": "dev/agent-workflow/evidence/candidate-v0.1.6-3/joint-j-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "counts": {
+    "run1": {
+      "PASS": 11
+    },
+    "run2": {
+      "PASS": 11
+    }
+  },
+  "recordClass": "DEV-LIVE",
+  "normalization": [
+    "run stamp (2026-11-12T03-36-55) -> <stamp>",
+    "home suffix (the per-world 6-hex id) -> -h<n>-r<hex>",
+    "ISO timestamp -> <iso>",
+    "marker file (stopped-<hash>.json) -> stopped-<hash>.json",
+    "marker key -> \"key\":\"<hash>\"",
+    "goal id -> goal-<id>",
+    "control id -> ctrl-<id>",
+    "instance id -> inst-<id>",
+    "session id -> session-<id>",
+    "definition fingerprint -> def#<n>",
+    "content hash -> sha256:<hash>",
+    "home path -> <home>",
+    "blueprint dir -> <blueprints>",
+    "fact wait ms -> executionFactWaitMs=<ms>",
+    "decision wait ms -> decisionWaitMs=<ms>",
+    "round counters (threshold is the clause) -> roundsStarted=<n>-><n>",
+    "mock round requests (timing artefact) -> mockRoundRequests=<n>-><n>"
+  ],
+  "arms": [
+    {
+      "arm": "J01",
+      "proposition": "Team + routing: v5 both families admitted; Officer routed, one team_resolve_control",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "team.create=200 admitted=true blueprintHash=sha256:<hash> memberIoCeilings=true reviewRouting=true schemaVersion=5",
+      "detail2": "team.create=200 admitted=true blueprintHash=sha256:<hash> memberIoCeilings=true reviewRouting=true schemaVersion=5"
+    },
+    {
+      "arm": "J02",
+      "proposition": "Governed I/O inside the ceiling: write succeeds + a5sf-guard-consult/1 ALLOW fact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "inside=\"pd42-inside-<stamp>-h<n>-r<hex>\" allowFacts=1",
+      "detail2": "inside=\"pd42-inside-<stamp>-h<n>-r<hex>\" allowFacts=1"
+    },
+    {
+      "arm": "J03",
+      "proposition": "Governed I/O outside the ceiling: typed deny, zero bytes, deny attributable",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "writeDenies=1 outsideExists=false",
+      "detail2": "writeDenies=1 outsideExists=false"
+    },
+    {
+      "arm": "J04",
+      "proposition": "Native bash governed: pinned definition, realm PTY, shared PTY state, second Member separate PTY",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "bashCalls=1 pinnedDefinition=true bashExecuted=true realmTerminalFacts=0 (disclosure: the shipped post-#730 path audits bash in the control ledger, not the realm sink)",
+      "detail2": "bashCalls=1 pinnedDefinition=true bashExecuted=true realmTerminalFacts=0 (disclosure: the shipped post-#730 path audits bash in the control ledger, not the realm sink)"
+    },
+    {
+      "arm": "J05",
+      "proposition": "Approval lifecycle: durable request -> human allow -> one consumption -> one execution -> one execution-result; deny = zero/zero/zero",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "request=ctrl-<id> consumption=1 executionResults=1 outcomes=succeeded executionFactWaitMs=<ms>",
+      "detail2": "request=ctrl-<id> consumption=1 executionResults=1 outcomes=succeeded executionFactWaitMs=<ms>"
+    },
+    {
+      "arm": "J06",
+      "proposition": "Officer identity (F-3): which decider receives parameter-permission vs team-tool-execute; whenOfficerUnavailable honoured",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "parameter-permission request=ctrl-<id> reviewAuthority=leader blueprintContentHash=sha256:<hash> operationTool=dsh-agent-team/bash authorityGeneration=0 decider={\"instanceId\":\"inst-<id>\",\"kind\":\"instance\",\"role\":\"member\"} officer=inst-<id> routedToOfficer=true routedAwayFromOfficer=false identityCarried=true legDecided=true decisionWaitMs=<ms> whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=true",
+      "detail2": "parameter-permission request=ctrl-<id> reviewAuthority=leader blueprintContentHash=sha256:<hash> operationTool=dsh-agent-team/bash authorityGeneration=0 decider={\"instanceId\":\"inst-<id>\",\"kind\":\"instance\",\"role\":\"member\"} officer=inst-<id> routedToOfficer=true routedAwayFromOfficer=false identityCarried=true legDecided=true decisionWaitMs=<ms> whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=true"
+    },
+    {
+      "arm": "J07",
+      "proposition": "Goal from direct human input: create/get/update, >=2 automatic rounds, human Stop -> durable paused, no continuation",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "member=inst-<id> relay=200/ok goal={\"id\":\"goal-<id>\",\"revision\":2,\"phase\":\"active\",\"objective\":\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex> ed\"} roundsStarted=<n>-><n> (mockRoundRequests=<n>-><n>) stopLandedMidRound=true holdReleasedBy=driver stop=200 phase=paused->paused toolResults=[\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex>\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex>\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex> edited\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\"]",
+      "detail2": "member=inst-<id> relay=200/ok goal={\"id\":\"goal-<id>\",\"revision\":2,\"phase\":\"active\",\"objective\":\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex> ed\"} roundsStarted=<n>-><n> (mockRoundRequests=<n>-><n>) stopLandedMidRound=true holdReleasedBy=driver stop=200 phase=paused->paused toolResults=[\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex>\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex>\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-<id>\\\",\\\"revision\\\":2,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_<stamp>-h<n>-r<hex> edited\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\"]"
+    },
+    {
+      "arm": "J08",
+      "proposition": "Relay refusal: a machine relay turn cannot create_goal (GOAL_TOOL_AUTHORITY_REQUIRED) and no Goal row exists",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "member=inst-<id> relay=200 caller=instance/inst-leader refusal=GOAL_TOOL_AUTHORITY_REQUIRED(sentence) refusalObserved=\"Error: this goal operation requires a direct human turn on a top-level agent\" goal=null governedBashStillRuns=false (disclosure; the shell lane is J04/J05's clause) file=null askLegsMinted=0",
+      "detail2": "member=inst-<id> relay=200 caller=instance/inst-leader refusal=GOAL_TOOL_AUTHORITY_REQUIRED(sentence) refusalObserved=\"Error: this goal operation requires a direct human turn on a top-level agent\" goal=null governedBashStillRuns=false (disclosure; the shell lane is J04/J05's clause) file=null askLegsMinted=0"
+    },
+    {
+      "arm": "J09",
+      "proposition": "Sticky Stop on the review-wake path: live latch -> human Stop -> durable stopped-<hash>.json, and a subsequent review ask wakes nobody",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "wakeSeen=13 firstRelay=200 cancel=200 markers=[\"stopped-<hash>.json\"] bytes=\"{\\\"stopped\\\":true,\\\"key\\\":{\\\"rootSessionId\\\":\\\"session-<id><stamp>-h<n>-r<hex>\\\",\\\"reviewerInstanceId\\\":\\\"inst-<id>\\\",\\\"sessionGeneration\\\":1},\\\"targetSessionId\\\":\\\"session-<id>\" wakes=13->13 markerStable=true secondAskLegs=1 askIsReal=true secondRelay=200 holdReleasedBy=driver",
+      "detail2": "wakeSeen=13 firstRelay=200 cancel=200 markers=[\"stopped-<hash>.json\"] bytes=\"{\\\"stopped\\\":true,\\\"key\\\":{\\\"rootSessionId\\\":\\\"session-<id><stamp>-h<n>-r<hex>\\\",\\\"reviewerInstanceId\\\":\\\"inst-<id>\\\",\\\"sessionGeneration\\\":1},\\\"targetSessionId\\\":\\\"session-<id>\" wakes=13->13 markerStable=true secondAskLegs=1 askIsReal=true secondRelay=200 holdReleasedBy=driver"
+    },
+    {
+      "arm": "J10",
+      "proposition": "Cold recovery: SIGKILL mid-body, cold boot on the same DSH_HOME, no duplicate execution, no replayed consumed allow, crash-window settlement unknown",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "exited=true restart=ok legs=pp:ctrl-<id>/pa:ctrl-<id> consumed=1/1->1/1 facts=pa:1xunknown pp:1xunknown abandonments=execution-outcome-unknown,execution-outcome-unknown mockRequests=2->2 members=6 memberSurvived=true officerSurvived=true bodyStart=\"body-started\\n\" clauses={\"noDuplicate\":true,\"noReplay\":true,\"execSettledUnknown\":true,\"noSilentAbsence\":true,\"durableSurvived\":true}",
+      "detail2": "exited=true restart=ok legs=pp:ctrl-<id>/pa:ctrl-<id> consumed=1/1->1/1 facts=pa:1xunknown pp:1xunknown abandonments=execution-outcome-unknown,execution-outcome-unknown mockRequests=2->2 members=6 memberSurvived=true officerSurvived=true bodyStart=\"body-started\\n\" clauses={\"noDuplicate\":true,\"noReplay\":true,\"execSettledUnknown\":true,\"noSilentAbsence\":true,\"durableSurvived\":true}"
+    },
+    {
+      "arm": "J11",
+      "proposition": "No replay: a consumed allow cannot be re-dispatched; a late allow is refused (CONTROL_REQUEST_DECIDED)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "one-shot consumption facts for ctrl-<id>: 1",
+      "detail2": "one-shot consumption facts for ctrl-<id>: 1"
+    }
+  ]
+}

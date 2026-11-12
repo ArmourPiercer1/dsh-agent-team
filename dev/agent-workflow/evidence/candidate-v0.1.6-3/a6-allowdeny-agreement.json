@@ -1,0 +1,137 @@
+{
+  "schema": "a6-run-agreement/1",
+  "run1": "dev/agent-workflow/evidence/candidate-v0.1.6-3/a6-allowdeny-run1",
+  "run2": "dev/agent-workflow/evidence/candidate-v0.1.6-3/a6-allowdeny-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "normalization": [
+    "ISO timestamp -> <iso>",
+    "run stamp (2026-11-12T18-04-25) -> <stamp>",
+    "defaultWorkspace path (may be log-truncated) -> \"defaultWorkspace\":\"<path>\"",
+    "home/workspace path -> <home>",
+    "blueprint scratch dir -> <blueprints>",
+    "rpc id (per-RPC random) -> \"rpcId\":\"<id>\"",
+    "control id -> ctrl-<id>",
+    "case id -> case-<id>",
+    "instance id -> inst-<id>",
+    "session id -> session-<id>",
+    "sha256 -> sha256:<hash>",
+    "native bash hexec call id -> :hexec:<id>",
+    "mock tool call id -> call-c1-<id>",
+    "requestToken -> <token>",
+    "ledger sequence numbers -> $1=<n>",
+    "absolute worktree path -> <worktree>"
+  ],
+  "checks": [
+    {
+      "check": "A6-1",
+      "proposition": "v5 team.create admits the Officer + routing on the real Host",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-<id><stamp>\",\"blueprint\":{\"blueprintId\":\"team.c1-a6-officer\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<path>\"",
+      "detail2": "status=200 body={\"type\":\"server-response\",\"rpcId\":\"<id>\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"path\":\"fresh-root\",\"durable\":{\"teamSession\":{\"schemaVersion\":1,\"rootSessionId\":\"session-<id><stamp>\",\"blueprint\":{\"blueprintId\":\"team.c1-a6-officer\",\"revision\":\"1\",\"contentHash\":\"sha256:<hash>\"},\"createdAt\":\"<iso>\",\"generation\":1,\"defaultWorkspace\":\"<path>\""
+    },
+    {
+      "check": "A6-2",
+      "proposition": "the Member ask produced a model-visible Officer review wake",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "wakes=6 notifications=0 requests=16",
+      "detail2": "wakes=6 notifications=0 requests=16"
+    },
+    {
+      "check": "A6-27",
+      "proposition": "the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "executed=true pa=ctrl-<id> callId=team-inst-<id>-bash:hexec:<id> outcome=succeeded facts=2",
+      "detail2": "executed=true pa=ctrl-<id> callId=team-inst-<id>-bash:hexec:<id> outcome=succeeded facts=2"
+    },
+    {
+      "check": "A6-28",
+      "proposition": "a DENIED call is refused after its durable decision: zero consumption, zero side effect, and NO execution-result fact",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "request=ctrl-<id> decision=deny consumed=false execFacts=0 file=false done=true",
+      "detail2": "request=ctrl-<id> decision=deny consumed=false execFacts=0 file=false done=true"
+    },
+    {
+      "check": "A6-29",
+      "proposition": "a call whose backend THROWS/aborts after consumption records ONE terminal `failed` execution-result (never `succeeded`)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "request=ctrl-<id> consumed=true execFacts=failed callId=team-inst-<id>-bash:hexec:<id> done=true",
+      "detail2": "request=ctrl-<id> consumed=true execFacts=failed callId=team-inst-<id>-bash:hexec:<id> done=true"
+    },
+    {
+      "check": "A6-3",
+      "proposition": "the Officer resolved through team_resolve_control",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "resolveCalls=2 wakeTools=team_list_pending_control | team_resolve_control |  | team_list_pending_control | team_resolve_control |",
+      "detail2": "resolveCalls=2 wakeTools=team_list_pending_control | team_resolve_control |  | team_list_pending_control | team_resolve_control |"
+    },
+    {
+      "check": "A6-4",
+      "proposition": "the original Member command executed after the Officer allow",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "file=<home>/workspace/c1-a6-allow-<stamp>.txt text=\"c1-a6-allow-<stamp>\\n\"",
+      "detail2": "file=<home>/workspace/c1-a6-allow-<stamp>.txt text=\"c1-a6-allow-<stamp>\\n\""
+    },
+    {
+      "check": "A6-5",
+      "proposition": "the Leader was not woken for a leg routed to the Officer",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "wakes=6 leaderWakes=0 notifications=0",
+      "detail2": "wakes=6 leaderWakes=0 notifications=0"
+    },
+    {
+      "check": "A6-6",
+      "proposition": "every durable request at the end is settled (no lost pending leg)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "requests=2 decisions=2 consumptions=2 pending=",
+      "detail2": "requests=2 decisions=2 consumptions=2 pending="
+    },
+    {
+      "check": "A6-7",
+      "proposition": "Officer self-ask is routed to the Leader, not back to the Officer",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "prompt=200 notif=6 selfReq=ctrl-<id> leaderDecided=true executed=true",
+      "detail2": "prompt=200 notif=6 selfReq=ctrl-<id> leaderDecided=true executed=true"
+    },
+    {
+      "check": "L0",
+      "proposition": "discovery captured the surface; read + bash present; the 12-tool C1 catalog is the closed team set (the boot leader inherits the full catalog — the saved blueprints deny the non-team remainder)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "surface=20 missingTeam=[] denyList=[]",
+      "detail2": "surface=20 missingTeam=[] denyList=[]"
+    }
+  ]
+}

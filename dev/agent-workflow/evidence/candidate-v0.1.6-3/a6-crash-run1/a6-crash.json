@@ -1,0 +1,165 @@
+{
+  "pa": {
+    "sequence": 10,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-0rvsaim0t08ned1i5m8940j9",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "team-tool-execute",
+    "targetInstanceId": "inst-07e4g7p0lgon",
+    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T18-13-35:inst-07e4g7p0lgon:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-07e4g7p0lgon-bash:hexec:a24c1da7-1c53-4ddd-8427-1e4d39d135c2-1",
+    "approvalCaseId": "case-15xxh8b1vq8jio0cx1khd18g",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "createdAt": "2026-11-12T18:13:46.815Z"
+  },
+  "beforeKill": {
+    "requests": [
+      {
+        "sequence": 6,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-07e4g7p0lgon",
+        "correlation": "call-c1-3nam0g74",
+        "approvalCaseId": "case-0f2su960vc3agl0le6ed40o5",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T18:13:46.423Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0rvsaim0t08ned1i5m8940j9",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-07e4g7p0lgon",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T18-13-35:inst-07e4g7p0lgon:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-07e4g7p0lgon-bash:hexec:a24c1da7-1c53-4ddd-8427-1e4d39d135c2-1",
+        "approvalCaseId": "case-15xxh8b1vq8jio0cx1khd18g",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T18:13:46.815Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-1u4myxl14c69",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T18:13:46.597Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "createdAt": "2026-11-12T18:13:46.762Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [],
+    "error": null
+  },
+  "durable": {
+    "requests": [
+      {
+        "sequence": 6,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-07e4g7p0lgon",
+        "correlation": "call-c1-3nam0g74",
+        "approvalCaseId": "case-0f2su960vc3agl0le6ed40o5",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T18:13:46.423Z"
+      },
+      {
+        "sequence": 10,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-0rvsaim0t08ned1i5m8940j9",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "targetInstanceId": "inst-07e4g7p0lgon",
+        "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-12T18-13-35:inst-07e4g7p0lgon:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-07e4g7p0lgon-bash:hexec:a24c1da7-1c53-4ddd-8427-1e4d39d135c2-1",
+        "approvalCaseId": "case-15xxh8b1vq8jio0cx1khd18g",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-12T18:13:46.815Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 8,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-1u4myxl14c69",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-12T18:13:46.597Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 9,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1k6a1o50bob5gu09eowrn0kc",
+        "createdAt": "2026-11-12T18:13:46.762Z"
+      }
+    ],
+    "abandonments": [],
+    "transfers": [],
+    "escalations": [],
+    "executionResults": [],
+    "error": null
+  },
+  "restart": {
+    "error": null
+  },
+  "late": {
+    "type": "server-response",
+    "rpcId": "c1a6crash-gslexwtq0i",
+    "result": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_ABANDONED",
+        "message": "ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request 'ctrl-0rvsaim0t08ned1i5m8940j9')",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_ABANDONED",
+            "message": "ControlService: allow impossible — the PA authority is undetermined; the invocation is abandoned and no decision is written (request 'ctrl-0rvsaim0t08ned1i5m8940j9')",
+            "details": {
+              "rootSessionId": "session-c1-smoke-a6-2026-11-12T18-13-35",
+              "requestId": "ctrl-0rvsaim0t08ned1i5m8940j9"
+            }
+          }
+        }
+      }
+    }
+  },
+  "decisionAfter": null,
+  "revived": false
+}
