@@ -1,0 +1,24 @@
+mock: listening on 127.0.0.1:3497
+mock: 1 [messages] text reply (11 chars): "F5 two-asks"
+mock: 2 [messages] text reply (14 chars): "F5_GENERIC_ACK"
+mock: 3 [messages] tool-call reply: team_create_member
+mock: 4 [messages] text reply (11 chars): "F5 two-asks"
+mock: 5 [messages] tool-call reply: team_create_member
+mock: 6 [messages] tool-call reply: team_delegate
+mock: 7 [messages] text reply (14 chars): "F5_LEADER_DONE"
+mock: 8 [messages] tool-call reply: bash
+mock: 9 [messages] text reply (11 chars): "F5 two-asks"
+mock: 10 [messages] text reply (29 chars): "F5_NOTIFICATION_LEFT_TO_HUMAN"
+mock: 11 [messages] tool-call reply: team_list_pending_control
+mock: 12 [messages] tool-call reply: team_resolve_control
+mock: 13 [messages] text reply (16 chars): "F5_REVIEWER_DONE"
+mock: 14 [messages] text reply (12 chars): "F5_ASK1_DONE"
+mock: 15 [messages] text reply (29 chars): "F5_NOTIFICATION_LEFT_TO_HUMAN"
+mock: 16 [messages] tool-call reply: bash
+mock: 17 [messages] tool-call reply: team_list_pending_control
+mock: 18 [messages] tool-call reply: team_resolve_control
+mock: 19 [messages] text reply (20 chars): "F5_LEADER_NOTIF_DONE"
+mock: 20 [messages] tool-call reply: team_list_pending_control
+mock: 21 [messages] tool-call reply: team_resolve_control
+mock: 22 [messages] text reply (20 chars): "F5_LEADER_NOTIF_DONE"
+mock: 23 [messages] text reply (12 chars): "F5_ASK2_DONE"

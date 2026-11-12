@@ -1,0 +1,86 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-11T19:32:53.840Z",
+  "selectedArms": [
+    "g0-governance-wire"
+  ],
+  "knownArms": [
+    "g0-governance-wire"
+  ],
+  "verdict": "ENV_BLOCK",
+  "reason": "ENV_BLOCK at world.seed (prepared seed world is absent at /home/armourpiercer/projects/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52 (this kit cannot start without it))",
+  "counts": {
+    "PASS": 8,
+    "FAIL": 0,
+    "NOT_REACHED": 0,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 1
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[g0-governance-wire]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (porcelain clean)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate 94d5293ef6f2 matches the worktree under test (LIVE class)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": null,
+      "state": "PASS",
+      "detail": "the run does not require an Officer"
+    },
+    {
+      "id": "port.3182",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3182 free (loopback)"
+    },
+    {
+      "id": "port.3496",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3496 free (loopback)"
+    },
+    {
+      "id": "world.seed",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "prepared seed world is absent at /home/armourpiercer/projects/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52 (this kit cannot start without it)"
+    }
+  ],
+  "blocking": [
+    {
+      "id": "world.seed",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "prepared seed world is absent at /home/armourpiercer/projects/dsh-agent-team/tests/homes/mpr-2026-09-27T08-35-52 (this kit cannot start without it)"
+    }
+  ],
+  "skipped": [],
+  "startAllowed": false
+}
