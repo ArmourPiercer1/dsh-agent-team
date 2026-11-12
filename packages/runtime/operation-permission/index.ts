@@ -149,6 +149,13 @@ export type {
   InstallParameterPermissionListenerParams,
   PreExecuteExec,
   PreToolDecisionLike,
+  // J06 (2026-11-11) — the identity carry: the immutable bound-Blueprint
+  // identity, the OperationOwner template and the verified tool coordinate the
+  // parameter-permission ask freezes onto its leg, so the SAME Alpha.6 route
+  // that decides a `team-tool-execute` leg decides this one.
+  Alpha6AskIdentity,
+  BoundBlueprintIdentity,
+  OperationToolBindingIdentity,
 } from './pre-execute-adapter.js'
 
 export {

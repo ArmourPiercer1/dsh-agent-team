@@ -121,12 +121,27 @@ interface FakeAgentCtx {
   on: (event: string, listener: (exec: PreExecuteExec, next: () => Promise<PreToolDecisionLike>) => Promise<PreToolDecisionLike>) => () => void
   tools: { guard: (guard: (exec: { name: string }) => string | undefined) => () => void }
   trigger: (exec: PreExecuteExec, next: () => Promise<PreToolDecisionLike>) => Promise<PreToolDecisionLike>
+  /** J05 — emit the host's `'tools/result'` terminal leg for one execution. */
+  triggerResult: (exec: object, result: unknown) => Promise<void>
+  /** J05 — how many terminal observers the install registered. */
+  resultListenerCount: () => number
 }
 
 function makeFakeAgentCtx(): FakeAgentCtx {
   const listeners: Array<(exec: PreExecuteExec, next: () => Promise<PreToolDecisionLike>) => Promise<PreToolDecisionLike>> = []
+  const resultListeners: Array<(exec: object, result: unknown) => undefined> = []
   return {
-    on: (_event, listener) => {
+    on: (event, listener) => {
+      // The host distinguishes its emit events by NAME; the fake does the same
+      // so a waterfall listener is never invoked with a terminal signature.
+      if (event === 'tools/result') {
+        const terminal = listener as unknown as (exec: object, result: unknown) => undefined
+        resultListeners.push(terminal)
+        return () => {
+          const index = resultListeners.indexOf(terminal)
+          if (index >= 0) resultListeners.splice(index, 1)
+        }
+      }
       listeners.push(listener)
       return () => {
         const index = listeners.indexOf(listener)
@@ -139,6 +154,10 @@ function makeFakeAgentCtx(): FakeAgentCtx {
       if (listener === undefined) throw new Error('fake ctx: no listener registered')
       return listener(exec, next)
     },
+    triggerResult: async (exec, result) => {
+      for (const listener of [...resultListeners]) listener(exec, result)
+    },
+    resultListenerCount: () => resultListeners.length,
   }
 }
 
@@ -683,5 +702,119 @@ describe('a4p4 lane C — one approval, one invocation, and an honest terminal s
     expect(c6.legacy.kind).toBe('still-covered')
     // A requirement that fell to what the actor already holds is covered.
     expect(c6.direct.kind).toBe('still-covered')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// J05 (2026-11-11) — a consumed allow owes exactly one truthful fact.
+//
+// Measured defect: the `parameter-permission` lane consumed the human's allow,
+// ran the body, and wrote NO `control-execution-result` — the ledger could not
+// distinguish "ran", "refused after consumption" and "died between". These two
+// cases pin the two shapes the lane can now tell apart, and that the fact is
+// written ONCE per request and only from the host's own terminal observation.
+// ---------------------------------------------------------------------------
+
+describe('J05 — a consumed allow leaves exactly one truthful execution fact', () => {
+  it('J05a: a completed call settles `succeeded` from the host terminal leg, exactly once', async () => {
+    const env = await createEnv('j05a', {})
+    try {
+      const next = makeNext()
+      const exec = makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'j05a-call' })
+      const pending = env.ctx.trigger(exec, next.fn)
+      const request = await waitForRequest(env.service, 'j05a-call')
+      await env.service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: request.requestId,
+        decision: 'allow',
+      })
+      expect((await pending).kind).toBe('allow')
+      expect(next.calls()).toBe(1)
+      expect(env.ctx.resultListenerCount()).toBe(1)
+
+      // The DECISION is not the completion: nothing is claimed before the host
+      // reports the result of the body.
+      const before = await env.service.listControlState(P6T4_ROOT)
+      expect(before.executionResults.filter((r) => r.requestId === request.requestId)).toHaveLength(0)
+
+      await env.ctx.triggerResult(exec, { isError: false })
+      const after = await env.service.listControlState(P6T4_ROOT)
+      const facts = after.executionResults.filter((r) => r.requestId === request.requestId)
+      expect(facts).toHaveLength(1)
+      expect(facts[0]?.outcome).toBe('succeeded')
+      // The fact carries THIS invocation's correlation, not a borrowed PA id.
+      expect(facts[0]?.callId).toBe('j05a-call')
+
+      // Exactly-once: a second terminal emit cannot mint a second fact.
+      await env.ctx.triggerResult(exec, { isError: false })
+      const again = await env.service.listControlState(P6T4_ROOT)
+      expect(again.executionResults.filter((r) => r.requestId === request.requestId)).toHaveLength(1)
+    } finally {
+      env.disposer()
+      await destroyP6T1World(env.world)
+    }
+  })
+
+  it('J05b: an answered failure is `failed`, and a dispatch refused AFTER consumption is still a fact', async () => {
+    // (i) The body ran and failed: `failed`, not success and not silence.
+    const env = await createEnv('j05b', {})
+    try {
+      const next = makeNext()
+      const exec = makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'j05b-call' })
+      const pending = env.ctx.trigger(exec, next.fn)
+      const request = await waitForRequest(env.service, 'j05b-call')
+      await env.service.resolveControl({
+        rootSessionId: P6T4_ROOT,
+        caller: leaderCaller(),
+        requestId: request.requestId,
+        decision: 'allow',
+      })
+      await pending
+      await env.ctx.triggerResult(exec, {
+        isError: true,
+        error: { message: 'read failed', info: { code: 'EIO' } },
+      })
+      const state = await env.service.listControlState(P6T4_ROOT)
+      const facts = state.executionResults.filter((r) => r.requestId === request.requestId)
+      expect(facts).toHaveLength(1)
+      expect(facts[0]?.outcome).toBe('failed')
+    } finally {
+      env.disposer()
+      await destroyP6T1World(env.world)
+    }
+
+    // (ii) A downstream listener refuses dispatch: no body will ever run to
+    // settle the obligation, so the refusal itself must land as a fact.
+    const refusedEnv = await createEnv('j05b-refused', {})
+    try {
+      const next = makeNext({ kind: 'deny', reason: 'a later listener refused dispatch' })
+      const request = await (async () => {
+        const pending = refusedEnv.ctx.trigger(
+          makeExec({ name: 'read', arguments: { file_path: 'fileA.txt' }, callId: 'j05b-refused-call' }),
+          next.fn,
+        )
+        const found = await waitForRequest(refusedEnv.service, 'j05b-refused-call')
+        await refusedEnv.service.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: found.requestId,
+          decision: 'allow',
+        })
+        const decision = await pending
+        expect(decision.kind).toBe('deny')
+        return found
+      })()
+      expect(next.calls()).toBe(1)
+      const state = await refusedEnv.service.listControlState(P6T4_ROOT)
+      const facts = state.executionResults.filter((r) => r.requestId === request.requestId)
+      expect(facts).toHaveLength(1)
+      expect(facts[0]?.outcome).toBe('failed')
+      // The allow was spent even though nothing dispatched.
+      expect(state.consumptions.filter((c) => c.requestId === request.requestId)).toHaveLength(1)
+    } finally {
+      refusedEnv.disposer()
+      await destroyP6T1World(refusedEnv.world)
+    }
   })
 })

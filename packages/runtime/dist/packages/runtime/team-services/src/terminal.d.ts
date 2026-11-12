@@ -50,6 +50,16 @@
  * CORE PATCH BUDGET = 0: this is our package's module, mounted through the
  * existing public seam. No upstream source is touched.
  *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * RETIRED FROM THE PRODUCT PATH (NATIVE-BASH-PRESERVATION, 2026-11-11).
+ * This face is a per-command confined child, NOT a PTY: `cd`/`export` cannot
+ * survive a call, so serving the model-visible `bash` through it required a
+ * Team-authored ToolDefinition — the shape A5-NATIVE-01/02 forbid. The shipped
+ * composition now declares `terminal: { mode: 'pty' }` and `install.ts` mounts
+ * `terminal-pty.ts` instead; this face stays for compositions that still
+ * declare it and for its own contract suites.
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
  * @module @dsh-agent-team/runtime/team-services/terminal
  */
 import type { EffectiveIoPolicy } from '../../member-io-policy/src/types.js';
