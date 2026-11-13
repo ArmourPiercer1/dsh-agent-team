@@ -8671,3 +8671,17 @@ B 桶（需 owner 裁决：缓存/分片、`pr-gate` 去重、默认反转、L3�
 
 **边界**：未改任何 `.github/workflows/`、`dev/ci/`、`scripts/eb3-*`、分支保护、`current-authority.json`、
 候选 manifest；未删除证据；未合并。
+
+### 2026-11-13（UTC 16:3xZ）— ENG-BASELINE 增补：把 Draft-first 从文档变成可执行的拒绝
+
+**新增**：`scripts/pr-ready-check.mjs` + `scripts/pr-ready-check.test.mjs`（13 个 node:test；另有 6 个
+`--self-test` 用例）。检查 R1–R8：仍为 draft、无 `DO-NOT-MERGE` 标记、非 BEHIND/DIRTY、四层绿、
+`ci-required-deferred` 绿、`ci-census=skipped`、settlement 覆盖当前 40-hex、本地干净且已推送。
+复用 `pr-settlement-gate.mjs` 的 `detectMarker`/`findSettlement`，不复制判定法则。
+
+**现场负控**（#759，draft）：`verdict=REFUSED reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING,WORKTREE_DIRTY`；
+L1 形态同时被证实（四层绿、deferred 绿、census skipped）。首次实跑遇 GitHub API 裸 EOF → exit 2
+（不是通过），据此加一次 750ms 重试。
+
+**边界**：未改 `.github/workflows/`（因此该测试暂未接入托管 CI；`pr-gate.yml` 接 `pr-settlement-gate.test.mjs`
+的先例留作 owner 裁决）；未改任何 gate。

@@ -163,3 +163,34 @@ gh api repos/ArmourPiercer1/dsh-agent-team/actions/runs/<run_id>/jobs \
 | `raw/rows.tsv` | 派生的 `<PR>\t<branch>\t<分钟>` |
 | `raw/runs.tsv` | 12 个 PR 的 ci-required 次数与 conclusion |
 | `raw/draft-events.tsv` | 12 个 PR 的 draft 转换事件数 |
+
+---
+
+## 9. 现场负控：`pr-ready-check` 对 #759 的判定（2026-11-13T16:3xZ）
+
+`scripts/pr-ready-check.mjs`（本程序 A2 的机器半边）对当时的 #759 实跑：
+
+```
+pr-ready-check: PR #759 head=dd41a09283fcc72b298c3ddd9b48ab12829629a0 state=blocked draft=true
+  layers: fast=success integration=success security=success product=success
+  deferred=success census=skipped settlement=missing
+  refuse reasons: MARKER_PRESENT_TITLE, SETTLEMENT_MISSING, WORKTREE_DIRTY
+DSH-PR-READY verdict=REFUSED pr=759 reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING,WORKTREE_DIRTY
+```
+
+这同时是两条证据：
+
+1. **正向**：L1 的形态与设计一致（四层绿、`deferred=success`、`census=skipped`），说明分层在工作；
+2. **负向**：检查器拒绝了一个「还在评审、没写 settlement、标题带 marker」的 draft——它不会把
+   「L1 绿」误判成「可以 ready」。只有在 C1–C7 全部满足后才会输出 `READY`。
+
+披露：首次实跑时 GitHub API 返回一次裸 `EOF`，脚本以 exit 2（`ERROR FETCH_FAILED`）失败——
+**不是通过**。已加一次重试（750ms），重试后仍失败则保持 exit 2。该行为未改变判定代数。
+
+### 现场判定的复现
+
+```bash
+node scripts/pr-ready-check.mjs --pr 759          # 对任何 draft PR
+node scripts/pr-ready-check.mjs --self-test       # 无网络，6 个内建用例
+node --test scripts/pr-ready-check.test.mjs       # 13 个单元测试
+```

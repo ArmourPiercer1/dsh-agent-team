@@ -115,6 +115,15 @@ gh api -X PUT repos/{owner}/{repo}/pulls/<n>/update-branch \
 ### C7 head 冻结
 从这一刻起不再 push。
 
+### C8 机器自检（新增，2026-11-13）
+```bash
+node scripts/pr-ready-check.mjs --pr <n>
+```
+必须 `verdict=READY`（exit 0）。它逐项核对 C1–C7 中机器可查的部分：仍是 draft、无
+`DO-NOT-MERGE` 标记、非 BEHIND/DIRTY、四层绿、`ci-required-deferred` 绿、`ci-census=skipped`、
+settlement 覆盖当前 40-hex、本地干净且已推送。任何一项不满足会打印 `REFUSED` 与具体原因；
+exit 2 是取数失败，**不是通过**。
+
 然后：
 
 ```bash
@@ -203,6 +212,7 @@ gh pr merge <n> --squash --match-head-commit <40-hex>
 - [ ] 文档/证据已更新
 - [ ] 标题无 `DO-NOT-MERGE` 前缀
 - [ ] settlement 覆盖当前 40-hex，且在 ready 之前写入
+- [ ] `node scripts/pr-ready-check.mjs --pr <n>` 返回 `READY`（exit 0）
 - [ ] ready 之后没有新 commit
 - [ ] 三个 Required 上下文对同一 head 绿
 - [ ] `gh pr merge --squash --match-head-commit <同一 40-hex>`
