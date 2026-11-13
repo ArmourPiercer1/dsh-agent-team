@@ -1,0 +1,3 @@
+| arm | verdict | proposition | measured detail |
+|---|---|---|---|
+| REISSUE | **PASS** | an abandoned (decided-but-unconsumed) request is re-issued by the operator: new ask decided+executed, exactly one side effect, old request terminal and non-resolvable, new leg separate | attempts=[{"n":1,"window":"DECIDED_BEFORE_CONSUMPTION","decision":"allow","consumedAtKill":0}] old=ctrl-1ewxbwh0ir4wyg0to8f4j1y8 abandoned=invocation-abandoned oldConsumed=0 oldExec=0 oldResolve=200/CONTROL_REQUEST_ABANDONED oldPendingAbsent=true new=ctrl-09oyvy40yu1cm10l57pt21qt distinct=true decided=true consumed=true exec=succeeded oneSideEffect=true vehicle="new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)" followUpProducedTurn=false newDecidedBy=operator |

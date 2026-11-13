@@ -1,0 +1,12 @@
+mock: listening on 127.0.0.1:3492
+mock: 1 [messages] text reply (18 chars): "A1 bash governance"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] text reply (12 chars): "A1_DISC_DONE"
+mock: 4 [messages] text reply (18 chars): "A1 bash governance"
+mock: 5 [messages] tool-call reply: create_goal
+mock: 6 [messages] text reply (18 chars): "A1 bash governance"
+mock: 7 [messages] tool-call reply: get_goal
+mock: 8 [messages] tool-call reply: update_goal
+mock: 9 [messages] text reply (23 chars): "MC_GOAL_HUMAN_TURN_DONE"
+mock: 10 [messages] text reply (16 chars): "MC_GOAL_ROUND_OK"
+mock: 11 [messages] text reply (16 chars): "MC_GOAL_ROUND_OK"

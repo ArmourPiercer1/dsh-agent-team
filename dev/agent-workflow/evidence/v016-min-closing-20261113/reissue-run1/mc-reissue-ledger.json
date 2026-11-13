@@ -1,0 +1,208 @@
+{
+  "settled": {
+    "oldRows": {
+      "requests": [
+        {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0erxyfi1hoyx",
+          "correlation": "call-c1-elvowm8u",
+          "approvalCaseId": "case-0sl7o6011cnpgx06h5hti0gy",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:df5f2d6c04bd9334bf719354ec0ff016d78844fe84778303bd497a7ba8658713",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T07:43:33.803Z"
+        }
+      ],
+      "decisions": [
+        {
+          "sequence": 8,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "decision": "allow",
+          "decider": {
+            "instanceId": "inst-09m1uuu1j5py",
+            "kind": "instance",
+            "role": "member"
+          },
+          "createdAt": "2026-11-13T07:43:33.968Z"
+        }
+      ],
+      "consumptions": [],
+      "executionResults": [],
+      "abandonments": [
+        {
+          "sequence": 9,
+          "factType": "control-request-abandoned",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "reason": "invocation-abandoned",
+          "createdAt": "2026-11-13T07:43:35.665Z"
+        }
+      ]
+    },
+    "allAbandonments": [
+      {
+        "sequence": 9,
+        "factType": "control-request-abandoned",
+        "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+        "reason": "invocation-abandoned",
+        "createdAt": "2026-11-13T07:43:35.665Z"
+      }
+    ],
+    "allRequests": [
+      {
+        "sequence": 7,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0erxyfi1hoyx",
+        "correlation": "call-c1-elvowm8u",
+        "approvalCaseId": "case-0sl7o6011cnpgx06h5hti0gy",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "w-probe",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#35",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:df5f2d6c04bd9334bf719354ec0ff016d78844fe84778303bd497a7ba8658713",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-13T07:43:33.803Z"
+      }
+    ]
+  },
+  "afterOldResolve": {
+    "oldRowsAfter": {
+      "requests": [
+        {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0erxyfi1hoyx",
+          "correlation": "call-c1-elvowm8u",
+          "approvalCaseId": "case-0sl7o6011cnpgx06h5hti0gy",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:df5f2d6c04bd9334bf719354ec0ff016d78844fe84778303bd497a7ba8658713",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T07:43:33.803Z"
+        }
+      ],
+      "decisions": [
+        {
+          "sequence": 8,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "decision": "allow",
+          "decider": {
+            "instanceId": "inst-09m1uuu1j5py",
+            "kind": "instance",
+            "role": "member"
+          },
+          "createdAt": "2026-11-13T07:43:33.968Z"
+        }
+      ],
+      "consumptions": [],
+      "executionResults": [],
+      "abandonments": [
+        {
+          "sequence": 9,
+          "factType": "control-request-abandoned",
+          "requestId": "ctrl-04ok8q31f1bixm0fhoged0j7",
+          "reason": "invocation-abandoned",
+          "createdAt": "2026-11-13T07:43:35.665Z"
+        }
+      ]
+    }
+  },
+  "newRows": {
+    "requests": [
+      {
+        "sequence": 17,
+        "factType": "control-request-recorded",
+        "requestId": "ctrl-1ngd5us1qmpswl1nsy7s61ag",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "targetInstanceId": "inst-0hd8vdg1qw1h",
+        "correlation": "call-c1-4ofk9kax",
+        "approvalCaseId": "case-08l43z70l6nzjm02yp1q10l2",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "operationOwnerTemplateId": "w-probe",
+        "operationToolOwner": "dsh-agent-team",
+        "operationToolName": "bash",
+        "operationToolDefinitionIdentity": "def#43",
+        "authorityGeneration": 0,
+        "blueprintContentHash": "sha256:df5f2d6c04bd9334bf719354ec0ff016d78844fe84778303bd497a7ba8658713",
+        "blueprintRevision": "1",
+        "perEffectRequiredAuthorities": [
+          "leader"
+        ],
+        "createdAt": "2026-11-13T07:44:47.756Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 18,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1ngd5us1qmpswl1nsy7s61ag",
+        "decision": "allow",
+        "decider": {
+          "humanId": "session-a1-root-2026-11-13T07-43-17-h0-rf7788e",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T07:45:32.819Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 19,
+        "factType": "control-allow-consumed",
+        "requestId": "ctrl-1ngd5us1qmpswl1nsy7s61ag",
+        "createdAt": "2026-11-13T07:45:33.024Z"
+      }
+    ],
+    "executionResults": [
+      {
+        "sequence": 24,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-1ngd5us1qmpswl1nsy7s61ag",
+        "callId": "call-c1-4ofk9kax",
+        "outcome": "succeeded",
+        "recordedAt": "2026-11-13T07:45:33.824Z",
+        "createdAt": "2026-11-13T07:45:33.824Z"
+      }
+    ],
+    "abandonments": []
+  }
+}

@@ -1,0 +1,16 @@
+[2026-11-13T07:47:51.537Z] A1 bash-governance — stamp 2026-11-13T07-47-51-h0-rcccd51
+[2026-11-13T07:47:51.538Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113
+[2026-11-13T07:47:51.538Z] testuse=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T07:47:51.538Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/dev/agent-workflow/evidence/v016-min-closing-20261113/reissue-run2
+[2026-11-13T07:47:51.538Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T07:47:51.539Z] mode: a6-on (alpha6ReviewRouting: true)
+[2026-11-13T07:47:51.660Z] sandbox backend in use: full (usable=true)
+[2026-11-13T07:47:53.163Z] ports: host=3192 mock=3493
+[2026-11-13T07:47:58.177Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T07:47:58.185Z] mock model listening on 3493
+[2026-11-13T07:48:05.867Z] host booted at http://127.0.0.1:3192; row ready — toolCount=15
+[2026-11-13T07:48:05.867Z] ── L0: discovery ──
+[2026-11-13T07:48:06.289Z] discovery surface=32 tools; deny list=11
+[2026-11-13T07:48:06.289Z] ── MIN-CLOSING mode=reissue (A6 ON, plane takeover=true, host default=danger-full-access) ──
+[2026-11-13T07:50:07.133Z] teardown: stopping host + mock
+[2026-11-13T07:50:12.145Z] VERDICT PASS
