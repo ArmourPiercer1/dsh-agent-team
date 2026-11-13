@@ -157,6 +157,58 @@ node tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs \
   --evidence-dir "$PWD/dev/agent-workflow/evidence/a6off-plane-takeover-20261113/a6off-run1"
 ```
 
+## Min-closing mode (`--min-closing=<mode>`, added 2026-11-13)
+
+**Why it exists.** The owner ruling of 2026-11-13 names exactly three
+**minimum closing measurements** for v0.1.6 Preview — the gaps the other kits
+do not cover. `--min-closing` runs ONE of them per invocation, on a fresh
+`DSH_HOME`, with the A1 seven-clause path untouched (absent the flag the driver
+behaves exactly as before):
+
+| mode | proposition |
+|---|---|
+| `pd42` | an **approved** governed `bash` call must not widen the Member filesystem ceiling: the OS refuses the out-of-lane write, zero bytes remain, the tool result carries the refusal, and the durable ledger is request → allow → consumption → execution-result (not `succeeded`) |
+| `goal-a6off` | plane takeover ∧ `alpha6ReviewRouting: false` ∧ a real Goal: ≥2 automatic rounds, then the Goal Stop |
+| `reissue` | reproduce a decided-but-unconsumed crash window, let boot settlement abandon the request, then perform the **operator re-issue** (new ask decided, executed, exactly one side effect; the old request terminal and non-resolvable; the new leg separate) |
+
+The verdicts live in `min-closing-verdicts.json` (with `min-closing-arms.md`
+and per-mode evidence JSON); the two-run comparator is
+`compare-min-closing-runs.mjs <run1> <run2> [out]`. The recorded evidence and
+the full disclosure set are in
+`dev/agent-workflow/evidence/v016-min-closing-20261113/README.md`.
+
+```bash
+K=tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs
+node "$K" --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
+  --host-port 3187 --mock-port 3496 --min-closing=pd42 \
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/v016-min-closing-20261113/pd42-run1"
+node "$K" --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
+  --a6-off --host-port 3188 --mock-port 3497 --min-closing=goal-a6off \
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/v016-min-closing-20261113/goal-run1"
+node "$K" --worktree "$PWD" --testuse "$PWD/tests/deepseek-harness-test-use" \
+  --host-port 3189 --mock-port 3498 --min-closing=reissue \
+  --evidence-dir "$PWD/dev/agent-workflow/evidence/v016-min-closing-20261113/reissue-run1"
+```
+
+Notes that apply to the mode:
+
+- `pd42` uses the A1 Team document as-is (one Officer, one `w-probe`): call 0
+  writes INSIDE the Member ceiling, call 1 writes OUTSIDE it, and the mock
+  approves BOTH legs (the arm measures an approved out-of-lane write, never an
+  unapproved refusal). The outside command ends in the failing redirect so its
+  shell exit code is nonzero.
+- `goal-a6off` adds a `goal-worker` template to the A1 document by string
+  surgery (one new template; no new Blueprint literal) and grants only the
+  goal tools the product already exposes on a permissions-less template.
+- `reissue` needs the Alpha.6 crash-recovery path (the boot settlement that
+  writes `control-request-abandoned` is `alpha6Wiring.mode === 'alpha6'`), so
+  this mode runs with A6 **on** by default; `--a6-off` would remove the very
+  settlement the proposition measures. The re-issue vehicle is
+  `team_follow_up` first and, if that is admitted without producing a turn, a
+  NEW ask on a FRESH Member (`team_follow_up` must be declared in that arm's
+  Team document to pass the closed-world binding guard). Which vehicle ran is
+  recorded in the arm's detail and in `mc-reissue.json`.
+
 ## Notes on the instrument
 
 - The Officer is a real model turn resolved through the production
