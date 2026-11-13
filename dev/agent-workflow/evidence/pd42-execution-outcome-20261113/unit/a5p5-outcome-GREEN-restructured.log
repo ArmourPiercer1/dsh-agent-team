@@ -1,0 +1,19 @@
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/packages/tools/a5p5-tools
+
+ ✓ test/a5p5-render.test.ts (7 tests) 9ms
+ ✓ test/a5p5-spill.test.ts (11 tests) 11ms
+ ✓ test/a5p5-dormant-audit.test.ts (9 tests) 134ms
+ ✓ test/a5p5-render-injection.test.ts (8 tests) 7ms
+ ✓ test/a5p5-args.test.ts (13 tests) 7ms
+ ✓ test/a5p5-execution-outcome.test.ts (14 tests) 12ms
+ ✓ test/a5p5-effects-schema.test.ts (17 tests) 18ms
+ ✓ test/a5p5-parity.test.ts (17 tests) 30ms
+ ✓ test/a5p5-shell-effect-mapping.test.ts (6 tests) 8ms
+ ✓ test/a5p5-barrel-emit.test.ts (4 tests) 1047ms
+     ✓ tsc -p tsconfig.build.json emits, the emitted index.js imports, and the full barrel surface behaves from dist  1044ms
+
+ Test Files  10 passed (10)
+      Tests  106 passed (106)
+   Start at  17:43:07
+   Duration  1.27s (transform 1.77s, setup 0ms, import 2.07s, tests 1.28s, environment 1ms)

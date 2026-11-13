@@ -1,0 +1,22 @@
+mock: listening on 127.0.0.1:3491
+mock: 1 [messages] text reply (18 chars): "A1 bash governance"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] text reply (12 chars): "A1_DISC_DONE"
+mock: 4 [messages] text reply (18 chars): "A1 bash governance"
+mock: 5 [messages] tool-call reply: bash
+mock: 6 [messages] text reply (18 chars): "A1 bash governance"
+mock: 7 [messages] tool-call reply: team_list_pending_control
+mock: 8 [messages] tool-call reply: team_resolve_control
+mock: 9 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 10 [messages] tool-call reply: team_list_pending_control
+mock: 11 [messages] tool-call reply: team_resolve_control
+mock: 12 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 13 [messages] tool-call reply: bash
+mock: 14 [messages] tool-call reply: team_list_pending_control
+mock: 15 [messages] tool-call reply: team_resolve_control
+mock: 16 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 17 [messages] tool-call reply: team_list_pending_control
+mock: 18 [messages] tool-call reply: team_resolve_control
+mock: 19 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 20 [messages] text reply (12 chars): "MC_PD42_DONE"
+mock: 21 [messages] text reply (12 chars): "A1_NOOP_DONE"

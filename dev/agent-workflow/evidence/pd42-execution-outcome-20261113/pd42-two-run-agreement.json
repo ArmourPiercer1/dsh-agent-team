@@ -1,7 +1,8 @@
 = PD-42  PASS / PASS
 verdictsAgree=true detailsAgree=true compositionAgree=true
 written: /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/dev/agent-workflow/evidence/pd42-execution-outcome-20261113/pd42-two-run-agreement.json
-n2": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/dev/agent-workflow/evidence/pd42-execution-outcome-20261113/after-run2",
+,
+  "run2": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/dev/agent-workflow/evidence/pd42-execution-outcome-20261113/restructured-run2",
   "verdictsAgree": true,
   "detailsAgree": true,
   "counts": {
