@@ -1,0 +1,28 @@
+$ pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.1.6
+# cwd=/home/armourpiercer/projects/dsh-agent-team (the pinned host CLI at 0.2.0-rc.2; DSH_HOME is the throwaway world)
+# started 2026-11-13T18:23:13Z
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/.local/share/pnpm/store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 0, reused 0, downloaded 1, added 0
+Progress: resolved 4, reused 0, downloaded 1, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team github:ArmourPiercer1/dsh-agent-team#v0.1.6
+
+Packages: +7
++++++++
+Progress: resolved 7, reused 0, downloaded 7, added 7, done
+Done in 14.5s using pnpm v11.7.0
+# exit=0 finished 2026-11-13T18:23:28Z

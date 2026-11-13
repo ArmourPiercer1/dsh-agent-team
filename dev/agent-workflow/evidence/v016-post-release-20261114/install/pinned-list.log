@@ -1,0 +1,8 @@
+Legend: production dependency, optional only, dev only
+
+dsh-profile-web /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web (PRIVATE)
+│
+│   dependencies:
+└── dsh-agent-team@0.1.6
+
+1 package

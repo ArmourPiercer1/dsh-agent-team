@@ -1,0 +1,42 @@
+# GitHub Release body for v0.1.6 (fetched, verbatim, unmodified)
+# source: gh release view v0.1.6 --json body  (2026-11-13T18:2xZ)
+# NOT a repository file: no copy of this body exists in the tag tree.
+#
+# v0.1.6 — Alpha.5 + Alpha.6 joint close-out (internal trial build)
+
+**This is an internal trial build, not a productised release and not a C2-adjudicated RC.** Both independent adjudications of `cand-v0.1.6-4` returned `eligible: false`; nothing here claims otherwise. It exists so the team-mode preview can be installed and used.
+
+## Install (pin the tag — an unpinned git dep tracks the default branch)
+
+```bash
+pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team#v0.1.6
+dsh plugin --profile web list          # → dsh-agent-team@0.1.6
+```
+
+A ref-less `github:` install is **not immutable**: the manifest keeps a moving spec and only the lock pins the commit. Use the tag (or a 40-hex sha) when reproducibility matters.
+
+Offline alternative: the attached `dsh-agent-team-0.1.6.tgz` (`sha256 6740c8a27d1eb05699dcce43377bba84fa90b1ec2b5ca6e787a2a1d7e8c7fdb7`).
+
+## What is stable
+- Member × Tool two-axis ceilings enforced on both the service and the OS execution paths.
+- Governed `bash` with durable `control-execution-result` facts: a **refused** execution is recorded `failed`, never `succeeded`.
+- Team create → member execute → human approval → result collection, with cold recovery of durable state.
+- Goal creation, active/paused lifecycle and Stop.
+
+## What is opt-in experimental (Alpha.6 review routing, default **off**)
+- Officer review of `leader-approval` legs: allow, deny, exception, Stop and crash paths measured on a real Host.
+- Two decision channels: `leader-approval` → Leader or human (or the case/leg-assigned Officer when Alpha.6 is on); `user-approval` → **human only**; `envelope-mutation` → Leader or human. The ban is self-approval: the executor may never decide its own operation.
+- `team_list_pending_control` is caller-scoped: the Leader sees every open case at its current leg (including `user-approval`), an assigned Officer sees its own current legs, an unassigned member is refused with zero rows. A role-granted all-requests view carrying resolver kind + identity is registered (#756), **not implemented**.
+
+## Must not be claimed
+1. `succeeded` does not mean "the command completed": a **timed-out** or shell-session-exited command is recorded `unknown`, and a signal-killed one `failed`.
+2. Sticky Stop is **latch-scoped** (accepted experimental limit, PD-40): a Stop does not unconditionally stop a later, differently-latched turn.
+3. After a **cold restart** the approval backend does not wake a reviewer. The measured operator procedure — Leader checks pending controls, closes what it may, messages the Officer, then messages members — was verified in 12 real-Host runs (Officer decides in 251/253 ms; without the briefing the ask starves). See the Leader skill's 「重启工作 / Restarting work」.
+4. No upgrade protocol; rollback means installing a new version, never moving a tag. No npm publish, no provenance, no signed artifact. Linux only (landlock); no second machine class was measured.
+
+## Versions
+Root `dsh-agent-team` and all nine workspace packages are `0.1.6`, all `private: true`, 18 exact `0.2.0-rc.2` host peers.
+
+## Evidence
+All measurements are `DEV-LIVE` (real hosts, real OS) and are not `CANDIDATE-C2`. Starting points: `dev/agent-workflow/evidence/v016-release-gate-20261114/`, `.../a6-cold-wake-nudge-20261113/`, `.../pd42-relfix-20261117/`, `.../candidate-v0.1.6-5/`.
+
