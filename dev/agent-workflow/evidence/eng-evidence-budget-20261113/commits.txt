@@ -1,0 +1,12 @@
+evidence-budget commits: n=30 total=385.2 KiB p50=7.4 KiB p90=38.3 KiB max=55.4 KiB cap=2.0 MiB over_cap=0
+    8.9 KiB  54 file(s)  6361185d87  A6 COLD-WAKE: a new ask after a restart gets no reviewer wake - measur
+   11.4 KiB  155 file(s)  28b083d9a1  PD-42 RELAY FIX: the PA leg gets its fact back, and timeout/SIGKILL st
+   38.2 KiB  179 file(s)  673b8b182a  RC-DRYRUN: two independent packs are one verdict; rollback is only a r
+    7.4 KiB  109 file(s)  a775031989  PD-42 FIXED: a refused execution is failed, not succeeded - the durabl
+    8.6 KiB  110 file(s)  510a0d0dff  test(v016): three minimum closing measurements (2026-11-13) (#750)
+    1.7 KiB  6 file(s)  ab77faf854  V016 CLOSING: generator root fix, the archived C2 pair, the governed-b
+   11.2 KiB  232 file(s)  270d8f95f9  A6-OFF EVIDENCE: re-cut the artifacts from the frozen kit (C2-B refuse
+      295 B  3 file(s)  c6c96534c5  DOCS: the v0.1.6-rc.1 package — stable vs opt-in experimental, line by
+   11.9 KiB  160 file(s)  0d31f91213  A6-OFF x PLANE TAKEOVER: the A1 seven clauses with alpha6ReviewRouting
+   43.8 KiB  63 file(s)  45132a119b  PD33-STALE-INSTRUMENT: the governed-bash arm predates #730 and is supe
+DSH-EVIDENCE-BUDGET mode=commits n=30 p50=7591 p90=39197 max=56747 cap=2097152 over_cap=0

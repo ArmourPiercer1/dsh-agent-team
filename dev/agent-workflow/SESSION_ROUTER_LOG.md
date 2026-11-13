@@ -8648,3 +8648,22 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-13（追加）— 证据体积预算：2 MB/PR 从不触发，真正的问题是 151 MiB 累积（draft PR，不 merge）
+
+**授权**：owner 2026-11-13「自行推进工程基线优化，不合并 PR」。A 桶（只读度量 + 提案），B 桶不动。
+
+**做了什么**：新增 `scripts/evidence-budget.mjs`（8 个 node:test + 5 个 self-test）。两种只读度量：
+`--commits N` 用 `git log --numstat` 算 master 最近 N 个 first-parent commit 在 evidence 下的新增字节；
+`--dirs` 统计每个顶层证据目录的字节。不删除、不移动、不压缩任何证据。
+
+**实测（`dev/agent-workflow/evidence/eng-evidence-budget-20261113/`）**：
+- 每 PR（30 个 commit）：中位 **7.4 KiB**、P90 **38.3 KiB**、最大 **55.4 KiB**，超 2 MiB 的 **0** 个
+  → M5 的 2 MB/PR 上限**目前从不触发**，作为防事故护栏可以留，但它不是优化杠杆；
+- 累积：413 个顶层条目共 **151.0 MiB**、最大目录 **6.5 MiB**、26 个目录超 2 MiB
+  → 在「1 task = 1 worktree」下，这是每个 worktree 的检出成本，是开发速度问题。
+
+**提案**（`docs/plans/memo/evidence-budget-20261113/PLAN.md`，未实施）：E1 保留 2 MB/PR 护栏；
+E2 单目录 8 MiB 建议 warn；E3 累积治理（归档/维持/只约束未来）属 owner 裁决，本 PR 不删除证据。
+
+**边界**：未改 `.github/`、`dev/ci/`、`scripts/eb3-*`、分支保护、Authority、候选 manifest/ref；未 merge。
