@@ -1,0 +1,12 @@
+run=2
+tarball=/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz
+tarballSha256=0cc7bef3d5ee24cbae0b60039b47738dc044014b262f5546c064fba723031923
+tarballBytes=4407630
+command=DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34 node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/.artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz
+hostBin=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+hostPin=639ed015397290b3745d163aafe02ffee4aa3f84
+profile=/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/profiles/web
+installedVersion=0.1.6
+installedHostEntrySha256=187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6
+lockIntegrity=sha512-ZSD/fN52L498LBIOYwjIOlaLv5veY6ZEwI2yzvZUKQtctn0QAPqu8tKdJ+OF5+Tv6NBq1U+wJWH+QI6OGy5EvQ==
+

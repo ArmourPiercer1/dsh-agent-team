@@ -1,0 +1,16 @@
+{
+  "label": "upgrade",
+  "hostPort": 3182,
+  "mockPort": 3491,
+  "dshHome": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-1-2026-11-13T10-59-10",
+  "booted": true,
+  "authStatus": 303,
+  "projectionStatus": 200,
+  "teamReadable": true,
+  "durableTeamRows": 2,
+  "error": null,
+  "instanceLog": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/dev/agent-workflow/evidence/rc-readiness-dryrun-20261113/run-1/upgrade/instance.log",
+  "projectionMembers": 4,
+  "projectionBody": "{\"type\":\"server-response\",\"rpcId\":\"upgrade-proj-1\",\"result\":{\"ok\":true,\"value\":{\"data\":{\"projection\":{\"schemaVersion\":2,\"teamSessionId\":\"team-v016pack-r1\",\"blueprint\":{\"blueprintId\":\"v016-pack-bp-r1\",\"revision\":\"1\",\"contentHash\":\"sha256:8457a26c6f3146ba0ed13a8f896adfd89c0d96efb758ae8693f41de9c97b7ac2\"},\"generation\":31,\"generatedAt\":\"2026-11-13T11:00:09.642Z\",\"root\":{\"teamSessionId\":\"team-v016pack-r1\",\"createdAt\":\"2026-11-13T10:59:15.507Z\",\"policyState\":\"default\",\"admission\":\"OPEN\",\"compatibility\":{\"status\":\"OPEN\",\"probeGeneration\":1,\"requirementFingerprint\":\"none\",\"environmentFingerprint\":\"fp-",
+  "projectionAttempts": 1
+}

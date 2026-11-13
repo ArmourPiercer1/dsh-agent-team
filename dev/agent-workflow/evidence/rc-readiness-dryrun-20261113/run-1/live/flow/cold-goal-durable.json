@@ -1,0 +1,15 @@
+{
+  "rpc": null,
+  "durable": {
+    "changes": 3,
+    "goal": {
+      "id": "goal-43f76326-b388-45db-b5d8-6d5d93b4f012",
+      "revision": 3,
+      "objective": "ship V016PACK_R1_GOAL_OBJECTIVE (revised)",
+      "phase": "paused",
+      "maxGoalRounds": 6
+    },
+    "roundsStarted": 3,
+    "operation": "edit"
+  }
+}

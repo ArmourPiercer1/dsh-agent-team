@@ -1,0 +1,59 @@
+# Compatibility probe: what the absolute file: dependency does when the artifact moves
+$ node <pinned host>/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/rc-dryrun-relocate/pkg/dsh-agent-team-0.1.6.tgz
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/rc-dryrun-relocate/home/profiles/web
+Progress: resolved 0, reused 1, downloaded 0, added 0
+Progress: resolved 6, reused 1, downloaded 0, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/rc-dryrun-relocate/pkg/dsh-agent-team-0.1.6.tgz
+
+Packages: +7
++++++++
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Progress: resolved 7, reused 7, downloaded 0, added 7, done
+Done in 1.9s using pnpm v11.7.0
+install exit=0
+
+## profile lock entry for the tarball (absolute file: spec)
+33:  dsh-agent-team@file:../../../pkg/dsh-agent-team-0.1.6.tgz:
+34-    resolution: {integrity: sha512-o6dl6KIWznHUhPvJerjhbaIfF280tvlZA+Q5kiucAZbGimFahhEmqTK2lP6K4ZaTfGrrVmyTkQ2bTJSALIUHcg==, tarball: file:../../../pkg/dsh-agent-team-0.1.6.tgz}
+35-    version: 0.1.6
+--
+117:  dsh-agent-team@file:../../../pkg/dsh-agent-team-0.1.6.tgz:
+118-    dependencies:
+
+## now delete the tarball and force a profile reinstall
+$ rm tests/homes/rc-dryrun-relocate/pkg/dsh-agent-team-0.1.6.tgz
+$ (cd profile && pnpm install --frozen-lockfile --offline)
+Already up to date
+Done in 226ms using pnpm v11.7.0
+repair exit=0
+
+## node_modules present => pnpm short-circuits (NOT a survival proof).
+## Remove node_modules and retry, i.e. a real repair/reinstall:
+$ rm -rf <profile>/node_modules
+$ (cd profile && pnpm install --frozen-lockfile --offline)
+? Verifying lockfile against supply-chain policies (7 entries)...
+Lockfile is up to date, resolution step is skipped
+Packages: +7
++++++++
+Progress: resolved 0, reused 1, downloaded 0, added 0
+✓ Lockfile passes supply-chain policies (7 entries in 948ms)
+[ENOENT] ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/rc-dryrun-relocate/pkg/dsh-agent-team-0.1.6.tgz'
+
+pnpm: ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/rc-dryrun-relocate/pkg/dsh-agent-team-0.1.6.tgz'
+    at Object.openSync (node:fs:621:18)
+    at Object.readFileSync (node:fs:487:35)
+    at fetch2 (file:///home/armourpiercer/deepseek-harness/node_modules/.pnpm/pnpm@11.7.0/node_modules/pnpm/dist/pnpm.mjs:134806:33)
+    at fetcher (file:///home/armourpiercer/deepseek-harness/node_modules/.pnpm/pnpm@11.7.0/node_modules/pnpm/dist/pnpm.mjs:158476:27)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+repair exit=254
