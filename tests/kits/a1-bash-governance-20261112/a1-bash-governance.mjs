@@ -2217,6 +2217,14 @@ function makeDecideA1() {
     if (lastUser.includes(MK_DISC_A1)) return { kind: 'text', content: 'A1_DISC_DONE' }
     if (lastUser.includes(MK_DISC) && !lastUser.startsWith('[team-review-wake')) return { kind: 'text', content: 'C1_DISC_DONE' }
 
+    // MIN-CLOSING (2026-11-13): the three closing measurements' scripted turns.
+    // Only active under `--min-closing`; the A1 seven-clause path is unchanged.
+    const mcMode = minClosingMode()
+    if (mcMode !== null) {
+      const mcReply = await mcDecisionFor({ mode: mcMode, lastUser, tools, req })
+      if (mcReply !== null) return mcReply
+    }
+
     // The Officer wake: list, then resolve. WHICH decision is the kit's (a
     // marker in the ask summary says which probe the leg belongs to); the
     // product's own authority is what makes the decision durable.
@@ -2439,12 +2447,24 @@ async function main() {
     for (const name of PD42_GOVERNED_EXTRA_TOOLS) if (!denyList.includes(name)) denyList.push(name)
     log(`discovery surface=${surface.length} tools; deny list=${denyList.length}`)
 
-    const allPass = await runA1Scenario({ booted, mock, denyList })
-    writeEvidence('a1-run-summary.json', { allPass, runStamp: RUN_STAMP, hostPort, mockPort: MOCK_PORT })
-    if (!allPass) FAILS.push('A1')
+    const mcMode = minClosingMode()
+    const allPass = mcMode === null
+      ? await runA1Scenario({ booted, mock, denyList })
+      : await runMinClosing({ booted, mock, denyList, mode: mcMode })
+    writeEvidence('a1-run-summary.json', {
+      allPass,
+      mode: mcMode ?? 'a1-seven-clauses',
+      runStamp: RUN_STAMP,
+      hostPort,
+      mockPort: MOCK_PORT,
+    })
+    if (!allPass) FAILS.push(mcMode === null ? 'A1' : `MIN-CLOSING:${mcMode}`)
   } finally {
     log('teardown: stopping host + mock')
     stopHost(host)
+    // The re-issue arm cold-boots a REPLACEMENT Host on the same DSH_HOME; the
+    // original process is already dead, so teardown must stop the live one too.
+    if (LIVE_HOST_AFTER_RESTART !== null) stopHost(LIVE_HOST_AFTER_RESTART)
     try { await mock.close() } catch { /* best-effort */ }
     const postStable = {
       p3080: await probeStableInstance('http://127.0.0.1:3080/'),
@@ -2469,6 +2489,944 @@ async function main() {
   }
 
   process.exit(FAILS.length === 0 ? 0 : 2)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MIN-CLOSING (2026-11-13): the three MINIMUM CLOSING MEASUREMENTS for the
+// v0.1.6 Preview, per the owner ruling of 2026-11-13. Each mode is its own
+// real-Host run against a fresh DSH_HOME; the A1 seven-clause path above is
+// selected only when `--min-closing` is absent and is byte-for-byte unchanged.
+//
+//   pd42       plane takeover + v5 Team with memberIoCeilings: an APPROVED
+//              governed bash write OUTSIDE the Member ceiling is still refused
+//              by the OS, leaves zero bytes, and the durable ledger shows
+//              request -> allow -> consumption -> execution-result(failed).
+//   goal-a6off plane takeover + Alpha.6 routing OFF + a real Goal driven by a
+//              direct human turn: >=2 automatic rounds, then the human Stop.
+//   reissue    request -> allow -> SIGKILL before consumption -> boot
+//              settlement abandons it (control-request-abandoned /
+//              invocation-abandoned), then the OPERATOR RE-ISSUE path: a new
+//              ask, decided, executed, exactly one side effect, the old request
+//              terminal and non-resolvable, the new leg separate.
+//
+// EVIDENCE CLASS: DEV-LIVE. Never CANDIDATE-C2, no V@B.
+// ─────────────────────────────────────────────────────────────────────────────
+
+function minClosingMode() {
+  const inline = args.find((a) => a.startsWith('--min-closing='))
+  const mode = inline === undefined ? argValue('min-closing', null) : inline.slice('--min-closing='.length)
+  if (mode === null) return null
+  if (!['pd42', 'goal-a6off', 'reissue'].includes(mode)) {
+    throw new Error(`--min-closing must be pd42|goal-a6off|reissue (got ${mode})`)
+  }
+  return mode
+}
+
+/** The scripted model turns of the three min-closing modes. Null = not mine. */
+async function mcDecisionFor({ mode, lastUser, tools, req }) {
+  if (mode === 'pd42') {
+    const marker = `C1MK_MCPD42_${RUN_STAMP}`
+    if (!lastUser.includes(marker)) return null
+    const inside = join(WORKSPACE, `mc-pd42-inside-${RUN_STAMP}.txt`)
+    const outside = join(HOME, `mc-pd42-outside-${RUN_STAMP}.txt`)
+    // 0: INSIDE the ceiling (approved, must execute). 1: OUTSIDE the ceiling
+    // (approved too — the Officer allows every leg in this mode). The outside
+    // command has NO trailing success marker, so the shell exits nonzero and
+    // the terminal execution fact reflects the refusal rather than a shell
+    // that "completed" while its write was denied.
+    if (tools === 0) return toolCall('bash', bashArgs(`printf '%s' 'MC_PD42_INSIDE' > ${inside} && echo MC_PD42_INSIDE_OK`))
+    if (tools === 1) return toolCall('bash', bashArgs(`printf '%s' 'MC_PD42_OUTSIDE' > ${outside}`))
+    return { kind: 'text', content: 'MC_PD42_DONE' }
+  }
+  if (mode === 'goal-a6off') {
+    const marker = `C1MK_MCGOAL_${RUN_STAMP}`
+    if (lastUser.includes('<goal_round>') && lastUser.includes(marker)) {
+      const roundNo = Number(/Round: (\d+)\//.exec(lastUser)?.[1] ?? 0)
+      J07_ROUND_TRACE.push({ round: roundNo, at: new Date().toISOString() })
+      if (J07_GATE.armed && roundNo >= 2) {
+        J07_GATE.holding = true
+        await new Promise((resolve) => {
+          J07_GATE.release = () => {
+            if (J07_GATE.releasedBy === null) J07_GATE.releasedBy = 'driver'
+            resolve()
+          }
+          setTimeout(() => {
+            if (J07_GATE.releasedBy === null) J07_GATE.releasedBy = 'timeout'
+            resolve()
+          }, 60_000)
+        })
+        J07_GATE.holding = false
+      }
+      return { kind: 'text', content: 'MC_GOAL_ROUND_OK' }
+    }
+    if (lastUser.includes(marker)) {
+      switch (tools) {
+        case 0: return toolCall('create_goal', { objective: `MC goal ${marker}`, max_goal_rounds: 6 })
+        case 1: return toolCall('get_goal', {})
+        case 2: {
+          const ref = lastGoalRefIn(req)
+          return ref === null
+            ? { kind: 'text', content: 'MC_GOAL_NO_REF' }
+            : toolCall('update_goal', {
+                goal_id: ref.id,
+                revision: ref.revision,
+                action: 'edit',
+                objective: `MC goal ${marker} edited`,
+              })
+        }
+        default: return { kind: 'text', content: 'MC_GOAL_HUMAN_TURN_DONE' }
+      }
+    }
+    return null
+  }
+  if (mode === 'reissue') {
+    // One generic branch for the crashed ask (`C1MK_MCR<n>`) and the operator
+    // re-issue (`C1MK_MCRNEW`); the token names the side-effect file so every
+    // attempt stays distinguishable without product-side knowledge.
+    const m = /C1MK_MCR[A-Z0-9]*/.exec(lastUser)
+    if (m === null) return null
+    const token = m[0]
+    const file = join(WORKSPACE, `mc-reissue-${token}.txt`)
+    if (tools === 0) return toolCall('bash', bashArgs(`printf '%s' 'MC_REISSUED_${token}' > ${file} && echo ${token}_OK`))
+    return { kind: 'text', content: `${token}_DONE` }
+  }
+  return null
+}
+
+function mcReissueFile(token) {
+  return join(WORKSPACE, `mc-reissue-${token}.txt`)
+}
+
+function mcReissueSum(token) {
+  return `MC_REISSUED_${token}`
+}
+
+/**
+ * The v5 Team of the goal arm: the A1 document (same `memberIoCeilings` +
+ * `reviewRouting` pair) plus ONE goal-worker template whose `capabilities`
+ * carries no `permissions` policy — the state that leaves the upstream goal
+ * tools on its surface (the arm then measures the product's own
+ * `hasDirectHumanInput` authority, not a kit-side denial). String surgery on
+ * the A1 document keeps this file's Blueprint literals unchanged.
+ */
+function a1GoalBlueprintYaml(denyList) {
+  const member = [
+    '  - templateId: goal-worker',
+    '    persona: "You are the MC goal worker. Drive the goal tools you are given; do not delegate."',
+    '    capabilities:',
+    '      teamTools:',
+    '        kind: deny',
+    '      builtinToolDeny: []',
+    '      skills:',
+    '        kind: allow',
+    '        items: []',
+    '      mcp:',
+    '        kind: allow',
+    '        items: []',
+  ].join('\n')
+  const envelope = [
+    '  - templateId: goal-worker',
+    '    envelope:',
+    '      allow:',
+    '        - send-message',
+    '        - report-progress',
+    '        - request-control',
+    '      deny: []',
+  ].join('\n')
+  const ceiling = [
+    '  - templateId: goal-worker',
+    '    io:',
+    '      read:',
+    '        mode: restricted',
+    `        allow: ["${WORKSPACE}"]`,
+    '        ask: []',
+    '        deny: []',
+    '      write:',
+    '        mode: restricted',
+    `        allow: ["${WORKSPACE}"]`,
+    '        ask: []',
+    '        deny: []',
+    '      network:',
+    '        mode: allow',
+  ].join('\n')
+  let text = a1BlueprintYaml(denyList)
+  text = text.replace('\nmemberEnvelopes:', `\n${member}\nmemberEnvelopes:`)
+  text = text.replace('memberEnvelopes:\n', `memberEnvelopes:\n${envelope}\n`)
+  text = text.replace('memberIoCeilings:\n', `memberIoCeilings:\n${ceiling}\n`)
+  return text
+}
+
+/**
+ * The re-issue arm's v5 Team: the A1 document plus `team_follow_up` on the
+ * CREATED Leader's closed tool surface. The production guard refuses a team
+ * tool with no binding ("closed world: an un-governed tool never executes"), so
+ * the operator re-issue surface the runbook names must be DECLARED — this is a
+ * capability grant, not a behaviour override, and it is confined to this arm's
+ * Team document (the A1 document is untouched).
+ */
+function a1ReissueBlueprintYaml(denyList) {
+  const text = a1BlueprintYaml(denyList)
+  return text.replace('        - team_delegate\n', '        - team_delegate\n        - team_follow_up\n')
+}
+
+// ── shared helpers for the three modes ─────────────────────────────────────
+
+async function mcCreateTeam(booted, bpText, filePrefix) {
+  writeFileSync(join(BLUEPRINT_DIR, `${filePrefix}.yaml`), bpText)
+  writeEvidence(`${filePrefix}-blueprint.yaml`, bpText)
+  const create = await remoteCall(booted.origin, booted.cookie, 'team.create', {
+    rootSessionId: CREATE_ROOT_A1,
+    blueprintId: BP_A1_ID,
+    initialWork: { prompt: MK_DISC_A1 },
+  }, `${filePrefix}-create`)
+  writeEvidence(`${filePrefix}-create.json`, create.body ?? create)
+  const ok = create.status === 200
+    && create.body?.result?.ok === true
+    && create.body?.result?.value?.data?.path === 'fresh-root'
+  const blueprintHash = create.body?.result?.value?.data?.durable?.teamSession?.blueprint?.contentHash ?? null
+  return { ok, create, blueprintHash, error: ok ? null : JSON.stringify(create.body ?? create).slice(0, 700) }
+}
+
+async function mcCreateMember(live, templateId, label) {
+  const call = await p6t6Tool(live.origin, 'team_create_member', {
+    rootSessionId: CREATE_ROOT_A1,
+    requestToken: `mc-${label}-${RUN_STAMP}-${Math.random().toString(36).slice(2, 7)}`,
+    delegationTemplateId: templateId,
+    label,
+  }, CREATE_ROOT_A1)
+  const instanceId = extractInstanceId(JSON.stringify(call?.body?.value ?? call?.body ?? ''))
+  let childSessionId = null
+  if (instanceId !== null) {
+    for (let attempt = 0; attempt < 150; attempt += 1) {
+      const row = readMemberRows(CREATE_ROOT_A1).find((r) => r.instanceId === instanceId)
+      if (typeof row?.childSessionId === 'string') { childSessionId = row.childSessionId; break }
+      await new Promise((r) => setTimeout(r, 100))
+    }
+  }
+  return { label, templateId, instanceId, childSessionId, refusal: p6t6ErrorText(call), raw: call?.body ?? call }
+}
+
+function mcCallsContaining(mock, needle) {
+  const out = []
+  for (const request of mock.requests) {
+    for (const call of (request.reply?.toolCalls ?? [])) {
+      if (String(JSON.stringify(call.arguments ?? '')).includes(needle)) {
+        out.push({ id: call.id, name: call.name, arguments: call.arguments })
+      }
+    }
+  }
+  return out
+}
+
+function mcToolTexts(mock, needle) {
+  const out = []
+  for (const request of mock.requests) {
+    if (!lastUserTextOf(request).includes(needle)) continue
+    for (const message of toolMsgsOf(request)) out.push(contentText(message?.content))
+  }
+  return out
+}
+
+async function mcWaitLedger(root, pred, timeoutMs, intervalMs = 100) {
+  const deadline = Date.now() + timeoutMs
+  let last = null
+  for (;;) {
+    last = readControlLedger(root)
+    const value = pred(last)
+    if (value !== null && value !== undefined && value !== false) return { ledger: last, value }
+    if (Date.now() >= deadline) return { ledger: last, value: null }
+    await new Promise((r) => setTimeout(r, intervalMs))
+  }
+}
+
+function mcLedgerRows(ledger, requestId) {
+  return {
+    requests: ledger.requests.filter((r) => r.requestId === requestId),
+    decisions: ledger.decisions.filter((d) => d.requestId === requestId),
+    consumptions: ledger.consumptions.filter((c) => c.requestId === requestId),
+    executionResults: ledger.executionResults.filter((e) => e.requestId === requestId),
+    abandonments: ledger.abandonments.filter((a) => a.requestId === requestId),
+  }
+}
+
+function mcRemoteErrorCode(res) {
+  const body = res?.body ?? {}
+  return body?.result?.error?.code ?? body?.error?.code ?? body?.result?.value?.code ?? null
+}
+
+/** Cold boot a replacement Host on the SAME DSH_HOME/port (documented recovery). */
+async function mcRestartHost(booted, previous) {
+  const offset = statSync(booted.instanceLog).size
+  const patchPath = join(HOME, 'profiles', 'web', 'cordis.patch.yml')
+  const patchText = readFileSync(patchPath, 'utf8')
+  if (!patchText.includes('bootPhase: "create-or-open"')) {
+    writeFileSync(patchPath, patchText.replace('bootPhase: "create"', 'bootPhase: "create-or-open"'))
+  }
+  const h2 = spawnHost({ port: booted.port, home: HOME, logPath: booted.instanceLog, mockPort: MOCK_PORT })
+  let parsed = null
+  const bootDeadline = Date.now() + 180_000
+  while (Date.now() < bootDeadline && h2.alive()) {
+    let text = ''
+    try { text = readFileSync(booted.instanceLog, 'utf8').slice(offset) } catch { /* not yet */ }
+    const matches = [...text.matchAll(/http:\/\/127\.0\.0\.1:(\d+)\/\?token=([A-Za-z0-9_-]+)/g)]
+    if (matches.length > 0) { parsed = matches.at(-1); break }
+    await new Promise((r) => setTimeout(r, 200))
+  }
+  if (parsed === null) {
+    stopHost(h2)
+    throw new Error('restart: no boot URL appeared within 180s')
+  }
+  const origin = `http://127.0.0.1:${parsed[1]}`
+  let cookie = null
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    try { cookie = await authenticate(origin, parsed[2]); break } catch { await new Promise((r) => setTimeout(r, 500)) }
+  }
+  if (cookie === null) {
+    stopHost(h2)
+    throw new Error('restart: authentication failed')
+  }
+  const healthDeadline = Date.now() + 120_000
+  let health = null
+  for (;;) {
+    const hb = await p6t6Health(booted.port)
+    health = hb
+    if (hb.status === 200 && hb.body?.ok === true) break
+    if (Date.now() >= healthDeadline) {
+      stopHost(h2)
+      throw new Error(`restart: row health not ready (${JSON.stringify(hb.body).slice(0, 300)})`)
+    }
+    await new Promise((r) => setTimeout(r, 500))
+  }
+  return { host: h2, origin, cookie, port: booted.port, health }
+}
+
+async function mcWaitDead(host, timeoutMs) {
+  const deadline = Date.now() + timeoutMs
+  while (host.alive() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 50))
+  return !host.alive()
+}
+
+// ── PD-42: an approved bash call must not widen the FS ceiling ─────────────
+
+async function mcRunPd42({ booted, mock, denyList }) {
+  const marker = `C1MK_MCPD42_${RUN_STAMP}`
+  const insideFile = join(WORKSPACE, `mc-pd42-inside-${RUN_STAMP}.txt`)
+  const outsideFile = join(HOME, `mc-pd42-outside-${RUN_STAMP}.txt`)
+  const facts = { marker, insideFile, outsideFile }
+
+  const bpText = a1BlueprintYaml(denyList)
+  const create = await mcCreateTeam(booted, bpText, 'mc-pd42')
+  facts.team = { ok: create.ok, blueprintHash: create.blueprintHash, error: create.error }
+  if (!create.ok) {
+    return [{ arm: 'PD-42', proposition: 'an APPROVED bash call does not widen the Member filesystem ceiling', verdict: 'NOT_REACHED', detail: `team.create refused the v5 document: ${String(create.error).slice(0, 500)}`, facts }]
+  }
+  const officer = await mcCreateMember(booted, 'officer', 'mc-pd42-officer')
+  const member = await mcCreateMember(booted, 'w-probe', 'mc-pd42-w1')
+  facts.members = { officer, member }
+  if (officer.instanceId === null || member.instanceId === null) {
+    return [{ arm: 'PD-42', proposition: 'an APPROVED bash call does not widen the Member filesystem ceiling', verdict: 'NOT_REACHED', detail: `member creation failed: officer=${String(officer.refusal)} member=${String(member.refusal)}`, facts }]
+  }
+
+  const delegate = await p6t6Tool(booted.origin, 'team_delegate', {
+    rootSessionId: CREATE_ROOT_A1,
+    requestToken: `mc-pd42-delegate-${RUN_STAMP}`,
+    delegationInstanceId: member.instanceId,
+    label: member.label,
+    prompt: marker,
+  }, CREATE_ROOT_A1)
+  writeEvidence('mc-pd42-delegate.json', delegate?.body ?? delegate)
+  const done = await waitForMock(mock, (r) => JSON.stringify(r.reply ?? '').includes('MC_PD42_DONE'), 240_000, 'PD-42 member turn')
+  facts.turnDone = done !== null
+
+  const calls = mcCallsContaining(mock, 'mc-pd42-')
+  const insideCall = calls.find((c) => String(JSON.stringify(c.arguments ?? '')).includes('mc-pd42-inside')) ?? null
+  const outsideCall = calls.find((c) => String(JSON.stringify(c.arguments ?? '')).includes('mc-pd42-outside')) ?? null
+  facts.calls = { inside: insideCall, outside: outsideCall }
+
+  // Wait until both approval legs have a terminal execution fact (or time out).
+  const wait = await mcWaitLedger(CREATE_ROOT_A1, (ledger) => {
+    const iReq = insideCall === null ? null : ledger.requests.find((r) => r.correlation === insideCall.id) ?? null
+    const oReq = outsideCall === null ? null : ledger.requests.find((r) => r.correlation === outsideCall.id) ?? null
+    const iExec = iReq === null ? null : ledger.executionResults.find((e) => e.requestId === iReq.requestId) ?? null
+    const oExec = oReq === null ? null : ledger.executionResults.find((e) => e.requestId === oReq.requestId) ?? null
+    return iReq !== null && oReq !== null && iExec !== null && oExec !== null
+      ? { iReq, oReq, iExec, oExec }
+      : null
+  }, 240_000, 150)
+  const ledger = wait.ledger
+  const iReq = insideCall === null ? null : ledger.requests.find((r) => r.correlation === insideCall.id) ?? null
+  const oReq = outsideCall === null ? null : ledger.requests.find((r) => r.correlation === outsideCall.id) ?? null
+  const iRows = iReq === null ? null : mcLedgerRows(ledger, iReq.requestId)
+  const oRows = oReq === null ? null : mcLedgerRows(ledger, oReq.requestId)
+  const iFile = osRead(insideFile)
+  const oFile = osRead(outsideFile)
+  const toolTexts = mcToolTexts(mock, marker)
+  const refusalText = toolTexts.find((t) => /Read-only file system|Permission denied|Operation not permitted|EROFS|EACCES/i.test(String(t))) ?? null
+  const insideExitZero = toolTexts.find((t) => t.includes('MC_PD42_INSIDE_OK')) ?? null
+
+  const insideAllow = iRows?.decisions.some((d) => d.decision === 'allow') === true
+  const insideConsumed = (iRows?.consumptions.length ?? 0) === 1
+  const insideExecSucceeded = iRows?.executionResults.some((e) => e.outcome === 'succeeded') === true
+  const insideBytes = iFile.exists && iFile.text === 'MC_PD42_INSIDE'
+  const outsideAllow = oRows?.decisions.some((d) => d.decision === 'allow') === true
+  const outsideConsumed = (oRows?.consumptions.length ?? 0) === 1
+  const outsideExecOutcome = oRows?.executionResults[0]?.outcome ?? null
+  const outsideLedgerRefusal = outsideExecOutcome !== null && outsideExecOutcome !== 'succeeded'
+  const outsideAbsent = oFile.exists === false
+  const outsideOsSignal = refusalText !== null
+
+  const pass = insideAllow && insideConsumed && insideExecSucceeded && insideBytes
+    && outsideAllow && outsideConsumed && outsideLedgerRefusal && outsideAbsent && outsideOsSignal
+
+  const failedClauses = []
+  if (!(insideAllow && insideConsumed && insideExecSucceeded && insideBytes)) failedClauses.push('INSIDE_APPROVED_EXECUTION_NOT_PROVEN')
+  if (!outsideAllow) failedClauses.push('OUTSIDE_LEG_NOT_APPROVED')
+  if (!outsideConsumed) failedClauses.push('OUTSIDE_ALLOW_NOT_CONSUMED')
+  if (!outsideLedgerRefusal) failedClauses.push(`EXECUTION_RESULT_${String(outsideExecOutcome).toUpperCase()}`)
+  if (!outsideAbsent) failedClauses.push('OUTSIDE_FILE_EXISTS')
+  if (!outsideOsSignal) failedClauses.push('OS_REFUSAL_TEXT_ABSENT')
+
+  facts.inside = {
+    requestId: iReq?.requestId ?? null,
+    decision: iRows?.decisions.map((d) => d.decision) ?? [],
+    consumptions: iRows?.consumptions.map((c) => c.sequence) ?? [],
+    executionResult: iRows?.executionResults[0] ?? null,
+    bytesOnDisk: iFile.exists ? { size: iFile.size, match: iFile.text === 'MC_PD42_INSIDE' } : null,
+    toolSawExit0: insideExitZero !== null,
+  }
+  facts.outside = {
+    requestId: oReq?.requestId ?? null,
+    decision: oRows?.decisions.map((d) => d.decision) ?? [],
+    consumptions: oRows?.consumptions.map((c) => c.sequence) ?? [],
+    executionResult: oRows?.executionResults[0] ?? null,
+    statExists: oFile.exists,
+    readError: oFile.error,
+    osRefusalText: refusalText === null ? null : String(refusalText).slice(0, 500),
+  }
+  facts.ledgerSequences = {
+    inside: iRows === null ? null : {
+      request: iRows.requests[0]?.sequence ?? null,
+      decision: iRows.decisions[0]?.sequence ?? null,
+      consumption: iRows.consumptions[0]?.sequence ?? null,
+      executionResult: iRows.executionResults[0]?.sequence ?? null,
+    },
+    outside: oRows === null ? null : {
+      request: oRows.requests[0]?.sequence ?? null,
+      decision: oRows.decisions[0]?.sequence ?? null,
+      consumption: oRows.consumptions[0]?.sequence ?? null,
+      executionResult: oRows.executionResults[0]?.sequence ?? null,
+    },
+  }
+  writeEvidence('mc-pd42-ledger.json', {
+    inside: iRows,
+    outside: oRows,
+    allRequests: ledger.requests.filter((r) => r.targetInstanceId === member.instanceId),
+    toolTexts: toolTexts.map((t) => String(t).slice(0, 1200)),
+  })
+  writeEvidence('mc-pd42-sandbox-profile.json', mcSandboxProfile(booted))
+
+  return [{
+    arm: 'PD-42',
+    proposition: 'an APPROVED governed bash call does not widen the Member filesystem ceiling: OS refuses the out-of-lane write, zero bytes remain, the tool result carries the refusal, and the ledger records request -> allow -> consumption -> execution-result(failed)',
+    verdict: pass ? 'PASS' : 'FAIL',
+    detail: `insideApprovedExecuted=${String(insideAllow && insideConsumed && insideExecSucceeded && insideBytes)}`
+      + ` outsideApproved=${String(outsideAllow)} outsideConsumed=${String(outsideConsumed)}`
+      + ` outsideExecOutcome=${String(outsideExecOutcome)} ledgerRefusal=${String(outsideLedgerRefusal)}`
+      + ` outsideFileExists=${String(oFile.exists)} readError=${String(oFile.error)}`
+      + ` osRefusal=${String(outsideOsSignal)}`
+      + ` insideSeq=${JSON.stringify(facts.ledgerSequences.inside)} outsideSeq=${JSON.stringify(facts.ledgerSequences.outside)}`
+      + `${failedClauses.length > 0 ? ` failedClauses=${failedClauses.join(',')}` : ''}`
+      + ` toolRefusal=${JSON.stringify(refusalText === null ? null : String(refusalText).slice(0, 220))}`,
+    facts,
+  }]
+}
+
+function mcSandboxProfile(booted) {
+  let backend = null
+  try { backend = JSON.parse(readFileSync(join(RUN_DIR, 'a1-sandbox-backend.json'), 'utf8')) } catch { /* not written */ }
+  const launcher = join(WORKTREE, 'packages', 'runtime', 'sandbox-provider', 'launcher', 'landlock-prelauncher.py')
+  return {
+    schema: 'mc-sandbox-profile/1',
+    hostDefaultPermissionMode: HOST_SANDBOX_MODE,
+    planeTakeover: PLANE_TAKEOVER,
+    governedRealm: PD42_CELLINGS,
+    provider: {
+      kind: 'Alpha.5 confined provider (plane takeover)',
+      launcherPath: launcher,
+      launcherSha256: existsSync(launcher) ? createHash('sha256').update(readFileSync(launcher)).digest('hex') : null,
+      minAbiVersion: 3,
+    },
+    provisionerCheck: backend,
+    hostPid: booted.host?.child?.pid ?? null,
+    note: 'the OS boundary under test is the confined provider the product launches for the Member shell; the provisioner --check line is the deployment-wide backend verdict recorded by this same run',
+  }
+}
+
+// ── Goal ∧ plane takeover ∧ A6-off ─────────────────────────────────────────
+
+async function mcRunGoal({ booted, mock, denyList }) {
+  const marker = `C1MK_MCGOAL_${RUN_STAMP}`
+  const facts = { marker, composition: { planeTakeover: PLANE_TAKEOVER, alpha6ReviewRouting: false, a6Off: A6_OFF } }
+  const bpText = a1GoalBlueprintYaml(denyList)
+  const create = await mcCreateTeam(booted, bpText, 'mc-goal')
+  facts.team = { ok: create.ok, blueprintHash: create.blueprintHash, error: create.error }
+  if (!create.ok) {
+    return [{ arm: 'GOAL-A6OFF', proposition: 'Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF', verdict: 'NOT_REACHED', detail: `team.create refused the v5 document: ${String(create.error).slice(0, 500)}`, facts }]
+  }
+  const member = await mcCreateMember(booted, 'goal-worker', 'mc-goal-worker')
+  facts.member = member
+  if (member.instanceId === null || member.childSessionId === null) {
+    return [{ arm: 'GOAL-A6OFF', proposition: 'Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF', verdict: 'NOT_REACHED', detail: `goal-worker could not be created: ${String(member.refusal ?? 'no child session')}`, facts }]
+  }
+
+  J07_GATE.armed = true
+  J07_GATE.holding = false
+  J07_GATE.releasedBy = null
+  const relay = await remoteCall(booted.origin, booted.cookie, 'member.send', {
+    teamSessionId: CREATE_ROOT_A1,
+    caller: { kind: 'human', humanId: CREATE_ROOT_A1 },
+    recipientInstanceId: member.instanceId,
+    body: marker,
+    requestToken: `mc-goal-relay-${RUN_STAMP}`,
+  }, 'mc-goal-relay', 4)
+  facts.relay = { status: relay.status, ok: relay.body?.result?.ok === true, body: relay.body ?? relay }
+  const humanTurn = await waitForMock(mock, (r) => lastUserTextOf(r).includes(marker) && !lastUserTextOf(r).includes('<goal_round>'), 180_000, 'goal human turn')
+  facts.humanTurnSeen = humanTurn !== null
+
+  const transitions = []
+  let lastPhase = null
+  const recordPhase = (goal) => {
+    const phase = goal?.phase ?? null
+    if (phase === lastPhase) return
+    transitions.push({ phase, roundsStarted: Number(goal?.roundsStarted ?? 0), revision: Number(goal?.revision ?? 0), at: new Date().toISOString() })
+    lastPhase = phase
+  }
+
+  let goalAfterEdit = null
+  const goalDeadline = Date.now() + 150_000
+  while (Date.now() < goalDeadline) {
+    const current = await goalGet(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-get')
+    goalAfterEdit = current.goal
+    recordPhase(goalAfterEdit)
+    if (goalAfterEdit !== null && Number(goalAfterEdit.revision ?? 0) >= 2) break
+    await new Promise((r) => setTimeout(r, 500))
+  }
+  facts.goalAfterEdit = goalAfterEdit
+
+  // The turn's TOOL RESULTS live on the FIRST request after the calls, not on
+  // the request that issued them, so scan the requests of this turn.
+  const turnTexts = mcToolTexts(mock, marker)
+  const typedRefusal = turnTexts.find((t) => /GOAL_TOOL_[A-Z_]+/.test(String(t))) ?? null
+  facts.typedRefusal = typedRefusal === null ? null : String(typedRefusal).slice(0, 600)
+  if (goalAfterEdit === null) {
+    // A Goal row that never appears is NOT_REACHED when the product REFUSED the
+    // goal tools (typed code), and FAIL when the tools were present but the row
+    // never materialized.
+    const refused = typedRefusal !== null
+    return [{
+      arm: 'GOAL-A6OFF',
+      proposition: 'Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF',
+      verdict: refused ? 'NOT_REACHED' : 'FAIL',
+      detail: refused
+        ? `GOAL_TOOL_UNAVAILABLE: ${String(typedRefusal).slice(0, 400)}`
+        : `FAIL no durable Goal row appeared within 150s (humanTurnSeen=${String(humanTurn !== null)}, relay=${String(relay.status)}); turnToolTexts=${JSON.stringify(turnTexts.slice(0, 4).map((t) => String(t).slice(0, 200)))}`,
+      facts,
+    }]
+  }
+
+  const roundText = (r) => `${lastUserTextOf(r)}\n${JSON.stringify(r.body ?? '')}`
+  const roundsDeadline = Date.now() + 180_000
+  let mockRounds = 0
+  while (Date.now() < roundsDeadline) {
+    mockRounds = mock.requests.filter((r) => roundText(r).includes('<goal_round>') && roundText(r).includes(marker)).length
+    const current = await goalGet(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-get2')
+    recordPhase(current.goal)
+    if (Number(current.goal?.roundsStarted ?? 0) >= 2) break
+    await new Promise((r) => setTimeout(r, 250))
+  }
+  const holdDeadline = Date.now() + 30_000
+  while (Date.now() < holdDeadline && !J07_GATE.holding) await new Promise((r) => setTimeout(r, 100))
+  facts.gateHeld = J07_GATE.holding
+  const atStop = await goalGet(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-get3')
+  const stop = await apiCancel(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-stop')
+  J07_GATE.armed = false
+  if (J07_GATE.holding) J07_GATE.release?.()
+  facts.stop = { status: stop.status, ok: stop.body?.result?.ok === true, body: stop.body ?? stop, gate: { holding: facts.gateHeld, releasedBy: J07_GATE.releasedBy } }
+  facts.roundsStartedAtStop = Number(atStop.goal?.roundsStarted ?? 0)
+
+  let goalAfterStop = null
+  const stopDeadline = Date.now() + 120_000
+  while (Date.now() < stopDeadline) {
+    const current = await goalGet(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-get4')
+    goalAfterStop = current.goal
+    recordPhase(goalAfterStop)
+    if (goalAfterStop?.phase === 'paused') break
+    await new Promise((r) => setTimeout(r, 500))
+  }
+  await new Promise((r) => setTimeout(r, 12_000))
+  const afterWindow = await goalGet(booted.origin, booted.cookie, member.childSessionId, 'mc-goal-get5')
+  const goalAfterWindow = afterWindow.goal
+  recordPhase(goalAfterWindow)
+  facts.goalAfterStop = goalAfterStop
+  facts.goalAfterWindow = goalAfterWindow
+  facts.phaseTransitions = transitions
+  facts.roundTrace = J07_ROUND_TRACE.slice()
+  facts.mockRoundRequests = mockRounds
+  facts.roundsStartedAfterWindow = Number(goalAfterWindow?.roundsStarted ?? 0)
+
+  const goalVisible = String(goalAfterEdit.objective ?? '').includes('edited') && Number(goalAfterEdit.revision ?? 0) >= 2
+  const roundsEnough = facts.roundsStartedAtStop >= 2
+  const stopAccepted = stop.status === 200 && stop.body?.result?.ok === true
+  const paused = goalAfterStop?.phase === 'paused' && goalAfterWindow?.phase === 'paused'
+  const noContinuation = facts.roundsStartedAfterWindow === facts.roundsStartedAtStop
+  const pass = goalVisible && roundsEnough && stopAccepted && paused && noContinuation
+  writeEvidence('mc-goal.json', facts)
+  return [{
+    arm: 'GOAL-A6OFF',
+    proposition: 'Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF',
+    verdict: pass ? 'PASS' : 'FAIL',
+    detail: `goal=${JSON.stringify({ id: goalAfterEdit.id, revision: goalAfterEdit.revision, phase: goalAfterEdit.phase, objective: String(goalAfterEdit.objective ?? '').slice(0, 80) })}`
+      + ` roundsStarted=${String(facts.roundsStartedAtStop)}->${String(facts.roundsStartedAfterWindow)} (mockRoundRequests=${String(mockRounds)})`
+      + ` phases=${JSON.stringify(transitions.map((t) => `${t.phase}@r${t.roundsStarted}`))}`
+      + ` stop=${String(stop.status)}/ok=${String(stop.body?.result?.ok === true)} stoppedMidRound=${String(facts.gateHeld)}`
+      + ` paused=${String(paused)} noContinuation=${String(noContinuation)}`
+      + `${pass ? '' : ` failedClauses=${[!goalVisible ? 'GOAL_NOT_EDITED' : null, !roundsEnough ? 'ROUNDS_LT_2' : null, !stopAccepted ? 'STOP_REFUSED' : null, !paused ? 'NOT_PAUSED' : null, !noContinuation ? 'CONTINUED_AFTER_STOP' : null].filter(Boolean).join(',')}`}`,
+    facts,
+  }]
+}
+
+// ── Operator re-issue of an abandoned request ──────────────────────────────
+
+async function mcRunReissue({ booted, mock, denyList }) {
+  const facts = { attempts: [], composition: { planeTakeover: PLANE_TAKEOVER, alpha6ReviewRouting: !A6_OFF, a6Off: A6_OFF } }
+  const bpText = a1ReissueBlueprintYaml(denyList)
+  const create = await mcCreateTeam(booted, bpText, 'mc-reissue')
+  facts.team = { ok: create.ok, blueprintHash: create.blueprintHash, error: create.error }
+  const arm = (verdict, detail) => [{
+    arm: 'REISSUE',
+    proposition: 'an abandoned (decided-but-unconsumed) request is re-issued by the operator: new ask decided+executed, exactly one side effect, old request terminal and non-resolvable, new leg separate',
+    verdict,
+    detail,
+    facts,
+  }]
+  if (!create.ok) return arm('NOT_REACHED', `team.create refused the v5 document: ${String(create.error).slice(0, 500)}`)
+
+  // The A6-on composition routes a governed ask to the ASSIGNED Officer; the
+  // wake cannot be resolved (the arm would measure a hold, not the crash
+  // window) if no officer Member exists. Same template the A1 arm creates.
+  const officer = await mcCreateMember(booted, 'officer', 'mc-reissue-officer')
+  facts.officer = officer
+  if (officer.instanceId === null) return arm('NOT_REACHED', `officer creation failed: ${String(officer.refusal)}`)
+
+  let live = { host: booted.host, origin: booted.origin, cookie: booted.cookie, port: booted.port }
+  let hit = null
+  for (let attempt = 1; attempt <= 3 && hit === null; attempt += 1) {
+    const member = await mcCreateMember(live, 'w-probe', `mc-reissue-w${attempt}`)
+    if (member.instanceId === null) {
+      facts.attempts.push({ attempt, error: `member creation failed: ${String(member.refusal)}` })
+      break
+    }
+    const token = `C1MK_MCR${attempt}`
+    const marker = `${token}_${RUN_STAMP}`
+    // Fire the ask without awaiting the delegate receipt: the crash is ours to
+    // time, not the delegate call's.
+    void p6t6Tool(live.origin, 'team_delegate', {
+      rootSessionId: CREATE_ROOT_A1,
+      requestToken: `mc-reissue-delegate-${attempt}-${RUN_STAMP}`,
+      delegationInstanceId: member.instanceId,
+      label: member.label,
+      prompt: marker,
+    }, CREATE_ROOT_A1).catch(() => null)
+    let call = null
+    const callDeadline = Date.now() + 90_000
+    while (Date.now() < callDeadline && call === null) {
+      const calls = mcCallsContaining(mock, `mc-reissue-${token}`)
+      call = calls[0] ?? null
+      if (call === null) await new Promise((r) => setTimeout(r, 50))
+    }
+    if (call === null) {
+      facts.attempts.push({ attempt, error: 'no governed bash call reached the mock' })
+      break
+    }
+    let observed = null
+    const deadline = Date.now() + 150_000
+    while (Date.now() < deadline) {
+      const ledger = readControlLedger(CREATE_ROOT_A1)
+      const req = ledger.requests.find((r) => r.correlation === call.id) ?? null
+      if (req !== null) {
+        const decision = ledger.decisions.find((d) => d.requestId === req.requestId) ?? null
+        const consumptions = ledger.consumptions.filter((c) => c.requestId === req.requestId).length
+        if (decision !== null) {
+          observed = { req, decision, consumptions, atKill: ledger }
+          live.host.child.kill('SIGKILL')
+          break
+        }
+      }
+      await new Promise((r) => setTimeout(r, 10))
+    }
+    if (observed === null) {
+      facts.attempts.push({ attempt, error: 'no decision within 150s' })
+      break
+    }
+    const exited = await mcWaitDead(live.host, 20_000)
+    const attemptRow = {
+      attempt,
+      token,
+      marker,
+      member: { instanceId: member.instanceId, childSessionId: member.childSessionId },
+      requestId: observed.req.requestId,
+      correlation: call.id,
+      decision: observed.decision.decision,
+      consumptionAtKill: observed.consumptions,
+      killed: exited,
+      window: observed.decision.decision === 'allow' && observed.consumptions === 0 ? 'DECIDED_BEFORE_CONSUMPTION' : 'MISSED',
+    }
+    facts.attempts.push(attemptRow)
+    if (attemptRow.window === 'DECIDED_BEFORE_CONSUMPTION') {
+      hit = { ...attemptRow, observed }
+      break
+    }
+    // Window missed: the old invocation consumed its allow. Restart and try a
+    // fresh ask on a fresh Member; the miss is kept in the evidence.
+    live = await mcRestartHost(booted, live)
+    LIVE_HOST_AFTER_RESTART = live.host
+  }
+
+  if (hit === null) {
+    return arm('FAIL', `REISSUE_CRASH_WINDOW_NOT_REPRODUCED: ${JSON.stringify(facts.attempts).slice(0, 800)}`)
+  }
+
+  // Boot settlement: the dead invocation is closed by the restarted Host.
+  live = await mcRestartHost(booted, live)
+  LIVE_HOST_AFTER_RESTART = live.host
+  await new Promise((r) => setTimeout(r, 10_000))
+  const oldId = hit.requestId
+  const oldToken = hit.token
+  const oldFile = mcReissueFile(oldToken)
+  const settled = readControlLedger(CREATE_ROOT_A1)
+  const oldRows = mcLedgerRows(settled, oldId)
+  const abandonment = oldRows.abandonments[0] ?? null
+  facts.settlement = {
+    requestId: oldId,
+    abandonments: oldRows.abandonments,
+    decisions: oldRows.decisions,
+    consumptions: oldRows.consumptions,
+    executionResults: oldRows.executionResults,
+    oldFileExists: existsSync(oldFile),
+  }
+  const abandoned = abandonment?.reason === 'invocation-abandoned'
+  const oldZeroConsumption = oldRows.consumptions.length === 0
+  const oldZeroExecution = oldRows.executionResults.length === 0
+  const oldFileAbsent = !existsSync(oldFile)
+
+  // The operator tries (and must fail) to resolve the terminal request.
+  const oldResolve = await remoteCall(live.origin, live.cookie, 'team.resolveControl', {
+    teamSessionId: CREATE_ROOT_A1,
+    requestId: oldId,
+    decision: 'allow',
+    note: 'mc re-issue: operator probes the abandoned request (must be terminal)',
+  }, 'mc-old-resolve', 4)
+  const oldResolveCode = mcRemoteErrorCode(oldResolve)
+  const oldResolveRefused = oldResolveCode === 'CONTROL_REQUEST_ABANDONED'
+  await new Promise((r) => setTimeout(r, 1000))
+  const afterOldResolve = readControlLedger(CREATE_ROOT_A1)
+  const oldRowsAfter = mcLedgerRows(afterOldResolve, oldId)
+  facts.oldResolve = { status: oldResolve.status, code: oldResolveCode, body: oldResolve.body ?? oldResolve, decisionsAfter: oldRowsAfter.decisions, abandonmentAfter: oldRowsAfter.abandonments }
+
+  // The pending list must not carry the abandoned row.
+  const pending = await p6t6Tool(live.origin, 'team_list_pending_control', { rootSessionId: CREATE_ROOT_A1 }, CREATE_ROOT_A1)
+  const pendingText = JSON.stringify(pending?.body?.value ?? pending?.body ?? pending)
+  const oldPendingAbsent = !pendingText.includes(oldId)
+  facts.pendingList = { status: pending?.status ?? null, oldPendingAbsent, text: pendingText.slice(0, 1500) }
+
+  // THE RE-ISSUE. Runbook §3.4 names two shapes: "a new ask from the Member,
+  // or a new follow_up". We measure the follow_up FIRST (same Member, new
+  // requestToken/correlation) and, if it is admitted but produces no turn, we
+  // fall back to "a new ask from the Member" on a FRESH Member — both are new
+  // asks; neither retries the old request. Which vehicle actually produced the
+  // new leg is disclosed in the arm's detail and in mc-reissue.json.
+  const newToken = 'C1MK_MCRNEW'
+  const newMarker = `${newToken}_${RUN_STAMP}`
+  const follow = await p6t6Tool(live.origin, 'team_follow_up', {
+    rootSessionId: CREATE_ROOT_A1,
+    requestToken: `mc-reissue-followup-${RUN_STAMP}`,
+    targetInstanceId: hit.member.instanceId,
+    prompt: newMarker,
+    taskSummary: 'operator re-issue of the abandoned request',
+  }, CREATE_ROOT_A1)
+  facts.followUp = { status: follow?.status ?? null, refusal: p6t6ErrorText(follow), body: follow?.body ?? follow }
+  let newCall = null
+  let reissueVehicle = 'follow-up on the same Member'
+  const followDeadline = Date.now() + 60_000
+  while (Date.now() < followDeadline && newCall === null) {
+    newCall = mcCallsContaining(mock, `mc-reissue-${newToken}`)[0] ?? null
+    if (newCall === null) await new Promise((r) => setTimeout(r, 50))
+  }
+  facts.followUpProducedTurn = newCall !== null
+  if (newCall === null) {
+    // Fallback: a new ask from a FRESH Member (the runbook's other shape). The
+    // abandoned Member's invocation is never revived; this is a new session.
+    const fresh = await mcCreateMember(live, 'w-probe', 'mc-reissue-reissued')
+    facts.fallbackMember = fresh
+    if (fresh.instanceId === null) {
+      writeEvidence('mc-reissue.json', facts)
+      return arm('FAIL', `REISSUE_NEW_LEG_INCOMPLETE: follow_up produced no turn within 60s and the fallback Member could not be created (${String(fresh.refusal)})`)
+    }
+    const fallbackDelegate = await p6t6Tool(live.origin, 'team_delegate', {
+      rootSessionId: CREATE_ROOT_A1,
+      requestToken: `mc-reissue-fresh-${RUN_STAMP}`,
+      delegationInstanceId: fresh.instanceId,
+      label: fresh.label,
+      prompt: newMarker,
+    }, CREATE_ROOT_A1)
+    facts.fallbackDelegate = { status: fallbackDelegate?.status ?? null, refusal: p6t6ErrorText(fallbackDelegate), body: fallbackDelegate?.body ?? fallbackDelegate }
+    const fallbackDeadline = Date.now() + 150_000
+    while (Date.now() < fallbackDeadline && newCall === null) {
+      newCall = mcCallsContaining(mock, `mc-reissue-${newToken}`)[0] ?? null
+      if (newCall === null) await new Promise((r) => setTimeout(r, 50))
+    }
+    reissueVehicle = 'new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)'
+  }
+  facts.reissueVehicle = reissueVehicle
+  facts.newCall = newCall
+  if (newCall === null) {
+    writeEvidence('mc-reissue.json', facts)
+    return arm('FAIL', `REISSUE_NEW_LEG_INCOMPLETE: neither re-issue vehicle produced a governed bash call (followUp=${String(facts.followUp.refusal)}, fallback=${String(facts.fallbackDelegate?.refusal)})`)
+  }
+  // The new ask must be minted as a NEW durable request before anything else
+  // can be asserted; then give the A6 reviewer a bounded window to decide it.
+  const minted = await mcWaitLedger(CREATE_ROOT_A1, (ledger) => ledger.requests.find((r) => r.correlation === newCall.id) ?? null, 120_000, 100)
+  const newReqId = minted.value?.requestId ?? null
+  let decidedBy = null
+  if (newReqId !== null) {
+    const wakeWindow = await mcWaitLedger(CREATE_ROOT_A1, (ledger) => ledger.decisions.find((d) => d.requestId === newReqId) ?? null, 45_000, 100)
+    if (wakeWindow.value !== null) decidedBy = 'reviewer-wake'
+  }
+  facts.newLegWake = { requestId: newReqId, decidedByWake: decidedBy !== null }
+  if (newReqId !== null && decidedBy === null) {
+    // The runbook's Outcome B verification allows the operator to decide the
+    // re-issued request; we take that path ONLY when no reviewer decision
+    // arrives, and we record the absence (see newLegWake) as a measured
+    // liveness gap rather than presenting it as a reviewer decision.
+    const newResolve = await remoteCall(live.origin, live.cookie, 'team.resolveControl', {
+      teamSessionId: CREATE_ROOT_A1,
+      requestId: newReqId,
+      decision: 'allow',
+      note: 'operator re-issue: decide the NEW request (the abandoned one is never retried)',
+    }, 'mc-new-resolve', 4)
+    facts.newLegOperatorResolve = { status: newResolve.status, code: mcRemoteErrorCode(newResolve), body: newResolve.body ?? newResolve }
+    if (newResolve.status === 200 && newResolve.body?.result?.ok === true) decidedBy = 'operator'
+  }
+  if (decidedBy === null && newReqId !== null) {
+    writeEvidence('mc-reissue.json', facts)
+    return arm('FAIL', `REISSUE_NEW_LEG_UNDECIDED: the new request ${newReqId} was neither woken nor operator-decidable`)
+  }
+  const newWait = await mcWaitLedger(CREATE_ROOT_A1, (ledger) => {
+    const req = ledger.requests.find((r) => r.correlation === newCall.id) ?? null
+    if (req === null) return null
+    const exec = ledger.executionResults.find((e) => e.requestId === req.requestId) ?? null
+    const consumed = ledger.consumptions.some((c) => c.requestId === req.requestId)
+    return exec !== null && consumed ? { req, exec } : null
+  }, 180_000, 100)
+  const newLedger = newWait.ledger
+  const newReq = newCall === null ? null : newLedger.requests.find((r) => r.correlation === newCall.id) ?? null
+  const newRows = newReq === null ? null : mcLedgerRows(newLedger, newReq.requestId)
+  const newFile = mcReissueFile(newToken)
+  const newBytes = osRead(newFile)
+  const newExec = newRows?.executionResults[0] ?? null
+  const newSeparate = newReq !== null && newReq.requestId !== oldId && String(newReq.correlation) !== String(hit.correlation)
+  const newDecided = newRows?.decisions.some((d) => d.decision === 'allow') === true
+  const newConsumed = (newRows?.consumptions.length ?? 0) === 1
+  const newExecuted = newExec?.outcome === 'succeeded'
+  const newBytesOk = newBytes.exists && newBytes.text === mcReissueSum(newToken)
+  const oneSideEffect = newBytesOk && (newRows?.executionResults.length ?? 0) === 1 && newRows?.consumptions.length === 1
+  facts.newLeg = {
+    requestId: newReq?.requestId ?? null,
+    correlation: newReq?.correlation ?? null,
+    decidedBy,
+    decisions: newRows?.decisions ?? [],
+    consumptions: newRows?.consumptions ?? [],
+    executionResults: newRows?.executionResults ?? [],
+    file: newBytes.exists ? { size: newBytes.size, match: newBytes.text === mcReissueSum(newToken) } : null,
+  }
+  facts.separation = {
+    oldRequestId: oldId,
+    newRequestId: newReq?.requestId ?? null,
+    distinctRequestIds: newSeparate,
+    oldCorrelation: hit.correlation,
+    newCorrelation: newReq?.correlation ?? null,
+  }
+
+  const pass = abandoned && oldZeroConsumption && oldZeroExecution && oldFileAbsent
+    && oldResolveRefused && oldPendingAbsent
+    && newSeparate && newDecided && newConsumed && newExecuted && oneSideEffect
+  const failedClauses = []
+  if (!abandoned) failedClauses.push(`ABANDONMENT_${String(abandonment?.reason ?? 'ABSENT').toUpperCase().replace(/-/g, '_')}`)
+  if (!(oldZeroConsumption && oldZeroExecution)) failedClauses.push('OLD_INVOCATION_REVIVED')
+  if (!oldFileAbsent) failedClauses.push('OLD_SIDE_EFFECT_EXISTS')
+  if (!oldResolveRefused) failedClauses.push(`OLD_RESOLVE_${String(oldResolveCode ?? 'NOT_REFUSED').toUpperCase().replace(/-/g, '_')}`)
+  if (!oldPendingAbsent) failedClauses.push('OLD_REQUEST_STILL_PENDING')
+  if (!newSeparate) failedClauses.push('NEW_LEG_NOT_SEPARATE')
+  if (!(newDecided && newConsumed && newExecuted)) failedClauses.push('NEW_LEG_INCOMPLETE')
+  if (!oneSideEffect) failedClauses.push('SIDE_EFFECT_COUNT_NOT_ONE')
+  writeEvidence('mc-reissue.json', facts)
+  writeEvidence('mc-reissue-ledger.json', {
+    settled: { oldRows, allAbandonments: settled.abandonments, allRequests: settled.requests.filter((r) => r.correlation === hit.correlation || r.requestId === newReq?.requestId) },
+    afterOldResolve: { oldRowsAfter },
+    newRows,
+  })
+  return arm(pass ? 'PASS' : 'FAIL',
+    `attempts=${JSON.stringify(facts.attempts.map((a) => ({ n: a.attempt, window: a.window, decision: a.decision, consumedAtKill: a.consumptionAtKill })))}`
+      + ` old=${String(oldId)} abandoned=${String(abandonment?.reason)} oldConsumed=${String(oldRows.consumptions.length)} oldExec=${String(oldRows.executionResults.length)}`
+      + ` oldResolve=${String(oldResolve.status)}/${String(oldResolveCode)} oldPendingAbsent=${String(oldPendingAbsent)}`
+      + ` new=${String(newReq?.requestId)} distinct=${String(newSeparate)} decided=${String(newDecided)} consumed=${String(newConsumed)} exec=${String(newExec?.outcome)}`
+      + ` oneSideEffect=${String(oneSideEffect)} vehicle=${JSON.stringify(reissueVehicle)} followUpProducedTurn=${String(facts.followUpProducedTurn)} newDecidedBy=${String(decidedBy)}`
+      + `${failedClauses.length > 0 ? ` failedClauses=${failedClauses.join(',')}` : ''}`)
+}
+
+// ── dispatcher + evidence writer ───────────────────────────────────────────
+
+async function runMinClosing({ booted, mock, denyList, mode }) {
+  log(`── MIN-CLOSING mode=${mode} (A6 ${A6_OFF ? 'OFF' : 'ON'}, plane takeover=${String(PLANE_TAKEOVER)}, host default=${HOST_SANDBOX_MODE}) ──`)
+  const arms = mode === 'pd42'
+    ? await mcRunPd42({ booted, mock, denyList })
+    : mode === 'goal-a6off'
+      ? await mcRunGoal({ booted, mock, denyList })
+      : await mcRunReissue({ booted, mock, denyList })
+  const counts = {}
+  for (const row of arms) counts[row.verdict] = (counts[row.verdict] ?? 0) + 1
+  const document = {
+    schema: 'v016-min-closing/1',
+    recordClass: 'DEV-LIVE',
+    mode,
+    tree: TREE_FACTS,
+    composition: {
+      hostBaseline: DSH_BASELINE_VERSION,
+      hostPin: HOST_BASELINE_SHA,
+      planeTakeover: PLANE_TAKEOVER,
+      alpha6ReviewRouting: !A6_OFF,
+      hostDefaultSandboxMode: HOST_SANDBOX_MODE,
+      governedMemberRealm: PD42_CELLINGS,
+      governedPreset: GOVERNED_PRESET_ID,
+      approvalPath: A6_OFF
+        ? 'legacy Leader notification (durable [team-control] -> team_list_pending_control + team_resolve_control)'
+        : 'Alpha.6 Officer review wake',
+      blueprint: mode === 'goal-a6off'
+        ? 'v5 Team: memberIoCeilings + reviewRouting + goal-worker template'
+        : 'v5 Team: memberIoCeilings + reviewRouting',
+    },
+    counts,
+    arms,
+    osLevelNetworkIsolationClaimed: false,
+    note: 'DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim.',
+  }
+  writeEvidence('min-closing-verdicts.json', document)
+  writeEvidence('min-closing-arms.md', [
+    '| arm | verdict | proposition | measured detail |',
+    '|---|---|---|---|',
+    ...arms.map((r) => `| ${r.arm} | **${r.verdict}** | ${String(r.proposition).replaceAll('|', '/')} | ${String(r.detail).replaceAll('|', '/').slice(0, 900)} |`),
+  ].join('\n'))
+  return arms.every((row) => row.verdict === 'PASS')
 }
 
 main().catch((e) => {

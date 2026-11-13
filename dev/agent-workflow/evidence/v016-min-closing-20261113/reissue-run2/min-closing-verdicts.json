@@ -1,0 +1,368 @@
+{
+  "schema": "v016-min-closing/1",
+  "recordClass": "DEV-LIVE",
+  "mode": "reissue",
+  "tree": {
+    "branch": "task/v016-min-closing-20261113",
+    "productSha": "76a86d6e923efa291350a32d1c1eb70e3754a684",
+    "masterTipAtRun": "c6c96534c5b5b78a8ff4eca52c0502cb78f99c1f"
+  },
+  "composition": {
+    "hostBaseline": "0.2.0-rc.2",
+    "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "hostDefaultSandboxMode": "danger-full-access",
+    "governedMemberRealm": true,
+    "governedPreset": "a5sf-governed-member",
+    "approvalPath": "Alpha.6 Officer review wake",
+    "blueprint": "v5 Team: memberIoCeilings + reviewRouting"
+  },
+  "counts": {
+    "PASS": 1
+  },
+  "arms": [
+    {
+      "arm": "REISSUE",
+      "proposition": "an abandoned (decided-but-unconsumed) request is re-issued by the operator: new ask decided+executed, exactly one side effect, old request terminal and non-resolvable, new leg separate",
+      "verdict": "PASS",
+      "detail": "attempts=[{\"n\":1,\"window\":\"DECIDED_BEFORE_CONSUMPTION\",\"decision\":\"allow\",\"consumedAtKill\":0}] old=ctrl-1ewxbwh0ir4wyg0to8f4j1y8 abandoned=invocation-abandoned oldConsumed=0 oldExec=0 oldResolve=200/CONTROL_REQUEST_ABANDONED oldPendingAbsent=true new=ctrl-09oyvy40yu1cm10l57pt21qt distinct=true decided=true consumed=true exec=succeeded oneSideEffect=true vehicle=\"new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)\" followUpProducedTurn=false newDecidedBy=operator",
+      "facts": {
+        "attempts": [
+          {
+            "attempt": 1,
+            "token": "C1MK_MCR1",
+            "marker": "C1MK_MCR1_2026-11-13T07-47-51-h0-rcccd51",
+            "member": {
+              "instanceId": "inst-197jgt600rdy",
+              "childSessionId": "session-team-child-711011bd4fa29765980c2cecbd9a2df1"
+            },
+            "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+            "correlation": "call-c1-jqqjwspm",
+            "decision": "allow",
+            "consumptionAtKill": 0,
+            "killed": true,
+            "window": "DECIDED_BEFORE_CONSUMPTION"
+          }
+        ],
+        "composition": {
+          "planeTakeover": true,
+          "alpha6ReviewRouting": true,
+          "a6Off": false
+        },
+        "team": {
+          "ok": true,
+          "blueprintHash": "sha256:441381c97c85ca286473cf8b8d974ea146e714ffba168872ad2e3c7225c69d1e",
+          "error": null
+        },
+        "officer": {
+          "label": "mc-reissue-officer",
+          "templateId": "officer",
+          "instanceId": "inst-05mdt4l1winh",
+          "childSessionId": "session-team-child-652bd1028d3ff5b0ab912b64e535366e",
+          "refusal": null,
+          "raw": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "create-member",
+              "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "member-activated",
+                "instanceId": "inst-05mdt4l1winh",
+                "templateId": "officer",
+                "childSessionId": "session-team-child-652bd1028d3ff5b0ab912b64e535366e",
+                "operationId": "op-0cclsm105j2apc08tm10z18s",
+                "replayed": false,
+                "ledgerSequence": 3,
+                "admissionCode": "ADMISSION_OPEN"
+              },
+              "requestToken": "mc-mc-reissue-officer-2026-11-13T07-47-51-h0-rcccd51-9sll8"
+            }
+          }
+        },
+        "settlement": {
+          "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+          "abandonments": [
+            {
+              "sequence": 9,
+              "factType": "control-request-abandoned",
+              "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+              "reason": "invocation-abandoned",
+              "createdAt": "2026-11-13T07:48:08.860Z"
+            }
+          ],
+          "decisions": [
+            {
+              "sequence": 8,
+              "factType": "control-decision-recorded",
+              "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+              "decision": "allow",
+              "decider": {
+                "instanceId": "inst-05mdt4l1winh",
+                "kind": "instance",
+                "role": "member"
+              },
+              "createdAt": "2026-11-13T07:48:07.226Z"
+            }
+          ],
+          "consumptions": [],
+          "executionResults": [],
+          "oldFileExists": false
+        },
+        "oldResolve": {
+          "status": 200,
+          "code": "CONTROL_REQUEST_ABANDONED",
+          "body": {
+            "type": "server-response",
+            "rpcId": "mc-old-resolve-gezolkfxtu",
+            "result": {
+              "ok": false,
+              "error": {
+                "code": "CONTROL_REQUEST_ABANDONED",
+                "message": "ControlService: request 'ctrl-1ewxbwh0ir4wyg0to8f4j1y8' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+                "details": {
+                  "method": "team.resolveControl",
+                  "endpoint": "team.resolveControl",
+                  "contractVersion": 4,
+                  "requestToken": null,
+                  "reason": "domain-error",
+                  "cause": {
+                    "code": "CONTROL_REQUEST_ABANDONED",
+                    "message": "ControlService: request 'ctrl-1ewxbwh0ir4wyg0to8f4j1y8' is durably abandoned (the terminal mark — it can never become an allow; zero durable side effects)",
+                    "details": {
+                      "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+                      "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "decisionsAfter": [
+            {
+              "sequence": 8,
+              "factType": "control-decision-recorded",
+              "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+              "decision": "allow",
+              "decider": {
+                "instanceId": "inst-05mdt4l1winh",
+                "kind": "instance",
+                "role": "member"
+              },
+              "createdAt": "2026-11-13T07:48:07.226Z"
+            }
+          ],
+          "abandonmentAfter": [
+            {
+              "sequence": 9,
+              "factType": "control-request-abandoned",
+              "requestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+              "reason": "invocation-abandoned",
+              "createdAt": "2026-11-13T07:48:08.860Z"
+            }
+          ]
+        },
+        "pendingList": {
+          "status": 200,
+          "oldPendingAbsent": true,
+          "text": "{\"status\":\"rejected\",\"code\":\"TEAM_TOOL_BAD_ARGUMENTS\",\"message\":\"team-tools: required argument 'requestToken' is missing\",\"details\":{\"field\":\"requestToken\"}}"
+        },
+        "followUp": {
+          "status": 200,
+          "refusal": null,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "follow-up",
+              "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+              "callerRole": "leader",
+              "targetInstanceId": "inst-197jgt600rdy",
+              "effect": {
+                "kind": "work-admitted",
+                "instanceId": "inst-197jgt600rdy",
+                "fromLifecycle": "RUNNING",
+                "lifecycleCommitted": false,
+                "sequence": 10,
+                "settled": false,
+                "workStatus": "admitted"
+              },
+              "requestToken": "mc-reissue-followup-2026-11-13T07-47-51-h0-rcccd51"
+            }
+          }
+        },
+        "followUpProducedTurn": false,
+        "fallbackMember": {
+          "label": "mc-reissue-reissued",
+          "templateId": "w-probe",
+          "instanceId": "inst-10xna5311jan",
+          "childSessionId": "session-team-child-e891182b655612537368f4c51214cb73",
+          "refusal": null,
+          "raw": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "create-member",
+              "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "member-activated",
+                "instanceId": "inst-10xna5311jan",
+                "templateId": "w-probe",
+                "childSessionId": "session-team-child-e891182b655612537368f4c51214cb73",
+                "operationId": "op-0qf0nb3031cyuu1n67dih18j",
+                "replayed": false,
+                "ledgerSequence": 14,
+                "admissionCode": "ADMISSION_OPEN"
+              },
+              "requestToken": "mc-mc-reissue-reissued-2026-11-13T07-47-51-h0-rcccd51-dg9eg"
+            }
+          }
+        },
+        "fallbackDelegate": {
+          "status": 200,
+          "refusal": null,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "delegate",
+              "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "work-admitted",
+                "instanceId": "inst-10xna5311jan",
+                "fromLifecycle": "CREATED",
+                "lifecycleCommitted": true,
+                "sequence": 15,
+                "settled": false,
+                "workStatus": "admitted"
+              },
+              "requestToken": "mc-reissue-fresh-2026-11-13T07-47-51-h0-rcccd51"
+            }
+          }
+        },
+        "reissueVehicle": "new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)",
+        "newCall": {
+          "id": "call-c1-emf8qxlb",
+          "name": "bash",
+          "arguments": {
+            "command": "printf '%s' 'MC_REISSUED_C1MK_MCRNEW' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-47-51-h0-rcccd51/workspace/mc-reissue-C1MK_MCRNEW.txt && echo C1MK_MCRNEW_OK",
+            "timeout": 30000
+          }
+        },
+        "newLegWake": {
+          "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+          "decidedByWake": false
+        },
+        "newLegOperatorResolve": {
+          "status": 200,
+          "code": null,
+          "body": {
+            "type": "server-response",
+            "rpcId": "mc-new-resolve-w79picpl0q",
+            "result": {
+              "ok": true,
+              "value": {
+                "data": {
+                  "decision": {
+                    "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+                    "decision": "allow",
+                    "decider": {
+                      "kind": "human",
+                      "humanId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51"
+                    },
+                    "scope": {
+                      "rootSessionId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+                      "subject": {
+                        "kind": "instance",
+                        "instanceId": "inst-10xna5311jan"
+                      },
+                      "targetInstanceId": "inst-10xna5311jan",
+                      "actionName": "parameter-permission",
+                      "correlation": "call-c1-emf8qxlb",
+                      "toolName": "bash",
+                      "operationFingerprint": "sha256:b0a8342e93f4f0bb634ea631e37a21a8b02a6166a3e3f2fa75b03c0619090f59",
+                      "authorityScope": {
+                        "operationClass": "bash",
+                        "matcher": {
+                          "kind": "exact",
+                          "resource": "bash"
+                        }
+                      }
+                    },
+                    "requestSequence": 17,
+                    "decisionSequence": 18,
+                    "createdAt": "2026-11-13T07:50:05.622Z",
+                    "note": "operator re-issue: decide the NEW request (the abandoned one is never retried)"
+                  }
+                },
+                "provenance": {
+                  "origin": "team-remote",
+                  "method": "team.resolveControl",
+                  "endpoint": "team.resolveControl",
+                  "contractVersion": 4,
+                  "requestToken": null,
+                  "projectionGeneration": null,
+                  "effectSequence": null
+                }
+              }
+            }
+          }
+        },
+        "newLeg": {
+          "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+          "correlation": "call-c1-emf8qxlb",
+          "decidedBy": "operator",
+          "decisions": [
+            {
+              "sequence": 18,
+              "factType": "control-decision-recorded",
+              "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+              "decision": "allow",
+              "decider": {
+                "humanId": "session-a1-root-2026-11-13T07-47-51-h0-rcccd51",
+                "kind": "human"
+              },
+              "createdAt": "2026-11-13T07:50:05.611Z"
+            }
+          ],
+          "consumptions": [
+            {
+              "sequence": 19,
+              "factType": "control-allow-consumed",
+              "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+              "createdAt": "2026-11-13T07:50:05.791Z"
+            }
+          ],
+          "executionResults": [
+            {
+              "sequence": 24,
+              "factType": "control-execution-result",
+              "requestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+              "callId": "call-c1-emf8qxlb",
+              "outcome": "succeeded",
+              "recordedAt": "2026-11-13T07:50:07.061Z",
+              "createdAt": "2026-11-13T07:50:07.061Z"
+            }
+          ],
+          "file": {
+            "size": 23,
+            "match": true
+          }
+        },
+        "separation": {
+          "oldRequestId": "ctrl-1ewxbwh0ir4wyg0to8f4j1y8",
+          "newRequestId": "ctrl-09oyvy40yu1cm10l57pt21qt",
+          "distinctRequestIds": true,
+          "oldCorrelation": "call-c1-jqqjwspm",
+          "newCorrelation": "call-c1-emf8qxlb"
+        }
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

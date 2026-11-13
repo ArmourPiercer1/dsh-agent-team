@@ -1,0 +1,47 @@
+{
+  "schema": "min-closing-agreement/1",
+  "mode": "reissue",
+  "recordClass": "DEV-LIVE",
+  "run1": "dev/agent-workflow/evidence/v016-min-closing-20261113/reissue-run1",
+  "run2": "dev/agent-workflow/evidence/v016-min-closing-20261113/reissue-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "counts": {
+    "run1": {
+      "PASS": 1
+    },
+    "run2": {
+      "PASS": 1
+    }
+  },
+  "compositionAgree": true,
+  "normalization": [
+    "run stamp (2026-11-13T07-43-33) -> <stamp>",
+    "home suffix (per-world 6-hex id) -> -h<n>-r<hex>",
+    "ISO timestamp -> <iso>",
+    "goal id -> goal-<id>",
+    "control id -> ctrl-<id>",
+    "instance id -> inst-<id>",
+    "child session id -> session-team-child-<id>",
+    "root/other session id -> session-<id>",
+    "tool call correlation -> call-c1-<id>",
+    "request token -> requestToken\":\"<token>\"",
+    "content hash -> sha256:<hash>",
+    "home path -> <home>",
+    "ledger sequence numbers (ordering is the clause; the absolute number is not) -> <normalized>",
+    "inside/outside Seq JSON -> Seq=<rows>",
+    "mock correlation in attempts detail -> \"correlation\":\"<id>\""
+  ],
+  "arms": [
+    {
+      "arm": "REISSUE",
+      "proposition": "an abandoned (decided-but-unconsumed) request is re-issued by the operator: new ask decided+executed, exactly one side effect, old request terminal and non-resolvable, new leg separate",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "attempts=[{\"n\":1,\"window\":\"DECIDED_BEFORE_CONSUMPTION\",\"decision\":\"allow\",\"consumedAtKill\":0}] old=ctrl-<id> abandoned=invocation-abandoned oldConsumed=0 oldExec=0 oldResolve=200/CONTROL_REQUEST_ABANDONED oldPendingAbsent=true new=ctrl-<id> distinct=true decided=true consumed=true exec=succeeded oneSideEffect=true vehicle=\"new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)\" followUpProducedTurn=false newDecidedBy=operator",
+      "detail2": "attempts=[{\"n\":1,\"window\":\"DECIDED_BEFORE_CONSUMPTION\",\"decision\":\"allow\",\"consumedAtKill\":0}] old=ctrl-<id> abandoned=invocation-abandoned oldConsumed=0 oldExec=0 oldResolve=200/CONTROL_REQUEST_ABANDONED oldPendingAbsent=true new=ctrl-<id> distinct=true decided=true consumed=true exec=succeeded oneSideEffect=true vehicle=\"new ask from a FRESH Member (follow_up was admitted but produced no turn in 60s)\" followUpProducedTurn=false newDecidedBy=operator"
+    }
+  ]
+}
