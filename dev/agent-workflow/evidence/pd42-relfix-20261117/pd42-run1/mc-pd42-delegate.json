@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "value": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-a1-root-2026-11-13T11-48-57-h0-rc28f3a",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-1epsgxf051la",
+      "fromLifecycle": "CREATED",
+      "lifecycleCommitted": true,
+      "sequence": 5,
+      "settled": false,
+      "workStatus": "admitted"
+    },
+    "requestToken": "mc-pd42-delegate-2026-11-13T11-48-57-h0-rc28f3a"
+  }
+}

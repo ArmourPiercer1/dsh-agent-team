@@ -781,15 +781,32 @@ export type ShellTerminalStatus = {
     readonly signal: string;
 };
 /**
- * Read the pinned shell status trailer from the LAST line of the result text.
- * Anchored (`$`) and last-line-only, so a look-alike marker inside the command
- * output cannot decide the fact — the tool's own marker is always appended
- * after that output.
+ * Read the pinned shell status trailer from the result text.
+ *
+ * Two anchors, and the second one is why this function changed (2026-11-17):
+ *
+ *  - LAST line: the normal settle path appends `[Command finished with exit
+ *    code N]` after the command output (even when truncated), so a look-alike
+ *    marker printed by the command itself cannot decide the fact.
+ *  - SECOND-TO-LAST line, when the LAST line is the tool's own
+ *    `SHELL_RESET_LINE`: the timeout and session-exit paths append the reset
+ *    sentence AFTER their trailer. Only when that trailer is present does the
+ *    read step back one line; a command that merely PRINTS the reset sentence
+ *    cannot trigger the step-back, because the normal path appends its real
+ *    trailer after it and the last line is then the trailer.
  */
 export declare function shellTerminalStatusOfResult(result: unknown): ShellTerminalStatus | undefined;
 /**
  * The outcome of one terminal tool result. See the module header for the
  * closed vocabulary and why each branch answers what it answers.
+ *
+ * A raw STRING is the shape the pinned native `bash` definition returns from
+ * `execute` (its output schema is `{type:'string'}`), so it must be classified
+ * from its text: returning `unknown` merely because the value is not a
+ * `ToolResult` object silently dropped the PA leg's durable fact (measured
+ * 2026-11-13: 10 consumptions, 5 execution-result facts). No trailer in a bare
+ * string is still `unknown` — there is no `isError` to fall back on, and
+ * inventing `succeeded` is exactly the lie PD-42 removed.
  */
 export declare function outcomeOfTerminalResult(result: unknown): ControlExecutionOutcome;
 /**

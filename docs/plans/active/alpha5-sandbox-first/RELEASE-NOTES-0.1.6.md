@@ -918,6 +918,96 @@ after a restart before the next ask) writes **no durable marker**. E2 is the pac
 section records that the two older sentences in §1 and §2.2 were corrected to say the same thing.
 They do not contradict each other, and neither is a new claim.
 
+---
+
+## 12. Appended 2026-11-17 — dated corrections to §11 (append-only; the original rows stay)
+
+**Why this append exists.** An independent adjudicator (C2-B) re-measured `cand-v0.1.6-5`
+(`a77503198…`, frozen by #752) and returned **NOT PASS**. Its record also showed that several §11
+sentences had become **stale under-claims**: statements written for an earlier tree read as false on the
+current one. This section flips each to its measured state; it does **not** delete or rewrite the
+original rows, and it does **not** sign a candidate (see 12.6).
+
+### 12.1 §11.1 S2 — the "#745 composition JSONs are stale" warning is false after #748
+
+S2's caution said the committed composition JSONs are stale/misdescribed and that their digests must not
+be quoted. That was true of #745's artifacts; **#748 re-cut them from the frozen kit**, and C2-B
+re-measured the re-cut (A-5): both `composition-a6-{on,off}/a1-composition.json` now carry a non-null
+`blueprint.normalizedSha256 = 8478f088b4763009d2e08efee37ea62563afa1741ddfca222633cb2cb7a576cd`
+(identical A6-on and A6-off), the README states the real request split (**6 `leader` + 5 absent**, the
+plane legs) instead of "every request `reviewAuthority: leader`", there is no `.patch.yml` artifact, and
+the superseded originals are kept under `superseded/`. Verdict: the re-cut is **supported by the data**;
+the stale-JSON warning applies to the pre-#748 artifacts only.
+
+**Portability caveat (do not drop it when quoting).** `patch.normalizedSha256` in the re-cut is
+**worktree-path-bound** — the emitted patch embeds `file://<worktree>/…`, so the same instrument on
+another worktree produces a different value (C2-B measured `01b9c482…` against the recorded
+`0f14331e…` / `5f2d7749…`). Only `blueprint.normalizedSha256` is portable across worktrees. The dated
+note in `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md` states this and leaves the
+recorded values untouched.
+
+### 12.2 §11.5 — the release package's candidate binding
+
+§11.5 said "the release package is assembled against `cand-v0.1.6-4`". That binding is superseded: the
+current **frozen** candidate is **`cand-v0.1.6-5`** (`a77503198990f921ef98cd092e7b0ecd21a90684`, frozen
+2026-11-13T10:25:47Z, recorded in `dev/engineering/candidates/cand-v0.1.6-5.json`, freeze commit #752).
+The C2 records cited in §11.2 remain bound to **`cand-v0.1.6-3`** and transfer to nothing; the `cand-v0.1.6-4`
+pair remains `eligible: false`. The release-package evidence directory
+(`dev/agent-workflow/evidence/v016-rc1-release-package/`) on this tree still records the **cand-4**
+assembly and has **not** been re-cut against `cand-v0.1.6-5`; no package artifact in these notes claims
+otherwise. `cand-v0.1.6-5` itself was **refused** at candidate level by C2-B (see 12.6). Whether any
+candidate may be released remains the owner's decision on `V016-RC1-GO-NO-GO.md`, not a claim of these
+notes.
+
+### 12.3 NC5 — PD-42's approved-`bash`-out-of-lane conjunction is measured
+
+NC5 said the ceiling on an approved Alpha.6 `bash` call is **unmeasured** and that "the A1 record measures
+governance, not that conjunction". **False on this tree.** A1-2 (the OS refuses the out-of-lane write:
+`Read-only file system`, zero bytes, `ENOENT` after a real read) and A1-6 (the Host's
+`danger-full-access` default is narrowed by the Member ceiling) are exactly the conjunction, on the v5
+Team carrying **both** `memberIoCeilings` and `reviewRouting` with the plane takeover: **7/7 ×4** across
+two trees in `dev/agent-workflow/evidence/a1-bash-governance/README.md`, and C2-B's re-run of the A6-off
+A1 arm **on `cand-v0.1.6-5` scores 7/7 twice**. With this branch's relay fix the durable execution fact
+also records the refusal as **`failed`** (the PD-42 arm passes twice) and the PA (`team-tool-execute`)
+leg writes its fact (**10 consumptions = 10 execution facts** on A1; joint PA leg ≥1). **Accepted limits
+that survive NC5**: `J04`'s `realmTerminalFacts=0` is an instrument disclosure, not a ceiling claim; the
+classifier reads the pinned tool's text trailer because the durable schema has no exit-code field; a
+timeout/session exit with no observed command end stays `unknown`; read scope on the governed PTY path
+rests on the OS profile (no lexical read admission is claimed).
+
+### 12.4 NC6 — the operator re-issue path is a measured path
+
+NC6 said the procedure "was not exercised in the record". **False on this tree**: the re-issue arm was
+run **twice** on `cand-v0.1.6-5` and both runs pass (C2-B's record root `dev/agent-workflow/evidence/candidate-v0.1.6-5/`, dirs `reissue-run1/`, `reissue-run2/`; that record is the adjudicator's and is not on this branch). Measured shape,
+with the qualifier that must travel with it: the crashed-after-allow, before-consumption invocation is
+**terminally abandoned** (`invocation-abandoned`) and **non-resolvable** (`CONTROL_REQUEST_ABANDONED`);
+a distinct new ask is decided, consumed exactly once and executed `succeeded` with one side effect. The
+qualifier: the new ask is **human-decided** (the operator resolves it; **no reviewer wake after
+restart**), and the vehicle may be a **fresh Member** (C2-B D-6: `team_follow_up` on the crashed Member
+was admitted but produced no turn). The runbook is now backed by a measurement for exactly that shape,
+not for an automatic reviewer re-wake.
+
+### 12.5 NC7 — `Goal ∧ plane-takeover ∧ A6-off` is measured
+
+NC7 said this three-way conjunction is **unmeasured**. **False on this tree**: the Goal × A6-off arm was
+run **twice** on `cand-v0.1.6-5` (same C2-B record root, dirs `goal-a6off-run1/`, `goal-a6off-run2/`), both PASS with the same fields:
+**2 rounds start**, revision 2 becomes active, a **mid-round Stop pauses (200)**, **no third round**
+starts, and **no Officer wakes**. The three-way conjunction therefore has a live measurement on the
+dual-family composition; the A1 kit still has no Goal arm of its own, which is why the goal evidence is
+its own record rather than an A1 clause.
+
+### 12.6 What this correction does NOT do
+
+- It does **not** sign `cand-v0.1.6-5`. C2-B's verdict is **NOT PASS**: two product defects on the
+  PD-42 surface (the PA leg dropped every allowed native-bash execution fact; timeout / session-exit /
+  SIGKILL classified `succeeded`) and a red debt-register gate (9/10). Those are fixed on branch
+  `task/pd42-relfix-20261117` and re-measured there, but that branch is **not** the frozen candidate; a
+  candidate-level re-acceptance would need a new freeze, which these notes do not perform or claim. The
+  register gate is **10/10** on the same branch (PD-41 anchors re-derived, PD-42 row updated).
+- It does **not** move a `V@B` cell, a matrix grade, an Authority pointer, a candidate ref, a tag or
+  Required-CI, and it does **not** rewrite any original §11 row.
+- It does **not** widen any accepted limit named in 12.3 (or in the register's PD-42 `not true` item 5).
+
 ## Appended 2026-11-13 — A6-COLD-WAKE (PD-44): a new governed ask is not woken after a cold boot (append-only record)
 
 **This section records a measured limit; it does not change any §11 row.** Lane `task/a6-cold-wake-20261113`,

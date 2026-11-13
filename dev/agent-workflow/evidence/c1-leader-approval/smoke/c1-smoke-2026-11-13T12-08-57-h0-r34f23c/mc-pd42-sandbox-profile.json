@@ -1,0 +1,22 @@
+{
+  "schema": "mc-sandbox-profile/1",
+  "hostDefaultPermissionMode": "danger-full-access",
+  "planeTakeover": true,
+  "governedRealm": true,
+  "provider": {
+    "kind": "Alpha.5 confined provider (plane takeover)",
+    "launcherPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-relfix/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py",
+    "launcherSha256": "f418831915c624fbabfc534d4bc4f6b07e04e55670f728450c316adca05094b4",
+    "minAbiVersion": 3
+  },
+  "provisionerCheck": {
+    "status": "ok",
+    "exitCode": 0,
+    "backend": "full",
+    "usable": true,
+    "stdout": "runtime tree : /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\nbaseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84\nmanifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json\nprobe        : before-provision=full -> after-provision=full\nbackend      : full (usable: true)\nlauncher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31\nporcelain    : empty (assets are gitignored)\n",
+    "stderr": ""
+  },
+  "hostPid": 74,
+  "note": "the OS boundary under test is the confined provider the product launches for the Member shell; the provisioner --check line is the deployment-wide backend verdict recorded by this same run"
+}

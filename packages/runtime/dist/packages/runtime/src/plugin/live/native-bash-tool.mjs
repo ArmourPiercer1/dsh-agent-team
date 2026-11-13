@@ -111,23 +111,26 @@ function registerWithAdmission(definition, realTools) {
       }
       try {
         const result = await definition.execute(args, exec)
-        // PD-42 (owner ruling 2026-11-13): a RESOLVED native call is not
-        // automatically a successful execution. The pinned `bash` definition
-        // reports a non-zero command exit as ordinary model-facing text (its
-        // exit code is a text trailer, not a ToolResult field), so the ONE
-        // shared classifier reads that trailer and reports `failed` for a
-        // refused/failed command. An abort still reports the PD-41
-        // `cancelled` (the plane settles nothing for it).
+        // PD-42 (owner ruling 2026-11-13; relay fix 2026-11-17): a RESOLVED
+        // native call is not automatically a successful execution. The pinned
+        // `bash` definition returns its model-facing TEXT (a string, not a
+        // `ToolResult`), and its exit code is a text trailer, so the ONE shared
+        // classifier reads that text and reports `failed` for a refused/failed
+        // command, `unknown` for a timeout/session exit/shell reset that never
+        // observed the command's end. An abort reports the durable `unknown`
+        // (PD-41: an abort is never a claimed completion) — and `unknown` is
+        // forwarded, not silently dropped: the allow was consumed, so the
+        // ledger must carry the fact that its end was never observed.
         admission.settle({
           callId: admitted.callId,
-          outcome: exec?.signal?.aborted === true ? 'cancelled' : outcomeOfTerminalResult(result),
+          outcome: exec?.signal?.aborted === true ? 'unknown' : outcomeOfTerminalResult(result),
         })
         return result
       } catch (error) {
         // An ABORT is not a completion (PD-41 correction): the plane's own
         // settlement decides the durable fact; this only reports the outcome
         // the native body produced.
-        admission.settle({ callId: admitted.callId, outcome: exec?.signal?.aborted === true ? 'cancelled' : 'failed' })
+        admission.settle({ callId: admitted.callId, outcome: exec?.signal?.aborted === true ? 'unknown' : 'failed' })
         throw error
       }
     },

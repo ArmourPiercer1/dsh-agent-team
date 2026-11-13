@@ -326,6 +326,20 @@ export const END_CAP_DENIAL_REASON = 'permission denied: no Team permission auth
  * command preview in the control request summary (H2 P1-2; A2C-1).
  */
 const SHELL_COMMAND_PREVIEW_MAX = 120;
+/**
+ * The sentence the pinned tool appends AFTER its status trailer on the two
+ * "the shell is gone" paths: the timeout return
+ * (`respondToTimeout`) and `respondToSessionExit` (timeout / shell exit /
+ * signal). It is captured verbatim from the pinned definition (see
+ * `dev/agent-workflow/evidence/pd42-relfix-20261117/captured-tool-texts.json`):
+ *
+ *   `...\n[Command timed out or OOM]\nThe persistent bash shell was reset; ...`
+ *   `...\n[shell killed by signal: SIGKILL]\nThe persistent bash shell was reset; ...`
+ *
+ * A last-line-only read therefore lands on THIS sentence, not on the trailer —
+ * which is how a timed-out / SIGKILLed command used to classify `succeeded`.
+ */
+const SHELL_RESET_LINE = 'The persistent bash shell was reset; the next bash call starts from the workspace with a fresh current directory and environment.';
 const EXIT_TRAILER = /^\[Command finished with exit code (-?\d+)\]$/;
 const TIMEOUT_TRAILER = '[Command timed out or OOM]';
 const SESSION_EXIT_TRAILER = /^\[shell exited(?:: code (-?\d+))?\]$/;
@@ -358,20 +372,8 @@ function resultText(result) {
     }
     return sawText ? text : undefined;
 }
-/**
- * Read the pinned shell status trailer from the LAST line of the result text.
- * Anchored (`$`) and last-line-only, so a look-alike marker inside the command
- * output cannot decide the fact — the tool's own marker is always appended
- * after that output.
- */
-export function shellTerminalStatusOfResult(result) {
-    const text = resultText(result);
-    if (text === undefined)
-        return undefined;
-    const trimmed = text.trimEnd();
-    if (trimmed.length === 0)
-        return undefined;
-    const line = trimmed.slice(trimmed.lastIndexOf('\n') + 1);
+/** Classify ONE line as the pinned tool's status trailer, if it is one. */
+function shellTerminalStatusOfLine(line) {
     if (line === TIMEOUT_TRAILER)
         return { kind: 'timed-out' };
     const exit = EXIT_TRAILER.exec(line);
@@ -387,10 +389,75 @@ export function shellTerminalStatusOfResult(result) {
     return undefined;
 }
 /**
+ * Read the pinned shell status trailer from the result text.
+ *
+ * Two anchors, and the second one is why this function changed (2026-11-17):
+ *
+ *  - LAST line: the normal settle path appends `[Command finished with exit
+ *    code N]` after the command output (even when truncated), so a look-alike
+ *    marker printed by the command itself cannot decide the fact.
+ *  - SECOND-TO-LAST line, when the LAST line is the tool's own
+ *    `SHELL_RESET_LINE`: the timeout and session-exit paths append the reset
+ *    sentence AFTER their trailer. Only when that trailer is present does the
+ *    read step back one line; a command that merely PRINTS the reset sentence
+ *    cannot trigger the step-back, because the normal path appends its real
+ *    trailer after it and the last line is then the trailer.
+ */
+export function shellTerminalStatusOfResult(result) {
+    const text = resultText(result);
+    if (text === undefined)
+        return undefined;
+    const trimmed = text.trimEnd();
+    if (trimmed.length === 0)
+        return undefined;
+    const lines = trimmed.split('\n');
+    let index = lines.length - 1;
+    const lastLine = lines[index];
+    if (lastLine === SHELL_RESET_LINE) {
+        let previous = index - 1;
+        while (previous >= 0 && (lines[previous] ?? '').trim() === '')
+            previous -= 1;
+        if (previous < 0)
+            return undefined;
+        const previousLine = lines[previous];
+        if (previousLine === undefined)
+            return undefined;
+        // The step-back is valid ONLY when the tool's own reset-path trailer is what
+        // the reset sentence follows. On this tool an exit trailer is NEVER followed
+        // by the reset sentence (the normal settle path ends with the exit trailer),
+        // and a printed reset sentence with no such trailer behind it must not
+        // promote some earlier look-alike line into the deciding fact.
+        const previousStatus = shellTerminalStatusOfLine(previousLine);
+        if (previousStatus === undefined || previousStatus.kind === 'exit')
+            return undefined;
+        index = previous;
+    }
+    const decidingLine = lines[index];
+    return decidingLine === undefined ? undefined : shellTerminalStatusOfLine(decidingLine);
+}
+/**
  * The outcome of one terminal tool result. See the module header for the
  * closed vocabulary and why each branch answers what it answers.
+ *
+ * A raw STRING is the shape the pinned native `bash` definition returns from
+ * `execute` (its output schema is `{type:'string'}`), so it must be classified
+ * from its text: returning `unknown` merely because the value is not a
+ * `ToolResult` object silently dropped the PA leg's durable fact (measured
+ * 2026-11-13: 10 consumptions, 5 execution-result facts). No trailer in a bare
+ * string is still `unknown` — there is no `isError` to fall back on, and
+ * inventing `succeeded` is exactly the lie PD-42 removed.
  */
 export function outcomeOfTerminalResult(result) {
+    const status = shellTerminalStatusOfResult(result);
+    if (typeof result === 'string') {
+        if (status === undefined)
+            return 'unknown';
+        if (status.kind === 'exit')
+            return status.code === 0 ? 'succeeded' : 'failed';
+        if (status.kind === 'signal')
+            return 'failed';
+        return 'unknown';
+    }
     if (result === null || typeof result !== 'object')
         return 'unknown';
     const record = result;
@@ -413,7 +480,6 @@ export function outcomeOfTerminalResult(result) {
     }
     if (record.isError !== false)
         return 'unknown';
-    const status = shellTerminalStatusOfResult(result);
     if (status !== undefined) {
         if (status.kind === 'exit')
             return status.code === 0 ? 'succeeded' : 'failed';

@@ -328,3 +328,24 @@ before and after each run.
 | `composition-diff.txt` | **current** — the two-line flag flip, from the JSON `patch.text` |
 | `a6off-run{1,2}.out`, `a6on-control-run{1,2}.out` | **current** — driver stdout/exit for each run |
 | `superseded/20261113-original-artifacts/` | **retained but superseded** — every artifact PR #745 committed (its run dirs, composition dirs with the phantom `.patch.yml`, agreements, the turn-race failure) plus `NOTE.md` saying why; do **not** cite |
+
+## Dated note (2026-11-17) — which composition digest is portable across worktrees
+
+The values recorded above are **correct for the worktree this record was produced in** and are left
+unchanged. One of them is **not portable**, and this note exists because a reviewer re-running the
+instrument elsewhere will get a different number and must not read that as a changed composition:
+
+- `patch.normalizedSha256` is **worktree-path-bound**. The emitted profile patch embeds the absolute
+  `file://<worktree>/…` module URL for the shipped rows, and the normalization that removes the
+  world-specific `DSH_HOME` / run stamp does **not** remove the checkout path. A fresh
+  `--print-composition` (or a run) from another worktree therefore hashes differently: C2-B measured
+  `01b9c4829cb1846c4a8e6d96de91cc37d229de6165e845ba8609dbedb91a5a56` in `.worktrees/c2b-cand5` for the
+  same instrument and the same product tree, against the `0f14331e…` (A6-off) / `5f2d7749…` (A6-on)
+  recorded here. Quote the patch digest only together with the worktree that produced it.
+- `blueprint.normalizedSha256` **is portable**: the blueprint normalization is path-insensitive, so
+  `8478f088b4763009d2e08efee37ea62563afa1741ddfca222633cb2cb7a576cd` reproduces across worktrees and is
+  identical A6-on/A6-off. **Use this digest** when comparing compositions across worktrees or against a
+  candidate; never the patch digest.
+
+The later section "Both equal the run-emitted `patch.normalizedSha256` above" states a within-worktree
+equality (print-mode vs run-mode, same checkout) and remains true; it was never a cross-worktree claim.
