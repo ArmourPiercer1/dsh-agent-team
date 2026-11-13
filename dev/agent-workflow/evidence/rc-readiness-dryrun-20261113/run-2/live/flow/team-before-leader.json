@@ -1,0 +1,338 @@
+{
+  "teamRows": [
+    {
+      "blueprint": {
+        "blueprintId": "v016-pack-bp-r2",
+        "contentHash": "sha256:5a5ebc54153554e2699220395bfa1c370ad34c90e5b36a7567a0f708799241a2",
+        "revision": "1"
+      },
+      "createdAt": "2026-11-13T11:00:39.456Z",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+      "generation": 10,
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1
+    }
+  ],
+  "membersBefore": [
+    {
+      "instanceId": "inst-0kc39c71kemt",
+      "templateId": "worker",
+      "label": "w-1",
+      "lifecycle": "RUNNING",
+      "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0ofnbt205ssz",
+      "templateId": "goal",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "result": null
+    },
+    {
+      "instanceId": "inst-0y1bmfd1fegn",
+      "templateId": "officer",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+      "result": null
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "label": "leader",
+      "lifecycle": "RUNNING",
+      "childSessionId": null,
+      "result": null
+    }
+  ],
+  "projection": {
+    "type": "server-response",
+    "rpcId": "V016PACK_R2-team.getProjection-reugmcjh",
+    "result": {
+      "ok": true,
+      "value": {
+        "data": {
+          "projection": {
+            "schemaVersion": 2,
+            "teamSessionId": "team-v016pack-r2",
+            "blueprint": {
+              "blueprintId": "v016-pack-bp-r2",
+              "revision": "1",
+              "contentHash": "sha256:5a5ebc54153554e2699220395bfa1c370ad34c90e5b36a7567a0f708799241a2"
+            },
+            "generation": 10,
+            "generatedAt": "2026-11-13T11:00:40.320Z",
+            "root": {
+              "teamSessionId": "team-v016pack-r2",
+              "createdAt": "2026-11-13T11:00:39.456Z",
+              "policyState": "default",
+              "admission": "OPEN",
+              "compatibility": {
+                "status": "OPEN",
+                "probeGeneration": 1,
+                "requirementFingerprint": "none",
+                "environmentFingerprint": "fp-v1:ae11d8f689bbb7b0",
+                "warningCount": 0,
+                "fatalCount": 0,
+                "acknowledgedWarningCount": 0,
+                "lastProbedAt": "2026-11-13T11:00:39.523Z"
+              },
+              "creationBudgetConsumed": 0,
+              "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace"
+            },
+            "templates": [
+              {
+                "kind": "leader",
+                "templateId": "leader",
+                "displayName": "leader",
+                "contextPolicy": "persistent"
+              },
+              {
+                "kind": "member",
+                "templateId": "officer",
+                "displayName": "Officer",
+                "contextPolicy": "persistent"
+              },
+              {
+                "kind": "member",
+                "templateId": "worker",
+                "displayName": "Worker",
+                "contextPolicy": "persistent"
+              },
+              {
+                "kind": "member",
+                "templateId": "goal",
+                "displayName": "Goal Worker",
+                "contextPolicy": "persistent"
+              }
+            ],
+            "members": [
+              {
+                "instanceId": "inst-0kc39c71kemt",
+                "templateId": "worker",
+                "label": "w-1",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                "createdAt": "2026-11-13T11:00:39.859Z",
+                "lifecycle": "RUNNING",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                    "source": "instance-creation",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "resident",
+                  "lastActivityAt": "2026-11-13T11:00:40.320Z"
+                },
+                "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "unspecified",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              },
+              {
+                "instanceId": "inst-0ofnbt205ssz",
+                "templateId": "goal",
+                "label": "g-1",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                "createdAt": "2026-11-13T11:00:39.962Z",
+                "lifecycle": "CREATED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                    "source": "instance-creation",
+                    "state": "inherited"
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "resident",
+                  "lastActivityAt": "2026-11-13T11:00:40.320Z"
+                },
+                "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "unspecified",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              },
+              {
+                "instanceId": "inst-0y1bmfd1fegn",
+                "templateId": "officer",
+                "label": "officer-1",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                "createdAt": "2026-11-13T11:00:39.750Z",
+                "lifecycle": "CREATED",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                    "source": "instance-creation",
+                    "state": "inherited"
+                  },
+                  "permissions": {
+                    "team_list_pending_control": {
+                      "value": "team_list_pending_control",
+                      "source": "member-template",
+                      "state": "inherited"
+                    },
+                    "team_resolve_control": {
+                      "value": "team_resolve_control",
+                      "source": "member-template",
+                      "state": "inherited"
+                    }
+                  },
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "resident",
+                  "lastActivityAt": "2026-11-13T11:00:40.320Z"
+                },
+                "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "unspecified",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              },
+              {
+                "instanceId": "inst-leader",
+                "templateId": "leader",
+                "label": "leader",
+                "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                "createdAt": "2026-11-13T11:00:39.470Z",
+                "lifecycle": "RUNNING",
+                "contextPolicy": "persistent",
+                "effectiveConfig": {
+                  "model": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "workspace": {
+                    "value": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+                    "source": "blueprint",
+                    "state": "locked",
+                    "locked": true
+                  },
+                  "permissions": {},
+                  "autonomy": {
+                    "value": null,
+                    "source": "autonomy-overlay",
+                    "state": "inherited"
+                  }
+                },
+                "liveActivity": {
+                  "residency": "resident",
+                  "lastActivityAt": "2026-11-13T11:00:40.320Z"
+                },
+                "modelState": {
+                  "current": {
+                    "value": "deepseek-official/v016pack_r2-model",
+                    "source": "capability",
+                    "state": "inherited"
+                  },
+                  "provenance": {
+                    "layer": "unspecified",
+                    "origin": "static",
+                    "recordId": null,
+                    "explanation": "model: effective deny; team none(origin=static) deny (fail-closed: no team layer grants this cell); external exists=yes, hard=unspecified"
+                  },
+                  "availability": "available"
+                }
+              }
+            ],
+            "ledger": {
+              "latestSequence": 8,
+              "totalEntries": 8,
+              "byCategory": {
+                "team": 3,
+                "member": 3,
+                "lifecycle": 0,
+                "message": 0,
+                "control": 1,
+                "policy": 0,
+                "compatibility": 0,
+                "progress": 1
+              },
+              "pendingControlCount": 1
+            }
+          }
+        },
+        "provenance": {
+          "origin": "team-remote",
+          "method": "team.getProjection",
+          "endpoint": "team.getProjection",
+          "contractVersion": 4,
+          "requestToken": null,
+          "projectionGeneration": 10,
+          "effectSequence": null
+        }
+      }
+    }
+  }
+}

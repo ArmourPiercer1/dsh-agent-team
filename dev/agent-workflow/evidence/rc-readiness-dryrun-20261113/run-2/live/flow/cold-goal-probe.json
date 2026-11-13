@@ -1,0 +1,15 @@
+{
+  "type": "server-response",
+  "rpcId": "V016PACK_R2-prompt-j30kdfjv",
+  "result": {
+    "ok": false,
+    "error": {
+      "code": "gateway/input-invalid",
+      "message": "typert gateway: session/prompt: wire field \"request\" failed boundary validation",
+      "details": {
+        "endpoint": "session/prompt",
+        "field": "request"
+      }
+    }
+  }
+}

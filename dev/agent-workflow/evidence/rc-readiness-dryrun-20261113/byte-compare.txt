@@ -1,0 +1,13 @@
+# Two independent packs of 22682f336, compared byte-wise
+pack-1 dir: .artifacts/tmp/packaging-v016-pack-run-1
+pack-2 dir: .artifacts/tmp/packaging-v016-pack-run-2
+0cc7bef3d5ee24cbae0b60039b47738dc044014b262f5546c064fba723031923  .artifacts/tmp/packaging-v016-pack-run-1/dsh-agent-team-0.1.6.tgz
+0cc7bef3d5ee24cbae0b60039b47738dc044014b262f5546c064fba723031923  .artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz
+4407630 bytes  .artifacts/tmp/packaging-v016-pack-run-1/dsh-agent-team-0.1.6.tgz
+4407630 bytes  .artifacts/tmp/packaging-v016-pack-run-2/dsh-agent-team-0.1.6.tgz
+
+## cmp -l output (empty = byte-identical)
+cmp exit 0: BYTE-IDENTICAL
+
+## tar -tzvf listing diff (empty = same members/modes/owners/mtimes/sizes)
+listings identical

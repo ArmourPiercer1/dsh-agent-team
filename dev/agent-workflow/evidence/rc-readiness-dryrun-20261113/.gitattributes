@@ -1,0 +1,5 @@
+# Evidence logs written by the packaged-acceptance instrument end with one blank
+# line at EOF (the writers append "\n" to text that already ends with "\n").
+# That is the measured bytes, not a defect to fix: disable only that whitespace
+# rule inside this evidence directory, and leave every other rule on.
+* whitespace=-blank-at-eof

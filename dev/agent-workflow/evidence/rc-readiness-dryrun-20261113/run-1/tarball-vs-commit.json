@@ -1,0 +1,29 @@
+{
+  "schema": "rc-dryrun/tarball-vs-commit/1",
+  "tarball": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/.artifacts/tmp/packaging-v016-pack-run-1/dsh-agent-team-0.1.6.tgz",
+  "tarballSha256": "0cc7bef3d5ee24cbae0b60039b47738dc044014b262f5546c064fba723031923",
+  "tarballBytes": 4407630,
+  "commit": "22682f33673139f1c411ca7a42826e0f4b7ab2e4",
+  "internalPackage": {
+    "name": "dsh-agent-team",
+    "version": "0.1.6",
+    "private": true
+  },
+  "counts": {
+    "regularMembers": 2113,
+    "matched": 2112,
+    "mismatched": 1,
+    "tarballOnly": 0,
+    "commitTracked": 16746,
+    "commitOnly": 14633
+  },
+  "mismatched": [
+    {
+      "path": "package.json",
+      "tarball": "07d75a9786d24f168f04502678dd311b7e10ac05",
+      "commit": "6e3eb5a8e3c01291ab0c51d7f1563c0abe799928"
+    }
+  ],
+  "tarballOnly": [],
+  "note": "content-only comparison (git blob sha1); tar mtimes/uid/gid/mode are not compared and are not part of git"
+}

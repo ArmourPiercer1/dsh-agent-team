@@ -1,0 +1,14 @@
+{
+  "packedCommit": "22682f33673139f1c411ca7a42826e0f4b7ab2e4",
+  "branch": "task/rc-readiness-dryrun-20261113",
+  "cleanAtPack": true,
+  "productPorcelainAtPack": "",
+  "fullPorcelainAtPack": "?? dev/agent-workflow/evidence/rc-readiness-dryrun-20261113/",
+  "tarballSha256": "0cc7bef3d5ee24cbae0b60039b47738dc044014b262f5546c064fba723031923",
+  "tarballBytes": 4407630,
+  "internalVersion": "0.1.6",
+  "internalName": "dsh-agent-team",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "at": "2026-11-13T10:59:08.150Z"
+}
