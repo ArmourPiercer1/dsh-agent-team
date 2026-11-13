@@ -1,0 +1,145 @@
+{
+  "allPass": [
+    {
+      "arm": "COLD-WAKE",
+      "proposition": "after SIGKILL + create-or-open cold boot a NEW governed ask still reaches and is decided by the Officer instance",
+      "verdict": "NOT_REACHED",
+      "detail": "CW_PRECRASH_ASK_NOT_MINTED: no governed bash call appeared",
+      "facts": {
+        "schema": "a6-cold-wake/1",
+        "recordClass": "DEV-LIVE",
+        "runStamp": "2026-11-13T12-01-26-h0-racd535",
+        "startedAt": "2026-11-13T12:01:41.576Z",
+        "composition": {
+          "hostBaseline": "0.2.0-rc.2",
+          "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+          "planeTakeover": true,
+          "alpha6ReviewRouting": true,
+          "governedRealm": true,
+          "wakeIntentPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/tests/homes/c1-smoke-2026-11-13T12-01-26-h0-racd535/alpha6-wake-intents",
+          "createRoot": "session-a1-root-2026-11-13T12-01-26-h0-racd535"
+        },
+        "timeline": [
+          {
+            "at": "2026-11-13T12:01:41.924Z",
+            "phase": "team-create",
+            "ok": true
+          },
+          {
+            "at": "2026-11-13T12:01:42.160Z",
+            "phase": "members-created",
+            "officer": "inst-0i9hx0g18f0q",
+            "officerSession": "session-team-child-bc10ee511d6a09a1ac6aa2956b0caa1b",
+            "worker": "inst-0s1gsnc0pnwu"
+          },
+          {
+            "at": "2026-11-13T12:01:42.215Z",
+            "phase": "pre-crash-delegate",
+            "status": 200
+          }
+        ],
+        "wakeIntentSnapshots": [
+          {
+            "at": "2026-11-13T12:01:42.160Z",
+            "label": "after-team-create",
+            "rows": [],
+            "raw": []
+          }
+        ],
+        "officerWakeLogLines": [],
+        "leaderNotificationLogLines": [],
+        "postRestartModelTurns": [],
+        "team": {
+          "ok": true,
+          "blueprintHash": "sha256:cfca9e3256e3e0cbef289e1a6f2af7ce2151050710f1bc886f325da12dcf10d6",
+          "error": null
+        },
+        "officer": {
+          "label": "cw-officer",
+          "templateId": "officer",
+          "instanceId": "inst-0i9hx0g18f0q",
+          "childSessionId": "session-team-child-bc10ee511d6a09a1ac6aa2956b0caa1b",
+          "refusal": null,
+          "raw": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "create-member",
+              "rootSessionId": "session-a1-root-2026-11-13T12-01-26-h0-racd535",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "member-activated",
+                "instanceId": "inst-0i9hx0g18f0q",
+                "templateId": "officer",
+                "childSessionId": "session-team-child-bc10ee511d6a09a1ac6aa2956b0caa1b",
+                "operationId": "op-1o82vof0v6nvzi0vlt2mp0bh",
+                "replayed": false,
+                "ledgerSequence": 3,
+                "admissionCode": "ADMISSION_OPEN"
+              },
+              "requestToken": "mc-cw-officer-2026-11-13T12-01-26-h0-racd535-3qd4x"
+            }
+          }
+        },
+        "worker": {
+          "label": "cw-w1",
+          "templateId": "w-probe",
+          "instanceId": "inst-0s1gsnc0pnwu",
+          "childSessionId": "session-team-child-a075e7ef9c41d590f2461d681a360dae",
+          "refusal": null,
+          "raw": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "create-member",
+              "rootSessionId": "session-a1-root-2026-11-13T12-01-26-h0-racd535",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "member-activated",
+                "instanceId": "inst-0s1gsnc0pnwu",
+                "templateId": "w-probe",
+                "childSessionId": "session-team-child-a075e7ef9c41d590f2461d681a360dae",
+                "operationId": "op-1p9z4vd0aketik16ajhh30wr",
+                "replayed": false,
+                "ledgerSequence": 4,
+                "admissionCode": "ADMISSION_OPEN"
+              },
+              "requestToken": "mc-cw-w1-2026-11-13T12-01-26-h0-racd535-o9yzc"
+            }
+          }
+        },
+        "preCrashDelegate": {
+          "status": 200,
+          "refusal": null,
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "executed",
+              "action": "delegate",
+              "rootSessionId": "session-a1-root-2026-11-13T12-01-26-h0-racd535",
+              "callerRole": "leader",
+              "effect": {
+                "kind": "work-admitted",
+                "instanceId": "inst-0s1gsnc0pnwu",
+                "fromLifecycle": "CREATED",
+                "lifecycleCommitted": true,
+                "sequence": 5,
+                "settled": false,
+                "workStatus": "admitted"
+              },
+              "requestToken": "cw-delegate1-2026-11-13T12-01-26-h0-racd535"
+            }
+          }
+        }
+      },
+      "clauses": {}
+    }
+  ],
+  "mode": "cold-wake",
+  "recordClass": "DEV-LIVE",
+  "runStamp": "2026-11-13T12-01-26-h0-racd535",
+  "hostPort": 3193,
+  "mockPort": 3499,
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/tests/homes/c1-smoke-2026-11-13T12-01-26-h0-racd535",
+  "wakeIntentPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/tests/homes/c1-smoke-2026-11-13T12-01-26-h0-racd535/alpha6-wake-intents"
+}

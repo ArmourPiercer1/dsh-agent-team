@@ -1,0 +1,51 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3194/?token=xTHC0Tl73wkoWck4RW0RJDUTy6QPP5bZlT_NENawB5k
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[a6dbg] turn-end sid=session-c1-smoke-root-2026-11-13T12-41-03-h0-r69fff6 status=no-coordinator
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T12-41-03-h0-r69fff6 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[a6dbg] turn-end sid=session-a1-root-2026-11-13T12-41-03-h0-r69fff6 status=no-coordinator
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[a6dbg] turn-start sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=queued
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0alko0q1234u-native-bash:hexec:nb-1794573678576-2005501425-1 approvalCaseId=tadm:session-a1-root-2026-11-13T12-41-03-h0-r69fff6:inst-0alko0q1234u:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[a6dbg] turn-end sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=running
+[a6dbg] turn-start sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=queued
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0alko0q1234u-native-bash:hexec:nb-1794573678576-2005501425-1 grantId=grant:6acc8baa2f9947cce93c19e2057b01d5 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0alko0q1234u-native-bash:hexec:nb-1794573678576-2005501425-1 grantId=grant:6acc8baa2f9947cce93c19e2057b01d5 caseId=tadm:session-a1-root-2026-11-13T12-41-03-h0-r69fff6:inst-0alko0q1234u:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3194/?token=y4TwBdxeysTasIrRLHoej1-TL0x5Ju1YheuzZXJRPjo
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 105ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T12-41-03-h0-r69fff6 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[a6dbg] turn-end sid=session-team-child-4507dc515b420ec0d46e80273c3527f8 status=no-coordinator
+[a6dbg] turn-end sid=session-a1-root-2026-11-13T12-41-03-h0-r69fff6 status=no-coordinator
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-41-03-h0-r69fff6
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[a6dbg] turn-start sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=queued
+[a6dbg] turn-end sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=running
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1dyarjp0ml1z-native-bash:hexec:nb-1794573774184-1855876717-1 approvalCaseId=tadm:session-a1-root-2026-11-13T12-41-03-h0-r69fff6:inst-1dyarjp0ml1z:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[a6dbg] turn-start sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=queued
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-1dyarjp0ml1z-native-bash:hexec:nb-1794573774184-1855876717-1 grantId=grant:8494e1075f56143db5255d72f0b99de9 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-1dyarjp0ml1z-native-bash:hexec:nb-1794573774184-1855876717-1 grantId=grant:8494e1075f56143db5255d72f0b99de9 caseId=tadm:session-a1-root-2026-11-13T12-41-03-h0-r69fff6:inst-1dyarjp0ml1z:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[a6dbg] turn-end sid=session-team-child-55c4c3e53376761da235d5c310c21c01 status=running

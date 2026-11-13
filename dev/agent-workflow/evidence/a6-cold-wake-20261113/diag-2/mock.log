@@ -1,0 +1,19 @@
+2026-11-13T12:05:49.614Z mock: listening on 127.0.0.1:3499
+2026-11-13T12:05:57.357Z mock: 1 [messages] text reply (18 chars): "A1 bash governance"
+2026-11-13T12:05:57.359Z mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+2026-11-13T12:05:57.886Z mock: 3 [messages] text reply (18 chars): "A1 bash governance"
+2026-11-13T12:05:57.886Z mock: 4 [messages] text reply (12 chars): "A1_DISC_DONE"
+2026-11-13T12:05:58.303Z mock: 5 [messages] tool-call reply: bash
+2026-11-13T12:05:58.304Z mock: 6 [messages] text reply (18 chars): "A1 bash governance"
+2026-11-13T12:05:58.463Z mock: 7 [messages] tool-call reply: team_list_pending_control
+2026-11-13T12:05:58.542Z mock: 8 [messages] tool-call reply: team_resolve_control
+2026-11-13T12:05:58.593Z mock: 9 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+2026-11-13T12:05:58.844Z mock: 10 [messages] tool-call reply: team_list_pending_control
+2026-11-13T12:05:58.913Z mock: 11 [messages] tool-call reply: team_resolve_control
+2026-11-13T12:05:58.986Z mock: 12 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+2026-11-13T12:05:59.533Z mock: 13 [messages] text reply (13 chars): "C1MK_CW1_DONE"
+2026-11-13T12:05:59.705Z mock: 14 [messages] text reply (12 chars): "A1_NOOP_DONE"
+2026-11-13T12:06:20.378Z mock: 15 [messages] tool-call reply: bash
+2026-11-13T12:06:20.598Z mock: 16 [messages] tool-call reply: team_list_pending_control
+2026-11-13T12:06:20.674Z mock: 17 [messages] tool-call reply: team_resolve_control
+2026-11-13T12:06:20.727Z mock: 18 [messages] text reply (15 chars): "A1_OFFICER_DONE"

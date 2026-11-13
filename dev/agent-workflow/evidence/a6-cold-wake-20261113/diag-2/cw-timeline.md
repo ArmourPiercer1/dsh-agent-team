@@ -1,0 +1,21 @@
+| at | phase | detail |
+| --- | --- | --- |
+| 2026-11-13T12:05:57.950Z | team-create | {"ok":true} |
+| 2026-11-13T12:05:58.192Z | members-created | {"officer":"inst-0e1ekxj13xl8","officerSession":"session-team-child-b1b8e4992fcd8b9dd05a4488220687be","worker":"inst-0el7di0149dw"} |
+| 2026-11-13T12:05:58.248Z | pre-crash-delegate | {"status":200} |
+| 2026-11-13T12:05:58.348Z | pre-crash-bash-call | {"callId":"call-c1-4mbm50bn"} |
+| 2026-11-13T12:05:58.449Z | pre-crash-request | {"requestId":"ctrl-0gxkfos1wq1eat1m8n6ai054","actionName":"parameter-permission"} |
+| 2026-11-13T12:05:58.651Z | pre-crash-decision | {"requestId":"ctrl-0gxkfos1wq1eat1m8n6ai054","decider":{"instanceId":"inst-0e1ekxj13xl8","kind":"instance","role":"member"},"wakeTurns":3} |
+| 2026-11-13T12:05:59.557Z | pre-crash-completion | {"consumed":9,"exec":"succeeded"} |
+| 2026-11-13T12:06:05.815Z | quiesced | {"mockRequests":14,"stableForMs":6008} |
+| 2026-11-13T12:06:05.917Z | sigkill | {"dead":true,"seqAtKill":14,"wakeFilesAtKill":[]} |
+| 2026-11-13T12:06:08.050Z | cold-boot | {"port":3193,"seq":14} |
+| 2026-11-13T12:06:20.052Z | recovery-settled | {"wakeFiles":0,"seq":14} |
+| 2026-11-13T12:06:20.185Z | follow-up | {"status":200,"refusal":null} |
+| 2026-11-13T12:06:20.386Z | new-bash-call | {"callId":"call-c1-4656sr9c","vehicle":"follow_up on the same Member"} |
+| 2026-11-13T12:06:20.487Z | new-request-minted | {"requestId":"ctrl-1hr0x5u0hnmkdb06jdzms1jq","actionName":"parameter-permission"} |
+| 2026-11-13T12:06:20.738Z | post-restart-wake-turn | {"seq":16,"namesNewRequest":true,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-05-42-h0-r0b71d3:inst-0e1ekxj13xl8:1:a6wake%3Av1%3A1%3Af3b1e5a2"} |
+| 2026-11-13T12:06:20.738Z | post-restart-wake-turn | {"seq":17,"namesNewRequest":true,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-05-42-h0-r0b71d3:inst-0e1ekxj13xl8:1:a6wake%3Av1%3A1%3Af3b1e5a2"} |
+| 2026-11-13T12:06:20.738Z | post-restart-wake-turn | {"seq":18,"namesNewRequest":true,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-05-42-h0-r0b71d3:inst-0e1ekxj13xl8:1:a6wake%3Av1%3A1%3Af3b1e5a2"} |
+| 2026-11-13T12:06:20.739Z | wake-intent-dir-changed | {"files":["wake-cbe944f9.json"]} |
+| 2026-11-13T12:06:20.740Z | window-end | {"decided":true,"decider":{"instanceId":"inst-0e1ekxj13xl8","kind":"instance","role":"member"},"newWakeTurns":3} |

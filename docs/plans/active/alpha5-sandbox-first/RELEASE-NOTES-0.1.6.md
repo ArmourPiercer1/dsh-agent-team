@@ -917,3 +917,47 @@ after this correction was written, states the same limit independently: the dura
 after a restart before the next ask) writes **no durable marker**. E2 is the package-level row; this
 section records that the two older sentences in §1 and §2.2 were corrected to say the same thing.
 They do not contradict each other, and neither is a new claim.
+
+## Appended 2026-11-13 — A6-COLD-WAKE (PD-44): a new governed ask is not woken after a cold boot (append-only record)
+
+**This section records a measured limit; it does not change any §11 row.** Lane `task/a6-cold-wake-20261113`,
+base `673b8b182`, evidence `dev/agent-workflow/evidence/a6-cold-wake-20261113/README.md`, register row **PD-44
+(`COLD-WAKE`)**. Evidence class **DEV-LIVE**. No product code changed in this lane.
+
+**What was measured.** A Team with Alpha.6 review routing is SIGKILLed while a review-wake turn is open and
+its wake-intent row is live; the Host is restarted with a create-or-open boot; a **new** governed `bash`
+ask is then minted by a fresh Member. The durable side is consistent (the ledger, the decision and the
+execution fact all agree, and the new leg is `pending` and resolvable by id), but **no `[team-review-wake]`
+names the new request** in a 45 s window, `team_follow_up` on the crashed Member is admitted (`status 200`,
+no refusal) and starts no Officer turn, and only the operator's `team.resolveControl` ends it. Two clean
+reproductions (45 157 / 45 160 ms, `decidedWithinWindow: false`, `decidedBy: operator`) against two controls
+where no wake row was live at the kill (the **Officer instance** decides in 251 ms / 252 ms). The
+discriminator is exactly "a live wake-intent row at the kill".
+
+**What is promised (unchanged).** The runbook's promise for a re-issued ask holds only as far as its last
+clause: `team_list_pending_control` **does** list the new leg, and `team.resolveControl` **does** decide it.
+**What is not promised, and must not be read as promised:** that the assigned reviewer is *woken* for work
+minted after a cold restart. `docs/runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4 lists "a review wake /
+its turn" first; after a cold boot that clause is not delivered. This is a **liveness** gap in the opt-in
+Alpha.6 experimental plane, not corruption, and it is **not** the documented "no redelivery for an already
+claimed notification" limit (ADR line 261 / blueprint memo line 206) — the new ask was never claimed by
+anyone, and it is **not** PD-40 (that row is the latch-scoped Stop).
+
+**Operator remedy (measured working).** After a Host restart, check `team_list_pending_control` before
+assuming a governed ask is dead, then decide it with `team.resolveControl`; the subsequent wake path
+recovers as a side effect. **Do not** rely on `team_follow_up` as the restart remedy — it is admitted and
+produces no Officer turn for a crashed Member.
+
+**Why no fix is claimed.** Two narrow re-arm patches were implemented, unit-tested host-free and A/B
+measured live (boot reconcile of the ownerless `queued` latch; turn-end release of a `queued` latch whose
+native message is gone). Both still starved; both were **reverted uncommitted** and the attempt is recorded
+in `fixed-run1/`. The residual blocker is the recipient session's restored invocation
+(`packages/runtime/src/plugin/live/agent-bindings.mjs`, ARC-A protected centre), which cannot change under
+`CORE PATCH BUDGET = 0` without a named centre-interface override and its own crash-semantics review. The
+row's `smallest honest fix` field records both candidates and why they were insufficient — no reader should
+take this section as "a fix exists".
+
+**Boundaries.** No `V@B`, no `CANDIDATE-C2`, no matrix grade, no candidate/tag/CI movement, no Authority
+pointer change, `:3080` untouched. n = 3 reproducing runs + 2 controls, one composition, one host pin
+(`639ed01539`, 0.2.0-rc.2); this is not a rate and not a stability claim, and a wake arriving after the 45 s
+window would not have been counted.

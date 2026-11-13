@@ -1,0 +1,35 @@
+[2026-11-13T12:36:52.315Z] A6 cold-wake — stamp 2026-11-13T12-36-52-h0-rb6a6cb
+[2026-11-13T12:36:52.315Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113
+[2026-11-13T12:36:52.315Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T12:36:52.315Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/dev/agent-workflow/evidence/a6-cold-wake-20261113/fixed-run1
+[2026-11-13T12:36:52.315Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T12:36:52.315Z] mode: cold-wake | a6-on (alpha6ReviewRouting: true)
+[2026-11-13T12:36:52.432Z] sandbox backend in use: full (usable=true)
+[2026-11-13T12:36:53.934Z] ports: host=3194 mock=3497
+[2026-11-13T12:36:58.944Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T12:36:58.951Z] mock model listening on 3497
+[2026-11-13T12:37:06.629Z] host booted at http://127.0.0.1:3194; row ready — toolCount=15
+[2026-11-13T12:37:06.629Z] ── L0: discovery ──
+[2026-11-13T12:37:07.046Z] discovery surface=32 tools; deny list=11
+[2026-11-13T12:37:07.375Z] CW team-create {"ok":true}
+[2026-11-13T12:37:07.605Z] CW members-created {"officer":"inst-1a3aiqd0p8s1","officerSession":"session-team-child-f7d3a499be1cf79e9ed6d9543ce54650","worker":"inst-0ijegnl15rzd"}
+[2026-11-13T12:37:07.660Z] CW pre-crash-delegate {"status":200}
+[2026-11-13T12:37:07.759Z] CW pre-crash-bash-call {"callId":"call-c1-pn4a4hzp"}
+[2026-11-13T12:37:07.860Z] CW pre-crash-request {"requestId":"ctrl-1uxcwvb1kj0y3212exlmx1bh","actionName":"parameter-permission"}
+[2026-11-13T12:37:08.062Z] CW pre-crash-decision {"requestId":"ctrl-1uxcwvb1kj0y3212exlmx1bh","decider":{"instanceId":"inst-1a3aiqd0p8s1","kind":"instance","role":"member"},"wakeTurns":3}
+[2026-11-13T12:37:28.964Z] CW kill-point {"point":"after-decision","consumed":null,"exec":null}
+[2026-11-13T12:37:29.015Z] CW sigkill {"at":"2026-11-13T12:37:29.015Z","dead":true,"seqAtKill":13,"wakeFilesAtKill":["wake-525c0d79.json"]}
+[2026-11-13T12:37:31.131Z] CW cold-boot {"port":3194,"seq":13}
+[2026-11-13T12:37:43.135Z] CW recovery-settled {"wakeFiles":1,"seq":13}
+[2026-11-13T12:37:43.135Z] CW recovery-wake-turns {"count":0}
+[2026-11-13T12:37:43.259Z] CW follow-up {"status":200,"refusal":null}
+[2026-11-13T12:38:43.409Z] CW fresh-member {"instanceId":"inst-0cvrzwn06atq","refusal":null}
+[2026-11-13T12:38:43.474Z] CW post-restart-delegate {"status":200,"refusal":null}
+[2026-11-13T12:38:43.575Z] CW new-bash-call {"callId":"call-c1-txwp281o","vehicle":"fresh Member delegate (follow_up was admitted but started no turn in 60 s)"}
+[2026-11-13T12:38:43.676Z] CW new-request-minted {"requestId":"ctrl-09gjhnm1jow1ov0x4nsc80vy","actionName":"parameter-permission","at":"2026-11-13T12:38:43.676Z"}
+[2026-11-13T12:38:43.927Z] CW post-restart-wake-turn {"seq":18,"namesNewRequest":false,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-1a3aiqd0p8s1:1:a6wake%3Av1%3A1%3A1eff6c75"}
+[2026-11-13T12:38:43.927Z] CW wake-intent-dir-changed {"files":[]}
+[2026-11-13T12:39:28.839Z] CW window-end {"decided":false,"decider":null,"newWakeTurns":0}
+[2026-11-13T12:39:28.880Z] CW operator-resolve {"status":200,"code":null}
+[2026-11-13T12:39:29.988Z] teardown: stopping host + mock
+[2026-11-13T12:39:34.992Z] VERDICT FAIL — failed: COLD-WAKE
