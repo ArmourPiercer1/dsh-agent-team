@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "value": {
+    "status": "executed",
+    "action": "delegate",
+    "rootSessionId": "session-a1-root-2026-11-13T11-47-48-h0-r711a49",
+    "callerRole": "leader",
+    "effect": {
+      "kind": "work-admitted",
+      "instanceId": "inst-1sr43ij0hjze",
+      "fromLifecycle": "CREATED",
+      "lifecycleCommitted": true,
+      "sequence": 7,
+      "settled": false,
+      "workStatus": "admitted"
+    },
+    "requestToken": "a1-delegate-w1-2026-11-13T11-47-48-h0-r711a49"
+  }
+}

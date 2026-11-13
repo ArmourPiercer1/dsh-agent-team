@@ -1,0 +1,26 @@
+{
+  "officer": {
+    "label": "a1-officer",
+    "templateId": "officer",
+    "instanceId": "inst-1dj0vjb01tny",
+    "refusal": null
+  },
+  "w1": {
+    "label": "a1-w1",
+    "templateId": "w-probe",
+    "instanceId": "inst-1oriue31bjik",
+    "refusal": null
+  },
+  "w2": {
+    "label": "a1-w2",
+    "templateId": "w-probe",
+    "instanceId": "inst-0ouyfg80smtd",
+    "refusal": null
+  },
+  "wDeny": {
+    "label": "a1-deny",
+    "templateId": "w-deny",
+    "instanceId": "inst-1pdbgdt1mfen",
+    "refusal": null
+  }
+}
