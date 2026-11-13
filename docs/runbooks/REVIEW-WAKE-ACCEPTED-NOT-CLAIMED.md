@@ -189,6 +189,38 @@ re-resolving the old request.
 > §6 record them), so do not expect a one-line fix. **Operator action: go straight to
 > `team_list_pending_control` + `team_resolve_control`.**
 
+> **2026-11-13 NUDGE correction (append-only; every line above is kept exactly as written — this note
+> supersedes only the last sentence's ORDER, not its facts).** "Operator action: go straight to
+> `team_list_pending_control` + `team_resolve_control`" is the **fallback**, not the first move.
+> Measured on a real Host (same SIGKILL + create-or-open restart; two runs per arm; evidence
+> `dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/README.md`, register **PD-44
+> `COLD-WAKE`**), the durable plane is fully usable after the boot and the flow is a **deliberate
+> four-step handover**:
+>
+> 1. **Surface the `user-approval` legs to the human.** A post-restart `user-approval` leg is durably
+>    listed and readable by id, and the Leader is **refused** with
+>    `CONTROL_RESOLVER_NOT_AUTHORIZED … role 'leader' is not a resolver for kind 'user-approval'
+>    (allowed: [human])`; only the operator decides it (decider `kind: human`).
+> 2. **Close every `leader-approval` leg yourself.** The Leader's `team_resolve_control` on a
+>    post-restart `leader-approval` leg is **accepted** (`200`, no refusal, decision recorded with the
+>    Leader instance as `decider`) — measured, so a leg in this class never needs the Officer.
+> 3. **Brief the Officer with the pending `requestId(s)`** (`team_send_message`): was the stop caused
+>    by a trajectory problem, how should the next approval go. It is admitted (`delivered`), starts a
+>    real model-visible Officer turn, and the Officer records `control-decision-recorded` with the
+>    **Officer instance** as `decider` in **0.3–0.6 s** — no operator, no wake.
+> 4. **Pull the work back up by messaging the members** with a **new** unit; the message cold-resumes
+>    the killed session, starts a turn, and the new ask mints normally. (`team_follow_up` on the dead
+>    unit stays admitted-but-inert — the row above is right about that.)
+>
+> **The durable authority does not drift:** the pre-crash request row is byte-identical after the
+> restart (same `kind`, `reviewAuthority`, `perEffectRequiredAuthorities`, `blueprintContentHash`,
+> `operationToolDefinitionIdentity`), so a leg the Officer could decide before the crash is still
+> decidable by it after; what goes silent is the **wake**, not the authority. **So PD-44's severity
+> drops from "approval unreachable" to "requires a deliberate restart briefing":** the missing piece
+> is *automatic* re-driving, and the four steps above restore it with human-in-the-loop where the
+> human is required. **Never wait for a wake after a restart** — this note does not change the wake
+> plane, and an unaddressed leg still starves (control arm: 65 s window, no decision).
+
 ---
 
 ## 4. What NOT to do

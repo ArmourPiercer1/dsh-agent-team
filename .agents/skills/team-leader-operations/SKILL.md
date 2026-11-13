@@ -301,6 +301,62 @@ safe path is the plain default:
 Explicit `async: false` (synchronous) delegation stays fine for work you
 know will not ask.
 
+### 5.2 重启工作 / Restarting work (cold boot after a crash)
+
+A Host restart recovers every **durable** fact — the ledger, the pending legs,
+the member rows — but it starts **no turn**. The approval wake is liveness inside
+a live process, not a recovery mechanism: after a cold boot nobody is
+re-driven, and a `team_follow_up` on a unit whose turn was killed is
+**admitted** (`status 200`, no refusal) while starting **no** turn. Nothing
+wakes up on its own. Restart work **deliberately**, in this order:
+
+1. **Surface the human-approval legs first.** `user-approval` requests are
+   resolvable by the **human only** (`allowed: [human]`); the Leader's
+   `team_resolve_control` on one is refused with
+   `CONTROL_RESOLVER_NOT_AUTHORIZED`. Read them off
+   `team_list_pending_control` and **tell the user, with the exact
+   `requestId`** — do not wait for them to decide on their own, and do not
+   try to close them yourself. *Guaranteed:* the leg is durably listed and
+   readable by id after the restart. *Needs the human:* the decision itself.
+2. **Resolve every ask you are allowed to resolve.** A `leader-approval` leg
+   is closable by the **Leader** after a restart: `team_resolve_control`
+   records the decision with the Leader instance as `decider` (measured:
+   `200`, no refusal, ~100 ms). Do this before briefing anyone — a leg you can
+   close yourself never needs the Officer. *Guaranteed:* the same durable
+   authority the leg carried before the crash; the restart does not rewrite
+   the request row. *May refuse:* a kind the Leader is not a resolver for
+   (`user-approval`, and any escalation leg) — hand those to the human.
+3. **Brief the assigned reviewer (the Officer under Alpha.6 review routing) for
+   whatever is left.** `team_send_message` with the pending `requestId(s)` and
+   the two questions that make it a briefing, not a ping:
+   - was the stop caused by something going wrong in the trajectory?
+   - how should the next approval go (same scope, re-ask, or escalate)?
+   Then wait for the **durable** decision (`control-decision-recorded` naming
+   the reviewer instance), never for reply text. *Guaranteed:* the message is
+   admitted (`delivered`) and starts a real model-visible turn — measured
+   **0.3–0.6 s** to a durable decision with the Officer as `decider`.
+   *Needs the human:* nothing extra for this step; but if the reviewer does not
+   decide, the operator `team_resolve_control` remains the fallback and that
+   outcome is a finding to report.
+4. **Pull the work back up by messaging the members.** Address the member with
+   a **new** unit (`team_send_message` / `team_delegate`), not the dead unit's
+   `team_follow_up`: the message cold-resumes the killed session, starts a real
+   turn, and the new governed ask mints normally — measured: a new
+   `control-request-recorded` for the same member template after the restart.
+   *Guaranteed:* the member session is reachable and does new work.
+   *May refuse/mislead:* the OLD unit stays admitted-but-inert — do not read
+   its `200` as "the work continued".
+
+Measured 2026-11-13 (DEV-LIVE, Alpha.6, real Host, two runs per arm; evidence
+`dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/README.md`, debt row
+PD-44 `COLD-WAKE`): after a SIGKILL with a live wake-intent row, an
+**unaddressed** leg starved for the whole 65 s window; the same class of leg
+was closed by the **Leader** in step 2, by the **Officer** 0.3–0.6 s after the
+step-3 briefing, and a `user-approval` leg fell through to the **human** with a
+typed refusal for the Leader. The difference between "approvals are unreachable
+after a restart" and "a restart needs a deliberate four-step handover" is
+exactly this procedure.
+
 ## 6. Reading results
 
 Every tool settles as a lossless JSON result, not an exception. The `status`
@@ -345,6 +401,11 @@ unexpected errors surface as tool errors.
   best-effort liveness for NEW requests; the durable request + the pending
   list are the recovery path (notifications are not replayed after a
   restart).
+- Assuming a restart resumes approvals by itself — after a cold boot nothing
+  is re-driven, and `team_follow_up` on the dead unit is admitted-but-inert.
+  Surface `user-approval` legs to the human, close the `leader-approval` legs
+  yourself, brief the Officer with the pending ids, then message the members
+  with a NEW unit (see §5.2).
 - Reading a definition-change cancellation as a guaranteed stop or a rollback: cancellation of
   unexecuted calls, an abort REQUEST for started calls, and the three-way outcome classification
   are different facts — see §8 (and do not read §8's guarantees into the G-g silent-subscription

@@ -1,0 +1,42 @@
+[2026-11-13T15:03:43.731Z] A6 cold-wake — stamp 2026-11-13T15-03-43-h0-r1386cd
+[2026-11-13T15:03:43.731Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113
+[2026-11-13T15:03:43.732Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T15:03:43.732Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/run-none-1
+[2026-11-13T15:03:43.732Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T15:03:43.732Z] mode: cold-wake-nudge arm=none kill=after-decision windowMs=65000 leaderProbe=false userApproval=false memberWork=false | a6-on (alpha6ReviewRouting: true)
+[2026-11-13T15:03:43.837Z] sandbox backend in use: full (usable=true)
+[2026-11-13T15:03:43.844Z] ports: host=13010 mock=13060
+[2026-11-13T15:03:48.852Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T15:03:48.859Z] mock model listening on 13060
+[2026-11-13T15:03:50.409Z] boot: url seen (port 13010)
+[2026-11-13T15:03:50.528Z] boot: authenticated
+[2026-11-13T15:03:51.534Z] boot: row health ok (toolCount=15)
+[2026-11-13T15:03:51.538Z] host booted at http://127.0.0.1:13010; row ready — toolCount=15
+[2026-11-13T15:03:51.539Z] ── L0: discovery ──
+[2026-11-13T15:03:51.959Z] discovery surface=32 tools; deny list=11
+[2026-11-13T15:03:52.261Z] CW team-create {"ok":true}
+[2026-11-13T15:03:52.496Z] CW members-created {"officer":"inst-0m5km7x1h273","officerSession":"session-team-child-28cfc94c336b2253fc8758c1157f8d95","worker":"inst-0msfjo11s8ea"}
+[2026-11-13T15:03:52.553Z] CW pre-crash-delegate {"status":200}
+[2026-11-13T15:03:52.653Z] CW pre-crash-bash-call {"callId":"call-c1-2he3aqxd"}
+[2026-11-13T15:03:52.755Z] CW pre-crash-request {"requestId":"ctrl-1hj1deh0w125241xjkt2r14y","actionName":"parameter-permission"}
+[2026-11-13T15:03:52.956Z] CW pre-crash-decision {"requestId":"ctrl-1hj1deh0w125241xjkt2r14y","decider":{"instanceId":"inst-0m5km7x1h273","kind":"instance","role":"member"},"wakeTurns":3}
+[2026-11-13T15:04:13.856Z] CW kill-point {"point":"after-decision","consumed":null,"exec":null}
+[2026-11-13T15:04:13.907Z] CW sigkill {"at":"2026-11-13T15:04:13.907Z","dead":true,"seqAtKill":13,"wakeFilesAtKill":["wake-1a3dcb47.json"],"point":"after-decision"}
+[2026-11-13T15:04:15.722Z] CW cold-boot {"port":13010,"seq":13}
+[2026-11-13T15:04:27.724Z] CW recovery-settled {"wakeFiles":1,"seq":13}
+[2026-11-13T15:04:27.725Z] CW recovery-wake-turns {"count":0}
+[2026-11-13T15:04:27.852Z] CW follow-up {"status":200,"refusal":null}
+[2026-11-13T15:05:28.031Z] CW fresh-member {"instanceId":"inst-0d99f4e0nvnc","refusal":null}
+[2026-11-13T15:05:28.104Z] CW post-restart-delegate {"status":200,"refusal":null}
+[2026-11-13T15:05:28.205Z] CW new-bash-call {"callId":"call-c1-zay6gy6a","vehicle":"fresh Member delegate (follow_up was admitted but started no turn in 60 s)"}
+[2026-11-13T15:05:28.306Z] CW new-request-minted {"requestId":"ctrl-0gxdnbf1ynrwxa1cs1tjt0od","actionName":"parameter-permission","at":"2026-11-13T15:05:28.306Z"}
+[2026-11-13T15:05:28.332Z] CW pending-listed {"count":1,"listedNewRequest":true,"listed":["ctrl-0gxdnbf1ynrwxa1cs1tjt0od"]}
+[2026-11-13T15:05:28.333Z] CW authority-comparison {"sameRowIdentical":true,"fields":14}
+[2026-11-13T15:05:28.333Z] CW nudge-skipped {"arm":"none","seq":17}
+[2026-11-13T15:05:28.584Z] CW wake-turn {"seq":18,"namesNewRequest":false,"persona":"unknown","wakeToken":"review-wake:session-a1-root-2026-11-13T15-03-43-h0-r1386cd:inst-0m5km7x1h273:1:a6wake%3Av1%3A1%3A97721378"}
+[2026-11-13T15:05:28.584Z] CW wake-intent-dir-changed {"files":[]}
+[2026-11-13T15:06:33.507Z] CW window-end {"decided":false,"decider":null,"nudgeTurns":0,"wakeTurns":1,"nudgeStartedTurn":false,"officerNudgeTurn":false,"wakeNamedNew":false}
+[2026-11-13T15:06:33.544Z] CW operator-resolve {"status":200,"code":null}
+[2026-11-13T15:06:34.551Z] teardown: stopping host + mock
+[2026-11-13T15:06:39.556Z] VERDICT PASS
+EXIT=0
