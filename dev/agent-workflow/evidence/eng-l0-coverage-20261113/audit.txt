@@ -1,0 +1,15 @@
+coverage-audit (origin/master, last 40 commits with a diff):
+  determined   20
+  undetermined 20  (50%)
+  paths that make a change undetermined:
+      4x  tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs
+      3x  tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs
+      2x  .merge-loop.sh
+      2x  .merge2.sh
+      2x  .nbp.patch
+      2x  tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs
+      2x  tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs
+      2x  tests/kits/wp3-fence-timing/wp3-fence-timing.mjs
+      1x  .anchorfix.py
+      1x  .merge.log
+DSH-COVERAGE-AUDIT commits=40 undetermined=20 rate_pct=50 top=tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs

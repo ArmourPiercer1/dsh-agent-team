@@ -1,0 +1,20 @@
+evidence READMEs: 192
+with a PASS/green claim: 179
+with a run id / sha / commit nearby: 86
+without: 93 (52%)
+first 15 without:
+dev/agent-workflow/evidence/a4-ceiling-coverage/README.md
+dev/agent-workflow/evidence/a4-escalate-truth/README.md
+dev/agent-workflow/evidence/a4-pr76-acceptance-world/README.md
+dev/agent-workflow/evidence/a56-semantics/README.md
+dev/agent-workflow/evidence/a5sf-ask-closed/README.md
+dev/agent-workflow/evidence/a5sf-assembly/README.md
+dev/agent-workflow/evidence/a5sf-bash/README.md
+dev/agent-workflow/evidence/a5sf-bl16-grep/README.md
+dev/agent-workflow/evidence/a5sf-boot-publish/README.md
+dev/agent-workflow/evidence/a5sf-boot-seam/README.md
+dev/agent-workflow/evidence/a5sf-deferred/README.md
+dev/agent-workflow/evidence/a5sf-e8-freeze/README.md
+dev/agent-workflow/evidence/a5sf-event-driven/README.md
+dev/agent-workflow/evidence/a5sf-f1-ctx/README.md
+dev/agent-workflow/evidence/a5sf-face-decl-impact/README.md
