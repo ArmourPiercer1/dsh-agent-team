@@ -166,3 +166,25 @@ node tests/kits/a6-cold-wake-20261113/a6-cold-wake.mjs \
 
 Exit code 2 = the finding reproduced (`VERDICT FAIL — failed: COLD-WAKE`). A control run uses
 `--cw-kill after-completion`. Ports: host `3181-3199` (3180 excluded), mock `3491-3500`.
+
+## 10. Artifact bundling (2026-11-13) — why each run has one `artifacts.json`
+
+The repository budget `scripts/integration-order.mjs` `BOUNDS.maxCandidates = 6000` ("committed `.json`
+under `dev/agent-workflow/evidence`") is a hard ceiling: at `origin/master` `28b083d9a` the tree already
+carried **5983** such files, and this lane originally added **53** more, so the bound was hit
+(**6036 > 6000**) and `tests/u7-3-devex/devex-integration.test.mjs` E4/E5 failed on this branch — a real,
+PR-caused red, not a pre-existing one. Rather than raise a repo-wide bound from inside an evidence lane
+(an owner measurement, not this lane's call), the per-run JSON was **bundled without loss**:
+
+- `cw-facts.json` (the measurement itself) and every `.md` / `.log` artifact stay as separate files;
+- each run directory now carries **one** `artifacts.json` (`schema: a6-cold-wake-artifacts/1`) holding the
+  other eight files **verbatim**: original name → `{bytes, sha256, text}`. Unpacking reproduces them
+  bit-for-bit:
+  `node -e 'const b=require("./artifacts.json");for(const [n,v] of Object.entries(b.files)) require("fs").writeFileSync(n,v.text)'`
+- nothing was edited, summarised, re-serialised or dropped; the sha256 per entry is the check.
+
+After bundling this lane contributes **11** committed `.json` files (5 × `cw-facts.json` + 6 ×
+`artifacts.json`; `diag-1` has no `cw-facts.json`), so the tree sits at **5994 / 6000**. That is a
+**disclosure to the owner, not a fix of the budget**: the remaining headroom is 6 files, and the next
+evidence lane will hit the same wall. The bound should be re-measured and, if evidence is to keep growing,
+raised by whoever owns `scripts/integration-order.mjs` — this lane deliberately did not touch it.

@@ -1,8 +1,0 @@
-{
-  "status": "ok",
-  "exitCode": 0,
-  "backend": "full",
-  "usable": true,
-  "stdout": "runtime tree : /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use\nbaseline pin : 0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84\nmanifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json\nprobe        : before-provision=full -> after-provision=full\nbackend      : full (usable: true)\nlauncher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31\nporcelain    : empty (assets are gitignored)\n",
-  "stderr": ""
-}
