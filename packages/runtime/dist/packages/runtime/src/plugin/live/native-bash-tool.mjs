@@ -36,7 +36,7 @@
  */
 import { apply as applyPersistentBash } from '@deepseek-ai/dsh-tool-bash-persistent'
 import { nativeAdmissionOf, NATIVE_ADMISSION_UNAVAILABLE } from './native-tool-admission.mjs'
-import { outcomeOfTerminalResult } from '../../../operation-permission/execution-outcome.js'
+import { outcomeOfTerminalResult } from '../../../operation-permission/pre-execute-adapter.js'
 
 /** The plugin name route C reports in its receipts. */
 export const name = 'a5sf-native-bash-persistent'

@@ -462,5 +462,12 @@
    "pr": "PD41-ABORT-CLASS (task/pd41-abort-class-20261111, draft PR `PD41-ABORT-CLASS`, base master) - NAMED center-interface change, same file/class as the PD-41 (#719) bookings above",
    "reason": "PD41-ABORT-CLASS (independent audit follow-up to PD-41): three of the four door refusals that PD-41's notes covered were still bare `Error`s. The definition-unreadable, kernel-table-drift and dual-definition-reentry refusals now throw the SAME typed ToolDispatchRefusalError as the Guard refusal (code TOOL_BINDING_UNVERIFIED + their own reason: definition-unreadable / definition-drift / binding-unverified) with every message byte-identical; the fourth (the host execution object cannot hold a cancellable signal) stays prose because no existing \u00a75 code truthfully describes a non-Binding execution-surface failure. No authority is widened and no decision moves: the same conditions, the same pre-Body refusal, the same sentence. This entry is a NAMED interface booking for the dispatch door, assigned and reviewed as such (evidence dev/agent-workflow/evidence/pd41-abort-class/)."
   }
+,
+  {
+   "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+   "sha256": "b811211bf853f6888a2d361e61fdd05a9b0697b8ae45e2aadb0c699b6ff96724",
+   "pr": "PR #751 (PD42-EXECUTION-OUTCOME) - NAMED center-interface change, J05J06/#733 precedent",
+   "reason": "PD-42 (owner ruling 2026-11-13): the terminal observer that already owns the execution fact now derives it from the pinned shell status trailer instead of isError alone (exit 0 succeeded, non-zero exit failed, timeout/OOM unknown, killed failed), and it is the shared home for the predicate so the ARC-A booking law gains NO new protected file (execution-outcome.ts deleted). The J05J06/#733 precedent applies: this is an interface change at the existing seam that settles the execution fact, reviewed as such; consumption, replay, exactly-once and the approval ceiling are untouched. The outside outcome changing from succeeded to failed on an OS-refused write is the point of the PR, not a family addition."
+  }
  ]
 }

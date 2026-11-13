@@ -74,6 +74,11 @@ function observedCompletion(result) {
  * structured `exitCode` is available on this lane (unlike the native tool's
  * text trailer), so it is read directly. `null`/absent exit codes keep the
  * historical completed reading (search rows carry no exit code at all).
+ *
+ * The runtime twin of this law is the terminal classifier in
+ * `packages/runtime/operation-permission/pre-execute-adapter.ts` (PD-42). This
+ * lane cannot import it without inverting the tools -> runtime layering, so the
+ * pure predicate is duplicated here; keep the two in step.
  */
 function failedExit(result) {
     const exitCode = result.outcome.exitCode;

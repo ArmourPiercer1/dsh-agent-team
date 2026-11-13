@@ -24,7 +24,7 @@ import { describe, expect, it } from 'vitest'
 import {
   outcomeOfTerminalResult,
   shellTerminalStatusOfResult,
-} from '../operation-permission/execution-outcome.js'
+} from '../operation-permission/pre-execute-adapter.js'
 
 /** The `ToolResult` shape the terminal funnel receives. */
 function toolResult(text: string, isError = false): {
