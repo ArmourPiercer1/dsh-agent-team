@@ -27,13 +27,9 @@
  * |                       | own operation; `decision=escalate` routes to |
  * |                       | `escalateApprovalLeg` (A4-PR5, PR4 duty b)   |
  * | team_list_pending_control | control service `listControlState`     |
- * |                       | (read-only, zero writes, no query language:  |
- * |                       | the Leader sees every open approval case at |
- * |                       | its current leg (incl. user-approval); an   |
- * |                       | assigned Officer sees its own current legs; |
- * |                       | an unassigned member is refused. The #756    |
- * |                       | all-requests view with resolver kind+       |
- * |                       | identity is REGISTERED, NOT implemented)     |
+ * |                       | (read-only, zero writes; the Leader sees    |
+ * |                       | every open case at its current leg; an      |
+ * |                       | assigned Officer its own legs — per-caller) |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
