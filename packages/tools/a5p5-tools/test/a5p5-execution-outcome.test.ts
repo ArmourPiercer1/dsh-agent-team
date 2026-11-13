@@ -8,8 +8,11 @@
  * confined shell logged `cancelled=true exit=not-observed` and no effect file
  * landed, while the durable `control-execution-result` said `succeeded`. A
  * cancelled or timed-out body now reports `unknown` — the ledger's existing
- * value for "admitted, end never observed" — and a completed run still reports
- * `succeeded` (including a non-zero exit: the run completed, the code is data).
+ * value for "admitted, end never observed" — and a completed run with exit
+ * code 0 reports `succeeded`. PD-42 (owner ruling 2026-11-13) supersedes the
+ * earlier "a non-zero exit is still a completion, the code is data" clause: a
+ * completed shell body that reported a NON-ZERO exit is `failed`, because the
+ * durable fact must not claim a refused/failed command succeeded.
  *
  * This law belongs to the lane that owns the observation; the typed dispatch
  * refusal it pairs with is pinned in `runtime/test/pd41-allow-semantics.test.ts`.
@@ -54,7 +57,7 @@ describe('PD-41 A — an answered call is not automatically a completed one', ()
     })).toBe('unknown')
   })
 
-  it('a completed run is `succeeded`, including a NON-ZERO exit (the code is data, not a verdict)', () => {
+  it('a completed run with exit code 0 is `succeeded`; a NON-ZERO exit is `failed` (PD-42)', () => {
     expect(executionOutcomeOfAnsweredCall({
       ok: true,
       outcome: shell({ exitCode: 0, stdout: 'ok' }),
@@ -63,6 +66,14 @@ describe('PD-41 A — an answered call is not automatically a completed one', ()
     expect(executionOutcomeOfAnsweredCall({
       ok: true,
       outcome: shell({ exitCode: 3, stderr: 'boom' }),
+      settlement: { kind: 'completed' as const },
+    })).toBe('failed')
+  })
+
+  it('a completed SEARCH run (no exit code) is still `succeeded`', () => {
+    expect(executionOutcomeOfAnsweredCall({
+      ok: true,
+      outcome: { outputMode: 'content' as const, matches: [], counts: [], files: [], totalMatches: 0, truncated: false },
       settlement: { kind: 'completed' as const },
     })).toBe('succeeded')
   })
@@ -220,12 +231,12 @@ describe('PD41-ABORT-CLASS — a non-user/non-parent abort is never `succeeded`'
     })).toBe('unknown')
   })
 
-  it('a completed settlement still succeeds on a NON-ZERO exit (the code is data)', () => {
+  it('a completed settlement with a NON-ZERO exit is `failed` (PD-42)', () => {
     expect(executionOutcomeOfAnsweredCall({
       ok: true,
       outcome: shell({ exitCode: 7, stderr: 'boom' }),
       settlement: { kind: 'completed' as const },
-    })).toBe('succeeded')
+    })).toBe('failed')
   })
 
   it('an ABORT-SHAPED THROW is `unknown`; any other throw stays `failed` (the existing arm)', async () => {

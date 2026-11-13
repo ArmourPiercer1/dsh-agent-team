@@ -112,7 +112,7 @@ export declare function executionOutcomeOfAnsweredCall(result: {
     readonly outcome: SearchOutcome | ShellOutcome;
     /** The terminal fact the backend observed. Absent only on archived fixtures. */
     readonly settlement?: LeaseSettlement;
-}): 'succeeded' | 'unknown';
+}): 'succeeded' | 'failed' | 'unknown';
 export interface SpillPointerFact {
     readonly spillId: string;
     readonly bytes: number;

@@ -830,6 +830,123 @@ const SHELL_COMMAND_PREVIEW_MAX = 120
  * the route gate refuses the leg by name instead of routing it at a guessed
  * generation.
  */
+// ---------------------------------------------------------------------------
+// PD-42 — the ONE derivation of a `control-execution-result` outcome.
+//
+// Moved here from a standalone `execution-outcome.ts` (2026-11-13) because the
+// ARC-A protected-centre booking law allows no NEW file under
+// `packages/runtime/operation-permission/`; this file is the terminal observer
+// that already owns the durable write, so it is the natural home. The native
+// bash admission edge imports the predicate from here; the a5p5 lane keeps its
+// own structured-exit predicate (see pipeline.ts) because a tools -> runtime
+// import would invert the package layering.
+//
+// PD-42 (owner ruling 2026-11-13) supersedes the PD-41 clause that called a
+// non-zero shell exit "still a completion and therefore `succeeded`". Closed
+// vocabulary (the durable schema already allows exactly these three; no new
+// state is invented): `succeeded | failed | unknown`.
+// ---------------------------------------------------------------------------
+
+/** The durable `control-execution-result` outcome vocabulary (unchanged). */
+export type ControlExecutionOutcome = 'succeeded' | 'failed' | 'unknown'
+
+/**
+ * The terminal status the pinned persistent-shell tool appends to its
+ * model-facing text. `undefined` = the result was not a shell observation (or
+ * its trailer was absent), and the caller falls back to `isError`.
+ */
+export type ShellTerminalStatus =
+  | { readonly kind: 'exit'; readonly code: number }
+  | { readonly kind: 'timed-out' }
+  | { readonly kind: 'session-exit'; readonly code: number | null }
+  | { readonly kind: 'signal'; readonly signal: string }
+
+const EXIT_TRAILER = /^\[Command finished with exit code (-?\d+)\]$/
+const TIMEOUT_TRAILER = '[Command timed out or OOM]'
+const SESSION_EXIT_TRAILER = /^\[shell exited(?:: code (-?\d+))?\]$/
+const SIGNAL_TRAILER = /^\[shell killed by signal: ([^\]\n]+)\]$/
+
+/**
+ * The model-facing text of a tool result. Supports the `ToolResult` shape
+ * (`content: ContentBlock[]`, text blocks) and a raw string (fixtures and
+ * older rows); anything else is `undefined`.
+ */
+function resultText(result: unknown): string | undefined {
+  if (typeof result === 'string') return result
+  if (result === null || typeof result !== 'object') return undefined
+  const content = (result as { content?: unknown }).content
+  if (typeof content === 'string') return content
+  if (!Array.isArray(content)) return undefined
+  let text = ''
+  let sawText = false
+  for (const block of content) {
+    if (block === null || typeof block !== 'object') continue
+    const candidate = block as { type?: unknown; text?: unknown }
+    if (candidate.type !== 'text' || typeof candidate.text !== 'string') continue
+    text += candidate.text
+    sawText = true
+  }
+  return sawText ? text : undefined
+}
+
+/**
+ * Read the pinned shell status trailer from the LAST line of the result text.
+ * Anchored (`$`) and last-line-only, so a look-alike marker inside the command
+ * output cannot decide the fact — the tool's own marker is always appended
+ * after that output.
+ */
+export function shellTerminalStatusOfResult(result: unknown): ShellTerminalStatus | undefined {
+  const text = resultText(result)
+  if (text === undefined) return undefined
+  const trimmed = text.trimEnd()
+  if (trimmed.length === 0) return undefined
+  const line = trimmed.slice(trimmed.lastIndexOf('\n') + 1)
+  if (line === TIMEOUT_TRAILER) return { kind: 'timed-out' }
+  const exit = EXIT_TRAILER.exec(line)
+  if (exit !== null) return { kind: 'exit', code: Number(exit[1]) }
+  const sessionExit = SESSION_EXIT_TRAILER.exec(line)
+  if (sessionExit !== null) {
+    return { kind: 'session-exit', code: sessionExit[1] === undefined ? null : Number(sessionExit[1]) }
+  }
+  const signal = SIGNAL_TRAILER.exec(line)
+  if (signal !== null) return { kind: 'signal', signal: signal[1] as string }
+  return undefined
+}
+
+/**
+ * The outcome of one terminal tool result. See the module header for the
+ * closed vocabulary and why each branch answers what it answers.
+ */
+export function outcomeOfTerminalResult(result: unknown): ControlExecutionOutcome {
+  if (result === null || typeof result !== 'object') return 'unknown'
+  const record = result as { isError?: unknown; error?: unknown }
+  if (record.isError === true) {
+    // An ANSWERED failure is `failed` unless the body was aborted: an abort is
+    // not an observed execution failure (PD-41).
+    const error = record.error
+    if (error !== null && typeof error === 'object') {
+      const info = (error as { info?: unknown }).info
+      if (info !== null && typeof info === 'object') {
+        const code = (info as { code?: unknown }).code
+        if (code === 'TOOL_ABORTED' || code === 'TOOL_ABORTED_BEFORE_DISPATCH') return 'unknown'
+      }
+      const name = (error as { name?: unknown }).name
+      if (name === 'AbortError') return 'unknown'
+    }
+    return 'failed'
+  }
+  if (record.isError !== false) return 'unknown'
+  const status = shellTerminalStatusOfResult(result)
+  if (status !== undefined) {
+    if (status.kind === 'exit') return status.code === 0 ? 'succeeded' : 'failed'
+    if (status.kind === 'signal') return 'failed'
+    // A timeout/OOM never observed the command's end; a shell session exit did
+    // not observe the command finish either. Both are the honest `unknown`.
+    return 'unknown'
+  }
+  return 'succeeded'
+}
+
 async function resolveAlpha6AuthorityGeneration(
   identity: Alpha6AskIdentity,
 ): Promise<number | undefined> {
@@ -843,41 +960,6 @@ async function resolveAlpha6AuthorityGeneration(
     return undefined
   }
   return generation
-}
-
-/**
- * J05 / PD-41 — classify the OBSERVED terminal result of one tool invocation
- * into the ledger's closed outcome vocabulary. The classification is about
- * what was observed, never about what the backend answered:
- *
- * - `succeeded` — the body returned a completed, non-error result (the end was
- *   observed; a non-zero exit is still a completion and stays `succeeded`);
- * - `unknown` — the invocation was cancelled/aborted or its end was never
- *   observed (the PD-41 abort class: `TOOL_ABORTED`,
- *   `TOOL_ABORTED_BEFORE_DISPATCH`, an `AbortError`), and any shape this
- *   module does not recognise;
- * - `failed` — an ANSWERED failure: the body ran and reported an error, or the
- *   dispatch itself was refused after the allow was consumed.
- *
- * A result this classifier cannot read is `unknown`, never `succeeded`: the
- * ledger may not claim a completion nobody watched.
- */
-function outcomeOfTerminalResult(result: unknown): 'succeeded' | 'failed' | 'unknown' {
-  if (result === null || typeof result !== 'object') return 'unknown'
-  const record = result as { isError?: unknown; error?: unknown }
-  if (record.isError === false) return 'succeeded'
-  if (record.isError !== true) return 'unknown'
-  const error = record.error
-  if (error !== null && typeof error === 'object') {
-    const info = (error as { info?: unknown }).info
-    if (info !== null && typeof info === 'object') {
-      const code = (info as { code?: unknown }).code
-      if (code === 'TOOL_ABORTED' || code === 'TOOL_ABORTED_BEFORE_DISPATCH') return 'unknown'
-    }
-    const name = (error as { name?: unknown }).name
-    if (name === 'AbortError') return 'unknown'
-  }
-  return 'failed'
 }
 
 /**

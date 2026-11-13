@@ -1,0 +1,96 @@
+
+ RUN  v4.1.8 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/packages/tools/a5p5-tools
+
+ ✓ test/a5p5-render.test.ts (7 tests) 4ms
+ ✓ test/a5p5-spill.test.ts (11 tests) 12ms
+ ❯ test/a5p5-dormant-audit.test.ts (9 tests | 1 failed) 117ms
+     ✓ no shipped source outside the lane references a5p5-tools 80ms
+     ✓ the one reviewed edge is exactly the live row barrel import, and nothing else 1ms
+     ✓ the A5-M1 correlation spec touches the lane ONLY as its one pinned dynamic barrel line 6ms
+     × the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge 5ms
+     ✓ the a5glb glob parity spec names the lane ONLY as one quoted read path, never as an edge 22ms
+     ✓ the a5p0 consumer-set pin names the lane ONLY as quoted consumer paths, never as an edge 1ms
+     ✓ the tools build tsconfig names the lane ONLY as the bare compile-face include, never as an edge 0ms
+     ✓ the runtime build tsconfig names the lane ONLY as the bare install-surface include, never as an edge 0ms
+     ✓ the shared tools barrel still does not know the lane (explicit leg) 0ms
+ ✓ test/a5p5-render-injection.test.ts (8 tests) 7ms
+ ✓ test/a5p5-args.test.ts (13 tests) 9ms
+ ✓ test/a5p5-effects-schema.test.ts (17 tests) 16ms
+ ❯ test/a5p5-execution-outcome.test.ts (14 tests | 2 failed) 17ms
+     ✓ a cancelled body (exit not observed) is `unknown`, never `succeeded` 1ms
+     ✓ a timed-out body is `unknown` (the race never saw an end) 0ms
+     × a completed run with exit code 0 is `succeeded`; a NON-ZERO exit is `failed` (PD-42) 5ms
+     ✓ a completed SEARCH run (no exit code) is still `succeeded` 0ms
+     ✓ a cancelled SHELL row reports `unknown` through the ONE pipeline (and still renders cancelled) 3ms
+     ✓ an ANSWERED FAILURE stays `failed` and a THROW stays `failed` (unchanged) 2ms
+     ✓ a SEARCH row (no cancel bit) keeps `succeeded` — the law never changes another arm 1ms
+     ✓ a forwarded inherited-signal abort (cancelled=false, settlement=cancelled) is `unknown` 0ms
+     ✓ a host-deadline abort (a DOMException reason, cancelled=false) is `unknown` 0ms
+     ✓ a plain AbortError abort (cancelled=false, settlement=cancelled) is `unknown` 0ms
+     ✓ a settlement that is not `completed` wins over a mislabelled outcome (defence in depth) 0ms
+     × a completed settlement with a NON-ZERO exit is `failed` (PD-42) 1ms
+     ✓ an ABORT-SHAPED THROW is `unknown`; any other throw stays `failed` (the existing arm) 1ms
+     ✓ the non-user abort reaches the pipeline as `unknown` (one row, one observation) 0ms
+ ✓ test/a5p5-parity.test.ts (17 tests) 28ms
+ ✓ test/a5p5-shell-effect-mapping.test.ts (6 tests) 8ms
+ ✓ test/a5p5-barrel-emit.test.ts (4 tests) 1059ms
+     ✓ tsc -p tsconfig.build.json emits, the emitted index.js imports, and the full barrel surface behaves from dist  1055ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/a5p5-dormant-audit.test.ts > a5p5-dormant-audit > the p4t6 census names the lane ONLY as quoted ledger paths, never as an edge
+AssertionError: pd42outcome.json: "reason": "PD-42 (owner ruling 2026-11-13): the durable `control-execution-result` outcome must follow what the execution did, not the tool's `isError` bit. The measured defect (`dev/agent-workflow/evidence/v016-min-closing-20261113/`, proposition 1, twice reproduced): an APPROVED governed bash write outside the Member ceiling was refused by the OS (`Read-only file system`, target ENOENT, shell exit 1) while the ledger wrote `outcome=succeeded`. This booking names the TWO new scannable files: (1) `packages/runtime/operation-permission/execution-outcome.ts` — the ONE shared classifier (`succeeded | failed | unknown`, the schema's existing closed vocabulary) now imported by BOTH durable-fact writers (the permission lane's terminal observer in `pre-execute-adapter.ts` and the native-bash admission edge in `src/plugin/live/native-bash-tool.mjs`): it reads the pinned persistent-shell status trailer (`[Command finished with exit code N]`, `[Command timed out or OOM]`, `[shell exited: code N]`, `[shell killed by signal: X]`) anchored to the END of the model-facing text, so a non-zero exit / refusal is `failed`, a timeout or session exit is `unknown`, and exit 0 stays `succeeded`; (2) `packages/runtime/test/pd42-execution-outcome.test.ts` — the host-free regression over ToolResult shapes, including the measured refusal text, and the look-alike-marker anchoring leg. All other edits this lane makes are EDITS to already-counted paths (`pre-execute-adapter.ts`, `src/plugin/live/native-bash-tool.mjs`, `packages/tools/a5p5-tools/src/pipeline.ts`, the a5p5 execution-outcome spec). No new denylist vocabulary; dist mirrors and dev-evidence live outside the scan.",: expected '"reason": "PD-42 (owner ruling 2026-1…' to match /^"packages\/tools\/a5p5-tools\/…/tools\
+
+- Expected:
+/^"packages\/tools\/a5p5-tools\/[^"]+",?$/
+
++ Received:
+"\"reason\": \"PD-42 (owner ruling 2026-11-13): the durable `control-execution-result` outcome must follow what the execution did, not the tool's `isError` bit. The measured defect (`dev/agent-workflow/evidence/v016-min-closing-20261113/`, proposition 1, twice reproduced): an APPROVED governed bash write outside the Member ceiling was refused by the OS (`Read-only file system`, target ENOENT, shell exit 1) while the ledger wrote `outcome=succeeded`. This booking names the TWO new scannable files: (1) `packages/runtime/operation-permission/execution-outcome.ts` — the ONE shared classifier (`succeeded | failed | unknown`, the schema's existing closed vocabulary) now imported by BOTH durable-fact writers (the permission lane's terminal observer in `pre-execute-adapter.ts` and the native-bash admission edge in `src/plugin/live/native-bash-tool.mjs`): it reads the pinned persistent-shell status trailer (`[Command finished with exit code N]`, `[Command timed out or OOM]`, `[shell exited: code N]`, `[shell killed by signal: X]`) anchored to the END of the model-facing text, so a non-zero exit / refusal is `failed`, a timeout or session exit is `unknown`, and exit 0 stays `succeeded`; (2) `packages/runtime/test/pd42-execution-outcome.test.ts` — the host-free regression over ToolResult shapes, including the measured refusal text, and the look-alike-marker anchoring leg. All other edits this lane makes are EDITS to already-counted paths (`pre-execute-adapter.ts`, `src/plugin/live/native-bash-tool.mjs`, `packages/tools/a5p5-tools/src/pipeline.ts`, the a5p5 execution-outcome spec). No new denylist vocabulary; dist mirrors and dev-evidence live outside the scan.\","
+
+ ❯ test/a5p5-dormant-audit.test.ts:313:56
+    311|         if (!line.includes('a5p5-tools')) continue
+    312|         named += 1
+    313|         expect(line.trim(), `${file}: ${line.trim()}`).toMatch(/^"pack…
+       |                                                        ^
+    314|       }
+    315|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  test/a5p5-execution-outcome.test.ts > PD-41 A — an answered call is not automatically a completed one > a completed run with exit code 0 is `succeeded`; a NON-ZERO exit is `failed` (PD-42)
+AssertionError: expected 'succeeded' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "succeeded"
+
+ ❯ test/a5p5-execution-outcome.test.ts:70:9
+     68|       outcome: shell({ exitCode: 3, stderr: 'boom' }),
+     69|       settlement: { kind: 'completed' as const },
+     70|     })).toBe('failed')
+       |         ^
+     71|   })
+     72|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  test/a5p5-execution-outcome.test.ts > PD41-ABORT-CLASS — a non-user/non-parent abort is never `succeeded` > a completed settlement with a NON-ZERO exit is `failed` (PD-42)
+AssertionError: expected 'succeeded' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "succeeded"
+
+ ❯ test/a5p5-execution-outcome.test.ts:239:9
+    237|       outcome: shell({ exitCode: 7, stderr: 'boom' }),
+    238|       settlement: { kind: 'completed' as const },
+    239|     })).toBe('failed')
+       |         ^
+    240|   })
+    241|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 8 passed (10)
+      Tests  3 failed | 103 passed (106)
+   Start at  16:16:30
+   Duration  1.26s (transform 2.02s, setup 0ms, import 2.30s, tests 1.28s, environment 1ms)

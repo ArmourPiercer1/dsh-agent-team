@@ -755,6 +755,44 @@ export interface Alpha6AskIdentity {
  */
 export declare const END_CAP_DENIAL_REASON = "permission denied: no Team permission authorization for this execution (pre-dispatch policy not reached \u2014 monotonic end-cap)";
 /**
+ * J06 — read the OperationOwner's durable authority generation through the
+ * glue's reader. A faulting/absent/malformed answer is `undefined` (NEVER a
+ * fabricated `0`): the caller then leaves the tool coordinate off the row, so
+ * the route gate refuses the leg by name instead of routing it at a guessed
+ * generation.
+ */
+/** The durable `control-execution-result` outcome vocabulary (unchanged). */
+export type ControlExecutionOutcome = 'succeeded' | 'failed' | 'unknown';
+/**
+ * The terminal status the pinned persistent-shell tool appends to its
+ * model-facing text. `undefined` = the result was not a shell observation (or
+ * its trailer was absent), and the caller falls back to `isError`.
+ */
+export type ShellTerminalStatus = {
+    readonly kind: 'exit';
+    readonly code: number;
+} | {
+    readonly kind: 'timed-out';
+} | {
+    readonly kind: 'session-exit';
+    readonly code: number | null;
+} | {
+    readonly kind: 'signal';
+    readonly signal: string;
+};
+/**
+ * Read the pinned shell status trailer from the LAST line of the result text.
+ * Anchored (`$`) and last-line-only, so a look-alike marker inside the command
+ * output cannot decide the fact — the tool's own marker is always appended
+ * after that output.
+ */
+export declare function shellTerminalStatusOfResult(result: unknown): ShellTerminalStatus | undefined;
+/**
+ * The outcome of one terminal tool result. See the module header for the
+ * closed vocabulary and why each branch answers what it answers.
+ */
+export declare function outcomeOfTerminalResult(result: unknown): ControlExecutionOutcome;
+/**
  * Install the parameter-permission pre-execute listener on one agent ctx
  * (plan §10.1: installed only for agents whose bound template declares
  * `permissions` — the install decision itself is the A6 glue's; once

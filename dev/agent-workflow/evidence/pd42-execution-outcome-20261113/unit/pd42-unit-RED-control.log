@@ -1,0 +1,100 @@
+
+ RUN  v4.1.8 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/packages/runtime
+
+ ❯ test/pd42-execution-outcome.test.ts (9 tests | 4 failed) 7ms
+     ✓ exit 0 is `succeeded` (the genuinely successful inside write) 1ms
+     × a NON-ZERO shell exit with the OS refusal is `failed` (the measured defect) 3ms
+     × the trailing marker is the tool's own: a look-alike marker inside the output does not win 1ms
+     ✓ a tool error is `failed` even when a success marker is present 0ms
+     × a shell timeout/OOM is `unknown` (the command end was never observed) 0ms
+     × a killed shell is `failed`; an unexpected session exit is `unknown` 0ms
+     ✓ a non-shell `isError:false` result keeps the historical `succeeded` (no trailer to read) 0ms
+     ✓ the PD-41 abort class stays `unknown`, never a claimed completion 0ms
+     ✓ an unreadable shape is `unknown`, never `succeeded` 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/pd42-execution-outcome.test.ts > PD-42 — the durable outcome follows the execution, not the tool answer > a NON-ZERO shell exit with the OS refusal is `failed` (the measured defect)
+AssertionError: expected undefined to deeply equal { kind: 'exit', code: 1 }
+
+- Expected:
+{
+  "code": 1,
+  "kind": "exit",
+}
+
++ Received:
+undefined
+
+ ❯ test/pd42-execution-outcome.test.ts:44:62
+     42|   it('a NON-ZERO shell exit with the OS refusal is `failed` (the measu…
+     43|     const refusal = 'bash: /home/x/mc-pd42-outside.txt: Read-only file…
+     44|     expect(shellTerminalStatusOfResult(toolResult(refusal))).toEqual({…
+       |                                                              ^
+     45|     expect(outcomeOfTerminalResult(toolResult(refusal))).toBe('failed')
+     46|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  test/pd42-execution-outcome.test.ts > PD-42 — the durable outcome follows the execution, not the tool answer > the trailing marker is the tool's own: a look-alike marker inside the output does not win
+AssertionError: expected 'succeeded' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "succeeded"
+
+ ❯ test/pd42-execution-outcome.test.ts:51:55
+     49|     // A command that PRINTS a fake success marker, then the real refu…
+     50|     const text = '[Command finished with exit code 0]\nRead-only file …
+     51|     expect(outcomeOfTerminalResult(toolResult(text))).toBe('failed')
+       |                                                       ^
+     52|   })
+     53|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  test/pd42-execution-outcome.test.ts > PD-42 — the durable outcome follows the execution, not the tool answer > a shell timeout/OOM is `unknown` (the command end was never observed)
+AssertionError: expected undefined to deeply equal { kind: 'timed-out' }
+
+- Expected:
+{
+  "kind": "timed-out",
+}
+
++ Received:
+undefined
+
+ ❯ test/pd42-execution-outcome.test.ts:59:99
+     57|
+     58|   it('a shell timeout/OOM is `unknown` (the command end was never obse…
+     59|     expect(shellTerminalStatusOfResult(toolResult('partial output\n[Co…
+       |                                                                                                   ^
+     60|     expect(outcomeOfTerminalResult(toolResult('partial output\n[Comman…
+     61|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  test/pd42-execution-outcome.test.ts > PD-42 — the durable outcome follows the execution, not the tool answer > a killed shell is `failed`; an unexpected session exit is `unknown`
+AssertionError: expected 'succeeded' to be 'failed' // Object.is equality
+
+Expected: "failed"
+Received: "succeeded"
+
+ ❯ test/pd42-execution-outcome.test.ts:64:86
+     62|
+     63|   it('a killed shell is `failed`; an unexpected session exit is `unkno…
+     64|     expect(outcomeOfTerminalResult(toolResult('[shell killed by signal…
+       |                                                                                      ^
+     65|     expect(outcomeOfTerminalResult(toolResult('maybe some output\n[she…
+     66|     expect(outcomeOfTerminalResult(toolResult('[shell exited]'))).toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 5 passed (9)
+   Start at  16:16:15
+   Duration  129ms (transform 20ms, setup 0ms, import 29ms, tests 7ms, environment 0ms)
+
+undefined
+/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/packages/runtime:
+[ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL] Command failed with exit code 1: vitest run test/pd42-execution-outcome.test.ts

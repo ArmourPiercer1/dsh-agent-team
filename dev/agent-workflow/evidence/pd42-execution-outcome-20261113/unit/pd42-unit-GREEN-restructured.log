@@ -1,0 +1,9 @@
+
+ RUN  v4.1.8 /home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-outcome-20261117/packages/runtime
+
+ ✓ test/pd42-execution-outcome.test.ts (9 tests) 4ms
+
+ Test Files  1 passed (1)
+      Tests  9 passed (9)
+   Start at  17:43:05
+   Duration  1.09s (transform 842ms, setup 0ms, import 1.00s, tests 4ms, environment 0ms)

@@ -124,8 +124,11 @@ export interface RunToolCallDeps {
  *  - a `cancelled`/`timedOut` outcome → `unknown` too (defence in depth: even
  *    a backend that mislabels its settlement cannot make a cancel a success);
  *  - an observed completion (`settlement.kind === 'completed'`, i.e. the
- *    payload reported its own end) → `succeeded`, including a NON-ZERO exit —
- *    the code is data, not a verdict;
+ *    payload reported its own end) with exit code 0 → `succeeded`; a
+ *    NON-ZERO shell exit is `failed` (PD-42, owner ruling 2026-11-13: the
+ *    durable fact must record a refused/failed command as `failed`, not claim
+ *    the execution succeeded — the pre-PD-42 "the code is data" reading made
+ *    the ledger lie about an OS refusal);
  *  - a missing settlement keeps the historical flag-only reading (the
  *    archived fixture backends predate the settlement field).
  *
@@ -141,6 +144,22 @@ function observedCompletion(result: {
   return outcome.cancelled !== true && outcome.timedOut !== true
 }
 
+/**
+ * PD-42 — a completed shell body that reported a non-zero exit FAILED. The
+ * structured `exitCode` is available on this lane (unlike the native tool's
+ * text trailer), so it is read directly. `null`/absent exit codes keep the
+ * historical completed reading (search rows carry no exit code at all).
+ *
+ * The runtime twin of this law is the terminal classifier in
+ * `packages/runtime/operation-permission/pre-execute-adapter.ts` (PD-42). This
+ * lane cannot import it without inverting the tools -> runtime layering, so the
+ * pure predicate is duplicated here; keep the two in step.
+ */
+function failedExit(result: { readonly outcome: SearchOutcome | ShellOutcome }): boolean {
+  const exitCode = (result.outcome as { readonly exitCode?: unknown }).exitCode
+  return typeof exitCode === 'number' && exitCode !== 0
+}
+
 /** The execution fact of an ANSWERED call (see the classification above). */
 export function executionOutcomeOfAnsweredCall(
   result: {
@@ -149,8 +168,9 @@ export function executionOutcomeOfAnsweredCall(
     /** The terminal fact the backend observed. Absent only on archived fixtures. */
     readonly settlement?: LeaseSettlement
   },
-): 'succeeded' | 'unknown' {
-  return observedCompletion(result) ? 'succeeded' : 'unknown'
+): 'succeeded' | 'failed' | 'unknown' {
+  if (!observedCompletion(result)) return 'unknown'
+  return failedExit(result) ? 'failed' : 'succeeded'
 }
 
 /**

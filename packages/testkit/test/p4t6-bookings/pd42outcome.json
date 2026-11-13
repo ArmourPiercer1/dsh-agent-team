@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "PD42OUTCOME",
+  "paths": [
+    "packages/runtime/test/pd42-execution-outcome.test.ts"
+  ],
+  "expectedDelta": {
+    "from": 1510,
+    "to": 1511
+  },
+  "reason": "PD-42 (owner ruling 2026-11-13): the durable `control-execution-result` outcome must follow what the execution did, not the tool's `isError` bit. The measured defect (`dev/agent-workflow/evidence/v016-min-closing-20261113/`, proposition 1, twice reproduced): an APPROVED governed bash write outside the Member ceiling was refused by the OS (`Read-only file system`, target ENOENT, shell exit 1) while the ledger wrote `outcome=succeeded`. This booking names the ONE new scannable file: `packages/runtime/test/pd42-execution-outcome.test.ts` - the host-free regression over ToolResult shapes, including the measured refusal text, and the look-alike-marker anchoring leg. The classifier itself lives in the existing `packages/runtime/operation-permission/pre-execute-adapter.ts` (the ARC-A protected centre gains ZERO new files; the first cut's standalone helper was deleted, so it is not booked and not counted). All other edits this lane makes are EDITS to already-counted paths (`pre-execute-adapter.ts`, `src/plugin/live/native-bash-tool.mjs`, the a5p5 pipeline source, and the a5p5 execution-outcome spec). No new denylist vocabulary; dist mirrors and dev-evidence live outside the scan.",
+  "tieNote": "Measured on THIS branch after the ARC-A restructure, with the one new test file on disk and no booking: `pnpm --filter @dsh-agent-team/testkit exec vitest run test/p4t6-session-event-scan.test.ts` reported `scanner counts 1511, ledger derives 983 + 529 = 1512` (the booking still claimed two new paths). The booking now names exactly the one test path, so 1510 -> 1511. The pre-restructure two-file reading is in the same lane's history; no chain value copied."
+}
