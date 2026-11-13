@@ -189,6 +189,18 @@ re-resolving the old request.
 > §6 record them), so do not expect a one-line fix. **Operator action: go straight to
 > `team_list_pending_control` + `team_resolve_control`.**
 
+> **2026-11-13 boundary note (append-only, same day; issue #756).** The sentence "the
+> `team_list_pending_control` clause is the **only** one that holds" holds **only for a Leader reading
+> a `leader-approval` ask**. The list is still Leader-gated (`TEAM_TOOL_PENDING_LIST_NOT_LEADER`,
+> checked before any read) and still returns `leader-approval` only. Consequences after a cold boot:
+> an **Officer cannot discover its own pending ask** through the list, and a `user-approval` leg is
+> **invisible here** (that kind is not listed; the GUI is its check surface). Resolver authority is by
+> **scope** — the reviewer instance assigned to the ask's scope may decide it, and the ban is the
+> executor deciding its own operation, not "any member" — but the role-granted list redesign that
+> would make discovery match that rule is **registered in #756, not implemented**. The operator
+> remedy therefore still requires the **Leader** (or the human, off this list, for `user-approval`);
+> do not read this runbook as promising that a non-Leader reviewer can find the leg by listing.
+
 ---
 
 ## 4. What NOT to do

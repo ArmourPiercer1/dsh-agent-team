@@ -121,13 +121,13 @@
  * consumption"). Both probes fail closed (a thrown/malformed facts probe
  * is a deny) and are read-only (no durable row either way).
  *
- * Resolver authority (invariant 37 / Architecture 25.1): the closed
- * resolver role set per kind (CONTROL_RESOLVER_ROLES) is checked BEFORE
- * the envelope — a MEMBER is never a resolver for any kind, even when
- * its template envelope allows the `resolve-control` op (no
- * self-approval); `user-approval` may only be resolved by the human (the
- * leader cannot stand in for the user); a leader resolver still needs
- * the `resolve-control` op in its effective envelope.
+ * Resolver authority is by SCOPE, not role alone (invariant 37 successor;
+ * owner ruling 2026-11-13, issue #756). The closed role set still governs
+ * the native channels; a MEMBER is admitted only via a case/leg-scoped
+ * ReviewCapability, `leader-approval` legs only. The ban is SELF-approval:
+ * the executor may never decide its own operation (reviewer != reviewed).
+ * Channels: leader-approval -> Leader|human (or the scope's Officer on
+ * opt-in Alpha.6); user-approval -> human ONLY; envelope-mutation -> Leader|human.
  *
  * The last-mile guard (`guardOperation`): the exported public seam the
  * P6-T6 tool layer consults BEFORE the DSH tool pipeline executes the
@@ -3229,9 +3229,9 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           { rootSessionId: root, requestId: args.requestId },
         )
       }
-      // Role closure (BEFORE the envelope — invariant 37: a member is
-      // never a resolver, even with the resolve-control op; the
-      // user-approval kind admits only the human).
+      // Authority is by SCOPE (invariant 37 successor, #756), checked
+      // BEFORE the envelope: role closure for Leader/human, the case-scoped
+      // capability below for a MEMBER; self-approval banned (executor != reviewer).
       const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]
       if (caller.role === 'member') {
         if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {

@@ -22,9 +22,11 @@ export const TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH = 128;
 export const TEAM_TOOL_BAD_ARGUMENTS = 'TEAM_TOOL_BAD_ARGUMENTS';
 /** The closed tool-layer caller-resolution error code. */
 export const TEAM_TOOL_CALLER_UNRESOLVED = 'TEAM_TOOL_CALLER_UNRESOLVED';
-/** The closed tool-layer leader-only caller error code (C1: the pending-
- *  control list is a Leader discovery surface — a non-leader caller is
- *  rejected before any read). */
+/** The closed tool-layer leader-only caller error code. Leader-gating is the CURRENT
+ *  mechanism, not the successor rule (resolver authority is by scope, #756): the list
+ *  still shows `leader-approval` only, so an Officer cannot discover its own asks and
+ *  `user-approval` is invisible here — the role-granted list redesign is REGISTERED,
+ *  NOT implemented. A non-leader caller is still rejected before any read. */
 export const TEAM_TOOL_PENDING_LIST_NOT_LEADER = 'TEAM_TOOL_PENDING_LIST_NOT_LEADER';
 /** The closed tool-layer leader-only caller error code (team_archive_member:
  *  member archiving is the Leader lifecycle-management surface — a

@@ -522,9 +522,10 @@ Two facts keep the loop honest:
 - **tool exposure is not authority**: listing these tools in `teamTools`
   gives the Leader the model-facing surface; the resolver-role closure in
   the control service (Leader or human for `leader-approval`; human only
-  for `user-approval`; a member is never a resolver) remains the
-  authoritative decision check — a denied resolve fails closed regardless
-  of the tool list.
+  for `user-approval`; a member decides only through the case/leg-scoped
+  ReviewCapability assigned to that scope, and never its own operation)
+  remains the authoritative decision check — a denied resolve fails closed
+  regardless of the tool list.
 - **the envelope still gates the operation**: the Leader's Team envelope
   must permit the existing `resolve-control` operation (and
   `request-control` when that tool is exposed), exactly as before —

@@ -257,7 +257,14 @@ SAME-SOURCE view the runtime authority uses — no re-probe, nothing invented:
      - `leader-approval` — resolved by Leader or human;
      - `user-approval` — resolved by the human only;
      - `envelope-mutation` — resolved by Leader or human.
-     A member is **never** a resolver.
+     Resolver authority is **by scope** (invariant 37 successor, #756): the
+     reviewer instance assigned to the request's scope may decide it, and the
+     ban is **self-approval** — the executor itself may never decide its own
+     operation, so reviewer and reviewed must be distinct instances. In this
+     release the discovery surface is still Leader-gated and still lists
+     `leader-approval` only: an Officer cannot find its own pending asks here,
+     and `user-approval` is invisible to this list (the GUI is its check
+     surface). That list-visibility redesign is registered in #756, not done.
   3. **discover the requestId**: when a member's operation waits on a
      `leader-approval`, the durable request carries the `requestId` and a
      model-visible Leader notification arrives on your session for NEW

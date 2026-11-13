@@ -91,6 +91,14 @@ envelope-mutation  -> leader | human
 
 A member is never a resolver.
 
+> **2026-11-13 successor note (issue #756; text only, original kept as history).** This categorical
+> sentence is retired. The frozen Architecture §25.1 is the Control/Approval purpose section and
+> invariant 37 says a member cannot *unrestricted self-escalate*. Resolver authority is assigned
+> **by scope** — the reviewer instance assigned to the request's scope may decide it — and what is
+> banned is **self-approval**: the executor itself may never decide its own operation, with reviewer
+> and reviewed as distinct instances. The `CONTROL_RESOLVER_ROLES` table quoted above is unchanged by
+> this note; a member enters only through the case/leg-scoped ReviewCapability.
+
 `packages/runtime/control/service.ts::resolveControl()` already enforces request existence, first-decision-wins, resolver-role closure, `resolve-control` envelope, target staleness, external hard policy, and durable decision commit.
 
 **Do not duplicate or weaken any of these checks.**

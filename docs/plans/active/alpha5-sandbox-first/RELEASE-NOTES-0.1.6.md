@@ -1064,3 +1064,47 @@ correction, not this appendix, is the operative instruction for the next operato
 pointer change, `:3080` untouched. n = 3 reproducing runs + 2 controls, one composition, one host pin
 (`639ed01539`, 0.2.0-rc.2); this is not a rate and not a stability claim, and a wake arriving after the 45 s
 window would not have been counted.
+
+---
+
+## 13. Appended 2026-11-13 — invariant 37 successors: resolver authority is by scope (documents only; owner ruling, issue #756)
+
+Nothing in the §11 tables is rewritten; this section only retires a claim that no longer matches the
+product and states what is still not built. No mechanism, grade, `V@B`, candidate, tag, Authority
+pointer or Required-CI line moves.
+
+- **Retired text, not the mechanism.** Code comments, the team skills and historical plans said "a
+  MEMBER is never a resolver". The frozen Architecture's §25.1 is the Control/Approval *purpose*
+  section and invariant 37 actually says a member cannot *unrestricted self-escalate*; the categorical
+  sentence was implementation shorthand that Alpha.6's assigned-Officer review made false in
+  practice. `CONTROL_RESOLVER_ROLES` and the case/leg-scoped ReviewCapability path are unchanged.
+- **Successor rule.** Resolver authority is assigned **by scope**: the reviewer instance assigned to
+  the request's scope may decide it. What is banned is **self-approval** — the executor itself may
+  never decide its own operation; reviewer and reviewed must be distinct instances.
+- **The two channels, with their boundaries:**
+
+| channel | who may decide |
+| --- | --- |
+| `leader-approval` | the Leader or a human; on an opt-in Alpha.6 team, the Officer assigned to that scope |
+| Alpha.6 Officer review | the Officer assigned to that scope (instance-level, case/leg-scoped ReviewCapability; the durable decision records the real decider) |
+| `user-approval` | **human only** |
+| `envelope-mutation` | the Leader or a human |
+
+- **Registered, not implemented.** `team_list_pending_control` is still Leader-gated
+  (`TEAM_TOOL_PENDING_LIST_NOT_LEADER`, checked before any read) and still lists `leader-approval`
+  only. An Officer therefore **cannot discover its own pending asks**, and `user-approval` is
+  **invisible to the Leader** (PD-44's discovery gap). The role-granted list-visibility redesign is
+  registered in issue #756 and **not done**; do not read this correction as a shipped discovery
+  capability.
+- **Evidence, and what it does not say.** J06 in
+  `dev/agent-workflow/evidence/joint-acceptance/j05j06-run1/joint-arms.md`: `routedToOfficer=true`,
+  `identityCarried=t`, and the durable decider is
+  `{"instanceId":"inst-…","kind":"instance","role":"member"}`. No `resolver=officer` field is claimed
+  here — neither the code nor J06 shows one.
+- **Where the text changed (documents only).** `packages/runtime/control/service.ts` and
+  `packages/tools/src/tokens.ts` (comments), `team-leader-operations` and
+  `team-blueprint-authoring` skills, `ALPHA5-SANDBOX-BACKLOG.md` §0, `PREVIEW-CONTRACT-2026-11-16.md`
+  §8, `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4, the Alpha.6 review-capability ADR, and two archived
+  plans (dated notes). The four 20260829 frozen documents are untouched.
+- **Round-4 C2 check item:** the documentation no longer asserts "member is never a resolver", and
+  the two decision channels are stated with their boundaries.

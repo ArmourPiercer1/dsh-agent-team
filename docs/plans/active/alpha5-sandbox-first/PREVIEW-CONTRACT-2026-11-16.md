@@ -267,3 +267,32 @@ PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——�
   （尤其是 §5.2 的归因整句与 §3.1 的 Stop 限定语）继续有效。
 - 0.1.6 的 Alpha.6 面**不在**本契约的 Preview 承诺内；它的已知缺陷 A6-26 与恢复流程见
   Release Notes §5 与 `RUNBOOK-CONTROL-ABANDONED.md`。
+
+---
+
+## 8. 裁决权威按 scope（append-only，2026-11-13；invariant 37 后继规则，issue #756）
+
+本节只澄清**文本**，不改任何判定、等级、机制或 `V@B`。撤回的是"member 永不是 resolver"这类绝对化
+表述——它从来不是冻结 Architecture 的原文：§25.1 是 Control/Approval 的目的，invariant 37 的原文是
+"Member 不能 unrestricted self-escalate"。
+
+- **后继规则**：裁决权威**按 scope 归属**——请求所属 scope 的被指派评审实例可以裁决；被禁止的是
+  **执行者本人裁决自己的操作**（reviewer 与 reviewed 必须是不同实例），不是"任何 member 都不能裁决"。
+- **双通道现状（含边界）**：
+
+| 通道 | 谁可以裁决 |
+| --- | --- |
+| `leader-approval` | Leader 或 human；启用 Alpha.6 `reviewRouting` 的团队上 = 该 scope 的被指派 Officer |
+| Alpha.6 Officer 评审 | 该 scope 的被指派 Officer（实例级、case/leg-scoped ReviewCapability；durable 记录真实 decider） |
+| `user-approval` | **仅 human**（Leader 不得代替用户） |
+| `envelope-mutation` | Leader 或 human |
+
+- **尚未成立（registered, not implemented）**：`team_list_pending_control` 仍由 Leader 角色把门
+  （`TEAM_TOOL_PENDING_LIST_NOT_LEADER`，在任何读取之前拒绝），且仍只返回 `leader-approval`。因此
+  Officer **不能**通过列表发现自己的待决 ask，`user-approval` 对 Leader **不可见**（PD-44 的发现缺口）。
+  列表可见性的角色化授予是 issue #756 的第二项，**已登记、未实现**；读本节不得得出"发现面已修好"的
+  结论。
+- **证据边界**：J06 实测（`dev/agent-workflow/evidence/joint-acceptance/j05j06-run1/joint-arms.md`）
+  显示 ask 路由到 Officer、`routedToOfficer=true`、`identityCarried=t`，durable decider 为
+  `{"instanceId":"inst-…","kind":"instance","role":"member"}`。本节**不**声称任何 `resolver=officer`
+  之类的 durable 字段命名——代码与 J06 都没有这个字段。
