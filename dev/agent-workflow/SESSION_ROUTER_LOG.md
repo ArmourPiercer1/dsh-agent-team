@@ -8648,3 +8648,20 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-13（追加）— B 桶提案：census 就是 L2 的全部（ready 23m55s vs draft 2m18s），等待 owner 裁决
+
+**授权**：owner 2026-11-13「自行推进优化，不合并 PR」。本 PR **只写提案**，不改任何 workflow/gate/分支保护。
+
+**实测（`dev/agent-workflow/evidence/eng-b-proposals-20261113/`，同一天同一仓库）**：
+- ready（census 跑了）中位 wall **1435s（23m55s）**，draft（census 跳过）中位 **138s（2m18s）**——差 10.4 倍；
+- `census-runtime` 中位 1391s，其余作业 27–111s；census 基本就是 L2 的全部；
+- 本窗口 job 级排队极小（`ci-required` P90 3s，`pr-gate` 最大 3s）→ #747 的 8h31m 排队是历史异常，
+  「`pr-gate` 去重」缺乏当前证据；可测的浪费是每次 fix push 重付一轮 L2（每 PR `ci-required` 中位 2 次）。
+
+**提案顺序**（`docs/plans/memo/ci-bottlenecks-20261113/PLAN.md`）：B6 分支保护 + B4 默认反转（收益 10 倍，
+风险=合并门少一层）→ B5 合并后 census/L3（语义更诚实、工作量更大）→ B1 profiling（低风险、先做）→
+B2 分片（仅当 census 必须留在合并门）→ B3 draft 并发取消。全部标注前置与风险，未实施。
+
+**边界**：未改 `.github/workflows/`、`dev/ci/`、分支保护、required contexts、Authority、候选 manifest/ref；
+未 merge；未删除证据。
