@@ -1,0 +1,2 @@
+tag=cand-r2-recipients worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-cand head=168266dbfe7f2de091d998431bd56ce4dba0dbb5 host=3183 mock=3483 extra=C1_A6_RECIPIENTS=1 start=2026-11-10T16:49:43Z
+exit=0 end=2026-11-10T16:51:05Z
