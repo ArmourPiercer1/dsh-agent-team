@@ -36,6 +36,7 @@
  */
 import { apply as applyPersistentBash } from '@deepseek-ai/dsh-tool-bash-persistent'
 import { nativeAdmissionOf, NATIVE_ADMISSION_UNAVAILABLE } from './native-tool-admission.mjs'
+import { outcomeOfTerminalResult } from '../../../operation-permission/execution-outcome.js'
 
 /** The plugin name route C reports in its receipts. */
 export const name = 'a5sf-native-bash-persistent'
@@ -110,7 +111,17 @@ function registerWithAdmission(definition, realTools) {
       }
       try {
         const result = await definition.execute(args, exec)
-        admission.settle({ callId: admitted.callId, outcome: 'succeeded' })
+        // PD-42 (owner ruling 2026-11-13): a RESOLVED native call is not
+        // automatically a successful execution. The pinned `bash` definition
+        // reports a non-zero command exit as ordinary model-facing text (its
+        // exit code is a text trailer, not a ToolResult field), so the ONE
+        // shared classifier reads that trailer and reports `failed` for a
+        // refused/failed command. An abort still reports the PD-41
+        // `cancelled` (the plane settles nothing for it).
+        admission.settle({
+          callId: admitted.callId,
+          outcome: exec?.signal?.aborted === true ? 'cancelled' : outcomeOfTerminalResult(result),
+        })
         return result
       } catch (error) {
         // An ABORT is not a completion (PD-41 correction): the plane's own

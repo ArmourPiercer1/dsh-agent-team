@@ -52,8 +52,11 @@ import { createSpillLease } from './spill.js';
  *  - a `cancelled`/`timedOut` outcome → `unknown` too (defence in depth: even
  *    a backend that mislabels its settlement cannot make a cancel a success);
  *  - an observed completion (`settlement.kind === 'completed'`, i.e. the
- *    payload reported its own end) → `succeeded`, including a NON-ZERO exit —
- *    the code is data, not a verdict;
+ *    payload reported its own end) with exit code 0 → `succeeded`; a
+ *    NON-ZERO shell exit is `failed` (PD-42, owner ruling 2026-11-13: the
+ *    durable fact must record a refused/failed command as `failed`, not claim
+ *    the execution succeeded — the pre-PD-42 "the code is data" reading made
+ *    the ledger lie about an OS refusal);
  *  - a missing settlement keeps the historical flag-only reading (the
  *    archived fixture backends predate the settlement field).
  *
@@ -66,9 +69,21 @@ function observedCompletion(result) {
     const outcome = result.outcome;
     return outcome.cancelled !== true && outcome.timedOut !== true;
 }
+/**
+ * PD-42 — a completed shell body that reported a non-zero exit FAILED. The
+ * structured `exitCode` is available on this lane (unlike the native tool's
+ * text trailer), so it is read directly. `null`/absent exit codes keep the
+ * historical completed reading (search rows carry no exit code at all).
+ */
+function failedExit(result) {
+    const exitCode = result.outcome.exitCode;
+    return typeof exitCode === 'number' && exitCode !== 0;
+}
 /** The execution fact of an ANSWERED call (see the classification above). */
 export function executionOutcomeOfAnsweredCall(result) {
-    return observedCompletion(result) ? 'succeeded' : 'unknown';
+    if (!observedCompletion(result))
+        return 'unknown';
+    return failedExit(result) ? 'failed' : 'succeeded';
 }
 /**
  * A THROW from the backend is not automatically an execution FAILURE. An

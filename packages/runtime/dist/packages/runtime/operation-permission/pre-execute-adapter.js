@@ -307,6 +307,7 @@ import { canonicalizeOperation, classifyPermissionTool, } from './canonical-oper
 import { SHELL_PERMISSION_TOOL_VALUES, } from './types.js';
 import { PRE_EXECUTE_CAPABILITY_ERROR_CODES, PRE_EXECUTE_INSTALL_ERROR_CODES, capabilityDenialReason, PermissionGuardUnavailableError, isOperationPermissionError, } from './errors.js';
 import { resolveOperationPermission, } from './permission-resolver.js';
+import { outcomeOfTerminalResult } from './execution-outcome.js';
 import { recheckOperationApproval, routeOperationApproval } from './approval-routing.js';
 import { CONTROL_ERROR_CODES, CONTROL_EXECUTION_COUPLINGS, CONTROL_GUARD_BLOCK_REASONS, CONTROL_REQUEST_KINDS, isControlError, } from '../control/index.js';
 /** The closed action name the adapter uses for its control scopes. */
@@ -345,45 +346,6 @@ async function resolveAlpha6AuthorityGeneration(identity) {
         return undefined;
     }
     return generation;
-}
-/**
- * J05 / PD-41 — classify the OBSERVED terminal result of one tool invocation
- * into the ledger's closed outcome vocabulary. The classification is about
- * what was observed, never about what the backend answered:
- *
- * - `succeeded` — the body returned a completed, non-error result (the end was
- *   observed; a non-zero exit is still a completion and stays `succeeded`);
- * - `unknown` — the invocation was cancelled/aborted or its end was never
- *   observed (the PD-41 abort class: `TOOL_ABORTED`,
- *   `TOOL_ABORTED_BEFORE_DISPATCH`, an `AbortError`), and any shape this
- *   module does not recognise;
- * - `failed` — an ANSWERED failure: the body ran and reported an error, or the
- *   dispatch itself was refused after the allow was consumed.
- *
- * A result this classifier cannot read is `unknown`, never `succeeded`: the
- * ledger may not claim a completion nobody watched.
- */
-function outcomeOfTerminalResult(result) {
-    if (result === null || typeof result !== 'object')
-        return 'unknown';
-    const record = result;
-    if (record.isError === false)
-        return 'succeeded';
-    if (record.isError !== true)
-        return 'unknown';
-    const error = record.error;
-    if (error !== null && typeof error === 'object') {
-        const info = error.info;
-        if (info !== null && typeof info === 'object') {
-            const code = info.code;
-            if (code === 'TOOL_ABORTED' || code === 'TOOL_ABORTED_BEFORE_DISPATCH')
-                return 'unknown';
-        }
-        const name = error.name;
-        if (name === 'AbortError')
-            return 'unknown';
-    }
-    return 'failed';
 }
 /**
  * H2 P1-2 — the bounded NON-authority command preview of the tool-level
