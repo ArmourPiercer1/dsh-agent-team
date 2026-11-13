@@ -1,0 +1,28 @@
+$ cd /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use && DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt4-pnpm-dsh-2026-11-13T16-49-21/home pnpm dsh plugin --profile web add github:ArmourPiercer1/dsh-agent-team
+[exit 0] [5722 ms]
+
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Progress: resolved 0, reused 1, downloaded 0, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team github:ArmourPiercer1/dsh-agent-team
+
+Packages: +7
++++++++
+Progress: resolved 7, reused 2, downloaded 0, added 0
+Progress: resolved 7, reused 7, downloaded 0, added 7, done
+Done in 4.9s using pnpm v11.7.0
+
+--- stderr ---
+$ node --import tsx/esm apps/cli/src/bin.ts plugin --profile web add github:ArmourPiercer1/dsh-agent-team
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt4-pnpm-dsh-2026-11-13T16-49-21/home/profiles/web
+

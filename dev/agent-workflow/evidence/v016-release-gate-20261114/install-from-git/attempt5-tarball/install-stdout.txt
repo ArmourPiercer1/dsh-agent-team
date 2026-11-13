@@ -1,0 +1,27 @@
+$ DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/.artifacts/tmp/pack-gate/dsh-agent-team-0.1.6.tgz
+[exit 0] [2486 ms]
+
+Progress: resolved 0, reused 0, downloaded 1, added 0
+Progress: resolved 3, reused 0, downloaded 1, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team file:/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/.artifacts/tmp/pack-gate/dsh-agent-team-0.1.6.tgz
+
+Packages: +7
++++++++
+Progress: resolved 7, reused 6, downloaded 1, added 7, done
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+Done in 2.2s using pnpm v11.7.0
+
+--- stderr ---
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home/profiles/web
+

@@ -1,0 +1,25 @@
+[2026-11-13T16:50:36.120Z] A1 bash-governance — stamp 2026-11-13T16-50-36-h0-r36d5c9
+[2026-11-13T16:50:36.121Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate
+[2026-11-13T16:50:36.121Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T16:50:36.121Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/dev/agent-workflow/evidence/v016-release-gate-20261114/a1-a6off-run1
+[2026-11-13T16:50:36.121Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T16:50:36.121Z] mode: a6-off (alpha6ReviewRouting: false)
+[2026-11-13T16:50:36.234Z] sandbox backend in use: full (usable=true)
+[2026-11-13T16:50:37.736Z] ports: host=3187 mock=3496
+[2026-11-13T16:50:42.748Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T16:50:42.756Z] mock model listening on 3496
+[2026-11-13T16:50:50.551Z] host booted at http://127.0.0.1:3187; row ready — toolCount=15
+[2026-11-13T16:50:50.551Z] ── L0: discovery ──
+[2026-11-13T16:50:50.971Z] discovery surface=32 tools; deny list=11
+[2026-11-13T16:50:50.972Z] ── A1-BASH-GOVERNANCE: seven clauses, preset=native, host default=danger-full-access ──
+[2026-11-13T16:50:56.192Z] PASS A1-1: path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true
+[2026-11-13T16:50:56.193Z] PASS A1-2: path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/c1-smoke-2026-11-13T16-50-36-h0-r36d5c9/a1-outside-2026-11-13T16-50-36-h0-r36d5c9.txt: Read-only file system
+A1_OUTSIDE_EXIT=1
+[Command finished with exit code 0]
+[2026-11-13T16:50:56.193Z] PASS A1-3: callA=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/c1-smoke-2026-11-13T16-50-36-h0-r36d5c9/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/c1-smoke-2026-11-13T16-50-36-h0-r36d5c9/workspace/a1-sub var=a1-value pid=2 file=persisted-2026-11-13T16-50-36-h0-r36d5c9 tty=/dev/console] markerReadBack=true
+[2026-11-13T16:50:57.860Z] PASS A1-4: w1=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/c1-smoke-2026-11-13T16-50-36-h0-r36d5c9/workspace/a1-sub tty=/dev/console] w2=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/c1-smoke-2026-11-13T16-50-36-h0-r36d5c9/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false
+[2026-11-13T16:51:01.879Z] PASS A1-5: sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45 quiesced=true precreationQuiesceMs=2002
+[2026-11-13T16:51:01.904Z] PASS A1-6: hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true
+[2026-11-13T16:51:05.772Z] PASS A1-7: legOwner=inst-14399wt054i8 isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-1n5g1ld08tcjzc0a48lg70d5 toolRefusal=Error: the approval was denied
+[2026-11-13T16:51:05.775Z] teardown: stopping host + mock
+[2026-11-13T16:51:10.781Z] VERDICT PASS

@@ -1,0 +1,13 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3191/?token=v3zN2lFxpaI4e6jx1BQ5qbv2qewFAhJqn9WyAMD4ur8
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: SessionHandleClosedError: session "team-root": flush on a closed handle
+    at JsonlSessionHandle.assertOpen (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/session/session-persistence-jsonl/lib/index.js:266:38)
+    at JsonlSessionHandle.run (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/session/session-persistence-jsonl/lib/index.js:259:8)
+    at JsonlSessionHandle.flush (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/session/session-persistence-jsonl/lib/index.js:130:15)
+    at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/session/session-persistence-jsonl/lib/index.js:418:18
+    at async Promise.allSettled (index 0)
+    at async Proxy.flush (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/session/lib/index.js:1840:20)
+    at async file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs:5382:9
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/root.js:4122:9)
+    at async bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:2490:13)
