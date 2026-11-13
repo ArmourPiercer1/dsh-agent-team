@@ -115,6 +115,13 @@ owners:
       - packages/tools/README.md
       - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
       - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+  # The pre-ready check is owned by the page that tells agents when to flip a PR
+  # to ready. Without this rule it falls through to the scripts/** catch-all
+  # (docs/STATUS.md), a document this work must not edit — and an owner document
+  # you cannot touch is not an owner.
+  - glob: scripts/pr-ready-check*.mjs
+    docs:
+      - docs/DEV-PR-WORKFLOW.md
   - glob: scripts/**
     docs:
       - docs/STATUS.md

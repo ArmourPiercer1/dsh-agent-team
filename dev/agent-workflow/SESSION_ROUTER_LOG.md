@@ -8648,3 +8648,40 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-13（真实 UTC 16:2xZ）— ENG-BASELINE：owner 授权下自行推进工程基线优化（**只开 draft PR，不合并**）
+
+**授权**：owner 2026-11-13 直接指令——「自行推进优化，但暂不合并 PR，待我回来之后审查后再合并」。
+据此获得：任务分支、推送、开 draft PR；未获得：合并、改 gate、改分支保护、移动 Authority、冻结候选。
+
+**先做的度量（只读，`evidence/eng-baseline-20261113/`）**：
+- 分层机制可用但被默认路径绕过：L1 实测 1m49s（run `41594329690`），L2 实测 19m34s（run `41594604836`）；
+- 最近 12 个合并 PR：**12/12 创建即 ready**（0 次 `ready_for_review`/`convert_to_draft`），`ci-required` 次数中位数 **2**；
+- 最近 30 个合并 PR 的 `created→merged`：中位数 **90.5 分钟**，P75 225，最长 1088；
+- census 从 19m06s（11-03）涨到 **24m13s**（11-13）；#755 最后一轮因并发组串行 **39m**；#747 `pr-gate` 排队 **8h31m**；
+- 静态事实：所有 workflow 无 `actions/cache`；`eb3-impact` 只打印不被消费；`ci-census` 由「非 draft」触发。
+
+**裁决**：分级为 A 桶（agent 可自行推进：度量、Draft-first 操作页、冻结元数据、证据预算）与
+B 桶（需 owner 裁决：缓存/分片、`pr-gate` 去重、默认反转、L3、分支保护）。B 桶只写提案，不落地。
+
+**本轮落地（draft PR）**：
+- `docs/plans/memo/engineering-baseline-optimization-20261113/PLAN.md` — 程序、边界、指标（M1–M7）、A/B 分桶；
+- `docs/DEV-PR-WORKFLOW.md` — Draft-first 操作页（C1–C7、判读表、反模式）；
+- `dev/agent-workflow/evidence/eng-baseline-20261113/` — 上述度量的原始数据与复现命令。
+
+**边界**：未改任何 `.github/workflows/`、`dev/ci/`、`scripts/eb3-*`、分支保护、`current-authority.json`、
+候选 manifest；未删除证据；未合并。
+
+### 2026-11-13（UTC 16:3xZ）— ENG-BASELINE 增补：把 Draft-first 从文档变成可执行的拒绝
+
+**新增**：`scripts/pr-ready-check.mjs` + `scripts/pr-ready-check.test.mjs`（13 个 node:test；另有 6 个
+`--self-test` 用例）。检查 R1–R8：仍为 draft、无 `DO-NOT-MERGE` 标记、非 BEHIND/DIRTY、四层绿、
+`ci-required-deferred` 绿、`ci-census=skipped`、settlement 覆盖当前 40-hex、本地干净且已推送。
+复用 `pr-settlement-gate.mjs` 的 `detectMarker`/`findSettlement`，不复制判定法则。
+
+**现场负控**（#759，draft）：`verdict=REFUSED reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING,WORKTREE_DIRTY`；
+L1 形态同时被证实（四层绿、deferred 绿、census skipped）。首次实跑遇 GitHub API 裸 EOF → exit 2
+（不是通过），据此加一次 750ms 重试。
+
+**边界**：未改 `.github/workflows/`（因此该测试暂未接入托管 CI；`pr-gate.yml` 接 `pr-settlement-gate.test.mjs`
+的先例留作 owner 裁决）；未改任何 gate。
