@@ -1,0 +1,295 @@
+{
+  "label": "pre-crash",
+  "ledger": {
+    "requests": [
+      {
+        "sequence": 7,
+        "requestId": "ctrl-1v9pv051b4vrka1dnfmoz1cm",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "correlation": "call-v016pack-2-5",
+        "approvalCaseId": "case-0agvo4b05w2dc81vm8e1p1cl",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-13T11:00:40.232Z"
+      },
+      {
+        "sequence": 11,
+        "requestId": "ctrl-0mhn32x06sy85218cklhr03v",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-1",
+        "approvalCaseId": "case-08x6okt0106sn402tpfdb07b",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-13T11:00:40.623Z"
+      },
+      {
+        "sequence": 14,
+        "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-1",
+        "approvalCaseId": "case-08x6okt0106sn402tpfdb07b",
+        "legOrdinal": 2,
+        "reviewAuthority": "human-user",
+        "createdAt": "2026-11-13T11:00:40.795Z"
+      },
+      {
+        "sequence": 21,
+        "requestId": "ctrl-1deznwa0ce5yyn09hb6a80ot",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "parameter-permission",
+        "correlation": "call-v016pack-2-12",
+        "approvalCaseId": "case-1ckmzo612847zr08im83o1pb",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-13T11:00:48.687Z"
+      },
+      {
+        "sequence": 24,
+        "requestId": "ctrl-0hhkdhn1ezee3g0hu02w51j0",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-2",
+        "approvalCaseId": "case-07xarec1kvwudh126u3s61gl",
+        "legOrdinal": 1,
+        "reviewAuthority": "leader",
+        "createdAt": "2026-11-13T11:00:49.041Z"
+      },
+      {
+        "sequence": 27,
+        "requestId": "ctrl-0hrjz6m1ftd76d0h019t81iq",
+        "kind": "leader-approval",
+        "toolName": "bash",
+        "actionName": "team-tool-execute",
+        "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-2",
+        "approvalCaseId": "case-07xarec1kvwudh126u3s61gl",
+        "legOrdinal": 2,
+        "reviewAuthority": "human-user",
+        "createdAt": "2026-11-13T11:00:49.214Z"
+      }
+    ],
+    "decisions": [
+      {
+        "sequence": 9,
+        "requestId": "ctrl-1v9pv051b4vrka1dnfmoz1cm",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T11:00:40.375Z"
+      },
+      {
+        "sequence": 12,
+        "requestId": "ctrl-0mhn32x06sy85218cklhr03v",
+        "decision": "deny",
+        "decider": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "reason": "escalated",
+        "createdAt": "2026-11-13T11:00:40.765Z"
+      },
+      {
+        "sequence": 15,
+        "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T11:00:40.960Z"
+      },
+      {
+        "sequence": 22,
+        "requestId": "ctrl-1deznwa0ce5yyn09hb6a80ot",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T11:00:48.801Z"
+      },
+      {
+        "sequence": 25,
+        "requestId": "ctrl-0hhkdhn1ezee3g0hu02w51j0",
+        "decision": "deny",
+        "decider": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "reason": "escalated",
+        "createdAt": "2026-11-13T11:00:49.184Z"
+      },
+      {
+        "sequence": 28,
+        "requestId": "ctrl-0hrjz6m1ftd76d0h019t81iq",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r2",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T11:00:49.380Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 10,
+        "requestId": "ctrl-1v9pv051b4vrka1dnfmoz1cm",
+        "createdAt": "2026-11-13T11:00:40.580Z"
+      },
+      {
+        "sequence": 16,
+        "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+        "createdAt": "2026-11-13T11:00:41.181Z"
+      },
+      {
+        "sequence": 23,
+        "requestId": "ctrl-1deznwa0ce5yyn09hb6a80ot",
+        "createdAt": "2026-11-13T11:00:49.005Z"
+      }
+    ],
+    "abandonments": [],
+    "escalations": [
+      {
+        "sequence": 13,
+        "approvalCaseId": "case-08x6okt0106sn402tpfdb07b",
+        "escalatedBy": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0mhn32x06sy85218cklhr03v"
+      },
+      {
+        "sequence": 26,
+        "approvalCaseId": "case-07xarec1kvwudh126u3s61gl",
+        "escalatedBy": {
+          "instanceId": "inst-0y1bmfd1fegn",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0hhkdhn1ezee3g0hu02w51j0"
+      }
+    ],
+    "executionResults": [
+      {
+        "sequence": 17,
+        "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+        "callId": "team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-1",
+        "outcome": "succeeded",
+        "createdAt": "2026-11-13T11:00:44.431Z"
+      },
+      {
+        "sequence": 18,
+        "requestId": "ctrl-1v9pv051b4vrka1dnfmoz1cm",
+        "callId": "call-v016pack-2-5",
+        "outcome": "succeeded",
+        "createdAt": "2026-11-13T11:00:44.448Z"
+      },
+      {
+        "sequence": 29,
+        "requestId": "ctrl-1deznwa0ce5yyn09hb6a80ot",
+        "callId": "call-v016pack-2-12",
+        "outcome": "failed",
+        "createdAt": "2026-11-13T11:00:49.418Z"
+      }
+    ],
+    "otherFactTypes": [
+      "team-work-admitted",
+      "provision-member-instance",
+      "provision-member-instance",
+      "provision-member-instance",
+      "team-work-admitted",
+      "activity-interval-opened",
+      "team-root-work-delivered",
+      "activity-interval-closed",
+      "member-lifecycle-changed"
+    ]
+  },
+  "members": [
+    {
+      "activityVersion": 1,
+      "createdAt": "2026-11-13T11:00:39.470Z",
+      "instanceId": "inst-leader",
+      "label": "leader",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 2,
+      "templateId": "leader"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-1af8f847a81e5885d8e54228e1c9ef5f",
+      "createdAt": "2026-11-13T11:00:39.750Z",
+      "instanceId": "inst-0y1bmfd1fegn",
+      "label": "officer-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "officer",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace"
+    },
+    {
+      "activityVersion": 3,
+      "childSessionId": "session-team-child-f567ec1003976f72b77cdd4b51e19b6f",
+      "createdAt": "2026-11-13T11:00:39.859Z",
+      "instanceId": "inst-0kc39c71kemt",
+      "label": "w-1",
+      "lifecycle": "SETTLED",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace"
+    },
+    {
+      "activityVersion": 1,
+      "childSessionId": "session-team-child-5facbd540c110dfcf471baa546f76451",
+      "createdAt": "2026-11-13T11:00:39.962Z",
+      "instanceId": "inst-0ofnbt205ssz",
+      "label": "g-1",
+      "lifecycle": "CREATED",
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1,
+      "templateId": "goal",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace"
+    }
+  ],
+  "teamRows": [
+    {
+      "blueprint": {
+        "blueprintId": "v016-pack-bp-r2",
+        "contentHash": "sha256:5a5ebc54153554e2699220395bfa1c370ad34c90e5b36a7567a0f708799241a2",
+        "revision": "1"
+      },
+      "createdAt": "2026-11-13T11:00:39.456Z",
+      "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-2-2026-11-13T11-00-34/workspace",
+      "generation": 31,
+      "rootSessionId": "team-v016pack-r2",
+      "schemaVersion": 1
+    }
+  ],
+  "domainBytes": 56027,
+  "tables": [
+    "schema_meta",
+    "team_sessions",
+    "member_instances",
+    "session_bindings",
+    "overrides",
+    "compatibility",
+    "operations",
+    "ledger",
+    "blueprint_registry",
+    "permission_overlays"
+  ]
+}

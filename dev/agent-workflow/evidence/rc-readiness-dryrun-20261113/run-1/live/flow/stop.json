@@ -1,0 +1,131 @@
+{
+  "permissionLeg": {
+    "requestId": "ctrl-106v9n402qznfl0xi1iua0aa",
+    "request": {
+      "sequence": 21,
+      "requestId": "ctrl-106v9n402qznfl0xi1iua0aa",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "parameter-permission",
+      "correlation": "call-v016pack-1-12",
+      "approvalCaseId": "case-1hrre861ib6xab09vj8c00ol",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-13T10:59:24.729Z"
+    },
+    "decisions": [
+      {
+        "sequence": 22,
+        "requestId": "ctrl-106v9n402qznfl0xi1iua0aa",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r1",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T10:59:24.849Z"
+      }
+    ],
+    "consumptions": [
+      {
+        "sequence": 23,
+        "requestId": "ctrl-106v9n402qznfl0xi1iua0aa",
+        "createdAt": "2026-11-13T10:59:25.047Z"
+      }
+    ],
+    "abandonments": [],
+    "executions": [
+      {
+        "sequence": 29,
+        "requestId": "ctrl-106v9n402qznfl0xi1iua0aa",
+        "callId": "call-v016pack-1-12",
+        "outcome": "failed",
+        "createdAt": "2026-11-13T10:59:25.470Z"
+      }
+    ],
+    "escalations": []
+  },
+  "humanLeg": {
+    "requestId": "ctrl-0ux9hyi0dxcrf91v6qx501um",
+    "request": {
+      "sequence": 27,
+      "requestId": "ctrl-0ux9hyi0dxcrf91v6qx501um",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "correlation": "pa:tadm:team-v016pack-r1:inst-0mzzhtj0zr0b:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-2",
+      "approvalCaseId": "case-0vl7nhr1pc9wm20dlhl991hi",
+      "legOrdinal": 2,
+      "reviewAuthority": "human-user",
+      "createdAt": "2026-11-13T10:59:25.263Z"
+    },
+    "decisions": [
+      {
+        "sequence": 28,
+        "requestId": "ctrl-0ux9hyi0dxcrf91v6qx501um",
+        "decision": "allow",
+        "decider": {
+          "humanId": "team-v016pack-r1",
+          "kind": "human"
+        },
+        "createdAt": "2026-11-13T10:59:25.432Z"
+      }
+    ],
+    "consumptions": [],
+    "abandonments": [],
+    "executions": [],
+    "escalations": [
+      {
+        "sequence": 26,
+        "approvalCaseId": "case-0vl7nhr1pc9wm20dlhl991hi",
+        "escalatedBy": {
+          "instanceId": "inst-12vvgyh1rzbg",
+          "kind": "instance",
+          "role": "member"
+        },
+        "legOrdinal": 1,
+        "previousRequestId": "ctrl-0un9w9j0d3dycc1w0pq7x1uw"
+      }
+    ]
+  },
+  "cancel": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "ok": true,
+      "value": {
+        "accepted": true
+      }
+    }
+  },
+  "lateAllow": {
+    "status": 200,
+    "ok": false,
+    "code": "CONTROL_REQUEST_DECIDED",
+    "body": {
+      "ok": false,
+      "error": {
+        "code": "CONTROL_REQUEST_DECIDED",
+        "message": "ControlService: request 'ctrl-0ux9hyi0dxcrf91v6qx501um' already carries a durable decision (the first decision is authoritative)",
+        "details": {
+          "method": "team.resolveControl",
+          "endpoint": "team.resolveControl",
+          "contractVersion": 4,
+          "requestToken": null,
+          "reason": "domain-error",
+          "cause": {
+            "code": "CONTROL_REQUEST_DECIDED",
+            "message": "ControlService: request 'ctrl-0ux9hyi0dxcrf91v6qx501um' already carries a durable decision (the first decision is authoritative)",
+            "details": {
+              "rootSessionId": "team-v016pack-r1",
+              "requestId": "ctrl-0ux9hyi0dxcrf91v6qx501um"
+            }
+          }
+        }
+      }
+    }
+  },
+  "escalationRecorded": true,
+  "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-1-2026-11-13T10-59-10/workspace/V016PACK_R1-arm2.txt",
+  "fileExists": false,
+  "terminalShape": "already-decided"
+}

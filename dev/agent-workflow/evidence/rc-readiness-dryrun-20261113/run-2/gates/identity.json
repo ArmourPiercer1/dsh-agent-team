@@ -1,0 +1,16 @@
+{
+  "productSha": "22682f33673139f1c411ca7a42826e0f4b7ab2e4",
+  "branch": "task/rc-readiness-dryrun-20261113",
+  "porcelainBefore": "?? dev/agent-workflow/evidence/rc-readiness-dryrun-20261113/",
+  "packedCommit": "22682f33673139f1c411ca7a42826e0f4b7ab2e4",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostVersion": "0.2.0-rc.2",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "hostPorcelain": "",
+  "testuse": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "node": "v24.21.0",
+  "pnpm": "11.7.0",
+  "at": "2026-11-13T11:00:21.853Z",
+  "evidenceClass": "DEV-LIVE",
+  "fullPorcelainBefore": "?? dev/agent-workflow/evidence/rc-readiness-dryrun-20261113/"
+}

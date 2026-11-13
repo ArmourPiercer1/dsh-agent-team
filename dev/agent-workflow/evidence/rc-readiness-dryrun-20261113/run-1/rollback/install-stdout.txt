@@ -1,0 +1,22 @@
+? Verifying lockfile against supply-chain policies (7 entries)...
+Progress: resolved 0, reused 1, downloaded 0, added 0
+✓ Lockfile passes supply-chain policies (7 entries in 710ms)
+Progress: resolved 7, reused 2, downloaded 0, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+Packages: +1
++
+Progress: resolved 8, reused 2, downloaded 0, added 1, done
+Done in 1.6s using pnpm v11.7.0
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+
+--- stderr ---
+
