@@ -1,0 +1,43 @@
+# C2 record presence for cand-v0.1.6-4 — snapshot by task/docs-v016-rc1-20261113
+# captured_at_utc: 2026-11-12T22:41:15Z
+# IMPORTANT: these are adjudicator worktree paths, not committed tree paths.
+
+## C2-A
+path: .worktrees/c2a-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-A.json
+sha256: 0823170ed5937f2160072af11aac3e5b7dac5dd8198187f2dd2aa7e95a9618ec
+mtime_utc: 2026-11-12T22:23:46Z
+schema: c2-adjudication-record/1
+candidateId: cand-v0.1.6-4
+candidateCommit: 0d31f9121308a43030701fe6d56c316100782419
+recordClass: CANDIDATE-C2
+candidateClaimEligibility.eligible: false
+candidateClaimEligibility.scope: C2-A only
+candidateClaimEligibility.eligibleIf: C2-B is measured on 0d31f9121 with a PASS, and the manifest evidence.record_root is corrected by a new manifest commit (not an edit of the frozen one).
+verdict: "PASS for C2-A as re-scoped on this SHA: identity 147/147; A6-off A1 seven clauses 7/7 twice with a same-tree A6-on control 7/7 twice and full cross-mode agreement (the #745 claim independently reproduced); joint 11/11 twice; A6 allow/deny/throw/exception/Stop/crash twice each; packaging 33/33 drive
+manifest.sha256: c0962acc5eb5cd31c712e5616664cf65495f9cfd1d1d20d5d5bbb534840841cc
+manifest.content_digest: sha256:4d37bf396e26b375f02f496dc09bc065c6a93e4fd30a1bc8eae50281857a17c1
+
+## C2-B
+path: .worktrees/c2b-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-B.json
+sha256: 1e05deaa40ac99dbb29ed1604f0305c11c4a1997359df5180b28cb369c5e64a6
+mtime_utc: 2026-11-12T22:29:19Z
+schema: c2-adjudication-record/1
+candidateId: cand-v0.1.6-4
+candidateCommit: 0d31f9121308a43030701fe6d56c316100782419
+recordClass: CANDIDATE-C2
+candidateClaimEligibility.eligible: false
+candidateClaimEligibility.scope: this record claims CANDIDATE-C2 only for the measurements below, all run on 0d31f9121308a43030701fe6d56c316100782419
+candidateClaimEligibility.eligibleIf: (none)
+verdict: "NOT PASS (candidate claim not eligible from this record)"
+manifest.sha256: (n/a)
+manifest.content_digest: sha256:4d37bf396e26b375f02f496dc09bc065c6a93e4fd30a1bc8eae50281857a17c1
+
+## verify-candidate with BOTH records
+$ node scripts/verify-candidate.mjs --manifest dev/engineering/candidates/cand-v0.1.6-4.json --record <C2-A> --record <C2-B>
+exit=0
+PASS         evidence./home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-A.json: runId=(none) recordClass=CANDIDATE-C2 eligible=false candidateCommit=0d31f9121308a43030701fe6d56c316100782419 — no candidate claim, preserved reference only
+PASS         evidence./home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-B.json: runId=c2-b-cand-v0.1.6-4-20261113 recordClass=CANDIDATE-C2 eligible=false candidateCommit=0d31f9121308a43030701fe6d56c316100782419 — no candidate claim, preserved reference only
+VERIFIED cand-v0.1.6-4 @ 0d31f9121308a43030701fe6d56c316100782419 — PASS=148
+
+PASS         evidence./home/armourpiercer/projects/dsh-agent-team/.worktrees/c2a-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-A.json: runId=(none) recordClass=CANDIDATE-C2 eligible=false candidateCommit=0d31f9121308a43030701fe6d56c316100782419 — no candidate claim, preserved reference only
+PASS         evidence./home/armourpiercer/projects/dsh-agent-team/.worktrees/c2b-cand4/dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-B.json: runId=c2-b-cand-v0.1.6-4-20261113 recordClass=CANDIDATE-C2 eligible=false candidateCommit=0d31f9121308a43030701fe6d56c316100782419 — no candidate claim, preserved reference only
