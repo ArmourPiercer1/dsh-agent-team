@@ -8648,3 +8648,28 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-13（追加）— 冻结候选的机器状态：`candidate-status` 只读工具 + 元数据缺陷实测（draft PR，不 merge）
+
+**授权**：owner 2026-11-13「自行推进工程基线优化，不合并 PR，审查后再合并」。本项属 A 桶（只读度量 +
+工具），B 桶不动。
+
+**做了什么**：新增 `scripts/candidate-status.mjs`（+ 13 个 node:test + 5 个内建 self-test）。它把
+「身份锁定（`status: FROZEN`）」与「验收（`evidence.record_root` 下的 C2-A/C2-B）」放进同一张表，
+并按 git 校验版本链。只读：不写 manifest、不建状态文件、不动 ref；`record_root` 的
+`cand-` → `candidate-` 映射直接 import `freeze-candidate.mjs#recordRootFor`，不复制第二份规则。
+
+**实测（`dev/agent-workflow/evidence/eng-candidate-status-20261113/`）**：
+- 6 个候选、6 个 FROZEN、**0 个 `CANDIDATE_ELIGIBLE`**；`-3/-4` 为 `C2_A_AND_B`（两条记录都在，
+  `eligible` 均为 false），`-1/-2/-5` 为 `C2_NOT_RUN`（`-1/-5` 是 AWAITING_C2 的正常待办）；
+- **3 条 `RECORD_ROOT_STALE_PATH`**：`-2/-3/-4` 的 `record_root` 仍指向 `candidate-v0.1.6-1`，
+  正是两位独立 C2 裁决者判 FAIL 的文字缺陷；工具仍按 id 从真实目录读到 `-3/-4` 的记录（附 note）；
+- **4 条 `LINEAGE_UNRECORDED`**：`immutability.supersedes` 硬编码 `null`，版本链只存在于 C2 记录的自由
+  文本里。共 7 条缺陷，均为元数据债务，修复只能靠新 manifest commit（不可变规则）。
+
+**提案**（`docs/plans/memo/candidate-metadata-20261113/PLAN.md`，未实施）：P1 生成器要求 `--supersedes`
+并在同族有前驱时拒绝缺失；P2 `freeze-candidate.mjs --check` 调用本报告并拒绝陈旧 `record_root`；
+P3 是否接入 CI（gate 面）由 owner 裁决。
+
+**边界**：未改 `.github/`、`dev/ci/`、`scripts/eb3-*`、分支保护、Authority 指针、候选 manifest/ref；
+未 merge；未删除任何证据。
