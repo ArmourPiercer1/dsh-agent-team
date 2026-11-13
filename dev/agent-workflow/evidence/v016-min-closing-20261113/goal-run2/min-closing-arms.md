@@ -1,0 +1,3 @@
+| arm | verdict | proposition | measured detail |
+|---|---|---|---|
+| GOAL-A6OFF | **PASS** | Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF | goal={"id":"goal-a02f2e46-b19c-441d-900b-de44123719fb","revision":2,"phase":"active","objective":"MC goal C1MK_MCGOAL_2026-11-13T07-47-18-h0-r20e325 edited"} roundsStarted=2->2 (mockRoundRequests=2) phases=["active@r2","paused@r2"] stop=200/ok=true stoppedMidRound=true paused=true noContinuation=true |

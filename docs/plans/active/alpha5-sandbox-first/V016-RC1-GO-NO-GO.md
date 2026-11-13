@@ -163,3 +163,70 @@ re-freeze if the product SHA moves, then run **C2-A and C2-B again** on the resu
 Until then the answer is **NO-GO**.
 
 **The tag itself is the owner's decision.** This document recommends, and stops there.
+
+---
+
+## Appended 2026-11-13 (after #747 merged) — four statements are superseded by the tree; **the recommendation does not change**
+
+This is an **append-only correction**. The body above is kept exactly as written and is not rewritten;
+where a sentence below disagrees with the body, the body is **superseded**, not deleted. Nothing here
+upgrades a claim, moves a `V@B` cell or changes §5: the blocker is still eligibility, and the answer is
+still **NO-GO for `v0.1.6-rc.1`** on `cand-v0.1.6-4`. Two facts moved since this document was written:
+#747 (this package) merged, and the closing branch `task/v016-closing-20261113` landed four items.
+
+**1. The C2 pair is now committed — "not committed" in §3 is superseded.** Both records for
+`cand-v0.1.6-4` are byte-identical copies under version control at
+`dev/agent-workflow/evidence/candidate-v0.1.6-4/` (adjudicator worktrees were the only copy before):
+
+| record | committed path | sha256 | verify (`--manifest dev/engineering/candidates/cand-v0.1.6-4.json`) |
+| --- | --- | --- | --- |
+| C2-A | `dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-A.json` | `0823170ed5937f2160072af11aac3e5b7dac5dd8198187f2dd2aa7e95a9618ec` | `PASS`, `recordClass=CANDIDATE-C2`, `eligible=false`, `candidateCommit=0d31f9121…` → `VERIFIED … PASS=147`, exit 0 |
+| C2-B | `dev/agent-workflow/evidence/candidate-v0.1.6-4/C2-B.json` | `1e05deaa40ac99dbb29ed1604f0305c11c4a1997359df5180b28cb369c5e64a6` | `PASS`, `runId=c2-b-cand-v0.1.6-4-20261113`, `eligible=false` → `VERIFIED … PASS=147`, exit 0 |
+
+With both records supplied the verifier reports `VERIFIED … PASS=148` (exit 0); the no-record baseline
+is 147. **Nothing about eligibility changed:** both records still return
+`candidateClaimEligibility.eligible: false`, and C2-B's verdict is still
+`NOT PASS (candidate claim not eligible from this record)`. Committing an adjudication does not turn it
+into a pass; §5 items 1–3 stand verbatim. Transcripts: `…/candidate-v0.1.6-4/verify-C2-A.txt`,
+`verify-C2-B.txt`, `verify-both.txt`; the README in that directory records the same facts.
+
+**2. The stable ceiling is S1–S4, not S1–S3.** The §5 bullet "what the release would be allowed to
+claim" lists S1/S2/S3 and says "Nothing more"; `RELEASE-NOTES-0.1.6.md` §11.1 now carries a fourth stable
+row, **S4** — *governed `bash` requires the plane-takeover composition* — with the operator consequence
+below the table (a pre-#730 composition's governed `bash` is typed-shut with
+`A5_NATIVE_ADMISSION_UNAVAILABLE`; no approval request, no execution; it stays that way until the
+takeover is mounted). S4 is a **configuration prerequisite stated as a product fact**, not a new
+capability and not a duplicate of S3: S3 records the measurement and the supersession of pd33's `FAIL`,
+S4 records the prerequisite, its code anchors (`native-bash-tool.mjs:97-102`, `agent-bindings.mjs:3135`
+/ `:3390`) and the upgrade path (`docs/INSTALL.md` §3.6). A release built on these notes may therefore
+claim governed `bash` **only on the plane-takeover composition** — which is exactly what S2 measured.
+
+**3. The manifest `evidence.record_root` drift is frozen history, and its recurrence is now prevented
+— O2 and §5(4) still stand.** No frozen manifest was rewritten: `cand-v0.1.6-2/-3/-4.json` still contain
+`"record_root": "dev/agent-workflow/evidence/candidate-v0.1.6-1"`, so `freeze-candidate --check` on them
+reports `DRIFT evidence.record_root` and C2-A's `manifestFindings` stays true as issued. What changed is
+the **generator**: `scripts/freeze-candidate.mjs` now derives the root from `--candidate-id`
+(`recordRootFor()`; `cand-<x>` → `…/evidence/candidate-<x>`), pinned by a host-free test
+(`tests/s2-authority/freeze-candidate.test.mjs`, 12 cases, including a negative control that the string
+`candidate-v0.1.6-1` cannot appear in a manifest frozen under another id, and a case asserting the frozen
+manifests keep their stale text). `--check` on `cand-v0.1.6-1` — the only manifest CI checks — remains
+**CLEAN**. The next freeze derives a correct root; **the correction of `-4`'s own manifest still requires
+a new manifest commit** (§5 step 4), and no such commit exists, so §5's minimum path is unchanged.
+
+**4. PD-40 now carries an owner ruling; it is still a disclosed limit, not a fix — O3 stands.** The
+owner ruled (2026-11-13) that PD-40 is an **accepted opt-in-experimental limit for the v0.1.6 Preview**
+provided the text never promises more than the code delivers; a full session-scoped durable marker is
+**deferred** (design change with crash semantics), and **no unconditional-stop claim is permitted**. The
+two sentences that over-claimed were corrected in `RELEASE-NOTES-0.1.6.md` — §1's "durable human-Stop
+marker" and §2.2's "may not survive" — and an appended before/after correction record quotes both. This
+satisfies the *wording* limb of §5 step (2) ("or scope Sticky Stop as latch-only"): the notes now say the
+durable marker is written **when a review wake latch exists** and that a Stop with no live wake writes
+nothing and is not persisted. It does **not** satisfy step (1), (3), (4) or (5), it does not upgrade E2,
+and it does not move C2-B's verdict — "durable Sticky Stop" remains a refused claim.
+
+**What this append does not touch.** #748's A6-off evidence re-cut was **not on `master`** when this was
+written (the work exists only on `origin/task/a6off-evidence-refresh-20261113`), so nothing here relies on
+it; §2's four gate measurements, §3's verdicts, O1's blocker, O4–O11 and §5's recommendation are
+unchanged. Gates re-run on the closing branch after the rebase onto #747: generator test 12/12,
+`a5sf-debt-register` 10/10, `lint-identities` clean, `docs-probe --base origin/master` blocking=0,
+`docs-sync --check` findings=0.

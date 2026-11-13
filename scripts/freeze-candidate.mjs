@@ -81,6 +81,48 @@ export function isJudgePath(path) {
   return JUDGE_PATH_RULES.some((rule) => rule.re.test(path))
 }
 
+/** Root under which a candidate's independent C2 records are produced. */
+export const EVIDENCE_ROOT_REL = 'dev/agent-workflow/evidence'
+
+/**
+ * The evidence root a candidate's C2 records belong under, DERIVED from the
+ * candidate id — never a constant.
+ *
+ * WHY THIS IS A FUNCTION AND NOT A STRING. `evidence.record_root` used to be the
+ * literal `dev/agent-workflow/evidence/candidate-v0.1.6-1`, carried unchanged
+ * through every freeze, so the manifests for `cand-v0.1.6-2`, `-3` and `-4` each
+ * told their adjudicator to write records into candidate `-1`'s directory. Two
+ * independent C2 adjudicators filed it as FAIL (manifest documentation drift).
+ *
+ * THE DIRECTORY NAME IS `candidate-<version>`, NOT `<candidate_id>`. Candidate ids
+ * are `cand-v0.1.6-4`; the evidence directories the track has actually used since
+ * candidate 1 are `candidate-v0.1.6-4` (`cand-v0.1.6-3`'s C2 records live under
+ * `dev/agent-workflow/evidence/candidate-v0.1.6-3/`). The mapping is therefore
+ * `cand-<x>` -> `candidate-<x>`, and an id that does not carry the `cand-` prefix
+ * is used verbatim. This is the derivation that reproduces the frozen `-1` value
+ * for `cand-v0.1.6-1` (which is why `--check` on that manifest stays CLEAN) while
+ * making `-2`, `-3`, `-4` and every later id point at their own directory.
+ *
+ * EXISTING MANIFESTS ARE NOT REWRITTEN. The wrong text already inside
+ * `cand-v0.1.6-2..-4` is frozen history: a manifest is never edited after the
+ * freeze (see `immutability.rule`). The fix takes effect for the NEXT freeze,
+ * which is the only place a manifest is written.
+ *
+ * The id is validated because it becomes a path segment: a slash, a `..` or
+ * whitespace would let a candidate id point the evidence root somewhere other
+ * than a directory named after it.
+ */
+export function recordRootFor(candidateId) {
+  if (typeof candidateId !== 'string' || candidateId === '') {
+    throw new Error(`record_root needs a non-empty candidate id, got ${JSON.stringify(candidateId)}`)
+  }
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(candidateId)) {
+    throw new Error(`invalid candidate id for record_root: ${JSON.stringify(candidateId)} (one path segment: letters, digits, dot, underscore, hyphen)`)
+  }
+  const dir = candidateId.startsWith('cand-') ? `candidate-${candidateId.slice('cand-'.length)}` : candidateId
+  return `${EVIDENCE_ROOT_REL}/${dir}`
+}
+
 // ---------- process helpers ----------
 
 export function git(root, args) {
@@ -269,7 +311,7 @@ export function buildManifest(opts) {
     evidence: {
       status: 'AWAITING_C2',
       run_records: [],
-      record_root: 'dev/agent-workflow/evidence/candidate-v0.1.6-1',
+      record_root: recordRootFor(opts.candidateId),
       evidence_note: 'No run record is cited at freeze: owner ruling D12 freezes the candidate BEFORE C2. The independent adjudicator produces the C2-A and C2-B records under record_root and verifies them against this manifest with `node scripts/verify-candidate.mjs --record <path>` — this manifest is never rewritten to add evidence. A cited record is refused, not warned about, when it claims candidate eligibility without candidateCommit/candidateSha equal to this candidate.',
     },
     ancestry: {

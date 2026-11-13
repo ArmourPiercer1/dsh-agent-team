@@ -1,0 +1,704 @@
+{
+ "schema": "c2-adjudication-record/1",
+ "recordClass": "CANDIDATE-C2",
+ "candidateClaimEligibility": {
+  "eligible": false,
+  "scope": "C2-A only",
+  "reason": "C2-A is measured and green on this SHA (identity 147/147; A6-off A1 seven clauses 7/7 twice with a same-tree A6-on control agreeing; joint 11/11 twice; A6 allow/deny/throw/exception/Stop/crash twice each; packaging 33/33+39/39 twice). Candidate-level eligibility is still withheld because (1) C2-B has not been run on 0d31f9121 \u2014 C2 is tied to a SHA and the C2-B records committed for cand-v0.1.6-3 cannot be re-pointed at this commit; and (2) the manifest evidence.record_root is still stale (see manifestFindings).",
+  "productSurfaceGreen": true,
+  "eligibleIf": "C2-B is measured on 0d31f9121 with a PASS, and the manifest evidence.record_root is corrected by a new manifest commit (not an edit of the frozen one)."
+ },
+ "candidateCommit": "0d31f9121308a43030701fe6d56c316100782419",
+ "candidateSha": "0d31f9121308a43030701fe6d56c316100782419",
+ "candidateRef": "refs/heads/candidate/v0.1.6-4",
+ "candidateId": "cand-v0.1.6-4",
+ "manifest": {
+  "path": "dev/engineering/candidates/cand-v0.1.6-4.json",
+  "commit": "5a5da26a771b213c2b2a1d6fe6327cead5beec47",
+  "commit_ref": "task/freeze-cand-4 (not an ancestor of the candidate \u2014 D12 freezes the manifest after the product commit)",
+  "sha256": "c0962acc5eb5cd31c712e5616664cf65495f9cfd1d1d20d5d5bbb534840841cc",
+  "content_digest": "sha256:4d37bf396e26b375f02f496dc09bc065c6a93e4fd30a1bc8eae50281857a17c1",
+  "present_in_candidate_tree": false,
+  "read_from": "git show task/freeze-cand-4:dev/engineering/candidates/cand-v0.1.6-4.json (byte-identical to the untracked copy in the main checkout and to the copy placed in the measurement worktree)"
+ },
+ "host": {
+  "version": "0.2.0-rc.2",
+  "sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "tree": "tests/deepseek-harness-test-use"
+ },
+ "authority": {
+  "pointer": "dev/engineering/current-authority.json",
+  "snapshot_version": "as20261109r1",
+  "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+  "baseline": "cb2e41483af8447700fb3c2a25c2686705320692",
+  "moved": false
+ },
+ "measurementWorktree": ".worktrees/c2a-cand4",
+ "measurementBranch": "task/c2a-cand4-20261113",
+ "adjudicator": {
+  "role": "independent C2 adjudicator",
+  "session": "c2a-cand4-20261113",
+  "authored_product_code": false,
+  "moved_authority_pointer": false,
+  "moved_candidate_ref": false,
+  "merged": false,
+  "edited_frozen_manifest": false,
+  "touched_3080": false
+ },
+ "date": "2026-11-13",
+ "measuredAtUtc": "2026-11-12T22:20:25Z",
+ "subject": {
+  "candidate_id": "cand-v0.1.6-4",
+  "candidate_commit": "0d31f9121308a43030701fe6d56c316100782419",
+  "candidate_commit_subject": "A6-OFF x PLANE TAKEOVER: the A1 seven clauses with alpha6ReviewRouting false \u2014 the zero-regression gap is now measured (#745)",
+  "supersedes": "cand-v0.1.6-3 (17a24e2c302cd991c3ba495ae29576b58a6c1069), whose C2-A reported the A6-off conjunction unmeasured",
+  "product_trees": {
+   "packages": "6f42b2afe7f40b9a87c66556c294d41d96c76dec",
+   "scripts": "fa6c2f039cce91c4a0508a4a7093d8d404cc86c4",
+   "tests/paths.mjs": "1bf4829eb8709a0121c80f9e91cb00855e0db7eb",
+   "package.json": "6e3eb5a8e3c01291ab0c51d7f1563c0abe799928",
+   "pnpm-lock.yaml": "bc5459e8182be89e4523b2f029897104d9a888b7"
+  },
+  "judges_pinned": "124/124 (verifier edge product.judges.coverage)",
+  "dependency_pins": {
+   "host_baseline_version": "0.2.0-rc.2",
+   "host_sha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+   "host_tree": "tests/deepseek-harness-test-use",
+   "lockfile_tree": "bc5459e8182be89e4523b2f029897104d9a888b7",
+   "package_json_tree": "6e3eb5a8e3c01291ab0c51d7f1563c0abe799928",
+   "dependency_note": "the dependency set is the one the measured acceptance runs must execute; a candidate repair that changes any of these is a NEW candidate version, not an edit of this one."
+  },
+  "ancestry": "candidate is an ancestor of refs/remotes/origin/master; product == candidate (self)",
+  "product_surface_vs_cand3": "git diff --stat 17a24e2c3 0d31f9121 -- packages scripts tests/paths.mjs package.json pnpm-lock.yaml is EMPTY (0 files): the product surface is byte-identical to cand-v0.1.6-3. Verdicts are still re-measured on this SHA and are not carried over."
+ },
+ "identity": {
+  "instrument": "scripts/verify-candidate.mjs",
+  "instrument_sha256": "8737b0804cd18dde46d2d3e3a382ab94bd0d86c3b5827f42636a69bd6c739b14",
+  "command": "node scripts/verify-candidate.mjs --manifest dev/engineering/candidates/cand-v0.1.6-4.json",
+  "verdict": "PASS",
+  "passEdges": 147,
+  "edges": "manifest.shape; candidate_commit.resolves; candidate_ref.tip; content_digest; all product.trees.*; all 124 product.judges.*; authority.*; dependencies.*; ancestry.*"
+ },
+ "manifestFindings": [
+  {
+   "field": "evidence.record_root",
+   "observed": "dev/agent-workflow/evidence/candidate-v0.1.6-1",
+   "expected_for_this_candidate": "dev/agent-workflow/evidence/candidate-v0.1.6-4",
+   "verdict": "FAIL",
+   "class": "manifest documentation drift, carried over unchanged by the freeze generator (identical in cand-1/-2/-3/-4 manifests)",
+   "impact": "If followed literally, cand-4 C2 evidence would be filed under cand-1 evidence root. The verifier does not read this field; no recomputed identity edge changes. The record was written under candidate-v0.1.6-4 per the brief.",
+   "weakensClaim": false
+  },
+  {
+   "field": "immutability.acceptance_scopes[C2-A]",
+   "observed": "\"Alpha.5 governed, A6 off \u2014 the formal governed I/O acceptance on the opt-in governed path.\"",
+   "verdict": "OBSERVED-UNCHANGED, NOT A DEFECT THIS TIME",
+   "class": "the text is byte-identical to cand-v0.1.6-3 (the freeze generator did not change it), but this tree now CONTAINS the A6-off measurement (#745), so the sentence names a measured lane instead of an unmeasured claim. On cand-3 the same sentence was a FAIL because no A6-off evidence existed on the plane-takeover composition.",
+   "impact": "Reported for the record; not counted as a FAIL. Note the sentence is narrower than this record, which also re-runs the joint A6-on surface and packaging.",
+   "weakensClaim": false
+  }
+ ],
+ "measurements": {
+  "joint": {
+   "instrument": "tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs",
+   "instrument_sha256": "3a8185725e6aa5cd4df17e3d27ceaafd183e8c851de14c82d0c09bf30dc65c2d",
+   "runs": [
+    {
+     "runId": "joint-j-run1",
+     "dir": "dev/agent-workflow/evidence/candidate-v0.1.6-4/joint-j-run1",
+     "hostPort": 3185,
+     "mockPort": 3494,
+     "verdict": {
+      "PASS": 11
+     },
+     "recordClass": "DEV-LIVE"
+    },
+    {
+     "runId": "joint-j-run2",
+     "dir": "dev/agent-workflow/evidence/candidate-v0.1.6-4/joint-j-run2",
+     "hostPort": 3186,
+     "mockPort": 3495,
+     "verdict": {
+      "PASS": 11
+     },
+     "recordClass": "DEV-LIVE"
+    }
+   ],
+   "agreement": {
+    "comparator": "tests/kits/joint-acceptance-20261111/compare-two-runs.mjs",
+    "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/joint-j-agreement.json",
+    "verdictsAgree": true,
+    "detailsAgree": true
+   }
+  },
+  "a6": {
+   "instrument": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+   "instrument_sha256": "78520f11457fdcec8a7a0161da4c3fcb73abad1b34247a7904e245a175b6f8f0",
+   "pairs": [
+    {
+     "scenario": "allow+deny+throw+self",
+     "env": "C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_EXEC_NEG=1 C1_A6_RECIPIENTS=1",
+     "runs": [
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-allowdeny-run1",
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-allowdeny-run2"
+     ],
+     "checks": "10 PASS each (A6-1,2,3,4,5,6,7,27,28,29)",
+     "agreement": {
+      "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-allowdeny-agreement.json",
+      "verdictsAgree": true,
+      "detailsAgree": true
+     }
+    },
+    {
+     "scenario": "exception (declared Leader exception)",
+     "env": "C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_EXCEPTION=1",
+     "runs": [
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-exception-run1",
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-exception-run2"
+     ],
+     "checks": "8 PASS each (A6-1,2,3,4,5,6,10,27)",
+     "agreement": {
+      "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-exception-agreement.json",
+      "verdictsAgree": true,
+      "detailsAgree": true
+     }
+    },
+    {
+     "scenario": "Stop before consumption",
+     "env": "C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_STOP=1",
+     "runs": [
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-stop-run1",
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-stop-run2"
+     ],
+     "checks": "3 PASS each (A6-1,11,12)",
+     "agreement": {
+      "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-stop-agreement.json",
+      "verdictsAgree": true,
+      "detailsAgree": true
+     }
+    },
+    {
+     "scenario": "Host crash after PA request write",
+     "env": "C1_ALPHA6_OFFICER=1 C1_PLANE_TAKEOVER=1 C1_A6_CRASH=1",
+     "runs": [
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-crash-run1",
+      "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-crash-run2"
+     ],
+     "checks": "3 PASS each (A6-1,13,14)",
+     "agreement": {
+      "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a6-crash-agreement.json",
+      "verdictsAgree": true,
+      "detailsAgree": true
+     }
+    }
+   ],
+   "comparator": {
+    "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/compare-a6-runs.mjs",
+    "sha256": "2396289ec627b8cf0ef22b4adffd4a2d80f033b2c4ce732d8ec05dd9a104a5fe",
+    "normalization": [
+     "ISO timestamp -> <iso>",
+     "run stamp (2026-11-12T18-04-25) -> <stamp>",
+     "defaultWorkspace path (may be log-truncated) -> \"defaultWorkspace\":\"<path>\"",
+     "mock request count on a notification leg (model-transport polling artefact; wakes/notifications stay compared) -> $1 requests=<n>",
+     "home/workspace path -> <home>",
+     "blueprint scratch dir -> <blueprints>",
+     "rpc id (per-RPC random) -> \"rpcId\":\"<id>\"",
+     "control id -> ctrl-<id>",
+     "case id -> case-<id>",
+     "instance id -> inst-<id>",
+     "session id -> session-<id>",
+     "sha256 -> sha256:<hash>",
+     "native bash hexec call id -> :hexec:<id>",
+     "mock tool call id -> call-c1-<id>",
+     "requestToken -> <token>",
+     "ledger sequence numbers -> $1=<n>",
+     "absolute worktree path -> <worktree>"
+    ]
+   }
+  },
+  "a1": {
+   "instrument": "tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs",
+   "instrument_sha256": "25067c78832b21d30d9d64364637e28cd991d111904655c2412fe392ff51ec2c",
+   "a6Off": {
+    "runs": [
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-off-run1",
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-off-run2"
+    ],
+    "counts": {
+     "PASS": 7
+    },
+    "composition": {
+     "preset": "native",
+     "mode": "a6-off",
+     "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting on ONE document",
+     "planeTakeover": true,
+     "alpha6ReviewRouting": false,
+     "alpha6WakeIntentPathConfigured": false,
+     "reviewRoutingBlocksInert": true,
+     "approvalPath": "legacy Leader notification (durable [team-control] -> team_list_pending_control + team_resolve_control)",
+     "governedRealm": true,
+     "hostDefaultSandboxMode": "danger-full-access",
+     "nativeBash": "the PINNED persistent bash over the governed PTY (cd/export persist; the plane adopts it and mounts no shell row)"
+    },
+    "agreement": {
+     "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-off-agreement.json",
+     "verdictsAgree": true,
+     "detailsAgree": true,
+     "normalization": [
+      "run stamp (2026-11-12T03-36-55) -> <stamp>",
+      "home suffix (the per-world 6-hex id) -> -h<n>-r<hex>",
+      "ISO timestamp -> <iso>",
+      "marker file (stopped-<hash>.json) -> stopped-<hash>.json",
+      "marker key -> \"key\":\"<hash>\"",
+      "goal id -> goal-<id>",
+      "control id -> ctrl-<id>",
+      "instance id -> inst-<id>",
+      "session id -> session-<id>",
+      "definition fingerprint -> def#<n>",
+      "content hash -> sha256:<hash>",
+      "home path -> <home>",
+      "blueprint dir -> <blueprints>",
+      "fact wait ms -> executionFactWaitMs=<ms>",
+      "decision wait ms -> decisionWaitMs=<ms>",
+      "A1-5 pre-creation quiesce wait ms -> precreationQuiesceMs=<ms>",
+      "round counters (threshold is the clause) -> roundsStarted=<n>-><n>",
+      "mock round requests (timing artefact) -> mockRoundRequests=<n>-><n>"
+     ]
+    }
+   },
+   "a6OnControl": {
+    "runs": [
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-on-run1",
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-on-run2"
+    ],
+    "counts": {
+     "PASS": 7
+    },
+    "composition": {
+     "preset": "native",
+     "mode": "a6-on",
+     "blueprint": "schemaVersion: 5, memberIoCeilings + reviewRouting on ONE document",
+     "planeTakeover": true,
+     "alpha6ReviewRouting": true,
+     "alpha6WakeIntentPathConfigured": true,
+     "reviewRoutingBlocksInert": false,
+     "approvalPath": "Alpha.6 Officer review wake",
+     "governedRealm": true,
+     "hostDefaultSandboxMode": "danger-full-access",
+     "nativeBash": "the PINNED persistent bash over the governed PTY (cd/export persist; the plane adopts it and mounts no shell row)"
+    },
+    "agreement": {
+     "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-on-agreement.json",
+     "verdictsAgree": true,
+     "detailsAgree": true
+    }
+   },
+   "crossMode": {
+    "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/a1-on-vs-off-agreement.json",
+    "verdictsAgree": true,
+    "detailsAgree": true
+   },
+   "compositionDiff": {
+    "changedLines": [
+     "-        alpha6ReviewRouting: true",
+     "-        alpha6WakeIntentPath: \"<DSH_HOME>/alpha6-wake-intents\"",
+     "+        alpha6ReviewRouting: false"
+    ],
+    "files": [
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/composition-a6-on/a1-composition.json",
+     "dev/agent-workflow/evidence/candidate-v0.1.6-4/composition-a6-off/a1-composition.json"
+    ],
+    "statement": "the emitted patch differs ONLY in alpha6ReviewRouting true->false and the removed alpha6WakeIntentPath line"
+   },
+   "clauses": {
+    "A1-1": {
+     "verdict": "PASS",
+     "proposition": "a write INSIDE the Member root is allowed and its bytes are on disk"
+    },
+    "A1-2": {
+     "verdict": "PASS",
+     "proposition": "a write OUTSIDE the Member ceiling is refused by the OS sandbox \u2014 zero bytes on disk"
+    },
+    "A1-3": {
+     "verdict": "PASS",
+     "proposition": "the same Member keeps `cd` + `export` state across consecutive calls"
+    },
+    "A1-4": {
+     "verdict": "PASS",
+     "proposition": "a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid)"
+    },
+    "A1-5": {
+     "verdict": "PASS",
+     "proposition": "a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named)"
+    },
+    "A1-6": {
+     "verdict": "PASS",
+     "proposition": "with the Host default at danger-full-access the Member ceiling still narrows it (root writes, Member refused)"
+    },
+    "A1-7": {
+     "verdict": "PASS",
+     "proposition": "a DENIED approval produces zero native bash executions (no marker, no fact, no bytes)"
+    }
+   },
+   "sandboxBackend": "full",
+   "osLevelNetworkIsolationClaimed": false
+  },
+  "pd33": {
+   "pinTest": "node --test tests/world-factory/a5sf-pd33-preview-e2e.test.mjs",
+   "pinResult": "14/14 PASS incl. PD33-SUPERSEDED",
+   "driverDeclaration": "run-boot.mjs SUPERSEDED_BASH_ARM (dated 2026-11-13, names #730, A5_NATIVE_ADMISSION_UNAVAILABLE, keeps the three case ids, names both successor instruments)",
+   "disclosure": "evidence README + run-record.json overall=FAIL, three cases REFUTED"
+  },
+  "packaging": {
+   "instrument": "tests/kits/packaging-v016/run-packaging-acceptance.mjs",
+   "instrument_sha256": "41cd87f1ef16de9ccb28913250b26d98b441e52d3217a42c2dff3648e769cc06",
+   "runs": [
+    {
+     "run": "1",
+     "dir": "dev/agent-workflow/evidence/candidate-v0.1.6-4/packaging-run1/run-1",
+     "hostPort": 3189,
+     "mockPort": 3499,
+     "driverChecks": "33/33",
+     "liveChecks": "39/39"
+    },
+    {
+     "run": "2",
+     "dir": "dev/agent-workflow/evidence/candidate-v0.1.6-4/packaging-run2/run-2",
+     "hostPort": 3190,
+     "mockPort": 3500,
+     "driverChecks": "33/33",
+     "liveChecks": "39/39"
+    }
+   ],
+   "tarball": {
+    "sha256": "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+    "bytes": 4405634,
+    "note": "identical to cand-v0.1.6-3, consistent with an unchanged product surface"
+   },
+   "secondTarball": {
+    "sha256": "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f",
+    "built_from": "6ea7d8dd4679ed48d1fd6e7d92ba30ee311fabad (helper worktree; no product edits)"
+   },
+   "agreement": {
+    "file": "dev/agent-workflow/evidence/candidate-v0.1.6-4/packaging-agreement.json",
+    "verdictsAgree": true,
+    "detailsAgree": true,
+    "artifactsAgree": true,
+    "artifactIdentity": {
+     "tarballSha256": [
+      "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+      "7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba"
+     ],
+     "tarballBytes": [
+      4405634,
+      4405634
+     ],
+     "packedHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+     ],
+     "installedHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+     ],
+     "secondTarballSha": [
+      "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f",
+      "4e146e9529ad215145bebc14ff6c54217f1a5765b1361bbb7664da3430a0730f"
+     ],
+     "secondTree": [
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4"
+     ],
+     "firstTree": [
+      "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b",
+      "sha256:deba287ddf31e4fc341cc95903dfa3b602488a41665113c8e171b408bd4a424b"
+     ],
+     "installedAfterSwap": [
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4",
+      "sha256:ad889249ad351cf96118adf96f9d92cfa22f379828e67dde5d05c05d8093ecf4"
+     ],
+     "rollbackHostEntry": [
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6",
+      "187bc363dc816703a364ad1288dd575135892fb7ad644273a38bba86e7d612b6"
+     ]
+    },
+    "normalization": [
+     "ISO timestamp -> <iso>",
+     "world stamp -> <stamp>",
+     "run label r1/r2 -> $1-<n>",
+     "run token r1/r2 -> $1_r<n>",
+     "run token R1/R2 -> V016PACK_R<n>_",
+     "blueprint content hash (hash over a run-labelled document) -> $1sha256:<hash>",
+     "port -> $1<port>",
+     "control id -> ctrl-<id>",
+     "goal id -> goal-<id>",
+     "case id -> case-<id>",
+     "instance id -> inst-<id>",
+     "session id -> session-<id>",
+     "world/home path -> <home>",
+     "worktree path -> <worktree>",
+     "blueprint scratch dir -> <blueprints>",
+     "rpc id -> \"rpcId\":\"<id>\""
+    ]
+   }
+  }
+ },
+ "cases": [
+  {
+   "id": "C2-A/J01",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "team.create=200 admitted=true blueprintHash=sha256:533a15beafb66385fcb96a98888c05ac7df49bcfdbba34f18a310dfcd23dbd55 memberIoCeilings=true reviewRouting=true schemaVersion=5",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J02",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "inside=\"pd42-inside-2026-11-12T21-53-51-h0-r337971\" allowFacts=1",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J03",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "writeDenies=1 outsideExists=false",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J04",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "bashCalls=1 pinnedDefinition=true bashExecuted=true realmTerminalFacts=0 (disclosure: the shipped post-#730 path audits bash in the control ledger, not the realm sink)",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J05",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "request=ctrl-0gc6tv419slhw11pf3tru0op consumption=1 executionResults=1 outcomes=succeeded executionFactWaitMs=300",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J06",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "parameter-permission request=ctrl-0gc6tv419slhw11pf3tru0op reviewAuthority=leader blueprintContentHash=sha256:533a15beafb66385fcb96a98888c05ac7df49bcfdbba34f18a310dfcd23dbd55 operationTool=dsh-agent-team/bash authorityGeneration=0 decider={\"instanceId\":\"inst-0pthwup0bd3e\",\"kind\":\"instance\",\"role\":\"member\"} officer=inst-0pthwup0bd3e routedToOfficer=true routedAwayFromOfficer=false identityCarried=true legDecided=true decisionWaitMs=1 whenOfficerUnavailable=hold(unit-pinned, not exercised here) team-tool-execute leg=true",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J07",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "member=inst-1kdzt6v0hw0q relay=200/ok goal={\"id\":\"goal-20852ee5-f251-4af2-ac16-f14af56c2005\",\"revision\":2,\"phase\":\"active\",\"objective\":\"C1_J07 human goal C1MK_J07_2026-11-12T21-53-51-h0-r337971 ed\"} roundsStarted=2->2 (mockRoundRequests=2->2) stopLandedMidRound=true holdReleasedBy=driver stop=200 phase=paused->paused toolResults=[\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-20852ee5-f251-4af2-ac16-f14af56c2005\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_2026-11-12T21-53-51-h0-r337971\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-20852ee5-f251-4af2-ac16-f14af56c2005\\\",\\\"revision\\\":1,\\\"objective\\\":\\\"C1_J07 human goal C1MK_J07_2026-11-12T21-53-51-h0-r337971\\\",\\\"phase\\\":\\\"active\\\",\\\"roundsStarted\\\":0,\\\"maxGoalRounds\\\":6},\\\"activation\\\":\\\"armed\\\"}\",\"{\\\"goal\\\":{\\\"id\\\":\\\"goal-20852ee5-f251-4af2-ac16-f14af56c2005\\\",\\\"revision\\\":",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J08",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "member=inst-1m8rk1k02hfr relay=200 caller=instance/inst-leader refusal=GOAL_TOOL_AUTHORITY_REQUIRED(sentence) refusalObserved=\"Error: this goal operation requires a direct human turn on a top-level agent\" goal=null governedBashStillRuns=false (disclosure; the shell lane is J04/J05's clause) file=null askLegsMinted=0",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J09",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "wakeSeen=13 firstRelay=200 cancel=200 markers=[\"stopped-df89cbe7.json\"] bytes=\"{\\\"stopped\\\":true,\\\"key\\\":{\\\"rootSessionId\\\":\\\"session-c1-smoke-a6-2026-11-12T21-53-51-h0-r337971\\\",\\\"reviewerInstanceId\\\":\\\"inst-0pthwup0bd3e\\\",\\\"sessionGeneration\\\":1},\\\"targetSessionId\\\":\\\"session-team-child-397214\" wakes=13->13 markerStable=true secondAskLegs=1 askIsReal=true secondRelay=200 holdReleasedBy=driver",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J10",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "exited=true restart=ok legs=pp:ctrl-1ivgt2n0ejjiia0p5l5up0s5/pa:ctrl-1ruq1j91vvyqdg1sedrpb1pm consumed=1/1->1/1 facts=pa:1xunknown pp:1xunknown abandonments=execution-outcome-unknown,execution-outcome-unknown mockRequests=2->2 members=6 memberSurvived=true officerSurvived=true bodyStart=\"body-started\\n\" clauses={\"noDuplicate\":true,\"noReplay\":true,\"execSettledUnknown\":true,\"noSilentAbsence\":true,\"durableSurvived\":true}",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/J11",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "one-shot consumption facts for ctrl-0gc6tv419slhw11pf3tru0op: 1",
+   "oracle": "durable product facts read back from the run (control ledger, goal rows, stop/crash artifacts) plus the model-visible tool transcript",
+   "falsifier": "a verdict that flips between the two fresh worlds, or a detail that differs after the documented normalization"
+  },
+  {
+   "id": "C2-A/A6-allow",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-27: the normal Member->Officer allow -> execute path writes a DURABLE `succeeded` execution-result fact for the PA request \u2014 executed=true pa=ctrl-06fjkfn10m62nk0jt0ixp0gn callId=team-inst-15qtwwh12pfq-bash:hexec:a6958f64-b458-43fa-bd3d-802d914a4d39-1 outcome=succeeded facts=2 ; PASS A6-2: the Member ask produced a model-visible Officer review wake \u2014 wakes=6 notifications=0 requests=17",
+   "durableRows": "ctrl-03sxy8z0fmbzmo1jc8rct1y4 (parameter-permission, reviewAuthority=leader) seq6 request / seq8 allow decider={instanceId:inst-0ms4pvd1xcm3,kind:instance,role:member} / seq9 allow-consumed / seq14 execution-result succeeded; ctrl-06fjkfn10m62nk0jt0ixp0gn (team-tool-execute) seq10 request / seq11 allow / seq12 consumed / seq13 succeeded callId=team-inst-15qtwwh12pfq-bash:hexec:a6958f64-\u2026-1",
+   "oracle": "durable control ledger rows + the file the approved body wrote (read back)",
+   "falsifier": "an allow with no consumption row, or an execution-result without the written file"
+  },
+  {
+   "id": "C2-A/A6-deny",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-28: a DENIED call is refused after its durable decision: zero consumption, zero side effect, and NO execution-result fact \u2014 request=ctrl-1uc4utm15v534h06uw21o1bo decision=deny consumed=false execFacts=0 file=false done=true",
+   "durableRows": "ctrl-1uc4utm15v534h06uw21o1bo (team-tool-execute): seq20 request -> seq21 decision=deny decider={humanId:session-c1-smoke-a6-2026-11-12T21-53-51,kind:human}; NO allow-consumed, NO execution-result, target file absent (fileExisted=false)",
+   "oracle": "absence of consumption/execution rows plus a real stat of the would-be target",
+   "falsifier": "any consumption/execution row for the denied request, or bytes on disk"
+  },
+  {
+   "id": "C2-A/A6-throw",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-29: a call whose backend THROWS/aborts after consumption records ONE terminal `failed` execution-result (never `succeeded`) \u2014 request=ctrl-0y23g6b1rziogc0v16jqh1js consumed=true execFacts=failed callId=team-inst-0ms4pvd1xcm3-bash:hexec:c7d92b15-eb64-4b97-a3ec-a30d04f3b8cb-2 done=true",
+   "durableRows": "ctrl-0y23g6b1rziogc0v16jqh1js: seq26 request -> seq28 allow-consumed -> seq29 execution-result outcome=failed; member tool result a5p5-refused backend-failed target-unresolvable",
+   "oracle": "the terminal execution-result outcome (failed, never succeeded)",
+   "falsifier": "outcome=succeeded or no terminal row after consumption"
+  },
+  {
+   "id": "C2-A/A6-exception",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-10: the PA leg of a declared Leader exception was decided by the Leader, never the Officer \u2014 pa={\"sequence\":10,\"factType\":\"control-request-recorded\",\"requestId\":\"ctrl-05rh0t405k6nn71vn4pxe1xn\",\"kind\":\"leader-approval\",\"toolName\":\"bash\",\"actionName\":\"team-tool-execute\",\"targetInstanceId\":\"inst-1m0wwcf1mxrf\",\"correlation\":\"pa:tadm:session-c1-smoke-a6-2026-11-12T21-56-31:inst-1m0wwcf1mxrf:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-1m0wwcf1mxrf-bash:hexec:9586a546-f69d-4b87-b023-9d6f066b7f83-1\",\"approvalCaseId\":\"case-0glhny503py6om19m211z1kb\",\"legOr ; PASS A6-2: the declared Leader exception produced a model-visible Leader notification, not an Officer wake \u2014 wakes=0 notifications=3 requests=16",
+   "durableRows": "ctrl-08wod4x1slk7ay09l7a3b0f4 and ctrl-05rh0t405k6nn71vn4pxe1xn: request reviewAuthority=leader -> decision=allow decider={instanceId:inst-leader,kind:instance,role:leader}; wakes=0 notifications=3; executed",
+   "oracle": "the decider identity on the durable decision row + notification/wake counts + written file",
+   "falsifier": "an Officer wake or an Officer decider"
+  },
+  {
+   "id": "C2-A/A6-stop",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-12: Stop before consumption prevents execution; a second allow is refused (decided or abandoned \u2014 the arm decides which) \u2014 lateStatus=200 lateDecision={\"sequence\":11,\"factType\":\"control-decision-recorded\",\"requestId\":\"ctrl-074rjvn1t6htkk0yn1krl142\",\"decision\":\"allow\",\"decider\":{\"humanId\":\"session-c1-smoke-a6-2026-11-12T22-01-03\",\"kind\":\"human\"},\"createdAt\":\"2026-11-12T22:01:14.592Z\"} consumed=false file=\"\"",
+   "durableRows": "human leg ctrl-074rjvn1t6htkk0yn1krl142 (reviewAuthority=human-user, seq10) -> seq11 decision=allow decider={humanId:\u2026,kind:human}; NO allow-consumed, NO execution-result, target file empty; second allow refused",
+   "oracle": "Stop RPC + absence of consumption/execution rows after an allowed decision",
+   "falsifier": "a consumption/execution after Stop, or a second effective allow"
+  },
+  {
+   "id": "C2-A/A6-crash",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "PASS A6-14: after a Host crash the dead invocation is settled without a deny rewrite and a late human allow cannot execute it \u2014 decision=undefined abandon=invocation-abandoned consumed=false file=false ; PASS A6-13: a Host crash after the PA request write leaves the durable request recoverable, with no execution before/after restart \u2014 exited=true pa=ctrl-15i5rct0x9blqe0h8qplj0zl restart=ok decision=null consumed=false file=false",
+   "durableRows": "PA request ctrl-15i5rct0x9blqe0h8qplj0zl survives SIGKILL+cold boot, no deny rewrite; late allow refused CONTROL_REQUEST_ABANDONED (\"durably abandoned\"); decisionAfter=null; no exec before/after",
+   "oracle": "durable request row after restart + typed refusal code + no execution rows",
+   "falsifier": "a deny rewrite, a resurrected execution, or a late allow that executes"
+  },
+  {
+   "id": "C2-A/a1-a6-off-pair",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "two fresh worlds, composition mode=a6-off alpha6ReviewRouting=false; 7/7 PASS each; comparator verdictsAgree=True detailsAgree=True",
+   "durableRows": "a1-off-run1/2: a1-ledger.json control rows for the denied leg (deny, 0 executions, 0 consumptions), a1-deny.json, a1-pty.json, a1-sandbox-backend.json backend=full; emitted composition in the same evidence dir",
+   "oracle": "real file reads after refusals, shell state, /proc PTY fds, typed refusal codes, ledger rows",
+   "falsifier": "bytes on disk after an out-of-ceiling write, state leaking between Members, or a denied leg with an execution row"
+  },
+  {
+   "id": "C2-A/a1-a6-on-control",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "same tree, alpha6ReviewRouting=true; 7/7 each; agreement verdictsAgree=True detailsAgree=True",
+   "durableRows": "a1-on-run1/2 (same artifacts as above, mode=a6-on)",
+   "oracle": "same as the A6-off pair",
+   "falsifier": "a clause that differs from the A6-off pair after normalization"
+  },
+  {
+   "id": "C2-A/a1-on-vs-off",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "A6-on control vs A6-off: verdictsAgree=True detailsAgree=True; emitted compositions differ in exactly 3 changed lines: alpha6ReviewRouting true->false and the alpha6WakeIntentPath line removed",
+   "durableRows": "composition-a6-on/a1-composition.json vs composition-a6-off/a1-composition.json (patch text + digests)",
+   "oracle": "the emitted composition text and the seven clause details",
+   "falsifier": "any other composition difference, or a clause detail that differs"
+  },
+  {
+   "id": "C2-A/pd33-superseded-pin",
+   "verdict": "PASS",
+   "bootsAgree": null,
+   "decisive": "host-free pin test 14/14 PASS including PD33-SUPERSEDED; SUPERSEDED_BASH_ARM (dated 2026-11-13, names #730 and A5_NATIVE_ADMISSION_UNAVAILABLE) still declares the three cases; shipped run-record overall=FAIL with the three cases REFUTED",
+   "durableRows": "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs SUPERSEDED_BASH_ARM + supersededBashArm field; evidence README dated disclosure; run-record.json overall FAIL",
+   "oracle": "node --test of the shipped host-free pin + the committed evidence record",
+   "falsifier": "a pin that silently re-classifies the arm, deletes a case, or a RESULT that is no longer FAIL"
+  },
+  {
+   "id": "C2-A/packaging-live-chain",
+   "verdict": "PASS",
+   "bootsAgree": true,
+   "decisive": "driver 33/33 and 33/33; live 39/39 and 39/39; tarball=7a1d754c54db844556412f1d943c2eb022400a4f0f9cb397b7dc820896ed45ba",
+   "durableRows": "installed profile bundle row + lock integrity; DSH_HOME durable Team/Member/Officer/Goal rows; human-approval request/decision/consumption/execution rows; post-SIGKILL cold boot with the same rows and collected result",
+   "oracle": "durable rows in the installed world, the real written file, a same-DSH_HOME cold boot after SIGKILL",
+   "falsifier": "installed host entry differing from the packed one, a human decision not kind=human, or rows that do not survive the cold boot"
+  }
+ ],
+ "verdict": "PASS for C2-A as re-scoped on this SHA: identity 147/147; A6-off A1 seven clauses 7/7 twice with a same-tree A6-on control 7/7 twice and full cross-mode agreement (the #745 claim independently reproduced); joint 11/11 twice; A6 allow/deny/throw/exception/Stop/crash twice each; packaging 33/33 driver + 39/39 live twice with artifact identity equal; PD33-SUPERSEDED pin and disclosure present and host-free test 14/14. Candidate-level eligibility is NOT claimed: C2-B is unrun on this SHA and the manifest evidence.record_root is still stale.",
+ "refusedToClaim": [
+  "candidate-level eligibility (candidateClaimEligibility.eligible=true) \u2014 C2-B unrun on 0d31f9121; C2 tied to a SHA; the -3 C2-B records cannot be re-pointed",
+  "the broad sentence \"with alpha6ReviewRouting off, Alpha.5 behaviour is unchanged\" \u2014 what is measured is the A1 seven-clause surface under plane takeover + A6-off, twice, plus the A6-on control; not the whole Alpha.5 tool surface",
+  "C2-B: Officer allow/deny under A6-off (the deny A6-28 here is a human resolve on the A6-on composition), Goal authorization conjunction, Sticky Stop no-latch (PD-40), A6-26 accepted-not-claimed Inbox, PD-43 relayed-turn finding",
+  "stability, rate, or probability \u2014 n=2 is existence + agreement, not a rate",
+  "real vendor-model behaviour \u2014 deterministic mock oracle",
+  "OS-level network isolation \u2014 osLevelNetworkIsolationClaimed=false in subordinate DEV-LIVE records",
+  "an upgrade protocol or data migration \u2014 none exists; measured install-over-then-back",
+  "Q7 / V@B / Required-CI status \u2014 untouched",
+  "that the PD33 governed-bash three-case RESULT FAIL is a product regression \u2014 it is a stale composition, adjudicated in #744; nothing here re-raises it"
+ ],
+ "disclosures": [
+  {
+   "id": "D1-manifest-availability",
+   "fact": "cand-v0.1.6-4.json is not in the candidate tree; read from task/freeze-cand-4 @ 5a5da26a7 (sha256 c0962acc\u2026, content digest 4d37bf39\u2026). Copy in the worktree is byte-identical and untracked.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D2-host-checkout",
+   "fact": "The documented baseline /srv/\u2026 is gone; the pristine host was copied with cp -a --reflink=auto from tests/deepseek-harness-test-use @ 639ed01539 (porcelain empty before/after) into the new worktree.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D3-joint-a6-shortcut",
+   "fact": "Under JOINT the driver exits into runJointScenario (run-joint-acceptance.mjs:4508) before its legacy A6 section, so A6 scenarios are driven by the shipped C1 kit with the same Officer/plane flags, host and SHA.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D4-stop-stamp-collision",
+   "fact": "First Stop pair was started in the same wall-clock second; both worlds collided on the shared per-stamp scratch and run1 died with ENOENT uv_cwd before any clause ran. Killed, world removed by verified path, quarantined as a6-stop-run1-INVALID-stamp-collision; the retry run2 was then written into a directory that already held a complete run (append), quarantined as a6-stop-run2-INVALID-mixed-dir; the final pair was run into fresh directories and both agree.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D5-allowdeny-port-busy",
+   "fact": "First allowdeny run2 died immediately on \"mock port 3498 busy\" yet exited 0; the kit exit code is not a verdict. Quarantined as a6-allowdeny-run2-INVALID-port-busy; rerun into a fresh directory, 10/10 PASS.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D6-a1-off-hang",
+   "fact": "First A1 A6-off run1 booted the Host but never advanced past boot (no clause logged, no error). Killed, world removed by verified path, quarantined as a1-off-run1-INVALID-hung-boot; rerun alone in a fresh directory, 7/7 PASS.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D7-packaging-no-install",
+   "fact": "First packaging run1 failed ART-1/ART-2 because the fresh worktree had no node_modules (pnpm -r build exit 2, missing client entry) \u2014 an environment failure, not a product failure. Quarantined as packaging-run1-INVALID-no-install. After pnpm install --frozen-lockfile --store-dir <workspace store> (the default store DB is not writable under the sandbox) both runs are 33/33 driver + 39/39 live, and the product tree stayed clean (git status empty for packages/scripts/paths/package.json/lock).",
+   "weakensClaim": false
+  },
+  {
+   "id": "D8-a6-mock-request-counter",
+   "fact": "A6-2 detail differed only in the mock model request counter (17 vs 16) while wakes=6 notifications=0 agreed; that counter is transport polling, so the comparator normalizes it but keeps wakes/notifications compared. Verdicts and every other detail agreed.",
+   "weakensClaim": false
+  },
+  {
+   "id": "D9-second-tarball",
+   "fact": "Upgrade/rollback uses a same-version tarball 4e146e95\u2026 built in a helper worktree at 6ea7d8dd4 (no product edits); UPG/RBK checks prove the swap is real (same version, different bytes, installed tree changes and returns).",
+   "weakensClaim": false
+  },
+  {
+   "id": "D10-scope-of-a6off",
+   "fact": "#745 closes the A1 seven-clause gap under A6-off + plane takeover; it does not measure the whole Alpha.5 tool surface with A6 off. The refusal it answers was about this conjunction; this record does not widen it.",
+   "weakensClaim": true
+  },
+  {
+   "id": "D11-sticky-latch",
+   "fact": "J09 passes on the live review-latch path; PD-40 (Stop with no live latch writes no marker) remains OPEN and is not exercised.",
+   "weakensClaim": true
+  }
+ ]
+}

@@ -1,0 +1,177 @@
+{
+  "schema": "v016-min-closing/1",
+  "recordClass": "DEV-LIVE",
+  "mode": "pd42",
+  "tree": {
+    "branch": "task/v016-min-closing-20261113",
+    "productSha": "76a86d6e923efa291350a32d1c1eb70e3754a684",
+    "masterTipAtRun": "76a86d6e923efa291350a32d1c1eb70e3754a684"
+  },
+  "composition": {
+    "hostBaseline": "0.2.0-rc.2",
+    "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "planeTakeover": true,
+    "alpha6ReviewRouting": true,
+    "hostDefaultSandboxMode": "danger-full-access",
+    "governedMemberRealm": true,
+    "governedPreset": "a5sf-governed-member",
+    "approvalPath": "Alpha.6 Officer review wake",
+    "blueprint": "v5 Team: memberIoCeilings + reviewRouting"
+  },
+  "counts": {
+    "FAIL": 1
+  },
+  "arms": [
+    {
+      "arm": "PD-42",
+      "proposition": "an APPROVED governed bash call does not widen the Member filesystem ceiling: OS refuses the out-of-lane write, zero bytes remain, the tool result carries the refusal, and the ledger records request -> allow -> consumption -> execution-result(failed)",
+      "verdict": "FAIL",
+      "detail": "insideApprovedExecuted=true outsideApproved=true outsideConsumed=true outsideExecOutcome=succeeded ledgerRefusal=false outsideFileExists=false readError=ENOENT osRefusal=true insideSeq={\"request\":7,\"decision\":8,\"consumption\":9,\"executionResult\":14} outsideSeq={\"request\":15,\"decision\":16,\"consumption\":17,\"executionResult\":22} failedClauses=EXECUTION_RESULT_SUCCEEDED toolRefusal=\"bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/mc-pd42-outside-2026-11-13T07-16-14-h0-rfadd6f.txt: Read-only file system\\n[Comman\"",
+      "facts": {
+        "marker": "C1MK_MCPD42_2026-11-13T07-16-14-h0-rfadd6f",
+        "insideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/workspace/mc-pd42-inside-2026-11-13T07-16-14-h0-rfadd6f.txt",
+        "outsideFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/mc-pd42-outside-2026-11-13T07-16-14-h0-rfadd6f.txt",
+        "team": {
+          "ok": true,
+          "blueprintHash": "sha256:64ac090106d4f4bbfc44fabc8885dd431f7ff263767300443cb7f56790dbcc46",
+          "error": null
+        },
+        "members": {
+          "officer": {
+            "label": "mc-pd42-officer",
+            "templateId": "officer",
+            "instanceId": "inst-1sdk0au1spje",
+            "childSessionId": "session-team-child-5c1f221ba2f58b5b4416c55ab7fc6e1a",
+            "refusal": null,
+            "raw": {
+              "ok": true,
+              "value": {
+                "status": "executed",
+                "action": "create-member",
+                "rootSessionId": "session-a1-root-2026-11-13T07-16-14-h0-rfadd6f",
+                "callerRole": "leader",
+                "effect": {
+                  "kind": "member-activated",
+                  "instanceId": "inst-1sdk0au1spje",
+                  "templateId": "officer",
+                  "childSessionId": "session-team-child-5c1f221ba2f58b5b4416c55ab7fc6e1a",
+                  "operationId": "op-0gdj5d51cbh5ag0oe5rdv0zw",
+                  "replayed": false,
+                  "ledgerSequence": 3,
+                  "admissionCode": "ADMISSION_OPEN"
+                },
+                "requestToken": "mc-mc-pd42-officer-2026-11-13T07-16-14-h0-rfadd6f-y7a57"
+              }
+            }
+          },
+          "member": {
+            "label": "mc-pd42-w1",
+            "templateId": "w-probe",
+            "instanceId": "inst-0iva0zp19gok",
+            "childSessionId": "session-team-child-3644407660d28e4a008154c9f1596cec",
+            "refusal": null,
+            "raw": {
+              "ok": true,
+              "value": {
+                "status": "executed",
+                "action": "create-member",
+                "rootSessionId": "session-a1-root-2026-11-13T07-16-14-h0-rfadd6f",
+                "callerRole": "leader",
+                "effect": {
+                  "kind": "member-activated",
+                  "instanceId": "inst-0iva0zp19gok",
+                  "templateId": "w-probe",
+                  "childSessionId": "session-team-child-3644407660d28e4a008154c9f1596cec",
+                  "operationId": "op-1pfjtr613balpr1e2ijg80oy",
+                  "replayed": false,
+                  "ledgerSequence": 4,
+                  "admissionCode": "ADMISSION_OPEN"
+                },
+                "requestToken": "mc-mc-pd42-w1-2026-11-13T07-16-14-h0-rfadd6f-tllpd"
+              }
+            }
+          }
+        },
+        "turnDone": true,
+        "calls": {
+          "inside": {
+            "id": "call-c1-j0y2j9re",
+            "name": "bash",
+            "arguments": {
+              "command": "printf '%s' 'MC_PD42_INSIDE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/workspace/mc-pd42-inside-2026-11-13T07-16-14-h0-rfadd6f.txt && echo MC_PD42_INSIDE_OK",
+              "timeout": 30000
+            }
+          },
+          "outside": {
+            "id": "call-c1-hcff723x",
+            "name": "bash",
+            "arguments": {
+              "command": "printf '%s' 'MC_PD42_OUTSIDE' > /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/mc-pd42-outside-2026-11-13T07-16-14-h0-rfadd6f.txt",
+              "timeout": 30000
+            }
+          }
+        },
+        "inside": {
+          "requestId": "ctrl-1o2epzo0z4plop0hkfpdy1b7",
+          "decision": [
+            "allow"
+          ],
+          "consumptions": [
+            9
+          ],
+          "executionResult": {
+            "sequence": 14,
+            "factType": "control-execution-result",
+            "requestId": "ctrl-1o2epzo0z4plop0hkfpdy1b7",
+            "callId": "call-c1-j0y2j9re",
+            "outcome": "succeeded",
+            "recordedAt": "2026-11-13T07:16:31.019Z",
+            "createdAt": "2026-11-13T07:16:31.019Z"
+          },
+          "bytesOnDisk": {
+            "size": 14,
+            "match": true
+          },
+          "toolSawExit0": true
+        },
+        "outside": {
+          "requestId": "ctrl-0luwu621usai7f04805is1jj",
+          "decision": [
+            "allow"
+          ],
+          "consumptions": [
+            17
+          ],
+          "executionResult": {
+            "sequence": 22,
+            "factType": "control-execution-result",
+            "requestId": "ctrl-0luwu621usai7f04805is1jj",
+            "callId": "call-c1-hcff723x",
+            "outcome": "succeeded",
+            "recordedAt": "2026-11-13T07:16:31.913Z",
+            "createdAt": "2026-11-13T07:16:31.913Z"
+          },
+          "statExists": false,
+          "readError": "ENOENT",
+          "osRefusalText": "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-min-closing-20261113/tests/homes/c1-smoke-2026-11-13T07-16-14-h0-rfadd6f/mc-pd42-outside-2026-11-13T07-16-14-h0-rfadd6f.txt: Read-only file system\n[Command finished with exit code 1]"
+        },
+        "ledgerSequences": {
+          "inside": {
+            "request": 7,
+            "decision": 8,
+            "consumption": 9,
+            "executionResult": 14
+          },
+          "outside": {
+            "request": 15,
+            "decision": 16,
+            "consumption": 17,
+            "executionResult": 22
+          }
+        }
+      }
+    }
+  ],
+  "osLevelNetworkIsolationClaimed": false,
+  "note": "DEV-LIVE: this record can never produce a V@B=yes or any frozen-candidate claim."
+}

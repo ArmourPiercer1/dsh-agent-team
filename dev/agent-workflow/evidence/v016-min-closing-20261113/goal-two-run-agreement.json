@@ -1,0 +1,47 @@
+{
+  "schema": "min-closing-agreement/1",
+  "mode": "goal-a6off",
+  "recordClass": "DEV-LIVE",
+  "run1": "dev/agent-workflow/evidence/v016-min-closing-20261113/goal-run1",
+  "run2": "dev/agent-workflow/evidence/v016-min-closing-20261113/goal-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "counts": {
+    "run1": {
+      "PASS": 1
+    },
+    "run2": {
+      "PASS": 1
+    }
+  },
+  "compositionAgree": true,
+  "normalization": [
+    "run stamp (2026-11-13T07-43-33) -> <stamp>",
+    "home suffix (per-world 6-hex id) -> -h<n>-r<hex>",
+    "ISO timestamp -> <iso>",
+    "goal id -> goal-<id>",
+    "control id -> ctrl-<id>",
+    "instance id -> inst-<id>",
+    "child session id -> session-team-child-<id>",
+    "root/other session id -> session-<id>",
+    "tool call correlation -> call-c1-<id>",
+    "request token -> requestToken\":\"<token>\"",
+    "content hash -> sha256:<hash>",
+    "home path -> <home>",
+    "ledger sequence numbers (ordering is the clause; the absolute number is not) -> <normalized>",
+    "inside/outside Seq JSON -> Seq=<rows>",
+    "mock correlation in attempts detail -> \"correlation\":\"<id>\""
+  ],
+  "arms": [
+    {
+      "arm": "GOAL-A6OFF",
+      "proposition": "Goal runs >=2 automatic rounds and the Goal Stop works with plane takeover and A6 routing OFF",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "goal={\"id\":\"goal-<id>\",\"revision\":2,\"phase\":\"active\",\"objective\":\"MC goal C1MK_MCGOAL_<stamp>-h<n>-r<hex> edited\"} roundsStarted=2->2 (mockRoundRequests=2) phases=[\"active@r2\",\"paused@r2\"] stop=200/ok=true stoppedMidRound=true paused=true noContinuation=true",
+      "detail2": "goal={\"id\":\"goal-<id>\",\"revision\":2,\"phase\":\"active\",\"objective\":\"MC goal C1MK_MCGOAL_<stamp>-h<n>-r<hex> edited\"} roundsStarted=2->2 (mockRoundRequests=2) phases=[\"active@r2\",\"paused@r2\"] stop=200/ok=true stoppedMidRound=true paused=true noContinuation=true"
+    }
+  ]
+}

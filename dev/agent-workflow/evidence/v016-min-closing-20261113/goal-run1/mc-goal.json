@@ -1,0 +1,158 @@
+{
+  "marker": "C1MK_MCGOAL_2026-11-13T07-18-36-h0-rab8789",
+  "composition": {
+    "planeTakeover": true,
+    "alpha6ReviewRouting": false,
+    "a6Off": true
+  },
+  "team": {
+    "ok": true,
+    "blueprintHash": "sha256:021f926f47e2973aeba839c7ed629376ffbe6b366abaab8086cd7801a5271379",
+    "error": null
+  },
+  "member": {
+    "label": "mc-goal-worker",
+    "templateId": "goal-worker",
+    "instanceId": "inst-0l8b45l1qm1p",
+    "childSessionId": "session-team-child-065f6925cedfdf0c02a327e43d2f5fb9",
+    "refusal": null,
+    "raw": {
+      "ok": true,
+      "value": {
+        "status": "executed",
+        "action": "create-member",
+        "rootSessionId": "session-a1-root-2026-11-13T07-18-36-h0-rab8789",
+        "callerRole": "leader",
+        "effect": {
+          "kind": "member-activated",
+          "instanceId": "inst-0l8b45l1qm1p",
+          "templateId": "goal-worker",
+          "childSessionId": "session-team-child-065f6925cedfdf0c02a327e43d2f5fb9",
+          "operationId": "op-1v1hc0g1cb2jqd18qdcye0hv",
+          "replayed": false,
+          "ledgerSequence": 3,
+          "admissionCode": "ADMISSION_OPEN"
+        },
+        "requestToken": "mc-mc-goal-worker-2026-11-13T07-18-36-h0-rab8789-wte98"
+      }
+    }
+  },
+  "relay": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "type": "server-response",
+      "rpcId": "mc-goal-relay-nuqpy8agso",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "outcome": {
+              "status": "delivered",
+              "rootSessionId": "session-a1-root-2026-11-13T07-18-36-h0-rab8789",
+              "action": "send-message",
+              "callerRole": "human",
+              "recipientInstanceId": "inst-0l8b45l1qm1p",
+              "deliveryMode": "direct",
+              "deliveredToInstanceId": "inst-0l8b45l1qm1p",
+              "deliveredToSessionId": "session-team-child-065f6925cedfdf0c02a327e43d2f5fb9",
+              "factSequence": 4,
+              "deliveredSequence": 5,
+              "requestToken": "mc-goal-relay-2026-11-13T07-18-36-h0-rab8789"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "member.send",
+            "endpoint": "member.send",
+            "contractVersion": 4,
+            "requestToken": "mc-goal-relay-2026-11-13T07-18-36-h0-rab8789",
+            "projectionGeneration": null,
+            "effectSequence": 4
+          }
+        }
+      }
+    }
+  },
+  "humanTurnSeen": true,
+  "goalAfterEdit": {
+    "id": "goal-9ba7a345-b835-447a-9d54-b0ed9d54cbec",
+    "revision": 2,
+    "objective": "MC goal C1MK_MCGOAL_2026-11-13T07-18-36-h0-rab8789 edited",
+    "phase": "active",
+    "maxGoalRounds": 6,
+    "roundsStarted": 2,
+    "createdAt": 1794554331914,
+    "updatedAt": 1794554331974,
+    "activation": "armed"
+  },
+  "typedRefusal": null,
+  "gateHeld": true,
+  "stop": {
+    "status": 200,
+    "ok": true,
+    "body": {
+      "type": "server-response",
+      "rpcId": "mc-goal-stop-jv2ey5hkmc",
+      "result": {
+        "ok": true,
+        "value": {
+          "accepted": true
+        }
+      }
+    },
+    "gate": {
+      "holding": true,
+      "releasedBy": "driver"
+    }
+  },
+  "roundsStartedAtStop": 2,
+  "goalAfterStop": {
+    "id": "goal-9ba7a345-b835-447a-9d54-b0ed9d54cbec",
+    "revision": 3,
+    "objective": "MC goal C1MK_MCGOAL_2026-11-13T07-18-36-h0-rab8789 edited",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 2,
+    "createdAt": 1794554331914,
+    "updatedAt": 1794554332280,
+    "activation": "disarmed"
+  },
+  "goalAfterWindow": {
+    "id": "goal-9ba7a345-b835-447a-9d54-b0ed9d54cbec",
+    "revision": 3,
+    "objective": "MC goal C1MK_MCGOAL_2026-11-13T07-18-36-h0-rab8789 edited",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 2,
+    "createdAt": 1794554331914,
+    "updatedAt": 1794554332280,
+    "activation": "disarmed"
+  },
+  "phaseTransitions": [
+    {
+      "phase": "active",
+      "roundsStarted": 2,
+      "revision": 2,
+      "at": "2026-11-13T07:18:52.267Z"
+    },
+    {
+      "phase": "paused",
+      "roundsStarted": 2,
+      "revision": 3,
+      "at": "2026-11-13T07:18:52.286Z"
+    }
+  ],
+  "roundTrace": [
+    {
+      "round": 1,
+      "at": "2026-11-13T07:18:52.135Z"
+    },
+    {
+      "round": 2,
+      "at": "2026-11-13T07:18:52.221Z"
+    }
+  ],
+  "mockRoundRequests": 2,
+  "roundsStartedAfterWindow": 2
+}
