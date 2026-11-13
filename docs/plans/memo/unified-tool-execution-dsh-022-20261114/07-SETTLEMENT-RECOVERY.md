@@ -48,7 +48,7 @@ Bound Blueprint + Team Agent identity
 ## 6. Stop / cancellation / crash
 **Stop**：先持久控制状态 → 阻止所有受影响 Scope 新调用 → 请求中断与排空 → 真实进程/PTY 终止证明 → 记录已完成/不确定事实。写 Stop 不能追溯撤回已产生的文件/网络影响。
 
-**崩溃**：恢复 Agent/Blueprint/Grant/Stop/Execution Journal；对已消费且无终态的调用记录 `unknown`，不自动 replay、复用旧 process domain 或重唤醒 Officer。与 [PR #758](https://github.com/ArmourPiercer1/dsh-agent-team/pull/758) 的“用户/Leader 主动恢复”防御模型一致；当前 PR 未合并不能在文中假定已发布。
+**崩溃**：恢复 Agent/Blueprint/Grant/Stop/Execution Journal；对已消费且无终态的调用记录 `unknown`，不自动 replay、复用旧 process domain 或重唤醒 Officer。与 [PR #758](https://github.com/ArmourPiercer1/dsh-agent-team/pull/758) 的“用户/Leader 主动恢复”防御模型一致；#758 已于本轮文档审查期间合并，但 v0.1.6 内部版的正式冻结与发布状态须另行核实，不由此设计 PR 宣告完成。
 
 **自批限制**：ReviewAuthority 独立于执行者；某 Agent 在别的请求中可获 Reviewer 身份，但其不得批准自己的执行。具体 Scope/Reviewer 规则仍由既有权限域裁决，不在本文件重写。
 
