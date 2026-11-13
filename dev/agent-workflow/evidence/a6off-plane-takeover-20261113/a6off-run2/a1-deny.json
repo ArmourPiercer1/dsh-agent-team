@@ -2,28 +2,28 @@
   "row": {
     "sequence": 57,
     "factType": "control-request-recorded",
-    "requestId": "ctrl-1pgjbdl0zdsv6s01tsvkb1m6",
+    "requestId": "ctrl-1key1640278k2h0btnmle0e2",
     "kind": "leader-approval",
     "toolName": "bash",
     "actionName": "parameter-permission",
-    "targetInstanceId": "inst-1crsi710ywxk",
-    "correlation": "call-c1-awefwh0z",
-    "approvalCaseId": "case-0cm001f0oiba5u1molt3t174",
+    "targetInstanceId": "inst-0n4y80p0hgeo",
+    "correlation": "call-c1-f1xyhc29",
+    "approvalCaseId": "case-0uum8fy1v65gkf0w2s62g0qj",
     "legOrdinal": 1,
     "reviewAuthority": "leader",
-    "createdAt": "2026-11-12T19:53:35.056Z"
+    "createdAt": "2026-11-12T22:45:13.393Z"
   },
   "decision": {
     "sequence": 58,
     "factType": "control-decision-recorded",
-    "requestId": "ctrl-1pgjbdl0zdsv6s01tsvkb1m6",
+    "requestId": "ctrl-1key1640278k2h0btnmle0e2",
     "decision": "deny",
     "decider": {
       "instanceId": "inst-leader",
       "kind": "instance",
       "role": "leader"
     },
-    "createdAt": "2026-11-12T19:53:35.216Z"
+    "createdAt": "2026-11-12T22:45:13.535Z"
   },
   "executions": [],
   "consumptions": [],

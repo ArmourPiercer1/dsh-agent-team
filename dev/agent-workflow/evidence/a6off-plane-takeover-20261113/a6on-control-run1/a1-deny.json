@@ -2,13 +2,13 @@
   "row": {
     "sequence": 57,
     "factType": "control-request-recorded",
-    "requestId": "ctrl-0x1al8o1ah4bbx0fgm2zi0o3",
+    "requestId": "ctrl-19708qi0q8c54j0qoti901sk",
     "kind": "leader-approval",
     "toolName": "bash",
     "actionName": "parameter-permission",
-    "targetInstanceId": "inst-0po4x8x1pduy",
-    "correlation": "call-c1-oehktj1n",
-    "approvalCaseId": "case-0f2i4rf0b8xija0pwkpc116y",
+    "targetInstanceId": "inst-0vv0fzl132cn",
+    "correlation": "call-c1-euc3ot9s",
+    "approvalCaseId": "case-1sq3t6x0ettou41s0zpcn0dc",
     "legOrdinal": 1,
     "reviewAuthority": "leader",
     "operationOwnerTemplateId": "w-deny",
@@ -16,24 +16,24 @@
     "operationToolName": "bash",
     "operationToolDefinitionIdentity": "def#50",
     "authorityGeneration": 0,
-    "blueprintContentHash": "sha256:b59822b3752dcf3e1374b4ccc1b492c0a4bfed5cbc5c460a280f400d1beb8371",
+    "blueprintContentHash": "sha256:a4d77e080583463aade7ce039d6b6cb45663a58e887ad98af59f716598c74599",
     "blueprintRevision": "1",
     "perEffectRequiredAuthorities": [
       "leader"
     ],
-    "createdAt": "2026-11-12T19:54:09.738Z"
+    "createdAt": "2026-11-12T22:46:10.957Z"
   },
   "decision": {
     "sequence": 58,
     "factType": "control-decision-recorded",
-    "requestId": "ctrl-0x1al8o1ah4bbx0fgm2zi0o3",
+    "requestId": "ctrl-19708qi0q8c54j0qoti901sk",
     "decision": "deny",
     "decider": {
-      "instanceId": "inst-0ibv75316b51",
+      "instanceId": "inst-1n0c7yj17jf3",
       "kind": "instance",
       "role": "member"
     },
-    "createdAt": "2026-11-12T19:54:09.900Z"
+    "createdAt": "2026-11-12T22:46:11.111Z"
   },
   "executions": [],
   "consumptions": [],
