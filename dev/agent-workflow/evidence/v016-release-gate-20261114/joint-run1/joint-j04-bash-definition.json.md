@@ -1,0 +1,23 @@
+```json
+{
+  "memberBashDef": {
+    "name": "bash",
+    "description": "Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string",
+          "description": "The bash command to run. Relative path is preferred in the command."
+        }
+      },
+      "required": [
+        "command"
+      ]
+    }
+  },
+  "pinnedSchema": true,
+  "bashExecuted": true,
+  "realmTerminalFacts": 0
+}
+```
