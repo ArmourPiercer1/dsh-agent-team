@@ -34,9 +34,9 @@ defined in §2; the second is **opt-in experimental** and is off by default.
   `dsh plugin --profile web add <tarball>` / `dsh web` path.
 - **The approval-routing plane (Alpha.6).** Blueprint v5 `reviewRouting`, the Officer plane
   (assigned-Officer review), review-wake creation/merge/delivery into the native Inbox, and Sticky
-  Stop (a durable human-Stop marker that machine relays cannot clear). This plane is activated only
-  by explicit opt-in (§2, §3.3); with the opt-in absent or `false`, the object handed to the control
-  service is byte-identical to the Alpha.5 wiring and no Alpha.6 parse, member read or port exists.
+  Stop (a human-Stop marker written **only while a review wake latch exists** for that reviewer
+  session; a Stop issued with no live wake writes nothing and is not persisted — §2.2/§4.7). This
+  plane is activated only by explicit opt-in (§2, §3.3); with the opt-in absent or `false`, the object handed to the control service is byte-identical to the Alpha.5 wiring and no Alpha.6 parse, member read or port exists.
 
 The two planes are not separate products and are not shipped as separate tarballs. Alpha.6 does not
 become the default by being present in the artifact.
@@ -103,7 +103,7 @@ and it may refuse to boot rather than degrade silently.
 | **Approval routing** (`reviewRouting`) | Experimental. Requires a v5 blueprint and the opt-in; absent/false keeps the Alpha.5 path. |
 | **Officer plane** (assigned-Officer review, transfer, escalation) | Experimental. Needs exactly one legal Officer template in the routing; zero or multiple live Officers is refused **per query** when a review is attempted (the Team itself boots — the boot only checks the template declaration). |
 | **Review wake** (merge, single-flight latch, durable intent rows, Inbox delivery) | Experimental. Needs a Host live wake seam plus a native `reviewWakeInbox`; without them the Team refuses to boot. The accepted-but-unclaimed abandonment defect applies (§5). |
-| **Sticky Stop** (human-Stop marker for **review wakes**; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: a human Stop protects the reviewer while a review latch exists for that session; a Stop issued between asks (or after a restart before the next ask) may not survive to the next wake — see §4.7. It stops the **review wake**, not every message (see §4.7). |
+| **Sticky Stop** (human-Stop marker for **review wakes**; machine relays cannot clear it) | Experimental. It is armed only by the Alpha.6 opt-in and its listeners are not registered when the opt-in is absent. The marker is **latch-scoped, not session-scoped**: the durable marker is written **when a review wake latch exists** for that reviewer session (a wake was dispatched, or boot recovery adopted an intent/stopped row); a Stop issued with **no live wake** writes **no marker** and is **not persisted**, so the next review wake can activate the "stopped" reviewer. It stops the **review wake**, not every message (see §4.7). |
 | **v5 blueprints** (`schemaVersion: 5`, `TeamBlueprintV5Core`) | Experimental. v5 extends v4 and one blueprint still carries the v4 I/O ceilings; v3/v4 documents remain supported and byte-identical. |
 | **Member capability allocation** (F-2) | Experimental / a limit, not a promise. One Member cannot both declare the `bash` ask lane and own the Goal tools: the A2C-2 coverage gate is fatal for a tool outside the managed vocabulary on an agent that declares `capabilities.permissions`, so the ask lane forces `builtinToolDeny` over the 19 unmanaged names and `create_goal`/`update_goal` go with them. **v0.1.6 limitation, not an architecture principle**: the split across different Members is what the coverage gate forces; there is no single fully-capable Member on this artifact and none is promised. *(Clarified 2026-11-12 — see the erratum below.)* |
 | **What "Officer approval" covers** (F-3) | Experimental. Officer routing applies to the `team-tool-execute` **plane** leg **and, since #733, to the `parameter-permission` leg**: that leg now carries the frozen `BoundBlueprintIdentity` (blueprintId/revision/schemaVersion/contentHash), the owner template and the verified tool coordinate, so `resolveAssignedOfficer` returns the Officer and a real `bash` ask wakes it (two runs; `dev/agent-workflow/evidence/j05j06-approval-lane-20261111/`). A field that cannot be supplied is refused by name at the route gate, never silently handed to the Leader. **Remaining gap:** the Officer's own `team_resolve_control` can still be refused by the trusted review-facts port when the operation-owner member row is not `RUNNING` (row `CREATED` for a relayed first turn, `SETTLED` for a second work unit) — that is register **PD-43**, open. "Officer approval" still never means every tool approval is Officer-decided: `hold` and `leader` are real declared outcomes. *(Corrected 2026-11-12: this row said the leg carried no Blueprint identity and the wake went to the Leader — true before #733, false now.)* |
@@ -753,6 +753,7 @@ part of the sentence.
 | **S1** | **STABLE** | **A1 governance — seven clauses** | On the real Host and from the durable ledger: (1) a write **inside** the Member root succeeds (bytes read back, exit 0); (2) a write **outside** the Member ceiling is refused by the OS sandbox with `Read-only file system`, **0 bytes** and `ENOENT` on a real read after the refusal; (3) `cd` + `export` **persist** across consecutive calls; (4) a **second Member is isolated** (own `$PWD`, empty export, different shell start-time, Host PTY fd count grows); (5) a **wrong or prefixed session id is refused before a PTY exists** (3 typed refusals, PTY fds and model turns unchanged); (6) the Host's `danger-full-access` default is **narrowed by the Member ceiling** (root write lands, identical Member write stays absent); (7) a **denied approval ⇒ 0 executions** (`decision: deny`, 0 `control-execution-result`, 0 `control-allow-consumed`, target absent). **7/7 ×4** across two trees. | `DEV-LIVE` (real Host, OS backend `full`) | `tests/kits/a1-bash-governance-20261112/README.md`; `dev/agent-workflow/evidence/a1-bash-governance/README.md`; `dev/agent-workflow/evidence/a1-bash-governance/a1-agreement.json`; `dev/agent-workflow/evidence/a1-bash-governance/a1-agreement-current-tip.json` |
 | **S2** | **STABLE** | **A6-off zero regression on the plane-takeover composition** | With `alpha6ReviewRouting` **explicitly `false`** on the plane-takeover composition (v5 blueprint carrying `memberIoCeilings` + `reviewRouting`, shipped governed preset, pinned native `bash` over the governed PTY, Host default `danger-full-access`), the **same seven clauses reproduce 7/7 twice**, and agree field-by-field with a **same-tree A6-on control** (also 7/7). Flipping only the flag leaves every clause verdict and every normalized measured detail unchanged. This is the zero-regression evidence **C2 on `cand-v0.1.6-3` refused to sign**; it is `DEV-LIVE`, not `CANDIDATE-C2`, and it covers the **`bash` face only** (restated as C2-B R1 on `cand-v0.1.6-4`). | `DEV-LIVE` (3 runs: A6-off ×2 + A6-on control; one retained instrument-race failure kept on disk) | `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md`; `…/a6off-agreement.json`; `…/a6on-vs-a6off-agreement.json`; `…/a6off-run2-turn-race/`; the fresh C2-B re-measurement on `cand-v0.1.6-4` (path and sha256 in `dev/agent-workflow/evidence/v016-rc1-release-package/c2-presence.txt`) |
 | **S3** | **STABLE (scope clarity, not a capability)** | **The Alpha.5-only composition cannot run a governed `bash`** | On the composition with **no plane takeover**, the native `bash` is **typed-shut by design**: every governed `bash` answers `A5_NATIVE_ADMISSION_UNAVAILABLE`. pd33's `bash` arm scores it **16 PROVEN / 3 REFUTED**, and that `FAIL` is preserved as the honest verdict. The arm **predates #730** and is a **superseded instrument**, not a regression: it is pinned as superseded by `#744`, and its successor measurements are S2 and the A1 kit above. | `DEV-LIVE` (the 16/19 run) + `HOST-FREE` (the superseded-instrument pin) | `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`; `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`; commit `45132a119` (`#744`); `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md` |
+| **S4** | **STABLE (a configuration prerequisite, not a capability)** | **Governed `bash` needs the plane-takeover composition mounted** | Since **#730** (`d8490f74d`, NATIVE-BASH-PRESERVATION) the model-visible `bash` **is** the host's pinned `@deepseek-ai/dsh-tool-bash-persistent` definition over the Member's governed PTY, and its `execute` is wrapped by the Team admission middleware (`packages/runtime/src/plugin/live/native-bash-tool.mjs:97-102`): the wrapper looks up the plane's published admission edge at call time and **refuses with `A5_NATIVE_ADMISSION_UNAVAILABLE` when none is published**. That edge is published **only inside the `teamToolPlane` mount block** (`packages/runtime/src/plugin/live/agent-bindings.mjs:3135` gate, `:3390` publication). Therefore **governed `bash` in the Alpha.5 Preview works only on the plane-takeover composition**: a composition that mounts the governed realm **without** `teamToolPlane` answers `A5_NATIVE_ADMISSION_UNAVAILABLE` on **every** governed `bash` call, opens **no** approval request and executes **nothing**. This is a **formal configuration prerequisite of this Preview**, stated as a product fact — **not** "an old test expired" and not a regression introduced by a downstream lane. | `CODE` (the two files above, on this tree) + `DEV-LIVE` (typed-shut measured twice: pd33 16/19 ×2 with 3 stably REFUTED; the plane-takeover composition reproduces the A1 seven clauses 7/7 ×2) | `packages/runtime/src/plugin/live/native-bash-tool.mjs`; `packages/runtime/src/plugin/live/agent-bindings.mjs`; `dev/agent-workflow/evidence/native-bash-preservation/README.md` (P6c: no published edge ⇒ typed refusal, 0 execution); `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md` (2026-11-13 section); commit `45132a119` (`#744`, the arm is SUPERSEDED, not a regression); `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md`; `docs/INSTALL.md` §3.6 |
 
 **How S1 and S2 relate to the frozen candidate.** S2's measured product tree is
 `1a677c5d4…`; `git diff 1a677c5d4 0d31f9121 -- packages scripts` is **empty**, so the runtime shipped
@@ -766,6 +767,24 @@ digests; and "zero regression" remains restricted to the **seven A1 clauses on o
 to Alpha.5 behaviour in general (C2-B R1, and NC7 below). Both C2 records for `cand-v0.1.6-4` exist and
 verify; **both withhold candidate-level eligibility** (`candidateClaimEligibility.eligible: false`;
 C2-B's verdict is `NOT PASS`).
+
+**The operator consequence, stated plainly (this is the part an upgrading operator needs).** If your
+composition was written **before #730** — the governed realm mounted, `teamToolPlane` **absent** — then
+after upgrading to this artifact your governed `bash` is **typed-shut**: every call answers
+`A5_NATIVE_ADMISSION_UNAVAILABLE`, nothing executes, and no approval request is created. It stays that
+way **until you mount the takeover** (`config.teamToolPlane` with its `realmId` / `fsInstance` /
+`confinedProvider` trust pair, plus a `bash` ask lane in the blueprint's `capabilities.permissions`) —
+see `docs/INSTALL.md` §3.6, which also records the dated correction to §3.5's older
+`BINDING_UNVERIFIED` sentence. The other governed faces (`read`, `write`, `edit`, `grep`, `glob`,
+`web_fetch`, `web_search`, `skill`, `present`) are **not** gated on the plane takeover: the post-#730
+re-measurement of the no-plane composition proves 16 of its 19 cases, and exactly the three shell
+clauses are REFUTED.
+
+**What this row does not claim.** It does not claim that a plane-takeover composition makes every
+governed tool work (it does not: `grep`/`glob` and the read-only minimal recipe are §3.5's business), it
+does not turn pd33's `FAIL` into a PASS, and it does not move a `V@B` cell, a matrix grade or a
+`CANDIDATE-C2` claim. The three REFUTED shell clauses stay the honest verdict of that instrument; they
+are **superseded** by `#744`, not retracted.
 
 ### 11.2 OPT-IN EXPERIMENTAL (Alpha.6) — default OFF
 
@@ -839,3 +858,62 @@ carries the same dated correction and its anchors resolve; C2-B independently re
 shipped tests + 18/18 adversarial probe, including two positive controls) and recorded the notes' stale
 sentences as finding **A10**. The four statements above are kept as history and are **superseded by this
 paragraph**; they are not to be quoted as the current state.
+---
+
+## Appended 2026-11-13 — PD-40 wording correction: Stop says what the code does (owner ruling; append-only record)
+
+**The ruling.** PD-40 (the Alpha.6 Sticky Stop marker is latch-scoped, not session-scoped) stays an
+**accepted opt-in-experimental limit for the v0.1.6 Preview** — but only if the user-visible text does
+not promise more than the code delivers. A session-scoped durable marker is **deferred** (it is a
+design change with crash semantics); **no unconditional-stop claim is permitted** in these notes, in
+the UI copy or in the docs. No behaviour was changed to produce this section: the only product change
+in this pass is wording, and none of it moves a `V@B` cell, a matrix grade or a `C2` claim.
+
+**What the mechanism is, stated once, plainly.** `alpha6WakeUserStop()` writes the durable
+`stopped-*` marker **inside** the wake-coordinator branch. A coordinator exists only when a review
+wake latch exists for that reviewer session — a wake was dispatched, or boot recovery adopted an
+intent/stopped row. A Stop issued with **no live wake** finds no coordinator, writes **nothing**, and
+returns `false`. That Stop is **not persisted**, and the next review wake can activate the
+"stopped" reviewer. This is the measured limit (independent review M11, re-measured by C2-A/C2-B on
+`cand-v0.1.6-4`), not a possibility to hedge.
+
+**Two sentences were therefore corrected (quoted before/after; nothing was deleted from history).**
+
+1. §1 "What ships", the Alpha.6 bullet — **before:** *"Sticky Stop (a durable human-Stop marker that
+   machine relays cannot clear)"* — an unconditional durability claim. **After:** *"Stop (a human-Stop
+   marker written **only while a review wake latch exists** for that reviewer session; a Stop issued
+   with no live wake writes nothing and is not persisted — §2.2/§4.7)"*. The "machine relays cannot
+   clear it" property is still true and is kept in §2.2.
+2. §2.2, the **Sticky Stop** row — **before:** *"a Stop issued between asks (or after a restart before
+   the next ask) may not survive to the next wake"* — a softener that reads as "sometimes". **After:**
+   *"the durable marker is written **when a review wake latch exists** for that reviewer session …; a
+   Stop issued with **no live wake** writes **no marker** and is **not persisted**, so the next review
+   wake can activate the 'stopped' reviewer"* — the mechanism, with the `latch-scoped, not
+   session-scoped` phrase retained verbatim (it is the anchored line PD-40 cites).
+
+**What was checked and deliberately not changed.**
+
+- §4.7 (2026-11-09, the PD-40 disclosure) **already** states the mechanism exactly (coordinator absent
+  ⇒ no marker, returns `false`, next wake can activate the stopped reviewer). It needed no edit, and it
+  is the source of the wording used above.
+- The **Web UI** (`packages/client/src/ui/locales.ts`, `member.stop.label` / `.hint` / `.stopped` /
+  `.contradicted` / `.unverified` / `.noGoal` / `.already` / `.unavailable`, EN and ZH; rendered from
+  `packages/client/src/ui/TeamMembers.tsx`) describes the **per-Member goal Stop only**: *"Pauses THIS
+  Member's goal and aborts its current turn (resumable later). Once the pause is acknowledged no new
+  round starts…"*. It claims a durable `pause` + turn abort, which is what it does; it makes **no**
+  session-wide or review-wake durability promise, so correcting it would be a product-copy change, not
+  a wording fix. **Not changed.**
+- **No CLI Stop command exists in this repository** (the plugin registers no command; the Stop control
+  is the Web UI path issuing `goals/get → goals/pause → session/cancel → goals/get`). There is
+  therefore no command help to correct.
+- `docs/PREVIEW-STOP-SEMANTICS.md` documents the same per-Member Stop and carries an appended dated
+  scope note pointing at this section and PD-40; its own text is unchanged.
+- `docs/PRODUCT-DEBT-REGISTER.md` PD-40 carries the dated owner-ruling note (accepted experimental
+  limit, full session-scoped durable marker deferred, no unconditional-stop claim permitted).
+
+**Consistency with #747 (this paragraph was added during the rebase).** §11.2 **E2**, which merged
+after this correction was written, states the same limit independently: the durable marker is written
+**only when a wake coordinator already exists** for that reviewer session, and a Stop between asks (or
+after a restart before the next ask) writes **no durable marker**. E2 is the package-level row; this
+section records that the two older sentences in §1 and §2.2 were corrected to say the same thing.
+They do not contradict each other, and neither is a new claim.
