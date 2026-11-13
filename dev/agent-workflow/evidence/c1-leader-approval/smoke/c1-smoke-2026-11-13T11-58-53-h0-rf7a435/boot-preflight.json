@@ -1,0 +1,110 @@
+{
+  "schema": "dsh-boot-preflight/1",
+  "generatedAt": "2026-11-13T11:59:00.609Z",
+  "selectedArms": [
+    "A1-1",
+    "A1-2",
+    "A1-3",
+    "A1-4",
+    "A1-5",
+    "A1-6",
+    "A1-7"
+  ],
+  "knownArms": [
+    "A1-1",
+    "A1-2",
+    "A1-3",
+    "A1-4",
+    "A1-5",
+    "A1-6",
+    "A1-7"
+  ],
+  "verdict": "ENV_BLOCK",
+  "reason": "ENV_BLOCK at port.3181 (port 3181 is already bound (PORT_BUSY))",
+  "counts": {
+    "PASS": 8,
+    "FAIL": 0,
+    "NOT_REACHED": 1,
+    "NOT_SELECTED": 0,
+    "UNSUPPORTED": 0,
+    "ENV_BLOCK": 1
+  },
+  "checks": [
+    {
+      "id": "arms.selection",
+      "arm": null,
+      "state": "PASS",
+      "detail": "selected=[A1-1, A1-2, A1-3, A1-4, A1-5, A1-6, A1-7]"
+    },
+    {
+      "id": "env.required",
+      "arm": null,
+      "state": "PASS",
+      "detail": "0 required env var(s) present"
+    },
+    {
+      "id": "host.pin",
+      "arm": null,
+      "state": "PASS",
+      "detail": "host 639ed0153972 (dirtiness not measured)"
+    },
+    {
+      "id": "candidate.sha",
+      "arm": null,
+      "state": "PASS",
+      "detail": "candidate 0b00cdc363ec matches DEV-LIVE branch head (not a frozen candidate)"
+    },
+    {
+      "id": "modality.text",
+      "arm": null,
+      "state": "PASS",
+      "detail": "text supported"
+    },
+    {
+      "id": "modality.tool-call",
+      "arm": null,
+      "state": "PASS",
+      "detail": "tool-call supported"
+    },
+    {
+      "id": "officer.count",
+      "arm": "A1-6",
+      "state": "NOT_REACHED",
+      "detail": "exactly one live Officer; core preflight did not pass"
+    },
+    {
+      "id": "port.3181",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "port 3181 is already bound (PORT_BUSY)"
+    },
+    {
+      "id": "port.3491",
+      "arm": null,
+      "state": "PASS",
+      "detail": "3491 free (loopback)"
+    },
+    {
+      "id": "world.dsh-home",
+      "arm": null,
+      "state": "PASS",
+      "detail": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/pd42-relfix/tests/homes/c1-smoke-2026-11-13T11-58-53-h0-rf7a435 (fresh world, not yet created)"
+    }
+  ],
+  "blocking": [
+    {
+      "id": "officer.count",
+      "arm": "A1-6",
+      "state": "NOT_REACHED",
+      "detail": "exactly one live Officer; core preflight did not pass"
+    },
+    {
+      "id": "port.3181",
+      "arm": null,
+      "state": "ENV_BLOCK",
+      "detail": "port 3181 is already bound (PORT_BUSY)"
+    }
+  ],
+  "skipped": [],
+  "startAllowed": false
+}

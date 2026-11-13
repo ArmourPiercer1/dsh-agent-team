@@ -1,0 +1,47 @@
+{
+  "schema": "min-closing-agreement/1",
+  "mode": "pd42",
+  "recordClass": "DEV-LIVE",
+  "run1": "dev/agent-workflow/evidence/pd42-relfix-20261117/pd42-run1",
+  "run2": "dev/agent-workflow/evidence/pd42-relfix-20261117/pd42-run2",
+  "verdictsAgree": true,
+  "detailsAgree": true,
+  "counts": {
+    "run1": {
+      "PASS": 1
+    },
+    "run2": {
+      "PASS": 1
+    }
+  },
+  "compositionAgree": true,
+  "normalization": [
+    "run stamp (2026-11-13T07-43-33) -> <stamp>",
+    "home suffix (per-world 6-hex id) -> -h<n>-r<hex>",
+    "ISO timestamp -> <iso>",
+    "goal id -> goal-<id>",
+    "control id -> ctrl-<id>",
+    "instance id -> inst-<id>",
+    "child session id -> session-team-child-<id>",
+    "root/other session id -> session-<id>",
+    "tool call correlation -> call-c1-<id>",
+    "request token -> requestToken\":\"<token>\"",
+    "content hash -> sha256:<hash>",
+    "home path -> <home>",
+    "ledger sequence numbers (ordering is the clause; the absolute number is not) -> <normalized>",
+    "inside/outside Seq JSON -> Seq=<rows>",
+    "mock correlation in attempts detail -> \"correlation\":\"<id>\""
+  ],
+  "arms": [
+    {
+      "arm": "PD-42",
+      "proposition": "an APPROVED governed bash call does not widen the Member filesystem ceiling: OS refuses the out-of-lane write, zero bytes remain, the tool result carries the refusal, and the ledger records request -> allow -> consumption -> execution-result(failed)",
+      "verdict1": "PASS",
+      "verdict2": "PASS",
+      "verdictAgree": true,
+      "detailAgree": true,
+      "detail1": "insideApprovedExecuted=true outsideApproved=true outsideConsumed=true outsideExecOutcome=failed ledgerRefusal=true outsideFileExists=false readError=ENOENT osRefusal=true insideSeq=<rows> outsideSeq=<rows> toolRefusal=\"bash: <home>/mc-pd42-outside-<stamp>-h<n>-r<hex>.txt: Read-only file system\\n[Command finished wit\"",
+      "detail2": "insideApprovedExecuted=true outsideApproved=true outsideConsumed=true outsideExecOutcome=failed ledgerRefusal=true outsideFileExists=false readError=ENOENT osRefusal=true insideSeq=<rows> outsideSeq=<rows> toolRefusal=\"bash: <home>/mc-pd42-outside-<stamp>-h<n>-r<hex>.txt: Read-only file system\\n[Command finished wit\""
+    }
+  ]
+}

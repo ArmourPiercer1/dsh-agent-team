@@ -1,0 +1,18 @@
+{
+  "turnsBefore": 45,
+  "turnsAfter": 45,
+  "quiesce": {
+    "quiesced": true,
+    "waitedMs": 2004,
+    "requests": 45
+  },
+  "windowTurns": [],
+  "ptyBefore": [
+    "/dev/pts/ptmx",
+    "/dev/pts/ptmx"
+  ],
+  "ptyAfter": [
+    "/dev/pts/ptmx",
+    "/dev/pts/ptmx"
+  ]
+}

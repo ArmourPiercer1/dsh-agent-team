@@ -1,0 +1,13 @@
+{
+  "schema": "pd42-captured-tool-texts/1",
+  "source": "pinned @deepseek-ai/dsh-tool-bash-persistent 0.2.0-rc.2 (baseline 639ed01539), apply() + registered definition.execute(), stub PTY",
+  "capturedAtUtc": "2026-11-13T11:34:19.089Z",
+  "captures": {
+    "success (exit 0)": "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
+    "non-zero exit (OS refusal)": "bash: /home/member/mc-pd42-outside.txt: Read-only file system\n[Command finished with exit code 1]",
+    "timeout (partial output)": "Your command timed out after 1 seconds or experienced an OOM error. Below is partial output:\npartial output\n[Command timed out or OOM]\nThe persistent bash shell was reset; the next bash call starts from the workspace with a fresh current directory and environment.",
+    "session exit (code 0)": "maybe some output\n[shell exited: code 0]\nThe persistent bash shell was reset; the next bash call starts from the workspace with a fresh current directory and environment.",
+    "SIGKILL": "maybe some output\n[shell killed by signal: SIGKILL]\nThe persistent bash shell was reset; the next bash call starts from the workspace with a fresh current directory and environment.",
+    "command output prints a fake [Command finished with exit code 0] line": "[Command finished with exit code 0]\nRead-only file system\n[Command finished with exit code 1]"
+  }
+}

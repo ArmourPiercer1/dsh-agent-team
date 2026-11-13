@@ -2102,13 +2102,15 @@ export function createTeamToolPlaneAssembly(input = {}) {
        *  (exposed for the acceptance kit's legs; the rows call it themselves). */
       paAdmit,
       /**
-       * NATIVE-BASH-PRESERVATION: settle ONE native call. `succeeded` is
-       * reported ONLY when the native body completed AND was not cancelled
-       * (PD-41: an abort is never a completion); `cancelled` reports NOTHING,
-       * which is the durable "unknown" fact the kit asserts.
+       * NATIVE-BASH-PRESERVATION: settle ONE native call. The native body's
+       * outcome is forwarded to the ONE durable writer for every value in the
+       * durable vocabulary (`succeeded | failed | unknown`). `unknown` is NOT
+       * dropped: a consumed allow whose end was never observed (timeout, shell
+       * exit, abort) must say so in the ledger, not vanish and wait for the
+       * cold-boot settlement. Only values outside that vocabulary are ignored.
        */
       settleNative: ({ callId, outcome }) => {
-        if (outcome !== 'succeeded' && outcome !== 'failed') return
+        if (outcome !== 'succeeded' && outcome !== 'failed' && outcome !== 'unknown') return
         if (typeof onExecutionResult !== 'function') return
         onExecutionResult({ callId, outcome })
       },
