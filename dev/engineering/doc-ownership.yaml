@@ -115,6 +115,9 @@ owners:
       - packages/tools/README.md
       - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
       - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+  - glob: scripts/coverage-audit*.mjs
+    docs:
+      - docs/plans/memo/verification-honesty-20261113/PLAN.md
   - glob: scripts/**
     docs:
       - docs/STATUS.md

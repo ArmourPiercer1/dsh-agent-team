@@ -1,0 +1,140 @@
+{
+  "commits": 40,
+  "undeterminedCommits": 20,
+  "determinedCommits": 20,
+  "ratePct": 50,
+  "topPaths": [
+    {
+      "path": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+      "count": 4
+    },
+    {
+      "path": "tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs",
+      "count": 3
+    },
+    {
+      "path": ".merge-loop.sh",
+      "count": 2
+    },
+    {
+      "path": ".merge2.sh",
+      "count": 2
+    },
+    {
+      "path": ".nbp.patch",
+      "count": 2
+    },
+    {
+      "path": "tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs",
+      "count": 2
+    },
+    {
+      "path": "tests/kits/wp3-fence-timing/wp3-fence-timing.mjs",
+      "count": 2
+    },
+    {
+      "path": ".anchorfix.py",
+      "count": 1
+    },
+    {
+      "path": ".merge.log",
+      "count": 1
+    }
+  ],
+  "examples": [
+    {
+      "sha": "6361185d878ab2617193d51dd419e6dfe521a2ad",
+      "subject": "A6 COLD-WAKE: a new ask after a restart gets no reviewer wake - measured, disclosed, deferred (PD-44) (#755)",
+      "paths": [
+        "tests/kits/a6-cold-wake-20261113/a6-cold-wake.mjs"
+      ]
+    },
+    {
+      "sha": "510a0d0dffb69ed6d268c06073ba6be867d9f867",
+      "subject": "test(v016): three minimum closing measurements (2026-11-13) (#750)",
+      "paths": [
+        "tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs",
+        "tests/kits/a1-bash-governance-20261112/compare-min-closing-runs.mjs"
+      ]
+    },
+    {
+      "sha": "ab77faf8544fb01082bc90cf22523609c51bbfdb",
+      "subject": "V016 CLOSING: generator root fix, the archived C2 pair, the governed-bash prerequisite, and Stop wording that stops over-promising (#749)",
+      "paths": [
+        "scripts/freeze-candidate.mjs"
+      ]
+    },
+    {
+      "sha": "0d31f9121308a43030701fe6d56c316100782419",
+      "subject": "A6-OFF x PLANE TAKEOVER: the A1 seven clauses with alpha6ReviewRouting false — the zero-regression gap is now measured (#745)",
+      "paths": [
+        "tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs",
+        "tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs"
+      ]
+    },
+    {
+      "sha": "45132a119b4e073a45cc2e0c7a96e1085d67dd2e",
+      "subject": "PD33-STALE-INSTRUMENT: the governed-bash arm predates #730 and is superseded, not a regression — plus the PD-43 docs C2-B caught (#744)",
+      "paths": [
+        "tests/world-factory/drivers/a5sf-pd33-preview-e2e/run-boot.mjs"
+      ]
+    },
+    {
+      "sha": "17a24e2c302cd991c3ba495ae29576b58a6c1069",
+      "subject": "PD39-INBOX: the accepted-but-not-claimed window no longer strands on this tree — and the promise is narrowed to what is measured (#740)",
+      "paths": [
+        "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs"
+      ]
+    },
+    {
+      "sha": "93d629f3af4bc9236186218ead0fd1ffbfa3543a",
+      "subject": "PACKAGING-V016: pack → clean-host install → Team/Member/Goal/Stop/cold-boot → upgrade → rollback, proven twice (#741)",
+      "paths": [
+        "tests/kits/packaging-v016/run-packaging-acceptance.mjs",
+        "tests/kits/v016-packaged-acceptance/run-packaged-acceptance.mjs"
+      ]
+    },
+    {
+      "sha": "84baf304c4c7d721d41312a4d240092e033fbfd6",
+      "subject": "A1-BASH-GOVERNANCE: seven clauses the OS and the ledger answer, not a boolean we chose (#739)",
+      "paths": [
+        "tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs",
+        "tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs"
+      ]
+    },
+    {
+      "sha": "68ab6ded7942b74119c9b8d16d6c9793ea502198",
+      "subject": "CLOSEOUT-DOCS: rebase onto master; correct the F-1/PD-42, F-3/PD-43 and F-4/PD-41 disclosures; register PD-42/PD-43 (#727)",
+      "paths": [
+        ".anchorfix.py"
+      ]
+    },
+    {
+      "sha": "29e4b1b38626b264f70ad1428b42e1dfb2fa8361",
+      "subject": "F5-TWO-ASKS-PREFLIGHT: two governed asks per policy + shared boot preflight (#723)",
+      "paths": [
+        "tests/kits/f5-two-asks/run-f5-two-asks.mjs",
+        "tests/kits/pr-a-governance-smoke/pr-a-governance-smoke.mjs"
+      ]
+    }
+  ]
+}
+coverage-audit (origin/master, last 40 commits with a diff):
+  determined   20
+  undetermined 20  (50%)
+  paths that make a change undetermined:
+      4x  tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs
+      3x  tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs
+      2x  .merge-loop.sh
+      2x  .merge2.sh
+      2x  .nbp.patch
+      2x  tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs
+      2x  tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs
+      2x  tests/kits/wp3-fence-timing/wp3-fence-timing.mjs
+      1x  .anchorfix.py
+      1x  .merge.log
+DSH-COVERAGE-AUDIT commits=40 undetermined=20 rate_pct=50 top=tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs

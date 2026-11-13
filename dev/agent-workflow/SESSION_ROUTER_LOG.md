@@ -8648,3 +8648,24 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-13（追加）— 绿色证明什么：L0 有 50% 的改动 undetermined，52% 的证据 PASS 没有 run id（draft PR，不 merge）
+
+**授权**：owner 2026-11-13「自行推进优化，不合并 PR」。A 桶（只读度量 + 提案），不改 `ci-local` 语义、不改 gate。
+
+**做了什么**：新增 `scripts/coverage-audit.mjs`（8 个 node:test + 4 个 self-test），复用 `ci-local.mjs`
+的 `classify()`（无第二套规则）扫描 master 最近 N 个 first-parent commit 的 diff；另用启发式扫描
+`dev/agent-workflow/evidence/*/README.md` 的 PASS 断言与 run id/commit/sha 的绑定。
+
+**实测（`dev/agent-workflow/evidence/eng-l0-coverage-20261113/`）**：
+- L0：40 个已合并改动中 **20 个（50%）`coverage=undetermined`**；主因是 `tests/kits/**` 的 kit 运行器
+  （证据生成器）与仓库根临时脚本（`.merge-loop.sh`、`.nbp.patch`、`.anchorfix.py`）——不是产品代码；
+- 文档：192 份证据 README 中 179 份含 PASS/绿 断言，**93 份（52%）附近找不到 run id / commit / sha**
+  （启发式，上界；已在证据 README §2 披露口径）。
+
+**提案**（`docs/plans/memo/verification-honesty-20261113/PLAN.md`，未实施）：C1 把 kit 运行器命名为
+`evidence-only`（改 `ci-local` 覆盖率语义，需 owner 裁决）；C2 根目录临时文件应 gitignore；C3 本 PR 不改
+`ci-local`。R1 新证据 README 的 dated 头部固定 `Verdict / Run / Reproduce` 三字段；R2 后续可加 advisory
+checker；R3 不追溯修改历史证据。
+
+**边界**：未改 `.github/`、`dev/ci/`、`ci-local.mjs`、分支保护、Authority、候选 manifest/ref；未 merge。
