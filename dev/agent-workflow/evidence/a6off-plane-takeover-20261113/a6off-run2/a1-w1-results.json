@@ -4,13 +4,13 @@
   "results": [
     "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
     "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
-    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
     "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
-    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
-    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub|2|/dev/console|112613739\n[Command finished with exit code 0]",
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub|2|/dev/console|113643574\n[Command finished with exit code 0]",
     "A1_INSIDE_WROTE\n[Command finished with exit code 0]",
-    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
-    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub|2|/dev/console|112613739\n[Command finished with exit code 0]",
-    "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub|a1-value|2|persisted-2026-11-12T19-53-09-h0-r018bab|/dev/console\n[Command finished with exit code 0]"
+    "bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+    "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub|2|/dev/console|113643574\n[Command finished with exit code 0]",
+    "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub|a1-value|2|persisted-2026-11-12T22-44-47-h0-r5e446b|/dev/console\n[Command finished with exit code 0]"
   ]
 }

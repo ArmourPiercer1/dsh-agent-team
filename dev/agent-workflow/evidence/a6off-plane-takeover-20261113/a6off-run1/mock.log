@@ -1,8 +1,8 @@
 mock: listening on 127.0.0.1:3496
 mock: 1 [messages] text reply (18 chars): "A1 bash governance"
 mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
-mock: 3 [messages] text reply (18 chars): "A1 bash governance"
-mock: 4 [messages] text reply (12 chars): "A1_DISC_DONE"
+mock: 3 [messages] text reply (12 chars): "A1_DISC_DONE"
+mock: 4 [messages] text reply (18 chars): "A1 bash governance"
 mock: 5 [messages] tool-call reply: bash
 mock: 6 [messages] text reply (18 chars): "A1 bash governance"
 mock: 7 [messages] tool-call reply: team_list_pending_control

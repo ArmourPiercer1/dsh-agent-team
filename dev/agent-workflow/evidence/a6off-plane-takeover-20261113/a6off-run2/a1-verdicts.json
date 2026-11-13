@@ -2,10 +2,10 @@
   "schema": "a1-bash-governance/1",
   "recordClass": "DEV-LIVE",
   "tree": {
-    "branch": "task/a6off-plane-takeover-20261113",
-    "productSha": "1a677c5d4f29cbedd28ced94ff29c46a33eda3de",
-    "masterTipAtRun": "1a677c5d4f29cbedd28ced94ff29c46a33eda3de",
-    "blueprintHash": "sha256:743067fdf3a0546bb98fbca2c6cccda89fc2adf149620f75c8ec2be9c82206a9"
+    "branch": "task/a6off-evidence-refresh-20261113",
+    "productSha": "76a86d6e923efa291350a32d1c1eb70e3754a684",
+    "masterTipAtRun": "76a86d6e923efa291350a32d1c1eb70e3754a684",
+    "blueprintHash": "sha256:2ebc87215386ac2e169bf2c22545669727c694f29ecd3f8abb011b1cad80eddc"
   },
   "composition": {
     "preset": "native",
@@ -30,7 +30,7 @@
       "verdict": "PASS",
       "detail": "path=WORKSPACE/a1-inside.txt exists=true size=40 bytesMatch=true toolSawExit0=true",
       "facts": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-inside-2026-11-12T19-53-09-h0-r018bab.txt",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-inside-2026-11-12T22-44-47-h0-r5e446b.txt",
         "size": 40
       }
     },
@@ -38,9 +38,9 @@
       "arm": "A1-2",
       "proposition": "a write OUTSIDE the Member ceiling is refused by the OS sandbox — zero bytes on disk",
       "verdict": "PASS",
-      "detail": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
+      "detail": "path=DSH_HOME/a1-outside.txt exists=false size=0 readErr=ENOENT osSignal=bash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt: Read-only file system\nA1_OUTSIDE_EXIT=1\n[Command finished with exit code 0]",
       "facts": {
-        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt",
+        "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt",
         "statExists": false
       }
     },
@@ -48,30 +48,30 @@
       "arm": "A1-3",
       "proposition": "the same Member keeps `cd` + `export` state across consecutive calls",
       "verdict": "PASS",
-      "detail": "callA=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub var=a1-value pid=2 file=persisted-2026-11-12T19-53-09-h0-r018bab tty=/dev/console] markerReadBack=true",
+      "detail": "callA=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub pid=2 tty=/dev/console] callB=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub var=a1-value pid=2 file=persisted-2026-11-12T22-44-47-h0-r5e446b tty=/dev/console] markerReadBack=true",
       "facts": {
-        "stateA": "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub|2|/dev/console|112613739\n[Command finished with exit code 0]",
-        "stateB": "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub|a1-value|2|persisted-2026-11-12T19-53-09-h0-r018bab|/dev/console\n[Command finished with exit code 0]"
+        "stateA": "A1_STATE_1|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub|2|/dev/console|113643574\n[Command finished with exit code 0]",
+        "stateB": "A1_STATE_2|/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub|a1-value|2|persisted-2026-11-12T22-44-47-h0-r5e446b|/dev/console\n[Command finished with exit code 0]"
       }
     },
     {
       "arm": "A1-4",
       "proposition": "a second Member cannot see the first Member's PTY state (own cwd, no export, different shell pid)",
       "verdict": "PASS",
-      "detail": "w1=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub tty=/dev/console] w2=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false",
+      "detail": "w1=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub tty=/dev/console] w2=[pwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace var= tty=/dev/console] startTimeDiffers=true hostPtyFdsBefore=1 after=2 newPty=true w2SawFirstCwd=false w2SawFirstExport=false",
       "facts": {
         "w1": [
-          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace/a1-sub",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace/a1-sub",
           "2",
           "/dev/console",
-          "112613739"
+          "113643574"
         ],
         "w2": [
-          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/workspace",
+          "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/workspace",
           "",
           "2",
           "/dev/console",
-          "112614141"
+          "113643979"
         ],
         "ptyCountGrew": true
       }
@@ -80,7 +80,7 @@
       "arm": "A1-5",
       "proposition": "a wrong or prefixed session id is refused BEFORE a PTY exists (no PTY fd, no turn, gate named)",
       "verdict": "PASS",
-      "detail": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45 quiesced=true precreationQuiesceMs=2003",
+      "detail": "sufficedStatus=200 truncatedStatus=200 relayStatus=200 gate=session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM allRefused=true ptyFdsBefore=2 ptyFdsAfter=2 turnsBefore=45 turnsAfter=45 quiesced=true precreationQuiesceMs=2005",
       "facts": {
         "gate": "session/not-found,session/not-found,TEAM_REMOTE_FOREIGN_TEAM",
         "ptyBefore": [
@@ -93,9 +93,9 @@
         ],
         "windowTurns": [],
         "refusals": [
-          "{\"type\":\"server-response\",\"rpcId\":\"c1-uxtbpau1rs\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T19-53-09-h0-r018babx\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T19-53-09-h0-r018babx\"}}}}",
-          "{\"type\":\"server-response\",\"rpcId\":\"c1-bdhsn9o6pz\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T19-53-09-h0-r018b\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T19-53-09-h0-r018b\"}}}}",
-          "{\"type\":\"server-response\",\"rpcId\":\"a1-wrong-relay-7ypdzr8xph\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'member.send' addresses TeamSession 'session-a1-root-2026-11-12T19-53-09-h0-r018babx' which this host does not own (bound root 'session-c1-smoke-root-2026-11-12T19-53-09-h0-r018bab')\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contr"
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-gelpkoryiw\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T22-44-47-h0-r5e446bx\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T22-44-47-h0-r5e446bx\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"c1-9ycaladxsn\",\"result\":{\"ok\":false,\"error\":{\"code\":\"session/not-found\",\"message\":\"session \\\"session-a1-root-2026-11-12T22-44-47-h0-r5e44\\\" not found\",\"details\":{\"sessionId\":\"session-a1-root-2026-11-12T22-44-47-h0-r5e44\"}}}}",
+          "{\"type\":\"server-response\",\"rpcId\":\"a1-wrong-relay-xjtku2l734\",\"result\":{\"ok\":false,\"error\":{\"code\":\"TEAM_REMOTE_FOREIGN_TEAM\",\"message\":\"remote method 'member.send' addresses TeamSession 'session-a1-root-2026-11-12T22-44-47-h0-r5e446bx' which this host does not own (bound root 'session-c1-smoke-root-2026-11-12T22-44-47-h0-r5e446b')\",\"details\":{\"method\":\"member.send\",\"endpoint\":\"member.send\",\"contr"
         ]
       }
     },
@@ -105,17 +105,17 @@
       "verdict": "PASS",
       "detail": "hostDefault=danger-full-access rootWrite=bytes-on-disk rootFileBytes=41 memberOutsideFileAbsent=true memberRefusalProven=true",
       "facts": {
-        "rootFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-root-outside-2026-11-12T19-53-09-h0-r018bab.txt",
-        "memberFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/tests/homes/c1-smoke-2026-11-12T19-53-09-h0-r018bab/a1-outside-2026-11-12T19-53-09-h0-r018bab.txt"
+        "rootFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-root-outside-2026-11-12T22-44-47-h0-r5e446b.txt",
+        "memberFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/tests/homes/c1-smoke-2026-11-12T22-44-47-h0-r5e446b/a1-outside-2026-11-12T22-44-47-h0-r5e446b.txt"
       }
     },
     {
       "arm": "A1-7",
       "proposition": "a DENIED approval produces zero native bash executions (no marker, no fact, no bytes)",
       "verdict": "PASS",
-      "detail": "legOwner=inst-1crsi710ywxk isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-1pgjbdl0zdsv6s01tsvkb1m6 toolRefusal=Error: the approval was denied",
+      "detail": "legOwner=inst-0n4y80p0hgeo isDenyMember=true decision=deny executions=0 consumptions=0 bytesOnDisk=false requestId=ctrl-1key1640278k2h0btnmle0e2 toolRefusal=Error: the approval was denied",
       "facts": {
-        "requestId": "ctrl-1pgjbdl0zdsv6s01tsvkb1m6"
+        "requestId": "ctrl-1key1640278k2h0btnmle0e2"
       }
     }
   ],
