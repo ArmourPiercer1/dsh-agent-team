@@ -221,6 +221,19 @@ re-resolving the old request.
 > human is required. **Never wait for a wake after a restart** — this note does not change the wake
 > plane, and an unaddressed leg still starves (control arm: 65 s window, no decision).
 
+> **2026-11-13 boundary note (append-only, same day; issue #756).** The list is **per-caller**, not
+> Leader-only: the Leader's `team_list_pending_control` shows every open approval case at its current
+> leg (all carriers) plus legacy pending rows, so a `user-approval` leg **is** visible there; an
+> assigned Officer is routed to `listMyReviewTasks` and sees its own current pending legs; a member
+> with no assigned task is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER` before any read. Resolver
+> authority is by **case/leg** — the leg's currently assigned Officer (the team's single live Officer
+> instance) may decide it, and the ban is the executor deciding its own operation, not "any member";
+> a leg transferred to the Leader is no longer decidable by the former Officer. The #756 redesign
+> that is **registered and not implemented** is the single role-granted **all-requests** view
+> carrying each request's resolver kind + identity — not the per-caller list above. So the operator
+> remedy still requires the **Leader** (or the human, off this list, for `user-approval`), and do not
+> read this runbook as promising that a non-Leader reviewer can find an arbitrary leg by listing.
+
 ---
 
 ## 4. What NOT to do

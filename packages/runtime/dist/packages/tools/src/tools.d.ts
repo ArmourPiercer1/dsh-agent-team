@@ -22,14 +22,18 @@
  * |                       | approval-flow entry point: unguarded,        |
  * |                       | idempotent over the scope identity)          |
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
- * |                       | the service's resolver role closure is the   |
- * |                       | authority; a member is never a resolver);    |
- * |                       | `decision=escalate` routes to                |
+ * |                       | authority is by SCOPE: a MEMBER only via a   |
+ * |                       | case/leg-scoped ReviewCapability, never its  |
+ * |                       | own operation; `decision=escalate` routes to |
  * |                       | `escalateApprovalLeg` (A4-PR5, PR4 duty b)   |
  * | team_list_pending_control | control service `listControlState`     |
- * |                       | (C1: the read-only Leader discovery of      |
- * |                       | pending `leader-approval` requests — leader |
- * |                       | only, zero writes, no query language)       |
+ * |                       | (read-only, zero writes, no query language:  |
+ * |                       | the Leader sees every open approval case at |
+ * |                       | its current leg (incl. user-approval); an   |
+ * |                       | assigned Officer sees its own current legs; |
+ * |                       | an unassigned member is refused. The #756    |
+ * |                       | all-requests view with resolver kind+       |
+ * |                       | identity is REGISTERED, NOT implemented)     |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |

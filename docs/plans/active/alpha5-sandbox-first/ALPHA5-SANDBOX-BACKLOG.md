@@ -39,6 +39,24 @@
   4. Web 的 `network: allow` 路径可继续被接受；可信 Web Provider 前的 `network: deny` 拒绝**不得**被推广成「任意子进程已被网络隔离」——**Web service-level deny refusal ≠ subprocess network isolation**。
   5. **归属更正**：**BL-39 是 Launcher `/etc`+`/proc` 文件读取例外收窄（read-exception hardening），不是网络隔离**；BL-39 保留原范围，真实 deny 后端独立记 **BL-42**。
 
+- **2026-11-13 owner 裁决（invariant 37 后继规则；issue #756；只修文本，不改机制）**：
+  冻结文档 `docs/plans/finished/DSH_Agent_Team_vNext_Detailed_Architecture_20260829.md` **§25.1**
+  （Control/Approval 的目的）与 **invariant 37**（原文 "Member 不能 unrestricted self-escalate"）
+  **只读**。**冻结文本本身没有写 "member 永不是 resolver"**——那句绝对化表述只出现在代码注释、skill
+  与历史计划里；本裁决退役的是那些**表述**，不是机制（`CONTROL_RESOLVER_ROLES` 与 Alpha.6 的
+  case/leg-scoped ReviewCapability 路径都不变）。
+  - **后继规则**：裁决权威**按 case/leg 归属**——请求所属 case/leg 的被指派评审实例可以裁决；被禁止的
+    是**执行者本人裁决自己的操作**（reviewer 与 reviewed 必须是不同实例），不是"任何 member 都不能裁决"。
+  - **双通道现状**：`leader-approval` → Leader 或 human（启用 Alpha.6 `reviewRouting` 的团队上 =
+    **该 case/leg 当前被指派的 Officer**，即团队内唯一在读的 Officer 实例）；Alpha.6 Officer 评审 →
+    该 case/leg 的被指派 Officer（leg 转交 Leader 后原 Officer 不再可裁决）；`user-approval` → **仅
+    human**；`envelope-mutation` → Leader 或 human。
+  - **发现面的真实状态**：`team_list_pending_control` **按调用者分流**，不是 Leader-only——Leader 看到
+    每个 open approval case 的当前 leg（含 `user-approval`）；被指派的 Officer 经 `listMyReviewTasks`
+    看到自己的当前 leg；未被指派的 member 被 `TEAM_TOOL_PENDING_LIST_NOT_LEADER` 在任何读取之前拒绝。
+    #756 里**已登记、未实现**的只是**单一角色化的"全部请求 + resolver kind/identity"视图**；不要把
+    本段读成"发现面已修好"，也不要读成"Officer 发现不了"。
+
 ## 0.1 能力面（capability face）与三层验收
 
 ### 0.1.1 六个能力面 + 一个 cross-face 桶

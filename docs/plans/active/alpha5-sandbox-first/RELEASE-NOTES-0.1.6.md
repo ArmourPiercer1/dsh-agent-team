@@ -1064,3 +1064,51 @@ correction, not this appendix, is the operative instruction for the next operato
 pointer change, `:3080` untouched. n = 3 reproducing runs + 2 controls, one composition, one host pin
 (`639ed01539`, 0.2.0-rc.2); this is not a rate and not a stability claim, and a wake arriving after the 45 s
 window would not have been counted.
+
+---
+
+## 13. Appended 2026-11-13 — invariant 37 successors: resolver authority is by scope (documents only; owner ruling, issue #756)
+
+Nothing in the §11 tables is rewritten; this section only retires a claim that no longer matches the
+product and states what is still not built. No mechanism, grade, `V@B`, candidate, tag, Authority
+pointer or Required-CI line moves.
+
+- **Retired text, not the mechanism.** Code comments, the team skills and historical plans said "a
+  MEMBER is never a resolver". The frozen Architecture's §25.1 is the Control/Approval *purpose*
+  section and invariant 37 actually says a member cannot *unrestricted self-escalate*; the categorical
+  sentence was implementation shorthand that Alpha.6's assigned-Officer review made false in
+  practice. `CONTROL_RESOLVER_ROLES` and the case/leg-scoped ReviewCapability path are unchanged.
+- **Successor rule.** Resolver authority is assigned **by case/leg**: the reviewer instance assigned
+  to the request's case/leg may decide it. What is banned is **self-approval** — the executor itself
+  may never decide its own operation; reviewer and reviewed must be distinct instances.
+- **The two channels, with their boundaries:**
+
+| channel | who may decide |
+| --- | --- |
+| `leader-approval` | the Leader or a human; on an opt-in Alpha.6 team, the case/leg's currently assigned Officer (the team's single live Officer instance) |
+| Alpha.6 Officer review | the case/leg's assigned Officer (instance-level, case/leg-scoped ReviewCapability; the durable decision records the real decider); a leg transferred to the Leader is no longer decidable by the former Officer |
+| `user-approval` | **human only** |
+| `envelope-mutation` | the Leader or a human |
+
+- **Registered, not implemented.** Discovery today is **per-caller**: the Leader's
+  `team_list_pending_control` shows every open approval case at its current leg (a `user-approval`
+  leg included, so PD-44's discovery gap is not "the Leader cannot see it"), an assigned Officer is
+  routed to `listMyReviewTasks` and sees its own current pending legs, and an unassigned member is
+  refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER`. What issue #756 registers and **does not ship**
+  is the single role-granted **all-requests** view that also carries each request's resolver kind and
+  identity. Do not read this correction as that view being implemented.
+- **Evidence, and what it does not say.** J06 in
+  `dev/agent-workflow/evidence/joint-acceptance/j05j06-run1/joint-arms.md`: `routedToOfficer=true`,
+  `identityCarried=t`, and the durable decider is
+  `{"instanceId":"inst-…","kind":"instance","role":"member"}`. No `resolver=officer` field is claimed
+  here — neither the code nor J06 shows one.
+- **Where the text changed.** `packages/runtime/control/service.ts`, `packages/tools/src/tokens.ts`,
+  `packages/runtime/control/types.ts` (comments) and `packages/tools/src/tools.ts` (comments plus one
+  model-facing tool-description string — no behaviour change; the dist mirror is rebuilt in the same
+  commit), `team-leader-operations` and `team-blueprint-authoring` skills,
+  `ALPHA5-SANDBOX-BACKLOG.md` §0, `PREVIEW-CONTRACT-2026-11-16.md` §8,
+  `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4, the Alpha.6 review-capability ADR, and two archived plans
+  (dated notes). The four 20260829 frozen documents are untouched.
+- **Round-4 C2 check item:** the documentation — including the model-facing `team_request_control`
+  description — no longer asserts "member is never a resolver", and the two decision channels are
+  stated with their boundaries.

@@ -22,9 +22,14 @@ export declare const TEAM_TOOL_REQUEST_TOKEN_MAX_LENGTH = 128;
 export declare const TEAM_TOOL_BAD_ARGUMENTS = "TEAM_TOOL_BAD_ARGUMENTS";
 /** The closed tool-layer caller-resolution error code. */
 export declare const TEAM_TOOL_CALLER_UNRESOLVED = "TEAM_TOOL_CALLER_UNRESOLVED";
-/** The closed tool-layer leader-only caller error code (C1: the pending-
- *  control list is a Leader discovery surface — a non-leader caller is
- *  rejected before any read). */
+/** The closed tool-layer pending-list refusal code. The list is PER-CALLER, not
+ *  Leader-only: the Leader sees every open approval case at its current leg (all
+ *  carriers) plus legacy pending rows, so a `user-approval` leg is visible there;
+ *  an assigned Officer sees only the current pending legs assigned to it
+ *  (`listMyReviewTasks`); a member with no assigned task is refused keyed to this
+ *  code. The #756 redesign — one role-granted view of ALL pending requests
+ *  carrying each request's resolver kind + identity — is REGISTERED, NOT
+ *  implemented. */
 export declare const TEAM_TOOL_PENDING_LIST_NOT_LEADER = "TEAM_TOOL_PENDING_LIST_NOT_LEADER";
 /** The closed tool-layer leader-only caller error code (team_archive_member:
  *  member archiving is the Leader lifecycle-management surface — a

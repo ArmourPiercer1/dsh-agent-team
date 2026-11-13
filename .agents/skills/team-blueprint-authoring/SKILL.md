@@ -517,14 +517,23 @@ capabilities:
 (`team_request_control` belongs on the surface only when the Leader itself
 issues explicit control requests for its own operations.)
 
-Two facts keep the loop honest:
+Three facts keep the loop honest:
 
 - **tool exposure is not authority**: listing these tools in `teamTools`
   gives the Leader the model-facing surface; the resolver-role closure in
   the control service (Leader or human for `leader-approval`; human only
-  for `user-approval`; a member is never a resolver) remains the
-  authoritative decision check — a denied resolve fails closed regardless
-  of the tool list.
+  for `user-approval`; a member decides only through the case/leg-scoped
+  ReviewCapability assigned to that case/leg, and never its own operation; a
+  leg transferred to the Leader is no longer decidable by the former Officer)
+  remains the authoritative decision check — a denied resolve fails closed
+  regardless of the tool list.
+- **the discovery surface is per-caller, and the #756 all-requests view is not
+  implemented**: `team_list_pending_control` shows the Leader every open
+  approval case at its current leg (a `user-approval` leg included) and an
+  assigned Officer its own current pending legs, while an unassigned member is
+  refused. The single role-granted view that also carries each request's
+  resolver kind and identity is registered in #756, not built — do not author
+  a blueprint that assumes it.
 - **the envelope still gates the operation**: the Leader's Team envelope
   must permit the existing `resolve-control` operation (and
   `request-control` when that tool is exposed), exactly as before —

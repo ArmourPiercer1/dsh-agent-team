@@ -51,7 +51,7 @@ shape is a fact you must know before you promise a member's work will run.
 | `team_report_progress` | Record progress on one work subject of an instance | `instanceId`, `subject`, `progress` |
 | `team_request_control` | Request approval for one operation scope (idempotent over the scope identity) | `kind`, `targetInstanceId`, `actionName` |
 | `team_resolve_control` | Record an allow/deny decision on a pending control request | `requestId`, `decision` |
-| `team_list_pending_control` | List the team's unresolved `leader-approval` requests with their exact `requestId`s (read-only, Leader-only) | — |
+| `team_list_pending_control` | List the approvals visible to the caller with their exact `requestId`s — Leader: every open case at its current leg plus pending legacy requests; assigned Officer: its own current legs (read-only, per-caller) | — |
 | `team_archive_member` | Archive ONE member instance — move it out of the active work set (durable, Leader-only) | `targetInstanceId` |
 | `team_grant_permission` | Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Tightenings apply immediately; an EXPANSION needs explicit carrier coverage on the bound Blueprint and, on a schemaVersion-3 Blueprint, must also stay inside BOTH authority ceilings (`teamHardEnvelope` and the Leader's own carrier, evaluated separately, never merged). A rise above either refuses typed as `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT` — **needing higher authority is a refusal, never a pending request** — and an unreadable ceiling document refuses as a context fault rather than being treated as absent. A rule-set-equal replay commits nothing. Does NOT change the Leader's own permissions. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
 | `team_revoke_permission` | Remove previously granted overlay rules from ONE member instance; the next pre-execute decision falls back to the lower layers. **A removal can itself be an EXPANSION** — where a revoke lets a looser remaining rule ANSWER (a reveal), it is gated exactly like a grant (carrier coverage, and on v3 both ceilings). A rule-set-equal replay commits nothing. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
@@ -97,10 +97,13 @@ Optional args worth knowing:
 - `team_resolve_control`: `decision` is a closed enum `allow | deny`; plus
   `note`.
 - `team_list_pending_control`: optional `limit` (integer, default 50,
-  maximum 100). It returns ONLY pending `leader-approval` requests
-  (sorted by durable request sequence) — `user-approval` and
-  `envelope-mutation` requests are NOT listed; the GUI remains the
-  inspection surface for those.
+  maximum 100). It returns the approvals visible to the CALLER, sorted by
+  durable request sequence: the Leader sees every open approval case at its
+  current leg (any kind — a `user-approval` leg included) plus pending legacy
+  requests; an assigned Officer sees only the open cases whose current leg is
+  assigned to it; a member with no assigned task is refused
+  `TEAM_TOOL_PENDING_LIST_NOT_LEADER`. Abandoned requests are terminal and are
+  not listed — find them by id on the ledger page and re-issue the ask.
 - `team_archive_member`: no optional args. For a legal archive target
   (RUNNING or SETTLED), the lifecycle authority QUIESCES the member
   first (its current work is interrupted and its resident descendants
@@ -257,7 +260,20 @@ SAME-SOURCE view the runtime authority uses — no re-probe, nothing invented:
      - `leader-approval` — resolved by Leader or human;
      - `user-approval` — resolved by the human only;
      - `envelope-mutation` — resolved by Leader or human.
-     A member is **never** a resolver.
+     Resolver authority is **by case/leg** (invariant 37 successor, #756): the
+     reviewer instance assigned to the request's **case/leg** may decide it —
+     in practice the case/leg's currently assigned Officer (the team's single
+     live Officer instance) — and the ban is **self-approval**: the executor
+     itself may never decide its own operation, so reviewer and reviewed must
+     be distinct instances. A leg transferred to the Leader is no longer
+     decidable by the former Officer. Discovery today is **per-caller**, not
+     Leader-only: the Leader's `team_list_pending_control` shows every open
+     approval case at its current leg (a `user-approval` leg included), an
+     assigned Officer sees its own current pending legs, and an unassigned
+     member is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER`. What is
+     registered in #756 and **not implemented** is the single role-granted
+     all-requests view that also carries each request's resolver kind and
+     identity.
   3. **discover the requestId**: when a member's operation waits on a
      `leader-approval`, the durable request carries the `requestId` and a
      model-visible Leader notification arrives on your session for NEW
