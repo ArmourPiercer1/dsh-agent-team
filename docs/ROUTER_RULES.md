@@ -274,3 +274,11 @@ Gate 编号
     7. **禁止为变绿**：`--no-tests`、放宽 union 判定、把用例塞进老红基线、绕过 settlement、管理员权限合并。做不到就停下报告。
     8. **§7 的停工上报条件扩展到本流程**：census 同 head 连续两次红；需要改 `.github/workflows/`、`dev/ci/`、`scripts/eb3-*` 或分支保护（本阶段一律不做）；需要 force-push/rebase 带证据的分支；同一 PR 超过 3 次 L2 仍红或单 PR 墙钟超过 2 小时；三条硬规则冲突。
     9. **合并动作**：先核对 `mergeStateStatus=CLEAN` 且 head 未变，再 `gh pr merge <n> --squash --match-head-commit <40-hex>`，合并后确认 master 前进，并把 run id / 判定行写进 evidence README。
+11. **草稿优先 PR 状态机（R-DRAFT-1）**【2026-11-13 owner 裁决（经协调席转达 landing 席）；起因 = L2 census 实测 **≥24 min、排队后 30–40 min**，而 Ready 后每次 push 都会重付 census 并让 settlement 机械失效（§8.5.6.2）——把修复循环留在 L1 是唯一的成本正确解。**本条为协议增补，不改 CI 配置、分支保护或 Required 上下文**；完整判据表与解释表正本 = [`docs/runbooks/PR-DRAFT-FIRST.md`](runbooks/PR-DRAFT-FIRST.md)】：
+    1. **一律草稿创建、草稿态只付 L1**：PR 用 `--draft` 创建；草稿态只跑四层 + deferred（`ci-census=skipping`、`ci-required=failure`（fail-closed）、`ci-required-deferred=success`）——这是**正常形态**，不是故障。
+    2. **C1–C7 全满足才 `gh pr ready`，且只 ready 一次**：C1 变更完成（无未推送提交）/ C2 与 master 同步（落后则**草稿态** update-branch）/ C3 L1 四层 + deferred 全绿 / C4 独立 review PASS 且每条 finding 带证据关闭（无独立席位时必须在 settlement 中**如实披露**）/ C5 文档与证据已更新 / C6 **settlement 先写**（覆盖当前 40-hex、引用 run id 与证据路径）/ C7 head 冻结。
+    3. **Ready 后禁止 push**：head 冻结，`--match-head-commit` 钉住合并。确需改动：`gh pr ready --undo` → push → 等 L1 → 重写**新的** dated settlement → 再 `gh pr ready` 一次；**禁止** Ready 态直接 push 后补 settlement（census 重付 + settlement 已失效）。
+    4. **一次只做一个状态切换**（draft / ready / label）；Ready 轮期间不 push、不改 label、不切换 draft，否则 pending 轮被顶替、判定丢失。
+    5. **合并判据不变**：仅 `pr-gate` + `ci-required` + `pr-settlement-gate` 三个上下文在**同一 head** 上 success，且 `mergeStateStatus=CLEAN`，才执行 `gh pr merge <n> --squash --match-head-commit <40-hex>`。
+    6. **禁止为省时而绕过**：`--no-tests`、提前 Ready、最终 head 上 `ci-defer-full`、管理员权限合并、取消非 superseded 的 run。取消**已被顶替**且占着 per-ref 并发槽的 run 是允许的，但必须在 PR 上留注。
+    7. **时限纪律**：正常路径 **恰好一次 L2**；单 PR 墙钟上限沿用 §10.8（2 小时）；超过即按 §7 停工上报，不靠加轮次、放宽判定或跳过 census 解决。

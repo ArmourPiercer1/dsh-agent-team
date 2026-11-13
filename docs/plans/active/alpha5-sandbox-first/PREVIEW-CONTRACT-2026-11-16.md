@@ -267,3 +267,33 @@ PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——�
   （尤其是 §5.2 的归因整句与 §3.1 的 Stop 限定语）继续有效。
 - 0.1.6 的 Alpha.6 面**不在**本契约的 Preview 承诺内；它的已知缺陷 A6-26 与恢复流程见
   Release Notes §5 与 `RUNBOOK-CONTROL-ABANDONED.md`。
+
+---
+
+## 8. 裁决权威按 case/leg（append-only，2026-11-13；invariant 37 后继规则，issue #756）
+
+本节只澄清**文本**，不改任何判定、等级、机制或 `V@B`。撤回的是"member 永不是 resolver"这类绝对化
+表述——它从来不是冻结 Architecture 的原文：§25.1 是 Control/Approval 的目的，invariant 37 的原文是
+"Member 不能 unrestricted self-escalate"。
+
+- **后继规则**：裁决权威**按 case/leg 归属**——请求所属 case/leg 的被指派评审实例可以裁决；被禁止的
+  是**执行者本人裁决自己的操作**（reviewer 与 reviewed 必须是不同实例），不是"任何 member 都不能裁决"。
+- **双通道现状（含边界）**：
+
+| 通道 | 谁可以裁决 |
+| --- | --- |
+| `leader-approval` | Leader 或 human；启用 Alpha.6 `reviewRouting` 的团队上 = 该 case/leg 当前被指派的 Officer（团队内唯一在读的 Officer 实例） |
+| Alpha.6 Officer 评审 | 该 case/leg 的被指派 Officer（实例级、case/leg-scoped ReviewCapability；durable 记录真实 decider）；leg 转交 Leader 后原 Officer 不再可裁决 |
+| `user-approval` | **仅 human**（Leader 不得代替用户） |
+| `envelope-mutation` | Leader 或 human |
+
+- **发现面的真实状态**：`team_list_pending_control` **按调用者分流**——Leader 看到每个 open approval
+  case 的当前 leg（含 `user-approval`，故它不是对 Leader 不可见）；被指派的 Officer 经
+  `listMyReviewTasks` 看到自己的当前 leg；未被指派的 member 被 `TEAM_TOOL_PENDING_LIST_NOT_LEADER`
+  拒绝，响应里**零行**（两次读取先执行、拒绝发生在响应组装处，不是读取前的门）。issue #756 里**已登记、未实现**的是**单一角色化、带 resolver kind/identity 的
+  "全部请求"视图**，不是上面的按调用者列表；读本节不得得出"该全量视图已实现"，也不得得出"发现面
+  没修"。
+- **证据边界**：J06 实测（`dev/agent-workflow/evidence/joint-acceptance/j05j06-run1/joint-arms.md`）
+  显示 ask 路由到 Officer、`routedToOfficer=true`、`identityCarried=t`，durable decider 为
+  `{"instanceId":"inst-…","kind":"instance","role":"member"}`。本节**不**声称任何 `resolver=officer`
+  之类的 durable 字段命名——代码与 J06 都没有这个字段。

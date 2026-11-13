@@ -189,6 +189,52 @@ re-resolving the old request.
 > §6 record them), so do not expect a one-line fix. **Operator action: go straight to
 > `team_list_pending_control` + `team_resolve_control`.**
 
+> **2026-11-13 NUDGE correction (append-only; every line above is kept exactly as written — this note
+> supersedes only the last sentence's ORDER, not its facts).** "Operator action: go straight to
+> `team_list_pending_control` + `team_resolve_control`" is the **fallback**, not the first move.
+> Measured on a real Host (same SIGKILL + create-or-open restart; two runs per arm; evidence
+> `dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/README.md`, register **PD-44
+> `COLD-WAKE`**), the durable plane is fully usable after the boot and the flow is a **deliberate
+> four-step handover**:
+>
+> 1. **Surface the `user-approval` legs to the human.** A post-restart `user-approval` leg is durably
+>    listed and readable by id, and the Leader is **refused** with
+>    `CONTROL_RESOLVER_NOT_AUTHORIZED … role 'leader' is not a resolver for kind 'user-approval'
+>    (allowed: [human])`; only the operator decides it (decider `kind: human`).
+> 2. **Close every `leader-approval` leg yourself.** The Leader's `team_resolve_control` on a
+>    post-restart `leader-approval` leg is **accepted** (`200`, no refusal, decision recorded with the
+>    Leader instance as `decider`) — measured, so a leg in this class never needs the Officer.
+> 3. **Brief the Officer with the pending `requestId(s)`** (`team_send_message`): was the stop caused
+>    by a trajectory problem, how should the next approval go. It is admitted (`delivered`), starts a
+>    real model-visible Officer turn, and the Officer records `control-decision-recorded` with the
+>    **Officer instance** as `decider` in **0.251 / 0.253 s** (`run-lm-1/2`) — no operator, no wake.
+> 4. **Pull the work back up by messaging the members** with a **new** unit; the message cold-resumes
+>    the killed session, starts a turn, and the new ask mints normally. (`team_follow_up` on the dead
+>    unit stays admitted-but-inert — the row above is right about that.)
+>
+> **The durable authority does not drift:** the pre-crash request row is byte-identical after the
+> restart (same `kind`, `reviewAuthority`, `perEffectRequiredAuthorities`, `blueprintContentHash`,
+> `operationToolDefinitionIdentity`), so a leg the Officer could decide before the crash is still
+> decidable by it after; what goes silent is the **wake**, not the authority. **So PD-44's severity
+> drops from "approval unreachable" to "requires a deliberate restart briefing":** the missing piece
+> is *automatic* re-driving, and the four steps above restore it with human-in-the-loop where the
+> human is required. **Never wait for a wake after a restart** — this note does not change the wake
+> plane, and an unaddressed leg still starves (control arm: 65 s window, no decision).
+
+> **2026-11-13 boundary note (append-only, same day; issue #756).** The list is **per-caller**, not
+> Leader-only: the Leader's `team_list_pending_control` shows every open approval case at its current
+> leg (all carriers) plus legacy pending rows, so a `user-approval` leg **is** visible there; an
+> assigned Officer is routed to `listMyReviewTasks` and sees its own current pending legs; a member
+> with no assigned task is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER` and gets **zero rows in
+> the response** (the refusal is evaluated after the two reads — not a pre-read gate). Resolver
+> authority is by **case/leg** — the leg's currently assigned Officer (the team's single live Officer
+> instance) may decide it, and the ban is the executor deciding its own operation, not "any member";
+> a leg transferred to the Leader is no longer decidable by the former Officer. The #756 redesign
+> that is **registered and not implemented** is the single role-granted **all-requests** view
+> carrying each request's resolver kind + identity — not the per-caller list above. So the operator
+> remedy still requires the **Leader** (or the human, off this list, for `user-approval`), and do not
+> read this runbook as promising that a non-Leader reviewer can find an arbitrary leg by listing.
+
 ---
 
 ## 4. What NOT to do

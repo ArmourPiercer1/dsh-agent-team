@@ -51,7 +51,7 @@ shape is a fact you must know before you promise a member's work will run.
 | `team_report_progress` | Record progress on one work subject of an instance | `instanceId`, `subject`, `progress` |
 | `team_request_control` | Request approval for one operation scope (idempotent over the scope identity) | `kind`, `targetInstanceId`, `actionName` |
 | `team_resolve_control` | Record an allow/deny decision on a pending control request | `requestId`, `decision` |
-| `team_list_pending_control` | List the team's unresolved `leader-approval` requests with their exact `requestId`s (read-only, Leader-only) | — |
+| `team_list_pending_control` | List the approvals visible to the caller with their exact `requestId`s — Leader: every open case at its current leg plus pending legacy requests; assigned Officer: its own current legs (read-only, per-caller) | — |
 | `team_archive_member` | Archive ONE member instance — move it out of the active work set (durable, Leader-only) | `targetInstanceId` |
 | `team_grant_permission` | Grant durable permission-overlay rules to ONE member instance (Leader-only; the ONE governance mutation authority). Tightenings apply immediately; an EXPANSION needs explicit carrier coverage on the bound Blueprint and, on a schemaVersion-3 Blueprint, must also stay inside BOTH authority ceilings (`teamHardEnvelope` and the Leader's own carrier, evaluated separately, never merged). A rise above either refuses typed as `PERMISSION_AUTHORITY_CEILING_INSUFFICIENT` — **needing higher authority is a refusal, never a pending request** — and an unreadable ceiling document refuses as a context fault rather than being treated as absent. A rule-set-equal replay commits nothing. Does NOT change the Leader's own permissions. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
 | `team_revoke_permission` | Remove previously granted overlay rules from ONE member instance; the next pre-execute decision falls back to the lower layers. **A removal can itself be an EXPANSION** — where a revoke lets a looser remaining rule ANSWER (a reveal), it is gated exactly like a grant (carrier coverage, and on v3 both ceilings). A rule-set-equal replay commits nothing. | `targetInstanceId`, `rules` (1..n closed `{operationClass, matcher, effect}`) |
@@ -97,10 +97,13 @@ Optional args worth knowing:
 - `team_resolve_control`: `decision` is a closed enum `allow | deny`; plus
   `note`.
 - `team_list_pending_control`: optional `limit` (integer, default 50,
-  maximum 100). It returns ONLY pending `leader-approval` requests
-  (sorted by durable request sequence) — `user-approval` and
-  `envelope-mutation` requests are NOT listed; the GUI remains the
-  inspection surface for those.
+  maximum 100). It returns the approvals visible to the CALLER, sorted by
+  durable request sequence: the Leader sees every open approval case at its
+  current leg (any kind — a `user-approval` leg included) plus pending legacy
+  requests; an assigned Officer sees only the open cases whose current leg is
+  assigned to it; a member with no assigned task is refused
+  `TEAM_TOOL_PENDING_LIST_NOT_LEADER`. Abandoned requests are terminal and are
+  not listed — find them by id on the ledger page and re-issue the ask.
 - `team_archive_member`: no optional args. For a legal archive target
   (RUNNING or SETTLED), the lifecycle authority QUIESCES the member
   first (its current work is interrupted and its resident descendants
@@ -257,7 +260,20 @@ SAME-SOURCE view the runtime authority uses — no re-probe, nothing invented:
      - `leader-approval` — resolved by Leader or human;
      - `user-approval` — resolved by the human only;
      - `envelope-mutation` — resolved by Leader or human.
-     A member is **never** a resolver.
+     Resolver authority is **by case/leg** (invariant 37 successor, #756): the
+     reviewer instance assigned to the request's **case/leg** may decide it —
+     in practice the case/leg's currently assigned Officer (the team's single
+     live Officer instance) — and the ban is **self-approval**: the executor
+     itself may never decide its own operation, so reviewer and reviewed must
+     be distinct instances. A leg transferred to the Leader is no longer
+     decidable by the former Officer. Discovery today is **per-caller**, not
+     Leader-only: the Leader's `team_list_pending_control` shows every open
+     approval case at its current leg (a `user-approval` leg included), an
+     assigned Officer sees its own current pending legs, and an unassigned
+     member is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER`. What is
+     registered in #756 and **not implemented** is the single role-granted
+     all-requests view that also carries each request's resolver kind and
+     identity.
   3. **discover the requestId**: when a member's operation waits on a
      `leader-approval`, the durable request carries the `requestId` and a
      model-visible Leader notification arrives on your session for NEW
@@ -300,6 +316,66 @@ safe path is the plain default:
 
 Explicit `async: false` (synchronous) delegation stays fine for work you
 know will not ask.
+
+### 5.2 重启工作 / Restarting work (cold boot after a crash)
+
+A Host restart recovers every **durable** fact — the ledger, the pending legs,
+the member rows — but it starts **no turn**. The approval wake is liveness inside
+a live process, not a recovery mechanism: after a cold boot nobody is
+re-driven, and a `team_follow_up` on a unit whose turn was killed is
+**admitted** (`status 200`, no refusal) while starting **no** turn. Nothing
+wakes up on its own. Restart work **deliberately**, in this order:
+
+1. **Surface the human-approval legs first.** `user-approval` requests are
+   resolvable by the **human only** (`allowed: [human]`); the Leader's
+   `team_resolve_control` on one is refused with
+   `CONTROL_RESOLVER_NOT_AUTHORIZED`. Read them off
+   `team_list_pending_control` and **tell the user, with the exact
+   `requestId`** — do not wait for them to decide on their own, and do not
+   try to close them yourself. *Guaranteed:* the leg is durably listed and
+   readable by id after the restart. *Needs the human:* the decision itself.
+2. **Resolve every ask you are allowed to resolve.** A `leader-approval` leg
+   is closable by the **Leader** after a restart: `team_resolve_control`
+   records the decision with the Leader instance as `decider` (measured:
+   `200`, no refusal; the recorded decision window is **0 / 1 ms** —
+   `window.durationMs` in `run-probe-1/2`; no separate resolve-latency field
+   was recorded). Do this before briefing anyone — a leg you can
+   close yourself never needs the Officer. *Guaranteed:* the same durable
+   authority the leg carried before the crash; the restart does not rewrite
+   the request row. *May refuse:* a kind the Leader is not a resolver for
+   (`user-approval`, and any escalation leg) — hand those to the human.
+3. **Brief the assigned reviewer (the Officer under Alpha.6 review routing) for
+   whatever is left.** `team_send_message` with the pending `requestId(s)` and
+   the two questions that make it a briefing, not a ping:
+   - was the stop caused by something going wrong in the trajectory?
+   - how should the next approval go (same scope, re-ask, or escalate)?
+   Then wait for the **durable** decision (`control-decision-recorded` naming
+   the reviewer instance), never for reply text. *Guaranteed:* the message is
+   admitted (`delivered`) and starts a real model-visible turn — measured
+   **0.251 / 0.253 s** to a durable decision with the Officer as `decider`
+   (`run-lm-1/2`).
+   *Needs the human:* nothing extra for this step; but if the reviewer does not
+   decide, the operator `team_resolve_control` remains the fallback and that
+   outcome is a finding to report.
+4. **Pull the work back up by messaging the members.** Address the member with
+   a **new** unit (`team_send_message` / `team_delegate`), not the dead unit's
+   `team_follow_up`: the message cold-resumes the killed session, starts a real
+   turn, and the new governed ask mints normally — measured: a new
+   `control-request-recorded` for the same member template after the restart.
+   *Guaranteed:* the member session is reachable and does new work.
+   *May refuse/mislead:* the OLD unit stays admitted-but-inert — do not read
+   its `200` as "the work continued".
+
+Measured 2026-11-13 (DEV-LIVE, Alpha.6, real Host, two runs per arm; evidence
+`dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/README.md`, debt row
+PD-44 `COLD-WAKE`): after a SIGKILL with a live wake-intent row, an
+**unaddressed** leg starved for the whole 65 s window; the same class of leg
+was closed by the **Leader** in step 2, by the **Officer** 0.251–0.253 s after
+the step-3 briefing (`run-lm-1/2`; 0.502–0.503 s on the healthy control,
+`run-nr-1/2`), and a `user-approval` leg fell through to the **human** with a
+typed refusal for the Leader. The difference between "approvals are unreachable
+after a restart" and "a restart needs a deliberate four-step handover" is
+exactly this procedure.
 
 ## 6. Reading results
 
@@ -345,6 +421,11 @@ unexpected errors surface as tool errors.
   best-effort liveness for NEW requests; the durable request + the pending
   list are the recovery path (notifications are not replayed after a
   restart).
+- Assuming a restart resumes approvals by itself — after a cold boot nothing
+  is re-driven, and `team_follow_up` on the dead unit is admitted-but-inert.
+  Surface `user-approval` legs to the human, close the `leader-approval` legs
+  yourself, brief the Officer with the pending ids, then message the members
+  with a NEW unit (see §5.2).
 - Reading a definition-change cancellation as a guaranteed stop or a rollback: cancellation of
   unexecuted calls, an abort REQUEST for started calls, and the three-way outcome classification
   are different facts — see §8 (and do not read §8's guarantees into the G-g silent-subscription

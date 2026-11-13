@@ -1,0 +1,29 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:13020/?token=moCA-oCbenko2WcUvQbiBJ1oDI6i3NpN3y5mPbNkqfk
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T15-14-01-h0-r8abd59 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-1nv5jt611mjn-native-bash:hexec:nb-1794582850213-1092035897-1 approvalCaseId=tadm:session-a1-root-2026-11-13T15-14-01-h0-r8abd59:inst-1nv5jt611mjn:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-1nv5jt611mjn-native-bash:hexec:nb-1794582850213-1092035897-1 grantId=grant:71a0a0f42979de10180e290ca87227ec effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-1nv5jt611mjn-native-bash:hexec:nb-1794582850213-1092035897-1 grantId=grant:71a0a0f42979de10180e290ca87227ec caseId=tadm:session-a1-root-2026-11-13T15-14-01-h0-r8abd59:inst-1nv5jt611mjn:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:13020/?token=LRgUNsCZBWFzRfEpizhvLYsYp8W1A4EzyM6VQh7BvH4
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 112ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59 templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T15-14-01-h0-r8abd59 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59 templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T15-14-01-h0-r8abd59
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
