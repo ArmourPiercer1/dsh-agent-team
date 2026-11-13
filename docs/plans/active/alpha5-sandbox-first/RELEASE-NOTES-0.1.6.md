@@ -724,3 +724,118 @@ the Binding, raise a **new** request.
 **Scope correction.** The refusal is a product answer, but it is an answer *inside the Team
 process*. Nothing here upgrades the experimental Alpha.6 plane, and nothing here moves a `V@B`
 cell or a matrix grade.
+
+---
+
+## 11. Appended 2026-11-13 — the v0.1.6-rc.1 package split, line by line
+
+This section exists because a reader of §2 still could not tell, **line by line**, which sentence is a
+stable promise, which is an opt-in experiment, and what kind of evidence stands behind each. It adds no
+tag, no RC and no candidate claim. Where a row below disagrees with an older sentence, the older sentence
+is **narrowed**, not deleted; the dated corrections elsewhere in this file stay in force.
+
+### 11.0 Evidence classes used below
+
+| class | what it is | what it can never be |
+| --- | --- | --- |
+| **`CANDIDATE-C2`** | a frozen-candidate record produced by an independent adjudicator against **one immutable SHA**, verified against that SHA's manifest | a claim about another SHA; a `V@B`; a stability rate |
+| **`DEV-LIVE`** | a real-Host development run (fresh `DSH_HOME`, sanctioned ports, pinned host `0.2.0-rc.2 @ 639ed01539`) | `CANDIDATE-C2`; a `V@B`; a matrix grade |
+| **`HOST-FREE`** | a unit/gate test that pins a sentence or a seam without booting a Host | live behaviour |
+| **`CODE/DOC`** | a static statement about the tree (a line of code, a runbook, a register row) | a measurement |
+
+**Rule for this section:** a line without a repository path is not a claim these notes make. The path is
+part of the sentence.
+
+### 11.1 STABLE (Alpha.5) — what a reader may rely on
+
+| # | status | surface | exact claim | evidence class | evidence that settles it |
+| --- | --- | --- | --- | --- | --- |
+| **S1** | **STABLE** | **A1 governance — seven clauses** | On the real Host and from the durable ledger: (1) a write **inside** the Member root succeeds (bytes read back, exit 0); (2) a write **outside** the Member ceiling is refused by the OS sandbox with `Read-only file system`, **0 bytes** and `ENOENT` on a real read after the refusal; (3) `cd` + `export` **persist** across consecutive calls; (4) a **second Member is isolated** (own `$PWD`, empty export, different shell start-time, Host PTY fd count grows); (5) a **wrong or prefixed session id is refused before a PTY exists** (3 typed refusals, PTY fds and model turns unchanged); (6) the Host's `danger-full-access` default is **narrowed by the Member ceiling** (root write lands, identical Member write stays absent); (7) a **denied approval ⇒ 0 executions** (`decision: deny`, 0 `control-execution-result`, 0 `control-allow-consumed`, target absent). **7/7 ×4** across two trees. | `DEV-LIVE` (real Host, OS backend `full`) | `tests/kits/a1-bash-governance-20261112/README.md`; `dev/agent-workflow/evidence/a1-bash-governance/README.md`; `dev/agent-workflow/evidence/a1-bash-governance/a1-agreement.json`; `dev/agent-workflow/evidence/a1-bash-governance/a1-agreement-current-tip.json` |
+| **S2** | **STABLE** | **A6-off zero regression on the plane-takeover composition** | With `alpha6ReviewRouting` **explicitly `false`** on the plane-takeover composition (v5 blueprint carrying `memberIoCeilings` + `reviewRouting`, shipped governed preset, pinned native `bash` over the governed PTY, Host default `danger-full-access`), the **same seven clauses reproduce 7/7 twice**, and agree field-by-field with a **same-tree A6-on control** (also 7/7). Flipping only the flag leaves every clause verdict and every normalized measured detail unchanged. This is the zero-regression evidence **C2 on `cand-v0.1.6-3` refused to sign**; it is `DEV-LIVE`, not `CANDIDATE-C2`, and it covers the **`bash` face only** (restated as C2-B R1 on `cand-v0.1.6-4`). | `DEV-LIVE` (3 runs: A6-off ×2 + A6-on control; one retained instrument-race failure kept on disk) | `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md`; `…/a6off-agreement.json`; `…/a6on-vs-a6off-agreement.json`; `…/a6off-run2-turn-race/`; the fresh C2-B re-measurement on `cand-v0.1.6-4` (path and sha256 in `dev/agent-workflow/evidence/v016-rc1-release-package/c2-presence.txt`) |
+| **S3** | **STABLE (scope clarity, not a capability)** | **The Alpha.5-only composition cannot run a governed `bash`** | On the composition with **no plane takeover**, the native `bash` is **typed-shut by design**: every governed `bash` answers `A5_NATIVE_ADMISSION_UNAVAILABLE`. pd33's `bash` arm scores it **16 PROVEN / 3 REFUTED**, and that `FAIL` is preserved as the honest verdict. The arm **predates #730** and is a **superseded instrument**, not a regression: it is pinned as superseded by `#744`, and its successor measurements are S2 and the A1 kit above. | `DEV-LIVE` (the 16/19 run) + `HOST-FREE` (the superseded-instrument pin) | `dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`; `tests/world-factory/a5sf-pd33-preview-e2e.test.mjs`; commit `45132a119` (`#744`); `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md` |
+
+**How S1 and S2 relate to the frozen candidate.** S2's measured product tree is
+`1a677c5d4…`; `git diff 1a677c5d4 0d31f9121 -- packages scripts` is **empty**, so the runtime shipped
+in `cand-v0.1.6-4` is the tree S2 measured. C2-B then re-ran the A6-off A1 arm **on the candidate SHA**
+and signed the same result (7/7 twice, identical blueprint document, legacy Leader deciders 11/11, no
+Officer wake). Two cautions, both adjudicator-recorded: the #745 **committed composition JSONs** are
+stale/misdescribed (null blueprint digest, a schema the frozen kit no longer emits, and the README's
+"every request `reviewAuthority: leader`" is false for the five `team-tool-execute` plane legs), so the
+claim is supported by the **fresh measurement**, not by those composition files — do not quote their
+digests; and "zero regression" remains restricted to the **seven A1 clauses on one composition**, not
+to Alpha.5 behaviour in general (C2-B R1, and NC7 below). Both C2 records for `cand-v0.1.6-4` exist and
+verify; **both withhold candidate-level eligibility** (`candidateClaimEligibility.eligible: false`;
+C2-B's verdict is `NOT PASS`).
+
+### 11.2 OPT-IN EXPERIMENTAL (Alpha.6) — default OFF
+
+**Default-off proof, not a promise.** The opt-in is the boolean `config.alpha6ReviewRouting === true`
+(`packages/runtime/src/plugin/root.ts:2509`). With it absent or `false`, the Alpha.6 composition thunk is
+not invoked at all, and no Alpha.6 parse, member read or port exists. Everything in this table is
+**experimental**: it is not covered by the Alpha.5 Preview contract, it may refuse to boot rather than
+degrade, and it must not be read as stable because it is present in the artifact.
+
+| # | status | surface | exact claim | evidence class | evidence that settles it |
+| --- | --- | --- | --- | --- | --- |
+| **E1** | **OPT-IN EXPERIMENTAL** | **Officer review routing — allow / deny / exception / Stop / crash** | Each outcome is measured twice on a real Host and evidenced by **durable ledger rows**, not by a driver boolean: **allow** consumes the one-shot authorisation exactly once and records the execution; **deny** leaves **zero consumption and zero execution-result** rows; **throw** records `outcome=failed` and never `succeeded`; a declared **exception** is honoured as declared; **Stop** cancels after the allow with **no consumption and an empty target**, and a late allow is refused; **crash** leaves the approval request readable, the late allow refused as `CONTROL_REQUEST_ABANDONED`, and both legs settled `unknown`. | `CANDIDATE-C2` — **valid only for `cand-v0.1.6-3` @ `17a24e2c3…`** | `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md`; `dev/agent-workflow/evidence/candidate-v0.1.6-3/C2-A.json`; `dev/agent-workflow/evidence/candidate-v0.1.6-3/C2-B.json`; `…/a6-allowdeny-agreement.json`; `…/a6-exception-agreement.json`; `…/a6-stop-agreement.json`; `…/a6-crash-agreement.json` |
+| **E2** | **OPT-IN EXPERIMENTAL — disclosed limit, NOT fixed** | **PD-40: the human Stop marker is latch-scoped** | A human Stop writes its durable marker **only when a wake coordinator already exists** for that reviewer session. A Stop **between asks**, or **after a restart before the next ask**, writes **no durable marker** and the next review wake can activate a "stopped" reviewer. **Reproduced twice by an independent adjudicator**, and reproduced again on `cand-v0.1.6-4` by C2-B (arm B 4/4, no marker and the next wake activates; control arm A 6/6, durable marker survives SIGKILL). **Not fixed in this candidate**; making the marker session-scoped is a design change with crash semantics, tracked as **PD-40**. | `DEV-LIVE` (M11 + WP1 arms) and `CANDIDATE-C2` (C2-B reproduction, cand-3 only) | `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` (PD-40 row); `dev/agent-workflow/evidence/v016-fix/README.md` §2; `dev/agent-workflow/evidence/wp1-sticky-stop/`; `dev/agent-workflow/evidence/candidate-v0.1.6-3/C2-B.json`; `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md`; C2-B for `cand-v0.1.6-4` (path and sha256 in `dev/agent-workflow/evidence/v016-rc1-release-package/c2-presence.txt`) |
+| **E3** | **OPT-IN EXPERIMENTAL** | **PD-39 Gap 2: accepted-but-not-claimed wake** | An accepted-but-not-claimed wake **no longer strands** on the current tree: after restart the request stays **pending**, is counted (`pendingControlCount: 1`), remains readable by id, and an operator `team.resolveControl` allow is accepted — zero consumption, zero execution, no duplicate. A **decided** invocation that dies **before consumption** is still **terminally abandoned at boot** with the typed fact `CONTROL_REQUEST_ABANDONED` (reason `invocation-abandoned`), with no revival; **recovery is re-issue**, never resolve, and there is **no automatic redelivery**. The promise is therefore *delivered, decidable, or terminally abandoned with a typed fact and an operator-visible re-issue path* — never "every accepted wake is delivered or decidable". | `DEV-LIVE` (2 agreeing runs of the window + 1 run of the terminal trigger) | `dev/agent-workflow/evidence/pd39-inbox-window-20261112/README.md`; `…/run-1/`; `…/run-2/`; `…/run-3-crash-after-allow/`; `…/two-run-agreement.txt`; `docs/runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md`; `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` (PD-39 row) |
+
+### 11.3 The boundary, stated once
+
+A surface is **STABLE** only if it is in §11.1. Everything in §11.2 — and anything reached only after
+`alpha6ReviewRouting: true` — is **OPT-IN EXPERIMENTAL**, including surfaces §2.2 labels experimental
+(Officer plane, review wake, Sticky Stop, v5 blueprints, the F-2 allocation limit, the F-3 coverage of
+"Officer approval"). Presence in the tarball is not promotion. No row in §11.1 is a `V@B`, a matrix grade
+or a `CANDIDATE-C2` claim except where the row says so.
+
+### 11.4 What these notes MUST NOT be read to claim
+
+These are not omissions; they are **refusals recorded by the adjudicators**. A release built on these
+notes may not imply any of them.
+
+| # | must not be claimed | why | where the refusal is recorded |
+| --- | --- | --- | --- |
+| **NC1** | **Rates, reliability or stability beyond "two agreeing worlds"** | `n=2` is two existences that agree, not a probability. | `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md` ("What neither adjudication proves"); `…/C2-B.json` `refusedClaims` |
+| **NC2** | **Real vendor-model behaviour** | The model is the **deterministic in-tree mock**; everything else (Host, OS sandbox, ledger, tarball) is real. | `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md`; `tests/kits/a1-bash-governance-20261112/README.md` |
+| **NC3** | **OS-level network isolation** | The network axis is **one admission-layer boolean**, not an OS or per-host policy. Every A1 run records `osLevelNetworkIsolationClaimed: false`. | `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md`; `tests/kits/a1-bash-governance-20261112/README.md`; §4.1 above |
+| **NC4** | **Any upgrade protocol** | None exists: no version negotiation, no data migration, no compatibility contract. Rollback is **re-installing the previous tarball** (byte-exact swap measured); the `0.1.5 → 0.1.6` path was **never measured**. | `dev/agent-workflow/evidence/packaging-v016-20261112/README.md` §7; `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md` |
+| **NC5** | **PD-42's approved-`bash`-out-of-lane conjunction** | The v5 gate is fixed and the joint composition runs, but **the ceiling on an approved Alpha.6 `bash` call is unmeasured** (`J04`'s `realmTerminalFacts=0` in every run). The A1 record measures governance, not that conjunction. | `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` (PD-42 row); `dev/agent-workflow/evidence/joint-acceptance/README.md`; `dev/agent-workflow/evidence/candidate-v0.1.6-3/C2-B.json` `refusedClaims`; §4.13 above |
+| **NC6** | **The operator re-issue path as a measured path** | Only **resolve-by-id** was measured for the accepted-but-not-claimed window. The runbook states the procedure; the procedure itself was not exercised in the record. | `dev/agent-workflow/evidence/candidate-v0.1.6-3/ADJUDICATION.md` (C2-B non-claims); `docs/runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` |
+| **NC7** | **`Goal ∧ plane-takeover ∧ A6-off`** | The A1 kit has no Goal arm and drives no goal rounds; the nearest A6-off goal evidence does not mount the plane takeover. This three-way conjunction is **unmeasured**. | `dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md` ("A5 Goal path with A6 off — NOT MEASURED by this kit") |
+
+### 11.5 Candidate binding of every `CANDIDATE-C2` line above
+
+C2 records are **bound to one SHA**. The two records cited in §11.2 (E1, E2) were produced for
+**`cand-v0.1.6-3` @ `17a24e2c302cd991c3ba495ae29576b58a6c1069`** against
+`dev/engineering/candidates/cand-v0.1.6-3.json`, and they are valid **for that candidate only**. They do
+**not** transfer to `cand-v0.1.6-4` (`0d31f9121…`) or to any later commit, and no sentence here should be
+read as transferring them.
+
+The release package is assembled against `cand-v0.1.6-4`; its frozen identity, manifest digest,
+`verify-candidate` output and the current state of its C2 pair are recorded in
+[`V016-RC1-GO-NO-GO.md`](./V016-RC1-GO-NO-GO.md) and in
+`dev/agent-workflow/evidence/v016-rc1-release-package/`. Whether that candidate may be released is the
+owner's decision on that document, not a claim of these notes.
+
+### 11.6 Dated correction (2026-11-13) — PD-43 is fixed on this tree; four older sentences are superseded
+
+This is an **append-only correction**, not a rewrite. Four statements earlier in this file still say
+PD-43 is open or unfixed, and on this tree that is **false**:
+
+- the §4.10 table row that says "that is register PD-43, open";
+- the §4.10 F-3 erratum that says `assigned-officer-facts.ts:444` requires `RUNNING` and that the fix is
+  "not claimed fixed here";
+- §4.15 item 15 ("open as PD-43" / "not fixed" / "not yet implemented");
+- the F-5 re-measured block that says the gate at line 444 is "still open".
+
+**What is true today.** PD-43 is **FIXED by #738** (`76293c79f`): the durable **pending approval leg**
+is the subject of validity, the live owner lifecycles are `CREATED` / `RUNNING` / `SETTLED`, and
+archived/disposed/unknown owners, decided/abandoned legs and identity/generation/revision/ordinal
+mismatches still refuse fail-closed. The gate now lives at
+`packages/runtime/alpha6/assigned-officer-facts.ts:341` / `:495` with the typed downstream sentence at
+`packages/runtime/control/service.ts:3059`; **line 444 no longer contains that gate**. The register row
+carries the same dated correction and its anchors resolve; C2-B independently re-tested it (48/48
+shipped tests + 18/18 adversarial probe, including two positive controls) and recorded the notes' stale
+sentences as finding **A10**. The four statements above are kept as history and are **superseded by this
+paragraph**; they are not to be quoted as the current state.
