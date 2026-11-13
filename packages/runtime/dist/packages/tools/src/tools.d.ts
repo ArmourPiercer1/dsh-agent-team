@@ -22,9 +22,9 @@
  * |                       | approval-flow entry point: unguarded,        |
  * |                       | idempotent over the scope identity)          |
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
- * |                       | the service's resolver role closure is the   |
- * |                       | authority; a member is never a resolver);    |
- * |                       | `decision=escalate` routes to                |
+ * |                       | authority is by SCOPE: a MEMBER only via a   |
+ * |                       | case/leg-scoped ReviewCapability, never its  |
+ * |                       | own operation; `decision=escalate` routes to |
  * |                       | `escalateApprovalLeg` (A4-PR5, PR4 duty b)   |
  * | team_list_pending_control | control service `listControlState`     |
  * |                       | (C1: the read-only Leader discovery of      |

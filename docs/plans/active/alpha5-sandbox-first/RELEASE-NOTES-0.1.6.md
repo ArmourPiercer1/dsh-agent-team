@@ -1101,10 +1101,11 @@ pointer or Required-CI line moves.
   `identityCarried=t`, and the durable decider is
   `{"instanceId":"inst-…","kind":"instance","role":"member"}`. No `resolver=officer` field is claimed
   here — neither the code nor J06 shows one.
-- **Where the text changed (documents only).** `packages/runtime/control/service.ts` and
-  `packages/tools/src/tokens.ts` (comments), `team-leader-operations` and
-  `team-blueprint-authoring` skills, `ALPHA5-SANDBOX-BACKLOG.md` §0, `PREVIEW-CONTRACT-2026-11-16.md`
-  §8, `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4, the Alpha.6 review-capability ADR, and two archived
-  plans (dated notes). The four 20260829 frozen documents are untouched.
+- **Where the text changed.** `packages/runtime/control/service.ts`, `packages/tools/src/tokens.ts`,
+  `packages/runtime/control/types.ts` and `packages/tools/src/tools.ts` (comments only; the dist mirror
+  is rebuilt in the same commit), `team-leader-operations` and `team-blueprint-authoring` skills,
+  `ALPHA5-SANDBOX-BACKLOG.md` §0, `PREVIEW-CONTRACT-2026-11-16.md` §8,
+  `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4, the Alpha.6 review-capability ADR, and two archived plans
+  (dated notes). The four 20260829 frozen documents are untouched.
 - **Round-4 C2 check item:** the documentation no longer asserts "member is never a resolver", and
   the two decision channels are stated with their boundaries.
