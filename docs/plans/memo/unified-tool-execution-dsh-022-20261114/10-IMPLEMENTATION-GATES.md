@@ -7,7 +7,7 @@
 > **发布边界**：仅在 PR #758 被合并、另行完成既定 v0.1.6 受限内部试用版冻结后，才规划下一版本的主机升级与代码迁移；此提案不更改 `AGENTS.md`、`docs/ROUTER_RULES.md`、`dev/engineering/current-authority.json`、任何 active plan、产品代码、测试基线或 PR #758。
 
 ## 1. Gate 前置
-本 PR 只有架构设计。PR #758 **当时仍 open**，在其合并并按既定程序冻结 v0.1.6 内部版前，不执行新版实施 Authority Migration。新版本固定上游 `dsh-v0.2.2-rc.3@38a6a5c...` 或实施时重新确认的更新发布 Tag + commit；**不可跟踪浮动 master**。新 Host 基线必须独立于 v0.1.6 pristine 测试目录、稳定端口和 DSH_HOME。
+本 PR 只有架构设计。PR #758 已于本轮文档审查期间合并；但在另行核实 v0.1.6 已按既定程序冻结为内部版之前，不执行新版实施 Authority Migration。新版本固定上游 `dsh-v0.2.2-rc.3@38a6a5c...` 或实施时重新确认的更新发布 Tag + commit；**不可跟踪浮动 master**。新 Host 基线必须独立于 v0.1.6 pristine 测试目录、稳定端口和 DSH_HOME。
 
 ## 2. G0–G5
 | Gate | 工作 | 成功条件 |
