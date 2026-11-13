@@ -118,9 +118,13 @@ invocation**: after the boot the Officer session is materialised with its crashe
 run loop; wake deliveries append to a queue that nothing drains, and the only observed drain was the same
 delivery attempt that the latch had already suppressed. That seam is
 `packages/runtime/src/plugin/live/agent-bindings.mjs` (`ensureLiveAgent` / `deliverReviewWake`), inside the
-**ARC-A protected centre**, and it cannot be changed under `CORE PATCH BUDGET = 0` without a named
-centre-interface override and its own crash-semantics review. That is why this lane ships the finding, the
-instrument and the register row instead of an unverified patch.
+**ARC-A protected centre**. The fix is therefore an **ARC-A centre-interface override on
+`agent-bindings.mjs`** — re-driving a restored invocation for a new pending leg — **plus its own
+crash-semantics review**; **neither is in this Preview's scope**, and `CORE PATCH BUDGET = 0` forbids
+patching the upstream/host side. That is why this lane ships the finding, the instrument and the register
+row instead of an unverified patch, and why the limit is **deferred (owner ruling 2026-11-13)**, not
+"hard": `docs/runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4 now carries a dated correction beneath its
+original table so no operator waits for a wake that does not come.
 
 ## 7. Operator meaning (what a Team owner must do today)
 

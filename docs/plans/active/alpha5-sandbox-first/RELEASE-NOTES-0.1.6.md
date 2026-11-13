@@ -948,14 +948,27 @@ assuming a governed ask is dead, then decide it with `team.resolveControl`; the 
 recovers as a side effect. **Do not** rely on `team_follow_up` as the restart remedy — it is admitted and
 produces no Officer turn for a crashed Member.
 
-**Why no fix is claimed.** Two narrow re-arm patches were implemented, unit-tested host-free and A/B
-measured live (boot reconcile of the ownerless `queued` latch; turn-end release of a `queued` latch whose
-native message is gone). Both still starved; both were **reverted uncommitted** and the attempt is recorded
-in `fixed-run1/`. The residual blocker is the recipient session's restored invocation
-(`packages/runtime/src/plugin/live/agent-bindings.mjs`, ARC-A protected centre), which cannot change under
-`CORE PATCH BUDGET = 0` without a named centre-interface override and its own crash-semantics review. The
-row's `smallest honest fix` field records both candidates and why they were insufficient — no reader should
-take this section as "a fix exists".
+**Why no fix is claimed, and why that is a deferral rather than "hard".** Two narrow re-arm patches were
+implemented, unit-tested host-free and A/B measured live (boot reconcile of the ownerless `queued` latch;
+turn-end release of a `queued` latch whose native message is gone). Both still starved; both were
+**reverted uncommitted** and the attempt is recorded in `fixed-run1/`. The residual blocker is the
+recipient session's **restored invocation** (`packages/runtime/src/plugin/live/agent-bindings.mjs`,
+ARC-A protected centre): the Officer session is materialised with its crashed invocation intact and no run
+loop, so appends are never drained. **The fix is therefore an ARC-A centre-interface override on
+`agent-bindings.mjs` — re-driving a restored invocation for a new pending leg — plus its own
+crash-semantics review** (which generation owns a re-drive, how it composes with Sticky Stop and with the
+no-redelivery rule above). **Neither the override nor that review is in this Preview's scope**; the limit
+is **deferred by owner ruling 2026-11-13**, on the same pattern applied to PD-40 — acceptable for this
+Preview only because the promise has been narrowed to what the code delivers. The row's
+`smallest honest fix` field records both candidates and why they were insufficient; no reader should take
+this section as "a fix exists" or as "a fix is scheduled for this Preview".
+
+**Where the narrowed promise lives (so an operator cannot be misled).**
+`docs/runbooks/REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` §3.4 now carries a dated correction **beneath** its
+original table (kept verbatim): after a cold boot a **new** ask gets no `[team-review-wake]` and no
+reviewer turn, `team_follow_up` is admitted and starts no turn, the leg stays `pending` and resolvable by
+id, and the operator must go straight to `team_list_pending_control` + `team_resolve_control`. That
+correction, not this appendix, is the operative instruction for the next operator.
 
 **Boundaries.** No `V@B`, no `CANDIDATE-C2`, no matrix grade, no candidate/tag/CI movement, no Authority
 pointer change, `:3080` untouched. n = 3 reproducing runs + 2 controls, one composition, one host pin

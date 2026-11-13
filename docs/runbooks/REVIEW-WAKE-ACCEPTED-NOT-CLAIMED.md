@@ -156,6 +156,39 @@ Check, in order, on the public ledger page for the Team root:
 A re-issued leg that stops before the consumption row is a **new** incident; do not "fix" it by
 re-resolving the old request.
 
+> **2026-11-13 correction (append-only; the table above is kept exactly as written).** The middle row
+> is **wrong after a cold boot**. Measured on a real Host (SIGKILL with a review-wake turn open and its
+> wake-intent row live, then a create-or-open restart; evidence
+> `dev/agent-workflow/evidence/a6-cold-wake-20261113/README.md`, register **PD-44 `COLD-WAKE`**):
+> a **new** ask minted *after* the restart — never claimed by the dead process — is durably `pending`
+> and readable by id, but **no `[team-review-wake]` names it** (45 s observation, wake-intent directory
+> empty), `team_follow_up` on the crashed Member is **admitted** (`status 200`, no refusal) and starts
+> **no** Officer turn, and **only** `team.resolveControl` ends it (`decidedBy: operator`). Two clean
+> reproductions (45 157 ms / 45 160 ms); two controls where no wake row was live at the kill got the
+> **Officer** to decide in 251 ms / 252 ms. The discriminator is exactly "a live wake-intent row at
+> the kill". **So, today, after a cold boot:** expect no wake and no reviewer turn; the leg is
+> `pending` and resolvable, and the `team_list_pending_control` clause is the **only** one that holds.
+> **Do not wait for a wake that never comes.**
+>
+> Why (four layers, each believing it is healthy, all `file:line`):
+> (1) `packages/runtime/alpha6/wake-intent.ts:144` — boot **adopts** the persisted row as `queued` and
+> emits no delivery effect; (2) `packages/runtime/review-wake/coordinator.ts:300-302` — a
+> changed-fingerprint `scan-result` on `queued` only moves the baseline ("it survives a work change and
+> the turn re-reads authority itself"), so no `deliver-wake`; (3) `packages/runtime/alpha6/wake-dispatch.ts:370-372`
+> — that latch is released **only** when `inbox.has(queuedWakeId)` is false, and the crashed turn's
+> message is still listed (`has` answers presence, not liveness), so "No second delivery" with no
+> failure and no fact; (4) `packages/runtime/src/plugin/root.ts:2701-2708` and `:2717` — the claim
+> event already fired pre-crash, and `turn-end` returns early for `queued`, so the post-turn rescan
+> never re-reads the ledger.
+>
+> **This is a disclosed experimental limit, deferred (owner ruling 2026-11-13), not a step you can
+> work around.** The fix requires an **ARC-A centre-interface override** on
+> `packages/runtime/src/plugin/live/agent-bindings.mjs` (re-driving a restored invocation for a new
+> pending leg) **plus** its own crash-semantics review; neither is in this Preview's scope. Tracked as
+> **PD-44**; two narrower re-arm patches were measured and falsified (register row and evidence README
+> §6 record them), so do not expect a one-line fix. **Operator action: go straight to
+> `team_list_pending_control` + `team_resolve_control`.**
+
 ---
 
 ## 4. What NOT to do
