@@ -118,3 +118,20 @@ active` 陈述最后一次重读观察到的矛盾，两者同时出现时由用
 - 视图入口：`packages/client/src/ui/TeamMembers.tsx`（`data-member-stop` /
   `data-leader-stop`）；组件测试 `packages/client/test/team-member-stop.client.spec.tsx`。
 - 机制来源：PD-30（#679）的 `interrupt` + durable `goals.pause`；本文件不改变该机制。
+
+## 6. 2026-11-13 追加：本文的适用范围，以及 Alpha.6 review-wake 的 Sticky Stop（PD-40）
+
+**本文只写"按成员的目标 Stop"**（§1 的两个入口：*停止此成员* 与 *停止 Leader 当前回合*）。它不描述、
+也不承诺 **Alpha.6 审批路由面的 Sticky Stop**——那是**另一个** stop：它保护的是某个 reviewer 会话的
+**review wake**，不是目标续轮。
+
+**那个 stop 的范围是 latch-scoped，不是 session-scoped**（PD-40，owner 2026-11-13 裁决：作为 v0.1.6
+Preview 的**opt-in 实验性限制**接受；完整 session-scoped 持久标记**推迟**，不在本 Preview 承诺）。
+机制原话：**只有在该 reviewer 会话存在 review wake latch 时**，durable 标记才会被写入；**没有 live wake
+的 Stop 什么也不写、也不会被持久化**，下一次 review wake 仍可能激活那个已被"停止"的 reviewer。
+
+**因此，不要把本文 §3 的"停止能活过一次冷启动"外推到 review wake 上**：那句话成立的范围是**目标**的
+durable `pause`（PD-34 实测），不是 review-wake 标记。完整口径见 `RELEASE-NOTES-0.1.6.md` §1 / §2.2 /
+§4.7 与本文档同一提交里的措辞更正记录（「Appended 2026-11-13 — PD-40 wording correction」）；
+登记行 = `docs/plans/active/alpha5-sandbox-first/PRODUCT-DEBT-REGISTER.md` 的 **PD-40 (STICKY-LATCH)**。
+本节只追加，不改动 §1–§5 的任何既有行文，也不改变任何产品行为。

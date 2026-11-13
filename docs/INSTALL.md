@@ -549,6 +549,56 @@ capabilities:
   authoring 指南的审批环约定）。
 - **闭合范围限定**：native 审批后执行闭合=限明确安装配置（cordis.patch.yml §3.2 takeover 行），不代表全工具总验收。
 
+## 3.6 配置前置条件（2026-11-13 追加，只追加）——受治 `bash` 需要 plane-takeover 装配
+
+> **这是 Alpha.5 Preview 的一条正式产品配置前置条件，不是"某条旧测试过期了"。** 本节只追加，
+> 不重写 §3.5。以下三句是可据以配置、可据以排障的事实。
+
+**（1）自 #730 起，模型可见的 `bash` 是宿主钉死定义，它的执行入口需要被发布的 admission edge。**
+#730（`d8490f74d`，NATIVE-BASH-PRESERVATION，2026-11-12 合入）把模型可见的 `bash` 换成宿主钉死的
+`@deepseek-ai/dsh-tool-bash-persistent` 定义，执行入口改为"先经治理面裁决与一次性消费，再调用原生
+`execute`"（`packages/runtime/src/plugin/live/native-bash-tool.mjs`）。该入口在调用时查找由治理工具面
+**发布**的 admission edge；**没有发布就不执行**，抛类型化拒绝
+`A5_NATIVE_ADMISSION_UNAVAILABLE`（`native-bash-tool.mjs:97-102`）。
+
+**（2）那条 edge 只在挂载了 `teamToolPlane` 的装配里发布。** 发布点在
+`packages/runtime/src/plugin/live/agent-bindings.mjs:3390`，而它位于
+`agent-bindings.mjs:3135` 的条件块内——**行 config 带 `teamToolPlane` 才进入，不带就不进入**。
+所以正确的说法是：
+
+> **受治 `bash` 在这一版里只在 plane-takeover 组合（挂载 `teamToolPlane`）上可用。**
+> 只装配了受治 realm、没有 `teamToolPlane` 的组合（Alpha.5-only 组合）**每一次**受治 `bash` 调用都以
+> `A5_NATIVE_ADMISSION_UNAVAILABLE` fail-closed 结束，**零执行**。
+
+**（3）运营者升级须知（#730 之前配置的组合）。** 如果你的 `cordis.patch.yml` 是在 #730 之前写的——
+只挂受治 realm（`read`/`write`/`edit`/`grep`/`glob`/`web_*`/`skill`/`present` 都正常）、**没有**
+`teamToolPlane` 行——那么升级到这个包之后，**你的受治 `bash` 会 typed-shut**：每次调用
+`A5_NATIVE_ADMISSION_UNAVAILABLE`，什么都不会执行，也不会开审批请求；在你按 §3.5 挂上 takeover 之前
+它一直是这个状态。这不是权限"更严"，而是**不可用**：不会被批准，也不会被执行。#730 之后同一组合的
+重新测量里其他受治面照常（`a5sf-pd33-preview-e2e` 的 16/19 中只有 shell 三例 REFUTED），所以缺的是
+**bash 的装配前置条件**，不是"治理整体坏了"。
+
+要让受治 `bash` 可用，两件事同时成立（缺一即 typed-shut 或 ask 不到）：
+
+1. **§3.5 的完整 takeover 行 config**：`config.teamToolPlane`（`realmId`、`fsInstance`、
+   `confinedProvider` 信任对三件套），不是 §3.5 的 read-only 最小配方；
+2. **blueprint 的 `capabilities.permissions` 给 `bash` 一条 ask lane**（`{ tool: bash,
+   resource: { kind: any } }`），否则即使 edge 已发布也没有审批面可走。
+
+**§3.5 里一句需要按本节读的话（勘误，原文保留不改）**：§3.5 的「缺省不挂平面……此形态下原生
+`bash` 在治理世界保持 dispatch 期 `BINDING_UNVERIFIED` 拒绝」描述的是 **#730 之前**的装配路径。
+#730 之后，缺 plane 的拒绝点前移到 admission edge 缺失，typed 码是
+`A5_NATIVE_ADMISSION_UNAVAILABLE`（dispatch-time Binding 校验仍在，但它不再是这条路径的第一道门）。
+
+**证据出处（实测，可复跑）**：`dev/agent-workflow/evidence/native-bash-preservation/README.md`
+（P6c：无 published edge ⇒ typed 拒绝、0 执行）；`dev/agent-workflow/evidence/a5sf-pd33-preview-e2e/README.md`
+（2026-11-13 节：16/19 ×2、`stablyRefuted=3`，并说明 19/19 是 #730 之前的仪器）；#744
+（`45132a119`，PD33-STALE-INSTRUMENT：把旧 arm 标为 SUPERSEDED 而非回归，承载它的重测在
+`tests/kits/a1-bash-governance-20261112/` 与 `tests/kits/joint-acceptance-20261111/` 的 plane-takeover
+组合里）；`dev/agent-workflow/evidence/a6off-plane-takeover-20261113/README.md`（plane-takeover 组合上
+A6-off 的 A1 七条 7/7 ×2）。`docs/runbooks/` 目前没有覆盖这条升级路径的 runbook（现存只有
+review-wake 一条），所以本节就是运营者入口；补一条 runbook 是后续事项，不是本节的条件。
+
 ## 4. 真实模型
 
 - `staticModel` 必须指向目标机器上**真实可用**的 provider/model，且该 DSH 实例已配置
