@@ -1,0 +1,42 @@
+{
+  "row": {
+    "sequence": 57,
+    "factType": "control-request-recorded",
+    "requestId": "ctrl-044g7170k9tv6m05fyd4x1g0",
+    "kind": "leader-approval",
+    "toolName": "bash",
+    "actionName": "parameter-permission",
+    "targetInstanceId": "inst-1125hit118sl",
+    "correlation": "call-c1-1wdzf7fl",
+    "approvalCaseId": "case-1g9lvki18yxvb702l1flw081",
+    "legOrdinal": 1,
+    "reviewAuthority": "leader",
+    "operationOwnerTemplateId": "w-deny",
+    "operationToolOwner": "dsh-agent-team",
+    "operationToolName": "bash",
+    "operationToolDefinitionIdentity": "def#50",
+    "authorityGeneration": 0,
+    "blueprintContentHash": "sha256:08f6af87c38c9da3ff60fa09a1c7890cc3b3d6545a06cf22bdbb4f0e274760d7",
+    "blueprintRevision": "1",
+    "perEffectRequiredAuthorities": [
+      "leader"
+    ],
+    "createdAt": "2026-11-12T22:47:12.768Z"
+  },
+  "decision": {
+    "sequence": 58,
+    "factType": "control-decision-recorded",
+    "requestId": "ctrl-044g7170k9tv6m05fyd4x1g0",
+    "decision": "deny",
+    "decider": {
+      "instanceId": "inst-0wjp7t714t6f",
+      "kind": "instance",
+      "role": "member"
+    },
+    "createdAt": "2026-11-12T22:47:12.951Z"
+  },
+  "executions": [],
+  "consumptions": [],
+  "file": null,
+  "toolRefusal": "Error: the approval was denied"
+}

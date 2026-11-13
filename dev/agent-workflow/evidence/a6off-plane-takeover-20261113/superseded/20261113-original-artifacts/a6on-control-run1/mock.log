@@ -1,0 +1,53 @@
+mock: listening on 127.0.0.1:3498
+mock: 1 [messages] text reply (18 chars): "A1 bash governance"
+mock: 2 [messages] text reply (12 chars): "C1_DISC_DONE"
+mock: 3 [messages] text reply (12 chars): "A1_DISC_DONE"
+mock: 4 [messages] text reply (18 chars): "A1 bash governance"
+mock: 5 [messages] tool-call reply: bash
+mock: 6 [messages] text reply (18 chars): "A1 bash governance"
+mock: 7 [messages] tool-call reply: team_list_pending_control
+mock: 8 [messages] tool-call reply: team_resolve_control
+mock: 9 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 10 [messages] tool-call reply: team_list_pending_control
+mock: 11 [messages] tool-call reply: team_resolve_control
+mock: 12 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 13 [messages] tool-call reply: bash
+mock: 14 [messages] tool-call reply: team_list_pending_control
+mock: 15 [messages] tool-call reply: team_resolve_control
+mock: 16 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 17 [messages] tool-call reply: team_list_pending_control
+mock: 18 [messages] tool-call reply: team_resolve_control
+mock: 19 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 20 [messages] tool-call reply: bash
+mock: 21 [messages] tool-call reply: team_list_pending_control
+mock: 22 [messages] tool-call reply: team_resolve_control
+mock: 23 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 24 [messages] tool-call reply: team_list_pending_control
+mock: 25 [messages] tool-call reply: team_resolve_control
+mock: 26 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 27 [messages] tool-call reply: bash
+mock: 28 [messages] tool-call reply: team_list_pending_control
+mock: 29 [messages] tool-call reply: team_resolve_control
+mock: 30 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 31 [messages] tool-call reply: team_list_pending_control
+mock: 32 [messages] tool-call reply: team_resolve_control
+mock: 33 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 34 [messages] text reply (10 chars): "A1_W1_DONE"
+mock: 35 [messages] text reply (12 chars): "A1_NOOP_DONE"
+mock: 36 [messages] tool-call reply: bash
+mock: 37 [messages] text reply (18 chars): "A1 bash governance"
+mock: 38 [messages] tool-call reply: team_list_pending_control
+mock: 39 [messages] tool-call reply: team_resolve_control
+mock: 40 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 41 [messages] tool-call reply: team_list_pending_control
+mock: 42 [messages] tool-call reply: team_resolve_control
+mock: 43 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 44 [messages] text reply (10 chars): "A1_W2_DONE"
+mock: 45 [messages] text reply (12 chars): "A1_NOOP_DONE"
+mock: 46 [messages] tool-call reply: bash
+mock: 47 [messages] text reply (18 chars): "A1 bash governance"
+mock: 48 [messages] tool-call reply: team_list_pending_control
+mock: 49 [messages] tool-call reply: team_resolve_control
+mock: 50 [messages] text reply (15 chars): "A1_OFFICER_DONE"
+mock: 51 [messages] text reply (12 chars): "A1_DENY_DONE"
+mock: 52 [messages] text reply (12 chars): "A1_NOOP_DONE"

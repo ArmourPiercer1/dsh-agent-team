@@ -3,17 +3,17 @@
   "value": {
     "status": "executed",
     "action": "delegate",
-    "rootSessionId": "session-a1-root-2026-11-12T19-53-43-h0-r6cb5d9",
+    "rootSessionId": "session-a1-root-2026-11-12T22-45-45-h0-rc2e734",
     "callerRole": "leader",
     "effect": {
       "kind": "work-admitted",
-      "instanceId": "inst-0622sgb1p5wa",
+      "instanceId": "inst-1skhf7309lzt",
       "fromLifecycle": "CREATED",
       "lifecycleCommitted": true,
       "sequence": 7,
       "settled": false,
       "workStatus": "admitted"
     },
-    "requestToken": "a1-delegate-w1-2026-11-12T19-53-43-h0-r6cb5d9"
+    "requestToken": "a1-delegate-w1-2026-11-12T22-45-45-h0-rc2e734"
   }
 }

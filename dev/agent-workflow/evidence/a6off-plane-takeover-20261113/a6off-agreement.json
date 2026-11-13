@@ -1,7 +1,7 @@
 {
   "schema": "a1-bash-governance-agreement/1",
-  "run1": "a6off-run1",
-  "run2": "a6off-run2",
+  "run1": "dev/agent-workflow/evidence/a6off-plane-takeover-20261113/a6off-run1",
+  "run2": "dev/agent-workflow/evidence/a6off-plane-takeover-20261113/a6off-run2",
   "verdictsAgree": true,
   "detailsAgree": true,
   "counts": {

@@ -8621,3 +8621,30 @@ f5-two-asks 证据未合并），本轮按规则修好：anchor 跟到新法、�
 **governed bash 的 A6-off 声明今天无法从 pd33 签出**——只有在 plane-takeover 组合上才有意义，而现有
 plane-takeover 仪器（A1 kit）把 `ALPHA6_OFFICER = true` 钉死，**没有 A6-off 的 plane-takeover 仪器**。
 这是残余测量缺口，必须如实写进报告，不能拿 pd33 的三例 REFUTED 说成「A6 关闭时 bash 行为不变」。
+
+---
+
+### 2026-11-13 — A6-off × plane takeover：artifact 重切（C2-B 拒绝的修复；DEV-LIVE）
+
+**1. 缺陷（C2-B 独立裁决，按 frozen kit 复测）**：PR #745 的**断言**在 frozen kit 下为真，但提交的
+**artifact** 不是该仪器在树中的输出：(a) `composition-a6-{on,off}/a1-composition.json` 的
+`blueprint` 是旧 schema `{sha256: null, text: ""}`，README 引用的
+`blueprint.normalizedSha256=8478f088…` 不在文件里；(b) committed ledger 实际是
+**6× `reviewAuthority="leader"` + 5× 字段缺席**，README 却写「每个请求都是 leader」；
+(c) 目录里有 frozen kit **不会写**的 `a1-composition.patch.yml`（来自另一版未提交仪器）。
+
+**2. 处理**：旧 artifact 全部 `git mv` 到 `superseded/20261113-original-artifacts/` 并加 dated `NOTE.md`
+（只追加，不静默删除）；用**树中 frozen kit、零改动**重跑 4 次（A6-off ×2、A6-on ×2，fresh
+`tests/homes/c1-smoke-*`，ports 3191–3194/3496–3499，host `639ed01539`）；composition artifact 改为
+**run emission**（kit 在 run 末尾写 `a1-composition.json`，blueprint 非空），不保留 `.patch.yml`；
+`--print-composition`（host-free）只作 patch 摘要 cross-check，其 blueprint 按设计为空，已在 README 披露。
+README 的 `reviewAuthority` 句改为实测 6/5 拆分并解释为 `team-tool-execute` 第二腿不带该字段、11 个
+decision 全部 `decider.role="leader"`。
+
+**3. 顺带披露**：`PD33-SUPERSEDED` 的 `doesNotMatch(DRIVER, /teamToolPlane\s*:/)` 是**源码文本 tripwire**，
+挡得住明显的静默 plane mount，挡不住 computed key 或多行 `capabilities` 块；limit 写进
+`tests/world-factory/drivers/a5sf-pd33-preview-e2e/README.md`（dated）。pin **未弱化**。
+
+**4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
+`true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
+Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。

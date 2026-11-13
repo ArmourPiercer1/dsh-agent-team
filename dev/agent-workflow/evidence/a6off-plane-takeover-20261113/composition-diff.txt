@@ -1,5 +1,5 @@
---- composition-a6-on/a1-composition.patch.yml	2026-11-13 03:40:56.931283198 +0800
-+++ composition-a6-off/a1-composition.patch.yml	2026-11-13 03:40:56.931283198 +0800
+--- composition-a6-on/a1-composition.json (patch.text)
++++ composition-a6-off/a1-composition.json (patch.text)
 @@ -49,8 +49,7 @@
                minAbiVersion: 3
          a5sfGovernedRealm: true
@@ -8,5 +8,5 @@
 -        alpha6WakeIntentPath: "<DSH_HOME>/alpha6-wake-intents"
 +        alpha6ReviewRouting: false
      - id: "p6t6-team-tools"
-       name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-plane-takeover-20261113/packages/tools/harness/plugin.mjs"
+       name: "file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/a6off-evidence-refresh-20261113/packages/tools/harness/plugin.mjs"
      - id: "preset-a5sf-governed-member"
