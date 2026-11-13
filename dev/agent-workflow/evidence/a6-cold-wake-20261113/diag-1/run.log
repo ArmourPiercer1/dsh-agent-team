@@ -1,0 +1,19 @@
+[2026-11-13T12:01:26.846Z] A6 cold-wake — stamp 2026-11-13T12-01-26-h0-racd535
+[2026-11-13T12:01:26.846Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113
+[2026-11-13T12:01:26.846Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T12:01:26.847Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/dev/agent-workflow/evidence/a6-cold-wake-20261113/diag-1
+[2026-11-13T12:01:26.847Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T12:01:26.847Z] mode: cold-wake | a6-on (alpha6ReviewRouting: true)
+[2026-11-13T12:01:26.959Z] sandbox backend in use: full (usable=true)
+[2026-11-13T12:01:28.461Z] ports: host=3193 mock=3499
+[2026-11-13T12:01:33.472Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T12:01:33.479Z] mock model listening on 3499
+[2026-11-13T12:01:41.152Z] host booted at http://127.0.0.1:3193; row ready — toolCount=15
+[2026-11-13T12:01:41.152Z] ── L0: discovery ──
+[2026-11-13T12:01:41.575Z] discovery surface=32 tools; deny list=11
+[2026-11-13T12:01:41.924Z] CW team-create {"ok":true}
+[2026-11-13T12:01:42.160Z] CW members-created {"officer":"inst-0i9hx0g18f0q","officerSession":"session-team-child-bc10ee511d6a09a1ac6aa2956b0caa1b","worker":"inst-0s1gsnc0pnwu"}
+[2026-11-13T12:01:42.215Z] CW pre-crash-delegate {"status":200}
+[2026-11-13T12:04:12.304Z] teardown: stopping host + mock
+[2026-11-13T12:04:17.309Z] --keep: world retained at /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/tests/homes/c1-smoke-2026-11-13T12-01-26-h0-racd535
+[2026-11-13T12:04:17.310Z] VERDICT PASS

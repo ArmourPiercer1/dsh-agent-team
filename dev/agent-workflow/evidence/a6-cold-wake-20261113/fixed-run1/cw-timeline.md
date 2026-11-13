@@ -1,0 +1,22 @@
+| at | phase | detail |
+| --- | --- | --- |
+| 2026-11-13T12:37:07.375Z | team-create | {"ok":true} |
+| 2026-11-13T12:37:07.605Z | members-created | {"officer":"inst-1a3aiqd0p8s1","officerSession":"session-team-child-f7d3a499be1cf79e9ed6d9543ce54650","worker":"inst-0ijegnl15rzd"} |
+| 2026-11-13T12:37:07.660Z | pre-crash-delegate | {"status":200} |
+| 2026-11-13T12:37:07.759Z | pre-crash-bash-call | {"callId":"call-c1-pn4a4hzp"} |
+| 2026-11-13T12:37:07.860Z | pre-crash-request | {"requestId":"ctrl-1uxcwvb1kj0y3212exlmx1bh","actionName":"parameter-permission"} |
+| 2026-11-13T12:37:08.062Z | pre-crash-decision | {"requestId":"ctrl-1uxcwvb1kj0y3212exlmx1bh","decider":{"instanceId":"inst-1a3aiqd0p8s1","kind":"instance","role":"member"},"wakeTurns":3} |
+| 2026-11-13T12:37:28.964Z | kill-point | {"point":"after-decision","consumed":null,"exec":null} |
+| 2026-11-13T12:37:29.015Z | sigkill | {"dead":true,"seqAtKill":13,"wakeFilesAtKill":["wake-525c0d79.json"]} |
+| 2026-11-13T12:37:31.131Z | cold-boot | {"port":3194,"seq":13} |
+| 2026-11-13T12:37:43.135Z | recovery-settled | {"wakeFiles":1,"seq":13} |
+| 2026-11-13T12:37:43.135Z | recovery-wake-turns | {"count":0} |
+| 2026-11-13T12:37:43.259Z | follow-up | {"status":200,"refusal":null} |
+| 2026-11-13T12:38:43.409Z | fresh-member | {"instanceId":"inst-0cvrzwn06atq","refusal":null} |
+| 2026-11-13T12:38:43.474Z | post-restart-delegate | {"status":200,"refusal":null} |
+| 2026-11-13T12:38:43.575Z | new-bash-call | {"callId":"call-c1-txwp281o","vehicle":"fresh Member delegate (follow_up was admitted but started no turn in 60 s)"} |
+| 2026-11-13T12:38:43.676Z | new-request-minted | {"requestId":"ctrl-09gjhnm1jow1ov0x4nsc80vy","actionName":"parameter-permission"} |
+| 2026-11-13T12:38:43.927Z | post-restart-wake-turn | {"seq":18,"namesNewRequest":false,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-1a3aiqd0p8s1:1:a6wake%3Av1%3A1%3A1eff6c75"} |
+| 2026-11-13T12:38:43.927Z | wake-intent-dir-changed | {"files":[]} |
+| 2026-11-13T12:39:28.839Z | window-end | {"decided":false,"decider":null,"newWakeTurns":0} |
+| 2026-11-13T12:39:28.880Z | operator-resolve | {"status":200,"code":null} |

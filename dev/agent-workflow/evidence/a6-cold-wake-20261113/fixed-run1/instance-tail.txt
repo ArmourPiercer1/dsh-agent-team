@@ -1,0 +1,40 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3194/?token=bm2dYwsQUplr6dlsvBR-4F0dT-7bzRVKefTb6A9f_nE
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0ijegnl15rzd-native-bash:hexec:nb-1794573427549-669324693-1 approvalCaseId=tadm:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-0ijegnl15rzd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0ijegnl15rzd-native-bash:hexec:nb-1794573427549-669324693-1 grantId=grant:1b89b4656c4b0d1af48245a5da19a561 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0ijegnl15rzd-native-bash:hexec:nb-1794573427549-669324693-1 grantId=grant:1b89b4656c4b0d1af48245a5da19a561 caseId=tadm:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-0ijegnl15rzd:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3194/?token=FYDohp4DCwFaB_pyLC1GTiIILz6z1qh2tvaV-4liYxk
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 106ms — the connection service appeared after the mount step)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=leader
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5ptc: census-boot root=session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-20261113/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=w-probe
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,pwsh] realm=c1-plane-realm-2026-11-13T12-36-52-h0-rb6a6cb
+[dsh-agent-team] a5sf-bind: realm-forwarded names declared=[bash,read,write,edit,read_image]
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0cvrzwn06atq-native-bash:hexec:nb-1794573523348-1290528280-1 approvalCaseId=tadm:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-0cvrzwn06atq:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0cvrzwn06atq-native-bash:hexec:nb-1794573523348-1290528280-1 grantId=grant:39f7c91b006a901af69d191c5807a943 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0cvrzwn06atq-native-bash:hexec:nb-1794573523348-1290528280-1 grantId=grant:39f7c91b006a901af69d191c5807a943 caseId=tadm:session-a1-root-2026-11-13T12-36-52-h0-rb6a6cb:inst-0cvrzwn06atq:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0

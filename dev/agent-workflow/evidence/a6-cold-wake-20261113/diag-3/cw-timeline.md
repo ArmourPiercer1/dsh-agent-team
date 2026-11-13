@@ -1,0 +1,21 @@
+| at | phase | detail |
+| --- | --- | --- |
+| 2026-11-13T12:08:05.291Z | team-create | {"ok":true} |
+| 2026-11-13T12:08:05.539Z | members-created | {"officer":"inst-1cgn8em1kdth","officerSession":"session-team-child-2a2000fee91f2f5578f9c2e033b83464","worker":"inst-1ygqkx60op80"} |
+| 2026-11-13T12:08:05.590Z | pre-crash-delegate | {"status":200} |
+| 2026-11-13T12:08:05.691Z | pre-crash-bash-call | {"callId":"call-c1-9o8rz3pz"} |
+| 2026-11-13T12:08:05.792Z | pre-crash-request | {"requestId":"ctrl-1gbo0at1d5zflk03by1y70tz","actionName":"parameter-permission"} |
+| 2026-11-13T12:08:05.993Z | pre-crash-decision | {"requestId":"ctrl-1gbo0at1d5zflk03by1y70tz","decider":{"instanceId":"inst-1cgn8em1kdth","kind":"instance","role":"member"},"wakeTurns":3} |
+| 2026-11-13T12:08:06.896Z | kill-point | {"point":"after-decision","consumed":null,"exec":null} |
+| 2026-11-13T12:08:06.947Z | sigkill | {"dead":true,"seqAtKill":13,"wakeFilesAtKill":[]} |
+| 2026-11-13T12:08:09.062Z | cold-boot | {"port":3193,"seq":13} |
+| 2026-11-13T12:08:21.065Z | recovery-settled | {"wakeFiles":0,"seq":13} |
+| 2026-11-13T12:08:21.065Z | recovery-wake-turns | {"count":0} |
+| 2026-11-13T12:08:21.193Z | follow-up | {"status":200,"refusal":null} |
+| 2026-11-13T12:09:21.337Z | fresh-member | {"instanceId":"inst-08w362d00le8","refusal":null} |
+| 2026-11-13T12:09:21.397Z | post-restart-delegate | {"status":200,"refusal":null} |
+| 2026-11-13T12:09:21.498Z | new-bash-call | {"callId":"call-c1-ty4g3x3o","vehicle":"fresh Member delegate (follow_up was admitted but started no turn in 60 s)"} |
+| 2026-11-13T12:09:21.599Z | new-request-minted | {"requestId":"ctrl-0gax5ul004prns1hl17s70h0","actionName":"parameter-permission"} |
+| 2026-11-13T12:09:21.850Z | post-restart-wake-turn | {"seq":18,"namesNewRequest":true,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-07-49-h0-re7f8ca:inst-1cgn8em1kdth:1:a6wake%3Av1%3A1%3A0c8c8254"} |
+| 2026-11-13T12:09:21.850Z | post-restart-wake-turn | {"seq":19,"namesNewRequest":true,"wakeToken":"review-wake:session-a1-root-2026-11-13T12-07-49-h0-re7f8ca:inst-1cgn8em1kdth:1:a6wake%3Av1%3A1%3A0c8c8254"} |
+| 2026-11-13T12:09:21.851Z | window-end | {"decided":true,"decider":{"instanceId":"inst-1cgn8em1kdth","kind":"instance","role":"member"},"newWakeTurns":2} |
