@@ -337,7 +337,9 @@ wakes up on its own. Restart work **deliberately**, in this order:
 2. **Resolve every ask you are allowed to resolve.** A `leader-approval` leg
    is closable by the **Leader** after a restart: `team_resolve_control`
    records the decision with the Leader instance as `decider` (measured:
-   `200`, no refusal, ~100 ms). Do this before briefing anyone — a leg you can
+   `200`, no refusal; the recorded decision window is **0 / 1 ms** —
+   `window.durationMs` in `run-probe-1/2`; no separate resolve-latency field
+   was recorded). Do this before briefing anyone — a leg you can
    close yourself never needs the Officer. *Guaranteed:* the same durable
    authority the leg carried before the crash; the restart does not rewrite
    the request row. *May refuse:* a kind the Leader is not a resolver for
@@ -350,7 +352,8 @@ wakes up on its own. Restart work **deliberately**, in this order:
    Then wait for the **durable** decision (`control-decision-recorded` naming
    the reviewer instance), never for reply text. *Guaranteed:* the message is
    admitted (`delivered`) and starts a real model-visible turn — measured
-   **0.3–0.6 s** to a durable decision with the Officer as `decider`.
+   **0.251 / 0.253 s** to a durable decision with the Officer as `decider`
+   (`run-lm-1/2`).
    *Needs the human:* nothing extra for this step; but if the reviewer does not
    decide, the operator `team_resolve_control` remains the fallback and that
    outcome is a finding to report.
@@ -367,8 +370,9 @@ Measured 2026-11-13 (DEV-LIVE, Alpha.6, real Host, two runs per arm; evidence
 `dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/README.md`, debt row
 PD-44 `COLD-WAKE`): after a SIGKILL with a live wake-intent row, an
 **unaddressed** leg starved for the whole 65 s window; the same class of leg
-was closed by the **Leader** in step 2, by the **Officer** 0.3–0.6 s after the
-step-3 briefing, and a `user-approval` leg fell through to the **human** with a
+was closed by the **Leader** in step 2, by the **Officer** 0.251–0.253 s after
+the step-3 briefing (`run-lm-1/2`; 0.502–0.503 s on the healthy control,
+`run-nr-1/2`), and a `user-approval` leg fell through to the **human** with a
 typed refusal for the Leader. The difference between "approvals are unreachable
 after a restart" and "a restart needs a deliberate four-step handover" is
 exactly this procedure.

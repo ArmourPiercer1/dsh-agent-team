@@ -2538,7 +2538,7 @@ export function createControlService(options) {
             if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED, `ControlService: request '${args.requestId}' already carries a durable decision (the first decision is authoritative)`, { rootSessionId: root, requestId: args.requestId });
             }
-            // Authority is by SCOPE (invariant 37 successor, #756), checked
+            // Authority is by CASE/LEG (invariant 37 successor, #756), checked
             // BEFORE the envelope: role closure for Leader/human, the case-scoped
             // capability below for a MEMBER; self-approval banned (executor != reviewer).
             const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind];

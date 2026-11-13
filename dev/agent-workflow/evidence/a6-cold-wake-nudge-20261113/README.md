@@ -97,7 +97,7 @@ team_send_message {
 
 ## 3. Authority drift — field-by-field, same leg, pre-crash vs post-restart
 
-The direct test of the hypothesis. `authorityComparison` is captured in every restart run: the **same** request row is read from the ledger before the SIGKILL (`preCrashLeg1`) and after the restart (`leg1AfterRestart`), and the **post-restart new leg** of the same class is compared next to it (`postRestartLeg2`). Values below are from `run-lm-1` and are identical in `run-lm-2`, `run-none-1/2`, `run-probe-1/2` (the `sameRowIdentical` flag is `true` in all eight restart runs).
+The direct test of the hypothesis. `authorityComparison` is captured in every restart run: the **same** request row is read from the ledger before the SIGKILL (`preCrashLeg1`) and after the restart (`leg1AfterRestart`), and the **post-restart new leg** of the same class is compared next to it (`postRestartLeg2`). Values below are from `run-lm-1` and are identical in `run-lm-2`, `run-none-1/2`, `run-probe-1/2` (the `sameRowIdentical` flag is `true` in all **ten** runs that capture `authorityComparison` — `run-lm-*`, `run-mw-*`, `run-none-*`, `run-nr-*`, `run-probe-*`; `run-ua-1/2` capture no `authorityComparison`).
 
 | field | pre-crash leg 1 | leg 1 after restart | post-restart leg 2 |
 | --- | --- | --- | --- |

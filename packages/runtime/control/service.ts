@@ -3229,7 +3229,7 @@ export function createControlService(options: ControlServiceOptions): ControlSer
           { rootSessionId: root, requestId: args.requestId },
         )
       }
-      // Authority is by SCOPE (invariant 37 successor, #756), checked
+      // Authority is by CASE/LEG (invariant 37 successor, #756), checked
       // BEFORE the envelope: role closure for Leader/human, the case-scoped
       // capability below for a MEMBER; self-approval banned (executor != reviewer).
       const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind]

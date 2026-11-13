@@ -1067,7 +1067,7 @@ window would not have been counted.
 
 ---
 
-## 13. Appended 2026-11-13 — invariant 37 successors: resolver authority is by scope (documents only; owner ruling, issue #756)
+## 13. Appended 2026-11-13 — invariant 37 successors: resolver authority is by case/leg (documents only; owner ruling, issue #756)
 
 Nothing in the §11 tables is rewritten; this section only retires a claim that no longer matches the
 product and states what is still not built. No mechanism, grade, `V@B`, candidate, tag, Authority

@@ -270,7 +270,7 @@ PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——�
 
 ---
 
-## 8. 裁决权威按 scope（append-only，2026-11-13；invariant 37 后继规则，issue #756）
+## 8. 裁决权威按 case/leg（append-only，2026-11-13；invariant 37 后继规则，issue #756）
 
 本节只澄清**文本**，不改任何判定、等级、机制或 `V@B`。撤回的是"member 永不是 resolver"这类绝对化
 表述——它从来不是冻结 Architecture 的原文：§25.1 是 Control/Approval 的目的，invariant 37 的原文是
@@ -290,7 +290,7 @@ PD-36 的"待修复"由本句取代；PD-36 作为**历史读数**保留——�
 - **发现面的真实状态**：`team_list_pending_control` **按调用者分流**——Leader 看到每个 open approval
   case 的当前 leg（含 `user-approval`，故它不是对 Leader 不可见）；被指派的 Officer 经
   `listMyReviewTasks` 看到自己的当前 leg；未被指派的 member 被 `TEAM_TOOL_PENDING_LIST_NOT_LEADER`
-  在任何读取之前拒绝。issue #756 里**已登记、未实现**的是**单一角色化、带 resolver kind/identity 的
+  拒绝，响应里**零行**（两次读取先执行、拒绝发生在响应组装处，不是读取前的门）。issue #756 里**已登记、未实现**的是**单一角色化、带 resolver kind/identity 的
   "全部请求"视图**，不是上面的按调用者列表；读本节不得得出"该全量视图已实现"，也不得得出"发现面
   没修"。
 - **证据边界**：J06 实测（`dev/agent-workflow/evidence/joint-acceptance/j05j06-run1/joint-arms.md`）

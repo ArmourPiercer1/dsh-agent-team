@@ -207,7 +207,7 @@ re-resolving the old request.
 > 3. **Brief the Officer with the pending `requestId(s)`** (`team_send_message`): was the stop caused
 >    by a trajectory problem, how should the next approval go. It is admitted (`delivered`), starts a
 >    real model-visible Officer turn, and the Officer records `control-decision-recorded` with the
->    **Officer instance** as `decider` in **0.3–0.6 s** — no operator, no wake.
+>    **Officer instance** as `decider` in **0.251 / 0.253 s** (`run-lm-1/2`) — no operator, no wake.
 > 4. **Pull the work back up by messaging the members** with a **new** unit; the message cold-resumes
 >    the killed session, starts a turn, and the new ask mints normally. (`team_follow_up` on the dead
 >    unit stays admitted-but-inert — the row above is right about that.)
@@ -225,7 +225,8 @@ re-resolving the old request.
 > Leader-only: the Leader's `team_list_pending_control` shows every open approval case at its current
 > leg (all carriers) plus legacy pending rows, so a `user-approval` leg **is** visible there; an
 > assigned Officer is routed to `listMyReviewTasks` and sees its own current pending legs; a member
-> with no assigned task is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER` before any read. Resolver
+> with no assigned task is refused with `TEAM_TOOL_PENDING_LIST_NOT_LEADER` and gets **zero rows in
+> the response** (the refusal is evaluated after the two reads — not a pre-read gate). Resolver
 > authority is by **case/leg** — the leg's currently assigned Officer (the team's single live Officer
 > instance) may decide it, and the ban is the executor deciding its own operation, not "any member";
 > a leg transferred to the Leader is no longer decidable by the former Officer. The #756 redesign

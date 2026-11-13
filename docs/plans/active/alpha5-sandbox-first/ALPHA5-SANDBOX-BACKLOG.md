@@ -53,7 +53,7 @@
     human**；`envelope-mutation` → Leader 或 human。
   - **发现面的真实状态**：`team_list_pending_control` **按调用者分流**，不是 Leader-only——Leader 看到
     每个 open approval case 的当前 leg（含 `user-approval`）；被指派的 Officer 经 `listMyReviewTasks`
-    看到自己的当前 leg；未被指派的 member 被 `TEAM_TOOL_PENDING_LIST_NOT_LEADER` 在任何读取之前拒绝。
+    看到自己的当前 leg；未被指派的 member 被 `TEAM_TOOL_PENDING_LIST_NOT_LEADER` 拒绝，响应里**零行**（两次读取先执行、拒绝发生在响应组装处，不是读取前的门）。
     #756 里**已登记、未实现**的只是**单一角色化的"全部请求 + resolver kind/identity"视图**；不要把
     本段读成"发现面已修好"，也不要读成"Officer 发现不了"。
 
