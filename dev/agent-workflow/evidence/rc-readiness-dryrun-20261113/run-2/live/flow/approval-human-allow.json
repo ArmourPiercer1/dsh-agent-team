@@ -1,0 +1,69 @@
+{
+  "resolved": {
+    "status": 200,
+    "body": {
+      "type": "server-response",
+      "rpcId": "V016PACK_R2-team.resolveControl-hnb0ylib",
+      "result": {
+        "ok": true,
+        "value": {
+          "data": {
+            "decision": {
+              "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+              "decision": "allow",
+              "decider": {
+                "kind": "human",
+                "humanId": "team-v016pack-r2"
+              },
+              "scope": {
+                "rootSessionId": "team-v016pack-r2",
+                "subject": {
+                  "kind": "instance",
+                  "instanceId": "inst-0kc39c71kemt"
+                },
+                "targetInstanceId": "inst-0kc39c71kemt",
+                "actionName": "team-tool-execute",
+                "correlation": "pa:tadm:team-v016pack-r2:inst-0kc39c71kemt:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0kc39c71kemt-bash:hexec:7775ed14-df5f-4fdf-8bb1-0afa5e8fddfa-1",
+                "toolName": "bash",
+                "operationFingerprint": "sha256:ca793ae41823fd2f45cda3a990369a962b5bf9bd70c08939dad7cf8141947749",
+                "authorityScope": {
+                  "operationClass": "tool-invoke",
+                  "matcher": {
+                    "kind": "exact",
+                    "resource": "v016-plane-realm-r2|tool:bash"
+                  }
+                }
+              },
+              "requestSequence": 14,
+              "decisionSequence": 15,
+              "createdAt": "2026-11-13T11:00:40.973Z",
+              "note": "v016 packaged acceptance human approval, escalated human leg (V016PACK_R2)"
+            }
+          },
+          "provenance": {
+            "origin": "team-remote",
+            "method": "team.resolveControl",
+            "endpoint": "team.resolveControl",
+            "contractVersion": 4,
+            "requestToken": null,
+            "projectionGeneration": null,
+            "effectSequence": null
+          }
+        }
+      }
+    },
+    "headers": {}
+  },
+  "ok": true,
+  "decision": {
+    "sequence": 15,
+    "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+    "decision": "allow",
+    "decider": {
+      "humanId": "team-v016pack-r2",
+      "kind": "human"
+    },
+    "createdAt": "2026-11-13T11:00:40.960Z"
+  },
+  "error": null
+}

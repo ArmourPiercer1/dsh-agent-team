@@ -1,0 +1,97 @@
+{
+  "teamPresent": true,
+  "memberPresent": true,
+  "memberLifecycle": "SETTLED",
+  "goalBefore": {
+    "id": "goal-963500d1-9d0e-4a03-be88-7e0ef21a6494",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794567647639,
+    "updatedAt": 1794567648148,
+    "activation": "disarmed"
+  },
+  "goalAfterRestart": {
+    "id": "goal-963500d1-9d0e-4a03-be88-7e0ef21a6494",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6
+  },
+  "goalDurableRecords": {
+    "changes": 3,
+    "goal": {
+      "id": "goal-963500d1-9d0e-4a03-be88-7e0ef21a6494",
+      "revision": 3,
+      "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+      "phase": "paused",
+      "maxGoalRounds": 6
+    },
+    "roundsStarted": 3,
+    "operation": "edit"
+  },
+  "goalPhaseSurvived": true,
+  "goalRevisionSurvived": true,
+  "goalRoundsSurvived": true,
+  "consumptionFacts": [
+    {
+      "leg": "approval-permission",
+      "requestId": "ctrl-1v9pv051b4vrka1dnfmoz1cm",
+      "expectedConsumptions": 1,
+      "consumptions": 1,
+      "abandonments": 0,
+      "abandonedReason": null
+    },
+    {
+      "leg": "approval-human",
+      "requestId": "ctrl-0lnoa0006iymg318mk76q04p",
+      "expectedConsumptions": 1,
+      "consumptions": 1,
+      "abandonments": 0,
+      "abandonedReason": null
+    },
+    {
+      "leg": "stop-permission",
+      "requestId": "ctrl-1deznwa0ce5yyn09hb6a80ot",
+      "expectedConsumptions": 1,
+      "consumptions": 1,
+      "abandonments": 0,
+      "abandonedReason": null
+    },
+    {
+      "leg": "stop-human",
+      "requestId": "ctrl-0hrjz6m1ftd76d0h019t81iq",
+      "expectedConsumptions": 0,
+      "consumptions": 0,
+      "abandonments": 0,
+      "abandonedReason": null
+    }
+  ],
+  "legsAgree": true,
+  "collectOk": true,
+  "collectBody": "{\"status\":\"executed\",\"action\":\"work-status\",\"rootSessionId\":\"team-v016pack-r2\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"work-status\",\"entries\":[{\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\",\"instanceId\":\"inst-0kc39c71kemt\",\"admittedSequence\":5,\"settledSequence\":20,\"memberResult\":{\"body\":\"V016PACK_R2_WORK1_DONE V016PACK_R2_ARM1_RESULT\",\"requestToken\":\"v016pack_r2-delegate-work\",\"status\":\"succeeded\"}}]},\"requestToken\":\"v016pack_r2-collect\"}",
+  "recordsStart": 41,
+  "recordsEnd": 41,
+  "mockStart": 33,
+  "mockEnd": 33,
+  "resurrection": {
+    "recordsDelta": 0,
+    "mockRequestsDelta": 0
+  },
+  "ledgerCountsBefore": {
+    "requests": 6,
+    "decisions": 6,
+    "consumptions": 3,
+    "abandonments": 0,
+    "executions": 3
+  },
+  "ledgerCountsAfter": {
+    "requests": 6,
+    "decisions": 6,
+    "consumptions": 3,
+    "abandonments": 0,
+    "executions": 3
+  }
+}

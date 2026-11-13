@@ -1,0 +1,35 @@
+{
+  "before": {
+    "id": "goal-963500d1-9d0e-4a03-be88-7e0ef21a6494",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794567647639,
+    "updatedAt": 1794567648148,
+    "activation": "disarmed"
+  },
+  "pause": {
+    "status": 200,
+    "ok": false,
+    "value": null,
+    "error": {
+      "code": "gateway/internal",
+      "message": "cannot pause goal \"goal-963500d1-9d0e-4a03-be88-7e0ef21a6494\" from phase \"paused\"; expected active",
+      "details": {}
+    }
+  },
+  "after": {
+    "id": "goal-963500d1-9d0e-4a03-be88-7e0ef21a6494",
+    "revision": 3,
+    "objective": "ship V016PACK_R2_GOAL_OBJECTIVE (revised)",
+    "phase": "paused",
+    "maxGoalRounds": 6,
+    "roundsStarted": 3,
+    "createdAt": 1794567647639,
+    "updatedAt": 1794567648148,
+    "activation": "disarmed"
+  },
+  "note": "goals/pause is the other half of the Stop button; session/cancel above is the fence arm."
+}

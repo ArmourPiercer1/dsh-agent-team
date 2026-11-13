@@ -1,0 +1,16 @@
+{
+  "registryRowPresent": true,
+  "registryContentHash": "sha256:8457a26c6f3146ba0ed13a8f896adfd89c0d96efb758ae8693f41de9c97b7ac2",
+  "frozenDocumentSchemaVersion": 5,
+  "frozenHasReviewRouting": true,
+  "frozenHasMemberIoCeilings": true,
+  "frozenMemberCeilingTemplateIds": [
+    "worker",
+    "officer"
+  ],
+  "teamSessionBlueprint": {
+    "blueprintId": "v016-pack-bp-r1",
+    "revision": "1",
+    "contentHash": "sha256:8457a26c6f3146ba0ed13a8f896adfd89c0d96efb758ae8693f41de9c97b7ac2"
+  }
+}

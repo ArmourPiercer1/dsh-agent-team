@@ -1,0 +1,66 @@
+{
+  "root": {
+    "name": "dsh-agent-team",
+    "version": "0.1.6"
+  },
+  "subPackages": [
+    {
+      "path": "packages/client",
+      "name": "@dsh-agent-team/client",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/contracts",
+      "name": "@dsh-agent-team/contracts",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/domain",
+      "name": "@dsh-agent-team/domain",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/legacy",
+      "name": "@dsh-agent-team/legacy",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/remote",
+      "name": "@dsh-agent-team/remote",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/runtime",
+      "name": "@dsh-agent-team/runtime",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/storage",
+      "name": "@dsh-agent-team/storage",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/testkit",
+      "name": "@dsh-agent-team/testkit",
+      "version": "0.1.6",
+      "private": true
+    },
+    {
+      "path": "packages/tools",
+      "name": "@dsh-agent-team/tools",
+      "version": "0.1.6",
+      "private": true
+    }
+  ],
+  "mismatched": [],
+  "versions": [
+    "0.1.6"
+  ]
+}

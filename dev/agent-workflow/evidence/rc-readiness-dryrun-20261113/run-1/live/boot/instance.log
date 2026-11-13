@@ -1,0 +1,22 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-1-2026-11-13T10-59-10/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=LiiEsI-mT4SYN2tSEpg-Xs5udIphWSr1s1IMSvL2kWs
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] durable permission authority ACTIVE for row team-boot-v016pack-r1: anchor templates declaring capabilities.permissions = ["officer","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor v016-pack-bp-r1@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=deny notes=1 realmId=v016-plane-realm-r1 templateId=officer
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=v016-plane-realm-r1
+[dsh-agent-team] a5ptc: census-boot root=team-v016pack-r1 selectedRunner=/home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-1-2026-11-13T10-59-10/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py enforcement=landlock-launcher pinned (sha256:f418831915c624fb)
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-note
+[dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=2 realmId=v016-plane-realm-r1 templateId=worker
+[dsh-agent-team] a5g7: placement-feed rows=[team_grep,team_glob,bash,pwsh] realm=v016-plane-realm-r1
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-1 approvalCaseId=tadm:team-v016pack-r1:inst-0mzzhtj0zr0b:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-1 grantId=grant:f5fc30986b53a04ef007f0c24f348832 effects=1
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-1 grantId=grant:f5fc30986b53a04ef007f0c24f348832 caseId=tadm:team-v016pack-r1:inst-0mzzhtj0zr0b:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0
+[dsh-agent-team] a5g7-shell: confined-shell capability OK realm=v016-plane-realm-r1 rows=6
+[dsh-agent-team] a5g7-shell: confined-shell ran realm=v016-plane-realm-r1 call=team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-1 pid=802 exit=0 timedOut=false cancelled=false
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=team-inst-0mzzhtj0zr0b-bash:hexec:38002ee6-e743-45e2-bc33-0b8f5337b2ff-2 approvalCaseId=tadm:team-v016pack-r1:inst-0mzzhtj0zr0b:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0 requiredAuthority=leader
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/rc-dryrun-20261113/tests/homes/v016-pack-1-2026-11-13T10-59-10/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3182/?token=W86G0n3wELbl_7ee-S5LT1bI4_GN_qNKCit1x1o8m74
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 108ms — the connection service appeared after the mount step)
+[dsh-agent-team] durable permission authority ACTIVE for row team-boot-v016pack-r1: anchor templates declaring capabilities.permissions = ["officer","worker"], facts resolve per ADDRESSED team through the bound-Blueprint resolver (anchor v016-pack-bp-r1@1), canonicalized at each target member's effective workspace; expansion ceiling = the bound Blueprint's explicit permissionMutationEnvelope carrier (facts healthy: true)
