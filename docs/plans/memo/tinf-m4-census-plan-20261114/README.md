@@ -54,7 +54,8 @@ M4 把「分片不能改变被验证的总体」从一句要求变成**两个可
 | capture 1 / capture 2 | **550.8 s / 544.8 s**（census 墙钟 **1095.6 s**，gate 报 step `seconds=1095.9`，即 23m37s job 里的 77%） |
 | 最重 root（每 capture 中位数） | `packages/runtime` **543.0 s**（545.3 / 543.0）、`packages/testkit` **539.2 s**（539.2 / 540.7） |
 | 计划 | 22 tasks、11 roots、11 个 `capture-pair` 组、`captures=2`、`--test-timeout 90000` |
-| 计划 identity | `merge_tree_sha=d023b1bb…`（M4 code tip tree）、`host_sha=639ed01539…`、`catalog_digest=sha256:ab4bd881…`、`build_digest=null`、`plan_digest=sha256:2e8ba7e5…` |
+| 计划稳定性复核 | 在本 memo 所在的 tip tree 上重跑：**22 个 task 与其 `est_ms`、`catalog_digest` 全部相同**（memo 只加散文），只有 `merge_tree_sha`（→ tip tree）与由它派生的 `plan_digest` 变化——这正是「身份是记录的、不是重算的」的可观察形式 |
+| 计划 identity | `merge_tree_sha=d023b1bb…`（M4 **代码提交** `dba8a03ae` 的 tree）、`host_sha=639ed01539…`、`catalog_digest=sha256:ab4bd881…`、`build_digest=null`、`plan_digest=sha256:2e8ba7e5…` |
 
 **分片负载（穷举最小 makespan，按实测估计；`work` = 该 shard 全部 task 估计之和）**
 

@@ -35,7 +35,7 @@ sum is NOT a wall clock — it is work, which is what the balancer minimises.
 
 PLAN M4 WOULD HAVE PRODUCED FOR THIS RUN — 22 tasks = 11 roots x 2 captures
   The L2 run's own product_merge_tree was 2214185978f5637bf3c7256c245970ad3a675bd8 (line 8). The identity
-  below is recorded at the M4 code tip (tree d023b1bb7d40bb64ba4b63bf9ed95e11a76025bc): merge_tree_sha and
+  below is recorded at the M4 code commit dba8a03ae (tree d023b1bb7d40bb64ba4b63bf9ed95e11a76025bc): merge_tree_sha and
   catalog_digest differ BY CONSTRUCTION because this PR adds two node:test suites (not census roots), so
   the root set / task set / estimates below are still the L2 run's own population.
     merge_tree_sha   d023b1bb7d40bb64ba4b63bf9ed95e11a76025bc
