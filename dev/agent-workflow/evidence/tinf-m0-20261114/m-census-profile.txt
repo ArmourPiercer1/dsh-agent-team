@@ -1,0 +1,25 @@
+### measurement: step medians over the most recent completed census jobs (Actions jobs API, sampled 2026-11-14)
+census-profile (n=3 census jobs, step medians):
+   1100 s   77%  n= 3  Census — nine roots, two captures, NO refusal permitted
+    272 s   19%  n= 3  Build the pristine host (TEST_METHODS §2 chain)
+     22 s    2%  n= 3  Build this repo (packages + composition) — the census leg REFUSES without this
+     11 s    1%  n= 3  Checkout
+      2 s    0%  n= 3  Provision the pinned pristine test host
+      2 s    0%  n= 3  Host-provisioned security suites (moved from ci-security; needs the pinned host)
+      2 s    0%  n= 3  Upload census transcripts
+      1 s    0%  n= 3  Set up job
+      1 s    0%  n= 3  Bind to the synthetic merge tree (EB3_MERGE_TREE)
+      1 s    0%  n= 3  Setup pnpm
+      0 s    0%  n= 3  Precheck — the authority's two git pins are present and HEAD-ancestors
+      0 s    0%  n= 3  Setup Node
+      0 s    0%  n= 3  Resolve the pinned pristine host from tests/paths.mjs
+      0 s    0%  n= 3  Census — re-grade the transcript by the missing-token rule
+      0 s    0%  n= 3  Layer verdict token (feeds the Required summary; runs even when a step above failed)
+      0 s    0%  n= 3  Post Setup pnpm
+      0 s    0%  n= 3  Post Setup Node
+      0 s    0%  n= 3  Post Checkout
+      0 s    0%  n= 3  Complete job
+   1427 s   100%  n= 3  JOB TOTAL (min 1090s / max 1428s)
+  not visible here: the split of the census step into its nine roots (M3 harness timer).
+DSH-CENSUS-PROFILE runs=3 total_p50_s=1427 top_step="Census — nine roots, two captures, NO refusal permitted" top_p50_s=1100 top_share_pct=77
+exit=0

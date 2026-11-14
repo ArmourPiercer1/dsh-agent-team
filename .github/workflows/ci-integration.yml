@@ -195,6 +195,17 @@ jobs:
         # with the file path as a required token — dropping it is CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/ci-local.test.mjs
 
+      - name: "scripts node:test suite (TINF M0 baseline tools — host-free)"
+        # TINF M0 (2026-11-14): the five baseline tools (pr-ready-check,
+        # evidence-budget, coverage-audit, test-collection-audit, census-profile)
+        # carry their laws in ONE host-free node:test suite. One file on purpose:
+        # until M1 discovery lands, each extra suite would need another hand-
+        # written entry here and in dev/ci/eb3-ci-manifest.json, which is the
+        # defect scripts/test-collection-audit.mjs exists to measure. Declared in
+        # the manifest with the file path as a required token; dropping it is
+        # CI_LAYER_LEG_WEAKENED.
+        run: node --test scripts/tinf-m0.test.mjs
+
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
         # machinery, so the harness wiring needs a C1 proof of its own. This step is the

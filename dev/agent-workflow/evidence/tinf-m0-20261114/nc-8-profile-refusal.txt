@@ -1,0 +1,4 @@
+### NC-8 profiling refusal — a census job whose every step is skipped (a draft round).
+### Must refuse (exit 2), never report 0 s medians.
+ERROR NO_MEASURABLE_CENSUS_JOB: no completed census job with timestamps found (a refusal, not a 0 s report)
+exit=2

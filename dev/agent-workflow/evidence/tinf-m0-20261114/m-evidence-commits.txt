@@ -1,0 +1,35 @@
+### measurement: evidence bytes per PR, last 30 first-parent commits of origin/master
+evidence-budget (last 30 first-parent commits, bytes of the evidence files each commit leaves):
+     3.1 MiB  373 file(s)  1a677c5d4f  C2: both independent records for cand-v0.1.6-3, with the refusals they c
+     2.9 MiB   63 file(s)  45132a119b  PD33-STALE-INSTRUMENT: the governed-bash arm predates #730 and is supers
+     2.2 MiB  204 file(s)  3a7303ca21  A6 COLD-WAKE: Leader-to-Officer restart briefing - measured as an operat
+     2.1 MiB  175 file(s)  93d629f3af  PACKAGING-V016: pack → clean-host install → Team/Member/Goal/Stop/cold-b
+     2.1 MiB  179 file(s)  673b8b182a  RC-DRYRUN: two independent packs are one verdict; rollback is only a re-
+     1.6 MiB  264 file(s)  270d8f95f9  A6-OFF EVIDENCE: re-cut the artifacts from the frozen kit (C2-B refused 
+     1.4 MiB  260 file(s)  a993d7df32  JOINT-ACCEPTANCE: eleven arms, three measurements — the joint surface is
+  1008.1 KiB  160 file(s)  0d31f91213  A6-OFF x PLANE TAKEOVER: the A1 seven clauses with alpha6ReviewRouting f
+   907.2 KiB  155 file(s)  28b083d9a1  PD-42 RELAY FIX: the PA leg gets its fact back, and timeout/SIGKILL stop
+   887.4 KiB   54 file(s)  6361185d87  A6 COLD-WAKE: a new ask after a restart gets no reviewer wake - measured
+   804.1 KiB  108 file(s)  84baf304c4  A1-BASH-GOVERNANCE: seven clauses the OS and the ledger answer, not a bo
+   685.1 KiB  110 file(s)  76293c79f6  A6-LEG-VALIDITY: the durable pending leg is the subject of an approval's
+   600.8 KiB  134 file(s)  29e4b1b386  F5-TWO-ASKS-PREFLIGHT: two governed asks per policy + shared boot prefli
+   502.4 KiB  109 file(s)  a775031989  PD-42 FIXED: a refused execution is failed, not succeeded - the durable 
+   482.0 KiB  110 file(s)  510a0d0dff  test(v016): three minimum closing measurements (2026-11-13) (#750)
+   141.6 KiB   35 file(s)  17a24e2c30  PD39-INBOX: the accepted-but-not-claimed window no longer strands on thi
+   137.8 KiB    6 file(s)  ab77faf854  V016 CLOSING: generator root fix, the archived C2 pair, the governed-bas
+    50.7 KiB    1 file(s)  2ec5ae4931  AUDIT-A-ALPHA5 — Alpha.5 Preview surface audit (#724)
+    49.7 KiB    1 file(s)  0d74121aed  AUDIT-B-ALPHA6: the approval lifecycle read against the tree (routing, w
+    35.2 KiB    1 file(s)  6beb42564c  AUDIT-D-RELEASE: PD-41/PD-42 claim check, release-note truth sweep, cand
+    26.6 KiB    3 file(s)  c6c96534c5  DOCS: the v0.1.6-rc.1 package — stable vs opt-in experimental, line by l
+    25.8 KiB    1 file(s)  b14063954c  AUDIT-C-PLANE-REALM: who owns tool execution when a v5 Team carries both
+         0 B    0 file(s)  22682f3367  FREEZE: cand-v0.1.6-5 at a77503198 (the tree where a refused execution i
+         0 B    0 file(s)  76a86d6e92  FREEZE: cand-v0.1.6-4 at 0d31f9121 (AWAITING_C2; supersedes -3, which ca
+         0 B    0 file(s)  32f2629dc3  FREEZE: cand-v0.1.6-3 manifest at 17a24e2c3 (AWAITING_C2; every digest c
+         0 B    0 file(s)  68ab6ded79  CLOSEOUT-DOCS: rebase onto master; correct the F-1/PD-42, F-3/PD-43 and 
+         0 B    0 file(s)  d8bdb0ce23  PD41-ABORT-CLASS: classify every abort by settlement, and type three mor
+         0 B    0 file(s)  57a0ec136e  CLOSEOUT: the joint surface is green — and the two defects that made it 
+         0 B    0 file(s)  6ea7d8dd46  fix(a6): a cold boot owns the parameter-permission lane too — no silent 
+         0 B    0 file(s)  4075c67ad3  fix(plane): an adopted native name is not the plane's to own — the shipp
+  commits=30 measured=30 skipped=0 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
+DSH-EVIDENCE-BUDGET mode=commits n=30 measured=30 skipped=0 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
+exit=0
