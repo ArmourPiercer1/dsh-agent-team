@@ -288,6 +288,17 @@
           "why": "#552 (2026-11-03, external review of #552 problem B): `scripts/ci-local.test.mjs` pins the L0 selector's laws — test-file detection, package attribution, runner dispatch by import (including the quoted-string false positive), the directory-prefix vitest filter (a glob matched zero files), and the rule that an unrecognised path is `undetermined` and exits 2 rather than reporting 'no tests' (`eslint.config.mjs` was the path that proved it). The review's finding was that NO cloud lane collected the file, so a green L2 proved nothing about these rules; this leg is the collection. Host-free node:test: pure functions, no ports, no DSH_HOME, no pristine host, no build. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
         },
         {
+          "id": "scripts node:test suite (TINF M0 baseline tools — host-free)",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "scripts/tinf-m0.test.mjs"
+          ],
+          "why": "TINF M0 (2026-11-14, docs/plans/memo/agent-testing-infrastructure-20261114/ M0): the five baseline tools landed with ONE host-free suite covering their laws — the five false-PASS paths of the draft-first ready helper (unknown mergeability, stale local HEAD, missing upstream, a newer pending check-run, comment pagination), real object-DB bytes instead of `--numstat` lines in evidence-budget (binary blobs included, window = literal last N first-parent commits), the UNKNOWN reason classes in coverage-audit (kit/evidence-only is NOT a zero-test 'determined'), the collected-or-exempt split in test-collection-audit, and step-median arithmetic in census-profile (a skipped step is not 0 s). One suite, not five: until M1 discovery lands, every node:test leg is a hand-written entry in this manifest AND in the workflow run line, which is exactly the anti-pattern test-collection-audit measures (97 tracked in-scope suites, 79 uncollected at this commit). Host-free: pure functions plus one read-only `git ls-files`; no port, no DSH_HOME, no pristine host, no build, no network. Dropping this file from the step or from check[] is CI_LAYER_LEG_WEAKENED."
+        },
+        {
           "id": "a5sf native route C",
           "cmd": [
             "node",

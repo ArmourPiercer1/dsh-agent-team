@@ -115,6 +115,27 @@ owners:
       - packages/tools/README.md
       - docs/plans/active/alpha5-tool-io-governance/TOOL-CAPABILITY-MATRIX-9b2.md
       - docs/plans/active/alpha5-tool-io-governance/m0-closure-v3/M0-A-LIFECYCLE-CONTRACT-v1.1.md
+  # TINF M0 (2026-11-14): the five baseline tools and their single suite are
+  # described by the M0 memo. Advisory on purpose: wiring this map into CI is
+  # EB3-B, a coordination decision that has not been taken.
+  - glob: scripts/pr-ready-check*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  - glob: scripts/evidence-budget*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  - glob: scripts/coverage-audit*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  - glob: scripts/test-collection-audit*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  - glob: scripts/census-profile*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  - glob: scripts/tinf-m0*.mjs
+    docs:
+      - docs/plans/memo/tinf-m0-baseline-20261114/README.md
   - glob: scripts/**
     docs:
       - docs/STATUS.md
