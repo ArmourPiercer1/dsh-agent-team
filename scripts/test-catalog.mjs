@@ -33,16 +33,17 @@
  *   DUPLICATE_ID, CONTRACT_WITHOUT_TEST, CONTRACT_UNKNOWN_TEST,
  *   STALE_EXCLUDE, UNKNOWN_DRIVER, TEST_UNCOLLECTED, UNKNOWN_CLASSIFICATION,
  *   VITEST_CONFIG_UNREADABLE, INSTRUMENT_DRIVER_MISSING.
- *   A refusal is the point: at landing `TEST_UNCOLLECTED` is 87 suites (80
- *   node:test + 7 compatibility), and it must not print as green just because the
- *   count is stable.
+ *   A refusal is the point: at landing `TEST_UNCOLLECTED` is 91 suites (80
+ *   node:test, 7 compatibility suites no config reaches, 4 POC suites only an
+ *   authoring-only config includes), and it must not print as green just because
+ *   the count is stable.
  *
  * USAGE
  *   node scripts/test-catalog.mjs                  # summary + findings
  *   node scripts/test-catalog.mjs --json           # the catalog artifact
  *   node scripts/test-catalog.mjs --diff           # two-way vs the CI lists
  *   node scripts/test-catalog.mjs --allow-uncollected   # report only, exit 0
- *   node scripts/test-catalog.mjs --max-uncollected 87  # ratchet: refuse GROWTH
+ *   node scripts/test-catalog.mjs --max-uncollected 91  # ratchet: refuse GROWTH
  *   node scripts/test-catalog.mjs --self-test
  */
 import { createHash } from 'node:crypto'
@@ -406,7 +407,7 @@ function main(argv) {
     }
     console.log(JSON.stringify(artifact, null, 2))
     // Printing the artifact is not a verdict: --json used to exit 0 with a planted
-    // CONTRACT_UNKNOWN_TEST and the 87 uncollected still in the file.
+    // CONTRACT_UNKNOWN_TEST and the 91 uncollected still in the file.
     const blocking = state.findings.filter((f) => f.code !== 'TEST_UNCOLLECTED' || (!opts.allowUncollected && opts.maxUncollected === null))
     for (const f of blocking) console.error(`REFUSED ${f.code} ${f.contract ?? f.instrument ?? f.path ?? ''} ${f.detail ?? ''}`.trimEnd())
     return blocking.length ? 2 : 0

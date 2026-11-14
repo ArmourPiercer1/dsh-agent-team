@@ -17,7 +17,7 @@
 | `nc-m1-5-uncollected-grew.txt` | 新增一个没 lane 的 suite → 92 > 91 → `UNCOLLECTED_GREW`（exit 2） |
 | `nc-m1-6-json-not-a-verdict.txt` | `--json` 打印 artifact 但不得吞掉拒绝 → 植入 `CONTRACT_UNKNOWN_TEST` 后 exit 2 |
 | `nc-m1-7-contract-ref-not-a-test.txt` | 合同绑到 `src/index.ts`（不是测试）→ `CONTRACT_REF_NOT_A_TEST`（exit 2） |
-| `nc-m1-8-scratch-config-not-authority.txt` | 两个探针：根级 scratch recorder 被权威配置 exclude（`EXCLUDED_WITH_REASON`）；包内同名文件由该包配置收集（`DISCOVERED_AND_COLLECTED`，**不是**过度声明） |
+| `nc-m1-8-scratch-config-not-authority.txt` | 两个探针：根级 recorder 不被任何 config 包含且被根配置 exclude（`EXCLUDED_WITH_REASON`）；`evidence/` 下只被该目录 authoring 配置包含的 recorder → `UNCOLLECTED`（证据目录的配置永远不是权威） |
 
 ## 未覆盖
 

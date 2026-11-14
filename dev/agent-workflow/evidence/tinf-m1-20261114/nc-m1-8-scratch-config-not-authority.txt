@@ -1,10 +1,11 @@
-### NC-M1-SCRATCH authoring-only configs must not be collection authority.
-### Probe A: a ROOT-LEVEL scratch recorder — only vitest.scratch.config.ts includes it.
+### NC-M1-SCRATCH an authoring-only config must not be collection authority.
+### Probe A: root-level 'zz-probe.scratch.test.ts'. No config includes it (the scratch config
+### names packages/runtime/test/*.scratch.test.ts only) and the root config EXCLUDES
+### '**/*.scratch.test.ts'. If authoring-only configs were authority, the scratch
+### config's include would surface it as collected; it must stay excluded.
 {"path":"zz-probe.scratch.test.ts","classification":"EXCLUDED_WITH_REASON","reason":"vitest config exclude[]"}
-  tests=858 instruments=3 digest=sha256:9e75c639474150b0b2204b47cc0a7d545f173a34453e4a1ec9ca7ab0eafb6c7b
-DSH-TEST-CATALOG tests=858 digest=sha256:9e75c639474150b0b2204b47cc0a7d545f173a34453e4a1ec9ca7ab0eafb6c7b refused=0 findings=0
 
-### Probe B: the same file name INSIDE a package whose own config includes test/**/*.test.ts.
-### Expected: DISCOVERED_AND_COLLECTED, and this is not an over-state — that package's
-### suite really runs it. The root config's exclude governs the root run only.
-{"path":"packages/runtime/test/zz-probe.scratch.test.ts","classification":"DISCOVERED_AND_COLLECTED"}
+### Probe B: 'dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/zz-probe.test.ts' —
+### included by that directory's vitest.poc.config.ts, which is authoring-only. Expected:
+### UNCOLLECTED, because a config under dev/agent-workflow/evidence/ can never be authority.
+{"path":"dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/zz-probe.test.ts","classification":"UNCOLLECTED"}
