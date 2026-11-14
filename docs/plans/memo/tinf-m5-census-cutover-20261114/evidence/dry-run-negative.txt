@@ -1,0 +1,27 @@
+# NEGATIVE CONTROLS over the SAME recorded input (M4 L2 run 1198, tinf-timing.tsv) — each must be RED.
+
+## fail (replay dir .artifacts/tmp/neg/fail)
+DSH-CENSUS-SUMMARY verdict=FAIL codes=TASK_STATE_FAIL expected=22 observed=22 missing=0 extra=0 shards=1 plan=sha256:9bb9fb22795dadc9ec53dd1bb64a722f10884a819a2ffb28c007908b72de1854
+DSH-CI-LEG leg=census verdict=fail seconds=0.8 detail=plan-mode census — tasks=22 roots=11 captures=2 plan=sha256:9bb9fb22795dadc9ec53dd1bb64a722f10884a819a2ffb28c007908b72de1854 build=sha256:7eb039bdd02c6887fb2f7528fcb97b8312875f4fda6bb5e7d4878dc1ed192c22 shards=1 aggregate=FAIL expected=22 observed=22 codes=TASK_STATE_FAIL — /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5/.artifacts/census/plan/census-shard-1.json: task census:packag
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0.8
+exit=1
+
+## drop (replay dir .artifacts/tmp/neg/drop)
+DSH-CENSUS-SUMMARY verdict=INCOMPLETE codes=TASK_MISSING expected=22 observed=21 missing=1 extra=0 shards=1 plan=sha256:9bb9fb22795dadc9ec53dd1bb64a722f10884a819a2ffb28c007908b72de1854
+DSH-CI-LEG leg=census verdict=fail seconds=0.8 detail=plan-mode census — tasks=22 roots=11 captures=2 plan=sha256:9bb9fb22795dadc9ec53dd1bb64a722f10884a819a2ffb28c007908b72de1854 build=sha256:7eb039bdd02c6887fb2f7528fcb97b8312875f4fda6bb5e7d4878dc1ed192c22 shards=1 aggregate=INCOMPLETE expected=22 observed=21 codes=TASK_MISSING — 1 planned task(s) have no result: census:packages/client#1
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0.8
+exit=1
+
+## nocap2 (replay dir .artifacts/tmp/neg/nocap2)
+DSH-CENSUS-REFUSED code=DRYRUN_CAPTURE_MISSING detail=neither census-replay-2.json nor census-capture-2.json exists in .artifacts/tmp/neg/nocap2 — a dry run of a two-capture census needs both captures recorded
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=DRYRUN_CAPTURE_MISSING expected=22 observed=0 plan=sha256:9bb9fb22795dadc9ec53dd1bb64a722f10884a819a2ffb28c007908b72de1854
+DSH-CI-LEG leg=census verdict=fail seconds=0.8 detail=REFUSED DRYRUN_CAPTURE_MISSING: neither census-replay-2.json nor census-capture-2.json exists in .artifacts/tmp/neg/nocap2 — a dry run of a two-capture census needs both captures recorded
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0.8
+exit=1
+
+## missing build stamp (--census-build-stamp .artifacts/tmp/absent.json)
+DSH-CENSUS-REFUSED code=BUILD_STAMP_MISSING detail=.artifacts/tmp/absent.json could not be read (ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5/.artifacts/tmp/absent.json') — a census with no recorded build identity refuses instead of inventing one
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=BUILD_STAMP_MISSING expected=0 observed=0
+DSH-CI-LEG leg=census verdict=fail seconds=0.4 detail=REFUSED BUILD_STAMP_MISSING: .artifacts/tmp/absent.json could not be read (ENOENT: no such file or directory, open '/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5/.artifacts/tmp/absent.json') — a census with no recorded build identity refuses instead of inventing one
+DSH-CI-VERDICT fail pass=0 fail=1 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0.4
+exit=1

@@ -239,8 +239,20 @@ jobs:
         # group or Required context is added here, and neither tool is read by ci-required. The spec
         # §6 step-2 shadow workflow is deferred on purpose — it changes eb3-ci-required's workflow
         # count and the manifest shape, which is a separately reviewed change.
+        # TINF M5 (2026-11-14) joins the SAME invocation and the SAME check[] entry with
+        # scripts/census-cutover.test.mjs, for the reason M1/M3/M4 joined it: a second hand-written
+        # list is the defect this milestone measures. It pins the CUTOVER — the plan path driven
+        # through the real `LEGS.census` (and the real CLI for the DSH-CI-VERDICT token/exit cases)
+        # over a RECORDED capture directory, host-free — its positive control (22 planned / 22
+        # observed / PASS) and its named refusals (plan refusal, CAPTURES_INSUFFICIENT, a missing
+        # second capture, an exit-0 shard carrying FAIL, a dropped root, a missing build stamp), plus
+        # the M5 build stamp (sha256 over the REAL install-surface bytes; absent/empty surfaces
+        # refuse, one byte moves the digest, built_at does not, a tampered list is caught). `legacy`
+        # remains the default execution mode, so this leg is green before and after
+        # census-runtime.yml's one-line switch. Dropping the file from this line or from the
+        # manifest's check[] is CI_LAYER_LEG_WEAKENED — the same law M1/M3/M4 landed.
         run: |
-          node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs
+          node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs scripts/census-cutover.test.mjs
           node scripts/test-catalog.mjs --max-uncollected 91
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"

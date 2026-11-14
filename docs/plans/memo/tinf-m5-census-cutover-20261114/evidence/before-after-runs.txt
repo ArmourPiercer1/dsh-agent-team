@@ -1,0 +1,23 @@
+M5 — before/after, measured, from the Actions API (gh) + the uploads of the two runs
+
+RUN A = M3's last L2 (id 43638954936, run_number 1195, merge tree 2214185978f5637bf3c7256c245970ad3a675bd8)
+  ci-census / census-runtime job   started 2026-11-14T20:43:20Z  completed 21:06:57Z  = 1417 s = 23m37s  success
+  census leg (transcript)          seconds=1095.9   captures 550.8 s + 544.8 s   (tinf-timing.tsv, 25 rows)
+  [source: docs/plans/memo/tinf-m4-census-plan-20261114/L2-20261114-MEASURED.txt]
+
+RUN B = M4's merge-commit L2 (id 43648221295, run_number 1198, merge tree 7fae3be14d927068520b77aef5662ee63569c690)
+  ci-census / census-runtime job   started 2026-11-14T22:28:15Z  completed 22:51:55Z  = 1420 s = 23m40s  success
+  census leg (transcript)          seconds=1091.3   captures 551048 ms + 539983 ms
+  identity                         705f/9213l twice; identity sets identical to the published baseline;
+                                   0 titled reds + 0 collection-error files in the tolerated baseline
+  [source: gh run download 43648221295 -n census-runtime-transcripts-1198 (evidence/m4-l2-1198-*)]
+
+RUN C = M5 — NOT YET MEASURED ON A HOST. This PR is not merged, so no L2 run of the plan path exists.
+  What can be stated without a host:
+    plan+verify+aggregate over the recorded input, wall clock ........ 0.8 s  (this file's dry-run, 22 tasks)
+    invocations the plan path performs ............................. 2  (identical to legacy: one per capture)
+    argv ........................................................... byte-identical to legacy (censusVitestArgv)
+  Therefore the expected census-leg wall clock of the first plan-mode run is ~1091 s, i.e. the SAME.
+  M5 changes WHAT IS PROVEN, not how long the suite takes. The first plan-mode run will publish its own
+  decomposition as tinf-timing rows: census-plan / census-plan-verify / census-capture x2 / census-root x22 /
+  census-aggregate, so the plan path's own overhead becomes a measured number instead of an estimate.
