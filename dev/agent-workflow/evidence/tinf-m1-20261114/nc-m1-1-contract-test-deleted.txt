@@ -1,5 +1,5 @@
 ### NC-M1-1 a contract's only test is deleted: the ref points at a path that no longer exists.
 ### Expected: CONTRACT_UNKNOWN_TEST, red — not 'a slightly smaller catalog'.
   REFUSED CONTRACT_UNKNOWN_TEST AUTH-01 test_ref does not exist (deleted or renamed?)
-DSH-TEST-CATALOG tests=825 digest=sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426 refused=1 findings=1
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=1 findings=1
 exit=2

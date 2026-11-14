@@ -41,6 +41,20 @@ test('discovery: vitest and node tests are catalogued, non-tests are not', () =>
   assert.deepEqual(paths, ['packages/runtime/controlled-fs/test/cf.test.ts', 'packages/runtime/test/auth.test.ts', 'scripts/a.test.mjs'])
 })
 
+test('discovery follows config include[], not the .test.ts suffix', () => {
+  // packages/client includes `test/**/*.client.spec.ts[x]`; an extension-based
+  // filter hid 32 real client suites from the first version of this catalog.
+  const cfg = { include: ['test/**/*.test.ts', 'test/**/*.client.spec.ts', 'test/**/*.client.spec.tsx'], exclude: ['test/skip.client.spec.ts'] }
+  const files = new Set(['packages/client/test/a.client.spec.ts', 'packages/client/test/b.client.spec.tsx', 'packages/client/test/c.test.ts', 'packages/client/test/skip.client.spec.ts', 'packages/client/test/d.spec.ts'])
+  const { entries } = buildEntries(files, { configs: [{ base: 'packages/client', cfg }], registry: {} })
+  const c = Object.fromEntries(entries.map((e) => [e.path, e.classification]))
+  assert.equal(c['packages/client/test/a.client.spec.ts'], 'DISCOVERED_AND_COLLECTED')
+  assert.equal(c['packages/client/test/b.client.spec.tsx'], 'DISCOVERED_AND_COLLECTED')
+  assert.equal(c['packages/client/test/c.test.ts'], 'DISCOVERED_AND_COLLECTED')
+  assert.equal(c['packages/client/test/skip.client.spec.ts'], 'EXCLUDED_WITH_REASON')
+  assert.equal(c['packages/client/test/d.spec.ts'], 'UNCOLLECTED')
+})
+
 test('classification: collected, uncollected and excluded are distinct', () => {
   const files = new Set([
     'packages/runtime/test/auth.test.ts',

@@ -130,11 +130,21 @@ export function loadRegistry(cwd) {
  */
 export function buildEntries(files, { vitestCfg, configs = null, registry, ciCollected = new Set(), explicitlyCollected = new Set() } = {}) {
   const effectiveConfigs = configs ?? (vitestCfg ? [{ base: '', cfg: vitestCfg }] : [])
+  const relOf = (base, file) => (base && file.startsWith(`${base}/`) ? file.slice(base.length + 1) : base ? null : file)
+  // Collected means "a config include[] matches it", NOT "its name ends in .test.ts":
+  // packages/client includes `test/**/*.client.spec.ts[x]`, and an extension-based
+  // filter made 32 real client suites invisible to the catalog.
   const collectedByConfig = (file) => effectiveConfigs.some(({ base, cfg }) => {
-    const rel = base && file.startsWith(`${base}/`) ? file.slice(base.length + 1) : file
-    if (base && rel === file) return false
+    const rel = relOf(base, file)
+    if (rel === null) return false
     return matchesAny(rel, cfg.include ?? []) && !matchesAny(rel, cfg.exclude ?? [])
   })
+  const excludedByConfig = (file) => effectiveConfigs.some(({ base, cfg }) => {
+    const rel = relOf(base, file)
+    if (rel === null) return false
+    return matchesAny(rel, cfg.exclude ?? [])
+  })
+  const TEST_LIKE_RE = /\.(?:test|spec)\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
   const entries = []
   const findings = []
   const contractOf = new Map()
@@ -156,20 +166,22 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
       entries.push({ id: null, path: file, runner: 'none', kind: 'excluded', contract_ids: [], classification: 'EXCLUDED_WITH_REASON', reason: x.reason ?? '(none)' })
       continue
     }
-    const isTs = /\.test\.ts$/.test(file)
-    const isNode = /\.test\.(mjs|cjs|js)$/.test(file)
-    if (!isTs && !isNode) continue
+    const testLike = TEST_LIKE_RE.test(file)
+    const isNode = /\.(?:test|spec)\.(?:mjs|cjs|js)$/.test(file)
+    const vitestHit = collectedByConfig(file) || explicitlyCollected.has(file)
+    if (!testLike && !isNode) continue
 
-    if (isTs) {
-      const included = collectedByConfig(file) || explicitlyCollected.has(file)
-      const excluded = effectiveConfigs.some(({ base, cfg }) => {
-        const rel = base && file.startsWith(`${base}/`) ? file.slice(base.length + 1) : file
-        return (!base || rel !== file) && matchesAny(rel, cfg.exclude ?? [])
-      })
-      let classification = 'UNCOLLECTED'
-      if (excluded) classification = 'EXCLUDED_WITH_REASON'
-      else if (included) classification = 'DISCOVERED_AND_COLLECTED'
-      entries.push({ id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [], classification, reason: excluded ? 'vitest config exclude[]' : undefined })
+    if (vitestHit) {
+      entries.push({ id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [], classification: 'DISCOVERED_AND_COLLECTED' })
+      continue
+    }
+    const configExcluded = excludedByConfig(file)
+    if (configExcluded) {
+      entries.push({ id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [], classification: 'EXCLUDED_WITH_REASON', reason: 'vitest config exclude[]' })
+      continue
+    }
+    if (!isNode) {
+      entries.push({ id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [], classification: 'UNCOLLECTED' })
       continue
     }
 

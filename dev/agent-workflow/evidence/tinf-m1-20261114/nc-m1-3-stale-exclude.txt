@@ -1,5 +1,5 @@
 ### NC-M1-3 the exclude table names a file that does not exist (and carries no reason).
 ### Expected: STALE_EXCLUDE, red — a stale exemption must not outlive its file.
   REFUSED STALE_EXCLUDE packages/domain/test/gone-forever.test.ts the excluded path does not exist (renamed or deleted?)
-DSH-TEST-CATALOG tests=825 digest=sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426 refused=1 findings=1
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=1 findings=1
 exit=2

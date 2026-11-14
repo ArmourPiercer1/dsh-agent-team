@@ -1,2 +1,2 @@
 ### measurement: two-way diff against the CI file lists
-  two-way diff: ci_named=49 catalog=825 node_unnamed=85 (uncollected 80) vitest_via_config=673 ci_only=0
+  two-way diff: ci_named=49 catalog=857 node_unnamed=85 (uncollected 80) vitest_via_config=703 ci_only=0

@@ -5,9 +5,9 @@
 
 | 文件 | 是什么 |
 | --- | --- |
-| `m-catalog.txt` | 严格模式：825 个测试、722 collected、91 uncollected → exit 2 |
+| `m-catalog.txt` | 严格模式：857 个测试、752 collected、91 uncollected → exit 2 |
 | `m-catalog-ratchet.txt` | CI 用的 `--max-uncollected 91`：已知集合允许，增长拒绝 → exit 0 |
-| `m-catalog-diff.txt` | 双向差集：`ci_named=49`、`node_unnamed=85`（其中 uncollected 80）、`vitest_via_config=673`、`ci_only=0` |
+| `m-catalog-diff.txt` | 双向差集：`ci_named=49`、`node_unnamed=85`（其中 uncollected 80）、`vitest_via_config=703`、`ci_only=0` |
 | `m-catalog-digest.txt` | 同一 head 两次 `--json` 的 digest 相同 |
 | `nc-m1-1-contract-test-deleted.txt` | 合同绑定的测试路径不存在 → `CONTRACT_UNKNOWN_TEST`（exit 2） |
 | `nc-m1-2-duplicate-id.txt` | 两个测试抢同一逻辑 id → `DUPLICATE_ID`（exit 2） |
@@ -19,4 +19,5 @@
 
 - “是否被收集”是**静态判定**（配置 include/exclude + 显式清单），不是“这次真的装载成功”。原生 `vitest list --json` 需要安装依赖与构建，留给 M5 的 dispatch。
 - `--diff` 的 `ci_only` 角度只覆盖“lane 点名了发现不到的文件”；反方向（发现到但没 lane）由 `TEST_UNCOLLECTED`/棘轮负责，不重复计数。
+- 一次真实的漏检已修：第一版按文件名后缀取 vitest 套件，漏掉 `packages/client` 的 32 个 `*.client.spec.ts[x]`；现在入口是「配置 include 是否匹配」，并有回归测试。
 - 没有验证 6 条合同的测试真的能捕获对应语义变异——那是 M2 的 mutation/oracle 工作；这里只保证绑定存在、可追、删不掉而不报错。
