@@ -1,0 +1,17 @@
+### NC-7 UNKNOWN is named, not converted to determined-with-zero-tests.
+### (a) live: the current master mix, with the kit paths named by class.
+  paths that make a change undetermined:
+      4x  tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs  [kit-runner]
+      3x  tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs  [kit-runner]
+      2x  .merge-loop.sh  [root-scratch]
+      2x  .merge2.sh  [root-scratch]
+      2x  .nbp.patch  [root-scratch]
+      2x  tests/kits/a1-bash-governance-20261112/compare-a1-runs.mjs  [kit-runner]
+      2x  tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs  [kit-runner]
+      2x  tests/kits/wp3-fence-timing/wp3-fence-timing.mjs  [kit-runner]
+      1x  .anchorfix.py  [root-scratch]
+      1x  .merge.log  [root-scratch]
+  note: kit-runner/uncatalogued-script are collection gaps (M1); root-scratch is a
+        .gitignore bug; only "other" means a classify() rule is missing.
+DSH-COVERAGE-AUDIT commits=40 undetermined=21 rate_pct=53 top=tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs top_reason=kit-runner
+exit=0

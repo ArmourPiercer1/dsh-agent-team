@@ -8648,3 +8648,35 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-14 — TINF-M0：设计基线 #767 过独立评审后修正；M0 落地为 Draft PR（五件工具 + 收集审计 + step 级 profiling）
+
+**1. #767（设计集，14 文件）独立评审 → CHANGES REQUIRED，三处 blocking 已修**：评审席=review 子代理（deepseek-v4.1，非实现者）。
+- F1：08 原文称“无 step 级耗时、不能断言 24 分钟大部分是构建”——**错**。Actions jobs API 返回每 step 的
+  `started_at/completed_at`；run `43459947311`：census 1108 s、host build 272 s、repo build 22 s、job 1422 s。
+  改为实测表，并说明只有 census 内部九 root 分解看不到（M3 的 harness 计时）。
+- F2/F3：10 把 `pr-ready-check.mjs` 当成“既有、只待修正”，实际它只在未合并的 #759 分支；11 的 M0 无法照做。
+  改为：标明未合并，#759 由 M0 重写落地；M0 重写为逐项表（文件/符号、交付、负控）。
+- F4–F7：README 把 merge tree 误列为 Required context（实为三个 context + 两条不变量）；11 的“每个 milestone 一个 PR”
+  与 M0 打包七项矛盾（改为一 PR 五项、各自可回滚）；补证据配额（5995/6000 `.json`，只剩 5 个名额，M0 证据一律
+  `.md/.txt/.tsv`）；07 的“聚合产物由 ci-required 消费”改为真实 seam（layer verdict token + needs 判形）。
+- 修正 commit `f867a4c18` 已推送到 `docs/agent-testing-infrastructure-vnext-20261114`；L1 全绿。
+
+**2. M0 实施（分支 `task/tinf-m0-20261114`）**：按 #767 的 M0 逐项落地，五件工具 + 一个 host-free suite。
+- `pr-ready-check.mjs`：五处假通过改 refusal（unknown mergeable state / 本地 HEAD 与 PR head / 无 upstream /
+  pending 新 attempt / 评论分页）+ R9（带 `ci-defer-full` 不得 ready）。
+- `evidence-budget.mjs`：object DB 真实字节（二进制计入）、窗口=字面 last-N first-parent。
+  **推翻 #761**：近 30 commit p50 701,506 B、p90 2.31 MB、max 3.28 MB，**5 个超过 2 MiB**（#761 说上限永不触发）。
+- `coverage-audit.mjs`：UNKNOWN 按类命名（kit/脚本/根目录 scratch/other），保持 exit 2，不采纳 kit=zero-tests。
+  40 commit 里 53% undetermined，但 `other` **0** 次——最大两块是 kit（24）与误提交根文件（10）。
+- `test-collection-audit.mjs`（新）：98 个 in-scope tracked node:test，19 collected / 79 uncollected；census 对
+  `tests/world-factory` 只 parse 不 spawn，故不计入收集。#530 仍 OPEN，只复用其判定不落地其 gate。
+- `census-profile.mjs`（新）：n=3 实测 census 1100 s（77%）、host build 272 s（19%）、job p50 1427 s。
+- 测试：`scripts/tinf-m0.test.mjs` 11/11；接进 `ci-integration` 一个 leg + manifest 一个条目，
+  `node scripts/eb3-ci-required.mjs` = `pass workflows=10 findings=0`。
+
+**3. 负控 8 项全部按期望变红**（转录在 `dev/agent-workflow/evidence/tinf-m0-20261114/`）：未推送 head、错误 git 状态、
+dirty worktree、本地未推送 commit、未收集 suite、二进制证据（1,048,588 B）、kit 路径仍 undetermined、全 skipped job 拒绝。
+
+**4. 边界**：未改运行时代码/Authority/Candidate/release；三个 Required contexts、fail-closed 聚合、census 组成、
+deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md`，新增 `.json` = 0。

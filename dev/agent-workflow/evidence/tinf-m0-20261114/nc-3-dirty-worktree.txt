@@ -1,0 +1,8 @@
+### NC-3 dirty worktree — identical to NC-2 plus one untracked file.
+pr-ready-check: PR #767 head=f867a4c18e7c29b5907290de87680cf07763ac67 state=blocked draft=true
+  layers: fast=success integration=success security=success product=success
+  deferred=success census=skipped settlement=missing
+  git: head=a9e4201c4 branch=docs/agent-testing-infrastructure-vnext-20261114 upstream=origin/docs/agent-testing-infrastructure-vnext-20261114 ahead=1 clean=false
+  refuse reasons: MARKER_PRESENT_TITLE, SETTLEMENT_MISSING, WORKTREE_DIRTY, LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS
+DSH-PR-READY verdict=REFUSED pr=767 reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING,WORKTREE_DIRTY,LOCAL_HEAD_NOT_PR_HEAD,UNPUSHED_COMMITS
+exit=1
