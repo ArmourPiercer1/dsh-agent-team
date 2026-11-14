@@ -140,7 +140,7 @@ export function audit(commits = 40) {
 
 // ---------------------------------------------------------------- render
 
-export function render(result, { top = 10, explain = false } = {}) {
+export function render(result, { explain = false } = {}) {
   const lines = []
   lines.push(`coverage-audit (${MASTER}, last 40 commits with a diff):`)
   lines.push(`  determined   ${result.determinedCommits}`)
