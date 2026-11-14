@@ -34,17 +34,17 @@ sum is NOT a wall clock — it is work, which is what the balancer minimises.
   SUM OF THE 11 MEDIAN WINDOWS                                      1889836       1889.8
 
 PLAN M4 PRODUCES FOR THIS RUN — 22 tasks = 11 roots x 2 captures
-  The L2 run's own product_merge_tree was 2214185978f5637bf3c7256c245970ad3a675bd8 (line 8). The identity
-  below is recorded at the commit this file is committed with: merge_tree_sha and catalog_digest differ BY
-  CONSTRUCTION because this PR adds node:test suites (not census roots), so the root set / task set /
-  estimates below are still the L2 run's own population.
-    merge_tree_sha   674da11a1f8ce4d3e11f5a6313ac449d94db628a
+  The L2 run's own product_merge_tree was 2214185978f5637bf3c7256c245970ad3a675bd8 (line 9). The identity
+  below was recorded on the tree of the CODE commit this review round closes (387321fcc); the memo/log
+  commits that follow are docs-only, so merge_tree_sha moves with them BY CONSTRUCTION while the task set,
+  est_ms and catalog_digest stay identical — that is "identity is recorded, not recomputed", observable.
+    merge_tree_sha   e93cf92dd69193bc5b46cfdf945d1e50fc3a8872
     host_sha         639ed015397290b3745d163aafe02ffee4aa3f84
     catalog_digest   sha256:ab4bd8818f839e1c6ab178e20eb48a5b587a009ea7b227053b552125e1f2454a
     build_digest     None
-    plan_digest      sha256:37c5a4fdc1b3e47eb9e61afb698c29fd22f04cba5fc02556d7e6a899448b8f39
+    plan_digest      sha256:72afef5e81d83a3062291972153a46e5ac5df7f0d249298eead36c976b4a82ee
   captures=2  test_timeout_ms=90000  roots=11  tasks=22  groups=11 (one capture-pair per root)
-  roots_dropped=[] (an exclude[]-removed root would be listed here AND refused without --allow-dropped-root)
+  roots_dropped=[] (an exclude[]-removed root is listed here AND refused without --allow-dropped-root)
   est_ms = each task's OWN measured attempt window (M3 row); null would mean unmeasured.
   Sum of the 22 estimates = 5226020 ms = 5226.0 s: that is the balancer's total WORK (not wall).
     census:packages/client#1               est_ms=405694  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_client_1.json --testTimeout=90000

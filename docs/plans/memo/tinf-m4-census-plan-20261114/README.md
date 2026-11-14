@@ -62,8 +62,8 @@ M4 把「分片不能改变被验证的总体」从一句要求变成**两个可
 | capture 1 / capture 2 | **550.8 s / 544.8 s**（census 墙钟 **1095.6 s**，gate 报 step `seconds=1095.9`，即 23m37s job 里的 77%） |
 | 最重 root（每 capture 中位数） | `packages/runtime` **543.0 s**（545.3 / 543.0）、`packages/testkit` **539.2 s**（539.2 / 540.7） |
 | 计划 | 22 tasks、11 roots、11 个 `capture-pair` 组、`captures=2`、`--test-timeout 90000` |
-| 计划稳定性复核 | 在评审修复后的 tip tree 上重跑：**22 个 task 与其 `est_ms`、`catalog_digest` 全部相同**，只有 `merge_tree_sha`（→ tip tree）与由它派生的 `plan_digest` 变化——这正是「身份是记录的、不是重算的」的可观察形式 |
-| 计划 identity | `merge_tree_sha=674da11a…`（评审修复后的 tip tree）、`host_sha=639ed01539…`、`catalog_digest=sha256:ab4bd881…`、`build_digest=null`、`plan_digest=sha256:37c5a4fd…`（`roots_dropped=[]` 现在也是 digest 的一部分） |
+| 计划稳定性复核 | 在评审修复后的代码树上重跑：**22 个 task 与其 `est_ms`、`catalog_digest` 全部相同**，只有 `merge_tree_sha`（→ tip tree）与由它派生的 `plan_digest` 变化——这正是「身份是记录的、不是重算的」的可观察形式 |
+| 计划 identity | `merge_tree_sha=e93cf92d…`（**代码提交 `387321fcc` 的 tree**；其后的 memo/日志提交只动文档，`merge_tree_sha`/`plan_digest` 随之变、task 集与 `est_ms` 不变）、`host_sha=639ed01539…`、`catalog_digest=sha256:ab4bd881…`、`build_digest=null`、`plan_digest=sha256:72afef5e…`（`roots_dropped=[]` 现在也是 digest 的一部分） |
 
 **分片负载——两个模型必须分开命名，否则数字不可复现**（评审缺口 5：旧的 1,889,990 / 1,889,836 只在已被取代的「只用 root 中位数」模型下成立）：
 
