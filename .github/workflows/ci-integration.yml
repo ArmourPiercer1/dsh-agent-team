@@ -206,7 +206,7 @@ jobs:
         # CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/tinf-m0.test.mjs
 
-      - name: "test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache — host-free)"
+      - name: "test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free)"
         # M1 delivers discovery, not authority: the workflow file lists and
         # dev/ci/eb3-ci-manifest.json stay the only things that decide what runs
         # (M5 moves that). This leg proves the catalog's classifications and its
@@ -224,8 +224,23 @@ jobs:
         # entry point + identity + file count + tree digest agree, and MISS for an
         # absent tree). Both host-free. Dropping either file from this line or from
         # the manifest's check[] is CI_LAYER_LEG_WEAKENED — the same law M1 landed.
+        # TINF M4 (2026-11-14) joins the SAME invocation and the SAME check[] entry with two more
+        # host-free suites, because a second hand-written list is exactly the defect this milestone
+        # measures: scripts/census-plan.test.mjs (the census plan is DERIVED from the root vitest
+        # config through the catalog's include[] matching + M3's rootOf — 11 roots / 705 files, the
+        # numbers the last real census printed — one task per (root, capture), captures of a root
+        # indivisible because parallelising them is unproven, est_ms a nullable hint that never drops
+        # a task, plan_digest covering every task field, --verify-plan refusing digest / identity /
+        # task-set drift) and scripts/census-aggregate.test.mjs (spec §5 rules 1–6 fail-closed as
+        # NAMED codes: omitted shard, duplicate ids, extra/missing tasks, each identity field, a shard
+        # that exited 0 carrying a FAIL, INCOMPLETE/CANCELLED/INFRA_ERROR, truncated artifact,
+        # one-capture plan, a plan digest recomputed after a task edit, no-terminal-state, the three
+        # oracle classes, and the positive control). Both are SHADOW: no workflow, matrix, concurrency
+        # group or Required context is added here, and neither tool is read by ci-required. The spec
+        # §6 step-2 shadow workflow is deferred on purpose — it changes eb3-ci-required's workflow
+        # count and the manifest shape, which is a separately reviewed change.
         run: |
-          node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs
+          node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs
           node scripts/test-catalog.mjs --max-uncollected 91
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
