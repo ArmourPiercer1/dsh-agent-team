@@ -215,7 +215,7 @@ jobs:
         # number: it refuses GROWTH and cannot be satisfied by deleting the leg.
         run: |
           node --test scripts/test-catalog.test.mjs
-          node scripts/test-catalog.mjs --max-uncollected 91
+          node scripts/test-catalog.mjs --max-uncollected 87
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI

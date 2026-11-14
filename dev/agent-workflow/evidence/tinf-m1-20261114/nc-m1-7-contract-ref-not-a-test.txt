@@ -1,0 +1,5 @@
+### NC-M1-REF a contract is bound to a source file, not a test.
+### Expected: CONTRACT_REF_NOT_A_TEST, red — a binding nobody runs is a coverage claim.
+  REFUSED CONTRACT_REF_NOT_A_TEST AUTH-01 a contract bound to a non-test file is a coverage claim nobody runs
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=1 findings=1
+exit=2

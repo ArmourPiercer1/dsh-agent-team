@@ -21,8 +21,9 @@
  *     `scripts/eb3-security-run.mjs` executes. The include/exclude arrays are
  *     parsed from those files, never copied here, so a config edit cannot
  *     silently leave this catalog stale. A package test that no config matches
- *     is `UNCOLLECTED`, which is how the 11 `packages/domain/compatibility/test`
- *     suites were found.
+ *     is `UNCOLLECTED`, which is how the 7 `packages/domain/compatibility/test`
+ *     suites were found (two levels below the package root, so neither the root
+ *     include nor the package include reaches them).
  *   - node:test: `*.test.mjs|cjs|js` under `scripts/` and `tests/`, collected
  *     via the same workflow/manifest token reader M0's audit uses.
  *   - everything under `dev/agent-workflow/evidence/` is evidence, not a test:
@@ -32,15 +33,16 @@
  *   DUPLICATE_ID, CONTRACT_WITHOUT_TEST, CONTRACT_UNKNOWN_TEST,
  *   STALE_EXCLUDE, UNKNOWN_DRIVER, TEST_UNCOLLECTED, UNKNOWN_CLASSIFICATION,
  *   VITEST_CONFIG_UNREADABLE, INSTRUMENT_DRIVER_MISSING.
- *   A refusal is the point: `TEST_UNCOLLECTED` is exactly the 79 suites M0
- *   measured, and it must not print as green just because the count is stable.
+ *   A refusal is the point: at landing `TEST_UNCOLLECTED` is 87 suites (80
+ *   node:test + 7 compatibility), and it must not print as green just because the
+ *   count is stable.
  *
  * USAGE
  *   node scripts/test-catalog.mjs                  # summary + findings
  *   node scripts/test-catalog.mjs --json           # the catalog artifact
  *   node scripts/test-catalog.mjs --diff           # two-way vs the CI lists
  *   node scripts/test-catalog.mjs --allow-uncollected   # report only, exit 0
- *   node scripts/test-catalog.mjs --max-uncollected 91  # ratchet: refuse GROWTH
+ *   node scripts/test-catalog.mjs --max-uncollected 87  # ratchet: refuse GROWTH
  *   node scripts/test-catalog.mjs --self-test
  */
 import { createHash } from 'node:crypto'
@@ -55,6 +57,8 @@ export const REGISTRY_FILE = 'dev/ci/test-contracts.json'
 export const VITEST_CONFIG = 'vitest.config.ts'
 /** Evidence scratch recorders are not product tests; the reason still has to be written down. */
 export const EVIDENCE_PREFIX = 'dev/agent-workflow/evidence/'
+/** What counts as a test file name. Used for node:test discovery AND contract refs. */
+export const TEST_LIKE_RE = /\.(?:test|spec)\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
 
 // ------------------------------------------------------------------ helpers
 
@@ -130,21 +134,30 @@ export function loadRegistry(cwd) {
  */
 export function buildEntries(files, { vitestCfg, configs = null, registry, ciCollected = new Set(), explicitlyCollected = new Set() } = {}) {
   const effectiveConfigs = configs ?? (vitestCfg ? [{ base: '', cfg: vitestCfg }] : [])
-  const relOf = (base, file) => (base && file.startsWith(`${base}/`) ? file.slice(base.length + 1) : base ? null : file)
+  // A config's globs are relative to its directory — EXCEPT when they spell that
+  // directory out (tests/poc-web-native-reuse/vitest.poc.config.ts includes
+  // 'tests/poc-web-native-reuse/**/*.test.ts', i.e. repo-relative). Guessing one
+  // convention made four real suites look uncollected, so each config declares
+  // which one it uses, detected from its own include strings.
+  const repoRelative = (base, cfg) => Boolean(base) && (cfg?.include ?? []).some((g) => g.startsWith(`${base}/`))
+  const relOf = (base, file, cfg) => {
+    if (!base) return file
+    if (repoRelative(base, cfg)) return file
+    return file.startsWith(`${base}/`) ? file.slice(base.length + 1) : null
+  }
   // Collected means "a config include[] matches it", NOT "its name ends in .test.ts":
   // packages/client includes `test/**/*.client.spec.ts[x]`, and an extension-based
   // filter made 32 real client suites invisible to the catalog.
   const collectedByConfig = (file) => effectiveConfigs.some(({ base, cfg }) => {
-    const rel = relOf(base, file)
+    const rel = relOf(base, file, cfg)
     if (rel === null) return false
     return matchesAny(rel, cfg.include ?? []) && !matchesAny(rel, cfg.exclude ?? [])
   })
   const excludedByConfig = (file) => effectiveConfigs.some(({ base, cfg }) => {
-    const rel = relOf(base, file)
+    const rel = relOf(base, file, cfg)
     if (rel === null) return false
     return matchesAny(rel, cfg.exclude ?? [])
   })
-  const TEST_LIKE_RE = /\.(?:test|spec)\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
   const entries = []
   const findings = []
   const contractOf = new Map()
@@ -206,6 +219,7 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
     if (refs.length === 0) findings.push({ code: 'CONTRACT_WITHOUT_TEST', contract: c.id, detail: 'a critical contract with no test_refs is an unbacked promise' })
     for (const ref of refs) {
       if (!files.has(ref.path)) findings.push({ code: 'CONTRACT_UNKNOWN_TEST', contract: c.id, path: ref.path, detail: 'test_ref does not exist (deleted or renamed?)' })
+      else if (!TEST_LIKE_RE.test(ref.path)) findings.push({ code: 'CONTRACT_REF_NOT_A_TEST', contract: c.id, path: ref.path, detail: 'a contract bound to a non-test file is a coverage claim nobody runs' })
     }
   }
 
@@ -289,7 +303,10 @@ export const SECURITY_LIST = 'tests/checks/eb3-security-suites.txt'
 export function vitestConfigsOf(files, readConfig) {
   const out = []
   for (const file of [...files].sort()) {
-    if (!/(^|\/)vitest\.config\.ts$/.test(file)) continue
+    // ANY vitest config, not just the default name: tests/poc-web-native-reuse has
+    // vitest.poc.config.ts and the root has vitest.scratch.config.ts, and a config
+    // this reader cannot see makes its suites look uncollected.
+    if (!/(^|\/)vitest(?:[.\w-]*)?\.config\.ts$/.test(file)) continue
     if (file.includes('node_modules/')) continue
     try {
       out.push({ base: path.posix.dirname(file) === '.' ? '' : path.posix.dirname(file), cfg: readConfig(file) })
@@ -370,7 +387,11 @@ function main(argv) {
       instruments: state.instruments,
     }
     console.log(JSON.stringify(artifact, null, 2))
-    return 0
+    // Printing the artifact is not a verdict: --json used to exit 0 with a planted
+    // CONTRACT_UNKNOWN_TEST and the 87 uncollected still in the file.
+    const blocking = state.findings.filter((f) => f.code !== 'TEST_UNCOLLECTED' || (!opts.allowUncollected && opts.maxUncollected === null))
+    for (const f of blocking) console.error(`REFUSED ${f.code} ${f.contract ?? f.instrument ?? f.path ?? ''} ${f.detail ?? ''}`.trimEnd())
+    return blocking.length ? 2 : 0
   }
 
   const rendered = render(state, { allowUncollected: opts.allowUncollected })

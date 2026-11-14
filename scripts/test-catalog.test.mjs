@@ -55,6 +55,32 @@ test('discovery follows config include[], not the .test.ts suffix', () => {
   assert.equal(c['packages/client/test/d.spec.ts'], 'UNCOLLECTED')
 })
 
+test('a config whose include spells out its own directory is repo-relative', () => {
+  // tests/poc-web-native-reuse/vitest.poc.config.ts includes
+  // 'tests/poc-web-native-reuse/**/*.test.ts' — the globs are repo-relative, not
+  // relative to the config's directory. Reading it the other way hid four suites.
+  const cfg = { include: ['tests/poc-web-native-reuse/**/*.test.ts'], exclude: [] }
+  const files = new Set(['tests/poc-web-native-reuse/poc-w1.test.ts', 'tests/poc-web-native-reuse/deep/poc-w9.test.ts'])
+  const { entries } = buildEntries(files, { configs: [{ base: 'tests/poc-web-native-reuse', cfg }], registry: {} })
+  assert.deepEqual(entries.map((e) => e.classification), ['DISCOVERED_AND_COLLECTED', 'DISCOVERED_AND_COLLECTED'])
+})
+
+test('a contract ref that is not a test file is refused', () => {
+  const reg = { contracts: [{ id: 'A-01', test_refs: ['packages/domain/src/index.ts'] }] }
+  const { findings } = buildEntries(new Set(['packages/domain/src/index.ts']), { configs: [{ base: '', cfg: CFG }], registry: reg })
+  assert.ok(findings.some((f) => f.code === 'CONTRACT_REF_NOT_A_TEST'))
+})
+
+test('the CI step that runs this suite also runs the ratchet', () => {
+  // The manifest pins the suite file, not the step's commands: without this the
+  // ratchet line could be deleted and eb3-ci-required would still say pass.
+  const wf = readFileSync('.github/workflows/ci-integration.yml', 'utf8')
+  const steps = wf.split(/^ {6}- name: /m)
+  const step = steps.find((s) => s.includes('node --test scripts/test-catalog.test.mjs'))
+  assert.ok(step, 'the catalog step is gone from ci-integration.yml')
+  assert.ok(step.includes('--max-uncollected '), 'the ratchet command was removed from the catalog step')
+})
+
 test('classification: collected, uncollected and excluded are distinct', () => {
   const files = new Set([
     'packages/runtime/test/auth.test.ts',
