@@ -317,7 +317,8 @@ test('balance: exact minimum makespan on a partition with a known answer', () =>
   assert.equal(two.ok, true, JSON.stringify(two))
   assert.equal(two.method, 'exhaustive-min-makespan')
   assert.equal(two.makespan_ms, 1200)
-  assert.equal(two.optimal, true)
+  assert.equal(two.matches_lower_bound, true)
+  assert.match(two.optimal_guarantee, /exhaustive/)
 })
 
 test('balance: every task appears exactly once, and a group is never split', () => {

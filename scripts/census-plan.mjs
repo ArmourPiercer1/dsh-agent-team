@@ -479,9 +479,17 @@ export function balance(plan, k, { maxExactGroups = MAX_EXACT_GROUPS } = {}) {
     total_ms: totalMs,
     ideal_ms: Math.ceil(totalMs / k),
     lower_bound_ms: lowerBound,
-    optimal: makespan === lowerBound,
-    est_note: 'loads are SUMMED per-shard estimates, not measured wall clock; the L2 roots run concurrently ' +
-      'inside one capture, so a shard\'s real wall clock is not the sum (tinf-timing\'s window semantics)',
+    // `matches_lower_bound` says the search reached the information-theoretic floor. Exhaustive search
+    // can PROVE a makespan that is above the floor is still the minimum (discrete unit weights), so
+    // "did it hit the floor" and "is it optimal" are different questions and are named separately.
+    matches_lower_bound: makespan === lowerBound,
+    optimal_guarantee: method.startsWith('exhaustive')
+      ? 'minimum makespan proven by exhaustive search over indivisible units'
+      : 'heuristic (greedy LPT + single-move local search); not proven minimal',
+    est_note:
+      'load_ms is the SUM of the shard\'s per-task medians — a WORK metric, not wall clock. In the real ' +
+      'census every root runs CONCURRENTLY inside one capture, so a shard\'s wall clock is roughly ' +
+      'captures × max(root median in that shard), not the sum (tinf-timing window semantics).',
   }
 }
 
