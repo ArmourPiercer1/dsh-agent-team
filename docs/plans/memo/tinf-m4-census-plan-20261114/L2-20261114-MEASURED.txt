@@ -1,0 +1,115 @@
+TINF M4 — L2 census measured numbers (committed extract; the 224 KB raw artifact is NOT committed)
+====================================================================================================
+
+PROVENANCE
+  repo/artifact : ArmourPiercer1/dsh-agent-team, `gh run download 43638954936 -n census-runtime-transcripts-1195`
+  file used     : art/census-transcripts/tinf-timing.tsv  (25 data rows)
+  produced by   : scripts/tinf-timing.mjs (M3, merged b8496efc2), shadow rows written by ci-pr-gate.mjs --only census
+  run identity  : run_id=20261114T204835Z-3375
+                  product_merge_tree=2214185978f5637bf3c7256c245970ad3a675bd8
+                  head=d13e94e6d2218107e1ea50b134a5cdd6ac60b2ba  host_commit=639ed015397290b3745d163aafe02ffee4aa3f84
+  counts        : 1 leg row(s) + 2 census-capture + 22 census-root = 25 rows
+
+CAPTURES (monotonic clock)
+  attempt 1  duration_ms=550794  (  550.8 s)  status=ok  started_at=2026-11-14T20:48:35.843Z
+  attempt 2  duration_ms=544812  (  544.8 s)  status=ok  started_at=2026-11-14T20:57:46.778Z
+  census wall   = 1095606 ms = 1095.6 s   (the gate printed seconds=1095.9 for the whole step)
+
+PER-ROOT WINDOWS. A census-root row is a DERIVED window (max(endTime)-min(startTime) over that root's
+files in that attempt). All roots run CONCURRENTLY inside one vitest process, so these overlap and the
+sum is NOT a wall clock — it is work, which is what the balancer minimises.
+
+  root                                    attempt 1  attempt 2   median(ms)    median(s)
+  packages/client                            405694      73656        73656         73.7
+  packages/contracts                          82551      77434        77434         77.4
+  packages/domain                            291799     113798       113798        113.8
+  packages/legacy                            176307      73980        73980         74.0
+  packages/remote                            268345     100439       100439        100.4
+  packages/runtime                           545285     542969       542969        543.0
+  packages/runtime/controlled-fs             144261      74232        74232         74.2
+  packages/storage                           159582      76363        76363         76.4
+  packages/testkit                           539173     540749       539173        539.2
+  packages/tools                             523566     112697       112697        112.7
+  packages/tools/a5p5-tools                  198045     105095       105095        105.1
+  SUM OF THE 11 MEDIAN WINDOWS                                   1889836       1889.8
+
+PLAN M4 WOULD HAVE PRODUCED FOR THIS RUN — 22 tasks = 11 roots x 2 captures
+  The L2 run's own product_merge_tree was 2214185978f5637bf3c7256c245970ad3a675bd8 (line 8). The identity
+  below is recorded at the M4 code tip (tree d023b1bb7d40bb64ba4b63bf9ed95e11a76025bc): merge_tree_sha and
+  catalog_digest differ BY CONSTRUCTION because this PR adds two node:test suites (not census roots), so
+  the root set / task set / estimates below are still the L2 run's own population.
+    merge_tree_sha   d023b1bb7d40bb64ba4b63bf9ed95e11a76025bc
+    host_sha         639ed015397290b3745d163aafe02ffee4aa3f84
+    catalog_digest   sha256:ab4bd8818f839e1c6ab178e20eb48a5b587a009ea7b227053b552125e1f2454a
+    build_digest     null (unrecorded: no --build-digest was passed; the aggregator would REFUSE to PASS it)
+    plan_digest      sha256:2e8ba7e50d0d9b704e6657e23d63d73a7ab717bca98f6146725226b2f79c51c6
+  captures=2  test_timeout_ms=90000  roots=11  tasks=22  groups=11 (one capture-pair per root)
+  est_ms = each task's OWN measured attempt window (M3 row); null would mean unmeasured.
+  Sum of the 22 estimates = 5226020 ms = 5226.0 s: that is the balancer's total WORK (not wall).
+    census:packages/client#1               est_ms=405694  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_client_1.json --testTimeout=90000
+    census:packages/client#2               est_ms=73656   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_client_2.json --testTimeout=90000
+    census:packages/contracts#1            est_ms=82551   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_contracts_1.json --testTimeout=90000
+    census:packages/contracts#2            est_ms=77434   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_contracts_2.json --testTimeout=90000
+    census:packages/domain#1               est_ms=291799  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_domain_1.json --testTimeout=90000
+    census:packages/domain#2               est_ms=113798  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_domain_2.json --testTimeout=90000
+    census:packages/legacy#1               est_ms=176307  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_legacy_1.json --testTimeout=90000
+    census:packages/legacy#2               est_ms=73980   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_legacy_2.json --testTimeout=90000
+    census:packages/remote#1               est_ms=268345  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_remote_1.json --testTimeout=90000
+    census:packages/remote#2               est_ms=100439  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_remote_2.json --testTimeout=90000
+    census:packages/runtime#1              est_ms=545285  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_runtime_1.json --testTimeout=90000
+    census:packages/runtime#2              est_ms=542969  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_runtime_2.json --testTimeout=90000
+    census:packages/runtime/controlled-fs#1 est_ms=144261  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_runtime_controlled-fs_1.json --testTimeout=90000
+    census:packages/runtime/controlled-fs#2 est_ms=74232   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_runtime_controlled-fs_2.json --testTimeout=90000
+    census:packages/storage#1              est_ms=159582  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_storage_1.json --testTimeout=90000
+    census:packages/storage#2              est_ms=76363   pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_storage_2.json --testTimeout=90000
+    census:packages/testkit#1              est_ms=539173  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_testkit_1.json --testTimeout=90000
+    census:packages/testkit#2              est_ms=540749  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_testkit_2.json --testTimeout=90000
+    census:packages/tools#1                est_ms=523566  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_tools_1.json --testTimeout=90000
+    census:packages/tools#2                est_ms=112697  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_tools_2.json --testTimeout=90000
+    census:packages/tools/a5p5-tools#1     est_ms=198045  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_tools_a5p5-tools_1.json --testTimeout=90000
+    census:packages/tools/a5p5-tools#2     est_ms=105095  pnpm exec vitest run --reporter=default --reporter=json --outputFile.json=.artifacts/census/census_packages_tools_a5p5-tools_2.json --testTimeout=90000
+
+LOAD THE BALANCER PICKS — exhaustive min-makespan over the 11 indivisible capture-pairs
+  load_ms = SUM of the unit's measured medians = WORK metric.
+  predicted wall(shard) = sum over captures c of max(est(root,c) for root in shard), the model that
+  matches how the census executes (one vitest process per capture, roots concurrent within it).
+
+  --- K=1  method=exhaustive-min-makespan
+      work makespan=  5226.0 s  matches_lower_bound=True
+      guarantee: minimum makespan proven by exhaustive search over indivisible units
+      shard-1 work=  5226.0 s  predicted_wall=  1088.3 s  tasks=22  roots=packages/client,packages/contracts,packages/domain,packages/legacy,packages/remote,packages/runtime,packages/runtime/controlled-fs,packages/storage,packages/testkit,packages/tools,packages/tools/a5p5-tools
+
+  --- K=2  method=exhaustive-min-makespan
+      work makespan=  2614.1 s  matches_lower_bound=False
+      guarantee: minimum makespan proven by exhaustive search over indivisible units
+      shard-1 work=  2614.1 s  predicted_wall=  1088.3 s  tasks=10  roots=packages/client,packages/contracts,packages/legacy,packages/runtime,packages/tools
+      shard-2 work=  2611.9 s  predicted_wall=  1079.9 s  tasks=12  roots=packages/domain,packages/remote,packages/runtime/controlled-fs,packages/storage,packages/testkit,packages/tools/a5p5-tools
+
+  --- K=4  method=exhaustive-min-makespan
+      work makespan=  1315.9 s  matches_lower_bound=False
+      guarantee: minimum makespan proven by exhaustive search over indivisible units
+      shard-1 work=  1306.7 s  predicted_wall=  1088.3 s  tasks= 4  roots=packages/runtime,packages/runtime/controlled-fs
+      shard-2 work=  1315.9 s  predicted_wall=  1079.9 s  tasks= 4  roots=packages/storage,packages/testkit
+      shard-3 work=  1292.1 s  predicted_wall=   637.4 s  tasks= 6  roots=packages/domain,packages/legacy,packages/tools
+      shard-4 work=  1311.3 s  predicted_wall=   510.8 s  tasks= 8  roots=packages/client,packages/contracts,packages/remote,packages/tools/a5p5-tools
+
+THE MEASURED CONCLUSION (the reason these numbers are committed rather than quoted)
+  * the census wall is 1095.6 s = two sequential captures of 550.8 s and 544.8 s, and each capture is
+    about its heaviest root window: packages/runtime 545.3 / 543.0 s, packages/testkit 539.2 / 540.7 s.
+  * so ROOT-LEVEL SHARDING CANNOT SHORTEN THIS CENSUS. Whichever shard holds packages/runtime still
+    needs 2 x ~543 s = 1086 s; the k=1 model predicts 1088.3 s against 1095.9 s measured (+0.7%).
+    k=2 and k=4 predict 1088.3 s as well: the split buys ~0 s of wall clock.
+  * the WORK metric does balance (5226.0 s -> 2614.1 s per shard at k=2), but work is not wall, and
+    no work is saved: exactly the same 22 tasks run either way (that is the non-degradation invariant).
+  * a sharded run ADDS fixed cost per shard — host provision+build 272 s and repo build 22 s (M0 step
+    medians): k=2 adds ~294 s of runner time and one more host boot, k=4 ~882 s and three more, for
+    zero wall gain on this data. The M3 host-cache key is the lever that would change that, and it is
+    not enabled.
+  * to shorten the wall you must either shard INSIDE a root (file-level; not M4) or run the two captures
+    concurrently — which spec §1 forbids assuming is lossless, and which is why every capture pair is
+    one indivisible group in the plan.
+
+WHAT THIS FILE DOES NOT CONTAIN
+  * no sharded run was executed. Every load here is computed OFFLINE from the recorded L2 medians
+    (spec §6 step 3). Runner-minutes per shard, per-shard host boots and cache hits are UNMEASURED.
+  * the raw transcript/artifact is not committed (evidence budget); these are the numbers used.
