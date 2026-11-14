@@ -299,21 +299,39 @@ test('key: a host lockfile edit changes the host key (the digest is not a consta
   assert.notEqual(b.host_lock_digest, c.host_lock_digest)
 })
 
-test('key: a dirty host checkout is refused, not keyed as the pin', () => {
+test('key: an off-pin host checkout is DRIFT; a dirty checkout AT the pin is DIRTY', () => {
   const dir = tmp()
   const git = (...args) => spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' })
   assert.equal(git('init', '-q').status, 0)
   git('config', 'user.email', 't@example.com')
   git('config', 'user.name', 't')
+  writeFileSync(join(dir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n')
   writeFileSync(join(dir, 'README'), 'x\n')
-  git('add', 'README')
+  git('add', '.')
   git('commit', '-qm', 'init')
   const head = git('rev-parse', 'HEAD').stdout.trim()
 
   const paths = readFileSync('tests/paths.mjs', 'utf8')
   const pin = /export\s+const\s+TEST_USE_BASELINE_SHA\s*=\s*['"]([0-9a-f]{40})['"]/.exec(paths)[1]
   assert.notEqual(head, pin)
-  // Pin mismatch is the first refusal (drift), so a clean-but-different tree is DRIFT.
-  writeFileSync(join(dir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n')
+  // Pin mismatch is the first refusal: a clean-but-different tree is DRIFT.
   assert.throws(() => deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: dir }), (e) => e.code === 'HOST_CHECKOUT_DRIFT')
+
+  // Now pin THIS repo's head so the drift check passes, and dirty the tree: only then is the dirty
+  // rule the one that decides. Without the pinOverride seam this claim was code-only.
+  const clean = deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: dir, hostPinOverride: head })
+  assert.equal(clean.host_commit, head)
+  writeFileSync(join(dir, 'README'), 'x\ny\n')
+  assert.throws(
+    () => deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: dir, hostPinOverride: head }),
+    (e) => e.code === 'HOST_CHECKOUT_DIRTY',
+  )
+})
+
+test('verify: a platform mismatch is INFRA_ERROR even without host_key', () => {
+  // Reviewer finding: the minimal documented expectation accepted a darwin artifact as a linux host.
+  const dir = makeArtifact()
+  const result = verifyHostArtifact({ dir, expect: { ...FACTS, platform: 'darwin-arm64' } })
+  assert.equal(result.verdict, 'INFRA_ERROR')
+  assert.ok(result.reasons.some((r) => r.startsWith('IDENTITY_MISMATCH: platform')), JSON.stringify(result.reasons))
 })

@@ -5,9 +5,9 @@
  * WHY THIS EXISTS. `scripts/census-profile.mjs` (M0) reads the Actions jobs API, which exposes
  * one step per phase: it measured census 1108 s of a 1422 s job (78%), host build 272 s (19%),
  * repo build 22 s (1.6%) on run 43459947311. Everything ABOVE the census step is therefore
- * already measured; what no step exposes is the split of that one census step into its nine
+ * already measured; what no step exposes is the split of that one census step into its package
  * roots. `census-profile.mjs` says so in its own output ("needs a harness-level timer (M3)").
- * This file is that timer: it records what the harness itself executes, as rows, so the nine-root
+ * This file is that timer: it records what the harness itself executes, as rows, so the per-root
  * decomposition stops being a guess.
  *
  * WHAT IT MEASURES. Whatever the CALLER wraps with `time(phase, root, fn)` — one row per call,
@@ -17,7 +17,7 @@
  *   phase=census-capture  root=nine-roots       each vitest capture attempt (the census step)
  *   phase=census-root     root=<root dir>       DERIVED, see below — not an hrtime span
  *
- * THE ONE DEVIATION FROM "WRAP THE ROOT LOOP": there is no root loop to wrap. The nine roots run
+ * THE ONE DEVIATION FROM "WRAP THE ROOT LOOP": there is no root loop to wrap. The roots run
  * CONCURRENTLY inside ONE `vitest run` (root `vitest.config.ts` include: `packages/<pkg>/test/**` plus
  * two lane directories; the config's own comment: "the census single-capture runs nine package
  * roots concurrently"). A per-root `hrtime` span around a non-existent loop would be an invention.
@@ -33,7 +33,7 @@
  *     schema      always `tinf-timing/1`
  *     run_id      caller's run identifier (the gate uses <stamp>-<pid>)
  *     phase       `[a-z][a-z0-9-]*`; known values: leg, census-capture, census-root
- *     root        what the phase ran on: a leg name, `nine-roots`, or a root directory
+ *     root        what the phase ran on: a leg name, `nine-roots` (the capture row keeps the
  *     attempt     1-based integer (capture attempt / re-sample index)
  *     started_at  ISO-8601 UTC wall clock (`...Z`); a stamp, never a duration source
  *     duration_ms non-negative integer milliseconds (monotonic clock, rounded; derived rows are
@@ -284,20 +284,17 @@ export function rootOf(file) {
     const at = rel.indexOf('tests/')
     rel = rel.slice(at)
   }
+  // A lane directory under `tests/` wins over any nested `/test/` further down: the root is
+  // `tests/<lane>` regardless of how deep the file is.
+  if (rel.startsWith('tests/')) return rel.split('/').slice(0, 2).join('/')
+  // Only these two layouts are census roots. An absolute path that merely contains `/test/` is not
+  // a root: naming it would bake the runner's prefix into a comparable field.
+  if (!rel.startsWith('packages/')) return 'unknown'
   const i = rel.indexOf('/test/')
   if (i > 0) return rel.slice(0, i)
-  const j = rel.indexOf('/tests/')
-  if (j >= 0) {
-    // A lane directory: keep two segments so `tests/checks` and `tests/kits` stay distinct.
-    const tail = rel.slice(j + 1)
-    const parts = tail.split('/')
-    return parts.slice(0, 2).join('/')
-  }
-  if (rel.startsWith('tests/')) {
-    const parts = rel.split('/')
-    return parts.slice(0, 2).join('/')
-  }
-  return rel === '' ? 'unknown' : rel
+  // Anything else (e.g. scripts/x.test.mjs) is not part of a census root; naming the file as its
+  // own "root" would invent roots that no config collects.
+  return 'unknown'
 }
 
 // ───────────────────────────────────────────────────────────────────────── parsing ──
@@ -408,7 +405,12 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
       byRoot.get(r.root).push(duration)
     }
   }
-  const baseSum = list.filter((r) => !DERIVED_PHASES.has(r.phase)).reduce((a, r) => a + r.duration_ms, 0)
+  // baseSum is a DENOMINATOR: a failed row in it silently shrinks every other phase's share (the
+  // reviewer's repro: ok 1000 + failed 1000 made census-capture read 50%, and raw string durations
+  // concatenated). Same bounded, coerced set the phase stats use.
+  const baseSum = list
+    .filter((r) => !DERIVED_PHASES.has(r.phase) && r.status === 'ok')
+    .reduce((a, r) => a + Number(r.duration_ms), 0)
   const phases = [...byPhase.entries()]
     .map(([phase, values]) => {
       const s = stats(values)

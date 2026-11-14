@@ -303,6 +303,10 @@ test('rootOf: the first /test/ segment wins, so nested files do not invent roots
   // A lane directory is a stable relative root, never an absolute path.
   assert.equal(rootOf('/w/tests/checks/q.test.ts'), 'tests/checks')
   assert.equal(rootOf('/w/tests/checks/eb3/eb3-x.test.ts'), 'tests/checks')
+  assert.equal(rootOf('/w/tests/kits/mykit/test/a.test.ts'), 'tests/kits')
+  // A path outside the census layout is not a root: naming it would invent roots no config collects.
+  assert.equal(rootOf('/w/scripts/ci-local.test.mjs'), 'unknown')
+  assert.equal(rootOf('/w/dev/x/test/y.test.ts'), 'unknown')
 })
 
 test('summarize: a failed span is surfaced by name and never rendered as 0 ms', () => {
@@ -329,4 +333,18 @@ test('summarize: a failed span is surfaced by name and never rendered as 0 ms', 
   assert.match(text, /packages\/storage \(FAILED/)
   assert.doesNotMatch(text, /\s0\s+0\s+0%\s+packages\/storage/)
   assert.match(text, /failed rows \(status != ok/)
+})
+
+test('summarize: a failed row never enters the denominator (shares are not diluted)', () => {
+  // Reviewer repro: one ok capture of 1000 ms and one failed leg of 1000 ms made the capture share
+  // read 50% instead of 100%, because baseSum filtered on phase only.
+  const rows = [
+    { ...BASE_ROW, phase: 'census-capture', duration_ms: '1000', status: 'ok' },
+    { ...BASE_ROW, phase: 'leg', root: 'ci-fast', duration_ms: '1000', status: 'failed' },
+  ]
+  const report = summarize(rows)
+  const capture = report.phases.find((p) => p.phase === 'census-capture')
+  assert.equal(capture.share_pct, 100)
+  assert.equal(report.failed_count, 1)
+  assert.equal(report.failed_rows[0].phase, 'leg')
 })

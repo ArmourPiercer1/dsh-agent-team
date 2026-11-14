@@ -51,7 +51,7 @@ const { path, rows, warnings } = timer.flush()        // 幂等；**永不 throw
 
 ## 4. root 行是**推导**的，不是包住一个循环（偏差 1）
 
-设计稿说「per root（census root loop）」，但真实代码里**没有 root 循环可以包**：九个 root 在**一次** `vitest run` 里并发执行（根 `vitest.config.ts` 的 include 是 `packages/<pkg>/test/**` 加两条 lane 目录，其注释原文：*"the census single-capture runs nine package roots concurrently"*）。在进程里为不存在的循环记 hrtime，等于发明一个测量。
+设计稿说「per root（census root loop）」，但真实代码里**没有 root 循环可以包**：所有 root 在**一次** `vitest run` 里并发执行（根 `vitest.config.ts` 的 include 是 `packages/<pkg>/test/**` 加两条 lane 目录，其注释原文：*"the census single-capture runs nine package roots concurrently"*；注意这句话本身也不精确——include 同时覆盖 `packages/runtime/controlled-fs` 和 `packages/tools/a5p5-tools` 两个嵌套包根，实测出现 **11** 个 root）。在进程里为不存在的循环记 hrtime，等于发明一个测量。
 
 所以诚实的版本是：
 
@@ -141,7 +141,7 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 1. **没开缓存**，也没做「影子对照」（同一 commit 有/无缓存的两轮对照）——那是切换前的第二步。
 2. **没测 cold/warm**：行 schema 不带热标签，报告因此**拒绝分组**。要测就得先在 schema 里加一个明确的标签列（`tinf-timing/2`），不是从 `attempt` 猜。
 3. **没在 CI 里计 host provision / host build / repo build / 安全 suite**：它们是好几个 **workflow YAML step**，不在写行的那个进程里。**不假装**：`--only census` 的 gate 进程看不到它们；它们的时间由 M0 的 `census-profile.mjs` 从 Actions step API 读。census 那个 step 内部的分解由本 PR 补上——两者互补，不重叠。
-4. **没有把 root 行做成 hrtime span**（原因见 §4；九个 root 并发在一次 vitest 里）。
+4. **没有把 root 行做成 hrtime span**（原因见 §4；所有 root 并发在一次 vitest 里）。
 5. **没有真实的 hosted root 分解样本**：本 checkout 无 pristine host、无 `node_modules`，`vitest run` 无法执行。演示用的 report 是合成的，行是真实 recorder 产的（见下）。
 6. 没有改 Authority / Candidate / release 状态 / 三个 Required contexts / 保护规则；`packages/**` 零改动（p4t6 booking 不需要）。
 7. 没有新增/删除任何名测试名单（M6 才退役它们）；新套件按 M1 的既有模式接在**同一个** ci-integration leg 与**同一个** manifest `check[]` 里。
@@ -150,7 +150,7 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 
 | # | 设计稿说法 | 真实代码 | 本 PR 的处理 |
 | --- | --- | --- | --- |
-| 1 | 「wrap per root（census root loop）」 | **没有 root 循环**；九个 root 在一次 `vitest run` 里并发（`vitest.config.ts` 注释原文 + include 只有一条 `packages/<pkg>/test/**`） | 每 root 一行，但**从该次 capture 的 report 推导窗口**；行留在 `phase=census-root`，报告明说重叠、share 可超 100%、不参与 phase 分母。证据：`scripts/tinf-timing.mjs` 头注 + §4 |
+| 1 | 「wrap per root（census root loop）」 | **没有 root 循环**；所有 root（实测 11 个，含两个嵌套包根）在一次 `vitest run` 里并发（`vitest.config.ts` 注释原文 + include 只有一条 `packages/<pkg>/test/**`） | 每 root 一行，但**从该次 capture 的 report 推导窗口**；行留在 `phase=census-root`，报告明说重叠、share 可超 100%、不参与 phase 分母。证据：`scripts/tinf-timing.mjs` 头注 + §4 |
 | 2 | 「cold vs warm-ish 分组」 | 行 schema 里没有热标签 | **不分组**，报告打一行 `cold/warm: NOT distinguished`。要分组先升 schema |
 | 3 | 「缓存照 §3 的字段」 | 本 checkout 无 pristine host，`host_lock_digest` 推不出来 | `--key` 在真实仓库上**拒绝并点名 `host_lock_digest`**（证据 `evidence/tinf-m3-20261114/host-key-refused-no-host.txt`）；用 `--host-dir` 指向合成宿主树演示完整键 |
 | 4 | 「actions/cache」推进 | 本 PR 明确不做 | 见 §8；提交信息同样声明 |
@@ -172,7 +172,7 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 
 | 门 | 结果 |
 | --- | --- |
-| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 41 / pass 41 / fail 0`（19 + 22；第二轮审查新增 5 个） |
+| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 43 / pass 43 / fail 0`（20 + 23；两轮审查共新增 7 个） |
 | `node scripts/test-catalog.mjs --max-uncollected 91` | exit 0，`tests=862`（`DISCOVERED_AND_COLLECTED 757` / `UNCOLLECTED 91`），`digest=sha256:1b2f3bc521f8b4ea6599b24c030a55f52c5dfc0b69d127c5f41e88456968be46` |
 | `node --test scripts/test-catalog.test.mjs` | `19 / pass 19 / fail 0`（未改动） |
 | `node --test scripts/tinf-m0.test.mjs` | `13 / pass 13 / fail 0`（未改动） |
@@ -206,3 +206,14 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 1. `rootOf` 用的是**最后**一个 `/test/` 段，且文档把「九 root」写死。修正见 §4：第一个 `/test/` 段、报告实际数量、并补了 fixture 路径 / 嵌套包根 / lane 目录三个断言。
 2. `summarize` 丢掉了行的 `status`：`status=failed` 的 root 会渲染成 `0 ms / 0%`，正是文件头自己宣称拒绝的「零秒答案」；`--json` 里也没有失败字段。修正：失败行从所有统计中剔除、按名字surface（`failed_rows`）、root 表显示 `FAILED`，并有专门测试。
 3. 非阻塞但同轮修掉：host/product 键混在一起（见 §6）、dirty host 只查 HEAD（见 §6）、`host_lock_digest` 缺敏感性测试（现在有「lock 改一字节 → digest 与 host_key 都变」的用例）、`summarize` 对字符串 duration 做 `+` 会拼接（现在入口统一 `Number()`）。
+
+## 12. 第二轮审查（再 CHANGES REQUIRED）与修正
+
+第二轮在 `def4327cc` 又给 **CHANGES REQUIRED**，其中一条 blocking 是我上一轮漏改：
+
+1. **blocking**：`baseSum`（share 的分母）仍然只按 phase 过滤、并且对字符串 duration 做 `+`。复现：一个 ok capture 1000 ms + 一个 failed leg 1000 ms → capture 的 share 显示 50%（应为 100%）；用字符串时更糟，分母变成 `'010001000'` → share 显示 0%。现在分母与分子用同一组「status=ok 且可转数字」的行，并有专门回归测试（ok + failed → 100%）。
+2. 非阻塞已修：
+   - `rootOf` 对**非 census 布局**仍会发明 root（`scripts/ci-local.test.mjs` → 自己；绝对路径 → 带 runner 前缀的目录；`tests/kits/mykit/test/a` → `tests/kits/mykit`）。现在只承认 `packages/…` 与 `tests/<lane>` 两种布局，其余一律 `unknown`；lane 判定优先于嵌套 `/test/`。
+   - **不同 host 曾被接受**：只给最小 expectation（三个 digest/commit 字段）时，darwin 产物能验证为 linux host。`platform` 与 `node_version` 现在进入 `IDENTITY_FIELDS`，并有 `platform` 不匹配 → `INFRA_ERROR` 的测试。
+   - 「dirty host 被拒绝」此前是**只有代码、没有测试**（测试仓库不在 pin 上，drift 先触发）。加了 `hostPinOverride` 测试缝：先证明 off-pin → `HOST_CHECKOUT_DRIFT`，再把 pin 指到测试仓库自己的 HEAD、弄脏工作树 → `HOST_CHECKOUT_DIRTY`。
+   - 「九 root」措辞在源码头注/测试/本 memo 残留处全部改掉（报告的 root 数量是实测值，不是常量）。

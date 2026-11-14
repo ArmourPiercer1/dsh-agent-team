@@ -109,8 +109,13 @@ export const HOST_KEY_FIELDS = [
 /** Fields that belong to the PRODUCT layer (merge tree + its lockfile). */
 export const PRODUCT_KEY_FIELDS = ['product_lock_digest', 'product_merge_tree']
 
-/** The identity fields an artifact RECORDS and verification compares (§3/§6). */
-export const IDENTITY_FIELDS = ['host_commit', 'host_lock_digest', 'toolchain_config_digest']
+/**
+ * The identity fields an artifact RECORDS and verification compares (§3/§6). `platform` and
+ * `node_version` belong here: without them a linux-x64 artifact verified against
+ * `platform: darwin-arm64` (review finding) because only the three digest/commit fields were
+ * compared and `host_key` is optional.
+ */
+export const IDENTITY_FIELDS = ['host_commit', 'host_lock_digest', 'toolchain_config_digest', 'platform', 'node_version']
 const HOST_WORKFLOW = '.github/workflows/census-runtime.yml'
 const HOST_BUILD_STEP = 'Build the pristine host'
 const REPO_BUILD_STEP = 'Build this repo'
@@ -190,7 +195,7 @@ export function hostPinFromPaths(repoRoot) {
  * fact and the path it looked at — a placeholder ("unknown", "0") would make two different
  * artifacts share one key, which is worse than not keying at all.
  */
-export function deriveHostCacheFacts({ repoRoot = process.cwd(), hostDir = null } = {}) {
+export function deriveHostCacheFacts({ repoRoot = process.cwd(), hostDir = null, hostPinOverride = null } = {}) {
   const root = resolve(repoRoot)
   const host = hostDir === null ? join(root, 'tests', 'deepseek-harness-test-use') : resolve(hostDir)
   // Facts are collected into `missing` and raised ONCE at the end, so a refusal names every
@@ -215,7 +220,9 @@ export function deriveHostCacheFacts({ repoRoot = process.cwd(), hostDir = null 
 
   let hostCommit = null
   try {
-    hostCommit = hostPinFromPaths(root)
+    // hostPinOverride exists so the dirty-checkout rule can be exercised at the pin: without it the
+    // drift rule always fires first in a test repo, and the DIRTY branch would be code-only.
+    hostCommit = hostPinOverride === null ? hostPinFromPaths(root) : String(hostPinOverride)
   } catch (e) {
     missing.push(e.message)
   }
