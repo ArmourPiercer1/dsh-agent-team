@@ -14,7 +14,7 @@
 | Product build（packages + composition） | 22 s |
 | 宿主安全 suite | 2 s |
 | 九 root census（两次 capture） | 1108 s（16:15:40→16:34:08） |
-| job 总计 | ≈1422 s（23m42s） |
+| job 总计（job 窗口 16:10:27→16:34:15） | 1428 s（23m48s；各 step 墙钟之和 1422 s） |
 
 即 census 占 78%、Host build 占 19%、Product build 占 1.6%；仅凭 Host build 缓存最多省 ~4.5 min（19%），"24 分钟大部分是构建"是**错的**。样本 n=1，M0 的 `scripts/census-profile.mjs` 必须按 N 个 run 报告分位数后再据此排优先级。真正的未知量只剩 census 内部九个 root 的分解（Actions step 不暴露这一层），这由 M3 的 harness 级计时补齐，不是靠猜。
 

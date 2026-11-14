@@ -11,7 +11,7 @@
 
 ### 1.1 证据配额（硬约束）
 
-`.json` 证据受 `scripts/integration-order.mjs` 的 `BOUNDS.maxCandidates = 6000` 约束（当前已提交 5995 个，剩 5 个名额）。因此：新证据默认用 `.md`/`.txt`/`.tsv`；同一次运行的多个 JSON 合并成一个文件再提交；任何新增 `.json` 必须先证明配额仍有余量，否则 integration-order 审计会把 PR 判红。这不是风格偏好，是会让门禁拒绝的硬上限。
+`.json` 证据受 `scripts/integration-order.mjs` 的 `BOUNDS.maxCandidates = 6000` 约束（当前已提交 5995 个，剩 5 个名额）。因此：新证据默认用 `.md`/`.txt`/`.tsv`；同一次运行的多个 JSON 合并成一个文件再提交；任何新增 `.json` 必须先证明配额仍有余量，否则 integration-order 审计会把 PR 判红。这不是风格偏好，是会让门禁拒绝的硬上限。§3 的 Run Record 若需要随证据提交，也必须与同一次运行的其他 JSON 合并成一个文件，并按该文件计入配额；不允许“每 run 一个 `.json`”的增量。
 
 ## 2. 测试执行的终态集合（建议）
 

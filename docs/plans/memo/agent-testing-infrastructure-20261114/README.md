@@ -7,7 +7,7 @@
 ## 0. 最重要的已确认决策
 
 1. **每个 Ready PR 在合并前仍需完整 census**。不采纳 #762 的 B4（默认跳过）及 B5（默认移到 master 之后）作为当前合并门优化；下一轮先以构建缓存、按实测分析的分片和避免重复执行降低成本。
-2. **Draft-first + 最终 head 一次 L2**。Draft 中允许多次便宜反馈；当前 Required contexts 恰好三个——`pr-gate`、`ci-required`、`pr-settlement-gate`——不变；合成 merge tree、settlement/head 绑定与 fail-closed 聚合是不变量（由 `ci-required` 内部实现），不是 context，也不新增 context。
+2. **Draft-first + 最终 head 一次 L2**。Draft 中允许多次便宜反馈；当前 Required contexts 恰好三个——`pr-gate`、`ci-required`、`pr-settlement-gate`——不变；合成 merge tree 与 fail-closed 聚合由 `ci-required` 内部实现，settlement/head 绑定由 `pr-gate` 里的 settlement job 实现——它们是不变量，不是 context，也不新增 context。
 3. **测试代码自动发现，关键契约显式声明**。不新建一个维护所有测试文件路径的第二权威名单；普通单元测试由既有 Vitest / node:test 收集。对测试仪器也要验证其可信度，绝不将 `evidence-only` 等价为零测试已覆盖。
 4. **Agent 行为测试尽可能确定性**：通过 Scripted Model 将外部模型决策固定，同时保留真实 DSH 工具路由、审批、执行器及独立副作用观测。真实模型评估属于单独的质量维度。
 5. **不以 CI PASS 代替 Candidate C2**；不以 PASS 字符串代替执行证据；不得借本工程项目变更产品 Authority、Candidate 或 v0.1.6 发布。

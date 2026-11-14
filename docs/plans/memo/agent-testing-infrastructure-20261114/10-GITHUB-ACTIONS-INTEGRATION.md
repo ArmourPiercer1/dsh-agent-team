@@ -29,7 +29,7 @@ on pull_request
 
 ## 3. Draft-first 操作原则与 ready-helper
 
-从创建 PR 开始 Draft，L1 可多轮，完成独立评审与 settlement 后从最终 head 转 Ready。注意：`scripts/pr-ready-check.mjs` **目前只存在于未合并的 PR #759 分支**（`origin/master` 无此文件，`docs/DEV-PR-WORKFLOW.md` 同样只在 #759/#758 分支上）；它不是既有权威。M0 在 #759 的实现基础上重写并落地该 helper，修正五处假通过：未知 mergeable state 不能假通过（改为 refusal）；本地 HEAD 必须与 PR head 比较；无 upstream 不能算已 push；check-run 的 pending/newer verdict 不得沿用老 success（按 `started_at` 取最新一次尝试）；GitHub comments 必须完整分页。
+从创建 PR 开始 Draft，L1 可多轮，完成独立评审与 settlement 后从最终 head 转 Ready。注意：`scripts/pr-ready-check.mjs` **目前只存在于未合并的 PR #759 分支**（`origin/master` 无此文件；`docs/DEV-PR-WORKFLOW.md` 同样只在 #759 分支上——#758 合入的是 `docs/runbooks/PR-DRAFT-FIRST.md`，不是这个文件）；它不是既有权威。M0 在 #759 的实现基础上重写并落地该 helper，修正五处假通过：未知 mergeable state 不能假通过（改为 refusal）；本地 HEAD 必须与 PR head 比较；无 upstream 不能算已 push；check-run 的 pending/newer verdict 不得沿用老 success（按 `started_at` 取最新一次尝试）；GitHub comments 必须完整分页。
 
 该 helper 是开发辅助手段，不能替代服务端合并保护；未通过修复与负控前不得作为自动 Ready 的强制权威。
 

@@ -15,8 +15,8 @@
 | # | item | 目标文件 / 符号 | 交付 | 负控（故意制造 → 期望） |
 | --- | --- | --- | --- | --- |
 | 1 | ready-helper 五处假通过 | `scripts/pr-ready-check.mjs`：`evaluate()` 的 R3/R4/R7/R8、`newestCheck()`、`gather()`（分页） | 五个 refusal 码 + `--self-test`（11 cases） | 未推送 head→`BRANCH_NOT_PUSHED`；陈旧本地 HEAD→`LOCAL_HEAD_NOT_PR_HEAD`；merge state unknown→`STATE_UNKNOWN`；pending 新 attempt→`LAYER_*_IN_PROGRESS`；>100 comments 仍能找到 settlement |
-| 2 | 证据预算行数当字节 | `scripts/evidence-budget.mjs`：`bytesAtCommit()`、`parseBatchCheckOrdered()`、`commitsReport()` | 用 object DB 真实字节（二进制按真实大小计）、窗口字面等于 last-N first-parent | 二进制证据文件不再记 0；窗口 30 时 `with_evidence` 必须 < 30 |
-| 3 | 未定覆盖率口径 | `scripts/coverage-audit.mjs`：`reasonOf()`、`summarizeAudit()` | 原因直方图（kit-runner / uncatalogued-script / root-scratch / other），**不**把 kit 归为 evidence-only，**不**改 exit 2 | 改动中的 `tests/kits/**` 仍为 undetermined 且 reason=kit-runner（不是 determined/0 tests） |
+| 2 | 证据预算行数当字节 | `scripts/evidence-budget.mjs`：M0 新增 `bytesAtCommit()` / `parseBatchCheckOrdered()`（#761 现有实现只解析 `--numstat` 行数） | 用 object DB 真实字节（二进制按真实大小计）、窗口字面等于 last-N first-parent | 二进制证据文件不再记 0；窗口 30 时 `with_evidence` 必须 < 30 |
+| 3 | 未定覆盖率口径 | `scripts/coverage-audit.mjs`：M0 新增 `reasonOf()`（#764 只有单一比率，没有原因分桶） | 原因直方图（kit-runner / uncatalogued-script / root-scratch / other），**不**把 kit 归为 evidence-only，**不**改 exit 2 | 改动中的 `tests/kits/**` 仍为 undetermined 且 reason=kit-runner（不是 determined/0 tests） |
 | 4 | 未收集测试集合 | 新 `scripts/test-collection-audit.mjs`；复用 #530 的"tracked suite 必须 collected-or-exempt"判定形状，不落地其 gate | collected / uncollected / exempt 清单 + `--strict` | `git add -N tests/checks/x.test.mjs` 后立即出现在 UNCOLLECTED |
 | 5 | step 级 profiling | 新 `scripts/census-profile.mjs`（读 Actions jobs API） | 单一受支持报表：N 个成功 census job 的 step 中位数/占比（md/txt，见 §0 证据配额） | 缺 `started_at`/全 skipped 的 run 必须拒绝或忽略，不得算作 0 秒 |
 
