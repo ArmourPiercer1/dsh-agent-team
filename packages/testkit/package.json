@@ -15,6 +15,9 @@
   "files": [
     "dist"
   ],
+  "devDependencies": {
+    "@types/node": "^22.20.0"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",

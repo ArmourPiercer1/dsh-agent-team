@@ -2,7 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    // TINF M2: src/effect-witness.ts and src/scripted-model.ts use node:fs /
+    // node:crypto / AbortSignal, so the build surface must declare node types
+    // (packages/runtime sets the same key for the same reason). Without this the
+    // package build fails TS2591/TS2304 in CI — which is how this was found: the
+    // first draft built clean locally only because the local typecheck script
+    // uses tsconfig.json, while the package build uses this file.
+    "types": ["node"]
   },
   "include": [
     "src"
