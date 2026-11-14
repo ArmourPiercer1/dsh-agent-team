@@ -1,8 +1,9 @@
 ### NC-4 unpushed commit — one empty local commit on top of the pushed head, never pushed.
-pr-ready-check: PR #767 head=f867a4c18e7c29b5907290de87680cf07763ac67 state=blocked draft=true
+### Expected: adds UNPUSHED_COMMITS and LOCAL_HEAD_NOT_PR_HEAD.
+pr-ready-check: PR #768 head=dcdd9608cd8b7c4f3d95272f2e93e4451895572b state=blocked draft=true
   layers: fast=success integration=success security=success product=success
   deferred=success census=skipped settlement=missing
-  git: head=af4868b6f branch=docs/agent-testing-infrastructure-vnext-20261114 upstream=origin/docs/agent-testing-infrastructure-vnext-20261114 ahead=2 clean=true
-  refuse reasons: MARKER_PRESENT_TITLE, SETTLEMENT_MISSING, LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS
-DSH-PR-READY verdict=REFUSED pr=767 reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING,LOCAL_HEAD_NOT_PR_HEAD,UNPUSHED_COMMITS
+  git: head=39e218380 branch=task/tinf-m0-20261114 upstream=origin/task/tinf-m0-20261114 ahead=1 clean=true
+  refuse reasons: SETTLEMENT_MISSING, LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS
+DSH-PR-READY verdict=REFUSED pr=768 reasons=SETTLEMENT_MISSING,LOCAL_HEAD_NOT_PR_HEAD,UNPUSHED_COMMITS
 exit=1

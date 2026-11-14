@@ -1,8 +1,9 @@
-### NC-1 baseline (no negative condition): PR #767 is a draft with no settlement yet. The only refusals must be the marker and the missing settlement; every layer is green on this head.
-pr-ready-check: PR #767 head=f867a4c18e7c29b5907290de87680cf07763ac67 state=blocked draft=true
+### NC-1 baseline — PR #768 is a draft whose head is this checkout, all four layers green, census skipped, no settlement yet.
+### Expected: the ONLY refusal is the missing settlement.
+pr-ready-check: PR #768 head=dcdd9608cd8b7c4f3d95272f2e93e4451895572b state=blocked draft=true
   layers: fast=success integration=success security=success product=success
   deferred=success census=skipped settlement=missing
-  git: head=f867a4c18 branch=docs/agent-testing-infrastructure-vnext-20261114 upstream=origin/docs/agent-testing-infrastructure-vnext-20261114 ahead=0 clean=true
-  refuse reasons: MARKER_PRESENT_TITLE, SETTLEMENT_MISSING
-DSH-PR-READY verdict=REFUSED pr=767 reasons=MARKER_PRESENT_TITLE,SETTLEMENT_MISSING
+  git: head=dcdd9608c branch=task/tinf-m0-20261114 upstream=origin/task/tinf-m0-20261114 ahead=0 clean=true
+  refuse reasons: SETTLEMENT_MISSING
+DSH-PR-READY verdict=REFUSED pr=768 reasons=SETTLEMENT_MISSING
 exit=1

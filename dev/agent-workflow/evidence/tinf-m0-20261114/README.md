@@ -5,10 +5,10 @@
 
 | 文件 | 是什么 | 记录时的 head |
 | --- | --- | --- |
-| `nc-1-ready-before-settlement.txt` | PR #767 在写 settlement 之前被 `pr-ready-check` 判为 REFUSED，原因只有 marker 与无 settlement | `f867a4c18`（#767 分支） |
-| `nc-2-wrong-git-state.txt` | 在 M0 worktree 对 #767 运行：head 不是 PR head、分支超前 → `LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS` | `a9e4201c4` |
-| `nc-3-dirty-worktree.txt` | 同 NC-2 加一个未跟踪文件 → 追加 `WORKTREE_DIRTY` | 同上 |
-| `nc-4-unpushed-commit.txt` | 一个本地空 commit、不 push → 仍含 `UNPUSHED_COMMITS`（跑完即 `git reset --hard` 回退） | 同上 |
+| `nc-1-ready-before-settlement.txt` | PR #768 在写 settlement 之前：四层全绿、census skipped、本地即 PR head，唯一 refusal 是 `SETTLEMENT_MISSING` | `dcdd9608c` |
+| `nc-2-wrong-git-state.txt` | 从 #767 的 worktree 对 #768 运行：head 不是 PR head、分支不同 → `LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS` | `dcdd9608c`（被评 head） |
+| `nc-3-dirty-worktree.txt` | 同 NC-1 加一个未跟踪文件 → 追加 `WORKTREE_DIRTY` | `dcdd9608c` |
+| `nc-4-unpushed-commit.txt` | 一个本地空 commit、不 push → 追加 `LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS`（跑完即 `git reset --hard` 回退） | `dcdd9608c` |
 | `nc-5-uncollected-suite.txt` | `git add -N tests/checks/tinf-m0-nc-uncollected.test.mjs` 后，该路径出现在 UNCOLLECTED，`total 98→99` | `a9e4201c4` |
 | `nc-6-binary-evidence.txt` | 临时 git 仓（根 commit）：1 MiB PNG + 12 B json → `1,048,588 B`（#761 的 numstat 解析会把 PNG 记 0） | 临时仓 |
 | `nc-7-unknown-named.txt` | `coverage-audit` 40 个 commit：21 undetermined（53%），kit 24 次 / root-scratch 10 次 / 脚本 2 次 / other 0 | `origin/master` `3a7303ca2` |
