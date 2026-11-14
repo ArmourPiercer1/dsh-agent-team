@@ -1,0 +1,3 @@
+### measurement: ratchet mode used by CI — the known 91 may stay, growth may not
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=0 findings=0
+exit=0

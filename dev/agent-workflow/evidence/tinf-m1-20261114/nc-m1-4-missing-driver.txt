@@ -1,0 +1,5 @@
+### NC-M1-4 an instrument is registered whose driver does not exist.
+### Expected: INSTRUMENT_DRIVER_MISSING, red.
+  REFUSED INSTRUMENT_DRIVER_MISSING kit-ghost
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=1 findings=1
+exit=2

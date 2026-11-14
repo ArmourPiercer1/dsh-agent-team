@@ -206,6 +206,20 @@ jobs:
         # CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/tinf-m0.test.mjs
 
+      - name: "test catalog (TINF M1 — shadow, host-free)"
+        # M1 delivers discovery, not authority: the workflow file lists and
+        # dev/ci/eb3-ci-manifest.json stay the only things that decide what runs
+        # (M5 moves that). This leg proves the catalog's classifications and its
+        # refusals, then runs it in ratchet mode against the uncollected count
+        # measured at landing (91). The ratchet is intentionally a hand-written
+        # number: it refuses GROWTH. The manifest pins this suite FILE, not the two
+        # commands below, so the suite itself reads this workflow and asserts that
+        # deleting the ratchet line fails — see 'the CI step that runs this suite
+        # also runs the ratchet' in scripts/test-catalog.test.mjs.
+        run: |
+          node --test scripts/test-catalog.test.mjs
+          node scripts/test-catalog.mjs --max-uncollected 91
+
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
         # machinery, so the harness wiring needs a C1 proof of its own. This step is the

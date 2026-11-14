@@ -1,0 +1,6 @@
+### NC-M1-GROW a new node:test suite exists but no lane names it (git add -N, so discovery sees it).
+### Expected: the ratchet at 91 refuses 92 — a new suite cannot be silently accepted.
+  UNCOLLECTED              92
+  REFUSED UNCOLLECTED_GREW  92 > baseline 91
+DSH-TEST-CATALOG tests=858 digest=sha256:34f4b830f5cdd1c645758cc41910cc6b0bec63c0100cb66ef842e7658193481b refused=1 findings=1
+exit=2

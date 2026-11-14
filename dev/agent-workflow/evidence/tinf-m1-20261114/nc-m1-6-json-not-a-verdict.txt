@@ -1,0 +1,4 @@
+### NC-M1-JSON --json must not exit 0 while a contract test is missing.
+REFUSED CONTRACT_UNKNOWN_TEST AUTH-01 test_ref does not exist (deleted or renamed?)
+REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-complete-true.test.ts discovered but no lane collects it
+exit=2

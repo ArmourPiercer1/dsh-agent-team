@@ -136,6 +136,14 @@ owners:
   - glob: scripts/tinf-m0*.mjs
     docs:
       - docs/plans/memo/tinf-m0-baseline-20261114/README.md
+  # TINF M1 (2026-11-14): the shadow Test Catalog, its suite and its contract
+  # registry are described by the M1 memo. Still advisory (EB3-B unowned).
+  - glob: scripts/test-catalog*.mjs
+    docs:
+      - docs/plans/memo/tinf-m1-catalog-20261114/README.md
+  - glob: dev/ci/test-contracts.json
+    docs:
+      - docs/plans/memo/tinf-m1-catalog-20261114/README.md
   - glob: scripts/**
     docs:
       - docs/STATUS.md

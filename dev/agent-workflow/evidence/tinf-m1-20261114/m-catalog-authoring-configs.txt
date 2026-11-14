@@ -1,0 +1,5 @@
+### measurement: why the four POC suites are UNCOLLECTED although a config includes them
+tests/poc-web-native-reuse/poc-w1-native-shape.test.ts | only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)
+tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts | only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)
+tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts | only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)
+tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts | only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)

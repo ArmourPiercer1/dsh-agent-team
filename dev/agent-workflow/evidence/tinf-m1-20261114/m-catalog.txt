@@ -1,0 +1,48 @@
+### measurement: catalog strict mode (a discovered suite no lane collects is a refusal)
+  tests=857 instruments=3 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf
+  DISCOVERED_AND_COLLECTED 752
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              91
+  by runner: node=105 none=7 vitest=745
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-complete-true.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-drift-invalidation.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-engine-outcomes.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-environment-facts.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-purity-serialization.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-requirement-validation.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-warning-ack.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/runtime/root-binding/harness/bounded-run.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED scripts/sanitize-evidence.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/evidence-store/evidence-store.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/_shared/boot-preflight.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/pr-e-requirement-recovery-smoke/ui-observe.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/rc2-real-host-smoke/run-control.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/carrier-import-preflight.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-orchestration.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-ownership.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w1-native-shape.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/authority-dual-read.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/authority-snapshot-isolated.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/candidate-track-negative-control.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/ci-snapshot-reader.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/consumer-candidate.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/current-authority-pointer.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/freeze-candidate.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/probe-candidate.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/sync-candidate-resolver.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/s2-authority/verify-candidate.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-acceptance-preflight.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-ask-precedence.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-assembly.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-bash.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-bl42-netdeny.test.mjs discovered but no lane collects it
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=91 findings=91
+exit=2
