@@ -1,0 +1,7 @@
+### measurement: catalog strict mode (a discovered suite no lane collects is a refusal)
+  tests=825 instruments=3 digest=sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426
+  UNCOLLECTED              91
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-complete-true.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-drift-invalidation.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-engine-outcomes.test.ts discovered but no lane collects it
+exit=2

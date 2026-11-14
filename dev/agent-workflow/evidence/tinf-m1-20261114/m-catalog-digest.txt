@@ -1,0 +1,3 @@
+### measurement: digest reproducibility (same head, two runs)
+  "catalog_digest": "sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426",
+  "catalog_digest": "sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426",

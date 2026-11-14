@@ -5,14 +5,14 @@
 
 ## 1. 一句话
 
-仓库里有 **824 个测试文件**，其中 **91 个不被任何 lane 收集**。M1 不把它们收进来，而是让这个数字**可见、可复算、且只能变小**：自动发现（不再手写名单）+ 关键合同绑定 + 双向差集 + 拒绝增长。
+仓库里有 **825 个测试文件**，其中 **91 个不被任何 lane 收集**。M1 不把它们收进来，而是让这个数字**可见、可复算、且只能变小**：自动发现（不再手写名单）+ 关键合同绑定 + 双向差集 + 拒绝增长。
 
 ## 2. 发现（没有手写名单）
 
 | 来源 | 规则 | 结果 |
 | --- | --- | --- |
 | vitest | 匹配**任一** `vitest.config.ts` 的 `include` 且不匹配其 `exclude`；根配置 + 每个 package 自己的配置，各自按自己的目录求值 | 713（702 collected / 11 uncollected） |
-| node:test | 任意位置的 `*.test.mjs|cjs|js` | 99（19 collected / 80 uncollected） |
+| node:test | 任意位置的 `*.test.mjs|cjs|js` | 100（20 collected / 80 uncollected） |
 | 显式 suite 清单 | `tests/checks/eb3-security-suites.txt`（`scripts/eb3-security-run.mjs` 执行的那 65 个） | 计入 collected |
 | 证据目录 | `dev/agent-workflow/evidence/**` 下的 recorder | 5 个 node + 7 个登记排除 = 12 excluded |
 
@@ -39,17 +39,21 @@
 
 绑定的含义被刻意写窄：**它说的是“这条合同由这些具名测试承担”，不是“这些测试足够”**。缺 test_refs 的合同 = 空头承诺 → `CONTRACT_WITHOUT_TEST`；绑定的路径消失 = `CONTRACT_UNKNOWN_TEST`（删掉关键合同的唯一测试是**红**，不是“catalog 变小了一点”）。
 
+## 4.5 digest
+
+`catalog_digest`（本 head）= `sha256:6083d1e961bdfea2ac610bc7b54e4f8fc3549ba04ccd247bb0ba4cb65820f426`：两次运行一致；测试集合变（加一个 suite）则变。
+
 ## 5. 拒绝集（本 PR 的交付物）
 
 | code | 触发 | 负控 |
 | --- | --- | --- |
 | `TEST_UNCOLLECTED` | 默认严格：发现到但没 lane | live：91 条 |
-| `UNCOLLECTED_GREW` | `--max-uncollected N` 棘轮：超过 N | 加一个未收集 suite → 92 > 91 → 红 |
-| `CONTRACT_UNKNOWN_TEST` | test_ref 路径不存在 | 删掉一条合同测试 → 红 |
+| `UNCOLLECTED_GREW` | `--max-uncollected N` 棘轮：超过 N | 加一个未收集 suite → 92 > 91 → 红（`nc-m1-5`） |
+| `CONTRACT_UNKNOWN_TEST` | test_ref 路径不存在 | 删掉一条合同测试 → 红（`nc-m1-1`） |
 | `CONTRACT_WITHOUT_TEST` | 合同没有 test_refs | 红 |
-| `DUPLICATE_ID` | 两个测试共用一个逻辑 id | 红 |
-| `STALE_EXCLUDE` | 排除项缺 reason/review | 红 |
-| `INSTRUMENT_DRIVER_MISSING` / `UNKNOWN_DRIVER` | 登记了不存在的 driver | 红 |
+| `DUPLICATE_ID` | 两个测试共用一个逻辑 id | 红（`nc-m1-2`） |
+| `STALE_EXCLUDE` | 排除项缺 reason/review，**或路径已不存在** | 红（`nc-m1-3`） |
+| `INSTRUMENT_DRIVER_MISSING` / `UNKNOWN_DRIVER` | 登记了不存在的 driver | 红（`nc-m1-4`） |
 | `VITEST_CONFIG_UNREADABLE` | 配置解析失败 | 红（不当作“没有配置”） |
 | `PLAN_REFERENCES_UNKNOWN_ID` | `--diff` 的 `ci_only` 非空 | 红 |
 
@@ -72,10 +76,10 @@
 
 ```bash
 node --test scripts/test-catalog.test.mjs        # 14/14
-node scripts/test-catalog.mjs --self-test        # 21 cases
+node scripts/test-catalog.mjs --self-test        # 22 cases
 node scripts/test-catalog.mjs                    # 严格：91 条 UNCOLLECTED → exit 2
 node scripts/test-catalog.mjs --max-uncollected 91   # CI 用棘轮 → exit 0
-node scripts/test-catalog.mjs --diff             # 双向差集
+node scripts/test-catalog.mjs --diff --max-uncollected 91   # 双向差集：ci_only=0
 node scripts/test-catalog.mjs --json | head -5   # artifact（不提交）
 ```
 

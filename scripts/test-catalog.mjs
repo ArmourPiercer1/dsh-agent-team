@@ -153,7 +153,6 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
   for (const file of [...files].sort()) {
     if (excludeOf.has(file)) {
       const x = excludeOf.get(file)
-      if (!x.reason || !x.review) findings.push({ code: 'STALE_EXCLUDE', path: file, detail: 'exclude needs reason + review' })
       entries.push({ id: null, path: file, runner: 'none', kind: 'excluded', contract_ids: [], classification: 'EXCLUDED_WITH_REASON', reason: x.reason ?? '(none)' })
       continue
     }
@@ -182,6 +181,12 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
   for (const entry of entries) {
     entry.explicit_id = explicitOf.get(entry.path) ?? null
     entry.id = idOf(entry)
+  }
+
+  for (const x of registry?.excludes ?? []) {
+    if (!x.path) continue
+    if (!files.has(x.path)) findings.push({ code: 'STALE_EXCLUDE', path: x.path, detail: 'the excluded path does not exist (renamed or deleted?)' })
+    else if (!x.reason || !x.review) findings.push({ code: 'STALE_EXCLUDE', path: x.path, detail: 'exclude needs reason + review' })
   }
 
   for (const c of registry?.contracts ?? []) {
@@ -405,6 +410,7 @@ export function selfTest() {
   expect('a deleted contract test is refused', buildEntries(new Set(['packages/domain/test/other.test.ts']), { vitestCfg: cfg, registry }).findings.some((f) => f.code === 'CONTRACT_UNKNOWN_TEST'))
   expect('a contract with no test is refused', buildEntries(files, { vitestCfg: cfg, registry: { contracts: [{ id: 'X-01', test_refs: [] }] } }).findings.some((f) => f.code === 'CONTRACT_WITHOUT_TEST'))
   expect('an exclude without reason is refused', buildEntries(new Set(['dev/agent-workflow/evidence/x/y.test.ts']), { vitestCfg: cfg, registry: { excludes: [{ path: 'dev/agent-workflow/evidence/x/y.test.ts' }] } }).findings.some((f) => f.code === 'STALE_EXCLUDE'))
+  expect('an exclude naming a missing file is refused', buildEntries(files, { vitestCfg: cfg, registry: { excludes: [{ path: 'gone/away.test.ts', reason: 'x', review: 'y' }] } }).findings.some((f) => f.code === 'STALE_EXCLUDE'))
   expect('duplicate logical ids are refused', (() => {
     const dup = { contracts: [{ id: 'A-01', test_refs: [{ path: 'packages/domain/test/a4p7-v3.test.ts', id: 'auth.binding' }, { path: 'packages/runtime/test/new.test.ts', id: 'auth.binding' }] }] }
     const r = buildEntries(files, { vitestCfg: cfg, registry: dup })

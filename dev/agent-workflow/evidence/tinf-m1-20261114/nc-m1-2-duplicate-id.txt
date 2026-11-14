@@ -1,0 +1,5 @@
+### NC-M1-2 two tests claim one logical id (a moved test that kept its id AND the old copy).
+### Expected: DUPLICATE_ID, red.
+  REFUSED DUPLICATE_ID packages/runtime/test/alpha5-g1-deny-lane.test.ts exec.same
+DSH-TEST-CATALOG tests=825 digest=sha256:0c49c362212a7386174dedcc849cfa44a09e74e66b8397a1ed5acbc28da78e1b refused=1 findings=1
+exit=2

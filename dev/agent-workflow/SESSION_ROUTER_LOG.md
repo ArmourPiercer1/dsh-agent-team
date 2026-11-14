@@ -8680,3 +8680,21 @@ dirty worktree、本地未推送 commit、未收集 suite、二进制证据（1,
 
 **4. 边界**：未改运行时代码/Authority/Candidate/release；三个 Required contexts、fail-closed 聚合、census 组成、
 deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md`，新增 `.json` = 0。
+
+## 2026-11-14 — TINF-M1：shadow Test Catalog（自动发现 + 合同绑定 + 收集棘轮）
+
+**前置**：#767（设计集）merged `f24c41337`；#768（M0）merged `db125a185`。M1 用 M0 修好的工具去量，结论变成可执行的东西。
+
+**1. 发现取代手工名单**：`scripts/test-catalog.mjs` 从 `git ls-files` + **每个** `vitest.config.ts`（根 + 9 个 package，各自按自身目录求值）解析 include/exclude，node:test 取任意位置的 `*.test.mjs|cjs|js`，再加上 `scripts/eb3-security-run.mjs` 执行的 65 条显式清单。
+- 结果：**825 个测试文件，722 collected，91 uncollected**；`catalog_digest=sha256:6083d1e9…`（两次运行一致）。
+- 三个真问题：**11 个 `packages/domain/compatibility/test/*.test.ts` 不被任何 config 收集**（根 include 只一层，包内 include 是包根 `test/**`，security 清单也没它们）；**80 个 node:test 没有 lane**；**手写名单与发现是两套事实**（`--diff` 双向列出，`ci_only` 非空即拒绝——现在 0）。
+
+**2. Critical Contract Registry**：`dev/ci/test-contracts.json`（`test-contracts/1`）登记 6 条安全合同（AUTH/EXEC/REVIEW/LIFE/RECOVERY/ISOLATION-01），每条绑定具名测试、witness_type、limitations。绑定含义写窄了：**说的是“谁承担”，不是“够了”**；ISOLATION-01 明写纯 JS 不能证明 OS 边界。缺 test_refs → `CONTRACT_WITHOUT_TEST`；绑定的路径消失 → `CONTRACT_UNKNOWN_TEST`（删掉关键合同的唯一测试是红）。
+
+**3. 棘轮而不是豁免**：CI 用 `--max-uncollected 91` —— 已知集合可以留到 M2–M5，**增长拒绝**（`UNCOLLECTED_GREW`）；删 leg 是 `CI_LAYER_LEG_WEAKENED`。
+
+**4. 边界（明示）**：**不是权威**——没有任何 gate 读 catalog 决定跑什么，workflow 列表与 manifest 仍是唯一事实直到 M5；没有删除任何手写名单（设计 M1 要求）；“是否被收集”是**静态判定**，不是装载成功的证据；原生 `vitest list` 留给 M5。
+
+**5. 负控 5 项**（`dev/agent-workflow/evidence/tinf-m1-20261114/`）：删合同测试、重复逻辑 id、陈旧排除、缺 driver、未收集增长——全部按期望 exit 2。修的是一个真缺陷：排除表指向不存在文件时原本**不报**（只查 reason/review），现补 `STALE_EXCLUDE`。
+
+**6. 门禁**：`scripts/test-catalog.test.mjs` 14/14；`--self-test` 22 cases；eslint 干净；`eb3-ci-required` = `pass workflows=10 findings=0`；`docs:sync --check` findings=0。
