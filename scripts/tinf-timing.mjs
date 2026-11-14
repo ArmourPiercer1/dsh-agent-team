@@ -264,17 +264,39 @@ export function rowsFromVitestReport(report, { attempt = 1 } = {}) {
  * anchor is what makes the root a stable name (`packages/domain`) instead of a runner-specific
  * absolute prefix — a report whose roots carried `/home/runner/work/...` would not be comparable
  * between runs.
+ *
+ * The FIRST `/test/` segment wins, not the last: a file at
+ * `packages/domain/test/fixtures/test/a.test.ts` belongs to `packages/domain`, and a nested
+ * package root still resolves to itself:
  *   packages/runtime/controlled-fs/test/x.test.ts -> packages/runtime/controlled-fs
  *   packages/domain/test/y.test.ts                -> packages/domain
+ *   tests/checks/z.test.ts                        -> tests/checks
+ *
+ * The set is whatever the reports contain, NOT a hardcoded "nine roots": the root config's
+ * include covers nested package roots (`packages/runtime/controlled-fs`, `packages/tools/a5p5-tools`)
+ * as well as the nine packages, so the report states the count it actually saw.
  */
 export function rootOf(file) {
   const p = String(file ?? '').replace(/\\/g, '/')
   const pkgs = p.lastIndexOf('/packages/')
-  const rel = pkgs >= 0 ? p.slice(pkgs + 1) : p
-  const i = rel.lastIndexOf('/test/')
+  let rel = pkgs >= 0 ? p.slice(pkgs + 1) : p
+  if (pkgs < 0 && /(^|\/)tests\//.test(rel)) {
+    const at = rel.indexOf('tests/')
+    rel = rel.slice(at)
+  }
+  const i = rel.indexOf('/test/')
   if (i > 0) return rel.slice(0, i)
-  const j = rel.indexOf('/test/')
-  if (j > 0) return rel.slice(0, j)
+  const j = rel.indexOf('/tests/')
+  if (j >= 0) {
+    // A lane directory: keep two segments so `tests/checks` and `tests/kits` stay distinct.
+    const tail = rel.slice(j + 1)
+    const parts = tail.split('/')
+    return parts.slice(0, 2).join('/')
+  }
+  if (rel.startsWith('tests/')) {
+    const parts = rel.split('/')
+    return parts.slice(0, 2).join('/')
+  }
   return rel === '' ? 'unknown' : rel
 }
 
@@ -366,12 +388,24 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
   const list = Array.isArray(rows) ? rows : []
   const byPhase = new Map()
   const byRoot = new Map()
+  const failedRoots = new Map()
+  const failed = []
   for (const r of list) {
+    if (r.status !== 'ok') {
+      // A row whose status is not `ok` is NOT a duration. Rendering it as 0 ms would be exactly the
+      // wrong answer this tool refuses; it is surfaced by name instead and kept out of every stat.
+      failed.push({ phase: r.phase, root: r.root, attempt: r.attempt, status: r.status })
+      if (r.phase === 'census-root') failedRoots.set(r.root, (failedRoots.get(r.root) ?? 0) + 1)
+      continue
+    }
+    // Coerce here: rows parsed from a TSV arrive as strings, rows recorded in-process arrive as
+    // numbers, and a string sum would concatenate ('0' + '1000') instead of adding.
+    const duration = Number(r.duration_ms)
     if (!byPhase.has(r.phase)) byPhase.set(r.phase, [])
-    byPhase.get(r.phase).push(r.duration_ms)
+    byPhase.get(r.phase).push(duration)
     if (r.phase === 'census-root') {
       if (!byRoot.has(r.root)) byRoot.set(r.root, [])
-      byRoot.get(r.root).push(r.duration_ms)
+      byRoot.get(r.root).push(duration)
     }
   }
   const baseSum = list.filter((r) => !DERIVED_PHASES.has(r.phase)).reduce((a, r) => a + r.duration_ms, 0)
@@ -383,14 +417,22 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
       return { phase, ...s, share_pct: DERIVED_PHASES.has(phase) || baseSum === 0 ? null : Math.round((100 * s.sum_ms) / baseSum) }
     })
     .sort((a, b) => b.sum_ms - a.sum_ms || a.phase.localeCompare(b.phase))
-  const captures = list.filter((r) => r.phase === 'census-capture').map((r) => r.duration_ms)
+  const captures = list.filter((r) => r.phase === 'census-capture' && r.status === 'ok').map((r) => Number(r.duration_ms))
   const captureMedian = percentile(captures.slice().sort((a, b) => a - b), 50)
-  const censusRoots = [...byRoot.entries()]
-    .map(([root, values]) => {
-      const s = stats(values)
-      return { root, ...s, share_of_capture_pct: captureMedian === 0 ? null : Math.round((100 * s.median_ms) / captureMedian) }
+  const rootNames = [...new Set([...byRoot.keys(), ...failedRoots.keys()])]
+  const censusRoots = rootNames
+    .map((root) => {
+      const values = byRoot.get(root) ?? []
+      const s = values.length > 0 ? stats(values) : { n: 0, median_ms: null, p90_ms: null, sum_ms: null }
+      return {
+        root,
+        ...s,
+        failed_n: failedRoots.get(root) ?? 0,
+        share_of_capture_pct:
+          s.median_ms === null || captureMedian === 0 ? null : Math.round((100 * s.median_ms) / captureMedian),
+      }
     })
-    .sort((a, b) => b.median_ms - a.median_ms || a.root.localeCompare(b.root))
+    .sort((a, b) => (b.median_ms ?? -1) - (a.median_ms ?? -1) || a.root.localeCompare(b.root))
   return {
     schema: SCHEMA,
     files,
@@ -402,9 +444,13 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
     census_total_ms: captures.reduce((a, b) => a + b, 0),
     census_capture_median_ms: captureMedian,
     census_attempts: [...new Set(list.filter((r) => CENSUS_PHASES.has(r.phase)).map((r) => r.attempt))].sort((a, b) => a - b),
+    failed_rows: failed,
+    failed_count: failed.length,
+    census_root_count: censusRoots.length,
     cold_warm: 'not-distinguished',
     notes: [
-      'census-root rows are DERIVED windows (max(end)-min(start) of that root\'s files in one vitest attempt), not hrtime spans; the nine roots run concurrently, so root shares overlap and do not sum to 100%.',
+      `census-root rows are DERIVED windows (max(end)-min(start) of that root's files in one vitest attempt), not hrtime spans; the ${String(censusRoots.length)} roots seen here run concurrently, so root shares overlap and do not sum to 100%. The set is whatever the reports contain (the root config covers nested package roots too), not a hardcoded nine.`,
+      'rows whose status is not ok are excluded from every statistic and listed by name (failed_rows); a failed span is never rendered as 0 ms.',
       'cold/warm is not distinguished: tinf-timing/1 rows carry no thermal label, so no split is inferred from attempt index.',
       'phases above the census (host provision/build, repo build, security suite) run as workflow YAML steps, not in the process that writes these rows; they are measured by scripts/census-profile.mjs from the Actions step API, not here.',
     ],
@@ -438,7 +484,18 @@ export function render(report) {
     lines.push('       0          -         -                 -  (no census-root rows in the input)')
   }
   for (const r of report.census_roots) {
+    if (r.n === 0) {
+      lines.push(`  ${String(0).padStart(5)}          -         -                 -  ${r.root} (FAILED: no readable span in ${String(r.failed_n)} attempt(s))`)
+      continue
+    }
     lines.push(`  ${String(r.n).padStart(5)}  ${String(r.median_ms).padStart(9)}  ${String(r.p90_ms).padStart(9)}  ${String(r.share_of_capture_pct === null ? 'n/a' : `${String(r.share_of_capture_pct)}%`).padStart(15)}  ${r.root}`)
+  }
+  if (report.failed_count > 0) {
+    lines.push(`failed rows (status != ok, excluded from every statistic): ${String(report.failed_count)}`)
+    for (const f of report.failed_rows.slice(0, 20)) {
+      lines.push(`  ${f.status}\t${f.phase}\t${f.root}\tattempt=${f.attempt}`)
+    }
+    if (report.failed_count > 20) lines.push(`  ... ${String(report.failed_count - 20)} more`)
   }
   lines.push(`census wall clock: ${String(report.census_total_ms)} ms across ${String(report.census_attempts.length)} attempt(s) [${report.census_attempts.join(', ')}]`)
   lines.push('cold/warm: NOT distinguished — tinf-timing/1 rows carry no thermal label, so no split is inferred.')

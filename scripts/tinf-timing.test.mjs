@@ -38,6 +38,19 @@ import {
 
 const SCRIPT = fileURLToPath(new URL('./tinf-timing.mjs', import.meta.url))
 
+/** A valid row; individual tests override the fields they are about. */
+const BASE_ROW = {
+  schema: SCHEMA,
+  run_id: 'r1',
+  phase: 'census-capture',
+  root: 'nine-roots',
+  attempt: '1',
+  started_at: '2026-11-14T00:00:00.000Z',
+  duration_ms: '1000',
+  status: 'ok',
+  identity: 'head=abc',
+}
+
 function tmp(prefix = 'tinf-timing-test-') {
   return mkdtempSync(join(tmpdir(), prefix))
 }
@@ -278,4 +291,42 @@ test('cli: --self-test pins its own parser (exit 0)', () => {
   const r = cli(['--self-test'])
   assert.equal(r.status, 0, r.out)
   assert.match(r.out, /DSH-TINF-TIMING-SELFTEST PASS/)
+})
+
+test('rootOf: the first /test/ segment wins, so nested files do not invent roots', () => {
+  // Reviewer finding: the fixture path below resolved to packages/domain/test/fixtures before.
+  assert.equal(rootOf('/w/packages/domain/test/fixtures/test/a.test.ts'), 'packages/domain')
+  // Both nested package roots are real (the root config include covers them).
+  assert.equal(rootOf('/w/packages/runtime/controlled-fs/test/x.test.ts'), 'packages/runtime/controlled-fs')
+  assert.equal(rootOf('/w/packages/tools/a5p5-tools/test/y.test.ts'), 'packages/tools/a5p5-tools')
+  assert.equal(rootOf('/w/packages/domain/test/z.test.ts'), 'packages/domain')
+  // A lane directory is a stable relative root, never an absolute path.
+  assert.equal(rootOf('/w/tests/checks/q.test.ts'), 'tests/checks')
+  assert.equal(rootOf('/w/tests/checks/eb3/eb3-x.test.ts'), 'tests/checks')
+})
+
+test('summarize: a failed span is surfaced by name and never rendered as 0 ms', () => {
+  const rows = [
+    { ...BASE_ROW, phase: 'census-root', root: 'packages/domain', attempt: '1', duration_ms: '1000', status: 'ok' },
+    { ...BASE_ROW, phase: 'census-root', root: 'packages/storage', attempt: '1', duration_ms: '0', status: 'failed' },
+  ]
+  const report = summarize(rows)
+  const storage = report.census_roots.find((r) => r.root === 'packages/storage')
+  const domain = report.census_roots.find((r) => r.root === 'packages/domain')
+
+  // The failed root keeps a row of its own, with no median and a failed count; it is not dropped,
+  // and it is not a zero-second success.
+  assert.equal(storage.n, 0)
+  assert.equal(storage.median_ms, null)
+  assert.equal(storage.failed_n, 1)
+  assert.equal(storage.share_of_capture_pct, null)
+  assert.equal(report.failed_count, 1)
+  assert.equal(report.failed_rows[0].root, 'packages/storage')
+  assert.equal(report.census_root_count, 2)
+  assert.equal(domain.median_ms, 1000)
+
+  const text = render(report)
+  assert.match(text, /packages\/storage \(FAILED/)
+  assert.doesNotMatch(text, /\s0\s+0\s+0%\s+packages\/storage/)
+  assert.match(text, /failed rows \(status != ok/)
 })

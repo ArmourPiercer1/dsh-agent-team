@@ -77,8 +77,9 @@ test('key: the canonical digest is stable under field order', () => {
   const reversed = Object.fromEntries(Object.entries(FACTS).reverse())
   assert.equal(hostCacheKey(reversed).key, a.key)
   assert.match(a.key, /^sha256:[0-9a-f]{64}$/)
-  // The digest covers exactly the §3 fields — no hidden extras, no missing ones.
-  assert.deepEqual(Object.keys(a).sort(), [...KEY_FIELDS, 'key'].sort())
+  // The object carries exactly the §3 fields plus the three derived digests — no hidden extras,
+  // no missing ones.
+  assert.deepEqual(Object.keys(a).sort(), [...KEY_FIELDS, 'key', 'host_key', 'product_key'].sort())
   assert.equal(a.key, `sha256:${sha256Hex(canonicalJson(Object.fromEntries(KEY_FIELDS.map((f) => [f, FACTS[f]]))))}`)
 })
 
@@ -261,4 +262,58 @@ test('workflow step extraction: the host build step carries the measured chain, 
   assert.ok(!step.includes('#'))
   // A step name that does not exist is null, which the derivation turns into a named refusal.
   assert.equal(extractStepText(text, 'No such step'), null)
+})
+
+test('key: the HOST key does not move with the product tree (that is what makes Host reuse possible)', () => {
+  const a = hostCacheKey(FACTS)
+  const otherTree = { ...FACTS, product_merge_tree: 'b'.repeat(40), product_lock_digest: `sha256:${'c'.repeat(64)}` }
+  const b = hostCacheKey(otherTree)
+
+  // Same host, different product tree: the host may be shared, the composite may not.
+  assert.equal(b.host_key, a.host_key)
+  assert.notEqual(b.product_key, a.product_key)
+  assert.notEqual(b.key, a.key)
+
+  // ... and a host field still moves the host key.
+  const otherHost = { ...FACTS, host_lock_digest: `sha256:${'d'.repeat(64)}` }
+  assert.notEqual(hostCacheKey(otherHost).host_key, a.host_key)
+
+  // A host artifact recorded for one tree verifies for HOST use against another tree.
+  const dir = makeArtifact()
+  const result = verifyHostArtifact({ dir, expect: { ...FACTS, host_key: b.host_key } })
+  assert.equal(result.verdict, 'OK', JSON.stringify(result.reasons))
+})
+
+test('key: a host lockfile edit changes the host key (the digest is not a constant)', () => {
+  const one = tmp()
+  const two = tmp()
+  writeFileSync(join(one, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n# alpha\n')
+  writeFileSync(join(two, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n# beta\n')
+  const a = deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: one })
+  const b = deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: two })
+  assert.notEqual(a.host_lock_digest, b.host_lock_digest)
+  assert.notEqual(hostCacheKey(a).host_key, hostCacheKey(b).host_key)
+  // One byte is enough.
+  writeFileSync(join(two, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n# betA\n')
+  const c = deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: two })
+  assert.notEqual(b.host_lock_digest, c.host_lock_digest)
+})
+
+test('key: a dirty host checkout is refused, not keyed as the pin', () => {
+  const dir = tmp()
+  const git = (...args) => spawnSync('git', ['-C', dir, ...args], { encoding: 'utf8' })
+  assert.equal(git('init', '-q').status, 0)
+  git('config', 'user.email', 't@example.com')
+  git('config', 'user.name', 't')
+  writeFileSync(join(dir, 'README'), 'x\n')
+  git('add', 'README')
+  git('commit', '-qm', 'init')
+  const head = git('rev-parse', 'HEAD').stdout.trim()
+
+  const paths = readFileSync('tests/paths.mjs', 'utf8')
+  const pin = /export\s+const\s+TEST_USE_BASELINE_SHA\s*=\s*['"]([0-9a-f]{40})['"]/.exec(paths)[1]
+  assert.notEqual(head, pin)
+  // Pin mismatch is the first refusal (drift), so a clean-but-different tree is DRIFT.
+  writeFileSync(join(dir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n')
+  assert.throws(() => deriveHostCacheFacts({ repoRoot: process.cwd(), hostDir: dir }), (e) => e.code === 'HOST_CHECKOUT_DRIFT')
 })

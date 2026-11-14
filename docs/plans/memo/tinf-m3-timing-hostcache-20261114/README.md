@@ -5,7 +5,7 @@
 
 ## 1. 一句话
 
-M3 交付**两半、都不上线**：**(A) 把 census 内部九个 root 的耗时第一次变成可读的行**（`scripts/tinf-timing.mjs`，接进 `ci-pr-gate.mjs` 的 census 路径，**shadow**）；**(B) 把 Host 缓存的前提条件做出来并做成可拒绝的**（`scripts/host-cache-key.mjs`：强键 + 对制品的**校验**，不是对键字符串的信任）。
+M3 交付**两半、都不上线**：**(A) 把 census 内部按 root 的耗时第一次变成可读的行**（`scripts/tinf-timing.mjs`，接进 `ci-pr-gate.mjs` 的 census 路径，**shadow**）；**(B) 把 Host 缓存的前提条件做出来并做成可拒绝的**（`scripts/host-cache-key.mjs`：强键 + 对制品的**校验**，不是对键字符串的信任）。
 
 **缓存没有打开**。没有任何 `actions/cache` 读写步骤，没有任何 CI 路径读取键，没有任何东西因为本 PR 改变「跑什么」。设计正本的说法是「先量化、再影子对照验证、最后切换」；本 PR 只完成第一步，并要求第二步以本 PR 的行数据为依据。
 
@@ -14,7 +14,7 @@ M3 交付**两半、都不上线**：**(A) 把 census 内部九个 root 的耗�
 | | 现在由谁测 | 状态 |
 | --- | --- | --- |
 | job 总墙钟、每个 **Actions step**（Host provision/build、repo build、安全 suite、census） | `scripts/census-profile.mjs`（M0，jobs API 的 `started_at/completed_at`） | 已有：n=3 样本 census p50 1100 s（77%）、host build 272 s（19%）、job p50 1427 s |
-| **census 那一个 step 内部的九个 root** | `scripts/tinf-timing.mjs`（M3） | **本 PR 新增**：每次 capture 一行 `census-capture` + 每个 root 一行 `census-root`，落在 `census-transcripts/tinf-timing.tsv` 并随既有 artifact 上传 |
+| **census 那一个 step 内部按 root 的耗时** | `scripts/tinf-timing.mjs`（M3） | **本 PR 新增**：每次 capture 一行 `census-capture` + 报告里出现的**每个** root 一行 `census-root`，落在 `census-transcripts/tinf-timing.tsv` 并随既有 artifact 上传 |
 | gate 的**每个 leg** | 同上（`phase=leg`） | 新增；`--only census` 时只有 `census` 这一个 leg 行 |
 | cold / warm | **无人测** | 行里没有热标签，报告**明写不分组**，不从 `attempt` 猜（见 §4） |
 | 缓存命中率 / runner-minute 节省 | **无人测** | 缓存未启用，没有命中可测；这正是「先量化再切换」要等的东西 |
@@ -30,7 +30,7 @@ M3 交付**两半、都不上线**：**(A) 把 census 内部九个 root 的耗�
 | `schema` | 恒为 `tinf-timing/1` | 其它值 → `BAD_SCHEMA` |
 | `run_id` | 调用方的 run 标识（gate 用 `<stamp>-<pid>`） | 非空 |
 | `phase` | `leg` / `census-capture` / `census-root` | `[a-z][a-z0-9-]*` |
-| `root` | leg 名 / `nine-roots` / root 目录（`packages/<pkg>`） | 非空 |
+| `root` | leg 名 / `nine-roots`（capture 行沿用既有名字）/ 报告里出现的 root 目录（`packages/<pkg>`，含嵌套包根） | 非空 |
 | `attempt` | 1 起的 capture/重采样序号 | 正整数 |
 | `started_at` | ISO-8601 UTC 墙钟（**只是时间戳，不是时长来源**） | `...Z` 且可解析 |
 | `duration_ms` | 非负整数毫秒；`time()` 用 `process.hrtime.bigint()`，**不用 `Date.now()` 算时长** | `^\d+$` |
@@ -49,7 +49,7 @@ const { path, rows, warnings } = timer.flush()        // 幂等；**永不 throw
 
 **写不进去不是红 census**：`createTimer` 在构造时 `mkdirSync` 失败 → `path=null` 并记 `TIMING_DIR_UNWRITABLE`；写失败 → `TIMING_WRITE_FAILED` 并停止重试。gate 把 warnings 打成一行 `[tinf-timing] WARN …`，**只此而已**：不改 verdict、不改 exit code、不改 token、不改顺序。
 
-## 4. 九个 root 是**推导**的，不是包住一个循环（偏差 1）
+## 4. root 行是**推导**的，不是包住一个循环（偏差 1）
 
 设计稿说「per root（census root loop）」，但真实代码里**没有 root 循环可以包**：九个 root 在**一次** `vitest run` 里并发执行（根 `vitest.config.ts` 的 include 是 `packages/<pkg>/test/**` 加两条 lane 目录，其注释原文：*"the census single-capture runs nine package roots concurrently"*）。在进程里为不存在的循环记 hrtime，等于发明一个测量。
 
@@ -59,7 +59,9 @@ const { path, rows, warnings } = timer.flush()        // 幂等；**永不 throw
 - 每个 root 的行从**这次 capture 的 vitest JSON report** 推导（`phase=census-root`）：该 root 下所有文件的 `max(endTime) - min(startTime)` 即它的**窗口**。`testResults[].startTime/endTime` 是 vitest reporter 自己写的字段，本仓库 vitest 4.1.11 实测存在（在主 checkout 跑一次 `--reporter=json` 读到的形状：`name/startTime/endTime/status/assertionResults`）。
 - 因此：**root 行与 capture 行是两种量级的东西**，`summarize` 明说这一点——root 的 share 是「占 capture 中位数的百分比」，因为窗口互相重叠，**加总可以超过 100%**；`census-root` 行在 phase 表里 share 显示 `n/a`，不参与分母（否则就是重复计数）。
 - 一个 root **没有可读 span** → 该行 `status=failed`，**不是 0 ms 的 ok**；不可读的 report 让整个推导跳过并记 warning，**不影响 leg**。
-- `rootOf()` 从 `/packages/` 锚点取名字（`packages/domain`），因为 vitest report 里是绝对路径——不锚定的话同一套件的 root 名会带 runner 的 `/home/runner/work/...` 前缀，跨 run 不可比。
+- `rootOf()` 从 `/packages/` 锚点取名字（`packages/domain`），因为 vitest report 里是绝对路径——不锚定的话同一套件的 root 名会带 runner 的 `/home/runner/work/...` 前缀，跨 run 不可比。**取第一个** `/test/` 段而不是最后一个：`packages/domain/test/fixtures/test/a.test.ts` 属于 `packages/domain`（取最后一个会发明一个 `packages/domain/test/fixtures` root）；lane 目录稳定成 `tests/<lane>`，不会退化成绝对路径。
+- **不是「九个」root**：根 `vitest.config.ts` 的 include 同时覆盖嵌套包根（`packages/runtime/controlled-fs`、`packages/tools/a5p5-tools`），所以真实报告会给出 11 个 root。本工具报告**它实际看到的数量**（`census_root_count`），notes 里也写明这一点——把「九」写死就是第二轮审查抓到的错误。
+- **`status != ok` 的行永远不被当成耗时**：它从所有统计里剔除，并按名字列进 `failed_rows`（`--json`）与 `failed rows` 段（文本）；一个只有失败窗口的 root 显示 `(FAILED: no readable span in N attempt(s))`，绝不显示成 `0 ms`。
 
 ## 5. 精确 CLI 用法
 
@@ -82,7 +84,17 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 
 退出码：计时器 `0` 报告 / `2` 具名拒绝（`NO_INPUT_PATHS`、`NO_INPUT`、`NO_INPUT_ROWS`、`NO_CENSUS_ROWS`、`BAD_ROW`、`BAD_SCHEMA`、`UNKNOWN_ARGUMENT`）。缓存键 `0 OK` / `1 INFRA_ERROR` / `2 REFUSED`（必需 fact 推不出来）/ `3 MISS`。
 
-## 6. Host 缓存键：九个字段，每个都从真实文件/对象来
+## 6. Host 缓存键：九个字段、**两层**，每个都从真实文件/对象来
+
+**审查修正（重要）**：第一版把九个字段一起哈希成「host key」。但 spec §3/§4 说 Host 缓存按 **Host identity** 命中、Product 缓存才携带 merge tree——把 `product_merge_tree`/`product_lock_digest` 混进 host 键，意味着**每个 PR 的 host 都不可能复用**。现在输出三个值：
+
+| 值 | 字段 | 用途 |
+| --- | --- | --- |
+| `host_key` | platform / node_version / pnpm_version / host_commit / host_lock_digest / host_build_flags_digest / toolchain_config_digest | **Host 层可共享的那把键**（未来 Host 缓存按它命中） |
+| `product_key` | product_merge_tree / product_lock_digest | Product 层 |
+| `key` | 九个字段的复合摘要 | 记录用，以及「这个 host 配这个树」的精确断言 |
+
+`verifyHostArtifact` 用 `host_key` 判定「是不是同一个 host」，因此同一个 host 可以被另一个树的验证接受；`key` 只在调用方显式提供时作第二道核查。另外：**dirty host 被拒绝**（`HOST_CHECKOUT_DIRTY`）——只查 HEAD 会把“在 pin 上但工作树脏”的字节当成 pin 的字节。
 
 **键 = `sha256:` over canonical（键名排序）JSON of 下面九个字段**。字段顺序不可能改变键；**任何单个字段变化一定改变键**（九项逐一有测试）。
 
@@ -160,7 +172,7 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 
 | 门 | 结果 |
 | --- | --- |
-| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 36 / pass 36 / fail 0` |
+| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 41 / pass 41 / fail 0`（19 + 22；第二轮审查新增 5 个） |
 | `node scripts/test-catalog.mjs --max-uncollected 91` | exit 0，`tests=862`（`DISCOVERED_AND_COLLECTED 757` / `UNCOLLECTED 91`），`digest=sha256:1b2f3bc521f8b4ea6599b24c030a55f52c5dfc0b69d127c5f41e88456968be46` |
 | `node --test scripts/test-catalog.test.mjs` | `19 / pass 19 / fail 0`（未改动） |
 | `node --test scripts/tinf-m0.test.mjs` | `13 / pass 13 / fail 0`（未改动） |
@@ -186,3 +198,11 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 | `host-verify-tampered.txt` | 一字节改动 → `INFRA_ERROR / CONTENT_DIGEST_MISMATCH` |
 
 **关于「真实 host 树」**：`tests/deepseek-harness-test-use` 与 `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness` 在本环境**都不存在**，所以 `--verify` 只能对**合成树**跑（已在上面标注）。真实宿主树上的校验留给切换前的第二步。
+
+## 11. 独立审查（第一轮 CHANGES REQUIRED → 本轮修正）
+
+第一轮独立审查在 head `e5465a3b1` 给出 **CHANGES REQUIRED**，两条 blocking 都是真的：
+
+1. `rootOf` 用的是**最后**一个 `/test/` 段，且文档把「九 root」写死。修正见 §4：第一个 `/test/` 段、报告实际数量、并补了 fixture 路径 / 嵌套包根 / lane 目录三个断言。
+2. `summarize` 丢掉了行的 `status`：`status=failed` 的 root 会渲染成 `0 ms / 0%`，正是文件头自己宣称拒绝的「零秒答案」；`--json` 里也没有失败字段。修正：失败行从所有统计中剔除、按名字surface（`failed_rows`）、root 表显示 `FAILED`，并有专门测试。
+3. 非阻塞但同轮修掉：host/product 键混在一起（见 §6）、dirty host 只查 HEAD（见 §6）、`host_lock_digest` 缺敏感性测试（现在有「lock 改一字节 → digest 与 host_key 都变」的用例）、`summarize` 对字符串 duration 做 `+` 会拼接（现在入口统一 `Number()`）。

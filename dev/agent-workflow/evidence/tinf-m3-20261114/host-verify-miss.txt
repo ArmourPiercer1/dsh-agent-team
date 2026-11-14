@@ -1,1 +1,1 @@
-DSH-HOST-CACHE verdict=MISS key=sha256:1bc65ad2b483582210de9897b66339203cd2fdfc2ea4bec810f1a2694349a928 reasons="ARTIFACT_DIR_ABSENT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m3/dev/agent-workflow/evidence/tinf-m3-20261114/absent does not exist — a miss is \"build it\", never \"nothing to run\""
+DSH-HOST-CACHE verdict=MISS key=sha256:d7889ae8ed9a05318ec18d86b9a826bf4596d876e3210186b6368477e546e2c7 reasons="ARTIFACT_DIR_ABSENT: /tmp/nonexistent-artifact does not exist — a miss is \"build it\", never \"nothing to run\""

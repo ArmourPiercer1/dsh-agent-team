@@ -80,7 +80,7 @@ export const KEY_SCHEMA = 'host-cache-key/1'
 export const ARTIFACT_MANIFEST = 'host-artifact.json'
 export const MANIFEST_SCHEMA = 'host-artifact-manifest/1'
 export const ENTRY_POINT = 'apps/cli/lib/bin.js'
-/** §3's minimum field set, in a fixed (sorted) order. */
+/** §3's field set, in a fixed (sorted) order: HOST identity + the PRODUCT tree it was used for. */
 export const KEY_FIELDS = [
   'host_build_flags_digest',
   'host_commit',
@@ -92,6 +92,23 @@ export const KEY_FIELDS = [
   'product_merge_tree',
   'toolchain_config_digest',
 ]
+/**
+ * The fields that identify the HOST alone (spec §3/§4: a Host cache hits by Host identity, so it
+ * must not move when a different PR's merge tree arrives). Everything in KEY_FIELDS that is not
+ * listed here belongs to the PRODUCT layer.
+ */
+export const HOST_KEY_FIELDS = [
+  'host_build_flags_digest',
+  'host_commit',
+  'host_lock_digest',
+  'node_version',
+  'platform',
+  'pnpm_version',
+  'toolchain_config_digest',
+]
+/** Fields that belong to the PRODUCT layer (merge tree + its lockfile). */
+export const PRODUCT_KEY_FIELDS = ['product_lock_digest', 'product_merge_tree']
+
 /** The identity fields an artifact RECORDS and verification compares (§3/§6). */
 export const IDENTITY_FIELDS = ['host_commit', 'host_lock_digest', 'toolchain_config_digest']
 const HOST_WORKFLOW = '.github/workflows/census-runtime.yml'
@@ -210,6 +227,11 @@ export function deriveHostCacheFacts({ repoRoot = process.cwd(), hostDir = null 
     if (head !== null && head !== hostCommit) {
       throw new KeyRefusal('HOST_CHECKOUT_DRIFT', `host_commit: ${host} is at ${head} but tests/paths.mjs pins ${hostCommit} — a drifted host tree cannot be keyed as the pin`)
     }
+    // HEAD alone is not the tree: a dirty checkout at the pin would be keyed as the pin's bytes.
+    const dirty = gitOut(['status', '--porcelain'], host)
+    if (dirty !== null && dirty.trim() !== '') {
+      throw new KeyRefusal('HOST_CHECKOUT_DIRTY', `host_commit: ${host} is at the pinned commit but has uncommitted changes (${dirty.trim().split('\n').length} path(s)) — a dirty host cannot be keyed as the pin`)
+    }
   }
 
   let hostLock = null
@@ -270,7 +292,15 @@ export function deriveHostCacheFacts({ repoRoot = process.cwd(), hostDir = null 
   }
 }
 
-/** The §3 key object: the nine fields verbatim + one canonical-JSON digest over them. */
+/**
+ * The §3 key object, with the two layers kept separate.
+ *
+ * `host_key` is what a Host cache may be shared on: it must NOT include the product tree, or a
+ * host built once could never be reused by another PR (review finding: hashing all nine fields for
+ * the host artifact made Host hits impossible).
+ * `product_key` is the layer above it. `key` is the composite of both, kept for the record and for
+ * callers that want "this exact host for this exact tree".
+ */
 export function hostCacheKey(facts) {
   const absent = KEY_FIELDS.filter((f) => facts?.[f] === undefined || facts?.[f] === null || String(facts[f]) === '')
   if (absent.length > 0) {
@@ -278,7 +308,16 @@ export function hostCacheKey(facts) {
   }
   const body = {}
   for (const f of KEY_FIELDS) body[f] = String(facts[f])
-  return { ...body, key: `sha256:${sha256Hex(canonicalJson(body))}` }
+  const hostBody = {}
+  for (const f of HOST_KEY_FIELDS) hostBody[f] = body[f]
+  const productBody = {}
+  for (const f of PRODUCT_KEY_FIELDS) productBody[f] = body[f]
+  return {
+    ...body,
+    host_key: `sha256:${sha256Hex(canonicalJson(hostBody))}`,
+    product_key: `sha256:${sha256Hex(canonicalJson(productBody))}`,
+    key: `sha256:${sha256Hex(canonicalJson(body))}`,
+  }
 }
 
 /** Walk a tree into a manifest. `.git` and the recorded manifest itself are excluded (see header). */
@@ -322,6 +361,8 @@ export function recordHostArtifact({ dir, facts }) {
   const record = {
     schema: MANIFEST_SCHEMA,
     ...Object.fromEntries(KEY_FIELDS.map((f) => [f, key[f]])),
+    host_key: key.host_key,
+    product_key: key.product_key,
     key: key.key,
     file_count: manifest.file_count,
     manifest_digest: manifest.manifest_digest,
@@ -364,6 +405,12 @@ export function verifyHostArtifact({ dir, expect } = {}) {
     if (String(recorded?.[f] ?? '') !== String(expect[f])) {
       reasons.push(`IDENTITY_MISMATCH: ${f} recorded=${String(recorded?.[f] ?? 'absent')} expected=${String(expect[f])}`)
     }
+  }
+  // The HOST key is the sharing unit: compare it when the caller supplies it. A host artifact
+  // recorded with a different product tree must still verify for HOST use (that is the point of
+  // splitting the layers), so only host_key is required here.
+  if (expect.host_key !== undefined && String(recorded?.host_key ?? '') !== String(expect.host_key)) {
+    reasons.push(`IDENTITY_MISMATCH: host_key recorded=${String(recorded?.host_key ?? 'absent')} expected=${String(expect.host_key)}`)
   }
   // When the caller also supplies the composite key, the whole §3 tuple is compared — a key that
   // disagrees with the recorded identity is a contradiction even if the three identity fields match.
