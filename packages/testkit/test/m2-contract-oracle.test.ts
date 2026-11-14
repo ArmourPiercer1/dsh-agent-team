@@ -256,7 +256,9 @@ describe('TINF M2 contract oracle: log text is not evidence', () => {
     })
 
     expect(judgement.verdict).toBe('INCONCLUSIVE')
-    expect(judgement.reasons.join(' ')).toMatch(/cannot see them/)
+    // Declared-blind is checked before the instrument flag: either way, a
+    // trace-only judgement cannot be SATISFIED.
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind|cannot see them/)
   })
 })
 
@@ -298,7 +300,7 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
     })
 
     expect(judgement.verdict).toBe('INCONCLUSIVE')
-    expect(judgement.reasons.join(' ')).toMatch(/cannot see them: network/)
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness: network/)
   })
 
   it('a DENIED event carrying an effect_id is VIOLATED even with a clean witness', () => {
@@ -331,6 +333,21 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.reasons.join(' ')).toMatch(/outside the graded scope.*process/)
     expect(judgement.limitations.join(' ')).toMatch(/unexplained out-of-scope effect: process/)
+  })
+
+  it('a domain declared blind cannot be graded even if a row claims instrumented', () => {
+    // Contradictory input is not a pass: the witness says it cannot see
+    // filesystem while a row claims it can.
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events: [denied()],
+      witness: fsWitness(false),
+      blindDomains: ['filesystem', 'process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+    })
+
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind/)
   })
 
   it('a decision id in authority_ref is not an identity mismatch', () => {

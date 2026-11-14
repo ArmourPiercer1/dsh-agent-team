@@ -32,7 +32,7 @@
  * @module @dsh-agent-team/testkit/effect-witness
  */
 import { createHash } from 'node:crypto'
-import { lstatSync, readdirSync, readFileSync, readlinkSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
 /** The effect domains a contract can be graded over. */
@@ -158,6 +158,10 @@ function label(path: string, root: string): string {
  */
 export function createFsWitness(opts: { root: string; outside: string; marker?: string }): EffectWitness {
   const baseline = snapshot(opts.outside)
+  // A watched directory that does not exist yet is still watched: any write that
+  // creates it appears in the next snapshot. Say so in the evidence instead of
+  // reporting a clean tree with no explanation.
+  const absentAtBaseline = baseline.size === 0 && !existsSync(opts.outside)
   return {
     blindDomains: ['process', 'network'],
     async observe(): Promise<WitnessObservation[]> {
@@ -168,7 +172,9 @@ export function createFsWitness(opts: { root: string; outside: string; marker?: 
           domain: 'filesystem',
           observed: changed.length > 0,
           instrumented: true,
-          evidence: listed,
+          evidence: absentAtBaseline
+            ? [...listed, `${label(opts.outside, opts.root)} did not exist when the witness was created`]
+            : listed,
           ...(changed.length > EVIDENCE_CAP ? { truncated: true } : {}),
         },
         {

@@ -241,6 +241,19 @@ export function judgeContract(input: OracleInput): OracleJudgement {
       limitations,
     }
   }
+  // Rule 2a': a domain the witness itself declares blind cannot be graded, even
+  // if a row for it claims instrumented:true. Contradictory input is not a pass.
+  const declaredBlind = required.filter((domain) => input.blindDomains.includes(domain))
+  if (declaredBlind.length > 0) {
+    return {
+      verdict: 'INCONCLUSIVE',
+      reasons: [
+        `required effect domain(s) declared blind by the witness: ${declaredBlind.join(', ')}; a domain cannot be both graded and unseen`,
+      ],
+      limitations,
+    }
+  }
+
   const uninstrumented = required.filter(
     (domain) => !observationsOf(domain).some((observation) => observation.instrumented === true),
   )

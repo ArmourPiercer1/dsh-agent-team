@@ -186,6 +186,6 @@ describe('TINF M2 effect witness: the sensitivity control is graded, not just pr
 
     // A real write happened; a witness that cannot see it must not certify it.
     expect(judgement.verdict).toBe('INCONCLUSIVE')
-    expect(judgement.reasons.join(' ')).toMatch(/cannot see them: filesystem/)
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness: filesystem/)
   })
 })

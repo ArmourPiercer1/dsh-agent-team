@@ -36,7 +36,7 @@ p4t6 的扫描账本要求每个新增 `packages/**` 文件登记；不登记会
 | verdict | 何时触发（按实现顺序，先到先判） |
 | --- | --- |
 | `INSTRUMENT_ERROR` | `event_seq` 不严格递增；event/witness 字段缺失或类型错误；`witness` 为空 |
-| `INCONCLUSIVE` | 必需域没有 witness 观测；**必需域的行没有 `instrumented: true`**（仪器自己说看不见）；trace 没有 computed/denied 事件；deny 合同没有 `DENIED`；有授权副作用但本 oracle 不给“授权效果”发 PASS；**在未评估域观测到副作用**（不能当作没发生） |
+| `INCONCLUSIVE` | 必需域没有 witness 观测；**必需域被 witness 自己声明为 blind**（矛盾输入不算通过）；**必需域的行没有 `instrumented: true`**（仪器自己说看不见）；trace 没有 computed/denied 事件；deny 合同没有 `DENIED`；有授权副作用但本 oracle 不给“授权效果”发 PASS；**在未评估域观测到副作用**（不能当作没发生） |
 | `VIOLATED` | 有 `DENIED` 且必需域真的观测到副作用；`DENIED` 事件自带 `effect_id`（自相矛盾）；`DISPATCHED`/`COMPLETED` 的 `authority_ref` 为 null 且观测到副作用；`authority_actor_id` 与 `actor_id` 不同（**决策签发给另一个身份**） |
 | `SATISFIED` | 仅当每个必需域的观测行 `instrumented: true` 且 `observed: false`，且 deny 合同有 `DENIED` 决策事件 |
 
@@ -77,6 +77,7 @@ p4t6 的扫描账本要求每个新增 `packages/**` 文件登记；不登记会
 | `DENIED` + `effect_id` | `a DENIED event carrying an effect_id is VIOLATED even with a clean witness` | `VIOLATED` |
 | 域外副作用 | `an effect outside the graded scope is INCONCLUSIVE and named, not dismissed` | `INCONCLUSIVE` + 理由/limitations 点名 |
 | 决策 id 不是身份 | `a decision id in authority_ref is not an identity mismatch` | `SATISFIED` |
+| 声明 blind 与能力声明矛盾 | `a domain declared blind cannot be graded even if a row claims instrumented` | `INCONCLUSIVE` |
 | 同尺寸改写 + 还原 mtime | `a same-size rewrite with a restored mtime is still observed (content digest)` | `observed:true` |
 | 新建空目录 | `a new empty directory is observed` | `observed:true` |
 | 新建符号链接 | `a created symlink is observed (recorded, not followed)` | `observed:true` |
