@@ -80,6 +80,20 @@ test('ready: marker, census, label, settlement and duty-cycle refusals', () => {
   assert.deepEqual(evaluate({ ...readyInput, checks: red }).reasons, ['LAYER_CI_PRODUCT_FAILURE'])
 })
 
+test('ready: a queued re-run with NO timestamps still outranks an older success', () => {
+  const oldSuccess = { id: 10, name: 'ci-fast / ci-fast', status: 'completed', conclusion: 'success', started_at: '2026-11-13T00:00:01Z', completed_at: '2026-11-13T00:00:02Z' }
+  // Real GitHub shape for a queued attempt: started_at and completed_at are null.
+  const queued = { id: 11, name: 'ci-fast / ci-fast', status: 'queued', conclusion: null, created_at: '2026-11-13T00:09:00Z', started_at: null, completed_at: null }
+  assert.equal(newestCheck([oldSuccess, queued], 'ci-fast').status, 'queued')
+  assert.deepEqual(evaluate({ ...readyInput, checks: [...checks(), queued] }).reasons, ['LAYER_CI_FAST_QUEUED'])
+})
+
+test('ready: an unreadable git state is refused, not silently skipped', () => {
+  const v = evaluate({ ...readyInput, git: null, gitError: 'fatal: not a git repository' })
+  assert.deepEqual(v.reasons, ['GIT_STATE_UNAVAILABLE'])
+  assert.equal(v.exit, 1)
+})
+
 test('ready: a head without a 40-hex sha is refused, not guessed', () => {
   assert.deepEqual(evaluate({ ...readyInput, pr: { ...readyInput.pr, headRefOid: 'abc' } }).reasons, ['NO_HEAD_SHA'])
 })
@@ -97,6 +111,8 @@ test('evidence-budget: bytes come from the object DB, binaries included', () => 
   assert.equal(rows[1].bytes, 4194304)
   const batch = parseBatchCheckOrdered('aaaa blob 12\nbbbb missing\ncccc blob 7\n', 3)
   assert.deepEqual(batch, [12, 0, 7])
+  // A short read is a refusal, never a silent 0 for the tail.
+  assert.throws(() => parseBatchCheckOrdered('aaaa blob 12\n', 2), /returned 1 line/)
 })
 
 test('evidence-budget: the window is the last N commits, and zeros do not enter percentiles', () => {
@@ -138,9 +154,12 @@ test('collection-audit: tokens, scope and the three-way split', () => {
     'run: node --test scripts/a.test.mjs scripts/b.test.mjs',
     'run: node --test --test-reporter=spec tests/c.test.mjs',
     'run: |\n  node --test \\\n    tests/d.test.mjs',
-  ], { layers: [{ check: ['tests/e.test.mjs', 'tests/not-a-test.mjs'] }] })
+  ], { layers: [{ id: 'ci-integration', legs: [{ id: 'leg', check: ['tests/e.test.mjs', 'tests/not-a-test.mjs'] }] }] })
   for (const p of ['scripts/a.test.mjs', 'scripts/b.test.mjs', 'tests/c.test.mjs', 'tests/d.test.mjs', 'tests/e.test.mjs']) assert.ok(tokens.has(p), p)
   assert.ok(![...tokens].some((t) => t.startsWith('-')))
+  // The manifest half must actually be read: a suite named ONLY by a leg counts.
+  const manifestOnly = collectTokens([], { layers: [{ id: 'l', legs: [{ check: ['scripts/manifest-only.test.mjs'] }] }] })
+  assert.ok(manifestOnly.has('scripts/manifest-only.test.mjs'))
   assert.deepEqual(inScope(['tests/kits/a/a.mjs', 'scripts/x.test.mjs', 'packages/p/x.test.mjs']), ['scripts/x.test.mjs'])
 
   const r = audit(['scripts/a.test.mjs', 'tests/b.test.mjs'], new Set(['scripts/a.test.mjs']), { 'tests/b.test.mjs': { reason: 'needs host', review: 'M1' } })

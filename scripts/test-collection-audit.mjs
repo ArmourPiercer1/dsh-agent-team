@@ -18,6 +18,11 @@
  * claim can be checked instead of believed.
  *
  * DESIGN NOTES
+ *   - KNOWN LIMIT: a suite named by a DIRECTORY or GLOB argument
+ *     (`node --test tests/kits/`, `.../*.test.mjs`) is not expanded, so it would
+ *     be reported UNCOLLECTED. No workflow on master passes a directory or a
+ *     glob (all 18 `node --test` invocations name files); M1's discovery is
+ *     what removes the limit.
  *   - READ-ONLY, and NOT a gate. It reports; `--strict` exists so a future lane
  *     (M1) can turn it into one without a second rule.
  *   - Scope is node:test suites only (`*.test.mjs|cjs|js`). Vitest suites are
@@ -78,7 +83,16 @@ export function collectTokens(workflowTexts = [], manifest = null) {
       }
     }
   }
-  const checks = Array.isArray(manifest?.layers) ? manifest.layers.flatMap((l) => (Array.isArray(l.check) ? l.check : [])) : []
+  // The manifest's file names live at layers[].legs[].check — reading
+  // layers[].check (the first version) always yielded zero tokens, i.e. the
+  // manifest half of the criterion was dead code.
+  const checks = []
+  for (const layer of Array.isArray(manifest?.layers) ? manifest.layers : []) {
+    if (Array.isArray(layer?.check)) checks.push(...layer.check)
+    for (const leg of Array.isArray(layer?.legs) ? layer.legs : []) {
+      if (Array.isArray(leg?.check)) checks.push(...leg.check)
+    }
+  }
   for (const c of checks) if (typeof c === 'string' && TEST_RE.test(c)) found.add(c)
   return found
 }

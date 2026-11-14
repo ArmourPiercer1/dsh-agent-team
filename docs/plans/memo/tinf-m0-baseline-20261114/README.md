@@ -11,7 +11,7 @@
 | --- | --- | --- | --- |
 | 1 | ready-helper 五处假通过（#759，未合并） | 五个 refusal 码 | PR #767：`MARKER_PRESENT_TITLE, SETTLEMENT_MISSING` 之外无假绿 |
 | 2 | 证据预算把 `--numstat` 行数当字节（#761） | object DB 真实字节，含二进制 | 近 30 个 first-parent commit：p50 **701,506 B**、p90 **2.31 MB**、max **3.28 MB**、**5/30 超过 2 MiB** |
-| 3 | 未定覆盖率只有百分比，诱导“kit=零测试”（#764） | 按类命名 UNKNOWN，保持 exit 2 | 40 commit：21 undetermined（53%），其中 kit 24 次 / 根目录 scratch 10 次 / 脚本 2 次 / **other 0** |
+| 3 | 未定覆盖率只有百分比，诱导“kit=零测试”（#764） | 按类命名 UNKNOWN，保持 exit 2 | 40 commit：21 undetermined（53%），其中 kit 24 次 / 根目录 scratch 10 次 / world-factory 1 次 / 脚本 2 次 / **other 0**（共 37 次命中） |
 | 4 | 未收集测试集没有当前口径（#530 仍未合并） | 收集审计（只读） | 98 个 in-scope tracked suite，**19 collected / 79 uncollected** |
 | 5 | “API 无 step 级耗时”的错误前提（#762 B1） | 读 jobs API 的分位数报表 | n=3：census **1100 s（77%）**、host build 272 s（19%）、repo build 22 s（2%），job p50 1427 s |
 
@@ -80,22 +80,25 @@
 | 3 | 同上 + 一个未跟踪文件 | 追加 `WORKTREE_DIRTY` | `nc-3-dirty-worktree.txt` |
 | 4 | 一个本地空 commit（不 push） | 仍含 `UNPUSHED_COMMITS` | `nc-4-unpushed-commit.txt` |
 | 5 | `git add -N` 一个没人命名的 `.test.mjs` | 该路径出现在 UNCOLLECTED，`total 98→99` | `nc-5-uncollected-suite.txt` |
-| 6 | 临时 git 仓提交 1 MiB PNG + 12 B json | **1,048,588 B**（#761 会把 PNG 记成 0） | `nc-6-binary-evidence.txt` |
+| 6 | 临时 git 仓（根 commit）提交 1 MiB PNG + 12 B json | **1,048,588 B**（#761 会把 PNG 记成 0） | `nc-6-binary-evidence.txt` |
 | 7 | 含 `tests/kits/**` 的改动 | 仍 undetermined，reason=`kit-runner`（不是 determined/0 tests） | `nc-7-unknown-named.txt` |
 | 8 | 全 skipped 的 census job | exit 2 拒绝，不报 0 秒 | `nc-8-profile-refusal.txt` |
+| 9 | depth-3 shallow clone | boundary commit 被 **SKIPPED** 并列出；不把整棵树当一次改动（旧版会报 134.2 MiB / 10,034 文件） | `nc-9-shallow-clone.txt` |
+| 10 | 合入 500 KiB 二进制的 merge commit | **512,000 B**（旧版 `diff-tree` 对 merge 输出空，记 0 B） | `nc-10-merge-commit.txt` |
 
 ## 4. 被这些测量推翻的旧结论
 
 1. **“24 分钟大部分是构建”**：错误。census 占 77%，host build 占 19%。Host build 缓存最多省 ~4.5 min；真正的杠杆在 census。
-2. **“2 MiB/PR 上限永远不会触发”**（#761）：错误。近 30 个 commit 中 5 个超过 2 MiB，max 3.28 MB；而累计证据树 153.2 MiB（413 个目录，27 个目录超过 2 MiB）。
-3. **“#764 的 53% undetermined 说明规则缺失”**：只有 0 次落在 `other`。53% 里最大的一块是 kit（24 次）与误提交的根目录文件（10 次），两者都不是 `classify()` 规则问题。
+2. **“2 MiB/PR 上限永远不会触发”**（#761）：错误。近 30 个 commit 中 5 个超过 2 MiB，max 3.28 MB；`origin/master` 上的累计证据树 153.2 MiB（413 个目录，27 个目录超过 2 MiB；本 PR 自己的目录使其 +1）。
+3. **“#764 的 53% undetermined 说明规则缺失”**：37 次命中里只有 0 次落在 `other`。最大两块是 kit（24 次）与误提交的根目录文件（10 次），两者都不是 `classify()` 规则问题。
 
 ## 5. 已知缺口（不隐藏）
 
 - M0 的测试仍然是“被手工列进一个 leg”，TINF-01 要的自动发现是 M1；当前 `test-collection-audit` 自己就报告 79 个未收集 suite。
 - `pr-ready-check` 是本地辅助，不是服务端权威；它不替代 branch protection，也不判断 review。
-- `evidence-budget` 对“修改过的文件”取新大小，因此是上界；对 rename 同样计入新文件全量。
-- `census-profile` 无法分解 census step；`--runs` 是顺序拉取，CI 之外的网络抖动会跳过个别 run（跳过不计数）。
+- `evidence-budget` 对“修改过的文件”取新大小，因此是上界；对 rename 同样计入新文件全量。shallow clone 的 boundary commit 会被跳过并在输出里列出（不是静默丢弃）；`--batch-check` 产出短于输入时直接抛错，不把尾部记 0。merge commit 用第一父比较。
+- `census-profile` 无法分解 census step；`--runs` 顺序拉取最近 40+ 个 ci-required run，网络失败会跳过单个 run（跳过不计数）。报表是**时变**的：`m-census-profile.txt` 是 2026-11-14 的样本（n=3，census 1100 s / 77%），不同日期会漂移。
+- `test-collection-audit` 只解析“显式文件”形式；若将来有 `node --test <目录>` 或 glob，会被误报为 UNCOLLECTED（当前 18 处 `node --test` 全部是显式文件）。
 - #760（candidate-status 只读）与 #763（发布独立）按设计**不在本 PR**。
 
 ## 6. 复现

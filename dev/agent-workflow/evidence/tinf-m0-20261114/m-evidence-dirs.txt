@@ -1,4 +1,4 @@
-### measurement: accumulated evidence tree by top-level directory (git scope)
+### measurement: accumulated evidence tree by top-level directory (origin/master 3a7303ca2)
 evidence-budget (accumulated per top-level evidence directory, scope=git):
      6.5 MiB   342 file(s)  a5sf-pty-devlive
      4.7 MiB   522 file(s)  a5sf-pd30-web-preview

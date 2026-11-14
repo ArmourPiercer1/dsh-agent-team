@@ -82,8 +82,12 @@ function sameCheck(name, wanted) {
 export function newestCheck(checks, wanted) {
   const hits = (checks ?? []).filter((c) => sameCheck(String(c.name ?? ''), wanted))
   if (hits.length === 0) return null
-  const stamp = (c) => String(c.started_at ?? c.completed_at ?? '')
-  return hits.slice().sort((a, b) => stamp(b).localeCompare(stamp(a)))[0]
+  // Ordering must survive a queued re-run, which GitHub reports with BOTH
+  // `started_at` and `completed_at` null (only `created_at` and `id` exist).
+  // Falling back to '' sorted that attempt last and let an older success win.
+  const stamp = (c) => String(c.created_at ?? c.started_at ?? c.completed_at ?? '')
+  const id = (c) => Number(c.id ?? 0)
+  return hits.slice().sort((a, b) => stamp(b).localeCompare(stamp(a)) || id(b) - id(a))[0]
 }
 
 /** Backwards-compatible alias (older callers used this name). */
@@ -119,6 +123,12 @@ export function evaluate(input = {}) {
   const comments = input.comments ?? []
   const reasons = []
   const notes = []
+  // A failed git read is NOT "no git state to check": only --no-git may skip
+  // R8. The first version collapsed both into `git === null`, so a broken
+  // checkout (not a repository, dubious ownership, a broken worktree) passed.
+  if (input.gitError) {
+    return { verdict: 'REFUSED', exit: 1, reasons: ['GIT_STATE_UNAVAILABLE'], notes: [String(input.gitError)], facts: { head: String(pr.headRefOid ?? '') } }
+  }
   const head = typeof pr.headRefOid === 'string' ? pr.headRefOid : ''
   const facts = { head, draft: pr.isDraft === true, state: pr.mergeStateStatus ?? null }
 
@@ -260,6 +270,7 @@ export function gather({ pr, repo, noGit }) {
   const checks = ghJsonPages(`repos/${repo}/commits/${head}/check-runs?per_page=100`, 'check_runs')
   const comments = ghJsonPages(`repos/${repo}/issues/${pr}/comments?per_page=100`)
   let git = null
+  let gitError = null
   if (!noGit) {
     try {
       const clean = gitOut(['status', '--porcelain']) === ''
@@ -270,8 +281,8 @@ export function gather({ pr, repo, noGit }) {
       let ahead = 0
       if (remoteHasHead) ahead = Number(gitOut(['rev-list', '--count', `origin/${branch}..HEAD`]))
       git = { clean, head: localHead, branch, upstream: remoteHasHead ? `origin/${branch}` : null, ahead, remoteHasHead }
-    } catch {
-      git = null
+    } catch (e) {
+      gitError = `git state unreadable: ${e?.message ?? e}`
     }
   }
   return {
@@ -288,6 +299,7 @@ export function gather({ pr, repo, noGit }) {
     checks,
     comments: comments.map((c) => ({ id: c.id, body: c.body ?? '' })),
     git,
+    gitError,
   }
 }
 

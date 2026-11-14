@@ -1,6 +1,5 @@
 ### NC-7 UNKNOWN is named, not converted to determined-with-zero-tests.
-### (a) live: the current master mix, with the kit paths named by class.
-  paths that make a change undetermined:
+### live: current master mix, kit paths named by class.
       4x  tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs  [kit-runner]
       3x  tests/kits/a1-bash-governance-20261112/a1-bash-governance.mjs  [kit-runner]
       2x  .merge-loop.sh  [root-scratch]

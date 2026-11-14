@@ -3,6 +3,5 @@
   collected        19
   UNCOLLECTED      80
     tests/checks/tinf-m0-nc-uncollected.test.mjs
-  note collected outside scope: scripts/<name>.test.mjs
 DSH-TEST-COLLECTION total=99 collected=19 exempt=0 uncollected=80 covered_pct=19
 exit=0 (measurement)

@@ -124,6 +124,9 @@ export function parseLsTree(text) {
  */
 export function parseBatchCheckOrdered(text, count) {
   const lines = String(text).split('\n').filter((l) => l.trim())
+  // A short read must not silently become "the tail is 0 bytes": that is the
+  // same false zero the tool exists to remove. Callers get a refusal instead.
+  if (lines.length < count) throw new Error(`cat-file returned ${lines.length} line(s) for ${count} path(s)`)
   const sizes = new Array(count).fill(0)
   for (let i = 0; i < Math.min(count, lines.length); i += 1) {
     const m = /^(\S+)\s+(blob|tree|commit|tag|missing)(?:\s+(\d+))?$/.exec(lines[i].trim())
@@ -164,8 +167,29 @@ function git(args, input) {
  * remove.
  */
 export function changedEvidencePaths(sha) {
+  const parents = git(['rev-list', '--parents', '-n1', sha]).trim().split(/\s+/).slice(1)
+  if (parents.length > 1) {
+    // A merge commit has no single "first parent" for diff-tree unless asked:
+    // without -m it prints nothing, which the first version recorded as 0 B.
+    const out = git(['diff', '--name-only', '-z', parents[0], sha, '--', EVIDENCE_DIR])
+    return out.split('\0').filter(Boolean)
+  }
   const out = git(['diff-tree', '-r', '--root', '--no-commit-id', '--name-only', '-z', sha, '--', EVIDENCE_DIR])
   return out.split('\0').filter(Boolean)
+}
+
+/** True when `sha` has no parent because it is the shallow boundary, not a root. */
+export function isShallowBoundary(sha) {
+  try {
+    git(['rev-parse', '--verify', '--quiet', `${sha}^`])
+    return false
+  } catch {
+    try {
+      return git(['rev-parse', '--is-shallow-repository']).trim() === 'true'
+    } catch {
+      return false
+    }
+  }
 }
 
 /** Real bytes (from the object DB) of those paths AT `sha`. */
@@ -182,26 +206,35 @@ export function commitsReport(count = 30, capBytes = 2 * MIB, rev = 'origin/mast
   const shas = git(['log', '--first-parent', `-n${count}`, '--format=%H', rev])
     .trim().split('\n').filter(Boolean)
   const rows = []
+  const skipped = []
   for (const sha of shas) {
     let subject = ''
     try {
       subject = git(['log', '-1', '--format=%s', sha]).trim()
     } catch { /* shallow boundary */ }
+    // `diff-tree --root` happily prints the WHOLE tree for a shallow boundary
+    // commit (measured: 134.2 MiB / 10,034 files in a depth-3 clone), which is
+    // not a change set. Only a real root commit may count the full tree.
+    if (isShallowBoundary(sha)) {
+      skipped.push({ sha, reason: 'shallow-boundary' })
+      continue
+    }
     let paths = []
     try {
       paths = changedEvidencePaths(sha)
-    } catch {
-      continue // root commit / shallow boundary: not a measurable change set
+    } catch (e) {
+      skipped.push({ sha, reason: `unmeasurable: ${e?.message ?? e}` })
+      continue
     }
     const { bytes, files } = bytesAtCommit(sha, paths)
     rows.push({ sha, subject, bytes, files })
   }
-  return { mode: 'commits', window: count, rows, summary: summarize(rows, capBytes) }
+  return { mode: 'commits', window: count, measured: rows.length, skipped, rows, summary: summarize(rows, capBytes) }
 }
 
-export function dirsReport(root = EVIDENCE_DIR, capBytes = 2 * MIB) {
-  const rows = groupByDir(parseLsTree(git(['ls-tree', '-r', '-l', 'HEAD', '--', root])), root)
-  return { mode: 'dirs', rows, summary: summarize(rows, capBytes) }
+export function dirsReport(root = EVIDENCE_DIR, capBytes = 2 * MIB, rev = 'HEAD') {
+  const rows = groupByDir(parseLsTree(git(['ls-tree', '-r', '-l', rev, '--', root])), root)
+  return { mode: 'dirs', scope: 'git', rev, rows, summary: summarize(rows, capBytes) }
 }
 
 function walkWorktree(dir, acc) {
@@ -243,8 +276,9 @@ export function render(result, top = 10) {
     for (const r of result.rows.slice().sort((a, b) => b.bytes - a.bytes).slice(0, top)) {
       lines.push(`  ${formatBytes(r.bytes).padStart(10)}  ${String(r.files).padStart(3)} file(s)  ${r.sha.slice(0, 10)}  ${r.subject.slice(0, 72)}`)
     }
-    lines.push(`  commits=${s.count} with_evidence=${s.withEvidence} p50=${s.p50} p90=${s.p90} max=${s.max} cap=${s.capBytes} over_cap=${s.overCapCount}`)
-    lines.push(`DSH-EVIDENCE-BUDGET mode=commits n=${s.count} with_evidence=${s.withEvidence} p50=${s.p50} p90=${s.p90} max=${s.max} cap=${s.capBytes} over_cap=${s.overCapCount}`)
+    lines.push(`  commits=${s.count} measured=${result.measured ?? s.count} skipped=${(result.skipped ?? []).length} with_evidence=${s.withEvidence} p50=${s.p50} p90=${s.p90} max=${s.max} cap=${s.capBytes} over_cap=${s.overCapCount}`)
+    for (const sk of result.skipped ?? []) lines.push(`  SKIPPED ${sk.sha.slice(0, 10)} ${sk.reason}`)
+    lines.push(`DSH-EVIDENCE-BUDGET mode=commits n=${s.count} measured=${result.measured ?? s.count} skipped=${(result.skipped ?? []).length} with_evidence=${s.withEvidence} p50=${s.p50} p90=${s.p90} max=${s.max} cap=${s.capBytes} over_cap=${s.overCapCount}`)
   } else {
     lines.push(`evidence-budget (accumulated per top-level evidence directory, scope=${result.scope ?? 'git'}):`)
     for (const r of result.rows.slice(0, top)) {
@@ -320,7 +354,7 @@ function main() {
     if (opts.input) {
       result = JSON.parse(readFileSync(resolve(opts.input), 'utf8'))
     } else if (opts.dirs) {
-      result = opts.worktree ? worktreeDirsReport(EVIDENCE_DIR, capBytes) : dirsReport(EVIDENCE_DIR, capBytes)
+      result = opts.worktree ? worktreeDirsReport(EVIDENCE_DIR, capBytes) : dirsReport(EVIDENCE_DIR, capBytes, opts.rev)
     } else {
       result = commitsReport(opts.commits, capBytes, opts.rev)
     }

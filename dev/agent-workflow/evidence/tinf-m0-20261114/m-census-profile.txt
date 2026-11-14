@@ -1,4 +1,4 @@
-### measurement: step medians over the last 3 completed census jobs (Actions jobs API)
+### measurement: step medians over the most recent completed census jobs (Actions jobs API, sampled 2026-11-14)
 census-profile (n=3 census jobs, step medians):
    1100 s   77%  n= 3  Census — nine roots, two captures, NO refusal permitted
     272 s   19%  n= 3  Build the pristine host (TEST_METHODS §2 chain)

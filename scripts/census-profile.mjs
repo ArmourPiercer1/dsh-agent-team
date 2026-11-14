@@ -133,7 +133,7 @@ export function discoverJobs(repo, runs, want) {
   const seen = new Set()
   // Workflow-specific endpoint: a plain /runs listing is dominated by the three
   // cheap layers, so 16 runs can contain one or two ci-required rounds.
-  const runList = ghJson(`repos/${repo}/actions/workflows/ci-required.yml/runs?per_page=${Math.min(100, Math.max(20, runs * 6))}&status=completed`)
+  const runList = ghJson(`repos/${repo}/actions/workflows/ci-required.yml/runs?per_page=${Math.min(100, Math.max(40, runs * 10))}&status=completed`)
   for (const run of runList.workflow_runs ?? []) {
     if (run.status !== 'completed') continue
     let payload

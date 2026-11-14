@@ -30,6 +30,6 @@ evidence-budget (last 30 first-parent commits, bytes of the evidence files each 
          0 B    0 file(s)  57a0ec136e  CLOSEOUT: the joint surface is green — and the two defects that made it 
          0 B    0 file(s)  6ea7d8dd46  fix(a6): a cold boot owns the parameter-permission lane too — no silent 
          0 B    0 file(s)  4075c67ad3  fix(plane): an adopted native name is not the plane's to own — the shipp
-  commits=30 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
-DSH-EVIDENCE-BUDGET mode=commits n=30 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
+  commits=30 measured=30 skipped=0 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
+DSH-EVIDENCE-BUDGET mode=commits n=30 measured=30 skipped=0 with_evidence=22 p50=701506 p90=2313158 max=3284257 cap=2097152 over_cap=5
 exit=0

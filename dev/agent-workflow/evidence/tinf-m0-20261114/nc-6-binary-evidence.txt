@@ -1,7 +1,7 @@
-### NC-6 binary evidence — a committed 1 MiB PNG plus a 12 B json under dev/agent-workflow/evidence.
-### #761's --numstat parse recorded the binary as 0 bytes (numstat prints '-'); this must be 1048576+.
-fatal: bad revision '798c22cb6a7a9ef751e318d9417ba61a3198d87a^'
+### NC-6 binary evidence — a committed 1 MiB PNG plus a 12 B json under dev/agent-workflow/evidence (root commit).
+### #761's --numstat parse recorded the binary as 0 bytes (numstat prints '-'); this must be 1,048,588.
 evidence-budget (last 1 first-parent commits, bytes of the evidence files each commit leaves):
-  commits=0 with_evidence=0 p50=0 p90=0 max=0 cap=2097152 over_cap=0
-DSH-EVIDENCE-BUDGET mode=commits n=0 with_evidence=0 p50=0 p90=0 max=0 cap=2097152 over_cap=0
+     1.0 MiB    2 file(s)  798c22cb6a  NC: one binary evidence file (1 MiB) and one small json
+  commits=1 measured=1 skipped=0 with_evidence=1 p50=1048588 p90=1048588 max=1048588 cap=2097152 over_cap=0
+DSH-EVIDENCE-BUDGET mode=commits n=1 measured=1 skipped=0 with_evidence=1 p50=1048588 p90=1048588 max=1048588 cap=2097152 over_cap=0
 exit=0

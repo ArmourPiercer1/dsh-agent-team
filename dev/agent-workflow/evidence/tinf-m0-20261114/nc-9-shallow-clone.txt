@@ -1,0 +1,9 @@
+### NC-9 shallow clone — depth-3 clone of the M0 branch. A shallow boundary commit must be SKIPPED,
+### never measured as its whole tree (the first version reported 134.2 MiB / 10,034 files for one row).
+evidence-budget (last 3 first-parent commits, bytes of the evidence files each commit leaves):
+    16.9 KiB   13 file(s)  d74e6a01bb  docs(ci): TINF M0 memo, evidence transcripts and session log
+         0 B    0 file(s)  1beaca9c83  fix(ci): coverage-audit render must not destructure an unused top
+  commits=2 measured=2 skipped=1 with_evidence=1 p50=17279 p90=17279 max=17279 cap=2097152 over_cap=0
+  SKIPPED b68685de06 shallow-boundary
+DSH-EVIDENCE-BUDGET mode=commits n=2 measured=2 skipped=1 with_evidence=1 p50=17279 p90=17279 max=17279 cap=2097152 over_cap=0
+exit=0
