@@ -299,6 +299,17 @@
           "why": "TINF M0 (2026-11-14, docs/plans/memo/agent-testing-infrastructure-20261114/ M0): the five baseline tools landed with ONE host-free suite covering their laws — the five false-PASS paths of the draft-first ready helper (unknown mergeability, stale local HEAD, missing upstream, a newer pending check-run, comment pagination), real object-DB bytes instead of `--numstat` lines in evidence-budget (binary blobs included, window = literal last N first-parent commits), the UNKNOWN reason classes in coverage-audit (kit/evidence-only is NOT a zero-test 'determined'), the collected-or-exempt split in test-collection-audit, and step-median arithmetic in census-profile (a skipped step is not 0 s). One suite, not five: until M1 discovery lands, every node:test leg is a hand-written entry in this manifest AND in the workflow run line, which is exactly the anti-pattern test-collection-audit measures (97 tracked in-scope suites, 79 uncollected at this commit). Host-free: pure functions plus one read-only `git ls-files`; no port, no DSH_HOME, no pristine host, no build, no network. Dropping this file from the step or from check[] is CI_LAYER_LEG_WEAKENED."
         },
         {
+          "id": "test catalog (TINF M1 — shadow, host-free)",
+          "cmd": [
+            "node",
+            "--test"
+          ],
+          "check": [
+            "scripts/test-catalog.test.mjs"
+          ],
+          "why": "TINF M1 (2026-11-14, docs/plans/memo/agent-testing-infrastructure-20261114/ M1): the Test Catalog is a shadow instrument — discovery from git ls-files plus the vitest.config.ts include/exclude arrays (parsed from that file, never copied), a canonical catalog_digest, a critical-contract binding table (dev/ci/test-contracts.json), and a two-way diff against the file lists these workflows still hand-maintain. It is NOT authority: nothing consults it to decide what runs, because two authorities would be worse than the one we have. Its refusal set is the deliverable: DUPLICATE_ID, CONTRACT_WITHOUT_TEST, CONTRACT_UNKNOWN_TEST (deleting a contract's only test is red, not a smaller catalog), STALE_EXCLUDE, UNKNOWN_DRIVER, INSTRUMENT_DRIVER_MISSING, and UNCOLLECTED_GREW — the last is a ratchet against the 91 uncollected suites measured at landing, so a newly discovered suite cannot be silently accepted and the number may only go down. Host-free: no Host boot, no DSH_HOME, no build, no network; one read-only `git ls-files` and two file reads. Dropping this file from the step or from check[] is CI_LAYER_LEG_WEAKENED."
+        },
+        {
           "id": "a5sf native route C",
           "cmd": [
             "node",
