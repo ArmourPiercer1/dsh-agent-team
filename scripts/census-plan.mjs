@@ -59,12 +59,30 @@
  *
  * Exit: 0 ok | 2 REFUSED (named code on stderr; the plan is never printed when it cannot be derived).
  *
+ * A DIGEST IS A DIGEST. `merge_tree_sha`, `host_sha`, `catalog_digest`, `build_digest` and the derived
+ * `plan_digest` are all validated against ONE shape (`scripts/census-digest.mjs`): `sha256:<64 hex>` or
+ * a bare `<40 hex>`. The sentinels `null`, `"null"`, `"undefined"`, `""`, whitespace, uppercase hex and
+ * a 39/65-hex value are refused by name, at plan time and again when a plan is read (`--verify-plan`).
+ * M4 review round 1 proved the bypass: `--plan --build-digest null` recorded the STRING `"null"` and
+ * two shards echoing it aggregated to `PASS expected=22 observed=22`. A plan may still record
+ * `build_digest: null` (its own code, `IDENTITY_BUILD_UNRECORDED`), but never a string that only looks
+ * like a value.
+ *
+ * ROOTS DROPPED BY exclude[]. A config edit that excludes a root's only files would otherwise shrink
+ * the census silently: the plan is derived from `include[]`, and a root that no longer matches is not
+ * in it. So `deriveRoots` reports every root that HAS test-like files but is entirely excluded by the
+ * root config's `exclude[]`, the plan lists them in `roots_dropped`, and the CLI REFUSES
+ * (`ROOT_DROPPED_BY_EXCLUDE`, exit 2) unless each one is named with `--allow-dropped-root <root>`.
+ * An allowed drop is recorded, not hidden: it stays in `roots_dropped` with `allowed: true`, it is part
+ * of `plan_digest`, and the aggregator prints it in the summary.
+ *
  * REFUSAL CODES: ROOT_CONFIG_MISSING, ROOT_CONFIG_UNREADABLE, CATALOG_UNREADABLE, GIT_READ_FAILED,
- *   ROOTS_NOT_DERIVED, ROOT_UNRESOLVED,
+ *   ROOTS_NOT_DERIVED, ROOT_UNRESOLVED, ROOT_DROPPED_BY_EXCLUDE,
  *   CAPTURES_INVALID, TIMINGS_INPUT_UNREADABLE, TIMINGS_BAD_ROW, TIMINGS_NO_CENSUS_ROWS,
  *   GIT_READ_FAILED, PLAN_UNREADABLE, PLAN_SCHEMA_UNKNOWN, PLAN_DIGEST_MISMATCH,
- *   PLAN_TASK_DUPLICATE, PLAN_TASK_SET_CHANGED, PLAN_IDENTITY_DRIFT, BALANCE_K_INVALID,
- *   ESTIMATES_UNKNOWN, NO_MODE, UNKNOWN_ARGUMENT, OUTPUT_UNWRITABLE.
+ *   PLAN_TASK_DUPLICATE, PLAN_TASK_SET_CHANGED, PLAN_IDENTITY_DRIFT, PLAN_IDENTITY_UNRECORDED,
+ *   PLAN_DIGEST_UNRECORDED, DIGEST_INVALID, IDENTITY_BUILD_UNRECORDED, DROPPED_ROOT_UNKNOWN,
+ *   BALANCE_K_INVALID, ESTIMATES_UNKNOWN, NO_MODE, UNKNOWN_ARGUMENT, OUTPUT_UNWRITABLE.
  *
  * @module scripts/census-plan
  */
@@ -75,6 +93,7 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { CENSUS_COMMAND, censusVitestArgv } from './census-invocation.mjs'
+import { DIGEST_SHAPE, IDENTITY_FIELDS, identityProblems, isValidDigest } from './census-digest.mjs'
 import { buildEntries, digestOf as catalogDigestOf, gather as gatherCatalog } from './test-catalog.mjs'
 // M3 owns both the root naming and the timing rows. `rootOf` is imported (not copied) so a plan
 // task's root and a `census-root` row's root are the same string by construction.
@@ -113,10 +132,13 @@ export function digestJson(value) {
  * list of its own: `test-catalog.mjs` does the parsing, this function only filters to the ROOT
  * config's matches and names their roots.
  *
+ * @param {{cwd?: string, allowDropped?: string[]}} [opts] `allowDropped` names roots whose
+ *   exclude[]-removal is a DELIBERATE, recorded drop; anything else refuses (ROOT_DROPPED_BY_EXCLUDE).
  * @returns {{ok: true, roots: Array<{root: string, files: number}>, catalog_digest: string,
- *            file_count: number} | {ok: false, code: string, detail: string}}
+ *            file_count: number, roots_dropped: Array<{root: string, files_excluded: number}>} |
+ *           {ok: false, code: string, detail: string}}
  */
-export function deriveRoots({ cwd = process.cwd() } = {}) {
+export function deriveRoots({ cwd = process.cwd(), allowDropped = [] } = {}) {
   let state
   try {
     state = gatherCatalog({ cwd })
@@ -156,6 +178,16 @@ export function deriveRoots({ cwd = process.cwd() } = {}) {
     registry: state.registry,
   })
   const counts = new Map()
+  // A root whose only test-like files are excluded by the ROOT config's `exclude[]`. Counted, not
+  // silently dropped: an 11-root census becoming a 10-root census is exactly the kind of quiet
+  // shrinkage the multiset invariant cannot see (the lost root is simply not in C).
+  const excluded = new Map()
+  for (const entry of built.entries) {
+    if (entry.classification === 'EXCLUDED_WITH_REASON' && entry.reason === 'vitest config exclude[]') {
+      const lost = rootOfCensusPath(entry.path)
+      if (lost !== 'unknown') excluded.set(lost, (excluded.get(lost) ?? 0) + 1)
+    }
+  }
   for (const entry of built.entries) {
     if (entry.runner !== 'vitest' || entry.classification !== 'DISCOVERED_AND_COLLECTED') continue
     // Same derivation as the timing rows (M3), imported rather than re-implemented.
@@ -173,17 +205,49 @@ export function deriveRoots({ cwd = process.cwd() } = {}) {
   const roots = [...counts.entries()]
     .map(([root, files]) => ({ root, files }))
     .sort((a, b) => (a.root < b.root ? -1 : a.root > b.root ? 1 : 0))
+  const dropped = [...excluded.entries()]
+    .filter(([root]) => !counts.has(root))
+    .map(([root, files_excluded]) => ({ root, files_excluded }))
+    .sort((a, b) => (a.root < b.root ? -1 : a.root > b.root ? 1 : 0))
   if (roots.length === 0) {
     return {
       ok: false,
       code: 'ROOTS_NOT_DERIVED',
       detail: `${ROOT_CONFIG} include[] matched no test file under any census root (include: ` +
-        `${JSON.stringify(rootCfg.include)}) — an empty root set is not a small plan`,
+        `${JSON.stringify(rootCfg.include)}) — an empty root set is not a small plan` +
+        (dropped.length > 0
+          ? ` (and ${String(dropped.length)} root(s) have files that exclude[] removes: ${dropped.map((d) => `${d.root}(${String(d.files_excluded)})`).join(', ')})`
+          : ''),
+    }
+  }
+  // Each dropped root must be named explicitly to proceed; naming a root that was NOT dropped is a
+  // typo, not a permission, so it refuses rather than quietly permitting nothing.
+  const allowed = new Set(allowDropped)
+  const known = new Set(dropped.map((d) => d.root))
+  const unknownAllowed = [...allowed].filter((root) => !known.has(root))
+  if (unknownAllowed.length > 0) {
+    return {
+      ok: false,
+      code: 'DROPPED_ROOT_UNKNOWN',
+      detail: `--allow-dropped-root ${unknownAllowed.join(', ')} names a root that exclude[] did not drop ` +
+        `(dropped: ${dropped.length === 0 ? 'none' : dropped.map((d) => d.root).join(', ')})`,
+    }
+  }
+  if (dropped.some((d) => !allowed.has(d.root))) {
+    const silent = dropped.filter((d) => !allowed.has(d.root))
+    return {
+      ok: false,
+      code: 'ROOT_DROPPED_BY_EXCLUDE',
+      detail: `${silent.length} census root(s) have test files that ${ROOT_CONFIG} exclude[] removes, so the ` +
+        `plan would be SMALLER than the population: ${silent.map((d) => `${d.root} (${String(d.files_excluded)} file(s))`).join(', ')}. ` +
+        'A smaller census that still aggregates to PASS is the failure this refuses; pass ' +
+        `--allow-dropped-root <root> for each one to record the drop deliberately`,
     }
   }
   return {
     ok: true,
     roots,
+    roots_dropped: dropped,
     catalog_digest: catalogDigestOf(state.entries),
     file_count: roots.reduce((a, r) => a + r.files, 0),
   }
@@ -192,7 +256,7 @@ export function deriveRoots({ cwd = process.cwd() } = {}) {
 // ───────────────────────────────────────────────────────────────── identity ──
 
 /** Identity fields a plan records; `plan_digest` is derived from them, not read from a file. */
-export const IDENTITY_FIELDS = ['merge_tree_sha', 'host_sha', 'catalog_digest', 'build_digest']
+export { DIGEST_SHAPE, IDENTITY_FIELDS, isValidDigest }
 
 /**
  * @param {object} p
@@ -202,10 +266,25 @@ export const IDENTITY_FIELDS = ['merge_tree_sha', 'host_sha', 'catalog_digest', 
  * @param {string|null} [p.build_digest] operator-supplied product build identity, null = unrecorded
  */
 export function makeIdentity({ merge_tree_sha, host_sha, catalog_digest, build_digest = null }) {
-  for (const [k, v] of Object.entries({ merge_tree_sha, host_sha, catalog_digest })) {
-    if (typeof v !== 'string' || v.trim() === '') throw new Error(`makeIdentity: ${k} is required`)
+  const identity = { merge_tree_sha, host_sha, catalog_digest, build_digest: build_digest ?? null }
+  // `allowUnrecordedBuild: true` here: an operator who does not pass --build-digest records `null`
+  // (which the aggregator then refuses to PASS), but a STRING that is not a digest is never recorded.
+  // The three required fields may not be null at all.
+  const malformed = identityProblems(identity, { scope: 'plan', allowUnrecordedBuild: true })
+    .filter((problem) => problem.code === 'DIGEST_INVALID')
+  if (malformed.length > 0) {
+    const e = new Error(malformed.map((problem) => problem.detail).join('; '))
+    e.code = 'DIGEST_INVALID'
+    throw e
   }
-  return { merge_tree_sha, host_sha, catalog_digest, build_digest: build_digest ?? null }
+  for (const field of ['merge_tree_sha', 'host_sha', 'catalog_digest']) {
+    if (identity[field] === null || identity[field] === undefined) {
+      const e = new Error(`makeIdentity: ${field} is required (${DIGEST_SHAPE})`)
+      e.code = 'PLAN_IDENTITY_UNRECORDED'
+      throw e
+    }
+  }
+  return identity
 }
 
 /**
@@ -220,6 +299,11 @@ export function planPayload(plan) {
     captures: plan.captures,
     test_timeout_ms: plan.test_timeout_ms ?? null,
     roots: (plan.roots ?? []).map((r) => r.root),
+    // A recorded drop changes the census population. Leaving it out of the digest would let a plan be
+    // edited from 0 to 3 dropped roots (or back) without any digest moving.
+    // Defensive: a malformed `roots_dropped` must reach the aggregator's named refusal, not crash the
+    // digest. (The plan-side builder always emits an array.)
+    roots_dropped: (Array.isArray(plan.roots_dropped) ? plan.roots_dropped : []).map((d) => ({ root: d.root, files_excluded: d.files_excluded, allowed: d.allowed === true })),
     groups: (plan.groups ?? []).map((g) => ({ id: g.id, kind: g.kind, task_ids: g.task_ids })),
     tasks: (plan.tasks ?? []).map((t) => ({
       task_id: t.task_id,
@@ -259,10 +343,13 @@ export function taskIdOf(root, capture) {
  * @param {number|null} [p.testTimeout]
  * @param {object|null} [p.timings]              {byRoot: Map<string, number>, source_files: string[]}
  */
-export function buildPlan({ roots, captures, identity, testTimeout = null, timings = null }) {
+export function buildPlan({ roots, captures, identity, testTimeout = null, timings = null, rootsDropped = [] }) {
   if (!Number.isInteger(captures) || captures < 1) {
     throw new Error(`buildPlan: captures must be a positive integer, got ${String(captures)}`)
   }
+  // Validates the digest SHAPE. A throw here is a refusal, not a crash: every caller (CLI, verify,
+  // tests) either catches it or is asserting the throw.
+  const checkedIdentity = makeIdentity(identity)
   const sorted = [...roots].sort((a, b) => (a.root < b.root ? -1 : a.root > b.root ? 1 : 0))
   const groups = []
   const tasks = []
@@ -302,10 +389,11 @@ export function buildPlan({ roots, captures, identity, testTimeout = null, timin
   const unknown = sorted.map((r) => r.root).filter((root) => !Number.isFinite(timings?.byRoot?.get(root)))
   const plan = {
     schema: SCHEMA,
-    identity: { ...identity },
+    identity: { ...checkedIdentity },
     captures,
     test_timeout_ms: testTimeout,
     roots: sorted.map((r) => ({ root: r.root, files: r.files ?? null })),
+    roots_dropped: rootsDropped.map((d) => ({ root: d.root, files_excluded: d.files_excluded, allowed: true })),
     groups,
     tasks,
     timings: {
@@ -347,6 +435,20 @@ export function verifyPlan(plan, { cwd = process.cwd(), currentPlan } = {}) {
   if (plan.schema !== SCHEMA) {
     return { ok: false, codes: ['PLAN_SCHEMA_UNKNOWN'], detail: [`schema must be ${SCHEMA}, got ${String(plan.schema)}`] }
   }
+  // 0. the identity block itself. A plan with `merge_tree_sha: null` (or `"null"`) is not a plan whose
+  //    identity "matches" anything — the digest comparison below must never be reached by a plan whose
+  //    recorded identity is not an identity.
+  const identityBad = identityProblems(plan.identity, { scope: 'plan', allowUnrecordedBuild: true })
+  if (identityBad.length > 0) {
+    return { ok: false, codes: [...new Set(identityBad.map((p) => p.code))], detail: identityBad.map((p) => p.detail) }
+  }
+  if (!isValidDigest(plan.identity?.plan_digest)) {
+    return {
+      ok: false,
+      codes: ['PLAN_DIGEST_UNRECORDED'],
+      detail: [`plan.identity.plan_digest ${plan.identity?.plan_digest === undefined ? 'is absent' : `is ${JSON.stringify(plan.identity.plan_digest)}`} (${DIGEST_SHAPE})`],
+    }
+  }
   // 1. the file's OWN digest, over the file's OWN fields. An edit that did not recompute the digest
   //    is caught here, before anything is compared with the tree.
   const recomputed = planDigest(plan)
@@ -364,8 +466,9 @@ export function verifyPlan(plan, { cwd = process.cwd(), currentPlan } = {}) {
   const current = currentPlan ?? (() => {
     const roots = deriveRoots({ cwd })
     if (!roots.ok) return { refusal: roots }
-    return {
-      plan: buildPlan({
+    let currentPlanObject
+    try {
+      currentPlanObject = buildPlan({
         roots: roots.roots,
         captures: plan.captures,
         identity: {
@@ -376,8 +479,12 @@ export function verifyPlan(plan, { cwd = process.cwd(), currentPlan } = {}) {
         },
         testTimeout: plan.test_timeout_ms ?? null,
         timings: null,
-      }),
+        rootsDropped: roots.roots_dropped ?? [],
+      })
+    } catch (e) {
+      return { refusal: { code: e.code ?? 'DIGEST_INVALID', detail: String(e.message) } }
     }
+    return { plan: currentPlanObject }
   })()
   if (current.refusal) {
     return { ok: false, codes: [...codes, current.refusal.code], detail: [...detail, current.refusal.detail] }
@@ -399,6 +506,13 @@ export function verifyPlan(plan, { cwd = process.cwd(), currentPlan } = {}) {
     detail.push(`task set changed: ${missing.length} planned task(s) no longer derivable` +
       `${missing.length ? ` (${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '…' : ''})` : ''}; ` +
       `${added.length} new task(s) the plan does not carry${added.length ? ` (${added.slice(0, 5).join(', ')}${added.length > 5 ? '…' : ''})` : ''}`)
+  }
+  const droppedWas = (plan.roots_dropped ?? []).map((d) => d.root).sort()
+  const droppedNow = (current.plan.roots_dropped ?? []).map((d) => d.root).sort()
+  if (JSON.stringify(droppedWas) !== JSON.stringify(droppedNow)) {
+    codes.push('PLAN_TASK_SET_CHANGED')
+    detail.push(`dropped-root set changed: plan=[${droppedWas.join(', ')}] current=[${droppedNow.join(', ')}] — a different ` +
+      'population is a different census, even when the surviving task ids are the same')
   }
   if (plan.captures !== current.plan.captures || (plan.test_timeout_ms ?? null) !== (current.plan.test_timeout_ms ?? null)) {
     codes.push('PLAN_IDENTITY_DRIFT')
@@ -658,6 +772,7 @@ export function loadTimings(paths, { readFile = readFileSync } = {}) {
 const HELP = [
   'usage: node scripts/census-plan.mjs --plan [--out FILE] [--captures N] [--test-timeout MS]',
   '                                      [--timings FILE ...] [--build-digest DIGEST] [--balance K]',
+  '                                      [--allow-dropped-root ROOT ...]',
   '       node scripts/census-plan.mjs --verify-plan FILE',
   '       node scripts/census-plan.mjs --self-test',
   '',
@@ -665,7 +780,10 @@ const HELP = [
   '  --captures N        captures per root (default 2; the L2 census invocation)',
   '  --test-timeout MS   the clock the runner passes to vitest; omitted = the suite default',
   '  --timings FILE...   tinf-timing/1 tsv file(s) for est_ms (load-balancing hint only)',
-  '  --build-digest D    product build identity recorded in the plan (default: unrecorded)',
+  '  --build-digest D    product build identity recorded in the plan (default: unrecorded).',
+  '                      Must be sha256:<64 hex> or <40 hex>; "null"/""/" " are refused, not recorded.',
+  '  --allow-dropped-root R  record (do not hide) that exclude[] removes every file of root R;',
+  '                      without it a dropped root is ROOT_DROPPED_BY_EXCLUDE (exit 2)',
   '  --balance K         print the group-to-shard assignment for K shards instead of the plan',
   '  --verify-plan FILE  re-derive and refuse on digest / identity / task-set drift',
   '  --self-test         pin the derivation, the digest, the refusals and the balancer',
@@ -681,7 +799,7 @@ function parseArgs(argv) {
   const opts = {
     plan: false, out: null, captures: DEFAULT_CAPTURES, testTimeout: null,
     timings: [], buildDigest: null, balance: null, verifyPlan: null, selfTest: false, help: false,
-    root: null,
+    allowDropped: [],
   }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
@@ -691,6 +809,11 @@ function parseArgs(argv) {
     else if (a === '--test-timeout') opts.testTimeout = Number(argv[++i])
     else if (a === '--timings') { while (i + 1 < argv.length && !argv[i + 1].startsWith('--')) opts.timings.push(argv[++i]) }
     else if (a === '--build-digest') opts.buildDigest = argv[++i] ?? null
+    else if (a === '--allow-dropped-root') {
+      const root = argv[++i] ?? null
+      if (root === null || root.startsWith('--')) throw Object.assign(new Error('--allow-dropped-root needs a root name'), { code: 'UNKNOWN_ARGUMENT' })
+      opts.allowDropped.push(root)
+    }
     else if (a === '--balance') opts.balance = Number(argv[++i])
     else if (a === '--verify-plan') opts.verifyPlan = argv[++i] ?? null
     else if (a === '--self-test') opts.selfTest = true
@@ -704,7 +827,18 @@ function parseArgs(argv) {
 }
 
 function currentPlanFor(opts) {
-  const roots = deriveRoots({ cwd: process.cwd() })
+  // A digest is a digest at the CLI boundary too: `--build-digest null` must not become the string
+  // "null" in a plan file (M4 review round 1 bypass).
+  if (opts.buildDigest !== null && !isValidDigest(opts.buildDigest)) {
+    return {
+      refusal: {
+        code: 'DIGEST_INVALID',
+        detail: `--build-digest ${JSON.stringify(opts.buildDigest)} is not a digest (${DIGEST_SHAPE}); ` +
+          'omit the flag to record build_digest: null (which the aggregator refuses to PASS)',
+      },
+    }
+  }
+  const roots = deriveRoots({ cwd: process.cwd(), allowDropped: opts.allowDropped })
   if (!roots.ok) return { refusal: roots }
   if (!Number.isInteger(opts.captures) || opts.captures < 1) {
     return { refusal: { code: 'CAPTURES_INVALID', detail: `--captures must be a positive integer, got ${String(opts.captures)}` } }
@@ -715,8 +849,9 @@ function currentPlanFor(opts) {
     if (!loaded.ok) return { refusal: loaded }
     timings = { byRoot: loaded.byRoot, byTask: loaded.byTask, source_files: loaded.source_files }
   }
-  return {
-    plan: buildPlan({
+  let plan
+  try {
+    plan = buildPlan({
       roots: roots.roots,
       captures: opts.captures,
       identity: {
@@ -727,9 +862,12 @@ function currentPlanFor(opts) {
       },
       testTimeout: opts.testTimeout,
       timings,
-    }),
-    roots,
+      rootsDropped: roots.roots_dropped ?? [],
+    })
+  } catch (e) {
+    return { refusal: { code: e.code ?? 'DIGEST_INVALID', detail: String(e && e.message ? e.message : e) } }
   }
+  return { plan, roots }
 }
 
 export function main(argv) {
@@ -801,7 +939,11 @@ export function selfTest() {
   const cases = []
   const ok = (label, cond, detail = '') => cases.push([label, Boolean(cond), detail])
   const roots = [{ root: 'packages/a', files: 3 }, { root: 'packages/b', files: 1 }]
-  const identity = makeIdentity({ merge_tree_sha: 'treetree', host_sha: 'hosthost', catalog_digest: 'sha256:cat', build_digest: 'build1' })
+  const TREE = '1'.repeat(40)
+  const HOST = '2'.repeat(40)
+  const CAT = `sha256:${'3'.repeat(64)}`
+  const BUILD = `sha256:${'4'.repeat(64)}`
+  const identity = makeIdentity({ merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CAT, build_digest: BUILD })
   const plan = buildPlan({ roots, captures: 2, identity })
   const tasks = plan.tasks
 
@@ -831,21 +973,44 @@ export function selfTest() {
 
   // digest: canonical, order-independent for objects, order-SENSITIVE for the task list
   ok('canonical JSON sorts object keys', canonicalJson({ b: 1, a: 2 }) === '{"a":2,"b":1}', canonicalJson({ b: 1, a: 2 }))
-  ok('the digest covers the task list', planDigest(plan) === planDigest(JSON.parse(JSON.stringify(plan))), 'roundtrip')
-  const edited = JSON.parse(JSON.stringify(plan))
-  edited.tasks[0].est_ms = 1
-  ok('editing a task changes the digest', planDigest(edited) !== plan.identity.plan_digest, 'digest')
+  // Every task field is covered: mutating ANY one of them must move the digest. A "digest of a
+  // round-tripped copy equals itself" case would pass even if the payload dropped the tasks entirely.
+  const fieldEdits = [
+    ['root', (t) => { t.root = 'packages/zz' }],
+    ['capture', (t) => { t.capture = 9 }],
+    ['group', (t) => { t.group = 'capture-pair:other' }],
+    ['est_ms', (t) => { t.est_ms = 1 }],
+    ['task_id', (t) => { t.task_id = 'census:packages/zz#1' }],
+    ['runner', (t) => { t.runner.argv.push('--testTimeout=1') }],
+  ]
+  const unmoved = fieldEdits.filter(([, edit]) => {
+    const copy = JSON.parse(JSON.stringify(plan))
+    edit(copy.tasks[0])
+    return planDigest(copy) === plan.identity.plan_digest
+  }).map(([name]) => name)
+  ok('editing ANY task field moves the digest', unmoved.length === 0, `unmoved: ${unmoved.join(',') || 'none'}`)
   const reordered = JSON.parse(JSON.stringify(plan))
   reordered.tasks.reverse()
   ok('reordering tasks changes the digest', planDigest(reordered) !== plan.identity.plan_digest, 'digest')
+  const reCaptured = JSON.parse(JSON.stringify(plan))
+  reCaptured.captures = 1
+  ok('editing the capture count moves the digest', planDigest(reCaptured) !== plan.identity.plan_digest, 'captures')
 
-  // verify: the four drift classes
-  ok('verify: an unedited plan verifies against itself', verifyPlan(plan, { currentPlan: { plan } }).ok === true, JSON.stringify(verifyPlan(plan, { currentPlan: { plan } })))
+  // verify: a plan verifies against a CURRENT plan derived from the same population in a different
+  // input order (order-insensitivity), not merely against itself.
+  const permuted = buildPlan({ roots: [roots[1], roots[0]], captures: 2, identity })
+  ok('verify: an unchanged population verifies (root input order does not matter)',
+    verifyPlan(plan, { currentPlan: { plan: permuted } }).ok === true,
+    JSON.stringify(verifyPlan(plan, { currentPlan: { plan: permuted } }).codes))
   const stale = JSON.parse(JSON.stringify(plan))
   stale.tasks[0].capture = 9
   ok('verify: an edit without a new digest is PLAN_DIGEST_MISMATCH',
     verifyPlan(stale, { currentPlan: { plan: stale } }).codes.includes('PLAN_DIGEST_MISMATCH'), JSON.stringify(verifyPlan(stale, { currentPlan: { plan: stale } }).codes))
-  const other = buildPlan({ roots, captures: 2, identity: makeIdentity({ merge_tree_sha: 'other', host_sha: 'hosthost', catalog_digest: 'sha256:cat' }) })
+  const other = buildPlan({
+    roots,
+    captures: 2,
+    identity: makeIdentity({ merge_tree_sha: '9'.repeat(40), host_sha: HOST, catalog_digest: CAT, build_digest: BUILD }),
+  })
   ok('verify: a different tree is PLAN_IDENTITY_DRIFT',
     verifyPlan(plan, { currentPlan: { plan: other } }).codes.includes('PLAN_IDENTITY_DRIFT'), JSON.stringify(verifyPlan(plan, { currentPlan: { plan: other } }).codes))
   const fewer = buildPlan({ roots: [roots[0]], captures: 2, identity })
@@ -858,6 +1023,49 @@ export function selfTest() {
     verifyPlan(dup, { currentPlan: { plan: dup } }).codes.includes('PLAN_TASK_DUPLICATE'), JSON.stringify(verifyPlan(dup, { currentPlan: { plan: dup } }).codes))
   ok('verify: a foreign schema is refused', verifyPlan({ schema: 'census-plan/2' }, { currentPlan: { plan } }).codes.includes('PLAN_SCHEMA_UNKNOWN'), 'schema')
   ok('verify: garbage is refused, not crashed on', verifyPlan(null, { currentPlan: { plan } }).codes.includes('PLAN_UNREADABLE'), 'null')
+
+  // digest shape (M4 review round 1, blocking): the sentinels must never become a recorded value
+  const base = { merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CAT }
+  const sentinels = ['null', 'undefined', '', ' ', 'NULL', `${'a'.repeat(39)}`, `${'a'.repeat(65)}`, `sha256:${'A'.repeat(64)}`, TREE.slice(0, 39)]
+  const accepted = sentinels.filter((v) => {
+    try {
+      makeIdentity({ ...base, build_digest: v })
+      return true
+    } catch {
+      return false
+    }
+  })
+  ok('every digest sentinel / wrong-length / wrong-case value is refused', accepted.length === 0, `accepted: ${JSON.stringify(accepted)}`)
+  ok('a bare 40-hex and a sha256:64-hex digest are both accepted',
+    isValidDigest(TREE) && isValidDigest(CAT) && !isValidDigest(`sha1:${TREE}`), JSON.stringify([TREE, CAT]))
+  let unrecordedCode = null
+  try {
+    makeIdentity({ ...base, merge_tree_sha: null })
+  } catch (e) {
+    unrecordedCode = e.code
+  }
+  ok('a required identity field may not be null', unrecordedCode === 'PLAN_IDENTITY_UNRECORDED', String(unrecordedCode))
+  const nullBuild = makeIdentity({ ...base })
+  ok('build_digest may be null (unrecorded) but is recorded as null, not a string', nullBuild.build_digest === null, String(nullBuild.build_digest))
+  const badPlan = JSON.parse(JSON.stringify(plan))
+  badPlan.identity.build_digest = 'null'
+  ok('verify: a sentinel string in a plan file is DIGEST_INVALID',
+    verifyPlan(badPlan, { currentPlan: { plan } }).codes.includes('DIGEST_INVALID'), JSON.stringify(verifyPlan(badPlan, { currentPlan: { plan } }).codes))
+  const nullPlan = JSON.parse(JSON.stringify(plan))
+  nullPlan.identity.merge_tree_sha = null
+  ok('verify: a null identity field in a plan file is PLAN_IDENTITY_UNRECORDED',
+    verifyPlan(nullPlan, { currentPlan: { plan } }).codes.includes('PLAN_IDENTITY_UNRECORDED'), JSON.stringify(verifyPlan(nullPlan, { currentPlan: { plan } }).codes))
+
+  // dropped roots: recorded in the plan, part of the digest, and never silently zero
+  const droppedPlan = buildPlan({ roots, captures: 2, identity, rootsDropped: [{ root: 'packages/c', files_excluded: 2 }] })
+  ok('a dropped root is recorded with its excluded file count',
+    droppedPlan.roots_dropped.length === 1 && droppedPlan.roots_dropped[0].root === 'packages/c' &&
+    droppedPlan.roots_dropped[0].files_excluded === 2 && droppedPlan.roots_dropped[0].allowed === true,
+    JSON.stringify(droppedPlan.roots_dropped))
+  const droppedEdited = JSON.parse(JSON.stringify(droppedPlan))
+  droppedEdited.roots_dropped[0].files_excluded = 3
+  ok('editing a dropped-root record moves the digest', planDigest(droppedEdited) !== droppedPlan.identity.plan_digest, 'digest')
+  ok('a plan with no drops says so explicitly', Array.isArray(plan.roots_dropped) && plan.roots_dropped.length === 0, JSON.stringify(plan.roots_dropped))
 
   // balance: exact makespan on a known partition
   const weighted = buildPlan({

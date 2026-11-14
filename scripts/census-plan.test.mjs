@@ -158,6 +158,55 @@ test('deriveRoots: a missing catalog registry is CATALOG_UNREADABLE (not "no roo
   assert.equal(derived.code, 'CATALOG_UNREADABLE')
 })
 
+test('deriveRoots: a root that exclude[] removes is REFUSED, not silently dropped', () => {
+  // The silent-shrink control: two roots on disk, one excluded by the ROOT config. Without this rule
+  // the plan would simply have one fewer root and still aggregate to PASS.
+  const dir = fixtureRepo({
+    config: "export default { test: { include: ['packages/*/test/**/*.test.ts'], exclude: ['packages/b/**'] } }\n",
+    files: { 'packages/a/test/x.test.ts': '', 'packages/b/test/y.test.ts': '', 'packages/b/test/z.test.ts': '' },
+  })
+  const derived = deriveRoots({ cwd: dir })
+  assert.equal(derived.ok, false)
+  assert.equal(derived.code, 'ROOT_DROPPED_BY_EXCLUDE')
+  assert.match(derived.detail, /packages\/b \(2 file\(s\)\)/)
+})
+
+test('deriveRoots: --allow-dropped-root records the drop instead of hiding it', () => {
+  const dir = fixtureRepo({
+    config: "export default { test: { include: ['packages/*/test/**/*.test.ts'], exclude: ['packages/b/**'] } }\n",
+    files: { 'packages/a/test/x.test.ts': '', 'packages/b/test/y.test.ts': '' },
+  })
+  const derived = deriveRoots({ cwd: dir, allowDropped: ['packages/b'] })
+  assert.equal(derived.ok, true, JSON.stringify(derived))
+  assert.deepEqual(derived.roots.map((r) => r.root), ['packages/a'])
+  assert.deepEqual(derived.roots_dropped, [{ root: 'packages/b', files_excluded: 1 }])
+  // The record is part of the plan the CLI emits, not a log line.
+  const plan = buildPlan({
+    roots: derived.roots,
+    captures: 2,
+    identity: IDENTITY(),
+    rootsDropped: derived.roots_dropped,
+  })
+  assert.deepEqual(plan.roots_dropped, [{ root: 'packages/b', files_excluded: 1, allowed: true }])
+})
+
+test('deriveRoots: --allow-dropped-root naming a root that was NOT dropped is refused', () => {
+  const dir = fixtureRepo({ config: GOOD_CONFIG, files: { 'packages/a/test/x.test.ts': '' } })
+  const derived = deriveRoots({ cwd: dir, allowDropped: ['packages/typo'] })
+  assert.equal(derived.ok, false)
+  assert.equal(derived.code, 'DROPPED_ROOT_UNKNOWN')
+})
+
+test('deriveRoots: an exclude[] that empties the whole config is still ROOTS_NOT_DERIVED', () => {
+  const dir = fixtureRepo({
+    config: "export default { test: { include: ['packages/*/test/**/*.test.ts'], exclude: ['packages/**'] } }\n",
+    files: { 'packages/a/test/x.test.ts': '' },
+  })
+  const derived = deriveRoots({ cwd: dir, allowDropped: ['packages/a'] })
+  assert.equal(derived.ok, false)
+  assert.equal(derived.code, 'ROOTS_NOT_DERIVED')
+})
+
 test('deriveRoots: the package configs are not the census population (root config only)', () => {
   const dir = fixtureRepo({
     config: GOOD_CONFIG,
@@ -176,7 +225,11 @@ test('deriveRoots: the package configs are not the census population (root confi
 
 // ─────────────────────────────────────────────────────────────────────── plan ──
 
-const IDENTITY = () => makeIdentity({ merge_tree_sha: 'tree-sha', host_sha: 'host-sha', catalog_digest: 'sha256:cat', build_digest: 'build-sha' })
+const TREE = '1'.repeat(40)
+const HOST = '2'.repeat(40)
+const CATALOG = `sha256:${'3'.repeat(64)}`
+const BUILD = `sha256:${'4'.repeat(64)}`
+const IDENTITY = () => makeIdentity({ merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CATALOG, build_digest: BUILD })
 
 test('buildPlan: one task per (root, capture), stable ids, runner argv from the census invocation', () => {
   const plan = buildPlan({ roots: [{ root: 'packages/a', files: 2 }, { root: 'packages/b', files: 1 }], captures: 2, identity: IDENTITY() })
@@ -272,7 +325,7 @@ test('verifyPlan: a moved tree is PLAN_IDENTITY_DRIFT', () => {
   const other = buildPlan({
     roots: [{ root: 'packages/a' }],
     captures: 2,
-    identity: makeIdentity({ merge_tree_sha: 'other-tree', host_sha: 'host-sha', catalog_digest: 'sha256:cat', build_digest: 'build-sha' }),
+    identity: makeIdentity({ merge_tree_sha: '9'.repeat(40), host_sha: HOST, catalog_digest: CATALOG, build_digest: BUILD }),
   })
   const v = verifyPlan(plan, { currentPlan: { plan: other } })
   assert.ok(v.codes.includes('PLAN_IDENTITY_DRIFT'), JSON.stringify(v.codes))
@@ -291,6 +344,48 @@ test('verifyPlan: a duplicate task id is refused even when the digest was recomp
   dup.tasks[1].task_id = dup.tasks[0].task_id
   dup.identity.plan_digest = planDigest(dup)
   assert.ok(verifyPlan(dup, { currentPlan: { plan: dup } }).codes.includes('PLAN_TASK_DUPLICATE'))
+})
+
+test('verifyPlan: a plan identity field that is null/absent/sentinel is refused for ALL five fields', () => {
+  const base = buildPlan({ roots: [{ root: 'packages/a' }], captures: 2, identity: IDENTITY() })
+  const cases = [
+    ['merge_tree_sha', null, 'PLAN_IDENTITY_UNRECORDED'],
+    ['host_sha', null, 'PLAN_IDENTITY_UNRECORDED'],
+    ['catalog_digest', null, 'PLAN_IDENTITY_UNRECORDED'],
+    ['build_digest', null, 'NONE'], // null build is legal in a plan (the aggregator refuses to PASS it)
+    ['plan_digest', null, 'PLAN_DIGEST_UNRECORDED'],
+    ['merge_tree_sha', 'null', 'DIGEST_INVALID'],
+    ['host_sha', '', 'DIGEST_INVALID'],
+    ['catalog_digest', ' ', 'DIGEST_INVALID'],
+    ['build_digest', 'undefined', 'DIGEST_INVALID'],
+    ['merge_tree_sha', 'a'.repeat(39), 'DIGEST_INVALID'],
+    ['host_sha', 'a'.repeat(65), 'DIGEST_INVALID'],
+  ]
+  for (const [field, value, expected] of cases) {
+    const p = JSON.parse(JSON.stringify(base))
+    if (value === null && expected === 'NONE') p.identity[field] = null
+    else p.identity[field] = value
+    const v = verifyPlan(p, { currentPlan: { plan: p } })
+    if (expected === 'NONE') {
+      // A null build digest is recorded-but-unproven: verify may pass, aggregation will refuse.
+      assert.equal(v.codes.includes('DIGEST_INVALID'), false, `${field}=null` )
+      continue
+    }
+    assert.equal(v.ok, false, `${field}=${JSON.stringify(value)} verified`)
+    assert.ok(v.codes.includes(expected), `${field}=${JSON.stringify(value)} -> ${JSON.stringify(v.codes)}`)
+  }
+})
+
+test('verifyPlan: a plan whose dropped-root set changed is a changed population', () => {
+  const plan = buildPlan({ roots: [{ root: 'packages/a' }], captures: 2, identity: IDENTITY() })
+  const withDrop = buildPlan({
+    roots: [{ root: 'packages/a' }],
+    captures: 2,
+    identity: IDENTITY(),
+    rootsDropped: [{ root: 'packages/b', files_excluded: 1 }],
+  })
+  const v = verifyPlan(plan, { currentPlan: { plan: withDrop } })
+  assert.ok(v.codes.includes('PLAN_TASK_SET_CHANGED'), JSON.stringify(v.codes))
 })
 
 test('verifyPlan: a foreign schema and a non-object are refusals, not crashes', () => {
@@ -410,12 +505,48 @@ test('cli: --plan on a fixture derives the plan and exits 0', () => {
 test('cli: --plan --out writes the artifact and prints a token, never the JSON', () => {
   const dir = fixtureRepo({ config: GOOD_CONFIG, files: { 'packages/a/test/x.test.ts': '' } })
   const out = join(tmp(), 'plan.json')
-  const r = cli(['--plan', '--out', out, '--build-digest', 'build-x'], { cwd: dir })
+  const r = cli(['--plan', '--out', out, '--build-digest', BUILD], { cwd: dir })
   assert.equal(r.status, 0, r.out)
   assert.match(r.stdout, /DSH-CENSUS-PLAN plan=ok roots=1 tasks=2 captures=2/)
   const plan = JSON.parse(readFileSync(out, 'utf8'))
-  assert.equal(plan.identity.build_digest, 'build-x')
+  assert.equal(plan.identity.build_digest, BUILD)
   assert.equal(plan.tasks.length, 2)
+})
+
+test('cli: --build-digest sentinels are DIGEST_INVALID exit 2, and no plan is printed', () => {
+  const dir = fixtureRepo({ config: GOOD_CONFIG, files: { 'packages/a/test/x.test.ts': '' } })
+  for (const sentinel of ['null', 'undefined', '', ' ', 'a'.repeat(39), 'a'.repeat(65)]) {
+    const r = cli(['--plan', '--build-digest', sentinel], { cwd: dir })
+    assert.equal(r.status, 2, `${JSON.stringify(sentinel)} -> ${r.out}`)
+    assert.match(r.stderr, /REFUSED DIGEST_INVALID/, r.stderr)
+    assert.equal(r.stdout.trim(), '', 'a refused plan must not print a plan')
+  }
+})
+
+test('cli: --allow-dropped-root makes the drop explicit in the emitted plan', () => {
+  const dir = fixtureRepo({
+    config: "export default { test: { include: ['packages/*/test/**/*.test.ts'], exclude: ['packages/b/**'] } }\n",
+    files: { 'packages/a/test/x.test.ts': '', 'packages/b/test/y.test.ts': '' },
+  })
+  const refused = cli(['--plan'], { cwd: dir })
+  assert.equal(refused.status, 2, refused.out)
+  assert.match(refused.stderr, /REFUSED ROOT_DROPPED_BY_EXCLUDE/)
+
+  const allowed = cli(['--plan', '--allow-dropped-root', 'packages/b'], { cwd: dir })
+  assert.equal(allowed.status, 0, allowed.out)
+  const plan = JSON.parse(allowed.stdout)
+  assert.deepEqual(plan.roots_dropped, [{ root: 'packages/b', files_excluded: 1, allowed: true }])
+  assert.deepEqual(plan.roots.map((r) => r.root), ['packages/a'])
+  // ...and it is inside the digest: flipping `allowed` must change it.
+  const flipped = JSON.parse(JSON.stringify(plan))
+  flipped.roots_dropped[0].allowed = false
+  assert.notEqual(planDigest(flipped), plan.identity.plan_digest)
+})
+
+test('cli: --allow-dropped-root with no value is UNKNOWN_ARGUMENT, not a silent no-op', () => {
+  const r = cli(['--plan', '--allow-dropped-root'])
+  assert.equal(r.status, 2, r.out)
+  assert.match(r.stderr, /REFUSED UNKNOWN_ARGUMENT/)
 })
 
 test('cli: an underivable root set is exit 2 with a named code and NO plan on stdout', () => {

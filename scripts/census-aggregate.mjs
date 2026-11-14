@@ -23,10 +23,16 @@
  *      the plan's declared digest must equal a digest recomputed from the plan's own tasks+identity.
  *      A shard carrying a different plan_digest came from another plan (PLAN_DIGEST_MISMATCH).
  *   2. STRUCTURE. Every shard must be parseable JSON with a known schema, a unique shard id, unique
- *      task ids (within a shard and across shards), a known status, and known terminal states.
- *   3. IDENTITY. All five identity fields (merge_tree_sha, host_sha, plan_digest, catalog_digest,
- *      build_digest) must equal the plan's, exactly. `build_digest: null` is not a pass: an
- *      unrecorded build identity refuses (IDENTITY_BUILD_UNRECORDED) rather than proving nothing.
+ *      task ids (within a shard and across shards), a known status, known terminal states, and — per
+ *      result — an identity of its own: `root` and `capture` that MATCH the plan task that id encodes
+ *      (RESULT_ROOT_MISMATCH / RESULT_CAPTURE_MISMATCH) and a non-empty `evidence` reference
+ *      (RESULT_EVIDENCE_MISSING). Keying on task_id alone let capture-2 ids carry capture-1 data.
+ *   3. IDENTITY. The PLAN's identity must be five real digests before anything can match it
+ *      (`sha256:<64 hex>` or `<40 hex>`, `scripts/census-digest.mjs`): a null field is
+ *      PLAN_IDENTITY_UNRECORDED / IDENTITY_BUILD_UNRECORDED and a sentinel string is DIGEST_INVALID,
+ *      never a match. Then all five fields (merge_tree_sha, host_sha, plan_digest, catalog_digest,
+ *      build_digest) must equal the plan's, exactly, and a shard value that agrees with the plan but
+ *      is not a digest still refuses (DIGEST_INVALID) — equality of two non-digests proves nothing.
  *   4. MULTISET + TERMINAL STATE. expected task ids == observed task ids as a multiset; every planned
  *      task has a terminal state; no task outside the plan. Missing / extra / unterminated are
  *      INCOMPLETE, never green.
@@ -43,6 +49,10 @@
  *   node scripts/census-aggregate.mjs --aggregate <shard.json...> --plan <plan.json> [--json]
  *   node scripts/census-aggregate.mjs --self-test
  *
+ * REFUSAL CODES added by review round 1: DIGEST_INVALID, PLAN_IDENTITY_UNRECORDED,
+ *   PLAN_DIGEST_UNRECORDED, RESULT_ROOT_MISMATCH, RESULT_CAPTURE_MISMATCH, RESULT_EVIDENCE_MISSING,
+ *   PLAN_ROOTS_DROPPED_MALFORMED.
+ *
  * Exit: 0 PASS | 1 non-PASS | 2 REFUSED (a named refusal; nothing is graded).
  *
  * @module scripts/census-aggregate
@@ -52,6 +62,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { DIGEST_SHAPE, identityProblems, isValidDigest } from './census-digest.mjs'
 import { IDENTITY_FIELDS, SCHEMA as PLAN_SCHEMA, buildPlan, digestJson, makeIdentity, planDigest } from './census-plan.mjs'
 
 export const SCHEMA = 'census-summary/1'
@@ -92,7 +103,9 @@ const sha256Bytes = (buffer) => `sha256:${createHash('sha256').update(buffer).di
 
 /** A refusal (exit 2) means "nothing was graded"; a failure (exit 1) means "graded, and not green". */
 function refused(codes, detail, extra = {}) {
-  return { ok: false, refused: true, verdict: null, codes: [...new Set(codes)], detail, ...extra }
+  // `summary: null` is part of the contract: a refusal GRADED NOTHING, so there is no expected/observed
+  // delta for a reader to mistake for a measurement.
+  return { ok: false, refused: true, verdict: null, codes: [...new Set(codes)], detail, summary: null, ...extra }
 }
 
 function graded(verdict, codes, detail, extra = {}) {
@@ -136,6 +149,35 @@ export function aggregate({ plan, shards }) {
   }
   if (plan.schema !== PLAN_SCHEMA) {
     return refused(['PLAN_SCHEMA_UNKNOWN'], [`plan.schema must be ${PLAN_SCHEMA}, got ${String(plan.schema)}`])
+  }
+  // The identity block first: a plan with `merge_tree_sha: null` (or the string "null") used to
+  // "match" shards carrying the same nothing. A null field is a refusal on its own; a sentinel string
+  // is DIGEST_INVALID. This runs before the digest recomputation so the message names the real problem.
+  const planIdentityProblems = identityProblems(plan.identity, { scope: 'plan' })
+  if (planIdentityProblems.length > 0) {
+    return refused(
+      [...new Set(planIdentityProblems.map((problem) => problem.code))],
+      planIdentityProblems.map((problem) => problem.detail),
+    )
+  }
+  if (!isValidDigest(plan.identity?.plan_digest)) {
+    return refused(
+      ['PLAN_DIGEST_UNRECORDED'],
+      [`plan.identity.plan_digest ${plan.identity?.plan_digest === undefined ? 'is absent' : `is ${JSON.stringify(plan.identity.plan_digest)}`} (${DIGEST_SHAPE})`],
+    )
+  }
+  if (plan.roots_dropped !== undefined && !Array.isArray(plan.roots_dropped)) {
+    return refused(['PLAN_ROOTS_DROPPED_MALFORMED'], ['plan.roots_dropped must be an array of {root, files_excluded, allowed}'])
+  }
+  for (const drop of plan.roots_dropped ?? []) {
+    if (!drop || typeof drop !== 'object' || typeof drop.root !== 'string' || drop.root === '' ||
+        !Number.isInteger(drop.files_excluded) || drop.files_excluded < 1 || drop.allowed !== true) {
+      return refused(
+        ['PLAN_ROOTS_DROPPED_MALFORMED'],
+        [`plan.roots_dropped entry ${JSON.stringify(drop)} is not {root: <non-empty string>, files_excluded: <positive integer>, allowed: true} — ` +
+          'a drop that is not explicitly allowed and counted is a silent one'],
+      )
+    }
   }
   const expectedTaskIds = (plan.tasks ?? []).map((t) => t.task_id)
   if (expectedTaskIds.length === 0) {
@@ -210,9 +252,12 @@ export function aggregate({ plan, shards }) {
     }
   }
 
-  // ── rule 2: shard structure, task-id uniqueness, parseability ───────────────────────────────────
+  // ── rule 2: shard structure, task-id uniqueness, parseability, per-result identity ────────────
   const shardIds = new Set()
   const seenTask = new Map()
+  // The plan is the only authority on what a task id MEANS. The check maps id -> plan task, so a
+  // result cannot re-label capture 2's data as capture 1's by carrying a different root/capture.
+  const planTaskById = new Map((plan.tasks ?? []).map((task) => [task.task_id, task]))
   for (const { file, json } of parsed) {
     if (json.shard_id === undefined || json.shard_id === null || String(json.shard_id).trim() === '') {
       return refused(['SHARD_ID_MISSING'], [`${file}: shard_id is required (a shard with no name cannot be counted)`])
@@ -239,6 +284,33 @@ export function aggregate({ plan, shards }) {
         )
       }
       seenTask.set(result.task_id, file)
+      // Per-result identity. The spec asks for a terminal state plus a raw reference per task; a
+      // result that names no root/capture cannot be checked against the plan, and one that names the
+      // WRONG root/capture is how capture-1 data gets reported under a capture-2 id.
+      const planned = planTaskById.get(result.task_id)
+      if (planned !== undefined) {
+        if (result.root !== planned.root) {
+          return refused(
+            ['RESULT_ROOT_MISMATCH'],
+            [`${file}: task ${result.task_id} reports root ${JSON.stringify(result.root)} but the plan's task is ` +
+              `root ${JSON.stringify(planned.root)}`],
+          )
+        }
+        if (result.capture !== planned.capture) {
+          return refused(
+            ['RESULT_CAPTURE_MISMATCH'],
+            [`${file}: task ${result.task_id} reports capture ${JSON.stringify(result.capture)} but the plan's task is ` +
+              `capture ${JSON.stringify(planned.capture)}`],
+          )
+        }
+      }
+      if (typeof result.evidence !== 'string' || result.evidence.trim() === '') {
+        return refused(
+          ['RESULT_EVIDENCE_MISSING'],
+          [`${file}: task ${result.task_id} carries no evidence reference — a terminal state with nothing to point at ` +
+            'is an assertion, not a measurement'],
+        )
+      }
       if (result.state !== undefined && !TASK_STATES.includes(result.state)) {
         return refused(['TASK_STATE_UNKNOWN'], [`${file}: task ${result.task_id} has state ${JSON.stringify(result.state)}; terminal states are ${TASK_STATES.join('|')}`])
       }
@@ -246,6 +318,18 @@ export function aggregate({ plan, shards }) {
   }
 
   // ── rule 3: identity equality (all five fields, exactly) ───────────────────────────────────────
+  // Shape first, per shard: a shard that agrees with the plan on a NON-digest (two sentinels, two
+  // nulls) must not be graded as "identity matches". (The plan side already refused above; this
+  // catches a shard carrying a malformed value independent of the plan's.)
+  for (const { file, json } of parsed) {
+    const shapeBad = identityProblems(json.identity, { scope: 'shard' })
+    if (shapeBad.length > 0) {
+      return refused([...new Set(shapeBad.map((problem) => problem.code))], shapeBad.map((problem) => `${file}: ${problem.detail}`))
+    }
+    if (json.identity?.plan_digest !== undefined && json.identity?.plan_digest !== null && !isValidDigest(json.identity.plan_digest)) {
+      return refused(['DIGEST_INVALID'], [`${file}: identity.plan_digest is ${JSON.stringify(json.identity.plan_digest)} (${DIGEST_SHAPE})`])
+    }
+  }
   for (const field of IDENTITY_FIELDS) {
     const want = plan.identity?.[field] ?? null
     const mismatched = []
@@ -391,6 +475,15 @@ export function aggregate({ plan, shards }) {
       tasks: expectedTaskIds.length,
       required_oracles: requiredOracles,
     },
+    // Structured, asserted by tests: prose alone can be reworded into a lie without a test noticing.
+    scope: {
+      shadow: true,
+      wired_to_ci_required: false,
+      writes_required_context_artifact: false,
+      branch_protection_authority: false,
+      decides_what_ci_runs: false,
+    },
+    roots_dropped: (plan.roots_dropped ?? []).map((d) => ({ root: d.root, files_excluded: d.files_excluded, allowed: d.allowed === true })),
     expected_task_ids: expectedTaskIds.slice().sort(),
     observed_task_ids: [...observedSet].sort(),
     shards: parsed.map(({ file, digest, json }) => ({
@@ -445,6 +538,10 @@ export function render(result) {
   lines.push(`  plan: captures=${String(s.plan.captures)} roots=${String(s.plan.roots.length)} tasks=${String(s.plan.tasks)} clock=${String(s.plan.test_timeout_ms)}`)
   lines.push(`  shards: ${s.shards.length} (${s.shards.map((x) => `${x.id}:${x.status}`).join(', ')})`)
   for (const x of s.shards) lines.push(`    ${String(x.id).padEnd(10)} status=${String(x.status).padEnd(11)} exit=${String(x.exit_code)} tasks=${String(x.tasks)} digest=${x.artifact_digest}`)
+  if (s.roots_dropped.length > 0) {
+    lines.push(`  DROPPED ROOTS (exclude[] removed them; allowed explicitly, recorded in the plan digest):`)
+    for (const d of s.roots_dropped) lines.push(`    ${d.root} files_excluded=${String(d.files_excluded)} allowed=${String(d.allowed)}`)
+  }
   lines.push(`  tasks: expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} missing=${String(s.counts.missing)} extra=${String(s.counts.extra)}`)
   lines.push(`  states: ${Object.entries(s.counts.by_state).map(([k, v]) => `${k}=${String(v)}`).join(' ')}`)
   lines.push(`  oracles: required=${String(s.oracles.required.length)} checked=${String(s.oracles.checked)} failed=${String(s.oracles.failed)} undecidable=${String(s.oracles.undecidable)} missing=${String(s.oracles.missing)}`)
@@ -521,10 +618,14 @@ export function main(argv) {
 export function selfTest() {
   const cases = []
   const ok = (label, cond, detail = '') => cases.push([label, Boolean(cond), detail])
+  const TREE = '1'.repeat(40)
+  const HOST = '2'.repeat(40)
+  const CAT = `sha256:${'3'.repeat(64)}`
+  const BUILD = `sha256:${'4'.repeat(64)}`
   const plan = buildPlan({
     roots: [{ root: 'packages/a' }, { root: 'packages/b' }],
     captures: 2,
-    identity: makeIdentity({ merge_tree_sha: 'tree1', host_sha: 'host1', catalog_digest: 'sha256:cat1', build_digest: 'build1' }),
+    identity: makeIdentity({ merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CAT, build_digest: BUILD }),
   })
   plan.required_oracles = ['ORACLE-A']
   // The plan digest is recomputed after the oracle list is added, so the fixture exercises the
@@ -539,7 +640,21 @@ export function selfTest() {
     build_digest: plan.identity.build_digest,
     ...over,
   })
-  const passResults = (taskIds) => taskIds.map((task_id) => ({ task_id, state: 'PASS', oracles: [{ id: 'ORACLE-A', state: 'PASS' }] }))
+  // The plan is the authority on what a task id means; `taskIdentity` decodes it the same way the
+  // aggregator checks it, so a fixture cannot accidentally agree with the code by construction.
+  const taskIdentity = (task_id) => {
+    const m = /^census:(.+)#([0-9]+)$/.exec(task_id)
+    return m === null ? { root: null, capture: null } : { root: m[1], capture: Number(m[2]) }
+  }
+  const res = (task_id, over = {}) => ({
+    task_id,
+    ...taskIdentity(task_id),
+    state: 'PASS',
+    evidence: `artifacts/${task_id}.json`,
+    oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
+    ...over,
+  })
+  const passResults = (taskIds) => taskIds.map((task_id) => res(task_id))
   const shard = (id, taskIds, over = {}) => {
     const base = {
       schema: SHARD_SCHEMA,
@@ -558,23 +673,39 @@ export function selfTest() {
 
   const pass = aggregate({ plan, shards: [s1, s2] })
   ok('positive: a complete consistent set is PASS', pass.verdict === PASS && pass.ok, JSON.stringify(pass.codes))
-  ok('positive: expected == observed', JSON.stringify(pass.summary.expected_task_ids) === JSON.stringify(pass.summary.observed_task_ids), 'ids')
-  ok('positive: shard artifact digests are recorded', pass.summary.shards.every((s) => /^sha256:[0-9a-f]{64}$/.test(s.artifact_digest)), 'digest')
+  ok('positive: expected == observed == the plan 4 tasks, no missing/extra',
+    JSON.stringify(pass.summary.expected_task_ids) === JSON.stringify([...all].sort()) &&
+    JSON.stringify(pass.summary.observed_task_ids) === JSON.stringify([...all].sort()) &&
+    pass.summary.counts.missing === 0 && pass.summary.counts.extra === 0,
+    JSON.stringify(pass.summary.counts))
+  ok('positive: the summary is STRUCTURALLY not an authority (asserted fields, not prose)',
+    pass.summary.scope.shadow === true && pass.summary.scope.wired_to_ci_required === false &&
+    pass.summary.scope.writes_required_context_artifact === false &&
+    pass.summary.scope.branch_protection_authority === false &&
+    pass.summary.scope.decides_what_ci_runs === false,
+    JSON.stringify(pass.summary.scope))
+  ok('positive: shard artifact digests are recorded', pass.summary.shards.every((x) => /^sha256:[0-9a-f]{64}$/.test(x.artifact_digest)), 'digest')
   ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY PASS/.test(render(pass)), render(pass).split('\n').pop())
 
   const omitted = aggregate({ plan, shards: [s1] })
-  ok('an omitted shard is INCOMPLETE / TASK_MISSING',
-    omitted.codes.includes('TASK_MISSING') && omitted.verdict === 'INCOMPLETE', JSON.stringify(omitted.codes))
+  ok('an omitted shard is INCOMPLETE / TASK_MISSING with the exact delta',
+    omitted.codes.includes('TASK_MISSING') && omitted.verdict === 'INCOMPLETE' &&
+    omitted.summary.counts.missing === 2 && omitted.summary.counts.expected === 4 &&
+    omitted.summary.counts.observed === 2 && omitted.summary.counts.extra === 0,
+    JSON.stringify(omitted.summary.counts))
   const dupeShard = aggregate({ plan, shards: [s1, shard('shard-1', all.slice(2))] })
   ok('a duplicate shard id refuses', dupeShard.refused && dupeShard.codes.includes('SHARD_ID_DUPLICATE'), JSON.stringify(dupeShard.codes))
   const twice = aggregate({ plan, shards: [s1, shard('shard-3', [all[0], all[0]])] })
   ok('a duplicate task id refuses', twice.refused && twice.codes.includes('SHARD_TASK_ID_DUPLICATE'), JSON.stringify(twice.codes))
   const extra = aggregate({ plan, shards: [s1, shard('shard-2', [...all.slice(2), 'census:packages/z#1'])] })
-  ok('a task outside the plan is TASK_EXTRA', extra.codes.includes('TASK_EXTRA') && extra.verdict === 'INCOMPLETE', JSON.stringify(extra.codes))
-  const noTerminal = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => ({ task_id })) })] })
+  ok('a task outside the plan is TASK_EXTRA with the exact delta',
+    extra.codes.includes('TASK_EXTRA') && extra.verdict === 'INCOMPLETE' &&
+    extra.summary.counts.extra === 1 && extra.summary.counts.missing === 0,
+    JSON.stringify(extra.summary.counts))
+  const noTerminal = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => res(task_id, { state: undefined })) })] })
   ok('a task with no terminal state is INCOMPLETE', noTerminal.codes.includes('TASK_NO_TERMINAL_RESULT'), JSON.stringify(noTerminal.codes))
   const failExit0 = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), {
-    results: all.slice(2).map((task_id, i) => ({ task_id, state: i === 0 ? 'FAIL' : 'PASS', oracles: [{ id: 'ORACLE-A', state: 'PASS' }] })),
+    results: all.slice(2).map((task_id, i) => res(task_id, { state: i === 0 ? 'FAIL' : 'PASS' })),
   })] })
   ok('exit 0 with a FAIL result is not PASS', failExit0.verdict === 'FAIL' && failExit0.codes.includes('TASK_STATE_FAIL'), JSON.stringify(failExit0.codes))
   for (const state of ['INCOMPLETE', 'CANCELLED', 'INFRA_ERROR']) {
@@ -583,9 +714,9 @@ export function selfTest() {
   }
   ok('a truncated shard refuses', aggregate({ plan, shards: [s1, { file: 'cut.json', text: '{"schema":"census-shard/1",' }] }).codes.includes('SHARD_UNPARSEABLE'), 'truncated')
   ok('a shard with a foreign policy digest refuses', aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { policy_digest: 'sha256:other' })] }).codes.includes('POLICY_DIGEST_MISMATCH'), 'policy')
-  ok('a shard from another plan refuses', aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ plan_digest: 'sha256:otherplan' }) })] }).codes.includes('PLAN_DIGEST_MISMATCH'), 'plan-drift')
+  ok('a shard from another plan refuses', aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ plan_digest: `sha256:${'9'.repeat(64)}` }) })] }).codes.includes('PLAN_DIGEST_MISMATCH'), 'plan-drift')
   ok('an identity mismatch refuses',
-    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ host_sha: 'host2' }) })] }).codes.includes('IDENTITY_MISMATCH_HOST_SHA'), 'identity')
+    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ host_sha: '9'.repeat(40) }) })] }).codes.includes('IDENTITY_MISMATCH_HOST_SHA'), 'identity')
   ok('a one-capture plan refuses (the missing second capture)', (() => {
     const one = buildPlan({ roots: [{ root: 'packages/a' }], captures: 1, identity: plan.identity })
     one.identity.plan_digest = planDigest(one)
@@ -603,9 +734,69 @@ export function selfTest() {
     return aggregate({ plan: stale, shards: [s1, s2] }).codes.includes('PLAN_DIGEST_MISMATCH')
   })(), 'stale-digest')
   ok('a missing required oracle is not PASS',
-    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => ({ task_id, state: 'PASS', oracles: [] })) })] }).codes.includes('ORACLE_MISSING'), 'oracle-missing')
+    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => res(task_id, { oracles: [] })) })] }).codes.includes('ORACLE_MISSING'), 'oracle-missing')
   ok('an undecidable oracle is not PASS',
-    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => ({ task_id, state: 'PASS', oracles: [{ id: 'ORACLE-A', state: 'MAYBE' }] })) })] }).codes.includes('ORACLE_UNDECIDABLE'), 'oracle-undecidable')
+    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: all.slice(2).map((task_id) => res(task_id, { oracles: [{ id: 'ORACLE-A', state: 'MAYBE' }] })) })] }).codes.includes('ORACLE_UNDECIDABLE'), 'oracle-undecidable')
+
+  // ── review round 1: a digest is a digest (both sides), and a result carries its own identity ──
+  const SENTINELS = ['null', 'undefined', '', ' ', 'NULL', 'a'.repeat(39), 'a'.repeat(65), `sha256:${'A'.repeat(64)}`]
+  const sentinelPlan = SENTINELS.filter((value) => (() => {
+    const p = JSON.parse(JSON.stringify(plan))
+    p.identity.build_digest = value
+    p.identity.plan_digest = planDigest(p)
+    const r = aggregate({ plan: p, shards: [shard('shard-1', all)] })
+    return !r.refused
+  })())
+  ok('a sentinel build_digest in the PLAN refuses (both sides, not just null)', sentinelPlan.length === 0, `accepted: ${JSON.stringify(sentinelPlan)}`)
+  const sentinelShard = SENTINELS.filter((value) => {
+    const r = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), {
+      identity: identityOf({ merge_tree_sha: value }),
+      results: all.slice(2).map((task_id) => res(task_id)),
+    })] })
+    return !r.refused
+  })
+  ok('a sentinel identity in a SHARD refuses', sentinelShard.length === 0, `accepted: ${JSON.stringify(sentinelShard)}`)
+  const planNulls = ['merge_tree_sha', 'host_sha', 'catalog_digest', 'build_digest'].filter((field) => {
+    const p = JSON.parse(JSON.stringify(plan))
+    p.identity[field] = null
+    p.identity.plan_digest = planDigest(p)
+    return !aggregate({ plan: p, shards: [shard('shard-1', all, { identity: { ...identityOf(), [field]: null, plan_digest: p.identity.plan_digest } })] }).refused
+  })
+  ok('a plan with ANY null identity field refuses (all five, build included)', planNulls.length === 0, `matched: ${JSON.stringify(planNulls)}`)
+  const droppedRootWithCapture1 = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), {
+    results: all.slice(2).map((task_id) => res(task_id, { capture: 1 })),
+  })] })
+  ok('a capture-2 id carrying capture-1 data refuses (RESULT_CAPTURE_MISMATCH)',
+    droppedRootWithCapture1.refused && droppedRootWithCapture1.codes.includes('RESULT_CAPTURE_MISMATCH'), JSON.stringify(droppedRootWithCapture1.codes))
+  ok('a result reporting another root refuses (RESULT_ROOT_MISMATCH)',
+    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), {
+      results: all.slice(2).map((task_id) => res(task_id, { root: 'packages/other' })),
+    })] }).codes.includes('RESULT_ROOT_MISMATCH'), 'root')
+  ok('a result with no evidence reference refuses (RESULT_EVIDENCE_MISSING)',
+    aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), {
+      results: all.slice(2).map((task_id) => res(task_id, { evidence: '' })),
+    })] }).codes.includes('RESULT_EVIDENCE_MISSING'), 'evidence')
+
+  const droppedPlan = JSON.parse(JSON.stringify(plan))
+  droppedPlan.roots_dropped = [{ root: 'packages/z', files_excluded: 2, allowed: true }]
+  droppedPlan.identity.plan_digest = planDigest(droppedPlan)
+  const droppedIdentity = { ...identityOf(), plan_digest: droppedPlan.identity.plan_digest }
+  const droppedOut = aggregate({
+    plan: droppedPlan,
+    shards: [
+      shard('shard-1', all.slice(0, 2), { identity: droppedIdentity }),
+      shard('shard-2', all.slice(2), { identity: droppedIdentity }),
+    ],
+  })
+  ok('an allowed dropped root is recorded in the aggregator output',
+    droppedOut.verdict === PASS && JSON.stringify(droppedOut.summary.roots_dropped) === '[{"root":"packages/z","files_excluded":2,"allowed":true}]',
+    JSON.stringify(droppedOut.summary.roots_dropped))
+  const malformedDrop = JSON.parse(JSON.stringify(plan))
+  malformedDrop.roots_dropped = [{ root: 'packages/z', files_excluded: 2 }]
+  malformedDrop.identity.plan_digest = planDigest(malformedDrop)
+  ok('an undeclared (not allowed) dropped root refuses',
+    aggregate({ plan: malformedDrop, shards: [s1, s2] }).codes.includes('PLAN_ROOTS_DROPPED_MALFORMED'), 'drop')
+
   const nullBuildPlan = JSON.parse(JSON.stringify(plan))
   nullBuildPlan.identity.build_digest = null
   nullBuildPlan.identity.plan_digest = planDigest(nullBuildPlan)
