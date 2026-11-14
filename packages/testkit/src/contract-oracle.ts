@@ -48,7 +48,13 @@ export interface TraceEvent {
   event_type: string
   actor_id?: string
   execution_id?: string
+  /** The decision record this event carries, or null when none was computed. */
   authority_ref?: string | null
+  /**
+   * The actor the referenced decision was issued FOR. Only meaningful together
+   * with `authority_ref`; a mismatch with `actor_id` is a violation.
+   */
+  authority_actor_id?: string
   outcome?: string
   effect_id?: string | null
 }
@@ -208,14 +214,11 @@ export function judgeContract(input: OracleInput): OracleJudgement {
     return { verdict: 'INSTRUMENT_ERROR', reasons: faults, limitations }
   }
 
-  const blind = new Set<EffectDomain>(input.blindDomains)
   const required = uniqueDomains(
     input.requiredEffectDomains ?? input.witness.map((observation) => observation.domain),
   )
   const denyExpected = input.expectDeny !== false
 
-  // Rule 2a: an uninstrumented required domain can never be graded clean.
-  const blindRequired = required.filter((domain) => blind.has(domain))
   if (required.length === 0) {
     return {
       verdict: 'INCONCLUSIVE',
@@ -223,32 +226,30 @@ export function judgeContract(input: OracleInput): OracleJudgement {
       limitations,
     }
   }
-  if (blindRequired.length > 0) {
+
+  // Rule 2a: a required domain must be reported by a row that CLAIMS to be able
+  // to see it. `instrumented` is set by the witness implementation, so a caller
+  // can fabricate a row but not an instrument; a fabricated `observed:false`
+  // row therefore cannot be read as cleanliness.
+  const observationsOf = (domain: EffectDomain): WitnessObservation[] =>
+    input.witness.filter((observation) => observation.domain === domain)
+  const missing = required.filter((domain) => observationsOf(domain).length === 0)
+  if (missing.length > 0) {
     return {
       verdict: 'INCONCLUSIVE',
-      reasons: [`required effect domain(s) not instrumented: ${blindRequired.join(', ')}`],
+      reasons: [`witness reported no observation for required domain(s): ${missing.join(', ')}`],
       limitations,
     }
   }
-
-  // Rule 2b: every required domain must actually be reported by the witness.
-  const missingObservations = required.filter(
-    (domain) => !input.witness.some((observation) => observation.domain === domain),
+  const uninstrumented = required.filter(
+    (domain) => !observationsOf(domain).some((observation) => observation.instrumented === true),
   )
-  if (missingObservations.length > 0) {
+  if (uninstrumented.length > 0) {
     return {
       verdict: 'INCONCLUSIVE',
-      reasons: [`witness reported no observation for required domain(s): ${missingObservations.join(', ')}`],
-      limitations,
-    }
-  }
-
-  // Log text alone is not evidence: if every reported domain is blind, the
-  // trace cannot be promoted to SATISFIED no matter what it says.
-  if (input.witness.every((observation) => blind.has(observation.domain))) {
-    return {
-      verdict: 'INCONCLUSIVE',
-      reasons: ['every witnessed effect domain is blind: the trace alone is not evidence'],
+      reasons: [
+        `required effect domain(s) reported by an instrument that cannot see them: ${uninstrumented.join(', ')}`,
+      ],
       limitations,
     }
   }
@@ -262,12 +263,45 @@ export function judgeContract(input: OracleInput): OracleJudgement {
   }
 
   const denied = input.events.some((event) => event.outcome === 'DENIED')
-  const effectDomains = required.filter((domain) =>
-    input.witness.some((observation) => observation.domain === domain && observation.observed),
+
+  // Rule 3a: a DENIED event that carries an effect id contradicts itself, with
+  // or without a witness. The trace's own claim is incoherent.
+  for (const [index, event] of input.events.entries()) {
+    if (event.outcome !== 'DENIED') continue
+    if (event.effect_id !== null && event.effect_id !== undefined) {
+      return {
+        verdict: 'VIOLATED',
+        reasons: [
+          `events[${index}] is DENIED but carries effect_id ${JSON.stringify(event.effect_id)}: a denial that produces an effect is not a denial`,
+        ],
+        limitations,
+      }
+    }
+  }
+
+  const observedIn = (domains: readonly EffectDomain[]): EffectDomain[] =>
+    domains.filter((domain) => observationsOf(domain).some((observation) => observation.observed))
+
+  // Rule 3b: an effect in a domain the contract did not grade is not a pass.
+  // Something happened that nobody asked about; the honest answer is that this
+  // oracle cannot grade it, and the domain is named in the reasons.
+  const outOfScope = observedIn(
+    ALL_DOMAINS.filter((domain) => !required.includes(domain)),
   )
+  if (outOfScope.length > 0) {
+    return {
+      verdict: 'INCONCLUSIVE',
+      reasons: [
+        `witness observed an effect outside the graded scope in: ${outOfScope.join(', ')}; this contract does not grade that domain, so the observation cannot be dismissed`,
+      ],
+      limitations: [...limitations, `unexplained out-of-scope effect: ${outOfScope.join(', ')}`],
+    }
+  }
+
+  const effectDomains = observedIn(required)
   const effectsObserved = effectDomains.length > 0
 
-  // Rule 3a: a DENIED log line plus a real effect in a required domain.
+  // Rule 3c: a DENIED log line plus a real effect in a graded domain.
   if (denied && effectsObserved) {
     return {
       verdict: 'VIOLATED',
@@ -278,8 +312,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
     }
   }
 
-  // Rule 3b/3c: authority is null while an effect happened, or authority names
-  // a different actor than the event's actor.
+  // Rule 3d: an effect happened while the event carries no decision at all.
   for (const [index, event] of input.events.entries()) {
     if (event.outcome !== 'DISPATCHED' && event.outcome !== 'COMPLETED') continue
     if ((event.authority_ref === null || event.authority_ref === undefined) && effectsObserved) {
@@ -292,13 +325,18 @@ export function judgeContract(input: OracleInput): OracleJudgement {
       }
     }
   }
+
+  // Rule 3e: the decision was issued for a different actor. `authority_ref` is
+  // a decision id (design memo 05 §6), so it is NEVER compared to actor_id; the
+  // comparison uses the decision's own subject when the trace states it.
   for (const [index, event] of input.events.entries()) {
-    if (typeof event.authority_ref !== 'string' || event.actor_id === undefined) continue
-    if (event.authority_ref !== event.actor_id) {
+    if (typeof event.authority_ref !== 'string') continue
+    if (typeof event.authority_actor_id !== 'string' || event.actor_id === undefined) continue
+    if (event.authority_actor_id !== event.actor_id) {
       return {
         verdict: 'VIOLATED',
         reasons: [
-          `events[${index}] authority_ref ${JSON.stringify(event.authority_ref)} names a different actor than actor_id ${JSON.stringify(event.actor_id)}`,
+          `events[${index}] authority_actor_id ${JSON.stringify(event.authority_actor_id)} does not match actor_id ${JSON.stringify(event.actor_id)}: the decision was issued for another identity`,
         ],
         limitations,
       }
@@ -307,8 +345,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
 
   // Rule 4: SATISFIED needs independent corroboration of no effect, and a deny
   // contract additionally needs its DENIED event. An authorized effect is a
-  // different contract; this deny/no-effect oracle does not promote it to
-  // SATISFIED.
+  // different contract; this deny/no-effect oracle does not promote it.
   if (denyExpected && !denied) {
     return {
       verdict: 'INCONCLUSIVE',

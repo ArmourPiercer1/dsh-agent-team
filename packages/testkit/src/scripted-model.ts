@@ -82,6 +82,17 @@ export type ScriptedModelErrorCode =
   | 'SCRIPT_UNCONSUMED_TURN'
 
 /** A scripted-model failure that names its stable code. */
+/**
+ * Raise the standard abort error when `signal` is already aborted.
+ * @param signal - the caller's cancellation signal, if any.
+ */
+function throwIfAborted(signal: AbortSignal | undefined): void {
+  if (!signal?.aborted) return
+  const error = new Error('scripted model call aborted')
+  error.name = 'AbortError'
+  throw error
+}
+
 export class ScriptedModelError extends Error {
   constructor(
     public code: ScriptedModelErrorCode,
@@ -254,6 +265,11 @@ export class ScriptedModelAdapter extends LlmAdapter {
   }
 
   override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
+    // The adapter contract requires honouring options.signal. A scripted turn is
+    // already-decided text, but a cancelled call must still stop: an ignored
+    // abort would let a turn be consumed and a tool call emitted after
+    // cancellation, which is exactly the behaviour a cancellation test looks for.
+    throwIfAborted(options.signal)
     const index = this.#consumed
     const turn = this.script.turns[index]
     if (turn === undefined) {
@@ -267,9 +283,11 @@ export class ScriptedModelAdapter extends LlmAdapter {
     this.#consumed += 1
     this.#matchRequest(turn, index, options)
 
+    throwIfAborted(options.signal)
     if (turn.respond.kind === 'text') {
       const text = turn.respond.text
       // Blocks are addressed by index; the text block is index 0.
+      throwIfAborted(options.signal)
       yield { type: 'block-start', index: 0, blockType: 'text' }
       for (const piece of fragments(text)) yield { type: 'text-delta', index: 0, text: piece }
       const block: ContentBlock = { type: 'text', text }
@@ -284,6 +302,7 @@ export class ScriptedModelAdapter extends LlmAdapter {
     // The provider-issued call id is a branded string; the brand is a
     // compile-time marker only, so a documented cast is the honest way to
     // synthesize one in a mock. It stays stable per turn for correlation.
+    throwIfAborted(options.signal)
     const callId = `call_scripted_${index}` as ToolCallId
     yield { type: 'block-start', index: 1, blockType: 'tool-call' }
     for (const argumentsDelta of fragments(argumentsJson)) {

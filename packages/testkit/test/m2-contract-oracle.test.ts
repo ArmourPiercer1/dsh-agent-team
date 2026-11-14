@@ -15,7 +15,7 @@ const ALL_DOMAINS: EffectDomain[] = ['filesystem', 'process', 'network']
 
 /** A fully instrumented witness that saw nothing anywhere. */
 function fullyInstrumentedNoEffect(): WitnessObservation[] {
-  return ALL_DOMAINS.map((domain) => ({ domain, observed: false, evidence: [] }))
+  return ALL_DOMAINS.map((domain) => ({ domain, observed: false, instrumented: true, evidence: [] }))
 }
 
 /**
@@ -24,9 +24,9 @@ function fullyInstrumentedNoEffect(): WitnessObservation[] {
  */
 function fsWitness(observed: boolean, evidence: string[] = []): WitnessObservation[] {
   return [
-    { domain: 'filesystem', observed, evidence },
-    { domain: 'process', observed: false, evidence: ['not instrumented by the filesystem witness'] },
-    { domain: 'network', observed: false, evidence: ['not instrumented by the filesystem witness'] },
+    { domain: 'filesystem', observed, instrumented: true, evidence },
+    { domain: 'process', observed: false, instrumented: false, evidence: ['not instrumented by the filesystem witness'] },
+    { domain: 'network', observed: false, instrumented: false, evidence: ['not instrumented by the filesystem witness'] },
   ]
 }
 
@@ -40,7 +40,7 @@ function denied(seq = 1): TraceEvent {
     event_type: 'tool.execution.denied',
     actor_id: 'member',
     execution_id: 'exec-1',
-    authority_ref: 'member',
+    authority_ref: 'decision-4711',
     outcome: 'DENIED',
     effect_id: null,
   }
@@ -96,7 +96,7 @@ describe('TINF M2 contract oracle: VIOLATED', () => {
         event_seq: 1,
         event_type: 'tool.authority.computed',
         actor_id: 'member',
-        authority_ref: 'member',
+        authority_ref: 'decision-4711',
         outcome: 'COMPUTED',
       },
       {
@@ -119,14 +119,17 @@ describe('TINF M2 contract oracle: VIOLATED', () => {
     expect(judgement.reasons.join(' ')).toMatch(/no authority_ref/)
   })
 
-  it('a wrong-actor authority_ref is VIOLATED', () => {
+  it('a decision issued for another actor is VIOLATED', () => {
+    // authority_ref is a DECISION id (design memo 05 §6), so the identity check
+    // compares the decision's own subject (authority_actor_id), never the id.
     const events: TraceEvent[] = [
       denied(1),
       {
         event_seq: 2,
         event_type: 'tool.authority.computed',
         actor_id: 'member',
-        authority_ref: 'officer',
+        authority_ref: 'decision-4711',
+        authority_actor_id: 'officer',
         outcome: 'COMPUTED',
       },
     ]
@@ -139,7 +142,7 @@ describe('TINF M2 contract oracle: VIOLATED', () => {
     })
 
     expect(judgement.verdict).toBe('VIOLATED')
-    expect(judgement.reasons.join(' ')).toMatch(/different actor/)
+    expect(judgement.reasons.join(' ')).toMatch(/another identity/)
     expect(judgement.reasons.join(' ')).toMatch(/officer/)
     expect(judgement.reasons.join(' ')).toMatch(/member/)
   })
@@ -193,7 +196,7 @@ describe('TINF M2 contract oracle: fail-closed states', () => {
           event_seq: 1,
           event_type: 'tool.execution.dispatched',
           actor_id: 'member',
-          authority_ref: 'member',
+          authority_ref: 'decision-4711',
           outcome: 'DISPATCHED',
         },
       ],
@@ -216,7 +219,7 @@ describe('TINF M2 contract oracle: log text is not evidence', () => {
           event_seq: 1,
           event_type: 'tool.authority.computed',
           actor_id: 'member',
-          authority_ref: 'member',
+          authority_ref: 'decision-4711',
           outcome: 'COMPUTED',
         },
       ],
@@ -234,7 +237,7 @@ describe('TINF M2 contract oracle: log text is not evidence', () => {
       contractId: 'EXEC-01',
       // The trace says everything a passing test would want to hear.
       events: [denied()],
-      witness: ALL_DOMAINS.map((domain) => ({ domain, observed: false, evidence: ['instrument disabled'] })),
+      witness: ALL_DOMAINS.map((domain) => ({ domain, observed: false, instrumented: false, evidence: ['instrument disabled'] })),
       blindDomains: ALL_DOMAINS,
       requiredEffectDomains: ALL_DOMAINS,
     })
@@ -247,12 +250,110 @@ describe('TINF M2 contract oracle: log text is not evidence', () => {
     const judgement = judgeContract({
       contractId: 'EXEC-01',
       events: [denied()],
-      witness: ALL_DOMAINS.map((domain) => ({ domain, observed: false, evidence: [] })),
+      witness: ALL_DOMAINS.map((domain) => ({ domain, observed: false, instrumented: false, evidence: [] })),
       blindDomains: ALL_DOMAINS,
       requiredEffectDomains: ['filesystem'],
     })
 
     expect(judgement.verdict).toBe('INCONCLUSIVE')
-    expect(judgement.reasons.join(' ')).toMatch(/not instrumented/)
+    expect(judgement.reasons.join(' ')).toMatch(/cannot see them/)
+  })
+})
+
+describe('TINF M2 contract oracle: a witness that attests nothing is not evidence', () => {
+  it('fabricated rows without instrumented cannot be graded SATISFIED', () => {
+    // The reviewer's CASE G: three rows that claim "no effect" but never claim
+    // they could see anything. Witness is data; the instrument flag is capability.
+    const fabricated: WitnessObservation[] = ALL_DOMAINS.map((domain) => ({
+      domain,
+      observed: false,
+      instrumented: false,
+      evidence: [],
+    }))
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events: [denied()],
+      witness: fabricated,
+      blindDomains: [],
+      requiredEffectDomains: ['filesystem'],
+    })
+
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.verdict).not.toBe('SATISFIED')
+    expect(judgement.reasons.join(' ')).toMatch(/cannot see them/)
+  })
+
+  it('an invented network row cannot cover a blind network domain', () => {
+    // The reviewer's CASE H: required=network, the only real channel is
+    // filesystem, and the caller adds one plausible-looking network row.
+    const judgement = judgeContract({
+      contractId: 'ISOLATION-01',
+      events: [denied()],
+      witness: [
+        { domain: 'filesystem', observed: false, instrumented: true, evidence: [] },
+        { domain: 'network', observed: false, instrumented: false, evidence: [] },
+      ],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['network'],
+    })
+
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/cannot see them: network/)
+  })
+
+  it('a DENIED event carrying an effect_id is VIOLATED even with a clean witness', () => {
+    const events: TraceEvent[] = [{ ...denied(1), effect_id: 'eff-7' }]
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events,
+      witness: fsWitness(false),
+      blindDomains: M2_BLIND,
+      requiredEffectDomains: ['filesystem'],
+    })
+
+    expect(judgement.verdict).toBe('VIOLATED')
+    expect(judgement.reasons.join(' ')).toMatch(/effect_id/)
+  })
+
+  it('an effect outside the graded scope is INCONCLUSIVE and named, not dismissed', () => {
+    // The reviewer's CASE H (out-of-scope): process observed, contract graded on filesystem only.
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events: [denied()],
+      witness: [
+        { domain: 'filesystem', observed: false, instrumented: true, evidence: [] },
+        { domain: 'process', observed: true, instrumented: true, evidence: ['pid 4242 appeared'] },
+      ],
+      blindDomains: ['network'],
+      requiredEffectDomains: ['filesystem'],
+    })
+
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/outside the graded scope.*process/)
+    expect(judgement.limitations.join(' ')).toMatch(/unexplained out-of-scope effect: process/)
+  })
+
+  it('a decision id in authority_ref is not an identity mismatch', () => {
+    // Design memo 05 §6: authority_ref is "<decision-or-null>". Comparing it to
+    // actor_id would fail every spec-conforming trace.
+    const events: TraceEvent[] = [
+      { ...denied(1), authority_ref: 'decision-4711' },
+      {
+        event_seq: 2,
+        event_type: 'tool.authority.computed',
+        actor_id: 'member',
+        authority_ref: 'decision-4711',
+        outcome: 'COMPUTED',
+      },
+    ]
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events,
+      witness: fsWitness(false),
+      blindDomains: M2_BLIND,
+      requiredEffectDomains: ['filesystem'],
+    })
+
+    expect(judgement.verdict).toBe('SATISFIED')
   })
 })

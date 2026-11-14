@@ -186,3 +186,22 @@ describe('TINF M2 scripted model: refusals', () => {
     }
   })
 })
+
+describe('TINF M2 scripted model: cancellation', () => {
+  it('an already-aborted signal refuses the call and consumes no turn', async () => {
+    const { adapter } = createScriptedModel({
+      schema: 'agent-script/1',
+      turns: [{ respond: { kind: 'tool-call', name: 'bash', args: { command: 'touch /outside/x' } } }],
+    })
+    const controller = new AbortController()
+    controller.abort()
+
+    // The adapter contract requires honouring options.signal (dsh-llm
+    // index.d.ts): emitting a tool call after cancellation would be exactly the
+    // behaviour a cancellation test is looking for.
+    await expect(collect(adapter.stream(request({ signal: controller.signal })))).rejects.toThrow(/abort/i)
+    // Nothing was consumed: the cancelled call never became a turn.
+    expect(adapter.pendingTurns).toHaveLength(1)
+    expect(() => assertComplete(adapter)).toThrow(/unconsumed scripted turn/)
+  })
+})

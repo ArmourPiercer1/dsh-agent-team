@@ -35,18 +35,23 @@ p4t6 的扫描账本要求每个新增 `packages/**` 文件登记；不登记会
 
 | verdict | 何时触发（按实现顺序，先到先判） |
 | --- | --- |
-| `INSTRUMENT_ERROR` | `event_seq` 不严格递增；event/witness 字段缺失或类型错误；`witness` 为空；`authority_ref` 存在但同一事件没有 `actor_id` |
-| `INCONCLUSIVE` | 必需效果域在 `blindDomains` 中；必需域没有 witness 观测；所有被观测域都 blind；trace 没有 computed/denied 事件；deny 合同没有 `DENIED`；有授权副作用但本 oracle 不给“授权效果”发 PASS |
-| `VIOLATED` | 有 `DENIED` 且必需域真的观测到副作用；`DISPATCHED`/`COMPLETED` 的 `authority_ref` 为 null 且观测到副作用；同一事件的 `authority_ref` 与 `actor_id` 不同 |
-| `SATISFIED` | 仅当每个必需域**已接入、已观测、结果为无副作用**，且 deny 合同有 `DENIED` 决策事件 |
+| `INSTRUMENT_ERROR` | `event_seq` 不严格递增；event/witness 字段缺失或类型错误；`witness` 为空 |
+| `INCONCLUSIVE` | 必需域没有 witness 观测；**必需域的行没有 `instrumented: true`**（仪器自己说看不见）；trace 没有 computed/denied 事件；deny 合同没有 `DENIED`；有授权副作用但本 oracle 不给“授权效果”发 PASS；**在未评估域观测到副作用**（不能当作没发生） |
+| `VIOLATED` | 有 `DENIED` 且必需域真的观测到副作用；`DENIED` 事件自带 `effect_id`（自相矛盾）；`DISPATCHED`/`COMPLETED` 的 `authority_ref` 为 null 且观测到副作用；`authority_actor_id` 与 `actor_id` 不同（**决策签发给另一个身份**） |
+| `SATISFIED` | 仅当每个必需域的观测行 `instrumented: true` 且 `observed: false`，且 deny 合同有 `DENIED` 决策事件 |
 
 顺序本身是安全设计：后面的“有趣发现”不能覆盖前面的“仪器不可信”。
 
 ## 5. 规则：日志文本不是证据
 
-`DENIED` 只是一行系统自述，不是“效果没有发生”的证明。实现里有两道硬闸：
-1. `witness` 为空 → `INSTRUMENT_ERROR`；
-2. 所有被观测域都在 `blindDomains` 中 → 无论 trace 写得多漂亮，都只能是 `INCONCLUSIVE`。
+`DENIED` 只是一行系统自述，不是“效果没有发生”的证明。实现里只有一道真正起作用的闸，但它比“声明 blind”强得多：
+
+**每行观测都带 `instrumented`（能力声明），由 witness 实现写，调用方写不了。** oracle 要求必需域存在 `instrumented: true` 的行，`observed: false` 才会被当作“干净”。所以：
+- 调用方可以伪造一行 `{observed:false}`，但伪造不了 `instrumented: true` 的仪器；
+- 一个“全盲”的 witness 即使 `blindDomains` 传空数组，也会落进 `INCONCLUSIVE`；
+- 反过来，如果有人往 witness 里塞一行假的 `network`，那行必须是 `instrumented:true` 才可能被采信 —— 而真正的 FS witness 永远只对 `filesystem` 声称 `instrumented:true`。
+
+（第一版曾宣称“两道硬闸”，其中“所有域都 blind”那条经审计证明不可达，因为它被“必需域未接入”先一步覆盖。现在只保留一条会被测试真正走到的规则，并且有负控证明它拦得住。）
 
 所以 **trace-only 判定必须是 `INCONCLUSIVE`**；`SATISFIED` 必须由独立 witness 的反证支撑。`limitations` 在每个 verdict 上都列出未接入的效果域（FS witness 场景下是 `process, network`）。
 
@@ -66,6 +71,16 @@ p4t6 的扫描账本要求每个新增 `packages/**` 文件登记；不登记会
 | 诚实盲域 | `process and network are reported blind, not clean` | `blindDomains=[process,network]` |
 | 证据上限 | `evidence is capped at 20 changed paths and flags truncation` | 20 + `truncated` |
 | **灵敏度**：witness 被弄瞎 | `the blind wrapper makes a real write invisible` | 同一写入对盲仪器不可见 |
+| **灵敏度必须被判**：盲仪器 + 真写入 | `a blinded witness cannot talk the oracle into SATISFIED` | `INCONCLUSIVE`，理由点名 `filesystem` |
+| 伪造观测行（无能力声明） | `fabricated rows without instrumented cannot be graded SATISFIED` | `INCONCLUSIVE` |
+| 伪造一个 network 行 | `an invented network row cannot cover a blind network domain` | `INCONCLUSIVE` |
+| `DENIED` + `effect_id` | `a DENIED event carrying an effect_id is VIOLATED even with a clean witness` | `VIOLATED` |
+| 域外副作用 | `an effect outside the graded scope is INCONCLUSIVE and named, not dismissed` | `INCONCLUSIVE` + 理由/limitations 点名 |
+| 决策 id 不是身份 | `a decision id in authority_ref is not an identity mismatch` | `SATISFIED` |
+| 同尺寸改写 + 还原 mtime | `a same-size rewrite with a restored mtime is still observed (content digest)` | `observed:true` |
+| 新建空目录 | `a new empty directory is observed` | `observed:true` |
+| 新建符号链接 | `a created symlink is observed (recorded, not followed)` | `observed:true` |
+| 取消（abort） | `an already-aborted signal refuses the call and consumes no turn` | 抛 abort 且不消费轮次 |
 | 拒绝 + 无效果 | `no effect + DENIED + full instrumentation is SATISFIED` | `SATISFIED` |
 | 拒绝 + 真副作用 | `DENIED plus a real effect is VIOLATED` | `VIOLATED` |
 | 缺必需域 | `a missing required domain is INCONCLUSIVE` | `INCONCLUSIVE` |
@@ -81,6 +96,15 @@ p4t6 的扫描账本要求每个新增 `packages/**` 文件登记；不登记会
 - “Usage” 的真实类型名是 **`TokenUsage`**。
 - 工具 block 仍按 spec 用 index 1（text 用 0）；`BlockAssembler` 允许任意首见 index，故合法。
 - `LlmAdapter.providerInfo()` 基类默认返回 `{id: provider, name: provider}` 已满足接口，故**没有 override**。
+- `stream()` 遵守 `options.signal`（d.ts 要求）：已 abort 的调用直接抛 `AbortError` 且**不消费**任何轮次。spec 没写这条，但适配器契约要求。
+
+## 7.1 见证通道的已知极限（写在代码里，也写在这里）
+
+FS witness 比较两个时间点的快照，因此：
+- 在两次 `observe()` 之间**创建再删除**的文件不可见；
+- 通过**符号链接**写到被监视目录之外的目标，只能看到链接本身变化（不跟随链接是刻意的：跟随等于替调用方观察另一棵树）；
+- 大于 4 MiB 的文件只按 size+mtime 比较（不为此每次观测去哈希 GB 级文件）；4 MiB 以内含 sha256 摘要，所以“同尺寸改写 + 还原 mtime”能被抓到（有负控）。
+这些是通道的极限，`limitations` 会写出来，任何判决都不允许把它们读成“干净”。
 
 ## 8. 未做（明示）
 
