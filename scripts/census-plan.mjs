@@ -272,7 +272,11 @@ export function buildPlan({ roots, captures, identity, testTimeout = null, timin
     for (let capture = 1; capture <= captures; capture += 1) {
       const task_id = taskIdOf(root, capture)
       const jsonPath = taskReportPath(task_id)
-      const est = timings?.byRoot instanceof Map ? timings.byRoot.get(root) : undefined
+      // Per TASK first: a `census-root` row is already (root, attempt), so the most precise estimate
+      // for `census:<root>#<capture>` is that attempt's own measurement. The per-root median is the
+      // fallback (e.g. a plan with more captures than the timing file has attempts).
+      const est = timings?.byTask?.get(`${root}#${String(capture)}`)
+        ?? (timings?.byRoot instanceof Map ? timings.byRoot.get(root) : undefined)
       tasks.push({
         task_id,
         root,
@@ -305,7 +309,8 @@ export function buildPlan({ roots, captures, identity, testTimeout = null, timin
     groups,
     tasks,
     timings: {
-      statistic: 'median_ms (nearest-rank, as tinf-timing.mjs publishes it)',
+      statistic: 'per-attempt census-root window_ms where the timing file has that attempt, else the ' +
+        'per-root median (nearest-rank, as tinf-timing.mjs publishes it)',
       source_files: (timings?.source_files ?? []).slice(),
       measured_roots: sorted.length - unknown.length,
       unknown_roots: unknown,
@@ -635,7 +640,17 @@ export function loadTimings(paths, { readFile = readFileSync } = {}) {
   for (const r of report.census_roots) {
     if (r.n > 0 && Number.isFinite(r.median_ms)) byRoot.set(r.root, r.median_ms)
   }
-  return { ok: true, byRoot, source_files: collected.files, report }
+  // `root#attempt` -> that attempt's own duration. Only `ok` rows: a failed span is not a duration,
+  // and rendering it as 0 ms would make a broken root look free.
+  const byTask = new Map()
+  for (const row of rows) {
+    if (row.phase !== 'census-root' || row.status !== 'ok') continue
+    const ms = Number(row.duration_ms)
+    if (!Number.isFinite(ms)) continue
+    const key = `${row.root}#${String(Number(row.attempt))}`
+    if (!byTask.has(key)) byTask.set(key, ms)
+  }
+  return { ok: true, byRoot, byTask, source_files: collected.files, report }
 }
 
 // ───────────────────────────────────────────────────────────────────── cli ──
@@ -698,7 +713,7 @@ function currentPlanFor(opts) {
   if (opts.timings.length > 0) {
     const loaded = loadTimings(opts.timings)
     if (!loaded.ok) return { refusal: loaded }
-    timings = { byRoot: loaded.byRoot, source_files: loaded.source_files }
+    timings = { byRoot: loaded.byRoot, byTask: loaded.byTask, source_files: loaded.source_files }
   }
   return {
     plan: buildPlan({
@@ -802,6 +817,15 @@ export function selfTest() {
   ok('an unmeasured root is null, never 0', tasks.every((t) => t.est_ms === null), JSON.stringify(tasks.map((t) => t.est_ms)))
   const measured = buildPlan({ roots, captures: 2, identity, timings: { byRoot: new Map([['packages/a', 1234.6]]) } })
   ok('a measured root gets a rounded median', measured.tasks.filter((t) => t.root === 'packages/a').every((t) => t.est_ms === 1235), JSON.stringify(measured.tasks.map((t) => t.est_ms)))
+  const perAttempt = buildPlan({
+    roots: [{ root: 'packages/a' }],
+    captures: 2,
+    identity,
+    timings: { byRoot: new Map([['packages/a', 500]]), byTask: new Map([['packages/a#2', 77]]) },
+  })
+  ok('a per-attempt row beats the root median for that task',
+    perAttempt.tasks[0].est_ms === 500 && perAttempt.tasks[1].est_ms === 77,
+    JSON.stringify(perAttempt.tasks.map((t) => t.est_ms)))
   ok('an estimate never removes a task', measured.tasks.length === 4, String(measured.tasks.length))
   ok('unknown roots are named, not hidden', JSON.stringify(measured.timings.unknown_roots) === '["packages/b"]', JSON.stringify(measured.timings.unknown_roots))
 

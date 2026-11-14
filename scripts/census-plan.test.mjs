@@ -373,6 +373,11 @@ test('loadTimings: per-root medians come from M3 rows, and a failed span is not 
   // nearest-rank median of [100, 900] is the LOWER value, the same rule tinf-timing publishes.
   assert.equal(loaded.byRoot.get('packages/a'), 100)
   assert.equal(loaded.byRoot.has('packages/b'), false)
+  // ...and the per-ATTEMPT durations are kept separately: the plan's task is (root, capture), so the
+  // most precise estimate for it is that attempt's own row, not the median.
+  assert.equal(loaded.byTask.get('packages/a#1'), 100)
+  assert.equal(loaded.byTask.get('packages/a#2'), 900)
+  assert.equal(loaded.byTask.has('packages/b#1'), false)
 })
 
 test('loadTimings: missing, garbage and census-less inputs are refused by name', () => {
