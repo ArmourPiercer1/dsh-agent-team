@@ -105,6 +105,14 @@ import { fileURLToPath } from 'node:url'
 // concurrently in ONE vitest process, so there is no root loop to wrap).
 import { createTimer, rowsFromVitestReport } from './tinf-timing.mjs'
 
+// TINF M4 — the census invocation itself, extracted so `scripts/census-plan.mjs` can put the SAME
+// command on a plan task instead of copying these strings. `censusVitestArgv()` reproduces the argv
+// this leg used to spell inline, character for character (argument order included): the plan and the
+// gate cannot disagree about what a census capture is. Deliberately NOT used for the single-file
+// load-family re-sample below — that is a diagnostic of one file with a different reporter set, not
+// a census task, and widening it would change transcripts nothing asked to change.
+import { censusVitestArgv } from './census-invocation.mjs'
+
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
@@ -1652,16 +1660,11 @@ const LEGS = {
         // the testkit lane sees, so every published census clears it first.
         rmSync(resolve(REPO_ROOT, 'packages/testkit/test/.tmp-fault'), { recursive: true, force: true })
       }
-      const run = ctx.timing.time('census-capture', 'nine-roots', () => runCommand('pnpm', [
-        'exec', 'vitest', 'run',
-        '--reporter=default',
-        '--reporter=json',
-        `--outputFile.json=${jsonPath}`,
-        // Only when an operator said so, and the value then appears on the leg line. A census that
-        // passed under a raised clock and one that passed under the suite's default are different
-        // claims, and the transcript has to distinguish them by itself.
-        ...(ctx.censusTestTimeout === null ? [] : [`--testTimeout=${String(ctx.censusTestTimeout)}`]),
-      ]), { attempt: i })
+      // Only when an operator said so, and the value then appears on the leg line. A census that
+      // passed under a raised clock and one that passed under the suite's default are different
+      // claims, and the transcript has to distinguish them by itself.
+      const run = ctx.timing.time('census-capture', 'nine-roots', () => runCommand('pnpm',
+        censusVitestArgv({ jsonPath, testTimeout: ctx.censusTestTimeout })), { attempt: i })
       ctx.capture(`census-capture-${String(i)}`, run)
       if (run.error !== null) {
         return { verdict: 'fail', detail: `vitest could not be spawned: ${run.error}` }
