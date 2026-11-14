@@ -8686,16 +8686,16 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **前置**：#767（设计集）merged `f24c41337`；#768（M0）merged `db125a185`。M1 用 M0 修好的工具去量，结论变成可执行的东西。
 
 **1. 发现取代手工名单**：`scripts/test-catalog.mjs` 从 `git ls-files` + **每个** `vitest.config.ts`（根 + 9 个 package，各自按自身目录求值）解析 include/exclude，node:test 取任意位置的 `*.test.mjs|cjs|js`，再加上 `scripts/eb3-security-run.mjs` 执行的 65 条显式清单。
-- 结果：**857 个测试文件，756 collected，87 uncollected**；`catalog_digest=sha256:69d5b59f…`（两次运行一致；digest 不含 classification）。
+- 结果：**857 个测试文件，752 collected，91 uncollected**（87 无 config + 4 仅 authoring 配置）；`catalog_digest=sha256:69d5b59f…`（两次运行一致；digest 不含 classification）。
 - 三个真问题：**7 个 `packages/domain/compatibility/test/*.test.ts` 不被任何 config 收集**（根 include 只一层，包内 include 是包根 `test/**`，security 清单也没它们）；**80 个 node:test 没有 lane**；**手写名单与发现是两套事实**（`--diff` 双向列出，`ci_only` 非空即拒绝——现在 0）。
-**两次漏检都在本轮修掉**：①按文件名后缀取套件，漏掉 client 的 32 个 `*.client.spec.ts[x]`；②只认 `vitest.config.ts`，漏掉 `vitest.poc.config.ts`/`vitest.scratch.config.ts`，且 POC 配置的 glob 是仓库相对。现在入口是「配置 include[] 是否匹配」，glob 相对基准由配置自身判定；各有回归测试。
+**三轮发现的都是同一类错误**：①按文件名后缀取套件，漏掉 client 的 32 个 `*.client.spec.ts[x]`；②只认 `vitest.config.ts`，看不见 `vitest.poc.config.ts`/`vitest.scratch.config.ts`；③把**所有** `vitest*.config.ts` 都当收集权威 → authoring-only 的 scratch 配置可以把一个根级 scratch recorder 说成 covered（**过度声明比漏报更危险**）。（评审给的 package 内 repro 经复核**不是**过度声明：`packages/runtime/vitest.config.ts` 的 include 确实收集 `test/**/*.test.ts`，根配置的 exclude 只管根那一次 run —— 该文件在包级 suite 里真的会跑。）最终规则：只有 lane 实际跑的配置（默认发现的 `vitest.config.ts`）是收集权威；非默认配置只用来解释「为什么没被收集」，四元组 glob 相对基准由配置自身判定；三项各有回归测试。
 
 **2. Critical Contract Registry**：`dev/ci/test-contracts.json`（`test-contracts/1`）登记 6 条安全合同（AUTH/EXEC/REVIEW/LIFE/RECOVERY/ISOLATION-01），每条绑定具名测试、witness_type、limitations。绑定含义写窄了：**说的是“谁承担”，不是“够了”**；ISOLATION-01 明写纯 JS 不能证明 OS 边界。缺 test_refs → `CONTRACT_WITHOUT_TEST`；绑定的路径消失 → `CONTRACT_UNKNOWN_TEST`（删掉关键合同的唯一测试是红）。
 
-**3. 棘轮而不是豁免**：CI 用 `--max-uncollected 87` —— 已知集合可以留到 M2–M5，**增长拒绝**（`UNCOLLECTED_GREW`）；删 manifest 的 `check[]` 是 `CI_LAYER_LEG_WEAKENED`，只删步内棘轮行由 suite 里那条读 workflow 的测试抓住。
+**3. 棘轮而不是豁免**：CI 用 `--max-uncollected 91` —— 已知集合可以留到 M2–M5，**增长拒绝**（`UNCOLLECTED_GREW`）；删 manifest 的 `check[]` 是 `CI_LAYER_LEG_WEAKENED`，只删步内棘轮行由 suite 里那条读 workflow 的测试抓住。
 
 **4. 边界（明示）**：**不是权威**——没有任何 gate 读 catalog 决定跑什么，workflow 列表与 manifest 仍是唯一事实直到 M5；没有删除任何手写名单（设计 M1 要求）；“是否被收集”是**静态判定**，不是装载成功的证据；原生 `vitest list` 留给 M5。
 
 **5. 负控 5 项**（`dev/agent-workflow/evidence/tinf-m1-20261114/`）：删合同测试、重复逻辑 id、陈旧排除、缺 driver、未收集增长——全部按期望 exit 2。修的是一个真缺陷：排除表指向不存在文件时原本**不报**（只查 reason/review），现补 `STALE_EXCLUDE`。
 
-**6. 门禁**：`scripts/test-catalog.test.mjs` 18/18；`--self-test` 22 cases；eslint 干净；`eb3-ci-required` = `pass workflows=10 findings=0`；`docs:sync --check` findings=0。
+**6. 门禁**：`scripts/test-catalog.test.mjs` 19/19；`--self-test` 22 cases；eslint 干净；`eb3-ci-required` = `pass workflows=10 findings=0`；`docs:sync --check` findings=0。

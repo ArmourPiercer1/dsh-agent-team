@@ -1,8 +1,8 @@
 ### measurement: catalog strict mode (a discovered suite no lane collects is a refusal)
   tests=857 instruments=3 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf
-  DISCOVERED_AND_COLLECTED 756
+  DISCOVERED_AND_COLLECTED 752
   EXCLUDED_WITH_REASON     14
-  UNCOLLECTED              87
+  UNCOLLECTED              91
   by runner: node=105 none=7 vitest=745
   REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-complete-true.test.ts discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED packages/domain/compatibility/test/t5-drift-invalidation.test.ts discovered but no lane collects it
@@ -25,6 +25,10 @@
   REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w1-native-shape.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts discovered but no lane collects it
+  REFUSED TEST_UNCOLLECTED tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/s2-authority/authority-dual-read.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/s2-authority/authority-snapshot-isolated.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/s2-authority/candidate-track-negative-control.test.mjs discovered but no lane collects it
@@ -40,9 +44,5 @@
   REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-assembly.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-bash.test.mjs discovered but no lane collects it
   REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-bl42-netdeny.test.mjs discovered but no lane collects it
-  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-capability-defaults.test.mjs discovered but no lane collects it
-  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-debt-register.test.mjs discovered but no lane collects it
-  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-dev-live-slots.test.mjs discovered but no lane collects it
-  REFUSED TEST_UNCOLLECTED tests/world-factory/a5sf-dev-live.test.mjs discovered but no lane collects it
-DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=87 findings=87
+DSH-TEST-CATALOG tests=857 digest=sha256:69d5b59f1ac665f1f837421486a2f4a8ddcaa018ed3c13b68626a40e30150caf refused=91 findings=91
 exit=2

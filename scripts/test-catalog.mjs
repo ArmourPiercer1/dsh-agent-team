@@ -133,7 +133,8 @@ export function loadRegistry(cwd) {
  * `ciCollected` is the set of node:test paths the workflows/manifest name.
  */
 export function buildEntries(files, { vitestCfg, configs = null, registry, ciCollected = new Set(), explicitlyCollected = new Set() } = {}) {
-  const effectiveConfigs = configs ?? (vitestCfg ? [{ base: '', cfg: vitestCfg }] : [])
+  const allEffective = configs ?? (vitestCfg ? [{ base: '', cfg: vitestCfg }] : [])
+  const effectiveConfigs = allEffective.filter((c) => !c.authoringOnly)
   // A config's globs are relative to its directory — EXCEPT when they spell that
   // directory out (tests/poc-web-native-reuse/vitest.poc.config.ts includes
   // 'tests/poc-web-native-reuse/**/*.test.ts', i.e. repo-relative). Guessing one
@@ -153,6 +154,10 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
     if (rel === null) return false
     return matchesAny(rel, cfg.include ?? []) && !matchesAny(rel, cfg.exclude ?? [])
   })
+  const authoringConfigOf = (file) => allEffective.find((c) => c.authoringOnly && c.cfg && (() => {
+    const rel = relOf(c.base, file, c.cfg)
+    return rel !== null && matchesAny(rel, c.cfg.include ?? []) && !matchesAny(rel, c.cfg.exclude ?? [])
+  })())
   const excludedByConfig = (file) => effectiveConfigs.some(({ base, cfg }) => {
     const rel = relOf(base, file, cfg)
     if (rel === null) return false
@@ -194,7 +199,12 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
       continue
     }
     if (!isNode) {
-      entries.push({ id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [], classification: 'UNCOLLECTED' })
+      const authoring = authoringConfigOf(file)
+      entries.push({
+        id: null, path: file, runner: 'vitest', kind: contractOf.has(file) ? 'contract' : 'unit', contract_ids: contractOf.get(file) ?? [],
+        classification: 'UNCOLLECTED',
+        reason: authoring ? `only ${authoring.file} includes it; that config is authoring-only (no lane passes --config)` : undefined,
+      })
       continue
     }
 
@@ -303,15 +313,23 @@ export const SECURITY_LIST = 'tests/checks/eb3-security-suites.txt'
 export function vitestConfigsOf(files, readConfig) {
   const out = []
   for (const file of [...files].sort()) {
-    // ANY vitest config, not just the default name: tests/poc-web-native-reuse has
-    // vitest.poc.config.ts and the root has vitest.scratch.config.ts, and a config
-    // this reader cannot see makes its suites look uncollected.
     if (!/(^|\/)vitest(?:[.\w-]*)?\.config\.ts$/.test(file)) continue
     if (file.includes('node_modules/')) continue
+    // Collection AUTHORITY is the config a lane actually runs. Vitest discovers a
+    // file named exactly vitest.config.ts on its own; any other name only runs when
+    // someone passes --config, and no workflow does (grep --config .github/workflows
+    // → nothing). Reading every vitest*.config.ts made authoring-only configs into
+    // collection authorities: vitest.scratch.config.ts includes **/*.scratch.test.ts
+    // while the production config excludes it, so one "any include wins" rule could
+    // report a scratch recorder as covered. They are still parsed — a suite they
+    // include is reported UNCOLLECTED *with that reason*, not silently ignored.
+    const name = path.posix.basename(file)
+    const authoringOnly = name !== 'vitest.config.ts' || file.startsWith(EVIDENCE_PREFIX)
+    const base = path.posix.dirname(file) === '.' ? '' : path.posix.dirname(file)
     try {
-      out.push({ base: path.posix.dirname(file) === '.' ? '' : path.posix.dirname(file), cfg: readConfig(file) })
+      out.push({ base, file, authoringOnly, cfg: readConfig(file) })
     } catch (e) {
-      out.push({ base: path.posix.dirname(file), cfg: null, error: e?.message ?? String(e) })
+      out.push({ base, file, authoringOnly, cfg: null, error: e?.message ?? String(e) })
     }
   }
   return out

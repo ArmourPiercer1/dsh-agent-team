@@ -59,10 +59,28 @@ test('a config whose include spells out its own directory is repo-relative', () 
   // tests/poc-web-native-reuse/vitest.poc.config.ts includes
   // 'tests/poc-web-native-reuse/**/*.test.ts' — the globs are repo-relative, not
   // relative to the config's directory. Reading it the other way hid four suites.
+  const cfg0 = { include: ['test/**/*.test.ts'], exclude: [] }
   const cfg = { include: ['tests/poc-web-native-reuse/**/*.test.ts'], exclude: [] }
   const files = new Set(['tests/poc-web-native-reuse/poc-w1.test.ts', 'tests/poc-web-native-reuse/deep/poc-w9.test.ts'])
-  const { entries } = buildEntries(files, { configs: [{ base: 'tests/poc-web-native-reuse', cfg }], registry: {} })
-  assert.deepEqual(entries.map((e) => e.classification), ['DISCOVERED_AND_COLLECTED', 'DISCOVERED_AND_COLLECTED'])
+  const { entries } = buildEntries(files, { configs: [{ base: 'tests/poc-web-native-reuse', file: 'tests/poc-web-native-reuse/vitest.poc.config.ts', authoringOnly: true, cfg }], registry: {}, vitestCfg: cfg0 })
+  assert.deepEqual(entries.map((e) => e.classification), ['UNCOLLECTED', 'UNCOLLECTED'])
+  assert.match(entries[0].reason, /authoring-only/)
+})
+
+test('an authoring-only config does not make a suite collected', () => {
+  // vitest.scratch.config.ts includes **/*.scratch.test.ts while the root config
+  // excludes it. If "any include wins", a root-level scratch recorder is reported
+  // as covered; it must instead be EXCLUDED by the authority config that governs it.
+  const root = { include: ['packages/*/test/**/*.test.ts'], exclude: ['**/*.scratch.test.ts'] }
+  const scratch = { include: ['**/*.scratch.test.ts'], exclude: [] }
+  const files = new Set(['packages/runtime/test/zz-probe.scratch.test.ts'])
+  const { entries } = buildEntries(files, {
+    vitestCfg: root,
+    configs: [{ base: '', file: 'vitest.config.ts', authoringOnly: false, cfg: root }, { base: '', file: 'vitest.scratch.config.ts', authoringOnly: true, cfg: scratch }],
+    registry: {},
+  })
+  assert.equal(entries[0].classification, 'EXCLUDED_WITH_REASON')
+  assert.equal(entries[0].reason, 'vitest config exclude[]')
 })
 
 test('a contract ref that is not a test file is refused', () => {

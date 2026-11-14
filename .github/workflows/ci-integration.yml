@@ -212,10 +212,13 @@ jobs:
         # (M5 moves that). This leg proves the catalog's classifications and its
         # refusals, then runs it in ratchet mode against the uncollected count
         # measured at landing (91). The ratchet is intentionally a hand-written
-        # number: it refuses GROWTH and cannot be satisfied by deleting the leg.
+        # number: it refuses GROWTH. The manifest pins this suite FILE, not the two
+        # commands below, so the suite itself reads this workflow and asserts that
+        # deleting the ratchet line fails — see 'the CI step that runs this suite
+        # also runs the ratchet' in scripts/test-catalog.test.mjs.
         run: |
           node --test scripts/test-catalog.test.mjs
-          node scripts/test-catalog.mjs --max-uncollected 87
+          node scripts/test-catalog.mjs --max-uncollected 91
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI

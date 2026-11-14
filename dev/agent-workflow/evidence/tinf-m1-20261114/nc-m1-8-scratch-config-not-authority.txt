@@ -1,0 +1,10 @@
+### NC-M1-SCRATCH authoring-only configs must not be collection authority.
+### Probe A: a ROOT-LEVEL scratch recorder — only vitest.scratch.config.ts includes it.
+{"path":"zz-probe.scratch.test.ts","classification":"EXCLUDED_WITH_REASON","reason":"vitest config exclude[]"}
+  tests=858 instruments=3 digest=sha256:9e75c639474150b0b2204b47cc0a7d545f173a34453e4a1ec9ca7ab0eafb6c7b
+DSH-TEST-CATALOG tests=858 digest=sha256:9e75c639474150b0b2204b47cc0a7d545f173a34453e4a1ec9ca7ab0eafb6c7b refused=0 findings=0
+
+### Probe B: the same file name INSIDE a package whose own config includes test/**/*.test.ts.
+### Expected: DISCOVERED_AND_COLLECTED, and this is not an over-state — that package's
+### suite really runs it. The root config's exclude governs the root run only.
+{"path":"packages/runtime/test/zz-probe.scratch.test.ts","classification":"DISCOVERED_AND_COLLECTED"}
