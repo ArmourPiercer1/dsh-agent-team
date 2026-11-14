@@ -98,6 +98,13 @@ import { dirname, join, resolve } from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
+// TINF M3 — harness-level timing, SHADOW ONLY. `createTimer` writes tinf-timing.tsv when (and only
+// when) the run already has a transcript dir; it cannot throw, it cannot change a verdict, an exit
+// code, a token or the order of anything. See scripts/tinf-timing.mjs for the schema and for the
+// one honest deviation (census roots are DERIVED from the vitest report — the nine roots run
+// concurrently in ONE vitest process, so there is no root loop to wrap).
+import { createTimer, rowsFromVitestReport } from './tinf-timing.mjs'
+
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
@@ -1645,7 +1652,7 @@ const LEGS = {
         // the testkit lane sees, so every published census clears it first.
         rmSync(resolve(REPO_ROOT, 'packages/testkit/test/.tmp-fault'), { recursive: true, force: true })
       }
-      const run = runCommand('pnpm', [
+      const run = ctx.timing.time('census-capture', 'nine-roots', () => runCommand('pnpm', [
         'exec', 'vitest', 'run',
         '--reporter=default',
         '--reporter=json',
@@ -1654,7 +1661,7 @@ const LEGS = {
         // passed under a raised clock and one that passed under the suite's default are different
         // claims, and the transcript has to distinguish them by itself.
         ...(ctx.censusTestTimeout === null ? [] : [`--testTimeout=${String(ctx.censusTestTimeout)}`]),
-      ])
+      ]), { attempt: i })
       ctx.capture(`census-capture-${String(i)}`, run)
       if (run.error !== null) {
         return { verdict: 'fail', detail: `vitest could not be spawned: ${run.error}` }
@@ -1662,6 +1669,25 @@ const LEGS = {
       if (!existsSync(jsonPath)) {
         // Exit 1 is EXPECTED (22 disclosed reds); the absence of the report is the real failure.
         return { verdict: 'fail', detail: `vitest exited ${String(run.code)} and wrote no JSON report to ${jsonPath}; a census with no report cannot be diffed: ${tail(run.stdout + run.stderr, 10)}` }
+      }
+      // TINF M3: the nine-root split the Actions step API cannot see. DERIVED from this capture's
+      // report (max(end)-min(start) per root), because the nine roots run CONCURRENTLY inside this
+      // one vitest process — there is no per-root loop to wrap. Best-effort: a report we cannot
+      // read costs a row, never the leg.
+      try {
+        const report = JSON.parse(readFileSync(jsonPath, 'utf8'))
+        for (const r of rowsFromVitestReport(report, { attempt: i })) {
+          ctx.timing.record({
+            phase: 'census-root',
+            root: r.root,
+            attempt: i,
+            startedAt: r.startedAt,
+            durationMs: r.durationMs,
+            status: r.status,
+          })
+        }
+      } catch (e) {
+        ctx.timing.warn(`CENSUS_ROOT_DERIVATION_FAILED capture=${String(i)}: ${String(e && e.message ? e.message : e)}`)
       }
       reports.push({ jsonPath, ids: ctx.idsFromReport(jsonPath, `census-ids-${String(i)}`), ...ctx.shapeFromReport(jsonPath) })
     }
@@ -1953,10 +1979,31 @@ function main(argv) {
   const transcriptDir = opts.transcriptDir === null ? null : resolve(process.cwd(), opts.transcriptDir)
   if (transcriptDir !== null) mkdirSync(transcriptDir, { recursive: true })
 
+  // ── TINF M3 shadow timing ──────────────────────────────────────────────────────────────────
+  // The file goes NEXT TO the transcripts (the artifact the workflow already uploads), and only
+  // when a transcript dir was asked for: a default local run writes nothing, so its behaviour and
+  // its output are byte-identical to before this milestone. `identity` carries the product merge
+  // tree and (when the workflow exported it) the pinned host commit — the two identities the memo
+  // wants a timing row to be attributable to.
+  const runStamp = evidenceStamp(new Date().toISOString())
+  const timingIdentity = (() => {
+    const parts = []
+    try {
+      const tree = git(['rev-parse', 'HEAD^{tree}'])
+      if (tree !== null) parts.push(`product_merge_tree=${tree}`)
+      const head = git(['rev-parse', 'HEAD'])
+      if (head !== null) parts.push(`head=${head}`)
+    } catch { /* a timing identity is best-effort by construction; it never gates anything */ }
+    if (process.env.TEST_USE_SHA) parts.push(`host_commit=${process.env.TEST_USE_SHA}`)
+    return parts.join(';')
+  })()
+  const timing = createTimer({ dir: transcriptDir, runId: `${runStamp}-${String(process.pid)}`, identity: timingIdentity })
+
   const ctx = {
     storeDir: opts.storeDir,
     baselines: opts.baselines,
-    stamp: evidenceStamp(new Date().toISOString()),
+    stamp: runStamp,
+    timing,
     censusCaptures: opts.censusCaptures,
     censusTestTimeout: opts.censusTestTimeout,
     censusJson: opts.censusJson,
@@ -2044,7 +2091,10 @@ function main(argv) {
         const legStarted = Date.now()
         let result
         try {
-          result = LEGS[name](ctx)
+          // Shadow timing: sync legs stay sync (tinf-timing's time() passes a non-thenable return
+          // through untouched), the throw is re-thrown into this same catch, and nothing reads the
+          // recorded row. A recording failure becomes a warning string, never an exception.
+          result = timing.time('leg', name, () => LEGS[name](ctx))
         } catch (e) {
           // A leg that could not be graded is a fail, stated as one, with the cause. The gate still
           // reaches its final token — the run never ends in silence.
@@ -2076,12 +2126,22 @@ function main(argv) {
       }
 
     const failBySkip = opts.full && counts.skip > 0
+    // Flush BEFORE the token so the token stays the last thing a reader sees. Silent on success;
+    // a recording failure is a named warning line (never a verdict, never an exit code).
+    const flushed = timing.flush()
+    if (flushed.warnings.length > 0) {
+      process.stdout.write(`  [tinf-timing] WARN ${flushed.warnings.join(' ;; ')} (timing is shadow: no verdict is affected)\n`)
+    } else if (flushed.path !== null) {
+      process.stdout.write(`  [tinf-timing] ${String(flushed.rows)} row(s) -> ${String(flushed.path)}\n`)
+    }
     printToken(counts.fail > 0 || failBySkip ? 'fail' : 'pass')
   }
   finally {
     if (!tokenPrinted) {
       printToken('fail', " harness=aborted detail=a leg threw past the per-leg catch; a run that never stated a verdict is a failure")
     }
+    // Idempotent and exception-free by construction: the aborted path also gets its rows on disk.
+    try { timing.flush() } catch { /* a clock may never take the gate down */ }
   }
 
   return counts.fail > 0 || (opts.full && counts.skip > 0) ? 1 : 0

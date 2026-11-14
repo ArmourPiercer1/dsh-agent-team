@@ -404,6 +404,14 @@ jobs:
       # under `census-transcripts/` — those stay the complete, uncut copies (the
       # caps live in scripts/ci-pr-gate.mjs: ECHO_LINE_LIMIT/ECHO_LINE_CAP/
       # ECHO_BYTE_CAP, pinned by that file's own bound-by-construction legs).
+      # TINF M3 (2026-11-14): `census-transcripts/tinf-timing.tsv` — the harness-level timing rows
+      # that decompose the ONE census step the Actions API reports (`scripts/tinf-timing.mjs`; the
+      # step-level split above the census stays with `scripts/census-profile.mjs`). Shadow: the file
+      # is written by the census leg only when `--transcript-dir` is set, nothing grades it, and a
+      # timer that cannot write degrades to a named warning line instead of a red census. Listed
+      # explicitly (it is also inside the directory above) so a reader can see that this milestone
+      # ships a measurement file, not just a transcript. NO new Required context, NO concurrency
+      # change, NO change to what `ci-required` grades.
       - name: Upload census transcripts
         if: always()
         uses: actions/upload-artifact@v4
@@ -412,6 +420,7 @@ jobs:
           path: |
             ${{ runner.temp }}/census-run.txt
             ${{ runner.temp }}/census-transcripts/
+            ${{ runner.temp }}/census-transcripts/tinf-timing.tsv
           if-no-files-found: warn
 
       - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)

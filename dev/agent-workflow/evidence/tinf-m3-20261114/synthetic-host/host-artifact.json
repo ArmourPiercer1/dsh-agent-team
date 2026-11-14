@@ -1,0 +1,17 @@
+{
+  "schema": "host-artifact-manifest/1",
+  "host_build_flags_digest": "sha256:f91782ac902102852e7b9e06719c5c70f608eb16a7d3a37b2639a5ac548383bf",
+  "host_commit": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "host_lock_digest": "sha256:fa76eb5780407271c7a2da0f4d510f4e802b33ae88363357ec1cf87cfe889e39",
+  "node_version": "v24.21.0",
+  "platform": "linux-x64",
+  "pnpm_version": "11.7.0",
+  "product_lock_digest": "sha256:8321621221cd48e8edb91c1a1b80f8cba55f47818a2030e99a130e4c6ca220fd",
+  "product_merge_tree": "a466bd0e3eb67e4b6a2199f9e0638cd3c6a01ed9",
+  "toolchain_config_digest": "sha256:fc7246995a6fbb22eee6ea377f44cce4a1176d3bd8c34763323e9fb9fcc98492",
+  "host_key": "sha256:54bb55cb9450887c604a4f2e4ea472bd48fdd57785d63d09ac8c80d5312cd8ee",
+  "product_key": "sha256:bb9ae1c6ac5248d4f61f3b8d934c94bf152b297e4216272b343193ddc3e69e53",
+  "key": "sha256:d7889ae8ed9a05318ec18d86b9a826bf4596d876e3210186b6368477e546e2c7",
+  "file_count": 3,
+  "manifest_digest": "sha256:5bbacb331f3d096d71d68e529486773c4785a8d389b6f56829ea5b1f81af104c"
+}

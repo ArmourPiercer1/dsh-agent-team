@@ -8699,3 +8699,22 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **5. 负控 5 项**（`dev/agent-workflow/evidence/tinf-m1-20261114/`）：删合同测试、重复逻辑 id、陈旧排除、缺 driver、未收集增长——全部按期望 exit 2。修的是一个真缺陷：排除表指向不存在文件时原本**不报**（只查 reason/review），现补 `STALE_EXCLUDE`。
 
 **6. 门禁**：`scripts/test-catalog.test.mjs` 19/19；`--self-test` 22 cases；eslint 干净；`eb3-ci-required` = `pass workflows=10 findings=0`；`docs:sync --check` findings=0。
+
+## 2026-11-14 — TINF-M2 合并记录 + TINF-M3：harness 级计时（shadow）+ Host 缓存键/校验（未启用）
+
+**1. M2 合并（记录，不是本轮工作）**：TINF M2（scripted model + 独立 effect witness + contract oracle）以 **`b471224aed35731e4b09fa456652d3121dd747aa`** 合入 `master`（PR **#770**，head `c2785b3ad35a9e394b3a6317c5d4317c07fcdb2b`）。L2 的 `ci-census` 一轮 **23m25s**；独立评审经 **一轮 CHANGES REQUIRED** 后 **PASS**（findings 逐条带证据关闭）。M3 即从该 commit 起算。
+
+**2. M3 两半，都不上线**：设计正本 `08-BUILD-CACHE-AND-PROVENANCE.md` §1 说「真正的未知量只剩 census 内部九个 root 的分解……由 M3 的 harness 级计时补齐」。本轮交付 **(A) 计时**（`scripts/tinf-timing.mjs`）与 **(B) 缓存键 + 制品校验**（`scripts/host-cache-key.mjs`），**缓存一步都没打开**（零 `actions/cache`、零 CI 读键路径、零「跑什么」的变化），memo 明写切换是另一次受审的动作。
+
+**3. (A) 计时：第一次有 root 行**。`tinf-timing/1` TSV 九列（schema/run_id/phase/root/attempt/started_at/duration_ms/status/identity），时长一律 `process.hrtime.bigint()`，`Date.now()` 只做时间戳。接进 `ci-pr-gate.mjs` 的 census 路径，**只在 `--transcript-dir` 存在时**写 `tinf-timing.tsv`（默认本地 run 一字节不多写），包住**每个 leg**、**每次 capture spawn**，并把 **9 root × 每次 attempt** 落成行；`census-runtime.yml` 既有 `if: always()` Upload step 显式带上该文件。计时器**永不 throw**：写不进目录 = `[tinf-timing] WARN …` 一行，verdict/exit/token/顺序全不改。
+- **一个诚实偏差（有据）**：设计稿说「wrap per root（root loop）」，但真实代码里**没有 root 循环**——九个 root 在**一次** `vitest run` 里并发（`vitest.config.ts` 注释原文 "the census single-capture runs nine package roots concurrently"，include 只有 `packages/<pkg>/test/**` + 两条 lane）。所以 root 行是从该次 capture 的 **vitest JSON report**（`testResults[].startTime/endTime`，本仓 vitest 4.1.11 实测存在）推导的**窗口** `max(end)-min(start)`，标在 `phase=census-root`；报告明说：窗口重叠、share 是「占 capture 中位数」、可超 100%、在 phase 表里 share 记 `n/a` 且不进分母；无 span 的 root 记 `failed` 而不是 0 ms 的 ok。
+- **不假装**：host provision / host build / repo build / 安全 suite 是 workflow YAML 的 step，**不在写行的进程里**，本轮不计（它们由 M0 的 `census-profile.mjs` 从 Actions step API 测）。cold/warm **不分组**：schema 没有热标签，不从 attempt 猜。
+- 拒绝集（exit 2，具名）：空输入 / 外来 schema / 坏行（坏 duration、未知 status、非 UTC 时间戳）/ **只有非 census 行**（`phase=leg` 名叫 census 也不算分解）。`--self-test` 26 cases。
+
+**4. (B) 缓存键：`sha256:` over canonical JSON 的九个 §3 字段**，每个都从真实文件/对象派生（`tests/paths.mjs` 的 pin、host 树 `pnpm-lock.yaml`、`census-runtime.yml` 的 host build **step 文本**、本仓 `pnpm-lock.yaml`、`tsconfig.base.json` + 两条 build step、`git rev-parse HEAD^{tree}`）；字段顺序不改键、**任一字段变化必改键**（九项逐一测）；**推不出来的 fact = exit 2 拒绝**，绝不填占位符；host 检出与 pin 不一致 = `HOST_CHECKOUT_DRIFT` 拒绝。`verifyHostArtifact` 三判决：**OK / INFRA_ERROR / MISS**——入口 `apps/cli/lib/bin.js` 必须存在且是文件、`host-artifact.json` 必须可读、`host_commit`/`host_lock_digest`/`toolchain_config_digest`（及整键）必须与期望相等、**文件数 + 全树清单摘要**必须与记录相等；**期望缺 fact 也是 INFRA_ERROR（缺期望 ≠ 任何制品都匹配）**；目录不存在是 **MISS**（「去构建」）而非 INFRA_ERROR（「找到的东西不许用」）。写窄：它证明不了「产物由那个 commit 构建」——只证明记录身份 + 内容摘要，摘要是摘要不是签名，也不能证明可运行。
+
+**5. 接线（按 M1 既有模式，不新增第二份名单）**：两个新 `node:test` 套件接进 **同一个** `ci-integration` leg 的 `node --test` 行（`test-catalog.test.mjs` + `tinf-timing.test.mjs` + `host-cache-key.test.mjs`）与 **同一个** manifest leg 的 `check[]`（leg id/why 同步陈述 M3）；`eb3-ci-required` = `pass workflows=10 findings=0`。`--max-uncollected 91` 仍 exit 0：**新文件必须被收集**，raised 数字不允许。
+
+**6. 门禁（本 head 实测）**：两个新套件 `36/36`；`test-catalog.mjs --max-uncollected 91` exit 0、`tests=862`、`UNCOLLECTED=91`、digest `sha256:1b2f3bc521f8b4ea6599b24c030a55f52c5dfc0b69d127c5f41e88456968be46`；`test-catalog.test.mjs` 19/19、`tinf-m0.test.mjs` 13/13（均未改）；`census-profile --self-test` PASS 8；`tinf-timing --self-test` PASS 26；`host-cache-key --self-test` PASS 13；eslint 5 文件 0 problems；`docs:sync --check` findings=0。**CLI 实跑**：`--summarize` 对 3 roots × 2 attempts 的真实 TSV 出报告（`evidence/tinf-m3-20261114/summarize-demo.txt`）；`--verify` 对**合成**宿主树 OK / 一字节改动 INFRA_ERROR / 缺目录 MISS（**本机没有 pristine host，也没有 `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`**，真实树校验留到切换前第二步，证据里已标注「合成」）。
+
+**7. 边界**：CORE PATCH BUDGET = 0（`packages/**` 零改动，p4t6 booking 不需条目）；未动 Authority / Candidate / release 状态 / 三个 Required contexts / concurrency / 保护规则；未新增/删除名测试名单；memo = `docs/plans/memo/tinf-m3-timing-hostcache-20261114/README.md`（含未做列表与回滚：删两个脚本 + 两个测试 + 接线行即回滚）。
