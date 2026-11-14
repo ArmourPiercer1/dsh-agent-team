@@ -280,9 +280,11 @@ export function rootOf(file) {
   const p = String(file ?? '').replace(/\\/g, '/')
   const pkgs = p.lastIndexOf('/packages/')
   let rel = pkgs >= 0 ? p.slice(pkgs + 1) : p
-  if (pkgs < 0 && /(^|\/)tests\//.test(rel)) {
-    const at = rel.indexOf('tests/')
-    rel = rel.slice(at)
+  if (pkgs < 0) {
+    // LAST `/tests/`, not the first: a runner prefix such as
+    // /home/runner/work/tests/repo/tests/checks/x.test.ts must still resolve to tests/checks.
+    const at = p.lastIndexOf('/tests/')
+    if (at >= 0) rel = p.slice(at + 1)
   }
   // A lane directory under `tests/` wins over any nested `/test/` further down: the root is
   // `tests/<lane>` regardless of how deep the file is.
@@ -388,7 +390,9 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
   const failedRoots = new Map()
   const failed = []
   for (const r of list) {
-    if (r.status !== 'ok') {
+    // A row that says `ok` but carries a non-number is a broken instrument, not a duration: treat it
+    // like a failed row so it cannot poison a statistic with NaN.
+    if (r.status !== 'ok' || !Number.isFinite(Number(r.duration_ms))) {
       // A row whose status is not `ok` is NOT a duration. Rendering it as 0 ms would be exactly the
       // wrong answer this tool refuses; it is surfaced by name instead and kept out of every stat.
       failed.push({ phase: r.phase, root: r.root, attempt: r.attempt, status: r.status })
@@ -445,7 +449,10 @@ export function summarize(rows, { files = [], problems = [] } = {}) {
     census_roots: censusRoots,
     census_total_ms: captures.reduce((a, b) => a + b, 0),
     census_capture_median_ms: captureMedian,
-    census_attempts: [...new Set(list.filter((r) => CENSUS_PHASES.has(r.phase)).map((r) => r.attempt))].sort((a, b) => a - b),
+    census_attempts: [...new Set(
+      list.filter((r) => CENSUS_PHASES.has(r.phase) && r.status === 'ok' && Number.isFinite(Number(r.duration_ms)))
+        .map((r) => r.attempt),
+    )].sort((a, b) => a - b),
     failed_rows: failed,
     failed_count: failed.length,
     census_root_count: censusRoots.length,
@@ -465,10 +472,13 @@ export function hasCensusRows(rows) {
 }
 
 export function verdictToken(report) {
+  // A root whose median is null (only failed spans) must read `n/a`, never `0`: the token is the
+  // line a reviewer greps, and a 0 there is the "zero-second answer" this file refuses.
   const top = report.census_roots[0]
+  const median = top === undefined || top.median_ms === null ? 'n/a' : String(top.median_ms)
   return `DSH-TINF-TIMING rows=${report.rows} run_ids=${report.run_ids.length} census_capture_ms=${report.census_total_ms}` +
-    ` top_root=${top ? JSON.stringify(top.root) : 'none'} top_median_ms=${top?.median_ms ?? 0}` +
-    ` top_share_of_capture_pct=${top?.share_of_capture_pct ?? 'n/a'}`
+    ` top_root=${top ? JSON.stringify(top.root) : 'none'} top_median_ms=${median}` +
+    ` top_share_of_capture_pct=${top?.share_of_capture_pct ?? 'n/a'} failed_rows=${report.failed_count ?? 0}`
 }
 
 export function render(report) {

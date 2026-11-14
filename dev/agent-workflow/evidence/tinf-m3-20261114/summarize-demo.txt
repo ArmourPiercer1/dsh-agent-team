@@ -11,4 +11,4 @@ census roots (window per root per attempt; roots run concurrently, so shares ove
 census wall clock: 370500 ms across 2 attempt(s) [1, 2]
 cold/warm: NOT distinguished — tinf-timing/1 rows carry no thermal label, so no split is inferred.
 not measured here: host provision/build, repo build, security suite (workflow YAML steps, not this process) — see scripts/census-profile.mjs.
-DSH-TINF-TIMING rows=8 run_ids=1 census_capture_ms=370500 top_root="packages/runtime" top_median_ms=119800 top_share_of_capture_pct=100
+DSH-TINF-TIMING rows=8 run_ids=1 census_capture_ms=370500 top_root="packages/runtime" top_median_ms=119800 top_share_of_capture_pct=100 failed_rows=0

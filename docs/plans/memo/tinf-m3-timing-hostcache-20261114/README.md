@@ -172,7 +172,7 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
 
 | 门 | 结果 |
 | --- | --- |
-| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 43 / pass 43 / fail 0`（20 + 23；两轮审查共新增 7 个） |
+| `node --test scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` | `tests 46 / pass 46 / fail 0`（23 + 23；三轮审查共新增 10 个） |
 | `node scripts/test-catalog.mjs --max-uncollected 91` | exit 0，`tests=862`（`DISCOVERED_AND_COLLECTED 757` / `UNCOLLECTED 91`），`digest=sha256:1b2f3bc521f8b4ea6599b24c030a55f52c5dfc0b69d127c5f41e88456968be46` |
 | `node --test scripts/test-catalog.test.mjs` | `19 / pass 19 / fail 0`（未改动） |
 | `node --test scripts/tinf-m0.test.mjs` | `13 / pass 13 / fail 0`（未改动） |
@@ -217,3 +217,16 @@ node scripts/host-cache-key.mjs --self-test        # 13 cases
    - **不同 host 曾被接受**：只给最小 expectation（三个 digest/commit 字段）时，darwin 产物能验证为 linux host。`platform` 与 `node_version` 现在进入 `IDENTITY_FIELDS`，并有 `platform` 不匹配 → `INFRA_ERROR` 的测试。
    - 「dirty host 被拒绝」此前是**只有代码、没有测试**（测试仓库不在 pin 上，drift 先触发）。加了 `hostPinOverride` 测试缝：先证明 off-pin → `HOST_CHECKOUT_DRIFT`，再把 pin 指到测试仓库自己的 HEAD、弄脏工作树 → `HOST_CHECKOUT_DIRTY`。
    - 「九 root」措辞在源码头注/测试/本 memo 残留处全部改掉（报告的 root 数量是实测值，不是常量）。
+
+## 13. 第三轮审查（再 CHANGES REQUIRED）与修正
+
+第三轮在 `b3a6660b4` 又给 **CHANGES REQUIRED**，blocking 仍是「失败行漏进统计」，这次在 **token 行**：
+
+1. **blocking**：`verdictToken` 用 `top?.median_ms ?? 0`，一个只有失败窗口的 root 会把 `top_median_ms` 写成 `0`（而表格里已显示 FAILED），于是人手 grep 的那一行又变成「零秒答案」。现在 null → `n/a`，token 里还带 `failed_rows=N`，并有测试禁止 `top_median_ms=0` 出现。
+2. 非阻塞已修：
+   - `census_attempts` 不再把「只有失败行」的 attempt 算成已测量的 capture attempt。
+   - 直接调 `summarize()` 传入 `status=ok` 但非数字的 duration（`'fast'`）→ 按失败行处理，不再产生 `NaN`。
+   - `rootOf` 的 lane 判定改用**最后**一个 `/tests/`：`/home/runner/work/tests/repo/tests/checks/x.test.ts` 仍解析为 `tests/checks`，不会被前缀里的 `tests` 劫持。
+   - 测试头注里的「nine-root」措辞一并清除。
+3. 审查确认已修好的部分：baseSum 的 repro（ok 1000 + failed 1000 → 100%）、1102 个文件的 `rootOf` 扫描（24 个 root、0 个越界、27 个 `unknown`）、dirty-at-pin 真正走到 `HOST_CHECKOUT_DIRTY`、`platform`/`node_version` 不匹配 → `INFRA_ERROR`。
+4. 仍未直接比较的字段（`pnpm_version`、`host_build_flags_digest`）会经由 `toolchain_config_digest` 与 `host_key` 间接覆盖；审查判定不 blocking，此限制已写在 §7.1。

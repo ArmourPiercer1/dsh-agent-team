@@ -8,7 +8,7 @@
  *   - an unwritable timing dir is a WARNING — a broken clock may never redden a green census;
  *   - the summarizer REFUSES empty, foreign, tampered and census-less input with exit 2, because a
  *     zero-second report is a wrong answer (same rule as census-profile.mjs);
- *   - the nine-root decomposition is DERIVED from the vitest report (the roots run concurrently in
+ *   - the per-root decomposition is DERIVED from the vitest report (the roots run concurrently in
  *     one process), and a root with no readable span is `failed`, never a 0 ms `ok`.
  *
  * Host-free: pure functions + mkdtemp fixtures + three cheap `node` spawns. No port, no DSH_HOME,
@@ -347,4 +347,36 @@ test('summarize: a failed row never enters the denominator (shares are not dilut
   assert.equal(capture.share_pct, 100)
   assert.equal(report.failed_count, 1)
   assert.equal(report.failed_rows[0].phase, 'leg')
+})
+
+test('token: a root with only failed spans reads n/a, never 0 ms', () => {
+  const rows = [
+    { ...BASE_ROW, phase: 'census-capture', duration_ms: '1000', status: 'ok' },
+    { ...BASE_ROW, phase: 'census-root', root: 'packages/domain', duration_ms: '0', status: 'failed' },
+  ]
+  const report = summarize(rows)
+  const token = verdictToken(report)
+  assert.doesNotMatch(token, /top_median_ms=0(\s|$)/)
+  assert.match(token, /top_median_ms=n\/a/)
+  assert.match(token, /failed_rows=1/)
+  // ... and the human report carries the same token line, so the two cannot disagree.
+  assert.ok(render(report).includes('top_median_ms=n/a'))
+})
+
+test('summarize: a row that claims ok but carries a non-number is treated as failed, not NaN', () => {
+  const rows = [
+    { ...BASE_ROW, phase: 'census-capture', duration_ms: '1000', status: 'ok' },
+    { ...BASE_ROW, phase: 'census-root', root: 'packages/domain', duration_ms: 'fast', status: 'ok' },
+  ]
+  const report = summarize(rows)
+  assert.equal(report.failed_count, 1)
+  assert.equal(report.census_roots[0].root, 'packages/domain')
+  assert.equal(report.census_roots[0].n, 0)
+  for (const phase of report.phases) assert.ok(Number.isFinite(phase.sum_ms), phase.phase)
+  // A failed-only attempt is not counted as a measured capture attempt.
+  assert.deepEqual(report.census_attempts, ['1'])
+})
+
+test('rootOf: a runner prefix containing tests/ does not hijack the lane root', () => {
+  assert.equal(rootOf('/home/runner/work/tests/repo/tests/checks/x.test.ts'), 'tests/checks')
 })
