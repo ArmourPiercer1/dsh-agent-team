@@ -4,7 +4,19 @@
 
 ## 1. 性能先有剖析再有缓存
 
-当前 Ready CI 约 24min；CI 工作包括 checkout、Host provision、Host build、Product install/build、宿主安全 suite、九 root census、transcript grading。项目 #762 尚无充分的 step 级耗时，**不能断言** 24 分钟大部分是构建。
+当前 Ready CI 约 24min；CI 工作包括 checkout、Host provision、Host build、Product install/build、宿主安全 suite、九 root census、transcript grading。
+
+**已有步骤级实测（2026-11-14 修正 #762 的前提）**：GitHub Actions 的 jobs API 返回每个 step 的 `started_at`/`completed_at`，所以阶段墙钟不需要任何工作流改动就能测——#762 所称"无 step 级耗时"不成立。样本 run `43459947311`（ci-required，success，2026-11-13，job `ci-census / census-runtime`）：
+
+| step | 墙钟 |
+| --- | --- |
+| Host provision + build（TEST_METHODS §2 链） | 272 s（16:10:44→16:15:16） |
+| Product build（packages + composition） | 22 s |
+| 宿主安全 suite | 2 s |
+| 九 root census（两次 capture） | 1108 s（16:15:40→16:34:08） |
+| job 总计 | ≈1422 s（23m42s） |
+
+即 census 占 78%、Host build 占 19%、Product build 占 1.6%；仅凭 Host build 缓存最多省 ~4.5 min（19%），"24 分钟大部分是构建"是**错的**。样本 n=1，M0 的 `scripts/census-profile.mjs` 必须按 N 个 run 报告分位数后再据此排优先级。真正的未知量只剩 census 内部九个 root 的分解（Actions step 不暴露这一层），这由 M3 的 harness 级计时补齐，不是靠猜。
 
 首先记录：每一阶段墙钟、CPU/runner、下载字节、cache hit/miss、runner OS、Host/Product 构建身份、耗时分位数。必须分别测 cold/warm 与成功/失败路径。
 

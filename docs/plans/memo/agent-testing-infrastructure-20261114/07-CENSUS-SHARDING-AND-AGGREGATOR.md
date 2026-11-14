@@ -66,7 +66,7 @@ GitHub Actions matrix `fail-fast: false` 用于在一个 shard FAIL 时保留其
 4. 校验预期 task ID 多重集与观察结果一致、每个任务有终态。
 5. 校验所有必需 Oracle 合同结果都可判定且通过。
 6. 任一失败/超时/取消/环境拒绝不绿；全部通过才产生 PASS。
-7. 聚合结果作为 **ci-census** 的唯一执行汇总，由现有 `ci-required` 消费；Aggregator 本身不成为独立分支保护权威。
+7. 聚合结果作为 **ci-census** 的唯一执行汇总。实际消费路径是：census job 输出 layer verdict token，`ci-required` 的 `eb3-ci-required.mjs` 按 job 结果与 `needs` 判形（`eb3-merge-tree.mjs --grade-needs`），**不存在**一个被聚合器写入、再由 `ci-required` 读取的 aggregate artifact；若未来需要该 artifact，必须显式改 manifest 形状并过负控。Aggregator 本身不成为独立分支保护权威。
 
 ## 6. Shadow 对照迁移
 

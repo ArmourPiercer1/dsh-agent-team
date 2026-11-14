@@ -4,17 +4,27 @@
 
 ## 0. 交付方式与依赖
 
-本 PR 为设计文档，不在这里改任何运行机制。后续按 M0–M6 切小型 Draft PR；每个 PR 有范围、基线 SHA、变更前后对照、显式未覆盖面、负控和回滚。保留单一实施负责人对合并门负责；并行实现可以拆 lane，但不能同时维护两个相互矛盾的测试集合同源。
+本 PR 为设计文档，不在这里改任何运行机制。后续按 M0–M6 推进，每个 milestone 一个 Draft PR（milestone 内的多个 item 各自独立 commit、可独立回滚，不拆成互相阻塞的 PR）；每个 PR 有范围、基线 SHA、变更前后对照、显式未覆盖面、负控和回滚。保留单一实施负责人对合并门负责；并行实现可以拆 lane，但不能同时维护两个相互矛盾的测试集合同源。
 
 建议依赖关系：`M0 → M1 → M2`；`M0 → M3 → M4`；`M1 + M2 + M4 → M5`；最终 `M6` 精简旧机制。M2/M3 可部分并行，但不得在 M1 验证前替换原始门禁。
 
 ## M0 — 已有 baseline PR 修复与真实 profiling
 
-**范围**：#759 的 ready-helper 假通过；#761 的 numstat 行数/字节误计；#764 的检测口径纠正，不使用 kit=zero tests 的方案；#760 保持只读、避免历史元数据永久阻塞；#762 B1 profiling 先做；#763 发布独立不作为基础设施合并门；复审 #530 收集门禁是否可复用。
+**范围（一个 Draft PR，内含 5 个可独立回滚的 item；不是 5 个 PR）**：把 #759/#761/#764/#762-B1 的缺陷修正在 master 上重写落地，并对 #530 的收集门禁做复用复审。#760 保持只读（不落地、不作合并门）、#763 保持发布独立（不进基础设施合并门）。
 
-交付：精确修改/风险清单、实际测量命令、一个受支持的性能报表、当前可收集测试集合与未收集/豁免 audit。
+| # | item | 目标文件 / 符号 | 交付 | 负控（故意制造 → 期望） |
+| --- | --- | --- | --- | --- |
+| 1 | ready-helper 五处假通过 | `scripts/pr-ready-check.mjs`：`evaluate()` 的 R3/R4/R7/R8、`newestCheck()`、`gather()`（分页） | 五个 refusal 码 + `--self-test`（11 cases） | 未推送 head→`BRANCH_NOT_PUSHED`；陈旧本地 HEAD→`LOCAL_HEAD_NOT_PR_HEAD`；merge state unknown→`STATE_UNKNOWN`；pending 新 attempt→`LAYER_*_IN_PROGRESS`；>100 comments 仍能找到 settlement |
+| 2 | 证据预算行数当字节 | `scripts/evidence-budget.mjs`：`bytesAtCommit()`、`parseBatchCheckOrdered()`、`commitsReport()` | 用 object DB 真实字节（二进制按真实大小计）、窗口字面等于 last-N first-parent | 二进制证据文件不再记 0；窗口 30 时 `with_evidence` 必须 < 30 |
+| 3 | 未定覆盖率口径 | `scripts/coverage-audit.mjs`：`reasonOf()`、`summarizeAudit()` | 原因直方图（kit-runner / uncatalogued-script / root-scratch / other），**不**把 kit 归为 evidence-only，**不**改 exit 2 | 改动中的 `tests/kits/**` 仍为 undetermined 且 reason=kit-runner（不是 determined/0 tests） |
+| 4 | 未收集测试集合 | 新 `scripts/test-collection-audit.mjs`；复用 #530 的"tracked suite 必须 collected-or-exempt"判定形状，不落地其 gate | collected / uncollected / exempt 清单 + `--strict` | `git add -N tests/checks/x.test.mjs` 后立即出现在 UNCOLLECTED |
+| 5 | step 级 profiling | 新 `scripts/census-profile.mjs`（读 Actions jobs API） | 单一受支持报表：N 个成功 census job 的 step 中位数/占比（md/txt，见 §0 证据配额） | 缺 `started_at`/全 skipped 的 run 必须拒绝或忽略，不得算作 0 秒 |
 
-Acceptance：预先故意制造未推送 PR head、错误 Git 状态、二进制证据文件、未收集 Node 测试，每种问题被各自工具看见；L2 semantics 未变。无运行时代码/Authority 修改。
+**#530 复用复审结论**：#530 仍为 OPEN（未合并），其 `scripts/eb3-node-test-collection.mjs` + manifest 例外表是"再写一份手工名单"的实现，且其 38 文件基线已过时（当前 103 个 tracked `*.test.mjs`）。M0 只复用其判定（tracked suite 必须被收集或有 reason+review 的豁免），以只读审计形式落地；M1 用自动发现替换。
+
+**Acceptance**：上表 5 个负控全部按期望变红；`--self-test` 全绿；L2 semantics 未变（三个 Required contexts、fail-closed、census 组成、deferral 均未触碰）；无运行时代码 / Authority / workflow 语义修改（若把 M0 测试文件接入 `ci-integration`，只增加一个 leg，manifest 与 workflow 同步且 `eb3-ci-required.mjs` 形状自检通过）。
+
+**证据配额**：`dev/agent-workflow/evidence` 的已提交 `.json` 当前 5995 个，`scripts/integration-order.mjs` 的 `BOUNDS.maxCandidates = 6000`，只剩 5 个名额。M0 及其后的证据一律用 `.md`/`.txt`/`.tsv`，多份 JSON 合并进单个文件；超过配额会让 integration-order 审计直接拒绝。
 
 ## M1 — Test Catalog 与 Runner Dispatch（shadow）
 

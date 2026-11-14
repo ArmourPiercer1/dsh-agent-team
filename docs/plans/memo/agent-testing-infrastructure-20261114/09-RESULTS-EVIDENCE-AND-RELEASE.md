@@ -9,6 +9,10 @@
 
 此设计不会创建新的 Candidate authority，也不更改已有验收记录。
 
+### 1.1 证据配额（硬约束）
+
+`.json` 证据受 `scripts/integration-order.mjs` 的 `BOUNDS.maxCandidates = 6000` 约束（当前已提交 5995 个，剩 5 个名额）。因此：新证据默认用 `.md`/`.txt`/`.tsv`；同一次运行的多个 JSON 合并成一个文件再提交；任何新增 `.json` 必须先证明配额仍有余量，否则 integration-order 审计会把 PR 判红。这不是风格偏好，是会让门禁拒绝的硬上限。
+
 ## 2. 测试执行的终态集合（建议）
 
 | Run terminal | 定义 | L2 必需任务能否视为通过 |
