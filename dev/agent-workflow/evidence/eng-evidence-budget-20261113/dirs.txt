@@ -1,0 +1,22 @@
+evidence-budget dirs: n=413 total=151.0 MiB p50=52.0 KiB p90=982.2 KiB max=6.5 MiB cap=2.0 MiB over_cap=26
+    6.5 MiB    342 file(s)  a5sf-pty-devlive
+    4.7 MiB    522 file(s)  a5sf-pd30-web-preview
+    4.3 MiB     50 file(s)  a5w-bootwave-20261030
+    4.3 MiB    230 file(s)  v016-acceptance
+    4.0 MiB      1 file(s)  RELOCATED-MANIFEST.tsv
+    3.9 MiB     92 file(s)  pd20-lifecycle
+    3.6 MiB    365 file(s)  a5sf-recon-web
+    3.5 MiB    353 file(s)  a5sf-pd29-service-seam
+    3.2 MiB    214 file(s)  a5sf-web-devlive
+    3.1 MiB    373 file(s)  candidate-v0.1.6-3
+    3.0 MiB     93 file(s)  u7r3-xval-20261030
+    3.0 MiB    347 file(s)  c2-adjudication-2
+    3.0 MiB     82 file(s)  a5sf-pd33-preview-e2e
+    2.8 MiB     73 file(s)  a5sf-recon-shell
+    2.7 MiB     73 file(s)  u7-w0b-20261026
+    2.6 MiB    178 file(s)  a4-pr7
+    2.4 MiB     33 file(s)  a5sf-pd29-goal-stop
+    2.3 MiB    239 file(s)  alpha5
+    2.3 MiB    159 file(s)  a5sf-pd24-surface-ledger
+    2.3 MiB     52 file(s)  u6-pr2-20261025
+DSH-EVIDENCE-BUDGET mode=dirs n=413 p50=53219 p90=1005739 max=6864647 cap=2097152 over_cap=26
