@@ -1,0 +1,13 @@
+{
+  "schema": "host-cache-key/1",
+  "host_build_flags_digest": "sha256:f91782ac902102852e7b9e06719c5c70f608eb16a7d3a37b2639a5ac548383bf",
+  "host_commit": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "host_lock_digest": "sha256:fa76eb5780407271c7a2da0f4d510f4e802b33ae88363357ec1cf87cfe889e39",
+  "node_version": "v24.21.0",
+  "platform": "linux-x64",
+  "pnpm_version": "11.7.0",
+  "product_lock_digest": "sha256:8321621221cd48e8edb91c1a1b80f8cba55f47818a2030e99a130e4c6ca220fd",
+  "product_merge_tree": "384ae0a40f37a75da636569b65efe5631bef8b5a",
+  "toolchain_config_digest": "sha256:fc7246995a6fbb22eee6ea377f44cce4a1176d3bd8c34763323e9fb9fcc98492",
+  "key": "sha256:1bc65ad2b483582210de9897b66339203cd2fdfc2ea4bec810f1a2694349a928"
+}

@@ -206,7 +206,7 @@ jobs:
         # CI_LAYER_LEG_WEAKENED.
         run: node --test scripts/tinf-m0.test.mjs
 
-      - name: "test catalog (TINF M1 — shadow, host-free)"
+      - name: "test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache — host-free)"
         # M1 delivers discovery, not authority: the workflow file lists and
         # dev/ci/eb3-ci-manifest.json stay the only things that decide what runs
         # (M5 moves that). This leg proves the catalog's classifications and its
@@ -216,8 +216,16 @@ jobs:
         # commands below, so the suite itself reads this workflow and asserts that
         # deleting the ratchet line fails — see 'the CI step that runs this suite
         # also runs the ratchet' in scripts/test-catalog.test.mjs.
+        # TINF M3 (2026-11-14) joins the SAME node --test invocation and the SAME
+        # manifest check[] entry: scripts/tinf-timing.test.mjs (the shadow census
+        # timer: failed rows re-throw, the summarizer refuses empty/foreign/tampered/
+        # census-less input) and scripts/host-cache-key.test.mjs (the host cache key
+        # is canonical, a missing fact refuses, verification answers OK only after
+        # entry point + identity + file count + tree digest agree, and MISS for an
+        # absent tree). Both host-free. Dropping either file from this line or from
+        # the manifest's check[] is CI_LAYER_LEG_WEAKENED — the same law M1 landed.
         run: |
-          node --test scripts/test-catalog.test.mjs
+          node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs
           node scripts/test-catalog.mjs --max-uncollected 91
 
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"

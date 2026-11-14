@@ -1,0 +1,1 @@
+DSH-HOST-CACHE-RECORD verdict=RECORDED dir=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m3/dev/agent-workflow/evidence/tinf-m3-20261114/synthetic-host key=sha256:1bc65ad2b483582210de9897b66339203cd2fdfc2ea4bec810f1a2694349a928 files=3 manifest=sha256:5bbacb331f3d096d71d68e529486773c4785a8d389b6f56829ea5b1f81af104c

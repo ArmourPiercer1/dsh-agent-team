@@ -1,0 +1,1 @@
+REFUSED HOST_CACHE_FACT_MISSING: host_lock_digest: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m3/tests/deepseek-harness-test-use/pnpm-lock.yaml is absent (provision/build the host, or pass --host-dir)

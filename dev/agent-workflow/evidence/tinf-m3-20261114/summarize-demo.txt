@@ -1,0 +1,14 @@
+tinf-timing (tinf-timing/1) files=1 rows=8 runs=1 [demo-synthetic-2x3]
+phases (share = phase sum / sum of non-derived rows; census-root rows are derived windows and excluded from the denominator):
+       n  median_ms    p90_ms      sum_ms  share  phase
+      6      60500     249500       609500   n/a  census-root
+      2     120000     250500       370500  100%  census-capture
+census roots (window per root per attempt; roots run concurrently, so shares overlap and may sum past 100%):
+       n  median_ms    p90_ms  share_of_capture  root
+      2     119800     249500             100%  packages/runtime
+      2      60000      90000              50%  packages/domain
+      2      29700      60500              25%  packages/storage
+census wall clock: 370500 ms across 2 attempt(s) [1, 2]
+cold/warm: NOT distinguished — tinf-timing/1 rows carry no thermal label, so no split is inferred.
+not measured here: host provision/build, repo build, security suite (workflow YAML steps, not this process) — see scripts/census-profile.mjs.
+DSH-TINF-TIMING rows=8 run_ids=1 census_capture_ms=370500 top_root="packages/runtime" top_median_ms=119800 top_share_of_capture_pct=100
