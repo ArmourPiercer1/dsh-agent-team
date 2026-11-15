@@ -8,20 +8,25 @@
  * the contract oracle refuses to grade a contract it cannot see instead of
  * reading "no filesystem write" as "no effect anywhere".
  *
- * PROVENANCE IS A PROPERTY OF AN INSTRUMENT INSTANCE (M7-A, corrected). A row
+ * PROVENANCE IS IDENTITY, NOT A PROPERTY LOOKUP (M7-A, corrected twice). A row
  * is not evidence because it has the right SHAPE: the first seal was attached
- * to whatever `observe()` returned, so `createBlindWitness(anythingWithObserve,
- * [])` could stamp a caller-supplied object and the oracle accepted the result
- * as `witnessed`. Now the module keeps a private `WeakSet` of the witness
- * INSTANCES it created, every row carries a non-enumerable reference to the
- * instance that produced it, and `isSealedWitnessObservation` answers true only
- * when that referenced instance is still in the set. Consequences: (a) a
- * hand-built row has no reference and fails; (b) a blind wrapper over a
- * non-instrument REFUSES to be constructed (`createBlindWitness` throws), so no
- * exported function can turn an arbitrary object into a witnessed row; (c) rows
- * are frozen, so a sealed row cannot be edited into a different observation;
- * (d) the reference does not survive JSON, so a replayed evidence file is
- * unsealed by construction.
+ * to whatever `observe()` returned (so `createBlindWitness(anythingWithObserve,
+ * [])` could stamp a caller-supplied object); the second read a symbol off the
+ * row, which `Object.create(sealedRow)` inherits — so a derived object with a
+ * different `observed` value still looked sealed.
+ *
+ * Now the module keeps a private `WeakMap<row, instrument>` populated only by
+ * the instrument that BUILT the row (never by a prototype), plus a private
+ * `WeakSet` of the instrument instances it constructed. A row is sealed only if
+ * all of these hold: it is in the WeakMap; its instrument is in the WeakSet; its
+ * prototype is exactly `Object.prototype` (no inherited fake); and the row and
+ * its arrays (`evidence`, `watchedPaths`, `observedPaths`) are frozen.
+ * Consequences: (a) a hand-built row is absent from the WeakMap; (b)
+ * `Object.create(sealedRow)` is a different identity, and its prototype is not
+ * `Object.prototype`, so it fails; (c) a blind wrapper over a non-instrument
+ * REFUSES to be constructed; (d) rows are frozen, so even a sealed row cannot
+ * be edited into a different observation; (e) nothing survives JSON, so a
+ * replayed evidence file is unsealed by construction.
  *
  * SCOPE (M7-A, corrected). A witness watches PATHS, not "the filesystem". Every
  * row therefore declares the absolute paths its instrument actually watched
@@ -47,7 +52,7 @@
  * @module @dsh-agent-team/testkit/effect-witness
  */
 import { createHash } from 'node:crypto'
-import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync } from 'node:fs'
+import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 
 /** The effect domains a contract can be graded over. */
@@ -109,8 +114,12 @@ type EntryIdentity = string
  */
 const INSTRUMENTS = new WeakSet<object>()
 
-/** Non-enumerable link from a row to the instrument instance that produced it. */
-const WITNESS_INSTRUMENT = Symbol('@dsh-agent-team/testkit/effect-witness/instrument')
+/**
+ * The rows this module actually BUILT, mapped to the instrument that built
+ * them. A `WeakMap` is keyed by object IDENTITY, so a prototype chain cannot
+ * carry a seal: `Object.create(sealedRow)` is not a key here.
+ */
+const ROWS = new WeakMap<object, object>()
 
 /** Whether `path` is `root` or lies inside it (both absolute, resolved). */
 function coveredBy(path: string, root: string): boolean {
@@ -204,22 +213,43 @@ function instrumentRows(rows: WitnessObservation[], instrument: object): Witness
     Object.freeze(row.evidence)
     if (row.watchedPaths !== undefined) Object.freeze(row.watchedPaths)
     if (row.observedPaths !== undefined) Object.freeze(row.observedPaths)
-    Object.defineProperty(row, WITNESS_INSTRUMENT, { value: instrument, enumerable: false, writable: false })
     Object.freeze(row)
+    ROWS.set(row, instrument)
   }
   return rows
 }
 
 /**
- * Whether one observation row was produced by an instrument INSTANCE this
- * module created (see the module doc: provenance is an instance property).
+ * Whether one observation row was BUILT by an instrument instance this module
+ * created (see the module doc: provenance is identity, not a property lookup).
+ *
+ * The checks are deliberately structural-AND-identity: the row must be the very
+ * object this module froze (WeakMap identity), its prototype must be exactly
+ * `Object.prototype` (so a derived object cannot inherit the identity), its
+ * instrument must still be registered, and the row plus its arrays must be
+ * frozen (so a sealed row cannot be edited). Never throws: a proxy trap or a
+ * hostile getter answers `false`.
  *
  * @param value - any value claiming to be a {@link WitnessObservation}.
  */
 export function isSealedWitnessObservation(value: unknown): boolean {
-  if (typeof value !== 'object' || value === null) return false
-  const instrument = (value as Record<symbol, unknown>)[WITNESS_INSTRUMENT]
-  return typeof instrument === 'object' && instrument !== null && INSTRUMENTS.has(instrument)
+  try {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+    if (Object.getPrototypeOf(value) !== Object.prototype) return false
+    const instrument = ROWS.get(value)
+    if (instrument === undefined || !INSTRUMENTS.has(instrument)) return false
+    if (!Object.isFrozen(value)) return false
+    const row = value as WitnessObservation
+    if (!Array.isArray(row.evidence) || !Object.isFrozen(row.evidence)) return false
+    for (const field of ['watchedPaths', 'observedPaths'] as const) {
+      const paths = row[field]
+      if (paths === undefined) continue
+      if (!Array.isArray(paths) || !Object.isFrozen(paths)) return false
+    }
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -273,15 +303,34 @@ export function createFsWitness(opts: {
   for (const path of requested.map((p) => resolve(p)).sort((a, b) => a.length - b.length)) {
     if (!roots.some((root) => coveredBy(path, root))) roots.push(path)
   }
+  // A watched root that is a SYMLINK would let a caller claim one path while the
+  // effects happen at another: `watch:[/link]` (→ /elsewhere) would report
+  // writes made in /elsewhere under the link's name. Resolve every root and
+  // refuse the indirection instead of silently following it.
+  const realRoots = roots.map((root) => {
+    let real: string
+    try {
+      real = realpathSync(root)
+    } catch (error) {
+      if (errnoCode(error) === 'ENOENT') return root // may be created inside the window; walked with lstat only
+      throw error
+    }
+    if (real !== root) {
+      throw new TypeError(
+        `createFsWitness: the watched root ${root} is a symlink (resolves to ${real}); a witness cannot claim a scope it reaches indirectly — declare the real path`,
+      )
+    }
+    return real
+  })
   const exclude = (opts.exclude ?? []).map((path) => resolve(path))
-  const baseline = snapshot(roots, exclude)
-  const absentAtBaseline = baseline.size === 0 && !roots.some((root) => existsSync(root))
+  const baseline = snapshot(realRoots, exclude)
+  const absentAtBaseline = baseline.size === 0 && !realRoots.some((root) => existsSync(root))
 
   const instrument: EffectWitness = {
     blindDomains: ['process', 'network'],
-    watchedPaths: Object.freeze([...roots]),
+    watchedPaths: Object.freeze([...realRoots]),
     async observe(): Promise<WitnessObservation[]> {
-      const changed = changes(baseline, snapshot(roots, exclude))
+      const changed = changes(baseline, snapshot(realRoots, exclude))
       const listed = changed.slice(0, EVIDENCE_CAP).map((path) => label(path, opts.root))
       const observedPaths = changed.slice(0, OBSERVED_CAP)
       return instrumentRows([
@@ -290,10 +339,10 @@ export function createFsWitness(opts: {
           observed: changed.length > 0,
           instrumented: true,
           evidence: absentAtBaseline
-            ? [...listed, `${label(roots[0] as string, opts.root)} did not exist when the witness was created`]
+            ? [...listed, `${label(realRoots[0] as string, opts.root)} did not exist when the witness was created`]
             : listed,
           ...(changed.length > EVIDENCE_CAP || changed.length > OBSERVED_CAP ? { truncated: true } : {}),
-          watchedPaths: [...roots],
+          watchedPaths: [...realRoots],
           observedPaths,
         },
         {
@@ -301,7 +350,7 @@ export function createFsWitness(opts: {
           observed: false,
           instrumented: false,
           evidence: ['not instrumented by the filesystem witness'],
-          watchedPaths: [...roots],
+          watchedPaths: [...realRoots],
           observedPaths: [],
         },
         {
@@ -309,7 +358,7 @@ export function createFsWitness(opts: {
           observed: false,
           instrumented: false,
           evidence: ['not instrumented by the filesystem witness'],
-          watchedPaths: [...roots],
+          watchedPaths: [...realRoots],
           observedPaths: [],
         },
       ], instrument)

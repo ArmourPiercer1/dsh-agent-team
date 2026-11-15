@@ -42,7 +42,7 @@
  */
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 
-import { areSealedWitnessObservations } from './effect-witness.js'
+import { isSealedWitnessObservation } from './effect-witness.js'
 import type { EffectDomain, WitnessObservation } from './effect-witness.js'
 
 /** Version tag of the oracle input contract. */
@@ -182,12 +182,74 @@ function coveredBy(path: string, root: string): boolean {
   return rel === '' || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`))
 }
 
+/** One witness row, read ONCE so a hostile getter cannot crash grading. */
+interface RowView {
+  domain: EffectDomain
+  observed: boolean
+  instrumented: boolean
+  watchedPaths: string[]
+  /** Whether the row carried an `observedPaths` array at all. */
+  placesEffects: boolean
+  observedPaths: string[]
+  /** The caller's original object, used only for the provenance check. */
+  raw: unknown
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * Read one witness row defensively.
+ *
+ * Every property access happens inside this function's try/catch: a caller can
+ * pass a Proxy whose `get` throws, and a grader that throws instead of returning
+ * a verdict is a denial of service on its own result.
+ */
+function readWitnessRow(value: unknown, index: number): { row: RowView } | { fault: string } {
+  const at = `witness[${index}]`
+  const faults: string[] = []
+  try {
+    if (!isRecord(value)) return { fault: `${at} is not an object` }
+    const domain = value.domain
+    if (!isEffectDomain(domain)) faults.push(`${at}.domain is not an effect domain`)
+    if (typeof value.observed !== 'boolean') faults.push(`${at}.observed must be a boolean`)
+    if (typeof value.instrumented !== 'boolean') faults.push(`${at}.instrumented must be a boolean`)
+    if (!Array.isArray(value.evidence) || value.evidence.some((line) => typeof line !== 'string')) {
+      faults.push(`${at}.evidence must be a string array`)
+    }
+    const readPaths = (field: 'watchedPaths' | 'observedPaths'): string[] | undefined => {
+      const raw = value[field]
+      if (raw === undefined) return undefined
+      if (!Array.isArray(raw) || raw.some((path) => typeof path !== 'string' || path.trim() === '')) {
+        faults.push(`${at}.${field} must be a non-empty-path string array when present`)
+        return undefined
+      }
+      return [...raw]
+    }
+    const watchedPaths = readPaths('watchedPaths')
+    const observedPaths = readPaths('observedPaths')
+    if (faults.length > 0) return { fault: faults.join('; ') }
+    return {
+      row: {
+        domain: domain as EffectDomain,
+        observed: value.observed as boolean,
+        instrumented: value.instrumented as boolean,
+        watchedPaths: watchedPaths ?? [],
+        placesEffects: observedPaths !== undefined,
+        observedPaths: observedPaths ?? [],
+        raw: value,
+      },
+    }
+  } catch (error) {
+    return { fault: `${at} could not be read (a throwing property access is not a witness row): ${messageOf(error)}` }
+  }
+}
+
 /** The blind set the CONTRACT can see: caller list PLUS rows that admit blindness. */
-function effectiveBlindDomains(input: OracleInput): EffectDomain[] {
-  const fromRows = input.witness
-    .filter((row) => isRecord(row) && row.instrumented === false && isEffectDomain(row.domain))
-    .map((row) => row.domain as EffectDomain)
-  return uniqueDomains([...(Array.isArray(input.blindDomains) ? input.blindDomains : []), ...fromRows])
+function blindDomainsOf(rows: readonly RowView[], declared: readonly EffectDomain[]): EffectDomain[] {
+  const fromRows = rows.filter((row) => row.instrumented === false).map((row) => row.domain)
+  return uniqueDomains([...declared, ...fromRows])
 }
 
 function limitationsFor(blindDomains: readonly EffectDomain[], watched: readonly string[], effects: readonly string[]): string[] {
@@ -214,25 +276,26 @@ function limitationsFor(blindDomains: readonly EffectDomain[], watched: readonly
  * what it was pointed at), and coverage can only be reached after the blind and
  * uninstrumented rules have already refused to grade.
  */
-function watchedPathsOf(input: OracleInput, domains: readonly EffectDomain[]): string[] {
-  return uniqueStrings(input.witness
-    .filter((row) => isRecord(row) && isEffectDomain(row.domain) && domains.includes(row.domain))
-    .flatMap((row) => (Array.isArray(row.watchedPaths) ? row.watchedPaths as string[] : [])))
+function watchedPathsOf(rows: readonly RowView[], domains: readonly EffectDomain[]): string[] {
+  return uniqueStrings(rows
+    .filter((row) => domains.includes(row.domain))
+    .flatMap((row) => row.watchedPaths))
 }
 
 /** The absolute paths the witness says changed, across `domains`. */
-function observedPathsOf(input: OracleInput, domains: readonly EffectDomain[]): string[] {
-  return uniqueStrings(input.witness
-    .filter((row) => isRecord(row) && row.observed === true && isEffectDomain(row.domain) && domains.includes(row.domain))
-    .flatMap((row) => (Array.isArray(row.observedPaths) ? row.observedPaths as string[] : [])))
+function observedPathsOf(rows: readonly RowView[], domains: readonly EffectDomain[]): string[] {
+  return uniqueStrings(rows
+    .filter((row) => row.observed && domains.includes(row.domain))
+    .flatMap((row) => row.observedPaths))
 }
 
-/** Runtime validation of the trace and witness; returns human-readable faults. */
-function instrumentFaults(input: OracleInput): string[] {
+/**
+ * Runtime validation of the trace and witness; returns the sanitised rows and
+ * human-readable faults. Never throws: every caller-supplied read is guarded.
+ */
+function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[] } {
   const faults: string[] = []
-  if (!Array.isArray(input.events)) faults.push('events must be an array')
-  if (!Array.isArray(input.witness)) faults.push('witness must be an array')
-  if (!Array.isArray(input.blindDomains)) faults.push('blindDomains must be an array')
+  const rows: RowView[] = []
   if (typeof input.contractId !== 'string' || input.contractId.length === 0) {
     faults.push('contractId must be a non-empty string')
   }
@@ -242,99 +305,121 @@ function instrumentFaults(input: OracleInput): string[] {
   if (input.witnessProvenance !== undefined && input.witnessProvenance !== 'declared' && input.witnessProvenance !== 'witnessed') {
     faults.push(`witnessProvenance must be "declared" or "witnessed" (got ${JSON.stringify(String(input.witnessProvenance))})`)
   }
-  if (faults.length > 0) return faults
 
-  if (input.witness.length === 0) faults.push('witness is empty: a trace alone is not evidence')
-
-  // Provenance (M7-A): in `witnessed` mode every row must come from a real
-  // instrument in the effect-witness module. This is checked before any verdict
-  // logic, so a caller-assembled row can never corroborate cleanliness.
-  if (input.witnessProvenance === 'witnessed' && input.witness.length > 0 && !areSealedWitnessObservations(input.witness)) {
-    const unsealed = input.witness
-      .map((observation, index) => (areSealedWitnessObservations([observation]) ? null : index))
-      .filter((index): index is number => index !== null)
-    faults.push(
-      `witnessProvenance is "witnessed" but witness row(s) ${unsealed.join(', ')} were not produced by a testkit witness instrument (no provenance seal); a hand-built observation cannot corroborate a verdict`,
-    )
+  let witnessList: unknown[] = []
+  try {
+    if (!Array.isArray(input.witness)) faults.push('witness must be an array')
+    else witnessList = [...input.witness]
+  } catch (error) {
+    faults.push(`witness could not be read: ${messageOf(error)}`)
+  }
+  for (const [index, value] of witnessList.entries()) {
+    const read = readWitnessRow(value, index)
+    if ('fault' in read) faults.push(read.fault)
+    else rows.push(read.row)
+  }
+  if (Array.isArray(input.witness) && witnessList.length === 0) {
+    faults.push('witness is empty: a trace alone is not evidence')
   }
 
-  for (const [index, domain] of input.blindDomains.entries()) {
+  // Provenance (M7-A): in `witnessed` mode every row must be an object THIS
+  // module built and froze. Checked before any verdict logic, so a
+  // caller-assembled row (or a `Object.create`d row inheriting a seal) can never
+  // corroborate cleanliness.
+  if (input.witnessProvenance === 'witnessed' && rows.length > 0) {
+    const unsealed = rows
+      .map((row, index) => (isSealedWitnessObservation(row.raw) ? null : index))
+      .filter((index): index is number => index !== null)
+    if (unsealed.length > 0) {
+      faults.push(
+        `witnessProvenance is "witnessed" but witness row(s) ${unsealed.join(', ')} were not produced by a testkit witness instrument (no provenance seal); a hand-built or derived observation cannot corroborate a verdict`,
+      )
+    }
+  }
+
+  let blindList: unknown[] = []
+  try {
+    if (!Array.isArray(input.blindDomains)) faults.push('blindDomains must be an array')
+    else blindList = [...input.blindDomains]
+  } catch (error) {
+    faults.push(`blindDomains could not be read: ${messageOf(error)}`)
+  }
+  for (const [index, domain] of blindList.entries()) {
     if (!isEffectDomain(domain)) faults.push(`blindDomains[${index}] is not an effect domain: ${JSON.stringify(domain)}`)
   }
 
-  let previous = Number.NEGATIVE_INFINITY
-  for (const [index, event] of input.events.entries()) {
-    const at = `events[${index}]`
-    if (!isRecord(event)) {
-      faults.push(`${at} is not an object`)
-      continue
-    }
-    if (typeof event.event_seq !== 'number' || !Number.isFinite(event.event_seq)) {
-      faults.push(`${at}.event_seq must be a finite number`)
-    } else {
-      if (event.event_seq <= previous) {
-        faults.push(`${at}.event_seq ${event.event_seq} is not strictly increasing after ${previous}`)
-      }
-      previous = event.event_seq
-    }
-    if (typeof event.event_type !== 'string' || event.event_type.length === 0) {
-      faults.push(`${at}.event_type must be a non-empty string`)
-    }
-    if (event.outcome !== undefined && typeof event.outcome !== 'string') {
-      faults.push(`${at}.outcome must be a string when present`)
-    }
-    if (event.actor_id !== undefined && typeof event.actor_id !== 'string') {
-      faults.push(`${at}.actor_id must be a string when present`)
-    }
-    if (event.authority_ref !== undefined && event.authority_ref !== null && typeof event.authority_ref !== 'string') {
-      faults.push(`${at}.authority_ref must be a string or null`)
-    }
-    // The identity rule needs the actor on any event whose authority names one.
-    if (typeof event.authority_ref === 'string' && event.authority_ref.length > 0 && event.actor_id === undefined) {
-      faults.push(`${at} names authority_ref ${JSON.stringify(event.authority_ref)} without actor_id; the identity rule needs both`)
-    }
+  let events: unknown[] = []
+  try {
+    if (!Array.isArray(input.events)) faults.push('events must be an array')
+    else events = [...input.events]
+  } catch (error) {
+    faults.push(`events could not be read: ${messageOf(error)}`)
   }
-
-  for (const [index, observation] of input.witness.entries()) {
-    const at = `witness[${index}]`
-    if (!isRecord(observation)) {
-      faults.push(`${at} is not an object`)
-      continue
-    }
-    if (!isEffectDomain(observation.domain)) faults.push(`${at}.domain is not an effect domain`)
-    if (typeof observation.observed !== 'boolean') faults.push(`${at}.observed must be a boolean`)
-    if (!Array.isArray(observation.evidence) || observation.evidence.some((line) => typeof line !== 'string')) {
-      faults.push(`${at}.evidence must be a string array`)
-    }
-    for (const field of ['watchedPaths', 'observedPaths'] as const) {
-      const value = (observation as Record<string, unknown>)[field]
-      if (value === undefined) continue
-      if (!Array.isArray(value) || value.some((path) => typeof path !== 'string' || path.trim() === '')) {
-        faults.push(`${at}.${field} must be a non-empty-path string array when present`)
+  let previous = Number.NEGATIVE_INFINITY
+  for (const [index, event] of events.entries()) {
+    const at = `events[${index}]`
+    try {
+      if (!isRecord(event)) {
+        faults.push(`${at} is not an object`)
+        continue
       }
+      if (typeof event.event_seq !== 'number' || !Number.isFinite(event.event_seq)) {
+        faults.push(`${at}.event_seq must be a finite number`)
+      } else {
+        if (event.event_seq <= previous) {
+          faults.push(`${at}.event_seq ${event.event_seq} is not strictly increasing after ${previous}`)
+        }
+        previous = event.event_seq
+      }
+      if (typeof event.event_type !== 'string' || event.event_type.length === 0) {
+        faults.push(`${at}.event_type must be a non-empty string`)
+      }
+      if (event.outcome !== undefined && typeof event.outcome !== 'string') {
+        faults.push(`${at}.outcome must be a string when present`)
+      }
+      if (event.actor_id !== undefined && typeof event.actor_id !== 'string') {
+        faults.push(`${at}.actor_id must be a string when present`)
+      }
+      if (event.authority_ref !== undefined && event.authority_ref !== null && typeof event.authority_ref !== 'string') {
+        faults.push(`${at}.authority_ref must be a string or null`)
+      }
+      // The identity rule needs the actor on any event whose authority names one.
+      if (typeof event.authority_ref === 'string' && event.authority_ref.length > 0 && event.actor_id === undefined) {
+        faults.push(`${at} names authority_ref ${JSON.stringify(event.authority_ref)} without actor_id; the identity rule needs both`)
+      }
+    } catch (error) {
+      faults.push(`${at} could not be read: ${messageOf(error)}`)
     }
   }
 
   if (input.requiredEffectDomains !== undefined) {
-    if (!Array.isArray(input.requiredEffectDomains)) {
-      faults.push('requiredEffectDomains must be an array when present')
-    } else {
-      for (const [index, domain] of input.requiredEffectDomains.entries()) {
-        if (!isEffectDomain(domain)) {
-          faults.push(`requiredEffectDomains[${index}] is not an effect domain: ${JSON.stringify(domain)}`)
+    try {
+      if (!Array.isArray(input.requiredEffectDomains)) {
+        faults.push('requiredEffectDomains must be an array when present')
+      } else {
+        for (const [index, domain] of [...input.requiredEffectDomains].entries()) {
+          if (!isEffectDomain(domain)) {
+            faults.push(`requiredEffectDomains[${index}] is not an effect domain: ${JSON.stringify(domain)}`)
+          }
         }
       }
+    } catch (error) {
+      faults.push(`requiredEffectDomains could not be read: ${messageOf(error)}`)
     }
   }
   for (const field of ['requiredEffectScope', 'authorizedEffectPaths', 'forbiddenEffectPaths'] as const) {
-    const value = input[field]
-    if (value === undefined) continue
-    if (!Array.isArray(value)) {
-      faults.push(`${field} must be an array when present`)
-      continue
-    }
-    for (const [index, path] of value.entries()) {
-      if (typeof path !== 'string' || path.trim() === '') faults.push(`${field}[${index}] must be a non-empty path string`)
+    try {
+      const value = input[field]
+      if (value === undefined) continue
+      if (!Array.isArray(value)) {
+        faults.push(`${field} must be an array when present`)
+        continue
+      }
+      for (const [index, path] of [...value].entries()) {
+        if (typeof path !== 'string' || path.trim() === '') faults.push(`${field}[${index}] must be a non-empty path string`)
+      }
+    } catch (error) {
+      faults.push(`${field} could not be read: ${messageOf(error)}`)
     }
   }
   if (input.witnessProvenance === 'witnessed' && (input.requiredEffectScope === undefined || input.requiredEffectScope.length === 0)) {
@@ -343,7 +428,7 @@ function instrumentFaults(input: OracleInput): string[] {
     // unknown. Requiring the declaration keeps the two facts together.
     faults.push('witnessProvenance is "witnessed" but the contract declares no requiredEffectScope: a witnessed row without a declared watch scope cannot corroborate a whole-domain claim')
   }
-  return faults
+  return { rows, faults }
 }
 
 /**
@@ -353,22 +438,46 @@ function instrumentFaults(input: OracleInput): string[] {
  * @returns verdict plus the reasons and the uninstrumented-domain limitations.
  */
 export function judgeContract(input: OracleInput): OracleJudgement {
-  const witnessRows = Array.isArray(input.witness) ? input.witness : []
+  // A caller-supplied witness is DATA, and data must never crash the grader: a
+  // Proxy whose `get` throws anywhere inside the rules is an INSTRUMENT_ERROR,
+  // not an exception escaping into the caller.
+  try {
+    return judgeSafely(input)
+  } catch (error) {
+    return {
+      verdict: 'INSTRUMENT_ERROR',
+      reasons: [`the oracle could not inspect the caller-supplied input: ${messageOf(error)}`],
+      limitations: ['limitations not computed: the input could not be inspected'],
+      observedEffectPaths: [],
+    }
+  }
+}
+
+function judgeSafely(input: OracleInput): OracleJudgement {
+  const inspected = inspectWitness(input)
+  const rows = inspected.rows
   // Blindness is a fact about the INSTRUMENT, not only a caller's list (M7-A):
   // a row that reports `instrumented: false` makes its domain blind whether or
   // not the contract remembered to name it.
-  const blindDomains = effectiveBlindDomains(input)
-  const watchedAll = watchedPathsOf(input, ALL_DOMAINS)
-  const observedAll = observedPathsOf(input, ALL_DOMAINS)
+  const callerBlind = (() => {
+    try {
+      return Array.isArray(input.blindDomains) ? [...input.blindDomains].filter(isEffectDomain) : []
+    } catch {
+      return []
+    }
+  })()
+  const blindDomains = blindDomainsOf(rows, callerBlind)
+  const watchedAll = watchedPathsOf(rows, ALL_DOMAINS)
+  const observedAll = observedPathsOf(rows, ALL_DOMAINS)
   const limitations = limitationsFor(blindDomains, watchedAll, observedAll)
 
-  const faults = instrumentFaults(input)
+  const faults = inspected.faults
   if (faults.length > 0) {
     return { verdict: 'INSTRUMENT_ERROR', reasons: faults, limitations, observedEffectPaths: observedAll }
   }
 
   const required = uniqueDomains(
-    input.requiredEffectDomains ?? witnessRows.map((observation) => observation.domain),
+    input.requiredEffectDomains ?? rows.map((row) => row.domain),
   )
   const requiredScope = uniqueStrings(input.requiredEffectScope ?? [])
   const authorized = uniqueStrings(input.authorizedEffectPaths ?? [])
@@ -385,8 +494,8 @@ export function judgeContract(input: OracleInput): OracleJudgement {
   }
 
   // Rule 2a: a required domain must be reported by a row.
-  const observationsOf = (domain: EffectDomain): WitnessObservation[] =>
-    witnessRows.filter((observation) => observation.domain === domain)
+  const observationsOf = (domain: EffectDomain): RowView[] =>
+    rows.filter((row) => row.domain === domain)
   const missing = required.filter((domain) => observationsOf(domain).length === 0)
   if (missing.length > 0) {
     return {
@@ -428,7 +537,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
   // about. "No effect in filesystem" from a witness that watched one directory
   // is the false green this rule exists to refuse.
   if (requiredScope.length > 0) {
-    const watchedForRequired = watchedPathsOf(input, required)
+    const watchedForRequired = watchedPathsOf(rows, required)
     const uncovered = requiredScope.filter((path) => !watchedForRequired.some((watched) => coveredBy(path, watched)))
     if (uncovered.length > 0) {
       return {
@@ -489,10 +598,10 @@ export function judgeContract(input: OracleInput): OracleJudgement {
   // reported and excluded from grading; anything else is the contract's
   // business. A row that claims an effect but cannot place it is FAIL-CLOSED —
   // an unplaceable effect is never authorized.
-  const observedInRequired = observedPathsOf(input, required)
-  const unplaceable = witnessRows.some((observation) =>
-    required.includes(observation.domain) && observation.observed === true &&
-    (!Array.isArray(observation.observedPaths) || observation.observedPaths.length === 0))
+  const observedInRequired = observedPathsOf(rows, required)
+  const unplaceable = rows.some((row) =>
+    required.includes(row.domain) && row.observed === true &&
+    (!row.placesEffects || row.observedPaths.length === 0))
   // Deny beats allow: an effect on a forbidden path is unauthorized even when an
   // authorized root contains it.
   const isAuthorized = (path: string): boolean =>

@@ -319,4 +319,58 @@ describe('M7-A witness provenance seal', () => {
     ])
     expect(() => createFsWitness({ root: '/tmp/x' })).toThrow(/refuses to watch nothing/)
   })
+
+  it('DERIVED-ROW CONTROL: Object.create(sealedRow) is not a witness row', async () => {
+    // The reviewer's reproduction of the second seal: reading the seal through
+    // the prototype chain let a derived object claim a DIFFERENT observation.
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    await witness.observe()
+    writeFileSync(join(outside, 'really-happened.txt'), 'ESCAPE\n')
+    const sealed = await witness.observe()
+
+    const satisfied = (rows: unknown[]) =>
+      judgeContract({
+        contractId: 'derived',
+        events: refusedTrace,
+        witness: rows as never,
+        blindDomains: ['process', 'network'],
+        requiredEffectDomains: ['filesystem'],
+        requiredEffectScope: [outside],
+        witnessProvenance: 'witnessed',
+      })
+
+    // The honest rows really do violate, so the arm is not vacuous.
+    expect(satisfied(sealed).verdict).toBe('VIOLATED')
+
+    // A derived object inherits `WITNESS_INSTRUMENT`-style seals by prototype,
+    // so an identity-free seal would accept this: same prototype chain entry,
+    // different `observed`. It must be refused.
+    const derived = Object.create(sealed[0] as object) as Record<string, unknown>
+    Object.defineProperty(derived, 'observed', { value: false, enumerable: true })
+    Object.defineProperty(derived, 'observedPaths', { value: [], enumerable: true })
+    expect(isSealedWitnessObservation(derived)).toBe(false)
+    const judged = satisfied([derived, ...sealed.slice(1)])
+    expect(judged.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judged.reasons.join(' ')).toMatch(/no provenance seal/)
+
+    // Same shape, plain prototype, copied values: still not the built identity.
+    const copy = Object.freeze({ ...sealed[0] })
+    expect(isSealedWitnessObservation(copy)).toBe(false)
+    expect(satisfied([copy, ...sealed.slice(1)]).verdict).toBe('INSTRUMENT_ERROR')
+  })
+
+  it('SYMLINK CONTROL: a watched root that is a symlink is refused, not followed', () => {
+    const { root } = world()
+    const real = join(root, 'real')
+    mkdirSync(real)
+    const link = join(root, 'link')
+    symlinkSync(real, link, 'dir')
+
+    // `watch: [link]` would report writes made in `real` under the link's name.
+    expect(() => createFsWitness({ root, watch: [link] })).toThrow(/is a symlink/)
+    // The real path is accepted and declared as the watched path.
+    const witness = createFsWitness({ root, watch: [real] })
+    expect(witness.watchedPaths).toEqual([real])
+  })
 })

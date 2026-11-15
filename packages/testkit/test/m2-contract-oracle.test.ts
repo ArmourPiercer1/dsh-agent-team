@@ -531,4 +531,64 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
     expect(judgement.verdict).toBe('SATISFIED')
     expect(judgement.authorizedEffectPaths).toEqual(['/w/home/tmp/ok/file.txt'])
   })
+
+  // ── M7-A correction: the grader must not crash on hostile input ────────────
+  it('M7-A crash control: a throwing Proxy row is INSTRUMENT_ERROR, never an exception', () => {
+    const hostile = new Proxy(
+      {},
+      {
+        get() {
+          throw new Error('proxy trap: get')
+        },
+        ownKeys() {
+          throw new Error('proxy trap: ownKeys')
+        },
+      },
+    )
+    const input = {
+      contractId: 'proxy',
+      events: [denied()],
+      witness: [hostile],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+    } as never
+    // A caller-supplied witness is DATA: the grader returns a verdict.
+    expect(() => judgeContract(input)).not.toThrow()
+    const judgement = judgeContract(input)
+    expect(judgement.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judgement.reasons.join(' ')).toMatch(/could not be read/)
+  })
+
+  it('M7-A crash control: a throwing Proxy event list is INSTRUMENT_ERROR, never an exception', () => {
+    const hostileEvents = new Proxy([], {
+      get() {
+        throw new Error('proxy trap: events')
+      },
+    })
+    const input = {
+      contractId: 'proxy-events',
+      events: hostileEvents,
+      witness: [fsRow(['/w/home'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+    } as never
+    expect(() => judgeContract(input)).not.toThrow()
+    expect(judgeContract(input).verdict).toBe('INSTRUMENT_ERROR')
+  })
+
+  it('M7-A scope control: a required path behind a link is not covered by the real watched path', () => {
+    // `watch:[/link]` (→ /real) is refused by the witness; if a contract still
+    // asks about `/link/x` while the row declares `/real`, lexical coverage must
+    // say NO — the target is outside the declared scope.
+    const judgement = judgeContract({
+      contractId: 'symlink-scope',
+      events: [denied()],
+      witness: [fsRow(['/real'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/link/x.txt'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/required effect scope is not covered by the witness/)
+  })
 })
