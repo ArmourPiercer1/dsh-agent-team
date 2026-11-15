@@ -1,0 +1,56 @@
+PERF-DIAG 2026-11-15 — host build reuse: determinism, relocation, absolute paths
+
+TREE: tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84 (git status --porcelain empty).
+SIZE: 332 MB excluding node_modules/.git (25 568 files); node_modules 1.9 GB.
+
+1) DETERMINISM. Two builds of the SAME tree at the SAME path, seconds apart.
+   Build A = the build used for the local capture; build B = outputs DELETED first
+   (the 334 ignored lib/dist dirs + .dsh-build/ + the two tsbuildinfo files, listed in
+   host-build-outputs.txt, were removed), then the documented chain re-run:
+     DSH_CLIENT_COMMIT_HASH=639ed01539 ESBUILD_WORKER_THREADS=1 pnpm run build
+   digest = sha256 of 'sha256sum' over every file except .git and node_modules, paths sorted.
+     build A: 867f80307366b080b89206e97a3d3dc6a3cfa8453b023b46e73b7f0c1faf79a9  (25568 files)
+     build B: 867f80307366b080b89206e97a3d3dc6a3cfa8453b023b46e73b7f0c1faf79a9  (25568 files)
+     diff A B: 0 lines.  BYTE-IDENTICAL.
+   CLEAN REBUILD COST (B): elapsed=161.52s user=209.09s sys=24.74s maxrss=4 060 596 kB (4.06 GB).
+   The hosted step 'Build the pristine host (TEST_METHODS §2 chain)' = 216 s, which also carries
+   'pnpm install --ignore-scripts'. Install measured separately in a fresh --no-hardlinks clone
+   against an already-warm local store: INSTALL elapsed=6.85s user=5.98s sys=18.86s.
+   => install is the small part locally (6.85 s warm store); the build is ~161 s of the 216 s.
+
+2) ABSOLUTE PATHS INSIDE THE OUTPUT. 49 built files still carry the BUILD TREE'S ABSOLUTE PATH.
+   Example (packages/client/locale/lib/client.js):
+     \0dsh-css:/home/…/tests/deepseek-harness-test-use/packages/client/locale/src/client/LanguageRow.module.css.mjs
+   So the output is deterministic AT A PATH, not PATH-INDEPENDENT: a REBUILD at a different
+   absolute path (or a repo rename, or a different runner checkout dir) yields different bytes in
+   those 49 client bundles, and a manifest recorded at the old path would then MISMATCH.
+
+3) RELOCATION. The built tree (2.3 GB with node_modules) rsynced to a different absolute path:
+     rsync -a --exclude=.git tests/deepseek-harness-test-use/ .artifacts/tmp/host-reloc/
+     real 0m21.348s  (proxy for a cache restore of the same bytes)
+   digest of the relocated copy = 867f8030… EXACTLY the same (bytes are copied, not rebuilt).
+   It RUNS from the new path:
+     node .artifacts/tmp/host-reloc/apps/cli/lib/bin.js --version   -> 0.2.0-rc.2
+     DSH_HOME=<workspace>/tests/homes/perfdiag-reloc node …/bin.js web --port 3198 --no-open
+       -> dsh web: http://127.0.0.1:3198/?token=…   (HTTP 401 without the token, i.e. serving)
+
+4) WHAT THIS MEANS FOR A TRUSTED CACHE.
+   SAFE: cache the whole provisioned host tree keyed by host_commit + lock + node/pnpm versions
+   + platform + build flags (scripts/host-cache-key.mjs already defines exactly these fields and
+   a record/verify manifest, and is NOT wired to CI). Restore it to the SAME absolute path the
+   runner uses (/home/runner/work/<repo>/<repo>/tests/deepseek-harness-test-use) and the
+   bytes verify. The workflow's existing post-build assertions (git rev-parse HEAD == pin;
+   apps/cli/lib/bin.js exists; porcelain-empty drift check) are the right place to add the
+   manifest verify.
+   UNSAFE / WOULD MAKE IT UNSAFE:
+     (a) restoring to a DIFFERENT absolute path and then trusting a manifest recorded at the old
+         one — it fails closed (MISS) rather than silently passing, but a cache key that omits the
+         path while the manifest includes path-dependent bytes would turn a hit into a refusal;
+     (b) caching node_modules or any dependency-resolution artifact without the lock in the key;
+     (c) treating 'manifest verifies' as 'the build really ran here' — it does not prove
+         provenance, only byte equality with a recorded identity (the M3 memo says so);
+     (d) a cache whose key omits the build FLAGS (DSH_CLIENT_COMMIT_HASH, ESBUILD_WORKER_THREADS)
+         or the node version: those change output bytes.
+   UNSAFE FOR A DIFFERENT REASON: caching the PRODUCT build (packages/*/dist, committed artifacts)
+   is already covered by check-artifacts-committed.mjs inside the job; caching it would remove the
+   freshness check rather than the build.

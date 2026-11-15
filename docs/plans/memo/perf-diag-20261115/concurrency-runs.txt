@@ -1,0 +1,67 @@
+PERF-DIAG 2026-11-15 — concurrency measurements (verbatim tool output)
+
+HOST: 16 logical CPUs, 30 GB, WSL2, node v24.21.0, pnpm 11.7.0, vitest 4.1.11.
+EMULATION OF THE HOSTED RUNNER: every run below was pinned with 'taskset -c 0-3' (4 logical CPUs)
+and CI=true. The workflow says 'runs-on: ubuntu-latest' and does NOT state a size; GitHub's standard
+ubuntu-latest is 4 vCPU / 16 GB (external fact, not stated in the workflow).
+
+vitest default maxWorkers = availableParallelism() - 1  (node_modules/vitest/dist/chunks/cli-api.*.js:2355)
+  => a 4-vCPU runner runs at most THREE test files concurrently, which is what the unmodified census does.
+
+=== capture-local-1 : full 705-file capture ===
+	User time (seconds): 647.26
+	System time (seconds): 242.53
+	Percent of CPU this job got: 189%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:50.36
+	Maximum resident set size (kbytes): 1527772
+   Duration  469.92s (transform 17.49s, setup 0ms, import 142.37s, tests 1167.80s, environment 43ms)
+ Test Files  2 failed | 703 passed (705)
+
+=== capture-local-3w-warm : full 705-file capture ===
+	User time (seconds): 599.36
+	System time (seconds): 174.96
+	Percent of CPU this job got: 180%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:08.25
+	Maximum resident set size (kbytes): 2194188
+   Duration  427.74s (transform 15.67s, setup 0ms, import 142.72s, tests 1062.66s, environment 51ms)
+ Test Files  3 failed | 702 passed (705)
+
+=== capture-local-4w : full 705-file capture ===
+	User time (seconds): 573.96
+	System time (seconds): 175.62
+	Percent of CPU this job got: 229%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:26.18
+	Maximum resident set size (kbytes): 2163416
+   Duration  325.66s (transform 15.38s, setup 0ms, import 138.98s, tests 1088.65s, environment 44ms)
+ Test Files  2 failed | 703 passed (705)
+
+=== top-20 files together, maxWorkers=3, 4 cpus ===
+	User time (seconds): 369.49
+	System time (seconds): 125.26
+	Percent of CPU this job got: 150%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:29.17
+	Maximum resident set size (kbytes): 1493048
+ Test Files  1 failed | 19 passed (20)
+   Duration  328.84s (transform 1.93s, setup 0ms, import 1.64s, tests 972.44s, environment 1ms)
+
+=== the SAME top-20 files serially, maxWorkers=1, 4 cpus ===
+	User time (seconds): 344.48
+	System time (seconds): 114.22
+	Percent of CPU this job got: 49%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 15:21.08
+	Maximum resident set size (kbytes): 1545400
+ Test Files  1 failed | 19 passed (20)
+   Duration  920.78s (transform 1.54s, setup 0ms, import 1.30s, tests 917.53s, environment 1ms)
+
+=== the two heavy files alone (maxWorkers=1) vs in the 3-worker subset vs in the full capture ===
+alpha5-glob-backend-adversarial: alone 154.7s, subset(3w) 184.8s, full capture 195.1s
+a4p7-merge-gate          : alone 140.75s, subset(3w) 157.46s, full capture 204.9s
+  (transcripts: .artifacts/tmp/top20-ser.txt, top20-par.txt, capture-local-1.json; not committed)
+
+=== adversarial dial A/B (alone, maxWorkers=1, 4 cpus) — verbatim ===
+pace=0 walks=6600 -> (8 tests) 124496ms ; elapsed=124.89 user=66.02 sys=52.01 maxrss=334680
+pace=4 walks=1200 -> (8 tests)  41757ms ; elapsed=42.16 user=15.29 sys=16.00 maxrss=287356
+pace=4 walks=6600 -> (8 tests) 154701ms (from the serial top-20 run)
+
+=== bare interpreter spawn cost on this host (idle, 16 cpus, 100 spawns) ===
+elapsed=0.85 user=0.42 sys=0.25  => 8.5 ms wall / 6.7 ms CPU per 'python3 -c pass'

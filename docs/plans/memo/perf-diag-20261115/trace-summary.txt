@@ -1,0 +1,107 @@
+flush_records=421  spawn_calls=5827  fired_sleep_calls=1399  fired_sleep_ms=95348  home_mkdirs=13004  distinct_worlds=34  mkdtemps=74
+
+## spawns by command (top 15)
+   4016  spawn:python3
+   1322  spawnSync:python3
+    217  execFileSync:git
+     85  spawnSync:node
+     52  spawnSync:git
+     37  spawn:node
+     35  spawnSync:rg
+     23  spawn:sh
+     14  spawnSync:sleep
+      6  spawnSync:mv
+      5  spawnSync:grep
+      4  spawnSync:npx
+      2  spawnSync:pnpm
+      2  spawn:git
+      2  spawn:pnpm
+
+## files by spawn count (top 20)
+   3299  packages/runtime/test/alpha5-glob-backend-adversarial.test.ts
+    718  packages/runtime/test/alpha5-glob-backend.test.ts
+    284  (not-in-a-test-file)
+    274  packages/runtime/test/a5-cancel-glob.test.ts
+    226  packages/runtime/test/a5-cancel-search.test.ts
+    208  packages/testkit/test/a4p7-merge-gate.test.ts
+    107  packages/runtime/test/alpha5-search-backend.test.ts
+     92  packages/runtime/test/a5sf-bl16-grep-realm.test.ts
+     78  packages/runtime/test/a5b2-exit-code-fidelity.test.ts
+     74  packages/runtime/test/a5lsp2-assembly.test.ts
+     65  packages/runtime/test/a5sf-confined-subprocess.test.ts
+     64  packages/runtime/test/a5rbn-runtime-base-narrow.test.ts
+     55  packages/runtime/test/a5b3-cancel-leg.test.ts
+     48  packages/testkit/test/a4p75-composition-smoke-classification.test.ts
+     34  packages/runtime/test/alpha5-glue7-plane-backends.test.ts
+     29  packages/testkit/test/rc2-kit-fault-injection.test.ts
+     28  packages/runtime/test/u74a-jobs-producer.test.ts
+     23  packages/runtime/test/a5sf-subprocess-contract.test.ts
+     17  packages/runtime/test/a5lsp2-streaming.test.ts
+     17  packages/runtime/test/a5-m1-bash-c1.test.ts
+
+## worlds created (distinct DSH_HOME names)
+count=34
+  a5-m1-bash-mwhubtoh
+  a5b2-unit-mwhuau5x
+  a5b3-unit-mwhu8tqn
+  a5cancel-g-mwhu6yjn-d4zc
+  a5cancel-gcap-mwhu6yjq-jzwx
+  a5cancel-s-mwhu4hyk-3enm
+  a5cancel-sbulk-mwhu4hyo-a7t5
+  a5g7-unit-mwhuanbd
+  a5glb-adv-mwhu9oo7-38fx
+  a5glb-cap-mwhu4auw-4dxn
+  a5glb-r1line-mwhu6gh9-8kuc
+  a5glb-swept-mwhs010r-dead00
+  a5glb-swept-mwhu56ss-live00
+  a5glb-unit-mwhu4aur-3ajt
+  a5globoff-unit-mwhuchx9
+  a5intr3-kit-20261115T130007
+  a5lsp2-assembly-2026-11-15T12-57-11-326Z
+  a5lsp2-stream-2026-11-15T12-56-53-419Z
+  a5m1-auth-mwhu43q2
+  a5m1-auth-noverifier-mwhu43s0
+  a5p4-provider-2026-11-15T12-57-10-701Z
+  a5rbn-unit-mwhud33e
+  a5scratchdef-mwhucu2x
+  a5srgp-alias-mwhu7p6h-do64
+  a5srgp-bulk-mwhu75te-3c9z
+  a5srgp-rootswap-mwhu7s3j-6ab5
+  a5srgp-unit-mwhu75t9-fp86
+  rc2-kit-fault-1794747551908-7
+  rc2-sanitize-1794747538545-7
+  u6pr3-bl01-mwhucyxn
+  u74a-g3-mwhu6suh
+  u74a-g4-mwhu6suh
+  u7f-web-c1-mwhu8kw7
+  u7grep-late-mwhubaml-5sqs
+
+## files by DSH_HOME mkdir (top 10)
+   6584  packages/runtime/test/alpha5-glob-backend-adversarial.test.ts
+   4182  packages/runtime/test/a5-cancel-search.test.ts
+   1251  packages/runtime/test/alpha5-glob-backend.test.ts
+    220  packages/runtime/test/a5-cancel-glob.test.ts
+    183  packages/runtime/test/alpha5-search-backend.test.ts
+     83  packages/runtime/test/a5p4-provider.test.ts
+     78  packages/runtime/test/a5b2-exit-code-fidelity.test.ts
+     64  (not-in-a-test-file)
+     56  packages/runtime/test/a5lsp2-assembly.test.ts
+     51  packages/runtime/test/a5b3-cancel-leg.test.ts
+
+## files by sleep ms (top 20, FIRED timers only)
+    78968 ms  n= 1171  (not-in-a-test-file)
+     6975 ms  n=  109  packages/runtime/test/a5lsp2-streaming.test.ts
+     2120 ms  n=   53  packages/runtime/test/u7-grep-late-stream.test.ts
+     1950 ms  n=    9  packages/runtime/test/a5b3-cancel-leg.test.ts
+     1040 ms  n=    2  packages/runtime/test/u7-agentstate-fs-store-c1.test.ts
+     1000 ms  n=    1  packages/runtime/test/u7-agentstate-fs-store-audit.test.ts
+      920 ms  n=   14  packages/runtime/test/a5-cancel-glob.test.ts
+      750 ms  n=   16  packages/runtime/test/fix-control-authz-c-abandon-terminal.test.ts
+      655 ms  n=   10  packages/runtime/test/a5-cancel-search.test.ts
+      325 ms  n=    4  packages/runtime/test/a5b2-exit-code-fidelity.test.ts
+      265 ms  n=    3  packages/runtime/test/alpha5-search-backend.test.ts
+      250 ms  n=    1  packages/runtime/test/u7f-web-c1.test.ts
+       60 ms  n=    3  tests/kits/rc2-real-host-smoke/run-control.regression.test.mjs
+       25 ms  n=    1  packages/runtime/test/a5-m1-auth-bridge.test.ts
+       25 ms  n=    1  packages/runtime/test/alpha5-glob-backend.test.ts
+       20 ms  n=    1  tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs
