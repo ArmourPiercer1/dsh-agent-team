@@ -34,23 +34,53 @@ SIZE: 332 MB excluding node_modules/.git (25 568 files); node_modules 1.9 GB.
      DSH_HOME=<workspace>/tests/homes/perfdiag-reloc node …/bin.js web --port 3198 --no-open
        -> dsh web: http://127.0.0.1:3198/?token=…   (HTTP 401 without the token, i.e. serving)
 
-4) WHAT THIS MEANS FOR A TRUSTED CACHE.
-   SAFE: cache the whole provisioned host tree keyed by host_commit + lock + node/pnpm versions
-   + platform + build flags (scripts/host-cache-key.mjs already defines exactly these fields and
-   a record/verify manifest, and is NOT wired to CI). Restore it to the SAME absolute path the
-   runner uses (/home/runner/work/<repo>/<repo>/tests/deepseek-harness-test-use) and the
-   bytes verify. The workflow's existing post-build assertions (git rev-parse HEAD == pin;
-   apps/cli/lib/bin.js exists; porcelain-empty drift check) are the right place to add the
-   manifest verify.
+4) VERIFICATION IS PATH-BLIND — MEASURED (this is the blocking caveat for any cache).
+   The key object has no path field, and manifestOf() walks the tree with relative(root, full).
+   Recorded at the real host path, copied to a DIFFERENT absolute path, verified: OK.
+
+     $ node scripts/host-cache-key.mjs --key --repo-root . --host-dir tests/deepseek-harness-test-use --json \
+         > .artifacts/tmp/expect-host.json
+     $ node scripts/host-cache-key.mjs --record --dir tests/deepseek-harness-test-use \
+         --expect .artifacts/tmp/expect-host.json
+     DSH-HOST-CACHE-RECORD verdict=RECORDED files=104192 manifest=sha256:a2f41debdf996d3066afbe97e52726eecbd0ddde4d177ec70d3e49a757a1deb3
+       key=sha256:1be4e9977e007045340d76fa3e1b84500e3dbd25a4f78ac6b6f5a49d373edf96
+     $ rsync -a --exclude=.git tests/deepseek-harness-test-use/ .artifacts/tmp/host-path-probe/
+     $ node scripts/host-cache-key.mjs --verify --dir .artifacts/tmp/host-path-probe \
+         --expect .artifacts/tmp/expect-host.json
+     DSH-HOST-CACHE verdict=OK key=sha256:1be4e9977e00… reasons=none            # exit 0
+     $ node scripts/host-cache-key.mjs --verify --dir tests/deepseek-harness-test-use \
+         --expect .artifacts/tmp/expect-host.json
+     DSH-HOST-CACHE verdict=OK key=sha256:1be4e9977e00… reasons=none            # exit 0
+
+   And the accepted copy still embeds the OLD build path (see 2 above):
+     dsh-css:/home/…/perf-diag-20261115/tests/deepseek-harness-test-use/packages/client/locale/src/client/LanguageRow.module.css.mjs
+   Both `--version` and a real `web` boot pass on the relocated tree because neither loads client
+   bundles. So a repo rename / workspace move / runner-path change SILENTLY ACCEPTS a host whose 49
+   client bundles point at a scene that no longer exists: not a MISS, not an INFRA_ERROR, a green OK.
+   (A first attempt at this probe copied BEFORE recording, and verify correctly said
+   INFRA_ERROR MANIFEST_MISSING — that is the manifest-absent path, not the path-relocation path.)
+
+5) WHAT THIS MEANS FOR A TRUSTED CACHE.
+   SAFE only after a guard that does not exist today:
+     (a) a `build_root` field inside hostCacheKey (hashed into `key`), and/or
+     (b) an explicit assertion in the verify step that the recorded build root equals the directory
+         being restored to,
+   plus the existing HEAD-pin / entry-point / porcelain assertions and a boot. Restore to the same
+   absolute path (/home/runner/work/<repo>/<repo>/tests/deepseek-harness-test-use) and the bytes
+   verify either way; the guard is what makes a DIFFERENT path fail loudly instead of passing.
+   Restoring 2.3 GB took 21.3 s locally (rsync -a), which bounds the restore side of the 216 s.
+
+   WHAT A GREEN VERIFICATION DOES NOT PROVE:
+     - not that the artifact was BUILT FROM the recorded commit (the manifest is unsigned);
+     - not that it came from THIS path (measured in 4);
+     - not that the embedded absolute paths in the 49 client bundles resolve to the serving tree;
+     - not that it is RUNNABLE (boot is a separate exercise, and boot does not read those bundles).
+
    UNSAFE / WOULD MAKE IT UNSAFE:
-     (a) restoring to a DIFFERENT absolute path and then trusting a manifest recorded at the old
-         one — it fails closed (MISS) rather than silently passing, but a cache key that omits the
-         path while the manifest includes path-dependent bytes would turn a hit into a refusal;
-     (b) caching node_modules or any dependency-resolution artifact without the lock in the key;
-     (c) treating 'manifest verifies' as 'the build really ran here' — it does not prove
-         provenance, only byte equality with a recorded identity (the M3 memo says so);
-     (d) a cache whose key omits the build FLAGS (DSH_CLIENT_COMMIT_HASH, ESBUILD_WORKER_THREADS)
-         or the node version: those change output bytes.
-   UNSAFE FOR A DIFFERENT REASON: caching the PRODUCT build (packages/*/dist, committed artifacts)
-   is already covered by check-artifacts-committed.mjs inside the job; caching it would remove the
-   freshness check rather than the build.
+     (a) restoring to a DIFFERENT absolute path — the measured hole in 4, silent OK today;
+     (b) omitting node/pnpm/flags/lock from the key (all change output bytes);
+     (c) reading "manifest verifies" as provenance (see the header of host-cache-key.mjs);
+     (d) caching the PRODUCT build: that would delete the check-artifacts-committed.mjs freshness
+         check rather than the build it guards.
+   The M3 memo's own header already states (c) and (d); it does not state (a), which is why this
+   round measured it.

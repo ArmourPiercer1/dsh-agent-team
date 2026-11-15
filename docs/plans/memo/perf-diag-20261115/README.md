@@ -8,14 +8,18 @@
 ## 0. One paragraph
 
 The census is not slow because of the host build, and it is not slow because 705 files are observed. It is
-slow because **92 % of the per-file test work lives in 20 files**, and two of those files are 18 % each:
+slow because **91 % of the per-file test work lives in 20 files** (hosted; 92 % on the local
+cross-check), and two of those files are ~18 % each:
 one re-runs the merge gate's own CI legs (lint / lint-visibility / typecheck / a scratch-worktree build /
-client lane) *inside a single vitest test file*, and one spends 196 s spawning a real confined `python3`
-**6 600 times**. The capture runs at most **three** test files concurrently (vitest derives `maxWorkers`
-from `availableParallelism() - 1`, so a 4-vCPU runner gets 3), and it achieves 2.42–2.46 of that 3. Lifting
-that ceiling to 4 workers is the single cheapest measured lever (−102 s per capture, −204 s per job, one
-flag, zero change to what is verified); caching the pristine host build is the next (−176 s of a 216 s
-step); the rest are verification-tradeoffs and are ranked in §7.
+client lane) *inside a single vitest test file*, and one spends 196 s on **6 600 real confined walks**, of
+which **3 299 actually spawn a `python3`** (a link-state walk refuses before spawning). The capture runs at
+most **three** test files concurrently (vitest derives `maxWorkers` from `availableParallelism() - 1`, so a
+4-vCPU runner gets 3), and it achieves 2.42–2.46 of that 3. Lifting that ceiling to 4 workers is the single
+cheapest measured lever (−102 s per capture, −204 s per job, one flag, zero change to what is verified). The
+host build cache would be next (−176 s of a 216 s step) but **is not shippable as it stands**: the M3 verify
+is path-blind, so a moved checkout silently accepts a host whose client bundles embed the old path (§6,
+measured). The rest — including the two nested-leg groups, which do not all have another runner (§7) — are
+coverage decisions, not free money.
 
 ## 1. Provenance and method (what is hosted, what is local)
 
@@ -140,8 +144,8 @@ is its share of the capture's 1157 s of file work, which is what the saving mode
 
 | # | file | root | s (cap1 / cap2) | s (mean) | % of a 477.7 s capture | % work | tests |
 | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| 1 | `packages/testkit/test/a4p7-merge-gate.test.ts` | testkit | 197.9 / 222.3 | 210.1 | 44.0 | 17.9 | 35 |
-| 2 | `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | runtime | 204.9 / 220.9 | 212.9 | 44.6 | 18.1 | 8 |
+| 1 | `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` | runtime | 204.9 / 220.9 | 212.9 | 44.6 | 18.1 | 8 |
+| 2 | `packages/testkit/test/a4p7-merge-gate.test.ts` | testkit | 197.9 / 222.3 | 210.1 | 44.0 | 17.9 | 35 |
 | 3 | `packages/runtime/test/a5-cancel-glob.test.ts` | runtime | 120.8 / 120.3 | 120.5 | 25.2 | 10.3 | 26 |
 | 4 | `packages/runtime/test/a5-cancel-search.test.ts` | runtime | 100.4 / 102.2 | 101.3 | 21.2 | 8.6 | 30 |
 | 5 | `packages/runtime/test/alpha5-glob-backend.test.ts` | runtime | 89.5 / 83.6 | 86.5 | 18.1 | 7.4 | 53 |
@@ -166,9 +170,13 @@ cross-check `per-file-local-capture-1.tsv` (with spawn / fired-sleep / world-mkd
 
 ### 3.2 Concentration and aggregation
 
-`Σ file work = 1157.1 s` (cap 1) / `1190.4 s` (cap 2). Shares: **top 1 = 17.7 %**, top 5 = **62.6 %**,
-top 10 = **78.6 %**, top 20 = **91.9 %**, top 50 = 98.0 %. **592 of 705 files are under 100 ms**; only 37
-files exceed 1 s. The distribution's p50 is 0.0 s, p90 0.4 s, p99 34.7 s.
+**Hosted, capture 1** (`Σ file work = 1157.1 s`): top 1 = **17.7 %**, top 5 = **61.7 %**, top 10 = **77.7 %**,
+top 20 = **91.2 %**, top 50 = 97.4 %; **581 of 705 files are under 100 ms**, 40 are ≥ 1 s.
+**Hosted, capture 2** (`1190.4 s`): 18.7 / 62.9 / 78.4 / 91.2 / 97.1 %; 572 files < 100 ms, 39 ≥ 1 s.
+**Local cross-check, capture 1** (`1158.5 s`): 17.7 / 62.6 / 78.6 / 91.9 / 98.0 %; 592 files < 100 ms,
+37 ≥ 1 s. The local row is the one that is slightly *more* concentrated (its two heaviest files are 10 s apart
+from the hosted ones, §3.3); the shares are quoted per source, never mixed. The percentiles p50 0.0 s /
+p90 0.4 s / p99 34.7 s are **local capture 1** only.
 
 By root, as the mean of the two captures (**this is work, not the root window** published by `tinf-timing`, which is
 `max(end)−min(start)` and therefore overlaps; the two must not be added):
@@ -187,11 +195,11 @@ By root, as the mean of the two captures (**this is work, not the root window** 
 | packages/contracts | 13 | 0.1 | 0.0 |
 | packages/legacy | 7 | 0.1 | 0.0 |
 
-"runtime and testkit are the long tail" is true but coarse: **runtime alone is 80 % of the work, and 19 of
+"runtime and testkit are the long tail" is true but coarse (hosted means): **runtime alone is 80 % of the work, and 19 of
 its 511 files (ranks 2–20 above) are 860.1 s of its 941.0 s — 91 % of the root's work, 73 % of the whole
 census's work.** Any plan that balances roots is balancing the wrong unit.
 
-By class, capture 1 (from each test file's own source: `WORLD` = creates a DSH world / starts a host, `SPAWN` = spawns a
+By class — **hosted capture 1 durations, class read from the checkout** (from each test file's own source: `WORLD` = creates a DSH world / starts a host, `SPAWN` = spawns a
 child but no world, `PURE` = neither):
 
 | class | files | file-seconds | % work | slowest file |
@@ -298,41 +306,74 @@ A *copy* keeps the same digest and **runs from a new path** (`--version` → `0.
 port 3198 printed `dsh web: http://127.0.0.1:3198/?token=…` and served HTTP 401 without a token, i.e. it
 was up), but a **rebuild at a different path would produce different bytes** in those 49 files.
 
-**Verdict: a trusted cache is safe if, and only if, it is keyed on host identity and restored to the same
-absolute path.** `scripts/host-cache-key.mjs` already defines exactly the right identity
-(`host_commit`, `host_lock_digest`, `toolchain_config_digest`, `platform`, `node_version`, `pnpm_version`,
-`host_build_flags_digest`) plus a record/verify manifest, and is deliberately **not wired**. Restoring
-2.3 GB took 21.3 s locally (`rsync -a`), which bounds the restore side of the 216 s.
+**Verification is path-blind — measured, and this is the blocking caveat.** The manifest walks the tree with
+`relative(root, full)` (`host-cache-key.mjs`, `manifestOf`) and `hostCacheKey` has **no path field** at all, so
+the recorded identity says nothing about *where* the tree was built. Reproduced end to end:
 
-What would make it **unsafe**: (a) restoring to a different absolute path and trusting a manifest recorded
-at the old one; (b) omitting node/pnpm/flags/lock from the key (all change output bytes); (c) reading
-"manifest verifies" as "the build ran from this commit" — it proves byte equality with a recorded
-identity, not provenance; (d) caching the product build, which would delete the
-`check-artifacts-committed.mjs` freshness check rather than the build. Every failure mode above is
-**fail-closed** in the existing design (a mismatch is a named MISS/refusal, never a green).
+```
+$ node scripts/host-cache-key.mjs --record --dir tests/deepseek-harness-test-use --expect expect-host.json
+DSH-HOST-CACHE-RECORD verdict=RECORDED files=104192 manifest=sha256:a2f41debdf99… key=sha256:1be4e9977e00…
+$ rsync -a --exclude=.git tests/deepseek-harness-test-use/ .artifacts/tmp/host-path-probe/   # a DIFFERENT absolute path
+$ node scripts/host-cache-key.mjs --verify --dir .artifacts/tmp/host-path-probe --expect expect-host.json
+DSH-HOST-CACHE verdict=OK key=sha256:1be4e9977e00… reasons=none                            # exit 0
+```
+
+…and the accepted copy still carries the **old** absolute path in its client bundles:
+
+```
+$ grep -ao 'dsh-css:[^"]*LanguageRow.module.css.mjs' \
+    .artifacts/tmp/host-path-probe/packages/client/locale/lib/client.js
+dsh-css:/home/…/perf-diag-20261115/tests/deepseek-harness-test-use/packages/client/locale/src/client/LanguageRow.module.css.mjs
+```
+
+So a repo rename, a workspace move, or a runner checkout-path change **silently accepts** a host whose 49
+client bundles point at a scene that no longer exists. Neither `--version` nor a `web` boot exercises those
+bundles (both were checked on the relocated tree and both passed), so nothing downstream would notice.
+
+**Verdict: a cache is safe only with a guard that does not exist today.** The minimum is (a) a `build_root`
+field inside `hostCacheKey` (hashed into `key`) **or** (b) an explicit assertion in the verify step that the
+recorded build root equals the directory being restored to — plus the existing HEAD-pin, entry-point and
+porcelain assertions, and a boot. Until (a) or (b) lands, **rank 2 in §7 is conditional: its −176 s is not
+available**, and any cache switch-on that skips this is a silent old-path acceptance, not a miss.
+
+**What a green verification does NOT prove** (each of these is a real limit, not a hedge): it does not prove
+the artifact was built **from** the recorded commit (the manifest is unsigned — a forger who rewrites manifest
+and tree together passes); it does not prove the artifact came from **this path** (measured above); it does not
+prove the **embedded absolute paths** in the 49 client bundles resolve to the tree that will serve them; and it
+does not prove the artifact is **runnable** — `--version` and a `web` boot both pass on a relocated tree,
+because neither loads the client bundles.
+
+What would make it **unsafe** in practice: (a) restoring to a different absolute path — the hole above; (b)
+omitting node/pnpm/flags/lock from the key (all change output bytes); (c) reading "manifest verifies" as
+provenance; (d) caching the *product* build, which would delete the `check-artifacts-committed.mjs` freshness
+check rather than the build it guards.
 
 ## 7. Ranked candidate experiments
 
 Saving model used for the projections: capture wall ≈ `max(longest file, worker-time / P)` with the
-**measured** `P = 2.46` at 3 workers and `3.34` at 4 (both measured on the same tree, §5). Per-job savings
-are ×2 because the job runs two captures serially. "Confidence" is stated as the range the two measured
-captures/local runs bound, not a statistical interval — n is small and the memo says so.
+**measured** `P = 2.46` at 3 workers and `3.34` at 4 (§5). Per-job savings are ×2 because the job runs two
+captures serially. "Measured where" is deliberately its own column: rank 1 was measured with a full capture on
+this host; rank 4's dial was measured on that one file alone, not inside a full capture; rank 2's *build* was
+measured but its cache path was not; ranks 5 and 6 are models. **Nothing here was measured on the hosted
+runner** — the hosted side contributes the per-file seconds, the step split and the subtest timings only.
 
-| rank | experiment | what exactly changes | expected saving per job | confidence | what could silently weaken verification | how completeness is still proven |
+| rank | experiment | what exactly changes | saving per job | measured where | what could silently weaken verification | how completeness is still proven |
 | ---: | --- | --- | ---: | --- | --- | --- |
-| 1 | **Lift the worker ceiling to 4** | add `--maxWorkers=4` to `censusVitestArgv` (one token in `scripts/census-invocation.mjs`); nothing else | **−204 s** (measured 428.3 → 326.2 s per capture, −24 % of the capture; −21 % of the 966 s census step) | ±10 % (two 3-worker arms vs one 4-worker arm, same tree, same 4 CPUs; the 4-worker arm did *more* test work) | none to *what* is asserted — same 705 files, same 22 tasks, same assertions; risk is timing-sensitive tests flaking under more contention (locally 2–3 failures in both arms, all environment-shaped) | plan/aggregator unchanged: 22 tasks, 705 files, 9 213 assertions per capture, `census-plan`/`census-aggregate` still refuse on any count mismatch |
-| 2 | **Cache the pristine host build** | wire the existing `host-cache-key.mjs` record/verify around an `actions/cache` entry keyed on the host identity; restore to the same path; verify before trusting | **−176 s** (216 s step − ~40 s restore; restore measured 21.3 s locally for 2.3 GB, hosted download slower) | −150…−206 s | a stale/foreign artifact restored as the pinned host — closed by the existing `git rev-parse HEAD == pin` + `bin.js exists` + porcelain-empty assertions, plus the manifest verify; provenance is not proven by the manifest (stated) | untouched: the census still boots the same pinned host, and `host_sha`/`build_digest` in the plan identity would move if the host did |
-| 3 | **Move `a4p7`'s nested CI legs out of the census** | stop re-running lint / lint-visibility / `check-artifacts-at-head` / `pnpm -r typecheck` / client lane *inside* `a4p7-merge-gate.test.ts`; they already run as `pr-gate` legs on the same tree | **−154 s** (190 s of nested legs per capture / 2.46) | −120…−160 s | **high**: those are the only end-to-end invocations of those instruments; removing them means a broken instrument is no longer caught by the census | the census still proves the *population*; the instrument-completeness proof would move entirely to `pr-gate`, so the census's own claim shrinks — must be disclosed as a scope change, not sold as perf |
-| 4 | **Dial the race storm in the census only** | set `A5GLB_RACE_WALKS=1200` (and keep the 6 600-walk run as the lane's hard gate) on the census invocation | **−92 s** (154.7 → 41.8 s measured; /2.46 ×2) | −70…−95 s | the census would exercise the race at 1/5.5 scale; the test already appends the dial to its own name so a dialled run cannot be quoted as the hard gate — but if nothing else runs 6 600, the hard gate disappears | same files/assertions; only the negative-control *scale* drops, and the leg name records it |
-| 5 | **File-level shard of the heavy glob family into a second job** | new job/matrix entry running the 5 heavy glob files; main census drops them | **−426 s** (model: main 637 s of work/2.46 = 259 s per capture → 518 s; shard 520/2.46 = 211 s → 422 s; the two jobs run in **parallel**, so the census wall becomes the slower one (518 s) + fixed cost, vs 966 s) | low (±30 %, **not measured**; needs the host cache to avoid paying 216 s twice) | weakening: sharded set must still union to the exact 22-task population; a mis-split silently drops files | `census-aggregate.mjs` already refuses unless `multiset_union(shards) == plan` with per-result identity — it was built for exactly this and is the reason this is even a candidate |
-| 6 | **Run the two captures concurrently** | change the capture-pair group from 2 serial captures to 2 parallel | **≈−300 s** (model only) | **very low, not measured**; spec §1 forbids assuming losslessness | the *only* thing the second capture buys (same population, later in time) is destroyed; two captures × 3 workers contend for 4 CPUs and would each inflate like §5.3 | not provable by the current plan: the capture pair is one indivisible group precisely because this is unproven |
+| 1 | **Lift the worker ceiling to 4** | add `--maxWorkers=4` to `censusVitestArgv` (one token in `scripts/census-invocation.mjs`) | **−204 s** (measured 428.3 → 326.2 s per capture, −24 % of the capture; −21 % of the 966 s census step) | **local**, 4 CPUs pinned, warm-to-warm on the same tree | none to *what* is asserted — same 705 files, same 22 tasks, same assertions; the risk is timing-sensitive tests flaking under more contention (local arms showed 2–3 environment-shaped failures each) | plan/aggregator unchanged: 22 tasks, 705 files, 9 213 assertions per capture, `census-plan`/`census-aggregate` still refuse on any count mismatch |
+| 2 | **Cache the pristine host build** | wire the existing `host-cache-key.mjs` record/verify around an `actions/cache` entry keyed on the host identity, **plus** the `build_root` guard from §6 (not implemented) | **−176 s, only after that guard lands** (216 s step − ~40 s restore) | **local**: clean rebuild 161.5 s, restore proxy 21.3 s; hosted restore time is UNKNOWN | **blocking today**: verification is path-blind (§6, measured `verdict=OK` on a copy at another absolute path), so a repo rename/workspace move silently accepts a host whose 49 client bundles embed the old path; green verify also does not prove provenance or runnability | untouched *if* the guard lands: same pinned host, same `host_sha`/plan identity; without the guard this row must not ship |
+| 3a | **Drop the three nested legs that `ci-product` already runs** | in `a4p7-merge-gate.test.ts`, stop re-running `pnpm -r run typecheck` (23.5 s), `lint-identities` (25.5 s) and `check-artifacts-at-head` (18.6 s) inside the census — **67.6 s of each capture** | **−55 s** (67.6 s/capture ÷ 2.46 ×2) | **hosted** subtest seconds, local model for the packing | none *provided* `ci-product.yml:116`'s gate (which runs exactly `typecheck,lint-identities,artifacts-at-head` over the same merge tree) stays Required; if that gate is ever demoted, this drops the only run of those instruments | the census still proves the population; the three legs are still proven, in the layer that owns them |
+| 3b | **Drop the three nested legs that have no other runner** | lint-visibility (22.1 s), the scratch-instrument test (71.1 s), the client lane (29.4 s) — **122.6 s of each capture** | **−100 s** | **hosted** subtest seconds, local model | **this DROPS coverage**: no workflow runs `*.client.spec` or lint-visibility, and the scratch-instrument test is census-only. Removing them means nothing anywhere exercises the client lane or the instrument isolation claim | the census keeps its population proof but shrinks its instrument proof — must be replaced by a new lane *before* removal, and disclosed as a scope change |
+| 4 | **Dial the race storm in the census only** | set `A5GLB_RACE_WALKS=1200` on the census invocation | **−92 s** (154.7 → 41.8 s measured; ÷2.46 ×2) | **local**, alone on 4 CPUs, the file's own dial | the census is **the only automated 6 600-walk run**: no workflow or script sets `A5GLB_RACE_WALKS`, and the "hard gate" is a manual `npx vitest run packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` in the test's own comment. So this does not shrink a hard gate — it removes the only automated one, and a dialled run cannot be quoted as the hard gate even though the leg name records the dial | same files/assertions; only the negative-control *scale* drops (5.5×) and the leg name records it |
+| 5 | **File-level shard of the heavy glob files into a second job** | new job/matrix entry running the top **4** glob files (adversarial 212.9 + a5-cancel-glob 120.6 + a5-cancel-search 101.3 + alpha5-glob-backend 86.5 = **521.3 s**); adding alpha5-search-backend makes 554.3 s | **≈−290 s** (model: main 636 s/2.46 = 259 s → 518 s; shard 521/2.46 = 212 s → 424 s; the two jobs run in parallel, so the census wall is the slower one + fixed cost, vs 966 s) | **model only**, not measured; needs the host cache (else +216 s twice) | a mis-split silently changes the population — but see the next column: it cannot even be *expressed* today | **not expressible as stated**: `census-aggregate.mjs:520` requires `result.file_digest === plan root file_digest`, and a plan task is `(root, capture)`; a partial runtime-root result is `RESULT_FILE_SET_MISMATCH`, because the multiset union is over **tasks/roots**, not files. This needs a plan/catalog population change (a per-root file-set split) before it is a candidate at all |
+| 6 | **Run the two captures concurrently** | change the capture-pair group from 2 serial captures to 2 parallel | **≈−300 s** | **model only**, not measured; spec §1 forbids assuming losslessness | the only thing the second capture buys (same population, later in time) is destroyed; two captures × 3 workers on 4 CPUs would each inflate like §5.3 | not provable by the current plan: the capture pair is one indivisible group precisely because this is unproven |
 
 **Not on the list, deliberately.** Root-level sharding (already measured and rejected: +294 s at K=2, +882 s
-at K=4); raising `testTimeout`; making the 592 sub-100 ms files faster (~0.2 % of the work per 100 such files);
-trimming fixture copies / worlds (34 + 74, not a lever).
+at K=4); raising `testTimeout`; making the sub-100 ms files faster (~0.2 % of the work per 100 such files);
+trimming fixture copies / worlds (34 + 74, bounded at ~1.3 s/capture).
 
-**The cheapest correct combination** is 1 + 2: **−380 s of 1226 s (31 %)**, taking the job to ~14 m, with
-**no change to what the census verifies**. Add 3 and/or 4 only as explicitly disclosed scope decisions.
+**Cheapest combination that is actually available today**: rank 1 + rank 3a = **−259 s of 1226 s (21 %)**,
+taking the job to ~16 m, with no loss of coverage anywhere. Rank 2 adds −176 s **only after the §6 guard**; on
+its own it is not shippable. Rank 3b, 4, 5 and 6 are scope/coverage decisions, not perf work.
 
 ## 8. Reproduction
 
@@ -383,13 +424,15 @@ prints `76 distinct; new 0, resolved 0` (exit 0). A measurement round must not m
 
 | item | status | why / what bounds it |
 | --- | --- | --- |
-| A census run **at the base commit `6aba7365f`** | **measured, via an identical tree** | run 1215's head tree is `8b10651a` = the base tree; the local capture agrees to 0.1 % on Σ file work |
+| A census run **at the base commit `6aba7365f`** | **RESOLVED** — not unknown | run 1215's head tree is `8b10651a` = the base tree; the local capture agrees to 0.1 % on Σ file work |
+| Is `host-cache-key.mjs`'s verification **path-aware**? | **RESOLVED: no** | measured `verdict=OK` on a copy at a different absolute path (§6); the key has no path field and the manifest uses relative paths. This is the blocking caveat for rank 2, not an unknown |
+| Does anything run the adversarial **6 600 walks** automatically? | **RESOLVED: only the census** | no workflow or script sets `A5GLB_RACE_WALKS`; the documented hard gate is a manual `npx vitest` command (§7 rank 4) |
 | **Per-file CPU time** (as opposed to wall) | **UNKNOWN** | `/usr/bin/time` gives whole-run user+sys only; per-file attribution would need `--cpu-prof` per worker, not attempted. Bounded by the whole-run ratios in §5 |
 | **Per-spawn cost under load** | **partially** | measured 8.5 ms idle and ~15.3 ms marginal per walk (which includes the walk). Not decomposed into fork/exec vs landlock vs enumeration |
 | **Timer attribution** | **partial** | 83 % of fired-timer ms is raised from a non-test frame (async continuation); attributed to that frame, not to a file. `timers/promises` sleeps are **not** counted at all (ESM binding cannot be replaced) — the 95.3 s is a **lower bound** |
-| **Actual `ubuntu-latest` size** | external | the workflow does not state it; 4 vCPU / 16 GB is GitHub's standard size, not a repo claim. If the runner is larger, `maxWorkers` (and experiment 1's headroom) is larger too |
+| **Actual `ubuntu-latest` size** | external fact, not a repo claim | the workflow does not state it; 4 vCPU / 16 GB is GitHub's standard size, not a repo claim. If the runner is larger, `maxWorkers` (and experiment 1's headroom) is larger too |
 | **Hosted cache restore time for 2.3 GB** | **UNKNOWN** | locally `rsync -a` of the built tree = 21.3 s; a `actions/cache` download on the runner was not measurable here. Experiment 2's saving is bounded by that unknown |
-| **Whether 4 workers transfer to the hosted runner** | **UNKNOWN (bounded)** | measured on 4 pinned logical CPUs of a 16-CPU host, which is *weaker* contention than 4 real vCPUs under a shared hypervisor; direction should transfer, magnitude may shrink |
+| **Whether 4 workers transfer to the hosted runner** | **UNKNOWN (bounded)** — the one number that decides rank 1 on CI | measured on 4 pinned logical CPUs of a 16-CPU host, which is *weaker* contention than 4 real vCPUs under a shared hypervisor; direction should transfer, magnitude may shrink |
 | **6+ workers / higher `maxWorkers`** | **not measured** | CPU utilisation at 4 workers is only 2.29 of 4 cores, so more workers might help further, but the two ~200 s files put a hard floor near 210 s/capture; memory at 4 workers was 2.16 GB of 16 GB |
 | **Per-run variance of the hosted job** | **not measured now** | the M6 memo's 5 green runs span 1325–1495 s for this job, and run 1215 is 1226 s (fast end); n = 1 for the per-file data here |
 | **Whether the second capture is lossless to drop** | **UNKNOWN by design** | `census-plan`/spec §1 forbid assuming it; experiment 6 is listed precisely because it is unproven |
