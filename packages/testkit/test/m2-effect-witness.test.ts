@@ -13,7 +13,14 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { judgeContract } from '../src/index.js'
-import { createBlindWitness, createFsWitness } from '../src/index.js'
+import { areSealedWitnessObservations, createBlindWitness, createFsWitness, isSealedWitnessObservation } from '../src/index.js'
+import type { TraceEvent } from '../src/index.js'
+
+/** A refusal the witness must corroborate: this lane computes no per-call decision. */
+const refusedTrace: TraceEvent[] = [
+  { event_seq: 1, event_type: 'tool/call', actor_id: 'session-x', authority_ref: null, outcome: 'DISPATCHED' },
+  { event_seq: 2, event_type: 'tool/result', actor_id: 'session-x', authority_ref: null, outcome: 'DENIED' },
+]
 
 const roots: string[] = []
 
@@ -187,5 +194,74 @@ describe('TINF M2 effect witness: the sensitivity control is graded, not just pr
     // A real write happened; a witness that cannot see it must not certify it.
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness: filesystem/)
+  })
+})
+
+describe('M7-A witness provenance seal', () => {
+  it('seals instrument rows; a hand-built row is INSTRUMENT_ERROR in witnessed mode', async () => {
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    const sealed = await witness.observe()
+    expect(sealed.every((row) => isSealedWitnessObservation(row))).toBe(true)
+    const handBuilt = [{ domain: 'filesystem' as const, observed: false, instrumented: true, evidence: [] }]
+
+    const declared = judgeContract({
+      contractId: 'provenance',
+      events: refusedTrace,
+      witness: handBuilt,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'declared',
+    })
+    // The pre-M7-A mode is unchanged: a caller-supplied row was and is accepted.
+    expect(declared.verdict).toBe('SATISFIED')
+
+    const witnessed = judgeContract({
+      contractId: 'provenance',
+      events: refusedTrace,
+      witness: handBuilt,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'witnessed',
+    })
+    // A fabricated instrument cannot corroborate a pass.
+    expect(witnessed.verdict).toBe('INSTRUMENT_ERROR')
+    expect(witnessed.reasons.join(' ')).toContain('provenance seal')
+  })
+
+  it('does not survive serialization: replayed rows are not witnessed rows', async () => {
+    const { root, outside } = world()
+    const rows = await createFsWitness({ root, outside }).observe()
+    expect(areSealedWitnessObservations(rows)).toBe(true)
+    expect(areSealedWitnessObservations(JSON.parse(JSON.stringify(rows)))).toBe(false)
+    // Empty is absence, not a seal.
+    expect(areSealedWitnessObservations([])).toBe(false)
+  })
+
+  it('a witnessed blind domain is INCONCLUSIVE and a witnessed effect is VIOLATED', async () => {
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    await witness.observe()
+    writeFileSync(join(outside, 'escape.txt'), 'ESCAPE\n')
+    const violated = judgeContract({
+      contractId: 'effect',
+      events: refusedTrace,
+      witness: await witness.observe(),
+      blindDomains: witness.blindDomains,
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'witnessed',
+    })
+    expect(violated.verdict).toBe('VIOLATED')
+
+    const blinded = createBlindWitness(createFsWitness({ root, outside }), ['filesystem'])
+    const inconclusive = judgeContract({
+      contractId: 'effect',
+      events: refusedTrace,
+      witness: await blinded.observe(),
+      blindDomains: blinded.blindDomains,
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'witnessed',
+    })
+    expect(inconclusive.verdict).toBe('INCONCLUSIVE')
   })
 })

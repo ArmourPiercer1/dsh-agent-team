@@ -65,6 +65,10 @@ const REPO_ROOT = resolve(HERE, '..', '..')
 const HOST_TREE = process.env.M7A_HOST_TREE ?? testUseTree(REPO_ROOT)
 const HOST_PRESENT = existsSync(join(HOST_TREE, 'apps', 'cli', 'lib', 'bin.js'))
 const REQUIRE_HOST = process.env.M7A_REQUIRE_PINNED_HOST === '1'
+// A hosted runner's first boot is slower than the 130 s measured locally; the
+// census step raises this (a boot timeout below a real boot forfeits the suite
+// rather than grading it). The default is the locally measured value.
+const BOOT_TIMEOUT_MS = Number(process.env.M7A_BOOT_TIMEOUT_MS ?? 180_000)
 const EVIDENCE_ROOT = join(REPO_ROOT, '.artifacts', 'tmp', 'm7a-real-slice')
 const sha256 = (text) => createHash('sha256').update(text).digest('hex')
 
@@ -203,7 +207,7 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
   }
 
   const bootStartedAt = Date.now()
-  const run = await startRealRun({ world, tmpDir, script })
+  const run = await startRealRun({ world, tmpDir, script, bootTimeoutMs: BOOT_TIMEOUT_MS })
   const bootMs = Date.now() - bootStartedAt
   const observer = await createWorldObserver({ home: world.home, watchDir })
   const report = {
