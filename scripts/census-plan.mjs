@@ -337,7 +337,7 @@ export function populationBaselineOf(roots, { acceptedReason = null, acceptedBy 
  *
  * @returns {{ok: true, file_count: number, roots: number, grew: boolean, added: string[]} | {ok: false, code: string, detail: string}}
  */
-export function checkPopulationBaseline({ roots, baseline, catalogDigest = null }) {
+export function checkPopulationBaseline({ roots, baseline, catalogDigest: _catalogDigest = null }) {
   if (!baseline || typeof baseline !== 'object' || baseline.schema !== POPULATION_BASELINE_SCHEMA) {
     return {
       ok: false,
