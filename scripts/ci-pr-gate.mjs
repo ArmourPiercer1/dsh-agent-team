@@ -1453,9 +1453,12 @@ export function censusPlanLeg(ctx) {
   const dryRun = ctx.censusDryRun ?? null
   const shardCount = ctx.censusShards ?? 1
   const workDir = ctx.transcriptDir ?? resolve(root, CENSUS_CAPTURE_REL)
-  // `shardDir` is overridable for the host-free tests so they never write into the checkout; the
-  // production default is the gitignored artifact directory beside the census reports.
-  const shardDir = ctx.shardDir ?? resolve(root, CENSUS_CAPTURE_REL, 'plan')
+  // Where the shards + evidence artifacts go. They live BESIDE THE TRANSCRIPT when one is given
+  // (`--transcript-dir`, which CI always passes), so the evidence chain travels with the uploaded
+  // transcript and the checkout stays untouched; only a run with no transcript dir falls back to the
+  // gitignored artifact directory. `ctx.shardDir` is a test seam (never set in production).
+  const shardDir =
+    ctx.shardDir ?? (ctx.transcriptDir ? resolve(ctx.transcriptDir, 'plan') : resolve(root, CENSUS_CAPTURE_REL, 'plan'))
   let plan = null
   let buildDigest = null
   const captureLines = []
@@ -2374,7 +2377,11 @@ function main(argv) {
 
   const scratchDir = resolve(REPO_ROOT, CENSUS_SIDECAR_REL)
   mkdirSync(scratchDir, { recursive: true })
-  mkdirSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true })
+  // Only the LEGACY capture writes under CENSUS_CAPTURE_REL. The plan path writes beside its
+  // transcript (or, with no transcript dir, creates its own directory when it needs it), so it must
+  // not pre-create a checkout directory it never uses — that is exactly the cross-run coupling
+  // finding 1 was about.
+  if (opts.censusExecution !== 'plan') mkdirSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true })
   const transcriptDir = opts.transcriptDir === null ? null : resolve(process.cwd(), opts.transcriptDir)
   if (transcriptDir !== null) mkdirSync(transcriptDir, { recursive: true })
 
