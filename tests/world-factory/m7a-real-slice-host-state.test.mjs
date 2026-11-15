@@ -18,21 +18,26 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
+import { TEST_USE_BASELINE_SHA } from '../paths.mjs'
 
 const REPO = resolve(fileURLToPath(new URL('.', import.meta.url)), '..', '..')
 const SUITE = join(REPO, 'tests', 'world-factory', 'm7a-real-slice.test.mjs')
 const emptyHost = mkdtempSync(join(tmpdir(), 'm7a-no-host-'))
+// A host tree that LOOKS provisioned (`apps/cli/lib/bin.js` exists) but cannot
+// be trusted: no git base, so the suite's host-base precondition must fail.
+const brokenHost = mkdtempSync(join(tmpdir(), 'm7a-broken-host-'))
 
 test.after(() => {
   rmSync(emptyHost, { recursive: true, force: true })
+  rmSync(brokenHost, { recursive: true, force: true })
 })
 
-function runSuite(env) {
+function runSuite(env, timeoutMs = 120_000) {
   // The outer runner marks this process with NODE_TEST_CONTEXT; a child that
   // inherits it is treated as a nested worker and SKIPS running the file (the
   // exact "run() called recursively" trap that would make these pins vacuous).
@@ -42,7 +47,7 @@ function runSuite(env) {
     cwd: REPO,
     env: { ...inherited, M7A_HOST_TREE: emptyHost, M7A_REQUIRE_PINNED_HOST: '', ...env },
     encoding: 'utf8',
-    timeout: 120_000,
+    timeout: timeoutMs,
   })
   return { status: result.status, output: `${result.stdout ?? ''}${result.stderr ?? ''}` }
 }
@@ -61,4 +66,46 @@ test('M7-A real-host suite: M7A_REQUIRE_PINNED_HOST=1 makes the same absence a h
   const { status, output } = runSuite({ M7A_REQUIRE_PINNED_HOST: '1' })
   assert.notEqual(status, 0)
   assert.match(output, /M7A-REAL-SLICE-HOST-INCOMPLETE/u)
+})
+
+test('M7-A real-host suite: a host-start failure EXITS, names the precondition, and does not hang', () => {
+  // MEASURED on the hosted runner (job 132898455498): the suite failed 166 ms in and the step
+  // then sat for 41 minutes, because the in-process mock provider it had already started kept
+  // the event loop alive and the reporter never reached its failure summary. The contract this
+  // case pins is the one that matters at the job level: a failing suite finishes failing.
+  //
+  // The host tree is HOST-FREE by construction: a fake `bin.js` that exits at once, and a
+  // `git` on PATH that answers the pin checks so the suite reaches `startHost`. That is the
+  // exact sequence that hung — mock provider listening, Host start failing — and the boot
+  // timeout is 2 s so the failure is fast and deterministic.
+  const fakeHost = mkdtempSync(join(tmpdir(), 'm7a-fake-host-'))
+  const fakeBin = join(fakeHost, 'shims')
+  mkdirSync(join(fakeHost, 'apps', 'cli', 'lib'), { recursive: true })
+  writeFileSync(join(fakeHost, 'apps', 'cli', 'lib', 'bin.js'), 'process.exit(0)\n')
+  mkdirSync(fakeBin)
+  const realGit = spawnSync('command', ['-v', 'git'], { shell: true, encoding: 'utf8' }).stdout.trim()
+  writeFileSync(
+    join(fakeBin, 'git'),
+    `#!/bin/sh\ncase "$*" in\n  *rev-parse*) echo ${TEST_USE_BASELINE_SHA} ;;\n  *status*) exit 0 ;;\n  *) exec ${realGit} "$@" ;;\nesac\n`,
+    { mode: 0o755 },
+  )
+  try {
+    const startedAt = Date.now()
+    const { status, output } = runSuite({
+      M7A_HOST_TREE: fakeHost,
+      M7A_REQUIRE_PINNED_HOST: '1',
+      M7A_BOOT_TIMEOUT_MS: '2000',
+      PATH: `${fakeBin}:${process.env.PATH ?? ''}`,
+    }, 240_000)
+    const elapsedMs = Date.now() - startedAt
+    // spawnSync's 120 s timeout reports `status: null`; an exit by itself reports a number.
+    assert.notEqual(status, null, `the suite must exit on its own (spawn timeout would mean a hang); output:\n${output}`)
+    assert.notEqual(status, 0)
+    assert.ok(elapsedMs < 240_000, `the suite must finish inside the child timeout (took ${String(elapsedMs)}ms)`)
+    assert.match(output, /M7A-PRECONDITION host-start FAILED/u)
+    assert.match(output, /\[M7A\] SUITE FAILED:/u)
+    assert.match(output, /teardown \(t\.after\)|teardown \(body-finally\)/u)
+  } finally {
+    rmSync(fakeHost, { recursive: true, force: true })
+  }
 })

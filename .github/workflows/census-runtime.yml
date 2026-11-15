@@ -411,12 +411,26 @@ jobs:
       # IT DOES NOT TOUCH THE CENSUS. This is a separate step after the census and its transcript
       # re-grade: the census argv, its two captures, its population and the plan are unchanged; a
       # failure here fails the job (and its layer verdict) without changing what the census graded.
+      # THREE DEFENCES, BECAUSE THE FIRST HOSTED RUN PROVED ONE IS NOT ENOUGH (2026-11-15,
+      # job 132898455498): the suite failed 166 ms in, the process then held an open handle for
+      # 41 MINUTES, and the 60-minute job timeout cancelled the whole L2. The step never
+      # printed the failure's text, because the spec reporter flushes failures at the END.
+      #   (1) the suite releases what it started on the throw itself, in `t.after`, and in its
+      #       `finally` (`scripts`-free: tests/world-factory/m7a-real-run.mjs startRealRun closes
+      #       the in-process mock provider on every failure path; U11 pins it);
+      #   (2) `--test-force-exit` closes the last escape hatch: a handle nobody tracks cannot
+      #       outlive the run, so the step exits with the verdict it actually reached;
+      #   (3) `timeout-minutes: 10` bounds the step even if both of the above regress — a red
+      #       inside ten minutes beats a cancelled job, which reports NOTHING about the code.
+      # The failure is also printed to stderr immediately (`[M7A] PRECONDITION <name> FAILED: …`
+      # and `[M7A] SUITE FAILED: …`), so a bounded red names its cause on the first line.
       - name: M7-A real-host slice — one real boot, five arms (pinned host REQUIRED, never skipped)
         shell: bash
+        timeout-minutes: 10
         env:
           M7A_REQUIRE_PINNED_HOST: '1'
           M7A_BOOT_TIMEOUT_MS: '600000'
-        run: node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
+        run: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
 
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the

@@ -103,10 +103,19 @@ export const M7A_WATCH_DIRNAME = 'm7a-watch'
  */
 export async function createRealRunWorld({ factory, line }) {
   const world = await factory.createWorld({ line })
-  const tmpDir = join(world.home, M7A_TMP_DIRNAME)
-  const watchDir = join(tmpDir, M7A_WATCH_DIRNAME)
-  mkdirSync(watchDir, { recursive: true })
-  return { world, tmpDir, watchDir }
+  try {
+    const tmpDir = join(world.home, M7A_TMP_DIRNAME)
+    const watchDir = join(tmpDir, M7A_WATCH_DIRNAME)
+    mkdirSync(watchDir, { recursive: true })
+    return { world, tmpDir, watchDir }
+  } catch (error) {
+    // A half-created World owns a home; leaving it behind on the failure path is
+    // how a red run turns into a leaking one. Tear down what we made, then fail.
+    await world.teardown({ keepHome: false }).catch((teardownError) => {
+      console.error('[M7A] teardown after createRealRunWorld failed:', teardownError?.stack ?? teardownError)
+    })
+    throw error
+  }
 }
 
 // ── session log: the Host's own durable trace ────────────────────────────────
@@ -343,33 +352,51 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * @param {unknown} args.script - an `agent-script/1` document
  * @param {number} [args.bootTimeoutMs]
  */
-export async function startRealRun({ world, tmpDir, script, bootTimeoutMs = 180_000 }) {
+export async function startRealRun({ world, tmpDir, script, bootTimeoutMs = 180_000, signal = null }) {
   const { createWireScriptDriver } = await wire()
   const driver = createWireScriptDriver(script, { callIdPrefix: 'm7a' })
   scrubProviderEnv()
   // The Host's temp area becomes world-owned: a temp-area write can then only
   // land where this slice can see it (and the World deletes it at teardown).
   process.env.TMPDIR = tmpDir
-  const mock = await world.startMock({ decide: (input) => driver.decide(input) })
-  const booted = await world.startHost({ bootTimeoutMs })
-  const origin = `http://127.0.0.1:${booted.port}`
-  const cookie = await authenticate(origin, world.token)
-  const created = await apiSessionCreate(origin, cookie, world.workspaceDir, 'm7a')
-  const sessionId = created.body?.result?.value?.sessionId
-  if (typeof sessionId !== 'string' || sessionId.length === 0) {
-    throw new Error(`M7A_SESSION_CREATE_REFUSED status=${String(created.status)} body=${JSON.stringify(created.body)?.slice(0, 400)}`)
+  // The mock provider is an IN-PROCESS HTTP SERVER: once it is listening it owns
+  // a handle, so a throw from anything below (the sandbox pre-flight, a dead
+  // host, a refused session) would leave the event loop alive and the test
+  // process unable to exit — measured on the hosted runner as a 41-minute hang
+  // until the job's own timeout. Every failure path therefore stops what this
+  // function started before it rethrows, and an abort signal does the same.
+  const onAbort = () => {
+    world.stopHost({ graceMs: 2_000 }).catch(() => {})
   }
-  return {
-    origin,
-    cookie,
-    sessionId,
-    port: booted.port,
-    driver,
-    mock,
-    token: world.token,
-    worldHome: world.home,
-    workspaceDir: world.workspaceDir,
-    agentPreset: created.body?.result?.value?.agentPreset ?? null,
+  signal?.addEventListener('abort', onAbort, { once: true })
+  try {
+    const mock = await world.startMock({ decide: (input) => driver.decide(input) })
+    const booted = await world.startHost({ bootTimeoutMs })
+    const origin = `http://127.0.0.1:${booted.port}`
+    const cookie = await authenticate(origin, world.token)
+    const created = await apiSessionCreate(origin, cookie, world.workspaceDir, 'm7a')
+    const sessionId = created.body?.result?.value?.sessionId
+    if (typeof sessionId !== 'string' || sessionId.length === 0) {
+      throw new Error(`M7A_SESSION_CREATE_REFUSED status=${String(created.status)} body=${JSON.stringify(created.body)?.slice(0, 400)}`)
+    }
+    return {
+      origin,
+      cookie,
+      sessionId,
+      port: booted.port,
+      driver,
+      mock,
+      token: world.token,
+      worldHome: world.home,
+      workspaceDir: world.workspaceDir,
+      agentPreset: created.body?.result?.value?.agentPreset ?? null,
+    }
+  } catch (error) {
+    await world.stopHost({ graceMs: 2_000 }).catch(() => {})
+    await world.stopMock().catch(() => {})
+    throw error
+  } finally {
+    signal?.removeEventListener('abort', onAbort)
   }
 }
 

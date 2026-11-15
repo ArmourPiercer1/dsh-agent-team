@@ -23,11 +23,13 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
+import { createServer } from 'node:http'
 import { zstdCompressSync } from 'node:zlib'
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 import {
   decompressSessionLog,
+  startRealRun,
   traceEventsFromSessionRows,
 } from './lib/m7a-real-run.mjs'
 
@@ -288,4 +290,64 @@ test('M7A-U10 without a decision event the oracle refuses to call an effect a vi
   })
   assert.equal(judged.verdict, 'INCONCLUSIVE', 'an effect with no decision anywhere in the trace cannot be graded as a violation')
   assert.ok(judged.reasons.some((line) => line.includes('no computed/denied event')))
+})
+
+// ── M7A-U11: a failing start must not leave the mock provider listening ──────
+//
+// MEASURED (hosted `census-runtime` job 132898455498): the live suite failed
+// 166 ms in, and the step then sat for 41 minutes until the job's 60-minute
+// timeout. The mechanism is here: `startRealRun` starts the in-process mock
+// provider BEFORE the Host, so a throw from the Host path left an HTTP server
+// holding the event loop and the test process could never exit. This case
+// drives that exact sequence with a fake World whose `startHost` throws, and
+// asserts the mock is CLOSED (not merely "stop was called") before the error
+// reaches the caller.
+test('M7A-U11 a host-start failure closes the mock provider it already started', async () => {
+  const dir = tmp('start-failure')
+  const server = createServer((_req, res) => res.end('{}'))
+  await new Promise((resolveListen) => server.listen(0, '127.0.0.1', resolveListen))
+  const port = server.address().port
+  const calls = { stopHost: 0, stopMock: 0 }
+  const fakeWorld = {
+    token: 'fake-token',
+    home: dir,
+    workspaceDir: dir,
+    async startMock() {
+      return { port }
+    },
+    async startHost() {
+      throw new Error('M7A-TEST-HOST-REFUSED: sandbox pre-flight refused before the first host start')
+    },
+    async stopHost() {
+      calls.stopHost += 1
+      return { wasRunning: false }
+    },
+    async stopMock() {
+      calls.stopMock += 1
+      await new Promise((resolveClose) => server.close(resolveClose))
+    },
+  }
+  const previousTmpdir = process.env.TMPDIR
+  try {
+    await assert.rejects(
+      startRealRun({
+        world: fakeWorld,
+        tmpDir: dir,
+        script: {
+          schema: 'agent-script/1',
+          world: 'm7a-u11',
+          turns: [{ expect_request: { tools_include: ['write'] }, respond: { kind: 'text', text: 'u11' } }],
+        },
+        bootTimeoutMs: 1_000,
+      }),
+      /M7A-TEST-HOST-REFUSED/u,
+    )
+  } finally {
+    if (previousTmpdir === undefined) delete process.env.TMPDIR
+    else process.env.TMPDIR = previousTmpdir
+    await new Promise((resolveClose) => server.close(() => resolveClose()))
+  }
+  assert.ok(calls.stopHost >= 1, 'the host stop was attempted on the failure path')
+  assert.ok(calls.stopMock >= 1, 'the mock provider was stopped on the failure path')
+  assert.equal(server.listening, false, 'the mock provider is CLOSED — it cannot hold the event loop after a failed start')
 })

@@ -338,7 +338,7 @@ must never be allowed to excuse the other:
 | suite | layer / step | what it needs | frequency | if the host is absent |
 | --- | --- | --- | --- | --- |
 | `tests/world-factory/m7a-real-slice-unit.test.mjs` (C1, 10 cases, ~0.2 s) **and** `tests/world-factory/m7a-real-slice-host-state.test.mjs` (the refusal/failure contract, 2 cases) | **ci-integration**, step `test catalog + TINF instruments`, leg `tinf-instruments` (`scripts/dispatch-tests.mjs --run --leg tinf-instruments`; population declared once in `dev/ci/eb3-ci-manifest.json` as `suites[]`) | nothing but the repo: no port, no `DSH_HOME`, no host tree | every PR | n/a — they never resolve the host |
-| `tests/world-factory/m7a-real-slice.test.mjs` (C2, 5 arms, one boot, ~50–135 s locally: 130 s cold, 43 s warm) | **ci-census** (`census-runtime.yml`), its own step after the census and its transcript re-grade: `node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`, with `M7A_REQUIRE_PINNED_HOST=1` and `M7A_BOOT_TIMEOUT_MS=600000` in `env:` | the pinned pristine host **and its build**, plus the repo build — exactly what this job already provisions | every PR (the layer is Required; drafts defer it as a whole, they do not skip this step inside a run) | **hard failure** (`M7A-REAL-SLICE-HOST-INCOMPLETE`), never a skip |
+| `tests/world-factory/m7a-real-slice.test.mjs` (C2, 5 arms, one boot, ~50–135 s locally: 130 s cold, 43 s warm) | **ci-census** (`census-runtime.yml`), its own step after the census and its transcript re-grade: `node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`, with `M7A_REQUIRE_PINNED_HOST=1` and `M7A_BOOT_TIMEOUT_MS=600000` in `env:` and `timeout-minutes: 10` on the step | the pinned pristine host **and its build**, plus the repo build — exactly what this job already provisions | every PR (the layer is Required; drafts defer it as a whole, they do not skip this step inside a run) | **hard failure** (`M7A-REAL-SLICE-HOST-INCOMPLETE`), never a skip |
 
 **What a green C1 run proves.** The three mappings the C2 arms rest on are themselves tested on
 every PR, with no host to hide behind: a real DSH session log is concatenated zstd frames and the
@@ -385,12 +385,75 @@ scanner walks the **working tree**, so an untracked file under `packages/**` dur
 inflates the total — the measurement above had to be re-run after removing a probe file, and keeps
 that fact in the booking's `tieNote`.
 
-**Cost, and the job's timeout.** Locally one boot + five arms = **133 s** (boot 130 s, teardown
-0.1 s). At the census job's own conservative 4× hosted factor that is a **~9 min** delta on top of
-its ~8–10 min measured floor, inside the job's `timeout-minutes: 60`. The step changes neither the
-census argv nor the plan: it is a separate step, so the census population, its two captures and its
-`--census-test-timeout` are untouched, and a failure here fails the job (and its layer verdict)
-without altering what the census graded.
+**Cost, and the job's timeout — corrected by measurement.** Locally one boot + five arms = **133 s**
+(boot 130 s, teardown 0.1 s) on a warm tree. That estimate is **withdrawn as a bound**: the hosted
+run never got there (it failed at 166 ms and then held the job for 41 minutes), so the 133 s × 4
+arithmetic was never a hosted measurement. The step now carries its OWN `timeout-minutes: 10`: a
+step-level budget cannot rescue the job, but it converts the worst case from a cancelled 60-minute
+job into a red whose log says what happened. The step changes neither the census argv nor the plan:
+it is a separate step, so the census population, its two captures and its `--census-test-timeout`
+are untouched.
+
+**What the second hosted run proved: a FAILING suite could hold the job for 41 minutes (job
+`132898455498`).** The census itself passed this time — the booking fix worked, and the census step
+went green at 17:59:35. Then the M7-A step started and printed exactly one line:
+
+```
+17:59:35  ✖ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (165.90127ms)
+18:41:17  ##[error]The operation was canceled.     ← 41 minutes later, nothing else
+```
+
+166 ms is not a boot attempt. **Two independent defects, both mine:**
+
+1. **The failure was silent.** The spec reporter prints failure text at the END of a run; the run
+   never ended. Nothing named the precondition, so the hosted log contains no error at all.
+2. **The failure outlived the test.** `startRealRun()` starts the in-process mock provider (an HTTP
+   server on a leased port) BEFORE the Host, and a throw from the Host path left that server
+   listening. Node cannot exit while a handle is open, so `node --test` sat there until the job's
+   own 60-minute timeout cancelled the entire L2 — reporting nothing about the code.
+
+**What the cold-checkout reproduction says the throw was.** A fresh worktree of this head + a fresh
+clone of the pinned host at `639ed01539`, `pnpm install --ignore-scripts`, `pnpm run build`, no
+`.artifacts`, no `tests/homes`, the exact step argv and env, bounded by `timeout`:
+
+```
+[M7A] PRECONDITION host-start FAILED: HostBaseError: host base guard: sandbox pre-flight refused
+  before the first host start: host-sandbox-assets: DESTINATION_DIGEST_MISMATCH:
+  bin/glibc/system.node … hashes 75450f92… the pinned manifest says 54a9c25c… — the runner never
+  overwrites bytes it did not create
+[M7A] SUITE FAILED: HostBaseError: … the same line …
+[M7A] teardown (t.after) finished in 0ms
+✖ … (83803.7ms)     ← and the process EXITS (exit code 1)
+```
+
+That is the shape of the hosted failure: a fatal `HostBaseError` thrown from `startHost` after the
+mock provider was already listening, followed by a hang. The same run with the pre-fix code did not
+exit: `timeout -s KILL 90` had to kill it.
+
+**The structural conclusion, stated so it is not mistaken for flakiness.** `bin/glibc/system.node`
+is a **gitignored native asset**. The Team repo's manifest pins its bytes to the build made in the
+main checkout on 2026-10-28 (`provenance.measuredFrom`), and a fresh clone + build of the SAME pinned
+host SHA produces different bytes (`75450f92…` vs the pinned `54a9c25c…`): the addon is compiled on
+the machine that builds it. The provisioner's only source is a **local** tree ("no download path"),
+and on a hosted runner the destination tree is the only tree. So on a cold hosted checkout the
+pre-flight is guaranteed to refuse, the pinned Host never boots, and this step cannot pass there —
+not within any budget, not with a longer timeout. Whether the hosted runner's 166 ms throw was
+exactly this refusal cannot be read from its log (defect 1 destroyed the text); what IS measured is
+that the cold-checkout chain produces exactly this refusal, at the same point in the sequence.
+
+**Fixes, all three, because one is not enough:**
+
+- the suite tears down on **every** exit path: `startRealRun` closes the mock (and stops a
+  half-started Host) on any throw and on an abort signal; `createRealRunWorld` tears down a
+  half-created World; the test body has `try/finally`, a `t.after`, and prints
+  `M7A-PRECONDITION <name> FAILED: …` / `[M7A] SUITE FAILED: …` to **stderr immediately**;
+- the step runs `node --test --test-force-exit …`, so a handle nobody tracks cannot outlive the run;
+- the step carries `timeout-minutes: 10`, so even a total regression is a bounded red instead of a
+  cancelled job.
+
+Pinned host-free by C1: `M7A-U11` (a fake World whose `startHost` throws after `startMock`, asserting
+the server is CLOSED, not merely stopped) and the third host-state case (a fake host tree + a `git`
+shim, boot timeout 2 s: the suite must exit by itself, name `host-start`, and print `SUITE FAILED`).
 
 **Three-state contract** (the `a5sf-fs-contract` idiom, kept for local runs and for a host-free
 checkout): complete host → the arms run; absent → one machine-readable
@@ -521,6 +584,22 @@ It may **not** conclude:
 8. Exact timing on a loaded machine (boot 130 s here is machine-specific, not a budget).
 9. Whether a tool write into the Host's own authorized state roots (`sessions/`, `storages/`, the `m7a-tmp/dsh-*` spool) can be distinguished from the Host's bookkeeping — **not distinguishable with a snapshot witness**; the authorization is declared, not measured.
 10. Whether the workspace/`TMPDIR` split the fs tool enforces is the intended product policy or an accident of this host build — **observed behaviour only** (repeated here because the scope correction now depends on it).
+11. **What the hosted runner's 166 ms throw actually was.** Its text is unrecoverable: the reporter
+    prints failures at the end and the run never ended. The cold-checkout reproduction above produces
+    a fatal `DESTINATION_DIGEST_MISMATCH` from `startHost` at exactly the same point in the sequence,
+    and that refusal is structural on any fresh checkout (a machine-local native pin with no local
+    provisioning source). That is a reproduction of the MECHANISM, not a read of the hosted log — so
+    the next hosted run must be the one that prints it. **This is an unexplained-hosted-run gap, not
+    a resolved one**, and it is why the fix above prints the failure immediately.
+12. Whether the pinned Host can boot on a hosted runner at all. As configured today: **no** — the
+    sandbox pre-flight compares `native/system/packages/linux-x64/bin/glibc/system.node` against a
+    manifest pinned to one machine's build, and a fresh clone + build produces different bytes
+    (`75450f92…` vs `54a9c25c…`, measured). Provisioning copies from a LOCAL tree and a hosted runner
+    has none. Deciding where this step belongs (Required vs a manual/nightly lane) is a gate
+    decision, not a code decision; it is raised as such rather than worked around here.
+13. Why `acquireFirstFreeLease` can take 30–100 s in this (sandboxed, stale-lease-heavy) environment
+    while the hosted run failed in 166 ms — **not investigated**; the local number is an environment
+    observation, not a budget (and stale lease files from killed runs make it worse).
 
 ---
 
@@ -532,9 +611,17 @@ cd .worktrees/m7a-20261115
 # C1 — the same invocation ci-integration runs (no boot; both host-free suites)
 node scripts/dispatch-tests.mjs --run --leg tinf-instruments
 
+# Cold-checkout reproduction of the hosted failure shape (a fresh worktree of this head plus a
+# fresh clone of the pinned host at 639ed01539, `pnpm install --ignore-scripts`, `pnpm run build`):
+#   M7A_REQUIRE_PINNED_HOST=1 M7A_BOOT_TIMEOUT_MS=600000 \
+#     node --test --test-force-exit --test-timeout=900000 --test-reporter=spec \
+#     tests/world-factory/m7a-real-slice.test.mjs
+# It must print `[M7A] PRECONDITION host-start FAILED: … DESTINATION_DIGEST_MISMATCH …` and EXIT.
+# Wrap it in `timeout 900` and the bound is real: before the fix this same command was killed.
+
 # C2 — the same argv ci-census runs, with the pin required so a missing
 # host cannot become a skip (one boot, five arms, ~2m15s)
-M7A_REQUIRE_PINNED_HOST=1 node --test --test-timeout=900000 --test-reporter=spec \
+M7A_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=900000 --test-reporter=spec \
   tests/world-factory/m7a-real-slice.test.mjs
 
 # in-package tests for the new testkit surface (the existing files they joined)
