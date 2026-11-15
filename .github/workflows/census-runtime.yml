@@ -394,6 +394,30 @@ jobs:
           set -euo pipefail
           node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/census-run.txt"
 
+      # M7-A (2026-11-15): the C2 half of the real-host slice — the Contract Oracle in front of a
+      # REAL execution chain (scripted model on the provider wire -> dsh web -> real Agent Session
+      # -> real tool resolution -> real execution -> independent FS observation -> judgeContract).
+      # WHY IT LIVES HERE. This is the only job that provisions and builds the pinned pristine host,
+      # and the only one where a missing host is already a failure; the slice's five arms are
+      # worthless as a gate if the ordinary outcome is "host absent, declared refusal, skipped".
+      # M7A_REQUIRE_PINNED_HOST=1 is therefore not a convenience: with it the suite turns an absent
+      # host into a hard, named failure, which is the difference between collecting the suite and
+      # pretending to. M7A_BOOT_TIMEOUT_MS=600000 because this runner's first boot of the pinned
+      # host is slower than the 130 s measured locally (the census job's own note records a 2-4x
+      # hosted factor); a boot timeout below a real boot forfeits the suite rather than grading it.
+      # COST, stated so the 60-minute job timeout can be checked against it: one boot + five arms =
+      # 133 s measured locally (boot 130 s, teardown 0.1 s); at the same conservative 4x factor the
+      # delta is ~9 min on top of the census job's ~8-10 min floor, well inside 60.
+      # IT DOES NOT TOUCH THE CENSUS. This is a separate step after the census and its transcript
+      # re-grade: the census argv, its two captures, its population and the plan are unchanged; a
+      # failure here fails the job (and its layer verdict) without changing what the census graded.
+      - name: M7-A real-host slice — one real boot, five arms (pinned host REQUIRED, never skipped)
+        shell: bash
+        env:
+          M7A_REQUIRE_PINNED_HOST: '1'
+          M7A_BOOT_TIMEOUT_MS: '600000'
+        run: node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
+
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the
       # 2026-10-18 forensics round — a BOUNDED key-line echo per failed command:

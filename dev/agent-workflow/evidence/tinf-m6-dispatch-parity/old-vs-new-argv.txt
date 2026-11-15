@@ -3,7 +3,7 @@
 dated: 2026-11-15
 base:  e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773 — the last commit whose
        workflows still carried the hand-written `node --test` lists)
-head:  task/tinf-trust-fix-20261115 (M6 + the TINF trust-closeout fixes)
+head:  task/m7a-real-host-20261115 (M6 + trust-closeout + M7-A's two host-free C1 suites)
 host:  v24.21.0 / git 2.53.0 / Linux x86_64
 
 WHY THIS FILE EXISTS
@@ -20,6 +20,16 @@ WHY THIS FILE EXISTS
   four files. `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set, so a
   future addition cannot hide behind this regeneration.
 
+  REGENERATED 2026-11-15 (M7-A). The real-host slice's two host-free suites
+  (tests/world-factory/m7a-real-slice-unit.test.mjs, tests/world-factory/m7a-real-slice-host-state.test.mjs)
+  ride the SAME `tinf-instruments` leg — they are test instruments (a durable-log reader, a wire
+  driver, a provenance seal, the live suite's host-state contract) and a brand-new leg would be a
+  permanent `UNCONVERTED` problem, because the parity law requires every dispatch step to correspond
+  to a `node --test` argv that existed at the base. So the union is DELIBERATELY 31 instead of 29,
+  every row still has `missing=none`, `problems=0`, and `added=` names exactly six files (the four
+  trust-closeout controls plus these two). The C2 half — the one that boots the real Host — is NOT
+  here: it runs in ci-census, which is the only job that provisions the pinned host.
+
 WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
   argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
   25/25 and is not a meaningful comparison. e5bf05670 is the last commit whose workflows
@@ -28,6 +38,7 @@ WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --
 REPRODUCE
   node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
 
+dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
       old tests/diag-call-chain/diag-call-chain.test.mjs
@@ -48,7 +59,7 @@ REPRODUCE
     scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
       old scripts/tinf-m0.test.mjs
       new scripts/tinf-m0.test.mjs
-    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=10 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=12 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs
       old scripts/census-aggregate.test.mjs
       old scripts/census-cutover.test.mjs
       old scripts/census-plan.test.mjs
@@ -65,6 +76,8 @@ REPRODUCE
       new scripts/test-catalog.test.mjs
       new scripts/tinf-timing.test.mjs
       new scripts/tinf-trust-closeout.test.mjs
+      new tests/world-factory/m7a-real-slice-host-state.test.mjs
+      new tests/world-factory/m7a-real-slice-unit.test.mjs
     a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
       old tests/world-factory/a5sf-harness.test.mjs
       new tests/world-factory/a5sf-harness.test.mjs
@@ -102,8 +115,8 @@ REPRODUCE
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=29 set=sha256:117cd5d498d12bc0b837106e5d8cab486e4e56cda7b48a34dc80896832e921e0
-DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=29 problems=0
+  union old=25 new=31 set=sha256:949f64991fac2208dbd779358802f6bcfbe149bfd4ea07871fc27d0bb07909dc
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=31 problems=0
 
 EXIT CODE
 1

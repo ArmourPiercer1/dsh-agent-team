@@ -300,6 +300,12 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'scripts/dispatch-tests.test.mjs',
     'scripts/eb3-ci-required.test.mjs',
     'scripts/tinf-trust-closeout.test.mjs',
+    // M7-A (2026-11-15): the real-host slice's two host-free suites ride the
+    // tinf-instruments leg (a new leg would be a permanent UNCONVERTED problem:
+    // the parity law needs an old-side `node --test` argv for every dispatch
+    // step). Declared HERE so the next addition still cannot hide.
+    'tests/world-factory/m7a-real-slice-host-state.test.mjs',
+    'tests/world-factory/m7a-real-slice-unit.test.mjs',
   ])
   const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
   assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')
