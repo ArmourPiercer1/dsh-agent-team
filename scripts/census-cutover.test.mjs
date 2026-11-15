@@ -6,29 +6,47 @@
  * aggregate, same verdict token) and adds the one producer M4 disclosed as missing (`build_digest`).
  * Both are exactly the kind of change that can go green while proving less than it claims, so every
  * refusal path the milestone names has a negative control here, and every control drives the REAL
- * code: `LEGS.census` from `scripts/ci-pr-gate.mjs` (with a recorded capture directory, the same
- * `--census-dry-run` CLI path CI's cheap legs can run), `resultsFromReport`/`resultsFromReplay`
- * from `scripts/census-execution.mjs`, and `computeBuildStamp`/`verifyBuildStamp` from
- * `scripts/census-build-stamp.mjs`. The two CLI cases spawn the real command and assert the real
- * `DSH-CI-VERDICT` token and exit code, because the token is the acceptance surface.
+ * code: `LEGS.census` from `scripts/ci-pr-gate.mjs` (recorded captures, or an injected runner for
+ * the live branch), `resultsFromReport`/`resultsFromReplay` from `scripts/census-execution.mjs`,
+ * `verifyEvidenceRefs`/`aggregateArtifacts` from `scripts/census-aggregate.mjs`, and
+ * `computeBuildStamp`/`readBuildStamp` from `scripts/census-build-stamp.mjs`. Three cases spawn the
+ * real CLI (`ci-pr-gate` twice, `census-aggregate` once) and assert the real token / exit / stderr,
+ * because the token is the acceptance surface and the aggregator CLI is what a doctored directory
+ * meets first.
  *
- * NEGATIVE CONTROLS (each must be RED, each named):
+ * HERMETIC BY CONSTRUCTION. Every fixture is created under `os.tmpdir()`. The first draft made them
+ * under `REPO_ROOT/.artifacts` and passed only because an UNRELATED earlier suite left that
+ * directory behind (16 of 25 failed on a clean checkout): a test that depends on execution order is
+ * not a test. `shardDir`/`transcriptDir` are injected for the same reason — a run writes nothing
+ * inside the checkout.
+ *
+ * NEGATIVE CONTROLS (each RED, each named):
  *   - a plan refusal                   (a tree whose root config cannot be derived)
  *   - an aggregation refusal           (a one-capture plan → CAPTURES_INSUFFICIENT)
  *   - a missing second capture         (only capture 1 recorded → DRYRUN_CAPTURE_MISSING)
+ *   - a replay from another tree       (→ DRYRUN_IDENTITY_MISMATCH)
+ *   - a replay that omits a root       (→ DRYRUN_COVERAGE_MISMATCH)
  *   - an exit-0-with-FAIL result       (shard COMPLETED/exit 0 carrying FAIL → TASK_STATE_FAIL)
- *   - a dropped root                   (one planned task has no result → TASK_MISSING/INCOMPLETE)
- *   - a missing build stamp            (→ BUILD_STAMP_MISSING; and nothing is written in its place)
- * plus the POSITIVE control (22 planned tasks, 22 observed, PASS) and a two-shard layout control.
+ *   - a dropped root                   (a shard missing a task → TASK_MISSING/INCOMPLETE)
+ *   - an unplanned root                (report names a root the plan does not → RESULT_ROOT_UNPLANNED)
+ *   - evidence that names nothing      (→ RESULT_EVIDENCE_UNREADABLE, at the aggregator CLI too)
+ *   - evidence that escapes the dir    (→ RESULT_EVIDENCE_OUTSIDE)
+ *   - a missing build stamp            (→ BUILD_STAMP_MISSING; nothing is written in its place)
+ *   - a stale build stamp              (same tree, changed bytes → BUILD_STAMP_STALE)
+ *   - a stale report at the graded path (unlinked before the run → CENSUS_REPORT_MISSING)
+ *   - EB3_MERGE_TREE naming another tree (→ PLAN_MERGE_TREE_MISMATCH)
+ *   - a skipped assertion              (NOT a failure, but the count travels with the result)
+ * plus the POSITIVE control (22 planned tasks, 22 observed, PASS), a two-shard layout control, and
+ * the live branch with an injected runner (one stamped invocation per capture).
  *
- * NO HOST, NO SUITE RUN. Nothing here spawns vitest; the recording is produced by the real
- * derivation path (`resultsFromReport`) or by the leg itself, and replayed. That is the same
- * mechanism a cheap CI leg uses.
+ * NO HOST, NO SUITE RUN. Nothing here spawns vitest; the live branch's runner is injected and writes
+ * a report, and the dry-run branch replays a recording.
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
 
@@ -41,11 +59,12 @@ import {
 } from './census-build-stamp.mjs'
 import { SCHEMA as PLAN_SCHEMA, buildPlan, deriveRoots, gitTreeSha, hostSha } from './census-plan.mjs'
 import { isValidDigest } from './census-digest.mjs'
+import { aggregateArtifacts, buildShardArtifacts, writeShardArtifacts } from './census-execution.mjs'
 import {
   REPLAY_SCHEMA,
-  buildShardArtifacts,
   resultsFromReplay,
   resultsFromReport,
+  stampedReportPath,
 } from './census-execution.mjs'
 import { CENSUS_CAPTURE_REL, LEGS, censusPlanLeg } from './ci-pr-gate.mjs'
 import { createTimer } from './tinf-timing.mjs'
@@ -84,9 +103,9 @@ function fixture() {
   return base
 }
 
+/** A fixture directory OUTSIDE the checkout: a clean clone has no `.artifacts/`, and must not need one. */
 function tmpDir(label) {
-  const dir = mkdtempSync(join(REPO_ROOT, '.artifacts', `m5-${label}-`))
-  return dir
+  return mkdtempSync(join(tmpdir(), `m5-${label}-`))
 }
 
 /** A recording of the shared plan: every task PASS unless `mutate` says otherwise. */
@@ -94,6 +113,7 @@ function replayOf(plan, capture, mutate = (results) => results) {
   return {
     schema: REPLAY_SCHEMA,
     plan_digest: plan.identity.plan_digest,
+    merge_tree: plan.identity.merge_tree_sha,
     capture,
     identity: { ...plan.identity },
     results: mutate(
@@ -110,22 +130,18 @@ function replayOf(plan, capture, mutate = (results) => results) {
   }
 }
 
-/** Write a dry-run directory holding the given captures (each recording or raw object). */
-function writeDryRun(label, plan, { captures = [1, 2], mutate = {}, files = {} } = {}) {
+/** Write a dry-run directory holding the given captures (each a recording, optionally mutated). */
+function writeDryRun(label, plan, { captures = [1, 2], mutate = {} } = {}) {
   const dir = tmpDir(label)
   for (const capture of captures) {
-    const name = files[capture] ?? `census-replay-${capture}.json`
-    const body = mutate[capture] === undefined
-      ? replayOf(plan, capture)
-      : replayOf(plan, capture, mutate[capture])
-    writeFileSync(join(dir, name), `${JSON.stringify(body, null, 2)}\n`)
+    const body = mutate[capture] === undefined ? replayOf(plan, capture) : replayOf(plan, capture, mutate[capture])
+    writeFileSync(join(dir, `census-replay-${capture}.json`), `${JSON.stringify(body, null, 2)}\n`)
   }
   return dir
 }
 
 /** The real gate context, as main() builds it, minus everything the plan path does not use. */
-function gateContext({ dryRun = null, captures = CAPTURES, shards = 1, stampPath = null, root = undefined } = {}) {
-  const dir = dryRun ?? tmpDir('ctx-transcripts')
+function gateContext({ dryRun = null, captures = CAPTURES, shards = 1, stampPath = null, root = undefined, runCommand = undefined } = {}) {
   return {
     repoRoot: root,
     censusExecution: 'plan',
@@ -136,15 +152,44 @@ function gateContext({ dryRun = null, captures = CAPTURES, shards = 1, stampPath
     censusTestTimeout: CLOCK,
     censusJson: null,
     resample: 3,
-    transcriptDir: dryRun === null ? dir : null,
+    // Both output directories are tmp: the leg writes the build stamp, the replay recording and the
+    // evidence artifacts here, so a test run leaves no byte inside the checkout.
+    transcriptDir: tmpDir('ctx-transcripts'),
+    shardDir: tmpDir('ctx-shards'),
     stamp: 'm5-test',
+    runCommand,
     timing: createTimer({ dir: null, runId: 'm5-test', identity: 'phase=m5' }),
     capture() {},
     writeJson() {},
   }
 }
 
+/** A synthetic vitest report whose roots all pass (with `skipped` extra skipped legs per root). */
+function reportFor(plan, { skipped = 0, failedRoot = null } = {}) {
+  return {
+    success: failedRoot === null,
+    testResults: plan.roots.map(({ root }) => ({
+      name: `/runner/work/repo/${root}/test/a.test.ts`,
+      status: failedRoot === root ? 'failed' : 'passed',
+      assertionResults: [
+        { status: failedRoot === root ? 'failed' : 'passed' },
+        ...Array.from({ length: skipped }, () => ({ status: 'skipped' })),
+      ],
+    })),
+  }
+}
+
 // ── the build stamp: a REAL digest of REAL bytes ────────────────────────────────────────────────
+
+test('fixtures live outside the checkout, so a clean checkout can run this suite', () => {
+  const dir = tmpDir('hermetic')
+  try {
+    assert.equal(dir.startsWith(REPO_ROOT), false, 'no fixture may be created inside the checkout')
+    assert.equal(dir.startsWith(tmpdir()), true)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
 
 test('the build stamp digests the real install surfaces, and the same bytes give the same digest', () => {
   const { stamp, roots } = fixture()
@@ -187,7 +232,7 @@ test('one changed byte changes the build digest (it is not a constant or a name)
     assert.notEqual(two.stamp.digest, one.stamp.digest)
     assert.equal(two.stamp.artifact_count, one.stamp.artifact_count)
     // ...and the second stamp verifies against its own bytes.
-    assert.equal(verifyBuildStamp(two.stamp).ok, true)
+    assert.equal(verifyBuildStamp(two.stamp, { cwd: dir, ignoredFiles: [] }).ok, true)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -243,6 +288,40 @@ test('a stamp from another tree is not this census build', () => {
   assert.equal(otherCatalog.code, 'BUILD_STAMP_IDENTITY_MISMATCH')
 })
 
+test('NEGATIVE: a same-tree stamp whose bytes changed is BUILD_STAMP_STALE (not trusted)', () => {
+  const dir = tmpDir('stamp-stale')
+  try {
+    spawnSync('git', ['init', '-q'], { cwd: dir })
+    mkdirSync(join(dir, 'packages/runtime/dist'), { recursive: true })
+    mkdirSync(join(dir, 'packages/client/composition-shim'), { recursive: true })
+    writeFileSync(join(dir, 'packages/runtime/dist/a.js'), 'A')
+    writeFileSync(join(dir, 'packages/client/composition-shim/b.js'), 'B')
+    const made = computeBuildStamp({
+      cwd: dir,
+      merge_tree: 'a'.repeat(40),
+      catalog_digest: `sha256:${'b'.repeat(64)}`,
+      ignoredFiles: [],
+    })
+    assert.equal(made.ok, true, made.detail)
+    const file = join(dir, 'product-build.json')
+    writeFileSync(file, `${JSON.stringify(made.stamp, null, 2)}\n`)
+    // Self-consistent, correct tree, correct catalog — and describing a moment that has passed.
+    assert.equal(readBuildStamp(file, { cwd: dir, ignoredFiles: [] }).ok, true)
+    writeFileSync(join(dir, 'packages/runtime/dist/a.js'), 'A changed')
+    const stale = readBuildStamp(file, { cwd: dir, ignoredFiles: [] })
+    assert.equal(stale.ok, false)
+    assert.equal(stale.code, 'BUILD_STAMP_STALE')
+    assert.match(stale.detail, /packages\/runtime\/dist\/a\.js \(bytes changed\)/)
+    // ...and when the surface cannot be re-hashed at all, the stamp is refused rather than trusted.
+    rmSync(join(dir, 'packages/runtime/dist'), { recursive: true, force: true })
+    const unverifiable = readBuildStamp(file, { cwd: dir, ignoredFiles: [] })
+    assert.equal(unverifiable.ok, false)
+    assert.equal(unverifiable.code, 'BUILD_STAMP_UNVERIFIABLE')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 test('an explicitly named stamp must EXIST — no substitute is computed in its place', () => {
   const dir = tmpDir('stamp-missing')
   try {
@@ -268,12 +347,12 @@ test('a recorded stamp round-trips through a file and verifies', () => {
     const { stamp } = fixture()
     const file = join(dir, 'product-build.json')
     writeFileSync(file, `${JSON.stringify(stamp, null, 2)}\n`)
-    const read = readBuildStamp(file, { merge_tree: stamp.merge_tree, catalog_digest: stamp.catalog_digest })
+    const read = readBuildStamp(file, { cwd: REPO_ROOT, merge_tree: stamp.merge_tree, catalog_digest: stamp.catalog_digest })
     assert.equal(read.ok, true, read.detail)
     assert.equal(read.stamp.digest, stamp.digest)
     // A stamp file that is not JSON is a named refusal, not a crash.
     writeFileSync(file, 'not json\n')
-    assert.equal(readBuildStamp(file).code, 'BUILD_STAMP_UNREADABLE')
+    assert.equal(readBuildStamp(file, { cwd: REPO_ROOT }).code, 'BUILD_STAMP_UNREADABLE')
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -301,6 +380,9 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
   assert.equal(mine.state, 'PASS')
   assert.equal(mine.capture, 1)
   assert.equal(mine.task_id, plan.tasks.find((t) => t.root === root && t.capture === 1).task_id)
+  assert.equal(mine.files, 1)
+  assert.equal(mine.assertions, 2)
+  assert.equal(mine.skipped, 0)
   assert.match(mine.evidence, /^\.artifacts\/census\/report-1\.json#/)
   assert.match(mine.evidence, /sha256:[0-9a-f]{64}$/)
 
@@ -313,6 +395,48 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
   })
   assert.equal(partial.ok, true)
   assert.equal(partial.results.every((r) => r.state === 'INCOMPLETE'), true)
+})
+
+test('a skip is NOT a failure (legacy semantics) and the skip count is carried', () => {
+  const { plan } = fixture()
+  const root = plan.tasks.find((t) => t.capture === 1).root
+  const got = resultsFromReport({
+    plan,
+    capture: 1,
+    reportRef: 'r.json',
+    report: {
+      success: true,
+      testResults: [
+        {
+          name: `/repo/${root}/test/a.test.ts`,
+          status: 'passed',
+          // `pending` is what vitest writes for `it.skip` / a conditional `it.skipIf(true)` body.
+          assertionResults: [{ status: 'passed' }, { status: 'pending' }, { status: 'skipped' }],
+        },
+      ],
+    },
+  })
+  const mine = got.results.find((r) => r.root === root)
+  assert.equal(mine.state, 'PASS', 'a skipped leg is a leg the runner declined to run, not a red')
+  assert.equal(mine.skipped, 2)
+  assert.equal(mine.assertions, 3)
+})
+
+test('an unknown assertion status is a FAIL, not a silent pass', () => {
+  const { plan } = fixture()
+  const root = plan.tasks.find((t) => t.capture === 1).root
+  const got = resultsFromReport({
+    plan,
+    capture: 1,
+    reportRef: 'r.json',
+    report: {
+      success: true,
+      testResults: [{ name: `/repo/${root}/test/a.test.ts`, status: 'passed', assertionResults: [{ status: 'quarantined' }] }],
+    },
+  })
+  const mine = got.results.find((r) => r.root === root)
+  assert.equal(mine.state, 'FAIL')
+  assert.match(mine.detail, /UNKNOWN_ASSERTION_STATUS/)
 })
 
 test('NEGATIVE: a root that RAN without being planned is refused (the invariant runs both ways)', () => {
@@ -349,7 +473,7 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
   })
   assert.equal(failed.results.find((r) => r.root === root).state, 'FAIL')
   // A collection error has no per-assertion detail; the whole report failed and no root owns it.
-  const unattributed = resultsFromReport({
+  const collection = resultsFromReport({
     plan,
     capture: 1,
     reportRef: 'r.json',
@@ -358,7 +482,7 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
       testResults: [{ name: `/repo/${root}/test/a.test.ts`, status: 'failed', message: 'collection error', assertionResults: [] }],
     },
   })
-  assert.equal(unattributed.results.find((r) => r.root === root).state, 'FAIL')
+  assert.equal(collection.results.find((r) => r.root === root).state, 'FAIL')
   const noFile = resultsFromReport({
     plan,
     capture: 1,
@@ -375,6 +499,8 @@ test('resultsFromReplay refuses every identity mismatch by name', () => {
 
   const cases = [
     ['DRYRUN_PLAN_MISMATCH', { ...good, plan_digest: `sha256:${'e'.repeat(64)}` }],
+    ['DRYRUN_IDENTITY_MISMATCH', { ...good, merge_tree: 'f'.repeat(40), identity: { ...good.identity, merge_tree_sha: 'f'.repeat(40) } }],
+    ['DRYRUN_IDENTITY_MISMATCH', { ...good, merge_tree: undefined, identity: undefined }],
     ['DRYRUN_CAPTURE_MISMATCH', { ...good, capture: 2 }],
     ['DRYRUN_REPLAY_SCHEMA_UNKNOWN', { ...good, schema: 'census-replay/0' }],
     ['TASK_ID_MISSING', { ...good, results: [{ ...good.results[0], task_id: '' }] }],
@@ -384,11 +510,65 @@ test('resultsFromReplay refuses every identity mismatch by name', () => {
     ['TASK_STATE_UNKNOWN', { ...good, results: [{ ...good.results[0], state: 'OK' }, ...good.results.slice(1)] }],
     ['RESULT_EVIDENCE_MISSING', { ...good, results: [{ ...good.results[0], evidence: '  ' }, ...good.results.slice(1)] }],
     ['SHARD_TASK_ID_DUPLICATE', { ...good, results: [good.results[0], ...good.results] }],
+    ['DRYRUN_COVERAGE_MISMATCH', { ...good, results: good.results.slice(1) }],
   ]
   for (const [code, replay] of cases) {
     const got = resultsFromReplay({ plan, capture: 1, replay, replayRef: 'r1.json' })
     assert.equal(got.ok, false, `${code} must refuse`)
-    assert.equal(got.code, code)
+    assert.equal(got.code, code, got.detail)
+  }
+})
+
+// ── evidence references: a pointer that can be OPENED, not a string that is trusted ────────────
+
+test('NEGATIVE: evidence that names a file which does not exist is refused', () => {
+  const { plan } = fixture()
+  const dir = tmpDir('evidence-missing')
+  try {
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: '/nonexistent/report.json#x' }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    assert.equal(built.ok, true)
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.refused, true)
+    assert.equal(got.codes.includes('RESULT_EVIDENCE_OUTSIDE'), true, JSON.stringify(got.codes))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: evidence that escapes the artifact directory is refused by name', () => {
+  const { plan } = fixture()
+  const parent = tmpDir('evidence-escape')
+  const dir = join(parent, 'shards')
+  mkdirSync(dir)
+  try {
+    writeFileSync(join(parent, 'outside.json'), '{}\n')
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: '../outside.json#' }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.refused, true)
+    assert.deepEqual(got.codes, ['RESULT_EVIDENCE_OUTSIDE'])
+  } finally {
+    rmSync(parent, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: the aggregator CLI refuses a doctored shard directory (exit 2, named code)', () => {
+  const { plan } = fixture()
+  const dir = tmpDir('cli-doctored')
+  try {
+    const planFile = join(dir, 'plan.json')
+    writeFileSync(planFile, `${JSON.stringify(plan, null, 2)}\n`)
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: '/nonexistent/report.json#x' }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const r = spawnSync(process.execPath, ['scripts/census-aggregate.mjs', '--aggregate', ...files, '--plan', planFile], { cwd: REPO_ROOT, encoding: 'utf8' })
+    assert.equal(r.status, 2, r.stdout + r.stderr)
+    assert.match(r.stderr, /REFUSED RESULT_EVIDENCE_(OUTSIDE|UNREADABLE)/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 
@@ -412,7 +592,9 @@ test('POSITIVE: the plan leg runs 22 planned tasks to a PASS with expected==obse
 test('NEGATIVE: a plan refusal is RED with a named code (and never falls back to legacy)', () => {
   const empty = tmpDir('no-root-config')
   try {
-    const leg = censusPlanLeg(gateContext({ root: empty, dryRun: empty }))
+    const ctx = gateContext({ dryRun: empty })
+    ctx.repoRoot = empty
+    const leg = censusPlanLeg(ctx)
     assert.equal(leg.verdict, 'fail')
     assert.match(leg.detail, /^REFUSED [A-Z_]+:/)
     // No legacy body ran: the detail is the refusal, not a baseline comparison.
@@ -422,13 +604,59 @@ test('NEGATIVE: a plan refusal is RED with a named code (and never falls back to
   }
 })
 
+test('NEGATIVE: EB3_MERGE_TREE naming another tree refuses PLAN_MERGE_TREE_MISMATCH', () => {
+  const { plan } = fixture()
+  const dryRun = writeDryRun('tree-claim', plan)
+  const before = process.env.EB3_MERGE_TREE
+  process.env.EB3_MERGE_TREE = 'f'.repeat(40)
+  try {
+    const leg = LEGS.census(gateContext({ dryRun }))
+    assert.equal(leg.verdict, 'fail')
+    assert.match(leg.detail, /REFUSED PLAN_MERGE_TREE_MISMATCH/)
+  } finally {
+    if (before === undefined) delete process.env.EB3_MERGE_TREE
+    else process.env.EB3_MERGE_TREE = before
+    rmSync(dryRun, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: a replay from another tree refuses DRYRUN_IDENTITY_MISMATCH', () => {
+  const { plan } = fixture()
+  const dryRun = writeDryRun('other-tree', plan)
+  try {
+    const file = join(dryRun, 'census-replay-1.json')
+    const doc = JSON.parse(readFileSync(file, 'utf8'))
+    doc.merge_tree = 'f'.repeat(40)
+    writeFileSync(file, `${JSON.stringify(doc, null, 2)}\n`)
+    const leg = LEGS.census(gateContext({ dryRun }))
+    assert.equal(leg.verdict, 'fail')
+    assert.match(leg.detail, /REFUSED DRYRUN_IDENTITY_MISMATCH/)
+  } finally {
+    rmSync(dryRun, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: a replay that omits a root refuses DRYRUN_COVERAGE_MISMATCH', () => {
+  const { plan } = fixture()
+  const dryRun = writeDryRun('coverage', plan, { mutate: { 1: (results) => results.slice(1) } })
+  try {
+    const leg = LEGS.census(gateContext({ dryRun }))
+    assert.equal(leg.verdict, 'fail')
+    assert.match(leg.detail, /REFUSED DRYRUN_COVERAGE_MISMATCH/)
+  } finally {
+    rmSync(dryRun, { recursive: true, force: true })
+  }
+})
+
 test('NEGATIVE: a missing build stamp is RED and the plan refuses (no placeholder)', () => {
   const { plan } = fixture()
   const dryRun = writeDryRun('stamp-red', plan)
   try {
-    const leg = LEGS.census(gateContext({ dryRun, stampPath: join(dryRun, 'absent.json') }))
+    const ctx = gateContext({ dryRun, stampPath: join(dryRun, 'absent.json') })
+    const leg = LEGS.census(ctx)
     assert.equal(leg.verdict, 'fail')
     assert.match(leg.detail, /REFUSED BUILD_STAMP_MISSING/)
+    assert.equal(readdirSync(ctx.transcriptDir).includes('product-build.json'), false)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
   }
@@ -436,7 +664,7 @@ test('NEGATIVE: a missing build stamp is RED and the plan refuses (no placeholde
 
 test('NEGATIVE: an aggregation refusal is RED (a one-capture plan is a smaller population)', () => {
   // A one-capture plan is internally consistent; the AGGREGATOR is what refuses it. Build the
-  // matching recording so the refusal provably comes from rule 1 and not from a replay mismatch.
+  // matching recording so the refusal provably comes from rule 1, not from a replay mismatch.
   const { roots, stamp } = fixture()
   const one = buildPlan({
     roots: roots.roots,
@@ -480,33 +708,46 @@ test('NEGATIVE: a shard that exited 0 while carrying FAIL is not a verdict (aggr
     mutate: { 1: (results) => results.map((r, i) => (i === 0 ? { ...r, state: 'FAIL' } : r)) },
   })
   try {
-    const leg = LEGS.census(gateContext({ dryRun }))
+    const ctx = gateContext({ dryRun })
+    const leg = LEGS.census(ctx)
     assert.equal(leg.verdict, 'fail', leg.detail)
     assert.match(leg.detail, /aggregate=FAIL/)
     assert.match(leg.detail, /TASK_STATE_FAIL/)
     // The shard itself claims success — that is the point.
-    const shard = JSON.parse(readFileSync(join(REPO_ROOT, CENSUS_CAPTURE_REL, 'plan', 'census-shard-1.json'), 'utf8'))
+    const shard = JSON.parse(readFileSync(join(ctx.shardDir, 'census-shard-1.json'), 'utf8'))
     assert.equal(shard.status, 'COMPLETED')
     assert.equal(shard.exit_code, 0)
     assert.equal(shard.results.some((r) => r.state === 'FAIL'), true)
+    // ...and every result's evidence points at an artifact that EXISTS in the shard directory.
+    for (const r of shard.results) {
+      const rel = r.evidence.split('#')[0].split(/\s+/)[0]
+      assert.equal(statSync(join(ctx.shardDir, rel)).isFile(), true, `${rel} must exist`)
+    }
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
   }
 })
 
-test('NEGATIVE: a dropped root is INCOMPLETE (TASK_MISSING), never a smaller green census', () => {
+test('NEGATIVE: a dropped shard result is TASK_MISSING/INCOMPLETE, never a smaller green census', () => {
+  // The dry-run path refuses incomplete coverage BEFORE aggregating (see the replay test), so the
+  // aggregator's own dropped-task rule is exercised where it lives: on the shard artifact.
   const { plan } = fixture()
-  const dryRun = writeDryRun('dropped-root', plan, {
-    mutate: { 1: (results) => results.slice(1) },
-  })
+  const dir = tmpDir('dropped-task')
   try {
-    const leg = LEGS.census(gateContext({ dryRun }))
-    assert.equal(leg.verdict, 'fail')
-    assert.match(leg.detail, /aggregate=INCOMPLETE/)
-    assert.match(leg.detail, /TASK_MISSING/)
-    assert.match(leg.detail, /expected=22 observed=21/)
+    // The evidence pointer is real (it is not what this control is about): the missing thing is a
+    // planned TASK, and that is the aggregator's own rule.
+    writeFileSync(join(dir, 'evidence.json'), '{}\n')
+    const results = plan.tasks.slice(1).map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'evidence.json' }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.ok, false)
+    assert.equal(got.verdict, 'INCOMPLETE')
+    assert.equal(got.codes.includes('TASK_MISSING'), true)
+    assert.equal(got.summary.counts.expected, plan.tasks.length)
+    assert.equal(got.summary.counts.observed, plan.tasks.length - 1)
   } finally {
-    rmSync(dryRun, { recursive: true, force: true })
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 
@@ -514,13 +755,13 @@ test('shards: N artifacts carry the SAME task multiset and still aggregate to PA
   const { plan } = fixture()
   const dryRun = writeDryRun('shards-2', plan)
   try {
-    const leg = LEGS.census(gateContext({ dryRun, shards: 2 }))
+    const ctx = gateContext({ dryRun, shards: 2 })
+    const leg = LEGS.census(ctx)
     assert.equal(leg.verdict, 'pass', leg.detail)
     assert.match(leg.detail, /shards=2/)
-    const dir = join(REPO_ROOT, CENSUS_CAPTURE_REL, 'plan')
-    const shardFiles = readdirSync(dir).filter((f) => /^census-shard-\d+\.json$/.test(f)).sort()
+    const shardFiles = readdirSync(ctx.shardDir).filter((f) => /^census-shard-\d+\.json$/.test(f)).sort()
     assert.equal(shardFiles.length, 2)
-    const ids = shardFiles.flatMap((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')).results.map((r) => r.task_id))
+    const ids = shardFiles.flatMap((f) => JSON.parse(readFileSync(join(ctx.shardDir, f), 'utf8')).results.map((r) => r.task_id))
     assert.equal(ids.length, plan.tasks.length)
     assert.equal(new Set(ids).size, plan.tasks.length)
     assert.deepEqual([...new Set(ids)].sort(), plan.tasks.map((t) => t.task_id).sort())
@@ -543,6 +784,66 @@ test('the shard artifacts carry per-result root/capture/evidence and the plan id
   }
 })
 
+// ── the LIVE branch, driven with an injected runner (no host, no vitest) ───────────────────────
+
+test('LIVE: one stamped invocation per capture, graded from the report it just wrote', () => {
+  const { plan } = fixture()
+  const calls = []
+  const runCommand = (cmd, args) => {
+    calls.push({ cmd, args })
+    const jsonArg = args.find((a) => a.startsWith('--outputFile.json='))
+    assert.ok(jsonArg, 'the plan argv must carry a report path')
+    const capture = Number(/census-m5-test-\d+-(\d+)\.json$/.exec(jsonArg)?.[1] ?? 0)
+    assert.ok(capture === 1 || capture === 2, `stamped path must name the capture: ${jsonArg}`)
+    const rel = jsonArg.slice('--outputFile.json='.length)
+    mkdirSync(resolve(REPO_ROOT, rel, '..'), { recursive: true })
+    writeFileSync(resolve(REPO_ROOT, rel), `${JSON.stringify(reportFor(plan, { skipped: 1 }), null, 2)}\n`)
+    return { command: cmd, args, seconds: 0, code: 0, signal: null, error: null, stdout: '', stderr: '' }
+  }
+  try {
+    const ctx = gateContext({ runCommand })
+    const leg = LEGS.census(ctx)
+    assert.equal(leg.verdict, 'pass', leg.detail)
+    assert.equal(calls.length, 2, 'one invocation per capture, not one per task')
+    assert.match(leg.detail, /expected=22 observed=22/)
+    // Every result's evidence names an artifact written beside the shards, and carries its skip count.
+    const shard = JSON.parse(readFileSync(join(ctx.shardDir, 'census-shard-1.json'), 'utf8'))
+    for (const r of shard.results) {
+      assert.match(r.evidence, /^census-evidence-\d\.json#/)
+      assert.equal(statSync(join(ctx.shardDir, r.evidence.split('#')[0])).isFile(), true)
+      assert.equal(r.skipped, 1, 'the skip count travels with the result')
+    }
+    // The graded path is the run-stamped one, not the plan's deterministic path.
+    for (const call of calls) {
+      const rel = call.args.find((a) => a.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
+      const capture = rel.includes('-1.json') ? 1 : 2
+      assert.equal(rel, stampedReportPath({ stamp: 'm5-test', pid: process.pid, capture }))
+      assert.notEqual(rel, plan.tasks[0].runner.argv.find((a) => a.startsWith('--outputFile.json=')).slice('--outputFile.json='.length))
+    }
+  } finally {
+    rmSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: a stale report at the graded path is UNLINKED, so its absence is a named refusal', () => {
+  const { plan } = fixture()
+  for (const capture of [1, 2]) {
+    const rel = stampedReportPath({ stamp: 'm5-test', pid: process.pid, capture })
+    mkdirSync(resolve(REPO_ROOT, rel, '..'), { recursive: true })
+    // Byte-for-byte what a previous run would have left: a fully green report.
+    writeFileSync(resolve(REPO_ROOT, rel), `${JSON.stringify(reportFor(plan), null, 2)}\n`)
+  }
+  const runCommand = (cmd, args) => ({ command: cmd, args, seconds: 0, code: 0, signal: null, error: null, stdout: '', stderr: '' })
+  try {
+    const leg = LEGS.census(gateContext({ runCommand }))
+    assert.equal(leg.verdict, 'fail')
+    assert.match(leg.detail, /REFUSED CENSUS_REPORT_MISSING/)
+  } finally {
+    for (const capture of [1, 2]) rmSync(resolve(REPO_ROOT, stampedReportPath({ stamp: 'm5-test', pid: process.pid, capture })), { force: true })
+    rmSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true, force: true })
+  }
+})
+
 // ── the acceptance surface: the real CLI's token and exit code ─────────────────────────────────
 
 function runGate(args) {
@@ -552,16 +853,19 @@ function runGate(args) {
 test('CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 on PASS', () => {
   const { plan } = fixture()
   const dryRun = writeDryRun('cli-pass', plan)
+  const transcript = tmpDir('cli-pass-out')
   try {
     const r = runGate(['--only', 'census', '--census-execution', 'plan', '--census-dry-run', dryRun,
-      '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK)])
+      '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK), '--transcript-dir', transcript])
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /^DSH-CI-VERDICT pass /m)
     assert.match(r.stdout, /DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:[0-9a-f]{64}/)
     assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22/)
     assert.equal((r.stdout.match(/^DSH-CI-VERDICT /gm) ?? []).length, 1, 'exactly one token')
+    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*skipped=0 evidence=census-evidence-1\.json/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
+    rmSync(transcript, { recursive: true, force: true })
   }
 })
 
@@ -570,14 +874,16 @@ test('CLI: a FAIL result is a fail token and exit 1 (the token and the code agre
   const dryRun = writeDryRun('cli-fail', plan, {
     mutate: { 1: (results) => results.map((r, i) => (i === 0 ? { ...r, state: 'FAIL' } : r)) },
   })
+  const transcript = tmpDir('cli-fail-out')
   try {
     const r = runGate(['--only', 'census', '--census-execution', 'plan', '--census-dry-run', dryRun,
-      '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK)])
+      '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK), '--transcript-dir', transcript])
     assert.equal(r.status, 1)
     assert.match(r.stdout, /^DSH-CI-VERDICT fail /m)
     assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=FAIL codes=TASK_STATE_FAIL/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
+    rmSync(transcript, { recursive: true, force: true })
   }
 })
 
@@ -596,23 +902,21 @@ test('the plan leg writes the build stamp it used, and its digest equals the pla
   const { plan } = fixture()
   const dryRun = writeDryRun('stamp-written', plan)
   try {
-    const ctx = gateContext({ dryRun: null, root: undefined })
-    // Live mode would spawn vitest; drive the leg with a dry run but keep the transcript dir so the
-    // stamp write path is the production one.
-    ctx.censusDryRun = dryRun
+    const ctx = gateContext({ dryRun })
     const leg = LEGS.census(ctx)
     assert.equal(leg.verdict, 'pass', leg.detail)
-    const stampFile = join(ctx.transcriptDir, 'product-build.json')
-    const stamp = JSON.parse(readFileSync(stampFile, 'utf8'))
+    const stamp = JSON.parse(readFileSync(join(ctx.transcriptDir, 'product-build.json'), 'utf8'))
     assert.equal(stamp.schema, STAMP_SCHEMA)
     assert.equal(isValidDigest(stamp.digest), true)
     assert.equal(stamp.digest, plan.identity.build_digest)
-    assert.equal(verifyBuildStamp(stamp, { merge_tree: stamp.merge_tree, catalog_digest: stamp.catalog_digest }).ok, true)
+    assert.equal(verifyBuildStamp(stamp, { cwd: REPO_ROOT, merge_tree: stamp.merge_tree, catalog_digest: stamp.catalog_digest }).ok, true)
     // The recording is an OUTPUT of the real derivation: replaying it is not a fixture.
     const replay = JSON.parse(readFileSync(join(ctx.transcriptDir, 'census-replay-1.json'), 'utf8'))
     assert.equal(replay.schema, REPLAY_SCHEMA)
     assert.equal(replay.plan_digest, plan.identity.plan_digest)
+    assert.equal(replay.merge_tree, plan.identity.merge_tree_sha)
     assert.equal(replay.results.length, 11)
+    assert.match(replay.results[0].evidence, /^census-evidence-1\.json#/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
   }

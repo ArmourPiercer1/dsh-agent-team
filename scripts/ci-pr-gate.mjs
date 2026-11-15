@@ -126,12 +126,15 @@ import { resolveBuildStamp } from './census-build-stamp.mjs'
 import {
   aggregateArtifacts,
   buildShardArtifacts,
+  digestFile,
   readReplay,
   readReport,
   renderPlanTokens,
   resolveDryRunCapture,
   resultsFromReplay,
   resultsFromReport,
+  stampedReportPath,
+  writeEvidenceArtifact,
   writeShardArtifacts,
 } from './census-execution.mjs'
 
@@ -1450,7 +1453,9 @@ export function censusPlanLeg(ctx) {
   const dryRun = ctx.censusDryRun ?? null
   const shardCount = ctx.censusShards ?? 1
   const workDir = ctx.transcriptDir ?? resolve(root, CENSUS_CAPTURE_REL)
-  const shardDir = resolve(root, CENSUS_CAPTURE_REL, 'plan')
+  // `shardDir` is overridable for the host-free tests so they never write into the checkout; the
+  // production default is the gitignored artifact directory beside the census reports.
+  const shardDir = ctx.shardDir ?? resolve(root, CENSUS_CAPTURE_REL, 'plan')
   let plan = null
   let buildDigest = null
   const captureLines = []
@@ -1469,15 +1474,19 @@ export function censusPlanLeg(ctx) {
   const built = ctx.timing.time('census-plan', 'repo', () => {
     const roots = deriveRoots({ cwd: root })
     if (!roots.ok) return { ok: false, code: roots.code, detail: roots.detail }
-    const mergeTree = process.env.EB3_MERGE_TREE ?? gitTreeSha(root)
-    return { ok: true, roots, mergeTree }
+    // The identity is the CHECKOUT's tree, always. `EB3_MERGE_TREE` (when a caller exports it) is a
+    // claim about which tree this run is supposed to be grading; it is compared against the real
+    // tree, never substituted for it. The first draft used it as the identity AND as the comparison
+    // value, so `PLAN_MERGE_TREE_MISMATCH` could never fire — a guard that could not fail.
+    const mergeTree = gitTreeSha(root)
+    const claimedTree = process.env.EB3_MERGE_TREE ?? null
+    return { ok: true, roots, mergeTree, claimedTree }
   })
   if (!built.ok) return refusePlan(built.code, built.detail)
-  const expectedTree = process.env.EB3_MERGE_TREE ?? null
-  if (expectedTree !== null && built.mergeTree !== expectedTree) {
+  if (built.claimedTree !== null && built.claimedTree !== built.mergeTree) {
     return refusePlan(
       'PLAN_MERGE_TREE_MISMATCH',
-      `this tree is ${built.mergeTree} but the synthetic merge tree under test is ${expectedTree}`,
+      `EB3_MERGE_TREE claims ${built.claimedTree} but this checkout's tree is ${built.mergeTree} — grading one tree under another tree's name is the mixed-tree failure TINF-13 names`,
     )
   }
 
@@ -1518,6 +1527,15 @@ export function censusPlanLeg(ctx) {
   } catch (e) {
     return refusePlan(e.code ?? 'PLAN_BUILD_FAILED', String(e && e.message ? e.message : e))
   }
+  // The second, INDEPENDENT comparison: the claim against the plan's RECORDED identity. A plan whose
+  // identity block was tampered with (or built from a different tree) fails here even if step 1
+  // passed, because this reads the plan object rather than the checkout.
+  if (built.claimedTree !== null && plan.identity.merge_tree_sha !== built.claimedTree) {
+    return refusePlan(
+      'PLAN_MERGE_TREE_MISMATCH',
+      `the plan records merge_tree=${String(plan.identity.merge_tree_sha)} but EB3_MERGE_TREE claims ${built.claimedTree}`,
+    )
+  }
   const verified = ctx.timing.time('census-plan-verify', 'repo', () => verifyPlan(plan, { cwd: root }))
   if (!verified.ok) {
     return refusePlan(
@@ -1546,6 +1564,9 @@ export function censusPlanLeg(ctx) {
     }
     let derived
     let reportRef = `recorded:${String(capture)}`
+    // The bytes this capture's evidence artifact digests: the report the runner wrote (live) or the
+    // recording that was replayed (dry run).
+    let sourcePath = null
     if (dryRun !== null) {
       // OFFLINE DRY RUN: replay recorded bytes through the SAME derivation and the SAME aggregator.
       const resolved = resolveDryRunCapture(dryRun, capture)
@@ -1554,10 +1575,12 @@ export function censusPlanLeg(ctx) {
         const recording = readReplay(resolved.file)
         if (!recording.ok) return refusePlan(recording.code, recording.detail)
         derived = resultsFromReplay({ plan, capture, replay: recording.json, replayRef: resolved.file })
+        sourcePath = resolved.file
       } else {
         const recording = readReport(resolved.file)
         if (!recording.ok) return refusePlan(recording.code, recording.detail)
         derived = resultsFromReport({ plan, capture, report: recording.json, reportRef: resolved.file })
+        sourcePath = resolved.file
       }
     } else {
       if (capture === 1) {
@@ -1566,16 +1589,25 @@ export function censusPlanLeg(ctx) {
       }
       // The command is the PLAN's command: `censusVitestArgv` is the same function the legacy leg
       // calls, so the first task of a capture carries exactly the invocation the census executes.
-      const argv = tasks[0].runner.argv
-      const jsonArg = argv.find((a) => a.startsWith('--outputFile.json='))
+      // ONE field is rewritten — the JSON report path. The plan's path is deterministic
+      // (`taskReportPath`), so a vitest crash before writing would leave the PREVIOUS run's report at
+      // the graded path; the run-stamped path (plus the unlink below) makes "no report" a named
+      // refusal instead of a stale PASS. Everything that decides WHAT runs comes from the plan.
+      const jsonArg = tasks[0].runner.argv.find((a) => a.startsWith('--outputFile.json='))
       if (jsonArg === undefined) {
         return refusePlan('PLAN_RUNNER_NO_REPORT', `${tasks[0].task_id}: the plan's runner argv carries no --outputFile.json`)
       }
-      const jsonPath = jsonArg.slice('--outputFile.json='.length)
+      const jsonPath = stampedReportPath({ stamp: ctx.stamp, pid: process.pid, capture })
+      const argv = tasks[0].runner.argv.map((a) => (a.startsWith('--outputFile.json=') ? `--outputFile.json=${jsonPath}` : a))
       reportRef = jsonPath
+      mkdirSync(resolve(root, dirname(jsonPath)), { recursive: true })
+      rmSync(resolve(root, jsonPath), { force: true })
+      // `ctx.runCommand` is a seam for the host-free tests (they inject a runner that writes a
+      // report); production never sets it, so the census always spawns the real command.
+      const spawn = ctx.runCommand ?? runCommand
       // `nine-roots` is the documented label for a capture row (tinf-timing.mjs header): the
       // invocation covers the whole population, which is exactly what the plan's task set grades.
-      const run = ctx.timing.time('census-capture', 'nine-roots', () => runCommand('pnpm', argv), { attempt: capture })
+      const run = ctx.timing.time('census-capture', 'nine-roots', () => spawn('pnpm', argv), { attempt: capture })
       ctx.capture(`census-capture-${String(capture)}`, run)
       if (run.error !== null) return refusePlan('CENSUS_SPAWN_FAILED', `vitest could not be spawned: ${run.error}`)
       const reportAbs = resolve(root, jsonPath)
@@ -1601,13 +1633,31 @@ export function censusPlanLeg(ctx) {
         ctx.timing.warn(`CENSUS_ROOT_DERIVATION_FAILED capture=${String(capture)}: ${String(e && e.message ? e.message : e)}`)
       }
       derived = resultsFromReport({ plan, capture, report, reportRef: jsonPath })
+      sourcePath = resolve(root, jsonPath)
     }
     if (!derived.ok) return refusePlan(derived.code, derived.detail)
+    // EVIDENCE ARTIFACT: written next to the shards, and every result is re-anchored to it, so the
+    // aggregator can OPEN what it grades (see verifyEvidenceRefs). The source report/recording is
+    // named and digested inside the artifact, so the chain report → artifact → shard is walkable.
+    let anchored
+    try {
+      anchored = writeEvidenceArtifact(shardDir, {
+        capture,
+        source: reportRef,
+        sourceDigest: sourcePath === null ? null : digestFile(sourcePath),
+        results: derived.results,
+      })
+    } catch (e) {
+      return refusePlan('CENSUS_EVIDENCE_UNWRITABLE', `${shardDir}: ${String(e && e.message ? e.message : e)}`)
+    }
+    derived = { ok: true, results: anchored.results }
     // Record the runner's own derivation so a cheap leg can replay it without a host. The recording
-    // is an OUTPUT of the path under test, not a hand-written fixture.
+    // is an OUTPUT of the path under test, not a hand-written fixture. `merge_tree` is recorded so a
+    // replay can prove it is this tree's census (DRYRUN_IDENTITY_MISMATCH otherwise).
     const recording = {
       schema: 'census-replay/1',
       plan_digest: plan.identity.plan_digest,
+      merge_tree: plan.identity.merge_tree_sha,
       capture,
       identity: { ...plan.identity },
       results: derived.results,
@@ -1619,11 +1669,17 @@ export function censusPlanLeg(ctx) {
     }
     results.push(...derived.results)
     const byState = (state) => derived.results.filter((r) => r.state === state).length
+    // `skipped` is printed because "0 failed" and "0 ran" must not read the same: a conditional skip
+    // is NOT a failure (legacy semantics, see census-execution.mjs), but it is also not a test that
+    // proved anything, so the count travels with the verdict.
+    const skippedTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0)
+    const assertionsTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0)
     const line =
       `DSH-CENSUS-CAPTURE capture=${String(capture)} mode=${dryRun === null ? 'live' : 'dry-run'} ` +
       `order=capture-major tasks=${String(tasks.length)} passed=${String(byState('PASS'))} ` +
       `failed=${String(byState('FAIL'))} incomplete=${String(byState('INCOMPLETE'))} ` +
-      `report=${reportRef}`
+      `assertions=${String(assertionsTotal)} skipped=${String(skippedTotal)} ` +
+      `evidence=${anchored.name} report=${reportRef}`
     captureLines.push(line)
     process.stdout.write(`${line}\n`)
   }

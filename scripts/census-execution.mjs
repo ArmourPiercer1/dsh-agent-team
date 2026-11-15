@@ -49,10 +49,11 @@
  *
  * @module scripts/census-execution
  */
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
-import { aggregate, readShardFile, SHARD_SCHEMA, TASK_STATES, POLICY_DIGEST } from './census-aggregate.mjs'
+import { aggregate, readShardFile, SHARD_SCHEMA, TASK_STATES, POLICY_DIGEST, verifyEvidenceRefs } from './census-aggregate.mjs'
 import { IDENTITY_FIELDS } from './census-digest.mjs'
 import { digestJson } from './census-plan.mjs'
 import { rootOf } from './tinf-timing.mjs'
@@ -66,9 +67,26 @@ function refused(code, detail) {
 }
 
 /**
+ * Assertion statuses, with the LEGACY semantics this file must mirror.
+ *
+ * The shipped census grades a report through `scripts/fail-set.mjs`, which counts exactly
+ * `status === 'failed'` and never a skipped leg: a `pending` / `skipped` / `todo` assertion is a
+ * test the runner declined to run, not a test that failed. The first draft here counted
+ * `status !== 'passed'`, which would have turned a CONDITIONAL SKIP into a red census — a latent
+ * false RED, since the population already contains such skips (e.g.
+ * `packages/runtime/test/a5rbn-runtime-base-narrow.test.ts`). Skips are still COUNTED and printed,
+ * because "0 failures" and "0 ran" must not read the same.
+ *
+ * An UNKNOWN status is the one place this file is deliberately STRICTER than fail-set: a reporter
+ * status nobody taught us about is not evidence that the leg passed, so it is graded as a failure
+ * (`UNKNOWN_ASSERTION_STATUS`) rather than silently ignored.
+ */
+const SKIPPED_STATUSES = new Set(['skipped', 'pending', 'todo'])
+
+/**
  * Per-root slices of ONE vitest JSON report: which files belong to the root, whether any assertion
- * failed, and whether the report as a whole failed without a per-test failure in this root (a
- * collection error, which must never be graded PASS for an unrelated root).
+ * failed, how many were skipped, and whether the report as a whole failed without a per-test failure
+ * in this root (a collection error, which must never be graded PASS for an unrelated root).
  */
 export function rootsFromReport(report) {
   const files = Array.isArray(report?.testResults) ? report.testResults : []
@@ -78,11 +96,25 @@ export function rootsFromReport(report) {
     const root = rootOf(name)
     if (!byRoot.has(root)) byRoot.set(root, [])
     const assertions = Array.isArray(f?.assertionResults) ? f.assertionResults : []
-    const failedAssertions = assertions.filter((a) => a && a.status !== 'passed').length
+    let failedAssertions = 0
+    let skipped = 0
+    let unknown = 0
+    for (const a of assertions) {
+      const status = a?.status
+      if (status === 'failed') failedAssertions += 1
+      else if (SKIPPED_STATUSES.has(status)) skipped += 1
+      else if (status !== 'passed') unknown += 1
+    }
     // A file-level failure with no per-assertion detail (collection error, unhandled rejection) is
     // still a red: `status: failed` / a non-empty `message` is the reporter saying so.
     const fileFailed = f?.status === 'failed' || (assertions.length === 0 && String(f?.message ?? '').trim() !== '')
-    byRoot.get(root).push({ name, assertions: assertions.length, failed: failedAssertions + (fileFailed ? 1 : 0) })
+    byRoot.get(root).push({
+      name,
+      assertions: assertions.length,
+      failed: failedAssertions + (fileFailed ? 1 : 0),
+      skipped,
+      unknown,
+    })
   }
   return byRoot
 }
@@ -125,15 +157,21 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         root: task.root,
         capture: task.capture,
         state: 'INCOMPLETE',
+        files: 0,
+        assertions: 0,
+        skipped: 0,
         evidence: `${reportRef}#${task.root}`,
         detail: `root ${task.root} is planned for capture ${String(capture)} but the report contains no file of it — a root that vanished is not a root that passed`,
       })
       continue
     }
     const failed = slice.filter((f) => f.failed > 0)
+    const skipped = slice.reduce((n, f) => n + (Number.isFinite(f.skipped) ? f.skipped : 0), 0)
+    const unknown = slice.filter((f) => (Number.isFinite(f.unknown) ? f.unknown : 0) > 0)
     // Evidence is a real, re-derivable pointer: the report path the runner wrote plus a digest over
     // the exact per-file slice that was graded (so the transcript can prove WHAT was graded).
     const evidence = `${reportRef}#${task.root} ${digestJson({ root: task.root, capture: task.capture, files: slice })}`
+    const shape = { files: slice.length, assertions: slice.reduce((n, f) => n + (Number.isFinite(f.assertions) ? f.assertions : 0), 0), skipped }
     if (failed.length > 0) {
       results.push({
         task_id: task.task_id,
@@ -141,7 +179,22 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         capture: task.capture,
         state: 'FAIL',
         evidence,
+        ...shape,
         detail: `${String(failed.length)} file(s) failed in ${task.root}: ${failed.slice(0, 6).map((f) => f.name).join(', ')}`,
+      })
+      continue
+    }
+    if (unknown.length > 0) {
+      // Fail-closed on a status this tool does not know (see SKIPPED_STATUSES): counting it as a
+      // skip would be the same "not-passed is not-failed" inversion that made a skip red.
+      results.push({
+        task_id: task.task_id,
+        root: task.root,
+        capture: task.capture,
+        state: 'FAIL',
+        evidence,
+        ...shape,
+        detail: `${String(unknown.length)} file(s) in ${task.root} reported an assertion status this tool does not know (UNKNOWN_ASSERTION_STATUS); an unrecognised status is not evidence of a pass`,
       })
       continue
     }
@@ -152,11 +205,12 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         capture: task.capture,
         state: 'INCOMPLETE',
         evidence,
+        ...shape,
         detail: `the report failed (success=false) but no failure is attributable to ${task.root}; an unattributed report failure is not this root's PASS`,
       })
       continue
     }
-    results.push({ task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', evidence })
+    results.push({ task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', evidence, ...shape })
   }
   return { ok: true, results }
 }
@@ -179,6 +233,24 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
       'DRYRUN_PLAN_MISMATCH',
       `${String(replayRef)} was recorded for plan_digest=${String(replay.plan_digest)} but this plan is ` +
         `${String(plan.identity?.plan_digest)} — replaying another plan's results is the mixed-tree failure TINF-13 names`,
+    )
+  }
+  // WHICH TREE the recording came from. A recording that does not say is not replayable: the whole
+  // point of the dry run is that the bytes under test are the bytes of THIS tree, and `plan_digest`
+  // alone cannot prove that once a plan is rebuilt (the digest covers the plan, and a plan for
+  // another tree with the same task set would still differ only in its identity fields).
+  const recordedTree = typeof replay.merge_tree === 'string' ? replay.merge_tree : replay.identity?.merge_tree_sha
+  if (typeof recordedTree !== 'string' || recordedTree === '') {
+    return refused(
+      'DRYRUN_IDENTITY_MISMATCH',
+      `${String(replayRef)} does not record the merge_tree it was made on; a recording whose tree is unknown cannot be replayed`,
+    )
+  }
+  if (recordedTree !== plan.identity?.merge_tree_sha) {
+    return refused(
+      'DRYRUN_IDENTITY_MISMATCH',
+      `${String(replayRef)} was recorded on merge_tree=${recordedTree} but this plan is ` +
+        `${String(plan.identity?.merge_tree_sha)} — replaying another tree's bytes would grade a census this checkout never ran`,
     )
   }
   if (replay.capture !== capture) {
@@ -222,6 +294,19 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
       evidence: result.evidence,
       ...(typeof result.detail === 'string' && result.detail !== '' ? { detail: result.detail } : {}),
     })
+  }
+  // COVERAGE. The aggregator would catch a missing task as TASK_MISSING, but a dry run has a
+  // stronger obligation: the recording must be a recording OF THIS CENSUS, so a recording that
+  // covers only some roots is refused here rather than aggregated into an INCOMPLETE that a reader
+  // could mistake for a half-run.
+  const covered = new Set(out.map((r) => r.root))
+  const uncovered = (Array.isArray(plan.roots) ? plan.roots : []).map((r) => r.root).filter((root) => !covered.has(root))
+  if (uncovered.length > 0) {
+    return refused(
+      'DRYRUN_COVERAGE_MISMATCH',
+      `${String(replayRef)} covers ${String(covered.size)} of ${String(plan.roots.length)} planned root(s); ` +
+        `missing: ${uncovered.slice(0, 6).join(', ')} — a dry run must replay the whole planned population`,
+    )
   }
   return { ok: true, results: out }
 }
@@ -280,9 +365,81 @@ export function writeShardArtifacts(dir, artifacts, { writeFile = writeFileSync 
   return files
 }
 
-/** Aggregate the artifacts FROM DISK: the shard digest the summary reports is the bytes' digest. */
+/**
+ * Aggregate the artifacts FROM DISK: the shard digest the summary reports is the bytes' digest.
+ *
+ * Before aggregating, every result's `evidence` reference is RESOLVED AND OPENED (see
+ * `verifyEvidenceRefs`): the shard's own directory is the evidence root, and a reference that does
+ * not name a file inside it is refused. Without that step a doctored shard set (22 PASS results
+ * pointing at `<something>#<root>`) aggregated to PASS — the evidence field was a string the
+ * aggregator trusted, not a pointer it checked.
+ */
 export function aggregateArtifacts({ plan, files, readShard = readShardFile }) {
-  return aggregate({ plan, shards: files.map((f) => readShard(f)) })
+  const shards = []
+  for (const file of files) {
+    const shard = readShard(file)
+    const evidence = verifyEvidenceRefs(shard, { dir: dirname(file), file })
+    if (!evidence.ok) return evidence
+    shards.push(shard)
+  }
+  return aggregate({ plan, shards })
+}
+
+// ─────────────────────────────────────────────────── evidence artifacts ──
+
+export const EVIDENCE_SCHEMA = 'census-evidence/1'
+
+/** `sha256:<64 hex>` of a file's bytes, or null when it cannot be read. */
+export function digestFile(file, { readFile = readFileSync } = {}) {
+  try {
+    return `sha256:${createHash('sha256').update(readFile(file)).digest('hex')}`
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Write the capture's EVIDENCE ARTIFACT into the shard directory and re-anchor every result's
+ * `evidence` to it.
+ *
+ * Why a second file: the graded bytes are the shard, and the shard must point at something the
+ * aggregator can OPEN. The vitest report lives outside the shard directory (`.artifacts/census/`),
+ * and a reference that escapes the artifact directory is exactly what `verifyEvidenceRefs` refuses.
+ * So the runner writes a compact, self-describing slice — per root: state, file/assertion counts,
+ * skip count and a digest over the same fields the result carries — and the shard points at THAT,
+ * with the report (or recording) named plus digested inside it.
+ */
+export function writeEvidenceArtifact(dir, { capture, source, sourceDigest = null, results, writeFile = writeFileSync }) {
+  const roots = results.map((r) => ({
+    root: r.root,
+    task_id: r.task_id,
+    state: r.state,
+    files: Number.isFinite(r.files) ? r.files : null,
+    assertions: Number.isFinite(r.assertions) ? r.assertions : null,
+    skipped: Number.isFinite(r.skipped) ? r.skipped : null,
+    digest: digestJson({ root: r.root, capture: r.capture, state: r.state, files: r.files ?? null, assertions: r.assertions ?? null, skipped: r.skipped ?? null }),
+  }))
+  const name = `census-evidence-${String(capture)}.json`
+  const json = {
+    schema: EVIDENCE_SCHEMA,
+    capture,
+    source: { path: source, digest: sourceDigest },
+    roots,
+  }
+  writeFile(join(dir, name), `${JSON.stringify(json, null, 2)}\n`)
+  const anchored = results.map((r, i) => ({ ...r, evidence: `${name}#${r.root} ${roots[i].digest}` }))
+  return { ok: true, name, json, results: anchored }
+}
+
+/**
+ * The report path a plan-mode capture writes. STAMPED with this run's stamp and pid, exactly like
+ * the legacy capture path: the plan's own argv path is deterministic (`taskReportPath`), so without
+ * the stamp a vitest crash before writing the report would leave the PREVIOUS run's report at the
+ * graded path and the census would grade stale bytes as a fresh PASS. The leg also unlinks the path
+ * before spawning, so "no report" stays a named refusal.
+ */
+export function stampedReportPath({ stamp, pid, capture }) {
+  return join('.artifacts', 'census', `census-${String(stamp)}-${String(pid)}-${String(capture)}.json`)
 }
 
 // ───────────────────────────────────────────────────────────── transcript lines ──

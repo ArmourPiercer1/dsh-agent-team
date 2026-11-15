@@ -201,7 +201,48 @@ export function stampPayload(stamp) {
  * Verify a parsed stamp: schema, field shapes, and that `digest` is the digest of the stamp's OWN
  * payload. Optionally bind it to an expected merge tree / catalog digest.
  */
-export function verifyBuildStamp(stamp, { merge_tree = null, catalog_digest = null } = {}) {
+/**
+ * Re-hash the CURRENT install surface and refuse a stamp that no longer describes it.
+ *
+ * WHY THIS IS NOT OPTIONAL FOR A RECORDED STAMP. `verifyBuildStamp` checks that the stamp is
+ * internally consistent: its own artifact list digests to its own `digest`. A stamp copied from an
+ * earlier run on the SAME tree is therefore perfectly self-consistent — and stale, because the bytes
+ * under the surfaces may have been rebuilt, half-written or reverted since. This function is the
+ * only thing that can tell the difference, so the census leg calls it on every recorded stamp:
+ * a current surface that cannot be hashed at all refuses too (trusting an unverifiable stamp is how
+ * a placeholder gets in through the side door).
+ */
+export function staleAgainstCurrent(stamp, { cwd, surfaces = SURFACES, ignoredFiles = null, readFile = readFileSync } = {}) {
+  if (typeof cwd !== 'string' || cwd === '') {
+    return refused('BUILD_STAMP_UNVERIFIABLE', 'no checkout was given, so the recorded surface cannot be re-hashed')
+  }
+  const now = computeBuildStamp({ cwd, merge_tree: stamp.merge_tree, catalog_digest: stamp.catalog_digest, surfaces, ignoredFiles, readFile })
+  if (!now.ok) {
+    return refused(
+      'BUILD_STAMP_UNVERIFIABLE',
+      `${now.code}: the current install surface cannot be re-hashed (${String(now.detail)}) — a recorded ` +
+        'stamp is refused rather than trusted when there is nothing to check it against',
+    )
+  }
+  if (now.stamp.digest === stamp.digest) return { ok: true, stamp: now.stamp }
+  const recorded = new Map(stamp.artifacts.map((a) => [a.path, a]))
+  const current = new Map(now.stamp.artifacts.map((a) => [a.path, a]))
+  const differs = []
+  for (const [path, a] of recorded) {
+    const b = current.get(path)
+    if (b === undefined) differs.push(`${path} (missing now)`)
+    else if (b.sha256 !== a.sha256 || b.bytes !== a.bytes) differs.push(`${path} (bytes changed)`)
+  }
+  for (const path of current.keys()) if (!recorded.has(path)) differs.push(`${path} (new since the stamp)`)
+  return refused(
+    'BUILD_STAMP_STALE',
+    `the stamp records digest=${String(stamp.digest)} but the CURRENT surface digests to ${String(now.stamp.digest)}; ` +
+      `differing artifacts: ${differs.slice(0, 6).join(', ')}${differs.length > 6 ? ` (+${String(differs.length - 6)} more)` : ''} — ` +
+      'a self-consistent stamp for another moment is not this build',
+  )
+}
+
+export function verifyBuildStamp(stamp, { merge_tree = null, catalog_digest = null, cwd = null, surfaces = SURFACES, ignoredFiles = null } = {}) {
   if (!stamp || typeof stamp !== 'object' || Array.isArray(stamp)) {
     return refused('BUILD_STAMP_MALFORMED', 'the stamp is not an object')
   }
@@ -241,6 +282,12 @@ export function verifyBuildStamp(stamp, { merge_tree = null, catalog_digest = nu
       `stamp.digest=${stamp.digest} but its own recorded artifacts digest to ${recomputed} — the stamp was ` +
         'edited after it was signed (or an artifact was rewritten under a stale stamp)',
     )
+  }
+  // The stale check runs AFTER the internal checks: a stamp that is not internally consistent has a
+  // more precise code than BUILD_STAMP_STALE, and a reader should see that one.
+  if (cwd !== null) {
+    const fresh = staleAgainstCurrent(stamp, { cwd, surfaces, ignoredFiles })
+    if (!fresh.ok) return fresh
   }
   if (merge_tree !== null && merge_tree !== stamp.merge_tree) {
     return refused(
@@ -301,7 +348,9 @@ export function resolveBuildStamp({
   writeFile = writeFileSync,
 } = {}) {
   if (stampPath !== null) {
-    const read = readBuildStamp(stampPath, { readFile, merge_tree, catalog_digest })
+    // `cwd` is always present here, so a recorded stamp is re-hashed against the current surface:
+    // `--census-build-stamp <file>` names a build, it does not outrank the bytes on disk.
+    const read = readBuildStamp(stampPath, { readFile, merge_tree, catalog_digest, cwd, surfaces, ignoredFiles })
     if (!read.ok) return read
     return { ok: true, stamp: read.stamp, text: read.text, path: resolve(stampPath), mode: 'recorded' }
   }
@@ -364,7 +413,8 @@ export function main(argv) {
     return 0
   }
   if (opts.verify !== null) {
-    const read = readBuildStamp(opts.verify, { merge_tree: opts.mergeTree, catalog_digest: opts.catalogDigest })
+    // Re-hash the current surface: `--verify` answers "is this stamp of the bytes on disk NOW".
+    const read = readBuildStamp(opts.verify, { cwd: process.cwd(), merge_tree: opts.mergeTree, catalog_digest: opts.catalogDigest })
     if (!read.ok) {
       process.stderr.write(`REFUSED ${read.code}: ${read.detail}\n`)
       return 2

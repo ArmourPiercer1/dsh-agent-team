@@ -58,8 +58,8 @@
  * @module scripts/census-aggregate
  */
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { DIGEST_SHAPE, identityProblems, isValidDigest } from './census-digest.mjs'
@@ -110,6 +110,91 @@ function refused(codes, detail, extra = {}) {
 
 function graded(verdict, codes, detail, extra = {}) {
   return { ok: verdict === PASS, refused: false, verdict, codes: [...new Set(codes)], detail, ...extra }
+}
+
+// ───────────────────────────────────────────────────── evidence references ──
+
+/**
+ * Verify that every result's `evidence` names a file that EXISTS, inside `dir`, and (when the file
+ * is one of this tool's evidence artifacts) that the fragment names a root the artifact lists.
+ *
+ * WHY THIS IS SEPARATE FROM `aggregate()`. `aggregate()` grades a multiset of in-memory shards; it
+ * has no filesystem and the M4 unit tests pass synthetic shards through it. The two callers that DO
+ * have bytes on disk — the CLI (`--aggregate <files>`) and the census leg (`aggregateArtifacts`) —
+ * call this first, so the graded path is `aggregate(verify(...) && parse(...))`. Without it, a
+ * doctored shard set carrying 22 PASS results whose evidence is `/nonexistent/report.json#<root>`
+ * aggregated to `PASS expected=22 observed=22`: a string the aggregator trusted, not a pointer.
+ *
+ * `evidence` shape: `<path relative to dir>[#<fragment>] [<digest>]`. A path that is absolute, or
+ * that escapes `dir` after resolution, is refused (`RESULT_EVIDENCE_OUTSIDE`) — the artifact
+ * directory is the boundary of what this census wrote.
+ */
+export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
+  if (typeof dir !== 'string' || dir === '') {
+    return refused(
+      ['RESULT_EVIDENCE_UNVERIFIABLE'],
+      [`${String(file)}: no evidence root was given; evidence references cannot be checked against nothing`],
+    )
+  }
+  const root = resolve(dir)
+  // The results come from the BYTES being graded when the caller hands us the raw artifact (the CLI
+  // and the leg do: `readShardFile` returns `{text}`, and `aggregate()` parses that same text), so
+  // the reference checked is the reference in the graded file and not a re-read of a moving one.
+  let results = Array.isArray(shard?.results) ? shard.results : null
+  if (results === null && typeof shard?.text === 'string') {
+    try {
+      const parsed = JSON.parse(shard.text)
+      results = Array.isArray(parsed?.results) ? parsed.results : []
+    } catch {
+      results = []
+    }
+  }
+  if (results === null) results = []
+  for (const result of results) {
+    const evidence = result?.evidence
+    // A blank reference is rule 2's refusal, not this one's; leave it for `aggregate()` so the code
+    // a caller sees stays RESULT_EVIDENCE_MISSING.
+    if (typeof evidence !== 'string' || evidence.trim() === '') continue
+    const hash = evidence.indexOf('#')
+    const rel = (hash >= 0 ? evidence.slice(0, hash) : evidence).trim().split(/\s+/)[0]
+    const fragment = hash >= 0 ? evidence.slice(hash + 1).trim().split(/\s+/)[0] : ''
+    const target = resolve(root, rel)
+    if (target !== root && !target.startsWith(root + sep)) {
+      return refused(
+        ['RESULT_EVIDENCE_OUTSIDE'],
+        [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} resolves outside the artifact directory ${root}`],
+      )
+    }
+    if (!existsSync(target)) {
+      return refused(
+        ['RESULT_EVIDENCE_UNREADABLE'],
+        [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} names ${rel}, which does not exist in ${root}`],
+      )
+    }
+    // An evidence artifact this tool wrote is JSON with a `roots` list: a fragment that names a root
+    // the artifact does not list is a mis-anchored reference. Any other (non-JSON) file is accepted
+    // on existence alone — the contract is "a pointer that can be opened", not "a format".
+    if (fragment !== '') {
+      let parsed
+      try {
+        parsed = JSON.parse(String(readFileSync(target, 'utf8')))
+      } catch {
+        continue
+      }
+      if (parsed && Array.isArray(parsed.roots) && listsRoot(parsed.roots, fragment) === false) {
+        return refused(
+          ['RESULT_EVIDENCE_UNKNOWN_ROOT'],
+          [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} names root ${JSON.stringify(fragment)}, which ${rel} does not list`],
+        )
+      }
+    }
+  }
+  return { ok: true }
+}
+
+/** Does an evidence artifact list this root? (Split out so the check reads as one sentence.) */
+function listsRoot(roots, fragment) {
+  return roots.some((entry) => entry && entry.root === fragment)
 }
 
 /** Read one shard artifact from a file: bytes -> digest + text. Never throws; refusal is data. */
@@ -601,7 +686,19 @@ export function main(argv) {
   } catch (e) {
     return refuse('PLAN_UNREADABLE', `${opts.plan}: ${String(e && e.message ? e.message : e)}`)
   }
-  const result = aggregate({ plan, shards: opts.shards.map((f) => readShardFile(f)) })
+  const shards = []
+  for (const file of opts.shards) {
+    const shard = readShardFile(file)
+    const evidence = verifyEvidenceRefs(shard, { dir: dirname(resolve(file)), file })
+    if (!evidence.ok) {
+      for (const code of evidence.codes) process.stderr.write(`REFUSED ${code}\n`)
+      for (const d of evidence.detail) process.stderr.write(`  ${d}\n`)
+      if (opts.json) process.stdout.write(`${JSON.stringify({ schema: SCHEMA, refused: true, codes: evidence.codes, detail: evidence.detail }, null, 2)}\n`)
+      return 2
+    }
+    shards.push(shard)
+  }
+  const result = aggregate({ plan, shards })
   if (result.refused) {
     for (const code of result.codes) process.stderr.write(`REFUSED ${code}\n`)
     for (const d of result.detail) process.stderr.write(`  ${d}\n`)
