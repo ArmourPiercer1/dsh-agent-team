@@ -590,24 +590,24 @@ control('C9 mandatory-leg-invoked-not-mentioned', () => {
   }
   // UNPROVEN is the allowlist's code for a leg-shaped command it cannot prove gates the
   // step (R2 F-2); every C9 evasion must produce one of these, never nothing.
-  // EXTRA_ARGUMENT joined the set on 2026-11-15: the whole-argv law now refuses a leg line that
-  // carries any token its `check[]` does not declare, so (c1)/(c2)/(c3) — which stage
-  // `--allow-refused`/`--skip`/a removed `--full` — are caught one rule EARLIER, before the
-  // per-leg check/forbid comparison can run. That is the stricter outcome the evasions exist to
-  // prove, not a weakening: dropping the token is what the law measures, and it fires on exactly
-  // the three mutations below.
-  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED', 'CI_LAYER_LEG_UNPROVEN', 'CI_LAYER_LEG_EXTRA_ARGUMENT']
+  // The whole-argv law (2026-11-15) caught (c1)/(c2)/(c3) before the per-leg check/forbid comparison
+  // could run. Round 2 split its names: an UNDECLARED token is EXTRA_ARGUMENT; a DECLARED token that
+  // was dropped is ARGUMENT_MISSING. Each evasion now asserts the semantically right one — c2 removes
+  // `--full` and must be ARGUMENT_MISSING, c1/c3 add tokens and must be EXTRA_ARGUMENT.
+  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED', 'CI_LAYER_LEG_UNPROVEN', 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'CI_LAYER_LEG_ARGUMENT_MISSING']
+  const EXTRA = ['CI_LAYER_LEG_EXTRA_ARGUMENT']
+  const MISSING = ['CI_LAYER_LEG_ARGUMENT_MISSING']
   const misses = [
     // (a) the real invocation replaced by an echo of the same words
     stage('a-echo', FAST, (t) => t.replace(`          ${SYNC}\n`, `          echo ${SYNC}\n`), LEG),
     // (b) the invocation exists only in a step NAME (the real one removed)
     stage('b-name-only', FAST, (t) => t.replace(`          ${SYNC}\n`, '          true\n').replace('- name: docs:sync --check\n', `- name: ${SYNC}\n`), LEG),
     // (c1) the census flag-set weakened: --allow-refused census added
-    stage('c1-allow-refused', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --allow-refused census \\\n'), LEG),
+    stage('c1-allow-refused', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --allow-refused census \\\n'), EXTRA),
     // (c2) the census flag removed: no --full, so the opt-in census is SKIPPED by default
-    stage('c2-no-full', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs \\\n'), LEG),
+    stage('c2-no-full', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs \\\n'), MISSING),
     // (c3) the census itself skipped by name
-    stage('c3-skip-census', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --skip census \\\n'), LEG),
+    stage('c3-skip-census', FULL, (t) => t.replace('node scripts/ci-pr-gate.mjs --full \\\n', 'node scripts/ci-pr-gate.mjs --full --skip census \\\n'), EXTRA),
     // (d1) a shell COMMENT inside run: — survives YAML parsing, must not count
     stage('d1-shell-comment', FAST, (t) => t.replace(`          ${SYNC}\n`, `          # ${SYNC}\n          true\n`), LEG),
     // (d2) a commented-out YAML step — the parser drops it; nothing invokes the leg

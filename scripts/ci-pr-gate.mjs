@@ -1572,8 +1572,12 @@ export function censusPlanLeg(ctx) {
   if (!population.ok) return refusePlan(population.code, population.detail)
   process.stdout.write(
     `DSH-CENSUS-POPULATION baseline=ok roots=${String(population.roots)} files=${String(population.file_count)} ` +
-      `baseline_files=${String(baseline.baseline.file_count)}\n`,
+      `baseline_files=${String(baseline.baseline.file_count)} ` +
+      `growth=${population.grew ? 'POPULATION_GREW' : 'none'} added=${String(population.added.length)}\n`,
   )
+  if (population.grew) {
+    process.stdout.write(`DSH-CENSUS-POPULATION-GREW added=${population.added.slice(0, 20).map((p) => JSON.stringify(p)).join(',')}${population.added.length > 20 ? ` (+${String(population.added.length - 20)} more)` : ''}\n`)
+  }
 
   mkdirSync(shardDir, { recursive: true })
 
@@ -1741,11 +1745,12 @@ export function censusPlanLeg(ctx) {
     // proved anything, so the count travels with the verdict.
     const skippedTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0)
     const assertionsTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0)
+    const executedTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.assertions_executed) ? r.assertions_executed : 0), 0)
     const line =
       `DSH-CENSUS-CAPTURE capture=${String(capture)} mode=${dryRun === null ? 'live' : 'dry-run'} ` +
       `order=capture-major tasks=${String(tasks.length)} passed=${String(byState('PASS'))} ` +
       `failed=${String(byState('FAIL'))} incomplete=${String(byState('INCOMPLETE'))} ` +
-      `assertions=${String(assertionsTotal)} skipped=${String(skippedTotal)} ` +
+      `assertions_executed=${String(executedTotal)} assertions_total=${String(assertionsTotal)} skipped_total=${String(skippedTotal)} ` +
       `evidence=${anchored.name} report=${reportRef}`
     captureLines.push(line)
     process.stdout.write(`${line}\n`)

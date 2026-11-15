@@ -1029,9 +1029,9 @@ test('CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /^DSH-CI-VERDICT pass /m)
     assert.match(r.stdout, /DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:[0-9a-f]{64}/)
-    assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 assertions_total=0/)
+    assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 assertions_total=0 assertions_executed=0 skipped_total=0/)
     assert.equal((r.stdout.match(/^DSH-CI-VERDICT /gm) ?? []).length, 1, 'exactly one token')
-    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions=0 skipped=0 evidence=census-evidence-1\.json/)
+    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions_executed=0 assertions_total=0 skipped_total=0 evidence=census-evidence-1\.json/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
     rmSync(transcript, { recursive: true, force: true })
@@ -1049,7 +1049,7 @@ test('CLI: a FAIL result is a fail token and exit 1 (the token and the code agre
       '--census-captures', String(CAPTURES), '--census-test-timeout', String(CLOCK), '--transcript-dir', transcript])
     assert.equal(r.status, 1)
     assert.match(r.stdout, /^DSH-CI-VERDICT fail /m)
-    assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=FAIL codes=TASK_STATE_FAIL/)
+    assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=dry-run verdict=FAIL codes=TASK_STATE_FAIL/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
     rmSync(transcript, { recursive: true, force: true })

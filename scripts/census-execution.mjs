@@ -124,11 +124,15 @@ export function rootsFromReport(report) {
     let failedAssertions = 0
     let skipped = 0
     let unknown = 0
+    let executed = 0
     for (const a of assertions) {
       const status = a?.status
       if (status === 'failed') failedAssertions += 1
       else if (SKIPPED_STATUSES.has(status)) skipped += 1
       else if (status !== 'passed') unknown += 1
+      // F-02 round 2: only a non-skipped status is a MEASUREMENT. A file whose every assertion is
+      // skipped/pending/todo contributes zero executed assertions even though its total is nonzero.
+      if (!SKIPPED_STATUSES.has(status)) executed += 1
     }
     // A file-level failure with no per-assertion detail (collection error, unhandled rejection) is
     // still a red: `status: failed` / a non-empty `message` is the reporter saying so.
@@ -136,6 +140,7 @@ export function rootsFromReport(report) {
     byRoot.get(root).push({
       name,
       assertions: assertions.length,
+      assertions_executed: executed,
       failed: failedAssertions + (fileFailed ? 1 : 0),
       skipped,
       unknown,
@@ -228,6 +233,7 @@ export function resultsFromReport({ plan, capture, report, reportRef, exitCode, 
     const unexpectedFiles = observed.filter((f) => !expectedSet.has(f))
     const collectionErrors = slice.filter((f) => f.collection_error === true).map((f) => relativeToRoot(f.name, task.root)).sort()
     const noAssertions = slice.filter((f) => f.no_assertions === true).map((f) => relativeToRoot(f.name, task.root)).sort()
+    const executedTotal = slice.reduce((n, f) => n + (Number.isFinite(f.assertions_executed) ? f.assertions_executed : 0), 0)
     const failed = slice.filter((f) => f.failed > 0)
     const skipped = slice.reduce((n, f) => n + (Number.isFinite(f.skipped) ? f.skipped : 0), 0)
     const unknown = slice.filter((f) => (Number.isFinite(f.unknown) ? f.unknown : 0) > 0)
@@ -238,6 +244,7 @@ export function resultsFromReport({ plan, capture, report, reportRef, exitCode, 
       files: observed.length,
       files_observed: observed.length,
       assertions: slice.reduce((n, f) => n + (Number.isFinite(f.assertions) ? f.assertions : 0), 0),
+      assertions_executed: executedTotal,
       skipped,
       ...population,
       exit_code: exitCode,
@@ -265,6 +272,14 @@ export function resultsFromReport({ plan, capture, report, reportRef, exitCode, 
         task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['COLLECTION_ERROR'],
         evidence, ...shape,
         detail: `COLLECTION_ERROR ${task.root}: ${String(collectionErrors.length)} file(s) failed to collect (no assertions were produced) — ${names(collectionErrors)}`,
+      })
+      continue
+    }
+    if (executedTotal === 0 && noAssertions.length === 0) {
+      results.push({
+        task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['NO_EXECUTED_ASSERTIONS'],
+        evidence, ...shape,
+        detail: `NO_EXECUTED_ASSERTIONS ${task.root}: ${String(slice.length)} collected file(s) produced assertions, but every one is skipped/pending/todo — ${String(shape.assertions)} assertion(s), zero executed; a report that ran nothing is not a pass — ${names(slice.map((f) => relativeToRoot(f.name, task.root)))}`,
       })
       continue
     }
@@ -423,6 +438,9 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
       files_expected: rootPlan.files_expected.length,
       files_observed: typeof result.files_observed === 'number' ? result.files_observed : rootPlan.files_expected.length,
       file_digest: rootPlan.file_digest,
+      ...(Number.isFinite(result.assertions) ? { assertions: result.assertions } : {}),
+      ...(Number.isFinite(result.assertions_executed) ? { assertions_executed: result.assertions_executed } : {}),
+      ...(Number.isFinite(result.skipped) ? { skipped: result.skipped } : {}),
       ...(result.exit_code !== undefined ? { exit_code: result.exit_code } : {}),
       ...(typeof result.detail === 'string' && result.detail !== '' ? { detail: result.detail } : {}),
     })
@@ -616,10 +634,11 @@ export function renderPlanTokens({ plan, buildDigest, captureLines, shardCount, 
   }
   lines.push(`DSH-CENSUS-SHARDS shards=${String(shardCount)} layout=${String(shardLayout)}`)
   lines.push(
-    `DSH-CENSUS-SUMMARY verdict=${String(verdict)} codes=${summary.codes.length === 0 ? 'none' : summary.codes.join(',')} ` +
+    `DSH-CENSUS-SUMMARY mode=${String(summary.mode ?? 'live')} verdict=${String(verdict)} codes=${summary.codes.length === 0 ? 'none' : summary.codes.join(',')} ` +
       `expected=${String(summary.counts.expected)} observed=${String(summary.counts.observed)} ` +
       `missing=${String(summary.counts.missing)} extra=${String(summary.counts.extra)} shards=${String(shardCount)} ` +
-      `assertions_total=${String(summary.counts.assertions_total)} plan=${String(plan.identity.plan_digest)}`,
+      `assertions_total=${String(summary.counts.assertions_total)} assertions_executed=${String(summary.counts.assertions_executed_total)} ` +
+      `skipped_total=${String(summary.counts.skipped_total)} plan=${String(plan.identity.plan_digest)}`,
   )
   return lines
 }

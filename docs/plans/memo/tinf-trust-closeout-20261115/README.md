@@ -57,3 +57,19 @@
 **追加门禁（本机）**：11 套件 `317/317`；`eb3-ci-required` = `pass workflows=10 findings=0`；`dispatch-tests --check` = `PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` = exit 0（869/91）；`contract-tiers --check` = `contracts=6 met=6 excepted=0 unmet=0 findings=0`；`contract-tiers --run --tier L1` = `tier=L1 contracts=6 files=12 exit=0`，vitest `12 passed / 162 tests`、Duration 2.50 s、进程墙钟 3.4 s（CI 未实测，UNVERIFIED）；`docs:sync --check` findings=0；`lint-identities` exit 0；eslint 0 problems。
 
 **未验证**：CI 上该步骤的实际墙钟；REPLAY 的宽容是否应改为非 PASS（当前 dry-run 仍可 PASS，因为它重放的是 recorded 判决，不是新执行）；`NO_ASSERTIONS` 对“整文件 skip”的拒绝是刻意的 fail-closed，若未来要允许整文件 skip，需要报告里出现可区分的字段，而不是放宽这里。
+
+## 2026-11-15 追加二 — Round 2 审查（skip 仍不是测量；baseline 仍是文件）
+
+Round 1 的修复把“枚举”与“执行”分开了，但 Round 2 证明还有两层同样的冒充：
+
+1. **全 skipped 的 705 条断言曾经 PASS。** `no_assertions` 只处理空数组；每个文件 `[{status:'skipped'}]` 时 `assertions=705, skipped=705`。现在 `rootsFromReport` 区分 **total / executed / skipped**，`executed` 只计 status 不在 `{skipped,pending,todo}` 的断言；一个 root 的 `assertions_executed === 0` 即 `INCOMPLETE/NO_EXECUTED_ASSERTIONS`，点名文件。混合情况（1 条真断言 + N 条 skip）仍 PASS，因为确实有测量。aggregator 对 `assertions_executed === 0`（旧录制缺字段时用 `skipped === assertions` 兜底）追加 `RESULT_NO_EXECUTED_ASSERTIONS`。capture/summary token 现在明确分列 `assertions_executed=` 与 `skipped_total=`。
+
+2. **baseline 的 digest 一刀切把增长变成假红。** 旧规则任何 `catalog_digest` 变化都 `UNREVIEWED`，加一个测试也要重生成，和“增长允许”的注释矛盾。现在按 **membership** 比较每个 root 的 `files_expected`：新增文件 → `POPULATION_GREW`（非阻塞，token 输出 `growth=POPULATION_GREW added=<n>` 与路径）；删除文件/删除 root/同数替换 → `POPULATION_SHRANK`，要求同 PR 带 reason 重生成。catalog digest 仅作元数据，不再决定 verdict。
+
+3. **reason gate 只约束 writer。** 手改 baseline 删掉 review 字段、或改行以匹配一次 shrink，旧检查接受。现在：四个字段 `generated_at / catalog_digest / accepted_reason / accepted_by` 缺失或空 → `POPULATION_BASELINE_UNREVIEWED`；每行 `rows_digest` 与整体 `baseline_digest` 在 check 时重算，手改行不更新 → `POPULATION_BASELINE_TAMPERED`。**边界写明白**：committed baseline 是文件，determined editor 可以同时重算 `rows_digest` 和 `baseline_digest`；这只能把 tampering 变成一次可见的多字段 diff（review 时能看见），不可能让文件自证。要更强只能把 baseline 放到不可写外部系统，本 PR 不做。
+
+4. **`COMPLETED` 缺 exit 仍 PASS。** aggregator 现在要求 `status: COMPLETED` 必须携带数字 `exit_code`，否则 `SHARD_EXIT_UNRECORDED`（INFRA_ERROR）；只有 `REPLAY` 允许 null，且 `REPLAY + 数字 exit` 仍是 `SHARD_REPLAY_WITH_EXIT`。dry-run 的 summary token 带 `mode=dry-run`（live 带 `mode=live`），transcript 不能把重放 PASS 误读成 live。
+
+5. **C9 命名。** 新增 `CI_LAYER_LEG_ARGUMENT_MISSING`：当 step 实际执行的 argv 缺少 `check[]` 声明的 token（如 `--full` 被删）；`CI_LAYER_LEG_EXTRA_ARGUMENT` 只留给未声明的 token。C9 的 `c1/c3` 断言 EXTRA，`c2-no-full` 断言 MISSING；whole-argv 对齐改为“在 rest 中向前搜索声明的 token”，否则一个缺失 flag 会级联成十几个假 extra。还要跳过同 cmd 的另一条 leg（`--check-transcript`），否则它会被误判为本 leg 全部缺参。
+
+**Round 2 门禁（本机）**：11 套件 `321/321`；`eb3-ci-required pass workflows=10 findings=0`；`test-catalog` exit 0（869/91）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；C9 `26/26`；`--run --tier L1` = `files=12 exit=0`，162 tests，Duration 3.12 s，进程墙钟 4.2 s（CI UNVERIFIED）；C9 `26/26`。

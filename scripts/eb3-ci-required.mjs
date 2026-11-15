@@ -23,6 +23,9 @@
  *   CI_LAYER_LEG_WEAKENED       the invocation runs but with a required flag missing, a forbidden
  *                               flag present (e.g. --allow-refused census), `|| true`, an
  *                               un-pipefailed pipe, or a conditional step
+ *   CI_LAYER_LEG_ARGUMENT_MISSING (TINF round 2, C9 naming) the step executes a declared `check[]`
+ *                               token-set with a required token ABSENT (e.g. `--full` dropped); this
+ *                               is distinct from an undeclared EXTRA token, which keeps its own code
  *   CI_LAYER_LEG_EXTRA_ARGUMENT (TINF trust-closeout, F-01) the step executes MORE argv tokens than
  *                               the leg declares — `--json`, `--list`, a second `--leg`, an env
  *                               assignment, anything. The old reader graded a PREFIX, so appending
@@ -319,11 +322,20 @@ export function checkTrailing(rest, check) {
     const want = allowed[i]
     const got = rest[j]
     if (isValueSlot(want)) {
-      if (got.startsWith('-')) { extra.push(got); missing.push(want) }
+      if (got.startsWith('-')) { missing.push(want); extra.push(got) }
       j += 1
       continue
     }
-    if (got !== want) { extra.push(got); missing.push(want); j += 1; continue }
+    if (got !== want) {
+      // Align by SEARCHING for the declared token before calling the rest extra. Otherwise a single
+      // missing flag (`--full` removed) would cascade into a dozen false "extra" tokens and be
+      // misnamed CI_LAYER_LEG_EXTRA_ARGUMENT. Tokens skipped on the way are genuinely extra.
+      const at = rest.indexOf(want, j)
+      if (at === -1) { missing.push(want); continue }
+      extra.push(...rest.slice(j, at))
+      j = at + 1
+      continue
+    }
     j += 1
   }
   if (j < rest.length) extra.push(...rest.slice(j))
@@ -368,6 +380,7 @@ export function gradeLeg(job, leg) {
   const unproven = []
   const weakened = []
   const extraArgs = []
+  const missingArgs = []
   // A cmd token can be a value SLOT (`<value>`, see checkTrailing); a slot never appears literally in
   // a workflow, so the prefilter keys on the program/script token instead (cmd[1], else cmd[0]).
   const markers = [leg.cmd[1], leg.cmd[0]].filter((t) => typeof t === 'string' && t !== '')
@@ -394,8 +407,20 @@ export function gradeLeg(job, leg) {
           extraArgs.push(`${String(step.name ?? 'unnamed step')}: unexpected argv token(s) ${trailing.extra.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (allowed trailing set: ${leg.check === undefined || leg.check.length === 0 ? 'empty' : JSON.stringify(leg.check)})`)
           break
         }
+        // Another leg with the same cmd can share this step's line (`--check-transcript` is the
+        // clearest case): it matches cmd but declares NONE of this leg's check[] and carries its own
+        // flags. That is not this leg running without argv; skip it instead of reporting every token
+        // as missing. A genuine dropped token still has at least one declared token matched (c2).
+        const declared = new Set(Array.isArray(leg.check) ? leg.check : [])
+        const matchedDeclared = rest.some((t) => declared.has(t))
+        if (!matchedDeclared && rest.length > 0) continue
         const problems = []
-        if (trailing.missing.length > 0) problems.push(`missing ${trailing.missing.map((t) => JSON.stringify(t)).join(', ')}`)
+        if (trailing.missing.length > 0) {
+          // A declared `check[]` token that is ABSENT is a different defect from an undeclared token:
+          // dropping `--full` (c2) must not be reported as "extra argument". Keep the two names.
+          missingArgs.push(`${String(step.name ?? 'unnamed step')}: missing declared argv token(s) ${trailing.missing.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (declared: ${JSON.stringify(leg.check ?? [])})`)
+          break
+        }
         for (const f of leg.forbid ?? []) {
           const at = rest.indexOf(f)
           if (at === -1) continue
@@ -425,6 +450,7 @@ export function gradeLeg(job, leg) {
       unproven.push(`${String(step.name ?? 'unnamed step')}: \`${leg.cmd.join(' ')}\` appears only inside a construct the reader does not prove (if/case/loop/function/substitution/\`-c\` string/heredoc/operator)`)
     }
   }
+  if (missingArgs.length > 0) return { code: 'CI_LAYER_LEG_ARGUMENT_MISSING', why: `\`${leg.cmd.join(' ')}\` runs without argv it declares — ${missingArgs.join(' ;; ')}` }
   if (extraArgs.length > 0) return { code: 'CI_LAYER_LEG_EXTRA_ARGUMENT', why: `\`${leg.cmd.join(' ')}\` runs with tokens it does not declare — ${extraArgs.join(' ;; ')}` }
   if (weakened.length > 0) return { code: 'CI_LAYER_LEG_WEAKENED', why: `\`${leg.cmd.join(' ')}\` runs but weakened — ${weakened.join(' ;; ')}` }
   if (unproven.length > 0) return { code: 'CI_LAYER_LEG_UNPROVEN', why: `\`${leg.cmd.join(' ')}\` is not PROVEN to gate its step — ${unproven.join(' ;; ')}` }

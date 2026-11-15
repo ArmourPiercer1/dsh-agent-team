@@ -128,6 +128,45 @@ test('F-02 positive control: N files with N>0 assertions (total) passes', () => 
   assert.equal(got.results[0].assertions, 4)
 })
 
+test('F-02 round 2: all-skipped and all-pending reports are INCOMPLETE/NO_EXECUTED_ASSERTIONS', () => {
+  const plan = planWith(['test/a.test.ts', 'test/b.test.ts'])
+  for (const status of ['skipped', 'pending', 'todo']) {
+    const report = {
+      success: true,
+      testResults: ['test/a.test.ts', 'test/b.test.ts'].map((name) => ({
+        name: `/runner/work/repo/packages/a/${name}`,
+        status: 'passed',
+        assertionResults: [{ status }, { status }],
+      })),
+    }
+    const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: 0 })
+    assert.equal(got.ok, true, got.detail)
+    assert.equal(got.results[0].state, 'INCOMPLETE', status)
+    assert.deepEqual(got.results[0].codes, ['NO_EXECUTED_ASSERTIONS'], status)
+    assert.equal(got.results[0].assertions, 4)
+    assert.equal(got.results[0].assertions_executed, 0)
+    assert.equal(got.results[0].skipped, 4)
+  }
+})
+
+test('F-02 round 2: one REAL assertion among skips is a measurement (PASS)', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const report = {
+    success: true,
+    testResults: [{
+      name: '/runner/work/repo/packages/a/test/a.test.ts',
+      status: 'passed',
+      assertionResults: [{ status: 'skipped' }, { status: 'passed' }, { status: 'pending' }],
+    }],
+  }
+  const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: 0 })
+  assert.equal(got.ok, true, got.detail)
+  assert.equal(got.results[0].state, 'PASS')
+  assert.equal(got.results[0].assertions, 3)
+  assert.equal(got.results[0].assertions_executed, 1)
+  assert.equal(got.results[0].skipped, 2)
+})
+
 test('F-02 aggregator: a PASS result that carries assertions=0 is RESULT_NO_ASSERTIONS (INCOMPLETE)', () => {
   const plan = planWith(['test/a.test.ts'])
   const root = plan.roots[0]
@@ -216,7 +255,7 @@ test('F-02 aggregator: observed files that do not sum to the plan are SUMMARY_FI
     file_digest: plan.roots[0].file_digest,
     evidence: 'e.json',
   }))
-  const built = buildShardArtifacts({ plan, results, shards: 1 })
+  const built = buildShardArtifacts({ plan, results, shards: 1, exitCode: 0 })
   const got = aggregate({ plan, shards: [{ schema: built.artifacts[0].json.schema, text: JSON.stringify(built.artifacts[0].json) }] })
   assert.equal(got.refused, false)
   assert.equal(got.verdict, 'INCOMPLETE')
@@ -246,7 +285,7 @@ test('F-02 CLI: the 1-of-100 green report aggregates to a non-PASS token', () =>
       assert.equal(derived.ok, true, derived.detail)
       results.push(...derived.results.map((r) => ({ ...r, evidence: `${evidenceFile}#${r.root} ${digest}` })))
     }
-    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const built = buildShardArtifacts({ plan, results, shards: 1, exitCode: 0 })
     const planFile = join(dir, 'plan.json')
     writeFileSync(planFile, `${JSON.stringify(plan, null, 2)}\n`)
     writeShardArtifacts(dir, built.artifacts)
@@ -263,10 +302,26 @@ test('F-02 CLI: the 1-of-100 green report aggregates to a non-PASS token', () =>
     }
     assert.equal(status, 1, out)
     assert.doesNotMatch(out, /DSH-CENSUS-SUMMARY PASS/)
-    assert.match(out, /DSH-CENSUS-SUMMARY INCOMPLETE/)
+    assert.match(out, /DSH-CENSUS-SUMMARY mode=live INCOMPLETE/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+
+test('F-02 aggregator: RESULT_NO_EXECUTED_ASSERTIONS when every assertion was skipped', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const root = plan.roots[0]
+  const results = plan.tasks.map((task) => ({
+    task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', codes: [],
+    files: 1, files_expected: 1, files_observed: 1, file_digest: root.file_digest,
+    assertions: 2, assertions_executed: 0, skipped: 2, exit_code: 0, evidence: 'artifacts/task.json',
+  }))
+  const built = buildShardArtifacts({ plan, results, shards: 1, exitCode: 0 })
+  const got = aggregate({ plan, shards: built.artifacts.map((a) => ({ file: a.file, text: `${JSON.stringify(a.json, null, 2)}\n` })) })
+  assert.equal(got.summary.census_verdict, 'INCOMPLETE')
+  assert.ok(got.summary.codes.includes('RESULT_NO_EXECUTED_ASSERTIONS'), got.summary.codes.join(','))
+  assert.equal(got.summary.counts.assertions_executed_total, 0)
+  assert.equal(got.summary.counts.skipped_total, 4)
 })
 
 // ── F-04: the process's exit is a fact the census must carry ──────────────────────────────────────
@@ -281,6 +336,24 @@ test('F-04: a LIVE derivation without an explicit exit refuses EXIT_CODE_UNRECOR
   const replay = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: null, mode: 'replay' })
   assert.equal(replay.ok, true, replay.detail)
   assert.equal(replay.results[0].exit_code, null)
+})
+
+test('F-04 residual: COMPLETED with a null/deleted exit is SHARD_EXIT_UNRECORDED, never PASS', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const root = plan.roots[0]
+  const results = plan.tasks.map((task) => ({
+    task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', codes: [],
+    files: 1, files_expected: 1, files_observed: 1, file_digest: root.file_digest,
+    assertions: 1, assertions_executed: 1, skipped: 0, exit_code: 0, evidence: 'artifacts/task.json',
+  }))
+  const built = buildShardArtifacts({ plan, results, shards: 1, exitCode: 0 })
+  for (const mutate of [(j) => { delete j.exit_code }, (j) => { j.exit_code = null }]) {
+    const json = JSON.parse(JSON.stringify(built.artifacts[0].json))
+    mutate(json)
+    const got = aggregate({ plan, shards: [{ file: 'census-shard-1.json', text: `${JSON.stringify(json, null, 2)}\n` }] })
+    assert.equal(got.summary.census_verdict, 'INFRA_ERROR')
+    assert.ok(got.summary.codes.includes('SHARD_EXIT_UNRECORDED'), got.summary.codes.join(','))
+  }
 })
 
 test('F-04: the default exit policy tolerates NOTHING', () => {
@@ -381,7 +454,7 @@ test('F-05: an absent baseline is a refusal, never "no baseline, no rule"', () =
 
 // ── population baseline (F-02 review artifact) ────────────────────────────────────────────────────
 
-test('population baseline reason gate: regeneration needs a reason; catalog drift is UNREVIEWED', () => {
+test('population baseline: metadata is required, growth is allowed, shrink refused, tampering evident', () => {
   const roots = [{ root: 'packages/a', files_expected: ['test/a.test.ts'], files: 1, file_digest: 'sha256:' + 'a'.repeat(64) }]
   const catalog = 'sha256:' + 'b'.repeat(64)
   const reviewed = populationBaselineOf(roots, { acceptedReason: 'reviewed: initial population', acceptedBy: 'owner-a', catalogDigest: catalog })
@@ -389,17 +462,35 @@ test('population baseline reason gate: regeneration needs a reason; catalog drif
   assert.equal(reviewed.accepted_by, 'owner-a')
   assert.equal(reviewed.catalog_digest, catalog)
   assert.match(reviewed.generated_at, /^\d{4}-\d{2}-\d{2}T/)
+  assert.match(reviewed.baseline_digest, /^sha256:[0-9a-f]{64}$/)
+  assert.match(reviewed.rows[0].rows_digest, /^sha256:[0-9a-f]{64}$/)
   assert.equal(checkPopulationBaseline({ roots, baseline: reviewed, catalogDigest: catalog }).ok, true)
-  const drifted = checkPopulationBaseline({ roots, baseline: reviewed, catalogDigest: 'sha256:' + 'c'.repeat(64) })
-  assert.equal(drifted.code, 'POPULATION_BASELINE_UNREVIEWED')
-  const unreviewed = populationBaselineOf(roots, { catalogDigest: catalog })
-  const got = checkPopulationBaseline({ roots, baseline: unreviewed, catalogDigest: catalog })
-  assert.equal(got.ok, true, 'no reason is only a risk when the digest DRIFTS')
+
+  // The catalog digest is no longer a blanket RED: a catalog change with the SAME file membership is
+  // not a population change (growth/shrink is decided by membership).
+  assert.equal(checkPopulationBaseline({ roots, baseline: reviewed, catalogDigest: 'sha256:' + 'c'.repeat(64) }).ok, true)
+
+  // Growth is allowed and reported.
+  const grown = [{ root: 'packages/a', files_expected: ['test/a.test.ts', 'test/b.test.ts'], files: 2, file_digest: 'sha256:' + 'd'.repeat(64) }]
+  const grew = checkPopulationBaseline({ roots: grown, baseline: reviewed, catalogDigest: catalog })
+  assert.equal(grew.ok, true)
+  assert.equal(grew.grew, true)
+  assert.deepEqual(grew.added, ['packages/a/test/b.test.ts'])
+
+  // A removed file is a shrink.
+  const shrunkRoots = [{ root: 'packages/a', files_expected: [], files: 0, file_digest: 'sha256:' + 'e'.repeat(64) }]
+  assert.equal(checkPopulationBaseline({ roots: shrunkRoots, baseline: reviewed }).code, 'POPULATION_SHRANK')
+
+  // Metadata deletion and a hand-edited row are refusals.
+  const noMeta = { ...reviewed, accepted_reason: '' }
+  assert.equal(checkPopulationBaseline({ roots, baseline: noMeta }).code, 'POPULATION_BASELINE_UNREVIEWED')
+  const tampered = { ...reviewed, rows: reviewed.rows.map((r) => ({ ...r, file_count: 999 })) }
+  assert.equal(checkPopulationBaseline({ roots, baseline: tampered }).code, 'POPULATION_BASELINE_TAMPERED')
 })
 
 test('population baseline: missing is refused; a lost file or an equal-count swap is POPULATION_SHRANK; growth passes', () => {
   const roots = (files) => buildPlan({ roots: [{ root: 'packages/a', files_expected: files }], captures: 1, identity: IDENTITY }).roots
-  const base = populationBaselineOf(roots(['test/a.test.ts', 'test/b.test.ts']))
+  const base = populationBaselineOf(roots(['test/a.test.ts', 'test/b.test.ts']), { acceptedReason: 'fixture', acceptedBy: 'fixture', catalogDigest: 'sha256:' + 'f'.repeat(64) })
   assert.equal(checkPopulationBaseline({ roots: roots(['test/a.test.ts', 'test/b.test.ts']), baseline: base }).ok, true)
   assert.equal(checkPopulationBaseline({ roots: roots(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base }).ok, true, 'growth is not a shrink')
   assert.equal(checkPopulationBaseline({ roots: roots(['test/a.test.ts']), baseline: base }).code, 'POPULATION_SHRANK')

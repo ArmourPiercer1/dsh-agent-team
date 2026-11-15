@@ -151,7 +151,7 @@ test('positive control: the complete, consistent shard set aggregates to PASS', 
   assert.equal(r.summary.counts.missing, 0)
   assert.equal(r.summary.counts.extra, 0)
   assert.equal(r.summary.shards.length, 2)
-  assert.match(render(r), /DSH-CENSUS-SUMMARY PASS/)
+  assert.match(render(r), /DSH-CENSUS-SUMMARY mode=live PASS/)
 })
 
 test('the summary scope is STRUCTURAL — the census leg is graded, the test set is not (M6)', () => {
@@ -569,8 +569,8 @@ test('cli: the human report names the codes and the token; it never says PASS fo
   const s1 = writeShard(dir, 'shard-1.json', SHARD_1)
   const r = cli(['--aggregate', s1, '--plan', writePlan(plan)])
   assert.equal(r.status, 1, r.out)
-  assert.match(r.stdout, /DSH-CENSUS-SUMMARY INCOMPLETE codes=.*TASK_MISSING/)
-  assert.doesNotMatch(r.stdout, /DSH-CENSUS-SUMMARY PASS/)
+  assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=(?:live|dry-run) INCOMPLETE codes=.*TASK_MISSING/)
+  assert.doesNotMatch(r.stdout, /DSH-CENSUS-SUMMARY mode=live PASS/)
   // M6: the header must not call the verdict shadow, and must name what it does and does not grade.
   assert.match(r.stdout, /plan-mode census leg verdict \(ci-census under ci-required\)/)
   assert.doesNotMatch(r.stdout, /SHADOW/)

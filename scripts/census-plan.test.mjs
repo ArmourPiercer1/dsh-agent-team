@@ -708,11 +708,15 @@ test('F-02: the plan digest moves when a file is swapped at the same count', () 
 
 test('F-02: the population baseline refuses a loss or an equal-count swap, and accepts growth', () => {
   const rootsOf = (files) => buildPlan({ roots: [{ root: 'packages/a', files_expected: files }], captures: 1, identity: IDENTITY() }).roots
-  const base = populationBaselineOf(rootsOf(['test/a.test.ts', 'test/b.test.ts']))
+  const base = populationBaselineOf(rootsOf(['test/a.test.ts', 'test/b.test.ts']), { acceptedReason: 'fixture', acceptedBy: 'fixture', catalogDigest: 'sha256:' + 'f'.repeat(64) })
   assert.equal(base.file_count, 2)
   assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts']), baseline: base }).code, 'POPULATION_SHRANK')
   assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/other.test.ts']), baseline: base }).code, 'POPULATION_SHRANK')
-  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base }).ok, true)
+  const grown = checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base })
+  assert.equal(grown.ok, true)
+  assert.equal(grown.grew, true)
+  assert.deepEqual(grown.added, ['packages/a/test/c.test.ts'])
+  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base }).code, undefined)
   assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts']), baseline: null }).code, 'POPULATION_BASELINE_MISSING')
 })
 
@@ -729,7 +733,7 @@ test('F-02 CLI: --write-population-baseline writes a reviewed artifact and a tok
     assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=705/)
     const body = JSON.parse(readFileSync(out, 'utf8'))
     assert.equal(body.schema, 'census-population-baseline/1')
-    assert.equal(body.roots.length, 11)
+    assert.equal(body.rows.length, 11)
     assert.equal(body.file_count, 705)
     assert.equal(body.accepted_reason, 'test: population unchanged; record review metadata')
     assert.equal(body.accepted_by, 'test-owner')

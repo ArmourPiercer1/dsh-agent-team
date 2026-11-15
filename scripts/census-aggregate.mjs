@@ -590,6 +590,11 @@ export function aggregate({ plan, shards }) {
     }
     // exit code and status must agree in BOTH directions. non-zero + COMPLETED is a shard that says it
     // failed; exit 0 with a non-COMPLETED status is a shard that failed while claiming success.
+    if (json.status === 'COMPLETED' && typeof json.exit_code !== 'number') {
+      codes.push('SHARD_EXIT_UNRECORDED')
+      verdicts.add('INFRA_ERROR')
+      detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — a completed run must carry the process exit; only REPLAY may leave it null`)
+    }
     if (json.exit_code !== undefined && json.exit_code !== null) {
       if (json.status === 'COMPLETED' && json.exit_code !== 0) {
         // A tolerance is not free text in the artifact: the shard must name the FROZEN policy digest
@@ -625,6 +630,14 @@ export function aggregate({ plan, shards }) {
         codes.push('RESULT_NO_ASSERTIONS')
         verdicts.add('INCOMPLETE')
         detail.push(`${file}: task ${result.task_id} reports assertions=0 — a collected root with no assertion is not a measurement`)
+      }
+      const executed = Number.isFinite(result.assertions_executed)
+        ? result.assertions_executed
+        : Number.isFinite(result.skipped) && Number.isFinite(result.assertions) && result.skipped === result.assertions ? 0 : null
+      if (executed === 0 && Number.isFinite(result.assertions) && result.assertions > 0) {
+        codes.push('RESULT_NO_EXECUTED_ASSERTIONS')
+        verdicts.add('INCOMPLETE')
+        detail.push(`${file}: task ${result.task_id} reports assertions=${String(result.assertions)} but assertions_executed=0 — every assertion was skipped/pending/todo, so nothing was measured`)
       }
       const state = result.state
       if (!TASK_STATES.includes(state)) {
@@ -775,6 +788,13 @@ export function aggregate({ plan, shards }) {
       extra: extra.length,
       by_state: Object.fromEntries(TASK_STATES.map((s) => [s, parsed.flatMap((p) => p.json.results).filter((r) => r.state === s).length])),
       assertions_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0),
+      assertions_executed_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => {
+        if (Number.isFinite(r.assertions_executed)) return n + r.assertions_executed
+        // Legacy replay recording without the field: all-skipped is still visible from skipped===assertions.
+        if (Number.isFinite(r.skipped) && Number.isFinite(r.assertions) && r.skipped === r.assertions) return n
+        return n + (Number.isFinite(r.assertions) ? r.assertions : 0)
+      }, 0),
+      skipped_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0),
     },
     oracles: {
       required: requiredOracles,
@@ -784,6 +804,9 @@ export function aggregate({ plan, shards }) {
       failed: oracleRows.filter((r) => r.state !== PASS && r.state !== 'MISSING' && r.state !== 'UNDECIDABLE').length,
       checked: oracleRows.length,
     },
+    // A dry-run summary must SAY it is a dry run: a PASS token read out of context must not be
+    // mistaken for a live execution. Any REPLAY shard makes the summary dry-run.
+    mode: parsed.length > 0 && parsed.every((p) => p.json.status === 'REPLAY') ? 'dry-run' : 'live',
     codes: [...new Set(codes)],
     detail,
     census_verdict: verdict,
@@ -820,17 +843,18 @@ export function render(result) {
   }
   lines.push(`  tasks: expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} missing=${String(s.counts.missing)} extra=${String(s.counts.extra)}`)
   lines.push(`  states: ${Object.entries(s.counts.by_state).map(([k, v]) => `${k}=${String(v)}`).join(' ')}`)
-  lines.push(`  assertions_total: ${String(s.counts.assertions_total)}`)
+  lines.push(`  assertions: total=${String(s.counts.assertions_total)} executed=${String(s.counts.assertions_executed_total)} skipped=${String(s.counts.skipped_total)}`)
   lines.push(`  oracles: required=${String(s.oracles.required.length)} checked=${String(s.oracles.checked)} failed=${String(s.oracles.failed)} undecidable=${String(s.oracles.undecidable)} missing=${String(s.oracles.missing)}`)
   if (s.detail.length > 0) {
     lines.push(`  findings (${s.detail.length}):`)
     for (const d of s.detail.slice(0, 25)) lines.push(`    ${d}`)
     if (s.detail.length > 25) lines.push(`    ... ${s.detail.length - 25} more`)
   }
-  lines.push(`DSH-CENSUS-SUMMARY ${s.census_verdict} codes=${s.codes.join(',') || 'none'} ` +
+  lines.push(`DSH-CENSUS-SUMMARY mode=${String(s.mode)} ${s.census_verdict} codes=${s.codes.join(',') || 'none'} ` +
     `expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} shards=${String(s.shards.length)} ` +
     `expected_task_ids=${String(s.expected_task_ids.length)} observed_task_ids=${String(s.observed_task_ids.length)} ` +
-    `assertions_total=${String(s.counts.assertions_total)}`)
+    `assertions_total=${String(s.counts.assertions_total)} assertions_executed=${String(s.counts.assertions_executed_total)} ` +
+    `skipped_total=${String(s.counts.skipped_total)}`)
   return lines.join('\n')
 }
 
@@ -987,7 +1011,7 @@ export function selfTest() {
     pass.summary.scope.decides_what_ci_runs === false,
     JSON.stringify(pass.summary.scope))
   ok('positive: shard artifact digests are recorded', pass.summary.shards.every((x) => /^sha256:[0-9a-f]{64}$/.test(x.artifact_digest)), 'digest')
-  ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY PASS/.test(render(pass)), render(pass).split('\n').pop())
+  ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY mode=live PASS/.test(render(pass)), render(pass).split('\n').pop())
 
   const omitted = aggregate({ plan, shards: [s1] })
   ok('an omitted shard is INCOMPLETE / TASK_MISSING with the exact delta',

@@ -8888,3 +8888,17 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **4. baseline**：`--write-population-baseline` 必须 `--accept-population-change <reason>`；文件记录 `generated_at/catalog_digest/accepted_reason/accepted_by`；catalog digest 漂移 → `POPULATION_BASELINE_UNREVIEWED`。
 
 **5. 门禁**：317/317；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18 bad=0`；`test-catalog` exit 0（869/91）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`--run --tier L1` exit 0（12 files/162 tests，Duration 2.50 s，墙钟 3.4 s，CI UNVERIFIED）；docs-sync/lint-identities/eslint 全过。`09eeebbe8` 保留：whole-argv 法先于 leg-specific 检查，新增测试沿用同一事实。
+
+## 2026-11-15 — TINF Round 2 审查收口（PR #775）
+
+**1. 全 skipped**：`executed` 只计非 `{skipped,pending,todo}`；root `executed===0` → `NO_EXECUTED_ASSERTIONS`；aggregator `RESULT_NO_EXECUTED_ASSERTIONS`（旧录制用 `skipped===assertions` 兜底）；token 分列 `assertions_executed=` / `skipped_total=`。
+
+**2. baseline 增长**：按 per-root `files_expected` membership 比较；新增 `POPULATION_GREW` 非阻塞并报告路径；删除/替换 `POPULATION_SHRANK`；catalog digest 不再是 verdict。
+
+**3. baseline 防篡改**：四字段必填（缺 → `POPULATION_BASELINE_UNREVIEWED`）；每行 `rows_digest` + 整体 `baseline_digest` 重算（改行不更新 → `POPULATION_BASELINE_TAMPERED`）。memo 明说：能重算 digest 的编辑者只能让篡改变成可见多字段 diff，committed file 的极限。
+
+**4. COMPLETED/null exit**：`SHARD_EXIT_UNRECORDED`；仅 REPLAY 可 null；summary token `mode=dry-run|live`。
+
+**5. C9**：`CI_LAYER_LEG_ARGUMENT_MISSING`（declared token 缺失）与 `EXTRA_ARGUMENT` 分离；C9 `c1/c3`→EXTRA、`c2`→MISSING；checkTrailing 对齐搜索 + 跳过同 cmd 的其它 leg。
+
+门禁：321/321；eb3 pass workflows=10 findings=0；catalog exit 0；contract-tiers met=6；C9 26/26。
