@@ -179,11 +179,17 @@ export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
     // A blank reference is rule 2's refusal, not this one's; leave it for `aggregate()` so the code
     // a caller sees stays RESULT_EVIDENCE_MISSING.
     if (typeof evidence !== 'string' || evidence.trim() === '') continue
-    const hash = evidence.indexOf('#')
-    const rel = (hash >= 0 ? evidence.slice(0, hash) : evidence).trim().split(/\s+/)[0]
-    const afterHash = hash >= 0 ? evidence.slice(hash + 1).trim() : ''
-    const fragment = afterHash.split(/\s+/)[0] ?? ''
-    const trailing = afterHash.split(/\s+/).slice(1)
+    // Shape: `<path>[#<fragment>] [sha256:<64 hex>]`. The digest is a property of the FILE, so it
+    // must be parsed and verified whether or not the reference also names a fragment. Splitting on
+    // the `#` first made `'evidence.json sha256:000…'` a silent PASS (the two emitted shapes always
+    // carry `#root`, but the check must not depend on the producer's habit). Tokenise the whole
+    // reference instead: the first token is the pointer, everything after it is a trailing claim.
+    const reference = evidence.trim().split(/\s+/)
+    const pointer = reference[0] ?? ''
+    const trailing = reference.slice(1)
+    const hash = pointer.indexOf('#')
+    const rel = hash >= 0 ? pointer.slice(0, hash) : pointer
+    const fragment = hash >= 0 ? pointer.slice(hash + 1) : ''
     const label = `${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)}`
     const real = resolveRoot()
     if (real === false) {
@@ -226,7 +232,9 @@ export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
     // bytes that no longer hash to it, is refused. The producer writes the FILE's digest, so the
     // reference is wrong the moment the artifact is replaced or edited.
     for (const token of trailing) {
-      if (!token.startsWith('sha256:')) continue
+      // A token that CLAIMS to be a sha256 must be one: `sha256`, `sha256:`, a truncated digest and
+      // an uppercase one are all refused rather than ignored, in both reference shapes.
+      if (!/^sha256/i.test(token)) continue
       if (!/^sha256:[0-9a-f]{64}$/.test(token)) {
         return refused(['RESULT_EVIDENCE_DIGEST_INVALID'], [`${label} carries ${token}, which is not a sha256 digest`])
       }

@@ -121,6 +121,10 @@ node dev/agent-workflow/evidence/tinf-m6-dispatch-parity/mutation-controls.mjs
 
 ```bash
 node scripts/dispatch-tests.mjs --parity --old-ref origin/master
+# caveat: `origin/master` must be the TRUE remote master (e5bf0567, M5 merged). Cloning from a stale
+# local checkout gives an older origin/master and reports `DIFFERS steps=16` — environmental, not a
+# parity failure. In a clone without that ref, pass the base sha itself (`--old-ref e5bf0567`),
+# not `HEAD~N` — N changes with every commit the branch gains.
 ```
 
 ```

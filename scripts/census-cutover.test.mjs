@@ -34,7 +34,8 @@
  *   - evidence naming a directory      (→ RESULT_EVIDENCE_NOT_REGULAR)
  *   - evidence naming an escaping link (→ RESULT_EVIDENCE_OUTSIDE, resolved)
  *   - evidence whose bytes changed     (→ RESULT_EVIDENCE_DIGEST_MISMATCH)
- *   - evidence carrying a bogus digest (→ RESULT_EVIDENCE_DIGEST_INVALID)
+ *   - evidence carrying a bogus digest (→ RESULT_EVIDENCE_DIGEST_INVALID), with or without `#root`
+ *   - evidence whose digest is checked but whose reference has no fragment (→ DIGEST_MISMATCH)
  *   - a missing build stamp            (→ BUILD_STAMP_MISSING; nothing is written in its place)
  *   - a stale build stamp              (same tree, changed bytes → BUILD_STAMP_STALE)
  *   - a stale report at the graded path (unlinked before the run → CENSUS_REPORT_MISSING)
@@ -633,6 +634,54 @@ test('NEGATIVE: a reference whose bytes changed is a DIGEST_MISMATCH, and a bogu
     const got2 = aggregateArtifacts({ plan, files: files2 })
     assert.equal(got2.refused, true)
     assert.deepEqual(got2.codes, ['RESULT_EVIDENCE_DIGEST_INVALID'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: the trailing digest is verified with OR without a `#root` fragment (M6 review)', () => {
+  // The digest attests the FILE, so it cannot be a property of the reference shape that happens to
+  // carry one. Before this, `'evidence.json sha256:…'` (no fragment) skipped the digest check
+  // entirely: a replaced artifact passed as long as some ref with `#root` was checked elsewhere.
+  const { plan } = fixture()
+  const dir = tmpDir('evidence-digest-shapes')
+  try {
+    const artifact = join(dir, 'census-evidence-1.json')
+    const body = (pretty) =>
+      JSON.stringify(
+        { schema: 'census-evidence/1', capture: 1, source: { path: 'x', digest: null }, roots: plan.tasks.filter((t) => t.capture === 1).map((t) => ({ root: t.root })) },
+        null,
+        pretty ? 2 : 0,
+      )
+    writeFileSync(artifact, body(false))
+    const digest = `sha256:${createHash('sha256').update(readFileSync(artifact)).digest('hex')}`
+
+    // POSITIVE: no fragment, honest digest — the shape is legal and must still aggregate.
+    const ok = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json ${digest}` }))
+    const okFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: ok, shards: 1 }).artifacts)
+    const okGot = aggregateArtifacts({ plan, files: okFiles })
+    assert.equal(okGot.refused, false, okGot.detail)
+    assert.equal(okGot.verdict, 'PASS')
+
+    // NEGATIVE 1: same shape (no fragment), bytes replaced → the digest must still be caught.
+    writeFileSync(artifact, body(true))
+    const got = aggregateArtifacts({ plan, files: okFiles })
+    assert.equal(got.refused, true)
+    assert.deepEqual(got.codes, ['RESULT_EVIDENCE_DIGEST_MISMATCH'])
+
+    // NEGATIVE 2: no fragment, malformed digest → INVALID (not silently ignored).
+    const bogus = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'census-evidence-1.json sha256:not-a-digest' }))
+    const bogusFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: bogus, shards: 1 }).artifacts)
+    const gotBogus = aggregateArtifacts({ plan, files: bogusFiles })
+    assert.equal(gotBogus.refused, true)
+    assert.deepEqual(gotBogus.codes, ['RESULT_EVIDENCE_DIGEST_INVALID'])
+
+    // NEGATIVE 3: with a fragment, the malformed digest is refused the same way (the old shape).
+    const bogusFrag = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json#${t.root} sha256:not-a-digest` }))
+    const bogusFragFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: bogusFrag, shards: 1 }).artifacts)
+    const gotBogusFrag = aggregateArtifacts({ plan, files: bogusFragFiles })
+    assert.equal(gotBogusFrag.refused, true)
+    assert.deepEqual(gotBogusFrag.codes, ['RESULT_EVIDENCE_DIGEST_INVALID'])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

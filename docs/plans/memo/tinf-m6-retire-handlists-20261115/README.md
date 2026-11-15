@@ -7,7 +7,7 @@ dated: 2026-11-15 ｜ 分支 `task/tinf-m6-retire-handlists-20261115` ｜ 基线
 
 ## 0. 一句话结论
 
-M6 之前，「这次 CI 要跑哪些 node:test 文件」有**两份**手写副本：workflow 的 `node --test <files>` argv，和 `dev/ci/eb3-ci-manifest.json` 里每个 leg 的 `check[]` token。`eb3-ci-required.mjs` 逐字比对这两份，所以它们既不能独立演进，也不能只改一份。M6 把人口（population）**一次**声明在 manifest leg 里，workflow 只写 leg 名；`scripts/dispatch-tests.mjs` 把它解析成显式 argv 再执行。**node:test 的文件清单从这个仓库里消失了**（vitest 的两份清单还在，理由见 §3）。同时关掉了四类「同一个事实有两个真相」的判定分支（§2.2），并用可重放的证据证明**跑的文件集合一个都没变**（§4）。
+M6 之前，「这次 CI 要跑哪些 node:test 文件」有**两份**手写副本：workflow 的 `node --test <files>` argv，和 `dev/ci/eb3-ci-manifest.json` 里每个 leg 的 `check[]` token。`eb3-ci-required.mjs` 逐字比对这两份，所以它们既不能独立演进，也不能只改一份。M6 把人口（population）**一次**声明在 manifest leg 里，workflow 只写 leg 名；`scripts/dispatch-tests.mjs` 把它解析成显式 argv 再执行。**这不是「文件名消失了」**：**25 个 node:test 文件名仍然写着**（17 个被转换 leg 的 24 个 + settlement 的 1 个），而且每个 leg 的展开与被删的 `check[]` 逐元素相同（17 compared / **0 different**）。M6 是**去重 + 搬家**——第二份副本、第二个 owner（workflow）、第二个谓词都没了，命名本身不是罪（vitest 的两份清单还在，理由见 §3）。同时关掉了四类「同一个事实有两个真相」的判定分支（§2.2），并用可重放的证据证明**跑的文件集合一个都没变**（§4）。
 
 ## 1. 现在只有一条权威链
 
@@ -29,9 +29,9 @@ node --test（显式 argv，永不通配）           ← workflow 里只剩 `--
 - **manifest 不再有 `check[]`**：`check[]` 是给「按行读 argv 的比对器」用的第二份声明；人口改由 `suites[]`/`areas[]` 承载，`eb3-ci-required.mjs` 用四条具名拒绝去grade它（见 §4）。
 - **catalog 不决定「这次跑哪些」**：它只回答「这个路径是不是一个 test / 是哪个 runner」，并提供 digest 与 uncollected 计数。两个工具争当权威比一份清单更糟，所以 catalog 的角色被写进它的文件头（M6 改掉了原来「shadow、workflow 仍是权威」的表述）。
 
-### 1.1 为什么 13 个 leg 保留 `suites[]` 而不是全部 `areas[]`
+### 1.1 为什么 14 个 leg 保留 `suites[]` 而不是全部 `areas[]`
 
-`areas[]` 只能表达「整个目录」。有 13 个 leg 是**更大目录里的一个子集**，例如 `tests/world-factory` 里有 65 个套件而某个 leg 只要其中 9 个；把它们改成 `areas[]` 会把 56 个未收集套件拉进 CI——那是**行为变化**，M6 明确禁止。于是：
+`areas[]` 只能表达「整个目录」。有 14 个 leg 是**更大目录里的一个子集**（13 个 layer leg + `pr-settlement-unit`，后者只要 `scripts/` 里的 1 个套件），例如 `tests/world-factory` 里有 65 个套件而某个 leg 只要其中 9 个；把它们改成 `areas[]` 会把 56 个未收集套件拉进 CI——那是**行为变化**，M6 明确禁止。于是：
 
 | 形态 | leg 数 | 例子 | 新增套件是否需要改清单 |
 | --- | --- | --- | --- |
@@ -87,13 +87,15 @@ node --test（显式 argv，永不通配）           ← workflow 里只剩 `--
 
 | 证据 | 命令 | 结果 |
 | --- | --- | --- |
-| 旧 argv vs 新 argv，逐步骤排序比对 | `node scripts/dispatch-tests.mjs --parity --old-ref origin/master` | `DISPATCH-PARITY IDENTICAL steps=18 old_files=25 new_files=25 problems=0`（`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`） |
+| 旧 argv vs 新 argv，逐步骤排序比对 | `node scripts/dispatch-tests.mjs --parity --old-ref origin/master`（见下注） | `DISPATCH-PARITY IDENTICAL steps=18 old_files=25 new_files=25 problems=0`（`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`） |
 | 新集合的 digest（防静默漂移） | 同上，`union ... set=sha256:5de65f5e…` | 已提交；`test-catalog.test.mjs` 用**今天**解析出的集合重算并比对，改了集合就必须重生成证据 |
 | 人口/谓词不变 | `node scripts/test-catalog.mjs --max-uncollected 91` | `tests=865 digest=sha256:2497b8f9…`，`UNCOLLECTED 91`（与 M5 基线逐字相同；只许降不许升） |
 | 每个 leg 都能 resolve 到已跟踪的 node:test 套件 | `node scripts/dispatch-tests.mjs --check` | `DSH-TEST-DISPATCH-CHECK PASS legs=18 bad=0` |
 | 18 个 leg 与 18 个 dispatch 步骤一一对应（ci-integration 17 + settlement 1） | `test-catalog.test.mjs` 的 `every dispatch step maps to one manifest leg` | 两个 workflow 各自逐 leg 比对 |
 | 四条新定律真的会红 | `negative-controls.mjs`（9 个变异，含 settlement leg） | `DSH-M6-NEGATIVE-CONTROLS PASS cases=9 failed=0` |
 | 删除「定律保护的东西」会红 | `mutation-controls.mjs`（7 个删改） | `DSH-M6-MUTATION kill=7/7 rate=100%` |
+
+**复现注（`--old-ref` 必须指向真正的远端 `master`）**：`origin/master` 只在你手上的 clone 里是什么，取决于那个 clone 取过什么。从本仓库**落后的本地 checkout** 再 clone（我第一轮就踩过）会得到更旧的 `origin/master`，parity 会报 `DIFFERS steps=16` 而不是 `steps=18`——那是**环境**，不是 parity 坏了。复现前先确认 `git rev-parse origin/master` = `e5bf05670f5a4867ff02834b033af4bbcc45b836`（M5 合并点）。没有这个 ref 的 clone 里请直接写 base sha（`--old-ref e5bf0567`），**不要用 `HEAD~N`**：分支每加一个 commit，N 就变一次（我复现时先写成 `HEAD~2` 就取到了转换后的提交，parity 报 `steps=0`，被自己的备注绊了一次）。
 
 ## 5. 回滚
 
