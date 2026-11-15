@@ -225,6 +225,28 @@ export function evaluateContracts({ contracts, tiers, exceptions = [], today = n
       findings.push({ code: 'CONTRACT_TIER_UNKNOWN', contract: contract.id, detail: `required_tiers ${unknown.join(',')} is not one of ${TIERS.join('|')}` })
     }
     const paths = boundPaths(contract)
+    // Vacuous ∀ guard (review of #776, P2): with zero bound paths the per-test quantifier below is
+    // true for every tier, so a contract declaring required_tiers but binding nothing would report
+    // `met` — the base reported `unmet`. test-catalog's CONTRACT_WITHOUT_TEST also refuses this, but
+    // a coverage checker must not depend on another gate to keep its own quantifier non-vacuous.
+    if (paths.length === 0 && required.length > 0) {
+      findings.push({
+        code: 'CONTRACT_TESTS_EMPTY',
+        contract: contract.id,
+        detail: `${contract.id} requires ${required.join('|')} but binds no test file — every bound test runs in every required tier is vacuous over an empty set`,
+      })
+      rows.push({
+        contract_id: contract.id,
+        required_tiers: required,
+        executed_tiers: [],
+        missing: [],
+        missing_tiers: [],
+        unmet: required.map((tier) => ({ tier, tests: [] })),
+        excepted: [],
+        status: 'unmet',
+      })
+      continue
+    }
     const actual = new Set()
     for (const p of paths) for (const t of tiers.get(p) ?? []) actual.add(t)
     // PER-TEST quantifier: a required tier is satisfied only when EVERY bound test runs in it.

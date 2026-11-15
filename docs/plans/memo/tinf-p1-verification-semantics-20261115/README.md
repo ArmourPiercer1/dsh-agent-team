@@ -25,7 +25,8 @@
 - 例外行可以携带 `tests: [...]`；此时它**只**覆盖 `tests[]` 里点名、且确实属于该 (contract, tier) 缺口的测试。
 - 不带 `tests[]` 时覆盖该缺口的全部绑定测试，但 `reason` 必须明说 **`all bound tests`**（大小写不敏感）。否则该行 `CONTRACT_TIER_EXCEPTION_INVALID`，不覆盖任何东西。
 - 例外仍按 (contract, tier) 匹配。任一缺口测试未被覆盖 → `CONTRACT_TIER_UNMET` 点名这些测试；全部被覆盖 → 该 tier 进入 `excepted`，`status=excepted`（不是 `met`）。
-- 结果：一个例外**不可能静默覆盖它没点名的测试**。只点名 A 的例外不覆盖 B，B 仍是 `CONTRACT_TIER_UNMET`。
+- 结果：对 `TIERS` 内的层级，一个例外**不可能静默覆盖它没点名的测试**。只点名 A 的例外不覆盖 B，B 仍是 `CONTRACT_TIER_UNMET`。
+- 边界：`tier: "oracle"` 的例外不点名测试——census plan 不记录 oracle 结果，所以 oracle 例外只能表示「这个 oracle 缺口已评审」，其 `reason` 必须写明；今天没有契约声明 `required_oracles`，因此这条路径是空真，接 World Factory 时必须重新审视。
 - 选择“无 `tests[]` 需 reason 明说”的理由：既允许人工写“整个 (contract, tier) 豁免”，又让这句话成为可审计的显式声明，而不是省略字段的默认值。
 
 ### owner 规则
