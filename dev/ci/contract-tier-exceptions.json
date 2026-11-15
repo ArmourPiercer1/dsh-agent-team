@@ -1,0 +1,48 @@
+{
+  "schema": "contract-tier-exceptions/1",
+  "note": "Reviewed ceiling for F-03 (contract tier coverage). Generated from MEASURED reality by `node scripts/contract-tiers.mjs --write-exceptions`; never hand-typed to hide a tier. Each row must name an owner and an expiry; owner UNASSIGNED means no human owns the gap yet and the memo says so. An entry that is expired or malformed is RED, not grandfathered.",
+  "exceptions": [
+    {
+      "contract_id": "AUTH-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    },
+    {
+      "contract_id": "EXEC-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    },
+    {
+      "contract_id": "REVIEW-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    },
+    {
+      "contract_id": "LIFE-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    },
+    {
+      "contract_id": "RECOVERY-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    },
+    {
+      "contract_id": "ISOLATION-01",
+      "tier": "L1",
+      "owner": "UNASSIGNED",
+      "reason": "measured 2026-11-15: the contract's bound files execute only in L2; no L1 leg declares them. Owner must be assigned by a human before this expires.",
+      "expires": "2026-12-31"
+    }
+  ]
+}
