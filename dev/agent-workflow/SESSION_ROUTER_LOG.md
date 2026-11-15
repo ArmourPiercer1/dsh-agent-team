@@ -8914,3 +8914,19 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **3. 文档**：`tinf-trust-closeout-20261115/README.md` 更正 baseline 语义（per-root membership；增长允许并报告；`catalog_digest` 仅元数据、参数 `_catalogDigest` 不比较），删除“digest 漂移拒绝”错误表述；新增本轮 P1 小节、精确拒绝码与测试名、以及仍在开放项（F-06 不在范围、`required_oracles` 仍空、L2 P50 ≤ 10 min 未达成、91 未收集测试仍是 set-diff 债务）。新 memo：`docs/plans/memo/tinf-p1-verification-semantics-20261115/README.md`。
 
 **4. 门禁**：在干净 clone 的真实 base 上重跑七文件命令与受影响套件；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18`；`test-catalog --max-uncollected 91` exit 0（`uncollected=91`）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`docs-sync --check`；`lint-identities`；eslint；`node --check`。具体数字见最终报告。
+
+## 2026-11-15 — M7-A 真实宿主纵向切片（首个把 Contract Oracle 架在真实执行链上的任务）
+
+**0. 背景**：M7-A 要求先用 file:line 证据回答六个侦察问题，再只做一条纵向切片：`脚本化模型 → 真实 DSH Agent Session → 真实工具解析 → 真实执行 → 独立观察 → Oracle 判决`，且 CORE PATCH BUDGET = 0、不得开 PR/推送。分支 `task/m7a-real-host-20261115`（base `6aba7365f`），四个 commit：`7f637debd`（testkit wire 脚本 + witness 溯源封印）、`2ff4bd152`（world-factory 真实宿主切片 + 无宿主单测）、`7f8230f3f`（侦察 memo）、`7d5bc8432`（uncollected baseline 91→93）。
+
+**1. 六问答案**（详见 `docs/plans/memo/m7a-real-host-20261115/README.md`）：World Factory 存在且独占生命周期（`tests/world-factory/lib/world-factory.mjs:226/333/622/844`）；脚本化模型经**公开 provider 端点**进入真实宿主（`DEEPSEEK_BASE_URL`，`packages/llm/llm-deepseek/src/config.ts:109/290`、trusted-env `app-boot/src/index.ts:148`、工厂注入 `world-factory.mjs:665`），不是打补丁；工具调用确实穿到 OS（`tool-fs/src/write.ts:111/112/118`、`fs-sandbox/src/index.ts:141`）；**没有公开的“效果观察” seam**——`session.event`（`sdk/protocol/src/types.ts:108`）与耐久 session log（`session-persistence-jsonl/src/format.ts:254/267/280`）都是被测系统的自述；独立观察只能来自宿主进程之外。
+
+**2. 能力矩阵（实测）**：filesystem = **可观察**（父进程快照 + sha256）；process / PTY / network = **不可观察**。真实工具面 27 个（含 `write`/`bash`，另有 canary `u5_canary`）。沙箱不对称：fs 工具可写平台临时区（TMPDIR 被指向世界内），bash 对同一路径只读（`Read-only file system`，exit 1）却仍以 `COMPLETED`（`isError:false`）入账——**非零退出不是工具错误**。
+
+**3. 切片（一次 boot、五个 session，2m13s wall，boot 130s）**：A1 拒绝写入工作区外 → `SATISFIED`（拒绝被独立见证 corroborate）；A2 真实写入被监视的非授权目录 → `VIOLATED`（负控，真实字节 + 独立可见）；A3 同一调用但观察被禁用 → `INCONCLUSIVE`（文件真实存在）；A4 空 witness → `INSTRUMENT_ERROR`；A5 bash 可达性与围栏 → `SATISFIED`。每臂都断言独立磁盘事实（拒绝=无字节+`FS_SANDBOX_DENIED`；允许=字节摘要相符）。观测对象由 observer 自己 arm/blind，调用方不写 `instrumented`。
+
+**4. `instrumented` 溯源**：新增模块私有 Symbol 封印 + `witnessProvenance:'declared'|'witnessed'`（默认 declared 向后兼容）。封印只能证明“行由 testkit 仪器产生”，**不能**证明监视的是哪个目录、时间窗口、也不能经 JSON 重放（有测试钉住）。真正的可信化需要 World Factory 拥有观察窗口并加盖 world/pid/lease 身份——列为 M7-B 候选，不在本任务范围。
+
+**5. 发现（未修，避免超范围）**：Oracle 的决策是 **contract 级而非 call 级**——A2 的 `VIOLATED` 由规则 3c（DENIED + 观察到的效果）触发，但它引用的拒绝属于另一个调用；判决对契约是对的，解释不精确。M7-B：要么 lane 产出 per-call decision 引用，要么 oracle 增加 execution 级规则。
+
+**6. 门禁**：无宿主单测 10/10（`node --test tests/world-factory/m7a-real-slice-unit.test.mjs`）；package vitest `m2-contract-oracle` 18、`m2-effect-witness` 10、`m2-scripted-model` 9、`m2-witness-provenance` 5、`m7a-real-slice`（宿主状态契约）2 全绿；四个无依赖模块在仓库 strict 旗标下 `tsc --noEmit` 通过；eslint 对改动 TS 文件 0 error；`test-catalog --write-uncollected-baseline` 后 exit 0。未推送、未开 PR；稳定实例 :3080 前后探针均为 `{"reachable":true,"status":401}`。
