@@ -23,11 +23,19 @@ import {
 
 const REPO_ROOT = resolve(new URL('..', import.meta.url).pathname)
 
+const WORKFLOW = '.github/workflows/ci-integration.yml'
+// Every tier-granting leg is graded against a real workflow step (P1-1), so the fixture must carry
+// the step it claims. The workflow map is injected so the test is host-free.
+const WORKFLOWS = new Map([
+  [WORKFLOW, { jobs: { 'ci-integration': { steps: [{ name: 'tinf', run: 'node scripts/dispatch-tests.mjs --leg tinf-instruments --run' }] } } }],
+])
+
 const MANIFEST = {
   layers: [
     {
       id: 'ci-integration',
-      workflow: '.github/workflows/ci-integration.yml',
+      workflow: WORKFLOW,
+      job: 'ci-integration',
       legs: [
         {
           id: 'tinf-instruments',
@@ -37,7 +45,7 @@ const MANIFEST = {
         },
       ],
     },
-    { id: 'ci-census', workflow: '.github/workflows/ci-census.yml', legs: [] },
+    { id: 'ci-census', workflow: '.github/workflows/ci-census.yml', job: 'census-runtime', legs: [] },
   ],
 }
 
@@ -49,7 +57,7 @@ const ROOTS = {
 }
 
 function tiersOf() {
-  const got = deriveExecutedTiers({ manifest: MANIFEST, tracked: new Set(['scripts/a.test.mjs']), roots: ROOTS })
+  const got = deriveExecutedTiers({ manifest: MANIFEST, tracked: new Set(['scripts/a.test.mjs']), roots: ROOTS, workflows: WORKFLOWS })
   assert.equal(got.ok, true, got.detail)
   return got
 }
@@ -98,12 +106,127 @@ test('F-03: binding a file that DOES run in the required tier is met', () => {
   assert.equal(evaluation.findings.length, 0)
 })
 
+// ── P1-1: the quantifier is PER TEST, exceptions are scoped, owners are real ─────────────────────
+
+const A = 'packages/a/test/a.test.mjs'
+const B = 'packages/b/test/b.test.mjs'
+const MIXED_TIERS = () => new Map([[A, new Set(['L1'])], [B, new Set(['L2'])]])
+
+test('P1-1: A runs L1 and B runs only L2 — required L1 is UNMET and names B (the old union said met)', () => {
+  const evaluation = evaluateContracts({ contracts: [contract('MIXED-01', [A, B], ['L1'])], tiers: MIXED_TIERS() })
+  assert.equal(evaluation.summary.met, 0)
+  assert.equal(evaluation.summary.unmet, 1)
+  const row = evaluation.contracts[0]
+  assert.equal(row.status, 'unmet')
+  assert.deepEqual(row.missing, [{ tier: 'L1', tests: [B] }])
+  assert.deepEqual(row.missing_tiers, ['L1'])
+  assert.deepEqual(row.executed_tiers, ['L1', 'L2'], 'executed_tiers stays the informational union')
+  const unmet = evaluation.findings.filter((f) => f.code === 'CONTRACT_TIER_UNMET')
+  assert.equal(unmet.length, 1)
+  assert.deepEqual(unmet[0].tests, [B])
+  assert.match(unmet[0].detail, /b\.test\.mjs/)
+})
+
+test('P1-1: an exception naming only A does not cover B — the tier stays UNMET and names B', () => {
+  const evaluation = evaluateContracts({
+    contracts: [contract('MIXED-01', [A, B], ['L1'])],
+    tiers: MIXED_TIERS(),
+    exceptions: [{ contract_id: 'MIXED-01', tier: 'L1', tests: [A], owner: 'reviewer-a', reason: 'A is the only file this waiver is about', expires: '2026-12-31' }],
+    today: '2026-11-15',
+  })
+  assert.equal(evaluation.summary.unmet, 1)
+  assert.equal(evaluation.summary.excepted, 0)
+  assert.equal(evaluation.contracts[0].status, 'unmet')
+  assert.deepEqual(evaluation.contracts[0].excepted, [])
+  const unmet = evaluation.findings.filter((f) => f.code === 'CONTRACT_TIER_UNMET')
+  assert.deepEqual(unmet[0].tests, [B])
+})
+
+test('P1-1: an exception naming B covers B — the tier is excepted, not met', () => {
+  const evaluation = evaluateContracts({
+    contracts: [contract('MIXED-01', [A, B], ['L1'])],
+    tiers: MIXED_TIERS(),
+    exceptions: [{ contract_id: 'MIXED-01', tier: 'L1', tests: [B], owner: 'reviewer-b', reason: 'B has no L1 leg yet', expires: '2026-12-31' }],
+    today: '2026-11-15',
+  })
+  assert.equal(evaluation.summary.unmet, 0)
+  assert.equal(evaluation.summary.excepted, 1)
+  assert.equal(evaluation.contracts[0].status, 'excepted')
+  assert.deepEqual(evaluation.contracts[0].excepted[0].tests, [B])
+  assert.equal(evaluation.contracts[0].excepted[0].owner, 'reviewer-b')
+  assert.deepEqual(evaluation.findings, [])
+})
+
+test('P1-1: a tests[]-less exception covers all bound tests ONLY when its reason says "all bound tests"', () => {
+  const scoped = evaluateContracts({
+    contracts: [contract('MIXED-01', [A, B], ['L1'])],
+    tiers: MIXED_TIERS(),
+    exceptions: [{ contract_id: 'MIXED-01', tier: 'L1', owner: 'reviewer-a', reason: 'waives L1 for ALL BOUND TESTS while the leg is rebuilt', expires: '2026-12-31' }],
+    today: '2026-11-15',
+  })
+  assert.equal(scoped.summary.excepted, 1)
+  assert.equal(scoped.summary.unmet, 0)
+  // A already runs L1, so B is the only gap; the unscoped row covers it (and A is not a gap to cover).
+  assert.deepEqual(scoped.contracts[0].excepted[0].tests, [B])
+
+  const silent = evaluateContracts({
+    contracts: [contract('MIXED-01', [A, B], ['L1'])],
+    tiers: MIXED_TIERS(),
+    exceptions: [{ contract_id: 'MIXED-01', tier: 'L1', owner: 'reviewer-a', reason: 'waives L1', expires: '2026-12-31' }],
+    today: '2026-11-15',
+  })
+  assert.equal(silent.summary.excepted, 0)
+  assert.equal(silent.summary.unmet, 1)
+  assert.ok(silent.findings.some((f) => f.code === 'CONTRACT_TIER_EXCEPTION_INVALID'), 'an unscoped row without the phrase is invalid, never silently broad')
+  assert.ok(silent.findings.some((f) => f.code === 'CONTRACT_TIER_UNMET'))
+})
+
+for (const owner of ['UNASSIGNED', 'unassigned', 'TBD', 'todo', 'Nobody']) {
+  test(`P1-1: placeholder owner ${JSON.stringify(owner)} refuses as CONTRACT_EXCEPTION_UNOWNED and excuses nothing`, () => {
+    const evaluation = evaluateContracts({
+      contracts: [contract('AUTH-01', ['packages/a/test/x.test.ts'], ['L1'])],
+      tiers: tiersOf().tiers,
+      exceptions: [{ contract_id: 'AUTH-01', tier: 'L1', tests: ['packages/a/test/x.test.ts'], owner, reason: 'no owner yet', expires: '2026-12-31' }],
+      today: '2026-11-15',
+    })
+    assert.equal(evaluation.summary.unmet, 1)
+    assert.equal(evaluation.summary.excepted, 0)
+    assert.ok(evaluation.findings.some((f) => f.code === 'CONTRACT_EXCEPTION_UNOWNED'), JSON.stringify(evaluation.findings))
+    assert.ok(!evaluation.findings.some((f) => f.code === 'CONTRACT_TIER_EXCEPTION_INVALID'), 'the row is otherwise well-formed: UNOWNED is the named refusal')
+  })
+}
+
+test('P1-1: a dispatcher leg with --run in cmd but NO workflow step grants no tier (manifest-only claim)', () => {
+  const workflow = '.github/workflows/ci-integration.yml'
+  const manifest = {
+    layers: [{
+      id: 'ci-integration',
+      workflow,
+      job: 'ci-integration',
+      legs: [{ id: 'tinf-instruments', cmd: ['node', 'scripts/dispatch-tests.mjs', '--leg', 'tinf-instruments', '--run'], suites: ['scripts/a.test.mjs'] }],
+    }],
+  }
+  const got = deriveExecutedTiers({
+    manifest,
+    tracked: new Set(['scripts/a.test.mjs']),
+    roots: { ok: true, roots: [], file_count: 0 },
+    workflows: new Map([[workflow, { jobs: { 'ci-integration': { steps: [{ run: 'echo nope' }] } } }]]),
+  })
+  assert.equal(got.ok, true, got.detail)
+  assert.equal(got.tiers.has('scripts/a.test.mjs'), false, 'a manifest-only --run claim must not grant L1')
+  assert.equal(got.sources.dispatch_runs_rejected.length, 1)
+  assert.match(got.sources.dispatch_runs_rejected[0].why, /CI_LAYER_LEG_MISSING/)
+  // ...and the tier really is absent from the evaluation, not only from the source list.
+  const evaluation = evaluateContracts({ contracts: [contract('A', ['scripts/a.test.mjs'], ['L1'])], tiers: got.tiers })
+  assert.equal(evaluation.contracts[0].status, 'unmet')
+})
+
 test('F-03: a valid non-expired exception turns the unmet tier into `excepted`, not `met`', () => {
   const { tiers } = tiersOf()
   const evaluation = evaluateContracts({
     contracts: [contract('AUTH-01', ['packages/a/test/x.test.ts'], ['L1'])],
     tiers,
-    exceptions: [{ contract_id: 'AUTH-01', tier: 'L1', owner: 'UNASSIGNED', reason: 'no L1 leg declares it', expires: '2026-12-31' }],
+    exceptions: [{ contract_id: 'AUTH-01', tier: 'L1', tests: ['packages/a/test/x.test.ts'], owner: 'reviewer-a', reason: 'no L1 leg declares it', expires: '2026-12-31' }],
     today: '2026-11-15',
   })
   assert.equal(evaluation.summary.unmet, 0)
@@ -117,7 +240,7 @@ test('F-03: an EXPIRED exception does not excuse anything', () => {
   const evaluation = evaluateContracts({
     contracts: [contract('AUTH-01', ['packages/a/test/x.test.ts'], ['L1'])],
     tiers,
-    exceptions: [{ contract_id: 'AUTH-01', tier: 'L1', owner: 'someone', reason: 'old', expires: '2026-01-01' }],
+    exceptions: [{ contract_id: 'AUTH-01', tier: 'L1', tests: ['packages/a/test/x.test.ts'], owner: 'someone', reason: 'old', expires: '2026-01-01' }],
     today: '2026-11-15',
   })
   assert.equal(evaluation.summary.unmet, 1)
@@ -146,21 +269,25 @@ test('F-03: required_oracles that no executed path plans is CONTRACT_ORACLE_UNPL
   const excepted = evaluateContracts({
     contracts: [contract('AUTH-01', ['packages/a/test/x.test.ts'], ['L2'], { required_oracles: ['ORACLE-AUTH'] })],
     tiers,
-    exceptions: [{ contract_id: 'AUTH-01', tier: 'oracle', owner: 'UNASSIGNED', reason: 'oracle not planned yet', expires: '2026-12-31' }],
+    exceptions: [{ contract_id: 'AUTH-01', tier: 'oracle', owner: 'reviewer-a', reason: 'oracle not planned yet', expires: '2026-12-31' }],
     today: '2026-11-15',
   })
   assert.deepEqual(excepted.findings, [])
 })
 
-test('F-03: the generated exception rows are measured, owned and expiring', () => {
+test('F-03: the generated exception rows are measured, unowned (owner:null), scoped and expiring', () => {
   const { tiers } = tiersOf()
   const evaluation = evaluateContracts({ contracts: [contract('AUTH-01', ['packages/a/test/x.test.ts'], ['L1'])], tiers })
   const rows = measuredExceptions(evaluation, { expires: '2026-12-31' })
   assert.equal(rows.length, 1)
   assert.equal(rows[0].contract_id, 'AUTH-01')
   assert.equal(rows[0].tier, 'L1')
-  assert.equal(rows[0].owner, 'UNASSIGNED')
-  assert.match(rows[0].reason, /execute only in L2/)
+  // A generated row is a measurement, not a review: no placeholder owner that could pass a
+  // non-empty check. A human must assign a real owner or CONTRACT_EXCEPTION_UNOWNED refuses it.
+  assert.equal(rows[0].owner, null)
+  assert.deepEqual(rows[0].tests, ['packages/a/test/x.test.ts'])
+  assert.match(rows[0].reason, /never execute in L1/)
+  assert.match(rows[0].reason, /CONTRACT_EXCEPTION_UNOWNED/)
   assert.equal(rows[0].expires, '2026-12-31')
 })
 
