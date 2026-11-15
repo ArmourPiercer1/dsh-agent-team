@@ -589,8 +589,14 @@ control('C9 mandatory-leg-invoked-not-mentioned', () => {
     return f.some((x) => codes.includes(x.code)) ? null : `${name}: not detected (${codes.join('|')}; got ${f.map((x) => x.code).join(',') || 'none'})`
   }
   // UNPROVEN is the allowlist's code for a leg-shaped command it cannot prove gates the
-  // step (R2 F-2); every C9 evasion must produce one of the three, never nothing.
-  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED', 'CI_LAYER_LEG_UNPROVEN']
+  // step (R2 F-2); every C9 evasion must produce one of these, never nothing.
+  // EXTRA_ARGUMENT joined the set on 2026-11-15: the whole-argv law now refuses a leg line that
+  // carries any token its `check[]` does not declare, so (c1)/(c2)/(c3) — which stage
+  // `--allow-refused`/`--skip`/a removed `--full` — are caught one rule EARLIER, before the
+  // per-leg check/forbid comparison can run. That is the stricter outcome the evasions exist to
+  // prove, not a weakening: dropping the token is what the law measures, and it fires on exactly
+  // the three mutations below.
+  const LEG = ['CI_LAYER_LEG_MISSING', 'CI_LAYER_LEG_WEAKENED', 'CI_LAYER_LEG_UNPROVEN', 'CI_LAYER_LEG_EXTRA_ARGUMENT']
   const misses = [
     // (a) the real invocation replaced by an echo of the same words
     stage('a-echo', FAST, (t) => t.replace(`          ${SYNC}\n`, `          echo ${SYNC}\n`), LEG),
