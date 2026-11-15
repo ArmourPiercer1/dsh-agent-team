@@ -129,6 +129,10 @@ function replayOf(plan, capture, mutate = (results) => results) {
           root: t.root,
           capture: t.capture,
           state: 'PASS',
+          // P1-2: a recorded replay must carry the measurement too (no inference, not even for REPLAY).
+          assertions: 1,
+          assertions_executed: 1,
+          skipped: 0,
           evidence: `recorded:tinf-timing.tsv#${t.task_id}`,
         })),
     ),
@@ -215,6 +219,10 @@ function pop(plan, task, over = {}) {
     files_expected: root.files_expected.length,
     files_observed: root.files_expected.length,
     file_digest: root.file_digest,
+    // P1-2: hand-built PASS rows carry a measurement, so the fixture cannot be greener than reality.
+    assertions: 1,
+    assertions_executed: 1,
+    skipped: 0,
     ...over,
   }
 }
@@ -969,7 +977,20 @@ test('LIVE: one stamped invocation per capture, graded from the report it just w
       assert.match(r.evidence, /^census-evidence-\d\.json#/)
       assert.equal(statSync(join(ctx.shardDir, r.evidence.split('#')[0])).isFile(), true)
       assert.equal(r.skipped, 1, 'the skip count travels with the result')
+      // P1-2: the REAL live producer emits the full measurement, so the new requirement is
+      // satisfiable without a fallback. 705 collected files, 1 assertion each, 1 skipped per root.
+      assert.ok(Number.isInteger(r.assertions) && r.assertions > 0)
+      assert.ok(Number.isInteger(r.assertions_executed))
+      assert.equal(r.assertions_executed + r.skipped, r.assertions)
     }
+    // The recorded shard of a live run carries the whole measurement: 705 files × 2 captures = 1410
+    // executed assertions, plus 1 skipped on the first file of each of the 11 roots per capture.
+    const totals = shard.results.reduce((n, r) => ({
+      assertions: n.assertions + r.assertions,
+      executed: n.executed + r.assertions_executed,
+      skipped: n.skipped + r.skipped,
+    }), { assertions: 0, executed: 0, skipped: 0 })
+    assert.deepEqual(totals, { assertions: 1432, executed: 1410, skipped: 22 })
     // The graded path is the run-stamped one, not the plan's deterministic path.
     for (const call of calls) {
       const rel = call.args.find((a) => a.startsWith('--outputFile.json=')).slice('--outputFile.json='.length)
@@ -1029,9 +1050,9 @@ test('CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /^DSH-CI-VERDICT pass /m)
     assert.match(r.stdout, /DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:[0-9a-f]{64}/)
-    assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 assertions_total=0 assertions_executed=0 skipped_total=0/)
+    assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 assertions_total=22 assertions_executed=22 skipped_total=0/)
     assert.equal((r.stdout.match(/^DSH-CI-VERDICT /gm) ?? []).length, 1, 'exactly one token')
-    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions_executed=0 assertions_total=0 skipped_total=0 evidence=census-evidence-1\.json/)
+    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions_executed=11 assertions_total=11 skipped_total=0 evidence=census-evidence-1\.json/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
     rmSync(transcript, { recursive: true, force: true })

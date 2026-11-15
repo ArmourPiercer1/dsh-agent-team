@@ -110,6 +110,11 @@ const res = (task_id, over = {}) => {
   file_digest: rootPlan.file_digest,
   files_expected: rootPlan.files_expected.length,
   files_observed: rootPlan.files_expected.length,
+  // P1-2: a PASS result is a measurement, so the fixture carries the measurement. Every negative
+  // control below deletes or corrupts exactly one of these fields.
+  assertions: 10,
+  assertions_executed: 10,
+  skipped: 0,
   // A pointer the CLI can OPEN (see verifyEvidenceRefs): the CLI and the census leg resolve evidence
   // against the shard's own directory, so the fixture writes that file beside the shards.
   evidence: 'evidence.json',
@@ -150,8 +155,85 @@ test('positive control: the complete, consistent shard set aggregates to PASS', 
   assert.deepEqual(r.summary.observed_task_ids, [...ALL_TASKS].sort())
   assert.equal(r.summary.counts.missing, 0)
   assert.equal(r.summary.counts.extra, 0)
+  assert.equal(r.summary.counts.assertions_total, 40)
+  assert.equal(r.summary.counts.assertions_executed_total, 40)
+  assert.equal(r.summary.counts.skipped_total, 0)
+  assert.equal(r.summary.counts.metadata_invalid, 0)
   assert.equal(r.summary.shards.length, 2)
   assert.match(render(r), /DSH-CENSUS-SUMMARY mode=live PASS/)
+})
+
+// ── P1-2: execution-count metadata is REQUIRED, never inferred ──────────────────────────────────
+// The reviewer's counterexample: `{state:'PASS', assertions:10, skipped:0}` with no
+// assertions_executed used to PASS and its 10 assertions were counted as executed.
+
+const tailShard = (build) => {
+  const rows = ALL_TASKS.slice(2).map((task_id) => build(task_id))
+  return shardFile('shard-2', ALL_TASKS.slice(2), { results: rows })
+}
+
+test('P1-2: a PASS result with no assertions_executed is not PASS and its assertions are not counted as executed', () => {
+  const r = aggregate({
+    plan,
+    shards: [SHARD_1, tailShard((task_id) => {
+      const row = res(task_id)
+      delete row.assertions_executed
+      return row
+    })],
+  })
+  assert.notEqual(r.verdict, PASS)
+  assert.ok(r.codes.includes('RESULT_EXECUTED_METADATA_MISSING'), JSON.stringify(r.codes))
+  assert.equal(r.summary.counts.metadata_invalid, 2)
+  // Only shard-1's two results contribute (10 executed each); the malformed rows contribute nothing.
+  assert.equal(r.summary.counts.assertions_executed_total, 20)
+  assert.equal(r.summary.counts.assertions_total, 40, 'assertions itself is still a valid count')
+})
+
+for (const bad of [-1, 1.5, '10']) {
+  test(`P1-2: assertions_executed=${JSON.stringify(bad)} is RESULT_EXECUTED_METADATA_INVALID (not a count)`, () => {
+    const r = aggregate({ plan, shards: [SHARD_1, tailShard((task_id) => res(task_id, { assertions_executed: bad }))] })
+    assert.notEqual(r.verdict, PASS)
+    assert.ok(r.codes.includes('RESULT_EXECUTED_METADATA_INVALID'), JSON.stringify(r.codes))
+    assert.equal(r.summary.counts.assertions_executed_total, 20, 'a malformed value never enters the total')
+  })
+}
+
+test('P1-2: assertions_executed > assertions is RESULT_METADATA_INCONSISTENT', () => {
+  const r = aggregate({ plan, shards: [SHARD_1, tailShard((task_id) => res(task_id, { assertions_executed: 11 }))] })
+  assert.notEqual(r.verdict, PASS)
+  assert.ok(r.codes.includes('RESULT_METADATA_INCONSISTENT'), JSON.stringify(r.codes))
+})
+
+test('P1-2: assertions_executed + skipped ≠ assertions is RESULT_METADATA_INCONSISTENT', () => {
+  const r = aggregate({ plan, shards: [SHARD_1, tailShard((task_id) => res(task_id, { assertions_executed: 8, skipped: 0 }))] })
+  assert.notEqual(r.verdict, PASS)
+  assert.ok(r.codes.includes('RESULT_METADATA_INCONSISTENT'), JSON.stringify(r.codes))
+})
+
+test('P1-2: a PASS result with no files_observed is RESULT_FILES_OBSERVED_MISSING', () => {
+  const r = aggregate({
+    plan,
+    shards: [SHARD_1, tailShard((task_id) => {
+      const row = res(task_id)
+      delete row.files_observed
+      return row
+    })],
+  })
+  assert.notEqual(r.verdict, PASS)
+  assert.ok(r.codes.includes('RESULT_FILES_OBSERVED_MISSING'), JSON.stringify(r.codes))
+})
+
+test('P1-2: files_observed off by one is RESULT_FILES_OBSERVED_MISMATCH', () => {
+  const r = aggregate({
+    plan,
+    shards: [SHARD_1, tailShard((task_id) => {
+      const id = taskIdentityOf(task_id)
+      const rootPlan = plan.roots.find((root) => root.root === id.root)
+      return res(task_id, { files_observed: rootPlan.files_expected.length + 1 })
+    })],
+  })
+  assert.notEqual(r.verdict, PASS)
+  assert.ok(r.codes.includes('RESULT_FILES_OBSERVED_MISMATCH'), JSON.stringify(r.codes))
 })
 
 test('the summary scope is STRUCTURAL — the census leg is graded, the test set is not (M6)', () => {

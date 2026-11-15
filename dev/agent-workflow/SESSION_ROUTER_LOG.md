@@ -8902,3 +8902,15 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **5. C9**：`CI_LAYER_LEG_ARGUMENT_MISSING`（declared token 缺失）与 `EXTRA_ARGUMENT` 分离；C9 `c1/c3`→EXTRA、`c2`→MISSING；checkTrailing 对齐搜索 + 跳过同 cmd 的其它 leg。
 
 门禁：321/321；eb3 pass workflows=10 findings=0；catalog exit 0；contract-tiers met=6；C9 26/26。
+
+## 2026-11-15 — TINF P1 验证语义补丁（外部评审 of `32b132017`，P1-1/P1-2）
+
+**0. 背景**：外部评审接受 PR #775（`32b132017`）后指出两个残余验证语义缺口：(P1-1) `contract-tiers` 用“绑定文件执行层并集”代替逐测试量词，A(L1)+B(仅 L2) 的 contract 被误报 `met`；(P1-2) `census-aggregate` 把 `assertions_executed` 当可选并用 `skipped===assertions` 兜底，手写的 `{state:PASS, assertions:10, skipped:0}` 通过且 10 条断言被计为已执行。本分支在一个 worktree 内修复，两个 reviewable commit：contract-tiers、aggregator+docs。无新模块，无 Required-context/workflow 变更。
+
+**1. P1-1（契约层）**：量词改为 `∀contract ∀required tier ∀bound test：Runs(t,l)`；`missing:[{tier,tests}]` 按测试点名，`executed_tiers` 仅信息展示。例外行可带 `tests[]` 则只覆盖点名测试；无 `tests[]` 时 `reason` 必须明说 `all bound tests`，否则 `CONTRACT_TIER_EXCEPTION_INVALID`。owner `UNASSIGNED/TBD/TODO/nobody`（大小写不敏感）→ `CONTRACT_EXCEPTION_UNOWNED`；`measuredExceptions()` 生成 `owner:null` + 精确 `tests[]`。所有授层 leg（普通 dispatcher 与 contract leg）都先过 `gradeLeg()`；manifest-only `--run` 不授予层并记 `sources.dispatch_runs_rejected`。负控：A-L1/B-L2 反例 `unmet` 点名 B；只点名 A 的例外不覆盖 B；占位 owner 拒绝；manifest-only leg 零层；真实树仍 `contracts=6 met=6 excepted=0 unmet=0`。
+
+**2. P1-2（aggregator）**：plan 内 `state=PASS` 的结果必须携带非负整数 `assertions`/`assertions_executed`（`RESULT_EXECUTED_METADATA_MISSING`/`RESULT_EXECUTED_METADATA_INVALID`）、满足 `0≤executed≤assertions` 且 `executed+skipped===assertions`（`RESULT_METADATA_INCONSISTENT`）、且 `files_observed` 存在并等于 plan root 文件数（`RESULT_FILES_OBSERVED_MISSING`/`RESULT_FILES_OBSERVED_MISMATCH`）。**fallback 整体删除，REPLAY 也不保留**；summary totals 只累加合法字段，畸形结果计入 `counts.metadata_invalid`。负控覆盖缺失、-1、1.5、"10"、executed>assertions、和不等、files_observed 缺失/off-by-one；正控与 LIVE 路径（每 capture 9213 断言级别）仍绿。
+
+**3. 文档**：`tinf-trust-closeout-20261115/README.md` 更正 baseline 语义（per-root membership；增长允许并报告；`catalog_digest` 仅元数据、参数 `_catalogDigest` 不比较），删除“digest 漂移拒绝”错误表述；新增本轮 P1 小节、精确拒绝码与测试名、以及仍在开放项（F-06 不在范围、`required_oracles` 仍空、L2 P50 ≤ 10 min 未达成、91 未收集测试仍是 set-diff 债务）。新 memo：`docs/plans/memo/tinf-p1-verification-semantics-20261115/README.md`。
+
+**4. 门禁**：在干净 clone 的真实 base 上重跑七文件命令与受影响套件；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18`；`test-catalog --max-uncollected 91` exit 0（`uncollected=91`）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`docs-sync --check`；`lint-identities`；eslint；`node --check`。具体数字见最终报告。
