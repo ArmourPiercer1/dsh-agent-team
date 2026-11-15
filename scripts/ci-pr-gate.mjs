@@ -1642,6 +1642,10 @@ export function censusPlanLeg(ctx) {
     // EVIDENCE ARTIFACT: written next to the shards, and every result is re-anchored to it, so the
     // aggregator can OPEN what it grades (see verifyEvidenceRefs). The source report/recording is
     // named and digested inside the artifact, so the chain report → artifact → shard is walkable.
+    // WHAT IT IS NOT (M6): independent verification. This process derived these numbers and wrote
+    // this file; the reference now carries the FILE's sha256, so a directory, an escaping symlink, a
+    // replaced artifact or a mismatched digest is a named refusal — but the chain still attests this
+    // run to itself, and no wording may present it as an independent witness.
     let anchored
     try {
       anchored = writeEvidenceArtifact(shardDir, {

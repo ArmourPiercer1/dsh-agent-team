@@ -42,6 +42,7 @@ import {
   shardOf,
 } from './census-aggregate.mjs'
 import { buildPlan, makeIdentity, planDigest } from './census-plan.mjs'
+import { identityProblems, isValidDigest } from './census-digest.mjs'
 
 const SCRIPT = fileURLToPath(new URL('./census-aggregate.mjs', import.meta.url))
 
@@ -143,19 +144,31 @@ test('positive control: the complete, consistent shard set aggregates to PASS', 
   assert.match(render(r), /DSH-CENSUS-SUMMARY PASS/)
 })
 
-test('the summary is STRUCTURALLY not an authority (fields, not prose)', () => {
+test('the summary scope is STRUCTURAL — the census leg is graded, the test set is not (M6)', () => {
   const r = aggregate({ plan, shards: [SHARD_1, SHARD_2] })
   assert.equal(r.summary.schema, SCHEMA)
-  // A prose sentence can be rewritten without a test noticing; these five booleans cannot.
+  // A prose sentence can be rewritten without a test noticing; these booleans cannot. The M4/M5
+  // version said `shadow: true, wired_to_ci_required: false`, which after the M5 cutover implied a
+  // red census could not block a merge — the opposite of the truth. The fix is not "wired to
+  // ci-required = true" either: no ci-required JOB parses this summary; the census LEG's exit status
+  // does, and that leg is the ci-census layer under ci-required.
   assert.deepEqual(r.summary.scope, {
-    shadow: true,
-    wired_to_ci_required: false,
+    shadow: false,
+    execution_mode: 'plan',
+    wired_to_census_leg: true,
+    decides_census_leg_verdict: true,
+    read_by_ci_required_job: false,
     writes_required_context_artifact: false,
     branch_protection_authority: false,
     decides_what_ci_runs: false,
   })
   // ...and no workflow/manifest input is named as a consumer.
   assert.equal('ci_required_input' in r.summary, false)
+  // The one sentence a reader may quote must not call this shadow or independent.
+  assert.match(r.summary.scope_note, /PLAN-MODE/)
+  assert.match(r.summary.scope_note, /ci-census/)
+  assert.doesNotMatch(r.summary.scope_note, /SHADOW/)
+  assert.doesNotMatch(r.summary.scope_note, /independent/)
 })
 
 // ─────────────────────────────────────────────────────── rule 4: the multiset ──
@@ -548,7 +561,9 @@ test('cli: the human report names the codes and the token; it never says PASS fo
   assert.equal(r.status, 1, r.out)
   assert.match(r.stdout, /DSH-CENSUS-SUMMARY INCOMPLETE codes=.*TASK_MISSING/)
   assert.doesNotMatch(r.stdout, /DSH-CENSUS-SUMMARY PASS/)
-  assert.match(r.stdout, /SHADOW: not an authority/)
+  // M6: the header must not call the verdict shadow, and must name what it does and does not grade.
+  assert.match(r.stdout, /plan-mode census leg verdict \(ci-census under ci-required\)/)
+  assert.doesNotMatch(r.stdout, /SHADOW/)
 })
 
 test('cli: --self-test stays green', () => {
@@ -587,9 +602,11 @@ for (const sentinel of SENTINEL_DIGESTS) {
   })
 }
 
-test('the accepted digest shapes are exactly sha256:<64 hex> and <40 hex>', () => {
-  // Positive control for the shape rule: both real producer shapes must aggregate to PASS, so the
-  // refusals above cannot be passing because EVERYTHING refuses.
+test('the accepted digest shapes are exactly sha256:<64 hex>, <40 hex> and a bare <64 hex>', () => {
+  // Positive control for the shape rule: every real producer shape must be accepted, so the refusals
+  // above cannot be passing because EVERYTHING refuses. The third shape is a sha256-object-format
+  // repo's own tree id (`git rev-parse HEAD^{tree}`); M6 found the header claimed it while the regex
+  // rejected it, so the shapes are now stated once in census-digest.mjs and tested on both sides.
   const forty = aggregate({
     plan,
     shards: [
@@ -602,6 +619,33 @@ test('the accepted digest shapes are exactly sha256:<64 hex> and <40 hex>', () =
   assert.equal(forty.refused, true)
   assert.ok(forty.codes.includes('IDENTITY_MISMATCH_MERGE_TREE_SHA'), JSON.stringify(forty.codes))
   assert.ok(!forty.codes.includes('DIGEST_INVALID'), JSON.stringify(forty.codes))
+})
+
+test('digest shapes: the plan side and the shard side accept and reject exactly the same strings', () => {
+  // "Both ways" is the point: a shape the planner records but the aggregator refuses (or the reverse)
+  // is a plan that cannot be graded by the tool that produced it.
+  const accepted = [
+    `sha256:${'a'.repeat(64)}`, // catalog digest / planDigest
+    'b'.repeat(40), // sha1 git tree, the host pin
+    'c'.repeat(64), // sha256 git object id (bare)
+  ]
+  const rejected = [
+    'null', 'undefined', 'NULL', '', ' ', 'a'.repeat(39), 'a'.repeat(65), 'A'.repeat(64),
+    `sha256:${'a'.repeat(40)}`, `sha1:${'a'.repeat(40)}`, `sha256:${'a'.repeat(64)}0`,
+  ]
+  for (const value of accepted) {
+    assert.equal(isValidDigest(value), true, `isValidDigest(${JSON.stringify(value)})`)
+    assert.deepEqual(identityProblems({ merge_tree_sha: value, host_sha: value, catalog_digest: value, build_digest: value }, { scope: 'plan' }), [], `plan side refused ${JSON.stringify(value)}`)
+    assert.deepEqual(identityProblems({ merge_tree_sha: value }, { scope: 'shard' }), [], `shard side refused ${JSON.stringify(value)}`)
+  }
+  for (const value of rejected) {
+    assert.equal(isValidDigest(value), false, `isValidDigest(${JSON.stringify(value)})`)
+    assert.ok(identityProblems({ merge_tree_sha: value, host_sha: value, catalog_digest: value, build_digest: value }, { scope: 'plan' }).some((p) => p.code === 'DIGEST_INVALID'), `plan side accepted ${JSON.stringify(value)}`)
+    assert.ok(identityProblems({ merge_tree_sha: value }, { scope: 'shard' }).some((p) => p.code === 'DIGEST_INVALID'), `shard side accepted ${JSON.stringify(value)}`)
+  }
+  // …and a bare sha256 tree id really flows through a plan: identityProblems is the gate both sides use.
+  const bare = 'd'.repeat(64)
+  assert.deepEqual(identityProblems({ merge_tree_sha: bare, host_sha: bare, catalog_digest: bare, build_digest: bare }, { scope: 'plan' }), [])
 })
 
 // ── finding 2: a plan with a null/absent identity field cannot "match" ─────────────────────────

@@ -58,7 +58,7 @@
  * @module scripts/census-aggregate
  */
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -115,8 +115,19 @@ function graded(verdict, codes, detail, extra = {}) {
 // ───────────────────────────────────────────────────── evidence references ──
 
 /**
- * Verify that every result's `evidence` names a file that EXISTS, inside `dir`, and (when the file
- * is one of this tool's evidence artifacts) that the fragment names a root the artifact lists.
+ * Check that every result's `evidence` names a file that EXISTS, inside `dir`, is a REGULAR FILE,
+ * and — when the reference carries a `sha256:` token — that the file's bytes still hash to it.
+ *
+ * WHAT THIS PROVES, AND WHAT IT DOES NOT (M6, correcting the M5 over-claim). The producer
+ * (`census-execution.mjs#writeEvidenceArtifact`, called by the census leg) writes the evidence
+ * artifact from the results it JUST DERIVED and then anchors each result to that file. So a green
+ * check proves the pointer is internally consistent — the named artifact is the bytes this run
+ * wrote, at the path it claims, and the root fragment it names is in that artifact. It is
+ * **integrity / self-attestation**, NOT independent verification: the same process produced the
+ * numbers and the file they are checked against. Earlier wording ("the aggregator can OPEN what it
+ * grades"; "independent chain") implied more than that. What DID change in M6 is that the check is
+ * now falsifiable: a directory, a symlink that escapes `dir`, a replaced file, or a digest that
+ * disagrees with the bytes is a NAMED refusal instead of a pass.
  *
  * WHY THIS IS SEPARATE FROM `aggregate()`. `aggregate()` grades a multiset of in-memory shards; it
  * has no filesystem and the M4 unit tests pass synthetic shards through it. The two callers that DO
@@ -125,9 +136,9 @@ function graded(verdict, codes, detail, extra = {}) {
  * doctored shard set carrying 22 PASS results whose evidence is `/nonexistent/report.json#<root>`
  * aggregated to `PASS expected=22 observed=22`: a string the aggregator trusted, not a pointer.
  *
- * `evidence` shape: `<path relative to dir>[#<fragment>] [<digest>]`. A path that is absolute, or
- * that escapes `dir` after resolution, is refused (`RESULT_EVIDENCE_OUTSIDE`) — the artifact
- * directory is the boundary of what this census wrote.
+ * `evidence` shape: `<path relative to dir>[#<fragment>] [sha256:<64 hex>]`. A path that is
+ * absolute, or that escapes `dir` after resolution (symlinks resolved), is refused
+ * (`RESULT_EVIDENCE_OUTSIDE`) — the artifact directory is the boundary of what this census wrote.
  */
 export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
   if (typeof dir !== 'string' || dir === '') {
@@ -137,6 +148,19 @@ export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
     )
   }
   const root = resolve(dir)
+  // Resolved LAZILY, on the first real evidence reference: a shard that cannot even be read is
+  // SHARD_UNREADABLE (the shard reader's refusal), not an evidence-root failure. Checking the
+  // directory up front made an unreadable shard report the wrong code.
+  let realRoot = null
+  const resolveRoot = () => {
+    if (realRoot !== null) return realRoot
+    try {
+      realRoot = realpathSync(root)
+    } catch {
+      realRoot = false
+    }
+    return realRoot
+  }
   // The results come from the BYTES being graded when the caller hands us the raw artifact (the CLI
   // and the leg do: `readShardFile` returns `{text}`, and `aggregate()` parses that same text), so
   // the reference checked is the reference in the graded file and not a re-read of a moving one.
@@ -157,19 +181,62 @@ export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
     if (typeof evidence !== 'string' || evidence.trim() === '') continue
     const hash = evidence.indexOf('#')
     const rel = (hash >= 0 ? evidence.slice(0, hash) : evidence).trim().split(/\s+/)[0]
-    const fragment = hash >= 0 ? evidence.slice(hash + 1).trim().split(/\s+/)[0] : ''
+    const afterHash = hash >= 0 ? evidence.slice(hash + 1).trim() : ''
+    const fragment = afterHash.split(/\s+/)[0] ?? ''
+    const trailing = afterHash.split(/\s+/).slice(1)
+    const label = `${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)}`
+    const real = resolveRoot()
+    if (real === false) {
+      return refused(['RESULT_EVIDENCE_UNREADABLE'], [`${label}: the evidence root ${root} cannot be resolved`])
+    }
     const target = resolve(root, rel)
     if (target !== root && !target.startsWith(root + sep)) {
-      return refused(
-        ['RESULT_EVIDENCE_OUTSIDE'],
-        [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} resolves outside the artifact directory ${root}`],
-      )
+      return refused(['RESULT_EVIDENCE_OUTSIDE'], [`${label} resolves outside the artifact directory ${root}`])
     }
     if (!existsSync(target)) {
       return refused(
         ['RESULT_EVIDENCE_UNREADABLE'],
-        [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} names ${rel}, which does not exist in ${root}`],
+        [`${label} names ${rel}, which does not exist in ${root}`],
       )
+    }
+    // EXISTS IS NOT ENOUGH (M6): a directory, or a symlink pointing out of the artifact directory,
+    // used to satisfy the pointer. Resolve the real path first (so a symlink cannot escape), then
+    // require a regular file.
+    let realPath
+    let stats
+    try {
+      realPath = realpathSync(target)
+      stats = statSync(realPath)
+    } catch {
+      return refused(['RESULT_EVIDENCE_UNREADABLE'], [`${label} names ${rel}, which cannot be resolved in ${root}`])
+    }
+    if (realPath !== real && !realPath.startsWith(real + sep)) {
+      return refused(
+        ['RESULT_EVIDENCE_OUTSIDE'],
+        [`${label} names ${rel}, which resolves (through a symlink) to ${realPath}, outside the artifact directory ${real}`],
+      )
+    }
+    if (!stats.isFile()) {
+      return refused(
+        ['RESULT_EVIDENCE_NOT_REGULAR'],
+        [`${label} names ${rel}, which is not a regular file (a directory or device cannot be an evidence artifact)`],
+      )
+    }
+    // A ref that carries a digest must be verifiable: a `sha256:` token that is not a sha256, or
+    // bytes that no longer hash to it, is refused. The producer writes the FILE's digest, so the
+    // reference is wrong the moment the artifact is replaced or edited.
+    for (const token of trailing) {
+      if (!token.startsWith('sha256:')) continue
+      if (!/^sha256:[0-9a-f]{64}$/.test(token)) {
+        return refused(['RESULT_EVIDENCE_DIGEST_INVALID'], [`${label} carries ${token}, which is not a sha256 digest`])
+      }
+      const actual = sha256Bytes(readFileSync(realPath))
+      if (actual !== token) {
+        return refused(
+          ['RESULT_EVIDENCE_DIGEST_MISMATCH'],
+          [`${label} carries ${token} but ${rel} hashes to ${actual} — the artifact is not the one the reference attests`],
+        )
+      }
     }
     // An evidence artifact this tool wrote is JSON with a `roots` list: a fragment that names a root
     // the artifact does not list is a mis-anchored reference. Any other (non-JSON) file is accepted
@@ -177,14 +244,14 @@ export function verifyEvidenceRefs(shard, { dir, file = '<shard>' } = {}) {
     if (fragment !== '') {
       let parsed
       try {
-        parsed = JSON.parse(String(readFileSync(target, 'utf8')))
+        parsed = JSON.parse(String(readFileSync(realPath, 'utf8')))
       } catch {
         continue
       }
       if (parsed && Array.isArray(parsed.roots) && listsRoot(parsed.roots, fragment) === false) {
         return refused(
           ['RESULT_EVIDENCE_UNKNOWN_ROOT'],
-          [`${String(file)}: task ${String(result?.task_id)} evidence ${JSON.stringify(evidence)} names root ${JSON.stringify(fragment)}, which ${rel} does not list`],
+          [`${label} names root ${JSON.stringify(fragment)}, which ${rel} does not list`],
         )
       }
     }
@@ -561,9 +628,23 @@ export function aggregate({ plan, shards }) {
       required_oracles: requiredOracles,
     },
     // Structured, asserted by tests: prose alone can be reworded into a lie without a test noticing.
+    //
+    // M6 corrects the M4/M5 wording. The old block said "shadow: true, wired_to_ci_required: false":
+    // after the M5 cutover `census-runtime.yml` runs the census leg with `--census-execution plan`,
+    // so THIS verdict IS the census leg's verdict, and that leg is the `ci-census` layer under
+    // `ci-required`. Saying "not read by any Required context" was therefore false in the one
+    // direction that matters (a reader could conclude a red census cannot block a merge).
     scope: {
-      shadow: true,
-      wired_to_ci_required: false,
+      shadow: false,
+      execution_mode: 'plan',
+      wired_to_census_leg: true,
+      decides_census_leg_verdict: true,
+      // Still true, and each is a real limit rather than modesty:
+      //   - no ci-required JOB parses this summary (the layer's exit status carries it);
+      //   - it writes no Required-context artifact and holds no branch-protection authority;
+      //   - it decides no test set: the plan is derived UPSTREAM from the catalog + root config, and
+      //     this tool only grades what it was handed.
+      read_by_ci_required_job: false,
       writes_required_context_artifact: false,
       branch_protection_authority: false,
       decides_what_ci_runs: false,
@@ -599,9 +680,11 @@ export function aggregate({ plan, shards }) {
     detail,
     census_verdict: verdict,
     scope_note:
-      'SHADOW: not wired to ci-required, not read by any Required context, not branch-protection ' +
-      'authority. PASS here means these artifacts are a complete, identity-consistent, oracle-clean ' +
-      'cover of THIS plan — nothing more.',
+      'PLAN-MODE: this summary IS the census leg verdict (census-runtime.yml runs --census-execution ' +
+      'plan) and that leg is the ci-census layer under ci-required, so a non-PASS here blocks the ' +
+      'merge. It is NOT read by a ci-required job, writes no Required-context artifact, is not ' +
+      'branch-protection authority and decides no test set. PASS means these artifacts are a ' +
+      'complete, identity-consistent, oracle-clean cover of THIS plan — nothing more.',
   }
   return graded(verdict, codes, detail, { summary })
 }
@@ -617,7 +700,7 @@ export function render(result) {
   }
   const s = result.summary
   const lines = []
-  lines.push(`census-summary (${SCHEMA}) — SHADOW: not an authority, not read by any Required context`)
+  lines.push(`census-summary (${SCHEMA}) — plan-mode census leg verdict (ci-census under ci-required); decides no test set`)
   lines.push(`  identity: merge_tree=${s.identity.merge_tree_sha} host=${s.identity.host_sha}`)
   lines.push(`            plan=${s.identity.plan_digest} catalog=${s.identity.catalog_digest} build=${String(s.identity.build_digest)}`)
   lines.push(`  plan: captures=${String(s.plan.captures)} roots=${String(s.plan.roots.length)} tasks=${String(s.plan.tasks)} clock=${String(s.plan.test_timeout_ms)}`)
@@ -775,8 +858,10 @@ export function selfTest() {
     JSON.stringify(pass.summary.observed_task_ids) === JSON.stringify([...all].sort()) &&
     pass.summary.counts.missing === 0 && pass.summary.counts.extra === 0,
     JSON.stringify(pass.summary.counts))
-  ok('positive: the summary is STRUCTURALLY not an authority (asserted fields, not prose)',
-    pass.summary.scope.shadow === true && pass.summary.scope.wired_to_ci_required === false &&
+  ok('positive: the summary scope is explicit — graded census leg, not the test set (asserted fields)',
+    pass.summary.scope.shadow === false && pass.summary.scope.wired_to_census_leg === true &&
+    pass.summary.scope.decides_census_leg_verdict === true &&
+    pass.summary.scope.read_by_ci_required_job === false &&
     pass.summary.scope.writes_required_context_artifact === false &&
     pass.summary.scope.branch_protection_authority === false &&
     pass.summary.scope.decides_what_ci_runs === false,

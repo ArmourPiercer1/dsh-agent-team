@@ -1,0 +1,98 @@
+# TINF M6 — dispatch parity evidence (old argv vs new dispatched argv)
+
+dated: 2026-11-15
+base:  origin/master e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773)
+head:  task/tinf-m6-retire-handlists-20261115 (this change)
+host:  v24.21.0 / git 2.53.0 / Linux x86_64
+
+WHY THIS FILE EXISTS
+  M6 deletes both workflow copies of every node:test file list (ci-integration.yml and the
+  settlement step of pr-gate.yml). The claim 'the set did not change' is graded here, not
+  asserted: the OLD argv is read from origin/master's copy of each workflow, the NEW argv is
+  the dispatcher resolving each manifest leg, both are sorted, and every step's diff is printed.
+  An empty missing/added on every row is the only passing state.
+
+  A NEW SUITE UNDER AN `areas[]` LEG WILL CHANGE THE UNION DIGEST BELOW. That is intended:
+  adding a test to CI is a deliberate act, and scripts/test-catalog.test.mjs compares this
+  digest with the set the legs resolve today, so the evidence cannot silently drift.
+
+REPRODUCE
+  node scripts/dispatch-tests.mjs --parity --old-ref origin/master
+
+OUTPUT
+dispatch-parity old=origin/master new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+  .github/workflows/ci-integration.yml
+    EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
+      old tests/diag-call-chain/diag-call-chain.test.mjs
+      old tests/u7-3-devex/devex-integration.test.mjs
+      new tests/diag-call-chain/diag-call-chain.test.mjs
+      new tests/u7-3-devex/devex-integration.test.mjs
+    tests/checks node:test suites (dist-placements, eslint-node-globals — host-free): old=2 new=2 missing=none added=none
+      old tests/checks/dist-placements.test.mjs
+      old tests/checks/eslint-node-globals.test.mjs
+      new tests/checks/dist-placements.test.mjs
+      new tests/checks/eslint-node-globals.test.mjs
+    scripts node:test suite (eb3-tool-acceptance law fixtures — host-free): old=1 new=1 missing=none added=none
+      old scripts/eb3-tool-acceptance.test.mjs
+      new scripts/eb3-tool-acceptance.test.mjs
+    scripts node:test suite (L0 selection laws — host-free): old=1 new=1 missing=none added=none
+      old scripts/ci-local.test.mjs
+      new scripts/ci-local.test.mjs
+    scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
+      old scripts/tinf-m0.test.mjs
+      new scripts/tinf-m0.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=6 missing=none added=none
+      old scripts/census-aggregate.test.mjs
+      old scripts/census-cutover.test.mjs
+      old scripts/census-plan.test.mjs
+      old scripts/host-cache-key.test.mjs
+      old scripts/test-catalog.test.mjs
+      old scripts/tinf-timing.test.mjs
+      new scripts/census-aggregate.test.mjs
+      new scripts/census-cutover.test.mjs
+      new scripts/census-plan.test.mjs
+      new scripts/host-cache-key.test.mjs
+      new scripts/test-catalog.test.mjs
+      new scripts/tinf-timing.test.mjs
+    a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-harness.test.mjs
+      new tests/world-factory/a5sf-harness.test.mjs
+    a5sf evidence chain R3 (BL-11 — node:test, host-free, records the four links and re-reads them with a5sf-diag): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-evidence.test.mjs
+      new tests/world-factory/a5sf-evidence.test.mjs
+    a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free): old=1 new=1 missing=none added=none
+      old tests/kits/a5sf-golden/compare.test.mjs
+      new tests/kits/a5sf-golden/compare.test.mjs
+    a5sf diag R4 (BL-12 — node:test, host-free, delegates to the PR #394 classifier): old=1 new=1 missing=none added=none
+      old tests/a5sf-diag/a5sf-diag.test.mjs
+      new tests/a5sf-diag/a5sf-diag.test.mjs
+    a5sf read budget gate C1 (P2-01/BL-14 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-read-gate.test.mjs
+      new tests/world-factory/a5sf-read-gate.test.mjs
+    a5sf P2 seam C1 (BL-14/P2-01 follow-up — node:test, zero Host boots, host-free, cross-process transport): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-seam.test.mjs
+      new tests/world-factory/a5sf-p2-seam.test.mjs
+    a5sf P2 WIRING C1 (product-row call site — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-wiring.test.mjs
+      new tests/world-factory/a5sf-p2-wiring.test.mjs
+    a5sf F1 TOOL PLANE (effective half — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-f1-ctx.test.mjs
+      new tests/world-factory/a5sf-f1-ctx.test.mjs
+    a5sf NATIVE ROUTE C (native tool confinement — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-native-route-c.test.mjs
+      new tests/world-factory/a5sf-native-route-c.test.mjs
+    a5sf PRODUCT ASSEMBLY (product-visible member-policy declaration — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-product-assembly.test.mjs
+      new tests/world-factory/a5sf-product-assembly.test.mjs
+    a5sf FS face layer B (per-native-tool contract — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-fs-contract.test.mjs
+      new tests/world-factory/a5sf-fs-contract.test.mjs
+  .github/workflows/pr-gate.yml
+    Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
+      old scripts/pr-settlement-gate.test.mjs
+      new scripts/pr-settlement-gate.test.mjs
+  union old=25 new=25 set=sha256:5de65f5ef1355d5b506a95bd635acd25bd2cb6aaecf702b3460bb548f7ffde42
+DISPATCH-PARITY IDENTICAL steps=18 old_files=25 new_files=25 problems=0
+
+EXIT CODE
+0

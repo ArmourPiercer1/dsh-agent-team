@@ -31,6 +31,10 @@
  *   - an unplanned root                (report names a root the plan does not → RESULT_ROOT_UNPLANNED)
  *   - evidence that names nothing      (→ RESULT_EVIDENCE_UNREADABLE, at the aggregator CLI too)
  *   - evidence that escapes the dir    (→ RESULT_EVIDENCE_OUTSIDE)
+ *   - evidence naming a directory      (→ RESULT_EVIDENCE_NOT_REGULAR)
+ *   - evidence naming an escaping link (→ RESULT_EVIDENCE_OUTSIDE, resolved)
+ *   - evidence whose bytes changed     (→ RESULT_EVIDENCE_DIGEST_MISMATCH)
+ *   - evidence carrying a bogus digest (→ RESULT_EVIDENCE_DIGEST_INVALID)
  *   - a missing build stamp            (→ BUILD_STAMP_MISSING; nothing is written in its place)
  *   - a stale build stamp              (same tree, changed bytes → BUILD_STAMP_STALE)
  *   - a stale report at the graded path (unlinked before the run → CENSUS_REPORT_MISSING)
@@ -45,7 +49,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmdirSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
@@ -567,6 +571,68 @@ test('NEGATIVE: the aggregator CLI refuses a doctored shard directory (exit 2, n
     const r = spawnSync(process.execPath, ['scripts/census-aggregate.mjs', '--aggregate', ...files, '--plan', planFile], { cwd: REPO_ROOT, encoding: 'utf8' })
     assert.equal(r.status, 2, r.stdout + r.stderr)
     assert.match(r.stderr, /REFUSED RESULT_EVIDENCE_(OUTSIDE|UNREADABLE)/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: evidence must be a REGULAR FILE — a directory is not a pointer (M6)', () => {
+  const { plan } = fixture()
+  const dir = tmpDir('evidence-dir')
+  try {
+    mkdirSync(join(dir, 'census-evidence-1.json'))
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'census-evidence-1.json#' + t.root }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.refused, true)
+    assert.deepEqual(got.codes, ['RESULT_EVIDENCE_NOT_REGULAR'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: a symlink that escapes the artifact directory is refused after resolution (M6)', () => {
+  const { plan } = fixture()
+  const parent = tmpDir('evidence-link')
+  const dir = join(parent, 'shards')
+  mkdirSync(dir)
+  try {
+    writeFileSync(join(parent, 'outside.json'), '{}\n')
+    symlinkSync(join(parent, 'outside.json'), join(dir, 'census-evidence-1.json'))
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'census-evidence-1.json#' + t.root }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.refused, true)
+    assert.deepEqual(got.codes, ['RESULT_EVIDENCE_OUTSIDE'])
+  } finally {
+    rmSync(parent, { recursive: true, force: true })
+  }
+})
+
+test('NEGATIVE: a reference whose bytes changed is a DIGEST_MISMATCH, and a bogus digest is refused (M6)', () => {
+  const { plan } = fixture()
+  const dir = tmpDir('evidence-digest')
+  try {
+    const artifact = join(dir, 'census-evidence-1.json')
+    writeFileSync(artifact, JSON.stringify({ schema: 'census-evidence/1', capture: 1, source: { path: 'x', digest: null }, roots: plan.tasks.filter((t) => t.capture === 1).map((t) => ({ root: t.root })) }))
+    const digest = `sha256:${createHash('sha256').update(readFileSync(artifact)).digest('hex')}`
+    const results = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json#${t.root} ${digest}` }))
+    const built = buildShardArtifacts({ plan, results, shards: 1 })
+    const files = writeShardArtifacts(dir, built.artifacts)
+    // The bytes the reference attests are gone: a replaced/edited artifact must not pass.
+    writeFileSync(artifact, JSON.stringify({ schema: 'census-evidence/1', capture: 1, source: { path: 'x', digest: null }, roots: plan.tasks.filter((t) => t.capture === 1).map((t) => ({ root: t.root })) }, null, 2))
+    const got = aggregateArtifacts({ plan, files })
+    assert.equal(got.refused, true)
+    assert.deepEqual(got.codes, ['RESULT_EVIDENCE_DIGEST_MISMATCH'])
+    // …and the reference itself must carry a real sha256, not a token that looks like one.
+    const bogus = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json#${t.root} sha256:not-a-digest` }))
+    const built2 = buildShardArtifacts({ plan, results: bogus, shards: 1 })
+    const files2 = writeShardArtifacts(dir, built2.artifacts)
+    const got2 = aggregateArtifacts({ plan, files: files2 })
+    assert.equal(got2.refused, true)
+    assert.deepEqual(got2.codes, ['RESULT_EVIDENCE_DIGEST_INVALID'])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

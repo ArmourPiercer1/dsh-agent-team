@@ -12,7 +12,10 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 
 import {
+  gather,
   buildEntries,
+  NODE_SUITE_RE,
+  isNodeSuitePath,
   auditCatalog,
   parseVitestConfig,
   matchesAny,
@@ -21,6 +24,15 @@ import {
   refOf,
   summarize,
 } from './test-catalog.mjs'
+import { TEST_RE } from './test-collection-audit.mjs'
+import {
+  dispatchLegs,
+  legByStep,
+  loadManifest,
+  resolveLeg,
+  setDigest,
+  trackedFiles,
+} from './dispatch-tests.mjs'
 
 const CFG = { include: ['packages/*/test/**/*.test.ts', 'packages/runtime/controlled-fs/test/**/*.test.ts'], exclude: ['**/*.scratch.test.ts', 'packages/client/test/spike.test.ts'] }
 const REGISTRY = {
@@ -89,13 +101,16 @@ test('a contract ref that is not a test file is refused', () => {
   assert.ok(findings.some((f) => f.code === 'CONTRACT_REF_NOT_A_TEST'))
 })
 
-test('the CI step that runs this suite also runs the ratchet', () => {
-  // The manifest pins the suite file, not the step's commands: without this the
+test('the CI step that dispatches this suite also runs the ratchet', () => {
+  // The manifest declares this suite's leg, not the step's commands: without this the
   // ratchet line could be deleted and eb3-ci-required would still say pass.
   const wf = readFileSync('.github/workflows/ci-integration.yml', 'utf8')
+  const manifest = loadManifest()
+  const leg = dispatchLegs(manifest).find((l) => (l.leg.suites ?? []).includes('scripts/test-catalog.test.mjs'))
+  assert.ok(leg, 'no dispatch leg collects scripts/test-catalog.test.mjs')
   const steps = wf.split(/^ {6}- name: /m)
-  const step = steps.find((s) => s.includes('node --test scripts/test-catalog.test.mjs'))
-  assert.ok(step, 'the catalog step is gone from ci-integration.yml')
+  const step = steps.find((s) => s.includes(`--leg ${leg.id}`))
+  assert.ok(step, `the step that dispatches ${leg.id} is gone from ci-integration.yml`)
   assert.ok(step.includes('--max-uncollected '), 'the ratchet command was removed from the catalog step')
 })
 
@@ -201,4 +216,88 @@ test('live read-only check: every registered contract test exists on this head',
   }
   const live = buildEntries(trackedSet, { vitestCfg: parseVitestConfig(readFileSync('vitest.config.ts', 'utf8')), registry, ciCollected: new Set() })
   assert.ok(summarize(live.entries, []).total > 700)
+})
+
+
+// ───────────────────────────────── TINF M6: the catalog is the dispatcher ──
+// The defect M6 removes is a file list with TWO copies. These laws keep the replacement honest:
+// the workflow names only a leg, every leg resolves to tracked node:test suites, the catalog
+// classifies every resolved suite as collected, and the committed old-vs-new parity evidence still
+// describes the set the legs resolve today.
+
+const WORKFLOWS = ['.github/workflows/ci-integration.yml', '.github/workflows/pr-gate.yml']
+
+test('dispatch: no workflow enumerates a single node:test file any more (M6)', () => {
+  for (const wf of WORKFLOWS) {
+    const text = readFileSync(wf, 'utf8')
+    const offenders = text.split('\n').filter((l) => /^\s*run: .*node --test/.test(l) || /^\s*node --test/.test(l))
+    assert.deepEqual(offenders, [], `${wf}: a hand-written node:test file list came back; the manifest leg is the ONE declaration`)
+  }
+})
+
+test('dispatch: every dispatch step maps to one manifest leg and every leg has its step', () => {
+  const manifest = loadManifest()
+  for (const wf of WORKFLOWS) {
+    const expected = dispatchLegs(manifest).filter((l) => l.workflow === wf).map((l) => l.id).sort()
+    const fromYaml = [...legByStep(readFileSync(wf, 'utf8')).values()].sort()
+    assert.deepEqual(fromYaml, expected, `${wf}: dispatched legs and manifest legs disagree`)
+    assert.equal(new Set(fromYaml).size, fromYaml.length, `${wf}: one leg dispatched twice runs it twice`)
+  }
+})
+
+test('dispatch: every leg resolves to tracked node:test suites (no invented path)', () => {
+  const tracked = trackedFiles()
+  for (const { id, leg } of dispatchLegs(loadManifest())) {
+    const r = resolveLeg(leg, tracked)
+    assert.deepEqual(r.problems, [], `${id}: ${r.problems.map((p) => p.code).join(',')}`)
+    assert.ok(r.suites.length > 0, `${id} resolved to nothing`)
+  }
+})
+
+test('dispatch: the catalog classifies every dispatched suite as collected', () => {
+  const state = gather({ cwd: process.cwd() })
+  const byPath = new Map(state.entries.map((e) => [e.path, e]))
+  for (const { id, leg } of dispatchLegs(loadManifest())) {
+    for (const p of resolveLeg(leg, new Set(state.entries.map((e) => e.path))).suites) {
+      const e = byPath.get(p) ?? state.entries.find((x) => x.path === p)
+      assert.ok(e, `${id}: ${p} is not in the catalog`)
+      assert.equal(e.runner, 'node', `${id}: ${p} is not a node:test suite`)
+      assert.equal(e.classification, 'DISCOVERED_AND_COLLECTED', `${id}: ${p} is ${e.classification}, so CI would run an uncollected suite`)
+    }
+  }
+})
+
+test('dispatch: refusals — untracked, non-node, empty area, empty leg', () => {
+  const tracked = new Set(['tests/area/a.test.mjs', 'scripts/x.mjs'])
+  assert.equal(resolveLeg({ id: 'x', suites: ['tests/gone.test.mjs'] }, tracked).problems[0].code, 'DISPATCH_SUITE_UNTRACKED')
+  assert.equal(resolveLeg({ id: 'x', suites: ['scripts/x.mjs'] }, tracked).problems[0].code, 'DISPATCH_SUITE_NOT_NODE_TEST')
+  assert.equal(resolveLeg({ id: 'x', areas: ['tests/empty'] }, tracked).problems[0].code, 'DISPATCH_AREA_EMPTY')
+  const none = resolveLeg({ id: 'x' }, tracked)
+  assert.equal(none.problems[0].code, 'DISPATCH_NO_SUITES')
+  assert.deepEqual(none.suites, [], 'an empty argv is never "run everything" here')
+  const area = resolveLeg({ id: 'x', areas: ['tests/area'] }, tracked)
+  assert.deepEqual(area.problems, [])
+  assert.deepEqual(area.suites, ['tests/area/a.test.mjs'], 'an area collects the discovered suites under it')
+})
+
+test('dispatch: the committed parity evidence still describes the resolved set', () => {
+  const evidence = readFileSync('dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt', 'utf8')
+  assert.match(evidence, /DISPATCH-PARITY IDENTICAL/)
+  const recorded = /union old=\d+ new=\d+ set=(sha256:[0-9a-f]{64})/.exec(evidence)
+  assert.ok(recorded, 'the evidence file has no union digest line')
+  const tracked = trackedFiles()
+  const union = [...new Set(dispatchLegs(loadManifest()).flatMap(({ leg }) => resolveLeg(leg, tracked).suites))].sort()
+  assert.equal(setDigest(union), recorded[1], 'the dispatched set moved away from the committed parity evidence — regenerate it deliberately')
+})
+
+test('one predicate: the catalog, the collection audit and the dispatcher share it', () => {
+  // M6 replaced the workflow file lists; the OTHER duplicate was the filename predicate. Two regexes
+  // one alternative apart (`.test` vs `.test|spec`) make the catalog call a suite collected while the
+  // dispatcher refuses it. Identity, not equality: the same binding, from a leaf module that imports
+  // nothing (test-catalog imports the audit, so the audit cannot import the catalog without a cycle).
+  assert.equal(TEST_RE, NODE_SUITE_RE)
+  assert.equal(isNodeSuitePath('a/b.spec.mjs'), true)
+  assert.equal(isNodeSuitePath('a/b.test.mjs'), true)
+  assert.equal(isNodeSuitePath('a/b.test.ts'), false, 'node --test does not execute a .test.ts')
+  assert.equal(isNodeSuitePath('a/b.mjs'), false)
 })
