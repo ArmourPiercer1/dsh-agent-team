@@ -280,7 +280,17 @@ export function traceEventsFromSessionRows(rows, { sessionId, callId, turn }) {
  * effect-witness provenance seal. The test caller receives rows; it never
  * constructs one and never writes `instrumented`.
  *
- * @param {{ home: string, watchDir: string }} args
+ * SCOPE (M7-A correction): the instrument watches the WHOLE owned home
+ * (`home`), not one quiet sub-directory. The previous version watched only
+ * `<home>/m7a-tmp/m7a-watch`, so a real write to the workspace was reported as
+ * "no effect in filesystem" — the false green the reviewer reproduced. The
+ * watch set is `home`, which already covers the workspace
+ * (`<home>/workspace`) and the World temp area (`<home>/m7a-tmp`); roots are
+ * pruned by the witness. Effects are then classified by path: the workspace and
+ * the Host's own session log are authorized, everything else (including the
+ * watched temp area) is not.
+ *
+ * @param {{ home: string, watchDir: string, authorized?: string[] }} args
  */
 export async function createWorldObserver({ home, watchDir }) {
   const { createFsWitness, createBlindWitness } = await testkit()
@@ -290,7 +300,7 @@ export async function createWorldObserver({ home, watchDir }) {
     watchDir,
     /** Start a fresh observation window (point-in-time baseline). */
     arm() {
-      active = createFsWitness({ root: home, outside: watchDir })
+      active = createFsWitness({ root: home, watch: [home] })
       blinded = false
       return this
     },
@@ -311,7 +321,11 @@ export async function createWorldObserver({ home, watchDir }) {
     /** The rows for the current window, private-sealed by the instrument. */
     async observe() {
       if (active === null) throw new Error('M7A_OBSERVER_NOT_ARMED')
-      return { observations: await active.observe(), blindDomains: [...active.blindDomains] }
+      return {
+        observations: await active.observe(),
+        blindDomains: [...active.blindDomains],
+        watchedPaths: [...active.watchedPaths],
+      }
     },
   }
 }
@@ -415,6 +429,9 @@ export async function judgeRealRun({
   observations,
   blindDomains,
   requiredEffectDomains = ['filesystem'],
+  requiredEffectScope = [],
+  authorizedEffectPaths = [],
+  forbiddenEffectPaths = [],
   witnessProvenance = 'witnessed',
   expectDeny = true,
 }) {
@@ -425,6 +442,12 @@ export async function judgeRealRun({
     witness: observations,
     blindDomains,
     requiredEffectDomains,
+    // M7-A correction: the contract states which paths it is about (and which
+    // effects it authorizes) instead of implying "the whole filesystem" from a
+    // witness that watched one directory.
+    requiredEffectScope,
+    authorizedEffectPaths,
+    forbiddenEffectPaths,
     witnessProvenance,
     expectDeny,
   }

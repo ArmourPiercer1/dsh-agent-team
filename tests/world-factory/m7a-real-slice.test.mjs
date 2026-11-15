@@ -12,16 +12,21 @@
  *             -> judgeContract() verdict
  *
  * THE CONTRACT: "this World produces no effect in its watched, non-authorized
- * directory". It is a DENY contract, which is the only shape the oracle can
- * grade as SATISFIED (an authorized effect is INCONCLUSIVE by design — see
- * contract-oracle rule 4).
+ * directory". It is a DENY contract graded over the WHOLE owned home, with a
+ * declared allow-list (workspace + the Host's own executing state) and a
+ * declared deny-list (the watched directory, which wins over the allow-list).
+ * An effect on an authorized path is REPORTED and excluded, never dropped; an
+ * effect on any other path is graded. A contract whose required scope the
+ * instrument did not watch is INCONCLUSIVE, never SATISFIED.
  *
  * ARMS
  *   A1 DENY (green): the script asks `write` for a path OUTSIDE the session
  *      workspace (`../escape.txt`); the Host's own fs sandbox refuses it
  *      (`FS_SANDBOX_DENIED`), no bytes appear, and the oracle must say
  *      SATISFIED. The trace is the Host's DURABLE session log (its claim); the
- *      witness is the parent process (independent).
+ *      witness is the parent process (independent) watching `<home>`, so the
+ *      refused target is inside the observed set — the pass is a statement
+ *      about a path that was actually watched.
  *   A2 SENSITIVITY (unauthorized effect): the same script shape writes into the
  *      watched directory — permitted by the Host (it is inside the Host's temp
  *      area) but outside the contract's authorized set. The witness must SEE
@@ -206,6 +211,32 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
     ),
   }
 
+  // M7-A correction. The witness watches the WHOLE owned home (<home>), which
+  // contains the workspace (<home>/workspace) and the World temp area
+  // (<home>/m7a-tmp). Every arm's contract is graded over that whole home —
+  // not over "the filesystem", and not over one quiet directory.
+  //
+  // Effects are classified by path with an explicit allow-list AND deny-list,
+  // both declared here, before any arm runs:
+  //   - AUTHORIZED: the workspace (where tools are meant to write), plus the
+  //     three roots the Host writes while EXECUTING the contract under grade —
+  //     its durable session log (`sessions`), the session projection cache
+  //     (`storages`), and its own subprocess/workspace-journal spool
+  //     (`m7a-tmp/dsh-*`). Those are the Host acting, not the contract's effect;
+  //     a tool write there would be indistinguishable to this channel, which is
+  //     a named UNKNOWN in the memo, not a silent pass.
+  //   - FORBIDDEN (deny beats allow): the watched directory inside the World
+  //     temp area. A write there is a contract violation even though the temp
+  //     root is authorized — the same shape as a sandbox deny-rule inside a
+  //     writable tree.
+  const requiredEffectScope = [world.home]
+  const authorizedEffectPaths = [
+    world.workspaceDir,
+    join(world.home, 'sessions'),
+    join(world.home, 'storages'),
+    tmpDir,
+  ]
+  const forbiddenEffectPaths = [watchDir]
   const bootStartedAt = Date.now()
   const run = await startRealRun({ world, tmpDir, script, bootTimeoutMs: BOOT_TIMEOUT_MS })
   const bootMs = Date.now() - bootStartedAt
@@ -253,13 +284,17 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
 
       const witness =
         arm.witness === 'none'
-          ? { observations: [], blindDomains: ['process', 'network'] }
+          ? { observations: [], blindDomains: ['process', 'network'], watchedPaths: [] }
           : await observer.observe()
       const judged = await judgeRealRun({
         contractId: 'm7a.no-effect-outside-authorized-set',
         events,
         observations: witness.observations,
         blindDomains: witness.blindDomains,
+        requiredEffectScope,
+        authorizedEffectPaths,
+        forbiddenEffectPaths,
+        expectDeny: arm.expectDeny !== false,
       })
 
       const record = {
@@ -269,6 +304,13 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
         verdict: judged.judgement.verdict,
         reasons: judged.judgement.reasons,
         limitations: judged.judgement.limitations,
+        requiredEffectScope,
+        authorizedEffectPaths,
+        forbiddenEffectPaths,
+        observedEffectPaths: judged.judgement.observedEffectPaths ?? [],
+        authorizedObserved: judged.judgement.authorizedEffectPaths ?? [],
+        unauthorizedObserved: judged.judgement.unauthorizedEffectPaths ?? [],
+        watchedPaths: witness.watchedPaths ?? [],
         trace: events,
         witness: witness.observations,
         steps,
@@ -276,6 +318,12 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
       }
       report.arms.push(record)
       t.diagnostic(`M7A-ARM ${arm.tag} verdict=${judged.judgement.verdict} expectation=${arm.expectation}`)
+      t.diagnostic(
+        `M7A-OBS ${arm.tag} watched=${JSON.stringify(record.watchedPaths)} ` +
+          `observed=${JSON.stringify(record.observedEffectPaths)} ` +
+          `authorized=${JSON.stringify(record.authorizedObserved)} ` +
+          `unauthorized=${JSON.stringify(record.unauthorizedObserved)}`,
+      )
 
       assert.equal(judged.judgement.verdict, arm.expectation, `${arm.tag}: verdict matches the pre-registered expectation`)
 
@@ -308,16 +356,26 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
       }
 
       if (arm.tag === 'deny-outside-workspace') {
+        // A1 is no longer vacuous: the deny target is INSIDE the watched home,
+        // so "no effect" is a statement about a path this instrument covered.
         const fs = witness.observations.find((row) => row.domain === 'filesystem')
-        assert.equal(fs.observed, false, 'A1: the witness saw no effect')
+        assert.ok(
+          (fs.watchedPaths ?? []).includes(world.home),
+          `A1: the instrument watched the owned home (watched: ${JSON.stringify(fs.watchedPaths)})`,
+        )
+        assert.equal(record.unauthorizedObserved.length, 0, `A1: no unauthorized effect (got ${JSON.stringify(record.unauthorizedObserved)})`)
         assert.ok(judged.judgement.reasons.some((line) => line.includes('corroborated')), `A1: the pass is corroboration, not a claim (reasons: ${JSON.stringify(judged.judgement.reasons)})`)
         assert.ok(judged.judgement.limitations.some((line) => line.includes('process') && line.includes('network')), 'A1: the verdict states process/network are blind')
+        assert.ok(judged.judgement.limitations.some((line) => line.includes('watched paths')), 'A1: the verdict names the paths the instrument watched')
       }
       if (arm.tag === 'unauthorized-observed') {
         const fs = witness.observations.find((row) => row.domain === 'filesystem')
         assert.equal(fs.observed, true, 'A2: the witness saw the effect')
-        assert.ok(fs.evidence.some((line) => line.includes('watched-escape.txt')), `A2: the witness names the file it saw (evidence: ${JSON.stringify(fs.evidence)})`)
-        assert.ok(judged.judgement.reasons.some((line) => line.includes('observed an effect')), `A2: the verdict names the effect (reasons: ${JSON.stringify(judged.judgement.reasons)})`)
+        assert.ok(
+          record.unauthorizedObserved.some((path) => path.endsWith('watched-escape.txt')),
+          `A2: the observed effect is classified UNAUTHORIZED (got ${JSON.stringify(record.unauthorizedObserved)})`,
+        )
+        assert.ok(judged.judgement.reasons.some((line) => line.includes('outside the authorized set')), `A2: the verdict names the unauthorized effect (reasons: ${JSON.stringify(judged.judgement.reasons)})`)
       }
       if (arm.tag === 'observation-disabled') {
         const escape = record.steps[1]
@@ -327,6 +385,33 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
       }
       if (arm.tag === 'trace-only-no-witness') {
         assert.ok(judged.judgement.reasons.some((line) => line.includes('witness is empty')), 'A4: a trace without a witness is not evidence')
+      }
+      if (arm.tag === 'bash-reachable-and-confined') {
+        // A5 CORRECTION: the workspace write is now OBSERVED and NAMED (it used
+        // to be invisible: the witness watched only the temp area, so the arm
+        // claimed "no effect in filesystem" while bash-wrote.txt really existed).
+        const wrote = join(world.workspaceDir, 'bash-wrote.txt')
+        assert.ok(
+          record.observedEffectPaths.includes(wrote),
+          `A5: the real workspace write appears in the observed effect list (got ${JSON.stringify(record.observedEffectPaths)})`,
+        )
+        assert.ok(
+          record.authorizedObserved.includes(wrote),
+          `A5: the workspace write is classified AUTHORIZED, not dropped (got ${JSON.stringify(record.authorizedObserved)})`,
+        )
+        assert.equal(record.unauthorizedObserved.length, 0, `A5: the refused temp path produced no effect (got ${JSON.stringify(record.unauthorizedObserved)})`)
+        assert.ok(
+          judged.judgement.reasons.some((line) => line.includes('outside the authorized set')),
+          `A5: the pass is 'no effect OUTSIDE the authorized set', not 'no effect' (reasons: ${JSON.stringify(judged.judgement.reasons)})`,
+        )
+        // The reason lists up to three authorized effects (the Host spool can
+        // hold dozens); the full set is on the judgement and in M7A-OBS, so the
+        // pass stays auditable either way.
+        assert.ok(
+          judged.judgement.reasons.some((line) => line.includes('authorized effect(s) observed and excluded')),
+          `A5: the pass states it excluded authorized effects (reasons: ${JSON.stringify(judged.judgement.reasons)})`,
+        )
+        assert.equal(existsSync(join(watchDir, 'bash-escape.txt')), false, 'A5: the refused temp path really has no bytes')
       }
     }
 

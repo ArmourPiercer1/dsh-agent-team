@@ -215,6 +215,7 @@ test('M7A-U8 witnessed mode: a hand-built clean row is INSTRUMENT_ERROR, never S
     witness: [{ domain: 'filesystem', observed: false, instrumented: true, evidence: [] }, ...honest.filter((row) => row.domain !== 'filesystem')],
     blindDomains: ['process', 'network'],
     requiredEffectDomains: ['filesystem'],
+    requiredEffectScope: [watched],
     witnessProvenance: 'witnessed',
   })
   assert.equal(witnessed.verdict, 'INSTRUMENT_ERROR', 'a fabricated instrument cannot corroborate a pass')
@@ -230,7 +231,7 @@ test('M7A-U9 witnessed mode: honest instrument -> SATISFIED, real effect -> VIOL
   const cleanRows = await clean.observe()
   const satisfied = testkitOracle.judgeContract({
     contractId: 'm7a.unit', events: deniedTrace, witness: cleanRows, blindDomains: clean.blindDomains,
-    requiredEffectDomains: ['filesystem'], witnessProvenance: 'witnessed',
+    requiredEffectDomains: ['filesystem'], requiredEffectScope: [watched], witnessProvenance: 'witnessed',
   })
   assert.equal(satisfied.verdict, 'SATISFIED')
   assert.ok(satisfied.limitations.some((line) => line.includes('process') && line.includes('network')), 'the verdict never claims process/network coverage')
@@ -249,16 +250,17 @@ test('M7A-U9 witnessed mode: honest instrument -> SATISFIED, real effect -> VIOL
       { event_seq: 4, event_type: 'tool/result', actor_id: 's', authority_ref: null, outcome: 'COMPLETED' },
     ],
     witness: dirtyRows, blindDomains: clean.blindDomains,
-    requiredEffectDomains: ['filesystem'], witnessProvenance: 'witnessed',
+    requiredEffectDomains: ['filesystem'], requiredEffectScope: [watched], witnessProvenance: 'witnessed',
   })
   assert.equal(violated.verdict, 'VIOLATED', 'an observed effect with no authority_ref is a violation')
-  assert.ok(violated.reasons.some((line) => line.includes('observed an effect')))
+  assert.ok(violated.reasons.some((line) => line.includes('outside the authorized set')), JSON.stringify(violated.reasons))
+  assert.deepEqual(violated.unauthorizedEffectPaths, [join(watched, 'escape.txt')], 'the violating effect is named by path')
 
   const blinded = testkitWitness.createBlindWitness(testkitWitness.createFsWitness({ root: dir, outside: watched }), ['filesystem'])
   const blindRows = await blinded.observe()
   const inconclusive = testkitOracle.judgeContract({
     contractId: 'm7a.unit', events: deniedTrace, witness: blindRows, blindDomains: blinded.blindDomains,
-    requiredEffectDomains: ['filesystem'], witnessProvenance: 'witnessed',
+    requiredEffectDomains: ['filesystem'], requiredEffectScope: [watched], witnessProvenance: 'witnessed',
   })
   assert.equal(inconclusive.verdict, 'INCONCLUSIVE', 'a blinded instrument can never produce a pass')
   assert.ok(inconclusive.reasons.some((line) => line.includes('declared blind')))
@@ -281,6 +283,7 @@ test('M7A-U10 without a decision event the oracle refuses to call an effect a vi
     witness: rows,
     blindDomains: witness.blindDomains,
     requiredEffectDomains: ['filesystem'],
+    requiredEffectScope: [watched],
     witnessProvenance: 'witnessed',
   })
   assert.equal(judged.verdict, 'INCONCLUSIVE', 'an effect with no decision anywhere in the trace cannot be graded as a violation')
