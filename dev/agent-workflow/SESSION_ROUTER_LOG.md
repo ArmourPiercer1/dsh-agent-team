@@ -8835,6 +8835,8 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 
 **6. 未退役（明写理由）**：`tests/checks/eb3-security-suites.txt`（65 行）与 `eb3-host-security-suites.txt`（12 行）是 **vitest** 人口、行序参与运行行为，M6 没有 vitest dispatcher 与 parity 证据 → 保留；`LEG_ORDER`/`productLegs` 是 gate-leg 顺序不是文件清单；`dev/ci/test-contracts.json` 是契约权威；manifest `movedSuites` 是审计线索；`scripts/ci-local.mjs` 的 `TEST_RE` 回答「本地该跑哪些」（含 vitest `.ts`），与 CI 人口不同问题。
 
-**7. 已知偏差**：`ci-integration.yml` 有一个步骤名仍写「M1 catalog shadow」——`--parity` 以**步骤名**为键，改名会破坏配对，故保留并在账本 §6 记录（要改名必须同时重生成证据）；`--parity` 是一次性证据（合并后 `origin/master` 变新形态），长期回归靠 `test-catalog.test.mjs` 的集合 digest 定律；`docs/runbooks/PR-DRAFT-FIRST.md` 在本仓库不存在，该前置阅读无法执行（已记录）。
+**7. 已知偏差**：`ci-integration.yml` 有一个步骤名仍写「M1 catalog shadow」——`--parity` 以**步骤名**为键（`oldArgvByStep`/`legByStep` 按 `- name:` 分块建索引），改名会破坏配对，故保留并在账本 §6 记录；这不削弱 `CI_LAYER_LEG_DISPATCH_SHAPE`（该律只读 manifest 的 `leg.cmd` 形状，步骤归属由 `mentions()` 读 `run:` 文本，均不读 `name:`）。`--parity` 是一次性证据（合并后 `origin/master` 变新形态），长期回归靠 `test-catalog.test.mjs` 的集合 digest 定律。
+
+**7a. 更正（同日，协调者指出）**：上文早先版本声称 `docs/runbooks/PR-DRAFT-FIRST.md` 不存在——**错**。该文件存在（`docs/runbooks/PR-DRAFT-FIRST.md`，同目录另有 `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md`，由 `3a7303ca2`（A6 cold-wake，#758）引入）；当时是在**落后的仓库根 checkout** 上看的（复核实测落后 `origin/master` 32 个 commit），不是本 worktree。已在 worktree 内通读并按状态机记账：本分支按任务书**未建 PR、未 push、未 ready**，故停在 `DRAFT` 之前；C1/C2/C5 有本地证据，C3（四层 L1）与 C4（独立审查）**未发生**，C6 settlement **由协调者在 PR 上发布**，本 memo 只提供四要素材料（审查裁决待补、作者席位+模型可披露、报告/证据路径、覆盖 head 由协调者在发布时刻读取——**不能照抄本文档的 sha**，因为文档自身每改一次 head 就前进一次）。账本 §7 有逐条表。
 
 **8. 账本与指标**：`docs/plans/memo/tinf-m6-retire-handlists-20261115/README.md`（逐清单 owner/替代/删除 commit/回滚，含未退役表与半回滚禁止说明）、`.../METRICS.md`（L1 24 次 PR 运行、L2 5 次 census、91/digest、kill=7/7、集合差异 0、UNKNOWN 9 项含 L3/长时模型/flakiness/分片墙钟/全仓 mutation score）。M4 memo 补 dated 附注区分「预测 vs 实测」，M5 memo §4 用实测数字替换「尚未上机」。

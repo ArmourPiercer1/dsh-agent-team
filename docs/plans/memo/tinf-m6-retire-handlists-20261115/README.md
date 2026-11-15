@@ -126,8 +126,31 @@ git rm scripts/test-suite-paths.mjs
 
 ## 6. 残留与已知偏差（不隐藏）
 
-1. **一个步骤名仍写着「M1 catalog shadow」**（`ci-integration.yml` 的 `test catalog + TINF instruments (M1 catalog shadow, …)`）。M6 没有改名：`--parity` 的 before/after 两侧以**步骤名**为键，改名会让这条证明失去配对；名字是历史标签，`census-aggregate` 的 `scope` 与 catalog 文件头已经改成准确表述。要改名就必须同时重生成证据。
+1. **一个步骤名仍写着「M1 catalog shadow」**（`ci-integration.yml` 的 `test catalog + TINF instruments (M1 catalog shadow, …)`）。M6 没有改名：`--parity` 的 before/after 两侧以**步骤名**为键（`scripts/dispatch-tests.mjs` 的 `oldArgvByStep`/`legByStep` 都按 `- name:` 分块建索引），改名会让这条证明失去配对。**这不削弱任何定律**：`CI_LAYER_LEG_DISPATCH_SHAPE` 只读 manifest 的 `leg.cmd`（`--run` 是否存在、是否是最后一个 token），步骤归属由 `mentions()` 读该步骤的 `run:` 文本决定，两者都不读步骤 `name:`；名字只是 CI 界面上的标签，也是 `--parity` 的配对键。要改名就必须同时重生成证据。
 2. **`--parity` 是一次性证据**：合并之后 `origin/master` 会包含本改动，`--old-ref origin/master` 将变成「新 vs 新」的恒等比对。因此**提交的 `.txt` 才是证据**，命令只用于复现本分支时刻的对比；`test-catalog.test.mjs` 用集合 digest 而不是 `--parity` 做长期回归。
 3. **`pr-settlement-unit` 挂在 `knownNonRequired[].legs[]`**：这不是新权威面，而是承认「job 的 Required-ness」与「该 job 跑哪些套件」是两个问题；M6 对两者都用同一套 leg 定律grade，但它确实让 manifest 多了一个 `legs[]` 位置（只有 1 处），已在 §2.1 #3 记录。
 4. **`areas[]` 会在目录里出现新套件时自动改变 CI 人口**：这是 M1 想要的，但它也意味着 `--parity` 的 union digest 会变；改动的正确流程是「新增套件 → 重生成证据 → 在 PR 里说明」，而不是让 digest 定律变红后改断言。
-5. `docs/runbooks/PR-DRAFT-FIRST.md` 在本仓库**不存在**（`docs/runbooks/` 目录也没有，全仓无此字符串），任务书里要求先读的这一项无法执行；本 PR 按 `docs/ROUTER_RULES.md` §0 + 计划文件执行。
+5. **早先一条记录是错的，此处更正**：本会话最初宣称 `docs/runbooks/PR-DRAFT-FIRST.md` 不存在、并据此说「按 ROUTER_RULES §0 + 计划文件执行」。**该文件存在**（`docs/runbooks/PR-DRAFT-FIRST.md`，与 `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md` 同目录，由 `3a7303ca2`（A6 cold-wake，#758）引入）；当时是在**落后的仓库根 checkout** 上看的（本次复核实测 `git rev-list --count HEAD..origin/master` = 32；协调者指出时记为 28），而不是本 worktree。该 runbook 已在本分支的 worktree 内读过并按其顺序执行（draft → C1–C7 → settlement → ready → merge 的**状态机**；本任务被明确要求不开 PR，所以状态机停在 `DRAFT` 之前，见 §7）。
+
+## 7. 与 `docs/runbooks/PR-DRAFT-FIRST.md` 的关系（本分支实际处于哪一步）
+
+任务书要求「不要建 PR，commit 后报 SHA」，因此 **draft-first 状态机没有启动**：没有 `gh pr create`、没有 `gh pr ready`、没有 push。据此对 runbook 逐条如实记账，**不声称任何未经检查的合规**：
+
+| runbook 条款 | 本分支状态 |
+| --- | --- |
+| §2 状态机 / 「`gh pr ready` 之后不得再 push」 | **未触发**：无 PR、无 ready、无 push。C7 的「冻结 head」在协调者 ready 之前不适用；本分支的 head 在 ready 之后若再移动，settlement 与 L2 都作废（runbook §2/§5.6），这条约束的是后续操作者，不是本 memo |
+| C1 变更完成 | 是：`git status` 干净、三个 commit（代码、账本、文档更正）、无 «fix after CI» TODO；但 `@{u}` 未设（分支未推送），C1 的 upstream 检查要等协调者 push 后才能评估 |
+| C2 与 master 同步 | 是：base `e5bf05670` 即当前 `origin/master`，`git merge-base --is-ancestor origin/master HEAD` 退出 0（本分支本地实测，非推断） |
+| C3 L1 绿（四层 + `ci-required-deferred`） | **未测**：本分支未推送，没有任何 run。本地等价物（七套件 263/263、catalog、`eb3-ci-required`、`--check`、parity）已列入 §4，但**它们不等于 L1 的四个层 job** |
+| C4 独立审查 PASS | **未进行**：M6 没有召集独立审查席位。这是协调者的动作，不由本 memo 代称 |
+| C5 文档/证据 | 是：本 memo + `METRICS.md` + 证据目录 + `docs:sync --check` findings=0（本地实测） |
+| C6 settlement | **未写，且不应由本 memo 冒充**：settlement 必须是 PR 上以 `**[dated settlement, …]**` 开式的评论、覆盖当时 40-hex head、含 §8.5.2 四要素。**该评论由协调者（或其指定的合并席位）在本 PR 上发布**——本分支既无 PR 也无 dated 开式语境，写了也不算数 |
+
+**PR 打开后 settlement 必须补齐的四要素**（`docs/ROUTER_RULES.md` §8.5.2；本 memo 只提供材料，不代替记录）：
+
+| 要素 | 本分支可提供的材料 | 缺什么 / 由谁补 |
+| --- | --- | --- |
+| 审查裁决（review verdict） | 无。M6 未经独立审查 | **协调者召集审查席位**并给出 PASS/CHANGES；本 memo 不代填 |
+| 审查者席位与模型披露（seat + model） | 作者侧可披露：实现席位 = 本 M6 writer 子会话，模型 `deepseek-v4.1-flash-1017` | 审查席位的 seat+model 只能由该席位自报 |
+| 报告 / 证据引用 | `docs/plans/memo/tinf-m6-retire-handlists-20261115/{README,METRICS}.md`；`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/{old-vs-new-argv,negative-controls}.txt`；`SESSION_ROUTER_LOG.md` 的 M6 条 | — |
+| 覆盖的 head sha | **不能照抄本文档**：本文档自身每改一次 head 就前进一次。发布时刻的权威 = `gh pr view <n> --json headRefOid`。到目前为止的链：`f517a5194`（代码）→ `cbcf2f3ee`（账本/指标/日志）→ 本文档所在的文档更正 commit | 协调者在写 settlement 的同一时刻读取并写入 40-hex |
