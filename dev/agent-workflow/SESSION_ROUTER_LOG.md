@@ -8842,3 +8842,25 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **7b. PR #774 独立评审（PASS，三条 minor + 一条 repro 备注，全部已修，不靠披露糊过去）**：(1) `census-aggregate.mjs` 的尾部 `sha256:` 原先只在含 `#` 时解析，`'evidence.json sha256:…'`（无 fragment）静默通过——现在整体 tokenise，**有无 fragment 都校验**，且任何以 `sha256` 开头的 token 必须是合法摘要（`sha256` / `sha256:` / 截断 / 大写一律 `RESULT_EVIDENCE_DIGEST_INVALID`）；新增 1 个测试覆盖「无 `#` 的正例 + 无 `#` 的 mismatch/invalid + 有 `#` 的 invalid」，`census-cutover.test.mjs` 41/41。(2) manifest 里 17 条 `why` 仍描述退役的 `check[]`（含「an emptied check[] is NOT machine-detected」）——全部改写为当前律：人口就在 `suites[]`/`areas[]`，空声明 = `CI_LAYER_LEG_NO_SUITES`，空白项 = `CI_LAYER_LEG_SUITE_INVALID`，非 tracked 套件 = `CI_SUITE_ABSENT`；`check[]` 字样 0 处（仍保留 `check[]` 的 8 个非 node leg 未动，它们本来就靠自己的 `check[]` grade）。(3) 账本「文件清单消失了」改为「25 个名字仍在、展开逐元素相同、去重+搬家」；§1.1 标题 13 → **14**（13 layer + settlement）。(4) repro 备注写明 `--old-ref origin/master` 必须是**真远端 master**（`e5bf0567`）；从落后的本地 checkout 再 clone 会得到更旧的 `origin/master` 并报 `DIFFERS steps=16`，那是环境不是 parity 坏了；只有本分支的 clone 用 `HEAD~2`。
 
 **8. 账本与指标**：`docs/plans/memo/tinf-m6-retire-handlists-20261115/README.md`（逐清单 owner/替代/删除 commit/回滚，含未退役表与半回滚禁止说明）、`.../METRICS.md`（L1 24 次 PR 运行、L2 5 次 census、91/digest、kill=7/7、集合差异 0、UNKNOWN 9 项含 L3/长时模型/flakiness/分片墙钟/全仓 mutation score）。M4 memo 补 dated 附注区分「预测 vs 实测」，M5 memo §4 用实测数字替换「尚未上机」。
+
+## 2026-11-15 — TINF 信任收口（F-01…F-05 修复，F-06 明确不做）
+
+**0. 结论先行**：分支 `task/tinf-trust-fix-20261115`（base `origin/master 7e3b6532a`，M6 合并点），按外部专家对 `7e3b6532a` 的评审修 2 个 P0 + 3 个 P1；**F-06（effect witness 现实性）不在范围**，不声称已修；**L2 P50 ≤ 10 min 未达成**，本 PR 不声称。未 push、未开 PR。
+
+**1. F-01（P0）**：`--run` 与 `--json/--list/--check/--parity/--run-args/--help` 互斥，`DISPATCH_MODE_CONFLICT` exit 2 且先于任何输出/spawn；`--run` 缺 `--leg` = `DISPATCH_NO_LEG`；spawn 前断言 argv 非空；`mode=run` token 只在 spawn 后打印；inspect 输出 `mode=inspect`；返回 runner exit。`eb3-ci-required` 从 cmd 前缀改为**整个 argv 精确 grade**，dispatch leg 尾部白名单 `[]`，多一个 token 即 `CI_LAYER_LEG_EXTRA_ARGUMENT`；10 个 workflow + manifest 全部审计并声明既有尾部 token。
+
+**2. F-02（P0）**：计划每个 root 记录排序文件表/计数/`file_digest`，人口进入 `plan_digest`；report 与计划**双向**比较（`FILE_MISSING`/`FILE_UNPLANNED`/`COLLECTION_ERROR`）；aggregator 增加 `RESULT_FILE_SET_MISMATCH` / `SUMMARY_FILE_TOTAL_MISMATCH` / `PLAN_FILE_POPULATION_MISSING`；新增已评审 `dev/ci/census-population-baseline.json`（11 roots/705 files），root 少文件或同数换文件 = `POPULATION_SHRANK`。
+
+**3. F-03（P1）**：新增 `scripts/contract-tiers.mjs`，从 manifest dispatch leg（L1）与 census 人口（L2）推导每个测试文件实际执行层；`required_tiers` 不满足 = `CONTRACT_TIER_UNMET`。测得 6 个 contract 的 L1 要求全部只靠 L2 文件，故 `dev/ci/contract-tier-exceptions.json` 记录 6 条 `owner=UNASSIGNED`、`expires=2026-12-31` 的例外（状态 `excepted`，不是 `met`）；`required_oracles` 今天无人声明，规则改为 `CONTRACT_ORACLE_UNPLANNED`（真空绿，声明即生效），不伪造 oracle 覆盖。
+
+**4. F-04（P1）**：`resultsFromReport` 接收真实 exit 并写入每条结果；shard 写真实 `exit_code`/`exit_signal`；`censusPlanLeg` 对“非 0 进程 + 全 PASS”拒绝 `CENSUS_EXIT_NONZERO`；新增 `scripts/census-exit-policy.mjs`（`exitTolerances: []`，条目需精确 code/signal+owner+reason+未过期）；aggregator 校验策略 digest，shard 不能自声明容忍。
+
+**5. F-05（P1）**：`dev/ci/uncollected-baseline.json` 记录 91 条未收集路径（path+reason+classification）；每次 catalog 调用跑集合差：`UNCOLLECTED_NEW` 阻塞、`UNCOLLECTED_FIXED` 警告、`UNCOLLECTED_BASELINE_STALE` 警告、缺基线 = `UNCOLLECTED_BASELINE_MISSING`；“修一个+加一个”不再因总数不变而通过；计数棘轮保留为第二界。
+
+**6. 负控与接线**：四个新套件（`dispatch-tests.test.mjs`、`eb3-ci-required.test.mjs`、`tinf-trust-closeout.test.mjs`、`contract-tiers.test.mjs`）接入同一 `tinf-instruments` leg（10 suites，293/293）；`contract-tiers --check` 成为 ci-integration 新步骤 + manifest leg。F-02 的评审原例（100 文件计划 vs 1 文件绿报告）在单测与 CLI 两条路径都断言非 PASS；F-01 的 `--run --json` 断言 exit 2、无 spawn。
+
+**7. 门禁实测**：`eb3-ci-required` = `pass workflows=10 findings=0`；`dispatch-tests --check` = `PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` = exit 0（867 tests / 91 uncollected / findings 0）；`contract-tiers --check` = `contracts=6 met=0 excepted=6 unmet=0 findings=0`；`docs:sync --check` findings=0；`lint-identities` exit 0；eslint 0 problems；七文件+四新套件 306/306。
+
+**8. 偏差（必须记录）**：(a) 任务书同时要求“新负控接入同一 leg”和“parity IDENTICAL 25/25”，二者不可兼得；本分支选择接线，重生成 `old-vs-new-argv.txt`（对 `e5bf05670` 比较：`missing=none`、`problems=0`、`added` 恰为 4 个新文件、union 25→29），`test-catalog.test.mjs` 同时钉 digest 与允许 added 集合。(b) `--old-ref 7e3b6532a` 本身无法得到 25/25：该 commit 的 workflow 已无 `node --test` 旧 argv，parity 只能报 18 个 UNCONVERTED；正确 old-ref 是 pre-M6 的 `e5bf05670`。(c) 契约例外 owner 全为 `UNASSIGNED`，需人接手。
+
+**9. 残余**：F-06（真实 PTY/进程/网络 effect witness、`instrumented` 独立性、真 host E2 负控）未做，需 pristine host + World Factory 接线；L2 P50 ≤10 min 未达成；census exit 容忍策略为空；plan 的 oracle 列表仍为空（规则真空绿）。详细表与回滚见 `docs/plans/memo/tinf-trust-closeout-20261115/README.md`。
