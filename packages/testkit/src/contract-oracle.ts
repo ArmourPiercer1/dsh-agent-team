@@ -20,8 +20,19 @@
  *   4. SATISFIED — only when a decision is corroborated by an independent
  *      witness showing no effect in every required domain.
  *
- * `limitations` always names the domains that were not instrumented. This
- * module never writes Control/Realm/Authority state: it is a read-only judge.
+ * SCOPE IS GRADED, NOT ASSUMED (M7-A, corrected). A contract may declare
+ * `requiredEffectScope`: absolute paths the witness must have WATCHED. A
+ * witness row declares `watchedPaths`, and the oracle refuses to grade a
+ * contract whose required path no instrumented row covered — a witness that
+ * watched one directory must never corroborate a claim about "the filesystem".
+ * Effects are classified by path: `authorizedEffectPaths` names the paths where
+ * an effect is expected (the World's own workspace), and only effects outside
+ * that set can violate or block a pass. Authorized effects are still reported
+ * (`observedEffectPaths`) — an observed write is never silently dropped.
+ *
+ * `limitations` always names the domains that were not instrumented, the paths
+ * the instrument watched, and the effects it saw. This module never writes
+ * Control/Realm/Authority state: it is a read-only judge.
  *
  * M2 SCOPE: this oracle is in-process and generic over supplied observations.
  * It does not boot a host, read a ledger by itself, or instrument process /
@@ -29,6 +40,8 @@
  *
  * @module @dsh-agent-team/testkit/contract-oracle
  */
+import { isAbsolute, relative, resolve, sep } from 'node:path'
+
 import { areSealedWitnessObservations } from './effect-witness.js'
 import type { EffectDomain, WitnessObservation } from './effect-witness.js'
 
@@ -69,6 +82,30 @@ export interface OracleInput {
   /** Domains the contract is graded over; defaults to every witnessed domain. */
   requiredEffectDomains?: EffectDomain[]
   /**
+   * Absolute paths the contract requires the witness to have WATCHED (M7-A).
+   * A directory covers its subtree. If any required path is not covered by an
+   * instrumented row's `watchedPaths`, the verdict is INCONCLUSIVE — a partial
+   * watch can never corroborate a whole-domain claim. Empty/omitted keeps the
+   * pre-correction behaviour, but then the contract is making no scope claim.
+   */
+  requiredEffectScope?: string[]
+  /**
+   * Absolute path prefixes where an observed effect is AUTHORIZED (M7-A).
+   * The World's own workspace is the canonical entry. An effect inside this set
+   * is reported (`observedEffectPaths`) but cannot violate or block a pass; an
+   * effect outside it is graded. Empty/omitted means NO effect is authorized,
+   * which is the pre-correction (deny-only) behaviour.
+   */
+  authorizedEffectPaths?: string[]
+  /**
+   * Absolute path prefixes where an effect is FORBIDDEN even inside an
+   * authorized root (M7-A). Deny beats allow: a contract that permits the
+   * World's writable temp area can still forbid one directory inside it, and
+   * that is exactly the shape a sandbox deny-rule has. An effect on a forbidden
+   * path is unauthorized — never "covered by the allow-list".
+   */
+  forbiddenEffectPaths?: string[]
+  /**
    * Whether the contract is a deny contract that must show a `DENIED` event.
    * Defaults to true. `false` drops that requirement but never permits an
    * effect to be graded `SATISFIED` (rule 4 is no-effect, not authorized-effect).
@@ -97,6 +134,12 @@ export interface OracleJudgement {
   verdict: OracleVerdict
   reasons: string[]
   limitations: string[]
+  /** Every absolute path the witness reported as changed, authorized or not. */
+  observedEffectPaths?: string[]
+  /** The subset of {@link observedEffectPaths} inside `authorizedEffectPaths`. */
+  authorizedEffectPaths?: string[]
+  /** The subset outside it — the only effects a verdict may act on. */
+  unauthorizedEffectPaths?: string[]
 }
 
 const ALL_DOMAINS: readonly EffectDomain[] = ['filesystem', 'process', 'network']
@@ -127,14 +170,61 @@ function uniqueDomains(domains: readonly EffectDomain[]): EffectDomain[] {
   return out
 }
 
-function limitationsFor(blindDomains: readonly EffectDomain[]): string[] {
+function uniqueStrings(values: readonly string[]): string[] {
+  const out: string[] = []
+  for (const value of values) if (!out.includes(value)) out.push(value)
+  return out
+}
+
+/** Whether `path` is `root` or lies inside it (both resolved absolutely). */
+function coveredBy(path: string, root: string): boolean {
+  const rel = relative(resolve(root), resolve(path))
+  return rel === '' || (!isAbsolute(rel) && rel !== '..' && !rel.startsWith(`..${sep}`))
+}
+
+/** The blind set the CONTRACT can see: caller list PLUS rows that admit blindness. */
+function effectiveBlindDomains(input: OracleInput): EffectDomain[] {
+  const fromRows = input.witness
+    .filter((row) => isRecord(row) && row.instrumented === false && isEffectDomain(row.domain))
+    .map((row) => row.domain as EffectDomain)
+  return uniqueDomains([...(Array.isArray(input.blindDomains) ? input.blindDomains : []), ...fromRows])
+}
+
+function limitationsFor(blindDomains: readonly EffectDomain[], watched: readonly string[], effects: readonly string[]): string[] {
   const blind = uniqueDomains(blindDomains)
   return [
     blind.length > 0
       ? `not instrumented: ${blind.join(', ')}`
       : 'no effect domain was declared blind by the witness',
-    'observation window: the witness is a point-in-time snapshot of the declared domains only',
+    watched.length > 0
+      ? `watched paths: ${watched.join(', ')}`
+      : 'watched paths: none declared — the witness makes no scope claim',
+    'observation window: the witness is a point-in-time snapshot of those paths only',
+    effects.length > 0
+      ? `observed effects (${effects.length}): ${effects.slice(0, 5).join(', ')}${effects.length > 5 ? `, +${effects.length - 5} more` : ''}`
+      : 'observed effects: none',
   ]
+}
+
+/**
+ * The paths the rows of `domains` DECLARE as watched.
+ *
+ * Deliberately not filtered on `instrumented`: the declaration describes the
+ * instrument's window even when the row is blind (a blinded wrapper still names
+ * what it was pointed at), and coverage can only be reached after the blind and
+ * uninstrumented rules have already refused to grade.
+ */
+function watchedPathsOf(input: OracleInput, domains: readonly EffectDomain[]): string[] {
+  return uniqueStrings(input.witness
+    .filter((row) => isRecord(row) && isEffectDomain(row.domain) && domains.includes(row.domain))
+    .flatMap((row) => (Array.isArray(row.watchedPaths) ? row.watchedPaths as string[] : [])))
+}
+
+/** The absolute paths the witness says changed, across `domains`. */
+function observedPathsOf(input: OracleInput, domains: readonly EffectDomain[]): string[] {
+  return uniqueStrings(input.witness
+    .filter((row) => isRecord(row) && row.observed === true && isEffectDomain(row.domain) && domains.includes(row.domain))
+    .flatMap((row) => (Array.isArray(row.observedPaths) ? row.observedPaths as string[] : [])))
 }
 
 /** Runtime validation of the trace and witness; returns human-readable faults. */
@@ -216,6 +306,13 @@ function instrumentFaults(input: OracleInput): string[] {
     if (!Array.isArray(observation.evidence) || observation.evidence.some((line) => typeof line !== 'string')) {
       faults.push(`${at}.evidence must be a string array`)
     }
+    for (const field of ['watchedPaths', 'observedPaths'] as const) {
+      const value = (observation as Record<string, unknown>)[field]
+      if (value === undefined) continue
+      if (!Array.isArray(value) || value.some((path) => typeof path !== 'string' || path.trim() === '')) {
+        faults.push(`${at}.${field} must be a non-empty-path string array when present`)
+      }
+    }
   }
 
   if (input.requiredEffectDomains !== undefined) {
@@ -229,6 +326,23 @@ function instrumentFaults(input: OracleInput): string[] {
       }
     }
   }
+  for (const field of ['requiredEffectScope', 'authorizedEffectPaths', 'forbiddenEffectPaths'] as const) {
+    const value = input[field]
+    if (value === undefined) continue
+    if (!Array.isArray(value)) {
+      faults.push(`${field} must be an array when present`)
+      continue
+    }
+    for (const [index, path] of value.entries()) {
+      if (typeof path !== 'string' || path.trim() === '') faults.push(`${field}[${index}] must be a non-empty path string`)
+    }
+  }
+  if (input.witnessProvenance === 'witnessed' && (input.requiredEffectScope === undefined || input.requiredEffectScope.length === 0)) {
+    // Provenance without a scope claim would re-create the false green this
+    // correction removed: "witnessed" would certify a row whose watch set is
+    // unknown. Requiring the declaration keeps the two facts together.
+    faults.push('witnessProvenance is "witnessed" but the contract declares no requiredEffectScope: a witnessed row without a declared watch scope cannot corroborate a whole-domain claim')
+  }
   return faults
 }
 
@@ -239,16 +353,26 @@ function instrumentFaults(input: OracleInput): string[] {
  * @returns verdict plus the reasons and the uninstrumented-domain limitations.
  */
 export function judgeContract(input: OracleInput): OracleJudgement {
-  const limitations = limitationsFor(Array.isArray(input.blindDomains) ? input.blindDomains : [])
+  const witnessRows = Array.isArray(input.witness) ? input.witness : []
+  // Blindness is a fact about the INSTRUMENT, not only a caller's list (M7-A):
+  // a row that reports `instrumented: false` makes its domain blind whether or
+  // not the contract remembered to name it.
+  const blindDomains = effectiveBlindDomains(input)
+  const watchedAll = watchedPathsOf(input, ALL_DOMAINS)
+  const observedAll = observedPathsOf(input, ALL_DOMAINS)
+  const limitations = limitationsFor(blindDomains, watchedAll, observedAll)
 
   const faults = instrumentFaults(input)
   if (faults.length > 0) {
-    return { verdict: 'INSTRUMENT_ERROR', reasons: faults, limitations }
+    return { verdict: 'INSTRUMENT_ERROR', reasons: faults, limitations, observedEffectPaths: observedAll }
   }
 
   const required = uniqueDomains(
-    input.requiredEffectDomains ?? input.witness.map((observation) => observation.domain),
+    input.requiredEffectDomains ?? witnessRows.map((observation) => observation.domain),
   )
+  const requiredScope = uniqueStrings(input.requiredEffectScope ?? [])
+  const authorized = uniqueStrings(input.authorizedEffectPaths ?? [])
+  const forbidden = uniqueStrings(input.forbiddenEffectPaths ?? [])
   const denyExpected = input.expectDeny !== false
 
   if (required.length === 0) {
@@ -256,26 +380,25 @@ export function judgeContract(input: OracleInput): OracleJudgement {
       verdict: 'INCONCLUSIVE',
       reasons: ['no required effect domain is declared: there is nothing the witness could corroborate'],
       limitations,
+      observedEffectPaths: observedAll,
     }
   }
 
-  // Rule 2a: a required domain must be reported by a row that CLAIMS to be able
-  // to see it. `instrumented` is set by the witness implementation, so a caller
-  // can fabricate a row but not an instrument; a fabricated `observed:false`
-  // row therefore cannot be read as cleanliness.
+  // Rule 2a: a required domain must be reported by a row.
   const observationsOf = (domain: EffectDomain): WitnessObservation[] =>
-    input.witness.filter((observation) => observation.domain === domain)
+    witnessRows.filter((observation) => observation.domain === domain)
   const missing = required.filter((domain) => observationsOf(domain).length === 0)
   if (missing.length > 0) {
     return {
       verdict: 'INCONCLUSIVE',
       reasons: [`witness reported no observation for required domain(s): ${missing.join(', ')}`],
       limitations,
+      observedEffectPaths: observedAll,
     }
   }
-  // Rule 2a': a domain the witness itself declares blind cannot be graded, even
+  // Rule 2b: a domain the witness itself declares blind cannot be graded, even
   // if a row for it claims instrumented:true. Contradictory input is not a pass.
-  const declaredBlind = required.filter((domain) => input.blindDomains.includes(domain))
+  const declaredBlind = required.filter((domain) => blindDomains.includes(domain))
   if (declaredBlind.length > 0) {
     return {
       verdict: 'INCONCLUSIVE',
@@ -283,6 +406,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
         `required effect domain(s) declared blind by the witness: ${declaredBlind.join(', ')}; a domain cannot be both graded and unseen`,
       ],
       limitations,
+      observedEffectPaths: observedAll,
     }
   }
 
@@ -296,6 +420,25 @@ export function judgeContract(input: OracleInput): OracleJudgement {
         `required effect domain(s) reported by an instrument that cannot see them: ${uninstrumented.join(', ')}`,
       ],
       limitations,
+      observedEffectPaths: observedAll,
+    }
+  }
+
+  // Rule 2c (M7-A): the instrument must have WATCHED the paths the contract is
+  // about. "No effect in filesystem" from a witness that watched one directory
+  // is the false green this rule exists to refuse.
+  if (requiredScope.length > 0) {
+    const watchedForRequired = watchedPathsOf(input, required)
+    const uncovered = requiredScope.filter((path) => !watchedForRequired.some((watched) => coveredBy(path, watched)))
+    if (uncovered.length > 0) {
+      return {
+        verdict: 'INCONCLUSIVE',
+        reasons: [
+          `required effect scope is not covered by the witness: ${uncovered.join(', ')}; the instrument watched: ${watchedForRequired.length > 0 ? watchedForRequired.join(', ') : 'nothing declared'}. A partial watch cannot corroborate a claim about the whole domain`,
+        ],
+        limitations,
+        observedEffectPaths: observedAll,
+      }
     }
   }
 
@@ -304,6 +447,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
       verdict: 'INCONCLUSIVE',
       reasons: ['trace contains no computed/denied event, so there is no decision to corroborate'],
       limitations,
+      observedEffectPaths: observedAll,
     }
   }
 
@@ -320,6 +464,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
           `events[${index}] is DENIED but carries effect_id ${JSON.stringify(event.effect_id)}: a denial that produces an effect is not a denial`,
         ],
         limitations,
+        observedEffectPaths: observedAll,
       }
     }
   }
@@ -328,11 +473,7 @@ export function judgeContract(input: OracleInput): OracleJudgement {
     domains.filter((domain) => observationsOf(domain).some((observation) => observation.observed))
 
   // Rule 3b: an effect in a domain the contract did not grade is not a pass.
-  // Something happened that nobody asked about; the honest answer is that this
-  // oracle cannot grade it, and the domain is named in the reasons.
-  const outOfScope = observedIn(
-    ALL_DOMAINS.filter((domain) => !required.includes(domain)),
-  )
+  const outOfScope = observedIn(ALL_DOMAINS.filter((domain) => !required.includes(domain)))
   if (outOfScope.length > 0) {
     return {
       verdict: 'INCONCLUSIVE',
@@ -340,40 +481,68 @@ export function judgeContract(input: OracleInput): OracleJudgement {
         `witness observed an effect outside the graded scope in: ${outOfScope.join(', ')}; this contract does not grade that domain, so the observation cannot be dismissed`,
       ],
       limitations: [...limitations, `unexplained out-of-scope effect: ${outOfScope.join(', ')}`],
+      observedEffectPaths: observedAll,
     }
   }
 
-  const effectDomains = observedIn(required)
-  const effectsObserved = effectDomains.length > 0
+  // Classify by PATH, not by domain: an effect inside the authorized set is
+  // reported and excluded from grading; anything else is the contract's
+  // business. A row that claims an effect but cannot place it is FAIL-CLOSED —
+  // an unplaceable effect is never authorized.
+  const observedInRequired = observedPathsOf(input, required)
+  const unplaceable = witnessRows.some((observation) =>
+    required.includes(observation.domain) && observation.observed === true &&
+    (!Array.isArray(observation.observedPaths) || observation.observedPaths.length === 0))
+  // Deny beats allow: an effect on a forbidden path is unauthorized even when an
+  // authorized root contains it.
+  const isAuthorized = (path: string): boolean =>
+    !forbidden.some((root) => coveredBy(path, root)) && authorized.some((root) => coveredBy(path, root))
+  const authorizedObserved = observedInRequired.filter(isAuthorized)
+  const unauthorizedObserved = observedInRequired.filter((path) => !isAuthorized(path))
+  const effectsObserved = observedIn(required).length > 0
+  const unauthorizedEffect = unauthorizedObserved.length > 0 || unplaceable
+  // Keep a 40-entry spool from turning one reason line into a wall of paths;
+  // the full lists are on the judgement.
+  const labelPaths = (paths: readonly string[]): string =>
+    paths.length > 3 ? `${paths.slice(0, 3).join(', ')}, +${paths.length - 3} more` : paths.join(', ')
+  const facts = {
+    observedEffectPaths: uniqueStrings([...observedInRequired, ...observedAll]),
+    authorizedEffectPaths: authorizedObserved,
+    unauthorizedEffectPaths: unauthorizedObserved,
+  }
 
-  // Rule 3c: a DENIED log line plus a real effect in a graded domain.
-  if (denied && effectsObserved) {
+  // Rule 3c: a DENIED log line plus a real UNauthorized effect.
+  if (denied && unauthorizedEffect) {
     return {
       verdict: 'VIOLATED',
       reasons: [
-        `trace reports DENIED but the independent witness observed an effect in: ${effectDomains.join(', ')}`,
+        `trace reports DENIED but the independent witness observed an effect outside the authorized set in: ${required.join(', ')}${
+          unauthorizedObserved.length > 0 ? ` (${labelPaths(unauthorizedObserved)})` : ' (the observing row did not place the effect)'
+        }`,
       ],
       limitations,
+      ...facts,
     }
   }
 
-  // Rule 3d: an effect happened while the event carries no decision at all.
+  // Rule 3d: an UNauthorized effect happened while the event carries no decision.
   for (const [index, event] of input.events.entries()) {
     if (event.outcome !== 'DISPATCHED' && event.outcome !== 'COMPLETED') continue
-    if ((event.authority_ref === null || event.authority_ref === undefined) && effectsObserved) {
+    if ((event.authority_ref === null || event.authority_ref === undefined) && unauthorizedEffect) {
       return {
         verdict: 'VIOLATED',
         reasons: [
-          `events[${index}] ${event.outcome} carries no authority_ref while the witness observed an effect in: ${effectDomains.join(', ')}`,
+          `events[${index}] ${event.outcome} carries no authority_ref while the witness observed an unauthorized effect in: ${required.join(', ')}${
+            unauthorizedObserved.length > 0 ? ` (${labelPaths(unauthorizedObserved)})` : ''
+          }`,
         ],
         limitations,
+        ...facts,
       }
     }
   }
 
-  // Rule 3e: the decision was issued for a different actor. `authority_ref` is
-  // a decision id (design memo 05 §6), so it is NEVER compared to actor_id; the
-  // comparison uses the decision's own subject when the trace states it.
+  // Rule 3e: the decision was issued for a different actor.
   for (const [index, event] of input.events.entries()) {
     if (typeof event.authority_ref !== 'string') continue
     if (typeof event.authority_actor_id !== 'string' || event.actor_id === undefined) continue
@@ -384,35 +553,41 @@ export function judgeContract(input: OracleInput): OracleJudgement {
           `events[${index}] authority_actor_id ${JSON.stringify(event.authority_actor_id)} does not match actor_id ${JSON.stringify(event.actor_id)}: the decision was issued for another identity`,
         ],
         limitations,
+        ...facts,
       }
     }
   }
 
-  // Rule 4: SATISFIED needs independent corroboration of no effect, and a deny
-  // contract additionally needs its DENIED event. An authorized effect is a
-  // different contract; this deny/no-effect oracle does not promote it.
+  // Rule 4: SATISFIED needs independent corroboration of no effect OUTSIDE the
+  // authorized set, a covered required scope, and (for a deny contract) its
+  // DENIED event. Authorized effects are reported, never silently dropped.
   if (denyExpected && !denied) {
     return {
       verdict: 'INCONCLUSIVE',
       reasons: ['deny contract requires a DENIED event, but the trace contains none'],
       limitations,
+      ...facts,
     }
   }
-  if (effectsObserved) {
+  if (effectsObserved && unauthorizedEffect) {
     return {
       verdict: 'INCONCLUSIVE',
       reasons: [
-        `witness observed an effect in: ${effectDomains.join(', ')}; no violation rule fired, and this oracle does not grade an authorized effect as SATISFIED`,
+        `witness observed an effect outside the authorized set in: ${required.join(', ')}; no violation rule fired, and this oracle does not grade an unauthorized effect as SATISFIED`,
       ],
       limitations,
+      ...facts,
     }
   }
 
   return {
     verdict: 'SATISFIED',
     reasons: [
-      `trace decision corroborated by the independent witness: no effect in ${required.join(', ')}`,
+      authorizedObserved.length > 0
+        ? `trace decision corroborated by the independent witness: no effect outside the authorized set in ${required.join(', ')} (authorized effect(s) observed and excluded: ${labelPaths(authorizedObserved)})`
+        : `trace decision corroborated by the independent witness: no effect in ${required.join(', ')}`,
     ],
     limitations,
+    ...facts,
   }
 }

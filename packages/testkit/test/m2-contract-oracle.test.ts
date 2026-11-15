@@ -282,7 +282,29 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
 
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.verdict).not.toBe('SATISFIED')
-    expect(judgement.reasons.join(' ')).toMatch(/cannot see them/)
+    // M7-A correction (blindness precedence): a row that admits `instrumented:
+    // false` makes its domain blind even when the caller's list omits it, and
+    // that rule fires before the weaker "cannot see them" branch. Either message
+    // refuses to grade; the point is that the row can never reach SATISFIED.
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness/)
+  })
+
+  it('M7-A blindness precedence: an uninstrumented row is blind even when the caller forgets to list it', () => {
+    // The exact shape the reviewer flagged: one row claims to see filesystem
+    // while a second row for the SAME domain says `instrumented:false`. The
+    // caller's `blindDomains` is empty. The instrument's own admission wins.
+    const judgement = judgeContract({
+      contractId: 'EXEC-01',
+      events: [denied()],
+      witness: [
+        { domain: 'filesystem', observed: false, instrumented: true, evidence: [] },
+        { domain: 'filesystem', observed: false, instrumented: false, evidence: ['cannot see it'] },
+      ],
+      blindDomains: [],
+      requiredEffectDomains: ['filesystem'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness/)
   })
 
   it('an invented network row cannot cover a blind network domain', () => {
@@ -372,5 +394,141 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
     })
 
     expect(judgement.verdict).toBe('SATISFIED')
+  })
+
+  // ── M7-A correction: SCOPE is graded, not assumed ──────────────────────────
+  /** A filesystem row that watched `watched` and saw `observedPaths`. */
+  function fsRow(watched: string[], observedPaths: string[] = []): WitnessObservation {
+    return {
+      domain: 'filesystem',
+      observed: observedPaths.length > 0,
+      instrumented: true,
+      evidence: observedPaths,
+      watchedPaths: watched,
+      observedPaths,
+    }
+  }
+
+  it('M7-A scope control: an effect outside the watched set is not SATISFIED', () => {
+    // The reviewer's reproduction: the witness watched /w/one, the contract asks
+    // about /w/other, and a file really exists there. A partial watch must answer
+    // INCONCLUSIVE — never "no effect in filesystem".
+    const judgement = judgeContract({
+      contractId: 'SCOPE-01',
+      events: [denied()],
+      witness: [fsRow(['/w/one'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/other/file.txt'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/required effect scope is not covered by the witness/)
+    expect(judgement.reasons.join(' ')).toMatch(/\/w\/other\/file\.txt/)
+    expect(judgement.reasons.join(' ')).toMatch(/watched: \/w\/one/)
+  })
+
+  it('M7-A scope control: a declared scope with no watch set is INCONCLUSIVE', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-02',
+      events: [denied()],
+      witness: [{ domain: 'filesystem', observed: false, instrumented: true, evidence: [] }],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reasons.join(' ')).toMatch(/nothing declared/)
+  })
+
+  it('M7-A scope control: a watched but UNauthorized effect is VIOLATED and named by path', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-03',
+      events: [denied()],
+      witness: [fsRow(['/w/home'], ['/w/home/tmp/escape.txt'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+      authorizedEffectPaths: ['/w/home/workspace'],
+    })
+    expect(judgement.verdict).toBe('VIOLATED')
+    expect(judgement.unauthorizedEffectPaths).toEqual(['/w/home/tmp/escape.txt'])
+    expect(judgement.reasons.join(' ')).toMatch(/\/w\/home\/tmp\/escape\.txt/)
+  })
+
+  it('M7-A scope control: an AUTHORIZED observed effect is reported and excluded, never dropped', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-04',
+      events: [denied(), { event_seq: 2, event_type: 'tool/result', actor_id: 'a', outcome: 'COMPLETED' }],
+      witness: [fsRow(['/w/home'], ['/w/home/workspace/bash-wrote.txt'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+      authorizedEffectPaths: ['/w/home/workspace'],
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+    expect(judgement.observedEffectPaths).toContain('/w/home/workspace/bash-wrote.txt')
+    expect(judgement.authorizedEffectPaths).toEqual(['/w/home/workspace/bash-wrote.txt'])
+    expect(judgement.reasons.join(' ')).toMatch(/no effect outside the authorized set/)
+    expect(judgement.reasons.join(' ')).toMatch(/bash-wrote\.txt/)
+  })
+
+  it('M7-A scope control: without an authorized set, the same observed effect is not a pass', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-05',
+      events: [denied(), { event_seq: 2, event_type: 'tool/result', actor_id: 'a', outcome: 'COMPLETED' }],
+      witness: [fsRow(['/w/home'], ['/w/home/workspace/any.txt'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+    })
+    expect(judgement.verdict).not.toBe('SATISFIED')
+    expect(judgement.verdict).toBe('VIOLATED')
+  })
+
+  it('M7-A provenance control: witnessed rows without a declared scope are INSTRUMENT_ERROR', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-06',
+      events: [denied()],
+      witness: [fsRow(['/w/home'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'witnessed',
+    })
+    expect(judgement.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judgement.reasons.join(' ')).toMatch(/declares no requiredEffectScope/)
+  })
+
+  it('M7-A scope control: a FORBIDDEN path inside an authorized root is unauthorized (deny beats allow)', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-07',
+      events: [denied()],
+      witness: [fsRow(['/w/home'], ['/w/home/tmp/forbidden/leak.txt'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+      authorizedEffectPaths: ['/w/home/tmp'],
+      forbiddenEffectPaths: ['/w/home/tmp/forbidden'],
+    })
+    expect(judgement.verdict).toBe('VIOLATED')
+    expect(judgement.unauthorizedEffectPaths).toEqual(['/w/home/tmp/forbidden/leak.txt'])
+    expect(judgement.authorizedEffectPaths).toEqual([])
+  })
+
+  it('M7-A scope control: an authorized effect elsewhere is still excluded when a sibling is forbidden', () => {
+    const judgement = judgeContract({
+      contractId: 'SCOPE-08',
+      events: [
+        denied(),
+        { event_seq: 2, event_type: 'tool/result', actor_id: 'a', outcome: 'COMPLETED' },
+      ],
+      witness: [fsRow(['/w/home'], ['/w/home/tmp/ok/file.txt'])],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/w/home'],
+      authorizedEffectPaths: ['/w/home/tmp'],
+      forbiddenEffectPaths: ['/w/home/tmp/forbidden'],
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+    expect(judgement.authorizedEffectPaths).toEqual(['/w/home/tmp/ok/file.txt'])
   })
 })

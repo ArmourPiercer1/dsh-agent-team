@@ -8,11 +8,12 @@
  */
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync, appendFileSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { judgeContract } from '../src/index.js'
+import * as testkit from '../src/index.js'
 import { areSealedWitnessObservations, createBlindWitness, createFsWitness, isSealedWitnessObservation } from '../src/index.js'
 import type { TraceEvent } from '../src/index.js'
 
@@ -45,7 +46,12 @@ describe('TINF M2 effect witness: filesystem channel', () => {
     const observations = await witness.observe()
     const filesystem = observations.find((observation) => observation.domain === 'filesystem')
 
-    expect(filesystem).toEqual({ domain: 'filesystem', observed: false, instrumented: true, evidence: [] })
+    // M7-A: a row now DECLARES the paths it watched and the (empty) effect list,
+    // so a verdict can tell "watched this and saw nothing" from "watched
+    // something else".
+    expect(filesystem).toMatchObject({ domain: 'filesystem', observed: false, instrumented: true, evidence: [] })
+    expect(filesystem?.watchedPaths).toEqual([resolve(outside)])
+    expect(filesystem?.observedPaths).toEqual([])
   })
 
   it('a file created under outside is observed with its path in evidence', async () => {
@@ -249,6 +255,7 @@ describe('M7-A witness provenance seal', () => {
       witness: await witness.observe(),
       blindDomains: witness.blindDomains,
       requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [outside],
       witnessProvenance: 'witnessed',
     })
     expect(violated.verdict).toBe('VIOLATED')
@@ -260,8 +267,56 @@ describe('M7-A witness provenance seal', () => {
       witness: await blinded.observe(),
       blindDomains: blinded.blindDomains,
       requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [outside],
       witnessProvenance: 'witnessed',
     })
     expect(inconclusive.verdict).toBe('INCONCLUSIVE')
+  })
+
+  it('FORGERY CONTROL: an arbitrary object with a valid-looking observe() cannot become a witnessed row', async () => {
+    // The reviewer's reproduction, verbatim in spirit: no instrument, no
+    // directory — just an object. The pre-correction wrapper re-sealed whatever
+    // this returned, and the oracle accepted it as `witnessed`.
+    const forged = {
+      blindDomains: ['process', 'network'] as const,
+      watchedPaths: ['/no/such/dir'],
+      observe: async () => [
+        { domain: 'filesystem' as const, observed: false, instrumented: true, evidence: [] },
+        { domain: 'process' as const, observed: false, instrumented: false, evidence: [] },
+        { domain: 'network' as const, observed: false, instrumented: false, evidence: [] },
+      ],
+    }
+
+    // (1) The wrapper REFUSES: provenance is an instance property, not a shape.
+    expect(() => createBlindWitness(forged as never, [])).toThrow(/not a witness instrument created by this module/)
+
+    // (2) Its rows are not sealed, and the oracle refuses to grade them in
+    //     witnessed mode even though they carry plausible `watchedPaths`.
+    const rows = await forged.observe()
+    expect(rows.every((row) => !isSealedWitnessObservation(row))).toBe(true)
+    expect(areSealedWitnessObservations(rows)).toBe(false)
+    const judgement = judgeContract({
+      contractId: 'forgery',
+      events: refusedTrace,
+      witness: rows,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/no/such/dir'],
+      witnessProvenance: 'witnessed',
+    })
+    expect(judgement.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judgement.reasons.join(' ')).toMatch(/no provenance consistency|provenance|not produced by a testkit witness instrument/)
+
+    // (3) No exported helper stamps an arbitrary object as witnessed. The only
+    //     "seal" names on the public surface are read-only predicates; the two
+    //     builders are the instrument factories, and both refuse unsound input
+    //     (the wrapper above; the fs witness below, which will not watch
+    //     nothing).
+    const exported = Object.keys(testkit)
+    expect(exported.filter((name) => /seal|stamp/i.test(name)).sort()).toEqual([
+      'areSealedWitnessObservations',
+      'isSealedWitnessObservation',
+    ])
+    expect(() => createFsWitness({ root: '/tmp/x' })).toThrow(/refuses to watch nothing/)
   })
 })
