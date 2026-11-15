@@ -100,7 +100,9 @@ const res = (task_id, over = {}) => ({
   task_id,
   ...taskIdentityOf(task_id),
   state: 'PASS',
-  evidence: `artifacts/census/${task_id}.json`,
+  // A pointer the CLI can OPEN (see verifyEvidenceRefs): the CLI and the census leg resolve evidence
+  // against the shard's own directory, so the fixture writes that file beside the shards.
+  evidence: 'evidence.json',
   duration_ms: 1000,
   oracles: [{ id: 'ORACLE-CENSUS', state: 'PASS' }],
   ...over,
@@ -482,6 +484,9 @@ function writePlan(planObject) {
 function writeShard(dir, name, shard) {
   const file = join(dir, name)
   writeFileSync(file, shard.text)
+  // The evidence root: `verifyEvidenceRefs` (which the CLI runs before grading) resolves every
+  // result's reference against THIS directory, so the fixture must put the named file here.
+  writeFileSync(join(dir, 'evidence.json'), '{}\n')
   return file
 }
 

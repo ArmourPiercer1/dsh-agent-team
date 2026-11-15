@@ -113,6 +113,31 @@ import { createTimer, rowsFromVitestReport } from './tinf-timing.mjs'
 // a census task, and widening it would change transcripts nothing asked to change.
 import { censusVitestArgv } from './census-invocation.mjs'
 
+// TINF M5 — the CUTOVER. `--census-execution plan` replaces the census leg's INTERNAL execution with
+// plan → execute tasks → aggregate → the SAME `DSH-CI-VERDICT` token. The M4 tools are consumed, not
+// re-implemented: the plan is `census-plan.mjs`, the verdict is `census-aggregate.mjs`, the task
+// results/shards are `census-execution.mjs`, and the build identity is `census-build-stamp.mjs`
+// (M5's one new producer — a real plan and real shards could not PASS without it, by M4's own
+// disclosure). Required contexts, job names, the capture count, the pinned host and the census
+// population are unchanged; `legacy` stays the default in this PR, so merging it changes NOTHING
+// until `census-runtime.yml` passes `--census-execution plan`, and rolling back is that same line.
+import { buildPlan, deriveRoots, gitTreeSha, hostSha, verifyPlan } from './census-plan.mjs'
+import { resolveBuildStamp } from './census-build-stamp.mjs'
+import {
+  aggregateArtifacts,
+  buildShardArtifacts,
+  digestFile,
+  readReplay,
+  readReport,
+  renderPlanTokens,
+  resolveDryRunCapture,
+  resultsFromReplay,
+  resultsFromReport,
+  stampedReportPath,
+  writeEvidenceArtifact,
+  writeShardArtifacts,
+} from './census-execution.mjs'
+
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 /** The only three reference documents this gate reads. Named here so a retarget is a diff. */
@@ -1401,7 +1426,326 @@ export function checkKitHomeGuard(files) {
   return violations
 }
 
-const LEGS = {
+// ──────────────────────────────────────── TINF M5: the PLAN-DRIVEN census execution ──────────────
+
+/**
+ * The census leg's plan mode: build the plan from the collection authority, verify it, produce the
+ * real build identity, execute every planned task (one capture at a time), write per-task results
+ * with identity + evidence, aggregate, and emit the SAME `DSH-CI-LEG` / `DSH-CI-VERDICT` channel the
+ * transcript re-grade step parses.
+ *
+ * WHAT IT DOES NOT DO, ON PURPOSE.
+ *   - It does not spawn one vitest process per task: the census invocation has no file filter, so a
+ *     per-task spawn would run the WHOLE population 22 times. One invocation per capture is what the
+ *     legacy path did; the plan decides the TASK SET which is graded from those invocations.
+ *   - It does not fall back to legacy. Every refusal is a RED census whose detail starts with the
+ *     named code, because a silent fallback makes "the plan ran" unmeasurable — the exact failure
+ *     this milestone exists to remove.
+ *   - It does not grade a suite: the M4 aggregator does, and this function only reports its verdict.
+ *
+ * `ctx` dependencies (all produced by main()): censusCaptures, censusShards, censusDryRun,
+ * censusBuildStamp, censusTestTimeout, timing, capture, transcriptDir, stamp.
+ */
+export function censusPlanLeg(ctx) {
+  // `repoRoot` is an injection point for the host-free tests (a tmp tree that must REFUSE);
+  // production never passes it, so the census always grades the checkout it lives in.
+  const root = ctx.repoRoot ?? REPO_ROOT
+  const dryRun = ctx.censusDryRun ?? null
+  const shardCount = ctx.censusShards ?? 1
+  const workDir = ctx.transcriptDir ?? resolve(root, CENSUS_CAPTURE_REL)
+  // Where the shards + evidence artifacts go. They live BESIDE THE TRANSCRIPT when one is given
+  // (`--transcript-dir`, which CI always passes), so the evidence chain travels with the uploaded
+  // transcript and the checkout stays untouched; only a run with no transcript dir falls back to the
+  // gitignored artifact directory. `ctx.shardDir` is a test seam (never set in production).
+  const shardDir =
+    ctx.shardDir ?? (ctx.transcriptDir ? resolve(ctx.transcriptDir, 'plan') : resolve(root, CENSUS_CAPTURE_REL, 'plan'))
+  let plan = null
+  let buildDigest = null
+  const captureLines = []
+
+  const refusePlan = (code, detail) => {
+    const flat = String(detail).replace(/\s+/g, ' ').trim()
+    process.stdout.write(`DSH-CENSUS-REFUSED code=${code} detail=${flat.slice(0, 400)}\n`)
+    process.stdout.write(
+      `DSH-CENSUS-SUMMARY verdict=REFUSED codes=${code} expected=${String(plan?.tasks?.length ?? 0)} observed=0` +
+        `${plan === null ? '' : ` plan=${String(plan.identity.plan_digest)}`}\n`,
+    )
+    return { verdict: 'fail', detail: `REFUSED ${code}: ${flat}` }
+  }
+
+  // 1. The plan, derived from the collection authority. No hardcoded roots, no captured count.
+  const built = ctx.timing.time('census-plan', 'repo', () => {
+    const roots = deriveRoots({ cwd: root })
+    if (!roots.ok) return { ok: false, code: roots.code, detail: roots.detail }
+    // The identity is the CHECKOUT's tree, always. `EB3_MERGE_TREE` (when a caller exports it) is a
+    // claim about which tree this run is supposed to be grading; it is compared against the real
+    // tree, never substituted for it. The first draft used it as the identity AND as the comparison
+    // value, so `PLAN_MERGE_TREE_MISMATCH` could never fire — a guard that could not fail.
+    const mergeTree = gitTreeSha(root)
+    const claimedTree = process.env.EB3_MERGE_TREE ?? null
+    return { ok: true, roots, mergeTree, claimedTree }
+  })
+  if (!built.ok) return refusePlan(built.code, built.detail)
+  if (built.claimedTree !== null && built.claimedTree !== built.mergeTree) {
+    return refusePlan(
+      'PLAN_MERGE_TREE_MISMATCH',
+      `EB3_MERGE_TREE claims ${built.claimedTree} but this checkout's tree is ${built.mergeTree} — grading one tree under another tree's name is the mixed-tree failure TINF-13 names`,
+    )
+  }
+
+  // 2. The build identity. A real digest of real bytes, or a named refusal — never a placeholder.
+  const explicitStamp = ctx.censusBuildStamp ?? null
+  const stampOut = join(workDir, 'product-build.json')
+  mkdirSync(workDir, { recursive: true })
+  const stamp = resolveBuildStamp({
+    cwd: root,
+    merge_tree: built.mergeTree,
+    catalog_digest: built.roots.catalog_digest,
+    stampPath: explicitStamp,
+    outPath: explicitStamp === null ? stampOut : null,
+  })
+  if (!stamp.ok) return refusePlan(stamp.code, stamp.detail)
+  buildDigest = stamp.stamp.digest
+  process.stdout.write(
+    `DSH-CENSUS-BUILD digest=${buildDigest} mode=${stamp.mode} files=${String(stamp.stamp.artifact_count)} ` +
+      `bytes=${String(stamp.stamp.artifact_bytes)} built_at=${stamp.stamp.built_at} ` +
+      `merge_tree=${stamp.stamp.merge_tree}${stamp.path === null ? '' : ` path=${stamp.path}`}\n`,
+  )
+
+  // 3. The plan, now carrying the build identity, and verified against a FRESH derivation.
+  try {
+    plan = buildPlan({
+      roots: built.roots.roots,
+      captures: ctx.censusCaptures,
+      identity: {
+        merge_tree_sha: built.mergeTree,
+        host_sha: hostSha(),
+        catalog_digest: built.roots.catalog_digest,
+        build_digest: buildDigest,
+      },
+      testTimeout: ctx.censusTestTimeout,
+      timings: null,
+      rootsDropped: built.roots.roots_dropped ?? [],
+    })
+  } catch (e) {
+    return refusePlan(e.code ?? 'PLAN_BUILD_FAILED', String(e && e.message ? e.message : e))
+  }
+  // The second, INDEPENDENT comparison: the claim against the plan's RECORDED identity. A plan whose
+  // identity block was tampered with (or built from a different tree) fails here even if step 1
+  // passed, because this reads the plan object rather than the checkout.
+  if (built.claimedTree !== null && plan.identity.merge_tree_sha !== built.claimedTree) {
+    return refusePlan(
+      'PLAN_MERGE_TREE_MISMATCH',
+      `the plan records merge_tree=${String(plan.identity.merge_tree_sha)} but EB3_MERGE_TREE claims ${built.claimedTree}`,
+    )
+  }
+  const verified = ctx.timing.time('census-plan-verify', 'repo', () => verifyPlan(plan, { cwd: root }))
+  if (!verified.ok) {
+    return refusePlan(
+      verified.codes[0] ?? 'PLAN_VERIFY_FAILED',
+      `${verified.codes.join(',')}: ${verified.detail.join(' ;; ')}`,
+    )
+  }
+  process.stdout.write(
+    `DSH-CENSUS-PLAN verify=ok tasks=${String(plan.tasks.length)} roots=${String(plan.roots.length)} ` +
+      `captures=${String(plan.captures)} plan=${String(plan.identity.plan_digest)} ` +
+      `catalog=${String(plan.identity.catalog_digest)} build=${String(buildDigest)} ` +
+      `merge_tree=${String(plan.identity.merge_tree_sha)} host=${String(plan.identity.host_sha)} ` +
+      `est_unknown=${String(plan.timings.unknown_roots.length)}\n`,
+  )
+  mkdirSync(shardDir, { recursive: true })
+
+  // 4. Execute every planned task, one capture at a time. Root-level parallelism lives INSIDE the
+  //    vitest process (M4 measured it); no per-root process sharding is invented here.
+  const results = []
+  for (let capture = 1; capture <= plan.captures; capture += 1) {
+    const tasks = plan.tasks.filter((t) => t.capture === capture)
+    if (tasks.length === 0) {
+      // A plan with a capture that owns no task is not a plan this leg can execute; the aggregator
+      // would refuse it later, but refusing BEFORE a spawn is the cheaper, clearer failure.
+      return refusePlan('PLAN_CAPTURE_UNKNOWN', `capture ${String(capture)} owns no planned task`)
+    }
+    let derived
+    let reportRef = `recorded:${String(capture)}`
+    // The bytes this capture's evidence artifact digests: the report the runner wrote (live) or the
+    // recording that was replayed (dry run).
+    let sourcePath = null
+    if (dryRun !== null) {
+      // OFFLINE DRY RUN: replay recorded bytes through the SAME derivation and the SAME aggregator.
+      const resolved = resolveDryRunCapture(dryRun, capture)
+      if (!resolved.ok) return refusePlan(resolved.code, resolved.detail)
+      if (resolved.kind === 'replay') {
+        const recording = readReplay(resolved.file)
+        if (!recording.ok) return refusePlan(recording.code, recording.detail)
+        derived = resultsFromReplay({ plan, capture, replay: recording.json, replayRef: resolved.file })
+        sourcePath = resolved.file
+      } else {
+        const recording = readReport(resolved.file)
+        if (!recording.ok) return refusePlan(recording.code, recording.detail)
+        derived = resultsFromReport({ plan, capture, report: recording.json, reportRef: resolved.file })
+        sourcePath = resolved.file
+      }
+    } else {
+      if (capture === 1) {
+        // The suite's own fault-injection scratch; stale state changes what the testkit lane sees.
+        rmSync(resolve(root, 'packages/testkit/test/.tmp-fault'), { recursive: true, force: true })
+      }
+      // The command is the PLAN's command: `censusVitestArgv` is the same function the legacy leg
+      // calls, so the first task of a capture carries exactly the invocation the census executes.
+      // ONE field is rewritten — the JSON report path. The plan's path is deterministic
+      // (`taskReportPath`), so a vitest crash before writing would leave the PREVIOUS run's report at
+      // the graded path; the run-stamped path (plus the unlink below) makes "no report" a named
+      // refusal instead of a stale PASS. Everything that decides WHAT runs comes from the plan.
+      const jsonArg = tasks[0].runner.argv.find((a) => a.startsWith('--outputFile.json='))
+      if (jsonArg === undefined) {
+        return refusePlan('PLAN_RUNNER_NO_REPORT', `${tasks[0].task_id}: the plan's runner argv carries no --outputFile.json`)
+      }
+      const jsonPath = stampedReportPath({ stamp: ctx.stamp, pid: process.pid, capture })
+      const argv = tasks[0].runner.argv.map((a) => (a.startsWith('--outputFile.json=') ? `--outputFile.json=${jsonPath}` : a))
+      reportRef = jsonPath
+      mkdirSync(resolve(root, dirname(jsonPath)), { recursive: true })
+      rmSync(resolve(root, jsonPath), { force: true })
+      // `ctx.runCommand` is a seam for the host-free tests (they inject a runner that writes a
+      // report); production never sets it, so the census always spawns the real command.
+      const spawn = ctx.runCommand ?? runCommand
+      // `nine-roots` is the documented label for a capture row (tinf-timing.mjs header): the
+      // invocation covers the whole population, which is exactly what the plan's task set grades.
+      const run = ctx.timing.time('census-capture', 'nine-roots', () => spawn('pnpm', argv), { attempt: capture })
+      ctx.capture(`census-capture-${String(capture)}`, run)
+      if (run.error !== null) return refusePlan('CENSUS_SPAWN_FAILED', `vitest could not be spawned: ${run.error}`)
+      const reportAbs = resolve(root, jsonPath)
+      if (!existsSync(reportAbs)) {
+        return refusePlan(
+          'CENSUS_REPORT_MISSING',
+          `vitest exited ${String(run.code)} and wrote no JSON report to ${jsonPath}; a census with no report cannot be graded: ${tail(run.stdout + run.stderr, 10)}`,
+        )
+      }
+      let report
+      try {
+        report = JSON.parse(readFileSync(reportAbs, 'utf8'))
+      } catch (e) {
+        return refusePlan('CENSUS_REPORT_UNREADABLE', `${jsonPath}: ${String(e && e.message ? e.message : e)}`)
+      }
+      // The SAME M3 census-root rows the legacy path records, so the first plan-mode run is
+      // comparable with every published per-root window.
+      try {
+        for (const r of rowsFromVitestReport(report, { attempt: capture })) {
+          ctx.timing.record({ phase: 'census-root', root: r.root, attempt: capture, startedAt: r.startedAt, durationMs: r.durationMs, status: r.status })
+        }
+      } catch (e) {
+        ctx.timing.warn(`CENSUS_ROOT_DERIVATION_FAILED capture=${String(capture)}: ${String(e && e.message ? e.message : e)}`)
+      }
+      derived = resultsFromReport({ plan, capture, report, reportRef: jsonPath })
+      sourcePath = resolve(root, jsonPath)
+    }
+    if (!derived.ok) return refusePlan(derived.code, derived.detail)
+    // EVIDENCE ARTIFACT: written next to the shards, and every result is re-anchored to it, so the
+    // aggregator can OPEN what it grades (see verifyEvidenceRefs). The source report/recording is
+    // named and digested inside the artifact, so the chain report → artifact → shard is walkable.
+    let anchored
+    try {
+      anchored = writeEvidenceArtifact(shardDir, {
+        capture,
+        source: reportRef,
+        sourceDigest: sourcePath === null ? null : digestFile(sourcePath),
+        results: derived.results,
+      })
+    } catch (e) {
+      return refusePlan('CENSUS_EVIDENCE_UNWRITABLE', `${shardDir}: ${String(e && e.message ? e.message : e)}`)
+    }
+    derived = { ok: true, results: anchored.results }
+    // Record the runner's own derivation so a cheap leg can replay it without a host. The recording
+    // is an OUTPUT of the path under test, not a hand-written fixture. `merge_tree` is recorded so a
+    // replay can prove it is this tree's census (DRYRUN_IDENTITY_MISMATCH otherwise).
+    const recording = {
+      schema: 'census-replay/1',
+      plan_digest: plan.identity.plan_digest,
+      merge_tree: plan.identity.merge_tree_sha,
+      capture,
+      identity: { ...plan.identity },
+      results: derived.results,
+    }
+    try {
+      writeFileSync(join(workDir, `census-replay-${String(capture)}.json`), `${JSON.stringify(recording, null, 2)}\n`)
+    } catch (e) {
+      ctx.timing.warn(`CENSUS_RECORDING_UNWRITABLE capture=${String(capture)}: ${String(e && e.message ? e.message : e)}`)
+    }
+    results.push(...derived.results)
+    const byState = (state) => derived.results.filter((r) => r.state === state).length
+    // `skipped` is printed because "0 failed" and "0 ran" must not read the same: a conditional skip
+    // is NOT a failure (legacy semantics, see census-execution.mjs), but it is also not a test that
+    // proved anything, so the count travels with the verdict.
+    const skippedTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0)
+    const assertionsTotal = derived.results.reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0)
+    const line =
+      `DSH-CENSUS-CAPTURE capture=${String(capture)} mode=${dryRun === null ? 'live' : 'dry-run'} ` +
+      `order=capture-major tasks=${String(tasks.length)} passed=${String(byState('PASS'))} ` +
+      `failed=${String(byState('FAIL'))} incomplete=${String(byState('INCOMPLETE'))} ` +
+      `assertions=${String(assertionsTotal)} skipped=${String(skippedTotal)} ` +
+      `evidence=${anchored.name} report=${reportRef}`
+    captureLines.push(line)
+    process.stdout.write(`${line}\n`)
+  }
+
+  // 5. Shards (an artifact LAYOUT, see census-execution.mjs) and the M4 aggregate verdict.
+  const artifactSet = buildShardArtifacts({
+    plan,
+    results,
+    shards: shardCount,
+    execution: {
+      mode: dryRun === null ? 'live' : 'dry-run',
+      order: 'capture-major',
+      invocations: plan.captures,
+      shared_invocation: true,
+      note: 'one vitest invocation per capture (the census argv has no file filter); one terminal result per planned (root, capture) task. No independent Worlds, no extra processes.',
+    },
+  })
+  if (!artifactSet.ok) return refusePlan(artifactSet.code, artifactSet.detail)
+  let shardFiles
+  try {
+    shardFiles = writeShardArtifacts(shardDir, artifactSet.artifacts)
+  } catch (e) {
+    return refusePlan('CENSUS_SHARD_UNWRITABLE', `${shardDir}: ${String(e && e.message ? e.message : e)}`)
+  }
+  const aggregated = ctx.timing.time('census-aggregate', 'repo', () => aggregateArtifacts({ plan, files: shardFiles }))
+  if (aggregated.refused) {
+    const lines = renderPlanTokens({
+      plan,
+      buildDigest,
+      captureLines,
+      shardCount,
+      shardLayout: 'contiguous-artifact',
+      refusal: { code: aggregated.codes.join(','), detail: aggregated.detail.join(' ;; ') },
+    })
+    process.stdout.write(`${lines.join('\n')}\n`)
+    return { verdict: 'fail', detail: `REFUSED ${aggregated.codes.join(',')}: ${aggregated.detail.join(' ;; ')}` }
+  }
+  const lines = renderPlanTokens({
+    plan,
+    buildDigest,
+    captureLines,
+    shardCount: shardFiles.length,
+    shardLayout: 'contiguous-artifact',
+    summary: aggregated.summary,
+    verdict: aggregated.summary.census_verdict,
+  })
+  // The per-capture lines were already printed live; print the rest (plan/summary are cheap and
+  // duplicating the capture lines here would double-count them for a reader).
+  process.stdout.write(`${lines.filter((l) => !l.startsWith('DSH-CENSUS-CAPTURE')).join('\n')}\n`)
+  const counts = aggregated.summary.counts
+  return {
+    verdict: aggregated.ok ? 'pass' : 'fail',
+    detail:
+      `plan-mode census — tasks=${String(plan.tasks.length)} roots=${String(plan.roots.length)} ` +
+      `captures=${String(plan.captures)} plan=${String(plan.identity.plan_digest)} build=${String(buildDigest)} ` +
+      `shards=${String(shardFiles.length)} aggregate=${String(aggregated.summary.census_verdict)} ` +
+      `expected=${String(counts.expected)} observed=${String(counts.observed)} ` +
+      `codes=${aggregated.summary.codes.length === 0 ? 'none' : aggregated.summary.codes.join(',')}` +
+      `${aggregated.summary.detail.length === 0 ? '' : ` — ${aggregated.summary.detail.join(' ;; ')}`}`,
+  }
+}
+
+export const LEGS = {
   // Takes no ctx: this leg runs one parser over one file, and writing `ctx` to satisfy the
   // harness signature would imply it uses the run context when it does not.
   'graph-parse'() {
@@ -1621,6 +1965,11 @@ const LEGS = {
   },
 
   census(ctx) {
+    // TINF M5 — the execution-mode switch. `legacy` (the default in this PR) is the shipped body
+    // below, byte for byte; `plan` is the cutover above. A plan/aggregate refusal inside plan mode
+    // returns `fail` with the code in its detail and NEVER re-enters the legacy body: a silent
+    // fallback would make "the plan ran" unmeasurable, which is the failure this milestone removes.
+    if (ctx.censusExecution === 'plan') return censusPlanLeg(ctx)
     // PREFLIGHT. The reason this exists is measured, not assumed: on a runner without the
     // gitignored pristine host checkout the census produced 57 failures wearing the product's
     // name — 38 file-level, whose error text is literally `no repo root with
@@ -1837,6 +2186,14 @@ function parseArgs(argv) {
     // never the identity set it reports, and the value in force is printed on the census leg line
     // so a pass reads as "passed under a 20 s budget" instead of "passed".
     censusTestTimeout: null,
+    // TINF M5 — the census EXECUTION MODE. `legacy` is the default in this PR so merging this
+    // change moves nothing; `plan` is the cutover (plan → execute → aggregate → same token). The
+    // three knobs below are plan-mode only and are REFUSED with `legacy` rather than silently
+    // ignored: a flag that does nothing is a claim the operator cannot check.
+    censusExecution: 'legacy',
+    censusShards: 1,
+    censusDryRun: null,
+    censusBuildStamp: null,
     resample: 3,
     // Legs whose `refused` verdict this invocation accepts. Declaring a refusal in the command
     // line is the whole design: the exemption is reviewable in the diff of the workflow, not
@@ -1858,6 +2215,10 @@ function parseArgs(argv) {
     else if (a === '--census-captures') opts.censusCaptures = Number(argv[(i += 1)])
     else if (a === '--census-json') opts.censusJson = argv[(i += 1)]
     else if (a === '--census-test-timeout') opts.censusTestTimeout = Number(argv[(i += 1)])
+    else if (a === '--census-execution') opts.censusExecution = String(argv[(i += 1)])
+    else if (a === '--census-shards') opts.censusShards = Number(argv[(i += 1)])
+    else if (a === '--census-dry-run') opts.censusDryRun = argv[(i += 1)]
+    else if (a === '--census-build-stamp') opts.censusBuildStamp = argv[(i += 1)]
     else if (a === '--resample') opts.resample = Number(argv[(i += 1)])
     else if (a === '--allow-refused') opts.allowRefused.push(...String(argv[(i += 1)]).split(',').map((x) => x.trim()).filter(Boolean))
     else if (a === '--only') {
@@ -1885,6 +2246,30 @@ function parseArgs(argv) {
     throw new Error(`--census-test-timeout wants a whole number of ms >= 1000, got ${String(opts.censusTestTimeout)}`)
   }
   if (!Number.isInteger(opts.censusCaptures) || opts.censusCaptures < 1) throw new Error('--census-captures must be a positive integer')
+  if (opts.censusExecution !== 'legacy' && opts.censusExecution !== 'plan') {
+    throw new Error(`--census-execution must be legacy or plan, got ${String(opts.censusExecution)}`)
+  }
+  if (!Number.isInteger(opts.censusShards) || opts.censusShards < 1) throw new Error('--census-shards must be a positive integer')
+  // The plan-only knobs are REFUSED with legacy, not ignored: an operator who passed them and got
+  // the legacy path would believe a plan ran when none did.
+  if (opts.censusExecution === 'legacy') {
+    const planOnly = []
+    if (opts.censusShards !== 1) planOnly.push('--census-shards')
+    if (opts.censusDryRun !== null) planOnly.push('--census-dry-run')
+    if (opts.censusBuildStamp !== null) planOnly.push('--census-build-stamp')
+    if (planOnly.length > 0) {
+      throw new Error(`${planOnly.join(', ')} only affect the plan path; pass --census-execution plan`)
+    }
+  }
+  if (opts.censusDryRun !== null && opts.censusExecution !== 'plan') {
+    throw new Error('--census-dry-run implies --census-execution plan')
+  }
+  if (opts.censusDryRun !== null && opts.censusJson !== null) {
+    throw new Error('--census-dry-run replays recorded captures; it cannot be combined with --census-json')
+  }
+  if (opts.censusExecution === 'plan' && opts.censusJson !== null) {
+    throw new Error('--census-json is the legacy re-grade path; plan mode builds and grades a current plan')
+  }
   if (!Number.isInteger(opts.resample) || opts.resample < 3) throw new Error('--resample must be an integer ≥3 (the published baseline rule)')
   const unknown = [...(opts.only ?? []), ...opts.skip].filter((n) => !LEG_ORDER.includes(n))
   if (unknown.length > 0) throw new Error(`unknown leg name(s): ${unknown.join(', ')} (known: ${LEG_ORDER.join(', ')})`)
@@ -1944,6 +2329,20 @@ function main(argv) {
       "                        run the suite with --testTimeout=MS; the suite sets none, so the",
       '                        default is vitest\'s 5000 ms. The value in force is printed on the',
       '                        census leg line: a pass states the clock it passed under.',
+      '  --census-execution legacy|plan',
+      '                        how the census leg executes: `legacy` (default) is the shipped body;',
+      '                        `plan` builds the M4 plan, verifies it, runs every planned task,',
+      '                        aggregates, and prints the SAME DSH-CI-VERDICT token. A plan or',
+      '                        aggregate refusal is a RED census with a named code — never a',
+      '                        fallback to legacy.',
+      '  --census-shards N     (plan only) split the results into N census-shard artifacts — an',
+      '                        ARTIFACT LAYOUT, not independent Worlds/processes (default 1)',
+      '  --census-dry-run DIR  (plan only) replay recorded captures from DIR (census-replay-N.json',
+      '                        written by a live plan run, or census-capture-N.json vitest reports)',
+      '                        without a host: the whole plan→results→aggregate path, offline',
+      '  --census-build-stamp F',
+      '                        (plan only) use/verify a recorded build stamp instead of computing',
+      '                        one from the real install surfaces; an absent file is a RED census',
       '  --resample N          load-family re-samples (>=3, the published baseline rule)',
       '  --only a,b,c          run a subset (RED controls, review re-runs)',
       '  --skip a,b            skip a leg, named on the token channel',
@@ -1978,7 +2377,11 @@ function main(argv) {
 
   const scratchDir = resolve(REPO_ROOT, CENSUS_SIDECAR_REL)
   mkdirSync(scratchDir, { recursive: true })
-  mkdirSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true })
+  // Only the LEGACY capture writes under CENSUS_CAPTURE_REL. The plan path writes beside its
+  // transcript (or, with no transcript dir, creates its own directory when it needs it), so it must
+  // not pre-create a checkout directory it never uses — that is exactly the cross-run coupling
+  // finding 1 was about.
+  if (opts.censusExecution !== 'plan') mkdirSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true })
   const transcriptDir = opts.transcriptDir === null ? null : resolve(process.cwd(), opts.transcriptDir)
   if (transcriptDir !== null) mkdirSync(transcriptDir, { recursive: true })
 
@@ -2010,6 +2413,14 @@ function main(argv) {
     censusCaptures: opts.censusCaptures,
     censusTestTimeout: opts.censusTestTimeout,
     censusJson: opts.censusJson,
+    // TINF M5: the execution mode and its plan-only knobs. `legacy` is the default, so every
+    // existing invocation (pr-gate.yml, census-runtime.yml before its one-line switch, --self-test)
+    // keeps executing the body it executed before this file changed.
+    censusExecution: opts.censusExecution,
+    censusShards: opts.censusShards,
+    censusDryRun: opts.censusDryRun,
+    censusBuildStamp: opts.censusBuildStamp,
+    transcriptDir,
     resample: opts.resample,
     scratchDir,
     capture(label, r) {

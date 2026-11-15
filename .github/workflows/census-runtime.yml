@@ -376,6 +376,7 @@ jobs:
           mkdir -p "$XDG_CACHE_HOME"
           node scripts/ci-pr-gate.mjs --full \
             --only census \
+            --census-execution plan \
             --census-captures 2 \
             --census-test-timeout 90000 \
             --store-dir "$DSH_CI_STORE_DIR" \
