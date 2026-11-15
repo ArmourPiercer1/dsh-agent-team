@@ -35,7 +35,13 @@
  *      is not a digest still refuses (DIGEST_INVALID) — equality of two non-digests proves nothing.
  *   4. MULTISET + TERMINAL STATE. expected task ids == observed task ids as a multiset; every planned
  *      task has a terminal state; no task outside the plan. Missing / extra / unterminated are
- *      INCOMPLETE, never green.
+ *      INCOMPLETE, never green. Every PASS result must also carry its own MEASUREMENT (P1-2):
+ *      non-negative integer `assertions` and `assertions_executed` (RESULT_EXECUTED_METADATA_MISSING /
+ *      RESULT_EXECUTED_METADATA_INVALID), `assertions_executed <= assertions` and
+ *      `assertions_executed + skipped === assertions` (RESULT_METADATA_INCONSISTENT), and a
+ *      `files_observed` equal to the plan root's file count (RESULT_FILES_OBSERVED_MISSING /
+ *      RESULT_FILES_OBSERVED_MISMATCH). There is NO inference from `skipped`: an absent count is
+ *      missing, not zero, and a malformed result never contributes to the summary totals.
  *   5. ORACLES. Every required oracle contract in the plan must appear on every PASS task with a
  *      decidable, passing state. Missing/undecidable/failed oracles are not green.
  *   6. VERDICT. Only if 1–5 all hold is the census_verdict PASS. Otherwise the verdict names the
@@ -52,6 +58,9 @@
  * REFUSAL CODES added by review round 1: DIGEST_INVALID, PLAN_IDENTITY_UNRECORDED,
  *   PLAN_DIGEST_UNRECORDED, RESULT_ROOT_MISMATCH, RESULT_CAPTURE_MISMATCH, RESULT_EVIDENCE_MISSING,
  *   PLAN_ROOTS_DROPPED_MALFORMED.
+ * GRADED CODES added by P1-2 (non-PASS, never a silent omission): RESULT_EXECUTED_METADATA_MISSING,
+ *   RESULT_EXECUTED_METADATA_INVALID, RESULT_METADATA_INCONSISTENT, RESULT_FILES_OBSERVED_MISSING,
+ *   RESULT_FILES_OBSERVED_MISMATCH.
  *
  * Exit: 0 PASS | 1 non-PASS | 2 REFUSED (a named refusal; nothing is graded).
  *
@@ -578,6 +587,8 @@ export function aggregate({ plan, shards }) {
   // ── rule 4: expected-vs-observed multiset, terminal state per task ────────────────────────────
   const verdicts = new Set()
   const observedTaskIds = []
+  const metadataInvalid = new Set()
+  const nonNegInt = (value) => Number.isInteger(value) && value >= 0
   for (const { file, json } of parsed) {
     if (json.status !== 'COMPLETED' && json.status !== 'REPLAY') {
       codes.push(`SHARD_STATUS_${json.status}`)
@@ -631,10 +642,64 @@ export function aggregate({ plan, shards }) {
         verdicts.add('INCOMPLETE')
         detail.push(`${file}: task ${result.task_id} reports assertions=0 — a collected root with no assertion is not a measurement`)
       }
-      const executed = Number.isFinite(result.assertions_executed)
-        ? result.assertions_executed
-        : Number.isFinite(result.skipped) && Number.isFinite(result.assertions) && result.skipped === result.assertions ? 0 : null
-      if (executed === 0 && Number.isFinite(result.assertions) && result.assertions > 0) {
+      // P1-2: execution-count metadata is REQUIRED, not optional. The old code inferred
+      // `assertions_executed` from `skipped === assertions` (or from `assertions`) and only refused a
+      // resolved 0, so a hand-made `{state: PASS, assertions: 10, skipped: 0}` with no
+      // assertions_executed PASSed and its 10 assertions were counted as executed. Every result that
+      // would make the census PASS must carry the measurement itself.
+      const plannedPass = result.state === PASS && planTaskById.has(result.task_id)
+      if (plannedPass) {
+        for (const field of ['assertions', 'assertions_executed']) {
+          if (result[field] === undefined || result[field] === null) {
+            codes.push('RESULT_EXECUTED_METADATA_MISSING')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} is PASS but carries no ${field} — a result that cannot say how many assertions ran is not a measurement`)
+          } else if (!nonNegInt(result[field])) {
+            codes.push('RESULT_EXECUTED_METADATA_INVALID')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} ${field}=${JSON.stringify(result[field])} is not a non-negative integer`)
+          }
+        }
+        if (nonNegInt(result.assertions) && nonNegInt(result.assertions_executed)) {
+          if (result.assertions_executed > result.assertions) {
+            codes.push('RESULT_METADATA_INCONSISTENT')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} reports assertions_executed=${String(result.assertions_executed)} > assertions=${String(result.assertions)}`)
+          } else if (!nonNegInt(result.skipped)) {
+            codes.push('RESULT_METADATA_INCONSISTENT')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} carries no non-negative skipped count, so assertions_executed + skipped = assertions cannot be checked`)
+          } else if (result.assertions_executed + result.skipped !== result.assertions) {
+            codes.push('RESULT_METADATA_INCONSISTENT')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} reports assertions_executed=${String(result.assertions_executed)} + skipped=${String(result.skipped)} ≠ assertions=${String(result.assertions)}`)
+          }
+        }
+        // Every PASS row must also state the population it observed, and it must be THIS root's
+        // planned file count — otherwise the per-result split can be right while a root's slice is not.
+        const rootPlan = planRoots.find((r) => r.root === result.root)
+        if (rootPlan !== undefined) {
+          if (result.files_observed === undefined || result.files_observed === null) {
+            codes.push('RESULT_FILES_OBSERVED_MISSING')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} is PASS but carries no files_observed — the observed population is required`)
+          } else if (!nonNegInt(result.files_observed) || result.files_observed !== rootPlan.files_expected.length) {
+            codes.push('RESULT_FILES_OBSERVED_MISMATCH')
+            verdicts.add('INCOMPLETE')
+            metadataInvalid.add(result.task_id)
+            detail.push(`${file}: task ${result.task_id} reports files_observed=${JSON.stringify(result.files_observed)} but plan root ${rootPlan.root} expects ${String(rootPlan.files_expected.length)} file(s)`)
+          }
+        }
+      }
+      // Zero executed assertions is still a named non-PASS, but only from a VALID count: the old
+      // inference that turned "all skipped" into 0 is gone, so no fabricated 0 fires this.
+      if (nonNegInt(result.assertions_executed) && result.assertions_executed === 0 && nonNegInt(result.assertions) && result.assertions > 0) {
         codes.push('RESULT_NO_EXECUTED_ASSERTIONS')
         verdicts.add('INCOMPLETE')
         detail.push(`${file}: task ${result.task_id} reports assertions=${String(result.assertions)} but assertions_executed=0 — every assertion was skipped/pending/todo, so nothing was measured`)
@@ -787,14 +852,12 @@ export function aggregate({ plan, shards }) {
       missing: missing.length,
       extra: extra.length,
       by_state: Object.fromEntries(TASK_STATES.map((s) => [s, parsed.flatMap((p) => p.json.results).filter((r) => r.state === s).length])),
-      assertions_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0),
-      assertions_executed_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => {
-        if (Number.isFinite(r.assertions_executed)) return n + r.assertions_executed
-        // Legacy replay recording without the field: all-skipped is still visible from skipped===assertions.
-        if (Number.isFinite(r.skipped) && Number.isFinite(r.assertions) && r.skipped === r.assertions) return n
-        return n + (Number.isFinite(r.assertions) ? r.assertions : 0)
-      }, 0),
-      skipped_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0),
+      // P1-2: totals are sums over the REQUIRED fields only. No inferred fallback, and a malformed
+      // value contributes nothing (it is counted in metadata_invalid instead of being silently zero).
+      assertions_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (nonNegInt(r.assertions) ? r.assertions : 0), 0),
+      assertions_executed_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (nonNegInt(r.assertions_executed) ? r.assertions_executed : 0), 0),
+      skipped_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (nonNegInt(r.skipped) ? r.skipped : 0), 0),
+      metadata_invalid: metadataInvalid.size,
     },
     oracles: {
       required: requiredOracles,
@@ -973,6 +1036,11 @@ export function selfTest() {
       file_digest: root?.file_digest,
       files_expected: root?.files_expected.length,
       files_observed: root?.files_expected.length,
+      // P1-2: a PASS result must carry its own measurement. The fixture is complete on purpose, so a
+      // green self-test cannot be green because the metadata rule skipped an absent field.
+      assertions: 3,
+      assertions_executed: 3,
+      skipped: 0,
       evidence: `artifacts/${task_id}.json`,
       oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
       ...over,
@@ -1012,6 +1080,19 @@ export function selfTest() {
     JSON.stringify(pass.summary.scope))
   ok('positive: shard artifact digests are recorded', pass.summary.shards.every((x) => /^sha256:[0-9a-f]{64}$/.test(x.artifact_digest)), 'digest')
   ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY mode=live PASS/.test(render(pass)), render(pass).split('\n').pop())
+
+  // P1-2: the reviewer's hand-made result — state PASS, assertions 10, skipped 0, NO
+  // assertions_executed — must not PASS, and its 10 assertions must not be counted as executed.
+  const noExecuted = all.slice(2).map((task_id) => {
+    const row = res(task_id)
+    delete row.assertions_executed
+    return row
+  })
+  const handMade = aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { results: noExecuted })] })
+  ok('a PASS result without assertions_executed is not PASS (RESULT_EXECUTED_METADATA_MISSING)',
+    handMade.verdict !== PASS && handMade.codes.includes('RESULT_EXECUTED_METADATA_MISSING') &&
+    handMade.summary.counts.metadata_invalid === noExecuted.length,
+    JSON.stringify(handMade.codes))
 
   const omitted = aggregate({ plan, shards: [s1] })
   ok('an omitted shard is INCOMPLETE / TASK_MISSING with the exact delta',
