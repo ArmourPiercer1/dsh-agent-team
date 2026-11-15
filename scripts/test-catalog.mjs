@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 /**
- * test-catalog.mjs — M1 (shadow) Test Catalog.
+ * test-catalog.mjs — Test Catalog (M1 discovery; M6 dispatch authority).
  *
  * WHAT IT IS
- *   A read-only census of every test the repository actually owns, with a
- *   digest, a critical-contract binding check, and a two-way diff against the
- *   file lists the CI workflows still hand-maintain.
+ *   A census of every test the repository actually owns, with a digest, a
+ *   critical-contract binding check, a two-way diff against what CI declares,
+ *   and — since M6 — the ONE definition of "this file is a node:test suite"
+ *   (`isNodeSuitePath`) that `scripts/dispatch-tests.mjs` resolves a CI leg
+ *   against. A leg's population is declared once in `dev/ci/eb3-ci-manifest.json`
+ *   (`suites[]` for an explicit subset, `areas[]` for a whole directory); the
+ *   workflow names only the leg, so the twin file list the old legs needed is
+ *   gone.
  *
  * WHAT IT IS NOT
- *   It is NOT authority. The workflows and `dev/ci/eb3-ci-manifest.json` stay
- *   the source of truth until M5. This tool must not be consulted by a gate to
- *   decide what runs; it exists to make the hand-lists' drift visible, and to
- *   refuse when discovery and the lists disagree in a way nobody has written
- *   down. Two authorities would be worse than one.
+ *   It is not the declaration of WHICH suites a leg runs: that is the manifest
+ *   leg, and the dispatcher refuses to run anything the catalog cannot classify
+ *   as a collected node:test suite. Discovery is the authority for "is a test",
+ *   the manifest leg for "is in this leg", and CI driver for "is collected".
+ *   Two copies of a file list would be worse than one, which is why the workflow
+ *   copy was deleted.
  *
  * DISCOVERY (no hand-written list)
  *   - vitest: `*.test.ts` matched by ANY vitest config in the repo — the root
@@ -59,7 +65,12 @@ export const VITEST_CONFIG = 'vitest.config.ts'
 /** Evidence scratch recorders are not product tests; the reason still has to be written down. */
 export const EVIDENCE_PREFIX = 'dev/agent-workflow/evidence/'
 /** What counts as a test file name. Used for node:test discovery AND contract refs. */
-export const TEST_LIKE_RE = /\.(?:test|spec)\.(?:mjs|cjs|js|jsx|ts|tsx|mts|cts)$/
+// The predicates moved to `scripts/test-suite-paths.mjs` in M6 (a leaf, because the collection
+// audit cannot import this module: this module imports the audit). Re-exported here so every existing
+// importer keeps working and there is still exactly ONE definition.
+import { TEST_LIKE_RE, NODE_SUITE_RE, isTestLikePath, isNodeSuitePath } from './test-suite-paths.mjs'
+
+export { TEST_LIKE_RE, NODE_SUITE_RE, isTestLikePath, isNodeSuitePath }
 
 // ------------------------------------------------------------------ helpers
 
@@ -185,8 +196,8 @@ export function buildEntries(files, { vitestCfg, configs = null, registry, ciCol
       entries.push({ id: null, path: file, runner: 'none', kind: 'excluded', contract_ids: [], classification: 'EXCLUDED_WITH_REASON', reason: x.reason ?? '(none)' })
       continue
     }
-    const testLike = TEST_LIKE_RE.test(file)
-    const isNode = /\.(?:test|spec)\.(?:mjs|cjs|js)$/.test(file)
+    const testLike = isTestLikePath(file)
+    const isNode = isNodeSuitePath(file)
     const vitestHit = collectedByConfig(file) || explicitlyCollected.has(file)
     if (!testLike && !isNode) continue
 
@@ -371,7 +382,7 @@ export function summarize(entries, instruments) {
 export function render({ entries, instruments, findings }, { allowUncollected = false } = {}) {
   const s = summarize(entries, instruments)
   const lines = []
-  lines.push(`test-catalog (${SCHEMA}) — shadow: the workflow lists are still authority`)
+  lines.push(`test-catalog (${SCHEMA}) — discovery + the node:test predicate the dispatcher resolves legs against`)
   lines.push(`  tests=${s.total} instruments=${s.instruments} digest=${s.digest}`)
   for (const [k, v] of Object.entries(s.byClassification).sort()) lines.push(`  ${k.padEnd(24)} ${v}`)
   lines.push(`  by runner: ${Object.entries(s.byRunner).sort().map(([k, v]) => `${k}=${v}`).join(' ')}`)

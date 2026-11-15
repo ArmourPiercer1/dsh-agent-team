@@ -190,6 +190,35 @@ test('deriveRoots: --allow-dropped-root records the drop instead of hiding it', 
   assert.deepEqual(plan.roots_dropped, [{ root: 'packages/b', files_excluded: 1, allowed: true }])
 })
 
+test('--verify-plan verifies a plan that used --allow-dropped-root (M6)', () => {
+  // The M5 review finding: the planner blessed a plan with a recorded drop, and `--verify-plan` then
+  // refused it with ROOT_DROPPED_BY_EXCLUDE forever, because the re-derivation forgot the permission.
+  const dir = fixtureRepo({
+    config: "export default { test: { include: ['packages/*/test/**/*.test.ts'], exclude: ['packages/b/**'] } }\n",
+    files: { 'packages/a/test/x.test.ts': '', 'packages/b/test/y.test.ts': '' },
+  })
+  const out = join(dir, '.artifacts', 'plan.json')
+  mkdirSync(dirname(out), { recursive: true })
+  const built = cli(['--plan', '--out', out, '--allow-dropped-root', 'packages/b'], { cwd: dir })
+  assert.equal(built.status, 0, built.out)
+  const plan = JSON.parse(readFileSync(out, 'utf8'))
+  assert.deepEqual(plan.roots_dropped, [{ root: 'packages/b', files_excluded: 1, allowed: true }])
+  const verified = cli(['--verify-plan', out], { cwd: dir })
+  assert.equal(verified.status, 0, verified.out)
+  assert.match(verified.out, /DSH-CENSUS-PLAN verify=ok/, verified.out)
+
+  // …and the permission is not a blanket amnesty: a plan that recorded NO drop, verified against a
+  // tree that drops a root, must still refuse. Build that plan with --allow-dropped-root, then erase
+  // the record (and re-digest, so the digest check cannot be what refuses).
+  const noDrop = JSON.parse(JSON.stringify(plan))
+  noDrop.roots_dropped = []
+  noDrop.identity.plan_digest = planDigest(noDrop)
+  writeFileSync(out, `${JSON.stringify(noDrop, null, 2)}\n`)
+  const refused = cli(['--verify-plan', out], { cwd: dir })
+  assert.equal(refused.status, 2, refused.out)
+  assert.match(refused.out, /ROOT_DROPPED_BY_EXCLUDE/, refused.out)
+})
+
 test('deriveRoots: --allow-dropped-root naming a root that was NOT dropped is refused', () => {
   const dir = fixtureRepo({ config: GOOD_CONFIG, files: { 'packages/a/test/x.test.ts': '' } })
   const derived = deriveRoots({ cwd: dir, allowDropped: ['packages/typo'] })

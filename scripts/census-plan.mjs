@@ -464,7 +464,32 @@ export function verifyPlan(plan, { cwd = process.cwd(), currentPlan } = {}) {
   // 2. the tree. `currentPlan` is injectable so the self-test can exercise identity and task-set
   //    drift without a git checkout.
   const current = currentPlan ?? (() => {
-    const roots = deriveRoots({ cwd })
+    // A plan built with `--allow-dropped-root` is a LEGAL plan that records its drop. Re-deriving it
+    // without those permissions made `--verify-plan` refuse ROOT_DROPPED_BY_EXCLUDE on exactly the
+    // plans the CLI had blessed — the command could not verify the only kind of plan that needed it.
+    // So: derive without permissions first; if (and only if) the refusal is the dropped-root one,
+    // retry naming the plan's OWN recorded `allowed: true` entries. A drop the plan did not record
+    // still refuses (the retry names nothing for it), and a recorded drop the tree no longer performs
+    // is a changed population, reported as PLAN_TASK_SET_CHANGED below rather than as a shape error.
+    let roots = deriveRoots({ cwd })
+    if (!roots.ok && roots.code === 'ROOT_DROPPED_BY_EXCLUDE') {
+      const recorded = (Array.isArray(plan.roots_dropped) ? plan.roots_dropped : [])
+        .filter((d) => d && d.allowed === true && typeof d.root === 'string')
+        .map((d) => d.root)
+      if (recorded.length > 0) {
+        const retried = deriveRoots({ cwd, allowDropped: recorded })
+        if (!retried.ok && retried.code === 'DROPPED_ROOT_UNKNOWN') {
+          return {
+            refusal: {
+              code: 'PLAN_TASK_SET_CHANGED',
+              detail: `the plan records allowed drop(s) [${recorded.join(', ')}] but the current tree no longer drops every one of them ` +
+                `(${retried.detail}) — a root that came back is a different census population, not a verification failure to hide`,
+            },
+          }
+        }
+        roots = retried
+      }
+    }
     if (!roots.ok) return { refusal: roots }
     let currentPlanObject
     try {

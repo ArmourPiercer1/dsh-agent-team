@@ -323,7 +323,7 @@ jobs:
         run: node scripts/pr-settlement-gate.mjs --self-test
 
       - name: Unit tests (node --test, scripts convention)
-        run: node --test scripts/pr-settlement-gate.test.mjs
+        run: node scripts/dispatch-tests.mjs --run --leg pr-settlement-unit
 
       - name: Grade THIS PR — marker + dated settlement + covered head sha
         # --expected-head cross-checks the API-fetched head sha against the

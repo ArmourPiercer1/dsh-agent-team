@@ -8,17 +8,23 @@
  * "two shards agree with the plan" must never be enough when the shared value is not a digest.
  *
  * Accepted shapes are exactly what the real producers emit:
- *   `sha256:<64 lowercase hex>`  — `test-catalog.mjs`'s catalog_digest, `planDigest()`, and any
- *                                  sha256 git object id (a sha256-object-format repo's tree);
+ *   `sha256:<64 lowercase hex>`  — `test-catalog.mjs`'s catalog_digest and `planDigest()`;
  *   `<40 lowercase hex>`         — `git rev-parse HEAD^{tree}` in a sha1 repo, and the
- *                                  `TEST_USE_BASELINE_SHA` host pin.
+ *                                  `TEST_USE_BASELINE_SHA` host pin;
+ *   `<64 lowercase hex>`         — a BARE sha256 git object id, i.e. `git rev-parse HEAD^{tree}`
+ *                                  in a sha256-object-format repo. The previous header claimed this
+ *                                  shape was accepted ("any sha256 git object id") while `DIGEST_RE`
+ *                                  rejected it: a repo created with `--object-format=sha256` could
+ *                                  not record its own tree id. The header and the regex now agree,
+ *                                  and the shape is listed here so they cannot drift again (M6).
  * Everything else — `null`, `"null"`, `"undefined"`, `""`, `" "`, uppercase hex, a 39-hex or 65-hex
- * value, `sha256:` without a digest, `sha1:<40hex>` — is refused by name.
+ * value, `sha256:` without a digest, `sha1:<40hex>`, a bare `sha256:<40hex>` — is refused by name.
  */
 
-export const DIGEST_RE = /^(?:sha256:[0-9a-f]{64}|[0-9a-f]{40})$/
+export const DIGEST_RE = /^(?:sha256:[0-9a-f]{64}|[0-9a-f]{40}|[0-9a-f]{64})$/
 
-export const DIGEST_SHAPE = 'sha256:<64 lowercase hex> or <40 lowercase hex>'
+export const DIGEST_SHAPE =
+  'sha256:<64 lowercase hex>, <40 lowercase hex>, or a bare <64 lowercase hex> (a sha256 git object id)'
 
 /** Identity fields a plan records. `plan_digest` is derived from them, not read from a file. */
 export const IDENTITY_FIELDS = ['merge_tree_sha', 'host_sha', 'catalog_digest', 'build_digest']

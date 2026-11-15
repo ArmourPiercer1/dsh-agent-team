@@ -49,7 +49,13 @@ import { execFileSync } from 'node:child_process'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-export const TEST_RE = /\.test\.(mjs|cjs|js)$/
+import { NODE_SUITE_RE } from './test-suite-paths.mjs'
+
+// M6: this used to be a private regex (`\.test\.(mjs|cjs|js)$`), i.e. a second definition of "a
+// node:test suite" one alternative away from the catalog's. It is now the shared predicate, aliased
+// under the old name so callers do not change shape. Population-identical on this tree (110 files
+// either way) and pinned by the `--self-test` case below.
+export const TEST_RE = NODE_SUITE_RE
 export const AUDITED_PREFIXES = ['scripts/', 'tests/']
 export const EXEMPTIONS_FILE = 'dev/ci/node-test-exemptions.json'
 const WORKFLOW_DIR = '.github/workflows'
@@ -64,7 +70,7 @@ export function inScope(paths) {
  * `check[]` arrays. Anything that is not a plausible path is dropped, so a
  * `--test-reporter=spec` flag cannot masquerade as a suite.
  */
-export function collectTokens(workflowTexts = [], manifest = null) {
+export function collectTokens(workflowTexts = [], manifest = null, scopePaths = []) {
   const found = new Set()
   for (const text of workflowTexts) {
     // Join shell line-continuations so a wrapped `node --test a \\\n b` yields both.
@@ -91,9 +97,38 @@ export function collectTokens(workflowTexts = [], manifest = null) {
     if (Array.isArray(layer?.check)) checks.push(...layer.check)
     for (const leg of Array.isArray(layer?.legs) ? layer.legs : []) {
       if (Array.isArray(leg?.check)) checks.push(...leg.check)
+      // M6: a dispatched leg declares its population as `suites[]` (an explicit subset) and/or
+      // `areas[]` (a whole directory, expanded over the audited suites). This reader is what makes
+      // the catalog's DISCOVERED_AND_COLLECTED agree with what the dispatcher actually runs; the
+      // leg's `cmd` names only a leg id, so without these two fields the whole node:test set would
+      // read as UNCOLLECTED and the ratchet would red for a set that did not change.
+      if (Array.isArray(leg?.suites)) checks.push(...leg.suites)
+      if (Array.isArray(leg?.areas)) {
+        for (const raw of leg.areas) {
+          const area = String(raw).replace(/^\.\//, '').replace(/\/+$/, '')
+          if (area === '') continue
+          for (const p of scopePaths) if (p.startsWith(`${area}/`)) found.add(p)
+        }
+      }
     }
   }
-  for (const c of checks) if (typeof c === 'string' && TEST_RE.test(c)) found.add(c)
+  // M6: a `knownNonRequired[]` entry may declare dispatch legs too (a job whose Required-ness is
+  // declared there — currently pr-gate.yml#settlement). The workflow no longer names its suite, so
+  // without this branch that suite would silently become UNCOLLECTED and the ratchet would read the
+  // conversion as "CI stopped running a test".
+  for (const entry of Array.isArray(manifest?.knownNonRequired) ? manifest.knownNonRequired : []) {
+    for (const leg of Array.isArray(entry?.legs) ? entry.legs : []) {
+      if (Array.isArray(leg?.suites)) checks.push(...leg.suites)
+      if (Array.isArray(leg?.areas)) {
+        for (const raw of leg.areas) {
+          const area = String(raw).replace(/^\.\//, '').replace(/\/+$/, '')
+          if (area === '') continue
+          for (const p of scopePaths) if (p.startsWith(`${area}/`)) found.add(p)
+        }
+      }
+    }
+  }
+  for (const c of checks) if (typeof c === 'string' && TEST_RE.test(c)) found.add(c.replace(/^\.\//, ''))
   return found
 }
 
@@ -157,7 +192,7 @@ export function gather({ cwd = process.cwd() } = {}) {
   const manifest = manifestText ? JSON.parse(manifestText) : null
   const exemptionsText = readIf(resolve(cwd, EXEMPTIONS_FILE))
   const exemptions = exemptionsText ? JSON.parse(exemptionsText) : {}
-  return { testPaths, collected: collectTokens(workflowTexts, manifest), exemptions, tracked }
+  return { testPaths, collected: collectTokens(workflowTexts, manifest, testPaths), exemptions, tracked }
 }
 
 // ---------------------------------------------------------------- render
@@ -220,6 +255,25 @@ function selfTest() {
   const r3 = audit(paths, new Set(['scripts/a.test.mjs']), { 'scripts/a.test.mjs': { reason: 'x', review: 'y' }, 'tests/b.test.mjs': { reason: '' } })
   cases.push(['stale + reasonless exemption are reported', r3.staleExemptions.length === 1 && r3.badExemptions.includes('tests/b.test.mjs'), JSON.stringify([r3.staleExemptions, r3.badExemptions])])
   cases.push(['scope excludes kit runners that are not suites', inScope(['tests/kits/a/a.mjs', 'scripts/x.test.mjs']).length === 1, JSON.stringify(inScope(['tests/kits/a/a.mjs', 'scripts/x.test.mjs']))])
+
+  // M6: a dispatched leg declares `suites[]`/`areas[]`, not `check[]`. Both must count as collected,
+  // otherwise the catalog's own ratchet reds the day the workflow list is deleted — and the failure
+  // would look like "CI stopped running tests" instead of "the reader is stale".
+  const dispatchManifest = {
+    layers: [{
+      id: 'l', legs: [
+        { id: 'subset', cmd: ['node', 'scripts/dispatch-tests.mjs', '--run', '--leg', 'subset'], suites: ['scripts/a.test.mjs', './scripts/b.test.mjs'] },
+        { id: 'area', cmd: ['node', 'scripts/dispatch-tests.mjs', '--run', '--leg', 'area'], areas: ['tests/checks/'] },
+      ],
+    }],
+  }
+  const scope = ['scripts/a.test.mjs', 'scripts/b.test.mjs', 'tests/checks/x.test.mjs', 'tests/checks/deep/y.test.mjs', 'tests/other/z.test.mjs']
+  const d = collectTokens([], dispatchManifest, scope)
+  cases.push([
+    'dispatched suites[] + areas[] are collected (and an area is expanded, not globbed)',
+    ['scripts/a.test.mjs', 'scripts/b.test.mjs', 'tests/checks/x.test.mjs', 'tests/checks/deep/y.test.mjs'].every((p) => d.has(p)) && !d.has('tests/other/z.test.mjs'),
+    JSON.stringify([...d]),
+  ])
 
   let bad = 0
   for (const [label, ok, detail] of cases) {

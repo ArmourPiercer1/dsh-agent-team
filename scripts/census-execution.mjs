@@ -408,8 +408,15 @@ export function digestFile(file, { readFile = readFileSync } = {}) {
  * So the runner writes a compact, self-describing slice — per root: state, file/assertion counts,
  * skip count and a digest over the same fields the result carries — and the shard points at THAT,
  * with the report (or recording) named plus digested inside it.
+ *
+ * THE REFERENCE'S DIGEST IS THE FILE'S DIGEST (M6). Until M6 the trailing token was the per-root
+ * digest, which no consumer checked, so a doctored or replaced artifact passed. The reference now
+ * carries `sha256:<64 hex>` over the artifact's BYTES (written, then hashed back through the same
+ * reader the verifier uses), and `verifyEvidenceRefs` refuses a mismatch. That is an INTEGRITY
+ * chain — the pointer agrees with the bytes at this path — NOT independent verification: this same
+ * process derived the numbers it just wrote. The per-root digest stays in the artifact body.
  */
-export function writeEvidenceArtifact(dir, { capture, source, sourceDigest = null, results, writeFile = writeFileSync }) {
+export function writeEvidenceArtifact(dir, { capture, source, sourceDigest = null, results, writeFile = writeFileSync, digest = null }) {
   const roots = results.map((r) => ({
     root: r.root,
     task_id: r.task_id,
@@ -426,9 +433,14 @@ export function writeEvidenceArtifact(dir, { capture, source, sourceDigest = nul
     source: { path: source, digest: sourceDigest },
     roots,
   }
-  writeFile(join(dir, name), `${JSON.stringify(json, null, 2)}\n`)
-  const anchored = results.map((r, i) => ({ ...r, evidence: `${name}#${r.root} ${roots[i].digest}` }))
-  return { ok: true, name, json, results: anchored }
+  const file = join(dir, name)
+  writeFile(file, `${JSON.stringify(json, null, 2)}\n`)
+  // Hash the bytes that are on disk, not the in-memory string: the write may have gone through a
+  // seam (a test's `writeFile`), and the reference must describe the file the verifier will read.
+  const fileDigest = (digest ?? digestFile)(file)
+  if (fileDigest === null) throw Object.assign(new Error(`${file}: written but unreadable, so no reference can attest it`), { code: 'CENSUS_EVIDENCE_UNREADABLE' })
+  const anchored = results.map((r) => ({ ...r, evidence: `${name}#${r.root} ${fileDigest}` }))
+  return { ok: true, name, json, file_digest: fileDigest, results: anchored }
 }
 
 /**

@@ -23,6 +23,16 @@
  *   CI_LAYER_LEG_WEAKENED       the invocation runs but with a required flag missing, a forbidden
  *                               flag present (e.g. --allow-refused census), `|| true`, an
  *                               un-pipefailed pipe, or a conditional step
+ *   CI_LAYER_LEG_NO_SUITES      (TINF M6) a `scripts/dispatch-tests.mjs` leg declares neither
+ *                               suites[] nor areas[] — the dispatcher's argv would be empty, and
+ *                               `node --test` with no argv runs the whole repository
+ *   CI_LAYER_LEG_SUITE_INVALID  a dispatched leg declares a blank suite
+ *   CI_SUITE_AREA_ABSENT        a dispatched leg's `areas[]` names a directory that is not there
+ *   CI_LAYER_LEG_DISPATCH_SHAPE a dispatched leg's cmd lacks `--run` (it would print an argv and
+ *                               run nothing) or ENDS with a token shared by every dispatch leg
+ *                               (`--run`), which makes the allowlisted line reader unable to tell
+ *                               one leg's step from another's
+ *   CI_LAYER_LEG_DISPATCH_ID    the leg's `dispatch_id` disagrees with the `--leg` value in its cmd
  *   CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER   a hostFree layer lists a suite that resolves
  *                               the pinned host checkout (checkSuiteLists)
  *   CI_SUMMARY_NOT_ALWAYS       the summary job lacks `if: always()` — when a layer fails a
@@ -355,6 +365,46 @@ export function gradeLeg(job, leg) {
   return { code: 'CI_LAYER_LEG_MISSING', why: `no step executes \`${leg.cmd.join(' ')}\`` }
 }
 
+/** Does this leg hand its file set to `scripts/dispatch-tests.mjs`? */
+export function isDispatchLeg(leg) {
+  const cmd = Array.isArray(leg?.cmd) ? leg.cmd : []
+  return cmd[0] === 'node' && cmd[1] === 'scripts/dispatch-tests.mjs' && cmd.includes('--leg')
+}
+
+/** Grade one declared leg against its job, plus the M6 dispatch-population laws. */
+function checkDeclaredLeg(job, leg, where, add) {
+      const miss = gradeLeg(job, leg)
+      if (miss !== null) add(miss.code, `${where.prefix}: leg "${leg.id}" — ${miss.why} (${where.workflow}#${where.job})`, { layer: where.layer, leg: leg.id })
+      // TINF M6: a dispatched leg carries the population the old `check[]` file list used to carry.
+      // The workflow no longer names a suite, so these three checks are what stands between a leg and
+      // "it runs nothing" / "it runs the whole repository" / "it runs a path that does not exist".
+      if (isDispatchLeg(leg)) {
+        const cmd = leg.cmd
+        if (!cmd.includes('--run')) {
+          add('CI_LAYER_LEG_DISPATCH_SHAPE', `${where.prefix}: leg "${leg.id}" dispatches without \`--run\` — the step would print an argv and gate nothing`, { layer: where.layer, leg: leg.id })
+        } else if (cmd[cmd.length - 1] === '--run') {
+          add('CI_LAYER_LEG_DISPATCH_SHAPE', `${where.prefix}: leg "${leg.id}" ends with \`--run\`; every dispatch leg would share that last token and the line reader could not attribute a step to one leg`, { layer: where.layer, leg: leg.id })
+        }
+        const legIdArg = cmd[cmd.indexOf('--leg') + 1]
+        if (typeof leg.dispatch_id === 'string' && leg.dispatch_id !== legIdArg) {
+          add('CI_LAYER_LEG_DISPATCH_ID', `${where.prefix}: leg "${leg.id}" declares dispatch_id=${leg.dispatch_id} but its cmd runs --leg ${String(legIdArg)}`, { layer: where.layer, leg: leg.id })
+        }
+        const suites = Array.isArray(leg.suites) ? leg.suites : []
+        const areas = Array.isArray(leg.areas) ? leg.areas : []
+        if (suites.length === 0 && areas.length === 0) {
+          add('CI_LAYER_LEG_NO_SUITES', `${where.prefix}: leg "${leg.id}" dispatches but declares no suites[]/areas[] — an empty argv would make \`node --test\` run the whole repository`, { layer: where.layer, leg: leg.id })
+        }
+        for (const s of suites) {
+          if (typeof s !== 'string' || s.trim() === '') add('CI_LAYER_LEG_SUITE_INVALID', `${where.prefix}: leg "${leg.id}" declares a blank suite`, { layer: where.layer, leg: leg.id })
+          else if (!existsSync(join(ROOT, s.replace(/^\.\//, '')))) add('CI_SUITE_ABSENT', `${where.prefix}: leg "${leg.id}" declares ${s}, which does not exist`, { layer: where.layer, leg: leg.id })
+        }
+        for (const a of areas) {
+          const rel = String(a).replace(/^\.\//, '').replace(/\/+$/, '')
+          if (!existsSync(join(ROOT, rel))) add('CI_SUITE_AREA_ABSENT', `${where.prefix}: leg "${leg.id}" declares area ${a}, which does not exist`, { layer: where.layer, leg: leg.id })
+        }
+      }
+}
+
 /** Step-level conditions under which no leg in the step is proven. */
 function stepRefusal(step) {
   if ('if' in step && !/^\s*(?:\$\{\{\s*)?(?:always\(\)|success\(\))(?:\s*\}\})?\s*$/.test(String(step.if))) return `step if: ${JSON.stringify(step.if)} (only unconditional, always() or success() is proven to run)`
@@ -494,10 +544,7 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     if (!Array.isArray(layer.legs) || layer.legs.length === 0) {
       add('CI_LAYER_LEG_MISSING', `layer ${layer.id}: the manifest declares no legs — a layer with nothing to invoke gates nothing`, { layer: layer.id })
     }
-    for (const leg of layer.legs ?? []) {
-      const miss = gradeLeg(job, leg)
-      if (miss !== null) add(miss.code, `layer ${layer.id}: leg "${leg.id}" — ${miss.why} (${layer.workflow}#${layer.job})`, { layer: layer.id, leg: leg.id })
-    }
+    for (const leg of layer.legs ?? []) checkDeclaredLeg(job, leg, { prefix: `layer ${layer.id}`, layer: layer.id, workflow: layer.workflow, job: layer.job }, add)
     // The merge-tree binding is a leg too: a layer that never compares its checkout to
     // the synthetic tree may be grading a different tree than the one reported.
     // Graded by the SAME allowlist as every other leg, plus: its argument must be the
@@ -648,8 +695,17 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
   // silently vanishes (census-runtime deleted, say) is drift in the CI's own description
   // of itself, and the C2 baseline showed the existing gate saw nothing when it happened.
   for (const k of manifest.knownNonRequired ?? []) {
-    if (jobAt(k.workflow, k.job) === null) {
+    const job = jobAt(k.workflow, k.job)
+    if (job === null) {
       add('CI_DECLARED_JOB_ABSENT', `declared non-required job ${k.workflow}#${k.job} is gone — remove it from ${MANIFEST_REL} in the same change if that is intended, so the removal is a reviewed line`, { job: k.job })
+      continue
+    }
+    // A declared job may carry dispatch legs of its own (M6: pr-gate.yml#settlement, the third
+    // Required context). Its Required-ness is the declaration above; its POPULATION is graded by
+    // exactly the same laws as a layer leg, because "which suite runs" is a different question
+    // from "does a red here block the merge", and both deserve an answer.
+    for (const leg of k.legs ?? []) {
+      checkDeclaredLeg(job, leg, { prefix: `job ${k.workflow}#${k.job}`, layer: `${k.workflow}#${k.job}`, workflow: k.workflow, job: k.job }, add)
     }
   }
 

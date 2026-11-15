@@ -57,14 +57,16 @@ M4 的诚实披露是「`build_digest` 无生产者，所以真实计划今天**
 ```
 { task_id, root, capture, state: PASS|FAIL|INCOMPLETE,
   files, assertions, skipped,
-  evidence: "census-evidence-<capture>.json#<root> sha256:<canonical-json{root,capture,state,files,assertions,skipped}>" }
+  evidence: "census-evidence-<capture>.json#<root> sha256:<sha256-of-the-evidence-FILE-bytes>" }
 ```
 
 `root` / `capture` **从 plan 任务取**，不从报告事后猜；报告里没有出现的 root → `INCOMPLETE`（沉默不是「跑过且通过」的证据）；`success=false` 但没有可归因的断言失败 → `INCOMPLETE`。
 
 **判定语义（round 2 修正）**：只有 `status === 'failed'` 计为失败（与 legacy 的 `scripts/fail-set.mjs` 一致）；`skipped` / `pending` / `todo` 是「runner 选择不跑」，**不是失败**，但会计数并写入 `skipped=`，因为「0 失败」和「0 跑过」不能读成同一句话（population 里已存在条件 skip，如 `packages/runtime/test/a5rbn-runtime-base-narrow.test.ts`）。未知状态一律 FAIL（`UNKNOWN_ASSERTION_STATUS`）——严格于 legacy，绝不更松。
 
-**evidence 是能被打开的指针**：进程在 shard 目录里写 `census-evidence-<capture>.json`（每条 root 的 state/计数/摘要 + 来源报告路径与摘要），shard 里的结果指向它。`verifyEvidenceRefs()` 在**被评分的字节**上解析每个引用：不存在 → `RESULT_EVIDENCE_UNREADABLE`；解析后逃出 shard 目录 → `RESULT_EVIDENCE_OUTSIDE`；证据产物没有列出该 root → `RESULT_EVIDENCE_UNKNOWN_ROOT`。聚合器 CLI 与 `aggregateArtifacts()` 都走这一步，所以「22 条 PASS + `evidence=/nonexistent/…`」的伪造目录现在 exit 2。
+**evidence 是能被打开的指针，并且是自证（self-attestation），不是独立验证**：进程在 shard 目录里写 `census-evidence-<capture>.json`（每条 root 的 state/计数/摘要 + 来源报告路径与摘要），shard 里的结果指向它。`verifyEvidenceRefs()` 在**被评分的字节**上解析每个引用：不存在 → `RESULT_EVIDENCE_UNREADABLE`；解析后逃出 shard 目录（含经符号链接逃出）→ `RESULT_EVIDENCE_OUTSIDE`；命名的是目录/设备而不是普通文件 → `RESULT_EVIDENCE_NOT_REGULAR`；引用尾部的 `sha256:<64hex>` 与文件字节不符 → `RESULT_EVIDENCE_DIGEST_MISMATCH`（尾部不是合法 sha256 → `RESULT_EVIDENCE_DIGEST_INVALID`）；证据产物没有列出该 root → `RESULT_EVIDENCE_UNKNOWN_ROOT`。聚合器 CLI 与 `aggregateArtifacts()` 都走这一步，所以「22 条 PASS + `evidence=/nonexistent/…`」的伪造目录 exit 2。
+
+> **M6 更正（2026-11-15）**：上面这条链是**完整性/自证**，不是独立证据。写 artifact 的进程和派生那些数字的进程是同一个（`censusPlanLeg` 用刚派生的结果写 `census-evidence-<n>.json`，再把每条结果重新锚定到它），所以它只能证明「指针指向的字节就是这个进程写下的字节，且该路径是 shard 目录内的普通文件」——不能证明这些数字来自一次独立执行。M5 定稿评论里记录的「round-1 doctored directory 仍能聚合为 PASS」在 M6 已修（目录/逃逸链接/被替换的字节都是具名拒绝），但「不是独立链」这一点不变，任何文字都不得把它当独立验证引用。
 
 ## 3. 证明的东西哪里变了（before / after）
 
@@ -87,7 +89,9 @@ M4 的诚实披露是「`build_digest` 无生产者，所以真实计划今天**
 | --- | --- | --- | --- | --- |
 | M3 最后一次 L2 | 43638954936（#1195） | 20:43:20→21:06:57 = **23m37s**（1417 s） | `seconds=1095.9` | 550.8 s + 544.8 s |
 | M4 合并点 L2 | 43648221295（#1198） | 22:28:15→22:51:55 = **23m40s**（1420 s） | `seconds=1091.3` | 551.0 s + 540.0 s |
-| M5 | **尚未上机** | — | — | — |
+| M5 合并点（plan 模式首次上机） | 43658816371（#773） | 00:34:33→00:56:38 = **22m05s**（1325 s） | `seconds=1029.6` | 517.7 s + 510.2 s |
+
+> **M6 更正（2026-11-15）**：#773 是 plan 路径第一次真正上机。job 墙钟 **22m05s**（1325 s）、leg `seconds=1029.6`、两次 capture **517.7 s + 510.2 s**、每次 capture **9213 条断言**、`DSH-CENSUS-SUMMARY verdict=PASS expected=22 observed=22`、plan 自身开销 `census-plan` 0.714 s + `census-plan-verify` 0.694 s + `census-aggregate` 0.002 s ≈ **1.4 s**（先前估的 0.8 s 偏小，但仍然只是 0.14%）。表里「M5 尚未上机」那句在合并前是真的、在合并后是假的，故按实测数字替换；完整 L1/L2 报表见 `docs/plans/memo/tinf-m6-retire-handlists-20261115/METRICS.md`。
 
 **M5 改的是「证明了什么」，不是墙钟。** 结构上：plan 路径的 invocation 数 = 2（与 legacy 相同），argv 除报告路径外逐字节相同；plan+verify+aggregate 的额外开销在录制数据上实测 **0.8 s**（22 任务）。所以第一次 plan 模式 L2 的 census leg 预期仍是 ~1091 s。首次上机后，`tinf-timing.tsv` 会第一次给出 plan 路径自己的分解（`census-plan` / `census-plan-verify` / `census-capture ×2` / `census-root ×22` / `census-aggregate`），那时「plan 的开销」才是实测而不是估计。
 

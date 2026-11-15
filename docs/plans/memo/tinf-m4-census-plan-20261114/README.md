@@ -53,6 +53,8 @@ M4 把「分片不能改变被验证的总体」从一句要求变成**两个可
 - **拒绝时 `summary: null`**：拒绝什么都没判，因此不存在一份「expected=22 observed=0」的摘要被误读成测量结果（有测试逐个断言）。
 - **`SHARD_EXIT_DISAGREES`**：`exit_code=0` 但 `status != COMPLETED`——exit 0 不是判决。这正是 spec §4「Aggregator 不能只看 shard exit 0」的反向那一半。
 
+> **M6 附注（2026-11-15，只补不删）**：本节所有 K=2/K=4 的**墙钟**都是**预测**（模型 B），从未实测；唯一被实测过的墙钟是 K=1（1,095,606 ms / 1,088,254 ms 预测，误差 +0.7%）。`最重 root（每 capture 中位数）`、`M0 step 中位数 272 s` 等标注了「中位数」的数字就是中位数，不要当成某一次运行的墙钟。M6 没有跑任何分片运行，所以 K=2/K=4 的 runner-minutes、host boot 次数、缓存命中**仍然是 UNKNOWN**，理由与缺口在 `docs/plans/memo/tinf-m6-retire-handlists-20261115/METRICS.md` 的 UNKNOWN 表里逐项列出（M6 的任务不是补测分片，而是把 M4 的估计与 M5 的实测分开记账）。首次 plan 模式 L2（#773：22 tasks / 11 roots / 2 captures / 9213 断言 ×2 / leg 1029.6 s / job 22m05s）也不改变本节结论：它仍是 K=1。
+
 ## 5. 真实数据：L2 census（22 tasks，1/2/4 分片负载）
 
 数据来源：`gh run download 43638954936 -n census-runtime-transcripts-1195` → `art/census-transcripts/tinf-timing.tsv`（**25 data rows** = 1 leg + 2 `census-capture` + **22 `census-root`**，11 roots × 2 captures）。原始 224 KB artifact **不提交**；提交的摘录是 [`L2-20261114-MEASURED.txt`](L2-20261114-MEASURED.txt)（数字与命令行由工具本身生成，不是手抄）。
