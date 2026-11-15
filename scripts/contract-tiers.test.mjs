@@ -297,6 +297,9 @@ test('F-03: `--run --tier L1` only in check[] does NOT count as execution (decla
   assert.equal(got.ok, true, got.detail)
   assert.equal(got.tiers.get('packages/a/test/a.test.ts')?.has('L1') ?? false, false, 'a check-only leg must not grant L1')
   assert.equal(got.sources.contract_runs.length, 0)
+  const evaluated = evaluateContracts({ contracts: [contract('A', ['packages/a/test/a.test.ts'], ['L1'])], tiers: got.tiers, exceptions: [] })
+  assert.equal(evaluated.contracts[0].status, 'unmet')
+  assert.equal(evaluated.findings[0].code, 'CONTRACT_TIER_UNMET')
 })
 
 test('F-03: a real run leg with NO workflow step is rejected by the eb3 step binding (manifest-only claim)', () => {
