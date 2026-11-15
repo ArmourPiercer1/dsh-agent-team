@@ -185,12 +185,13 @@ agent-script/1 (wire driver)
 Files:
 
 - `tests/world-factory/lib/m7a-real-run.mjs` — harness: session-log reader (`decompressSessionLog`, `findSessionLog`, `traceEventsFromSessionRows`), observer (`createWorldObserver`, armed/blinded by the observer object, never by the test caller), run driver (`startRealRun`, `runTurn`), judging (`judgeRealRun`), census (`mockRequestCensus`).
-- `tests/world-factory/m7a-real-slice.test.mjs` — the live slice (5 arms, one host, 5 sessions).
-- `tests/world-factory/m7a-real-slice-unit.test.mjs` — host-free C1 complement (10 cases).
+- `tests/world-factory/m7a-real-slice.test.mjs` — the live slice (5 arms, one host, 5 sessions). Runs in **ci-census**, as its own workflow step, with `M7A_REQUIRE_PINNED_HOST=1`.
+- `tests/world-factory/m7a-real-slice-unit.test.mjs` — host-free C1 complement (10 cases). Runs in **ci-integration** on every PR: it is declared in the `tinf-instruments` leg (`scripts/dispatch-tests.mjs --run --leg tinf-instruments`), the repo's host-free node:test instrument leg — a *new* leg would have no `node --test` argv on the M6 base and would therefore be a permanent `UNCONVERTED` problem in the dispatch-parity gate.
+- `tests/world-factory/m7a-real-slice-host-state.test.mjs` — the live suite's host-state contract (2 cases): an absent host refuses in words and skips; `M7A_REQUIRE_PINNED_HOST=1` turns that into a hard failure. Same leg, same run.
 - `packages/testkit/src/agent-script.ts`, `wire-script.ts` — the script law + wire driver.
 - `packages/testkit/src/effect-witness.ts` — provenance seal.
 - `packages/testkit/src/contract-oracle.ts` — `witnessProvenance`.
-- `packages/testkit/test/m2-witness-provenance.test.ts` — in-package tests for the above.
+- `packages/testkit/test/m2-effect-witness.test.ts` and `packages/testkit/test/m2-scripted-model.test.ts` — the in-package tests for the above live *in the existing files* (one law, one home): the provenance seal and the oracle's `witnessed` mode beside the witness negative controls, the wire driver beside the in-process scripted adapter. Folding them in is deliberate: a new `packages/*/test/**/*.test.ts` file would move the reviewed census population (705 files), and this task's diff must not move it.
 
 The trace is built from the Host's own durable log: `<DSH_HOME>/sessions/<cwd-slug>/session-<id>/session.v4.jsonl.zstd`, which is a sequence of **concatenated zstd frames** (one per append). A single `zstdDecompressSync` call decodes only the first; the reader splits on the zstd magic and drops an undecodable partial tail. Mapping (explicit, in code):
 
@@ -238,12 +239,51 @@ This is a real finding for M7-B (our oracle, not upstream): either the lane must
 
 ---
 
-## 5. Test-suite conventions honoured
+## 5. Where the two suites run, and what a green CI run proves
 
-- **Host-state contract** (the `a5sf-fs-contract` idiom): host absent → one machine-readable line
-  `M7A-REAL-SLICE-HOST-REFUSED host=… reason=apps/cli/lib/bin.js is absent …` and every case **skipped** (never green); `M7A_REQUIRE_PINNED_HOST=1` turns the refusal into a hard failure. The pinning test is `packages/testkit/test/m7a-real-slice.test.ts` (wording pinned so the refusal cannot rot).
-- **Host-free complement** runs with no boot: `node --test tests/world-factory/m7a-real-slice-unit.test.mjs` → 10/10.
-- **Three-state**: complete host → arms run; absent → declared refusal + skip; `M7A_REQUIRE_PINNED_HOST=1` and absent → FAIL.
+Both suites are **collected**, and the uncollected ratchet stays at **91** (the count the gate
+opened with); neither is baselined as "host-required, uncollected". They are split because one half
+must never be allowed to excuse the other:
+
+| suite | layer / step | what it needs | frequency | if the host is absent |
+| --- | --- | --- | --- | --- |
+| `tests/world-factory/m7a-real-slice-unit.test.mjs` (C1, 10 cases, ~0.2 s) **and** `tests/world-factory/m7a-real-slice-host-state.test.mjs` (the refusal/failure contract, 2 cases) | **ci-integration**, step `test catalog + TINF instruments`, leg `tinf-instruments` (`scripts/dispatch-tests.mjs --run --leg tinf-instruments`; population declared once in `dev/ci/eb3-ci-manifest.json` as `suites[]`) | nothing but the repo: no port, no `DSH_HOME`, no host tree | every PR | n/a — they never resolve the host |
+| `tests/world-factory/m7a-real-slice.test.mjs` (C2, 5 arms, one boot, ~133 s locally) | **ci-census** (`census-runtime.yml`), its own step after the census and its transcript re-grade: `node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`, with `M7A_REQUIRE_PINNED_HOST=1` and `M7A_BOOT_TIMEOUT_MS=600000` in `env:` | the pinned pristine host **and its build**, plus the repo build — exactly what this job already provisions | every PR (the layer is Required; drafts defer it as a whole, they do not skip this step inside a run) | **hard failure** (`M7A-REAL-SLICE-HOST-INCOMPLETE`), never a skip |
+
+**What a green C1 run proves.** The three mappings the C2 arms rest on are themselves tested on
+every PR, with no host to hide behind: a real DSH session log is concatenated zstd frames and the
+reader decodes all of them (dropping only an undecodable tail); the durable rows map to
+`DISPATCHED` / `DENIED` / `COMPLETED` honestly (a refusal keeps the Host's typed `error_code`, a
+success claims none, `authority_ref` is `null` because this lane computes none); the wire driver
+accepts exactly the document `validateAgentScript` accepts and refuses exhaustion / mismatch /
+unconsumed turns; and the oracle's `witnessed` mode rejects a hand-built row (`INSTRUMENT_ERROR`),
+a blinded instrument is `INCONCLUSIVE`, a real effect with a decision is `VIOLATED`, and the seal
+does not survive JSON. It does **not** prove the reader still matches a *live* Host's row shapes —
+only C2 does that.
+
+**What a green C2 run proves.** On the pinned host, in one run: a real tool call was dispatched by a
+real session, its effect was read back by an independent parent process, and the oracle's verdict
+matched the pre-registered expectation in all five arms — including the two that must not be green
+(`VIOLATED` for a real unauthorized effect, `INCONCLUSIVE` when observation is disabled) and the one
+that must not be evidence at all (`INSTRUMENT_ERROR` with an empty witness). Because the step runs
+with `M7A_REQUIRE_PINNED_HOST=1`, that run cannot be reported as green from a job that failed to
+provision the host. It still says nothing about process, PTY or network (§7), and nothing about the
+seal's trust limits (§6).
+
+**Cost, and the job's timeout.** Locally one boot + five arms = **133 s** (boot 130 s, teardown
+0.1 s). At the census job's own conservative 4× hosted factor that is a **~9 min** delta on top of
+its ~8–10 min measured floor, inside the job's `timeout-minutes: 60`. The step changes neither the
+census argv nor the plan: it is a separate step, so the census population, its two captures and its
+`--census-test-timeout` are untouched, and a failure here fails the job (and its layer verdict)
+without altering what the census graded.
+
+**Three-state contract** (the `a5sf-fs-contract` idiom, kept for local runs and for a host-free
+checkout): complete host → the arms run; absent → one machine-readable
+`M7A-REAL-SLICE-HOST-REFUSED host=… reason=apps/cli/lib/bin.js is absent …` line and every case
+**skipped** (never green); `M7A_REQUIRE_PINNED_HOST=1` and absent → hard `FAIL`. The wording is
+pinned by `tests/world-factory/m7a-real-slice-host-state.test.mjs`, which runs the live suite
+against an empty `M7A_HOST_TREE` and asserts both the skip and the hard failure — in CI, not only
+by hand.
 
 ---
 
@@ -304,14 +344,16 @@ It may **not** conclude:
 ```bash
 cd .worktrees/m7a-20261115
 
-# host-free (no boot, ~0.2 s)
-node --test --test-reporter=spec tests/world-factory/m7a-real-slice-unit.test.mjs
+# C1 — the same invocation ci-integration runs (no boot; both host-free suites)
+node scripts/dispatch-tests.mjs --run --leg tinf-instruments
 
-# real host slice (one boot, five arms, ~2m15s)
-node --test --test-reporter=spec --test-timeout=900000 tests/world-factory/m7a-real-slice.test.mjs
+# C2 — the same argv ci-census runs, with the pin required so a missing
+# host cannot become a skip (one boot, five arms, ~2m15s)
+M7A_REQUIRE_PINNED_HOST=1 node --test --test-timeout=900000 --test-reporter=spec \
+  tests/world-factory/m7a-real-slice.test.mjs
 
-# in-package tests for the new testkit surface
-node <vitest.mjs> run --root packages/testkit test/m2-witness-provenance.test.ts
+# in-package tests for the new testkit surface (the existing files they joined)
+node <vitest.mjs> run --root packages/testkit test/m2-effect-witness.test.ts test/m2-scripted-model.test.ts
 ```
 
 Evidence lands in `.artifacts/tmp/m7a-real-slice/run-<utc>/m7a-run-report.json` (gitignored) and is summarised in §4.2. Host tree absent → the refusal line + skips in §5; set `M7A_REQUIRE_PINNED_HOST=1` to fail instead.
