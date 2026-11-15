@@ -360,6 +360,31 @@ with `M7A_REQUIRE_PINNED_HOST=1`, that run cannot be reported as green from a jo
 provision the host. It still says nothing about process, PTY or network (§7), and nothing about the
 seal's trust limits (§6).
 
+**What the hosted L2 census proved that no local suite did (job `132889076020`).** The first
+review round's local gates were green and the PR still broke the census: `census-runtime`, job
+`132889076020`, failed after 20 m 34 s in both captures — `p4t6-session-event-scan.test.ts` reported
+`coverage: … 980 files scanned …` red, and the capture printed
+`assertions_executed=9233` with `codes=SHARD_EXIT_NONZERO,TASK_STATE_INCOMPLETE,TASK_STATE_FAIL`.
+The cause was structural, not flaky: the slice added **two new scannable sources** under
+`packages/**` (`packages/testkit/src/agent-script.ts`, `packages/testkit/src/wire-script.ts`), and
+that audit pins an **exact** scanner total against a booking ledger —
+"A NEW LANE ADDS ONE FILE THERE AND EDITS NOTHING HERE." Every local suite I ran was green because
+none of them *is* that audit; only the full census collects it.
+
+The sanctioned fix is a booking, and it was written from MEASUREMENT, not arithmetic:
+`packages/testkit/test/p4t6-bookings/m7a-real-host-20261115.json` books exactly those two paths.
+With the files on disk and **no** booking, the ledger reported
+`scanner counts 1519, ledger derives 983 + 534 = 1517`; with the booking the derived total is
+`983 + 536 = 1519` and the audit passes (`✓ test/p4t6-session-event-scan.test.ts (20 tests)` — every
+ledger violation kind, the nine-root corpus, and both total forms are asserted by that one suite).
+`from: 1517, to: 1519`, `to - from === paths.length === 2`.
+
+Two things this teaches, recorded rather than smoothed over: (1) an exact-population audit is
+invisible to per-suite runs, so "all my suites are green" is not evidence about the census; (2) the
+scanner walks the **working tree**, so an untracked file under `packages/**` during the scan
+inflates the total — the measurement above had to be re-run after removing a probe file, and keeps
+that fact in the booking's `tieNote`.
+
 **Cost, and the job's timeout.** Locally one boot + five arms = **133 s** (boot 130 s, teardown
 0.1 s). At the census job's own conservative 4× hosted factor that is a **~9 min** delta on top of
 its ~8–10 min measured floor, inside the job's `timeout-minutes: 60`. The step changes neither the
