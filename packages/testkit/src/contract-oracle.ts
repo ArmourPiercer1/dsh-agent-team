@@ -29,6 +29,7 @@
  *
  * @module @dsh-agent-team/testkit/contract-oracle
  */
+import { areSealedWitnessObservations } from './effect-witness.js'
 import type { EffectDomain, WitnessObservation } from './effect-witness.js'
 
 /** Version tag of the oracle input contract. */
@@ -73,6 +74,22 @@ export interface OracleInput {
    * effect to be graded `SATISFIED` (rule 4 is no-effect, not authorized-effect).
    */
   expectDeny?: boolean
+  /**
+   * Provenance expectation for the witness rows (M7-A).
+   *
+   * - `'declared'` (default, back-compatible): the rows are taken at face
+   *   value. This is the pre-M7-A behaviour and it is why a hand-built
+   *   `{domain:'filesystem', observed:false, instrumented:true}` literal could
+   *   corroborate a verdict.
+   * - `'witnessed'`: every row MUST carry the effect-witness module's private
+   *   provenance seal (`isSealedWitnessObservation`), i.e. it was produced by
+   *   `createFsWitness` / `createBlindWitness` rather than assembled by the
+   *   caller. An unsealed row is an INSTRUMENT_ERROR, never a pass.
+   *
+   * The seal proves the instrument, not the observation window; `limitations`
+   * still names the blind domains and the point-in-time window.
+   */
+  witnessProvenance?: 'declared' | 'witnessed'
 }
 
 /** The oracle's answer, with the reasons and the observation limits. */
@@ -132,9 +149,24 @@ function instrumentFaults(input: OracleInput): string[] {
   if (input.expectDeny !== undefined && typeof input.expectDeny !== 'boolean') {
     faults.push('expectDeny must be a boolean')
   }
+  if (input.witnessProvenance !== undefined && input.witnessProvenance !== 'declared' && input.witnessProvenance !== 'witnessed') {
+    faults.push(`witnessProvenance must be "declared" or "witnessed" (got ${JSON.stringify(String(input.witnessProvenance))})`)
+  }
   if (faults.length > 0) return faults
 
   if (input.witness.length === 0) faults.push('witness is empty: a trace alone is not evidence')
+
+  // Provenance (M7-A): in `witnessed` mode every row must come from a real
+  // instrument in the effect-witness module. This is checked before any verdict
+  // logic, so a caller-assembled row can never corroborate cleanliness.
+  if (input.witnessProvenance === 'witnessed' && input.witness.length > 0 && !areSealedWitnessObservations(input.witness)) {
+    const unsealed = input.witness
+      .map((observation, index) => (areSealedWitnessObservations([observation]) ? null : index))
+      .filter((index): index is number => index !== null)
+    faults.push(
+      `witnessProvenance is "witnessed" but witness row(s) ${unsealed.join(', ')} were not produced by a testkit witness instrument (no provenance seal); a hand-built observation cannot corroborate a verdict`,
+    )
+  }
 
   for (const [index, domain] of input.blindDomains.entries()) {
     if (!isEffectDomain(domain)) faults.push(`blindDomains[${index}] is not an effect domain: ${JSON.stringify(domain)}`)

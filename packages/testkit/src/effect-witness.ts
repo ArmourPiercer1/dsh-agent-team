@@ -59,6 +59,50 @@ export interface EffectWitness {
   readonly blindDomains: EffectDomain[]
 }
 
+/**
+ * Provenance seal (M7-A). `instrumented: true` used to be a value ANY caller
+ * could type into a hand-built observation row: the oracle demanded the flag
+ * but could not tell an instrument from a literal. Every row this module
+ * produces therefore carries a non-enumerable, module-private symbol.
+ *
+ * WHAT IT PROVES: the row object was built by a witness implementation in THIS
+ * module (`createFsWitness` / `createBlindWitness`), not assembled at the call
+ * site — which is why the seal is a private `Symbol`, not a string field.
+ * WHAT IT DOES NOT PROVE: that the caller ran the instrument over the right
+ * directory, at the right time, or did not discard its rows. It also does not
+ * survive `JSON.stringify` / `structuredClone`, so a REPLAYED evidence file is
+ * unsealed by construction and cannot be re-graded as `witnessed`.
+ */
+const WITNESS_SEAL = Symbol('@dsh-agent-team/testkit/effect-witness/seal')
+
+/** Mark rows as produced by this module. Non-enumerable: JSON is unchanged. */
+function sealObservations(rows: WitnessObservation[]): WitnessObservation[] {
+  for (const row of rows) {
+    Object.defineProperty(row, WITNESS_SEAL, { value: true, enumerable: false })
+  }
+  return rows
+}
+
+/**
+ * Whether one observation row was produced by a witness instrument in this
+ * module (see {@link WITNESS_SEAL}).
+ *
+ * @param value - any value claiming to be a {@link WitnessObservation}.
+ */
+export function isSealedWitnessObservation(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && (value as Record<symbol, unknown>)[WITNESS_SEAL] === true
+}
+
+/**
+ * Whether EVERY row was produced by this module's instruments. Empty input is
+ * not sealed: an empty witness is an absence of observation, not a seal.
+ *
+ * @param rows - the observations handed to an oracle.
+ */
+export function areSealedWitnessObservations(rows: readonly unknown[]): boolean {
+  return rows.length > 0 && rows.every((row) => isSealedWitnessObservation(row))
+}
+
 /** All three domains, in the fixed reporting order. */
 const ALL_DOMAINS: readonly EffectDomain[] = ['filesystem', 'process', 'network']
 
@@ -167,7 +211,7 @@ export function createFsWitness(opts: { root: string; outside: string; marker?: 
     async observe(): Promise<WitnessObservation[]> {
       const changed = changes(baseline, snapshot(opts.outside))
       const listed = changed.slice(0, EVIDENCE_CAP).map((path) => label(path, opts.root))
-      return [
+      return sealObservations([
         {
           domain: 'filesystem',
           observed: changed.length > 0,
@@ -189,7 +233,7 @@ export function createFsWitness(opts: { root: string; outside: string; marker?: 
           instrumented: false,
           evidence: ['not instrumented by the filesystem witness'],
         },
-      ]
+      ])
     },
   }
 }
@@ -219,7 +263,7 @@ export function createBlindWitness(witness: EffectWitness, domains: EffectDomain
     blindDomains,
     async observe(): Promise<WitnessObservation[]> {
       const observations = await witness.observe()
-      return observations.map((observation) =>
+      return sealObservations(observations.map((observation) =>
         blinded.has(observation.domain)
           ? {
               domain: observation.domain,
@@ -228,7 +272,7 @@ export function createBlindWitness(witness: EffectWitness, domains: EffectDomain
               evidence: ['blinded by createBlindWitness (sensitivity negative control)'],
             }
           : observation,
-      )
+      ))
     },
   }
 }

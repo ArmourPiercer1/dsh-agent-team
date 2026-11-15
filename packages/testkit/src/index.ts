@@ -38,7 +38,21 @@ export type {
   ScriptedModelErrorCode,
 } from './scripted-model.js'
 
-export { createBlindWitness, createFsWitness } from './effect-witness.js'
+// M7-A (2026-11-15): the same script at the real host's model WIRE boundary
+// (one in-process adapter cannot reach a `dsh web` child), plus the shared
+// schema/matching law both transports use. Dependency-free on purpose: the
+// real-host harness imports these modules under plain `node`.
+export { matchAgentScriptRequest } from './agent-script.js'
+export type { AgentScriptRequestFacts } from './agent-script.js'
+export { createWireScriptDriver, wireSerializedMessages, wireToolNames } from './wire-script.js'
+export type { WireModelRequest, WireScriptConsumption, WireScriptDriver, WireScriptReply } from './wire-script.js'
+
+export {
+  areSealedWitnessObservations,
+  createBlindWitness,
+  createFsWitness,
+  isSealedWitnessObservation,
+} from './effect-witness.js'
 export type { EffectDomain, EffectWitness, WitnessObservation } from './effect-witness.js'
 
 export { CONTRACT_SCHEMA, judgeContract } from './contract-oracle.js'
