@@ -205,3 +205,46 @@ describe('TINF M2 scripted model: cancellation', () => {
     expect(() => assertComplete(adapter)).toThrow(/unconsumed scripted turn/)
   })
 })
+
+describe('M7-A wire script driver (the same agent-script/1 law, over the model wire)', () => {
+  const wireRequest = (toolNames: string[], text: string) => ({
+    tools: toolNames.map((name) => ({ function: { name } })),
+    messages: [{ role: 'user' as const, content: text }],
+  })
+
+  it('consumes one turn per agent request; aux requests consume nothing; completion is enforced', async () => {
+    const { createWireScriptDriver } = await import('../src/index.js')
+    const driver = createWireScriptDriver(
+      {
+        schema: 'agent-script/1',
+        turns: [
+          {
+            expect_request: { tools_include: ['write'], contains_text: 'GO' },
+            respond: { kind: 'tool-call', name: 'write', args: { file_path: 'a', content: 'b' } },
+          },
+          { respond: { kind: 'text', text: 'DONE' } },
+        ],
+      },
+      { callIdPrefix: 'w' },
+    )
+    // An aux request (title/compaction) carries no tool list: a neutral reply, no turn consumed.
+    expect(await driver.decide({ seq: 1, req: { messages: [] } })).toEqual({ kind: 'text', content: 'WIRE-AUX' })
+    expect(driver.consumedTurns).toBe(0)
+    const call = await driver.decide({ seq: 2, req: wireRequest(['write', 'bash'], 'GO') })
+    expect(call).toMatchObject({ kind: 'tool-call', toolCalls: [{ id: 'w-0', name: 'write' }] })
+    expect(await driver.decide({ seq: 3, req: wireRequest(['write'], 'GO result') })).toEqual({ kind: 'text', content: 'DONE' })
+    driver.assertComplete()
+    await expect(driver.decide({ seq: 4, req: wireRequest(['write'], 'again') })).rejects.toMatchObject({ code: 'SCRIPT_EXHAUSTED' })
+  })
+
+  it('refuses a request that does not match the declared expectation, and shares the schema with the adapter', async () => {
+    const { createWireScriptDriver } = await import('../src/index.js')
+    const doc = { schema: 'agent-script/1', turns: [{ expect_request: { tools_include: ['write'] }, respond: { kind: 'text', text: 'X' } }] }
+    const driver = createWireScriptDriver(doc, {})
+    await expect(driver.decide({ seq: 1, req: wireRequest(['read'], 'p') })).rejects.toMatchObject({ code: 'SCRIPT_UNEXPECTED_REQUEST' })
+    // One law, two transports: the wire driver and validateAgentScript accept exactly the same document.
+    expect(validateAgentScript(doc)).toEqual(driver.script)
+    expect(() => validateAgentScript({ schema: 'agent-script/2', turns: [] })).toThrow()
+    expect(() => createWireScriptDriver({ schema: 'agent-script/2', turns: [] }, {})).toThrow()
+  })
+})

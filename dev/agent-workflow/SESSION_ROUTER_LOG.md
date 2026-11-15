@@ -8914,3 +8914,67 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **3. 文档**：`tinf-trust-closeout-20261115/README.md` 更正 baseline 语义（per-root membership；增长允许并报告；`catalog_digest` 仅元数据、参数 `_catalogDigest` 不比较），删除“digest 漂移拒绝”错误表述；新增本轮 P1 小节、精确拒绝码与测试名、以及仍在开放项（F-06 不在范围、`required_oracles` 仍空、L2 P50 ≤ 10 min 未达成、91 未收集测试仍是 set-diff 债务）。新 memo：`docs/plans/memo/tinf-p1-verification-semantics-20261115/README.md`。
 
 **4. 门禁**：在干净 clone 的真实 base 上重跑七文件命令与受影响套件；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18`；`test-catalog --max-uncollected 91` exit 0（`uncollected=91`）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`docs-sync --check`；`lint-identities`；eslint；`node --check`。具体数字见最终报告。
+
+## 2026-11-15 — M7-A 真实宿主纵向切片（首个把 Contract Oracle 架在真实执行链上的任务）
+
+**0. 背景**：M7-A 要求先用 file:line 证据回答六个侦察问题，再只做一条纵向切片：`脚本化模型 → 真实 DSH Agent Session → 真实工具解析 → 真实执行 → 独立观察 → Oracle 判决`，且 CORE PATCH BUDGET = 0、不得开 PR/推送。分支 `task/m7a-real-host-20261115`（base `6aba7365f`），四个 commit：`7f637debd`（testkit wire 脚本 + witness 溯源封印）、`2ff4bd152`（world-factory 真实宿主切片 + 无宿主单测）、`7f8230f3f`（侦察 memo）、`7d5bc8432`（uncollected baseline 91→93）。
+
+**1. 六问答案**（详见 `docs/plans/memo/m7a-real-host-20261115/README.md`）：World Factory 存在且独占生命周期（`tests/world-factory/lib/world-factory.mjs:226/333/622/844`）；脚本化模型经**公开 provider 端点**进入真实宿主（`DEEPSEEK_BASE_URL`，`packages/llm/llm-deepseek/src/config.ts:109/290`、trusted-env `app-boot/src/index.ts:148`、工厂注入 `world-factory.mjs:665`），不是打补丁；工具调用确实穿到 OS（`tool-fs/src/write.ts:111/112/118`、`fs-sandbox/src/index.ts:141`）；**没有公开的“效果观察” seam**——`session.event`（`sdk/protocol/src/types.ts:108`）与耐久 session log（`session-persistence-jsonl/src/format.ts:254/267/280`）都是被测系统的自述；独立观察只能来自宿主进程之外。
+
+**2. 能力矩阵（实测）**：filesystem = **可观察**（父进程快照 + sha256）；process / PTY / network = **不可观察**。真实工具面 27 个（含 `write`/`bash`，另有 canary `u5_canary`）。沙箱不对称：fs 工具可写平台临时区（TMPDIR 被指向世界内），bash 对同一路径只读（`Read-only file system`，exit 1）却仍以 `COMPLETED`（`isError:false`）入账——**非零退出不是工具错误**。
+
+**3. 切片（一次 boot、五个 session，2m13s wall，boot 130s）**：A1 拒绝写入工作区外 → `SATISFIED`（拒绝被独立见证 corroborate）；A2 真实写入被监视的非授权目录 → `VIOLATED`（负控，真实字节 + 独立可见）；A3 同一调用但观察被禁用 → `INCONCLUSIVE`（文件真实存在）；A4 空 witness → `INSTRUMENT_ERROR`；A5 bash 可达性与围栏 → `SATISFIED`。每臂都断言独立磁盘事实（拒绝=无字节+`FS_SANDBOX_DENIED`；允许=字节摘要相符）。观测对象由 observer 自己 arm/blind，调用方不写 `instrumented`。
+
+**4. `instrumented` 溯源**：新增模块私有 Symbol 封印 + `witnessProvenance:'declared'|'witnessed'`（默认 declared 向后兼容）。封印只能证明“行由 testkit 仪器产生”，**不能**证明监视的是哪个目录、时间窗口、也不能经 JSON 重放（有测试钉住）。真正的可信化需要 World Factory 拥有观察窗口并加盖 world/pid/lease 身份——列为 M7-B 候选，不在本任务范围。
+
+**5. 发现（未修，避免超范围）**：Oracle 的决策是 **contract 级而非 call 级**——A2 的 `VIOLATED` 由规则 3c（DENIED + 观察到的效果）触发，但它引用的拒绝属于另一个调用；判决对契约是对的，解释不精确。M7-B：要么 lane 产出 per-call decision 引用，要么 oracle 增加 execution 级规则。
+
+**6. 门禁**：无宿主单测 10/10（`node --test tests/world-factory/m7a-real-slice-unit.test.mjs`）；package vitest `m2-contract-oracle` 18、`m2-effect-witness` 10、`m2-scripted-model` 9、`m2-witness-provenance` 5、`m7a-real-slice`（宿主状态契约）2 全绿；四个无依赖模块在仓库 strict 旗标下 `tsc --noEmit` 通过；eslint 对改动 TS 文件 0 error；`test-catalog --write-uncollected-baseline` 后 exit 0。未推送、未开 PR；稳定实例 :3080 前后探针均为 `{"reachable":true,"status":401}`。
+
+## 2026-11-15 — M7-A 修正：两个套件真正被 CI 收集（基线回到 91）
+
+**0. 背景（必须修正）**：上一轮把 `uncollected` 基线从 91 抬到 93，且两个 M7-A 套件只在本地跑过——按 F-06 的定义，“只有手工演示过的能力”等于没有门禁。父代理拒绝以该状态合并。本轮在不改切片语义的前提下把两个半区放回 CI：C1（无宿主）进 L1，C2（一次真实 boot）进 ci-census。
+
+**1. C1（无宿主，每个 PR）**：`tests/world-factory/m7a-real-slice-unit.test.mjs`（10 例）与新增 `tests/world-factory/m7a-real-slice-host-state.test.mjs`（node:test，2 例：宿主缺失=逐字拒绝+skip；`M7A_REQUIRE_PINNED_HOST=1`=硬失败）声明进**既有** `tinf-instruments` 腿的 `suites[]`，由 `node scripts/dispatch-tests.mjs --run --leg tinf-instruments` 在 ci-integration 执行，整套 339 测试全绿。**不新建腿**的原因：M6 parity 法则要求每个 dispatch step 在 base（`e5bf05670`）有对应 `node --test` argv，新 step 会被判 `UNCONVERTED`；因此改为并入既有腿，并按既有流程**有意重生成** parity 证据（union 29→31、`problems=0`、`added=` 精确列出两文件），同时在 `scripts/test-catalog.test.mjs` 的 allowed-added 集合里点名声明，后续新增仍无法藏在该豁免后。
+
+**2. C2（真实宿主，ci-census）**：`census-runtime.yml` 在 census 与 transcript re-grade **之后**新增独立 step：`node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`，`env: M7A_REQUIRE_PINNED_HOST: '1'`、`M7A_BOOT_TIMEOUT_MS: '600000'`。宿主缺失在该 job 是**命名硬失败**（`M7A-REAL-SLICE-HOST-INCOMPLETE`），绝不 skip。census 的 argv、两次 capture、population 与 plan 均未触碰（独立 step）。成本：locally world wall 133.2s（boot 129.1s + teardown 0.1s），按 CI argv 实测 `node --test` 148.7s；按该 job 自己的 4× hosted 系数约 +9 min，叠加其 ~8–10 min 地板仍远低于 `timeout-minutes: 60`。
+
+**3. 基线**：`dev/ci/uncollected-baseline.json` 用 `--write-uncollected-baseline` 重生成回 **91**（两套件均被收集，不是抬闸）；`--max-uncollected 91` exit 0 且打印 `UNCOLLECTED 91`。census population 仍为 11 roots / **705** files（故 705 的钉住值不动）。
+
+**4. 测试面归并**（避免移动 705 的 reviewed population）：provenance 封印用例并入 `packages/testkit/test/m2-effect-witness.test.ts`，wire driver 并入 `packages/testkit/test/m2-scripted-model.test.ts`；宿主状态契约移出 vitest 成为 node:test（并剥离子进程的 `NODE_TEST_CONTEXT`，否则嵌套 runner 会跳过文件、两例变成空断言）。
+
+**5. 新 commit**：`e2aae32b0`（测试面归并 + host-state node:test + `M7A_BOOT_TIMEOUT_MS`）、`14b266f09`（CI 收集：manifest leg suites、ci-integration 注释、census step、baseline 91、parity 证据与 allowed-added）、`9d0cd5722`（memo §5/§9）。此前 `7d5bc8432` 的 91→93 已被 `14b266f09` 撤回为 91。
+
+**6. 门禁（本轮实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` exit 0（`UNCOLLECTED 91`，`tests=872 digest=sha256:5f71c543…`）；`docs-sync --check` exit 0；`lint-identities` exit 0（1686 files）；`eb3-ci-negative-controls` 26/26；`census-plan.test.mjs` 50/50；C2 以 CI argv 在真实宿主上 5 臂全中（A1 SATISFIED / A2 VIOLATED / A3 INCONCLUSIVE / A4 INSTRUMENT_ERROR / A5 SATISFIED）。未推送、未开 PR；:3080 探针前后不变。
+
+## 2026-11-15 — M7-A 审查修复：溯源变成“仪器实例的属性”，域变成“被声明并真正被观察的路径”
+
+**0. 背景**：PR #779 审查判 CHANGES REQUIRED，两个 blocking 假绿。(1) 伪造溯源：旧封印盖在 `observe()` 的**返回值**上，故 `createBlindWitness(witness, [])` 能把任意对象重新封印成 `witnessed`；memo 中“调用方能伪造一行，不能伪造一台仪器”是**假的**，本轮撤回。(2) 一个目录冒充整个 `filesystem` 域：witness 只盯 `<home>/m7a-tmp/m7a-watch`，而 `judgeRealRun` 硬编码 `requiredEffectDomains:['filesystem']`；A5 实际写了 `workspace/bash-wrote.txt` 却判 `SATISFIED "no effect in filesystem"`。
+
+**1. 溯源改为实例属性**：`effect-witness.ts` 模块私有 `WeakSet` 记录**本模块构造的仪器实例**，每行带不可枚举的实例引用；`isSealedWitnessObservation` 只在实例仍在集合内时为真；`createBlindWitness` 对非本模块仪器**抛 TypeError**，已无重封印路径；公开面只剩两个只读谓词含 "seal"（有测试点名）；`witnessProvenance:'witnessed'` 现在**必须**同时声明 `requiredEffectScope`（否则 INSTRUMENT_ERROR）。负控：`TypeError: createBlindWitness: the wrapped object is not a witness instrument created by this module…`；`SEALED: [false,false,false]`；`FORGERY: INSTRUMENT_ERROR | witnessProvenance is "witnessed" but witness row(s) 0, 1, 2 were not produced by a testkit witness instrument (no provenance seal)…`。
+
+**2. 范围改为按路径判级**：每行新增 `watchedPaths`（绝对路径，目录覆盖子树）与 `observedPaths`（观测到的变更路径）；合同声明 `requiredEffectScope` / `authorizedEffectPaths` / `forbiddenEffectPaths`（**deny 压 allow**）。未覆盖必需范围 → `INCONCLUSIVE` 并点名未覆盖路径；授权路径上的效果**上报并排除**（`observedEffectPaths`/`authorizedEffectPaths`），绝不丢弃；其余路径按规则判级；行自报 `instrumented:false` 的域**无论调用方是否列在 `blindDomains`** 都算盲（盲区优先级）。负控原文：`SCOPE: INCONCLUSIVE | required effect scope is not covered by the witness: /w/other/file.txt; the instrument watched: /w/one. A partial watch cannot corroborate a claim about the whole domain`；`EFFECT: VIOLATED | unauthorized=["/w/home/tmp/x"] | …outside the authorized set…`；`BLIND: INCONCLUSIVE | required effect domain(s) declared blind by the witness: filesystem…`。
+
+**3. 重跑五臂（一次 boot，130.5s boot / 133.8s wall，:3193）**：A1 `SATISFIED`（观测 46 / 授权 46 / 非授权 **0**；拒绝目标在**被观察的 home 内**，不再是空洞通过）；A2 `VIOLATED`（46/45/**1**，非授权路径逐字为 `$HOME/m7a-tmp/m7a-watch/watched-escape.txt`）；A3 `INCONCLUSIVE`（盲；`limitations` 现在点名 watched paths）；A4 `INSTRUMENT_ERROR`；A5 `SATISFIED`（44/44/**0**，且其 observed 列表**含** `$HOME/workspace/bash-wrote.txt`——旧版不可见的真实写入现在被观测、分类、并写进判决理由）。每臂新增 `M7A-OBS` 诊断行（watched/observed/authorized/unauthorized）与 report 三张路径表。授权集合是**事先声明**的：workspace + 宿主自身执行态（`sessions/`、`storages/`、`m7a-tmp/dsh-*` spool）；禁止集合 = 授权 temp 根内的 watch 目录。宿主记账与工具写入授权根在本通道上不可区分——列为 memo §8.9 UNKNOWN，而不是静默通过。
+
+**4. memo**：§6 整节重写并**撤回**“cannot fabricate an instrument”；§4.2 换成新一次运行的逐字 transcript 与按臂计数表；§4.4 记录两条 blocking 与逐字负控输出；§7/§8 增补“授权集合内的效果不可归因于工具”“未观察路径只能 INCONCLUSIVE”。明示：若范围修复让某些臂变成 `INCONCLUSIVE`，那才是正确结果——本轮没有为了保绿而缩小范围（A1/A5 的 scope 是**整个 owned home**，不是单个目录）。
+
+**5. 新 commit**：`767b7d1ee`（testkit：实例溯源 + scope/授权/禁止判级 + 负控）、`a67603da0`（harness + 五臂声明与诊断行）、`b21b5f508`（memo）。此前 `e2aae32b0`/`14b266f09`/`9d0cd5722`/`e072ca7f5` 不变；未推送、未开 PR。
+
+**6. 门禁（本轮实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`；`dispatch-tests --parity --old-ref e5bf05670` → `union old=25 new=31 set=sha256:949f6499… problems=0`（与已记录证据一致）；`test-catalog --max-uncollected 91` → `UNCOLLECTED 91`、`findings=0`、`dev/ci/uncollected-baseline.json` 对 `origin/master` **零 diff**；C1 腿在宿主树隐藏下 `339 pass / 0 fail`（`M7A_HOST_TREE=/nonexistent/host node scripts/dispatch-tests.mjs --run --leg tinf-instruments`）；testkit `m2-effect-witness` 14 / `m2-contract-oracle` 27 / `m2-scripted-model` 11 全绿；`node --test` 无宿主套件 10/10、host-state 2/2；`docs-sync --check` findings=0；`lint-identities` exit 0；eslint 改动文件 0 error。**已知环境性失败（与本次改动无关）**：`p4t6-session-event-scan`（census 记账 1216 vs 树）、`a4p7-merge-gate`（workspace typecheck / client lane，本 worktree 无构建产物）——前者已在 `git stash` 后的干净树上复现为同一条失败。稳定实例 :3080 探针前后 `{"reachable":true,"status":401}` 不变。
+
+## 2026-11-15 — M7-A 审查修复（第 2 轮）：溯源=行身份（对象标识），而非属性查找
+
+**0. 背景**：PR #779 第 2 轮审查仍判 CHANGES REQUIRED。上轮把“溯源”从行内符号改成“指向仪器实例的不可枚举引用”，但 `isSealedWitnessObservation` 仍以**属性查找**读取该符号，于是 `Object.create(realSealedRow)` 会**沿原型链继承**封印：派生对象（未冻结）改掉 `observed:false` 后仍被判为 witnessed，诚实脏 witness 为 `VIOLATED`、派生行却可 `SATISFIED`，直接推翻 memo §6.1“行已冻结故不可改写”的说法。
+
+**1. BLOCKING（已修）**：溯源改为**行身份**。模块私有 `WeakMap<row, instrument>` 只由**构造该行的仪器**写入，另有 `WeakSet` 记录本模块构造的仪器；`isSealedWitnessObservation` 要求全部成立：该对象**就是** WeakMap 的键（身份，派生/复制对象不是键）、其仪器仍在集合、`Object.getPrototypeOf(row) === Object.prototype`（原型不能夹带）、行**与数组**（`evidence`/`watchedPaths`/`observedPaths`）均已冻结。谓词整体 try/catch，恶意 getter 一律答 false。逐字负控：`HONEST: VIOLATED`；`DERIVED sealed? false | INSTRUMENT_ERROR | witnessProvenance is "witnessed" but witness row(s) 0 were not produced by a testkit witness instrument (no provenance seal); a hand-built or derived observation cannot corroborate a verdict`；`Object.freeze({...sealedRow})` 普通复制对象同样 `INSTRUMENT_ERROR`。memo §6.1 已按此改写并撤回“仅靠冻结即可”的表述。
+
+**2. MEDIUM（Proxy 崩溃，已修）**：witness 行现在经 `readWitnessRow` **一次性**在 try/catch 内读取（代理陷阱抛错时返回 fault），`events`/`blindDomains`/scope 数组亦防御式读取，`judgeContract` 外层再兜底：恶意输入返回 `INSTRUMENT_ERROR` 而非抛异常。逐字：`PROXY: INSTRUMENT_ERROR | witness[0] could not be read (a throwing property access is not a witness row): proxy trap: get`；事件列表为抛错 Proxy 时同样 `INSTRUMENT_ERROR`。
+
+**3. MEDIUM（符号链接根被跟随，已修）**：`createFsWitness` 对每个 watch 根做 `realpath`，解析结果与声明路径不同即抛 `TypeError`（不静默跟随），`watchedPaths` 声明为真实路径；因此要求“链接之后”的路径覆盖不到 → `INCONCLUSIVE`（有测试）。逐字：`TypeError: createFsWitness: the watched root /tmp/…/link is a symlink (resolves to /tmp/…/real); a witness cannot claim a scope it reaches indirectly — declare the real path`。
+
+**4. LOW（计数不可复现，已改写法）**：不再把精确 observed 计数当 canonical。§4.2 表头标明“one run（`run-2026-11-15T16-25-46-433Z`，warm boot 43.1s / wall 48.2s / port 3184）”，并写明**不变量**才是钉住的东西：A1/A5 非授权 = 0、A2 = 1、A3 盲（INCONCLUSIVE）；数字随宿主把自身记账（`dsh-subprocess-*`、`dsh-workspace-changes-*`）写入同一 home 的时点而变（本轮 34/34/0、34/33/1、0/0/0、0/0/0、32/32/0；上一轮冷启动为 46/46/0、46/45/1、44/44/0）。§6.2 同步改写。**没有臂的判决或主张发生变化**：A1/A5 仍 `SATISFIED`（主张=授权集合外无效果，且 A5 的 observed 列表含 `workspace/bash-wrote.txt`），A2 `VIOLATED`，A3 `INCONCLUSIVE`，A4 `INSTRUMENT_ERROR`。
+
+**5. 新增 commit**：`88d4b5469`（身份溯源 + Proxy 防护 + symlink 拒绝 + 测试）、`715c2ef17`（memo §4.2/§4.4/§6.1/§6.2）。此前 `767b7d1ee`/`a67603da0`/`b21b5f508`/`43fd05dcd` 不变。按父代理本轮明确指示**推送本分支**（非 force）。
+
+**6. 门禁（本轮实测）**：testkit `m2-contract-oracle` 30 / `m2-effect-witness` 16 / `m2-scripted-model` 11 全绿；`node --test` 无宿主套件 10/10、host-state 2/2；C1 腿在宿主树隐藏下全绿；C2 以 CI argv（`M7A_REQUIRE_PINNED_HOST=1`）五臂全中（`✔ … (48218.0ms)`、`ℹ pass 1`）；`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK PASS legs=18 bad=0`；`--parity --old-ref e5bf05670` → `problems=0`、union 25→31（added 仍为 4 控制 + 2 套件）；`test-catalog --max-uncollected 91` → `findings=0`、`tests=872 digest=sha256:5f71c543…`、baseline 对 `origin/master` 零 diff；`docs-sync --check` findings=0；`lint-identities` exit 0；eslint 改动 TS 0 error；`git diff --check` 干净。:3080 探针前后 `{"reachable":true,"status":401}`。

@@ -229,6 +229,14 @@ jobs:
         # positive control and named refusals, plus the build stamp over the REAL install-surface
         # bytes). Deleting the step is CI_LAYER_LEG_MISSING; dropping `--run` is
         # CI_LAYER_LEG_WEAKENED.
+        # M7-A (2026-11-15) joins this SAME leg with the real-host slice's two HOST-FREE suites:
+        # tests/world-factory/m7a-real-slice-unit.test.mjs (durable-log reader over concatenated
+        # zstd frames, wire script driver, witness provenance seal) and
+        # tests/world-factory/m7a-real-slice-host-state.test.mjs (absent host -> declared refusal +
+        # skip; M7A_REQUIRE_PINNED_HOST=1 -> hard failure). A NEW leg is not usable here: the M6
+        # parity law requires every dispatch step to correspond to an old-side `node --test` argv,
+        # so a new step would be a permanent UNCONVERTED problem. The C2 half (one real boot) runs
+        # in ci-census, the only job that provisions the pinned host.
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
           node scripts/test-catalog.mjs --max-uncollected 91

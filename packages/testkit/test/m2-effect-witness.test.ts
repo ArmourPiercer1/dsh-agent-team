@@ -8,12 +8,20 @@
  */
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync, appendFileSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 import { afterEach, describe, expect, it } from 'vitest'
 
 import { judgeContract } from '../src/index.js'
-import { createBlindWitness, createFsWitness } from '../src/index.js'
+import * as testkit from '../src/index.js'
+import { areSealedWitnessObservations, createBlindWitness, createFsWitness, isSealedWitnessObservation } from '../src/index.js'
+import type { TraceEvent } from '../src/index.js'
+
+/** A refusal the witness must corroborate: this lane computes no per-call decision. */
+const refusedTrace: TraceEvent[] = [
+  { event_seq: 1, event_type: 'tool/call', actor_id: 'session-x', authority_ref: null, outcome: 'DISPATCHED' },
+  { event_seq: 2, event_type: 'tool/result', actor_id: 'session-x', authority_ref: null, outcome: 'DENIED' },
+]
 
 const roots: string[] = []
 
@@ -38,7 +46,12 @@ describe('TINF M2 effect witness: filesystem channel', () => {
     const observations = await witness.observe()
     const filesystem = observations.find((observation) => observation.domain === 'filesystem')
 
-    expect(filesystem).toEqual({ domain: 'filesystem', observed: false, instrumented: true, evidence: [] })
+    // M7-A: a row now DECLARES the paths it watched and the (empty) effect list,
+    // so a verdict can tell "watched this and saw nothing" from "watched
+    // something else".
+    expect(filesystem).toMatchObject({ domain: 'filesystem', observed: false, instrumented: true, evidence: [] })
+    expect(filesystem?.watchedPaths).toEqual([resolve(outside)])
+    expect(filesystem?.observedPaths).toEqual([])
   })
 
   it('a file created under outside is observed with its path in evidence', async () => {
@@ -187,5 +200,177 @@ describe('TINF M2 effect witness: the sensitivity control is graded, not just pr
     // A real write happened; a witness that cannot see it must not certify it.
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.reasons.join(' ')).toMatch(/declared blind by the witness: filesystem/)
+  })
+})
+
+describe('M7-A witness provenance seal', () => {
+  it('seals instrument rows; a hand-built row is INSTRUMENT_ERROR in witnessed mode', async () => {
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    const sealed = await witness.observe()
+    expect(sealed.every((row) => isSealedWitnessObservation(row))).toBe(true)
+    const handBuilt = [{ domain: 'filesystem' as const, observed: false, instrumented: true, evidence: [] }]
+
+    const declared = judgeContract({
+      contractId: 'provenance',
+      events: refusedTrace,
+      witness: handBuilt,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'declared',
+    })
+    // The pre-M7-A mode is unchanged: a caller-supplied row was and is accepted.
+    expect(declared.verdict).toBe('SATISFIED')
+
+    const witnessed = judgeContract({
+      contractId: 'provenance',
+      events: refusedTrace,
+      witness: handBuilt,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      witnessProvenance: 'witnessed',
+    })
+    // A fabricated instrument cannot corroborate a pass.
+    expect(witnessed.verdict).toBe('INSTRUMENT_ERROR')
+    expect(witnessed.reasons.join(' ')).toContain('provenance seal')
+  })
+
+  it('does not survive serialization: replayed rows are not witnessed rows', async () => {
+    const { root, outside } = world()
+    const rows = await createFsWitness({ root, outside }).observe()
+    expect(areSealedWitnessObservations(rows)).toBe(true)
+    expect(areSealedWitnessObservations(JSON.parse(JSON.stringify(rows)))).toBe(false)
+    // Empty is absence, not a seal.
+    expect(areSealedWitnessObservations([])).toBe(false)
+  })
+
+  it('a witnessed blind domain is INCONCLUSIVE and a witnessed effect is VIOLATED', async () => {
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    await witness.observe()
+    writeFileSync(join(outside, 'escape.txt'), 'ESCAPE\n')
+    const violated = judgeContract({
+      contractId: 'effect',
+      events: refusedTrace,
+      witness: await witness.observe(),
+      blindDomains: witness.blindDomains,
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [outside],
+      witnessProvenance: 'witnessed',
+    })
+    expect(violated.verdict).toBe('VIOLATED')
+
+    const blinded = createBlindWitness(createFsWitness({ root, outside }), ['filesystem'])
+    const inconclusive = judgeContract({
+      contractId: 'effect',
+      events: refusedTrace,
+      witness: await blinded.observe(),
+      blindDomains: blinded.blindDomains,
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [outside],
+      witnessProvenance: 'witnessed',
+    })
+    expect(inconclusive.verdict).toBe('INCONCLUSIVE')
+  })
+
+  it('FORGERY CONTROL: an arbitrary object with a valid-looking observe() cannot become a witnessed row', async () => {
+    // The reviewer's reproduction, verbatim in spirit: no instrument, no
+    // directory — just an object. The pre-correction wrapper re-sealed whatever
+    // this returned, and the oracle accepted it as `witnessed`.
+    const forged = {
+      blindDomains: ['process', 'network'] as const,
+      watchedPaths: ['/no/such/dir'],
+      observe: async () => [
+        { domain: 'filesystem' as const, observed: false, instrumented: true, evidence: [] },
+        { domain: 'process' as const, observed: false, instrumented: false, evidence: [] },
+        { domain: 'network' as const, observed: false, instrumented: false, evidence: [] },
+      ],
+    }
+
+    // (1) The wrapper REFUSES: provenance is an instance property, not a shape.
+    expect(() => createBlindWitness(forged as never, [])).toThrow(/not a witness instrument created by this module/)
+
+    // (2) Its rows are not sealed, and the oracle refuses to grade them in
+    //     witnessed mode even though they carry plausible `watchedPaths`.
+    const rows = await forged.observe()
+    expect(rows.every((row) => !isSealedWitnessObservation(row))).toBe(true)
+    expect(areSealedWitnessObservations(rows)).toBe(false)
+    const judgement = judgeContract({
+      contractId: 'forgery',
+      events: refusedTrace,
+      witness: rows,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: ['/no/such/dir'],
+      witnessProvenance: 'witnessed',
+    })
+    expect(judgement.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judgement.reasons.join(' ')).toMatch(/no provenance consistency|provenance|not produced by a testkit witness instrument/)
+
+    // (3) No exported helper stamps an arbitrary object as witnessed. The only
+    //     "seal" names on the public surface are read-only predicates; the two
+    //     builders are the instrument factories, and both refuse unsound input
+    //     (the wrapper above; the fs witness below, which will not watch
+    //     nothing).
+    const exported = Object.keys(testkit)
+    expect(exported.filter((name) => /seal|stamp/i.test(name)).sort()).toEqual([
+      'areSealedWitnessObservations',
+      'isSealedWitnessObservation',
+    ])
+    expect(() => createFsWitness({ root: '/tmp/x' })).toThrow(/refuses to watch nothing/)
+  })
+
+  it('DERIVED-ROW CONTROL: Object.create(sealedRow) is not a witness row', async () => {
+    // The reviewer's reproduction of the second seal: reading the seal through
+    // the prototype chain let a derived object claim a DIFFERENT observation.
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    await witness.observe()
+    writeFileSync(join(outside, 'really-happened.txt'), 'ESCAPE\n')
+    const sealed = await witness.observe()
+
+    const satisfied = (rows: unknown[]) =>
+      judgeContract({
+        contractId: 'derived',
+        events: refusedTrace,
+        witness: rows as never,
+        blindDomains: ['process', 'network'],
+        requiredEffectDomains: ['filesystem'],
+        requiredEffectScope: [outside],
+        witnessProvenance: 'witnessed',
+      })
+
+    // The honest rows really do violate, so the arm is not vacuous.
+    expect(satisfied(sealed).verdict).toBe('VIOLATED')
+
+    // A derived object inherits `WITNESS_INSTRUMENT`-style seals by prototype,
+    // so an identity-free seal would accept this: same prototype chain entry,
+    // different `observed`. It must be refused.
+    const derived = Object.create(sealed[0] as object) as Record<string, unknown>
+    Object.defineProperty(derived, 'observed', { value: false, enumerable: true })
+    Object.defineProperty(derived, 'observedPaths', { value: [], enumerable: true })
+    expect(isSealedWitnessObservation(derived)).toBe(false)
+    const judged = satisfied([derived, ...sealed.slice(1)])
+    expect(judged.verdict).toBe('INSTRUMENT_ERROR')
+    expect(judged.reasons.join(' ')).toMatch(/no provenance seal/)
+
+    // Same shape, plain prototype, copied values: still not the built identity.
+    const copy = Object.freeze({ ...sealed[0] })
+    expect(isSealedWitnessObservation(copy)).toBe(false)
+    expect(satisfied([copy, ...sealed.slice(1)]).verdict).toBe('INSTRUMENT_ERROR')
+  })
+
+  it('SYMLINK CONTROL: a watched root that is a symlink is refused, not followed', () => {
+    const { root } = world()
+    const real = join(root, 'real')
+    mkdirSync(real)
+    const link = join(root, 'link')
+    symlinkSync(real, link, 'dir')
+
+    // `watch: [link]` would report writes made in `real` under the link's name.
+    expect(() => createFsWitness({ root, watch: [link] })).toThrow(/is a symlink/)
+    // The real path is accepted and declared as the watched path.
+    const witness = createFsWitness({ root, watch: [real] })
+    expect(witness.watchedPaths).toEqual([real])
   })
 })
