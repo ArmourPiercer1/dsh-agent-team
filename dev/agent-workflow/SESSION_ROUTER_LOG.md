@@ -8806,3 +8806,5 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **9 仍未实测（memo §7 明写）**：**live plan 路径从未在宿主上跑过**（本机无 pristine host；live 分支只经注入 runner 的测试）；**没有任何真实 replay 录制**（全部合成）；plan 模式墙钟仍只是结构论断（2 次 invocation、argv 相同 + 0.8 s 实测开销）；dry-run 的 `ok→PASS` 只到 root 级，不证明断言数/文件集合。证据汇总：`docs/plans/memo/tinf-m5-census-cutover-20261114/evidence/review-round-2.txt`。
 
 **10. round-2 补充（同一分支，紧接上条）**：§1 里「测试运行不往 checkout 写一个字节」当时还差**一个空目录**——`main()` 在 plan 模式下也会预创建 `.artifacts/census/`。已收紧为：**只有 legacy 路径**预创建该目录；plan 路径的产物（replay / evidence / shard / product-build）写在 `--transcript-dir` 旁边（shard 在 `<transcript>/plan/`），**证据链随 transcript 一起被上传**，checkout 零写入；仅当没有 transcript dir 时才回落到 gitignored 的 `.artifacts/census/`。实测：清掉 `.artifacts/census` 后单跑 `census-cutover.test.mjs`，目录不再出现；六文件命令仍 **238/238**。
+
+**11. round-2 补充（精度修正）**：上条 §10 的「checkout 零写入」实测应为「**无 tracked 变更**；完整六文件跑完后最多留一个**空的** gitignored `.artifacts/`」。这不影响 finding 1 的实质：被审版本是**依赖**该目录存在（缺席即 16 条红），本 head 是**不读它**、缺席照跑 238/238。memo §2.2 与 `evidence/review-round-2.txt` 已按此措辞更正；live 分支测试在 finally 里对空 `.artifacts` 做 best-effort `rmdir`（非空则不动）。

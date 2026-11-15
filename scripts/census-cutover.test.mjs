@@ -45,7 +45,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
@@ -822,6 +822,13 @@ test('LIVE: one stamped invocation per capture, graded from the report it just w
     }
   } finally {
     rmSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true, force: true })
+    // The live branch writes into the checkout's gitignored artifact directory (it must: it grades a
+    // real stamped path). Remove the parent too, but ONLY when it is empty — never a real artifact.
+    try {
+      rmdirSync(resolve(REPO_ROOT, '.artifacts'))
+    } catch {
+      /* not empty, or already gone: leave it alone */
+    }
   }
 })
 
@@ -841,6 +848,11 @@ test('NEGATIVE: a stale report at the graded path is UNLINKED, so its absence is
   } finally {
     for (const capture of [1, 2]) rmSync(resolve(REPO_ROOT, stampedReportPath({ stamp: 'm5-test', pid: process.pid, capture })), { force: true })
     rmSync(resolve(REPO_ROOT, CENSUS_CAPTURE_REL), { recursive: true, force: true })
+    try {
+      rmdirSync(resolve(REPO_ROOT, '.artifacts'))
+    } catch {
+      /* not empty, or already gone */
+    }
   }
 })
 

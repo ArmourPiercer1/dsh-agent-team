@@ -26,8 +26,10 @@ node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/h
 | `4ff253a5` (the reviewed commit) | no | 226 | **210** | **16** |
 | `32c1a5bd4` (this round) | no | 238 | **238** | **0** |
 
-`ls .artifacts` in the clone after the second run: still absent — the suite writes nothing into the
-checkout (the leg's `shardDir`/`transcriptDir` are injected as tmp dirs).
+What the clone looks like afterwards: `git status --porcelain` is EMPTY (no tracked change), and the
+only thing that can appear is an EMPTY gitignored `.artifacts/` directory. That matters because
+nothing READS it: the old suite failed when it was missing, the new one passes without it, and the
+leg's output directories are tmp dirs (or `<transcript>/plan` in production).
 
 ## 2. Gates at `32c1a5bd4` (this worktree)
 
