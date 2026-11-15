@@ -19,13 +19,21 @@
  * a green step that runs nothing. The manifest leg's `cmd` ends with `--run`, so `eb3-ci-required`'s
  * allowlisted line reader proves the CI step actually executes the suites; `--run` is not defaulted.
  *
+ * MODES ARE MUTUALLY EXCLUSIVE (TINF trust-closeout, F-01). Until this rule, `--run --json` printed the
+ * plan JSON and exited 0 WITHOUT SPAWNING: a green CI step that ran nothing. `eb3-ci-required` could not
+ * see it because it graded a cmd PREFIX. The dispatcher now refuses any combination of execution and
+ * inspection modes by name (DISPATCH_MODE_CONFLICT, exit 2) before it reads the manifest, prints a
+ * plan or spawns anything, `--run` without `--leg` is DISPATCH_NO_LEG, and the run token
+ * (`DSH-TEST-DISPATCH … suites=N files=M`) is printed AFTER the spawn only.
+ *
  * USAGE
  *   node scripts/dispatch-tests.mjs --leg <id> --run      # execute: node --test <resolved files>
- *   node scripts/dispatch-tests.mjs --leg <id>            # print: node --test <resolved files>
- *   node scripts/dispatch-tests.mjs --leg <id> --json     # {leg, suites, set_digest, argv}
- *   node scripts/dispatch-tests.mjs --list                # every dispatchable leg + its suite count
- *   node scripts/dispatch-tests.mjs --check               # every leg resolves (no CI leg is empty)
- *   node scripts/dispatch-tests.mjs --parity [--old-ref R]  # old-vs-new argv diff for every leg
+ *   node scripts/dispatch-tests.mjs --leg <id>            # inspect: print the argv (mode=inspect)
+ *   node scripts/dispatch-tests.mjs --leg <id> --run-args # inspect: print the argv explicitly
+ *   node scripts/dispatch-tests.mjs --leg <id> --json     # inspect: {mode, leg, suites, argv}
+ *   node scripts/dispatch-tests.mjs --list                # inspect: every leg + suite count
+ *   node scripts/dispatch-tests.mjs --check               # inspect: every leg resolves
+ *   node scripts/dispatch-tests.mjs --parity [--old-ref R]  # inspect: old-vs-new argv diff
  *
  * Exit: 0 ok | 2 REFUSED (named code on stderr) | otherwise the runner's own exit code under --run.
  *
@@ -242,8 +250,24 @@ export function parityReport({ oldText, newText, manifest, tracked = null, workf
 
 // ---------------------------------------------------------------------- cli
 
-function parseArgs(argv) {
-  const opts = { leg: [], run: false, json: false, list: false, check: false, parity: false, oldRef: 'origin/master', help: false }
+/**
+ * Every CLI mode flag. ONE of these may be present in a valid invocation (or none: the default is
+ * `inspect` for a `--leg` invocation). `--leg` is an operand, not a mode. Kept as a frozen list so the
+ * conflict check cannot silently forget a flag when a new one is added.
+ */
+export const MODE_FLAGS = Object.freeze([
+  ['--run', 'run'],
+  ['--json', 'json'],
+  ['--list', 'list'],
+  ['--check', 'check'],
+  ['--parity', 'parity'],
+  ['--run-args', 'run-args'],
+  ['--help', 'help'],
+  ['-h', 'help'],
+])
+
+export function parseArgs(argv) {
+  const opts = { leg: [], run: false, json: false, list: false, check: false, parity: false, runArgs: false, oldRef: 'origin/master', help: false, modes: [] }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
     if (a === '--leg') {
@@ -251,16 +275,28 @@ function parseArgs(argv) {
       if (v === undefined || v.startsWith('--')) throw Object.assign(new Error('--leg needs an id'), { code: 'UNKNOWN_ARGUMENT' })
       opts.leg.push(v)
       i += 1
-    } else if (a === '--run') opts.run = true
-    else if (a === '--json') opts.json = true
-    else if (a === '--list') opts.list = true
-    else if (a === '--check') opts.check = true
-    else if (a === '--parity') opts.parity = true
+    } else if (a === '--run') { opts.run = true; opts.modes.push('run') }
+    else if (a === '--json') { opts.json = true; opts.modes.push('json') }
+    else if (a === '--list') { opts.list = true; opts.modes.push('list') }
+    else if (a === '--check') { opts.check = true; opts.modes.push('check') }
+    else if (a === '--parity') { opts.parity = true; opts.modes.push('parity') }
+    else if (a === '--run-args') { opts.runArgs = true; opts.modes.push('run-args') }
     else if (a === '--old-ref') opts.oldRef = String(argv[(i += 1)])
-    else if (a === '--help' || a === '-h') opts.help = true
+    else if (a === '--help' || a === '-h') { opts.help = true; opts.modes.push('help') }
     else throw Object.assign(new Error(`unknown argument ${a}`), { code: 'UNKNOWN_ARGUMENT' })
   }
   return opts
+}
+
+/**
+ * A mode COMBINATION is a refusal, not a precedence order. Any two distinct modes (including
+ * `--run --run`? that is one mode twice, which is harmless and not a conflict) → DISPATCH_MODE_CONFLICT.
+ * The check runs BEFORE the manifest is read, any plan/argv is printed, and any spawn.
+ */
+export function modeConflict(opts) {
+  const distinct = [...new Set(opts.modes ?? [])]
+  if (distinct.length <= 1) return null
+  return `modes ${distinct.join(' + ')} are mutually exclusive — a single invocation either EXECUTES (--run) or INSPECTS (--json/--list/--check/--parity/--run-args/--help), never both; the F-01 defect was \`--run --json\` printing a plan and exiting 0 without spawning`
 }
 
 function main(argv) {
@@ -270,14 +306,23 @@ function main(argv) {
   } catch (e) {
     return refused(e.code ?? 'UNKNOWN_ARGUMENT', e.message)
   }
+  // F-01: mutually exclusive modes, refused by NAME before any manifest read/output/spawn.
+  const conflict = modeConflict(opts)
+  if (conflict !== null) return refused('DISPATCH_MODE_CONFLICT', conflict)
   const usage = [
-    'usage: node scripts/dispatch-tests.mjs --leg <id> [--run] [--json]',
+    'usage: node scripts/dispatch-tests.mjs --leg <id> --run      (execute; modes are exclusive)',
+    '       node scripts/dispatch-tests.mjs --leg <id> [--run-args|--json]',
     '       node scripts/dispatch-tests.mjs --list | --check',
     '       node scripts/dispatch-tests.mjs --parity [--old-ref origin/master]',
   ].join('\n')
   if (opts.help) {
     process.stdout.write(`${usage}\n`)
     return 0
+  }
+  // F-01: `--run` is an execution request; without a leg there is nothing to execute. Refuse by name
+  // rather than falling through to the usage text (a generic exit 2 is not a named refusal).
+  if (opts.run && opts.leg.length === 0) {
+    return refused('DISPATCH_NO_LEG', '--run needs --leg <id>: there is no implicit leg, and an empty execution request must not be mistaken for a successful inspect')
   }
   const manifest = loadManifest(REPO_ROOT)
   const legs = dispatchLegs(manifest)
@@ -290,7 +335,7 @@ function main(argv) {
     const workflows = [...new Set(legs.map((l) => l.workflow))].sort()
     const rows = []
     const problems = []
-    process.stdout.write(`dispatch-parity old=${opts.oldRef} new=worktree workflows=${workflows.join(',')}\n`)
+    process.stdout.write(`dispatch-parity mode=inspect old=${opts.oldRef} new=worktree workflows=${workflows.join(',')}\n`)
     for (const wf of workflows) {
       let oldText
       try {
@@ -317,7 +362,7 @@ function main(argv) {
     const newAll = [...new Set(rows.flatMap((r) => r.new))].sort()
     process.stdout.write(`  union old=${String(oldAll.length)} new=${String(newAll.length)} set=${setDigest(newAll)}\n`)
     process.stdout.write(
-      `DISPATCH-PARITY ${problems.length === 0 && rows.every((r) => r.missing.length === 0 && r.added.length === 0) ? 'IDENTICAL' : 'DIFFERS'} ` +
+      `DISPATCH-PARITY mode=inspect ${problems.length === 0 && rows.every((r) => r.missing.length === 0 && r.added.length === 0) ? 'IDENTICAL' : 'DIFFERS'} ` +
         `steps=${String(rows.length)} old_files=${String(oldAll.length)} new_files=${String(newAll.length)} problems=${String(problems.length)}\n`,
     )
     return problems.length === 0 && rows.every((r) => r.missing.length === 0 && r.added.length === 0) ? 0 : 1
@@ -326,6 +371,7 @@ function main(argv) {
   const tracked = trackedFiles(REPO_ROOT)
 
   if (opts.list) {
+    process.stdout.write(`DSH-TEST-DISPATCH-LIST mode=inspect legs=${String(legs.length)}\n`)
     for (const l of legs) {
       const r = resolveLeg(l.leg, tracked)
       process.stdout.write(`${r.problems.length === 0 ? 'ok ' : 'BAD'} ${l.id} suites=${String(r.suites.length)} layer=${l.layer}\n`)
@@ -342,7 +388,7 @@ function main(argv) {
       bad += 1
       for (const p of r.problems) process.stderr.write(`REFUSED ${p.code} leg=${l.id} ${p.detail}\n`)
     }
-    process.stdout.write(`DSH-TEST-DISPATCH-CHECK ${bad === 0 ? 'PASS' : 'FAIL'} legs=${String(legs.length)} bad=${String(bad)}\n`)
+    process.stdout.write(`DSH-TEST-DISPATCH-CHECK mode=inspect ${bad === 0 ? 'PASS' : 'FAIL'} legs=${String(legs.length)} bad=${String(bad)}\n`)
     return bad === 0 ? 0 : 2
   }
 
@@ -364,20 +410,38 @@ function main(argv) {
   if (suites.length === 0) return refused('DISPATCH_NO_SUITES', 'the selected leg(s) resolved to no suite')
 
   if (opts.json) {
-    process.stdout.write(`${JSON.stringify({ schema: 'test-dispatch/1', legs: selected.map((s) => ({ id: s.id, suites: s.suites, areas: s.areas })), suites, set_digest: setDigest(suites), argv: ['node', '--test', ...suites] }, null, 2)}\n`)
+    process.stdout.write(`${JSON.stringify({ schema: 'test-dispatch/1', mode: 'inspect', legs: selected.map((s) => ({ id: s.id, suites: s.suites, areas: s.areas })), suites, set_digest: setDigest(suites), argv: ['node', '--test', ...suites] }, null, 2)}\n`)
     return 0
   }
 
-  for (const s of selected) {
-    process.stdout.write(`DSH-TEST-DISPATCH leg=${s.id} suites=${String(s.suites.length)} set=${setDigest(s.suites)}\n`)
-  }
+  // INSPECT: the invocation that WOULD run. `mode=inspect` is in the human token too, so a transcript
+  // that only captured stdout cannot be mistaken for an execution transcript.
   if (!opts.run) {
+    for (const s of selected) {
+      process.stdout.write(`DSH-TEST-DISPATCH mode=inspect leg=${s.id} suites=${String(s.suites.length)} files=${String(s.suites.length)} set=${setDigest(s.suites)}\n`)
+    }
     process.stdout.write(`node --test ${suites.join(' ')}\n`)
     return 0
   }
-  const run = spawnSync(process.execPath, ['--test', ...suites], { cwd: REPO_ROOT, stdio: 'inherit' })
+
+  // F-01: EXECUTE. The resolved argv must be non-empty (DISPATCH_NO_SUITES above already guarantees
+  // suites.length > 0; this assertion makes the invariant local to the spawn), and the ONLY run token
+  // is printed AFTER spawnSync returns — there is no code path that prints it and exits 0 without
+  // having spawned.
+  if (suites.length === 0) return refused('DISPATCH_NO_SUITES', 'the resolved argv is empty — refusing instead of spawning `node --test` with no files (which would run the whole repository)')
+  const runnerArgv = ['--test', ...suites]
+  // PIPE, then forward, rather than stdio:'inherit': the token below must be printed AFTER every byte
+  // of the child's own output, which inherit cannot order once the parent's stdout is a pipe (the
+  // regression test for F-01 captures this process's stdout). maxBuffer matches the census spawn.
+  const run = spawnSync(process.execPath, runnerArgv, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
   if (run.error) return refused('DISPATCH_SPAWN_FAILED', String(run.error.message ?? run.error))
-  return run.status ?? 1
+  if (run.stdout) process.stdout.write(run.stdout)
+  if (run.stderr) process.stderr.write(run.stderr)
+  const status = run.status ?? 1
+  for (const s of selected) {
+    process.stdout.write(`DSH-TEST-DISPATCH mode=run leg=${s.id} suites=${String(s.suites.length)} files=${String(s.suites.length)} exit=${String(status)} set=${setDigest(s.suites)}\n`)
+  }
+  return status
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) process.exit(main(process.argv.slice(2)))
