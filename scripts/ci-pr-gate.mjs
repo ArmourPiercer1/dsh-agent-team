@@ -121,7 +121,15 @@ import { censusVitestArgv } from './census-invocation.mjs'
 // disclosure). Required contexts, job names, the capture count, the pinned host and the census
 // population are unchanged; `legacy` stays the default in this PR, so merging it changes NOTHING
 // until `census-runtime.yml` passes `--census-execution plan`, and rolling back is that same line.
-import { buildPlan, deriveRoots, gitTreeSha, hostSha, verifyPlan } from './census-plan.mjs'
+import {
+  buildPlan,
+  checkPopulationBaseline,
+  deriveRoots,
+  gitTreeSha,
+  hostSha,
+  readPopulationBaseline,
+  verifyPlan,
+} from './census-plan.mjs'
 import { resolveBuildStamp } from './census-build-stamp.mjs'
 import {
   aggregateArtifacts,
@@ -136,6 +144,7 @@ import {
   stampedReportPath,
   writeEvidenceArtifact,
   writeShardArtifacts,
+  exitTolerance,
 } from './census-execution.mjs'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -1553,11 +1562,28 @@ export function censusPlanLeg(ctx) {
       `merge_tree=${String(plan.identity.merge_tree_sha)} host=${String(plan.identity.host_sha)} ` +
       `est_unknown=${String(plan.timings.unknown_roots.length)}\n`,
   )
+  // 3b. THE POPULATION BASELINE (F-02). The plan's per-root file lists are derived from the checkout;
+  // the committed baseline is the reviewed statement of what that population used to be. A config
+  // edit that drops a root/file (or swaps a file at an equal count) is POPULATION_SHRANK here, and
+  // updating the baseline in the same PR is the visible review act. Growth is allowed.
+  const baseline = readPopulationBaseline({ cwd: root })
+  if (!baseline.ok) return refusePlan(baseline.code, baseline.detail)
+  const population = checkPopulationBaseline({ roots: plan.roots, baseline: baseline.baseline })
+  if (!population.ok) return refusePlan(population.code, population.detail)
+  process.stdout.write(
+    `DSH-CENSUS-POPULATION baseline=ok roots=${String(population.roots)} files=${String(population.file_count)} ` +
+      `baseline_files=${String(baseline.baseline.file_count)}\n`,
+  )
+
   mkdirSync(shardDir, { recursive: true })
 
   // 4. Execute every planned task, one capture at a time. Root-level parallelism lives INSIDE the
   //    vitest process (M4 measured it); no per-root process sharding is invented here.
   const results = []
+  // The real process facts (F-04). One shard artifact exists per shard, not per capture, so a
+  // multi-capture inconsistency is collapsed to the first non-zero capture; production shard count
+  // is 1, and the per-result `exit_code` keeps every capture's own value auditable.
+  const processFacts = { exitCode: 0, exitSignal: null, tolerance: null }
   for (let capture = 1; capture <= plan.captures; capture += 1) {
     const tasks = plan.tasks.filter((t) => t.capture === capture)
     if (tasks.length === 0) {
@@ -1566,6 +1592,7 @@ export function censusPlanLeg(ctx) {
       return refusePlan('PLAN_CAPTURE_UNKNOWN', `capture ${String(capture)} owns no planned task`)
     }
     let derived
+    let captureExit = null
     let reportRef = `recorded:${String(capture)}`
     // The bytes this capture's evidence artifact digests: the report the runner wrote (live) or the
     // recording that was replayed (dry run).
@@ -1613,6 +1640,7 @@ export function censusPlanLeg(ctx) {
       const run = ctx.timing.time('census-capture', 'nine-roots', () => spawn('pnpm', argv), { attempt: capture })
       ctx.capture(`census-capture-${String(capture)}`, run)
       if (run.error !== null) return refusePlan('CENSUS_SPAWN_FAILED', `vitest could not be spawned: ${run.error}`)
+      captureExit = typeof run.code === 'number' ? run.code : null
       const reportAbs = resolve(root, jsonPath)
       if (!existsSync(reportAbs)) {
         return refusePlan(
@@ -1635,10 +1663,42 @@ export function censusPlanLeg(ctx) {
       } catch (e) {
         ctx.timing.warn(`CENSUS_ROOT_DERIVATION_FAILED capture=${String(capture)}: ${String(e && e.message ? e.message : e)}`)
       }
-      derived = resultsFromReport({ plan, capture, report, reportRef: jsonPath })
+      derived = resultsFromReport({ plan, capture, report, reportRef: jsonPath, exitCode: captureExit })
       sourcePath = resolve(root, jsonPath)
     }
     if (!derived.ok) return refusePlan(derived.code, derived.detail)
+    // F-04: the PROCESS and the REPORT must agree. A non-zero exit beside an all-PASS derivation is
+    // the exact "green numbers, red process" shape this refuses; a non-zero exit beside a genuinely
+    // failing report is already red and proceeds to the aggregator (which also grades the exit).
+    if (captureExit !== null && captureExit !== 0) {
+      const tolerance = exitTolerance({ code: captureExit, signal: null })
+      const allPass = derived.results.every((r) => r.state === 'PASS')
+      if (!tolerance.tolerated && allPass) {
+        return refusePlan(
+          'CENSUS_EXIT_NONZERO',
+          `capture ${String(capture)} exited ${String(captureExit)} but every planned task derived PASS from the ` +
+            `${reportRef} it wrote — a green report from a non-zero process is not a green census ` +
+            '(no tolerance is declared in scripts/census-exit-policy.mjs)',
+        )
+      }
+      if (tolerance.tolerated) {
+        processFacts.tolerance = {
+          code: captureExit,
+          signal: null,
+          owner: tolerance.entry.owner,
+          reason: tolerance.entry.reason,
+          expires: tolerance.entry.expires,
+        }
+        process.stdout.write(
+          `DSH-CENSUS-CAPTURE-EXIT capture=${String(capture)} code=${String(captureExit)} tolerated=ok ` +
+            `owner=${JSON.stringify(tolerance.entry.owner)} expires=${tolerance.entry.expires}\n`,
+        )
+      }
+      if (processFacts.exitCode === 0) {
+        processFacts.exitCode = captureExit
+        processFacts.exitSignal = null
+      }
+    }
     // EVIDENCE ARTIFACT: written next to the shards, and every result is re-anchored to it, so the
     // aggregator can OPEN what it grades (see verifyEvidenceRefs). The source report/recording is
     // named and digested inside the artifact, so the chain report → artifact → shard is walkable.
@@ -1696,6 +1756,9 @@ export function censusPlanLeg(ctx) {
     plan,
     results,
     shards: shardCount,
+    exitCode: processFacts.exitCode,
+    exitSignal: processFacts.exitSignal,
+    exitToleranceEntry: processFacts.tolerance,
     execution: {
       mode: dryRun === null ? 'live' : 'dry-run',
       order: 'capture-major',

@@ -36,6 +36,18 @@
  * The gate (`scripts/ci-pr-gate.mjs`, `LEGS.census`) owns the spawn, the transcript, the timing
  * rows and the final `DSH-CI-VERDICT` token; this module never prints a verdict of its own.
  *
+ * FILE-SET EQUALITY (TINF trust-closeout, F-02). A root PASS used to mean "the root appears in the
+ * report and its tests did not fail". The plan records a per-root expected FILE LIST; this module now
+ * compares it with the report's collected file set BOTH ways (FILE_MISSING / FILE_UNPLANNED), turns a
+ * file-level collection error into COLLECTION_ERROR, and only then applies the PASS logic. Every
+ * result carries `files_expected`, `files_observed` and the plan's `file_digest`, so the aggregator can
+ * prove the result came from this plan's population.
+ *
+ * THE RAW EXIT IS AN INPUT (F-04). `resultsFromReport` receives the spawn's real exit code and writes
+ * it on every result; `buildShardArtifacts` writes it into the shard artifact instead of a literal 0.
+ * A green report with a non-zero exit is refused by the census leg (CENSUS_EXIT_NONZERO) unless a
+ * versioned exit-tolerance policy names that exact tolerance.
+ *
  * REFUSALS ARE NAMED AND NEVER FALL BACK. A plan/aggregate/derivation refusal is data
  * (`{ok:false, code, detail}`); the census leg turns it into a RED census whose detail carries the
  * code. There is no path from a refusal back to the legacy execution — a silent fallback would make
@@ -51,6 +63,10 @@
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { fileListDigest } from './census-plan.mjs'
+import { EXIT_POLICY, EXIT_POLICY_SCHEMA, exitPolicyDigest, exitTolerance } from './census-exit-policy.mjs'
+
+export { EXIT_POLICY, EXIT_POLICY_SCHEMA, exitPolicyDigest, exitTolerance }
 import { dirname, join, resolve } from 'node:path'
 
 import { aggregate, readShardFile, SHARD_SCHEMA, TASK_STATES, POLICY_DIGEST, verifyEvidenceRefs } from './census-aggregate.mjs'
@@ -88,6 +104,15 @@ const SKIPPED_STATUSES = new Set(['skipped', 'pending', 'todo'])
  * failed, how many were skipped, and whether the report as a whole failed without a per-test failure
  * in this root (a collection error, which must never be graded PASS for an unrelated root).
  */
+/** Strip a checkout prefix: `…/packages/runtime/test/x.test.ts` + `packages/runtime` -> `test/x.test.ts`. */
+function relativeToRoot(name, root) {
+  const p = String(name ?? '').replace(/\\/g, '/')
+  const at = p.lastIndexOf(`/${root}/`)
+  if (at >= 0) return p.slice(at + root.length + 2)
+  if (p.startsWith(`${root}/`)) return p.slice(root.length + 1)
+  return p
+}
+
 export function rootsFromReport(report) {
   const files = Array.isArray(report?.testResults) ? report.testResults : []
   const byRoot = new Map()
@@ -114,6 +139,9 @@ export function rootsFromReport(report) {
       failed: failedAssertions + (fileFailed ? 1 : 0),
       skipped,
       unknown,
+      // A failed file with no assertions at all is a COLLECTION error (import/syntax/setup), not a
+      // failed assertion: F-02 requires it to surface as its own unfinished code.
+      collection_error: assertions.length === 0 && (f?.status === 'failed' || String(f?.message ?? '').trim() !== ''),
     })
   }
   return byRoot
@@ -125,10 +153,20 @@ export function rootsFromReport(report) {
  * A planned root ABSENT from the report is `INCOMPLETE`, never PASS: a dropped root is exactly the
  * quiet shrinkage TINF-12 names, and "the report did not mention it" is not evidence that it ran.
  */
-export function resultsFromReport({ plan, capture, report, reportRef }) {
+export function resultsFromReport({ plan, capture, report, reportRef, exitCode = null }) {
   if (!plan || !Array.isArray(plan.tasks)) return refused('PLAN_UNREADABLE', 'resultsFromReport needs a census-plan/1 plan')
   if (typeof reportRef !== 'string' || reportRef === '') {
     return refused('RESULT_EVIDENCE_MISSING', 'resultsFromReport needs a report reference: a terminal state with nothing to point at is not a measurement')
+  }
+  // THE POPULATION MUST BE ENUMERABLE. A plan that records only counts cannot be compared with the
+  // report's collected files; grading it would re-open the F-02 hole (a count is not equality).
+  const planRoots = Array.isArray(plan.roots) ? plan.roots : []
+  const missingPopulation = planRoots.filter((r) => !Array.isArray(r.files_expected)).map((r) => r.root)
+  if (missingPopulation.length > 0) {
+    return refused(
+      'PLAN_POPULATION_MISSING',
+      `the plan names no expected file list for root(s) ${missingPopulation.slice(0, 6).join(', ')} — a per-root count is not a population; re-plan with the M4+ planner`,
+    )
   }
   const byRoot = rootsFromReport(report)
   const tasks = plan.tasks.filter((t) => t.capture === capture)
@@ -138,7 +176,7 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
   // The multiset invariant runs BOTH ways. A planned root with no result is `INCOMPLETE` below; a
   // root that RAN without being planned is refused here. Legacy compared whole identity sets, so
   // the reverse direction was red too — dropping it would make plan mode a quiet loosening.
-  const planned = new Set((Array.isArray(plan.roots) ? plan.roots : []).map((r) => r.root))
+  const planned = new Set(planRoots.map((r) => r.root))
   const unplanned = [...byRoot.keys()].filter((k) => !planned.has(k))
   if (unplanned.length > 0) {
     const named = unplanned.slice(0, 5).map((k) => `${k} (${String(byRoot.get(k).length)} file(s))`).join(', ')
@@ -147,9 +185,14 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
       `the report contains file(s) the plan does not name: ${named} — a root that ran without being planned makes the graded population different from the planned one`,
     )
   }
+  const rootPlan = new Map(planRoots.map((r) => [r.root, r]))
   const reportFailed = report?.success === false
   const results = []
   for (const task of tasks) {
+    const declared = rootPlan.get(task.root)
+    const expected = [...declared.files_expected].sort()
+    const expectedDigest = declared.file_digest ?? fileListDigest(expected)
+    const population = { files_expected: expected.length, file_digest: expectedDigest }
     const slice = byRoot.get(task.root)
     if (slice === undefined) {
       results.push({
@@ -157,27 +200,71 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         root: task.root,
         capture: task.capture,
         state: 'INCOMPLETE',
+        codes: ['ROOT_MISSING'],
         files: 0,
+        files_observed: 0,
         assertions: 0,
         skipped: 0,
+        exit_code: exitCode,
+        ...population,
         evidence: `${reportRef}#${task.root}`,
         detail: `root ${task.root} is planned for capture ${String(capture)} but the report contains no file of it — a root that vanished is not a root that passed`,
       })
       continue
     }
+    const observed = slice.map((f) => relativeToRoot(f.name, task.root)).sort()
+    const observedSet = new Set(observed)
+    const expectedSet = new Set(expected)
+    const missingFiles = expected.filter((f) => !observedSet.has(f))
+    const unexpectedFiles = observed.filter((f) => !expectedSet.has(f))
+    const collectionErrors = slice.filter((f) => f.collection_error === true).map((f) => relativeToRoot(f.name, task.root)).sort()
     const failed = slice.filter((f) => f.failed > 0)
     const skipped = slice.reduce((n, f) => n + (Number.isFinite(f.skipped) ? f.skipped : 0), 0)
     const unknown = slice.filter((f) => (Number.isFinite(f.unknown) ? f.unknown : 0) > 0)
     // Evidence is a real, re-derivable pointer: the report path the runner wrote plus a digest over
     // the exact per-file slice that was graded (so the transcript can prove WHAT was graded).
     const evidence = `${reportRef}#${task.root} ${digestJson({ root: task.root, capture: task.capture, files: slice })}`
-    const shape = { files: slice.length, assertions: slice.reduce((n, f) => n + (Number.isFinite(f.assertions) ? f.assertions : 0), 0), skipped }
+    const shape = {
+      files: observed.length,
+      files_observed: observed.length,
+      assertions: slice.reduce((n, f) => n + (Number.isFinite(f.assertions) ? f.assertions : 0), 0),
+      skipped,
+      ...population,
+      exit_code: exitCode,
+    }
+    const names = (list, limit = 8) => list.slice(0, limit).join(', ') + (list.length > limit ? ` (+${String(list.length - limit)} more)` : '')
+    // F-02: the file SET decides the state before any assertion does. Both directions are named.
+    if (missingFiles.length > 0) {
+      results.push({
+        task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['FILE_MISSING'],
+        evidence, ...shape,
+        detail: `FILE_MISSING ${task.root}: ${String(missingFiles.length)} planned file(s) are absent from the report — ${names(missingFiles)}`,
+      })
+      continue
+    }
+    if (unexpectedFiles.length > 0) {
+      results.push({
+        task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['FILE_UNPLANNED'],
+        evidence, ...shape,
+        detail: `FILE_UNPLANNED ${task.root}: ${String(unexpectedFiles.length)} collected file(s) are not in the plan — ${names(unexpectedFiles)}`,
+      })
+      continue
+    }
+    if (collectionErrors.length > 0) {
+      results.push({
+        task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['COLLECTION_ERROR'],
+        evidence, ...shape,
+        detail: `COLLECTION_ERROR ${task.root}: ${String(collectionErrors.length)} file(s) failed to collect (no assertions were produced) — ${names(collectionErrors)}`,
+      })
+      continue
+    }
     if (failed.length > 0) {
       results.push({
         task_id: task.task_id,
         root: task.root,
         capture: task.capture,
         state: 'FAIL',
+        codes: ['FILE_FAILED'],
         evidence,
         ...shape,
         detail: `${String(failed.length)} file(s) failed in ${task.root}: ${failed.slice(0, 6).map((f) => f.name).join(', ')}`,
@@ -192,6 +279,7 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         root: task.root,
         capture: task.capture,
         state: 'FAIL',
+        codes: ['UNKNOWN_ASSERTION_STATUS'],
         evidence,
         ...shape,
         detail: `${String(unknown.length)} file(s) in ${task.root} reported an assertion status this tool does not know (UNKNOWN_ASSERTION_STATUS); an unrecognised status is not evidence of a pass`,
@@ -204,15 +292,16 @@ export function resultsFromReport({ plan, capture, report, reportRef }) {
         root: task.root,
         capture: task.capture,
         state: 'INCOMPLETE',
+        codes: ['REPORT_FAILED'],
         evidence,
         ...shape,
         detail: `the report failed (success=false) but no failure is attributable to ${task.root}; an unattributed report failure is not this root's PASS`,
       })
       continue
     }
-    results.push({ task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', evidence, ...shape })
+    results.push({ task_id: task.task_id, root: task.root, capture: task.capture, state: 'PASS', codes: [], evidence, ...shape })
   }
-  return { ok: true, results }
+  return { ok: true, results, exit_code: exitCode }
 }
 
 /**
@@ -224,6 +313,11 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
   if (!plan || !Array.isArray(plan.tasks)) return refused('PLAN_UNREADABLE', 'resultsFromReplay needs a census-plan/1 plan')
   if (!replay || typeof replay !== 'object' || Array.isArray(replay)) {
     return refused('DRYRUN_REPLAY_UNREADABLE', `${String(replayRef)} is not an object`)
+  }
+  const replayRoots = Array.isArray(plan.roots) ? plan.roots : []
+  const noPopulation = replayRoots.filter((r) => !Array.isArray(r.files_expected) || typeof r.file_digest !== 'string').map((r) => r.root)
+  if (noPopulation.length > 0) {
+    return refused('PLAN_POPULATION_MISSING', `the plan names no expected file list/digest for root(s) ${noPopulation.slice(0, 6).join(', ')}; a replay cannot be reprinted without one`)
   }
   if (replay.schema !== REPLAY_SCHEMA) {
     return refused('DRYRUN_REPLAY_SCHEMA_UNKNOWN', `${String(replayRef)}: schema must be ${REPLAY_SCHEMA}, got ${String(replay.schema)}`)
@@ -286,12 +380,32 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
     if (typeof result.evidence !== 'string' || result.evidence.trim() === '') {
       return refused('RESULT_EVIDENCE_MISSING', `${String(replayRef)}: task ${result.task_id} carries no evidence reference`)
     }
+    const rootPlan = replayRoots.find((r) => r.root === planned.root)
+    if (result.file_digest !== undefined && result.file_digest !== rootPlan.file_digest) {
+      return refused(
+        'DRYRUN_FILE_SET_MISMATCH',
+        `${String(replayRef)}: task ${result.task_id} records file_digest=${String(result.file_digest)} but plan root ` +
+          `${rootPlan.root} is ${String(rootPlan.file_digest)} — the recording was made against another file set`,
+      )
+    }
+    if (result.files_expected !== undefined && result.files_expected !== rootPlan.files_expected.length) {
+      return refused(
+        'DRYRUN_FILE_SET_MISMATCH',
+        `${String(replayRef)}: task ${result.task_id} records files_expected=${String(result.files_expected)} but plan root has ${String(rootPlan.files_expected.length)} file(s)`,
+      )
+    }
     out.push({
       task_id: result.task_id,
       root: result.root,
       capture: result.capture,
       state: result.state,
       evidence: result.evidence,
+      // The population is reprinted from the PLAN (the recording's task id must mean the plan's
+      // root/capture); a recorded value is checked when present, never trusted over the plan.
+      files_expected: rootPlan.files_expected.length,
+      files_observed: typeof result.files_observed === 'number' ? result.files_observed : rootPlan.files_expected.length,
+      file_digest: rootPlan.file_digest,
+      ...(result.exit_code !== undefined ? { exit_code: result.exit_code } : {}),
       ...(typeof result.detail === 'string' && result.detail !== '' ? { detail: result.detail } : {}),
     })
   }
@@ -320,7 +434,7 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
  * a result it carries is FAIL — the two are different facts, and the aggregator is what turns the
  * latter into a red verdict (`TASK_STATE_FAIL`) rather than trusting an exit code.
  */
-export function buildShardArtifacts({ plan, results, shards = 1, execution = null }) {
+export function buildShardArtifacts({ plan, results, shards = 1, execution = null, exitCode = 0, exitSignal = null, exitToleranceEntry = null, exitPolicy = EXIT_POLICY }) {
   if (!Number.isInteger(shards) || shards < 1) {
     return refused('CENSUS_SHARDS_INVALID', `--census-shards must be a positive integer, got ${String(shards)}`)
   }
@@ -344,7 +458,12 @@ export function buildShardArtifacts({ plan, results, shards = 1, execution = nul
       policy_digest: POLICY_DIGEST,
       identity: { ...identity },
       status: 'COMPLETED',
-      exit_code: 0,
+      // THE REAL PROCESS FACT, never a literal. The aggregator grades this value (and, when nonzero,
+      // accepts it only for an explicit non-expired entry of the frozen exit policy named below).
+      exit_code: exitCode,
+      exit_signal: exitSignal,
+      exit_policy_digest: exitPolicyDigest(exitPolicy),
+      exit_tolerance: exitToleranceEntry,
       plan: { captures: plan.captures, tasks: tasks.length, shard_tasks: slice.length },
       execution: execution ?? null,
       results: rows,

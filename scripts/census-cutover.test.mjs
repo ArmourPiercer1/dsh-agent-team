@@ -169,18 +169,53 @@ function gateContext({ dryRun = null, captures = CAPTURES, shards = 1, stampPath
   }
 }
 
-/** A synthetic vitest report whose roots all pass (with `skipped` extra skipped legs per root). */
-function reportFor(plan, { skipped = 0, failedRoot = null } = {}) {
+/**
+ * The files a plan root expects, as report entries. A synthetic report MUST enumerate the plan's
+ * population (F-02): one file per root is no longer "the root passed", it is 704 missing files.
+ */
+function reportFilesOf(plan, root = null) {
+  return plan.roots
+    .filter((r) => root === null || r.root === root)
+    .flatMap((r) => r.files_expected.map((rel) => ({ root: r.root, name: `/runner/work/repo/${r.root}/${rel}` })))
+}
+
+/**
+ * A synthetic vitest report whose enumerated files all pass (with `skipped` extra skipped legs on the
+ * FIRST file of each root). `mutate(file, index)` may rewrite one entry; `onlyRoot` narrows the report
+ * to one root (used by the per-root derivation controls).
+ */
+function reportFor(plan, { skipped = 0, failedRoot = null, onlyRoot = null, assertionsPerFile = 1, mutate = null } = {}) {
+  const files = reportFilesOf(plan, onlyRoot)
   return {
     success: failedRoot === null,
-    testResults: plan.roots.map(({ root }) => ({
-      name: `/runner/work/repo/${root}/test/a.test.ts`,
-      status: failedRoot === root ? 'failed' : 'passed',
-      assertionResults: [
-        { status: failedRoot === root ? 'failed' : 'passed' },
-        ...Array.from({ length: skipped }, () => ({ status: 'skipped' })),
-      ],
-    })),
+    testResults: files.map((file, index) => {
+      const failed = failedRoot !== null && file.root === failedRoot
+      const firstOfRoot = files.findIndex((f) => f.root === file.root) === index
+      const entry = {
+        name: file.name,
+        status: failed ? 'failed' : 'passed',
+        assertionResults: [
+          ...Array.from({ length: assertionsPerFile }, () => ({ status: failed ? 'failed' : 'passed' })),
+          ...(firstOfRoot ? Array.from({ length: skipped }, () => ({ status: 'skipped' })) : []),
+        ],
+      }
+      return mutate === null ? entry : mutate(entry, index, file)
+    }),
+  }
+}
+
+/** A hand-built result row must carry the plan's population (F-02); this is the one place that does it. */
+function pop(plan, task, over = {}) {
+  const root = plan.roots.find((r) => r.root === task.root)
+  return {
+    task_id: task.task_id,
+    root: task.root,
+    capture: task.capture,
+    state: 'PASS',
+    files_expected: root.files_expected.length,
+    files_observed: root.files_expected.length,
+    file_digest: root.file_digest,
+    ...over,
   }
 }
 
@@ -368,16 +403,12 @@ test('a recorded stamp round-trips through a file and verifies', () => {
 test('resultsFromReport derives root identity, a terminal state and evidence from the report', () => {
   const { plan } = fixture()
   const root = plan.tasks.find((t) => t.capture === 1).root
+  const expected = plan.roots.find((r) => r.root === root).files_expected.length
   const ok = resultsFromReport({
     plan,
     capture: 1,
     reportRef: '.artifacts/census/report-1.json',
-    report: {
-      success: true,
-      testResults: [
-        { name: `/runner/work/repo/${root}/test/a.test.ts`, status: 'passed', assertionResults: [{ status: 'passed' }, { status: 'passed' }] },
-      ],
-    },
+    report: reportFor(plan, { assertionsPerFile: 2 }),
   })
   assert.equal(ok.ok, true, ok.detail)
   assert.equal(ok.results.length, plan.tasks.filter((t) => t.capture === 1).length)
@@ -385,8 +416,10 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
   assert.equal(mine.state, 'PASS')
   assert.equal(mine.capture, 1)
   assert.equal(mine.task_id, plan.tasks.find((t) => t.root === root && t.capture === 1).task_id)
-  assert.equal(mine.files, 1)
-  assert.equal(mine.assertions, 2)
+  assert.equal(mine.files, expected)
+  assert.equal(mine.files_expected, expected)
+  assert.equal(mine.files_observed, expected)
+  assert.equal(mine.assertions, 2 * expected)
   assert.equal(mine.skipped, 0)
   assert.match(mine.evidence, /^\.artifacts\/census\/report-1\.json#/)
   assert.match(mine.evidence, /sha256:[0-9a-f]{64}$/)
@@ -405,26 +438,23 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
 test('a skip is NOT a failure (legacy semantics) and the skip count is carried', () => {
   const { plan } = fixture()
   const root = plan.tasks.find((t) => t.capture === 1).root
+  const expected = plan.roots.find((r) => r.root === root).files_expected.length
   const got = resultsFromReport({
     plan,
     capture: 1,
     reportRef: 'r.json',
-    report: {
-      success: true,
-      testResults: [
-        {
-          name: `/repo/${root}/test/a.test.ts`,
-          status: 'passed',
-          // `pending` is what vitest writes for `it.skip` / a conditional `it.skipIf(true)` body.
-          assertionResults: [{ status: 'passed' }, { status: 'pending' }, { status: 'skipped' }],
-        },
-      ],
-    },
+    report: reportFor(plan, {
+      onlyRoot: root,
+      mutate: (entry, index) =>
+        index === 0
+          ? { ...entry, assertionResults: [{ status: 'passed' }, { status: 'pending' }, { status: 'skipped' }] }
+          : entry,
+    }),
   })
   const mine = got.results.find((r) => r.root === root)
   assert.equal(mine.state, 'PASS', 'a skipped leg is a leg the runner declined to run, not a red')
   assert.equal(mine.skipped, 2)
-  assert.equal(mine.assertions, 3)
+  assert.equal(mine.assertions, expected + 2)
 })
 
 test('an unknown assertion status is a FAIL, not a silent pass', () => {
@@ -434,10 +464,10 @@ test('an unknown assertion status is a FAIL, not a silent pass', () => {
     plan,
     capture: 1,
     reportRef: 'r.json',
-    report: {
-      success: true,
-      testResults: [{ name: `/repo/${root}/test/a.test.ts`, status: 'passed', assertionResults: [{ status: 'quarantined' }] }],
-    },
+    report: reportFor(plan, {
+      onlyRoot: root,
+      mutate: (entry, index) => (index === 0 ? { ...entry, assertionResults: [{ status: 'quarantined' }] } : entry),
+    }),
   })
   const mine = got.results.find((r) => r.root === root)
   assert.equal(mine.state, 'FAIL')
@@ -446,7 +476,6 @@ test('an unknown assertion status is a FAIL, not a silent pass', () => {
 
 test('NEGATIVE: a root that RAN without being planned is refused (the invariant runs both ways)', () => {
   const { plan } = fixture()
-  const root = plan.tasks.find((t) => t.capture === 1).root
   const got = resultsFromReport({
     plan,
     capture: 1,
@@ -454,7 +483,7 @@ test('NEGATIVE: a root that RAN without being planned is refused (the invariant 
     report: {
       success: true,
       testResults: [
-        { name: `/repo/${root}/test/a.test.ts`, assertionResults: [{ status: 'passed' }] },
+        ...reportFor(plan).testResults,
         { name: '/repo/packages/not-planned/test/a.test.ts', assertionResults: [{ status: 'passed' }] },
       ],
     },
@@ -471,28 +500,31 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
     plan,
     capture: 1,
     reportRef: 'r.json',
-    report: {
-      success: false,
-      testResults: [{ name: `/repo/${root}/test/a.test.ts`, assertionResults: [{ status: 'failed' }] }],
-    },
+    report: reportFor(plan, {
+      onlyRoot: root,
+      mutate: (entry, index) => (index === 0 ? { ...entry, assertionResults: [{ status: 'failed' }] } : entry),
+    }),
   })
   assert.equal(failed.results.find((r) => r.root === root).state, 'FAIL')
-  // A collection error has no per-assertion detail; the whole report failed and no root owns it.
+  // A collection error has no per-assertion detail: F-02 names it COLLECTION_ERROR (INCOMPLETE), not
+  // a failed assertion, so the transcript says "it never ran" instead of "an assertion failed".
   const collection = resultsFromReport({
     plan,
     capture: 1,
     reportRef: 'r.json',
-    report: {
-      success: false,
-      testResults: [{ name: `/repo/${root}/test/a.test.ts`, status: 'failed', message: 'collection error', assertionResults: [] }],
-    },
+    report: reportFor(plan, {
+      onlyRoot: root,
+      mutate: (entry, index) =>
+        index === 0 ? { ...entry, status: 'failed', message: 'collection error', assertionResults: [] } : entry,
+    }),
   })
-  assert.equal(collection.results.find((r) => r.root === root).state, 'FAIL')
+  assert.equal(collection.results.find((r) => r.root === root).state, 'INCOMPLETE')
+  assert.deepEqual(collection.results.find((r) => r.root === root).codes, ['COLLECTION_ERROR'])
   const noFile = resultsFromReport({
     plan,
     capture: 1,
     reportRef: 'r.json',
-    report: { success: false, testResults: [{ name: `/repo/${root}/test/a.test.ts`, status: 'passed', assertionResults: [] }] },
+    report: { success: false, testResults: reportFor(plan).testResults },
   })
   assert.equal(noFile.results.find((r) => r.root === root).state, 'INCOMPLETE')
 })
@@ -657,7 +689,7 @@ test('NEGATIVE: the trailing digest is verified with OR without a `#root` fragme
     const digest = `sha256:${createHash('sha256').update(readFileSync(artifact)).digest('hex')}`
 
     // POSITIVE: no fragment, honest digest — the shape is legal and must still aggregate.
-    const ok = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json ${digest}` }))
+    const ok = plan.tasks.map((t) => pop(plan, t, { evidence: `census-evidence-1.json ${digest}` }))
     const okFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: ok, shards: 1 }).artifacts)
     const okGot = aggregateArtifacts({ plan, files: okFiles })
     assert.equal(okGot.refused, false, okGot.detail)
@@ -670,14 +702,14 @@ test('NEGATIVE: the trailing digest is verified with OR without a `#root` fragme
     assert.deepEqual(got.codes, ['RESULT_EVIDENCE_DIGEST_MISMATCH'])
 
     // NEGATIVE 2: no fragment, malformed digest → INVALID (not silently ignored).
-    const bogus = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'census-evidence-1.json sha256:not-a-digest' }))
+    const bogus = plan.tasks.map((t) => pop(plan, t, { evidence: 'census-evidence-1.json sha256:not-a-digest' }))
     const bogusFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: bogus, shards: 1 }).artifacts)
     const gotBogus = aggregateArtifacts({ plan, files: bogusFiles })
     assert.equal(gotBogus.refused, true)
     assert.deepEqual(gotBogus.codes, ['RESULT_EVIDENCE_DIGEST_INVALID'])
 
     // NEGATIVE 3: with a fragment, the malformed digest is refused the same way (the old shape).
-    const bogusFrag = plan.tasks.map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: `census-evidence-1.json#${t.root} sha256:not-a-digest` }))
+    const bogusFrag = plan.tasks.map((t) => pop(plan, t, { evidence: `census-evidence-1.json#${t.root} sha256:not-a-digest` }))
     const bogusFragFiles = writeShardArtifacts(dir, buildShardArtifacts({ plan, results: bogusFrag, shards: 1 }).artifacts)
     const gotBogusFrag = aggregateArtifacts({ plan, files: bogusFragFiles })
     assert.equal(gotBogusFrag.refused, true)
@@ -852,7 +884,7 @@ test('NEGATIVE: a dropped shard result is TASK_MISSING/INCOMPLETE, never a small
     // The evidence pointer is real (it is not what this control is about): the missing thing is a
     // planned TASK, and that is the aggregator's own rule.
     writeFileSync(join(dir, 'evidence.json'), '{}\n')
-    const results = plan.tasks.slice(1).map((t) => ({ task_id: t.task_id, root: t.root, capture: t.capture, state: 'PASS', evidence: 'evidence.json' }))
+    const results = plan.tasks.slice(1).map((t) => pop(plan, t, { evidence: 'evidence.json' }))
     const built = buildShardArtifacts({ plan, results, shards: 1 })
     const files = writeShardArtifacts(dir, built.artifacts)
     const got = aggregateArtifacts({ plan, files })

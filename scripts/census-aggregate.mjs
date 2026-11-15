@@ -63,6 +63,7 @@ import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { DIGEST_SHAPE, identityProblems, isValidDigest } from './census-digest.mjs'
+import { EXIT_POLICY, EXIT_POLICY_SCHEMA, exitPolicyDigest, exitTolerance } from './census-exit-policy.mjs'
 import { IDENTITY_FIELDS, SCHEMA as PLAN_SCHEMA, buildPlan, digestJson, makeIdentity, planDigest } from './census-plan.mjs'
 
 export const SCHEMA = 'census-summary/1'
@@ -346,6 +347,44 @@ export function aggregate({ plan, shards }) {
   if (new Set(expectedTaskIds).size !== expectedTaskIds.length) {
     return refused(['PLAN_TASK_DUPLICATE'], [`the plan names ${expectedTaskIds.length} tasks but only ${new Set(expectedTaskIds).size} distinct ids`])
   }
+  // ── rule 1b: the plan's FILE POPULATION (F-02) ────────────────────────────────────────────────
+  // A plan that records only per-root COUNTS cannot be compared with what a shard collected. The
+  // population must be enumerable and digest-bound, or the "file set equal" rule below has no left
+  // side and a root that collected 1 of 100 planned files would still PASS.
+  const planRoots = Array.isArray(plan.roots) ? plan.roots : []
+  if (planRoots.length === 0) {
+    return refused(['PLAN_FILE_POPULATION_MISSING'], ['the plan enumerates no roots; a plan with no file population cannot grade a census'])
+  }
+  let plannedFileTotal = 0
+  for (const root of planRoots) {
+    if (!root || typeof root.root !== 'string' || root.root === '' || !Array.isArray(root.files_expected)) {
+      return refused(
+        ['PLAN_FILE_POPULATION_MISSING'],
+        [`plan root ${JSON.stringify(root?.root ?? root)} carries no files_expected[] — a per-root count is not a population ` +
+          '(build the plan with the M4+ planner that records the sorted file list and its digest)'],
+      )
+    }
+    if (root.files_expected.length === 0) {
+      return refused(['PLAN_FILE_POPULATION_MISSING'], [`plan root ${root.root} declares an EMPTY file population`])
+    }
+    if (root.file_count !== undefined && root.file_count !== root.files_expected.length) {
+      return refused(
+        ['PLAN_FILE_POPULATION_MISSING'],
+        [`plan root ${root.root} declares file_count=${String(root.file_count)} but files_expected has ${String(root.files_expected.length)} entries`],
+      )
+    }
+    if (!isValidDigest(root.file_digest)) {
+      return refused(['PLAN_FILE_POPULATION_MISSING'], [`plan root ${root.root} carries no valid file_digest (${String(root.file_digest)})`])
+    }
+    plannedFileTotal += root.files_expected.length
+  }
+  if (plan.file_count !== undefined && plan.file_count !== plannedFileTotal) {
+    return refused(
+      ['PLAN_FILE_POPULATION_MISSING'],
+      [`plan.file_count=${String(plan.file_count)} but the per-root file lists sum to ${String(plannedFileTotal)}`],
+    )
+  }
+
   if (!Number.isInteger(plan.captures) || plan.captures < REQUIRED_CAPTURES) {
     // The "missing second capture" control. A one-capture plan is self-consistent and would aggregate
     // to PASS, which is exactly the fail-open this refusal exists to prevent: the L2 population is
@@ -463,6 +502,26 @@ export function aggregate({ plan, shards }) {
               `capture ${JSON.stringify(planned.capture)}`],
           )
         }
+        // F-02: the result must carry THIS plan's per-root file digest and count. A result derived
+        // from another population is not this plan's result even when its task id agrees.
+        const rootPlan = planRoots.find((r) => r.root === planned.root)
+        if (rootPlan === undefined) {
+          return refused(['RESULT_FILE_SET_MISMATCH'], [`${file}: task ${result.task_id} names root ${JSON.stringify(planned.root)} which is not a plan root`])
+        }
+        if (result.file_digest !== rootPlan.file_digest) {
+          return refused(
+            ['RESULT_FILE_SET_MISMATCH'],
+            [`${file}: task ${result.task_id} carries file_digest=${String(result.file_digest)} but plan root ${rootPlan.root} is ` +
+              `${String(rootPlan.file_digest)} — the result was derived from a different file set`],
+          )
+        }
+        if (result.files_expected !== undefined && result.files_expected !== rootPlan.files_expected.length) {
+          return refused(
+            ['RESULT_FILE_SET_MISMATCH'],
+            [`${file}: task ${result.task_id} says files_expected=${String(result.files_expected)} but the plan root has ` +
+              `${String(rootPlan.files_expected.length)} file(s)`],
+          )
+        }
       }
       if (typeof result.evidence !== 'string' || result.evidence.trim() === '') {
         return refused(
@@ -529,9 +588,18 @@ export function aggregate({ plan, shards }) {
     // failed; exit 0 with a non-COMPLETED status is a shard that failed while claiming success.
     if (json.exit_code !== undefined && json.exit_code !== null) {
       if (json.status === 'COMPLETED' && json.exit_code !== 0) {
-        codes.push('SHARD_EXIT_NONZERO')
-        verdicts.add('INFRA_ERROR')
-        detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — the shard's own two signals disagree`)
+        // A tolerance is not free text in the artifact: the shard must name the FROZEN policy digest
+        // AND the policy itself must contain a matching, non-expired entry for this exact code/signal.
+        const policyMatches = json.exit_policy_digest === exitPolicyDigest(EXIT_POLICY) && EXIT_POLICY.schema === EXIT_POLICY_SCHEMA
+        const tolerance = policyMatches ? exitTolerance({ code: json.exit_code, signal: json.exit_signal ?? null, policy: EXIT_POLICY }) : { tolerated: false }
+        if (tolerance.tolerated) {
+          codes.push('SHARD_EXIT_TOLERATED')
+          detail.push(`${file}: status=COMPLETED with exit_code=${String(json.exit_code)} — tolerated by exit policy entry ${JSON.stringify(tolerance.entry.owner)} (expires ${tolerance.entry.expires})`)
+        } else {
+          codes.push('SHARD_EXIT_NONZERO')
+          verdicts.add('INFRA_ERROR')
+          detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — the shard's own two signals disagree`)
+        }
       }
       if (json.status !== 'COMPLETED' && json.exit_code === 0) {
         codes.push('SHARD_EXIT_DISAGREES')
@@ -574,6 +642,26 @@ export function aggregate({ plan, shards }) {
     codes.push('TASK_EXTRA')
     verdicts.add('INCOMPLETE')
     detail.push(`${extra.length} result(s) are not in the plan: ${extra.slice(0, 6).join(', ')}${extra.length > 6 ? ' (+…)' : ''}`)
+  }
+
+  // ── rule 4b: the observed population sums to the plan's total (F-02) ──────────────────────────
+  // Per-result digests prove each row came from this plan; this proves the rows, taken over UNIQUE
+  // roots, cover the whole planned population — a set of results that quietly omits a root's files
+  // cannot hide behind a correct-looking per-root digest.
+  const observedFilesByRoot = new Map()
+  for (const { json } of parsed) {
+    for (const result of json.results) {
+      if (typeof result.files_observed === 'number') observedFilesByRoot.set(result.root, result.files_observed)
+    }
+  }
+  const observedFileTotal = [...observedFilesByRoot.values()].reduce((n, v) => n + v, 0)
+  if (observedFilesByRoot.size === planRoots.length && observedFileTotal !== plannedFileTotal) {
+    codes.push('SUMMARY_FILE_TOTAL_MISMATCH')
+    verdicts.add('INCOMPLETE')
+    detail.push(
+      `the results' files_observed sum to ${String(observedFileTotal)} but the plan's file population is ` +
+        `${String(plannedFileTotal)} — a census that collected a different number of files is not this plan's census`,
+    )
   }
 
   // ── rule 5: required oracle contracts ─────────────────────────────────────────────────────────
@@ -811,7 +899,10 @@ export function selfTest() {
   const CAT = `sha256:${'3'.repeat(64)}`
   const BUILD = `sha256:${'4'.repeat(64)}`
   const plan = buildPlan({
-    roots: [{ root: 'packages/a' }, { root: 'packages/b' }],
+    roots: [
+      { root: 'packages/a', files_expected: ['test/a1.test.ts'] },
+      { root: 'packages/b', files_expected: ['test/b1.test.ts'] },
+    ],
     captures: 2,
     identity: makeIdentity({ merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CAT, build_digest: BUILD }),
   })
@@ -834,14 +925,21 @@ export function selfTest() {
     const m = /^census:(.+)#([0-9]+)$/.exec(task_id)
     return m === null ? { root: null, capture: null } : { root: m[1], capture: Number(m[2]) }
   }
-  const res = (task_id, over = {}) => ({
-    task_id,
-    ...taskIdentity(task_id),
-    state: 'PASS',
-    evidence: `artifacts/${task_id}.json`,
-    oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
-    ...over,
-  })
+  const res = (task_id, over = {}) => {
+    const id = taskIdentity(task_id)
+    const root = plan.roots.find((r) => r.root === id.root)
+    return {
+      task_id,
+      ...id,
+      state: 'PASS',
+      file_digest: root?.file_digest,
+      files_expected: root?.files_expected.length,
+      files_observed: root?.files_expected.length,
+      evidence: `artifacts/${task_id}.json`,
+      oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
+      ...over,
+    }
+  }
   const passResults = (taskIds) => taskIds.map((task_id) => res(task_id))
   const shard = (id, taskIds, over = {}) => {
     const base = {
@@ -908,7 +1006,7 @@ export function selfTest() {
   ok('an identity mismatch refuses',
     aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ host_sha: '9'.repeat(40) }) })] }).codes.includes('IDENTITY_MISMATCH_HOST_SHA'), 'identity')
   ok('a one-capture plan refuses (the missing second capture)', (() => {
-    const one = buildPlan({ roots: [{ root: 'packages/a' }], captures: 1, identity: plan.identity })
+    const one = buildPlan({ roots: [{ root: 'packages/a', files_expected: ['test/a1.test.ts'] }], captures: 1, identity: plan.identity })
     one.identity.plan_digest = planDigest(one)
     return aggregate({ plan: one, shards: [shard('shard-1', one.tasks.map((t) => t.task_id))] }).codes.includes('CAPTURES_INSUFFICIENT')
   })(), 'one-capture')

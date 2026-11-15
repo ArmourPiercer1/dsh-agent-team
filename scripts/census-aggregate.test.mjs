@@ -60,7 +60,10 @@ function cli(args) {
 /** Two roots × two captures, one required oracle. The positive control runs against this. */
 function makePlan({ captures = REQUIRED_CAPTURES } = {}) {
   const plan = buildPlan({
-    roots: [{ root: 'packages/a', files: 2 }, { root: 'packages/b', files: 1 }],
+    roots: [
+      { root: 'packages/a', files: 2, files_expected: ['test/a1.test.ts', 'test/a2.test.ts'] },
+      { root: 'packages/b', files: 1, files_expected: ['test/b1.test.ts'] },
+    ],
     captures,
     identity: makeIdentity({
       merge_tree_sha: '1111111111111111111111111111111111111111',
@@ -97,17 +100,24 @@ function taskIdentityOf(task_id) {
 }
 
 /** A passing result WITH the per-task identity the aggregator now requires. */
-const res = (task_id, over = {}) => ({
+const res = (task_id, over = {}) => {
+  const id = taskIdentityOf(task_id)
+  const rootPlan = plan.roots.find((r) => r.root === id.root)
+  return {
   task_id,
-  ...taskIdentityOf(task_id),
+  ...id,
   state: 'PASS',
+  file_digest: rootPlan.file_digest,
+  files_expected: rootPlan.files_expected.length,
+  files_observed: rootPlan.files_expected.length,
   // A pointer the CLI can OPEN (see verifyEvidenceRefs): the CLI and the census leg resolve evidence
   // against the shard's own directory, so the fixture writes that file beside the shards.
   evidence: 'evidence.json',
   duration_ms: 1000,
   oracles: [{ id: 'ORACLE-CENSUS', state: 'PASS' }],
   ...over,
-})
+  }
+}
 
 const passResults = (taskIds) => taskIds.map((task_id) => res(task_id))
 
