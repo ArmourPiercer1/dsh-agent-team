@@ -233,6 +233,14 @@ jobs:
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
           node scripts/test-catalog.mjs --max-uncollected 91
 
+      - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
+        # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is
+        # the measured, owned, expiring ceiling. This step compares the claim with the tiers the bound
+        # files actually execute in (L1 = non-census dispatched legs, L2 = the census population) and
+        # refuses CONTRACT_TIER_UNMET / CONTRACT_ORACLE_UNPLANNED. Synthetic data cannot satisfy it:
+        # the derivation reads dev/ci/eb3-ci-manifest.json and the census planner's root discovery.
+        run: node scripts/contract-tiers.mjs --check
+
       - name: "a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free)"
         # BL-10/R2: the Sandbox-First suites ride the pre-existing factory/oracle/CI
         # machinery, so the harness wiring needs a C1 proof of its own.

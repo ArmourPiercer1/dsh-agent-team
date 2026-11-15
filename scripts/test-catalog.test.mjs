@@ -282,7 +282,23 @@ test('dispatch: refusals — untracked, non-node, empty area, empty leg', () => 
 
 test('dispatch: the committed parity evidence still describes the resolved set', () => {
   const evidence = readFileSync('dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt', 'utf8')
-  assert.match(evidence, /DISPATCH-PARITY IDENTICAL/)
+  // Trust-closeout regenerated this file with four NEW negative-control suites wired into the same
+  // leg, so the verdict is DIFFERS by design. The laws that still hold are the ones that matter:
+  // nothing may be MISSING, the run must have no problems, and the only added files are the four
+  // named control suites. A future addition cannot hide behind this exception.
+  const verdict = /DISPATCH-PARITY mode=inspect (\w+) steps=(\d+) old_files=(\d+) new_files=(\d+) problems=(\d+)/.exec(evidence)
+  assert.ok(verdict, 'the evidence file has no DISPATCH-PARITY verdict line')
+  assert.equal(verdict[5], '0', 'parity problems must be zero')
+  assert.equal(verdict[1], 'DIFFERS', 'the regenerated evidence records a deliberate growth')
+  const added = [...evidence.matchAll(/^ {4}\S.*?added=([^\n]+)$/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(','))).sort()
+  assert.deepEqual(added, [
+    'scripts/contract-tiers.test.mjs',
+    'scripts/dispatch-tests.test.mjs',
+    'scripts/eb3-ci-required.test.mjs',
+    'scripts/tinf-trust-closeout.test.mjs',
+  ])
+  const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
+  assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')
   const recorded = /union old=\d+ new=\d+ set=(sha256:[0-9a-f]{64})/.exec(evidence)
   assert.ok(recorded, 'the evidence file has no union digest line')
   const tracked = trackedFiles()

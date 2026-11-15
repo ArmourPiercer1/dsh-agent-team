@@ -111,6 +111,14 @@
           ]
         },
         {
+          "id": "contract tier coverage (F-03 — required_tiers proven against executed tiers)",
+          "cmd": [
+            "node",
+            "scripts/contract-tiers.mjs",
+            "--check"
+          ]
+        },
+        {
           "id": "eb3-trusted-sources",
           "cmd": [
             "node",
@@ -382,7 +390,11 @@
             "scripts/host-cache-key.test.mjs",
             "scripts/census-plan.test.mjs",
             "scripts/census-aggregate.test.mjs",
-            "scripts/census-cutover.test.mjs"
+            "scripts/census-cutover.test.mjs",
+            "scripts/dispatch-tests.test.mjs",
+            "scripts/eb3-ci-required.test.mjs",
+            "scripts/tinf-trust-closeout.test.mjs",
+            "scripts/contract-tiers.test.mjs"
           ]
         },
         {
