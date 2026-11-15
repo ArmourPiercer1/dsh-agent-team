@@ -87,6 +87,13 @@ jobs:
           pnpm run build
           pnpm build:composition
 
+      - name: "Contracts at L1 — execute every contract-bound vitest file"
+        # F-03 closeout. The population is derived from dev/ci/test-contracts.json (contracts whose
+        # required_tiers include L1), never a hand-written list; `contract-tiers --check` reads this
+        # leg's `--run --tier L1` declaration as the L1 executed set, so deleting the step or dropping
+        # `--run` removes L1 coverage and turns the contracts back to UNMET. Raw vitest exit is returned.
+        run: node scripts/contract-tiers.mjs --run --tier L1
+
       - name: Ensure a YAML parser for the graph leg
         run: |
           python3 -c 'import yaml' 2>/dev/null && echo "PyYAML present" || python3 -m pip install --quiet pyyaml

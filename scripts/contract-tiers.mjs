@@ -28,8 +28,10 @@
  *   node scripts/contract-tiers.mjs --check         # exit 2 on an unmet tier / invalid exception
  *   node scripts/contract-tiers.mjs --json          # machine artifact
  *   node scripts/contract-tiers.mjs --write-exceptions [--out FILE]
+ *   node scripts/contract-tiers.mjs --run --tier L1   # execute the bound files, raw exit
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -50,7 +52,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
  *
  * @returns {{ok: true, tiers: Map<string, Set<string>>, sources: object} | {ok: false, code: string, detail: string}}
  */
-export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked = null, roots = null } = {}) {
+export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked = null, roots = null, contracts = null } = {}) {
   let loaded
   try {
     loaded = manifest ?? loadManifest(root)
@@ -75,6 +77,29 @@ export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked
     for (const suite of resolved.suites) add(suite, tier)
     if (tier === 'L1') l1Legs.push({ id: entry.id, layer: entry.layer, suites: resolved.suites.length })
   }
+  // L1/L2 EXECUTION legs: a manifest leg that runs `contract-tiers --run --tier <T>` executes the
+  // contract-bound files at that tier. This is the authority that turns the exception registry into a
+  // real gate: the same resolved `test_refs` the runner uses are the tier's executed set.
+  const contractRuns = []
+  let contractsFile = contracts === null ? null : { contracts }
+  for (const layer of loaded?.layers ?? []) {
+    for (const leg of layer?.legs ?? []) {
+      const cmd = Array.isArray(leg?.cmd) ? leg.cmd : []
+      const tokens = [...cmd, ...(Array.isArray(leg?.check) ? leg.check : [])]
+      if (cmd[1] !== 'scripts/contract-tiers.mjs' || !tokens.includes('--run') || !tokens.includes('--tier')) continue
+      const tier = tokens[tokens.indexOf('--tier') + 1]
+      if (!TIERS.includes(tier)) continue
+      if (contractsFile === null) contractsFile = readJson(resolve(root, CONTRACTS_REL))
+      if (!contractsFile || !Array.isArray(contractsFile.contracts)) {
+        return { ok: false, code: 'CONTRACT_TIERS_CONTRACTS_MISSING', detail: `${CONTRACTS_REL} is absent or carries no contracts[]` }
+      }
+      const bound = contractsFile.contracts
+        .filter((c) => Array.isArray(c?.required_tiers) && c.required_tiers.includes(tier))
+        .flatMap((c) => boundPaths(c))
+      for (const path of bound) add(path, tier)
+      contractRuns.push({ id: leg.id ?? '(unnamed)', layer: layer.id, tier, files: new Set(bound).size })
+    }
+  }
   const census = roots ?? deriveRoots({ cwd: root })
   if (!census.ok) return { ok: false, code: census.code, detail: census.detail }
   for (const r of census.roots) {
@@ -86,6 +111,7 @@ export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked
     sources: {
       l1: { authority: 'dev/ci/eb3-ci-manifest.json dispatch legs (non-census)', legs: l1Legs },
       l2: { authority: 'scripts/census-plan.mjs deriveRoots()', roots: census.roots.length, files: census.file_count },
+      contract_runs: contractRuns,
     },
   }
 }
@@ -199,6 +225,55 @@ export function measuredExceptions(evaluation, { expires = DEFAULT_EXPIRES, owne
     }))
 }
 
+/**
+ * Resolve the bound files for every contract that requires `tier`, then run EXACTLY those files with
+ * the repository's vitest config. This is the L1 EXECUTION half of F-03: an exception registry is a
+ * disclosure of a gap, not a gate — the gate becomes real only when the required tier actually runs
+ * the contract-bound tests.
+ *
+ * The population is derived from `dev/ci/test-contracts.json` (`test_refs` of contracts whose
+ * `required_tiers` include the tier): no new list, and nothing is inferred from the catalog.
+ *
+ * @returns {{ok: true, contracts: number, files: string[], exit: number, signal: string|null}}
+ *        | {{ok: false, code: string, detail: string}}
+ */
+export function runTierContracts({ tier, root = REPO_ROOT, contracts = null, spawn = spawnSync } = {}) {
+  if (!TIERS.includes(tier)) {
+    return { ok: false, code: 'CONTRACT_TIER_RUN_TIER_UNKNOWN', detail: `--tier must be one of ${TIERS.join('|')}, got ${String(tier)}` }
+  }
+  let list = contracts
+  if (list === null) {
+    const file = readJson(resolve(root, CONTRACTS_REL))
+    if (!file || !Array.isArray(file.contracts)) {
+      return { ok: false, code: 'CONTRACT_TIERS_CONTRACTS_MISSING', detail: `${CONTRACTS_REL} is absent or carries no contracts[]` }
+    }
+    list = file.contracts
+  }
+  const selected = list.filter((c) => Array.isArray(c?.required_tiers) && c.required_tiers.includes(tier))
+  const files = [...new Set(selected.flatMap((c) => boundPaths(c)))].sort()
+  if (files.length === 0) {
+    return {
+      ok: false,
+      code: 'CONTRACT_TIER_RUN_NO_FILES',
+      detail: `no contract requires ${tier} and names a bound test file — an empty run is not a proven tier`,
+    }
+  }
+  const missing = files.filter((f) => !existsSync(resolve(root, f)))
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      code: 'CONTRACT_TIER_RUN_FILE_MISSING',
+      detail: `${tier} names ${String(missing.length)} bound file(s) that do not exist: ${missing.slice(0, 6).join(', ')}`,
+    }
+  }
+  const args = ['exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--reporter=dot', ...files]
+  const run = spawn('pnpm', args, { cwd: root, stdio: 'inherit' })
+  if (run && run.error) {
+    return { ok: false, code: 'CONTRACT_TIER_RUN_SPAWN_FAILED', detail: String(run.error.message ?? run.error) }
+  }
+  return { ok: true, contracts: selected.length, files, exit: typeof run?.status === 'number' ? run.status : 1, signal: run?.signal ?? null }
+}
+
 function readJson(file, fallback = null) {
   try {
     return JSON.parse(readFileSync(file, 'utf8'))
@@ -222,6 +297,24 @@ function main(argv) {
   if (outAt >= 0 && (!outPath || outPath.startsWith('--'))) {
     process.stderr.write('REFUSED CONTRACT_TIERS_ARGUMENT: --out needs a path\n')
     return 2
+  }
+  if (argv.includes('--run')) {
+    const at = argv.indexOf('--tier')
+    const tier = at >= 0 ? argv[at + 1] : null
+    if (tier === null || tier.startsWith('--')) {
+      process.stderr.write('REFUSED CONTRACT_TIER_RUN_TIER_UNKNOWN: --run needs --tier <L1|L2>\n')
+      return 2
+    }
+    const ran = runTierContracts({ tier, root })
+    if (!ran.ok) {
+      process.stderr.write(`REFUSED ${ran.code}: ${ran.detail}\n`)
+      return 2
+    }
+    process.stdout.write(
+      `DSH-CONTRACT-TIERS-RUN tier=${tier} contracts=${String(ran.contracts)} files=${String(ran.files.length)} ` +
+        `exit=${String(ran.exit)}${ran.signal === null ? '' : ` signal=${ran.signal}`}\n`,
+    )
+    return ran.exit
   }
   const contractsFile = readJson(resolve(root, CONTRACTS_REL))
   if (!contractsFile || !Array.isArray(contractsFile.contracts)) {

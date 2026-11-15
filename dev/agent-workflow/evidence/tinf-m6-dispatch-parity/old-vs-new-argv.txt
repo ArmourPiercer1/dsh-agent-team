@@ -20,6 +20,11 @@ WHY THIS FILE EXISTS
   four files. `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set, so a
   future addition cannot hide behind this regeneration.
 
+WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
+  argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
+  25/25 and is not a meaningful comparison. e5bf05670 is the last commit whose workflows
+  still carry the hand-written lists, and it is the base this evidence has always named.
+
 REPRODUCE
   node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
 

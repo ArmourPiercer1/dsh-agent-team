@@ -286,6 +286,10 @@ test('dispatch: the committed parity evidence still describes the resolved set',
   // leg, so the verdict is DIFFERS by design. The laws that still hold are the ones that matter:
   // nothing may be MISSING, the run must have no problems, and the only added files are the four
   // named control suites. A future addition cannot hide behind this exception.
+  // The comparison base is e5bf05670 (last pre-M6 workflow). 7e3b6532a is the M6 merge point and has
+  // no old `node --test` argv at all, so a parity run against it reports 18 UNCONVERTED — the base
+  // named in the evidence is the only meaningful one, and this assertion keeps that explicit.
+  assert.match(evidence, /base: {2}e5bf05670/)
   const verdict = /DISPATCH-PARITY mode=inspect (\w+) steps=(\d+) old_files=(\d+) new_files=(\d+) problems=(\d+)/.exec(evidence)
   assert.ok(verdict, 'the evidence file has no DISPATCH-PARITY verdict line')
   assert.equal(verdict[5], '0', 'parity problems must be zero')

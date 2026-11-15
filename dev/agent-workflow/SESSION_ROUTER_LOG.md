@@ -8864,3 +8864,13 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **8. 偏差（必须记录）**：(a) 任务书同时要求“新负控接入同一 leg”和“parity IDENTICAL 25/25”，二者不可兼得；本分支选择接线，重生成 `old-vs-new-argv.txt`（对 `e5bf05670` 比较：`missing=none`、`problems=0`、`added` 恰为 4 个新文件、union 25→29），`test-catalog.test.mjs` 同时钉 digest 与允许 added 集合。(b) `--old-ref 7e3b6532a` 本身无法得到 25/25：该 commit 的 workflow 已无 `node --test` 旧 argv，parity 只能报 18 个 UNCONVERTED；正确 old-ref 是 pre-M6 的 `e5bf05670`。(c) 契约例外 owner 全为 `UNASSIGNED`，需人接手。
 
 **9. 残余**：F-06（真实 PTY/进程/网络 effect witness、`instrumented` 独立性、真 host E2 负控）未做，需 pristine host + World Factory 接线；L2 P50 ≤10 min 未达成；census exit 容忍策略为空；plan 的 oracle 列表仍为空（规则真空绿）。详细表与回滚见 `docs/plans/memo/tinf-trust-closeout-20261115/README.md`。
+
+## 2026-11-15 — TINF F-03 收口：L1 真正执行契约文件（例外清零）
+
+**0. 结论**：协调者指出“6/6 excepted 不是 gate，是缺口登记”。已加 `contract-tiers --run --tier L1`，从 `dev/ci/test-contracts.json` 的 `test_refs` 解析要求 L1 的契约文件（无新清单），用仓库自己的 `vitest.config.ts` 执行并原样返回 vitest exit；新 manifest leg `contracts-l1` 落在 **ci-product**（该 job 先 install + build + build:composition），workflow 加同名步骤。`deriveExecutedTiers` 读该 leg 的 `--run --tier L1` 声明作为 L1 执行集。
+
+**1. 结果**：`node scripts/contract-tiers.mjs --check` → `contracts=6 met=6 excepted=0 unmet=0 findings=0`；`dev/ci/contract-tier-exceptions.json` 已重生成为空（保留文件与 owner/expiry 规则，供未来真实缺口使用）。`node scripts/contract-tiers.mjs --run --tier L1` → `DSH-CONTRACT-TIERS-RUN tier=L1 contracts=6 files=12 exit=0`；本机 vitest `12 passed / 162 tests`，Duration 2.65 s，进程墙钟 3.6 s（**CI 未实测，标 UNVERIFIED**；本机需把 root 的 package `node_modules` 链接进来，CI 由 `pnpm install` 提供）。
+
+**2. 负控**：零文件 → `CONTRACT_TIER_RUN_NO_FILES`；绑定文件不存在 → `CONTRACT_TIER_RUN_FILE_MISSING`；注入 spawn 断言精确 argv 与 raw exit 7 被传播；删除/去掉 manifest leg 的 `--run` 会让 L1 从 executed 集消失并回到 UNMET（单测覆盖）；oracle gate 仍为真空绿，未伪造覆盖。
+
+**3. 形状**：`eb3-ci-required` 仍 `pass workflows=10 findings=0`（workflow 数 10、job 名未变、三个 Required contexts 未动）；新 leg 的 `check[]` 精确声明 `--run --tier L1`，整个 argv 法通过。parity 证据与 `test-catalog.test.mjs` 断言同时钉住 `e5bf05670` 这个 base，并写明 `7e3b6532a` 无旧 argv、不能作为 25/25 的比较基。

@@ -8,7 +8,7 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
@@ -17,6 +17,7 @@ import {
   deriveExecutedTiers,
   evaluateContracts,
   measuredExceptions,
+  runTierContracts,
   EXCEPTIONS_SCHEMA,
 } from './contract-tiers.mjs'
 
@@ -165,11 +166,14 @@ test('F-03: the generated exception rows are measured, owned and expiring', () =
 
 test('F-03 CLI: the real tree passes --check, and --json is the contract-tiers artifact', () => {
   const out = execFileSync(process.execPath, ['scripts/contract-tiers.mjs', '--check'], { cwd: REPO_ROOT, encoding: 'utf8' })
-  assert.match(out, /DSH-CONTRACT-TIERS contracts=6 met=0 excepted=6 unmet=0 findings=0/)
+  assert.match(out, /DSH-CONTRACT-TIERS contracts=6 met=6 excepted=0 unmet=0 findings=0/)
   const json = JSON.parse(execFileSync(process.execPath, ['scripts/contract-tiers.mjs', '--json'], { cwd: REPO_ROOT, encoding: 'utf8' }))
   assert.equal(json.schema, 'contract-tiers/1')
   assert.equal(json.summary.unmet, 0)
+  assert.equal(json.summary.met, 6)
+  assert.equal(json.summary.excepted, 0)
   assert.ok(json.sources.l1.legs.length > 0)
+  assert.ok(json.sources.contract_runs.some((r) => r.tier === 'L1' && r.files === 12))
   assert.ok(json.executed.every((row) => row.tiers.length > 0))
 })
 
@@ -191,4 +195,81 @@ test('F-03 CLI: a malformed exception file is refused, never ignored', () => {
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+
+// ── F-03 closeout: the required tier must EXECUTE the bound files ─────────────────────────────────
+
+test('F-03 run: the L1 population is the union of bound test_refs, and the raw exit is returned', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'tinf-f03-run-'))
+  try {
+    for (const p of ['packages/a/test/a.test.ts', 'packages/b/test/b.test.ts']) {
+      mkdirSync(join(dir, p, '..'), { recursive: true })
+      writeFileSync(join(dir, p), '// fixture\n')
+    }
+    const contracts = [
+      contract('A', ['packages/a/test/a.test.ts'], ['L1']),
+      contract('B', ['packages/b/test/b.test.ts'], ['L1']),
+      contract('C', ['packages/a/test/a.test.ts'], ['L2']),
+    ]
+    let seen = null
+    const got = runTierContracts({
+      tier: 'L1',
+      root: dir,
+      contracts,
+      spawn: (cmd, args, opts) => {
+        seen = { cmd, args, opts }
+        return { status: 7, signal: null, error: null }
+      },
+    })
+    assert.equal(got.ok, true, got.detail)
+    assert.equal(got.contracts, 2)
+    assert.deepEqual(got.files, ['packages/a/test/a.test.ts', 'packages/b/test/b.test.ts'])
+    assert.equal(got.exit, 7, 'the runner exit is propagated, not swallowed')
+    assert.equal(seen.cmd, 'pnpm')
+    assert.deepEqual(seen.args.slice(0, 6), ['exec', 'vitest', 'run', '--config', 'vitest.config.ts', '--reporter=dot'])
+    assert.deepEqual(seen.args.slice(6), got.files)
+    assert.equal(seen.opts.cwd, dir)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('F-03 run: a tier with zero bound files refuses CONTRACT_TIER_RUN_NO_FILES (never a vacuous pass)', () => {
+  const got = runTierContracts({
+    tier: 'L2',
+    root: '/',
+    contracts: [contract('A', ['a.test.ts'], ['L1'])],
+    spawn: () => assert.fail('must not spawn for an empty population'),
+  })
+  assert.equal(got.ok, false)
+  assert.equal(got.code, 'CONTRACT_TIER_RUN_NO_FILES')
+})
+
+test('F-03 run: a bound file that does not exist refuses CONTRACT_TIER_RUN_FILE_MISSING', () => {
+  const got = runTierContracts({
+    tier: 'L1',
+    root: mkdtempSync(join(tmpdir(), 'tinf-f03-missing-')),
+    contracts: [contract('A', ['packages/a/test/absent.test.ts'], ['L1'])],
+    spawn: () => assert.fail('must not spawn for a missing bound file'),
+  })
+  assert.equal(got.ok, false)
+  assert.equal(got.code, 'CONTRACT_TIER_RUN_FILE_MISSING')
+})
+
+test('F-03: the manifest contracts-l1 leg is what makes L1 executed (not the exception file)', () => {
+  const manifest = {
+    layers: [{
+      id: 'ci-product',
+      workflow: '.github/workflows/ci-product.yml',
+      legs: [{ id: 'contracts-l1', cmd: ['node', 'scripts/contract-tiers.mjs'], check: ['--run', '--tier', 'L1'] }],
+    }],
+  }
+  const got = deriveExecutedTiers({
+    manifest,
+    tracked: new Set(),
+    roots: { ok: true, roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts'] }], file_count: 1 },
+    contracts: [contract('A', ['packages/a/test/a.test.ts'], ['L1'])],
+  })
+  assert.equal(got.ok, true, got.detail)
+  assert.deepEqual([...(got.tiers.get('packages/a/test/a.test.ts') ?? [])].sort(), ['L1', 'L2'])
 })
