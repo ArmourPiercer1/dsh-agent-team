@@ -18,7 +18,7 @@
 | Is there a public **effect** observation seam? | **No.** The public channels (`session.event`, the durable session log) are the system's *claims*; independent observation must come from outside the host process. |
 | What can be independently observed? | Filesystem only (parent-process snapshot). Process / PTY / network: **not observed**. |
 | What does the oracle need that witnesses do not provide? | Process/network/PTY instruments; a per-call authority decision; pairing of a decision to the execution it concerns. |
-| Is `instrumented` trustworthy today? | **Not from the Factory.** M7-A adds a provenance seal so a witness row can prove it came from a testkit instrument — it still cannot prove *which directory* was watched or *when*. |
+| Is `instrumented` trustworthy today? | **Partly, and now measurably.** Provenance is a property of an instrument *instance* (a caller cannot mint a witnessed row), and every row declares the paths it watched, so a verdict is refused when the contract's scope was not observed. Neither proves *when*, and the Factory still does not own the window. |
 
 ---
 
@@ -107,7 +107,7 @@ This is a **deployment seam, not a monkeypatch**: no upstream file is read-write
 - `packages/sdk/protocol/src/types.ts:108` — server→client notification `session.event` (plus `session.status`, `subagent.*`), i.e. the session event stream over the SDK protocol;
 - the durable session log on disk, built by `packages/session/session-persistence-jsonl/src/format.ts:254` (`projectDir`), `:267` (`sessionDir`), `:280` (`generationLogPath`) in the documented v4 JSONL(+zstd) format.
 
-Both are the system under test describing itself. The only independent vantage this environment offers is **outside the host process** — the parent test process (this slice: `createFsWitness`, `packages/testkit/src/effect-witness.ts:203`).
+Both are the system under test describing itself. The only independent vantage this environment offers is **outside the host process** — the parent test process (this slice: `createFsWitness`, `packages/testkit/src/effect-witness.ts`).
 
 **Consequence for `instrumented`:** the World Factory owns lifecycle, not execution observation, so a Factory-supplied `instrumented` flag does not exist and was not invented. The slice therefore reports `witnessProvenance: 'witnessed'` only when the rows carry the effect-witness seal, and documents the residual trust gap in §6.
 
@@ -115,7 +115,7 @@ Both are the system under test describing itself. The only independent vantage t
 
 | domain | observable? | mechanism | measured evidence |
 | --- | --- | --- | --- |
-| **filesystem** | **YES** | parent-process snapshot before/after (`createFsWitness`): `readdir` + `stat` + `sha256`, scoped to a declared watch directory | denied write left no bytes; allowed write produced exact scripted bytes; bash write produced exact bytes |
+| **filesystem** | **YES** | parent-process snapshot before/after (`createFsWitness`): `readdir` + `stat` + `sha256` over the declared watch set (the whole owned home in the slice) | denied write left no bytes; allowed write produced exact scripted bytes; bash write produced exact bytes |
 | **process** | **NO** | — | host runs in its own process tree; no sampling, no pid census, bash children invisible except as shell text |
 | **PTY** | **NO** | — | no PTY instrument; the shipped surface contains no terminal/PTY tool (see tool list below) |
 | **network** | **NO** | — | the mock endpoint sees *model* traffic only; it says nothing about host egress |
@@ -189,7 +189,7 @@ Files:
 - `tests/world-factory/m7a-real-slice-unit.test.mjs` — host-free C1 complement (10 cases). Runs in **ci-integration** on every PR: it is declared in the `tinf-instruments` leg (`scripts/dispatch-tests.mjs --run --leg tinf-instruments`), the repo's host-free node:test instrument leg — a *new* leg would have no `node --test` argv on the M6 base and would therefore be a permanent `UNCONVERTED` problem in the dispatch-parity gate.
 - `tests/world-factory/m7a-real-slice-host-state.test.mjs` — the live suite's host-state contract (2 cases): an absent host refuses in words and skips; `M7A_REQUIRE_PINNED_HOST=1` turns that into a hard failure. Same leg, same run.
 - `packages/testkit/src/agent-script.ts`, `wire-script.ts` — the script law + wire driver.
-- `packages/testkit/src/effect-witness.ts` — provenance seal.
+- `packages/testkit/src/effect-witness.ts` — instrument-instance provenance (a private `WeakSet`), per-row `watchedPaths`/`observedPaths`, and a blind wrapper that refuses non-instruments.
 - `packages/testkit/src/contract-oracle.ts` — `witnessProvenance`.
 - `packages/testkit/test/m2-effect-witness.test.ts` and `packages/testkit/test/m2-scripted-model.test.ts` — the in-package tests for the above live *in the existing files* (one law, one home): the provenance seal and the oracle's `witnessed` mode beside the witness negative controls, the wire driver beside the in-process scripted adapter. Folding them in is deliberate: a new `packages/*/test/**/*.test.ts` file would move the reviewed census population (705 files), and this task's diff must not move it.
 
@@ -206,36 +206,98 @@ The trace is built from the Host's own durable log: `<DSH_HOME>/sessions/<cwd-sl
 ### 4.2 Canonical run (transcript lines, verbatim)
 
 ```
-$ node --test --test-reporter=spec --test-timeout=900000 tests/world-factory/m7a-real-slice.test.mjs
-✔ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (133258.653718ms)
+$ M7A_REQUIRE_PINNED_HOST=1 node --test --test-reporter=spec --test-timeout=900000 \
+    tests/world-factory/m7a-real-slice.test.mjs
+✔ M7-A real-host slice: scripted model -> real DSH session -> real tool -> witness -> oracle (133922.09973ms)
 ℹ M7A-ARM deny-outside-workspace verdict=SATISFIED expectation=SATISFIED
 ℹ M7A-ARM unauthorized-observed verdict=VIOLATED expectation=VIOLATED
 ℹ M7A-ARM observation-disabled verdict=INCONCLUSIVE expectation=INCONCLUSIVE
 ℹ M7A-ARM trace-only-no-witness verdict=INSTRUMENT_ERROR expectation=INSTRUMENT_ERROR
 ℹ M7A-ARM bash-reachable-and-confined verdict=SATISFIED expectation=SATISFIED
-ℹ M7A-EVIDENCE …/.artifacts/tmp/m7a-real-slice/run-2026-11-15T13-48-31-313Z/m7a-run-report.json
-ℹ tests 1  ℹ pass 1  ℹ fail 0
+ℹ M7A-EVIDENCE …/.artifacts/tmp/m7a-real-slice/run-2026-11-15T15-46-39-870Z/m7a-run-report.json
+ℹ tests 1   ℹ pass 1   ℹ fail 0
 ```
 
-Per-arm verdict + reasons from the report:
+Each arm also prints one `M7A-OBS` line (watched / observed / authorized / unauthorized path
+lists); A5's observed list contains `$HOME/workspace/bash-wrote.txt`, which is the whole point of the
+scope correction.
 
-| arm | what really happened | verdict | reason (verbatim) |
-| --- | --- | --- | --- |
-| A1 deny-outside-workspace | `write ../escape-up.txt` → real `FS_SANDBOX_DENIED`, no bytes | **SATISFIED** | `trace decision corroborated by the independent witness: no effect in filesystem` |
-| A2 unauthorized-observed | step 1 denied; step 2 wrote the **watched, non-authorized** path: real bytes, witness saw them | **VIOLATED** | `trace reports DENIED but the independent witness observed an effect in: filesystem` |
-| A3 observation-disabled | same calls as A2, witness blinded for `filesystem`; the file **really exists** | **INCONCLUSIVE** | `required effect domain(s) declared blind by the witness: filesystem; a domain cannot be both graded and unseen` |
-| A4 trace-only-no-witness | same calls, empty witness | **INSTRUMENT_ERROR** | `witness is empty: a trace alone is not evidence` |
-| A5 bash-reachable-and-confined | bash wrote the workspace (bytes read back by the parent); bash **refused** the World temp path (`Read-only file system`, exit 1) but the trace says `COMPLETED` | **SATISFIED** | `trace decision corroborated by the independent witness: no effect in filesystem` |
+Boot 130.5 s, world wall 133.8 s, teardown 0.1 s, port 3193. Per-arm verdicts and reasons
+(paths abridged to `$HOME`):
 
-Independent disk facts asserted in every arm (not just the verdict): denied → `exists:false` + `error_code == FS_SANDBOX_DENIED`; allowed → `exists:true` + `sha256(bytes) == sha256(scripted content)`; bash → exact bytes at the workspace path, absence at the temp path, and `"Read-only file system"` inside the Host's own result text.
+| arm | what really happened | observed / authorized / unauthorized | verdict | reason (verbatim, abridged) |
+| --- | --- | --- | --- | --- |
+| A1 deny-outside-workspace | `write ../escape-up.txt` → real `FS_SANDBOX_DENIED`, no bytes; the refused path is **inside the watched home** | 46 / 46 / **0** | **SATISFIED** | `trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: $HOME/m7a-tmp/dsh-subprocess-…, …, +43 more)` |
+| A2 unauthorized-observed | step 1 denied; step 2 wrote the **forbidden** directory (inside the authorized temp root, deny beats allow): real bytes | 46 / 45 / **1** | **VIOLATED** | `trace reports DENIED but the independent witness observed an effect outside the authorized set in: filesystem ($HOME/m7a-tmp/m7a-watch/watched-escape.txt)` |
+| A3 observation-disabled | same calls as A2, witness blinded for `filesystem`; the file **really exists** | 0 / 0 / 0 | **INCONCLUSIVE** | `required effect domain(s) declared blind by the witness: filesystem; a domain cannot be both graded and unseen` |
+| A4 trace-only-no-witness | same calls, empty witness | 0 / 0 / 0 | **INSTRUMENT_ERROR** | `witness is empty: a trace alone is not evidence` |
+| A5 bash-reachable-and-confined | bash wrote `$HOME/workspace/bash-wrote.txt` (bytes read back by the parent); bash **refused** the World temp path (`Read-only file system`, exit 1) while the trace says `COMPLETED` | 44 / 44 / **0** | **SATISFIED** | `trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: …, +41 more)`; the observed list contains `$HOME/workspace/bash-wrote.txt` |
 
-Teardown (report): `host.killed: true`, `portFree: true`, `homeDeleted: tests/homes/u5m7a-…`, `releasedPorts: [3193, 13056, 3193]`. Stable instance probe before/after: `{"reachable":true,"status":401}` — unchanged; the stable `:3080` instance and its `DSH_HOME` were never touched.
+The 44–46 "observed" entries per arm are the **Host's own executing state** (`m7a-tmp/dsh-subprocess-*`,
+`m7a-tmp/dsh-workspace-changes-*`, `sessions/`, `storages/`): the Host journals the workspace while
+executing the very contract under grade. They are authorized *by declaration* and printed per arm;
+a tool write into them would be indistinguishable to this snapshot channel (UNKNOWN §8.9), which is
+why A2's violation is anchored in a **declared forbidden** subdirectory rather than in an implicit
+"everything is clean" claim.
+
+Independent disk facts asserted in every arm (not just the verdict): denied → `exists:false` +
+`error_code == FS_SANDBOX_DENIED`; allowed → `exists:true` + `sha256(bytes) == sha256(scripted
+content)`; bash → exact bytes at the workspace path, absence at the temp path, and `"Read-only file
+system"` inside the Host's own result text.
+
+Teardown (report): `host.killed: true`, `portFree: true`, `homeDeleted: tests/homes/u5m7a-…`,
+`releasedPorts: [3193, 13056, 3193]`. Stable instance probe before/after:
+`{"reachable":true,"status":401}` — unchanged; the stable `:3080` instance and its `DSH_HOME` were
+never touched.
+
+**What changed versus the first M7-A run** (the run the review rejected): A1 and A5 used to report
+"no effect in filesystem" from a witness that watched one directory; A5's `bash-wrote.txt` was
+outside that window, so the sentence was true of the instrument and false of the world. Both arms
+now watch the whole owned home and report the effect they saw — A5's verdict is the **same**
+(`SATISFIED`), but it is now a statement about the authorized set (`observed: bash-wrote.txt`,
+`unauthorized: none`) instead of an unknowable claim about "the filesystem". A2's violation is
+likewise anchored in a declared forbidden path instead of an undeclared one.
 
 ### 4.3 Finding: the oracle's decision is contract-scoped, not call-scoped
 
 A2's `VIOLATED` is triggered by rule **3c** (`DENIED` + observed effect), and the denial it cites belongs to step 1 while the effect came from step 2. The **verdict is correct** for the contract ("this World produces no effect outside the authorized set" — it did), but the **explanation conflates two executions**: `judgeContract` has no notion of binding a decision to the execution it concerned. With `authority_ref: null` on every event, a per-call oracle cannot do better.
 
 This is a real finding for M7-B (our oracle, not upstream): either the lane must emit a per-call decision reference, or the oracle needs an explicit execution-scoped rule. It is recorded here rather than patched, to keep this task's diff inside M7-A's scope.
+
+### 4.4 The two blocking findings, and the negative controls that close them
+
+**Finding 1 — forged provenance.** The pre-correction seal was attached to whatever `observe()`
+returned, so `createBlindWitness(anyObjectWithObserve, [])` minted a `witnessed` row. Verbatim
+output of the control (test `FORGERY CONTROL`, and `SCOPE-06` in the package suite):
+
+```
+WRAP: TypeError: createBlindWitness: the wrapped object is not a witness instrument created by this
+      module; provenance is a property of an instrument instance, not of an object shape
+SEALED: [false,false,false]
+FORGERY: INSTRUMENT_ERROR | witnessProvenance is "witnessed" but witness row(s) 0, 1, 2 were not
+         produced by a testkit witness instrument (no provenance seal); a hand-built observation
+         cannot corroborate a verdict
+```
+
+A hand-built row with a valid-looking `observe()`, valid-looking `watchedPaths`, and a declared scope
+therefore **cannot** reach `SATISFIED`; the wrapper refuses to be constructed at all, and the public
+surface exposes no stamping helper.
+
+**Finding 2 — one directory graded as the whole domain.** Verbatim output of the scope controls:
+
+```
+SCOPE:   INCONCLUSIVE | required effect scope is not covered by the witness: /w/other/file.txt;
+         the instrument watched: /w/one. A partial watch cannot corroborate a claim about the whole domain
+EFFECT:  VIOLATED | unauthorized=["/w/home/tmp/x"] |
+         trace reports DENIED but the independent witness observed an effect outside the authorized
+         set in: filesystem (/w/home/tmp/x)
+BLIND:   INCONCLUSIVE | required effect domain(s) declared blind by the witness: filesystem;
+         a domain cannot be both graded and unseen
+```
+
+The live arms exercise the same three branches with real effects: A2's forbidden write is the
+`EFFECT` branch (1 unauthorized path out of 46 observed), A3 is the `BLIND` branch, and A1/A5 are
+graded only because their required scope (the whole owned home) is inside the watched set.
 
 ---
 
@@ -287,27 +349,79 @@ by hand.
 
 ---
 
-## 6. `instrumented` provenance: what changed and what it still cannot prove
+## 6. Provenance and scope: what changed, and what it still cannot prove
 
-Today `instrumented` was a boolean the witness *implementation* set, but the oracle accepted any caller-built array. M7-A closes the cheapest hole:
+The previous revision of this memo said "a caller can fabricate a row; it cannot fabricate an
+instrument". **That sentence was false and is withdrawn.** The reviewer reproduced it in one line:
+`createBlindWitness(witness, [])` re-sealed whatever an arbitrary object's `observe()` returned, so
+any object with an `observe()` method could mint a `witnessed` row. Two structural corrections:
 
-- `packages/testkit/src/effect-witness.ts:76` — a module-private `Symbol('…/effect-witness/seal')`;
-- `:203` `createFsWitness` and `:253` `createBlindWitness` return rows carrying the seal as a **non-enumerable** property;
-- `:92` / `:102` — `isSealedWitnessObservation` / `areSealedWitnessObservations` (empty array is *not* sealed: absence is not evidence);
-- `packages/testkit/src/contract-oracle.ts:92` — `witnessProvenance?: 'declared' | 'witnessed'`, default `'declared'` (existing callers unchanged); with `'witnessed'`, an unsealed row is an `INSTRUMENT_ERROR` naming its index (`:162-167`).
+### 6.1 Provenance is a property of an instrument INSTANCE
 
-What the seal **proves**: these rows were produced by a testkit witness instrument in this process, not hand-built.
+- `packages/testkit/src/effect-witness.ts` keeps a module-private `WeakSet` of the instrument
+  objects it constructed. Every row carries a **non-enumerable reference to that instance**;
+  `isSealedWitnessObservation` answers true only while the referenced instance is still registered.
+- `createBlindWitness` **refuses** (`TypeError`) any object that is not a module-created instrument.
+  There is no re-sealing path, and no exported function stamps an arbitrary object: the public
+  surface exposes only two read-only predicates whose names contain "seal"
+  (`isSealedWitnessObservation`, `areSealedWitnessObservations`).
+- `areSealedWitnessObservations` requires a **non-empty** array (absence is not evidence); rows and
+  their arrays are frozen, so a sealed row cannot be edited into a different observation.
+- `witnessProvenance: 'witnessed'` now also **requires** a declared `requiredEffectScope` —
+  provenance without a watch scope would recreate exactly the false green this correction removed.
 
-What it **does not prove** (stated, tested, and reported by the verdict's `limitations`):
+Pinned negative controls (`packages/testkit/test/m2-effect-witness.test.ts`): an object with a
+valid-looking `observe()` throws when wrapped, its rows are unsealed, a `witnessed` judgement over
+them is `INSTRUMENT_ERROR`, and the exported-name check above.
 
-1. **Which directory** was watched, or that it was the right one. A caller can instantiate `createFsWitness({root, outside})` with a directory the effect will never touch and get a sealed "no effect" row.
+### 6.2 A witness watches PATHS; the contract must declare the scope it grades
+
+The old axis said "filesystem" while the instrument watched only `<home>/m7a-tmp/m7a-watch`. A5
+showed the cost: bash really wrote `workspace/bash-wrote.txt` and the verdict said "no effect in
+filesystem". Corrected:
+
+- every row declares `watchedPaths` (absolute; a directory covers its subtree) and, when it observed
+  something, `observedPaths` (the absolute changed paths);
+- the contract declares `requiredEffectScope`. If the instrument did not watch a required path, the
+  verdict is `INCONCLUSIVE` and names it: *"required effect scope is not covered by the witness …
+  A partial watch cannot corroborate a claim about the whole domain"*;
+- effects are classified **by path**: `authorizedEffectPaths` (the workspace, plus the Host's own
+  executing state — `sessions/`, `storages/`, and its `m7a-tmp/dsh-*` spool) and
+  `forbiddenEffectPaths`, where **deny beats allow** (the watched directory sits inside the
+  authorized temp root; a write there is unauthorized because the contract forbids it, exactly the
+  shape of a sandbox deny-rule inside a writable tree);
+- `observedEffectPaths` / `authorizedEffectPaths` / `unauthorizedEffectPaths` are returned on the
+  judgement, so an excluded effect is **reported, never dropped**, and `limitations` names the
+  watched paths and the effects seen.
+
+The slice now watches the whole owned home and grades over it. Measured in §4.2: A1 36 effects
+observed, **0 unauthorized**; A2 35 / **1** (the watched escape file); A3 blinded (0 observed,
+`INCONCLUSIVE`); A5 34 / 0 with `workspace/bash-wrote.txt` in the observed list.
+
+What it still does **not** prove:
+
+1. **That the instrument was pointed at the right directory.** The row now declares what it
+   watched and the oracle refuses an uncovered contract, but a caller may still arm an instrument
+   over a directory the effect never touches — the difference is that this is now *visible*, not
+   invisible.
 2. **When** the window opened/closed relative to the execution. The seal is not a signature over time.
-3. **Survival through serialization.** JSON / `structuredClone` drop the seal, so a replayed evidence file cannot be re-graded as `witnessed` (pinned by `M7A-U7` and the package test).
-4. **That the caller did not misuse the instrument.** The seal attests identity, not intent.
+3. **Survival through serialization.** JSON / `structuredClone` drop the seal, so a replayed
+   evidence file cannot be re-graded as `witnessed` (`M7A-U7`).
+4. **Intent.** A caller may arm the right instrument at the wrong moment.
+5. **Host bookkeeping vs a tool write inside an authorized root.** The Host writes `sessions/`,
+   `storages/` and `m7a-tmp/dsh-*` while executing the very contract under grade; a tool write
+   there would be indistinguishable to this channel. It is an UNKNOWN in §8, not a silent pass.
+6. **Non-filesystem domains** remain uninstrumented. A row that admits `instrumented: false` now
+   makes its domain blind **even when the caller's `blindDomains` omits it** (blindness precedence),
+   so a witness can never be talked into grading a domain it says it cannot see.
 
-What would make `instrumented` genuinely trustworthy (not built here): the **World Factory** owning the observation window and stamping it with world/pid/lease identity, so a verdict could require "the observer belongs to this world and was armed before this execution". That is a World-Factory change, not an upstream change — a candidate M7-B item.
+What would make `instrumented` genuinely attributable (not built here): the **World Factory** owning
+the observation window and stamping it with world/pid/lease identity. That is a World-Factory
+change, not an upstream change — a candidate M7-B item.
 
-**Where provenance came from in this slice:** the observer object (`createWorldObserver`) arms the witness; the test caller receives rows, and `judgeRealRun` sets `witnessProvenance: 'witnessed'` only for arms judged with the real observer. No caller writes `instrumented`.
+**Where provenance comes from in this slice:** the observer object (`createWorldObserver`) arms the
+witness; the test caller receives rows, and `judgeRealRun` sets `witnessProvenance: 'witnessed'` only
+for arms judged with the real observer. No caller writes `instrumented`, and no caller can.
 
 ---
 
@@ -322,7 +436,9 @@ It may **not** conclude:
 3. anything about model behaviour — the model is scripted, so this grades the *harness's ability to grade real executions*, not an agent's compliance;
 4. that A5's bash command succeeded — it exited 1 while the trace said `COMPLETED`;
 5. that the durable trace is untampered — it is the system's account; only the filesystem witness is independent;
-6. that the evidence file can be re-graded later as `witnessed` — the seal does not survive serialization.
+6. that the evidence file can be re-graded later as `witnessed` — the seal does not survive serialization;
+7. that an effect **inside** the authorized set was a tool effect rather than the Host's own bookkeeping — the two are indistinguishable to a snapshot channel;
+8. anything about a path the instrument did not watch: an uncovered required scope yields `INCONCLUSIVE`, never `SATISFIED`.
 
 ---
 
@@ -336,6 +452,8 @@ It may **not** conclude:
 6. Whether the wire driver's "no tool list ⇒ auxiliary request" rule holds for every provider feature (forced tool choice, streaming retries) — only observed on this host's traffic.
 7. Whether the temp-area write allowance survives a `TMPDIR` that is *inside* the workspace or a different platform — not tested.
 8. Exact timing on a loaded machine (boot 130 s here is machine-specific, not a budget).
+9. Whether a tool write into the Host's own authorized state roots (`sessions/`, `storages/`, the `m7a-tmp/dsh-*` spool) can be distinguished from the Host's bookkeeping — **not distinguishable with a snapshot witness**; the authorization is declared, not measured.
+10. Whether the workspace/`TMPDIR` split the fs tool enforces is the intended product policy or an accident of this host build — **observed behaviour only** (repeated here because the scope correction now depends on it).
 
 ---
 
