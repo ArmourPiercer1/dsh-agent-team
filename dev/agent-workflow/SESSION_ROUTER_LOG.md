@@ -8930,3 +8930,19 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **5. 发现（未修，避免超范围）**：Oracle 的决策是 **contract 级而非 call 级**——A2 的 `VIOLATED` 由规则 3c（DENIED + 观察到的效果）触发，但它引用的拒绝属于另一个调用；判决对契约是对的，解释不精确。M7-B：要么 lane 产出 per-call decision 引用，要么 oracle 增加 execution 级规则。
 
 **6. 门禁**：无宿主单测 10/10（`node --test tests/world-factory/m7a-real-slice-unit.test.mjs`）；package vitest `m2-contract-oracle` 18、`m2-effect-witness` 10、`m2-scripted-model` 9、`m2-witness-provenance` 5、`m7a-real-slice`（宿主状态契约）2 全绿；四个无依赖模块在仓库 strict 旗标下 `tsc --noEmit` 通过；eslint 对改动 TS 文件 0 error；`test-catalog --write-uncollected-baseline` 后 exit 0。未推送、未开 PR；稳定实例 :3080 前后探针均为 `{"reachable":true,"status":401}`。
+
+## 2026-11-15 — M7-A 修正：两个套件真正被 CI 收集（基线回到 91）
+
+**0. 背景（必须修正）**：上一轮把 `uncollected` 基线从 91 抬到 93，且两个 M7-A 套件只在本地跑过——按 F-06 的定义，“只有手工演示过的能力”等于没有门禁。父代理拒绝以该状态合并。本轮在不改切片语义的前提下把两个半区放回 CI：C1（无宿主）进 L1，C2（一次真实 boot）进 ci-census。
+
+**1. C1（无宿主，每个 PR）**：`tests/world-factory/m7a-real-slice-unit.test.mjs`（10 例）与新增 `tests/world-factory/m7a-real-slice-host-state.test.mjs`（node:test，2 例：宿主缺失=逐字拒绝+skip；`M7A_REQUIRE_PINNED_HOST=1`=硬失败）声明进**既有** `tinf-instruments` 腿的 `suites[]`，由 `node scripts/dispatch-tests.mjs --run --leg tinf-instruments` 在 ci-integration 执行，整套 339 测试全绿。**不新建腿**的原因：M6 parity 法则要求每个 dispatch step 在 base（`e5bf05670`）有对应 `node --test` argv，新 step 会被判 `UNCONVERTED`；因此改为并入既有腿，并按既有流程**有意重生成** parity 证据（union 29→31、`problems=0`、`added=` 精确列出两文件），同时在 `scripts/test-catalog.test.mjs` 的 allowed-added 集合里点名声明，后续新增仍无法藏在该豁免后。
+
+**2. C2（真实宿主，ci-census）**：`census-runtime.yml` 在 census 与 transcript re-grade **之后**新增独立 step：`node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`，`env: M7A_REQUIRE_PINNED_HOST: '1'`、`M7A_BOOT_TIMEOUT_MS: '600000'`。宿主缺失在该 job 是**命名硬失败**（`M7A-REAL-SLICE-HOST-INCOMPLETE`），绝不 skip。census 的 argv、两次 capture、population 与 plan 均未触碰（独立 step）。成本：locally world wall 133.2s（boot 129.1s + teardown 0.1s），按 CI argv 实测 `node --test` 148.7s；按该 job 自己的 4× hosted 系数约 +9 min，叠加其 ~8–10 min 地板仍远低于 `timeout-minutes: 60`。
+
+**3. 基线**：`dev/ci/uncollected-baseline.json` 用 `--write-uncollected-baseline` 重生成回 **91**（两套件均被收集，不是抬闸）；`--max-uncollected 91` exit 0 且打印 `UNCOLLECTED 91`。census population 仍为 11 roots / **705** files（故 705 的钉住值不动）。
+
+**4. 测试面归并**（避免移动 705 的 reviewed population）：provenance 封印用例并入 `packages/testkit/test/m2-effect-witness.test.ts`，wire driver 并入 `packages/testkit/test/m2-scripted-model.test.ts`；宿主状态契约移出 vitest 成为 node:test（并剥离子进程的 `NODE_TEST_CONTEXT`，否则嵌套 runner 会跳过文件、两例变成空断言）。
+
+**5. 新 commit**：`e2aae32b0`（测试面归并 + host-state node:test + `M7A_BOOT_TIMEOUT_MS`）、`14b266f09`（CI 收集：manifest leg suites、ci-integration 注释、census step、baseline 91、parity 证据与 allowed-added）、`9d0cd5722`（memo §5/§9）。此前 `7d5bc8432` 的 91→93 已被 `14b266f09` 撤回为 91。
+
+**6. 门禁（本轮实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` exit 0（`UNCOLLECTED 91`，`tests=872 digest=sha256:5f71c543…`）；`docs-sync --check` exit 0；`lint-identities` exit 0（1686 files）；`eb3-ci-negative-controls` 26/26；`census-plan.test.mjs` 50/50；C2 以 CI argv 在真实宿主上 5 臂全中（A1 SATISFIED / A2 VIOLATED / A3 INCONCLUSIVE / A4 INSTRUMENT_ERROR / A5 SATISFIED）。未推送、未开 PR；:3080 探针前后不变。
