@@ -165,7 +165,7 @@ DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedle
 9. **`census-aggregate.mjs` 本轮被改了一处**（新增 `verifyEvidenceRefs()` + CLI 调用点），这是 round 2 审查明确要求的（「evidence 必须存在」）；M4 的 `aggregate()` 判定代数、`census-plan.mjs`、`docs/ROUTER_RULES.md`、`docs/TEST_METHODS.md`、Authority/Candidate/release、`packages/**`（CORE PATCH BUDGET = 0）**一个字节没动**。
 10. **M4 的 CLI 测试 fixture 改了 7 行**（写一份 `evidence.json`），因为 CLI 现在会解析 evidence；它们断言的东西没变（同一批 shard、同一个判决）。
 
-## 9. 门禁（本 head 实测，`32c1a5bd4`）
+## 9. 门禁（本 head 实测，`32c1a5bd4`–`df2b248c6`）
 
 ```
 fresh clone (git clone --no-hardlinks, 无 .artifacts/) + 六文件 CI 命令

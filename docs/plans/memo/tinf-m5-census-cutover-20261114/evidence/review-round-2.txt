@@ -31,7 +31,10 @@ only thing that can appear is an EMPTY gitignored `.artifacts/` directory. That 
 nothing READS it: the old suite failed when it was missing, the new one passes without it, and the
 leg's output directories are tmp dirs (or `<transcript>/plan` in production).
 
-## 2. Gates at `32c1a5bd4` (this worktree)
+## 2. Gates at `32c1a5bd4`–`df2b248c6` (this worktree)
+
+Code froze at `32c1a5bd4`; `29bd642e0`/`df2b248c6` add two finishing fixes (plan artifacts live beside
+the transcript; live-test cleanup) and the six-file command was re-run at `df2b248c6` = 238/238.
 
 ```
 node --test <the six files> ................ 238 tests / 238 pass / 0 fail   (was 226/210/16 at 4ff253a5)
@@ -50,7 +53,7 @@ node scripts/ci-pr-gate.mjs --check-transcript <plan-mode transcript>
   ............................................ pass class=ok :: 1 leg(s), final token pass
 ```
 
-## 3. The dry run, re-verified at this head — and what it does NOT claim
+## 3. The dry run, re-verified at this head (`df2b248c6`) — and what it does NOT claim
 
 See `dry-run-positive.txt` / `dry-run-negative.txt`. The recorded artifact the M4 job uploaded
 (`census-runtime-transcripts-1198`) contains only `census-run.txt`, `census-capture-{1,2}.txt` and
