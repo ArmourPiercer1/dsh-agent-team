@@ -72,7 +72,7 @@ export const SHARD_SCHEMA = 'census-shard/1'
 export const REQUIRED_CAPTURES = 2
 
 export const TASK_STATES = Object.freeze(['PASS', 'FAIL', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
-export const SHARD_STATES = Object.freeze(['COMPLETED', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
+export const SHARD_STATES = Object.freeze(['COMPLETED', 'REPLAY', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
 /** The only state that is green. Everything else is enumerated, never the other way round. */
 export const PASS = 'PASS'
 
@@ -579,10 +579,14 @@ export function aggregate({ plan, shards }) {
   const verdicts = new Set()
   const observedTaskIds = []
   for (const { file, json } of parsed) {
-    if (json.status !== 'COMPLETED') {
+    if (json.status !== 'COMPLETED' && json.status !== 'REPLAY') {
       codes.push(`SHARD_STATUS_${json.status}`)
       verdicts.add(json.status)
       detail.push(`${file}: shard status is ${json.status}, not COMPLETED`)
+    } else if (json.status === 'REPLAY' && (typeof json.exit_code === 'number')) {
+      codes.push('SHARD_REPLAY_WITH_EXIT')
+      verdicts.add('INFRA_ERROR')
+      detail.push(`${file}: status=REPLAY but exit_code=${String(json.exit_code)} — a replay has no process exit to claim`)
     }
     // exit code and status must agree in BOTH directions. non-zero + COMPLETED is a shard that says it
     // failed; exit 0 with a non-COMPLETED status is a shard that failed while claiming success.
@@ -615,6 +619,13 @@ export function aggregate({ plan, shards }) {
     }
     for (const result of json.results) {
       observedTaskIds.push(result.task_id)
+      // F-02 follow-up: file names are not execution. A result that says assertions=0 is a root that
+      // enumerated but measured nothing; it cannot stay PASS even if its state field says so.
+      if (result.assertions === 0) {
+        codes.push('RESULT_NO_ASSERTIONS')
+        verdicts.add('INCOMPLETE')
+        detail.push(`${file}: task ${result.task_id} reports assertions=0 — a collected root with no assertion is not a measurement`)
+      }
       const state = result.state
       if (!TASK_STATES.includes(state)) {
         codes.push('TASK_NO_TERMINAL_RESULT')
@@ -763,6 +774,7 @@ export function aggregate({ plan, shards }) {
       missing: missing.length,
       extra: extra.length,
       by_state: Object.fromEntries(TASK_STATES.map((s) => [s, parsed.flatMap((p) => p.json.results).filter((r) => r.state === s).length])),
+      assertions_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0),
     },
     oracles: {
       required: requiredOracles,
@@ -808,6 +820,7 @@ export function render(result) {
   }
   lines.push(`  tasks: expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} missing=${String(s.counts.missing)} extra=${String(s.counts.extra)}`)
   lines.push(`  states: ${Object.entries(s.counts.by_state).map(([k, v]) => `${k}=${String(v)}`).join(' ')}`)
+  lines.push(`  assertions_total: ${String(s.counts.assertions_total)}`)
   lines.push(`  oracles: required=${String(s.oracles.required.length)} checked=${String(s.oracles.checked)} failed=${String(s.oracles.failed)} undecidable=${String(s.oracles.undecidable)} missing=${String(s.oracles.missing)}`)
   if (s.detail.length > 0) {
     lines.push(`  findings (${s.detail.length}):`)
@@ -816,7 +829,8 @@ export function render(result) {
   }
   lines.push(`DSH-CENSUS-SUMMARY ${s.census_verdict} codes=${s.codes.join(',') || 'none'} ` +
     `expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} shards=${String(s.shards.length)} ` +
-    `expected_task_ids=${String(s.expected_task_ids.length)} observed_task_ids=${String(s.observed_task_ids.length)}`)
+    `expected_task_ids=${String(s.expected_task_ids.length)} observed_task_ids=${String(s.observed_task_ids.length)} ` +
+    `assertions_total=${String(s.counts.assertions_total)}`)
   return lines.join('\n')
 }
 

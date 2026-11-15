@@ -257,11 +257,13 @@ test('F-03 run: a bound file that does not exist refuses CONTRACT_TIER_RUN_FILE_
 })
 
 test('F-03: the manifest contracts-l1 leg is what makes L1 executed (not the exception file)', () => {
+  const workflow = '.github/workflows/ci-product.yml'
   const manifest = {
     layers: [{
       id: 'ci-product',
-      workflow: '.github/workflows/ci-product.yml',
-      legs: [{ id: 'contracts-l1', cmd: ['node', 'scripts/contract-tiers.mjs'], check: ['--run', '--tier', 'L1'] }],
+      workflow,
+      job: 'ci-product',
+      legs: [{ id: 'contracts-l1', cmd: ['node', 'scripts/contract-tiers.mjs', '--run', '--tier', 'L1'], check: [] }],
     }],
   }
   const got = deriveExecutedTiers({
@@ -269,7 +271,53 @@ test('F-03: the manifest contracts-l1 leg is what makes L1 executed (not the exc
     tracked: new Set(),
     roots: { ok: true, roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts'] }], file_count: 1 },
     contracts: [contract('A', ['packages/a/test/a.test.ts'], ['L1'])],
+    workflows: new Map([[workflow, { jobs: { 'ci-product': { steps: [{ run: 'node scripts/contract-tiers.mjs --run --tier L1' }] } } }]]),
   })
   assert.equal(got.ok, true, got.detail)
   assert.deepEqual([...(got.tiers.get('packages/a/test/a.test.ts') ?? [])].sort(), ['L1', 'L2'])
+})
+
+test('F-03: `--run --tier L1` only in check[] does NOT count as execution (declaration is not a run)', () => {
+  const workflow = '.github/workflows/ci-product.yml'
+  const manifest = {
+    layers: [{
+      id: 'ci-product',
+      workflow,
+      job: 'ci-product',
+      legs: [{ id: 'contracts-l1', cmd: ['node', 'scripts/contract-tiers.mjs', '--check'], check: ['--run', '--tier', 'L1'] }],
+    }],
+  }
+  const got = deriveExecutedTiers({
+    manifest,
+    tracked: new Set(),
+    roots: { ok: true, roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts'] }], file_count: 1 },
+    contracts: [contract('A', ['packages/a/test/a.test.ts'], ['L1'])],
+    workflows: new Map([[workflow, { jobs: { 'ci-product': { steps: [{ run: 'node scripts/contract-tiers.mjs --check --run --tier L1' }] } } }]]),
+  })
+  assert.equal(got.ok, true, got.detail)
+  assert.equal(got.tiers.get('packages/a/test/a.test.ts')?.has('L1') ?? false, false, 'a check-only leg must not grant L1')
+  assert.equal(got.sources.contract_runs.length, 0)
+})
+
+test('F-03: a real run leg with NO workflow step is rejected by the eb3 step binding (manifest-only claim)', () => {
+  const workflow = '.github/workflows/ci-product.yml'
+  const manifest = {
+    layers: [{
+      id: 'ci-product',
+      workflow,
+      job: 'ci-product',
+      legs: [{ id: 'contracts-l1', cmd: ['node', 'scripts/contract-tiers.mjs', '--run', '--tier', 'L1'], check: [] }],
+    }],
+  }
+  const got = deriveExecutedTiers({
+    manifest,
+    tracked: new Set(),
+    roots: { ok: true, roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts'] }], file_count: 1 },
+    contracts: [contract('A', ['packages/a/test/a.test.ts'], ['L1'])],
+    workflows: new Map([[workflow, { jobs: { 'ci-product': { steps: [{ run: 'echo nope' }] } } }]]),
+  })
+  assert.equal(got.ok, true, got.detail)
+  assert.equal(got.tiers.get('packages/a/test/a.test.ts')?.has('L1') ?? false, false)
+  assert.equal(got.sources.contract_runs_rejected.length, 1)
+  assert.match(got.sources.contract_runs_rejected[0].why, /CI_LAYER_LEG_MISSING/)
 })

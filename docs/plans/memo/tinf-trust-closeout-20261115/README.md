@@ -44,3 +44,16 @@
 ## 回滚
 
 每个 commit 独立可回滚：F-05 集合基线、F-02/F-04 census 人口与退出、F-03 契约层、CI 接线。回滚 F-02 时必须同时回滚 `dev/ci/census-population-baseline.json` 与 aggregator 的人口规则，否则计划/结果形状不匹配；回滚 F-05 必须同时删除 `dev/ci/uncollected-baseline.json`，否则 CLI 会把缺失基线当作 `UNCOLLECTED_BASELINE_MISSING`（这是有意的 fail-closed）。
+
+## 2026-11-15 追加 — PR #775 对抗审查（同 class 更深一层）
+
+评审确认上一轮的修复方向，但指出四个“名字/声明仍然冒充执行”的残余。本分支在同一分支追加修复，未开新 PR。
+
+1. **F-02：文件枚举 ≠ 执行。** 报告可以枚举全部 705 个文件却对某个 root 产出 `assertionResults: []`，旧代码给出 `PASS`。现在 `rootsFromReport` 把“已收集但零断言”的文件标为 `no_assertions`，`resultsFromReport` 对该 root 返回 `INCOMPLETE` + `NO_ASSERTIONS`（点名文件）。边界写死：**vitest 报告无法区分“整文件被有意跳过”和“文件根本没跑”，所以拒绝而不是猜**。aggregator 对 `assertions: 0` 的 result 追加 `RESULT_NO_ASSERTIONS` 并降为 `INCOMPLETE`；summary 增加 `assertions_total=`，capture token 继续携带 `assertions=`。负控：空 `assertionResults`、`status: pending` 无断言、`status: passed` 无断言三种形状全部 INCOMPLETE；N 文件 N>0 断言正控 PASS。
+2. **F-04 replay 不再伪造 exit 0。** `resultsFromReport` 的 LIVE 路径要求显式数字 `exitCode`，缺失即 `EXIT_CODE_UNRECORDED`；dry-run/replay 显式传 `exitCode: null, mode: 'replay'`。shard 无 exit 时 `status=REPLAY`、`exit_code=null`；aggregator 接受 `REPLAY`（不伪造 COMPLETED），但 `REPLAY` 携带数字 exit 会 `SHARD_REPLAY_WITH_EXIT`。dry-run 的 FAIL 仍从 recorded states 得出，不靠 exit。
+3. **F-03 “executed” 只能是 cmd 本身。** 只从 **`cmd`** 中同时含 `--run` 与 `--tier <X>` 的 leg 授予层；`check[]` 里的同名 token 不再算数（负控：check-only leg → 无 L1，契约回到 `CONTRACT_TIER_UNMET`）。并交叉校验 eb3 的 step binding：用 `gradeLeg(job, leg)` 对该 layer 的 workflow step 求值，manifest-only claim / 被弱化的 step 不会授予层，记入 `contract_runs_rejected`。manifest 的 `contracts-l1` 已把 `--run --tier L1` 移入 `cmd`（`check: []`）。
+4. **F-02 baseline 防洗白。** 重新生成必须给 `--accept-population-change <reason>`，否则 `POPULATION_BASELINE_REASON_MISSING`；baseline 记录 `generated_at` / `catalog_digest` / `accepted_reason` / `accepted_by`。census 侧当当前 catalog digest 与 baseline 记录不同即 `POPULATION_BASELINE_UNREVIEWED`（要求重新生成并给出新理由），所以“删配置 + 重生成”至少是两个可见、带署名的动作。负控：无 reason 拒绝；有 reason 通过且理由写入文件；digest 漂移拒绝。
+
+**追加门禁（本机）**：11 套件 `317/317`；`eb3-ci-required` = `pass workflows=10 findings=0`；`dispatch-tests --check` = `PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` = exit 0（869/91）；`contract-tiers --check` = `contracts=6 met=6 excepted=0 unmet=0 findings=0`；`contract-tiers --run --tier L1` = `tier=L1 contracts=6 files=12 exit=0`，vitest `12 passed / 162 tests`、Duration 2.50 s、进程墙钟 3.4 s（CI 未实测，UNVERIFIED）；`docs:sync --check` findings=0；`lint-identities` exit 0；eslint 0 problems。
+
+**未验证**：CI 上该步骤的实际墙钟；REPLAY 的宽容是否应改为非 PASS（当前 dry-run 仍可 PASS，因为它重放的是 recorded 判决，不是新执行）；`NO_ASSERTIONS` 对“整文件 skip”的拒绝是刻意的 fail-closed，若未来要允许整文件 skip，需要报告里出现可区分的字段，而不是放宽这里。

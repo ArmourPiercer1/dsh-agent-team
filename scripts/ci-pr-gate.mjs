@@ -1568,7 +1568,7 @@ export function censusPlanLeg(ctx) {
   // updating the baseline in the same PR is the visible review act. Growth is allowed.
   const baseline = readPopulationBaseline({ cwd: root })
   if (!baseline.ok) return refusePlan(baseline.code, baseline.detail)
-  const population = checkPopulationBaseline({ roots: plan.roots, baseline: baseline.baseline })
+  const population = checkPopulationBaseline({ roots: plan.roots, baseline: baseline.baseline, catalogDigest: plan.identity.catalog_digest })
   if (!population.ok) return refusePlan(population.code, population.detail)
   process.stdout.write(
     `DSH-CENSUS-POPULATION baseline=ok roots=${String(population.roots)} files=${String(population.file_count)} ` +
@@ -1583,7 +1583,7 @@ export function censusPlanLeg(ctx) {
   // The real process facts (F-04). One shard artifact exists per shard, not per capture, so a
   // multi-capture inconsistency is collapsed to the first non-zero capture; production shard count
   // is 1, and the per-result `exit_code` keeps every capture's own value auditable.
-  const processFacts = { exitCode: 0, exitSignal: null, tolerance: null }
+  const processFacts = { exitCode: dryRun === null ? 0 : null, exitSignal: null, tolerance: null }
   for (let capture = 1; capture <= plan.captures; capture += 1) {
     const tasks = plan.tasks.filter((t) => t.capture === capture)
     if (tasks.length === 0) {
@@ -1609,7 +1609,7 @@ export function censusPlanLeg(ctx) {
       } else {
         const recording = readReport(resolved.file)
         if (!recording.ok) return refusePlan(recording.code, recording.detail)
-        derived = resultsFromReport({ plan, capture, report: recording.json, reportRef: resolved.file })
+        derived = resultsFromReport({ plan, capture, report: recording.json, reportRef: resolved.file, exitCode: null, mode: 'replay' })
         sourcePath = resolved.file
       }
     } else {

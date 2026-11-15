@@ -23,7 +23,7 @@ import {
   resultsFromReport,
   writeShardArtifacts,
 } from './census-execution.mjs'
-import { aggregate } from './census-aggregate.mjs'
+import { aggregate, render } from './census-aggregate.mjs'
 import { buildPlan, checkPopulationBaseline, makeIdentity, populationBaselineOf } from './census-plan.mjs'
 import { checkUncollectedBaseline, UNCOLLECTED_BASELINE_SCHEMA } from './test-catalog.mjs'
 
@@ -64,6 +64,7 @@ test('F-02 counterexample: a plan of 100 files + a green report collecting 1 is 
     plan,
     capture: 1,
     reportRef: 'report-1.json',
+    exitCode: 0,
     report: reportOf(['packages/a/test/f000.test.ts']),
   })
   assert.equal(got.ok, true, got.detail)
@@ -82,12 +83,75 @@ test('F-02 both directions: a collected file the plan does not name is INCOMPLET
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportOf(['packages/a/test/a.test.ts', 'packages/a/test/b.test.ts', 'packages/a/test/c.test.ts']),
   })
   assert.equal(got.ok, true, got.detail)
   assert.equal(got.results[0].state, 'INCOMPLETE')
   assert.deepEqual(got.results[0].codes, ['FILE_UNPLANNED'])
   assert.match(got.results[0].detail, /FILE_UNPLANNED packages\/a: 1 collected file\(s\) are not in the plan/)
+})
+
+test('F-02: a collected file with ZERO assertions is INCOMPLETE/NO_ASSERTIONS (names are not a measurement)', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const shapes = [
+    { label: 'empty assertionResults', entry: { status: 'passed', assertionResults: [] } },
+    { label: 'pending, no assertions', entry: { status: 'pending', assertionResults: [] } },
+    { label: 'passed, no assertionResults key', entry: { status: 'passed' } },
+  ]
+  for (const { label, entry } of shapes) {
+    const report = {
+      success: true,
+      testResults: [{ name: '/runner/work/repo/packages/a/test/a.test.ts', ...entry }],
+    }
+    const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: 0 })
+    assert.equal(got.ok, true, `${label}: ${got.detail}`)
+    assert.equal(got.results[0].state, 'INCOMPLETE', label)
+    assert.deepEqual(got.results[0].codes, ['NO_ASSERTIONS'], label)
+    assert.match(got.results[0].detail, /NO_ASSERTIONS packages\/a: 1 collected file/)
+  }
+})
+
+test('F-02 positive control: N files with N>0 assertions (total) passes', () => {
+  const plan = planWith(['test/a.test.ts', 'test/b.test.ts'])
+  const report = {
+    success: true,
+    testResults: ['test/a.test.ts', 'test/b.test.ts'].map((name) => ({
+      name: `/runner/work/repo/packages/a/${name}`,
+      status: 'passed',
+      assertionResults: [{ status: 'passed' }, { status: 'passed' }],
+    })),
+  }
+  const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: 0 })
+  assert.equal(got.ok, true, got.detail)
+  assert.equal(got.results[0].state, 'PASS')
+  assert.equal(got.results[0].assertions, 4)
+})
+
+test('F-02 aggregator: a PASS result that carries assertions=0 is RESULT_NO_ASSERTIONS (INCOMPLETE)', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const root = plan.roots[0]
+  const results = plan.tasks.map((task) => ({
+    task_id: task.task_id,
+    root: task.root,
+    capture: task.capture,
+    state: 'PASS',
+    codes: [],
+    files: 1,
+    files_expected: 1,
+    files_observed: 1,
+    file_digest: root.file_digest,
+    assertions: 0,
+    skipped: 0,
+    exit_code: 0,
+    evidence: 'artifacts/task.json',
+  }))
+  const built = buildShardArtifacts({ plan, results, shards: 1, exitCode: 0 })
+  const got = aggregate({ plan, shards: built.artifacts.map((a) => ({ file: a.file, text: `${JSON.stringify(a.json, null, 2)}\n` })) })
+  assert.equal(got.summary.census_verdict, 'INCOMPLETE')
+  assert.ok(got.summary.codes.includes('RESULT_NO_ASSERTIONS'), got.summary.codes.join(','))
+  assert.equal(got.summary.counts.assertions_total, 0)
+  assert.match(render(got), /assertions_total=0/)
 })
 
 test('F-02: an equal-size replacement is caught by the per-root FILE DIGEST, not by the count', () => {
@@ -101,7 +165,7 @@ test('F-02: a file-level collection error is INCOMPLETE/COLLECTION_ERROR (not a 
   const plan = planWith(['test/a.test.ts', 'test/b.test.ts'])
   const report = reportOf(['packages/a/test/a.test.ts', 'packages/a/test/b.test.ts'])
   report.testResults[0] = { name: report.testResults[0].name, status: 'failed', message: 'import failed', assertionResults: [] }
-  const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report })
+  const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: 0 })
   assert.equal(got.results[0].state, 'INCOMPLETE')
   assert.deepEqual(got.results[0].codes, ['COLLECTION_ERROR'])
 })
@@ -114,6 +178,7 @@ test('F-02: a plan that records only counts is refused (PLAN_POPULATION_MISSING)
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportOf(['packages/a/test/a.test.ts']),
   })
   assert.equal(got.ok, false)
@@ -175,6 +240,7 @@ test('F-02 CLI: the 1-of-100 green report aggregates to a non-PASS token', () =>
         plan,
         capture: task.capture,
         reportRef: `report-${String(task.capture)}.json`,
+        exitCode: 0,
         report: reportOf(['packages/a/test/f000.test.ts']),
       })
       assert.equal(derived.ok, true, derived.detail)
@@ -204,6 +270,18 @@ test('F-02 CLI: the 1-of-100 green report aggregates to a non-PASS token', () =>
 })
 
 // ── F-04: the process's exit is a fact the census must carry ──────────────────────────────────────
+
+test('F-04: a LIVE derivation without an explicit exit refuses EXIT_CODE_UNRECORDED (never a fabricated 0)', () => {
+  const plan = planWith(['test/a.test.ts'])
+  const report = reportOf(['packages/a/test/a.test.ts'])
+  const got = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report })
+  assert.equal(got.ok, false)
+  assert.equal(got.code, 'EXIT_CODE_UNRECORDED')
+  // A replay says so explicitly and needs no process exit.
+  const replay = resultsFromReport({ plan, capture: 1, reportRef: 'r.json', report, exitCode: null, mode: 'replay' })
+  assert.equal(replay.ok, true, replay.detail)
+  assert.equal(replay.results[0].exit_code, null)
+})
 
 test('F-04: the default exit policy tolerates NOTHING', () => {
   assert.deepEqual(EXIT_POLICY.exitTolerances, [])
@@ -302,6 +380,22 @@ test('F-05: an absent baseline is a refusal, never "no baseline, no rule"', () =
 })
 
 // ── population baseline (F-02 review artifact) ────────────────────────────────────────────────────
+
+test('population baseline reason gate: regeneration needs a reason; catalog drift is UNREVIEWED', () => {
+  const roots = [{ root: 'packages/a', files_expected: ['test/a.test.ts'], files: 1, file_digest: 'sha256:' + 'a'.repeat(64) }]
+  const catalog = 'sha256:' + 'b'.repeat(64)
+  const reviewed = populationBaselineOf(roots, { acceptedReason: 'reviewed: initial population', acceptedBy: 'owner-a', catalogDigest: catalog })
+  assert.equal(reviewed.accepted_reason, 'reviewed: initial population')
+  assert.equal(reviewed.accepted_by, 'owner-a')
+  assert.equal(reviewed.catalog_digest, catalog)
+  assert.match(reviewed.generated_at, /^\d{4}-\d{2}-\d{2}T/)
+  assert.equal(checkPopulationBaseline({ roots, baseline: reviewed, catalogDigest: catalog }).ok, true)
+  const drifted = checkPopulationBaseline({ roots, baseline: reviewed, catalogDigest: 'sha256:' + 'c'.repeat(64) })
+  assert.equal(drifted.code, 'POPULATION_BASELINE_UNREVIEWED')
+  const unreviewed = populationBaselineOf(roots, { catalogDigest: catalog })
+  const got = checkPopulationBaseline({ roots, baseline: unreviewed, catalogDigest: catalog })
+  assert.equal(got.ok, true, 'no reason is only a risk when the digest DRIFTS')
+})
 
 test('population baseline: missing is refused; a lost file or an equal-count swap is POPULATION_SHRANK; growth passes', () => {
   const roots = (files) => buildPlan({ roots: [{ root: 'packages/a', files_expected: files }], captures: 1, identity: IDENTITY }).roots

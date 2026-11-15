@@ -142,6 +142,10 @@ export function rootsFromReport(report) {
       // A failed file with no assertions at all is a COLLECTION error (import/syntax/setup), not a
       // failed assertion: F-02 requires it to surface as its own unfinished code.
       collection_error: assertions.length === 0 && (f?.status === 'failed' || String(f?.message ?? '').trim() !== ''),
+      // F-02 follow-up: a COLLECTED file that reports ZERO assertions is not a measurement. We cannot
+      // distinguish "the whole population is intentionally skipped" from "the file did not run" from a
+      // vitest JSON report, so we refuse rather than guess (see NO_ASSERTIONS below).
+      no_assertions: assertions.length === 0 && !(f?.status === 'failed' || String(f?.message ?? '').trim() !== ''),
     })
   }
   return byRoot
@@ -153,8 +157,13 @@ export function rootsFromReport(report) {
  * A planned root ABSENT from the report is `INCOMPLETE`, never PASS: a dropped root is exactly the
  * quiet shrinkage TINF-12 names, and "the report did not mention it" is not evidence that it ran.
  */
-export function resultsFromReport({ plan, capture, report, reportRef, exitCode = null }) {
+export function resultsFromReport({ plan, capture, report, reportRef, exitCode, mode = 'live' }) {
   if (!plan || !Array.isArray(plan.tasks)) return refused('PLAN_UNREADABLE', 'resultsFromReport needs a census-plan/1 plan')
+  // F-04: a LIVE derivation must carry the process exit it came from. Defaulting to 0 is the fabricated
+  // green this refusal removes; a replay has no process, so it must say so explicitly (`mode: 'replay'`).
+  if (mode === 'live' && typeof exitCode !== 'number') {
+    return refused('EXIT_CODE_UNRECORDED', 'a live derivation needs the spawn\'s numeric exitCode; omitting it would write a fabricated 0')
+  }
   if (typeof reportRef !== 'string' || reportRef === '') {
     return refused('RESULT_EVIDENCE_MISSING', 'resultsFromReport needs a report reference: a terminal state with nothing to point at is not a measurement')
   }
@@ -218,6 +227,7 @@ export function resultsFromReport({ plan, capture, report, reportRef, exitCode =
     const missingFiles = expected.filter((f) => !observedSet.has(f))
     const unexpectedFiles = observed.filter((f) => !expectedSet.has(f))
     const collectionErrors = slice.filter((f) => f.collection_error === true).map((f) => relativeToRoot(f.name, task.root)).sort()
+    const noAssertions = slice.filter((f) => f.no_assertions === true).map((f) => relativeToRoot(f.name, task.root)).sort()
     const failed = slice.filter((f) => f.failed > 0)
     const skipped = slice.reduce((n, f) => n + (Number.isFinite(f.skipped) ? f.skipped : 0), 0)
     const unknown = slice.filter((f) => (Number.isFinite(f.unknown) ? f.unknown : 0) > 0)
@@ -255,6 +265,14 @@ export function resultsFromReport({ plan, capture, report, reportRef, exitCode =
         task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['COLLECTION_ERROR'],
         evidence, ...shape,
         detail: `COLLECTION_ERROR ${task.root}: ${String(collectionErrors.length)} file(s) failed to collect (no assertions were produced) — ${names(collectionErrors)}`,
+      })
+      continue
+    }
+    if (noAssertions.length > 0) {
+      results.push({
+        task_id: task.task_id, root: task.root, capture: task.capture, state: 'INCOMPLETE', codes: ['NO_ASSERTIONS'],
+        evidence, ...shape,
+        detail: `NO_ASSERTIONS ${task.root}: ${String(noAssertions.length)} collected file(s) produced zero assertions — a file that enumerates but measures nothing is not a pass (skipped-only and did-not-run are indistinguishable here, so this refuses) — ${names(noAssertions)}`,
       })
       continue
     }
@@ -434,7 +452,7 @@ export function resultsFromReplay({ plan, capture, replay, replayRef }) {
  * a result it carries is FAIL — the two are different facts, and the aggregator is what turns the
  * latter into a red verdict (`TASK_STATE_FAIL`) rather than trusting an exit code.
  */
-export function buildShardArtifacts({ plan, results, shards = 1, execution = null, exitCode = 0, exitSignal = null, exitToleranceEntry = null, exitPolicy = EXIT_POLICY }) {
+export function buildShardArtifacts({ plan, results, shards = 1, execution = null, exitCode = null, exitSignal = null, exitToleranceEntry = null, exitPolicy = EXIT_POLICY }) {
   if (!Number.isInteger(shards) || shards < 1) {
     return refused('CENSUS_SHARDS_INVALID', `--census-shards must be a positive integer, got ${String(shards)}`)
   }
@@ -457,7 +475,9 @@ export function buildShardArtifacts({ plan, results, shards = 1, execution = nul
       shard_id: `census-plan-shard-${String(index + 1)}`,
       policy_digest: POLICY_DIGEST,
       identity: { ...identity },
-      status: 'COMPLETED',
+      // A shard with no recorded exit is a REPLAY, not a COMPLETED run: `exit_code: null` plus this
+      // status is the only honest shape for bytes that were replayed rather than executed.
+      status: exitCode === null ? 'REPLAY' : 'COMPLETED',
       // THE REAL PROCESS FACT, never a literal. The aggregator grades this value (and, when nonzero,
       // accepts it only for an explicit non-expired entry of the frozen exit policy named below).
       exit_code: exitCode,
@@ -599,7 +619,7 @@ export function renderPlanTokens({ plan, buildDigest, captureLines, shardCount, 
     `DSH-CENSUS-SUMMARY verdict=${String(verdict)} codes=${summary.codes.length === 0 ? 'none' : summary.codes.join(',')} ` +
       `expected=${String(summary.counts.expected)} observed=${String(summary.counts.observed)} ` +
       `missing=${String(summary.counts.missing)} extra=${String(summary.counts.extra)} shards=${String(shardCount)} ` +
-      `plan=${String(plan.identity.plan_digest)}`,
+      `assertions_total=${String(summary.counts.assertions_total)} plan=${String(plan.identity.plan_digest)}`,
   )
   return lines
 }

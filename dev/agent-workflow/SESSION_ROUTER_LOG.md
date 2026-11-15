@@ -8874,3 +8874,17 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **2. 负控**：零文件 → `CONTRACT_TIER_RUN_NO_FILES`；绑定文件不存在 → `CONTRACT_TIER_RUN_FILE_MISSING`；注入 spawn 断言精确 argv 与 raw exit 7 被传播；删除/去掉 manifest leg 的 `--run` 会让 L1 从 executed 集消失并回到 UNMET（单测覆盖）；oracle gate 仍为真空绿，未伪造覆盖。
 
 **3. 形状**：`eb3-ci-required` 仍 `pass workflows=10 findings=0`（workflow 数 10、job 名未变、三个 Required contexts 未动）；新 leg 的 `check[]` 精确声明 `--run --tier L1`，整个 argv 法通过。parity 证据与 `test-catalog.test.mjs` 断言同时钉住 `e5bf05670` 这个 base，并写明 `7e3b6532a` 无旧 argv、不能作为 25/25 的比较基。
+
+## 2026-11-15 — TINF F-02/F-03/F-04 对抗审查收口（PR #775）
+
+**0. 背景**：协调者对 PR #775（`f1beb8021`，含其 fixture commit `09eeebbe8`）的对抗审查给出 CHANGES REQUIRED：F-02 仍只 grade 文件名（705 文件全枚举但零断言 → PASS）；F-04 replay 伪造 `exit_code: 0`；F-03 “executed” 仍可由 `check[]` 声明；baseline 可“删文件 + 重生成”洗白。已在同一分支修复，未 revert `09eeebbe8`。
+
+**1. F-02**：`rootsFromReport` 标记零断言文件；`resultsFromReport` → `INCOMPLETE/NO_ASSERTIONS`（点名文件）；aggregator → `RESULT_NO_ASSERTIONS`；capture token `assertions=`、summary token `assertions_total=`。边界：vitest 报告无法区分“整文件有意 skip”与“没跑”，故拒绝而非猜。三种零断言形状 + N 文件 N>0 正控均有测试。
+
+**2. F-04**：live `resultsFromReport` 缺 `exitCode` → `EXIT_CODE_UNRECORDED`；dry-run 显式 `exitCode:null, mode:'replay'`；shard `status=REPLAY/exit_code=null`；aggregator 接受 REPLAY 但拒绝 `REPLAY + 数字 exit`（`SHARD_REPLAY_WITH_EXIT`）。
+
+**3. F-03**：只有 `cmd` 同时含 `--run --tier <X>` 的 leg 才授予层，`check[]` 单独声明不算；并用 `eb3-ci-required.gradeLeg(job, leg)` 交叉校验 workflow step，manifest-only claim 记 `contract_runs_rejected` 且不授予。manifest `contracts-l1` 的 flags 已移入 `cmd`。
+
+**4. baseline**：`--write-population-baseline` 必须 `--accept-population-change <reason>`；文件记录 `generated_at/catalog_digest/accepted_reason/accepted_by`；catalog digest 漂移 → `POPULATION_BASELINE_UNREVIEWED`。
+
+**5. 门禁**：317/317；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18 bad=0`；`test-catalog` exit 0（869/91）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`--run --tier L1` exit 0（12 files/162 tests，Duration 2.50 s，墙钟 3.4 s，CI UNVERIFIED）；docs-sync/lint-identities/eslint 全过。`09eeebbe8` 保留：whole-argv 法先于 leg-specific 检查，新增测试沿用同一事实。

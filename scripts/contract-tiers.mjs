@@ -33,6 +33,9 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
+import { parse as parseYaml } from 'yaml'
+
+import { gradeLeg } from './eb3-ci-required.mjs'
 import { fileURLToPath } from 'node:url'
 
 import { dispatchLegs, loadManifest, resolveLeg, trackedFiles } from './dispatch-tests.mjs'
@@ -52,7 +55,7 @@ const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
  *
  * @returns {{ok: true, tiers: Map<string, Set<string>>, sources: object} | {ok: false, code: string, detail: string}}
  */
-export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked = null, roots = null, contracts = null } = {}) {
+export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked = null, roots = null, contracts = null, workflows = null } = {}) {
   let loaded
   try {
     loaded = manifest ?? loadManifest(root)
@@ -81,14 +84,30 @@ export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked
   // contract-bound files at that tier. This is the authority that turns the exception registry into a
   // real gate: the same resolved `test_refs` the runner uses are the tier's executed set.
   const contractRuns = []
+  const contractRunRejected = []
   let contractsFile = contracts === null ? null : { contracts }
   for (const layer of loaded?.layers ?? []) {
     for (const leg of layer?.legs ?? []) {
       const cmd = Array.isArray(leg?.cmd) ? leg.cmd : []
-      const tokens = [...cmd, ...(Array.isArray(leg?.check) ? leg.check : [])]
-      if (cmd[1] !== 'scripts/contract-tiers.mjs' || !tokens.includes('--run') || !tokens.includes('--tier')) continue
-      const tier = tokens[tokens.indexOf('--tier') + 1]
+      // F-03 residual: EXECUTION is the invocation itself, never the expectation list. A leg whose
+      // cmd is `--check` but whose check[] names `--run --tier L1` never runs anything, so it must not
+      // grant a tier. Only a cmd carrying `--run --tier <X>` counts.
+      if (cmd[1] !== 'scripts/contract-tiers.mjs' || !cmd.includes('--run') || !cmd.includes('--tier')) continue
+      const tier = cmd[cmd.indexOf('--tier') + 1]
       if (!TIERS.includes(tier)) continue
+      // Cross-check the SAME step binding eb3-ci-required grades: a manifest-only claim with no
+      // workflow step (or a weakened step) is not an execution.
+      const doc = workflowDoc({ root, path: layer.workflow, workflows })
+      const job = doc?.jobs?.[layer.job]
+      if (job === undefined) {
+        contractRunRejected.push({ id: leg.id ?? '(unnamed)', layer: layer.id, tier, why: `workflow ${String(layer.workflow)} has no job ${String(layer.job)}` })
+        continue
+      }
+      const miss = gradeLeg(job, leg)
+      if (miss !== null) {
+        contractRunRejected.push({ id: leg.id ?? '(unnamed)', layer: layer.id, tier, why: `${miss.code}: ${miss.why}` })
+        continue
+      }
       if (contractsFile === null) contractsFile = readJson(resolve(root, CONTRACTS_REL))
       if (!contractsFile || !Array.isArray(contractsFile.contracts)) {
         return { ok: false, code: 'CONTRACT_TIERS_CONTRACTS_MISSING', detail: `${CONTRACTS_REL} is absent or carries no contracts[]` }
@@ -112,6 +131,7 @@ export function deriveExecutedTiers({ root = REPO_ROOT, manifest = null, tracked
       l1: { authority: 'dev/ci/eb3-ci-manifest.json dispatch legs (non-census)', legs: l1Legs },
       l2: { authority: 'scripts/census-plan.mjs deriveRoots()', roots: census.roots.length, files: census.file_count },
       contract_runs: contractRuns,
+      contract_runs_rejected: contractRunRejected,
     },
   }
 }
@@ -272,6 +292,19 @@ export function runTierContracts({ tier, root = REPO_ROOT, contracts = null, spa
     return { ok: false, code: 'CONTRACT_TIER_RUN_SPAWN_FAILED', detail: String(run.error.message ?? run.error) }
   }
   return { ok: true, contracts: selected.length, files, exit: typeof run?.status === 'number' ? run.status : 1, signal: run?.signal ?? null }
+}
+
+function workflowDoc({ root, path, workflows = null }) {
+  if (workflows !== null) {
+    if (typeof workflows.get === 'function' && workflows.has(path)) return workflows.get(path)
+    if (Object.prototype.hasOwnProperty.call(workflows, path)) return workflows[path]
+    return null
+  }
+  try {
+    return parseYaml(String(readFileSync(resolve(root, path), 'utf8'))) ?? null
+  } catch {
+    return null
+  }
 }
 
 function readJson(file, fallback = null) {

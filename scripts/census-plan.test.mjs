@@ -720,13 +720,21 @@ test('F-02 CLI: --write-population-baseline writes a reviewed artifact and a tok
   const dir = mkdtempSync(join(tmpdir(), 'census-population-'))
   try {
     const out = join(dir, 'baseline.json')
-    const r = cli(['--write-population-baseline', '--out', out])
-    assert.equal(r.status, 0, r.out + r.err)
+    // Regeneration without a reason is refused: the reason is the review act.
+    const noReason = cli(['--write-population-baseline', '--out', out])
+    assert.equal(noReason.status, 2, noReason.out)
+    assert.match(noReason.stderr, /POPULATION_BASELINE_REASON_MISSING/)
+    const r = cli(['--write-population-baseline', '--accept-population-change', 'test: population unchanged; record review metadata', '--accepted-by', 'test-owner', '--out', out])
+    assert.equal(r.status, 0, r.out)
     assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=705/)
     const body = JSON.parse(readFileSync(out, 'utf8'))
     assert.equal(body.schema, 'census-population-baseline/1')
     assert.equal(body.roots.length, 11)
     assert.equal(body.file_count, 705)
+    assert.equal(body.accepted_reason, 'test: population unchanged; record review metadata')
+    assert.equal(body.accepted_by, 'test-owner')
+    assert.match(body.generated_at, /^\d{4}-\d{2}-\d{2}T/)
+    assert.match(body.catalog_digest, /^sha256:[0-9a-f]{64}$/)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

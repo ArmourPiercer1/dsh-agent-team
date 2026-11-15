@@ -294,7 +294,7 @@ export function deriveRoots({ cwd = process.cwd(), allowDropped = [] } = {}) {
  * and because any change to it is a visible line in the diff: a config edit that drops files must drop
  * them from this file too, in the same PR, or `POPULATION_SHRANK` refuses.
  */
-export function populationBaselineOf(roots) {
+export function populationBaselineOf(roots, { acceptedReason = null, acceptedBy = null, generatedAt = new Date().toISOString(), catalogDigest = null } = {}) {
   const rows = (Array.isArray(roots) ? roots : [])
     .map((r) => ({
       root: r.root,
@@ -310,6 +310,13 @@ export function populationBaselineOf(roots) {
       'root vitest.config.ts; never hand-written. The census leg refuses POPULATION_SHRANK when a root ' +
       'loses files (or swaps them at an equal count) relative to this file. Updating it is the visible ' +
       'review act when the population intentionally shrinks.',
+    // F-02 review gate (baseline laundering): regeneration requires an explicit accepted reason and
+    // records WHO/WHEN/WHICH catalog. A later catalog drift is POPULATION_BASELINE_UNREVIEWED until
+    // the baseline is regenerated with a new reason, so "delete files + regenerate" is two visible acts.
+    generated_at: generatedAt,
+    catalog_digest: catalogDigest,
+    accepted_reason: acceptedReason,
+    accepted_by: acceptedBy,
     file_count: rows.every((r) => Number.isFinite(r.file_count)) ? rows.reduce((n, r) => n + r.file_count, 0) : null,
     roots: rows,
   }
@@ -322,7 +329,7 @@ export function populationBaselineOf(roots) {
  *
  * @returns {{ok: true, file_count: number, roots: number} | {ok: false, code: string, detail: string}}
  */
-export function checkPopulationBaseline({ roots, baseline }) {
+export function checkPopulationBaseline({ roots, baseline, catalogDigest = null }) {
   if (!baseline || typeof baseline !== 'object' || baseline.schema !== POPULATION_BASELINE_SCHEMA) {
     return {
       ok: false,
@@ -331,6 +338,19 @@ export function checkPopulationBaseline({ roots, baseline }) {
         `${POPULATION_BASELINE_REL} is absent or is not ${POPULATION_BASELINE_SCHEMA} — without the reviewed ` +
         'baseline a config edit that shrinks the census would be indistinguishable from the truth; ' +
         'generate it with `node scripts/census-plan.mjs --write-population-baseline` and commit the result',
+    }
+  }
+  // The baseline was generated against one catalog discovery. If the current catalog digest is known
+  // and differs, the population changed since the review: refuse until the baseline is regenerated
+  // with an explicit reason (which is what makes the shrink a reviewed line, not a JSON diff).
+  if (catalogDigest !== null && baseline.catalog_digest !== catalogDigest) {
+    return {
+      ok: false,
+      code: 'POPULATION_BASELINE_UNREVIEWED',
+      detail:
+        `${POPULATION_BASELINE_REL} records catalog_digest=${String(baseline.catalog_digest)} but the current census ` +
+        `catalog is ${String(catalogDigest)} — the population changed since this baseline was reviewed; regenerate it ` +
+        'with `--accept-population-change <reason>` so the change is an explicit, attributed act',
     }
   }
   const now = new Map((Array.isArray(roots) ? roots : []).map((r) => [r.root, r]))
@@ -963,7 +983,10 @@ const HELP = [
   '                      without it a dropped root is ROOT_DROPPED_BY_EXCLUDE (exit 2)',
   '  --balance K         print the group-to-shard assignment for K shards instead of the plan',
   '  --verify-plan FILE  re-derive and refuse on digest / identity / task-set drift',
-  '  --write-population-baseline  regenerate dev/ci/census-population-baseline.json from discovery',
+  '  --write-population-baseline  regenerate dev/ci/census-population-baseline.json from discovery;',
+  '                      REQUIRES --accept-population-change <reason> (recorded + attributed)',
+  '  --accept-population-change R  the review reason for the population change (non-empty)',
+  '  --accepted-by NAME  who accepted it (default: git author name / USER)',
   '  --out FILE          with --write-population-baseline: write there instead of the default path',
   '  --self-test         pin the derivation, the digest, the refusals and the balancer',
   '',
@@ -978,7 +1001,7 @@ function parseArgs(argv) {
   const opts = {
     plan: false, out: null, captures: DEFAULT_CAPTURES, testTimeout: null,
     timings: [], buildDigest: null, balance: null, verifyPlan: null, selfTest: false, help: false,
-    writePopulationBaseline: false, allowDropped: [],
+    writePopulationBaseline: false, acceptPopulationChange: null, acceptedBy: null, allowDropped: [],
   }
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i]
@@ -996,6 +1019,14 @@ function parseArgs(argv) {
     else if (a === '--balance') opts.balance = Number(argv[++i])
     else if (a === '--verify-plan') opts.verifyPlan = argv[++i] ?? null
     else if (a === '--write-population-baseline') opts.writePopulationBaseline = true
+    else if (a === '--accept-population-change') {
+      const reason = argv[++i] ?? null
+      if (reason === null || reason.startsWith('--') || reason.trim() === '') {
+        throw Object.assign(new Error('--accept-population-change needs a non-empty reason'), { code: 'UNKNOWN_ARGUMENT' })
+      }
+      opts.acceptPopulationChange = reason
+    }
+    else if (a === '--accepted-by') opts.acceptedBy = argv[++i] ?? null
     else if (a === '--self-test') opts.selfTest = true
     else if (a === '--help' || a === '-h') opts.help = true
     else throw Object.assign(new Error(`unknown argument ${a}`), { code: 'UNKNOWN_ARGUMENT' })
@@ -1064,9 +1095,19 @@ export function main(argv) {
   if (opts.selfTest) return selfTest()
 
   if (opts.writePopulationBaseline) {
+    if (typeof opts.acceptPopulationChange !== 'string' || opts.acceptPopulationChange.trim() === '') {
+      return refuse(
+        'POPULATION_BASELINE_REASON_MISSING',
+        'regenerating the population baseline requires --accept-population-change <reason>: the reason is the review act, and an unattributed regeneration is how a shrink launders itself',
+      )
+    }
     const roots = deriveRoots({ cwd: process.cwd(), allowDropped: opts.allowDropped })
     if (!roots.ok) return refuse(roots.code, roots.detail)
-    const baseline = populationBaselineOf(roots.roots)
+    const baseline = populationBaselineOf(roots.roots, {
+      acceptedReason: opts.acceptPopulationChange,
+      acceptedBy: opts.acceptedBy ?? process.env.GIT_AUTHOR_NAME ?? process.env.USER ?? null,
+      catalogDigest: roots.catalog_digest,
+    })
     const out = opts.out ?? resolve(process.cwd(), POPULATION_BASELINE_REL)
     try {
       writeFileSync(out, `${JSON.stringify(baseline, null, 2)}\n`)

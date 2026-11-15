@@ -494,13 +494,12 @@
           "id": "contracts-l1",
           "cmd": [
             "node",
-            "scripts/contract-tiers.mjs"
-          ],
-          "check": [
+            "scripts/contract-tiers.mjs",
             "--run",
             "--tier",
             "L1"
           ],
+          "check": [],
           "why": "F-03 closeout: an exception registry is a disclosure of a gap, not a gate. This leg runs the contract-bound vitest files of every contract whose required_tiers include L1, using the repo's own vitest.config.ts, and propagates vitest's raw exit. It lives in ci-product because that job installs and builds the packages before the gate legs; the population is derived from dev/ci/test-contracts.json test_refs (no new list), and contract-tiers --check reads this leg's --run --tier L1 declaration as the L1 executed set, so a missing/emptied run is CONTRACT_TIER_UNMET rather than an exception."
         },
         {

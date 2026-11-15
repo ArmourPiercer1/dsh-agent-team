@@ -408,6 +408,7 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
     plan,
     capture: 1,
     reportRef: '.artifacts/census/report-1.json',
+    exitCode: 0,
     report: reportFor(plan, { assertionsPerFile: 2 }),
   })
   assert.equal(ok.ok, true, ok.detail)
@@ -429,6 +430,7 @@ test('resultsFromReport derives root identity, a terminal state and evidence fro
     plan,
     capture: 1,
     reportRef: '.artifacts/census/report-1.json',
+    exitCode: 0,
     report: { success: true, testResults: [] },
   })
   assert.equal(partial.ok, true)
@@ -443,6 +445,7 @@ test('a skip is NOT a failure (legacy semantics) and the skip count is carried',
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportFor(plan, {
       onlyRoot: root,
       mutate: (entry, index) =>
@@ -464,6 +467,7 @@ test('an unknown assertion status is a FAIL, not a silent pass', () => {
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportFor(plan, {
       onlyRoot: root,
       mutate: (entry, index) => (index === 0 ? { ...entry, assertionResults: [{ status: 'quarantined' }] } : entry),
@@ -480,6 +484,7 @@ test('NEGATIVE: a root that RAN without being planned is refused (the invariant 
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: {
       success: true,
       testResults: [
@@ -500,6 +505,7 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportFor(plan, {
       onlyRoot: root,
       mutate: (entry, index) => (index === 0 ? { ...entry, assertionResults: [{ status: 'failed' }] } : entry),
@@ -512,6 +518,7 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: reportFor(plan, {
       onlyRoot: root,
       mutate: (entry, index) =>
@@ -524,6 +531,7 @@ test('a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE
     plan,
     capture: 1,
     reportRef: 'r.json',
+    exitCode: 0,
     report: { success: false, testResults: reportFor(plan).testResults },
   })
   assert.equal(noFile.results.find((r) => r.root === root).state, 'INCOMPLETE')
@@ -862,8 +870,10 @@ test('NEGATIVE: a shard that exited 0 while carrying FAIL is not a verdict (aggr
     assert.match(leg.detail, /TASK_STATE_FAIL/)
     // The shard itself claims success — that is the point.
     const shard = JSON.parse(readFileSync(join(ctx.shardDir, 'census-shard-1.json'), 'utf8'))
-    assert.equal(shard.status, 'COMPLETED')
-    assert.equal(shard.exit_code, 0)
+    // A dry run REPLAYS bytes; it must not fabricate a process exit. The shard says REPLAY/null and
+    // the FAIL still comes from the recorded states, not from an invented green exit.
+    assert.equal(shard.status, 'REPLAY')
+    assert.equal(shard.exit_code, null)
     assert.equal(shard.results.some((r) => r.state === 'FAIL'), true)
     // ...and every result's evidence points at an artifact that EXISTS in the shard directory.
     for (const r of shard.results) {
@@ -1019,9 +1029,9 @@ test('CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 
     assert.equal(r.status, 0, r.stderr)
     assert.match(r.stdout, /^DSH-CI-VERDICT pass /m)
     assert.match(r.stdout, /DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:[0-9a-f]{64}/)
-    assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22/)
+    assert.match(r.stdout, /DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 assertions_total=0/)
     assert.equal((r.stdout.match(/^DSH-CI-VERDICT /gm) ?? []).length, 1, 'exactly one token')
-    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*skipped=0 evidence=census-evidence-1\.json/)
+    assert.match(r.stdout, /DSH-CENSUS-CAPTURE capture=1 .*assertions=0 skipped=0 evidence=census-evidence-1\.json/)
   } finally {
     rmSync(dryRun, { recursive: true, force: true })
     rmSync(transcript, { recursive: true, force: true })
