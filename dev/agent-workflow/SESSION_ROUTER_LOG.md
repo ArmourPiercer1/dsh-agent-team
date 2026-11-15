@@ -8842,3 +8842,63 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **7b. PR #774 独立评审（PASS，三条 minor + 一条 repro 备注，全部已修，不靠披露糊过去）**：(1) `census-aggregate.mjs` 的尾部 `sha256:` 原先只在含 `#` 时解析，`'evidence.json sha256:…'`（无 fragment）静默通过——现在整体 tokenise，**有无 fragment 都校验**，且任何以 `sha256` 开头的 token 必须是合法摘要（`sha256` / `sha256:` / 截断 / 大写一律 `RESULT_EVIDENCE_DIGEST_INVALID`）；新增 1 个测试覆盖「无 `#` 的正例 + 无 `#` 的 mismatch/invalid + 有 `#` 的 invalid」，`census-cutover.test.mjs` 41/41。(2) manifest 里 17 条 `why` 仍描述退役的 `check[]`（含「an emptied check[] is NOT machine-detected」）——全部改写为当前律：人口就在 `suites[]`/`areas[]`，空声明 = `CI_LAYER_LEG_NO_SUITES`，空白项 = `CI_LAYER_LEG_SUITE_INVALID`，非 tracked 套件 = `CI_SUITE_ABSENT`；`check[]` 字样 0 处（仍保留 `check[]` 的 8 个非 node leg 未动，它们本来就靠自己的 `check[]` grade）。(3) 账本「文件清单消失了」改为「25 个名字仍在、展开逐元素相同、去重+搬家」；§1.1 标题 13 → **14**（13 layer + settlement）。(4) repro 备注写明 `--old-ref origin/master` 必须是**真远端 master**（`e5bf0567`）；从落后的本地 checkout 再 clone 会得到更旧的 `origin/master` 并报 `DIFFERS steps=16`，那是环境不是 parity 坏了；只有本分支的 clone 用 `HEAD~2`。
 
 **8. 账本与指标**：`docs/plans/memo/tinf-m6-retire-handlists-20261115/README.md`（逐清单 owner/替代/删除 commit/回滚，含未退役表与半回滚禁止说明）、`.../METRICS.md`（L1 24 次 PR 运行、L2 5 次 census、91/digest、kill=7/7、集合差异 0、UNKNOWN 9 项含 L3/长时模型/flakiness/分片墙钟/全仓 mutation score）。M4 memo 补 dated 附注区分「预测 vs 实测」，M5 memo §4 用实测数字替换「尚未上机」。
+
+## 2026-11-15 — TINF 信任收口（F-01…F-05 修复，F-06 明确不做）
+
+**0. 结论先行**：分支 `task/tinf-trust-fix-20261115`（base `origin/master 7e3b6532a`，M6 合并点），按外部专家对 `7e3b6532a` 的评审修 2 个 P0 + 3 个 P1；**F-06（effect witness 现实性）不在范围**，不声称已修；**L2 P50 ≤ 10 min 未达成**，本 PR 不声称。未 push、未开 PR。
+
+**1. F-01（P0）**：`--run` 与 `--json/--list/--check/--parity/--run-args/--help` 互斥，`DISPATCH_MODE_CONFLICT` exit 2 且先于任何输出/spawn；`--run` 缺 `--leg` = `DISPATCH_NO_LEG`；spawn 前断言 argv 非空；`mode=run` token 只在 spawn 后打印；inspect 输出 `mode=inspect`；返回 runner exit。`eb3-ci-required` 从 cmd 前缀改为**整个 argv 精确 grade**，dispatch leg 尾部白名单 `[]`，多一个 token 即 `CI_LAYER_LEG_EXTRA_ARGUMENT`；10 个 workflow + manifest 全部审计并声明既有尾部 token。
+
+**2. F-02（P0）**：计划每个 root 记录排序文件表/计数/`file_digest`，人口进入 `plan_digest`；report 与计划**双向**比较（`FILE_MISSING`/`FILE_UNPLANNED`/`COLLECTION_ERROR`）；aggregator 增加 `RESULT_FILE_SET_MISMATCH` / `SUMMARY_FILE_TOTAL_MISMATCH` / `PLAN_FILE_POPULATION_MISSING`；新增已评审 `dev/ci/census-population-baseline.json`（11 roots/705 files），root 少文件或同数换文件 = `POPULATION_SHRANK`。
+
+**3. F-03（P1）**：新增 `scripts/contract-tiers.mjs`，从 manifest dispatch leg（L1）与 census 人口（L2）推导每个测试文件实际执行层；`required_tiers` 不满足 = `CONTRACT_TIER_UNMET`。测得 6 个 contract 的 L1 要求全部只靠 L2 文件，故 `dev/ci/contract-tier-exceptions.json` 记录 6 条 `owner=UNASSIGNED`、`expires=2026-12-31` 的例外（状态 `excepted`，不是 `met`）；`required_oracles` 今天无人声明，规则改为 `CONTRACT_ORACLE_UNPLANNED`（真空绿，声明即生效），不伪造 oracle 覆盖。
+
+**4. F-04（P1）**：`resultsFromReport` 接收真实 exit 并写入每条结果；shard 写真实 `exit_code`/`exit_signal`；`censusPlanLeg` 对“非 0 进程 + 全 PASS”拒绝 `CENSUS_EXIT_NONZERO`；新增 `scripts/census-exit-policy.mjs`（`exitTolerances: []`，条目需精确 code/signal+owner+reason+未过期）；aggregator 校验策略 digest，shard 不能自声明容忍。
+
+**5. F-05（P1）**：`dev/ci/uncollected-baseline.json` 记录 91 条未收集路径（path+reason+classification）；每次 catalog 调用跑集合差：`UNCOLLECTED_NEW` 阻塞、`UNCOLLECTED_FIXED` 警告、`UNCOLLECTED_BASELINE_STALE` 警告、缺基线 = `UNCOLLECTED_BASELINE_MISSING`；“修一个+加一个”不再因总数不变而通过；计数棘轮保留为第二界。
+
+**6. 负控与接线**：四个新套件（`dispatch-tests.test.mjs`、`eb3-ci-required.test.mjs`、`tinf-trust-closeout.test.mjs`、`contract-tiers.test.mjs`）接入同一 `tinf-instruments` leg（10 suites，293/293）；`contract-tiers --check` 成为 ci-integration 新步骤 + manifest leg。F-02 的评审原例（100 文件计划 vs 1 文件绿报告）在单测与 CLI 两条路径都断言非 PASS；F-01 的 `--run --json` 断言 exit 2、无 spawn。
+
+**7. 门禁实测**：`eb3-ci-required` = `pass workflows=10 findings=0`；`dispatch-tests --check` = `PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` = exit 0（867 tests / 91 uncollected / findings 0）；`contract-tiers --check` = `contracts=6 met=0 excepted=6 unmet=0 findings=0`；`docs:sync --check` findings=0；`lint-identities` exit 0；eslint 0 problems；七文件+四新套件 306/306。
+
+**8. 偏差（必须记录）**：(a) 任务书同时要求“新负控接入同一 leg”和“parity IDENTICAL 25/25”，二者不可兼得；本分支选择接线，重生成 `old-vs-new-argv.txt`（对 `e5bf05670` 比较：`missing=none`、`problems=0`、`added` 恰为 4 个新文件、union 25→29），`test-catalog.test.mjs` 同时钉 digest 与允许 added 集合。(b) `--old-ref 7e3b6532a` 本身无法得到 25/25：该 commit 的 workflow 已无 `node --test` 旧 argv，parity 只能报 18 个 UNCONVERTED；正确 old-ref 是 pre-M6 的 `e5bf05670`。(c) 契约例外 owner 全为 `UNASSIGNED`，需人接手。
+
+**9. 残余**：F-06（真实 PTY/进程/网络 effect witness、`instrumented` 独立性、真 host E2 负控）未做，需 pristine host + World Factory 接线；L2 P50 ≤10 min 未达成；census exit 容忍策略为空；plan 的 oracle 列表仍为空（规则真空绿）。详细表与回滚见 `docs/plans/memo/tinf-trust-closeout-20261115/README.md`。
+
+## 2026-11-15 — TINF F-03 收口：L1 真正执行契约文件（例外清零）
+
+**0. 结论**：协调者指出“6/6 excepted 不是 gate，是缺口登记”。已加 `contract-tiers --run --tier L1`，从 `dev/ci/test-contracts.json` 的 `test_refs` 解析要求 L1 的契约文件（无新清单），用仓库自己的 `vitest.config.ts` 执行并原样返回 vitest exit；新 manifest leg `contracts-l1` 落在 **ci-product**（该 job 先 install + build + build:composition），workflow 加同名步骤。`deriveExecutedTiers` 读该 leg 的 `--run --tier L1` 声明作为 L1 执行集。
+
+**1. 结果**：`node scripts/contract-tiers.mjs --check` → `contracts=6 met=6 excepted=0 unmet=0 findings=0`；`dev/ci/contract-tier-exceptions.json` 已重生成为空（保留文件与 owner/expiry 规则，供未来真实缺口使用）。`node scripts/contract-tiers.mjs --run --tier L1` → `DSH-CONTRACT-TIERS-RUN tier=L1 contracts=6 files=12 exit=0`；本机 vitest `12 passed / 162 tests`，Duration 2.65 s，进程墙钟 3.6 s（**CI 未实测，标 UNVERIFIED**；本机需把 root 的 package `node_modules` 链接进来，CI 由 `pnpm install` 提供）。
+
+**2. 负控**：零文件 → `CONTRACT_TIER_RUN_NO_FILES`；绑定文件不存在 → `CONTRACT_TIER_RUN_FILE_MISSING`；注入 spawn 断言精确 argv 与 raw exit 7 被传播；删除/去掉 manifest leg 的 `--run` 会让 L1 从 executed 集消失并回到 UNMET（单测覆盖）；oracle gate 仍为真空绿，未伪造覆盖。
+
+**3. 形状**：`eb3-ci-required` 仍 `pass workflows=10 findings=0`（workflow 数 10、job 名未变、三个 Required contexts 未动）；新 leg 的 `check[]` 精确声明 `--run --tier L1`，整个 argv 法通过。parity 证据与 `test-catalog.test.mjs` 断言同时钉住 `e5bf05670` 这个 base，并写明 `7e3b6532a` 无旧 argv、不能作为 25/25 的比较基。
+
+## 2026-11-15 — TINF F-02/F-03/F-04 对抗审查收口（PR #775）
+
+**0. 背景**：协调者对 PR #775（`f1beb8021`，含其 fixture commit `09eeebbe8`）的对抗审查给出 CHANGES REQUIRED：F-02 仍只 grade 文件名（705 文件全枚举但零断言 → PASS）；F-04 replay 伪造 `exit_code: 0`；F-03 “executed” 仍可由 `check[]` 声明；baseline 可“删文件 + 重生成”洗白。已在同一分支修复，未 revert `09eeebbe8`。
+
+**1. F-02**：`rootsFromReport` 标记零断言文件；`resultsFromReport` → `INCOMPLETE/NO_ASSERTIONS`（点名文件）；aggregator → `RESULT_NO_ASSERTIONS`；capture token `assertions=`、summary token `assertions_total=`。边界：vitest 报告无法区分“整文件有意 skip”与“没跑”，故拒绝而非猜。三种零断言形状 + N 文件 N>0 正控均有测试。
+
+**2. F-04**：live `resultsFromReport` 缺 `exitCode` → `EXIT_CODE_UNRECORDED`；dry-run 显式 `exitCode:null, mode:'replay'`；shard `status=REPLAY/exit_code=null`；aggregator 接受 REPLAY 但拒绝 `REPLAY + 数字 exit`（`SHARD_REPLAY_WITH_EXIT`）。
+
+**3. F-03**：只有 `cmd` 同时含 `--run --tier <X>` 的 leg 才授予层，`check[]` 单独声明不算；并用 `eb3-ci-required.gradeLeg(job, leg)` 交叉校验 workflow step，manifest-only claim 记 `contract_runs_rejected` 且不授予。manifest `contracts-l1` 的 flags 已移入 `cmd`。
+
+**4. baseline**：`--write-population-baseline` 必须 `--accept-population-change <reason>`；文件记录 `generated_at/catalog_digest/accepted_reason/accepted_by`；catalog digest 漂移 → `POPULATION_BASELINE_UNREVIEWED`。
+
+**5. 门禁**：317/317；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18 bad=0`；`test-catalog` exit 0（869/91）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`--run --tier L1` exit 0（12 files/162 tests，Duration 2.50 s，墙钟 3.4 s，CI UNVERIFIED）；docs-sync/lint-identities/eslint 全过。`09eeebbe8` 保留：whole-argv 法先于 leg-specific 检查，新增测试沿用同一事实。
+
+## 2026-11-15 — TINF Round 2 审查收口（PR #775）
+
+**1. 全 skipped**：`executed` 只计非 `{skipped,pending,todo}`；root `executed===0` → `NO_EXECUTED_ASSERTIONS`；aggregator `RESULT_NO_EXECUTED_ASSERTIONS`（旧录制用 `skipped===assertions` 兜底）；token 分列 `assertions_executed=` / `skipped_total=`。
+
+**2. baseline 增长**：按 per-root `files_expected` membership 比较；新增 `POPULATION_GREW` 非阻塞并报告路径；删除/替换 `POPULATION_SHRANK`；catalog digest 不再是 verdict。
+
+**3. baseline 防篡改**：四字段必填（缺 → `POPULATION_BASELINE_UNREVIEWED`）；每行 `rows_digest` + 整体 `baseline_digest` 重算（改行不更新 → `POPULATION_BASELINE_TAMPERED`）。memo 明说：能重算 digest 的编辑者只能让篡改变成可见多字段 diff，committed file 的极限。
+
+**4. COMPLETED/null exit**：`SHARD_EXIT_UNRECORDED`；仅 REPLAY 可 null；summary token `mode=dry-run|live`。
+
+**5. C9**：`CI_LAYER_LEG_ARGUMENT_MISSING`（declared token 缺失）与 `EXTRA_ARGUMENT` 分离；C9 `c1/c3`→EXTRA、`c2`→MISSING；checkTrailing 对齐搜索 + 跳过同 cmd 的其它 leg。
+
+门禁：321/321；eb3 pass workflows=10 findings=0；catalog exit 0；contract-tiers met=6；C9 26/26。

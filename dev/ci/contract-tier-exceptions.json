@@ -1,0 +1,5 @@
+{
+  "schema": "contract-tier-exceptions/1",
+  "note": "Reviewed ceiling for F-03 (contract tier coverage). Generated from MEASURED reality by `node scripts/contract-tiers.mjs --write-exceptions`; never hand-typed to hide a tier. Each row must name an owner and an expiry; owner UNASSIGNED means no human owns the gap yet and the memo says so. An entry that is expired or malformed is RED, not grandfathered.",
+  "exceptions": []
+}

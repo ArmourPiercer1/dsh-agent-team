@@ -63,6 +63,7 @@ import { dirname, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { DIGEST_SHAPE, identityProblems, isValidDigest } from './census-digest.mjs'
+import { EXIT_POLICY, EXIT_POLICY_SCHEMA, exitPolicyDigest, exitTolerance } from './census-exit-policy.mjs'
 import { IDENTITY_FIELDS, SCHEMA as PLAN_SCHEMA, buildPlan, digestJson, makeIdentity, planDigest } from './census-plan.mjs'
 
 export const SCHEMA = 'census-summary/1'
@@ -71,7 +72,7 @@ export const SHARD_SCHEMA = 'census-shard/1'
 export const REQUIRED_CAPTURES = 2
 
 export const TASK_STATES = Object.freeze(['PASS', 'FAIL', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
-export const SHARD_STATES = Object.freeze(['COMPLETED', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
+export const SHARD_STATES = Object.freeze(['COMPLETED', 'REPLAY', 'INCOMPLETE', 'INFRA_ERROR', 'CANCELLED'])
 /** The only state that is green. Everything else is enumerated, never the other way round. */
 export const PASS = 'PASS'
 
@@ -346,6 +347,44 @@ export function aggregate({ plan, shards }) {
   if (new Set(expectedTaskIds).size !== expectedTaskIds.length) {
     return refused(['PLAN_TASK_DUPLICATE'], [`the plan names ${expectedTaskIds.length} tasks but only ${new Set(expectedTaskIds).size} distinct ids`])
   }
+  // ── rule 1b: the plan's FILE POPULATION (F-02) ────────────────────────────────────────────────
+  // A plan that records only per-root COUNTS cannot be compared with what a shard collected. The
+  // population must be enumerable and digest-bound, or the "file set equal" rule below has no left
+  // side and a root that collected 1 of 100 planned files would still PASS.
+  const planRoots = Array.isArray(plan.roots) ? plan.roots : []
+  if (planRoots.length === 0) {
+    return refused(['PLAN_FILE_POPULATION_MISSING'], ['the plan enumerates no roots; a plan with no file population cannot grade a census'])
+  }
+  let plannedFileTotal = 0
+  for (const root of planRoots) {
+    if (!root || typeof root.root !== 'string' || root.root === '' || !Array.isArray(root.files_expected)) {
+      return refused(
+        ['PLAN_FILE_POPULATION_MISSING'],
+        [`plan root ${JSON.stringify(root?.root ?? root)} carries no files_expected[] — a per-root count is not a population ` +
+          '(build the plan with the M4+ planner that records the sorted file list and its digest)'],
+      )
+    }
+    if (root.files_expected.length === 0) {
+      return refused(['PLAN_FILE_POPULATION_MISSING'], [`plan root ${root.root} declares an EMPTY file population`])
+    }
+    if (root.file_count !== undefined && root.file_count !== root.files_expected.length) {
+      return refused(
+        ['PLAN_FILE_POPULATION_MISSING'],
+        [`plan root ${root.root} declares file_count=${String(root.file_count)} but files_expected has ${String(root.files_expected.length)} entries`],
+      )
+    }
+    if (!isValidDigest(root.file_digest)) {
+      return refused(['PLAN_FILE_POPULATION_MISSING'], [`plan root ${root.root} carries no valid file_digest (${String(root.file_digest)})`])
+    }
+    plannedFileTotal += root.files_expected.length
+  }
+  if (plan.file_count !== undefined && plan.file_count !== plannedFileTotal) {
+    return refused(
+      ['PLAN_FILE_POPULATION_MISSING'],
+      [`plan.file_count=${String(plan.file_count)} but the per-root file lists sum to ${String(plannedFileTotal)}`],
+    )
+  }
+
   if (!Number.isInteger(plan.captures) || plan.captures < REQUIRED_CAPTURES) {
     // The "missing second capture" control. A one-capture plan is self-consistent and would aggregate
     // to PASS, which is exactly the fail-open this refusal exists to prevent: the L2 population is
@@ -463,6 +502,26 @@ export function aggregate({ plan, shards }) {
               `capture ${JSON.stringify(planned.capture)}`],
           )
         }
+        // F-02: the result must carry THIS plan's per-root file digest and count. A result derived
+        // from another population is not this plan's result even when its task id agrees.
+        const rootPlan = planRoots.find((r) => r.root === planned.root)
+        if (rootPlan === undefined) {
+          return refused(['RESULT_FILE_SET_MISMATCH'], [`${file}: task ${result.task_id} names root ${JSON.stringify(planned.root)} which is not a plan root`])
+        }
+        if (result.file_digest !== rootPlan.file_digest) {
+          return refused(
+            ['RESULT_FILE_SET_MISMATCH'],
+            [`${file}: task ${result.task_id} carries file_digest=${String(result.file_digest)} but plan root ${rootPlan.root} is ` +
+              `${String(rootPlan.file_digest)} — the result was derived from a different file set`],
+          )
+        }
+        if (result.files_expected !== undefined && result.files_expected !== rootPlan.files_expected.length) {
+          return refused(
+            ['RESULT_FILE_SET_MISMATCH'],
+            [`${file}: task ${result.task_id} says files_expected=${String(result.files_expected)} but the plan root has ` +
+              `${String(rootPlan.files_expected.length)} file(s)`],
+          )
+        }
       }
       if (typeof result.evidence !== 'string' || result.evidence.trim() === '') {
         return refused(
@@ -520,18 +579,36 @@ export function aggregate({ plan, shards }) {
   const verdicts = new Set()
   const observedTaskIds = []
   for (const { file, json } of parsed) {
-    if (json.status !== 'COMPLETED') {
+    if (json.status !== 'COMPLETED' && json.status !== 'REPLAY') {
       codes.push(`SHARD_STATUS_${json.status}`)
       verdicts.add(json.status)
       detail.push(`${file}: shard status is ${json.status}, not COMPLETED`)
+    } else if (json.status === 'REPLAY' && (typeof json.exit_code === 'number')) {
+      codes.push('SHARD_REPLAY_WITH_EXIT')
+      verdicts.add('INFRA_ERROR')
+      detail.push(`${file}: status=REPLAY but exit_code=${String(json.exit_code)} — a replay has no process exit to claim`)
     }
     // exit code and status must agree in BOTH directions. non-zero + COMPLETED is a shard that says it
     // failed; exit 0 with a non-COMPLETED status is a shard that failed while claiming success.
+    if (json.status === 'COMPLETED' && typeof json.exit_code !== 'number') {
+      codes.push('SHARD_EXIT_UNRECORDED')
+      verdicts.add('INFRA_ERROR')
+      detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — a completed run must carry the process exit; only REPLAY may leave it null`)
+    }
     if (json.exit_code !== undefined && json.exit_code !== null) {
       if (json.status === 'COMPLETED' && json.exit_code !== 0) {
-        codes.push('SHARD_EXIT_NONZERO')
-        verdicts.add('INFRA_ERROR')
-        detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — the shard's own two signals disagree`)
+        // A tolerance is not free text in the artifact: the shard must name the FROZEN policy digest
+        // AND the policy itself must contain a matching, non-expired entry for this exact code/signal.
+        const policyMatches = json.exit_policy_digest === exitPolicyDigest(EXIT_POLICY) && EXIT_POLICY.schema === EXIT_POLICY_SCHEMA
+        const tolerance = policyMatches ? exitTolerance({ code: json.exit_code, signal: json.exit_signal ?? null, policy: EXIT_POLICY }) : { tolerated: false }
+        if (tolerance.tolerated) {
+          codes.push('SHARD_EXIT_TOLERATED')
+          detail.push(`${file}: status=COMPLETED with exit_code=${String(json.exit_code)} — tolerated by exit policy entry ${JSON.stringify(tolerance.entry.owner)} (expires ${tolerance.entry.expires})`)
+        } else {
+          codes.push('SHARD_EXIT_NONZERO')
+          verdicts.add('INFRA_ERROR')
+          detail.push(`${file}: status=COMPLETED but exit_code=${String(json.exit_code)} — the shard's own two signals disagree`)
+        }
       }
       if (json.status !== 'COMPLETED' && json.exit_code === 0) {
         codes.push('SHARD_EXIT_DISAGREES')
@@ -547,6 +624,21 @@ export function aggregate({ plan, shards }) {
     }
     for (const result of json.results) {
       observedTaskIds.push(result.task_id)
+      // F-02 follow-up: file names are not execution. A result that says assertions=0 is a root that
+      // enumerated but measured nothing; it cannot stay PASS even if its state field says so.
+      if (result.assertions === 0) {
+        codes.push('RESULT_NO_ASSERTIONS')
+        verdicts.add('INCOMPLETE')
+        detail.push(`${file}: task ${result.task_id} reports assertions=0 — a collected root with no assertion is not a measurement`)
+      }
+      const executed = Number.isFinite(result.assertions_executed)
+        ? result.assertions_executed
+        : Number.isFinite(result.skipped) && Number.isFinite(result.assertions) && result.skipped === result.assertions ? 0 : null
+      if (executed === 0 && Number.isFinite(result.assertions) && result.assertions > 0) {
+        codes.push('RESULT_NO_EXECUTED_ASSERTIONS')
+        verdicts.add('INCOMPLETE')
+        detail.push(`${file}: task ${result.task_id} reports assertions=${String(result.assertions)} but assertions_executed=0 — every assertion was skipped/pending/todo, so nothing was measured`)
+      }
       const state = result.state
       if (!TASK_STATES.includes(state)) {
         codes.push('TASK_NO_TERMINAL_RESULT')
@@ -574,6 +666,26 @@ export function aggregate({ plan, shards }) {
     codes.push('TASK_EXTRA')
     verdicts.add('INCOMPLETE')
     detail.push(`${extra.length} result(s) are not in the plan: ${extra.slice(0, 6).join(', ')}${extra.length > 6 ? ' (+…)' : ''}`)
+  }
+
+  // ── rule 4b: the observed population sums to the plan's total (F-02) ──────────────────────────
+  // Per-result digests prove each row came from this plan; this proves the rows, taken over UNIQUE
+  // roots, cover the whole planned population — a set of results that quietly omits a root's files
+  // cannot hide behind a correct-looking per-root digest.
+  const observedFilesByRoot = new Map()
+  for (const { json } of parsed) {
+    for (const result of json.results) {
+      if (typeof result.files_observed === 'number') observedFilesByRoot.set(result.root, result.files_observed)
+    }
+  }
+  const observedFileTotal = [...observedFilesByRoot.values()].reduce((n, v) => n + v, 0)
+  if (observedFilesByRoot.size === planRoots.length && observedFileTotal !== plannedFileTotal) {
+    codes.push('SUMMARY_FILE_TOTAL_MISMATCH')
+    verdicts.add('INCOMPLETE')
+    detail.push(
+      `the results' files_observed sum to ${String(observedFileTotal)} but the plan's file population is ` +
+        `${String(plannedFileTotal)} — a census that collected a different number of files is not this plan's census`,
+    )
   }
 
   // ── rule 5: required oracle contracts ─────────────────────────────────────────────────────────
@@ -675,6 +787,14 @@ export function aggregate({ plan, shards }) {
       missing: missing.length,
       extra: extra.length,
       by_state: Object.fromEntries(TASK_STATES.map((s) => [s, parsed.flatMap((p) => p.json.results).filter((r) => r.state === s).length])),
+      assertions_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.assertions) ? r.assertions : 0), 0),
+      assertions_executed_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => {
+        if (Number.isFinite(r.assertions_executed)) return n + r.assertions_executed
+        // Legacy replay recording without the field: all-skipped is still visible from skipped===assertions.
+        if (Number.isFinite(r.skipped) && Number.isFinite(r.assertions) && r.skipped === r.assertions) return n
+        return n + (Number.isFinite(r.assertions) ? r.assertions : 0)
+      }, 0),
+      skipped_total: parsed.flatMap((p) => p.json.results).reduce((n, r) => n + (Number.isFinite(r.skipped) ? r.skipped : 0), 0),
     },
     oracles: {
       required: requiredOracles,
@@ -684,6 +804,9 @@ export function aggregate({ plan, shards }) {
       failed: oracleRows.filter((r) => r.state !== PASS && r.state !== 'MISSING' && r.state !== 'UNDECIDABLE').length,
       checked: oracleRows.length,
     },
+    // A dry-run summary must SAY it is a dry run: a PASS token read out of context must not be
+    // mistaken for a live execution. Any REPLAY shard makes the summary dry-run.
+    mode: parsed.length > 0 && parsed.every((p) => p.json.status === 'REPLAY') ? 'dry-run' : 'live',
     codes: [...new Set(codes)],
     detail,
     census_verdict: verdict,
@@ -720,15 +843,18 @@ export function render(result) {
   }
   lines.push(`  tasks: expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} missing=${String(s.counts.missing)} extra=${String(s.counts.extra)}`)
   lines.push(`  states: ${Object.entries(s.counts.by_state).map(([k, v]) => `${k}=${String(v)}`).join(' ')}`)
+  lines.push(`  assertions: total=${String(s.counts.assertions_total)} executed=${String(s.counts.assertions_executed_total)} skipped=${String(s.counts.skipped_total)}`)
   lines.push(`  oracles: required=${String(s.oracles.required.length)} checked=${String(s.oracles.checked)} failed=${String(s.oracles.failed)} undecidable=${String(s.oracles.undecidable)} missing=${String(s.oracles.missing)}`)
   if (s.detail.length > 0) {
     lines.push(`  findings (${s.detail.length}):`)
     for (const d of s.detail.slice(0, 25)) lines.push(`    ${d}`)
     if (s.detail.length > 25) lines.push(`    ... ${s.detail.length - 25} more`)
   }
-  lines.push(`DSH-CENSUS-SUMMARY ${s.census_verdict} codes=${s.codes.join(',') || 'none'} ` +
+  lines.push(`DSH-CENSUS-SUMMARY mode=${String(s.mode)} ${s.census_verdict} codes=${s.codes.join(',') || 'none'} ` +
     `expected=${String(s.counts.expected)} observed=${String(s.counts.observed)} shards=${String(s.shards.length)} ` +
-    `expected_task_ids=${String(s.expected_task_ids.length)} observed_task_ids=${String(s.observed_task_ids.length)}`)
+    `expected_task_ids=${String(s.expected_task_ids.length)} observed_task_ids=${String(s.observed_task_ids.length)} ` +
+    `assertions_total=${String(s.counts.assertions_total)} assertions_executed=${String(s.counts.assertions_executed_total)} ` +
+    `skipped_total=${String(s.counts.skipped_total)}`)
   return lines.join('\n')
 }
 
@@ -811,7 +937,10 @@ export function selfTest() {
   const CAT = `sha256:${'3'.repeat(64)}`
   const BUILD = `sha256:${'4'.repeat(64)}`
   const plan = buildPlan({
-    roots: [{ root: 'packages/a' }, { root: 'packages/b' }],
+    roots: [
+      { root: 'packages/a', files_expected: ['test/a1.test.ts'] },
+      { root: 'packages/b', files_expected: ['test/b1.test.ts'] },
+    ],
     captures: 2,
     identity: makeIdentity({ merge_tree_sha: TREE, host_sha: HOST, catalog_digest: CAT, build_digest: BUILD }),
   })
@@ -834,14 +963,21 @@ export function selfTest() {
     const m = /^census:(.+)#([0-9]+)$/.exec(task_id)
     return m === null ? { root: null, capture: null } : { root: m[1], capture: Number(m[2]) }
   }
-  const res = (task_id, over = {}) => ({
-    task_id,
-    ...taskIdentity(task_id),
-    state: 'PASS',
-    evidence: `artifacts/${task_id}.json`,
-    oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
-    ...over,
-  })
+  const res = (task_id, over = {}) => {
+    const id = taskIdentity(task_id)
+    const root = plan.roots.find((r) => r.root === id.root)
+    return {
+      task_id,
+      ...id,
+      state: 'PASS',
+      file_digest: root?.file_digest,
+      files_expected: root?.files_expected.length,
+      files_observed: root?.files_expected.length,
+      evidence: `artifacts/${task_id}.json`,
+      oracles: [{ id: 'ORACLE-A', state: 'PASS' }],
+      ...over,
+    }
+  }
   const passResults = (taskIds) => taskIds.map((task_id) => res(task_id))
   const shard = (id, taskIds, over = {}) => {
     const base = {
@@ -875,7 +1011,7 @@ export function selfTest() {
     pass.summary.scope.decides_what_ci_runs === false,
     JSON.stringify(pass.summary.scope))
   ok('positive: shard artifact digests are recorded', pass.summary.shards.every((x) => /^sha256:[0-9a-f]{64}$/.test(x.artifact_digest)), 'digest')
-  ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY PASS/.test(render(pass)), render(pass).split('\n').pop())
+  ok('positive: the verdict token renders', /DSH-CENSUS-SUMMARY mode=live PASS/.test(render(pass)), render(pass).split('\n').pop())
 
   const omitted = aggregate({ plan, shards: [s1] })
   ok('an omitted shard is INCOMPLETE / TASK_MISSING with the exact delta',
@@ -908,7 +1044,7 @@ export function selfTest() {
   ok('an identity mismatch refuses',
     aggregate({ plan, shards: [s1, shard('shard-2', all.slice(2), { identity: identityOf({ host_sha: '9'.repeat(40) }) })] }).codes.includes('IDENTITY_MISMATCH_HOST_SHA'), 'identity')
   ok('a one-capture plan refuses (the missing second capture)', (() => {
-    const one = buildPlan({ roots: [{ root: 'packages/a' }], captures: 1, identity: plan.identity })
+    const one = buildPlan({ roots: [{ root: 'packages/a', files_expected: ['test/a1.test.ts'] }], captures: 1, identity: plan.identity })
     one.identity.plan_digest = planDigest(one)
     return aggregate({ plan: one, shards: [shard('shard-1', one.tasks.map((t) => t.task_id))] }).codes.includes('CAPTURES_INSUFFICIENT')
   })(), 'one-capture')

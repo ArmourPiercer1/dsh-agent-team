@@ -1,26 +1,33 @@
 # TINF M6 — dispatch parity evidence (old argv vs new dispatched argv)
 
 dated: 2026-11-15
-base:  origin/master e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773)
-head:  task/tinf-m6-retire-handlists-20261115 (this change)
+base:  e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773 — the last commit whose
+       workflows still carried the hand-written `node --test` lists)
+head:  task/tinf-trust-fix-20261115 (M6 + the TINF trust-closeout fixes)
 host:  v24.21.0 / git 2.53.0 / Linux x86_64
 
 WHY THIS FILE EXISTS
   M6 deletes both workflow copies of every node:test file list (ci-integration.yml and the
   settlement step of pr-gate.yml). The claim 'the set did not change' is graded here, not
-  asserted: the OLD argv is read from origin/master's copy of each workflow, the NEW argv is
+  asserted: the OLD argv is read from the base commit's copy of each workflow, the NEW argv is
   the dispatcher resolving each manifest leg, both are sorted, and every step's diff is printed.
-  An empty missing/added on every row is the only passing state.
 
-  A NEW SUITE UNDER AN `areas[]` LEG WILL CHANGE THE UNION DIGEST BELOW. That is intended:
-  adding a test to CI is a deliberate act, and scripts/test-catalog.test.mjs compares this
-  digest with the set the legs resolve today, so the evidence cannot silently drift.
+  REGENERATED 2026-11-15 (trust-closeout). The four negative-control suites the review requires
+  (scripts/dispatch-tests.test.mjs, scripts/eb3-ci-required.test.mjs,
+  scripts/tinf-trust-closeout.test.mjs, scripts/contract-tiers.test.mjs) are WIRED INTO the same
+  `tinf-instruments` leg, so the union is DELIBERATELY 29 instead of 25. Every row still has
+  `missing=none`, and `problems=0`: nothing was removed or weakened. `added=` names exactly those
+  four files. `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set, so a
+  future addition cannot hide behind this regeneration.
+
+WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
+  argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
+  25/25 and is not a meaningful comparison. e5bf05670 is the last commit whose workflows
+  still carry the hand-written lists, and it is the base this evidence has always named.
 
 REPRODUCE
-  node scripts/dispatch-tests.mjs --parity --old-ref origin/master
+  node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
 
-OUTPUT
-dispatch-parity old=origin/master new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
       old tests/diag-call-chain/diag-call-chain.test.mjs
@@ -41,7 +48,7 @@ dispatch-parity old=origin/master new=worktree workflows=.github/workflows/ci-in
     scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
       old scripts/tinf-m0.test.mjs
       new scripts/tinf-m0.test.mjs
-    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=6 missing=none added=none
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=10 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs
       old scripts/census-aggregate.test.mjs
       old scripts/census-cutover.test.mjs
       old scripts/census-plan.test.mjs
@@ -51,9 +58,13 @@ dispatch-parity old=origin/master new=worktree workflows=.github/workflows/ci-in
       new scripts/census-aggregate.test.mjs
       new scripts/census-cutover.test.mjs
       new scripts/census-plan.test.mjs
+      new scripts/contract-tiers.test.mjs
+      new scripts/dispatch-tests.test.mjs
+      new scripts/eb3-ci-required.test.mjs
       new scripts/host-cache-key.test.mjs
       new scripts/test-catalog.test.mjs
       new scripts/tinf-timing.test.mjs
+      new scripts/tinf-trust-closeout.test.mjs
     a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
       old tests/world-factory/a5sf-harness.test.mjs
       new tests/world-factory/a5sf-harness.test.mjs
@@ -91,8 +102,8 @@ dispatch-parity old=origin/master new=worktree workflows=.github/workflows/ci-in
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=25 set=sha256:5de65f5ef1355d5b506a95bd635acd25bd2cb6aaecf702b3460bb548f7ffde42
-DISPATCH-PARITY IDENTICAL steps=18 old_files=25 new_files=25 problems=0
+  union old=25 new=29 set=sha256:117cd5d498d12bc0b837106e5d8cab486e4e56cda7b48a34dc80896832e921e0
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=29 problems=0
 
 EXIT CODE
-0
+1

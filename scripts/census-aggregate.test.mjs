@@ -60,7 +60,10 @@ function cli(args) {
 /** Two roots × two captures, one required oracle. The positive control runs against this. */
 function makePlan({ captures = REQUIRED_CAPTURES } = {}) {
   const plan = buildPlan({
-    roots: [{ root: 'packages/a', files: 2 }, { root: 'packages/b', files: 1 }],
+    roots: [
+      { root: 'packages/a', files: 2, files_expected: ['test/a1.test.ts', 'test/a2.test.ts'] },
+      { root: 'packages/b', files: 1, files_expected: ['test/b1.test.ts'] },
+    ],
     captures,
     identity: makeIdentity({
       merge_tree_sha: '1111111111111111111111111111111111111111',
@@ -97,17 +100,24 @@ function taskIdentityOf(task_id) {
 }
 
 /** A passing result WITH the per-task identity the aggregator now requires. */
-const res = (task_id, over = {}) => ({
+const res = (task_id, over = {}) => {
+  const id = taskIdentityOf(task_id)
+  const rootPlan = plan.roots.find((r) => r.root === id.root)
+  return {
   task_id,
-  ...taskIdentityOf(task_id),
+  ...id,
   state: 'PASS',
+  file_digest: rootPlan.file_digest,
+  files_expected: rootPlan.files_expected.length,
+  files_observed: rootPlan.files_expected.length,
   // A pointer the CLI can OPEN (see verifyEvidenceRefs): the CLI and the census leg resolve evidence
   // against the shard's own directory, so the fixture writes that file beside the shards.
   evidence: 'evidence.json',
   duration_ms: 1000,
   oracles: [{ id: 'ORACLE-CENSUS', state: 'PASS' }],
   ...over,
-})
+  }
+}
 
 const passResults = (taskIds) => taskIds.map((task_id) => res(task_id))
 
@@ -141,7 +151,7 @@ test('positive control: the complete, consistent shard set aggregates to PASS', 
   assert.equal(r.summary.counts.missing, 0)
   assert.equal(r.summary.counts.extra, 0)
   assert.equal(r.summary.shards.length, 2)
-  assert.match(render(r), /DSH-CENSUS-SUMMARY PASS/)
+  assert.match(render(r), /DSH-CENSUS-SUMMARY mode=live PASS/)
 })
 
 test('the summary scope is STRUCTURAL — the census leg is graded, the test set is not (M6)', () => {
@@ -559,8 +569,8 @@ test('cli: the human report names the codes and the token; it never says PASS fo
   const s1 = writeShard(dir, 'shard-1.json', SHARD_1)
   const r = cli(['--aggregate', s1, '--plan', writePlan(plan)])
   assert.equal(r.status, 1, r.out)
-  assert.match(r.stdout, /DSH-CENSUS-SUMMARY INCOMPLETE codes=.*TASK_MISSING/)
-  assert.doesNotMatch(r.stdout, /DSH-CENSUS-SUMMARY PASS/)
+  assert.match(r.stdout, /DSH-CENSUS-SUMMARY mode=(?:live|dry-run) INCOMPLETE codes=.*TASK_MISSING/)
+  assert.doesNotMatch(r.stdout, /DSH-CENSUS-SUMMARY mode=live PASS/)
   // M6: the header must not call the verdict shadow, and must name what it does and does not grade.
   assert.match(r.stdout, /plan-mode census leg verdict \(ci-census under ci-required\)/)
   assert.doesNotMatch(r.stdout, /SHADOW/)

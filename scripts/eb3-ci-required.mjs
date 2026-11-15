@@ -23,6 +23,16 @@
  *   CI_LAYER_LEG_WEAKENED       the invocation runs but with a required flag missing, a forbidden
  *                               flag present (e.g. --allow-refused census), `|| true`, an
  *                               un-pipefailed pipe, or a conditional step
+ *   CI_LAYER_LEG_ARGUMENT_MISSING (TINF round 2, C9 naming) the step executes a declared `check[]`
+ *                               token-set with a required token ABSENT (e.g. `--full` dropped); this
+ *                               is distinct from an undeclared EXTRA token, which keeps its own code
+ *   CI_LAYER_LEG_EXTRA_ARGUMENT (TINF trust-closeout, F-01) the step executes MORE argv tokens than
+ *                               the leg declares — `--json`, `--list`, a second `--leg`, an env
+ *                               assignment, anything. The old reader graded a PREFIX, so appending
+ *                               `--json` to a manifest cmd kept this gate green while the step
+ *                               printed a plan and ran nothing. The whole trailing argv must now be
+ *                               exactly the leg's `check[]` grammar (and for a dispatch leg it must
+ *                               be exactly empty after its declared cmd).
  *   CI_LAYER_LEG_NO_SUITES      (TINF M6) a `scripts/dispatch-tests.mjs` leg declares neither
  *                               suites[] nor areas[] — the dispatcher's argv would be empty, and
  *                               `node --test` with no argv runs the whole repository
@@ -281,6 +291,60 @@ function preludeRefusal(line) {
   return `\`${argv[0]}\` before the leg is outside the reader's allowlist (cd/source/trap/functions/alias/shopt and every compound construct are)`
 }
 
+/**
+ * Is this `check[]` entry a one-token VALUE SLOT? `<value>` matches exactly one trailing token that
+ * does not itself look like an option (`-…`). Slots exist because a real invocation passes dynamic
+ * values (`--new-since "$CI_BASE"`, `--store-dir "$DSH_CI_STORE_DIR"`); before slots the reader had to
+ * treat every value as an allowed token, which is the prefix hole again. A slot never matches an
+ * option, so a step cannot smuggle `--json` into a value position.
+ */
+export function isValueSlot(token) {
+  return typeof token === 'string' && /^<[^<>]+>$/.test(token)
+}
+
+/**
+ * THE WHOLE TRAILING ARGV LAW (TINF trust-closeout, F-01).
+ *
+ * `check[]` used to mean "every one of these tokens appears somewhere after cmd", so `--json`,
+ * `--list`, a second `--leg` or an env assignment all passed. It is now the ONLY permitted trailing
+ * SEQUENCE, matched token-for-token and end-to-end. No check[] means no trailing tokens at all.
+ *
+ * @returns {{extra: string[], missing: string[]}} extra = tokens the step carries but the leg does
+ *   not declare (CI_LAYER_LEG_EXTRA_ARGUMENT); missing = declared tokens the step does not carry.
+ */
+export function checkTrailing(rest, check) {
+  const allowed = Array.isArray(check) ? check : []
+  const extra = []
+  const missing = []
+  let j = 0
+  for (let i = 0; i < allowed.length; i += 1) {
+    if (j >= rest.length) { missing.push(...allowed.slice(i)); break }
+    const want = allowed[i]
+    const got = rest[j]
+    if (isValueSlot(want)) {
+      if (got.startsWith('-')) { missing.push(want); extra.push(got) }
+      j += 1
+      continue
+    }
+    if (got !== want) {
+      // Align by SEARCHING for the declared token before calling the rest extra. Otherwise a single
+      // missing flag (`--full` removed) would cascade into a dozen false "extra" tokens and be
+      // misnamed CI_LAYER_LEG_EXTRA_ARGUMENT. Tokens skipped on the way are genuinely extra.
+      const at = rest.indexOf(want, j)
+      if (at === -1) { missing.push(want); continue }
+      extra.push(...rest.slice(j, at))
+      j = at + 1
+      continue
+    }
+    j += 1
+  }
+  if (j < rest.length) extra.push(...rest.slice(j))
+  return { extra, missing }
+}
+
+/** The dispatcher's own argv[0..1]; every dispatch leg must declare EXACTLY this + `--run --leg <id>`. */
+export const DISPATCHER_CMD = Object.freeze(['node', 'scripts/dispatch-tests.mjs'])
+
 /** Positive recognition of the leg on ONE logical line. Returns { argv } or { why }. */
 function legLine(line, leg, pipefailSet) {
   let body = line
@@ -315,7 +379,12 @@ export function gradeLeg(job, leg) {
   const steps = Array.isArray(job?.steps) ? job.steps : []
   const unproven = []
   const weakened = []
-  const mentions = (s) => typeof s?.run === 'string' && s.run.includes(leg.cmd[leg.cmd.length - 1])
+  const extraArgs = []
+  const missingArgs = []
+  // A cmd token can be a value SLOT (`<value>`, see checkTrailing); a slot never appears literally in
+  // a workflow, so the prefilter keys on the program/script token instead (cmd[1], else cmd[0]).
+  const markers = [leg.cmd[1], leg.cmd[0]].filter((t) => typeof t === 'string' && t !== '')
+  const mentions = (s) => typeof s?.run === 'string' && markers.some((m) => s.run.includes(m))
   for (const step of steps) {
     if (!mentions(step)) continue
     const stepWhy = stepRefusal(step)
@@ -329,8 +398,29 @@ export function gradeLeg(job, leg) {
         const why = stepWhy ?? blocked ?? scriptWide ?? hit.why ?? null
         if (why !== null) { unproven.push(`${String(step.name ?? 'unnamed step')}: ${why}`); break }
         const rest = hit.argv.slice(leg.cmd.length)
+        // THE WHOLE TRAILING ARGV. `check[]` is not a "these tokens must be present" subset any more:
+        // it is the ONLY permitted trailing sequence, matched token-for-token (a `<value>` entry is a
+        // one-token slot). For a dispatch leg the permitted trailing set is exactly empty — the cmd
+        // already carries `--run --leg <id>`, so any extra token is a mode the step may not add.
+        const trailing = checkTrailing(rest, leg.check)
+        if (trailing.extra.length > 0) {
+          extraArgs.push(`${String(step.name ?? 'unnamed step')}: unexpected argv token(s) ${trailing.extra.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (allowed trailing set: ${leg.check === undefined || leg.check.length === 0 ? 'empty' : JSON.stringify(leg.check)})`)
+          break
+        }
+        // Another leg with the same cmd can share this step's line (`--check-transcript` is the
+        // clearest case): it matches cmd but declares NONE of this leg's check[] and carries its own
+        // flags. That is not this leg running without argv; skip it instead of reporting every token
+        // as missing. A genuine dropped token still has at least one declared token matched (c2).
+        const declared = new Set(Array.isArray(leg.check) ? leg.check : [])
+        const matchedDeclared = rest.some((t) => declared.has(t))
+        if (!matchedDeclared && rest.length > 0) continue
         const problems = []
-        for (const f of leg.check ?? []) if (!rest.includes(f)) problems.push(`missing ${f}`)
+        if (trailing.missing.length > 0) {
+          // A declared `check[]` token that is ABSENT is a different defect from an undeclared token:
+          // dropping `--full` (c2) must not be reported as "extra argument". Keep the two names.
+          missingArgs.push(`${String(step.name ?? 'unnamed step')}: missing declared argv token(s) ${trailing.missing.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (declared: ${JSON.stringify(leg.check ?? [])})`)
+          break
+        }
         for (const f of leg.forbid ?? []) {
           const at = rest.indexOf(f)
           if (at === -1) continue
@@ -360,6 +450,8 @@ export function gradeLeg(job, leg) {
       unproven.push(`${String(step.name ?? 'unnamed step')}: \`${leg.cmd.join(' ')}\` appears only inside a construct the reader does not prove (if/case/loop/function/substitution/\`-c\` string/heredoc/operator)`)
     }
   }
+  if (missingArgs.length > 0) return { code: 'CI_LAYER_LEG_ARGUMENT_MISSING', why: `\`${leg.cmd.join(' ')}\` runs without argv it declares — ${missingArgs.join(' ;; ')}` }
+  if (extraArgs.length > 0) return { code: 'CI_LAYER_LEG_EXTRA_ARGUMENT', why: `\`${leg.cmd.join(' ')}\` runs with tokens it does not declare — ${extraArgs.join(' ;; ')}` }
   if (weakened.length > 0) return { code: 'CI_LAYER_LEG_WEAKENED', why: `\`${leg.cmd.join(' ')}\` runs but weakened — ${weakened.join(' ;; ')}` }
   if (unproven.length > 0) return { code: 'CI_LAYER_LEG_UNPROVEN', why: `\`${leg.cmd.join(' ')}\` is not PROVEN to gate its step — ${unproven.join(' ;; ')}` }
   return { code: 'CI_LAYER_LEG_MISSING', why: `no step executes \`${leg.cmd.join(' ')}\`` }
@@ -380,6 +472,23 @@ function checkDeclaredLeg(job, leg, where, add) {
       // "it runs nothing" / "it runs the whole repository" / "it runs a path that does not exist".
       if (isDispatchLeg(leg)) {
         const cmd = leg.cmd
+        // F-01: the manifest cmd is a COMPLETE invocation, not a prefix. Only
+        // [node, scripts/dispatch-tests.mjs, --run, --leg, <id>] is executable; appending `--json`
+        // (or `--list`, a second `--leg`, an env assignment …) to the manifest used to leave this
+        // gate green because every check was a prefix check.
+        if (cmd.includes('--run') && cmd.includes('--leg')) {
+          const idAt = cmd.indexOf('--leg')
+          const canonical = [...DISPATCHER_CMD, '--run', '--leg', cmd[idAt + 1]]
+          const extraTokens = []
+          if (cmd.length > canonical.length) extraTokens.push(...cmd.slice(canonical.length))
+          for (let k = 0; k < Math.min(cmd.length, canonical.length); k += 1) {
+            if (cmd[k] !== canonical[k] && !extraTokens.includes(cmd[k])) extraTokens.push(cmd[k])
+          }
+          if (Array.isArray(leg.check) && leg.check.length > 0) extraTokens.push(...leg.check.map((t) => `check:${t}`))
+          if (extraTokens.length > 0) {
+            add('CI_LAYER_LEG_EXTRA_ARGUMENT', `${where.prefix}: leg "${leg.id}" declares tokens a dispatch invocation may not carry (${extraTokens.map((t) => JSON.stringify(t)).join(', ')}) — the only executable form is ${JSON.stringify(canonical)}; expectation is declared by suites[]/areas[], not by extra argv`, { layer: where.layer, leg: leg.id })
+          }
+        }
         if (!cmd.includes('--run')) {
           add('CI_LAYER_LEG_DISPATCH_SHAPE', `${where.prefix}: leg "${leg.id}" dispatches without \`--run\` — the step would print an argv and gate nothing`, { layer: where.layer, leg: leg.id })
         } else if (cmd[cmd.length - 1] === '--run') {
@@ -549,7 +658,7 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     // the synthetic tree may be grading a different tree than the one reported.
     // Graded by the SAME allowlist as every other leg, plus: its argument must be the
     // caller's merge_tree input and the step must pass the event in.
-    const bindLeg = { id: 'merge-tree-binding', cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--assert-tree'] }
+    const bindLeg = { id: 'merge-tree-binding', cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--assert-tree', '<value>'] }
     const bindMiss = gradeLeg(job, bindLeg)
     const bindStep = (job.steps ?? []).find((s) => typeof s?.run === 'string' && s.run.includes('--assert-tree'))
     const bindArg = bindStep !== undefined && /--assert-tree\s+"\$\{\{\s*inputs\.merge_tree\s*\}\}"/.test(bindStep.run)
@@ -681,7 +790,7 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     // The synthesize job must EXECUTE the merge-tree script (same invocation law).
     const synth = aggDoc?.jobs?.synthesize
     const synthMiss = synth === undefined ? { code: 'CI_SUMMARY_NOT_SYNTHESIZING', why: 'no synthesize job' }
-      : gradeLeg(synth, { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--synthesize'] })
+      : gradeLeg(synth, { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--synthesize', '--from-merge-ref', '--github-output'] })
     if (synthMiss !== null) {
       add(synthMiss.code === 'CI_LAYER_LEG_WEAKENED' ? 'CI_SUMMARY_NOT_SYNTHESIZING' : 'CI_SUMMARY_NOT_SYNTHESIZING', `summary: synthesize job — ${synthMiss.why}`, { layer: 'aggregate' })
     }

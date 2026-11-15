@@ -40,6 +40,11 @@
             "node",
             "scripts/eb3-impact.mjs"
           ],
+          "check": [
+            "--base",
+            "<value>",
+            "--github-output"
+          ],
           "why": "the selection itself must run"
         },
         {
@@ -47,6 +52,10 @@
           "cmd": [
             "node",
             "scripts/docs-probe.mjs"
+          ],
+          "check": [
+            "--base",
+            "<value>"
           ],
           "why": "MANDATORY per PR (plan: ci-fast 强制 docs:probe)"
         },
@@ -82,7 +91,9 @@
           ],
           "check": [
             "--only",
-            "graph-parse"
+            "graph-parse",
+            "--only",
+            "state-freshness"
           ]
         },
         {
@@ -97,6 +108,14 @@
           "cmd": [
             "node",
             "scripts/eb3-ci-required.mjs"
+          ]
+        },
+        {
+          "id": "contract tier coverage (F-03 — required_tiers proven against executed tiers)",
+          "cmd": [
+            "node",
+            "scripts/contract-tiers.mjs",
+            "--check"
           ]
         },
         {
@@ -125,6 +144,10 @@
           "cmd": [
             "node",
             "scripts/eb3-run-manifest.mjs"
+          ],
+          "check": [
+            "--new-since",
+            "<value>"
           ]
         },
         {
@@ -134,7 +157,8 @@
             "scripts/eb3-evidence-guard.mjs"
           ],
           "check": [
-            "--new-since"
+            "--new-since",
+            "<value>"
           ],
           "why": "Raw census captures (~3.8 MB) were committed into tracked evidence scratch/ three times in two days with only a prose rule against it (PR #396 untracked 32 MB; lanes re-committed 6-8 each). Refuses files the PR ADDS under dev/agent-workflow/evidence/ that match the raw-capture/resample grammar, or exceed 1 MiB without a reasoned entry in dev/ci/evidence-large-allowlist.json. --new-since is required: without a base it would grade against origin/master, which is not the merge ref's first parent."
         },
@@ -366,7 +390,11 @@
             "scripts/host-cache-key.test.mjs",
             "scripts/census-plan.test.mjs",
             "scripts/census-aggregate.test.mjs",
-            "scripts/census-cutover.test.mjs"
+            "scripts/census-cutover.test.mjs",
+            "scripts/dispatch-tests.test.mjs",
+            "scripts/eb3-ci-required.test.mjs",
+            "scripts/tinf-trust-closeout.test.mjs",
+            "scripts/contract-tiers.test.mjs"
           ]
         },
         {
@@ -432,6 +460,10 @@
           "cmd": [
             "node",
             "scripts/eb3-security-run.mjs"
+          ],
+          "check": [
+            "--timeout",
+            "20000"
           ]
         }
       ],
@@ -459,6 +491,18 @@
       ],
       "legs": [
         {
+          "id": "contracts-l1",
+          "cmd": [
+            "node",
+            "scripts/contract-tiers.mjs",
+            "--run",
+            "--tier",
+            "L1"
+          ],
+          "check": [],
+          "why": "F-03 closeout: an exception registry is a disclosure of a gap, not a gate. This leg runs the contract-bound vitest files of every contract whose required_tiers include L1, using the repo's own vitest.config.ts, and propagates vitest's raw exit. It lives in ci-product because that job installs and builds the packages before the gate legs; the population is derived from dev/ci/test-contracts.json test_refs (no new list), and contract-tiers --check reads this leg's --run --tier L1 declaration as the L1 executed set, so a missing/emptied run is CONTRACT_TIER_UNMET rather than an exception."
+        },
+        {
           "id": "product-gate",
           "cmd": [
             "node",
@@ -466,7 +510,12 @@
           ],
           "check": [
             "--full",
-            "--only"
+            "--only",
+            "graph-parse,kit-home-guard,state-freshness,install,blueprint-fence,typecheck,lint-identities,artifacts-at-head",
+            "--store-dir",
+            "<value>",
+            "--transcript-dir",
+            "<value>"
           ],
           "forbid": [
             "--allow-refused",
@@ -489,9 +538,10 @@
             "scripts/ci-pr-gate.mjs"
           ],
           "check": [
-            "--check-transcript"
+            "--check-transcript",
+            "<value>"
           ],
-          "why": "the transcript, not the exit code, is the authority"
+          "why": "the transcript, not the exit code, is the authority (one VALUE slot: the transcript path; no extra flag)"
         }
       ]
     },
@@ -517,7 +567,9 @@
             "--layer",
             "ci-census",
             "--list-file",
-            "tests/checks/eb3-host-security-suites.txt"
+            "tests/checks/eb3-host-security-suites.txt",
+            "--timeout",
+            "20000"
           ],
           "why": "the security controls that need the pinned host, token-graded"
         },
@@ -531,8 +583,16 @@
             "--full",
             "--only",
             "census",
+            "--census-execution",
+            "plan",
             "--census-captures",
-            "--census-test-timeout"
+            "2",
+            "--census-test-timeout",
+            "90000",
+            "--store-dir",
+            "<value>",
+            "--transcript-dir",
+            "<value>"
           ],
           "forbid": [
             "--allow-refused",
@@ -552,9 +612,10 @@
             "scripts/ci-pr-gate.mjs"
           ],
           "check": [
-            "--check-transcript"
+            "--check-transcript",
+            "<value>"
           ],
-          "why": "second reader, same rule as ci-product"
+          "why": "second reader, same rule as ci-product (one VALUE slot: the transcript path)"
         }
       ]
     }

@@ -23,7 +23,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -39,6 +39,8 @@ import {
   loadTimings,
   makeIdentity,
   planDigest,
+  populationBaselineOf,
+  checkPopulationBaseline,
   verifyPlan,
 } from './census-plan.mjs'
 import { rootOf } from './tinf-timing.mjs'
@@ -677,4 +679,67 @@ test('cli: --self-test stays green', () => {
   const r = cli(['--self-test'])
   assert.equal(r.status, 0, r.out)
   assert.match(r.stdout, /DSH-CENSUS-PLAN-SELFTEST PASS/)
+})
+
+// ── F-02: the plan carries the POPULATION, not only a count ───────────────────────────────────────
+
+test('F-02: each plan root carries a sorted file list, its count and a recomputable digest', () => {
+  const roots = deriveRoots()
+  assert.equal(roots.ok, true)
+  assert.equal(roots.file_count, 705)
+  for (const r of roots.roots) {
+    assert.equal(r.files_expected.length, r.file_count)
+    assert.equal(r.files, r.file_count)
+    assert.deepEqual(r.files_expected, [...r.files_expected].sort())
+    const plan = buildPlan({ roots: [r], captures: 1, identity: IDENTITY() })
+    assert.equal(plan.roots[0].file_digest, r.file_digest)
+    assert.equal(plan.roots[0].files_expected.length, r.file_count)
+    assert.equal(plan.file_count, r.file_count)
+  }
+})
+
+test('F-02: the plan digest moves when a file is swapped at the same count', () => {
+  const identity = IDENTITY()
+  const a = buildPlan({ roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts', 'test/b.test.ts'] }], captures: 1, identity })
+  const b = buildPlan({ roots: [{ root: 'packages/a', files_expected: ['test/a.test.ts', 'test/c.test.ts'] }], captures: 1, identity })
+  assert.equal(a.roots[0].files, b.roots[0].files)
+  assert.notEqual(a.identity.plan_digest, b.identity.plan_digest, 'the population is part of the plan identity')
+})
+
+test('F-02: the population baseline refuses a loss or an equal-count swap, and accepts growth', () => {
+  const rootsOf = (files) => buildPlan({ roots: [{ root: 'packages/a', files_expected: files }], captures: 1, identity: IDENTITY() }).roots
+  const base = populationBaselineOf(rootsOf(['test/a.test.ts', 'test/b.test.ts']), { acceptedReason: 'fixture', acceptedBy: 'fixture', catalogDigest: 'sha256:' + 'f'.repeat(64) })
+  assert.equal(base.file_count, 2)
+  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts']), baseline: base }).code, 'POPULATION_SHRANK')
+  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/other.test.ts']), baseline: base }).code, 'POPULATION_SHRANK')
+  const grown = checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base })
+  assert.equal(grown.ok, true)
+  assert.equal(grown.grew, true)
+  assert.deepEqual(grown.added, ['packages/a/test/c.test.ts'])
+  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts', 'test/b.test.ts', 'test/c.test.ts']), baseline: base }).code, undefined)
+  assert.equal(checkPopulationBaseline({ roots: rootsOf(['test/a.test.ts']), baseline: null }).code, 'POPULATION_BASELINE_MISSING')
+})
+
+test('F-02 CLI: --write-population-baseline writes a reviewed artifact and a token, not stdout JSON', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'census-population-'))
+  try {
+    const out = join(dir, 'baseline.json')
+    // Regeneration without a reason is refused: the reason is the review act.
+    const noReason = cli(['--write-population-baseline', '--out', out])
+    assert.equal(noReason.status, 2, noReason.out)
+    assert.match(noReason.stderr, /POPULATION_BASELINE_REASON_MISSING/)
+    const r = cli(['--write-population-baseline', '--accept-population-change', 'test: population unchanged; record review metadata', '--accepted-by', 'test-owner', '--out', out])
+    assert.equal(r.status, 0, r.out)
+    assert.match(r.stdout, /DSH-CENSUS-POPULATION-BASELINE written=ok roots=11 files=705/)
+    const body = JSON.parse(readFileSync(out, 'utf8'))
+    assert.equal(body.schema, 'census-population-baseline/1')
+    assert.equal(body.rows.length, 11)
+    assert.equal(body.file_count, 705)
+    assert.equal(body.accepted_reason, 'test: population unchanged; record review metadata')
+    assert.equal(body.accepted_by, 'test-owner')
+    assert.match(body.generated_at, /^\d{4}-\d{2}-\d{2}T/)
+    assert.match(body.catalog_digest, /^sha256:[0-9a-f]{64}$/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })
