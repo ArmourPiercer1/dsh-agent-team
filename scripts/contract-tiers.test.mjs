@@ -451,3 +451,27 @@ test('F-03: a real run leg with NO workflow step is rejected by the eb3 step bin
   assert.equal(got.sources.contract_runs_rejected.length, 1)
   assert.match(got.sources.contract_runs_rejected[0].why, /CI_LAYER_LEG_MISSING/)
 })
+
+// Review of #776, P2: the per-test quantifier `∀ required tier ∀ bound test: runs in it` is TRUE
+// over an empty binding, so a contract declaring required_tiers but binding no test file reported
+// `met` (the base reported `unmet`). test-catalog's CONTRACT_WITHOUT_TEST also refuses that shape,
+// but a coverage checker must not depend on another gate to keep its own quantifier non-vacuous.
+test('F-03: a contract with required_tiers but zero bound tests is UNMET, not vacuously met', () => {
+  const result = evaluateContracts({
+    contracts: [
+      { id: 'EMPTY-01', required_tiers: ['L1'], test_refs: [] },
+      { id: 'BOUND-01', required_tiers: ['L1'], test_refs: ['packages/a/test/a.test.ts'] },
+    ],
+    tiers: new Map([['packages/a/test/a.test.ts', new Set(['L1'])]]),
+    exceptions: [],
+    today: '2026-11-15',
+  })
+  const byId = new Map(result.contracts.map((r) => [r.contract_id, r]))
+  assert.equal(byId.get('EMPTY-01').status, 'unmet')
+  assert.deepEqual(byId.get('EMPTY-01').unmet.map((u) => u.tier), ['L1'])
+  assert.equal(byId.get('BOUND-01').status, 'met', 'a properly bound contract must stay met')
+  assert.ok(
+    result.findings.some((f) => f.code === 'CONTRACT_TESTS_EMPTY' && f.contract === 'EMPTY-01'),
+    'the empty binding must be named, not silently unmet',
+  )
+})
