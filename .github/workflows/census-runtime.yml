@@ -424,13 +424,39 @@ jobs:
       #       inside ten minutes beats a cancelled job, which reports NOTHING about the code.
       # The failure is also printed to stderr immediately (`[M7A] PRECONDITION <name> FAILED: …`
       # and `[M7A] SUITE FAILED: …`), so a bounded red names its cause on the first line.
+      # DISCLOSED REFUSAL, NOT continue-on-error (reviewer decision 2026-11-15, option B).
+      # Measured fact: this runner CANNOT boot the pinned host. `bin/glibc/system.node` is a
+      # gitignored native asset; `tests/world-factory/lib/host-sandbox-assets-manifest.json` pins the
+      # bytes of ONE machine's build (`provenance.measuredFrom`), a fresh clone + build of the same
+      # pinned host SHA produces different bytes, and the provisioner's only source is a local tree
+      # a hosted runner does not have. So the step may accept EXACTLY ONE outcome that is not a
+      # verification: the sandbox-asset digest refusal, named `M7A-HOST-ASSET-UNPROVISIONABLE`, with
+      # zero arms graded — and only because `M7A_ALLOW_UNPROVISIONABLE_HOST=1` is set HERE and
+      # nowhere else (default off: a local run still hard-fails). Any other failure, a refusal that
+      # arrives alongside graded arms, or a missing record fails the job. `m7a-step.json` records the
+      # verdict for the ledger step below; the memo states that the real-host slice is NOT verified
+      # on CI as of this commit. Provenance: hosted job 132898455498 (41-minute hang, cancelled L2),
+      # cold-checkout reproduction (DESTINATION_DIGEST_MISMATCH, exit 1 after 94 s).
       - name: M7-A real-host slice — one real boot, five arms (pinned host REQUIRED, never skipped)
         shell: bash
         timeout-minutes: 10
         env:
           M7A_REQUIRE_PINNED_HOST: '1'
           M7A_BOOT_TIMEOUT_MS: '600000'
+          M7A_ALLOW_UNPROVISIONABLE_HOST: '1'
+          # Recorded verbatim in m7a-step.json: a node:test child cannot see the flags the runner
+          # consumed (`--test-reporter=spec`), so the step declares its own command instead.
+          M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
         run: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
+
+      # One line per L2, always: whether the real-host capability was VERIFIED (five arms graded)
+      # or DISCLOSED-REFUSED BY NAME on this runner. Strict reader: a missing `m7a-step.json` is a
+      # failure, a VERIFIED record needs graded arms, and the refusal needs the one accepted reason.
+      # Prints `M7A-STEP-LEDGER verdict=… reason=… …` on stdout.
+      - name: M7-A step ledger — VERIFIED or DISCLOSED-REFUSAL, in one greppable line
+        shell: bash
+        if: always()
+        run: node scripts/m7a-step-ledger.mjs
 
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the
@@ -460,6 +486,7 @@ jobs:
             ${{ runner.temp }}/census-run.txt
             ${{ runner.temp }}/census-transcripts/
             ${{ runner.temp }}/census-transcripts/tinf-timing.tsv
+            ${{ github.workspace }}/.artifacts/tmp/m7a-real-slice/m7a-step.json
           if-no-files-found: warn
 
       - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)

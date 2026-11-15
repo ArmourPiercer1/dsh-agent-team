@@ -47,7 +47,7 @@
  */
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
@@ -61,7 +61,17 @@ import {
   runTurn,
   startRealRun,
 } from './lib/m7a-real-run.mjs'
-import { testUseTree } from '../paths.mjs'
+import {
+  ALLOW_UNPROVISIONABLE_ENV,
+  UNPROVISIONABLE_TOKEN,
+  allowUnprovisionableHost,
+  decideStepOutcome,
+  formatStepLine,
+  stepArgv,
+  stepRecordPath,
+  writeStepRecord,
+} from './lib/m7a-step-verdict.mjs'
+import { TEST_USE_BASELINE_SHA, testUseTree } from '../paths.mjs'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -114,7 +124,11 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
    * skipped.
    */
   let world = null
+  let report = null
   let tornDown = null
+  // A record from an earlier local run must never be read as this run's outcome:
+  // absent record = ambiguous = the ledger fails, which is the honest default.
+  rmSync(stepRecordPath(REPO_ROOT), { force: true })
   const teardownWorld = async (why) => {
     if (world === null) return
     const startedAt = Date.now()
@@ -295,7 +309,7 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
     const run = await step('host-start', () => startRealRun({ world, tmpDir, script, bootTimeoutMs: BOOT_TIMEOUT_MS }))
     const bootMs = Date.now() - bootStartedAt
     const observer = await step('witness-arm', () => createWorldObserver({ home: world.home, watchDir }))
-    const report = {
+    report = {
       world: world.id,
       port: run.port,
       sessionIds: [],
@@ -499,13 +513,61 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
     assert.equal(report.stableAfter.status, stableBefore.status, 'the stable :3080 instance status is unchanged')
     assert.equal(report.teardown.homeDeleted, world.home, 'the World home was deleted through its ownership marker')
     t.diagnostic(`M7A-EVIDENCE ${join(evidenceDir, 'm7a-run-report.json')}`)
+    // The record is written only AFTER every assertion above has passed: a file that says VERIFIED
+    // must never outlive a failure that happened later in the same body.
+    const verified = decideStepOutcome({ error: null, armCount: report.arms.length })
+    const recordFile = writeStepRecord(stepRecordPath(REPO_ROOT), {
+      schema: 'm7a-step/1',
+      ...verified,
+      armVerdicts: report.arms.map((arm) => ({ arm: arm.arm, verdict: arm.verdict, expectation: arm.expectation })),
+      hostSha: TEST_USE_BASELINE_SHA,
+      hostTree: HOST_TREE,
+      ...stepArgv(),
+      utc: new Date().toISOString(),
+      node: process.version,
+      allowUnprovisionable: allowUnprovisionableHost(),
+      wallMs: report.wallMs,
+    })
+    console.error(formatStepLine(verified))
+    t.diagnostic(formatStepLine(verified))
+    t.diagnostic(`M7A-STEP-RECORD ${recordFile}`)
   } catch (error) {
     // Printed IMMEDIATELY, not left to the reporter: a hang never reaches the
     // reporter's failure summary, and the hosted run's 41 minutes of silence is
     // exactly what that cost. This line is the failure, on stderr, now.
     console.error('[M7A] SUITE FAILED:', error?.stack ?? error)
     t.diagnostic(`M7A-FAILED ${error?.message ?? String(error)}`)
-    throw error
+    // The ONLY acceptable non-verification (reviewer decision 2026-11-15, option B): the named
+    // sandbox-asset refusal, only when the caller opted in, and only with zero arms graded. The
+    // decision is a pure function (`m7a-step-verdict.mjs`) and every other combination throws.
+    const outcome = decideStepOutcome({
+      error,
+      allowUnprovisionable: allowUnprovisionableHost(),
+      armCount: report?.arms?.length ?? 0,
+    })
+    if (outcome.verdict !== 'DISCLOSED_REFUSAL') {
+      console.error(formatStepLine(outcome))
+      t.diagnostic(formatStepLine(outcome))
+      throw error
+    }
+    // Emit the token at the ONE place the refusal is classified, after the decision said it is
+    // acceptable — never instead of it, so a token in a log always means "accepted, and why".
+    console.error(UNPROVISIONABLE_TOKEN)
+    const recordFile = writeStepRecord(stepRecordPath(REPO_ROOT), {
+      schema: 'm7a-step/1',
+      ...outcome,
+      armVerdicts: [],
+      hostSha: TEST_USE_BASELINE_SHA,
+      hostTree: HOST_TREE,
+      ...stepArgv(),
+      utc: new Date().toISOString(),
+      node: process.version,
+      allowUnprovisionable: allowUnprovisionableHost(),
+      allowEnv: ALLOW_UNPROVISIONABLE_ENV,
+    })
+    console.error(formatStepLine(outcome))
+    t.diagnostic(formatStepLine(outcome))
+    t.diagnostic(`M7A-STEP-RECORD ${recordFile}`)
   }
 })
 

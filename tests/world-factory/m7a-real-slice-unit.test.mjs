@@ -23,6 +23,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import test from 'node:test'
+import { spawnSync } from 'node:child_process'
 import { createServer } from 'node:http'
 import { zstdCompressSync } from 'node:zlib'
 import { register } from 'node:module'
@@ -32,6 +33,14 @@ import {
   startRealRun,
   traceEventsFromSessionRows,
 } from './lib/m7a-real-run.mjs'
+import {
+  ALLOW_UNPROVISIONABLE_ENV,
+  UNPROVISIONABLE_TOKEN,
+  classifyHostAssetRefusal,
+  decideStepOutcome,
+  formatLedgerLine,
+  formatStepLine,
+} from './lib/m7a-step-verdict.mjs'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const REPO_ROOT = resolve(HERE, '..', '..')
@@ -350,4 +359,86 @@ test('M7A-U11 a host-start failure closes the mock provider it already started',
   assert.ok(calls.stopHost >= 1, 'the host stop was attempted on the failure path')
   assert.ok(calls.stopMock >= 1, 'the mock provider was stopped on the failure path')
   assert.equal(server.listening, false, 'the mock provider is CLOSED — it cannot hold the event loop after a failed start')
+})
+
+// ── M7A-U12: the disclosed-refusal gate accepts ONE outcome and nothing else ───
+//
+// Reviewer decision 2026-11-15 (option B): a permanently red Required leg is not shippable, and
+// `continue-on-error` would let ANY failure pass. The gate must accept exactly one named refusal.
+// These are the negative controls: without them the token is a hole, because anything that reaches
+// the catch could be relabelled "unprovisionable" and the job would go green.
+const assetRefusalError = new Error(
+  'host base guard: sandbox pre-flight refused before the first host start: host-sandbox-assets: ' +
+    'DESTINATION_DIGEST_MISMATCH: bin/glibc/system.node in /srv/host/tests/deepseek-harness-test-use ' +
+    `hashes ${'a'.repeat(64)}, the pinned manifest says ${'b'.repeat(64)} — the runner never overwrites ` +
+    'bytes it did not create',
+)
+
+test('M7A-U12 the refusal gate: the ONE accepted outcome is a named asset refusal with zero arms', () => {
+  const refused = decideStepOutcome({ error: assetRefusalError, allowUnprovisionable: true, armCount: 0 })
+  assert.equal(refused.verdict, 'DISCLOSED_REFUSAL')
+  assert.equal(refused.reason, 'HOST_ASSET_UNPROVISIONABLE')
+  assert.equal(refused.actualSha256, 'a'.repeat(64))
+  assert.equal(refused.expectedSha256, 'b'.repeat(64))
+  assert.equal(classifyHostAssetRefusal(assetRefusalError).token, UNPROVISIONABLE_TOKEN)
+  assert.match(formatStepLine(refused), /^M7A-STEP verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE arms=0 detail=bin\/glibc\/system\.node /u)
+})
+
+test('M7A-U12a NOTHING ELSE IS ACCEPTED: no opt-in, another failure, a refusal with arms, and a green run with no arms all FAIL', () => {
+  // 1. the same refusal without the opt-in (the local default) is a failure
+  assert.deepEqual(
+    (({ verdict, reason }) => ({ verdict, reason }))(decideStepOutcome({ error: assetRefusalError, allowUnprovisionable: false, armCount: 0 })),
+    { verdict: 'FAILED', reason: 'UNPROVISIONABLE_HOST_NOT_ALLOWED' },
+  )
+  // 2. any other failure — even with the opt-in — is a failure (the token cannot launder it)
+  const other = new Error('instance boot failed: process exited (code=0 signal=none)')
+  assert.deepEqual(
+    (({ verdict, reason }) => ({ verdict, reason }))(decideStepOutcome({ error: other, allowUnprovisionable: true, armCount: 0 })),
+    { verdict: 'FAILED', reason: 'REFUSAL_NOT_ACCEPTED' },
+  )
+  //    …including a sandbox-asset failure that is a DIFFERENT code (SOURCE_IS_DESTINATION)
+  const sibling = new Error('host-sandbox-assets: SOURCE_IS_DESTINATION: the source tree is the runtime tree')
+  assert.equal(decideStepOutcome({ error: sibling, allowUnprovisionable: true, armCount: 0 }).verdict, 'FAILED')
+  // 3. a refusal PLUS arm output is a contradiction, and a contradiction is a failure
+  assert.deepEqual(
+    (({ verdict, reason }) => ({ verdict, reason }))(decideStepOutcome({ error: assetRefusalError, allowUnprovisionable: true, armCount: 3 })),
+    { verdict: 'FAILED', reason: 'REFUSAL_WITH_ARM_OUTPUT' },
+  )
+  // 4. a green run that graded nothing is not a verification
+  assert.deepEqual(
+    (({ verdict, reason }) => ({ verdict, reason }))(decideStepOutcome({ error: null, allowUnprovisionable: true, armCount: 0 })),
+    { verdict: 'FAILED', reason: 'NO_ARMS_GRADED' },
+  )
+  // and the honest green run is VERIFIED
+  assert.equal(decideStepOutcome({ error: null, allowUnprovisionable: true, armCount: 5 }).verdict, 'VERIFIED')
+})
+
+test('M7A-U12b the opt-in is an explicit 1: unset, 0, true and yes all keep the hard failure', async () => {
+  const { allowUnprovisionableHost } = await import('./lib/m7a-step-verdict.mjs')
+  assert.equal(allowUnprovisionableHost({}), false)
+  assert.equal(allowUnprovisionableHost({ [ALLOW_UNPROVISIONABLE_ENV]: '0' }), false)
+  assert.equal(allowUnprovisionableHost({ [ALLOW_UNPROVISIONABLE_ENV]: 'true' }), false)
+  assert.equal(allowUnprovisionableHost({ [ALLOW_UNPROVISIONABLE_ENV]: 'yes' }), false)
+  assert.equal(allowUnprovisionableHost({ [ALLOW_UNPROVISIONABLE_ENV]: '1' }), true)
+})
+
+test('M7A-U12c the ledger line names the verdict, both ways, and a missing/invalid record is a failure', () => {
+  assert.match(
+    formatLedgerLine({ verdict: 'VERIFIED', arms: 5, hostSha: '639ed01539', utc: 'T' }),
+    /^M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=639ed01539 utc=T$/u,
+  )
+  assert.match(
+    formatLedgerLine({ verdict: 'DISCLOSED_REFUSAL', reason: 'HOST_ASSET_UNPROVISIONABLE', asset: 'bin/glibc/system.node', actualSha256: 'a', expectedSha256: 'b', hostSha: '639ed01539', utc: 'T' }),
+    /^M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=bin\/glibc\/system\.node actual=a pinned=b host=639ed01539 utc=T$/u,
+  )
+  // The reader is the last line of defence: a missing record and an invalid record must BOTH fail.
+  const emptyDir = tmp('ledger-missing')
+  const missing = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'm7a-step-ledger.mjs'), join(emptyDir, 'nope.json')], { encoding: 'utf8' })
+  assert.equal(missing.status, 1)
+  assert.match(missing.stderr, /M7A-STEP-LEDGER verdict=MISSING reason=NO_RECORD/u)
+  const invalidFile = join(emptyDir, 'invalid.json')
+  writeFileSync(invalidFile, JSON.stringify({ schema: 'm7a-step/1', verdict: 'VERIFIED', reason: 'ARMS_GRADED', arms: 0 }))
+  const invalid = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'm7a-step-ledger.mjs'), invalidFile], { encoding: 'utf8' })
+  assert.equal(invalid.status, 1)
+  assert.match(invalid.stderr, /M7A-STEP-LEDGER verdict=INVALID reason=NO_ARMS/u)
 })

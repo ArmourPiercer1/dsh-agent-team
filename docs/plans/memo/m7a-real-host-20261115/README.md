@@ -451,9 +451,46 @@ that the cold-checkout chain produces exactly this refusal, at the same point in
 - the step carries `timeout-minutes: 10`, so even a total regression is a bounded red instead of a
   cancelled job.
 
+**2026-11-15, reviewer decision: option B — a NAMED DISCLOSED REFUSAL, not
+`continue-on-error`.** The conclusion above makes the step permanently red on the Required path,
+which is not shippable, and `continue-on-error` would bless ANY failure. The gate now accepts
+exactly one outcome that is not a verification:
+
+- `M7A_ALLOW_UNPROVISIONABLE_HOST` — **default off**; a local run still hard-fails. Set to `1` only
+  in the census step, with the cause and the date in the workflow comment.
+- the suite classifies the throw in ONE place (`tests/world-factory/lib/m7a-step-verdict.mjs`) and
+  accepts it only when it is *exactly* `host-sandbox-assets: DESTINATION_DIGEST_MISMATCH`, the
+  opt-in is on, **and zero arms were graded**. It then emits `M7A-HOST-ASSET-UNPROVISIONABLE`,
+  prints `M7A-STEP verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE detail=…`, writes
+  `.artifacts/tmp/m7a-real-slice/m7a-step.json` (verdict, reason, asset, the sha256 pair, the host
+  SHA, the argv, the UTC time), and exits 0.
+- **everything else fails the job**: no opt-in, any other precondition failure (including the
+  sibling sandbox-asset codes `SOURCE_IS_DESTINATION` / `SOURCE_TREE_MISSING`), a refusal that
+  arrives alongside graded arms, a green run that graded no arms, and a missing/unreadable
+  `m7a-step.json`. The four failure shapes are pinned by `M7A-U12a`/`U12b`/`U12c` (pure decision
+  table + the real ledger script as a child process); the end-to-end controls are the cold-checkout
+  run with the flag on (exit 0, disclosed) and with the flag off (exit 1).
+- a following step in the same job (`node scripts/m7a-step-ledger.mjs`, `if: always()`) prints ONE
+  greppable line, `M7A-STEP-LEDGER verdict=… reason=… …`, so every L2 states whether the real-host
+  capability was verified or disclosed-refused on that runner; the record is uploaded with the
+  transcripts.
+
+**AS OF THIS COMMIT THE REAL-HOST SLICE IS *NOT* VERIFIED ON THE HOSTED RUNNER.** It is verified
+locally — five arms, A1 SATISFIED / A2 VIOLATED / A3 INCONCLUSIVE / A4 INSTRUMENT_ERROR / A5
+SATISFIED, 80.7 s, `pass 1 fail 0` — and on no CI machine. The cause is a provisioning defect, not
+a property of the slice: the sandbox-asset manifest pins native bytes from one machine's build, and
+nothing in the hosted job can reproduce or fetch them. What it would take to make it verify in CI,
+in increasing order of cost: (a) derive the manifest on the runner (build, measure, write the
+manifest in-job — turns the pin into a self-consistency check and gives up the "the pinned host is
+the reviewed host" property), (b) publish the assets (a release artifact the job downloads, so the
+pin keeps its meaning), or (c) provision from a local tree in a self-hosted job. Until one of those
+lands, **a green L2 means "C1 ran, C2 disclosed-refused by name" — it does NOT mean the safety chain
+runs in CI**, and the ledger line is where that distinction is visible.
+
 Pinned host-free by C1: `M7A-U11` (a fake World whose `startHost` throws after `startMock`, asserting
-the server is CLOSED, not merely stopped) and the third host-state case (a fake host tree + a `git`
-shim, boot timeout 2 s: the suite must exit by itself, name `host-start`, and print `SUITE FAILED`).
+the server is CLOSED, not merely stopped), `M7A-U12/U12a/U12b/U12c` (the disclosed-refusal gate and its
+four negative controls), and the third host-state case (a fake host tree + a `git` shim, boot timeout
+2 s: the suite must exit by itself, name `host-start`, and print `SUITE FAILED`).
 
 **Three-state contract** (the `a5sf-fs-contract` idiom, kept for local runs and for a host-free
 checkout): complete host → the arms run; absent → one machine-readable
@@ -618,6 +655,12 @@ node scripts/dispatch-tests.mjs --run --leg tinf-instruments
 #     tests/world-factory/m7a-real-slice.test.mjs
 # It must print `[M7A] PRECONDITION host-start FAILED: … DESTINATION_DIGEST_MISMATCH …` and EXIT.
 # Wrap it in `timeout 900` and the bound is real: before the fix this same command was killed.
+# With the census step's own env (M7A_ALLOW_UNPROVISIONABLE_HOST=1) the same run exits 0 and prints
+# `M7A-STEP verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE …`, writing
+# `.artifacts/tmp/m7a-real-slice/m7a-step.json`; the ledger then prints one line:
+#   node scripts/m7a-step-ledger.mjs
+#   → M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=… actual=… pinned=… host=… utc=…
+# and on a host it CAN boot: `M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=… utc=…`.
 
 # C2 — the same argv ci-census runs, with the pin required so a missing
 # host cannot become a skip (one boot, five arms, ~2m15s)

@@ -68,16 +68,8 @@ test('M7-A real-host suite: M7A_REQUIRE_PINNED_HOST=1 makes the same absence a h
   assert.match(output, /M7A-REAL-SLICE-HOST-INCOMPLETE/u)
 })
 
-test('M7-A real-host suite: a host-start failure EXITS, names the precondition, and does not hang', () => {
-  // MEASURED on the hosted runner (job 132898455498): the suite failed 166 ms in and the step
-  // then sat for 41 minutes, because the in-process mock provider it had already started kept
-  // the event loop alive and the reporter never reached its failure summary. The contract this
-  // case pins is the one that matters at the job level: a failing suite finishes failing.
-  //
-  // The host tree is HOST-FREE by construction: a fake `bin.js` that exits at once, and a
-  // `git` on PATH that answers the pin checks so the suite reaches `startHost`. That is the
-  // exact sequence that hung — mock provider listening, Host start failing — and the boot
-  // timeout is 2 s so the failure is fast and deterministic.
+/** A host tree that LOOKS provisioned but cannot boot: fake `bin.js`, `git` that answers the pin checks. */
+function makeFakeHost() {
   const fakeHost = mkdtempSync(join(tmpdir(), 'm7a-fake-host-'))
   const fakeBin = join(fakeHost, 'shims')
   mkdirSync(join(fakeHost, 'apps', 'cli', 'lib'), { recursive: true })
@@ -89,6 +81,20 @@ test('M7-A real-host suite: a host-start failure EXITS, names the precondition, 
     `#!/bin/sh\ncase "$*" in\n  *rev-parse*) echo ${TEST_USE_BASELINE_SHA} ;;\n  *status*) exit 0 ;;\n  *) exec ${realGit} "$@" ;;\nesac\n`,
     { mode: 0o755 },
   )
+  return { fakeHost, fakeBin }
+}
+
+test('M7-A real-host suite: a host-start failure EXITS, names the precondition, and does not hang', () => {
+  // MEASURED on the hosted runner (job 132898455498): the suite failed 166 ms in and the step
+  // then sat for 41 minutes, because the in-process mock provider it had already started kept
+  // the event loop alive and the reporter never reached its failure summary. The contract this
+  // case pins is the one that matters at the job level: a failing suite finishes failing.
+  //
+  // The host tree is HOST-FREE by construction: a fake `bin.js` that exits at once, and a
+  // `git` on PATH that answers the pin checks so the suite reaches `startHost`. That is the
+  // exact sequence that hung — mock provider listening, Host start failing — and the boot
+  // timeout is 2 s so the failure is fast and deterministic.
+  const { fakeHost, fakeBin } = makeFakeHost()
   try {
     const startedAt = Date.now()
     const { status, output } = runSuite({
@@ -105,6 +111,29 @@ test('M7-A real-host suite: a host-start failure EXITS, names the precondition, 
     assert.match(output, /M7A-PRECONDITION host-start FAILED/u)
     assert.match(output, /\[M7A\] SUITE FAILED:/u)
     assert.match(output, /teardown \(t\.after\)|teardown \(body-finally\)/u)
+  } finally {
+    rmSync(fakeHost, { recursive: true, force: true })
+  }
+})
+
+test('M7-A real-host suite: the disclosure opt-in does NOT launder a different failure (the token is not a hole)', () => {
+  // The one accepted non-verification is a NAMED sandbox-asset refusal. A boot failure is not one,
+  // so even with M7A_ALLOW_UNPROVISIONABLE_HOST=1 the step must fail — otherwise the token would
+  // be a blanket "pass on any error", which is exactly why continue-on-error was rejected.
+  const { fakeHost, fakeBin } = makeFakeHost()
+  try {
+    const { status, output } = runSuite({
+      M7A_HOST_TREE: fakeHost,
+      M7A_REQUIRE_PINNED_HOST: '1',
+      M7A_BOOT_TIMEOUT_MS: '2000',
+      M7A_ALLOW_UNPROVISIONABLE_HOST: '1',
+      PATH: `${fakeBin}:${process.env.PATH ?? ''}`,
+    }, 240_000)
+    assert.notEqual(status, null, `the suite must exit on its own; output:\n${output}`)
+    assert.notEqual(status, 0)
+    assert.match(output, /M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED/u)
+    assert.doesNotMatch(output, /M7A-HOST-ASSET-UNPROVISIONABLE/u)
+    assert.doesNotMatch(output, /verdict=DISCLOSED_REFUSAL/u)
   } finally {
     rmSync(fakeHost, { recursive: true, force: true })
   }
