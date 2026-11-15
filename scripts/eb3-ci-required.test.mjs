@@ -19,7 +19,7 @@ import test from 'node:test'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-import { checkRequiredJobs, checkStepArgvDeclaration, checkTrailing, loadManifest, workflowFiles } from './eb3-ci-required.mjs'
+import { checkRequiredJobs, checkTrailing, loadManifest, workflowFiles } from './eb3-ci-required.mjs'
 
 const SCRIPT = fileURLToPath(new URL('./eb3-ci-required.mjs', import.meta.url))
 
