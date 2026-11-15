@@ -63,12 +63,14 @@ import {
 } from './lib/m7a-real-run.mjs'
 import {
   ALLOW_UNPROVISIONABLE_ENV,
+  EXPECTED_ARM_VERDICTS,
   UNPROVISIONABLE_TOKEN,
   allowUnprovisionableHost,
   decideStepOutcome,
   formatStepLine,
+  resetStepRecord,
   stepArgv,
-  stepRecordPath,
+  stepRunId,
   writeStepRecord,
 } from './lib/m7a-step-verdict.mjs'
 import { TEST_USE_BASELINE_SHA, testUseTree } from '../paths.mjs'
@@ -85,6 +87,14 @@ const REQUIRE_HOST = process.env.M7A_REQUIRE_PINNED_HOST === '1'
 // rather than grading it). The default is the locally measured value.
 const BOOT_TIMEOUT_MS = Number(process.env.M7A_BOOT_TIMEOUT_MS ?? 180_000)
 const EVIDENCE_ROOT = join(REPO_ROOT, '.artifacts', 'tmp', 'm7a-real-slice')
+// AT MODULE SCOPE, BEFORE ANY TEST CAN RETURN. The hosted failure mode is a run that never reaches
+// the test body (absent host + M7A_REQUIRE_PINNED_HOST=1): a `VERIFIED` record left from an earlier
+// run would then be blessed by the ledger, which is exactly the stale-blessing the reviewer proved
+// (seeded record + empty host -> suite red, ledger `verdict=VERIFIED` exit 0). Deleting it here
+// means a run that never writes one leaves `verdict=MISSING`, and the record carries a run id so a
+// foreign record is `STALE` even if the deletion is bypassed.
+const STEP_RECORD = resetStepRecord(REPO_ROOT)
+const STEP_RUN_ID = stepRunId()
 const sha256 = (text) => createHash('sha256').update(text).digest('hex')
 
 if (!HOST_PRESENT && !REQUIRE_HOST) {
@@ -126,9 +136,6 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
   let world = null
   let report = null
   let tornDown = null
-  // A record from an earlier local run must never be read as this run's outcome:
-  // absent record = ambiguous = the ledger fails, which is the honest default.
-  rmSync(stepRecordPath(REPO_ROOT), { force: true })
   const teardownWorld = async (why) => {
     if (world === null) return
     const startedAt = Date.now()
@@ -263,6 +270,14 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
         ],
       },
     ]
+    // The ledger grades `VERIFIED` against EXPECTED_ARM_VERDICTS; if these two ever disagree the
+    // gate would refuse a genuinely green run (or bless a changed one), so it fails HERE instead.
+    assert.deepEqual(
+      arms.map((arm) => ({ arm: arm.tag, verdict: arm.expectation })),
+      [...EXPECTED_ARM_VERDICTS],
+      'the arms this run grades must be the arms the ledger expects',
+    )
+
     const fileOf = (step) => (step.file.startsWith('@watch/') ? join(watchDir, step.file.slice('@watch/'.length)) : step.file)
 
     const argsOf = (step) => step.args ?? { file_path: fileOf(step), content: step.content }
@@ -516,9 +531,10 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
     // The record is written only AFTER every assertion above has passed: a file that says VERIFIED
     // must never outlive a failure that happened later in the same body.
     const verified = decideStepOutcome({ error: null, armCount: report.arms.length })
-    const recordFile = writeStepRecord(stepRecordPath(REPO_ROOT), {
+    const recordFile = writeStepRecord(STEP_RECORD, {
       schema: 'm7a-step/1',
       ...verified,
+      runId: STEP_RUN_ID,
       armVerdicts: report.arms.map((arm) => ({ arm: arm.arm, verdict: arm.verdict, expectation: arm.expectation })),
       hostSha: TEST_USE_BASELINE_SHA,
       hostTree: HOST_TREE,
@@ -553,9 +569,10 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
     // Emit the token at the ONE place the refusal is classified, after the decision said it is
     // acceptable — never instead of it, so a token in a log always means "accepted, and why".
     console.error(UNPROVISIONABLE_TOKEN)
-    const recordFile = writeStepRecord(stepRecordPath(REPO_ROOT), {
+    const recordFile = writeStepRecord(STEP_RECORD, {
       schema: 'm7a-step/1',
       ...outcome,
+      runId: STEP_RUN_ID,
       armVerdicts: [],
       hostSha: TEST_USE_BASELINE_SHA,
       hostTree: HOST_TREE,

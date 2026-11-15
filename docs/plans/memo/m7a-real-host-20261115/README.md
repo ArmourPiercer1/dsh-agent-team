@@ -475,6 +475,38 @@ exactly one outcome that is not a verification:
   capability was verified or disclosed-refused on that runner; the record is uploaded with the
   transcripts.
 
+**The reader had to become a gate, in round 4.** Three defects, each proved before it was fixed:
+
+1. **A failing run could leave a stale `VERIFIED` record and the ledger blessed it.** The record was
+   deleted inside the test body, after the host-presence precondition, so a run that never reached
+   the body (empty `M7A_HOST_TREE` + `M7A_REQUIRE_PINNED_HOST=1` → exit 1 `M7A-REAL-SLICE-HOST-INCOMPLETE`)
+   left the seeded record untouched and the ledger printed `verdict=VERIFIED arms=5`, exit 0. The
+   memo's "absent record = ambiguous" was therefore false in exactly the case that matters. Fixed:
+   `resetStepRecord()` runs at **module scope**, before any test can return; the record carries a
+   `runId` (`M7A_STEP_RUN_ID`, `<run_id>-<run_attempt>` in CI, random locally), so a foreign record
+   is `STALE` even if the deletion is bypassed.
+2. **The ledger re-printed instead of re-checking.** `{verdict:"VERIFIED", arms:5}` with no
+   `armVerdicts`, a renamed arm, a reconstructed argv, or a refusal with `arms:3` all passed. Fixed:
+   `validateStepRecord()` independently requires the exact schema, the run id, the host sha, the
+   DECLARED argv (`argvSource` must be `M7A_STEP_ARGV` and, when the step declares it, match it
+   token for token), `arms === 5` **with each arm's expected verdict** for `VERIFIED`, and
+   `arms === 0` + a real differing sha256 pair for the refusal. Anything else is `INVALID`/`STALE`
+   + exit 1.
+3. **One fixed record path shared across processes.** Three C1 `m7a-real-slice-host-state` children
+   running the live suite concurrently deleted the C2 record (observed: C2 green, then
+   `verdict=MISSING`). Fixed: `M7A_STEP_RECORD` / `M7A_STEP_RECORD_DIR` select the path, and every
+   C1 child gets its own directory, so C1 cannot touch the step's record at all. Running the control
+   (C1 and C2 at the same time) then exposed a SECOND collision the record fix does not cover: the
+   World name is `u5<line>-<UTC>` with one-second resolution, so a C1 child and the live C2 created
+   in the same second refused each other (`world-create FAILED: world home path already exists`).
+   Fixed in `TestWorldFactory.createWorld` by moving the stamp forward a second at a time (bounded,
+   still inside the §7 name grammar — a suffix would violate it).
+
+One more hole closed in the same round, because the declaration is a second copy of one command:
+`eb3-ci-required` now carries `CI_LAYER_STEP_ARGV_DESYNC` — a step that declares
+`env.M7A_STEP_ARGV` must declare exactly the leg the manifest grades, so a one-sided edit of either
+copy is a red gate instead of a silent divergence.
+
 **AS OF THIS COMMIT THE REAL-HOST SLICE IS *NOT* VERIFIED ON THE HOSTED RUNNER.** It is verified
 locally — five arms, A1 SATISFIED / A2 VIOLATED / A3 INCONCLUSIVE / A4 INSTRUMENT_ERROR / A5
 SATISFIED, 80.7 s, `pass 1 fail 0` — and on no CI machine. The cause is a provisioning defect, not
@@ -658,13 +690,19 @@ node scripts/dispatch-tests.mjs --run --leg tinf-instruments
 # With the census step's own env (M7A_ALLOW_UNPROVISIONABLE_HOST=1) the same run exits 0 and prints
 # `M7A-STEP verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE …`, writing
 # `.artifacts/tmp/m7a-real-slice/m7a-step.json`; the ledger then prints one line:
-#   node scripts/m7a-step-ledger.mjs
-#   → M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=… actual=… pinned=… host=… utc=…
+#   M7A_STEP_RUN_ID=<run id> M7A_STEP_ARGV='node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs' \
+#     node scripts/m7a-step-ledger.mjs
+#   → M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=… actual=… pinned=… host=… utc=… run=…
+# (the ledger re-checks the run id, the declared argv, the host sha and the arm table; a record
+#  from another run is `STALE`, a malformed one is `INVALID`, and both exit 1)
 # and on a host it CAN boot: `M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=… utc=…`.
 
 # C2 — the same argv ci-census runs, with the pin required so a missing
 # host cannot become a skip (one boot, five arms, ~2m15s)
-M7A_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=900000 --test-reporter=spec \
+M7A_REQUIRE_PINNED_HOST=1 \
+  M7A_STEP_RUN_ID="$(date +%s)" \
+  M7A_STEP_ARGV='node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs' \
+  node --test --test-force-exit --test-timeout=900000 --test-reporter=spec \
   tests/world-factory/m7a-real-slice.test.mjs
 
 # in-package tests for the new testkit surface (the existing files they joined)

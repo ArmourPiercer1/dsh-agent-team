@@ -19,12 +19,29 @@
  * four ways this could become a hole are pinned by tests instead of by prose.
  */
 
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { randomUUID } from 'node:crypto'
 import { dirname, join } from 'node:path'
 
 export const UNPROVISIONABLE_TOKEN = 'M7A-HOST-ASSET-UNPROVISIONABLE'
 export const ALLOW_UNPROVISIONABLE_ENV = 'M7A_ALLOW_UNPROVISIONABLE_HOST'
 export const STEP_RECORD_SCHEMA = 'm7a-step/1'
+export const STEP_RUN_ID_ENV = 'M7A_STEP_RUN_ID'
+export const STEP_ARGV_ENV = 'M7A_STEP_ARGV'
+export const STEP_RECORD_ENV = 'M7A_STEP_RECORD'
+export const STEP_RECORD_DIR_ENV = 'M7A_STEP_RECORD_DIR'
+
+/**
+ * The five arms and the verdict each MUST carry. The ledger grades a `VERIFIED` record against
+ * this table independently of whatever wrote it: `arms: 5` alone is a number, not a verification.
+ */
+export const EXPECTED_ARM_VERDICTS = Object.freeze([
+  { arm: 'deny-outside-workspace', verdict: 'SATISFIED' },
+  { arm: 'unauthorized-observed', verdict: 'VIOLATED' },
+  { arm: 'observation-disabled', verdict: 'INCONCLUSIVE' },
+  { arm: 'trace-only-no-witness', verdict: 'INSTRUMENT_ERROR' },
+  { arm: 'bash-reachable-and-confined', verdict: 'SATISFIED' },
+])
 
 /** The opt-in is an explicit `1`; unset, `0`, `true`, `yes` all mean "do not accept a refusal". */
 export function allowUnprovisionableHost(env = process.env) {
@@ -94,17 +111,75 @@ export function formatStepLine(outcome) {
   return parts.join(' ')
 }
 
-/** The ledger line printed by `scripts/m7a-step-ledger.mjs` after the step (same job, `always()`). */
-export function formatLedgerLine(record) {
-  if (record === null || typeof record !== 'object') return 'M7A-STEP-LEDGER verdict=INVALID reason=UNREADABLE'
+const isSha256 = (v) => typeof v === 'string' && /^[0-9a-f]{64}$/u.test(v)
+
+/**
+ * The INDEPENDENT reader used by the ledger — not a re-print.
+ *
+ * It re-checks every conjunction the writer relied on, against the environment the job declares:
+ * schema, run identity, host sha, declared argv, arm count vs verdict, and each arm's verdict
+ * against `EXPECTED_ARM_VERDICTS`. A record that fails any of these is `INVALID` (or `STALE` when it
+ * belongs to another run) and the ledger exits 1 — the record is evidence, not a claim to echo.
+ */
+export function validateStepRecord(record, { env = process.env, expectedHostSha = null } = {}) {
+  const invalid = (reason, detail = '') => ({ ok: false, code: 'INVALID', reason, detail })
+  if (record === null || typeof record !== 'object' || Array.isArray(record)) return invalid('NOT_AN_OBJECT')
+  if (record.schema !== STEP_RECORD_SCHEMA) return invalid('WRONG_SCHEMA', String(record.schema))
+
+  // Run identity: a record from another run is never this run's verdict.
+  const declaredRunId = typeof env?.[STEP_RUN_ID_ENV] === 'string' ? env[STEP_RUN_ID_ENV].trim() : ''
+  const runId = typeof record.runId === 'string' ? record.runId.trim() : ''
+  if (runId === '') return invalid('NO_RUN_ID')
+  if (declaredRunId !== '' && runId !== declaredRunId) {
+    return { ok: false, code: 'STALE', reason: 'RUN_ID_MISMATCH', detail: `record=${runId} this-run=${declaredRunId}` }
+  }
+
+  if (expectedHostSha !== null && record.hostSha !== expectedHostSha) return invalid('HOST_SHA_MISMATCH', String(record.hostSha))
+  if (typeof record.hostSha !== 'string' || record.hostSha.length < 7) return invalid('NO_HOST_SHA')
+
+  // The argv must be the DECLARED one; a reconstruction cannot be checked and is refused.
+  if (record.argvSource !== STEP_ARGV_ENV) return invalid('ARGV_NOT_DECLARED', String(record.argvSource))
+  if (!Array.isArray(record.argv) || record.argv.length === 0 || record.argv.some((t) => typeof t !== 'string')) return invalid('ARGV_MALFORMED')
+  const declaredArgv = typeof env?.[STEP_ARGV_ENV] === 'string' ? env[STEP_ARGV_ENV].trim() : ''
+  if (declaredArgv !== '' && record.argv.join(' ') !== declaredArgv) return invalid('ARGV_MISMATCH', record.argv.join(' '))
+
   if (record.verdict === 'VERIFIED') {
-    return `M7A-STEP-LEDGER verdict=VERIFIED arms=${String(record.arms ?? 0)} host=${String(record.hostSha ?? 'unknown')} utc=${String(record.utc ?? 'unknown')}`
+    if (record.reason !== 'ARMS_GRADED') return invalid('WRONG_REASON', String(record.reason))
+    if (record.arms !== EXPECTED_ARM_VERDICTS.length) return invalid('WRONG_ARM_COUNT', String(record.arms))
+    if (!Array.isArray(record.armVerdicts) || record.armVerdicts.length !== EXPECTED_ARM_VERDICTS.length) return invalid('ARM_VERDICTS_MISSING')
+    for (const [i, expected] of EXPECTED_ARM_VERDICTS.entries()) {
+      const got = record.armVerdicts[i]
+      if (got?.arm !== expected.arm) return invalid('ARM_ORDER_MISMATCH', `${String(got?.arm)} != ${expected.arm}`)
+      if (got?.verdict !== expected.verdict) return invalid('ARM_VERDICT_MISMATCH', `${expected.arm}: ${String(got?.verdict)} != ${expected.verdict}`)
+    }
+    return { ok: true, code: 'OK', verdict: 'VERIFIED', reason: 'ARMS_GRADED' }
   }
-  if (record.verdict === 'DISCLOSED_REFUSAL' && record.reason === 'HOST_ASSET_UNPROVISIONABLE') {
-    return `M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=${String(record.asset ?? 'unknown')} actual=${String(record.actualSha256 ?? 'unknown')} pinned=${String(record.expectedSha256 ?? 'unknown')} host=${String(record.hostSha ?? 'unknown')} utc=${String(record.utc ?? 'unknown')}`
+
+  if (record.verdict === 'DISCLOSED_REFUSAL') {
+    if (record.reason !== 'HOST_ASSET_UNPROVISIONABLE') return invalid('WRONG_REASON', String(record.reason))
+    if (record.arms !== 0) return invalid('REFUSAL_WITH_ARMS', String(record.arms))
+    if (Array.isArray(record.armVerdicts) && record.armVerdicts.length > 0) return invalid('REFUSAL_WITH_ARM_VERDICTS')
+    if (typeof record.asset !== 'string' || record.asset.trim() === '') return invalid('NO_ASSET')
+    if (!isSha256(record.actualSha256) || !isSha256(record.expectedSha256)) return invalid('NO_SHA_PAIR')
+    if (record.actualSha256 === record.expectedSha256) return invalid('SHA_PAIR_EQUAL')
+    return { ok: true, code: 'OK', verdict: 'DISCLOSED_REFUSAL', reason: 'HOST_ASSET_UNPROVISIONABLE' }
   }
-  return `M7A-STEP-LEDGER verdict=INVALID reason=${String(record.verdict ?? 'MISSING')}`
+
+  return invalid('UNKNOWN_VERDICT', String(record.verdict))
 }
+
+/** Read + validate a record file; the ledger's whole body. `MISSING` and `STALE` are failures too. */
+export function readStepRecord(path, options = {}) {
+  if (!existsSync(path)) return { ok: false, code: 'MISSING', reason: 'NO_RECORD', detail: path }
+  let record = null
+  try {
+    record = JSON.parse(readFileSync(path, 'utf8'))
+  } catch (error) {
+    return { ok: false, code: 'INVALID', reason: 'UNREADABLE_RECORD', detail: String(error?.message ?? error).slice(0, 200) }
+  }
+  return { ...validateStepRecord(record, options), record }
+}
+
 
 /**
  * The argv that actually decided this run, as a fact rather than a reconstruction.
@@ -115,15 +190,47 @@ export function formatLedgerLine(record) {
  * and says so (`argvSource`).
  */
 export function stepArgv(env = process.env) {
-  const declared = typeof env?.M7A_STEP_ARGV === 'string' ? env.M7A_STEP_ARGV.trim() : ''
+  const declared = typeof env?.[STEP_ARGV_ENV] === 'string' ? env[STEP_ARGV_ENV].trim() : ''
   if (declared !== '') return { argv: declared.split(/\s+/u), argvSource: 'M7A_STEP_ARGV' }
   const flags = [...new Set(process.execArgv.filter((flag) => flag.startsWith('--test')))]
   return { argv: [process.execPath, ...flags, ...process.argv.slice(1)], argvSource: 'process.argv (reconstructed)' }
 }
 
-/** Where the step record lives: gitignored, stable across runs, uploaded by the job. */
-export function stepRecordPath(repoRoot) {
-  return join(repoRoot, '.artifacts', 'tmp', 'm7a-real-slice', 'm7a-step.json')
+/**
+ * Where the step record lives. `M7A_STEP_RECORD` (a file) and `M7A_STEP_RECORD_DIR` (a directory)
+ * exist so a test that runs this suite as a CHILD (the C1 host-state cases) cannot delete or
+ * overwrite the record of the real step: three parallel children sharing one fixed path turned a
+ * green C2 into `verdict=MISSING` (observed 2026-11-15).
+ */
+export function stepRecordPath(repoRoot, env = process.env) {
+  const explicit = typeof env?.[STEP_RECORD_ENV] === 'string' ? env[STEP_RECORD_ENV].trim() : ''
+  if (explicit !== '') return explicit
+  const dir = typeof env?.[STEP_RECORD_DIR_ENV] === 'string' ? env[STEP_RECORD_DIR_ENV].trim() : ''
+  return join(dir !== '' ? dir : join(repoRoot, '.artifacts', 'tmp', 'm7a-real-slice'), 'm7a-step.json')
+}
+
+/**
+ * The identity a record is bound to. The job supplies it (`<run_id>-<run_attempt>`), so a record
+ * from an earlier run — or one seeded by hand — can never be read as this run's verdict. A local
+ * run without the variable gets a random id: the record still says WHICH run it belongs to.
+ */
+export function stepRunId(env = process.env) {
+  const declared = typeof env?.[STEP_RUN_ID_ENV] === 'string' ? env[STEP_RUN_ID_ENV].trim() : ''
+  return declared !== '' ? declared : `local-${randomUUID()}`
+}
+
+/**
+ * Delete any record at `path` BEFORE a single precondition can return, and return the path.
+ *
+ * This is called at MODULE scope by the suite, not inside the test body: the hosted job's failure
+ * mode is a suite that never reaches its body (absent host + M7A_REQUIRE_PINNED_HOST=1), and a
+ * `VERIFIED` record left from an earlier run would then be blessed by the ledger. "Absent record =
+ * ambiguous" is only true if the record is deleted on the paths that never write one.
+ */
+export function resetStepRecord(repoRoot, env = process.env) {
+  const path = stepRecordPath(repoRoot, env)
+  rmSync(path, { force: true })
+  return path
 }
 
 /** Write the record the ledger step reads. A failure to write must be loud, not silent. */

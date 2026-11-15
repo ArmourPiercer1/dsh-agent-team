@@ -35,11 +35,15 @@ import {
 } from './lib/m7a-real-run.mjs'
 import {
   ALLOW_UNPROVISIONABLE_ENV,
+  EXPECTED_ARM_VERDICTS,
+  STEP_ARGV_ENV,
+  STEP_RUN_ID_ENV,
   UNPROVISIONABLE_TOKEN,
   classifyHostAssetRefusal,
   decideStepOutcome,
-  formatLedgerLine,
   formatStepLine,
+  readStepRecord,
+  validateStepRecord,
 } from './lib/m7a-step-verdict.mjs'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -422,23 +426,100 @@ test('M7A-U12b the opt-in is an explicit 1: unset, 0, true and yes all keep the 
   assert.equal(allowUnprovisionableHost({ [ALLOW_UNPROVISIONABLE_ENV]: '1' }), true)
 })
 
-test('M7A-U12c the ledger line names the verdict, both ways, and a missing/invalid record is a failure', () => {
-  assert.match(
-    formatLedgerLine({ verdict: 'VERIFIED', arms: 5, hostSha: '639ed01539', utc: 'T' }),
-    /^M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=639ed01539 utc=T$/u,
-  )
-  assert.match(
-    formatLedgerLine({ verdict: 'DISCLOSED_REFUSAL', reason: 'HOST_ASSET_UNPROVISIONABLE', asset: 'bin/glibc/system.node', actualSha256: 'a', expectedSha256: 'b', hostSha: '639ed01539', utc: 'T' }),
-    /^M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=bin\/glibc\/system\.node actual=a pinned=b host=639ed01539 utc=T$/u,
-  )
-  // The reader is the last line of defence: a missing record and an invalid record must BOTH fail.
-  const emptyDir = tmp('ledger-missing')
-  const missing = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'm7a-step-ledger.mjs'), join(emptyDir, 'nope.json')], { encoding: 'utf8' })
+const PASS_ARGV = 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
+const PASS_ENV = { [STEP_ARGV_ENV]: PASS_ARGV, [STEP_RUN_ID_ENV]: 'run-42' }
+const HOST_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
+const verifiedRecord = () => ({
+  schema: 'm7a-step/1',
+  verdict: 'VERIFIED',
+  reason: 'ARMS_GRADED',
+  arms: 5,
+  runId: 'run-42',
+  hostSha: HOST_SHA,
+  argvSource: STEP_ARGV_ENV,
+  argv: PASS_ARGV.split(' '),
+  armVerdicts: EXPECTED_ARM_VERDICTS.map((arm) => ({ ...arm, expectation: arm.verdict })),
+  utc: 'T',
+})
+const refusalRecord = () => ({
+  schema: 'm7a-step/1',
+  verdict: 'DISCLOSED_REFUSAL',
+  reason: 'HOST_ASSET_UNPROVISIONABLE',
+  arms: 0,
+  armVerdicts: [],
+  asset: 'bin/glibc/system.node',
+  actualSha256: 'a'.repeat(64),
+  expectedSha256: 'b'.repeat(64),
+  runId: 'run-42',
+  hostSha: HOST_SHA,
+  argvSource: STEP_ARGV_ENV,
+  argv: PASS_ARGV.split(' '),
+  utc: 'T',
+})
+
+test('M7A-U12c the ledger re-checks the record instead of echoing it: VERIFIED and the refusal pass, everything else exits 1', () => {
+  assert.deepEqual(validateStepRecord(verifiedRecord(), { env: PASS_ENV, expectedHostSha: HOST_SHA }), { ok: true, code: 'OK', verdict: 'VERIFIED', reason: 'ARMS_GRADED' })
+  assert.equal(validateStepRecord(refusalRecord(), { env: PASS_ENV, expectedHostSha: HOST_SHA }).verdict, 'DISCLOSED_REFUSAL')
+
+  // The reviewer's three malformed records: each claimed success and each must be refused.
+  const cases = [
+    ['no armVerdicts', (r) => { delete r.armVerdicts }, 'ARM_VERDICTS_MISSING'],
+    ['a renamed arm', (r) => { r.armVerdicts[0].arm = 'some-other-arm' }, 'ARM_ORDER_MISMATCH'],
+    ['refusal with arms', (r) => { r.verdict = 'DISCLOSED_REFUSAL'; r.reason = 'HOST_ASSET_UNPROVISIONABLE'; r.arms = 3; r.armVerdicts = [] }, 'REFUSAL_WITH_ARMS'],
+    ['reconstructed argv', (r) => { r.argvSource = 'process.argv (reconstructed)' }, 'ARGV_NOT_DECLARED'],
+    ['wrong argv', (r) => { r.argv = ['node', '--test', 'something-else.mjs'] }, 'ARGV_MISMATCH'],
+    ['wrong host', (r) => { r.hostSha = 'f'.repeat(40) }, 'HOST_SHA_MISMATCH'],
+    ['wrong arm verdict', (r) => { r.armVerdicts[1].verdict = 'SATISFIED' }, 'ARM_VERDICT_MISMATCH'],
+    ['short arm count', (r) => { r.arms = 4 }, 'WRONG_ARM_COUNT'],
+    ['equal sha pair', (r) => { const x = refusalRecord(); x.expectedSha256 = x.actualSha256; r.verdict = 'DISCLOSED_REFUSAL'; Object.assign(r, x) }, 'SHA_PAIR_EQUAL'],
+  ]
+  for (const [name, mutate, reason] of cases) {
+    const record = verifiedRecord()
+    mutate(record)
+    const result = validateStepRecord(record, { env: PASS_ENV, expectedHostSha: HOST_SHA })
+    assert.equal(result.ok, false, `${name} must be refused`)
+    assert.equal(result.reason, reason, `${name}: ${JSON.stringify(result)}`)
+  }
+  // A record from ANOTHER run is STALE, not VERIFIED — the stale-blessing control.
+  const stale = validateStepRecord(verifiedRecord(), { env: { ...PASS_ENV, [STEP_RUN_ID_ENV]: 'run-43' }, expectedHostSha: HOST_SHA })
+  assert.equal(stale.code, 'STALE')
+  assert.equal(stale.reason, 'RUN_ID_MISMATCH')
+
+  // And the real script, as a child process: missing / invalid / stale all exit 1.
+  const dir = tmp('ledger-reader')
+  const ledger = join(REPO_ROOT, 'scripts', 'm7a-step-ledger.mjs')
+  const runLedger = (file, env) => spawnSync(process.execPath, [ledger, file], { encoding: 'utf8', env: { ...process.env, ...env } })
+  const missing = runLedger(join(dir, 'nope.json'), {})
   assert.equal(missing.status, 1)
   assert.match(missing.stderr, /M7A-STEP-LEDGER verdict=MISSING reason=NO_RECORD/u)
-  const invalidFile = join(emptyDir, 'invalid.json')
-  writeFileSync(invalidFile, JSON.stringify({ schema: 'm7a-step/1', verdict: 'VERIFIED', reason: 'ARMS_GRADED', arms: 0 }))
-  const invalid = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'm7a-step-ledger.mjs'), invalidFile], { encoding: 'utf8' })
+
+  const invalidFile = join(dir, 'invalid.json')
+  writeFileSync(invalidFile, JSON.stringify({ ...verifiedRecord(), arms: 0 }))
+  const invalid = runLedger(invalidFile, PASS_ENV)
   assert.equal(invalid.status, 1)
-  assert.match(invalid.stderr, /M7A-STEP-LEDGER verdict=INVALID reason=NO_ARMS/u)
+  assert.match(invalid.stderr, /M7A-STEP-LEDGER verdict=INVALID reason=WRONG_ARM_COUNT/u)
+
+  const staleFile = join(dir, 'stale.json')
+  writeFileSync(staleFile, JSON.stringify(verifiedRecord()))
+  const staleRun = runLedger(staleFile, { ...PASS_ENV, [STEP_RUN_ID_ENV]: 'run-99' })
+  assert.equal(staleRun.status, 1)
+  assert.match(staleRun.stderr, /M7A-STEP-LEDGER verdict=STALE reason=RUN_ID_MISMATCH/u)
+
+  const goodFile = join(dir, 'good.json')
+  writeFileSync(goodFile, JSON.stringify(verifiedRecord()))
+  const good = runLedger(goodFile, PASS_ENV)
+  assert.equal(good.status, 0)
+  assert.match(good.stdout, /^M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=639ed01539/u)
+  assert.match(good.stdout, /run=run-42/u)
+
+  // And the refusal line, through the same reader.
+  const refusalFile = join(dir, 'refusal.json')
+  writeFileSync(refusalFile, JSON.stringify(refusalRecord()))
+  const refusal = runLedger(refusalFile, PASS_ENV)
+  assert.equal(refusal.status, 0)
+  assert.match(refusal.stdout, /^M7A-STEP-LEDGER verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE asset=bin\/glibc\/system\.node actual=a{64} pinned=b{64}/u)
+
+  // `readStepRecord` is the same body the script uses.
+  assert.equal(readStepRecord(goodFile, { env: PASS_ENV, expectedHostSha: HOST_SHA }).ok, true)
+  assert.equal(readStepRecord(join(dir, 'nope.json')).code, 'MISSING')
 })

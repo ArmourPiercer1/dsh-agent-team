@@ -447,6 +447,9 @@ jobs:
           # Recorded verbatim in m7a-step.json: a node:test child cannot see the flags the runner
           # consumed (`--test-reporter=spec`), so the step declares its own command instead.
           M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
+          # The record is bound to THIS run; a record left by an earlier job (or seeded by hand)
+          # is STALE at the ledger, not this run's verdict.
+          M7A_STEP_RUN_ID: '${{ github.run_id }}-${{ github.run_attempt }}'
         run: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
 
       # One line per L2, always: whether the real-host capability was VERIFIED (five arms graded)
@@ -456,6 +459,10 @@ jobs:
       - name: M7-A step ledger — VERIFIED or DISCLOSED-REFUSAL, in one greppable line
         shell: bash
         if: always()
+        env:
+          # Same identity + declared argv as the suite step: the ledger re-checks both.
+          M7A_STEP_RUN_ID: '${{ github.run_id }}-${{ github.run_attempt }}'
+          M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
         run: node scripts/m7a-step-ledger.mjs
 
       # What to read when this job is red: `census-run.txt` first (the gate's own

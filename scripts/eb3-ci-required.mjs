@@ -464,6 +464,31 @@ export function isDispatchLeg(leg) {
 }
 
 /** Grade one declared leg against its job, plus the M6 dispatch-population laws. */
+/**
+ * WHOLE-ARGV LAW, the other direction (#775 dividend).
+ *
+ * A step that DECLARES its command (`env.M7A_STEP_ARGV`, recorded in the step's evidence so a
+ * node:test child can report the argv it actually ran under) must declare the leg the manifest
+ * grades. The manifest and the declaration are two copies of one command; a one-sided edit would
+ * otherwise desync silently — the manifest would keep grading a command nobody runs, or the record
+ * would name a command the gate never saw.
+ */
+export function checkStepArgvDeclaration(job, leg) {
+  const check = Array.isArray(leg.check) ? leg.check : []
+  if (check.length === 0) return null
+  // A `<value>` slot cannot be compared textually; those legs are out of scope for this rule.
+  if (check.some((token) => String(token).startsWith('<'))) return null
+  const whole = [...(leg.cmd ?? []), ...check].join(' ')
+  const step = (job?.steps ?? []).find((s) => typeof s?.run === 'string' && check.every((token) => s.run.includes(token)))
+  const declared = typeof step?.env?.M7A_STEP_ARGV === 'string' ? step.env.M7A_STEP_ARGV.trim() : ''
+  if (declared === '') return null
+  if (declared === whole) return null
+  return {
+    code: 'CI_LAYER_STEP_ARGV_DESYNC',
+    why: `the step declares M7A_STEP_ARGV=${JSON.stringify(declared)} but the manifest leg is ${JSON.stringify(whole)} — one command, two copies, and they disagree`,
+  }
+}
+
 function checkDeclaredLeg(job, leg, where, add) {
       const miss = gradeLeg(job, leg)
       if (miss !== null) add(miss.code, `${where.prefix}: leg "${leg.id}" — ${miss.why} (${where.workflow}#${where.job})`, { layer: where.layer, leg: leg.id })
@@ -653,7 +678,11 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     if (!Array.isArray(layer.legs) || layer.legs.length === 0) {
       add('CI_LAYER_LEG_MISSING', `layer ${layer.id}: the manifest declares no legs — a layer with nothing to invoke gates nothing`, { layer: layer.id })
     }
-    for (const leg of layer.legs ?? []) checkDeclaredLeg(job, leg, { prefix: `layer ${layer.id}`, layer: layer.id, workflow: layer.workflow, job: layer.job }, add)
+    for (const leg of layer.legs ?? []) {
+      checkDeclaredLeg(job, leg, { prefix: `layer ${layer.id}`, layer: layer.id, workflow: layer.workflow, job: layer.job }, add)
+      const argvDrift = checkStepArgvDeclaration(job, leg)
+      if (argvDrift !== null) add(argvDrift.code, `layer ${layer.id}: leg "${leg.id}" — ${argvDrift.why}`, { layer: layer.id, leg: leg.id })
+    }
     // The merge-tree binding is a leg too: a layer that never compares its checkout to
     // the synthetic tree may be grading a different tree than the one reported.
     // Graded by the SAME allowlist as every other leg, plus: its argument must be the

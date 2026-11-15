@@ -19,7 +19,7 @@ import test from 'node:test'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-import { checkRequiredJobs, checkTrailing, loadManifest, workflowFiles } from './eb3-ci-required.mjs'
+import { checkRequiredJobs, checkStepArgvDeclaration, checkTrailing, loadManifest, workflowFiles } from './eb3-ci-required.mjs'
 
 const SCRIPT = fileURLToPath(new URL('./eb3-ci-required.mjs', import.meta.url))
 
@@ -90,4 +90,28 @@ test('eb3-ci-required: a second --leg on a dispatch cmd is EXTRA_ARGUMENT (not a
   const hit = findings.filter((f) => f.code === 'CI_LAYER_LEG_EXTRA_ARGUMENT')
   assert.equal(hit.length, 1, JSON.stringify(findings))
   assert.match(hit[0].detail, /tinf-m0-baseline/)
+})
+
+test('eb3-ci-required: a declared step argv that disagrees with the manifest leg is STEP_ARGV_DESYNC (both directions)', () => {
+  const MANIFEST_ARGV = 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
+  const rel = '.github/workflows/census-runtime.yml'
+
+  // Direction 1: the workflow declaration drifts (the step would record a command nobody grades).
+  const files = workflowFiles()
+  const before = files.get(rel)
+  assert.ok(before.includes(`M7A_STEP_ARGV: '${MANIFEST_ARGV}'`), 'the M7-A step must declare its argv')
+  files.set(rel, before.replace(`M7A_STEP_ARGV: '${MANIFEST_ARGV}'`, `M7A_STEP_ARGV: '${MANIFEST_ARGV.replace('--test-timeout=900000', '--test-timeout=800000')}'`))
+  const drift = checkRequiredJobs({ files, manifest: loadManifest() }).findings.filter((f) => f.code === 'CI_LAYER_STEP_ARGV_DESYNC')
+  assert.equal(drift.length, 1, JSON.stringify(drift))
+  assert.match(drift[0].detail, /m7a real-host slice/u)
+  assert.match(drift[0].detail, /--test-timeout=800000/u)
+
+  // Direction 2: the manifest leg drifts (the gate would grade a command nobody runs).
+  const manifest = deepClone(loadManifest())
+  const leg = manifest.layers.flatMap((l) => l.legs ?? []).find((l) => l.id.startsWith('m7a real-host slice'))
+  assert.ok(leg, 'the M7-A leg must exist in the manifest')
+  leg.cmd = leg.cmd.map((token) => (token === '--test-force-exit' ? '--test-force-exit_v2' : token))
+  const drift2 = checkRequiredJobs({ files: workflowFiles(), manifest }).findings.filter((f) => f.code === 'CI_LAYER_STEP_ARGV_DESYNC')
+  assert.equal(drift2.length, 1, JSON.stringify(drift2))
+  assert.match(drift2[0].detail, /--test-force-exit_v2/u)
 })

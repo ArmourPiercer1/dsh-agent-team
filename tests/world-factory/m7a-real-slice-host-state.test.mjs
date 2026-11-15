@@ -43,13 +43,21 @@ function runSuite(env, timeoutMs = 120_000) {
   // exact "run() called recursively" trap that would make these pins vacuous).
   const inherited = { ...process.env }
   delete inherited.NODE_TEST_CONTEXT
-  const result = spawnSync(process.execPath, ['--test', '--test-reporter=spec', SUITE], {
-    cwd: REPO,
-    env: { ...inherited, M7A_HOST_TREE: emptyHost, M7A_REQUIRE_PINNED_HOST: '', ...env },
-    encoding: 'utf8',
-    timeout: timeoutMs,
-  })
-  return { status: result.status, output: `${result.stdout ?? ''}${result.stderr ?? ''}` }
+  // ISOLATION (observed 2026-11-15): the suite deletes its step record at module scope, so three
+  // C1 children sharing the C2 record path turned a green C2 into `verdict=MISSING`. Each child
+  // gets its own record directory and never touches the step's.
+  const recordDir = mkdtempSync(join(tmpdir(), 'm7a-host-state-record-'))
+  try {
+    const result = spawnSync(process.execPath, ['--test', '--test-reporter=spec', SUITE], {
+      cwd: REPO,
+      env: { ...inherited, M7A_HOST_TREE: emptyHost, M7A_REQUIRE_PINNED_HOST: '', M7A_STEP_RECORD_DIR: recordDir, ...env },
+      encoding: 'utf8',
+      timeout: timeoutMs,
+    })
+    return { status: result.status, output: `${result.stdout ?? ''}${result.stderr ?? ''}` }
+  } finally {
+    rmSync(recordDir, { recursive: true, force: true })
+  }
 }
 
 test('M7-A real-host suite: an absent host refuses in words and skips, and the suite is not green', () => {
