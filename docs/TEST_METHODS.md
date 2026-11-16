@@ -139,6 +139,54 @@ node tests/world-factory/provision-host-sandbox.mjs --manifest   # 打印 pin
 4. 摘要不符是供给链事件不是环境态：预检**抛出**并拒绝启动 Host，而非记成 `unusable` 继续跑。
 5. 套件不得为变绿放宽沙箱、替换原生工具或 patch 宿主（CORE PATCH BUDGET = 0）。
 
+### 9.1 第二条传输：已发布的 pin 包（2026-11-16 owner 裁决）
+
+**缺陷**：hosted census runner 的**自身构建**产出的 `bin/glibc/system.node` 与上表 pin 不同（实测
+`dfa6d586…` vs `54a9c25c…`，census 作业输出 `M7A-STEP verdict=DISCLOSED_REFUSAL reason=HOST_ASSET_UNPROVISIONABLE arms=0`），
+而本地复制传输要求源树就是"那一台机器"的字节，runner 没有这样的源树。此前 M7-A 步骤靠
+`M7A_ALLOW_UNPROVISIONABLE_HOST=1` 把这个缺口记成**具名拒绝**，等于 L2 上真实安全链从未验证。
+
+**裁决**：固定发布产物是标准，runner 的构建不是。**不移动上表 pin**；改为从已发布的
+`@deepseek-ai/node-addon-system-linux-x64@0.1.2` 取 tarball（25758 B，sha256 `77fb771b…`，
+registry `dist.integrity` `sha512-S2aPVHvY…`），验证后安装**同一组 pin 字节**。包内
+`bin/glibc/system.node` = `54a9c25c…`（17360 B）、`bin/landlock-run` = `a752bc72…`（38552 B）；
+包内另有 `bin/musl/system.node`（17960 B），故 manifest 新增 `siblings` 把它一并 pin 住，
+"`bin/` 下多余文件" = 既不在 `files` 也不在 `siblings` 的文件（整棵 `bin/` 仍被完整解释）。
+
+**命令**（tarball only；不 `pnpm install` 该包、不加仓库依赖、不 patch 宿主）：
+
+```bash
+node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+# exit 0 → stdout 一行 HOST-ASSETS-PROVISIONED package=… version=… tarballSha256=… distIntegrity=… files=… host=… manifestDigest=… utc=… receipt=…
+# exit 1 → stderr 一行 HOST-ASSETS-REFUSED code=… detail=…
+```
+
+**顺序即拒绝顺序**：精确版本（`PACKAGE_SPEC_NOT_EXACT` / `PACKAGE_VERSION_UNPINNED` / `PACKAGE_SPEC_INVALID`，
+全部在网络前）→ 目标符号链接（`DESTINATION_IS_SYMLINK`）与目标形状（`DESTINATION_NOT_REGULAR_FILE`：FIFO/socket/设备/目录/硬链接在**第一次读之前** `lstat` 拒绝，见 memo §7.1；本地复制传输共用同一律），两者都在任何写之前→ metadata
+（`REGISTRY_METADATA_UNAVAILABLE` / `REGISTRY_INTEGRITY_MISSING` / `REGISTRY_INTEGRITY_UNKNOWN` /
+`REGISTRY_NAME_MISMATCH` / `REGISTRY_VERSION_MISMATCH`）→ tarball（`TARBALL_INTEGRITY_MISMATCH` 对 registry
+`dist.integrity`，再 `TARBALL_DIGEST_MISMATCH` / `TARBALL_LENGTH_MISMATCH` 对提交的 `tarballSha256` /
+`tarballBytes`）→ 解包（`PACKAGE_ARCHIVE_PATH_UNSAFE` / `PACKAGE_ARCHIVE_ENTRY_UNSAFE` / `PACKAGE_EXTRACT_FAILED`）→
+逐文件（`PACKAGE_EXTRA_BIN_FILE` / `PACKAGE_FILE_MISSING` / `PACKAGE_FILE_LENGTH_MISMATCH` /
+`PACKAGE_FILE_DIGEST_MISMATCH`）→ 暂存 + chmod 到 pin 的 mode + rename + 复读 digest/mode →
+receipt（`u7-sbx-host-asset-receipt/1`，含 package spec、tarball sha256、`distIntegrity`、逐文件 sha256、
+host sha、UTC、**manifest digest**）。任一步失败 → 回滚、零残留、typed error。`packages.files` 必须与
+`entries.files` 深度相等，否则 `PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`——发布包不能定义第二标准。
+
+**本地复制传输不变**：仍拒绝 `DESTINATION_DIGEST_MISMATCH`（不覆盖别人的字节）；**package transport 有意
+替换** runner 构建的字节，这正是它的用途（失败时回滚备份）。测试：`tests/world-factory/host-sandbox-assets.test.mjs`
+T28–T39（真实 tar.gz fixture + 注入 fetcher/extractor，离线；T29 正向、T30–T37 拒绝矩阵、T38 CI 接线、
+T39 CLI 契约）。**CI**：`.github/workflows/census-runtime.yml` 在 M7-A 之前新增该步骤，并**删除**
+`M7A_ALLOW_UNPROVISIONABLE_HOST`（拒绝码路径保留在 `lib/m7a-step-verdict.mjs`，默认关闭；T38 逐 workflow
+断言没有 workflow 设置它 → CI 上不可达，任何拒绝都是红）；`dev/ci/eb3-ci-manifest.json` 的 `ci-census`
+新增同 argv leg（whole-argv 纪律与 M7-A 腿相同）。设计正本：
+`docs/plans/memo/host-assets-20261116/README.md`。
+
+**仍未证明**：进程/PTY/网络观测面（M7-B）；registry 可用性（离线 runner 会 red，有意 fail closed）；
+发布字节能否由源码重建（本传输只保证"发布字节 = pin 字节"）。**本机主 checkout 的 `system.node`
+当前仍是 `75450f92…`（17352 B），与 pin 不同**——本 PR 不修改被 gitignore 的运行时树；需要时用上面的
+供给命令（`--runtime-tree <树>`）把它修成 pin 字节。
+
 ## 10. Host 启动授权：`DEV-LIVE` 与 `CANDIDATE-C2`（2026-11-09 owner 裁决）
 
 本节把 `docs/ROUTER_RULES.md` §0.1 第 4 条落到测试基础设施上。**它只改启动授权，不改隔离、
