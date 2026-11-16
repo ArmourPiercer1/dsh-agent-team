@@ -316,12 +316,48 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'tests/s2-authority/probe-candidate.test.mjs',
     'tests/s2-authority/sync-candidate-resolver.test.mjs',
     'tests/s2-authority/verify-candidate.test.mjs',
+    // B3 (2026-11-16): batch B3 of the uncollected-test audit. The 28 world-factory suites the
+    // audit called host-free were RE-MEASURED with the pinned tree ABSENT (its own rev-2 records
+    // that the first host-free label was wrong for 18 files), and ride the SAME `tinf-instruments`
+    // leg for the SAME M6 reason: a new dispatch step has no old-side `node --test` argv and would
+    // be a permanent UNCONVERTED problem (measured problems=1 before the reshape). The three B3
+    // files that are red regardless of the host (two install-shape `require.resolve` reds, one
+    // stale product-debt anchor) are NOT collected and stay in the uncollected baseline. Declared
+    // HERE so the next addition still cannot hide.
+    'tests/world-factory/a5sf-acceptance-preflight.test.mjs',
+    'tests/world-factory/a5sf-ask-precedence.test.mjs',
+    'tests/world-factory/a5sf-assembly.test.mjs',
+    'tests/world-factory/a5sf-bash.test.mjs',
+    'tests/world-factory/a5sf-capability-defaults.test.mjs',
+    'tests/world-factory/a5sf-dev-live-slots.test.mjs',
+    'tests/world-factory/a5sf-dev-live.test.mjs',
+    'tests/world-factory/a5sf-dual-plane.test.mjs',
+    'tests/world-factory/a5sf-instrument-graph.test.mjs',
+    'tests/world-factory/a5sf-p01-realm-binding.test.mjs',
+    'tests/world-factory/a5sf-pd1-revocation-escape.test.mjs',
+    'tests/world-factory/a5sf-pd12-bash-governance.test.mjs',
+    'tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs',
+    'tests/world-factory/a5sf-pd26-confined-skill.test.mjs',
+    'tests/world-factory/a5sf-pd29-goal-stop.test.mjs',
+    'tests/world-factory/a5sf-pd33-preview-e2e.test.mjs',
+    'tests/world-factory/a5sf-pd34-member-stop.test.mjs',
+    'tests/world-factory/a5sf-run-record-binding.test.mjs',
+    'tests/world-factory/a5sf-search-live.test.mjs',
+    'tests/world-factory/a5sf-window-taxonomy.test.mjs',
+    'tests/world-factory/arm-verdict.test.mjs',
+    'tests/world-factory/binding-digests.test.mjs',
     // M7-A (2026-11-15): the real-host slice's two host-free suites ride the
     // tinf-instruments leg (a new leg would be a permanent UNCONVERTED problem:
     // the parity law needs an old-side `node --test` argv for every dispatch
     // step). Declared HERE so the next addition still cannot hide.
     'tests/world-factory/m7a-real-slice-host-state.test.mjs',
     'tests/world-factory/m7a-real-slice-unit.test.mjs',
+    'tests/world-factory/port-probe.test.mjs',
+    'tests/world-factory/u6-arc-d.test.mjs',
+    'tests/world-factory/u7-tbash-offline-drive.test.mjs',
+    'tests/world-factory/u7-tbash-seam.test.mjs',
+    'tests/world-factory/u7-tbash.test.mjs',
+    'tests/world-factory/u7-uileg0-answer-drive.test.mjs',
   ])
   const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
   assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')

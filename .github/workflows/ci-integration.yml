@@ -255,9 +255,29 @@ jobs:
         # `fetch-depth: 0` checkout above (census-runtime.yml enforces the same and fails loudly),
         # never on runner luck — see the manifest `why` for the measured depth-1 sensitivity.
         # The ratchet below is tightened to the measured post-B2 count (84 -> 76); it may only go down.
+        # B3 (2026-11-16) joins this SAME leg with the 28 world-factory suites the uncollected-test
+        # audit called host-free, RE-MEASURED with the pinned tree ABSENT (parent `tests/` bind-mounted
+        # empty inside `unshare -m -r`, + A5SF_REQUIRE_PINNED_HOST=1, A5SF_PD31_HOST_TREE=/nonexistent)
+        # on a clean `pnpm install --frozen-lockfile` tree: 426 arms / 420 pass / 0 fail / 6
+        # source-declared PRE-FIX-PIN-FORK skips. Same M6 parity reason as M7-A and B2 — a new leg
+        # would be a permanent UNCONVERTED step (measured: problems=1) — so they ride THIS leg's
+        # `suites[]`, which goes 20 -> 48. The three B3 files that are red regardless of the host (two
+        # install-shape `require.resolve` reds, one stale product-debt anchor) stay UNCOLLECTED;
+        # docs/plans/memo/b3-collect-20261116/ has the verbatim output and the 31-row table.
+        # THE ENV IS THE TRAP CLOSED. `A5SF_REQUIRE_PINNED_HOST=1` (here AND in the manifest leg) makes
+        # an absent pinned host a RED instead of `verdict=NOT_RUN` with 15 skips — measured on the
+        # deferred B4 set, where `a5sf-pty-contract` on a genuinely absent tree exits 0 with
+        # `skipped=15 cases=15 verdict=NOT_RUN`. `eb3-ci-required` grades both halves
+        # (CI_LAYER_LEG_ENV_MISSING if this step loses the flag, CI_HOST_REFUSAL_UNGUARDED if a
+        # hostFree leg lists a refusal-capable suite without the declaration). The only reviewed
+        # exception is `a5sf-fs-contract-layer-b` (`hostRefusal: declared-not-run`), which lives in
+        # this same no-host lane and declares its NOT_RUN on purpose.
+        # The ratchet is tightened to the measured post-B2+B3 count (76 -> 48); it may only go down.
+        env:
+          A5SF_REQUIRE_PINNED_HOST: '1'
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-          node scripts/test-catalog.mjs --max-uncollected 76
+          node scripts/test-catalog.mjs --max-uncollected 48
 
       - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
         # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is
