@@ -154,11 +154,12 @@ Fetch path: `gh run download <id> -n census-runtime-transcripts-<run>`, then rea
 is **10.8 s** (1096.7–1107.5 s, about 1 %), so a ~60 s threshold is roughly 5.5× the spread and is
 a meaningful bar, not an inconclusive one.
 
-**Do not use the perf memo's 966 s as this baseline.** That is run 1215's census-leg token on the
-memo's pre-#779 base tree (head `1f7725663`, tree `8b10651a`) — a different tree and run. The
-current config's hosted band is 1096.7–1107.5 s. Both are the same token (`DSH-CI-LEG
-leg=census seconds=`); the difference is the measurement occasion, not a different definition, and
-the local A/B in §1 is not this baseline either.
+**Do not use the perf memo's 966 s as this baseline.** That is run 1215's census-leg token
+(`DSH-CI-LEG leg=census seconds=965.9`) on its pre-#779 base tree (head `1f7725663`, tree
+`8b10651a`), and the memo itself calls its wall numbers the **fast end** of the observed range
+(a slower run moves the captures up +8–18 %). The current config's band is 1096.7–1107.5 s
+(~+13–15 %), consistent with that. Same token, but a different measurement occasion and speed
+regime — not a same-config baseline, and the local A/B in §1 is not one either.
 
 Revert this PR if the hosted L2 shows **any** of:
 
