@@ -26,11 +26,13 @@ The census `vitest` invocation now names its worker ceiling: **`--maxWorkers=4`*
   `available_parallelism=<n> workers=4` on its `DSH-CI-RUN` line, so each L2 states the machine's own
   number and the ceiling can be judged against it.
 - **What does not change**: one `vitest run` over the whole 705-file population; 11 roots; two
-  serial captures in capture-major order; the reporters and JSON report path; the optional
+  serial captures in capture-major order; the capture's reporters and JSON report path; the optional
   `--testTimeout`; the timeouts, retries, assertions, the 6600-walk race test and the flock test;
   the Required contexts; the workflow argv (`--census-execution plan --census-captures 2
   --census-test-timeout 90000`); the census population baseline. `--maxWorkers=4` is appended to
-  the argv, so no existing flag changes position.
+  the argv, so no existing flag changes position. The **re-sample's** reporter set did widen — it
+  gained `--reporter=default` — while its graded source (the JSON report) did not, so it cannot move
+  an assertion or a verdict.
 
 ## 1. What was measured, and how
 
@@ -115,8 +117,9 @@ in this sandbox. A fresh CI checkout without the provisioned launcher is expecte
 refusal arm. The plan aggregate then reports
 `SHARD_EXIT_NONZERO,TASK_STATE_INCOMPLETE,TASK_STATE_FAIL` because one root failed. The condition is
 present before and after, so it does not affect the timing comparison, and this PR does not claim a
-green local census. The hosted L2 is the first place the census will run with the runner's own
-environment.
+green local census. The three pre-PR hosted L2 runs cited in §3 already ran this plan-mode census
+(22 tasks / 11 roots / 705 files, `aggregate=PASS`) with the runner's own environment; this PR's L2
+adds the 4-worker arm.
 
 ## 2. What remains unmeasured
 
@@ -135,11 +138,27 @@ environment.
 hook, so there is no L2 memory number to decide on; the local 2.13 GiB is context, not a criterion.
 If memory needs to become one, the workflow must first grow a real measurement step.
 
-**How the timing comparison is made.** Compare this PR's census leg with **both** of the two most
-recent pre-PR `master` L2 census legs and report all three numbers plus the deltas. The recorded
-same-config spread is **130 s** (`485.3 s` vs `355.3 s`, `dev/agent-workflow/evidence/a4-pr7/
-census-runtime/COUPLING-20261009.md` §11), which dwarfs a 60 s threshold; a delta inside that spread
-is not evidence of improvement.
+**The baseline is the current-config pre-PR plan-mode census.** Three hosted `ci-census` /
+`census-runtime` legs on `master` before this PR, each 22 tasks / 11 roots / 705 files / 9233
+assertions per capture, `aggregate=PASS`:
+
+| run | `DSH-CI-LEG leg=census` | captures |
+| --- | --- | --- |
+| 43764507382 (#1231) | `verdict=pass seconds=1096.7` | 554.53 + 538.01 s |
+| 43767865055 (#1232) | `verdict=pass seconds=1107.5` | 561.09 + 542.29 s |
+| 43804251634 (#1238) | `verdict=pass seconds=1107.4` | 560.67 + 542.68 s |
+
+Fetch path: `gh run download <id> -n census-runtime-transcripts-<run>`, then read
+`_temp/census-run.txt` (`DSH-CI-VERDICT … seconds=`, `DSH-CI-LEG leg=census`) and
+`_temp/census-transcripts/census-capture-{1,2}.txt` (the `Duration` lines). The same-config spread
+is **10.8 s** (1096.7–1107.5 s, about 1 %), so a ~60 s threshold is roughly 5.5× the spread and is
+a meaningful bar, not an inconclusive one.
+
+**Do not use the perf memo's 966 s as this baseline.** That is run 1215's census-leg token on the
+memo's pre-#779 base tree (head `1f7725663`, tree `8b10651a`) — a different tree and run. The
+current config's hosted band is 1096.7–1107.5 s. Both are the same token (`DSH-CI-LEG
+leg=census seconds=`); the difference is the measurement occasion, not a different definition, and
+the local A/B in §1 is not this baseline either.
 
 Revert this PR if the hosted L2 shows **any** of:
 
@@ -150,9 +169,9 @@ Revert this PR if the hosted L2 shows **any** of:
    lane's BOUNDED polls) and `packages/runtime/test/a5lsp2-assembly.test.ts` (records those legs
    going red on a CI runner twice, which is why it carries a 30 s ceiling and forensics). Both are
    in the population and are the most likely neighbours to feel a fourth worker.
-2. less than a **~60 s** improvement across the census job (job-level, not one capture), measured
-   against the two most recent pre-PR master L2 census legs as above. A delta between 60 s and the
-   130 s historical spread is **inconclusive**, not a win: investigate before keeping the change.
+2. the PR's census leg is **not at least ~60 s faster than the 1096.7–1107.5 s band** (i.e. it
+   should be at most ~1036.7 s to count as an improvement). Report the PR's leg against all three
+   baselines. A result inside ±11 s of the band is run-to-run noise, not an improvement.
 
 Exact revert. `master` squash-merges, so the branch commit is not on `master`; revert the squash
 commit:
