@@ -261,6 +261,23 @@ Both bounds fired — the path set (`UNCOLLECTED_NEW`) and the count (`UNCOLLECT
 | identities | `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | `baseline ...: 76 distinct; new 0, resolved 0` | 0 |
 | whitespace | `git diff --check` | (no output) | 0 |
 
+### 5.1 Hosted, on the draft PR (#784, run `43817908337`, head `d94177a3d`)
+
+| job | result |
+| --- | --- |
+| `ci-fast` | pass 27 s |
+| `ci-integration` | **pass 2 m 12 s** (the leg that now carries the nine suites) |
+| `ci-security` | pass 1 m 02 s |
+| `ci-product` | pass 2 m 15 s |
+| `synthesize-merge-tree` | pass 19 s |
+| `candidate-protection` | pass 12 s |
+| `ci-census` | skipping — **draft by design** (`ci-required.yml` runs the cheap layers only; census runs on `ready_for_review`) |
+| `ci-required` | **fail** — `EB3-REQUIRED fail layers=6 green=5 nongreen=ci-census:skipped`. This is the documented draft shape: a skipped census cannot satisfy branch protection, which is exactly why `required-deferred` exists. |
+| `ci-required-deferred` | pass 12 s (grades the other layers) |
+| `pr-settlement-gate` | fail — `DSH-SETTLEMENT-VERDICT FAIL marker=none matches=0 candidates=0 reasons=NO_SETTLEMENT_CANDIDATE`: the §8.5.6 process gate needs a dated settlement comment covering the head sha. It is not a code gate and this draft has not been reviewed/settled. |
+
+The first hosted execution of the nine suites inside `ci-census`'s sibling layers is therefore **green**: `ci-integration` passed with the 21-suite leg on the hosted runner, not only locally.
+
 ## 6. What stays uncollected (75)
 
 `84 − 9 = 75`, matching `dev/ci/uncollected-baseline.json`. No other batch moved:
