@@ -176,9 +176,9 @@ DEBUG C10 differs in runtime:
 
 **Why not fix it here.** The batch is "collect green, host-free files". A repair that changes what an authority control compares is a semantic change to a safety-critical suite and belongs in its own reviewed change (the same separation the audit makes with B5, "test-side repairs, then collect"). The exact fix is one line — drop `runtime` from the structural comparison at `consumer-candidate.test.mjs:173-174` (keep `view` + `findings` + `topLevel`; `renderView` bytes are already compared separately and unaffected). It stays red-listed in `dev/ci/uncollected-baseline.json` (reason `no lane collects it`) and named in the manifest/workflow comments so it cannot be forgotten or swept in by an area.
 
-### 2.3 Why `freeze-candidate.test.mjs` is NOT collected (the hosted flake)
+### 2.3 Why `freeze-candidate.test.mjs` is NOT collected — hosted red, cause NOT established
 
-It was in this batch's **first cut** (`9cf752851` … `e0514df18`): 12/12 green alone, 12/12 green with the host tree hidden, green inside the full leg locally. The hosted runner then produced **two different verdicts for the same bytes**.
+It was in this batch's **first cut** (`9cf752851` … `e0514df18`): 12/12 green alone, 12/12 green with the host tree hidden, green inside the full leg locally. The hosted runner then produced two different verdicts for the same bytes.
 
 Evidence A — the leg **passed** on head `e0514df18` (run `43818397164`):
 
@@ -189,25 +189,38 @@ ALL GREEN (12 cases)
 DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=21 files=21 exit=0 set=sha256:a7d04943...
 ```
 
-Evidence B — the leg **failed** on head `49bb277f` (run `43821557423`), same dispatch set:
+Evidence B — the leg **failed** on head `49bb277f` (run `43821557423`), same dispatch set. The failing line, verbatim:
 
 ```
 FAIL --check DETECTS a tampered content_digest (exit 1, DIGEST MISMATCH): expected DIGEST ... MISMATCH
 RED (1/12 failing)
+✔ … every other freeze-candidate case passed …
 DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=21 files=21 exit=1 set=sha256:a7d049433f021adca492385969a54634a157fe36111e63c0a348a51ac7e27c48
 ```
 
-Identical `set=sha256:a7d04943…` means identical files and bytes, and `git diff --stat e0514df18 49bb277f` touches only #782's three files — **not** the suite, **not** `scripts/freeze-candidate.mjs`, **not** `dev/engineering/candidates/`. So the two heads are the same input to this suite.
+**The cause of B was NOT established by that run, and this memo does not claim one.** The assertion that fired is the *message* check `assert(/^DIGEST .* MISMATCH$/m.test(r.stdout), 'expected DIGEST ... MISMATCH')`; the preceding `assert(r.status === 1)` passed, so the child exited 1 (the drift path) but its stdout did not carry the summary line the assertion expects. The `fatal: Not a valid commit name 9b2ee57bc…` / `fatal: Not a valid object name origin/master` lines printed around that point in the job belong to `sync-candidate-resolver`'s deliberate fixture probes (that suite finished `ALL GREEN (8 cases)`), and the checkout is **depth 0** (§2.4). History is therefore **not** the explanation.
 
-The case itself is small: it writes a copy of the committed manifest with `content_digest: sha256:ffff…` to a temp file and asserts the CLI's `DIGEST … MISMATCH` summary line. The exit code was 1 in both runs (the first assertion — "drift, not an environment error" — passed); the *second* assertion is the one that missed in B. The CLI prints that line unconditionally on the drift path, so a missing line points at the child's stdout capture, not at the drift logic.
+What was ruled out, with the measurement:
 
-Locally it is deterministic: 3/3 green in the worktree, 3/3 in a clean full clone (`.artifacts/full`, `ALL GREEN (12 cases)` each time).
+| hypothesis | test | result |
+| --- | --- | --- |
+| shallow history / missing pinned object | the runner's own fetch line (`+refs/heads/*:refs/remotes/origin/*`, no `--depth`); two suites in the same job read **older** pinned commits and passed | **ruled out** |
+| the PR's merge-commit tree changes the manifest | `git diff --stat e0514df18 49bb277f` touches only #782's three files; the merge tree of `49bb277f` equals the branch tree | **ruled out** |
+| order-dependence on `dev/engineering/current-authority.json` or the mirror | 30+ standalone runs, 3/3 in a clean full clone | **not observed** |
+| standalone determinism | 12/12 green every time, worktree and clean clone | **not observed** |
+| **concurrency in the collected leg** | 10 concurrent runs of all ten `tests/s2-authority` files → **freeze-candidate red once**; 25 concurrent runs of the four stateful suites → red never; a second campaign hit the *probe copy* once in 16 with **exit 1 and empty stdout on a different case** (`tampered product.trees.packages`, `expected DRIFT … got:` with nothing after `got:`) | **reproduced, low rate (~1 in 10–50)** |
 
-**Verdict: unknown nondeterminism ⇒ un-collectable.** It is not a product regression (the CLI is a dev script; the drift logic is exercised by the other eleven passing cases), not a stale assertion, and not a history/shallow-checkout effect (§2.4 shows the object DB is complete and that suites reading *older* pinned commits passed in the same job). Until the cause is identified, collecting it would put a nondeterministic case in a Required gate. The cheapest next step, in its own PR: make the assertion message include `r.stdout` (and `r.signal`) so the hosted failure is self-describing, then root-cause.
+So the failure is **shape-dependent** (concurrent leg), not content-dependent, and it is not specific to the `content_digest` case: under concurrency a second case failed the same way — exit 1 with **no stdout at all**. In both shapes the child's exit code is 1 (a real drift answer) while the line the assertion reads is missing, which points at the child's stdout being lost rather than at the drift logic.
+
+**Leading, unproven hypothesis:** `scripts/freeze-candidate.mjs` ends with `process.exit(main(process.argv.slice(2)))`, and Node's `process.exit()` does not wait for a pending asynchronous write to `process.stdout` (a pipe under `spawnSync`). Under the leg's process concurrency the summary line can be dropped while the exit code still reaches the parent — which is exactly "exit 1, expected line missing". It is labelled unproven because the flake was not reproduced with a captured `r.stdout` in the time box; the fix would be `process.exitCode = main(...)` (flush on natural exit), and it belongs to a change that can validate it against a reproduction, not to a collection PR.
+
+**Verdict: un-collected.** Not a product regression (the drift logic itself is right and the other eleven cases pass), not a stale assertion, and not a history effect. It stays in `dev/ci/uncollected-baseline.json` until the child-output question is settled. Next step, in its own PR: make the assertion message carry `{status, signal, error, stdout, stderr}` so the next hosted red is self-describing, then fix the exit path.
 
 ### 2.4 The class, the procedure, and a correction to the review note
 
-The class the review named — "a suite that needs repository objects beyond a shallow checkout" — is real in this repo, but it is **not what failed here**, and the distinction changes the procedure. The hosted failure was reported as a shallow checkout missing the pinned baseline `9b2ee57bc…`. The runner's own log says otherwise:
+The class the review named — "a suite that needs repository objects beyond a shallow checkout" — is real in this repo, but it is **not what failed here**, and the distinction changes the procedure.
+
+**Stated plainly: CI declares `fetch-depth: 0`. The depth-1 reds in this section are what a *shallower* checkout would cost, not a current condition.** They are a forward-looking measurement of four collected suites, not an explanation of the `freeze-candidate` hosted red (§2.3). The hosted failure was reported as a shallow checkout missing the pinned baseline `9b2ee57bc…`. The runner's own log says otherwise:
 
 - `ci-integration` checks out with **`fetch-depth: 0`**, and the command it ran has no `--depth`:
   ```
@@ -385,7 +398,7 @@ Same set digest as (a) — same files, same bytes — so the four reds are exact
 | `sync-candidate-resolver` | **red** | `git show 61df0b424:scripts/docs-sync.mjs`, `cat-file 9b2ee57bc`, `origin/master` | green |
 | `verify-candidate` | **red** | frozen manifest's `candidate_commit` ancestry + `refs/remotes/origin/master` | green |
 
-The depth-1 result is recorded, not enforced: CI declares `fetch-depth: 0` and enforces it (`census-runtime.yml`'s PIN precheck fails loudly otherwise), so (a) is the shape that decides, and (b) is what a future shallower checkout would cost.
+The depth-1 result is recorded, **not** enforced and **not** a current condition: CI declares `fetch-depth: 0` and enforces it (`census-runtime.yml`'s PIN precheck fails loudly otherwise), so (a) is the shape that decides, and (b) is what a future shallower checkout would cost. It is not an explanation of the `freeze-candidate` red — that red occurs at depth 0 (§2.3).
 
 ## 6. What stays uncollected (76)
 
