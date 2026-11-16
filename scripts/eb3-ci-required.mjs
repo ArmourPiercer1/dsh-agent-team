@@ -45,6 +45,17 @@
  *   CI_LAYER_LEG_DISPATCH_ID    the leg's `dispatch_id` disagrees with the `--leg` value in its cmd
  *   CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER   a hostFree layer lists a suite that resolves
  *                               the pinned host checkout (checkSuiteLists)
+ *   CI_LAYER_LEG_ENV_MISSING    (B3, 2026-11-16) a leg declares `env` and the step that executes
+ *                               it does not carry the SAME value — the declaration-grades-the-step
+ *                               law that `cmd`/`check[]` already had, extended to env
+ *   CI_HOST_REFUSAL_UNGUARDED   (B3, 2026-11-16) a `hostFree` layer's leg lists a suite that can
+ *                               turn an ABSENT pinned host into a declared NOT_RUN (its source names
+ *                               `A5SF_REQUIRE_PINNED_HOST`), and the leg neither sets that env to `1`
+ *                               nor declares the reviewed exception `hostRefusal: 'declared-not-run'`.
+ *                               Without it the leg stays green with `verdict=NOT_RUN, skipped=15`
+ *                               when the host is gone — measured on the deferred B4 set. It is the
+ *                               static half of the hidden-host control, so the trap cannot recur
+ *                               silently in a lane that will never provision the host.
  *   CI_SUMMARY_NOT_ALWAYS       the summary job lacks `if: always()` — when a layer fails a
  *                               summary without always() is SKIPPED, and skipped is not red
  *   CI_SUMMARY_NEEDS_INCOMPLETE the summary does not call + need every layer — that layer can
@@ -545,7 +556,7 @@ function stepRefusal(step) {
   if (step['continue-on-error'] !== undefined && step['continue-on-error'] !== false) return `step continue-on-error=${JSON.stringify(step['continue-on-error'])}`
   if (step.shell !== undefined && step.shell !== 'bash') return `step shell: ${JSON.stringify(step.shell)} (only unset or exactly \`bash\` is proven errexit)`
   if (step['working-directory'] !== undefined) return `step working-directory: ${JSON.stringify(step['working-directory'])} moves the relative script path`
-  if (step.env !== undefined && Object.keys(step.env).some((k) => ['PATH', 'BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(k))) return 'step env reassigns PATH/BASH_ENV/ENV/NODE_OPTIONS — what `node` resolves to is not proven'
+  if (step.env !== undefined && Object.keys(step.env ?? {}).some((k) => ['PATH', 'BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(k))) return 'step env reassigns PATH/BASH_ENV/ENV/NODE_OPTIONS — what `node` resolves to is not proven'
   return null
 }
 
@@ -569,6 +580,100 @@ export const HOST_DEPENDENCE_MARKERS = Object.freeze([
 /** Read a suite list file: one path per line, `#` comments and blanks ignored. */
 export function readSuiteList(text) {
   return String(text).split('\n').map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'))
+}
+
+// ─────────────────── the deployed half of the hidden-host control (B3, 2026-11-16)
+/**
+ * The env var a suite consults when it would otherwise turn an ABSENT pinned host into a
+ * declared NOT_RUN. A suite whose source names it can SKIP when the host is gone.
+ */
+export const HOST_REFUSAL_MARKER = 'A5SF_REQUIRE_PINNED_HOST'
+
+/** The reviewed exception spelling: a lane that provisions no host declares its NOT_RUN. */
+export const HOST_REFUSAL_DECLARED = 'declared-not-run'
+
+/**
+ * A `hostFree` layer's leg must not be able to pass on an ABSENT pinned host. Two ways to
+ * satisfy the law, and a finding when a leg takes neither:
+ *
+ *   1. `env.A5SF_REQUIRE_PINNED_HOST === '1'` — absence is a red (the leg says so, and
+ *      `checkStepEnvDeclaration` proves the step carries it);
+ *   2. `hostRefusal === 'declared-not-run'` — a named, reviewed exception for a lane that
+ *      deliberately provisions no host (today exactly one: the FS-face layer-B leg, whose
+ *      suite reports `A5SF-FS-CONTRACT-HOST-REFUSED` with `pass 0` and 9 skips).
+ *
+ * The measured defect this closes: `a5sf-pty-contract` on a genuinely absent tree exits 0
+ * with `A5SF-PTY-CONTRACT-HOST-REFUSED … skipped=15 cases=15 verdict=NOT_RUN`. A leg that
+ * lists such a suite without either declaration stays green while running nothing, and no
+ * other rule in this file sees it (`checkSuiteLists` only reads `suiteList` files, and
+ * `ci-integration` has none).
+ *
+ * SCOPE, stated honestly: explicit `suites[]` only. An `areas[]` leg's population is
+ * discovered from git at dispatch time; this rule does not expand areas (it is pure over
+ * the manifest, with no git read), so an area leg that later swallows a refusal-capable
+ * suite is not caught here. `scripts/dispatch-tests.mjs` still refuses untracked/empty
+ * declarations, and the catalog still grades collection.
+ *
+ * @param {object} p
+ * @param {string} [p.root]
+ * @param {object} [p.manifest]
+ * @param {Record<string,string>} [p.override]  path → text, for controls (no disk writes)
+ */
+export function checkHostRefusalGuard({ root = ROOT, manifest = loadManifest(root), override = {} } = {}) {
+  const findings = []
+  const read = (rel) => (rel in override ? override[rel] : existsSync(join(root, rel)) ? readFileSync(join(root, rel), 'utf8') : null)
+  for (const layer of manifest.layers ?? []) {
+    if (layer.hostFree !== true) continue
+    for (const leg of layer.legs ?? []) {
+      if (leg.env?.[HOST_REFUSAL_MARKER] === '1') continue
+      if (leg.hostRefusal === HOST_REFUSAL_DECLARED) continue
+      for (const suite of Array.isArray(leg.suites) ? leg.suites : []) {
+        const text = read(String(suite))
+        if (text === null) continue // a nonexistent suite is CI_SUITE_ABSENT / DISPATCH_SUITE_UNTRACKED elsewhere
+        if (!text.includes(HOST_REFUSAL_MARKER)) continue
+        findings.push({
+          code: 'CI_HOST_REFUSAL_UNGUARDED',
+          detail:
+            `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which can turn an ABSENT pinned host into ` +
+            `\`verdict=NOT_RUN\` with skips (it consults ${HOST_REFUSAL_MARKER}). Set env.${HOST_REFUSAL_MARKER}="1" on the leg ` +
+            `(and on its step) so absence is a red, or declare hostRefusal="${HOST_REFUSAL_DECLARED}" with the reason if this lane ` +
+            `deliberately provisions no host (${MANIFEST_REL})`,
+          layer: layer.id,
+          leg: leg.id,
+          path: suite,
+        })
+      }
+    }
+  }
+  return { findings }
+}
+
+/**
+ * The declaration-grades-the-step law, extended to `env`. `cmd`/`check[]` already had it
+ * (`CI_LAYER_LEG_MISSING` answers "does a step EXECUTE this invocation?"); without this rule
+ * a leg could declare `env.A5SF_REQUIRE_PINNED_HOST=1` and the step that runs it could omit
+ * it, restoring the silent-skip trap while the manifest still looked guarded.
+ *
+ * @returns {{code: string, why: string}|null}
+ */
+export function checkStepEnvDeclaration(job, leg) {
+  const declared = leg?.env
+  if (declared === undefined || declared === null) return null
+  if (typeof declared !== 'object' || Array.isArray(declared)) return { code: 'CI_LAYER_LEG_ENV_MISSING', why: 'leg.env must be an object of NAME -> value' }
+  const names = Object.keys(declared)
+  if (names.length === 0) return null
+  const cmd = Array.isArray(leg.cmd) ? leg.cmd : []
+  if (cmd.length === 0) return null
+  const step = (job?.steps ?? []).find((s) => typeof s?.run === 'string' && s.run.includes(cmd.join(' ')))
+  if (step === undefined) return null // CI_LAYER_LEG_MISSING names the absent step; do not double-report
+  const missing = names.filter((k) => String(step?.env?.[k] ?? '') !== String(declared[k]))
+  if (missing.length === 0) return null
+  return {
+    code: 'CI_LAYER_LEG_ENV_MISSING',
+    why:
+      `the manifest leg declares env ${JSON.stringify(declared)} but the step that executes \`${cmd.join(' ')}\` ` +
+      `sets ${JSON.stringify(step?.env ?? {})} — one invocation, two copies, and they disagree (missing/mismatched: ${missing.join(', ')})`,
+  }
 }
 
 /**
@@ -682,6 +787,10 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
       checkDeclaredLeg(job, leg, { prefix: `layer ${layer.id}`, layer: layer.id, workflow: layer.workflow, job: layer.job }, add)
       const argvDrift = checkStepArgvDeclaration(job, leg)
       if (argvDrift !== null) add(argvDrift.code, `layer ${layer.id}: leg "${leg.id}" — ${argvDrift.why}`, { layer: layer.id, leg: leg.id })
+      // B3: a declared `env` is a claim about the step that executes this leg, and it is
+      // graded the same way `cmd`/`check[]` is — otherwise the guard is prose.
+      const envDrift = checkStepEnvDeclaration(job, leg)
+      if (envDrift !== null) add(envDrift.code, `layer ${layer.id}: leg "${leg.id}" — ${envDrift.why}`, { layer: layer.id, leg: leg.id })
     }
     // The merge-tree binding is a leg too: a layer that never compares its checkout to
     // the synthetic tree may be grading a different tree than the one reported.
@@ -984,6 +1093,7 @@ if (invokedDirectly) {
     const files = workflowFiles(ROOT)
     const wf = checkRequiredJobs({ files })
     const sl = checkSuiteLists({ root: ROOT })
+    const hg = checkHostRefusalGuard({ root: ROOT })
     const rawLabels = process.env['EB3_PR_LABELS_JSON']
     const conclusion = process.env['EB3_CI_REQUIRED_CONCLUSION']
     const rawDraft = process.env['EB3_PR_DRAFT']
@@ -995,7 +1105,7 @@ if (invokedDirectly) {
         dc = { findings: [{ code: 'CI_DEFERRAL_CONFLICT_UNREADABLE', detail: `EB3_PR_LABELS_JSON is set but unreadable: ${String(e?.message ?? e).slice(0, 80)}` }] }
       }
     }
-    out = { files: files.size, findings: [...wf.findings, ...sl.findings, ...dc.findings] }
+    out = { files: files.size, findings: [...wf.findings, ...sl.findings, ...hg.findings, ...dc.findings] }
   } catch (e) {
     console.error(`EB3-CI-REQUIRED refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)

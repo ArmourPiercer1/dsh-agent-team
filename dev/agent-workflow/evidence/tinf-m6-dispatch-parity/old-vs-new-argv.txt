@@ -4,7 +4,8 @@ dated: 2026-11-16 (regenerated for batch B2, then re-regenerated that day when t
        forced one B2 suite back out — see the second B2 paragraph below)
 base:  e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773 — the last commit whose
        workflows still carried the hand-written `node --test` lists)
-head:  task/b2-collect-20261116 (M6 + trust-closeout + M7-A + B2's eight host-free authority suites)
+head:  task/b3-collect-20261116 (M6 + trust-closeout + M7-A + B2 as merged at 81bf61ccf
+       (8 of 9 suites) + B3's twenty-eight host-free world-factory suites)
 host:  v24.21.0 / git 2.53.0 / Linux x86_64
 
 WHY THIS FILE EXISTS
@@ -50,6 +51,21 @@ WHY THIS FILE EXISTS
   dev/ci/uncollected-baseline.json until repaired in their own PRs.
   `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set.
 
+  REGENERATED 2026-11-16 (B3, uncollected-test audit batch B3). The 28 world-factory suites that
+  the audit called host-free — RE-MEASURED with the pinned tree ABSENT, because its own rev-2
+  records that the first host-free label was wrong for 18 files (`findTestRepoRoot()` walks up out
+  of `.worktrees/<task>` into the main checkout) — ride the SAME `tinf-instruments` leg, declared
+  explicitly in the manifest's `suites[]` (20 -> 48). Same reason as M7-A and B2: a brand-new
+  dispatch step has no `node --test` argv at the base, so it would be a permanent `UNCONVERTED`
+  problem and `problems` could not be 0 (measured on the first revision of this change against
+  e5bf05670: problems=1, UNCONVERTED step "a5sf world-factory C1"). The union is DELIBERATELY 67
+  instead of 39; every row still has `missing=none`, `problems=0`, and `added=` now names exactly
+  forty-two files (the four trust-closeout controls, M7-A's two, B2's eight as merged, and these
+  28). The three B3 files that are red regardless of the host (two `require.resolve` install-shape
+  reds, one stale product-debt anchor) are NOT here and stay in
+  dev/ci/uncollected-baseline.json — see docs/plans/memo/b3-collect-20261116/README.md for the
+  verbatim output. `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set.
+
 WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
   argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
   25/25 and is not a meaningful comparison. e5bf05670 is the last commit whose workflows
@@ -79,7 +95,7 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
       old scripts/tinf-m0.test.mjs
       new scripts/tinf-m0.test.mjs
-    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=20 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=48 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/a5sf-acceptance-preflight.test.mjs,tests/world-factory/a5sf-ask-precedence.test.mjs,tests/world-factory/a5sf-assembly.test.mjs,tests/world-factory/a5sf-bash.test.mjs,tests/world-factory/a5sf-capability-defaults.test.mjs,tests/world-factory/a5sf-dev-live-slots.test.mjs,tests/world-factory/a5sf-dev-live.test.mjs,tests/world-factory/a5sf-dual-plane.test.mjs,tests/world-factory/a5sf-instrument-graph.test.mjs,tests/world-factory/a5sf-p01-realm-binding.test.mjs,tests/world-factory/a5sf-pd1-revocation-escape.test.mjs,tests/world-factory/a5sf-pd12-bash-governance.test.mjs,tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs,tests/world-factory/a5sf-pd26-confined-skill.test.mjs,tests/world-factory/a5sf-pd29-goal-stop.test.mjs,tests/world-factory/a5sf-pd33-preview-e2e.test.mjs,tests/world-factory/a5sf-pd34-member-stop.test.mjs,tests/world-factory/a5sf-run-record-binding.test.mjs,tests/world-factory/a5sf-search-live.test.mjs,tests/world-factory/a5sf-window-taxonomy.test.mjs,tests/world-factory/arm-verdict.test.mjs,tests/world-factory/binding-digests.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs,tests/world-factory/port-probe.test.mjs,tests/world-factory/u6-arc-d.test.mjs,tests/world-factory/u7-tbash-offline-drive.test.mjs,tests/world-factory/u7-tbash-seam.test.mjs,tests/world-factory/u7-tbash.test.mjs,tests/world-factory/u7-uileg0-answer-drive.test.mjs
       old scripts/census-aggregate.test.mjs
       old scripts/census-cutover.test.mjs
       old scripts/census-plan.test.mjs
@@ -104,8 +120,36 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
       new tests/s2-authority/probe-candidate.test.mjs
       new tests/s2-authority/sync-candidate-resolver.test.mjs
       new tests/s2-authority/verify-candidate.test.mjs
+      new tests/world-factory/a5sf-acceptance-preflight.test.mjs
+      new tests/world-factory/a5sf-ask-precedence.test.mjs
+      new tests/world-factory/a5sf-assembly.test.mjs
+      new tests/world-factory/a5sf-bash.test.mjs
+      new tests/world-factory/a5sf-capability-defaults.test.mjs
+      new tests/world-factory/a5sf-dev-live-slots.test.mjs
+      new tests/world-factory/a5sf-dev-live.test.mjs
+      new tests/world-factory/a5sf-dual-plane.test.mjs
+      new tests/world-factory/a5sf-instrument-graph.test.mjs
+      new tests/world-factory/a5sf-p01-realm-binding.test.mjs
+      new tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
+      new tests/world-factory/a5sf-pd12-bash-governance.test.mjs
+      new tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
+      new tests/world-factory/a5sf-pd26-confined-skill.test.mjs
+      new tests/world-factory/a5sf-pd29-goal-stop.test.mjs
+      new tests/world-factory/a5sf-pd33-preview-e2e.test.mjs
+      new tests/world-factory/a5sf-pd34-member-stop.test.mjs
+      new tests/world-factory/a5sf-run-record-binding.test.mjs
+      new tests/world-factory/a5sf-search-live.test.mjs
+      new tests/world-factory/a5sf-window-taxonomy.test.mjs
+      new tests/world-factory/arm-verdict.test.mjs
+      new tests/world-factory/binding-digests.test.mjs
       new tests/world-factory/m7a-real-slice-host-state.test.mjs
       new tests/world-factory/m7a-real-slice-unit.test.mjs
+      new tests/world-factory/port-probe.test.mjs
+      new tests/world-factory/u6-arc-d.test.mjs
+      new tests/world-factory/u7-tbash-offline-drive.test.mjs
+      new tests/world-factory/u7-tbash-seam.test.mjs
+      new tests/world-factory/u7-tbash.test.mjs
+      new tests/world-factory/u7-uileg0-answer-drive.test.mjs
     a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
       old tests/world-factory/a5sf-harness.test.mjs
       new tests/world-factory/a5sf-harness.test.mjs
@@ -143,5 +187,8 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=39 set=sha256:cb9240edad2cfffd84f7f1d887e8cc5c98f89279fc44a83503291401c7eaca47
-DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=39 problems=0
+  union old=25 new=67 set=sha256:4f8ba2615c9cec27d75c0366d5bd1599d12c044fb6dab19cd3d1a6151e1494ee
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=67 problems=0
+
+EXIT CODE
+1
