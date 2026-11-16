@@ -424,26 +424,47 @@ jobs:
       #       inside ten minutes beats a cancelled job, which reports NOTHING about the code.
       # The failure is also printed to stderr immediately (`[M7A] PRECONDITION <name> FAILED: …`
       # and `[M7A] SUITE FAILED: …`), so a bounded red names its cause on the first line.
-      # DISCLOSED REFUSAL, NOT continue-on-error (reviewer decision 2026-11-15, option B).
-      # Measured fact: this runner CANNOT boot the pinned host. `bin/glibc/system.node` is a
-      # gitignored native asset; `tests/world-factory/lib/host-sandbox-assets-manifest.json` pins the
-      # bytes of ONE machine's build (`provenance.measuredFrom`), a fresh clone + build of the same
-      # pinned host SHA produces different bytes, and the provisioner's only source is a local tree
-      # a hosted runner does not have. So the step may accept EXACTLY ONE outcome that is not a
-      # verification: the sandbox-asset digest refusal, named `M7A-HOST-ASSET-UNPROVISIONABLE`, with
-      # zero arms graded — and only because `M7A_ALLOW_UNPROVISIONABLE_HOST=1` is set HERE and
-      # nowhere else (default off: a local run still hard-fails). Any other failure, a refusal that
-      # arrives alongside graded arms, or a missing record fails the job. `m7a-step.json` records the
-      # verdict for the ledger step below; the memo states that the real-host slice is NOT verified
-      # on CI as of this commit. Provenance: hosted job 132898455498 (41-minute hang, cancelled L2),
-      # cold-checkout reproduction (DESTINATION_DIGEST_MISMATCH, exit 1 after 94 s).
+      # NO EXEMPTION ANY MORE (2026-11-16). Until this commit the step accepted exactly one
+      # non-verification — the sandbox-asset digest refusal, named `M7A-HOST-ASSET-UNPROVISIONABLE`,
+      # zero arms graded — because it was set with `M7A_ALLOW_UNPROVISIONABLE_HOST=1` HERE and
+      # nowhere else. That is GONE: the step above provisions the pinned bytes from the PINNED
+      # PUBLISHED package, so the "this runner cannot carry the pinned bytes" fact no longer holds.
+      # The refusal code path still exists in `tests/world-factory/lib/m7a-step-verdict.mjs`, still
+      # defaults OFF, and is still tested — but no workflow sets it, so it is unreachable from CI
+      # (`tests/world-factory/host-sandbox-assets.test.mjs` T38 greps every workflow for it). A
+      # refusal here now fails the job; the slice must produce `M7A-STEP verdict=VERIFIED arms=5`.
+      # The assets are installed by the step immediately above (tarball only, exact version, verified
+      # against the UNCHANGED sha256 pin); this step's own contract is unchanged otherwise.
+      # HOST SANDBOX ASSETS (2026-11-16) — the PINNED PUBLISHED PACKAGE, not the runner's build.
+      # MEASURED (2026-11-16, owner download; recorded in the manifest's `packages` block and in
+      # docs/plans/memo/host-assets-20261116/README.md): the published tarball
+      # `@deepseek-ai/node-addon-system-linux-x64@0.1.2` (25758 bytes, sha256 77fb771b…, registry
+      # dist.integrity sha512-S2aPVHvY…) carries EXACTLY the bytes the committed manifest already
+      # pins — `bin/glibc/system.node` sha256 54a9c25c… (17360 B) and `bin/landlock-run` sha256
+      # a752bc72… (38552 B). A hosted runner's own host build produces DIFFERENT bytes for the addon
+      # (measured dfa6d586… in job 132898455498, the exact `DESTINATION_DIGEST_MISMATCH` the M7-A
+      # step used to disclose).
+      # THE DECISION (owner, 2026-11-16): the FIXED PUBLISHED ASSET is the standard; the runner's
+      # build is not. Keep the existing sha256 pin, do NOT move it to match a build, and provision
+      # from the pinned published version only (exact version — no ranges, no `latest`). The tarball
+      # is verified against the registry's published dist.integrity AND the pinned tarball sha256,
+      # every file against the pin, and only then installed. Tarball only: no pnpm install of the
+      # package, no repo dependency, no upstream patch (CORE PATCH BUDGET = 0).
+      # WHOLE-ARGV DISCIPLINE: this line is EXACTLY the `ci-census` leg
+      # `host-sandbox assets (pinned published package)` in dev/ci/eb3-ci-manifest.json, and
+      # `eb3-ci-required` grades it the same way it grades the M7-A step.
+      # ORDER: after the census and its re-grade (the census population and its captures are
+      # untouched), immediately before M7-A, which reads these assets.
+      - name: Host sandbox assets — provision the PINNED published package (exact version, verified)
+        shell: bash
+        run: node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+
       - name: M7-A real-host slice — one real boot, five arms (pinned host REQUIRED, never skipped)
         shell: bash
         timeout-minutes: 10
         env:
           M7A_REQUIRE_PINNED_HOST: '1'
           M7A_BOOT_TIMEOUT_MS: '600000'
-          M7A_ALLOW_UNPROVISIONABLE_HOST: '1'
           # Recorded verbatim in m7a-step.json: a node:test child cannot see the flags the runner
           # consumed (`--test-reporter=spec`), so the step declares its own command instead.
           M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
