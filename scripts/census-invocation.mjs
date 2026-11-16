@@ -17,15 +17,32 @@
  *
  * THE ARGUMENT ORDER IS LOAD-BEARING AND UNCHANGED from the gate's inline literals:
  *   pnpm exec vitest run [<file>] --reporter=default --reporter=json --outputFile.json=<path>
- *                    [--testTimeout=<ms>]
+ *                    [--testTimeout=<ms>] --maxWorkers=<N>
  * `--reporter=default` is kept because the transcript's human-readable summary is what the re-grade
  * step reads; `--reporter=json` is what the census is graded from; `--outputFile.json` is the file
  * the aggregator's per-task evidence points at. `--testTimeout` is appended ONLY when an operator
  * passed a clock (the gate prints which clock was in force on every leg line, and the plan records
  * it in its digest), so a plan for a run under the suite default carries no `--testTimeout` at all.
  *
+ * THE WORKER CEILING IS EXPLICIT. Vitest's default is `availableParallelism() - 1`, which is **3**
+ * on the 4-vCPU hosted runner, and the measured census is wait-heavy (children, pipe I/O, fs):
+ * 4 workers on the same 4 CPUs finished a capture 102 s sooner than 3 in the perf-diag memo
+ * (`docs/plans/memo/perf-diag-20261115/README.md` §5). Before a perf-rank1 change this argv carried
+ * no `--maxWorkers` at all, so the runner's effective ceiling was 3 by derivation; it is now named
+ * here, in the ONE module both the census gate and the census plan build their command from, so the
+ * value cannot drift between the runner and the plan. The rest of the invocation — reporters, the
+ * JSON report path, the optional clock, one `vitest run` over the whole population, two serial
+ * captures — is unchanged.
+ *
  * @module scripts/census-invocation
  */
+
+/**
+ * The census `vitest` worker ceiling. 4 = the hosted runner's vCPU count (perf-rank1, 2026-11-16);
+ * its previous EFFECTIVE value was 3 (vitest's `availableParallelism() - 1`). Named, exported and
+ * used by `censusVitestArgv` so no caller can carry a different number.
+ */
+export const CENSUS_MAX_WORKERS = 4
 
 /**
  * The census command for one capture (or one re-sample of a single file).
@@ -47,6 +64,7 @@ export function censusVitestArgv({ jsonPath, testTimeout = null, file = null } =
     '--reporter=json',
     `--outputFile.json=${jsonPath}`,
     ...(testTimeout === null ? [] : [`--testTimeout=${String(testTimeout)}`]),
+    `--maxWorkers=${String(CENSUS_MAX_WORKERS)}`,
   ]
 }
 
