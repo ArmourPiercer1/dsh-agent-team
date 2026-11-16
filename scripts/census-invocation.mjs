@@ -17,15 +17,35 @@
  *
  * THE ARGUMENT ORDER IS LOAD-BEARING AND UNCHANGED from the gate's inline literals:
  *   pnpm exec vitest run [<file>] --reporter=default --reporter=json --outputFile.json=<path>
- *                    [--testTimeout=<ms>]
+ *                    [--testTimeout=<ms>] --maxWorkers=<N>
  * `--reporter=default` is kept because the transcript's human-readable summary is what the re-grade
  * step reads; `--reporter=json` is what the census is graded from; `--outputFile.json` is the file
  * the aggregator's per-task evidence points at. `--testTimeout` is appended ONLY when an operator
  * passed a clock (the gate prints which clock was in force on every leg line, and the plan records
  * it in its digest), so a plan for a run under the suite default carries no `--testTimeout` at all.
  *
+ * THE WORKER CEILING IS EXPLICIT. Vitest's default is `max(availableParallelism() - 1, 1)`; the
+ * perf-diag memo measured the effective 3-worker capture on a 4-CPU mask and found 4 workers on the
+ * same 4 CPUs finishing ~102 s sooner on a wait-heavy population
+ * (`docs/plans/memo/perf-diag-20261115/README.md` §5). Before perf-rank1 this argv carried no
+ * `--maxWorkers` at all, so the ceiling was whatever the machine implied; it is now named here, in
+ * the module that builds the argv for the census capture, its load-family re-sample and every census
+ * plan task, so those three cannot carry different ceilings. The value is NOT derived from the
+ * machine's core count — the hosted runner's own shape is an external assumption — so every gate run
+ * logs `available_parallelism` and `workers` on its `DSH-CI-RUN` line, and an L2 can judge the
+ * ceiling against the machine it actually got. The rest of the invocation — reporters, the JSON
+ * report path, the optional clock, one `vitest run` over the whole population, two serial captures —
+ * is unchanged.
+ *
  * @module scripts/census-invocation
  */
+
+/**
+ * The census `vitest` worker ceiling. 4 = the approved perf-diag rank-1 value (2026-11-16), one
+ * above the previous EFFECTIVE 3 (vitest's `availableParallelism() - 1` on the measured 4-CPU
+ * shape). Named, exported and used by `censusVitestArgv` so no caller can carry a different number.
+ */
+export const CENSUS_MAX_WORKERS = 4
 
 /**
  * The census command for one capture (or one re-sample of a single file).
@@ -47,6 +67,7 @@ export function censusVitestArgv({ jsonPath, testTimeout = null, file = null } =
     '--reporter=json',
     `--outputFile.json=${jsonPath}`,
     ...(testTimeout === null ? [] : [`--testTimeout=${String(testTimeout)}`]),
+    `--maxWorkers=${String(CENSUS_MAX_WORKERS)}`,
   ]
 }
 
