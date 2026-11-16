@@ -1,9 +1,10 @@
 # TINF M6 — dispatch parity evidence (old argv vs new dispatched argv)
 
-dated: 2026-11-15
+dated: 2026-11-16 (regenerated for batch B2, then re-regenerated that day when the hosted run
+       forced one B2 suite back out — see the second B2 paragraph below)
 base:  e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773 — the last commit whose
        workflows still carried the hand-written `node --test` lists)
-head:  task/m7a-real-host-20261115 (M6 + trust-closeout + M7-A's two host-free C1 suites)
+head:  task/b2-collect-20261116 (M6 + trust-closeout + M7-A + B2's eight host-free authority suites)
 host:  v24.21.0 / git 2.53.0 / Linux x86_64
 
 WHY THIS FILE EXISTS
@@ -30,6 +31,25 @@ WHY THIS FILE EXISTS
   trust-closeout controls plus these two). The C2 half — the one that boots the real Host — is NOT
   here: it runs in ci-census, which is the only job that provisions the pinned host.
 
+  REGENERATED 2026-11-16 (B2, uncollected-test audit batch B2). EIGHT of the ten
+  `tests/s2-authority/` suites ride the SAME `tinf-instruments` leg, declared explicitly in the
+  manifest's `suites[]` (the host-free authority machine's own laws). Same reason as M7-A: a
+  brand-new dispatch step has no `node --test` argv at the base, so it would be a permanent
+  `UNCONVERTED` problem and `problems` could not be 0. The union is DELIBERATELY 39 instead of 31;
+  every row still has `missing=none`, `problems=0`, and `added=` now names exactly fourteen files
+  (the four trust-closeout controls, M7-A's two suites, and these eight).
+
+  TWO suites are deliberately NOT here. tests/s2-authority/consumer-candidate.test.mjs: its C10
+  case compares `runtime` (the live `git status --porcelain` count), so a concurrent sibling suite
+  that stages a temp path between its two builds reds it (`dirty_paths` 11 vs 12, measured in this
+  leg). tests/s2-authority/freeze-candidate.test.mjs: it was in the first cut of this batch (union
+  40, added fifteen) and the HOSTED leg then failed on it — one case, `--check DETECTS a tampered
+  content_digest`, on head 49bb277f, while the same leg had PASSED on head e0514df18 with a
+  byte-identical dispatch set (`sha256:a7d04943…`). It does not reproduce locally, so its cause is
+  UNKNOWN and unknown nondeterminism is disqualifying. Both stay in
+  dev/ci/uncollected-baseline.json until repaired in their own PRs.
+  `scripts/test-catalog.test.mjs` pins both the digest and the allowed added set.
+
 WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
   argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
   25/25 and is not a meaningful comparison. e5bf05670 is the last commit whose workflows
@@ -38,7 +58,7 @@ WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --
 REPRODUCE
   node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
 
-dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
       old tests/diag-call-chain/diag-call-chain.test.mjs
@@ -59,7 +79,7 @@ dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=wo
     scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
       old scripts/tinf-m0.test.mjs
       new scripts/tinf-m0.test.mjs
-    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=12 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=20 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs
       old scripts/census-aggregate.test.mjs
       old scripts/census-cutover.test.mjs
       old scripts/census-plan.test.mjs
@@ -76,6 +96,14 @@ dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=wo
       new scripts/test-catalog.test.mjs
       new scripts/tinf-timing.test.mjs
       new scripts/tinf-trust-closeout.test.mjs
+      new tests/s2-authority/authority-dual-read.test.mjs
+      new tests/s2-authority/authority-snapshot-isolated.test.mjs
+      new tests/s2-authority/candidate-track-negative-control.test.mjs
+      new tests/s2-authority/ci-snapshot-reader.test.mjs
+      new tests/s2-authority/current-authority-pointer.test.mjs
+      new tests/s2-authority/probe-candidate.test.mjs
+      new tests/s2-authority/sync-candidate-resolver.test.mjs
+      new tests/s2-authority/verify-candidate.test.mjs
       new tests/world-factory/m7a-real-slice-host-state.test.mjs
       new tests/world-factory/m7a-real-slice-unit.test.mjs
     a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
@@ -115,8 +143,5 @@ dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=wo
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=31 set=sha256:949f64991fac2208dbd779358802f6bcfbe149bfd4ea07871fc27d0bb07909dc
-DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=31 problems=0
-
-EXIT CODE
-1
+  union old=25 new=39 set=sha256:cb9240edad2cfffd84f7f1d887e8cc5c98f89279fc44a83503291401c7eaca47
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=39 problems=0
