@@ -84,6 +84,10 @@ with the repo root `vitest.config.ts` loaded by default, one invocation per capt
 
 **Population side-effect:** the root config now derives **12 roots / 712 files** (was 11 / 705; the new root is `packages/domain/compatibility` with its 7 files).
 
+### Population sanity (observation, not a gate)
+
+A one-shot local run of the whole post-change root population (`vitest run --config vitest.config.ts`, dot reporter) collected **712 files** — the 7 B1 files included — and reported 689 passed / 23 failed files (8 failed tests, 9011 passed / 9019) in 290.9 s. **None of the 23 is a B1 file** (the failures are `packages/runtime/**` and kit suites whose local shape needs a built host/`DSH_HOME`; e.g. the first failure is an `ENFORCEMENT_UNAVAILABLE` assertion). That local run is not the census and is not used as a green claim here: the gate-relevant evidence is the targeted root-config run above (7/7 files, 76/76 tests) plus the catalogue/plan counts. What the full run does establish is the file count: the population really is 712, not 705 + an inferred delta.
+
 ## 3. Ratchet: 91 → 84, exactly
 
 - `dev/ci/uncollected-baseline.json` was **regenerated**, not hand-edited:
