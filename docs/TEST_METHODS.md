@@ -162,7 +162,7 @@ node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-sy
 ```
 
 **顺序即拒绝顺序**：精确版本（`PACKAGE_SPEC_NOT_EXACT` / `PACKAGE_VERSION_UNPINNED` / `PACKAGE_SPEC_INVALID`，
-全部在网络前）→ 目标符号链接（`DESTINATION_IS_SYMLINK`，任何写之前）→ metadata
+全部在网络前）→ 目标符号链接（`DESTINATION_IS_SYMLINK`）与目标形状（`DESTINATION_NOT_REGULAR_FILE`：FIFO/socket/设备/目录/硬链接在**第一次读之前** `lstat` 拒绝，见 memo §7.1；本地复制传输共用同一律），两者都在任何写之前→ metadata
 （`REGISTRY_METADATA_UNAVAILABLE` / `REGISTRY_INTEGRITY_MISSING` / `REGISTRY_INTEGRITY_UNKNOWN` /
 `REGISTRY_NAME_MISMATCH` / `REGISTRY_VERSION_MISMATCH`）→ tarball（`TARBALL_INTEGRITY_MISMATCH` 对 registry
 `dist.integrity`，再 `TARBALL_DIGEST_MISMATCH` / `TARBALL_LENGTH_MISMATCH` 对提交的 `tarballSha256` /

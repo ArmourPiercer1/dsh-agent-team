@@ -123,6 +123,7 @@ export const FATAL_PROVISION_CODES = Object.freeze([
   'LIBC_VARIANT_UNMANIFESTED',
   'WRITES_OUTSIDE_PLATFORM_BIN',
   'SOURCE_IS_DESTINATION',
+  'DESTINATION_NOT_REGULAR_FILE',
   'SOURCE_TREE_MISSING',
   'SOURCE_TREE_NOT_A_DIRECTORY',
   'SOURCE_TREE_OUTSIDE_ALLOWED_ROOTS',
@@ -406,6 +407,9 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
   const destination = relPaths.map((rel) => {
     const path = join(layout.platformDir, rel)
     const spec = pinned.files[rel]
+    // Before ANY read: a FIFO/socket/device/hardlink/directory destination must
+    // refuse, not block (this is the shape that cost a 41-minute cancelled job).
+    assertRegularDestinationFile(layout.platformDir, rel, baseline.manifestKey)
     const present = existsSync(path)
     const sha256 = present ? sha256File(path) : null
     return { relPath: rel, role: rel === pinned.launcher ? 'launcher' : 'addon', path, present, sha256, expectedSha256: spec.sha256, bytes: spec.bytes, mode: spec.mode, modeBits: modeBits.get(rel) }
@@ -478,6 +482,7 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
     for (const f of destination.filter((d) => !d.present)) {
       const srcFile = sourceFiles.get(f.relPath)
       const stage = `${f.path}.u7-sbx-staging`
+      assertStagePathWritable(stage, f.relPath, baseline.manifestKey)
       mkdirSync(dirname(f.path), { recursive: true })
       copyFileSync(srcFile.path, stage)
       const stagedSha = sha256File(stage)
@@ -794,6 +799,7 @@ export const PACKAGE_TRANSPORT_CODES = Object.freeze([
   'PACKAGE_FILE_LENGTH_MISMATCH',
   'PACKAGE_FILE_DIGEST_MISMATCH',
   'DESTINATION_IS_SYMLINK',
+  'DESTINATION_NOT_REGULAR_FILE',
   'RECEIPT_WRITE_FAILED',
 ])
 
@@ -1003,6 +1009,53 @@ function assertNoSymlinkOnPath(root, rel, context) {
   }
 }
 
+/**
+ * Name a destination that is NOT a regular file, in terms an operator can act on.
+ * These are the shapes that make `readFileSync`/`copyFileSync` BLOCK (a FIFO
+ * waits for a writer, a socket/device never answers) or mutate bytes that belong
+ * to another path (a hardlink shares its inode). A test timeout is not a
+ * refusal: the check must run BEFORE the first read.
+ */
+function destinationNotRegularDetail(st) {
+  if (st.isFIFO()) return 'a FIFO (reading it blocks until a writer appears)'
+  if (st.isDirectory()) return 'a directory'
+  if (st.isSocket()) return 'a socket'
+  if (st.isBlockDevice()) return 'a block device'
+  if (st.isCharacterDevice()) return 'a character device'
+  if (st.isFile()) return `a regular file with nlink=${String(st.nlink)} (a hardlink: an in-place overwrite would change another path's bytes)`
+  return `not a regular file (mode 0o${(st.mode & 0o7777).toString(8)})`
+}
+
+/**
+ * Refuse a destination path that exists as anything but a regular file with
+ * nlink === 1. Absent is fine (the install creates it). Runs before hashing,
+ * backing up or copying, so a FIFO can never hang the provisioner.
+ * @throws {HostSandboxAssetError} DESTINATION_NOT_REGULAR_FILE
+ */
+function assertRegularDestinationFile(root, rel, context) {
+  const path = join(root, ...rel.split('/'))
+  let st
+  try {
+    st = lstatSync(path)
+  } catch {
+    return
+  }
+  if (st.isFile() && st.nlink === 1) return
+  throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `${context}: ${path} is ${destinationNotRegularDetail(st)} — the destination must be a regular file (nlink=1) or absent; reading, backing up or writing through anything else can block indefinitely or mutate another path's bytes, so nothing was read, backed up or written`)
+}
+
+/** The staging name is writable too: a FIFO/socket there would block `writeFileSync`. */
+function assertStagePathWritable(stage, rel, context) {
+  let st
+  try {
+    st = lstatSync(stage)
+  } catch {
+    return
+  }
+  if (st.isFile() && st.nlink === 1) return
+  throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `${context}: staging path ${stage} for ${rel} is ${destinationNotRegularDetail(st)} — refusing to write through it (nothing was installed)`)
+}
+
 /** Where the provisioning receipt is written (explicit file → directory → default). */
 export function hostAssetReceiptPath(repoRoot, env = process.env) {
   const explicit = typeof env?.[RECEIPT_ENV] === 'string' ? env[RECEIPT_ENV].trim() : ''
@@ -1070,6 +1123,8 @@ export async function provisionHostSandboxAssetsFromPackage({
   }
   assertNoSymlinkOnPath(layout.platformDir, pinned.launcher, baseline.manifestKey)
   for (const rel of relPaths) assertNoSymlinkOnPath(layout.platformDir, rel, baseline.manifestKey)
+  assertRegularDestinationFile(layout.platformDir, pinned.launcher, baseline.manifestKey)
+  for (const rel of relPaths) assertRegularDestinationFile(layout.platformDir, rel, baseline.manifestKey)
 
   // (3) REGISTRY METADATA: the exact version, with an integrity we pinned.
   const base = String(registryBase ?? pinned.registry ?? DEFAULT_REGISTRY).replace(/\/+$/u, '')
@@ -1218,6 +1273,10 @@ export async function provisionHostSandboxAssetsFromPackage({
         const spec = pinned.files[f.relPath]
         const mode = modeBits.get(f.relPath)
         const stage = `${f.path}.u7-sbx-staging`
+        // Re-check at install time (the pre-network check was earlier; a FIFO
+        // swapped in since must not hang the hash/backup below).
+        assertRegularDestinationFile(layout.platformDir, f.relPath, baseline.manifestKey)
+        assertStagePathWritable(stage, f.relPath, baseline.manifestKey)
         mkdirSync(dirname(f.path), { recursive: true })
         if (f.present) {
           const backup = join(tempDir, `backup-${written.length}-${f.relPath.replace(/[\\/]/gu, '_')}`)
@@ -1265,6 +1324,19 @@ export async function provisionHostSandboxAssetsFromPackage({
         if (existsSync(stage)) rmSync(stage, { force: true })
         const backup = backups.get(path)
         if (backup !== undefined) {
+          // A FIFO/socket swapped in during the run would make the restore
+          // block. Remove a non-regular entry (bounded) before writing; if it
+          // still isn't a regular file, fail closed instead of hanging.
+          let st = null
+          try { st = lstatSync(path) } catch { /* absent */ }
+          if (st !== null && !st.isFile()) {
+            try { rmSync(path, { force: true }) } catch { /* a directory cannot be unlinked */ }
+            st = null
+            try { st = lstatSync(path) } catch { /* gone */ }
+            if (st !== null && !st.isFile()) {
+              throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `rollback cannot restore ${path}: it is ${destinationNotRegularDetail(st)} — the destination was left in place rather than blocking the rollback`)
+            }
+          }
           copyFileSync(backup.backup, path)
           chmodSync(path, backup.mode)
         } else if (existsSync(path)) {

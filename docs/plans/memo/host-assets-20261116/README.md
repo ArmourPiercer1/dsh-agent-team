@@ -135,6 +135,7 @@ M7-A 腿相同：workflow 行的整条尾随 argv 必须**恰好等于** `cmd + 
 | d | metadata 无 `dist.integrity` | `REGISTRY_INTEGRITY_MISSING` | 取 tarball 前 |
 | d' | metadata 的 integrity 不是 pin（即便格式合法） | `REGISTRY_INTEGRITY_UNKNOWN` | 取 tarball 前 |
 | e | 目标 `bin/` 是 node_modules 风格符号链接 | `DESTINATION_IS_SYMLINK` | 任何写之前；链接目标保持空 |
+| e'' | 目标路径是 FIFO / socket / 设备 / 目录 / 硬链接（nlink>1） | `DESTINATION_NOT_REGULAR_FILE` | **第一次读之前**（`lstat`），detail 点名 `FIFO`/`directory`/`nlink=N`；见 §7.1 |
 | e' | 目标 launcher 文件本身是符号链接 | `DESTINATION_IS_SYMLINK` | 同上；链接目标字节不变 |
 | f | tarball 的 `bin/` 多出未 pin 文件 | `PACKAGE_EXTRA_BIN_FILE` | 逐文件校验 |
 | g | pin 长度与实际不符 | `PACKAGE_FILE_LENGTH_MISMATCH` | 逐文件校验 |
@@ -142,6 +143,20 @@ M7-A 腿相同：workflow 行的整条尾随 argv 必须**恰好等于** `cmd + 
 
 否定控制的实际输出（verbatim，`.artifacts/tmp/host-assets-negatives/output.txt`）见 §9；
 其中 a/b/c/d/e/f 均打印 `installed=none staging=0`。
+
+### 7.1 一个「读就会阻塞」的目标：为什么必须 `lstat`，以及为什么测试不能只靠 timeout
+
+`readFileSync` / `copyFileSync` 在 FIFO 上会**无限等待写端**，socket/设备同理；目录会抛裸 `EISDIR`
+（reviewer 实测 `code=UNEXPECTED`）；硬链接（`nlink>1`）被原地覆盖会改掉**另一条路径**的字节。
+这与 2026-11-15 hosted job `132898455498` 的 41 分钟取消是同一类失败：进程不退出、不报错，只有 job
+timeout 结束它。
+
+因此传输在**任何可能阻塞的读之前**（哈希、备份、复制）对 launcher 与 addon 各做一次 `lstat`：
+只有**常规文件且 `nlink===1`** 或**不存在**才继续；否则 `DESTINATION_NOT_REGULAR_FILE`，detail 点名
+形状。暂存路径（`<dest>.u7-sbx-staging`）同样检查，因为 `writeFileSync(stage)` 也会阻塞；回滚路径
+不会向非常规文件写入（先有界删除，删不掉就 fail closed，绝不挂起）。本地复制传输共用同一律
+（T41）。测试用 `Promise.race` **自己断言调用在 4 s 内返回**，不依赖 `node:test` 的 timeout
+（T40：FIFO launcher、FIFO addon、目录、硬链接、FIFO 暂存五种；实测每次 3 ms 返回）。
 
 ## 8. 正向控制（真实网络、真实 registry、真实 tarball）
 
@@ -191,7 +206,11 @@ CONTROL-REFUSED control=d-unknown-dist-integrity expected=REGISTRY_INTEGRITY_UNK
 CONTROL-REFUSED control=e-symlinked-destination expected=DESTINATION_IS_SYMLINK code=DESTINATION_IS_SYMLINK installed=none staging=0
 CONTROL-LINK-TARGET control=e-symlinked-destination entries=empty (nothing written through the link)
 CONTROL-REFUSED control=f-extra-bin-file expected=PACKAGE_EXTRA_BIN_FILE code=PACKAGE_EXTRA_BIN_FILE installed=none staging=0
-NEGATIVE-CONTROLS controls=6 failures=0
+CONTROL-REFUSED control=g-fifo-destination elapsedMs=3 expected=DESTINATION_NOT_REGULAR_FILE code=DESTINATION_NOT_REGULAR_FILE installed=none staging=0 detail="… bin/landlock-run is a FIFO (reading it blocks until a writer appears) — the destination must be a regular file (nlink=1) or absent; … nothing was read, backed up or written"
+CONTROL-LEFT-IN-PLACE control=g-fifo-destination isFIFO=true addonPresent=false
+CONTROL-REFUSED control=h-dir-destination elapsedMs=3 expected=DESTINATION_NOT_REGULAR_FILE code=DESTINATION_NOT_REGULAR_FILE installed=none staging=0 detail="… bin/landlock-run is a directory — the destination must be a regular file (nlink=1) or absent; …"
+CONTROL-LEFT-IN-PLACE control=h-dir-destination isDirectory=true
+NEGATIVE-CONTROLS controls=8 failures=0
 ```
 
 ## 10. 绿的 L2 现在证明什么 / 仍不证明什么

@@ -54,7 +54,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import {
-  chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync,
+  chmodSync, copyFileSync, existsSync, linkSync, lstatSync, mkdirSync, mkdtempSync, readFileSync,
   readdirSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join, resolve, sep } from 'node:path'
@@ -1663,4 +1663,108 @@ test('T39 the CLI: one greppable line, exit 0/1, no network for an unpinned vers
   assert.ok(PACKAGE_TRANSPORT_CODES.includes('TARBALL_DIGEST_MISMATCH'))
   assert.ok(PACKAGE_TRANSPORT_CODES.includes('PACKAGE_EXTRA_BIN_FILE'))
   assert.ok(PACKAGE_TRANSPORT_CODES.includes('DESTINATION_IS_SYMLINK'))
+})
+
+test('T40 a destination that is NOT a regular file refuses by name and RETURNS (a FIFO must never block the provisioner)', async () => {
+  const { manifest, tarball } = packageFixture()
+  const platformDirOf = (tree) => join(tree, 'native/system/packages/linux-x64')
+  const binOf = (tree) => join(platformDirOf(tree), 'bin')
+  // The refusal must happen BEFORE any network call: this fetcher must never run.
+  const offline = { async get(url) { throw new Error(`network reached before the destination type check (${url})`) } }
+  const mkfifo = (path) => {
+    const r = spawnSync('mkfifo', [path], { encoding: 'utf8' })
+    if (r.status !== 0) return false
+    return true
+  }
+  // Bounded: assert the CALL returns within a small wall-clock budget. Not a
+  // test timeout — a hung readFileSync on a FIFO would otherwise be recorded as
+  // a cancelled job (the 41-minute incident's exact failure class).
+  const boundedRefusal = async (label, promise) => {
+    let timer
+    const timeout = new Promise((resolveTimeout) => { timer = setTimeout(() => resolveTimeout({ settled: 'timeout' }), 4000) })
+    const result = await Promise.race([
+      promise.then((value) => ({ settled: 'resolved', value }), (error) => ({ settled: 'rejected', error })),
+      timeout,
+    ])
+    clearTimeout(timer)
+    assert.equal(result.settled, 'rejected', `${label}: must return a typed refusal, not hang for 4 s (settled=${result.settled})`)
+    assert.ok(result.error instanceof HostSandboxAssetError, `${label}: typed error expected, got ${String(result.error)}`)
+    assert.equal(result.error.code, 'DESTINATION_NOT_REGULAR_FILE', `${label}: expected DESTINATION_NOT_REGULAR_FILE, got ${result.error.code} (${result.error.message})`)
+    return result.error
+  }
+  const controls = []
+
+  // (1) the launcher path is a FIFO — the exact shape that blocked probe3 forever.
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-launcher')
+    const fifo = join(binOf(tree), 'landlock-run')
+    if (!mkfifo(fifo)) return // mkfifo(1) unavailable on this host: the other controls still run
+    const error = await boundedRefusal('FIFO launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /FIFO/u, 'the detail names the shape (FIFO)')
+    assert.equal(lstatSync(fifo).isFIFO(), true, 'the FIFO is left in place, untouched')
+    assert.equal(existsSync(join(binOf(tree), 'glibc/system.node')), false, 'nothing else was written')
+    controls.push('fifo-launcher')
+  }
+  // (2) the addon path is a FIFO (both install-set paths are checked, not just the launcher).
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-addon')
+    const fifo = join(binOf(tree), 'glibc/system.node')
+    if (!mkfifo(fifo)) return
+    const error = await boundedRefusal('FIFO addon', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /bin\/glibc\/system\.node/u, 'the detail names the addon path')
+    assert.equal(lstatSync(fifo).isFIFO(), true)
+    controls.push('fifo-addon')
+  }
+  // (3) a DIRECTORY where the launcher should be: raw EISDIR before, typed now.
+  {
+    const tree = makeRuntimeFixture('pkg-dir-launcher')
+    mkdirSync(join(binOf(tree), 'landlock-run'))
+    const error = await boundedRefusal('directory launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /directory/u, 'the detail names the shape (directory)')
+    assert.equal(lstatSync(join(binOf(tree), 'landlock-run')).isDirectory(), true)
+    controls.push('directory-launcher')
+  }
+  // (4) a HARDLINK destination (nlink=2): an in-place overwrite would rewrite
+  //     bytes that belong to another path, so it is refused, not followed.
+  {
+    const tree = makeRuntimeFixture('pkg-hardlink-launcher')
+    const other = join(platformDirOf(tree), 'other-bytes')
+    writeFileSync(other, 'somebody-elses-bytes')
+    linkSync(other, join(binOf(tree), 'landlock-run'))
+    const error = await boundedRefusal('hardlink launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /nlink=2/u, 'the detail names the link count')
+    assert.equal(readFileSync(other, 'utf8'), 'somebody-elses-bytes', 'the other link is untouched')
+    controls.push('hardlink-launcher')
+  }
+  // (5) the STAGING path is a FIFO: writeFileSync would block there too. This
+  //     one is checked at install time, so the registry must answer.
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-staging')
+    const fifo = join(binOf(tree), 'landlock-run.u7-sbx-staging')
+    if (!mkfifo(fifo)) return
+    const registry = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+    const error = await boundedRefusal('FIFO staging path', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: registry.fetcher }))
+    assert.match(error.message, /staging path/u, 'the detail names the staging path')
+    assert.equal(existsSync(join(binOf(tree), 'landlock-run')), false, 'no published file was created')
+    controls.push('fifo-staging')
+  }
+  assert.ok(controls.length >= 4, `at least four controls ran, got ${controls.join(', ')}`)
+})
+
+test('T41 the LOCAL-COPY transport shares the destination-type law (a FIFO destination is a refusal, not a hang)', async () => {
+  const tree = makeRuntimeFixture('local-fifo')
+  const fifo = join(tree, 'native/system/packages/linux-x64/bin/landlock-run')
+  const made = spawnSync('mkfifo', [fifo], { encoding: 'utf8' })
+  if (made.status !== 0) return
+  let timer
+  const timeout = new Promise((resolveTimeout) => { timer = setTimeout(() => resolveTimeout({ settled: 'timeout' }), 4000) })
+  const result = await Promise.race([
+    provisionHostSandboxAssets({ runtimeTree: tree, sourceTree: pinnedSourceFixture('local-fifo-src'), repoRoot: REPO_ROOT })
+      .then((value) => ({ settled: 'resolved', value }), (error) => ({ settled: 'rejected', error })),
+    timeout,
+  ])
+  clearTimeout(timer)
+  assert.equal(result.settled, 'rejected', `the local-copy transport must refuse, not hang (settled=${result.settled})`)
+  assert.equal(result.error.code, 'DESTINATION_NOT_REGULAR_FILE', `got ${result.error.code}: ${result.error.message}`)
+  assert.equal(lstatSync(fifo).isFIFO(), true, 'the FIFO is untouched')
 })
