@@ -22,14 +22,24 @@
  *      runtime tree's OWN entry module (`launcherPath()`), never from a
  *      hardcoded path that can drift silently; the file set comes from the
  *      committed manifest, keyed by the pinned baseline in `tests/paths.mjs`.
- *   2. **Local bytes only, from a tree we trust.** Source is an explicit LOCAL
- *      tree (default: the main Team checkout's own runtime tree; override with
- *      `DSH_TEAM_SANDBOX_ASSET_SOURCE`). There is no download path, and the
- *      source tree is never a write target. Because law 1 means resolving a
- *      source tree IMPORTS its entry module, the override is not free-form: it
- *      must be an existing directory whose REALPATH stays inside a Team tree or
- *      the one documented shared baseline (`SHARED_BASELINE_ROOTS`). A digest
- *      pins bytes; it cannot pin the code of the tree those bytes are read by.
+ *   2. **Two transports, one pin.** (a) LOCAL COPY (the default, no network):
+ *      source is an explicit LOCAL tree (default: the main Team checkout's own
+ *      runtime tree; override with `DSH_TEAM_SANDBOX_ASSET_SOURCE`); the source
+ *      tree is never a write target. Because law 1 means resolving a source
+ *      tree IMPORTS its entry module, the override is not free-form: it must be
+ *      an existing directory whose REALPATH stays inside a Team tree or the one
+ *      documented shared baseline (`SHARED_BASELINE_ROOTS`). A digest pins
+ *      bytes; it cannot pin the code of the tree those bytes are read by.
+ *      (b) PINNED PACKAGE (`provisionHostSandboxAssetsFromPackage`, 2026-11-16):
+ *      the pinned bytes are fetched from the PINNED PUBLISHED npm package
+ *      (exact name@version from the manifest's `packages` block), verified
+ *      against the registry's `dist.integrity` (sha512) AND a committed
+ *      tarball sha256, then per-file sha256+length+mode verified. This exists
+ *      because a hosted runner's own host build produces DIFFERENT bytes
+ *      (`bin/glibc/system.node` measured `dfa6d586…` on the runner vs the pin
+ *      `54a9c25c…`), and THE FIXED PUBLISHED ASSET — not the runner's build —
+ *      is the standard. The package transport may replace destination bytes it
+ *      did not create; the local-copy transport never does (law 4 stays).
  *   3. **Verify, then publish — and never outside `bin/`.** Every
  *      manifest-declared relative path is checked for containment in the
  *      destination platform package's `bin/` BEFORE the first mkdir/copy/rename.
@@ -63,11 +73,12 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, realpathSync, renameSync,
-  rmSync, statSync, unlinkSync,
+  chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync,
+  realpathSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync,
 } from 'node:fs'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { gunzipSync } from 'node:zlib'
 import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -112,6 +123,7 @@ export const FATAL_PROVISION_CODES = Object.freeze([
   'LIBC_VARIANT_UNMANIFESTED',
   'WRITES_OUTSIDE_PLATFORM_BIN',
   'SOURCE_IS_DESTINATION',
+  'DESTINATION_NOT_REGULAR_FILE',
   'SOURCE_TREE_MISSING',
   'SOURCE_TREE_NOT_A_DIRECTORY',
   'SOURCE_TREE_OUTSIDE_ALLOWED_ROOTS',
@@ -395,6 +407,9 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
   const destination = relPaths.map((rel) => {
     const path = join(layout.platformDir, rel)
     const spec = pinned.files[rel]
+    // Before ANY read: a FIFO/socket/device/hardlink/directory destination must
+    // refuse, not block (this is the shape that cost a 41-minute cancelled job).
+    assertRegularDestinationFile(layout.platformDir, rel, baseline.manifestKey)
     const present = existsSync(path)
     const sha256 = present ? sha256File(path) : null
     return { relPath: rel, role: rel === pinned.launcher ? 'launcher' : 'addon', path, present, sha256, expectedSha256: spec.sha256, bytes: spec.bytes, mode: spec.mode, modeBits: modeBits.get(rel) }
@@ -467,6 +482,7 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
     for (const f of destination.filter((d) => !d.present)) {
       const srcFile = sourceFiles.get(f.relPath)
       const stage = `${f.path}.u7-sbx-staging`
+      assertStagePathWritable(stage, f.relPath, baseline.manifestKey)
       mkdirSync(dirname(f.path), { recursive: true })
       copyFileSync(srcFile.path, stage)
       const stagedSha = sha256File(stage)
@@ -699,5 +715,687 @@ export function nativeConfinementEnvBlock({ observedText = '', observedSignal = 
       at: preflight.at ?? null,
     },
     note: 'the native (non-governed) confinement control could not run because the host reports NO usable sandbox backend, and the lane observed exactly that typed refusal — an environment/provisioning gap, recorded as ENV_BLOCK (never PASS, never a product FAIL)',
+  }
+}
+
+// ─────────────────────── package transport (2026-11-16) ───────────────────────
+/**
+ * THE SECOND TRANSPORT: the pinned bytes from the PINNED PUBLISHED PACKAGE.
+ *
+ * WHY (measured 2026-11-16; see docs/plans/memo/host-assets-20261116/README.md).
+ * The hosted `census-runtime` job CANNOT carry the pinned bytes from a local
+ * tree, and it does not need to: its own host build produces `bin/` files with
+ * DIFFERENT digests (measured `bin/glibc/system.node` = `dfa6d586…` on the
+ * runner vs the pin `54a9c25c…`, hosted job 132898455498). The M7-A step used
+ * to accept that as a named DISCLOSED_REFUSAL. The owner's decision is the
+ * opposite: the FIXED PUBLISHED ASSET is the standard, the runner's build is
+ * not, and the existing sha256 pin must not move to match a build.
+ *
+ * THE ORDER, AND WHY IT IS THE ORDER (fail closed at every step, nothing is
+ * written before the last verification):
+ *   1. the spec is `name@EXACT_VERSION` — no ranges, no tags, no `latest`;
+ *   2. the version/name must equal the manifest's `packages` pin, and that
+ *      pin's file table must EQUAL the host pin in `entries` (one standard,
+ *      two spellings — divergence is refused, never reconciled);
+ *   3. the registry metadata for that exact version must carry a `sha512-`
+ *      `dist.integrity` equal to the pinned one (missing ⇒ refusal, a different
+ *      one ⇒ refusal: "unknown integrity" is not a weaker pin);
+ *   4. the tarball bytes must match BOTH that SRI (sha512) AND the committed
+ *      `tarballSha256` (and its byte length when pinned);
+ *   5. the extracted `bin/` subtree must be EXACTLY the pin's install set plus
+ *      the pinned siblings (the real tarball also carries `bin/musl/system.node`;
+ *      everything under `bin/` is pinned, so an unaccounted file is refused);
+ *   6. every installed file is re-checked for sha256 AND byte length against the
+ *      manifest before a byte is written, staged beside its destination,
+ *      re-hashed, chmodded to the PINNED mode, renamed into place and re-read;
+ *   7. a receipt binds package spec, version, tarball sha256, dist.integrity,
+ *      per-file digests, host sha, UTC time and the manifest digest.
+ *
+ * A destination that is a symlink (a `node_modules`-style link is the realistic
+ * case) is refused before anything is written: following it would install the
+ * asset outside the tree the host resolves.
+ */
+
+/** Schema of the package-transport provisioning receipt. */
+export const HOST_ASSET_RECEIPT_SCHEMA = 'u7-sbx-host-asset-receipt/1'
+/** Receipt file override (explicit path) / directory override (file name fixed). */
+export const RECEIPT_ENV = 'DSH_TEAM_SANDBOX_ASSET_RECEIPT'
+export const RECEIPT_DIR_ENV = 'DSH_TEAM_SANDBOX_ASSET_RECEIPT_DIR'
+/** Registry base override; the default is the public npm registry. */
+export const REGISTRY_ENV = 'DSH_TEAM_SANDBOX_ASSET_REGISTRY'
+export const DEFAULT_REGISTRY = 'https://registry.npmjs.org'
+
+/**
+ * The transport's typed refusal codes. They are NOT in `FATAL_PROVISION_CODES`:
+ * that list describes the pre-flight's local-copy path, and the package
+ * transport is never reached from `preflightHostSandbox()`. Every one of these
+ * fails the caller (in CI: the step, hence the job) — none is an environment
+ * state.
+ */
+export const PACKAGE_TRANSPORT_CODES = Object.freeze([
+  'PACKAGE_SPEC_INVALID',
+  'PACKAGE_SPEC_NOT_EXACT',
+  'PACKAGE_PIN_MISSING',
+  'PACKAGE_PIN_INVALID',
+  'PACKAGE_PIN_DIVERGES_FROM_HOST_PIN',
+  'PACKAGE_UNPINNED',
+  'PACKAGE_VERSION_UNPINNED',
+  'REGISTRY_METADATA_UNAVAILABLE',
+  'REGISTRY_METADATA_UNREADABLE',
+  'REGISTRY_NAME_MISMATCH',
+  'REGISTRY_VERSION_MISMATCH',
+  'REGISTRY_INTEGRITY_MISSING',
+  'REGISTRY_INTEGRITY_UNKNOWN',
+  'REGISTRY_TARBALL_URL_INVALID',
+  'TARBALL_FETCH_FAILED',
+  'TARBALL_INTEGRITY_MISMATCH',
+  'TARBALL_DIGEST_MISMATCH',
+  'TARBALL_LENGTH_MISMATCH',
+  'PACKAGE_EXTRACT_FAILED',
+  'PACKAGE_ARCHIVE_PATH_UNSAFE',
+  'PACKAGE_ARCHIVE_ENTRY_UNSAFE',
+  'PACKAGE_EXTRA_BIN_FILE',
+  'PACKAGE_FILE_MISSING',
+  'PACKAGE_FILE_LENGTH_MISMATCH',
+  'PACKAGE_FILE_DIGEST_MISMATCH',
+  'DESTINATION_IS_SYMLINK',
+  'DESTINATION_NOT_REGULAR_FILE',
+  'RECEIPT_WRITE_FAILED',
+])
+
+/** `1.2.3` or `1.2.3-rc.1` — an EXACT version, never a range/tag/wildcard. */
+const EXACT_VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/u
+const SRI_SHA512_RE = /^sha512-[A-Za-z0-9+/]+={0,2}$/u
+const SHA256_RE = /^[0-9a-f]{64}$/u
+
+const sha256Hex = (buf) => createHash('sha256').update(buf).digest('hex')
+
+/** Canonical JSON (sorted keys, recursively) — the digest's input. */
+export function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map((v) => canonicalJson(v)).join(',')}]`
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`).join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+/** The digest of the pin table itself: what the receipt binds. */
+export function manifestDigest(manifest) {
+  return sha256Hex(Buffer.from(canonicalJson(manifest), 'utf8'))
+}
+
+/**
+ * Parse `@scope/name@EXACT_VERSION`. A range, a dist-tag (`latest`), a partial
+ * version or a missing version is refused BY NAME — the transport never asks
+ * npm "what does this resolve to", because that answer is not a pin.
+ * @throws {HostSandboxAssetError} PACKAGE_SPEC_INVALID | PACKAGE_SPEC_NOT_EXACT
+ */
+export function parsePackageSpec(spec) {
+  if (typeof spec !== 'string' || spec.trim() === '') {
+    throw new HostSandboxAssetError('PACKAGE_SPEC_INVALID', `expected \`name@EXACT_VERSION\`, got ${JSON.stringify(spec)}`)
+  }
+  const s = spec.trim()
+  const at = s.lastIndexOf('@')
+  if (at <= 0) {
+    throw new HostSandboxAssetError('PACKAGE_SPEC_INVALID', `${JSON.stringify(s)} names no version — the package transport requires \`name@EXACT_VERSION\` (a range or a dist-tag is not a pin)`)
+  }
+  const name = s.slice(0, at)
+  const version = s.slice(at + 1)
+  if (!/^(?:@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/u.test(name)) {
+    throw new HostSandboxAssetError('PACKAGE_SPEC_INVALID', `${JSON.stringify(s)}: ${JSON.stringify(name)} is not a package name`)
+  }
+  if (!EXACT_VERSION_RE.test(version)) {
+    throw new HostSandboxAssetError('PACKAGE_SPEC_NOT_EXACT', `${JSON.stringify(s)}: ${JSON.stringify(version)} is not an exact version (ranges, dist-tags such as \`latest\`, wildcards and partial versions are refused — only a version the manifest pins may be provisioned)`)
+  }
+  return { spec: s, name, version }
+}
+
+/**
+ * The manifest's `packages` pin for one baseline + platform. It must AGREE with
+ * the host pin in `entries` (same relative paths, same sha256, same bytes, same
+ * mode): the package is a transport for that pin, never a second standard.
+ * @throws {HostSandboxAssetError} PACKAGE_PIN_MISSING | PACKAGE_PIN_INVALID
+ *         | PLATFORM_UNMANIFESTED | LIBC_VARIANT_UNMANIFESTED
+ *         | MANIFEST_ENTRY_MISSING | PACKAGE_PIN_DIVERGES_FROM_HOST_PIN
+ */
+export function packagePlatformEntry(manifest, { version, sha, platform, libc }) {
+  const key = `${version}@${sha}`
+  const bundle = manifest?.packages?.[key]
+  if (!bundle) {
+    throw new HostSandboxAssetError('PACKAGE_PIN_MISSING', `the manifest pins no package transport for host baseline ${key} (carries: ${Object.keys(manifest?.packages ?? {}).join(', ') || 'none'}) — pin the published package before provisioning from it`)
+  }
+  const p = bundle.platforms?.[platform]
+  if (!p) throw new HostSandboxAssetError('PLATFORM_UNMANIFESTED', `no pinned package transport for platform ${platform} at ${key}`)
+  if (typeof p.libc === 'string' && libc !== null && p.libc !== libc) {
+    throw new HostSandboxAssetError('LIBC_VARIANT_UNMANIFESTED', `the package pin is for ${p.libc} on ${platform}, this host is ${libc}`)
+  }
+  const invalid = (field) => new HostSandboxAssetError('PACKAGE_PIN_INVALID', `${key}/${platform}: packages pin field ${JSON.stringify(field)} is missing or malformed`)
+  if (typeof p.package !== 'string' || p.package.trim() === '') throw invalid('package')
+  if (typeof p.version !== 'string' || !EXACT_VERSION_RE.test(p.version)) throw invalid('version')
+  if (typeof p.distIntegrity !== 'string' || !SRI_SHA512_RE.test(p.distIntegrity)) throw invalid('distIntegrity')
+  if (typeof p.tarballSha256 !== 'string' || !SHA256_RE.test(p.tarballSha256)) throw invalid('tarballSha256')
+  if (p.tarballBytes !== undefined && (!Number.isInteger(p.tarballBytes) || p.tarballBytes <= 0)) throw invalid('tarballBytes')
+  if (p.files === null || typeof p.files !== 'object' || Array.isArray(p.files)) throw invalid('files')
+  if (p.siblings !== undefined && (p.siblings === null || typeof p.siblings !== 'object' || Array.isArray(p.siblings))) throw invalid('siblings')
+  if (typeof p.launcher !== 'string' || !Object.prototype.hasOwnProperty.call(p.files, p.launcher)) throw invalid('launcher')
+  for (const [rel, spec] of Object.entries(p.files)) {
+    if (spec === null || typeof spec !== 'object') throw invalid(`files[${rel}]`)
+    if (typeof spec.sha256 !== 'string' || !SHA256_RE.test(spec.sha256)) throw invalid(`files[${rel}].sha256`)
+    if (!Number.isInteger(spec.bytes) || spec.bytes <= 0) throw invalid(`files[${rel}].bytes`)
+    parseManifestMode(spec.mode, rel)
+  }
+  for (const [rel, spec] of Object.entries(p.siblings ?? {})) {
+    if (spec === null || typeof spec !== 'object') throw invalid(`siblings[${rel}]`)
+    if (typeof spec.sha256 !== 'string' || !SHA256_RE.test(spec.sha256)) throw invalid(`siblings[${rel}].sha256`)
+    if (!Number.isInteger(spec.bytes) || spec.bytes <= 0) throw invalid(`siblings[${rel}].bytes`)
+    if (!manifestAssetPathIsSafe(rel)) throw invalid(`siblings[${rel}]`)
+  }
+  // ONE STANDARD: the package pin must be the host pin, path for path.
+  const hostEntry = manifest?.entries?.[key]?.platforms?.[platform]
+  if (!hostEntry) throw new HostSandboxAssetError('MANIFEST_ENTRY_MISSING', `no host pin for ${key}/${platform} — the package transport has nothing to agree with`)
+  const sameFiles = canonicalJson(hostEntry.files) === canonicalJson(p.files)
+  if (!sameFiles) {
+    throw new HostSandboxAssetError('PACKAGE_PIN_DIVERGES_FROM_HOST_PIN', `${key}/${platform}: the packages pin's file table differs from the host pin in entries — the package transports the committed standard, it does not define a second one (host: ${Object.keys(hostEntry.files).sort().join(', ')}; package: ${Object.keys(p.files).sort().join(', ')})`)
+  }
+  if (hostEntry.launcher !== p.launcher) {
+    throw new HostSandboxAssetError('PACKAGE_PIN_DIVERGES_FROM_HOST_PIN', `${key}/${platform}: the packages pin names launcher ${JSON.stringify(p.launcher)}, the host pin names ${JSON.stringify(hostEntry.launcher)}`)
+  }
+  return p
+}
+
+/** The default fetcher: Node's global `fetch`, bounded by a timeout. */
+export const defaultPackageFetcher = Object.freeze({
+  async get(url) {
+    const response = await fetch(url, {
+      redirect: 'follow',
+      headers: { accept: 'application/json, application/octet-stream' },
+      signal: AbortSignal.timeout(120_000),
+    })
+    const bytes = Buffer.from(await response.arrayBuffer())
+    return { ok: response.ok === true, status: Number(response.status), bytes, url: response.url || url }
+  },
+})
+
+const cstr = (buf, start, end) => {
+  const s = buf.subarray(start, end).toString('utf8')
+  const nul = s.indexOf('\u0000')
+  return (nul === -1 ? s : s.slice(0, nul)).trim()
+}
+const octalAt = (buf, start, end) => {
+  const s = cstr(buf, start, end)
+  return s === '' ? 0 : Number.parseInt(s, 8)
+}
+
+/**
+ * Is an ARCHIVE path safe to materialise? Plain relative, no empty/`.`/`..`
+ * segment, no drive letter, no backslash. (The archive is untrusted input; a
+ * `../` entry would write outside the extraction directory before any digest
+ * check could look at it.)
+ */
+export function packageArchivePathIsSafe(name) {
+  if (typeof name !== 'string' || name === '' || name.includes('\u0000')) return false
+  if (name.includes('\\') || name.startsWith('/') || /^[a-zA-Z]:/u.test(name)) return false
+  const segments = name.split('/')
+  return segments.every((s) => s !== '' && s !== '.' && s !== '..')
+}
+
+/**
+ * The default extractor: gunzip + a strict ustar reader. Only regular files and
+ * directories are accepted; symlink/hardlink/PAX/GNU-longname entries are
+ * REFUSED (an archive is data, not code). Files are materialised under
+ * `destDir`, keeping their `package/…` archive names.
+ * @returns {{files: string[]}} the archive-relative names that were written
+ */
+export function extractPackageTarball(tarballBytes, destDir) {
+  let tar
+  try {
+    tar = gunzipSync(tarballBytes)
+  } catch (error) {
+    throw new HostSandboxAssetError('PACKAGE_EXTRACT_FAILED', `the tarball is not gzip: ${String(error?.message ?? error)}`)
+  }
+  const files = []
+  let offset = 0
+  while (offset + 512 <= tar.length) {
+    const header = tar.subarray(offset, offset + 512)
+    if (header.every((b) => b === 0)) break
+    const name = cstr(header, 0, 100)
+    const prefix = cstr(header, 345, 500)
+    const full = prefix === '' ? name : `${prefix}/${name}`
+    const size = octalAt(header, 124, 136)
+    const type = header[156] === 0 ? '0' : String.fromCharCode(header[156])
+    const dataStart = offset + 512
+    if (dataStart + size > tar.length) {
+      throw new HostSandboxAssetError('PACKAGE_EXTRACT_FAILED', `archive entry ${JSON.stringify(full)} claims ${String(size)} bytes past the end of the archive (truncated tarball)`)
+    }
+    if (type === '0' || type === '7') {
+      if (!packageArchivePathIsSafe(full)) {
+        throw new HostSandboxAssetError('PACKAGE_ARCHIVE_PATH_UNSAFE', `archive entry ${JSON.stringify(full)} is not a plain relative path — refusing to extract an archive that can write outside its directory`)
+      }
+      if (full.startsWith('package/')) {
+        const rel = full.slice('package/'.length)
+        const dest = join(destDir, ...full.split('/'))
+        mkdirSync(dirname(dest), { recursive: true })
+        writeFileSync(dest, tar.subarray(dataStart, dataStart + size))
+        files.push(`package/${rel}`)
+      }
+    } else if (type === '5') {
+      // directory: nothing to materialise
+    } else {
+      throw new HostSandboxAssetError('PACKAGE_ARCHIVE_ENTRY_UNSAFE', `archive entry ${JSON.stringify(full)} has type ${JSON.stringify(type)} — only regular files and directories are accepted (symlinks, hardlinks and PAX/GNU extensions are refused)`)
+    }
+    offset = dataStart + Math.ceil(size / 512) * 512
+  }
+  return { files }
+}
+
+/** Refuse to walk through a symlink on the destination path (a `node_modules`-style link is the realistic case). */
+function assertNoSymlinkOnPath(root, rel, context) {
+  let current = root
+  const rootStat = (() => { try { return lstatSync(current) } catch { return null } })()
+  if (rootStat !== null && rootStat.isSymbolicLink()) {
+    throw new HostSandboxAssetError('DESTINATION_IS_SYMLINK', `${context}: ${root} is a symlink — installing through it would write outside the runtime tree`)
+  }
+  for (const segment of rel.split('/')) {
+    current = join(current, segment)
+    let st
+    try {
+      st = lstatSync(current)
+    } catch {
+      return // not present ⇒ no descendant can exist either
+    }
+    if (st.isSymbolicLink()) {
+      throw new HostSandboxAssetError('DESTINATION_IS_SYMLINK', `${context}: ${current} is a symlink (destination path ${rel}) — refusing to install through a link the host did not resolve`)
+    }
+  }
+}
+
+/**
+ * Name a destination that is NOT a regular file, in terms an operator can act on.
+ * These are the shapes that make `readFileSync`/`copyFileSync` BLOCK (a FIFO
+ * waits for a writer, a socket/device never answers) or mutate bytes that belong
+ * to another path (a hardlink shares its inode). A test timeout is not a
+ * refusal: the check must run BEFORE the first read.
+ */
+function destinationNotRegularDetail(st) {
+  if (st.isFIFO()) return 'a FIFO (reading it blocks until a writer appears)'
+  if (st.isDirectory()) return 'a directory'
+  if (st.isSocket()) return 'a socket'
+  if (st.isBlockDevice()) return 'a block device'
+  if (st.isCharacterDevice()) return 'a character device'
+  if (st.isFile()) return `a regular file with nlink=${String(st.nlink)} (a hardlink: an in-place overwrite would change another path's bytes)`
+  return `not a regular file (mode 0o${(st.mode & 0o7777).toString(8)})`
+}
+
+/**
+ * Refuse a destination path that exists as anything but a regular file with
+ * nlink === 1. Absent is fine (the install creates it). Runs before hashing,
+ * backing up or copying, so a FIFO can never hang the provisioner.
+ * @throws {HostSandboxAssetError} DESTINATION_NOT_REGULAR_FILE
+ */
+function assertRegularDestinationFile(root, rel, context) {
+  const path = join(root, ...rel.split('/'))
+  let st
+  try {
+    st = lstatSync(path)
+  } catch {
+    return
+  }
+  if (st.isFile() && st.nlink === 1) return
+  throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `${context}: ${path} is ${destinationNotRegularDetail(st)} — the destination must be a regular file (nlink=1) or absent; reading, backing up or writing through anything else can block indefinitely or mutate another path's bytes, so nothing was read, backed up or written`)
+}
+
+/** The staging name is writable too: a FIFO/socket there would block `writeFileSync`. */
+function assertStagePathWritable(stage, rel, context) {
+  let st
+  try {
+    st = lstatSync(stage)
+  } catch {
+    return
+  }
+  if (st.isFile() && st.nlink === 1) return
+  throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `${context}: staging path ${stage} for ${rel} is ${destinationNotRegularDetail(st)} — refusing to write through it (nothing was installed)`)
+}
+
+/** Where the provisioning receipt is written (explicit file → directory → default). */
+export function hostAssetReceiptPath(repoRoot, env = process.env) {
+  const explicit = typeof env?.[RECEIPT_ENV] === 'string' ? env[RECEIPT_ENV].trim() : ''
+  if (explicit !== '') return explicit
+  const dir = typeof env?.[RECEIPT_DIR_ENV] === 'string' ? env[RECEIPT_DIR_ENV].trim() : ''
+  return join(dir !== '' ? dir : join(resolve(repoRoot), '.artifacts', 'tmp', 'host-assets'), 'provision-receipt.json')
+}
+
+/**
+ * Provision the pinned native sandbox assets from the PINNED PUBLISHED package.
+ *
+ * @param {object} opts
+ * @param {string} opts.runtimeTree destination runtime checkout
+ * @param {string} [opts.spec] `@scope/name@EXACT_VERSION` (default: the manifest's pinned package)
+ * @param {string} [opts.repoRoot] Team repo root (manifest + default temp/receipt paths)
+ * @param {object} [opts.manifest] manifest override (tests)
+ * @param {{get: (url: string) => Promise<{ok: boolean, status: number, bytes: Buffer}>}} [opts.fetcher]
+ * @param {(tarballBytes: Buffer, destDir: string) => {files: string[]}} [opts.extractor]
+ * @param {string} [opts.registryBase]
+ * @param {string} [opts.receiptPath]
+ * @param {(env: object) => string} [opts.receiptEnv]
+ * @returns {Promise<object>} the receipt (also written to disk)
+ */
+export async function provisionHostSandboxAssetsFromPackage({
+  runtimeTree,
+  spec,
+  repoRoot,
+  manifest = null,
+  fetcher = defaultPackageFetcher,
+  extractor = extractPackageTarball,
+  registryBase = process.env[REGISTRY_ENV] ?? null,
+  receiptPath = null,
+  receiptEnv = process.env,
+  now = () => new Date(),
+} = {}) {
+  const root = resolve(repoRoot ?? DEFAULT_REPO_ROOT)
+  const layout = await resolveHostSandboxLayout(runtimeTree)
+  const m = manifest ?? readHostSandboxAssetManifest({ repoRoot: root })
+  const libc = detectedLibcVariant()
+  const platform = `${process.platform}-${process.arch}`
+  const baseline = { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, manifestKey: `${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}` }
+  const pinned = packagePlatformEntry(m, { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, platform, libc })
+
+  // (1) SPEC: exact version only, and it must be the pinned one.
+  const parsed = parsePackageSpec(spec === undefined || spec === null || spec === '' ? `${pinned.package}@${pinned.version}` : spec)
+  if (parsed.name !== pinned.package) {
+    throw new HostSandboxAssetError('PACKAGE_UNPINNED', `${parsed.name} is not the pinned package ${pinned.package} — the manifest pins which package may be provisioned`)
+  }
+  if (parsed.version !== pinned.version) {
+    throw new HostSandboxAssetError('PACKAGE_VERSION_UNPINNED', `${parsed.name}@${parsed.version} is not the pinned version ${pinned.package}@${pinned.version} — an unpinned version is not a weaker pin, it is a different artifact`)
+  }
+
+  // (2) WRITE SCOPE + MODE, before any network or filesystem mutation.
+  const relPaths = Object.keys(pinned.files).sort()
+  const modeBits = new Map()
+  for (const rel of [...relPaths, pinned.launcher]) {
+    if (!manifestAssetPathIsSafe(rel)) {
+      throw new HostSandboxAssetError('MANIFEST_PATH_UNSAFE', `${baseline.manifestKey}: packages pin declares ${JSON.stringify(rel)}, which is not a relative path contained in the platform package's bin/ subtree`)
+    }
+    const abs = join(layout.platformDir, rel)
+    if (!abs.startsWith(layout.binDir + sep)) {
+      throw new HostSandboxAssetError('MANIFEST_PATH_UNSAFE', `${baseline.manifestKey}: ${JSON.stringify(rel)} resolves to ${abs}, outside the bin/ the host resolved (${layout.binDir}) — nothing was written`)
+    }
+    if (Object.prototype.hasOwnProperty.call(pinned.files, rel)) modeBits.set(rel, parseManifestMode(pinned.files[rel].mode, rel))
+  }
+  assertNoSymlinkOnPath(layout.platformDir, pinned.launcher, baseline.manifestKey)
+  for (const rel of relPaths) assertNoSymlinkOnPath(layout.platformDir, rel, baseline.manifestKey)
+  assertRegularDestinationFile(layout.platformDir, pinned.launcher, baseline.manifestKey)
+  for (const rel of relPaths) assertRegularDestinationFile(layout.platformDir, rel, baseline.manifestKey)
+
+  // (3) REGISTRY METADATA: the exact version, with an integrity we pinned.
+  const base = String(registryBase ?? pinned.registry ?? DEFAULT_REGISTRY).replace(/\/+$/u, '')
+  const metadataUrl = `${base}/${encodeURIComponent(parsed.name)}/${encodeURIComponent(parsed.version)}`
+  let metadataResponse
+  try {
+    metadataResponse = await fetcher.get(metadataUrl)
+  } catch (error) {
+    throw new HostSandboxAssetError('REGISTRY_METADATA_UNAVAILABLE', `${metadataUrl}: ${String(error?.message ?? error)}`)
+  }
+  if (metadataResponse?.ok !== true) {
+    throw new HostSandboxAssetError('REGISTRY_METADATA_UNAVAILABLE', `${metadataUrl}: HTTP ${String(metadataResponse?.status ?? 'no response')} — the pinned package must be published at the pinned version`)
+  }
+  let metadata
+  try {
+    metadata = JSON.parse(Buffer.from(metadataResponse.bytes).toString('utf8'))
+  } catch (error) {
+    throw new HostSandboxAssetError('REGISTRY_METADATA_UNREADABLE', `${metadataUrl}: ${String(error?.message ?? error)}`)
+  }
+  if (metadata?.name !== parsed.name) {
+    throw new HostSandboxAssetError('REGISTRY_NAME_MISMATCH', `${metadataUrl}: the registry answered for ${JSON.stringify(metadata?.name)}, not ${JSON.stringify(parsed.name)}`)
+  }
+  if (metadata?.version !== parsed.version) {
+    throw new HostSandboxAssetError('REGISTRY_VERSION_MISMATCH', `${metadataUrl}: the registry answered version ${JSON.stringify(metadata?.version)}, not the exact pinned ${JSON.stringify(parsed.version)}`)
+  }
+  const integrity = metadata?.dist?.integrity
+  if (typeof integrity !== 'string' || integrity.trim() === '') {
+    throw new HostSandboxAssetError('REGISTRY_INTEGRITY_MISSING', `${metadataUrl}: dist.integrity is absent — the tarball could only be trusted by its sha256 pin, and the registry's own published integrity is part of the evidence this transport requires`)
+  }
+  if (!SRI_SHA512_RE.test(integrity)) {
+    throw new HostSandboxAssetError('REGISTRY_INTEGRITY_UNKNOWN', `${metadataUrl}: dist.integrity ${JSON.stringify(integrity)} is not an sha512 SRI — the pinned manifest only authors sha512 integrity, so this tarball's registry identity cannot be checked`)
+  }
+  if (integrity !== pinned.distIntegrity) {
+    throw new HostSandboxAssetError('REGISTRY_INTEGRITY_UNKNOWN', `${metadataUrl}: the registry publishes ${integrity}, the manifest pins ${pinned.distIntegrity} — an integrity the manifest does not know is not a weaker pin`)
+  }
+  const tarballUrl = metadata?.dist?.tarball
+  let parsedTarballUrl
+  try {
+    parsedTarballUrl = new URL(String(tarballUrl))
+  } catch {
+    throw new HostSandboxAssetError('REGISTRY_TARBALL_URL_INVALID', `${metadataUrl}: dist.tarball ${JSON.stringify(tarballUrl)} is not a URL`)
+  }
+  if (parsedTarballUrl.protocol !== 'https:') {
+    throw new HostSandboxAssetError('REGISTRY_TARBALL_URL_INVALID', `${metadataUrl}: dist.tarball is ${parsedTarballUrl.protocol}// — the transport fetches https only`)
+  }
+
+  // (4) TARBALL: dist.integrity (sha512) AND the committed sha256 pin AND its length.
+  let tarballResponse
+  try {
+    tarballResponse = await fetcher.get(parsedTarballUrl.href)
+  } catch (error) {
+    throw new HostSandboxAssetError('TARBALL_FETCH_FAILED', `${parsedTarballUrl.href}: ${String(error?.message ?? error)}`)
+  }
+  if (tarballResponse?.ok !== true) {
+    throw new HostSandboxAssetError('TARBALL_FETCH_FAILED', `${parsedTarballUrl.href}: HTTP ${String(tarballResponse?.status ?? 'no response')}`)
+  }
+  const tarballBytes = Buffer.from(tarballResponse.bytes ?? [])
+  if (tarballBytes.length === 0) throw new HostSandboxAssetError('TARBALL_FETCH_FAILED', `${parsedTarballUrl.href}: empty body`)
+  const sri = `sha512-${createHash('sha512').update(tarballBytes).digest('base64')}`
+  if (sri !== integrity) {
+    throw new HostSandboxAssetError('TARBALL_INTEGRITY_MISMATCH', `${parsedTarballUrl.href}: sha512 ${sri} != the registry's published ${integrity} — the bytes are not the artifact the registry attests, nothing was extracted and nothing was installed`)
+  }
+  const tarballSha256 = sha256Hex(tarballBytes)
+  if (tarballSha256 !== pinned.tarballSha256) {
+    throw new HostSandboxAssetError('TARBALL_DIGEST_MISMATCH', `${parsedTarballUrl.href}: sha256 ${tarballSha256} != the pinned ${pinned.tarballSha256} — nothing was extracted and nothing was installed`)
+  }
+  if (Number.isInteger(pinned.tarballBytes) && tarballBytes.length !== pinned.tarballBytes) {
+    throw new HostSandboxAssetError('TARBALL_LENGTH_MISMATCH', `${parsedTarballUrl.href}: ${String(tarballBytes.length)} bytes != the pinned ${String(pinned.tarballBytes)}`)
+  }
+
+  // (5) EXTRACT to a scratch directory inside the workspace (never /tmp), then
+  // verify EVERY manifested file (length, then digest) before the first write.
+  mkdirSync(join(root, '.artifacts', 'tmp'), { recursive: true })
+  const tempDir = mkdtempSync(join(root, '.artifacts', 'tmp', 'host-assets-pkg-'))
+  try {
+    let extracted
+    try {
+      extracted = extractor(tarballBytes, tempDir)
+    } catch (error) {
+      if (error instanceof HostSandboxAssetError) throw error
+      throw new HostSandboxAssetError('PACKAGE_EXTRACT_FAILED', String(error?.message ?? error))
+    }
+    const extractedNames = Array.isArray(extracted?.files) ? extracted.files.map(String) : []
+    const extractedRel = new Set()
+    for (const name of extractedNames) {
+      const norm = name.replace(/^\.\//u, '')
+      if (!norm.startsWith('package/')) continue
+      extractedRel.add(norm.slice('package/'.length))
+    }
+    // A tarball is pinned whole; everything it carries under bin/ is either an
+    // install-set file or a pinned sibling. An unaccounted file is a refusal.
+    const allowedBin = new Set([...relPaths, ...Object.keys(pinned.siblings ?? {})])
+    const extras = [...extractedRel].filter((rel) => rel.startsWith('bin/') && !allowedBin.has(rel)).sort()
+    if (extras.length > 0) {
+      throw new HostSandboxAssetError('PACKAGE_EXTRA_BIN_FILE', `${parsed.name}@${parsed.version}: the tarball carries unaccounted file(s) under bin/: ${extras.join(', ')} — the pin accounts for the whole bin/ subtree, so an extra file means the artifact is not the one the manifest describes; nothing was installed`)
+    }
+    const verified = new Map()
+    for (const rel of relPaths) {
+      const spec = pinned.files[rel]
+      if (!extractedRel.has(rel)) {
+        throw new HostSandboxAssetError('PACKAGE_FILE_MISSING', `${parsed.name}@${parsed.version}: ${rel} is not in the tarball (found: ${[...extractedRel].sort().join(', ') || 'no files'})`)
+      }
+      const abs = join(tempDir, 'package', ...rel.split('/'))
+      const bytes = readFileSync(abs)
+      if (bytes.length !== spec.bytes) {
+        throw new HostSandboxAssetError('PACKAGE_FILE_LENGTH_MISMATCH', `${rel}: ${String(bytes.length)} bytes, the manifest pins ${String(spec.bytes)} — nothing was installed`)
+      }
+      const digest = sha256Hex(bytes)
+      if (digest !== spec.sha256) {
+        throw new HostSandboxAssetError('PACKAGE_FILE_DIGEST_MISMATCH', `${rel}: sha256 ${digest}, the pinned manifest says ${spec.sha256} — nothing was installed`)
+      }
+      verified.set(rel, { bytes, sha256: digest })
+    }
+    for (const [rel, spec] of Object.entries(pinned.siblings ?? {})) {
+      if (!extractedRel.has(rel)) continue // not carried by this tarball; the install set is what must exist
+      const bytes = readFileSync(join(tempDir, 'package', ...rel.split('/')))
+      const digest = sha256Hex(bytes)
+      if (bytes.length !== spec.bytes || digest !== spec.sha256) {
+        throw new HostSandboxAssetError('PACKAGE_FILE_DIGEST_MISMATCH', `sibling ${rel}: sha256/bytes ${digest}/${String(bytes.length)} != the pinned ${spec.sha256}/${String(spec.bytes)} — the pin accounts for this file, so a mismatch means the artifact is not the pinned one`)
+      }
+    }
+
+    // (6) INSTALL: stage → verify → chmod(pin) → rename → re-read. Existing
+    // bytes (the runner's own build) are REPLACED — that is this transport's
+    // purpose — but they are backed up first and restored on any failure, so a
+    // refusal leaves the tree exactly as it was found.
+    const porcelainBefore = porcelainState(layout.runtimeTree)
+    const before = relPaths.map((rel) => {
+      const path = join(layout.platformDir, rel)
+      const present = existsSync(path)
+      return {
+        relPath: rel,
+        role: rel === pinned.launcher ? 'launcher' : 'addon',
+        path,
+        present,
+        preExistingSha256: present ? sha256File(path) : null,
+        preExistingMode: present ? modeString(path) : null,
+      }
+    })
+    const touched = new Set()
+    const backups = new Map()
+    const written = []
+    let bytesWritten = 0
+    try {
+      for (const f of before) {
+        const spec = pinned.files[f.relPath]
+        const mode = modeBits.get(f.relPath)
+        const stage = `${f.path}.u7-sbx-staging`
+        // Re-check at install time (the pre-network check was earlier; a FIFO
+        // swapped in since must not hang the hash/backup below).
+        assertRegularDestinationFile(layout.platformDir, f.relPath, baseline.manifestKey)
+        assertStagePathWritable(stage, f.relPath, baseline.manifestKey)
+        mkdirSync(dirname(f.path), { recursive: true })
+        if (f.present) {
+          const backup = join(tempDir, `backup-${written.length}-${f.relPath.replace(/[\\/]/gu, '_')}`)
+          copyFileSync(f.path, backup)
+          backups.set(f.path, { backup, mode: statSync(f.path).mode & 0o7777 })
+        }
+        touched.add(f.path)
+        writeFileSync(stage, verified.get(f.relPath).bytes)
+        const stagedSha = sha256File(stage)
+        if (stagedSha !== spec.sha256) {
+          throw new HostSandboxAssetError('STAGED_DIGEST_MISMATCH', `${f.relPath} hashed ${stagedSha} in staging, expected ${spec.sha256}`)
+        }
+        chmodSync(stage, mode)
+        renameSync(stage, f.path)
+        const publishedSha = sha256File(f.path)
+        if (publishedSha !== spec.sha256) {
+          unlinkSync(f.path)
+          throw new HostSandboxAssetError('PUBLISHED_DIGEST_MISMATCH', `${f.relPath} hashed ${publishedSha} after publish, expected ${spec.sha256} — the file was removed again`)
+        }
+        const publishedMode = modeOf(f.path)
+        if (publishedMode !== mode) {
+          unlinkSync(f.path)
+          throw new HostSandboxAssetError('PUBLISHED_MODE_MISMATCH', `${f.relPath} is mode 0o${publishedMode.toString(8)} after publish, the manifest pins ${spec.mode} — the file was removed again`)
+        }
+        if (!f.path.startsWith(layout.binDir + sep)) {
+          throw new HostSandboxAssetError('WRITES_OUTSIDE_PLATFORM_BIN', `refusing to keep ${f.path} outside ${layout.binDir}`)
+        }
+        bytesWritten += spec.bytes
+        written.push({
+          relPath: f.relPath,
+          role: f.role,
+          sha256: publishedSha,
+          expectedSha256: spec.sha256,
+          bytes: spec.bytes,
+          mode: modeString(f.path),
+          preExistingSha256: f.preExistingSha256,
+          preExistingMode: f.preExistingMode,
+        })
+      }
+    } catch (error) {
+      // No combined state survives a failure: restore what was there (or remove
+      // what this run published), and never leave a staging file behind.
+      for (const path of touched) {
+        const stage = `${path}.u7-sbx-staging`
+        if (existsSync(stage)) rmSync(stage, { force: true })
+        const backup = backups.get(path)
+        if (backup !== undefined) {
+          // A FIFO/socket swapped in during the run would make the restore
+          // block. Remove a non-regular entry (bounded) before writing; if it
+          // still isn't a regular file, fail closed instead of hanging.
+          let st = null
+          try { st = lstatSync(path) } catch { /* absent */ }
+          if (st !== null && !st.isFile()) {
+            try { rmSync(path, { force: true }) } catch { /* a directory cannot be unlinked */ }
+            st = null
+            try { st = lstatSync(path) } catch { /* gone */ }
+            if (st !== null && !st.isFile()) {
+              throw new HostSandboxAssetError('DESTINATION_NOT_REGULAR_FILE', `rollback cannot restore ${path}: it is ${destinationNotRegularDetail(st)} — the destination was left in place rather than blocking the rollback`)
+            }
+          }
+          copyFileSync(backup.backup, path)
+          chmodSync(path, backup.mode)
+        } else if (existsSync(path)) {
+          rmSync(path, { force: true })
+        }
+      }
+      throw error
+    }
+
+    // (7) RECEIPT: the artifact, the pin and the host, in one JSON.
+    const runtimeHead = (() => {
+      const r = gitText(['rev-parse', 'HEAD'], layout.runtimeTree)
+      return r.status === 0 ? String(r.stdout ?? '').trim() : null
+    })()
+    const receipt = {
+      schema: HOST_ASSET_RECEIPT_SCHEMA,
+      at: now().toISOString(),
+      action: 'provisioned-from-package',
+      transport: 'pinned-package',
+      package: {
+        spec: parsed.spec,
+        name: parsed.name,
+        version: parsed.version,
+        registry: base,
+        metadataUrl,
+        tarballUrl: parsedTarballUrl.href,
+        distIntegrity: integrity,
+        tarballSha256,
+        tarballBytes: tarballBytes.length,
+      },
+      host: {
+        baselineVersion: DSH_BASELINE_VERSION,
+        sha: TEST_USE_BASELINE_SHA,
+        runtimeTree: layout.runtimeTree,
+        runtimeHead,
+        platform,
+        libc,
+        platformDir: layout.platformDir,
+        launcherPath: layout.launcherPath,
+      },
+      manifest: { path: MANIFEST_REL, schema: m.schema, digest: manifestDigest(m) },
+      files: written.map((f) => ({
+        relPath: f.relPath, role: f.role, sha256: f.sha256, expectedSha256: f.expectedSha256,
+        bytes: f.bytes, mode: f.mode, preExistingSha256: f.preExistingSha256, preExistingMode: f.preExistingMode,
+      })),
+      siblings: Object.keys(pinned.siblings ?? {}).sort(),
+      bytesWritten,
+      porcelainBefore: { available: porcelainBefore.available, empty: porcelainBefore.empty },
+      porcelainAfter: (() => { const p = porcelainState(layout.runtimeTree); return { available: p.available, empty: p.empty, lines: p.lines } })(),
+    }
+    const path = receiptPath ?? hostAssetReceiptPath(root, receiptEnv)
+    try {
+      mkdirSync(dirname(path), { recursive: true })
+      writeFileSync(path, `${JSON.stringify(receipt, null, 2)}\n`)
+    } catch (error) {
+      throw new HostSandboxAssetError('RECEIPT_WRITE_FAILED', `${path}: ${String(error?.message ?? error)} — the assets are installed but the evidence of HOW cannot be written, so this is a refusal, not a silent success`)
+    }
+    return { ...receipt, receiptPath: path }
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true })
   }
 }
