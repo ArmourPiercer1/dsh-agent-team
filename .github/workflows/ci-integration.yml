@@ -221,7 +221,7 @@ jobs:
         # shadow census timer; failed rows re-throw, the summarizer refuses
         # empty/foreign/tampered/census-less input), host-cache-key (canonical key, a missing
         # fact refuses, OK only after entry point + identity + file count + tree digest agree),
-        # census-plan (DERIVED from the root vitest config — 11 roots / 705 files — one task per
+        # census-plan (DERIVED from the root vitest config — 12 roots / 712 files — one task per
         # (root, capture), est_ms a nullable hint that never drops a task, plan_digest over
         # every task field, --verify-plan refusing digest/identity/task-set drift),
         # census-aggregate (spec §5 rules 1–6 fail-closed as NAMED codes) and census-cutover
@@ -239,7 +239,7 @@ jobs:
         # in ci-census, the only job that provisions the pinned host.
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-          node scripts/test-catalog.mjs --max-uncollected 91
+          node scripts/test-catalog.mjs --max-uncollected 84
 
       - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
         # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is

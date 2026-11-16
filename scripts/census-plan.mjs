@@ -22,8 +22,9 @@
  *   the census's single `vitest run` actually loads. Each matching file is mapped to its root with
  *   `rootOf()` from `scripts/tinf-timing.mjs`, the SAME derivation M3 uses to name roots in the timing
  *   rows, so a plan task's root name and a timing row's root name cannot disagree.
- *   On this tree that yields 11 roots / 705 files, which is exactly what the last real census reported
- *   (`captured 705f/9213l`, and 11 `census-root` names in the M3 timing TSV) — the derivation is the
+ *   On this tree that yields 12 roots / 712 files (705 from the last real census, reported as
+ *   `captured 705f/9213l` + 11 `census-root` names in the M3 timing TSV, plus the 7 T5 compatibility
+ *   suites collected by batch B1) — the derivation is the
  *   same authority, not a coincidence.
  *   It REFUSES when the root set cannot be derived from the config (missing root config, unparsable
  *   `include[]`, a matched file that resolves to no root, an empty set). There is no fallback count
