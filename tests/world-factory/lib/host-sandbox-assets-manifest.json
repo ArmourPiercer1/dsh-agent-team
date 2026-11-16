@@ -1,13 +1,16 @@
 {
   "schema": "u7-sbx-host-sandbox-assets/1",
-  "purpose": "Pinned sha256 of the gitignored native sandbox assets a fresh runtime checkout does NOT carry (native/system/.gitignore ignores every platform package bin/). tests/world-factory/lib/host-sandbox-assets.mjs copies them from a LOCAL source tree and refuses to publish any file whose bytes do not hash to this table.",
-  "transport": "local copy only - the provisioner has no download path",
+  "purpose": "Pinned sha256 of the gitignored native sandbox assets a fresh runtime checkout does NOT carry (native/system/.gitignore ignores every platform package bin/). tests/world-factory/lib/host-sandbox-assets.mjs provisions them over TWO transports and refuses to publish any file whose bytes do not hash to this table: (1) a LOCAL copy from a trusted runtime tree, (2) the pinned PUBLISHED npm package (packages block below), fetched as a tarball and verified against the registry's dist.integrity AND the pinned tarball sha256 before a byte is installed.",
+  "transport": "two transports, one pin: (a) local copy from a trusted LOCAL runtime tree (no network; the default, and it never overwrites bytes it did not create); (b) pinned published package tarball - exact name@version only, fetched from the npm registry, verified against the registry's published dist.integrity (sha512) and against the tarballSha256 pinned below, then per-file sha256+length+mode checked before install. The package transport exists because a hosted runner's own host build produces DIFFERENT bytes for bin/glibc/system.node (measured dfa6d586... vs the pin 54a9c25c...); the FIXED PUBLISHED ASSET is the standard and the sha256 pin is never moved to match a build.",
   "provenance": {
     "measuredAt": "2026-10-28",
     "measuredFrom": "the main Team checkout runtime tree at detached HEAD 639ed015397290b3745d163aafe02ffee4aa3f84 (porcelain empty), built by the 0.2.0-rc.2 host-upgrade round",
     "upstream": "the same bytes the official @deepseek-ai/node-addon-system-linux-x64 package carries (native/system/packages/linux-x64/prebuilds.json names these paths); host source is never patched - CORE PATCH BUDGET = 0",
     "verifyCommand": "sha256sum tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/landlock-run",
-    "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state"
+    "packageMeasuredAt": "2026-11-16",
+    "packageMeasuredFrom": "https://registry.npmjs.org/@deepseek-ai/node-addon-system-linux-x64/-/node-addon-system-linux-x64-0.1.2.tgz downloaded 2026-11-16: 25758 bytes, sha256 77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20, registry dist.integrity sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==; package/bin/glibc/system.node and package/bin/landlock-run hash EXACTLY to the entries block above",
+    "packageVerifyCommand": "node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2",
+    "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state (the package transport writes the same bin/ paths and nothing else)"
   },
   "entries": {
     "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84": {
@@ -29,6 +32,45 @@
               "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
               "bytes": 38552,
               "mode": "0o755"
+            }
+          }
+        }
+      }
+    }
+  },
+  "packages": {
+    "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84": {
+      "hostBaseline": {
+        "version": "0.2.0-rc.2",
+        "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platforms": {
+        "linux-x64": {
+          "libc": "glibc",
+          "package": "@deepseek-ai/node-addon-system-linux-x64",
+          "version": "0.1.2",
+          "registry": "https://registry.npmjs.org",
+          "distIntegrity": "sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==",
+          "tarballSha256": "77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20",
+          "tarballBytes": 25758,
+          "launcher": "bin/landlock-run",
+          "files": {
+            "bin/glibc/system.node": {
+              "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+              "bytes": 17360,
+              "mode": "0o755"
+            },
+            "bin/landlock-run": {
+              "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+              "bytes": 38552,
+              "mode": "0o755"
+            }
+          },
+          "siblings": {
+            "bin/musl/system.node": {
+              "sha256": "fb39a23ed7c414b48d6a8ee35b02016400997b0eb15926b1fd53946c7403f1d2",
+              "bytes": 17960,
+              "note": "the musl variant the published tarball also carries; not installed on a glibc host, pinned so the package's whole bin/ subtree is accounted for (an unaccounted bin/ file is PACKAGE_EXTRA_BIN_FILE)"
             }
           }
         }
