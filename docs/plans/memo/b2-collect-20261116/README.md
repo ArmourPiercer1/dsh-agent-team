@@ -337,14 +337,55 @@ Both bounds fired — the path set (`UNCOLLECTED_NEW`) and the count (`UNCOLLECT
 | --- | --- | --- | --- |
 | `43818397164` | `e0514df18` | **pass 2 m 10 s**, 21 suites, `set=sha256:a7d04943…` | the first cut (nine collected) was green on the hosted runner |
 | `43821557423` | `49bb277f` (merge of `master`/`#782`) | **fail 1 m 51 s**, same 21 suites, same `set=sha256:a7d04943…` | `freeze-candidate` failed one case with byte-identical inputs → §2.3 |
+| `43831767996` | `5586bb26e` (this correction) | **pass 2 m 20 s**, 20 suites | the collected set is green on the hosted runner in the shape CI provides |
 
 Same set digest, same files, opposite verdicts: that is the flake, and it is why the suite is out.
 
 Other jobs in run `43821557423`: `ci-fast` pass 27 s · `ci-security` pass 1 m 04 s · `ci-product` pass 1 m 46 s · `synthesize-merge-tree` pass 14 s · `candidate-protection` pass 12 s · `ci-census / census-runtime` **pass 21 m 39 s** (the PR is no longer a draft, so the full census ran) · `pr-gate` pass 1 m 21 s · `ci-required` fail (`EB3-REQUIRED fail … nongreen=ci-integration`) · `pr-settlement-gate` pass (a dated settlement comment now covers the head).
 
-### 5.2 Collected shape in the shape CI provides
+### 5.2 Collected shape, measured in a clone (not in this worktree)
 
-After the correction is pushed, the leg is executed twice more outside this worktree: in a **clean full clone** of the pushed head (the depth-0 shape `ci-integration` declares) and in a **depth-1 clone** (the stricter probe from §2.4). Results are appended in the follow-up commit that records them.
+Two clones of the pushed head `5586bb26e`, both outside the worktree, both with the same 20-suite dispatch set:
+
+**(a) clean full clone — the depth-0 shape `ci-integration` declares** (`git status --porcelain` empty, `fetch-depth: 0` semantics):
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg tinf-instruments
+ℹ tests 355
+ℹ pass 355
+ℹ fail 0
+ℹ duration_ms 56849.28
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=20 files=20 exit=0 set=sha256:26f1f436abc1d3cfe1e45bd691dd8e04c62e9685949b76bd32ea5b4efb064a33
+```
+
+**(b) depth-1 clone — the stricter probe from §2.4** (`git clone --depth 1 --no-single-branch`, `git rev-list --count HEAD` = **1**):
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg tinf-instruments
+ℹ tests 355
+ℹ pass 351
+ℹ fail 4
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=20 files=20 exit=1 set=sha256:26f1f436abc1d3cfe1e45bd691dd8e04c62e9685949b76bd32ea5b4efb064a33
+✖ tests/s2-authority/ci-snapshot-reader.test.mjs
+✖ tests/s2-authority/probe-candidate.test.mjs
+✖ tests/s2-authority/sync-candidate-resolver.test.mjs
+✖ tests/s2-authority/verify-candidate.test.mjs
+```
+
+Same set digest as (a) — same files, same bytes — so the four reds are exactly the history-dependence named in §2.4, and nothing else. Per file:
+
+| suite | depth-1 | why it reds at depth 1 | depth 0 |
+| --- | :-: | --- | :-: |
+| `authority-dual-read` | green | — | green |
+| `authority-snapshot-isolated` | green | — | green |
+| `candidate-track-negative-control` | green | — | green |
+| `current-authority-pointer` | green | — | green |
+| `ci-snapshot-reader` | **red** | `git show 3d6f6aad:scripts/ci-pr-gate.mjs` (object absent) | green |
+| `probe-candidate` | **red** | `git show 09fd39464:scripts/docs-probe.mjs` | green |
+| `sync-candidate-resolver` | **red** | `git show 61df0b424:scripts/docs-sync.mjs`, `cat-file 9b2ee57bc`, `origin/master` | green |
+| `verify-candidate` | **red** | frozen manifest's `candidate_commit` ancestry + `refs/remotes/origin/master` | green |
+
+The depth-1 result is recorded, not enforced: CI declares `fetch-depth: 0` and enforces it (`census-runtime.yml`'s PIN precheck fails loudly otherwise), so (a) is the shape that decides, and (b) is what a future shallower checkout would cost.
 
 ## 6. What stays uncollected (76)
 
