@@ -11,7 +11,7 @@
  *
  * node:test on purpose: it is host-free and belongs to the same dispatch leg as
  * the C1 unit suite (`m7a-real-host-c1`), so both run in ci-integration on every
- * PR. It is NOT a vitest suite — the vitest census population (705 files at the
+ * PR. It is NOT a vitest suite — the vitest census population (712 files at the
  * last real census) is a reviewed artifact and this file does not move it.
  *
  * Run: node --test tests/world-factory/m7a-real-slice-host-state.test.mjs
