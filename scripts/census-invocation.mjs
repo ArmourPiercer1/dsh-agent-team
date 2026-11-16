@@ -24,23 +24,26 @@
  * passed a clock (the gate prints which clock was in force on every leg line, and the plan records
  * it in its digest), so a plan for a run under the suite default carries no `--testTimeout` at all.
  *
- * THE WORKER CEILING IS EXPLICIT. Vitest's default is `availableParallelism() - 1`, which is **3**
- * on the 4-vCPU hosted runner, and the measured census is wait-heavy (children, pipe I/O, fs):
- * 4 workers on the same 4 CPUs finished a capture 102 s sooner than 3 in the perf-diag memo
- * (`docs/plans/memo/perf-diag-20261115/README.md` §5). Before a perf-rank1 change this argv carried
- * no `--maxWorkers` at all, so the runner's effective ceiling was 3 by derivation; it is now named
- * here, in the ONE module both the census gate and the census plan build their command from, so the
- * value cannot drift between the runner and the plan. The rest of the invocation — reporters, the
- * JSON report path, the optional clock, one `vitest run` over the whole population, two serial
- * captures — is unchanged.
+ * THE WORKER CEILING IS EXPLICIT. Vitest's default is `max(availableParallelism() - 1, 1)`; the
+ * perf-diag memo measured the effective 3-worker capture on a 4-CPU mask and found 4 workers on the
+ * same 4 CPUs finishing ~102 s sooner on a wait-heavy population
+ * (`docs/plans/memo/perf-diag-20261115/README.md` §5). Before perf-rank1 this argv carried no
+ * `--maxWorkers` at all, so the ceiling was whatever the machine implied; it is now named here, in
+ * the module that builds the argv for the census capture, its load-family re-sample and every census
+ * plan task, so those three cannot carry different ceilings. The value is NOT derived from the
+ * machine's core count — the hosted runner's own shape is an external assumption — so every gate run
+ * logs `available_parallelism` and `workers` on its `DSH-CI-RUN` line, and an L2 can judge the
+ * ceiling against the machine it actually got. The rest of the invocation — reporters, the JSON
+ * report path, the optional clock, one `vitest run` over the whole population, two serial captures —
+ * is unchanged.
  *
  * @module scripts/census-invocation
  */
 
 /**
- * The census `vitest` worker ceiling. 4 = the hosted runner's vCPU count (perf-rank1, 2026-11-16);
- * its previous EFFECTIVE value was 3 (vitest's `availableParallelism() - 1`). Named, exported and
- * used by `censusVitestArgv` so no caller can carry a different number.
+ * The census `vitest` worker ceiling. 4 = the approved perf-diag rank-1 value (2026-11-16), one
+ * above the previous EFFECTIVE 3 (vitest's `availableParallelism() - 1` on the measured 4-CPU
+ * shape). Named, exported and used by `censusVitestArgv` so no caller can carry a different number.
  */
 export const CENSUS_MAX_WORKERS = 4
 

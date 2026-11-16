@@ -10,15 +10,21 @@
 
 The census `vitest` invocation now names its worker ceiling: **`--maxWorkers=4`**.
 
-- **Where**: `scripts/census-invocation.mjs`, the one module that builds the census argv for both
-  the census leg of `scripts/ci-pr-gate.mjs` and every task of the census plan
-  (`scripts/census-plan.mjs`). The workflow and the manifest do not carry a second copy of the
-  number, so `dispatch-tests --check`, `eb3-ci-required`, the plan's `runner.argv` and the census
-  invocation cannot drift apart.
+- **Where**: `scripts/census-invocation.mjs`, the one module that builds the census argv for all
+  three callers: the full capture in `scripts/ci-pr-gate.mjs`, that leg's **single-file load-family
+  re-sample** (previously an inline argv at `ci-pr-gate.mjs:2174` with no `--maxWorkers`), and every
+  task of the census plan (`scripts/census-plan.mjs`). The workflow and the manifest carry no second
+  copy of the number, so `dispatch-tests --check`, `eb3-ci-required`, the plan's `runner.argv` and
+  both gate invocations cannot drift apart.
 - **What it replaces**: there was no literal `3` to edit. Before this PR the invocation carried no
-  `--maxWorkers` at all, and vitest's default (`availableParallelism() - 1`) is **3** on the
-  4-vCPU hosted runner — the ceiling the perf-diag memo measured and recommended lifting. This PR
-  makes that effective value explicit at 4 in the same single source of truth.
+  `--maxWorkers` at all, and vitest's default (`max(availableParallelism() - 1, 1)`) was **3** on
+  the measured 4-CPU shape — the ceiling the perf-diag memo measured and recommended lifting. This
+  PR makes that effective value explicit at 4 in the same single source of truth.
+- **Not derived from a core count**: the hosted runner's shape is an external assumption, not a fact
+  this repo owns (`pr-gate.yml` also describes a 2-core hosted runner). The invocation therefore
+  does not compute 4 from `availableParallelism()`; instead every gate run logs
+  `available_parallelism=<n> workers=4` on its `DSH-CI-RUN` line, so each L2 states the machine's own
+  number and the ceiling can be judged against it.
 - **What does not change**: one `vitest run` over the whole 705-file population; 11 roots; two
   serial captures in capture-major order; the reporters and JSON report path; the optional
   `--testTimeout`; the timeouts, retries, assertions, the 6600-walk race test and the flock test;
@@ -41,8 +47,10 @@ taskset -c 0-3 env CI=true node scripts/ci-pr-gate.mjs --full \
   --transcript-dir .artifacts/perf-rank1/transcripts-<arm>
 ```
 
-`taskset -c 0-3` emulates the 4-vCPU hosted runner: `availableParallelism()` on that affinity is 4,
-so the **before** arm's implicit vitest ceiling is 3. The **before** arm stashed only
+`taskset -c 0-3` emulates a 4-CPU runner: `availableParallelism()` on that affinity is 4, so the
+**before** arm's implicit vitest ceiling is 3. The arm headers below say "3 workers"/"4 workers",
+which is the effective test-file concurrency, not a claim about the hosted runner's real core count.
+The **before** arm stashed only
 `scripts/census-invocation.mjs`; the **after** arm is the PR's tree. The pristine host
 (`tests/deepseek-harness-test-use`) was a local copy of a built, porcelain-clean checkout at
 `639ed015397290b3745d163aafe02ffee4aa3f84` (0.2.0-rc.2); the repo was built with
@@ -79,9 +87,15 @@ tree was restricted to CPUs 0–3 for both arms.
 | peak RSS (whole process tree) | — | — | **2,234,468 KiB ≈ 2.13 GiB** |
 
 - **Measured delta: 958.3 s → 681.4 s = −276.9 s (−4 m 37 s) on the census leg**, about
-  −138.6 s per capture. Both captures ran, both arms; this is not a one-capture extrapolation.
-- Peak RSS rose by ≈ 381 MB (1.77 → 2.13 GiB), well under a 16 GiB hosted runner, but that limit
-  is **not** measured here.
+  −138.45 s per capture (276.9 / 2). Both captures ran, both arms; this is not a one-capture
+  extrapolation.
+- Peak RSS rose by **380,796 KiB = 372 MiB ≈ 390 MB** (1.77 → 2.13 GiB). The local machine has
+  30 GiB; the hosted runner's limit and its peak are **unmeasured**, so no hosted memory conclusion
+  is drawn.
+- **Why the before arm is 473.95 s, not the perf memo's 428.3 s**: that memo number is a *warm*
+  full capture from an earlier tree (its base predates #779) on its own machine. This is a fresh
+  before/after pair on the same `origin/master` tree, same machine, same caches order; comparing
+  the two is the A/B, not reproducing the memo's absolute table.
 - Assertion parity: 9233 per capture in both arms. The task brief's 9213 is the perf-diag base
   tree; current `origin/master` carries #779 (M7-A testkit tests), which is +20 assertions on the
   same 705 files / 11 roots. This PR changes neither the population nor the assertion set.
@@ -93,12 +107,16 @@ tree was restricted to CPUs 0–3 for both arms.
 The plan-mode aggregate returned `verdict=FAIL` in **both** arms, with the same single failed test:
 `packages/runtime/test/a5sf-os-runner.test.ts > refuses a network-deny policy when the backend
 cannot enforce it (no bare process)` — it expects `ENFORCEMENT_UNAVAILABLE`, but this local host's
-provisioned Landlock launcher *does* enforce the policy, so the negative control observes
-`ok: true`. The plan aggregate then reports `SHARD_EXIT_NONZERO,TASK_STATE_INCOMPLETE,TASK_STATE_FAIL`
-because one root failed. This is a difference between this sandbox (native sandbox assets
-provisioned) and a fresh CI checkout (assets absent, backend unusable); it is present before and
-after, so it does not affect the timing comparison, and this PR does not claim a green local census.
-The hosted L2 is the first place the census will run with the runner's own environment.
+netns leg returns **`NET-DENY-CONFIRMED`** (`packages/runtime/sandbox-provider/probe-abi.ts:441-491`,
+`network.ts:60/229`): the confined child can create its own `CLONE_NEWUSER|CLONE_NEWNET` pair, so
+the provider reports an enforceable network-deny and the negative control observes `ok: true`. This
+is not "the Landlock launcher enforces a network policy"; it is the netns mechanism being available
+in this sandbox. A fresh CI checkout without the provisioned launcher is expected to take the
+refusal arm. The plan aggregate then reports
+`SHARD_EXIT_NONZERO,TASK_STATE_INCOMPLETE,TASK_STATE_FAIL` because one root failed. The condition is
+present before and after, so it does not affect the timing comparison, and this PR does not claim a
+green local census. The hosted L2 is the first place the census will run with the runner's own
+environment.
 
 ## 2. What remains unmeasured
 
@@ -113,23 +131,45 @@ The hosted L2 is the first place the census will run with the runner's own envir
 
 ## 3. Rollback criterion (and the exact revert command)
 
+**Hosted peak memory is unmeasured.** `census-runtime.yml` has no RSS / `free` / `/usr/bin/time`
+hook, so there is no L2 memory number to decide on; the local 2.13 GiB is context, not a criterion.
+If memory needs to become one, the workflow must first grow a real measurement step.
+
+**How the timing comparison is made.** Compare this PR's census leg with **both** of the two most
+recent pre-PR `master` L2 census legs and report all three numbers plus the deltas. The recorded
+same-config spread is **130 s** (`485.3 s` vs `355.3 s`, `dev/agent-workflow/evidence/a4-pr7/
+census-runtime/COUPLING-20261009.md` §11), which dwarfs a 60 s threshold; a delta inside that spread
+is not evidence of improvement.
+
 Revert this PR if the hosted L2 shows **any** of:
 
-1. any added flakiness or failure — a new red identity, a failed capture, a refused leg, or a
-   retry that did not exist at 3 workers;
-2. peak memory approaching the runner limit (the job's own measurement; local peak was 2.13 GiB);
-3. less than a **~60 s** improvement across the census job (the job-level delta, not one capture).
+1. **any added flakiness or failure** — a new red identity, a failed capture, a refused leg, or a
+   retry that did not exist at 3 workers. The first two files to inspect are
+   `packages/runtime/test/alpha5-glob-backend-adversarial.test.ts` (the 6600-walk storm; it
+   describes itself as a "good neighbour in a shared pool" and is paced because it tips another
+   lane's BOUNDED polls) and `packages/runtime/test/a5lsp2-assembly.test.ts` (records those legs
+   going red on a CI runner twice, which is why it carries a 30 s ceiling and forensics). Both are
+   in the population and are the most likely neighbours to feel a fourth worker.
+2. less than a **~60 s** improvement across the census job (job-level, not one capture), measured
+   against the two most recent pre-PR master L2 census legs as above. A delta between 60 s and the
+   130 s historical spread is **inconclusive**, not a win: investigate before keeping the change.
 
-Exact revert, after the merge commit exists:
+Exact revert. `master` squash-merges, so the branch commit is not on `master`; revert the squash
+commit:
 
 ```bash
-git revert --no-edit <this PR's merge/squash commit>
+git revert --no-edit "$(gh pr view 782 --json mergeCommit --jq .mergeCommit.oid)"
 ```
 
-If the PR is merged as the single commit on this branch, `<this PR's merge/squash commit>` is that
-commit; the revert restores the invocation with no `--maxWorkers` and therefore the previous
-effective ceiling of 3. No other file is touched, so the revert cannot collide with a later
-change except on the argv line itself.
+If `gh` is unavailable, the same commit is the one whose subject carries this PR number:
+
+```bash
+git revert --no-edit "$(git log origin/master -1 --format=%H --grep='#782')"
+```
+
+The revert restores the invocation with no `--maxWorkers` and therefore the previous effective
+ceiling; no other file is touched, so it cannot collide with a later change except on the argv
+line itself.
 
 ## 4. Gates run locally on this branch
 
