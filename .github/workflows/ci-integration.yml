@@ -237,9 +237,40 @@ jobs:
         # parity law requires every dispatch step to correspond to an old-side `node --test` argv,
         # so a new step would be a permanent UNCONVERTED problem. The C2 half (one real boot) runs
         # in ci-census, the only job that provisions the pinned host.
+        # B2 (2026-11-16) joins this SAME leg with NINE of the ten host-free authority suites
+        # (dev/engineering pointer transactional switch + byte-exact restore, F0 snapshot digest
+        # and publisher whitelist, dual-read diagnostics, candidate freeze/probe/sync/verify),
+        # declared explicitly in the manifest's `suites[]`. They are node:test files (one case per
+        # file over a hand-rolled `t()` harness, exit 1 on a failed assert) and green with the
+        # pinned host tree bind-mounted EMPTY. Same M6 parity reason as M7-A: a new leg would be a
+        # permanent UNCONVERTED step. The TENTH, tests/s2-authority/consumer-candidate.test.mjs,
+        # stays UNCOLLECTED: its C10 case compares `runtime`, which carries the LIVE `git status`
+        # count, so a concurrent sibling suite moves it between the two builds (measured
+        # dirty_paths 11 vs 12) — collecting it would import a flake into this gate. It is listed
+        # in dev/ci/uncollected-baseline.json until its assertion is repaired in its own PR.
+        # The ratchet below is tightened to the measured post-B2 count (84 -> 75); it may only go down.
+        # B3 (2026-11-16) joins this SAME leg with the 28 world-factory suites the uncollected-test
+        # audit called host-free, RE-MEASURED with the pinned tree bind-mounted EMPTY inside
+        # `unshare -m -r` (+ A5SF_REQUIRE_PINNED_HOST=1, A5SF_PD31_HOST_TREE=/nonexistent) on a clean
+        # `pnpm install --frozen-lockfile` tree: 426 arms / 420 pass / 0 fail / 6 source-declared
+        # PRE-FIX-PIN-FORK skips. Same M6 parity reason as M7-A and B2 — a new leg would be a
+        # permanent UNCONVERTED step, so they ride THIS leg's `suites[]`. The three B3 files that are
+        # red regardless of the host (two install-shape reds, one stale product-debt anchor) stay
+        # UNCOLLECTED; docs/plans/memo/b3-collect-20261116/ has the verbatim output.
+        # THE ENV IS THE TRAP CLOSED. `A5SF_REQUIRE_PINNED_HOST=1` (here AND in the manifest leg) makes
+        # an absent pinned host a RED instead of a `verdict=NOT_RUN` with 15 skips — measured on the
+        # deferred B4 set, where `a5sf-pty-contract` on a genuinely absent tree exits 0 with
+        # `skipped=15 cases=15 verdict=NOT_RUN`. `eb3-ci-required` grades both halves
+        # (CI_LAYER_LEG_ENV_MISSING if this step loses the flag, CI_HOST_REFUSAL_UNGUARDED if a
+        # hostFree leg lists a refusal-capable suite without the declaration). The only reviewed
+        # exception is `a5sf-fs-contract-layer-b` (`hostRefusal: declared-not-run`), which lives in
+        # this same no-host lane and declares its NOT_RUN on purpose.
+        # The ratchet is tightened to the measured post-B2+B3 count (75 -> 47); it may only go down.
+        env:
+          A5SF_REQUIRE_PINNED_HOST: '1'
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-          node scripts/test-catalog.mjs --max-uncollected 56
+          node scripts/test-catalog.mjs --max-uncollected 47
 
       - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
         # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is
@@ -451,27 +482,6 @@ jobs:
         # in-process Cordis unit root and mkdtemp fixtures — no boot, no port, no DSH_HOME, no
         # pristine host tree at run time.
         run: node scripts/dispatch-tests.mjs --run --leg a5sf-fs-contract-layer-b
-
-      - name: "a5sf world-factory C1 (host-free, 28 suites — node:test, zero Host boots, measured with the pinned tree hidden)"
-        # BATCH B3 of the uncollected-test audit (PR #777). The 31 world-factory suites that
-        # audit called host-free were re-measured here, because the audit's own revision history
-        # records that the first "host-free" claim was wrong: those tests only turned green by
-        # `findTestRepoRoot()` walking up out of `.worktrees/<task>` into the main checkout, where
-        # `tests/deepseek-harness-test-use` exists. Each B3 file is re-run with that tree
-        # bind-mounted to an EMPTY directory in a private mount namespace (`unshare -m -r`), with
-        # `A5SF_REQUIRE_PINNED_HOST=1` and `A5SF_PD31_HOST_TREE=/nonexistent` — the condition a
-        # hosted runner has. 28 of the 31 are green there and are declared in this leg's `suites[]`;
-        # the 3 that are not (two install-shape reds that `require.resolve` a package the isolated
-        # linker only hoists into `.pnpm/node_modules`, one stale product-debt anchor) stay
-        # UNCOLLECTED on purpose and are disclosed in docs/plans/memo/b3-collect-20261116/.
-        # The 18 host-DEPENDENT world-factory suites are not here: they need the pinned built tree
-        # and a leg that sets `A5SF_REQUIRE_PINNED_HOST=1` itself, so that a missing host is a red
-        # rather than 15 silent skips (measured: `a5sf-pty-contract` on an absent tree exits 0 with
-        # `skipped=15 cases=15 verdict=NOT_RUN`; under this step's condition it is a hard failure).
-        # The leg's population is declared ONCE in dev/ci/eb3-ci-manifest.json (`suites[]` for an
-        # explicit subset, `areas[]` for a whole area) and this step names only the leg; deleting the
-        # step is CI_LAYER_LEG_MISSING, dropping `--run` is CI_LAYER_LEG_WEAKENED.
-        run: node scripts/dispatch-tests.mjs --run --leg a5sf-worldfactory-c1
 
       # ── the pre-existing legs, unchanged ──────────────────────────────────────
       - name: Gate legs — graph-parse + state-freshness

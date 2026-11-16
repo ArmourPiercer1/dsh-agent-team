@@ -652,7 +652,92 @@ control('C10 host-free-layer-refuses-host-dependent-suite', () => {
   }
 })
 
-// ──────────────────── control 11: the remaining text rules must not be satisfiable by text
+// ───────────── control 10b/10c: the deployed half of the hidden-host control (B3)
+/**
+ * B3 (2026-11-16) measured the trap the hostFree declaration did NOT close: a suite that
+ * consults `A5SF_REQUIRE_PINNED_HOST` turns an ABSENT pinned host into
+ * `A5SF-…-HOST-REFUSED … verdict=NOT_RUN` with skips, and prints `pass 0`. `a5sf-pty-contract`
+ * on a genuinely absent tree exits 0 with `skipped=15 cases=15`. `eb3-ci-required` said
+ * `pass workflows=10 findings=0` about a leg that would have run nothing, because
+ * `checkSuiteLists` only grades `layer.suiteList` files and `ci-integration` has none.
+ *
+ * Two rules now close it, and neither may be satisfied by text alone:
+ *
+ *   `CI_LAYER_LEG_ENV_MISSING`  — a leg's declared `env` must appear, with the same value, on
+ *                                  the step that EXECUTES that leg (same law cmd/check[] have)
+ *   `CI_HOST_REFUSAL_UNGUARDED` — a hostFree leg listing a refusal-capable suite must either
+ *                                  set the flag (absence = red) or declare the reviewed
+ *                                  exception `hostRefusal: 'declared-not-run'`
+ *
+ * Both halves are exercised here: honest tree passes both, and each mutation must produce
+ * the named code. The mutations are in-memory (manifest object + workflow text), never disk.
+ */
+control('C10b leg-env-declaration-grades-the-step', () => {
+  const { checkRequiredJobs, checkStepEnvDeclaration, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  if (typeof checkStepEnvDeclaration !== 'function') return { ok: false, detail: 'eb3-ci-required.mjs exports no checkStepEnvDeclaration — a declared env is prose' }
+  const files = workflowFiles(ROOT)
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const honest = checkRequiredJobs({ files, manifest })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest tree already fails: ${honest.findings.map((f) => f.code).join(',')}` }
+  const layer = manifest.layers.find((l) => l.id === 'ci-integration')
+  const leg = layer.legs.find((l) => l.dispatch_id === 'tinf-instruments')
+  if (leg?.env?.A5SF_REQUIRE_PINNED_HOST !== '1') return { ok: false, detail: 'the tinf-instruments leg no longer declares env.A5SF_REQUIRE_PINNED_HOST=1 — the guard has nothing to grade' }
+  const misses = []
+  // (a) the STEP loses the flag: the manifest still claims it, so the claim is unproven
+  const wfPath = '.github/workflows/ci-integration.yml'
+  const stripped = new Map(files)
+  stripped.set(wfPath, String(files.get(wfPath)).replace("          A5SF_REQUIRE_PINNED_HOST: '1'\n", ''))
+  const a = checkRequiredJobs({ files: stripped, manifest }).findings.filter((f) => f.code === 'CI_LAYER_LEG_ENV_MISSING' && String(f.detail).includes('tinf-instruments'))
+  if (a.length === 0) misses.push('step-loses-the-flag: CI_LAYER_LEG_ENV_MISSING not raised')
+  // (b) the MANIFEST changes the value the step must carry
+  const flipped = { ...manifest, layers: manifest.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === 'tinf-instruments' ? { ...x, env: { A5SF_REQUIRE_PINNED_HOST: '0' } } : x)) } : l)) }
+  const b = checkRequiredJobs({ files, manifest: flipped }).findings.filter((f) => f.code === 'CI_LAYER_LEG_ENV_MISSING' && String(f.detail).includes('tinf-instruments'))
+  if (b.length === 0) misses.push('manifest-flips-the-value: CI_LAYER_LEG_ENV_MISSING not raised')
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? 'honest tree passes; step loses the flag => CI_LAYER_LEG_ENV_MISSING; manifest flips the value => CI_LAYER_LEG_ENV_MISSING'
+      : misses.join(' ;; '),
+  }
+})
+
+control('C10c host-free-leg-refuses-unguarded-refusal-suite', () => {
+  const { checkHostRefusalGuard, HOST_REFUSAL_MARKER } = requireModule('scripts/eb3-ci-required.mjs')
+  if (typeof checkHostRefusalGuard !== 'function') return { ok: false, detail: 'eb3-ci-required.mjs exports no checkHostRefusalGuard — the NOT_RUN trap is ungraded' }
+  const honest = checkHostRefusalGuard({ root: ROOT })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest manifest already fails: ${honest.findings.map((f) => f.code).join(',')}` }
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const layer = manifest.layers.find((l) => l.id === 'ci-integration')
+  const leg = layer.legs.find((l) => l.dispatch_id === 'tinf-instruments')
+  const suite = leg.suites.find((s) => s.startsWith('tests/world-factory/'))
+  const misses = []
+  // (a) the leg loses BOTH the flag and the declaration while listing a refusal-capable suite
+  const bare = {
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration'
+      ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === 'tinf-instruments' ? { ...x, env: {}, hostRefusal: undefined } : x)) }
+      : l)),
+  }
+  const a = checkHostRefusalGuard({ root: ROOT, manifest: bare, override: { [suite]: `const flag = process.env.${HOST_REFUSAL_MARKER} === '1'\n` } }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === suite)
+  if (a.length === 0) misses.push(`flag+declaration removed with a refusal-capable ${suite.split('/').pop()}: CI_HOST_REFUSAL_UNGUARDED not raised`)
+  // (b) the SAME guard still fires with only the declaration present (no env) — one allow does
+  //     not buy the other, and the exception is spelled, never inferred
+  const declaredOnly = { ...bare, layers: bare.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === 'tinf-instruments' ? { ...x, hostRefusal: 'something-else' } : x)) } : l)) }
+  const b = checkHostRefusalGuard({ root: ROOT, manifest: declaredOnly, override: { [suite]: `const flag = process.env.${HOST_REFUSAL_MARKER} === '1'\n` } }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === suite)
+  if (b.length === 0) misses.push('an unrecognised hostRefusal value still passes: CI_HOST_REFUSAL_UNGUARDED not raised')
+  // (c) the honest flag keeps a genuinely refusal-capable suite green — the rule must not
+  //     simply refuse every suite that mentions the marker
+  const withFlag = checkHostRefusalGuard({ root: ROOT, override: { [suite]: `const flag = process.env.${HOST_REFUSAL_MARKER} === '1'\n` } })
+  if (withFlag.findings.length !== 0) misses.push(`the declared flag no longer admits a refusal-capable suite: ${withFlag.findings.map((f) => f.code).join(',')}`)
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest manifest passes; ${suite.split('/').pop()} made refusal-capable with flag+declaration removed => CI_HOST_REFUSAL_UNGUARDED; the same with the declared flag in place => no finding`
+      : misses.join(' ;; '),
+  }
+})
+
+
 /**
  * R1 review item 4: "re-check the rest of the manifest for the same pattern". The
  * leg rule was not the only one deciding by substring. Each mutation below satisfies
