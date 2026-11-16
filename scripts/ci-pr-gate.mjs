@@ -95,7 +95,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync, writeSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
-import { tmpdir } from 'node:os'
+import { availableParallelism, tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 
 // TINF M3 — harness-level timing, SHADOW ONLY. `createTimer` writes tinf-timing.tsv when (and only
@@ -108,10 +108,12 @@ import { createTimer, rowsFromVitestReport } from './tinf-timing.mjs'
 // TINF M4 — the census invocation itself, extracted so `scripts/census-plan.mjs` can put the SAME
 // command on a plan task instead of copying these strings. `censusVitestArgv()` reproduces the argv
 // this leg used to spell inline, character for character (argument order included): the plan and the
-// gate cannot disagree about what a census capture is. Deliberately NOT used for the single-file
-// load-family re-sample below — that is a diagnostic of one file with a different reporter set, not
-// a census task, and widening it would change transcripts nothing asked to change.
-import { censusVitestArgv } from './census-invocation.mjs'
+// gate cannot disagree about what a census capture is. It is used for BOTH gate invocations — the
+// full capture and the single-file load-family re-sample — because a re-sample that carried a
+// different worker ceiling would be a second performance configuration masquerading as a retry.
+// (`--reporter=default` therefore also appears on a re-sample; that only widens its transcript, it
+// changes no assertion and no verdict.)
+import { CENSUS_MAX_WORKERS, censusVitestArgv } from './census-invocation.mjs'
 
 // TINF M5 — the CUTOVER. `--census-execution plan` replaces the census leg's INTERNAL execution with
 // plan → execute tasks → aggregate → the SAME `DSH-CI-VERDICT` token. The M4 tools are consumed, not
@@ -2171,8 +2173,7 @@ export const LEGS = {
           for (let k = 1; k <= ctx.resample; k += 1) {
             rmSync(resolve(REPO_ROOT, 'packages/testkit/test/.tmp-fault'), { recursive: true, force: true })
             const rp = censusResamplePath(REPO_ROOT, process.pid, file, k)
-            const run = runCommand('pnpm', ['exec', 'vitest', 'run', file, '--reporter=json', `--outputFile.json=${rp}`,
-              ...(ctx.censusTestTimeout === null ? [] : [`--testTimeout=${String(ctx.censusTestTimeout)}`])])
+            const run = runCommand('pnpm', censusVitestArgv({ jsonPath: rp, testTimeout: ctx.censusTestTimeout, file }))
             ctx.capture(`census-resample-${file.replace(/[^a-zA-Z0-9]/g, '_')}-${String(k)}`, run)
             if (run.error !== null || !existsSync(rp)) continue
             if (ctx.idsFromReport(rp, `resample-ids-${file.replace(/[^a-zA-Z0-9]/g, '_')}-${String(k)}`).length === 0) green += 1
@@ -2534,7 +2535,8 @@ function main(argv) {
   process.stdout.write(
     `DSH-CI-RUN head=${String(git(['rev-parse', '--short', 'HEAD']) ?? 'unknown')} mode=${opts.full ? 'full' : 'default'} ` +
       `node=${process.version} cwd=${REPO_ROOT} store-dir=${String(ctx.storeDir ?? 'default')} ` +
-     `allow-refused=${(opts.allowRefused ?? []).length > 0 ? opts.allowRefused.join(',') : 'none'}\n`,
+      `allow-refused=${(opts.allowRefused ?? []).length > 0 ? opts.allowRefused.join(',') : 'none'} ` +
+      `available_parallelism=${String(availableParallelism())} workers=${String(CENSUS_MAX_WORKERS)}\n`,
   )
 
   // The token is printed from a `finally` and guarded by a flag: a throw anywhere in the loop —
