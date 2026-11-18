@@ -140,6 +140,25 @@ census-cutover 41/41, docs-sync clean, lint new 0 / resolved 0, typecheck clean,
 fresh clone the three census steps ran in one job: **B4/1 32/32 (26.4 s), B4/2 27/27 (0.5 s), M7-B1 10/10
 (94.0 s)**.
 
+## 3e. Hosted L2 green on the first merged head, then merged `82091ae4a` (#787)
+
+The hosted L2 on `1922d957b` (master `b28728fef`) passed **all three census steps in one job, in order**
+(M7-B1 10/10 with `M7B1-ARM inside-authorized verdict=SATISFIED unauthorized=[]` and named refusals for
+every forged shape; M7-A still `VERIFIED`), and **B4/1 on the ABI-v8 runner** printed
+`✔ P3-PROBE-SHAPE (capability-paired) … OR unsupported WITH a note naming the ABI gap` and
+`✔ P3-DENY-KERNEL-REFUSED (capability-paired): … unsupported ⇒ refused BEFORE SPAWN with
+NETWORK_UNCONFINED_REALM and zero children`. The capability pairing is therefore confirmed by the
+environment that broke the old assertion — not by simulation.
+
+Then `#787` landed (`82091ae4a`: second pinned host, `excluded-baseline.json`, `--max-excluded`) and the
+branch was merged again (head `6bea34a98`, no force-push). Re-derived: uncollected **41** (regenerated,
+#787's floor was 46 and collects nothing here), `test-catalog.test.mjs` byte-identical to master and
+**28/28**, the ratchet line tightened from `--max-uncollected 46 --max-excluded 9` to
+`--max-uncollected 41 --max-excluded 9` (a ratchet may only go down), the manifest diff against master
+still **55 insertions / 0 deletions** with three `hostRefusal` blocks intact, and `excluded-baseline.json`
+still **9 entries** — none of them one of this branch's five suites. In the CI-shape clone: **B4/1 32/32
+(26.5 s), B4/2 27/27 (0.5 s), M7-B1 10/10 (88.7 s)**, parity `problems=0`, controls 32/32.
+
 ## 4. Host absent — two answers, no green path
 
 | shape | result |
