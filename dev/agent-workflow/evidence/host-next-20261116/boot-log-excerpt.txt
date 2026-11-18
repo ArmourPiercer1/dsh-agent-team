@@ -1,3 +1,2 @@
-# next-host boot log — instance-port3190.log (first boot, 0.2.2-rc.5)
-# captured 2026-11-18T14:10:48Z; token redacted by the runner's own proof line
-dsh web: http://127.0.0.1:3190/?token=<REDACTED>
+# instance-port13000.log excerpt (token redacted) — 2026-11-18T15:45:20Z
+dsh web: http://127.0.0.1:13000/?token=<REDACTED>

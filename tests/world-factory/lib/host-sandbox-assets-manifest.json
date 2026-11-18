@@ -13,7 +13,7 @@
     "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state (the package transport writes the same bin/ paths and nothing else)",
     "nextHostMeasuredAt": "2026-11-16",
     "nextHostMeasuredFrom": "upstream tag dsh-v0.2.2-rc.5 = 9c2670d3bce5275e0d1610272958121af87787bb (lightweight tag, hashed with git ls-remote); its native/system/packages/{entry,linux-x64} manifests and native/system/packages/entry/src/*.{c} are byte-identical to the 0.2.0-rc.2 tree (diff -rq, empty), and the published @deepseek-ai/node-addon-system-linux-x64@0.1.2 tarball (25758 B, sha256 77fb771b...) hashes to the SAME per-file digests committed for the legacy host (measured 2026-11-16, evidence dev/agent-workflow/evidence/host-next-20261116/addon-tarball.txt). The next-host entry is therefore the same pinned published asset, not a locally rebuilt byte set.",
-    "nextHostVerifyCommand": "node scripts/provision-host-assets.mjs --host next --runtime-tree tests/deepseek-harness-next"
+    "nextHostVerifyCommand": "node scripts/provision-host-assets.mjs --from-package --host next --runtime-tree tests/deepseek-harness-next"
   },
   "entries": {
     "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84": {

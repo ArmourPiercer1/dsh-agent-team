@@ -1,13 +1,5 @@
-NEXT-SMOKE BOOT ok ms=1505 port=3190 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:3190/?token=<redacted>"
-NEXT-SMOKE SESSION ok sessionId=session-638462d6-4d91-45ed-b31d-7b1cce87f9cf createStatus=200 promptStatus=200 modelRequests=2
-NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/tests/homes/next-boot-2026-11-18T14-10-20-587Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-rXoeMO--/session-638462d6-4d91-45ed-b31d-7b1cce87f9cf/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-rXoeMO--/session-638462d6-4d91-45ed-b31d-7b1cce87f9cf/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
-✔ the pinned next host boots, serves a session, and its wire traffic is the scripted model (7622.204298ms)
-ℹ tests 1
-ℹ suites 0
-ℹ pass 1
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 22671.976494
-EXIT=0
+# NEXT-HOST BOOT — real boot of the pinned 0.2.2-rc.5 host, port from 13000-13049 (generation partition ruling 2026-11-16)
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+NEXT-SMOKE BOOT ok ms=1506 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/tests/homes/next-boot-2026-11-18T15-44-48-032Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-h3SWKf--/session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-h3SWKf--/session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f/session.v4.jsonl.zstd hostLogs=absent modelReplies=2

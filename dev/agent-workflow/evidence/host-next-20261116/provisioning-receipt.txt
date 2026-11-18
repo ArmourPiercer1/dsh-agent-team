@@ -1,14 +1,14 @@
-# NATIVE ASSET PROVISIONING for the NEXT host — measured 2026-11-18T14:17:38Z (real UTC)
+# NATIVE ASSET PROVISIONING for the NEXT host — measured 2026-11-18T15:45:40Z (real UTC)
 
-## command (exact version only; the manifest pins package@version per host baseline)
+## the documented command (manifest nextHostVerifyCommand), run VERBATIM (round-2 P3 fix: --from-package)
 $ node scripts/provision-host-assets.mjs --from-package --host next --runtime-tree tests/deepseek-harness-next
 
-## stdout (machine-greppable line, verbatim)
-HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 hostBaseline=next host=9c2670d3bce5275e0d1610272958121af87787bb manifestDigest=599d183d6d2a6e38b499c57768032253076796388f31f3b5a81c4269ae71f45a utc=2026-11-18T13:56:43.469Z receipt=<worktree>/.artifacts/tmp/host-assets/provision-receipt.json
+## stdout (verbatim HOST-ASSETS-PROVISIONED line)
+HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 hostBaseline=next host=9c2670d3bce5275e0d1610272958121af87787bb manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c utc=2026-11-18T15:42:16.124Z receipt=/home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/.artifacts/tmp/host-assets/provision-receipt.json
 
-## before provisioning the tree carried a LOCAL BUILD of the addon (drift, not the pin)
-  bin/glibc/system.node  75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd  17352 B  (built by pnpm run build)
-  bin/landlock-run       ABSENT (build:native-system --host-addon-only builds only the addon)
+## before provisioning a plain build left a LOCAL addon (drift, refused)
+  bin/glibc/system.node  75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd  17352 B
+  bin/landlock-run       ABSENT
 
 ## after provisioning (re-hashed from disk)
   a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31  tests/deepseek-harness-next/native/system/packages/linux-x64/bin/landlock-run
@@ -19,7 +19,7 @@ HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version
 ## receipt (u7-sbx-host-asset-receipt/1) — full content
 {
   "schema": "u7-sbx-host-asset-receipt/1",
-  "at": "2026-11-18T13:56:43.469Z",
+  "at": "2026-11-18T15:42:16.124Z",
   "action": "provisioned-from-package",
   "transport": "pinned-package",
   "package": {
@@ -47,7 +47,7 @@ HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version
   "manifest": {
     "path": "tests/world-factory/lib/host-sandbox-assets-manifest.json",
     "schema": "u7-sbx-host-sandbox-assets/1",
-    "digest": "599d183d6d2a6e38b499c57768032253076796388f31f3b5a81c4269ae71f45a"
+    "digest": "7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c"
   },
   "files": [
     {
@@ -57,7 +57,7 @@ HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version
       "expectedSha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
       "bytes": 17360,
       "mode": "0o755",
-      "preExistingSha256": "75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd",
+      "preExistingSha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
       "preExistingMode": "0o755"
     },
     {
@@ -67,8 +67,8 @@ HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version
       "expectedSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
       "bytes": 38552,
       "mode": "0o755",
-      "preExistingSha256": null,
-      "preExistingMode": null
+      "preExistingSha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+      "preExistingMode": "0o755"
     }
   ],
   "siblings": [

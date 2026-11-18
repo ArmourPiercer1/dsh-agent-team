@@ -302,14 +302,17 @@ node scripts/provision-host-assets.mjs --from-package --host next \
 - 树：`tests/deepseek-harness-next/`（gitignored；`tests/deepseek-harness-test-use/` 不动）。
 - `DSH_HOME`：`tests/homes/<world>-next`（`nextHostHomeDir()`），永不与 legacy 的 `<world>` 同名；
   home 内 token/会话永不提交，teardown 删除并在证据登记。
-- 端口：`NEXT_HOST.portBands` = **3190-3199**（在 §2 允许段内、legacy kit 默认 3180-3186 之外；
-  `3080` 永不使用）。
+- 端口：**按代际分区**（RULING，UTE-Prep，2026-11-16）：legacy host 只租 **3181-3199**（`HOST_PORT_BANDS`），
+  第二台 pinned host 只租 **13000-13049**（`NEXT_HOST.portBands`），两组**不相交**（13000-13049 不再属于
+  legacy 的 fall-through 段；mock 仍 3491-3500 / 13050-13099）。`3080` 永不使用。该分区是**代码断言**
+  （`tests/next-host` 的 `assertGenerationBandsDisjoint()` + boot 端口 ∈ 13000-13049 ∧ ∉ legacy 段；
+  `tests/world-factory/world-factory.test.mjs` 同步断言），不是靠"先探空闲端口"的运气。
 - 构建产物 / pnpm store / 日志：worktree 内各自独立；legacy 的构建与 node_modules 不参与。
 
 ### 11.5 验收通道（fail-loud，无 skip）
 
 ```bash
-node --test tests/next-host/            # 两条 suite：boot + native API smoke
+node --test 'tests/next-host/*.test.mjs'   # 两条 suite：boot + native API smoke（Node 24 不接受目录参数）
 ```
 
 - `tests/next-host/boot.test.mjs`：用既有 `packages/tools/harness/mock-deepseek.mjs` 脚本模型
@@ -326,7 +329,13 @@ node --test tests/next-host/            # 两条 suite：boot + native API smoke
   `tools/result` 仍通知该失败）。
 - **fail-loud**：树缺失/未构建/HEAD 漂移、原生资产缺失或 sha256 不符 → 直接 throw（`host-next-lib.mjs`），
   **没有** skip 分支。因此该通道**不进入** CI census 腿（census runner 没有这台树的构建），
-  由上面的显式命令跑；CI 仍只跑 legacy 腿。这是**有意的**分层，不是"缺 host 就跳过"。
+  由上面的显式端命令跑；CI 仍只跑 legacy 腿。这是**有意的**分层，不是"缺 host 就跳过"。
+- **非执行通道必须可数**：两条 suite 在 `dev/ci/test-contracts.json#excludes` 里，而 `excludes` 是
+  **不执行**通道。它现在有独立基线 `dev/ci/excluded-baseline.json`（路径 + reason + review ref）和
+  `--max-excluded N` 计数闸；gate 在**每次** catalog 调用都检查：不在基线 → `EXCLUDED_NEW`，
+  超出上限 → `EXCLUDED_GREW`（实测：把一个 tracked 但从不运行的 suite 加进 `excludes` 会 refused=2；
+  去掉 reason 仍是 `STALE_EXCLUDE`；合法条目 0 findings）。CI 的 catalog step 跑
+  `--max-uncollected 48 --max-excluded 9`，两个通道同时有界。
 
 ### 11.6 尚未证明（UNKNOWN）
 

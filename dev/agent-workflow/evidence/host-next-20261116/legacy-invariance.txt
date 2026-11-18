@@ -16,7 +16,7 @@ $ git diff -U0 -- tests/paths.mjs   # only the appended NEXT_HOST block
 ## 3. legacy suite passes unchanged: node scripts/dispatch-tests.mjs --run --leg tinf-instruments
 DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=48 files=48 exit=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f
 EXIT=0
-  ✔ 733
+  ✔ 735
   ✖ 0
 
 ## 4. shared files: paths.mjs strictly additive; the provisioning lib only gains a DEFAULTED parameter
@@ -29,6 +29,16 @@ EXIT=0
   legacy behaviour is unchanged (proved by the green tinf-instruments leg above).
   The manifest only gains a second entry/package key (legacy entries untouched).
 
+## 3b. the shared provisioning CLI still works for BOTH hosts (P1 review fix)
+  $ node tests/world-factory/provision-host-sandbox.mjs --check            -> EXIT=0, backend full,
+    "host baseline: legacy (0.2.0-rc.2@639ed01539…)", launcher a752bc72…, porcelain empty
+  $ node tests/world-factory/provision-host-sandbox.mjs --host next --check -> EXIT=0, backend full,
+    "host baseline: next (0.2.2-rc.5@9c2670d3…)", launcher a752bc72…, porcelain empty
+  (Before the fix the first console.log read p.baseline before `const p = await preflight…`,
+  a TDZ ReferenceError that killed every invocation, legacy included.)
+  The a1/a6 kits invoke exactly this path (`node <worktree>/tests/world-factory/provision-host-sandbox.mjs
+  --check`) and now get a usable preflight instead of exit 2.
+
 ## 4b. pre-existing red in this environment, NOT introduced here
   node --test tests/world-factory/host-sandbox-assets.test.mjs
     with my diff   : 35 red (same named set)
@@ -36,6 +46,8 @@ EXIT=0
   The 35 named failures are identical with and without this branch (the main checkout's
   legacy runtime tree carries a drifted bin/glibc/system.node = 75450f92… and no bwrap), so
   they are an environment asset-drift condition, not a regression from this branch.
+  tests/world-factory/world-factory.test.mjs: 44/45 pass; the one red ("RUN record: overall is
+  worst-of") is ALSO red with this branch's changes stashed (measured in the same worktree).
 
 ## 5. why this required an install in the worktree
   A fresh worktree has no root node_modules: the same leg first reported 6 suites red with

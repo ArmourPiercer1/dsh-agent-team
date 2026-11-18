@@ -7,7 +7,8 @@
  * (`packages/tools/harness/mock-deepseek.mjs` on DEEPSEEK_BASE_URL). Nothing
  * here fakes a boot: the child is `<nextTree>/apps/cli/lib/bin.js`, its own
  * DSH_HOME under `tests/homes/<world>-next`, its own port from the next-host
- * band (3190-3199, never :3080 and never the legacy 3180 family), its own log.
+ * band (13000-13049, never :3080 and never the legacy 3181-3199 family — the
+ * two bands are disjoint by the 2026-11-16 generation partition), its own log.
  *
  * Recorded: boot wall time (spawn -> boot marker), the boot marker line, the
  * session id the host returned, the host's own session log path, and the number
@@ -24,12 +25,12 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { performance } from 'node:perf_hooks'
 
-import { NEXT_HOST, nextHostHomeDir } from '../paths.mjs'
+import { HOST_PORT_BANDS, NEXT_HOST, nextHostHomeDir } from '../paths.mjs'
 import { DshInstance } from '../characterization/lib/instance.mjs'
 import { apiPrompt, apiSessionCreate, authenticate } from '../world-factory/lib/world-factory.mjs'
 import { startMockModel } from '../../packages/tools/harness/mock-deepseek.mjs'
 import {
-  NEXT_LANE_REPO_ROOT, assertNextHostAssets, assertNextHostTree, nextLaneWorkdir, proof,
+  NEXT_LANE_REPO_ROOT, assertGenerationBandsDisjoint, assertNextHostAssets, assertNextHostTree, nextLaneWorkdir, proof,
 } from './host-next-lib.mjs'
 
 const host = assertNextHostTree()
@@ -54,6 +55,19 @@ async function firstFreePort(bands) {
   throw new Error(`no free port in the next-host bands ${JSON.stringify(bands)}`)
 }
 
+// RULING 2026-11-16 (UTE-Prep): the generation partition is asserted as a LAW,
+// not inferred from a free-port probe. This runs before any boot and is the
+// cheapest possible RED when someone overlaps the bands again.
+test('host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only', () => {
+  const { legacy, next } = assertGenerationBandsDisjoint()
+  assert.deepEqual([legacy[0], legacy.at(-1), legacy.length], [3181, 3199, 19])
+  assert.deepEqual([next[0], next.at(-1), next.length], [13000, 13049, 50])
+  assert.deepEqual(JSON.parse(JSON.stringify(HOST_PORT_BANDS)), [[3181, 3199]])
+  assert.deepEqual(JSON.parse(JSON.stringify(NEXT_HOST.portBands)), [[13000, 13049]])
+  assert.equal(next.some((p) => legacy.includes(p)), false)
+  proof('BANDS', true, `legacy=3181-3199(19) next=13000-13049(50) overlap=0`)
+})
+
 /** A text-only scripted reply: the mock provider's own wire shape. */
 const decide = () => ({ kind: 'text', content: 'NEXT-BOOT-OK scripted model reply' })
 
@@ -65,7 +79,13 @@ test('the pinned next host boots, serves a session, and its wire traffic is the 
   const cwd = nextLaneWorkdir(NEXT_LANE_REPO_ROOT)
   mkdirSync(logDir, { recursive: true })
   const mockPort = await firstFreePort([[3491, 3500]])
+  assertGenerationBandsDisjoint()
   const hostPort = await firstFreePort(NEXT_HOST.portBands)
+  // The boot's port must be in the next-generation band AND outside every
+  // legacy band — asserted from the value actually bound, not from intent.
+  const legacyPorts = HOST_PORT_BANDS.flatMap(([lo, hi]) => Array.from({ length: hi - lo + 1 }, (_, i) => lo + i))
+  assert.ok(hostPort >= 13000 && hostPort <= 13049, `boot port ${hostPort} is inside 13000-13049`)
+  assert.equal(legacyPorts.includes(hostPort), false, `boot port ${hostPort} is NOT a legacy host port`)
   const mock = await startMockModel({ port: mockPort, decide })
   const instance = new DshInstance({
     hostTree: host.tree,

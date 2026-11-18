@@ -11,7 +11,7 @@
  * FAIL-LOUD LAW (repo precedent: "missing host -> skip" hid two real breaks):
  * every export here THROWS on a missing/mismatched host tree or asset. There is
  * no skip path, no `t.skip()`, no faked fallback. The lane is run explicitly
- * (`node --test tests/next-host/`) because the tree is provisioned by a
+ * (`node --test 'tests/next-host/*.test.mjs'`) because the tree is provisioned by a
  * documented command (docs/TEST_METHODS.md §11) and is not part of CI's
  * census; a run without the tree is a RED run, not a green skip.
  *
@@ -26,8 +26,30 @@ import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { NEXT_HOST, nextHostTree } from '../paths.mjs'
+import { HOST_PORT_BANDS, NEXT_HOST, nextHostTree, portsOfBands } from '../paths.mjs'
 import { detectedLibcVariant, manifestPlatformEntry, readHostSandboxAssetManifest } from '../world-factory/lib/host-sandbox-assets.mjs'
+
+/**
+ * RULING (UTE-Prep, 2026-11-16): host port bands are partitioned BY GENERATION.
+ * Legacy leases 3181-3199; the second pinned host leases 13000-13049 ONLY. This
+ * asserts the partition itself (not a lucky free-port probe) and is called by
+ * the boot lane before it binds anything, so a future edit that reintroduces an
+ * overlap is a RED lane rather than an intermittent collision in CI.
+ * @returns {{legacy: number[], next: number[]}}
+ */
+export function assertGenerationBandsDisjoint() {
+  const legacy = portsOfBands(HOST_PORT_BANDS)
+  const next = portsOfBands(NEXT_HOST.portBands)
+  const overlap = next.filter((p) => legacy.includes(p))
+  if (overlap.length > 0) {
+    throw new Error(`HOST PORT BANDS OVERLAP: next-generation ports ${overlap.join(',')} are also legacy-host ports; the 2026-11-16 generation partition is broken (tests/paths.mjs)`)
+  }
+  for (const [lo, hi] of NEXT_HOST.portBands) {
+    if (lo < 13000 || hi > 13049) throw new Error(`next-generation band ${lo}-${hi} leaves 13000-13049: the next host must lease only the upper band`)
+  }
+  if (legacy.some((p) => p >= 13000 && p <= 13049)) throw new Error('a legacy host port landed in 13000-13049: the generations are no longer disjoint')
+  return { legacy, next }
+}
 
 /** Repo root of the worktree this module lives in (tests/next-host -> ../..). */
 export const NEXT_LANE_REPO_ROOT = resolve(new URL('.', import.meta.url).pathname, '..', '..')

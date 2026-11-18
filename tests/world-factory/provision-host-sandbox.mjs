@@ -13,7 +13,8 @@
  * (an environment state, recorded as ENV_BLOCK by suites), 2 = fail-closed
  * typed error (digest/manifest/source problem — supply chain, not environment).
  */
-import { dirname, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import {
   HostSandboxAssetError, MANIFEST_REL, SOURCE_TREE_ENV,
@@ -57,13 +58,15 @@ try {
 
   const host = opt('host') ?? 'legacy'
   const repoRoot = findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE
-  const runtimeTree = resolve(opt('runtime-tree') ?? (host === 'next' ? nextHostTree(repoRoot) : testUseTree(repoRoot)))
+  // `--host next` resolves the NEXT tree from THIS checkout when it owns one
+  // (a task worktree does), and falls back to the shared Team checkout
+  // otherwise. Using only findTestRepoRoot would silently target the main
+  // checkout, which normally has no next-host tree (review round 2).
+  const nextOwnerRoot = existsSync(join(nextHostTree(TEAM_TREE), 'package.json')) ? TEAM_TREE : repoRoot
+  const runtimeTree = resolve(opt('runtime-tree') ?? (host === 'next' ? nextHostTree(nextOwnerRoot) : testUseTree(repoRoot)))
   const sourceTree = opt('source-tree')
   const check = args.includes('--check')
 
-  console.log(`runtime tree : ${runtimeTree}`)
-  console.log(`host baseline: ${host} (${p.baseline.version}@${p.baseline.sha})`)
-  console.log(`manifest     : ${MANIFEST_REL}`)
   const p = await preflightHostSandbox({
     runtimeTree,
     sourceTree,
@@ -72,6 +75,11 @@ try {
     throwOnProbeError: true,
     host,
   })
+  // Printed AFTER the preflight: `p` did not exist above (review round 2 caught
+  // a TDZ ReferenceError that killed every normal invocation, legacy included).
+  console.log(`runtime tree : ${runtimeTree}`)
+  console.log(`host baseline: ${host} (${p.baseline.version}@${p.baseline.sha})`)
+  console.log(`manifest     : ${MANIFEST_REL}`)
   console.log(`probe        : ${p.verdicts.map((v) => `${v.phase}=${v.backend}`).join(' -> ')}`)
   console.log(`backend      : ${p.backend} (usable: ${p.usable})`)
   console.log(`launcher     : ${p.launcherPresent ? 'present' : 'ABSENT'} ${p.launcherSha256 ?? ''}`)

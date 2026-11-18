@@ -2,6 +2,8 @@
 
 **Dated:** 2026-11-16 (session calendar; real UTC captured per file header).
 **Branch / worktree:** `task/host-next-20261116` · `.worktrees/host-next-20261116`.
+**Review round 2:** `review-round-2.txt` — port-band partition (P0-1), excludes ratchet (P0-2),
+provisioning-CLI TDZ fix (P1), lane-command form (P2), manifest verify command (P3).
 **CORE PATCH BUDGET = 0:** the upstream host source is never patched; only published package
 entry points are imported and the only host-tree write is the digest-verified native-asset
 install performed by the shared provisioner.
@@ -17,6 +19,8 @@ install performed by the shared provisioner.
 | `boot.txt` + `boot-log-excerpt.txt` | real boot of `apps/cli/lib/bin.js web` on port 3190 with the scripted mock model: boot marker, boot wall time, session served, mock request count, durable session log |
 | `native-api-smoke.txt` | the six native-API assertions with their verbatim `NEXT-SMOKE …` proof lines |
 | `legacy-invariance.txt` | legacy pin block untouched, legacy tree still at `639ed01539` (porcelain 0), `tinf-instruments` 48 suites / 733 pass / 0 fail, pre-existing environment red isolated |
+| `review-round-2.txt` | the five review findings with a proof command + observed output each; includes the planted-exclude refusal (`EXCLUDED_NEW` + `EXCLUDED_GREW`) and both provisioning-CLI invocations |
+| `next-lane-run.txt` | the full verbatim lane run (`node --test 'tests/next-host/*.test.mjs'`) on the partitioned band |
 
 ## Reproduce
 
@@ -31,7 +35,7 @@ npm install --prefix .next-tools pnpm@11.28.5
  DSH_CLIENT_COMMIT_HASH=9c2670d3bc ESBUILD_WORKER_THREADS=1 \
    node ../../.next-tools/node_modules/pnpm/bin/pnpm.cjs run build)
 node scripts/provision-host-assets.mjs --from-package --host next
-node --test tests/next-host/
+node --test 'tests/next-host/*.test.mjs'
 ```
 
 `tests/deepseek-harness-next/` and `tests/homes/` are gitignored; the commands above rebuild

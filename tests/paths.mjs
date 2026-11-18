@@ -93,16 +93,22 @@ export const CLIENT_COMMIT_HASH = '639ed01539'
  * The bands, by role (the World factory leases from these; legacy kits keep
  * their own candidate lists INSIDE the old 3180-3186 / 3491-3500 ranges, which
  * every band below still contains):
- *   HOST_PORT_BANDS  host instances: 3181-3199, then 13000-13049. 3180 is
+ *   HOST_PORT_BANDS  LEGACY host instances only: 3181-3199. 3180 is
  *                    deliberately NOT leased to World hosts: it is the
  *                    hand-run default of TEST_METHODS §2 and several kits pin
  *                    it, so a World never steals it from a human/kit run.
+ *                    RULING (UTE-Prep, 2026-11-16): the bands are partitioned BY
+ *                    GENERATION — legacy keeps 3181-3199, the second pinned host
+ *                    (NEXT_HOST.portBands) leases 13000-13049 ONLY. The two sets
+ *                    are disjoint, so a legacy World lease and a next-host boot
+ *                    can never collide on a port; tests/next-host asserts it.
  *   MOCK_PORT_BANDS  the in-process mock provider: 3491-3500, then 13050-13099.
- * The upper band is FINITE on purpose (100 ports: 50 host + 50 mock) — enough
- * for the six planned parallel family lanes at several Worlds each, while a
- * runaway leaser still exhausts quickly and fails closed instead of wandering
- * the port space. Widening it again is a one-line change here plus a recorded
- * ruling.
+ * The upper band is FINITE on purpose (100 ports: 50 next-generation host +
+ * 50 mock) — enough for the next-generation host lanes at several Worlds each,
+ * while a runaway leaser still exhausts quickly and fails closed instead of
+ * wandering the port space. Widening it again is a one-line change here plus a
+ * recorded ruling. Legacy host leasing stays in 3181-3199 by the 2026-11-16
+ * partition ruling; it no longer falls through to 13000-13049.
  */
 export const TEST_PORT_RANGES = Object.freeze([
   Object.freeze([3180, 3199]),
@@ -112,7 +118,6 @@ export const TEST_PORT_RANGES = Object.freeze([
 /** World-factory host-instance leasing order (3180 excluded — see above). */
 export const HOST_PORT_BANDS = Object.freeze([
   Object.freeze([3181, 3199]),
-  Object.freeze([13000, 13049]),
 ])
 /** World-factory mock-provider leasing order. */
 export const MOCK_PORT_BANDS = Object.freeze([
@@ -223,11 +228,13 @@ export const NEXT_HOST = Object.freeze({
   /** DSH_HOME names are suffixed so a next world never shares a home. */
   homeSuffix: '-next',
   /**
-   * Its own host-port family: 3190-3199. Deliberately INSIDE the sanctioned
-   * 3180-3199 band but at its far end, so a next-host lane cannot collide with
-   * the legacy family's 3180-3186 kit defaults; never 3080.
+   * Its own host-port family: 13000-13049 — the upper sanctioned host band,
+   * which the legacy family no longer leases (RULING UTE-Prep 2026-11-16: the
+   * generations are partitioned, not interleaved). Disjoint from
+   * HOST_PORT_BANDS by construction; tests/next-host asserts the disjointness
+   * and that a boot lands here, never in the legacy 3181-3199 range. Never 3080.
    */
-  portBands: Object.freeze([Object.freeze([3190, 3199])]),
+  portBands: Object.freeze([Object.freeze([13000, 13049])]),
 })
 
 /** Absolute path of the next-host tree for a resolved repo root. */
