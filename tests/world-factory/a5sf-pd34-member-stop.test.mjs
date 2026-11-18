@@ -29,7 +29,7 @@
  * @module tests/world-factory/a5sf-pd34-member-stop.test
  */
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -182,11 +182,28 @@ test('PD34-MUTATION: deleting the pause call reddens the sequence pin', () => {
 
 test('PD34-PIN: the entry did not exist at the lane base', () => {
   const base = process.env.A5SF_PD34_BASE ?? '3101ca08f'
-  let exists = true
-  try {
-    execFileSync('git', ['cat-file', '-e', `${base}:${MODEL}`], { cwd: REPO_ROOT, stdio: 'ignore' })
-  } catch {
-    exists = false
-  }
-  assert.equal(exists, false, `the model must not already exist at ${base}`)
+  // A pin that cannot be EVALUATED is not evidence of absence.
+  //
+  // `git cat-file -e <base>:<path>` exits non-zero for two different reasons: the path
+  // is absent AT a readable base (the thing this pin asserts), or the base COMMIT is not
+  // in this checkout at all (shallow / single-branch / partial clone). The first version
+  // of this arm mapped both to `exists = false`, so in a depth-1 clone — where
+  // `3101ca08f` is simply not there — the pin reported "absent" and the suite passed
+  // 8/8 having proven nothing. Resolve the BASE first and fail loudly (INCOMPLETE) when
+  // it cannot be resolved; only then is a non-zero exit evidence about the path.
+  const commit = spawnSync('git', ['cat-file', '-e', `${base}^{commit}`], { cwd: REPO_ROOT, encoding: 'utf8' })
+  assert.equal(
+    commit.status,
+    0,
+    `PD34-PIN INCOMPLETE: the lane base ${base} is not readable in this checkout ` +
+      `(${(commit.stderr ?? '').trim() || `git cat-file exited ${commit.status}`}). The pin cannot be ` +
+      `evaluated; "cannot evaluate" must never be read as "does not exist". Check the checkout out with ` +
+      `real history (the CI job declares fetch-depth: 0) or set A5SF_PD34_BASE to a base this clone carries.`,
+  )
+  const atPath = spawnSync('git', ['cat-file', '-e', `${base}:${MODEL}`], { cwd: REPO_ROOT, encoding: 'utf8' })
+  assert.notEqual(
+    atPath.status,
+    0,
+    `the model must not already exist at ${base} (git cat-file -e ${base}:${MODEL} exited 0)`,
+  )
 })
