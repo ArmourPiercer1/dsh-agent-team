@@ -1,0 +1,13 @@
+# BEFORE — the suite itself under the same pool (old generator binary)
+# command: node .artifacts/tmp/repro-suite-concurrent.mjs tests/s2-authority/freeze-candidate.test.mjs 120 20
+# utc: 2026-11-18T14:05:51Z
+RUNS 120 concurrency=20
+GREEN 60
+RED 60
+GREEN_WITH_SUMMARY_LINE 60
+OUTPUT_WITHOUT_VERDICT_LINE 0
+  red exit=1 tail=["FAIL --check is CLEAN against the committed cand-v0.1.6-1 manifest (exit 0): expected a CLEAN summary line","FAIL --check DETECTS a tampered content_digest (exit 1, DIGEST MISMATCH): expected DIGEST ... MISMATCH"]
+  red exit=1 tail=["FAIL --check DETECTS a tampered content_digest (exit 1, DIGEST MISMATCH): expected DIGEST ... MISMATCH"]
+  red exit=1 tail=["FAIL --check is CLEAN against the committed cand-v0.1.6-1 manifest (exit 0): expected a CLEAN summary line"]
+  red exit=1 tail=["FAIL --check also recomputes content_digest over every other field (a silent field edit breaks it): expected the F0 digest to catch the silent edit too"]
+  red exit=1 tail=["FAIL --check is CLEAN against the committed cand-v0.1.6-1 manifest (exit 0): expected a CLEAN summary line","FAIL --check DETECTS a tampered content_digest (exit 1, DIGEST MISMATCH): expected DIGEST ... MISMATCH"]
