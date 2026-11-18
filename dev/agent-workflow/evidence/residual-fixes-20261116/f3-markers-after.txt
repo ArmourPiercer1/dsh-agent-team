@@ -1,0 +1,7 @@
+# F3 probe — POST-FIX predicate (HOST_REFUSAL_MARKERS)
+# utc: 2026-11-18T14:21:36Z
+# command: node .artifacts/tmp/probe-markers.mjs
+
+markers exported: ["A5SF_REQUIRE_PINNED_HOST","M7A_REQUIRE_PINNED_HOST"]
+planted m7a-real-slice.test.mjs (M7A marker): findings=1 ["CI_HOST_REFUSAL_UNGUARDED"]
+planted a5sf-pty-contract.test.mjs (A5SF marker): findings=1 ["CI_HOST_REFUSAL_UNGUARDED"]

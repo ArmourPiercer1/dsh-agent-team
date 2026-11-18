@@ -1,0 +1,26 @@
+# PD34-PIN — BEFORE (arm from origin/master) in a DEPTH-1 clone
+# clone: git clone --depth 1 file://<worktree> .artifacts/tmp/pd34-depth1  (rev-list --count HEAD = 1; 3101ca08f^{commit} absent)
+# command: cd <clone> && node --test tests/world-factory/a5sf-pd34-member-stop.test.mjs
+# utc: 2026-11-18T14:09:02Z
+
+$ git cat-file -e 3101ca08f^{commit}
+fatal: Not a valid object name 3101ca08f^{commit}
+(exit 128)
+
+$ node --test tests/world-factory/a5sf-pd34-member-stop.test.mjs
+✔ PD34-MODEL-SEQUENCE: the model issues get -> pause -> cancel -> get, and owns no archive (0.675618ms)
+✔ PD34-INJECT: the mount injects the public goals/session namespaces, no private endpoint (0.335916ms)
+✔ PD34-VIEW-ENTRY: a per-Member control and a DISTINCT Leader-turn control (0.246737ms)
+✔ PD34-DRIVER-WIRE: the live driver issues the same four calls in the same order (0.414925ms)
+✔ PD34-NO-SIMULATION: the stop handler patches nothing locally (0.246577ms)
+✔ PD34-EVIDENCE: the evidence README names the source id and the honest UI limit (0.180171ms)
+✔ PD34-MUTATION: deleting the pause call reddens the sequence pin (0.694655ms)
+✔ PD34-PIN: the entry did not exist at the lane base (3.365832ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 61.289067

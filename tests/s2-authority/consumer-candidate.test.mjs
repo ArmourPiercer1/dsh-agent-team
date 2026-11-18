@@ -170,15 +170,28 @@ ran += 1;
     const OLD = await import(pathToFileURL(tmpMod).href);
     const a = OLD.build(root);
     const b = build(root);
-    const structA = JSON.stringify({ view: a.view, findings: a.findings, runtime: a.runtime, topLevel: a.topLevel });
-    const structB = JSON.stringify({ view: b.view, findings: b.findings, runtime: b.runtime, topLevel: b.topLevel });
+    // COMPARE THE RENDERED FIELDS ONLY — never `runtime`.
+    //
+    // `runtime` is the LIVE instrument (branch / head / merged_into_master /
+    // `dirty_paths`, the last being `(git status --porcelain).length`), documented in
+    // gen-current-state.mjs as state that is "not persisted in the view" and NOT
+    // rendered by `renderView`. `dirty_paths` is a property of the whole checkout at the
+    // instant it is read, so any suite running beside this one that creates or removes a
+    // repo-root `.tmp-*` directory (the sibling s2-authority suites all do exactly that)
+    // can change it between the two builds. Including it made this arm order-dependent:
+    // measured `FAIL C10 structure_same=false bytes_same=true` — i.e. the structure
+    // differed ONLY in the instrument the view does not render, while the rendered bytes
+    // were identical. The product is not at fault and is not changed here; the assertion
+    // compares what the view actually publishes.
+    const structA = JSON.stringify({ view: a.view, findings: a.findings, topLevel: a.topLevel });
+    const structB = JSON.stringify({ view: b.view, findings: b.findings, topLevel: b.topLevel });
     const rA = OLD.renderView(a); const rB = renderView(b);
     const bytesSame = Buffer.compare(Buffer.from(rA, 'utf8'), Buffer.from(rB, 'utf8')) === 0;
     if (structA === structB && bytesSame && rA.length > 0) {
-      console.log(`PASS C10 default == 5f0d0e58 baseline (structure equal; rendered ${rA.length} bytes byte-identical)`);
+      console.log(`PASS C10 default == 5f0d0e58 baseline (rendered fields equal; rendered ${rA.length} bytes byte-identical)`);
     } else {
       fails += 1;
-      console.log(`FAIL C10 structure_same=${structA === structB} bytes_same=${bytesSame}`);
+      console.log(`FAIL C10 rendered_fields_same=${structA === structB} bytes_same=${bytesSame}`);
     }
   } catch (e) { fails += 1; console.log(`FAIL C10: ${e.message}`); }
   finally { if (staged && staged.owned) rmSync(tmpMod, { force: true }); clean(root); }

@@ -1,0 +1,13 @@
+# BEFORE — scripts/freeze-candidate.mjs ends with process.exit(main(...))
+# command: node .artifacts/tmp/repro-freeze-candidate-flush.mjs scripts/freeze-candidate.mjs 400 200 .artifacts/tmp/tampered-digest.json
+# utc: 2026-11-18T14:05:22Z
+# node: v24.21.0
+RUNS 400 concurrency=200
+EMPTY_STDOUT 0
+EMPTY_STDOUT_EXIT1 0
+MISSING_DIGEST_LINE 267
+MISSING_DRIFT_SUMMARY 0
+WRONG_EXIT 0
+  sample exit=1 bytes=20277 last="OK    product.sha_meaning = \"the frozen product commit, and the candidate commit itself: the candidate ref points at the product tree, so there is no evidence/fixture delta to explain.\"|"
+  sample exit=1 bytes=20091 last="OK    product.sha = \"168266dbfe7f2de091d998431bd56ce4dba0dbb5\"|"
+  sample exit=1 bytes=20091 last="OK    product.sha = \"168266dbfe7f2de091d998431bd56ce4dba0dbb5\"|"

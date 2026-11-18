@@ -1,0 +1,9 @@
+# F4 probe — same probe against the PRE-FIX tree (code + manifest stashed to origin/master state)
+# utc: 2026-11-18T14:16:37Z
+# command: node .artifacts/tmp/probe-waiver.mjs
+
+manifest hostRefusal as committed: "declared-not-run"
+honest                 : findings=0 []
+planted-undeclared     : findings=0 []
+planted-legacy-string  : findings=0 []
+planted-named-in-waiver: findings=2 ["CI_HOST_REFUSAL_UNGUARDED(a5sf-fs-contract.test.mjs)","CI_HOST_REFUSAL_UNGUARDED(a5sf-pty-contract.test.mjs)"]
