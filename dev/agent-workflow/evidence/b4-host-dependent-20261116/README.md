@@ -47,6 +47,22 @@ needed: the refusal is a module-load `ERR_MODULE_NOT_FOUND`, i.e. structurally u
 
 **No skip-on-missing-input path was introduced.** None of the five files was edited.
 
+## 2b. The hosted L2 found one machine-specific assertion pair (fixed 2026-11-18)
+
+The first hosted run of B4/1 (Actions run 44343691531, on `b87adf358`) went red **deterministically**:
+the runner's Landlock is ABI v8, its probe answers `network-destination=unsupported`, and the product
+therefore refused the `network=deny` lane **before spawning anything** (`NETWORK_UNCONFINED_REALM`).
+Two `a5sf-sub-contract` P3 arms had pinned a v7 box's answer (`enforced`, admission) and called the
+product's safe refusal a failure. **The product was right; the arms were machine-specific.**
+
+They now assert the PAIRING: `enforced` ⇒ admitted once + kernel errno in a distinct netns; `unsupported`
+⇒ refused before spawn with `NETWORK_UNCONFINED_REALM` and `spawns.after === 0`; `enforced` with no
+mechanism, or an empty note, stays red; a deny lane is never silently allowed. Both halves run on every
+host — the hosted capability is injected at the provider seam (`capabilityOverride`, probe only), so a v7
+box proves the refusing half end to end and a v8 runner proves the admitting half. B4/1 is now
+**32/32** (15 pty + 17 sub-contract). Full transcript and reasoning:
+`dev/agent-workflow/evidence/hosted-l2-20261118/README.md`.
+
 ## 3. Stale assertions: none found, nothing updated
 
 All five pass unchanged against the pinned host. Nothing was re-pinned, relaxed, or deleted to make a
@@ -58,7 +74,7 @@ the old behaviour and the assertions agree on this host.)
 `../m7b1-observation-window-20261116/ci-shape.txt` records the same two batches inside a **full clone
 of the pushed head** (`git clone`, 2859 commits, porcelain 0) with its own `pnpm install
 --frozen-lockfile` + build, the pinned host fetched by exact SHA and built, and the assets provisioned
-from the pinned published package: **B4/1 30/30 in 27 s**, **B4/2 27/27 in <1 s**. A fresh clone there
+from the pinned published package: **B4/1 32/32 in 27 s**, **B4/2 27/27 in <1 s**. A fresh clone there
 carries no usable native assets, which is the CI fact the `host-sandbox assets` step exists for.
 
 ## 4. The ratchet
