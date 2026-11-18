@@ -85,6 +85,34 @@ dispatch step: every census leg (M7-A included) is a graded `cmd`+`check[]` argv
 that shape for three legs requires a ruling on either the parity base ref or the UNCONVERTED rule
 (a rename is already caught by the other branch of the same check), which is above this task.
 
+## 3c. The hosted L2 found the one thing local evidence could not (2026-11-18)
+
+The GitHub Actions run on `b87adf358` (run 44343691531) went red in **B4/1**, deterministically. The two
+P3 network arms had pinned ONE host's capability and were therefore machine-specific:
+
+- `P3-PROBE-SHAPE` demanded `enforced`. The runner's Landlock is ABI v8, and its own probe note says
+  *"landlock ABI v8: Landlock ABI v4 mediates only TCP port bind/connect inside the domain"* — so the
+  probe answers `unsupported`, correctly.
+- `P3-DENY-KERNEL-REFUSED` demanded admission. Because the capability is `unsupported`, the product
+  refused **before any process was created** with `NETWORK_UNCONFINED_REALM` — the safe answer, and the
+  one the arm called a failure.
+
+**The product was right; the assertion was wrong.** Both arms now assert the *pairing*, which is the
+contract and holds on any kernel:
+
+| capability | probe must be | deny lane must be |
+| --- | --- | --- |
+| `enforced` | mechanism matching `netns` **and** a realm-bound `evidence://` row (realmId + trustRoot + the measurement note) | admitted **once**, child runs in a distinct netns, kernel errno on the connect |
+| `unsupported` | **no** mechanism, **no** evidence, and a note that **names the gap** (the ABI text) | refused **before spawn**: `NETWORK_UNCONFINED_REALM`, `spawns.after === 0`, nothing ran |
+
+Red in both directions: `enforced` with no mechanism (the pre-BL-42 shape) is a capability *claim*, not an
+observation; and a network=deny lane is never silently allowed. Both halves are exercised on every host —
+the hosted ABI-v8 capability is injected at the provider seam (`capabilityOverride`, probe only, the spawn
+path stays the product's), so a v7 developer box proves the refusing half end to end and a v8 runner
+proves the admitting half. Local: **17/17**, including `P3-PROBE-SHAPE (hosted capability simulated)`
+and `P3-DENY-REFUSED-BEFORE-SPAWN (hosted capability simulated)`. The manifest's `why` for the leg now
+records the pairing and quotes the hosted transcript.
+
 ## 4. Host absent — two answers, no green path
 
 | shape | result |
