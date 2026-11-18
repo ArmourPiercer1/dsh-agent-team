@@ -699,6 +699,61 @@
             "tests/world-factory/m7a-real-slice.test.mjs"
           ],
           "why": "M7-A (2026-11-15): the C2 half of the milestone — the Contract Oracle in front of a REAL DSH execution chain (scripted model on the provider wire -> dsh web -> real Agent Session -> real tool resolution -> real execution -> independent FS observation -> judgeContract). It lives in THIS layer, not ci-integration, because it needs what this job already provisions: the pinned pristine host and its build, the repo build, and a runner that made a missing host a failure. The step sets M7A_REQUIRE_PINNED_HOST=1 (and M7A_BOOT_TIMEOUT_MS=600000, because a hosted runner's first boot is 2-4x the local 130 s), so a host that failed to provision is a NAMED hard failure instead of the declared refusal + skips the suite produces on an unprovisioned checkout — a green census job that skipped the slice is exactly the F-06 failure mode (a capability only demonstrated by hand) this milestone exists to end. It runs one Host for its five arms (A1 denied write -> SATISFIED, A2 real effect in the watched non-authorized directory -> VIOLATED, A3 same calls with observation disabled -> INCONCLUSIVE, A4 empty witness -> INSTRUMENT_ERROR, A5 bash reachability/confinement), each arm a separate session on the same boot; the World Factory owns the lifecycle and teardown deletes the home. NO argv change to the census leg above and no change to the plan: this is a separate step, so the census population and its two captures are untouched. The whole-argv law is strict: the declared check[] is exactly the one trailing token, and dropping M7A_REQUIRE_PINNED_HOST makes this leg runnable-but-skippable, which is why the requirement is part of the step's env rather than a caller's choice. `--test-force-exit` (Node 24) was added after hosted job 132898455498: the suite failed at 166 ms, an in-process mock provider it had already started kept the event loop alive, and the step held the job for 41 minutes until the 60-minute timeout cancelled the whole L2. The step also carries `timeout-minutes: 10`, so even a regression is a bounded red rather than a cancelled job The step is now a NAMED DISCLOSED REFUSAL OR a verification, never a blanket pass (reviewer decision 2026-11-15, option B): this runner cannot boot the pinned host, because the sandbox-asset manifest pins one machine's native bytes and a cold hosted checkout cannot reproduce or fetch them (measured: hosted job 132898455498; cold-checkout reproduction DESTINATION_DIGEST_MISMATCH). 2026-11-16: THE EXEMPTION IS GONE. The step before this one provisions the pinned bytes from the pinned published package (leg `host-sandbox assets (pinned published package ...)`), so the DESTINATION_DIGEST_MISMATCH disclosure is no longer reachable and M7A_ALLOW_UNPROVISIONABLE_HOST is not set by any workflow (pinned by tests/world-factory/host-sandbox-assets.test.mjs T38; the code path and its tests remain, default off). This leg must now produce `M7A-STEP verdict=VERIFIED arms=5`; any refusal fails the job. The step's env/argv contract is otherwise unchanged, and the following step (scripts/m7a-step-ledger.mjs, always()) still prints one M7A-STEP-LEDGER line per L2. Provenance: docs/plans/memo/m7a-real-host-20261115/README.md plus docs/plans/memo/host-assets-20261116/README.md."
+        },
+        {
+          "id": "b4/1 subprocess boundary (node:test, pinned host REQUIRED; PTY + subprocess contract laws)",
+          "cmd": [
+            "node",
+            "--test",
+            "--test-force-exit",
+            "--test-timeout=600000",
+            "--test-reporter=spec"
+          ],
+          "check": [
+            "tests/world-factory/a5sf-pty-contract.test.mjs",
+            "tests/world-factory/a5sf-sub-contract.test.mjs"
+          ],
+          "env": {
+            "A5SF_REQUIRE_PINNED_HOST": "1"
+          },
+          "why": "B4 batch 1/2 (2026-11-16): the SUBPROCESS security boundary, collected instead of demonstrated by hand. `a5sf-pty-contract` pins the PTY contract (per-session fencing, stale-domain refusal, no per-domain kill) and `a5sf-sub-contract` pins the subprocess contract (confined child argv boundary, env scrub, proxy divergence) — both resolve the pinned pristine host through tests/paths.mjs, so they were UNCOLLECTED: no lane runs them, and ci-integration provisions no host (a suite there would make its hostFree declaration a lie). This leg lives in ci-census, the one job that provisions and builds the host and whose absence of one is already a failure. MISSING HOST = RED, proved twice on 2026-11-16 (dev/agent-workflow/evidence/b4-host-dependent-20261116/): with the host tree bind-mounted EMPTY both suites exit 1 with a NAMED refusal (A5SF-PTY-CONTRACT-HOST-INCOMPLETE / A5SF-SUB-CONTRACT-HOST-INCOMPLETE), and with A5SF_REQUIRE_PINNED_HOST=1 — declared HERE and set on the step, the two copies `eb3-ci-required` refuses to let drift (CI_LAYER_LEG_ENV_MISSING) — the suites' otherwise-declared NOT_RUN becomes that hard failure. So no skip-on-missing-input path exists: an absent or partial host is a red, never `verdict=NOT_RUN` with skips. Measured with the host present: 15/15 in 0.43 s and 15/15 in 26.3 s. CAPABILITY-PAIRED P3 (2026-11-18, after the hosted L2 on b87adf358): the two network arms in `a5sf-sub-contract` used to pin ONE host's answer and went red on the Actions runner, whose Landlock is ABI v8 and reports network-destination unsupported — hosted, twice, verbatim: “probe note: landlock ABI v8: Landlock ABI v4 mediates only TCP port bind/connect inside the domain” and “the deny lane must now be admitted: NETWORK_UNCONFINED_REALM”. The PRODUCT was right (it refused to run a network-capable child under a deny claim the kernel cannot enforce, before spawning anything); the assertion was machine-specific. The arms now assert the PAIRING — enforced WITH a mechanism and a realm-bound evidence row, OR unsupported WITH a note naming the ABI gap; enforced with no mechanism is red; a deny lane is enforced ⇒ admitted once and kernel-refused in a distinct netns, or unsupported ⇒ refused BEFORE SPAWN with NETWORK_UNCONFINED_REALM and zero provider calls, never silently allowed. Both halves run on EVERY host: the hosted capability is injected at the provider seam (`capabilityOverride`), so the refusing half is exercised on a v7 developer box and the admitting half on a v8 runner (17/17 locally, 2026-11-18). The separate cmd flags (`--test-timeout=600000`) are the measured budget of the slowest suite in the batch AND they keep this leg's invocation distinct from the sibling batch's, so the env-declaration rule has exactly one step to grade."
+        },
+        {
+          "id": "b4/2 web + read_image face (node:test, pinned host REQUIRED; confined web contract + attachment face)",
+          "cmd": [
+            "node",
+            "--test",
+            "--test-force-exit",
+            "--test-timeout=300000",
+            "--test-reporter=spec"
+          ],
+          "check": [
+            "tests/world-factory/a5sf-web-contract.test.mjs",
+            "tests/world-factory/a5sf-web-row.test.mjs",
+            "tests/world-factory/a5sf-pd31-read-image.test.mjs"
+          ],
+          "env": {
+            "A5SF_REQUIRE_PINNED_HOST": "1"
+          },
+          "why": "B4 batch 2/2 (2026-11-16): the WEB face plus the `read_image` attachment face, same boundary logic as batch 1 (the batches are per security boundary so a red names which face broke, and each is independently reviewable). `a5sf-web-contract` pins the confined fetch/search guard (one guard, two methods, authoring-time refusal of two sources), `a5sf-web-row` pins the product-row declaration path that mounts the confined face with no realm service, and `a5sf-pd31-read-image` pins the attachment-face arms, their mutations, the evidence binding and the install graph measured through the World graph. All three resolve the pinned host (the web modules at MODULE LOAD, which is why `A5SF_REQUIRE_PINNED_HOST` alone cannot guard them — the refusal is an ERR_MODULE_NOT_FOUND, and that is exactly what makes the leg red rather than skipped). MISSING HOST = RED, proved twice on 2026-11-16 with the host tree bind-mounted EMPTY: web-contract 0 pass / 1 fail (A5SF-WEB-CONTRACT-HOST-REFUSED), web-row 0/1 (ERR_MODULE_NOT_FOUND on the pinned packages/web/web/lib/index.js), pd31-read-image 4 pass / 3 fail. With the host present: 10/10 in 0.42 s, 10/10 in 0.44 s, 7/7 in 0.12 s. `--test-timeout=300000` is the measured budget with a 10x margin for a hosted runner, and it keeps this leg's invocation distinct from every other node:test leg so the env declaration has one step to grade."
+        },
+        {
+          "id": "m7b1 observation window (node:test, pinned host REQUIRED; World-Factory-owned contract + three real FS controls)",
+          "cmd": [
+            "node",
+            "--test",
+            "--test-force-exit",
+            "--test-timeout=1200000",
+            "--test-reporter=spec"
+          ],
+          "check": [
+            "tests/world-factory/m7b1-observation-window.test.mjs"
+          ],
+          "env": {
+            "M7B1_REQUIRE_PINNED_HOST": "1",
+            "M7B1_BOOT_TIMEOUT_MS": "600000"
+          },
+          "why": "M7-B1 (2026-11-16): the World Factory OWNS the filesystem observation window instead of the suite nailing the scope shut by hand. `tests/world-factory/lib/m7b1-observation-contract.mjs` declares and binds world_id/agent_id/execution_id, a DECLARED watch scope (absolute, symlink-RESOLVED; a symlinked root is refused at declare time AND re-resolved at open time), the pre/post window, and the witness provenance — and it extends the testkit's existing row-identity provenance (private WeakMap) with the WINDOW half in the same module (`createFsWitness({window})`, `observationWindowOf`, `isSealedObservationWindow`, `closeObservationWindow`) rather than duplicating a seal. Fail closed: host absent, tree not at the pinned SHA, native assets not the pins, scope unresolvable/symlinked/partial, or a row not produced by the armed instrument is a NAMED INSTRUMENT_ERROR/INCONCLUSIVE — never SATISFIED; and a whole-filesystem-domain claim over a partial watch is refused (SCOPE_PARTIAL_FOR_DOMAIN) at declare time. The real-host arms: A1 an authorized workspace write is REPORTED and excluded (SATISFIED), A2 a write outside the authorized set is VIOLATED naming the EXACT path, A3 a write in the SAME directory the harness itself writes to is caught per-entry while the harness's own authorized file stays authorized (a directory-shaped watch would miss it), A4 the VERBATIM FS_SANDBOX_DENIED line is captured from the Host's durable trace, A5 a hand-built row carrying the correct window id is INSTRUMENT_ERROR, A6 a real sealed row from another window is refused by window id. It lives in ci-census for the M7-A reason: this job provisions and builds the pinned host, and M7B1_REQUIRE_PINNED_HOST=1 makes an absent host a hard failure instead of the declared refusal the suite otherwise grades (without the flag the suite still proves INSTRUMENT_ERROR reason=HOST_ABSENT, so there is no green path through a missing host). `--test-timeout=1200000` and a 15-minute step bound: one boot plus three real arms, measured locally (evidence dev/agent-workflow/evidence/m7b1-observation-window-20261116/)."
         }
       ]
     }

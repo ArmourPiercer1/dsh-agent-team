@@ -623,6 +623,11 @@ export function readSuiteList(text) {
 export const HOST_REFUSAL_REQUIRE_MARKERS = Object.freeze([
   'A5SF_REQUIRE_PINNED_HOST',
   'M7A_REQUIRE_PINNED_HOST',
+  // M7-B1 (2026-11-18): the observation window's own require-host switch. It is a
+  // REQUIRE_PINNED_HOST spelling read through process.env, so the derived-marker guard
+  // (C10e) reds until it is listed here — which is the guard doing its job: a new
+  // refusal-capable suite may not arrive with a marker the guard has never seen.
+  'M7B1_REQUIRE_PINNED_HOST',
 ])
 
 export const HOST_REFUSAL_HOST_TREE_SWITCHES = Object.freeze([
@@ -630,6 +635,9 @@ export const HOST_REFUSAL_HOST_TREE_SWITCHES = Object.freeze([
   'A5SF_PD25_HOST_TREE',
   'A5SF_PD31_HOST_TREE',
   'M7A_HOST_TREE',
+  // M7-B1's tree override, so the refusal path can be graded against an EMPTY/broken tree
+  // (the suite resolves the pinned tree itself, hence the HOST_TREE role, not REQUIRE).
+  'M7B1_HOST_TREE',
 ])
 
 /** Every switch the guard knows, both roles (require-host first). */

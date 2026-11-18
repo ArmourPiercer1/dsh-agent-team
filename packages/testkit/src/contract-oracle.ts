@@ -127,6 +127,26 @@ export interface OracleInput {
    * still names the blind domains and the point-in-time window.
    */
   witnessProvenance?: 'declared' | 'witnessed'
+  /**
+   * The ONE observation window every witness row must belong to (M7-B1).
+   *
+   * A witness instrument created with a `window` descriptor stamps its rows with
+   * `window_id`; that id is what ties a row to the World/Agent/Execution the
+   * World Factory declared. When this field is present, a row that (a) carries no
+   * `window_id`, (b) carries a different one, or (c) claims an id no instrument
+   * produced is an INSTRUMENT_ERROR — a verdict may not be corroborated by an
+   * observation taken in another window (before the tool ran, or for another
+   * agent). Absent, the pre-M7-B1 behaviour is unchanged.
+   */
+  requiredObservationWindowId?: string
+  /**
+   * The execution the contract grades (M7-B1b). When present, the trace MUST
+   * carry it on a `tool/call` or `tool/result` event: an id that is merely well
+   * formed is not an execution the host performed, and a verdict may not rest on
+   * a trace that never observed it. `TraceEvent.execution_id` has been declared
+   * since M7-A and was never read — this is where it is read.
+   */
+  requiredExecutionId?: string
 }
 
 /** The oracle's answer, with the reasons and the observation limits. */
@@ -191,6 +211,8 @@ interface RowView {
   /** Whether the row carried an `observedPaths` array at all. */
   placesEffects: boolean
   observedPaths: string[]
+  /** The window the row belongs to, or `null` when the row declares none. */
+  window_id: string | null
   /** The caller's original object, used only for the provenance check. */
   raw: unknown
 }
@@ -229,6 +251,14 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
     }
     const watchedPaths = readPaths('watchedPaths')
     const observedPaths = readPaths('observedPaths')
+    let windowId: string | null = null
+    if (value.window_id !== undefined) {
+      if (typeof value.window_id !== 'string' || value.window_id.trim() === '') {
+        faults.push(`${at}.window_id must be a non-empty string when present`)
+      } else {
+        windowId = value.window_id
+      }
+    }
     if (faults.length > 0) return { fault: faults.join('; ') }
     return {
       row: {
@@ -238,6 +268,7 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
         watchedPaths: watchedPaths ?? [],
         placesEffects: observedPaths !== undefined,
         observedPaths: observedPaths ?? [],
+        window_id: windowId,
         raw: value,
       },
     }
@@ -302,6 +333,14 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
   if (input.expectDeny !== undefined && typeof input.expectDeny !== 'boolean') {
     faults.push('expectDeny must be a boolean')
   }
+  if (input.requiredObservationWindowId !== undefined &&
+      (typeof input.requiredObservationWindowId !== 'string' || input.requiredObservationWindowId.trim() === '')) {
+    faults.push('requiredObservationWindowId must be a non-empty string when present')
+  }
+  if (input.requiredExecutionId !== undefined &&
+      (typeof input.requiredExecutionId !== 'string' || input.requiredExecutionId.trim() === '')) {
+    faults.push('requiredExecutionId must be a non-empty string when present')
+  }
   if (input.witnessProvenance !== undefined && input.witnessProvenance !== 'declared' && input.witnessProvenance !== 'witnessed') {
     faults.push(`witnessProvenance must be "declared" or "witnessed" (got ${JSON.stringify(String(input.witnessProvenance))})`)
   }
@@ -337,6 +376,22 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
     }
   }
 
+  // Window binding (M7-B1): an observation taken in another window cannot
+  // corroborate this contract. Checked for BOTH provenance modes, because a
+  // window claim is a statement about WHICH observation this is, independent of
+  // whether the row carries the module seal.
+  const requiredWindow = typeof input.requiredObservationWindowId === 'string' ? input.requiredObservationWindowId : null
+  if (requiredWindow !== null && rows.length > 0) {
+    const foreign = rows.filter((row) => row.window_id !== requiredWindow)
+    if (foreign.length > 0) {
+      faults.push(
+        `requiredObservationWindowId is ${JSON.stringify(requiredWindow)} but witness row(s) ` +
+          `${foreign.map((row) => (row.window_id === null ? 'no window_id' : row.window_id)).join(', ')} ` +
+          'were not taken in it; an observation from another window (another agent/execution, or the pre-tool baseline) cannot corroborate this contract',
+      )
+    }
+  }
+
   let blindList: unknown[] = []
   try {
     if (!Array.isArray(input.blindDomains)) faults.push('blindDomains must be an array')
@@ -354,6 +409,26 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
     else events = [...input.events]
   } catch (error) {
     faults.push(`events could not be read: ${messageOf(error)}`)
+  }
+  // Execution binding (M7-B1b): the contract names the execution under grade, and
+  // the trace must SHOW it. Checked before the per-event walk so a trace that
+  // never carried the id is a named fault rather than "no effect observed".
+  if (typeof input.requiredExecutionId === 'string' && input.requiredExecutionId.trim() !== '') {
+    const wanted = input.requiredExecutionId
+    const carriers = events.filter((event) => {
+      if (typeof event !== 'object' || event === null) return false
+      const record = event as { event_type?: unknown; execution_id?: unknown }
+      return (record.event_type === 'tool/call' || record.event_type === 'tool/result') && record.execution_id === wanted
+    })
+    if (carriers.length === 0) {
+      const seen = [...new Set(events
+        .map((event) => (typeof event === 'object' && event !== null ? (event as { execution_id?: unknown }).execution_id : undefined))
+        .filter((id): id is string => typeof id === 'string'))]
+      faults.push(
+        `requiredExecutionId is ${JSON.stringify(wanted)} but no tool/call or tool/result event in the trace carries it ` +
+          `(ids present: ${seen.length === 0 ? 'none' : seen.join(', ')}); the execution under grade is not the execution this trace observed`,
+      )
+    }
   }
   let previous = Number.NEGATIVE_INFINITY
   for (const [index, event] of events.entries()) {
