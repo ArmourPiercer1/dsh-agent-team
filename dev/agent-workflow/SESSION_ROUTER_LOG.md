@@ -8998,3 +8998,25 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **7. 本轮已知瑕疵（记账用）**：合并 `81bf61ccf` 的 commit subject 仍写「9 of the 10 … 84 → 75」，而内容与 baseline 实为 **8/76**——subject 取自 PR 旧标题。master 为 gated 历史不做改写，故在此登记：以内容与 `dev/ci/uncollected-baseline.json`（`uncollected_count: 76`，`--max-uncollected 76`）为准。
 
 **8. 仍未证明**：process/PTY/network 三个效果域仍 `instrumented:false`（M7-B）；provenance 封印跨序列化是否存活未知；hosted 峰值内存无测量；B4（18 个 host-dependent）、B5–B9 未收；`freeze-candidate` 的真实机制未定。
+
+## 2026-11-18 — 外部评审四项前置的执行收口：Host-Next / TINF-Next / 残余工程修复（三个 PR 落地，UTE-Prep 留在 draft 等裁决）
+
+**背景**：外部评审给出四项 P0 前置（P0-A 新宿主独立基线阻塞 G1、P0-B M7-B1 观测窗口阻塞 G2/G3、P0-C 旧安全测试可运行基线只阻塞家族退役、P0-D 架构与权限迁移契约 = `#765` 阻塞产品重构），并明确「旧宿主冻结、新增第二份、不得原地升级」「不得把宿主升级与工具执行器重写混在一起」。本轮只做与工程基础清理相关的三项（UTE-Prep / Host-Next / TINF-Next）+ 阻塞它们的残余修复，**不碰产品重构**。
+
+**落地（全部经 Required CI 绿 + 具名 settlement 覆盖精确 40-hex 头）**：
+
+- `#788` `b28728fef` — 残余修复五条，每条带负控。`freeze-candidate` 截断的真因是 `process.exit(main())` 不等管道写完（池化实测 51/100 丢尾行；改 `process.exitCode` 后 0/100），而第一版修复又引入**假 DRIFT**：`| head -1` 在干净候选上得 rc 1 + 未处理 `EPIPE`，故只吞 `EPIPE`/`ECONNRESET` 而保留语义退出码。`PD34-PIN` 不再把「读不到 base」映射成「base 里没有」；host-refusal 守卫从单一字面量扩为**派生**的两类角色（require-marker / host-tree），范围含 `scripts/*.test.mjs`；waiver 改为 per-suite `{mode,suites[],why}`；`consumer-candidate` 改比 `{view,findings,topLevel}` + 渲染字节（该用例原先比较 `dirty_paths` 这个**活仪器**）。负控 30 → **32**，未收集 48 → **46**。
+- `#787` `82091ae4a` — 第二份宿主独立基线（评审 P0-A）：`dsh-v0.2.2-rc.5` = `9c2670d3…` 落 `tests/deepseek-harness-next`，pin 在代码里断言（`rev-parse HEAD` + 包版本）。原生资产是**两个 pin**：npm 只有 `0.1.2` 一个版本，故宿主版本 ≠ 资产版本；实测 rc.5 与 rc.2 的原生包清单与 C 源码字节相同，发布字节 `system.node` = `54a9c25c…` 17360 B、`landlock-run` = `a752bc72…` 38552 B mode 755，而本地 `pnpm run build` 产出 `75450f92…` 17352 B 被**判 DRIFTED 拒用**（执行字节的机器不得定义字节）。端口按代次分区：legacy 仅 `3181–3199`、next `13000–13049`；六条 native-API 冒烟在 13000 真启动通过。审查抓到两个 P0：端口带重叠（3190–3199 落在 legacy 租约内）+ `excludes` 是**静默不执行通道**（两个棘轮只看 `UNCOLLECTED`，植入 excluded 套件后两门皆绿），后者以 `dev/ci/excluded-baseline.json`（9 条 path/reason/review）+ `--max-excluded` 封死。另修 `provision-host-sandbox.mjs` 的 TDZ `ReferenceError`（会让正常调用直接崩在启动）。
+- `#786` `f46bcdd29` — 观测窗口（评审 P0-B）+ B4 收编：`world_id`/`agent_id`/`execution_id` 由纯函数 `checkWindowBinding` 绑定，契约 `execution_id` 必须出现在真实 `tool/call`/`tool/result` 轨迹事件上，窗口记录封在私有 `WeakSet`、lib 三处调用点校验，`post` 相位 + 非空 `closedAt` 强制，`/` 判 `SCOPE_PARTIAL_FOR_DOMAIN`。三条 host-dependent 套件族以 **`ci-census` 三条腿**（`b4/1`、`b4/2`、`M7-B1`）落在唯一会 provision 宿主的 job 里。未收集 46 → **41**。
+
+**hosted 轮把我自己的判断推翻了一次，这是本轮最重要的记录**：`#786` 首个 hosted L2 在 `ci-census` 红两次，红在我刚收编的套件上——runner 的 Landlock ABI v8 探针诚实回答 `network-destination='unsupported'`，产品因此**在 spawn 之前**拒绝 `network=deny` 车道（`NETWORK_UNCONFINED_REALM`），这是正确行为；错的是我的断言把**一台开发机的答案**钉成契约。改为断言**配对**：`enforced` ⇒ 有 `netns` 机制 + 绑定本 realm 与 launcher trust root 的 `evidence://` 行 ⇒ 车道被准入一次并由内核拒绝；`unsupported` ⇒ 无机制/无证据 + 说明能力缺口的 note ⇒ `NETWORK_UNCONFINED_REALM` 且 `spawns.after === 0`；两侧都保留「裸 enforced 无机制」「空 note」「deny 车道被静默放行」三条红。因为只覆写 provider 的 `probe` seam，两半在每台机器都会跑。**复核由打断断言的那台环境给出**：重跑后 `ci-census` pass 18m45s，`B4/1`、`B4/2`、`M7-B1` 三步在同一 job 依次 success，`M7B1-ARM inside-authorized verdict=SATISFIED unauthorized=[]`，伪造形状分别得 `IDENTITY_MISMATCH` / `WITNESS_NOT_SEALED` / `WINDOW_NOT_CLOSED`，M7-A 仍 `VERIFIED`。
+
+**一条尚未解释的 flake（UNKNOWN，不写成已修）**：`ci-integration` 在 `#786` 首轮红一次、同一头重跑绿。失败套件名不可恢复（GitHub 只回了 2 231 行、行内截断，`✖ tests/…` 与 dispatch token 都不在里面）。已按要求查而不是猜：CI 形态（全新完整 clone、自装自建、宿主树缺席、共享 `/tmp`）连跑 10 次、2 条 leg 并发、`--test-concurrency=64` 全部 exit 0 且 digest 相同；逐文件扫过本仓历史上咬过人的共享态类别（固定端口、固定 `/tmp` 路径、写 tracked 路径、`git status`/`dirty_paths` 活仪器——后者的两个载体不在该腿内）。残余怀疑（明确写为怀疑）：runner 负载/并发。transcript 已入证据。
+
+**我自己纠正的两处**：(1) 我预告 `#786` 会把 `tinf-instruments` 从 50 加到 55——**错**，那五条是 host-dependent，而该腿在**不 provision 宿主**的 `ci-integration`，收编进去会把该层的 host-free 声明变成谎话；改走三条 `ci-census` 腿（census 层 5 → 8），`tinf-instruments` 保持 50。(2) 我先按口头算术写 43/46，实现者改用 `--write-uncollected-baseline` 工具重算并给出 `--max-uncollected 40` 会 `REFUSED UNCOLLECTED_GREW` 的负控。
+
+**未收集阶梯**：91 → 84 → 76 → 48 → **46**（`#788`）→ **41**（`#786`）。负控 28 → 30 → 32。三条 `ci-census` 腿与 `--max-excluded 9` 现在是 master 上的常态。
+
+**`#765` UTE-Prep 仍是 draft**：设计 memo 已按 rc.3→rc.5 增量、两份共存的端口分区、S1/S2 结算保证等级、受限 fork 授权迁移三项裁决更新，并补了「hosted 轮推翻了什么」；三条治理性文本（`AGENTS.md` 的窄口径 fork 例外、`ALPHA5-SANDBOX-BACKLOG.md` §0.4）仍作**提案**留在 memo 06，等 owner 裁决后由主 Agent 落文，本轮不自行改。
+
+**仍未做（明确不在本轮范围）**：其余 13 条 host-dependent（Realm/surface 8、Web-egress/seam 4、provisioning 1）、`M7-B2`（process/PTY/network 域）、`M7-C`（approval/Stop/recovery）、host 构建缓存（rank 2）、L3 evals、census 调优。**宿主仍冻结在 `0.2.0-rc.2`**：第二份是新增，不是升级，旧宿主与其套件一行未动。
