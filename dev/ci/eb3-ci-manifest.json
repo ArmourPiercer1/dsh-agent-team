@@ -435,7 +435,9 @@
             "tests/world-factory/u7-tbash-offline-drive.test.mjs",
             "tests/world-factory/u7-tbash-seam.test.mjs",
             "tests/world-factory/u7-tbash.test.mjs",
-            "tests/world-factory/u7-uileg0-answer-drive.test.mjs"
+            "tests/world-factory/u7-uileg0-answer-drive.test.mjs",
+            "tests/s2-authority/consumer-candidate.test.mjs",
+            "tests/s2-authority/freeze-candidate.test.mjs"
           ],
           "hostRefusal": {
             "mode": "declared-not-run",

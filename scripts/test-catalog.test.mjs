@@ -307,12 +307,22 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     // live `git status` count, so it reds beside a sibling suite) and freeze-candidate
     // (passed the hosted leg on head e0514df18, failed the same byte-identical leg on head
     // 49bb277f in one case and does not reproduce locally — unknown nondeterminism).
+    // Both were repaired in their own round (2026-11-18) and are collected BELOW: C10 now
+    // compares the RENDERED fields only (the live `runtime` instrument is not rendered by
+    // `renderView`), and freeze-candidate now drains stdout instead of `process.exit`ing.
     // Declared HERE so the next addition still cannot hide.
     'tests/s2-authority/authority-dual-read.test.mjs',
     'tests/s2-authority/authority-snapshot-isolated.test.mjs',
     'tests/s2-authority/candidate-track-negative-control.test.mjs',
     'tests/s2-authority/ci-snapshot-reader.test.mjs',
+    // Residual-fixes round (2026-11-18): the two B2 suites that were held back are repaired at
+    // their root and ride the SAME tinf-instruments leg (48 -> 50). freeze-candidate's generator
+    // no longer drops its queued stdout on exit; consumer-candidate's C10 compares the RENDERED
+    // fields only, not the live `runtime.dirty_paths` instrument. Both leave
+    // dev/ci/uncollected-baseline.json (48 -> 46).
+    'tests/s2-authority/consumer-candidate.test.mjs',
     'tests/s2-authority/current-authority-pointer.test.mjs',
+    'tests/s2-authority/freeze-candidate.test.mjs',
     'tests/s2-authority/probe-candidate.test.mjs',
     'tests/s2-authority/sync-candidate-resolver.test.mjs',
     'tests/s2-authority/verify-candidate.test.mjs',
@@ -358,6 +368,11 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'tests/world-factory/u7-tbash-seam.test.mjs',
     'tests/world-factory/u7-tbash.test.mjs',
     'tests/world-factory/u7-uileg0-answer-drive.test.mjs',
+    // Residual-fixes round (2026-11-18): the two B2 suites that were held back are repaired at
+    // their root and ride the SAME tinf-instruments leg (48 -> 50). freeze-candidate's generator
+    // no longer drops its queued stdout on exit; consumer-candidate's C10 compares the rendered
+    // fields only, not the live `runtime.dirty_paths` instrument. Both leave
+    // dev/ci/uncollected-baseline.json (48 -> 46).
   ])
   const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
   assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')
