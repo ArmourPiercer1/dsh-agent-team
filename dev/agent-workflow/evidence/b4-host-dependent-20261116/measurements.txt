@@ -1,0 +1,24 @@
+# B4 — the five collected host-dependent suites, BOTH host shapes (2026-11-16 UTC)
+# host tree: tests/deepseek-harness-test-use @ 639ed01539 (pinned); native assets provisioned
+#   from the pinned published package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+# flag A5SF_REQUIRE_PINNED_HOST=1 in BOTH shapes (declared on the manifest leg and set on the step)
+# every row is a real `node --test` invocation in this worktree; pass/fail/skipped read from the reporter
+
+## SHAPE 1 — host PRESENT (asset digests = the pins; build present)
+present a5sf-pty-contract          exit=0 pass=15 fail=0 skipped=0 wall_ms=396
+present a5sf-sub-contract          exit=0 pass=15 fail=0 skipped=0 wall_ms=26326
+present a5sf-web-contract          exit=0 pass=10 fail=0 skipped=0 wall_ms=425
+present a5sf-web-row               exit=0 pass=10 fail=0 skipped=0 wall_ms=445
+present a5sf-pd31-read-image       exit=0 pass=7 fail=0 skipped=0 wall_ms=140
+
+## SHAPE 2 — host tree BIND-MOUNTED EMPTY (unshare -m -r, 0 entries) — every suite is RED
+host-tree-entries=0
+empty-host a5sf-pty-contract          exit=1 pass=0 fail=1 skipped=0 wall_ms=90
+    Error: A5SF-PTY-CONTRACT-HOST-INCOMPLETE: the pinned host tree exists at /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use but is missing terminalService=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepse
+empty-host a5sf-sub-contract          exit=1 pass=0 fail=1 skipped=0 wall_ms=87
+    Error: A5SF-SUB-CONTRACT-HOST-INCOMPLETE: the pinned host tree exists at /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use but is missing upstreamSubprocess=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/dee
+empty-host a5sf-web-contract          exit=1 pass=0 fail=1 skipped=0 wall_ms=90
+    A5SF-WEB-CONTRACT-HOST-REFUSED the pinned host checkout is absent or incomplete (missing packages/web/web/lib/index.js, packages/web/tool-web/lib/index.js under /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use)
+empty-host a5sf-web-row               exit=1 pass=0 fail=1 skipped=0 wall_ms=318
+    Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use/packages/web/web/lib/index.js' imported from /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/world-factory/l
+empty-host a5sf-pd31-read-image       exit=1 pass=4 fail=3 skipped=0 wall_ms=136
