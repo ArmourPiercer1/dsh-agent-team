@@ -2,7 +2,9 @@
 
 > **状态：DRAFT DESIGN / DOCUMENTS ONLY / DO NOT MERGE WITHOUT OWNER REVIEW。** 本目录记录下一版本的拟议架构，不是现行实施计划、权限裁决、生产配置或发布保证。批准本 PR 不等于授权开发或变更当前 Authority。
 > 
-> **技术基线**：DSH `dsh-v0.2.2-rc.3`（tag commit `38a6a5c965aa99ab525161efb7cc5cf1fe62fced`，2026-11-13）；Team 文档基线 `master@6361185d878ab2617193d51dd419e6dfe521a2ad`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，新版接口未在 Team 上集成或验收。
+> **技术基线（更新）**：DSH `dsh-v0.2.2-rc.5`（tag commit `9c2670d3bce5275e0d1610272958121af87787bb`，上游 lightweight tag，本仓 `origin` 不带该 tag）；Team 文档基线 `master@b7276ffa7bd8b040402460d2772c62576d08da5b`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，rc.5 接口未在 Team 上集成或验收。
+>
+> **[updated 2026-11-16 UTE-Prep]** 基线由 `dsh-v0.2.2-rc.3@38a6a5c` 迁至固定 `dsh-v0.2.2-rc.5@9c2670d3`（tag/commit 已用 `git ls-remote` + 上游 refs API 复验），Team 文档基线随 master 前进。差量判定、三条边界裁决与 G0/G1 首批纵切见 [`docs/plans/memo/ute-prep-20261116/`](../ute-prep-20261116/README.md)。原 rc.3 结论**未被静默改写**：rc.5 对 UTE 的实际影响只在 Web/Search 路由（见该目录 02）。
 > 
 > **发布边界**：仅在 PR #758 被合并、另行完成既定 v0.1.6 受限内部试用版冻结后，才规划下一版本的主机升级与代码迁移；此提案不更改 `AGENTS.md`、`docs/ROUTER_RULES.md`、`dev/engineering/current-authority.json`、任何 active plan、产品代码、测试基线或 PR #758。
 
@@ -41,8 +43,9 @@ Bound Blueprint + Team Agent identity
 - `tools/post-execute` 是可等待的 waterfall，通常可以接入结果审查/业务结算，但异常路径可能跳过。
 - `tools/result` 是最终结果 `emit`；Host 不等待异步 handler，因此不能将其当作 durable-commit-before-return 保障。
 - `ToolExecutionPipeline.complete()` 先完成结果规范化与通知；`executeToolBatch` 再按模型序列提交 `tool/result` 到 Session。
-- 基本保证（下一版本必选）：有已消费 Grant 的 ExecutionAttempt 最终形成一条可查的终态或保守 `unknown`；崩溃重启不会自动副作用重放。
-- 强化保证（单独门禁）：模型/Host 最终通知前 ExecutionFact 已持久化。若 public Hook 不足，可在最新版公开 `ToolExecutor` / `ToolExecutionPipeline` / Batch 旁增加薄 Adapter 或最小基础设施 Fork，**不得声称现成 `tools/result` 自动保证顺序**。
+- **S1 硬保证（G1 验收条件）**：每一次进入执行阶段（`EXECUTION_DISPATCH_ENTERED`）的调用，最终必须落成一条可查询的执行事实——`EXECUTION_SETTLED` 终态，或显式 `EXECUTION_UNCONFIRMED`（`unknown`）。二者缺一 = S1 违约。按 `ExecutionId` 幂等；`unknown` 是合法终态、不得自动重试；**事实写入的触发条件不得是"模型回合正常结束"**（rc.5 的 refusal 路径会先 yield `usage` 再 throw `CONTENT_REFUSED`，回合收尾式 flush 会在此丢事实）。
+- **S2 独立强化门（不是 G1 前置）**：持久化在宿主把结果返回给模型之前完成。**不得**把异步 `tools/result` 监听器当作 S2 的实现，也不得暗示它已提供该顺序——rc.5 未修复这一点（`packages/core/tools` 源码零改动）。若公开 seam 上找不到可等待的返回点，正确产出是 `CORE_SEAM_BLOCKER`（附公开 seam 排除表：`apply()` / `ctx.isolate()` / Service 代理 / `tools.register` / `ToolExecutor` / `ToolExecutionPipeline` / `tools/pre-execute` / `tools/post-execute`），**不是现在就 fork**。
+- **[updated 2026-11-16 UTE-Prep]** 以上两条由 `docs/plans/memo/ute-prep-20261116/03-RULINGS-AUTHORITY-BINDING-SETTLEMENT.md` 裁决 2 冻结；原"基本/强化"两行被替换，语义未被改写（S1 = 原基本保证，S2 = 原强化保证），但**新增了可判定边界**：S1 达标不推出 S2 达标，S2 达标蕴含 S1。
 - 不能无意让自定义 Executor 重写 ToolTool 的 batch ordering、PTC nested 或 Session log；异常分支和内部 Host 事件要 C2 验证。
 
 ## 6. Stop / cancellation / crash

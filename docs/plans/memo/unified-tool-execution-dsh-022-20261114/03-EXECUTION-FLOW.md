@@ -2,7 +2,9 @@
 
 > **状态：DRAFT DESIGN / DOCUMENTS ONLY / DO NOT MERGE WITHOUT OWNER REVIEW。** 本目录记录下一版本的拟议架构，不是现行实施计划、权限裁决、生产配置或发布保证。批准本 PR 不等于授权开发或变更当前 Authority。
 > 
-> **技术基线**：DSH `dsh-v0.2.2-rc.3`（tag commit `38a6a5c965aa99ab525161efb7cc5cf1fe62fced`，2026-11-13）；Team 文档基线 `master@6361185d878ab2617193d51dd419e6dfe521a2ad`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，新版接口未在 Team 上集成或验收。
+> **技术基线（更新）**：DSH `dsh-v0.2.2-rc.5`（tag commit `9c2670d3bce5275e0d1610272958121af87787bb`，上游 lightweight tag，本仓 `origin` 不带该 tag）；Team 文档基线 `master@b7276ffa7bd8b040402460d2772c62576d08da5b`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，rc.5 接口未在 Team 上集成或验收。
+>
+> **[updated 2026-11-16 UTE-Prep]** 基线由 `dsh-v0.2.2-rc.3@38a6a5c` 迁至固定 `dsh-v0.2.2-rc.5@9c2670d3`（tag/commit 已用 `git ls-remote` + 上游 refs API 复验），Team 文档基线随 master 前进。差量判定、三条边界裁决与 G0/G1 首批纵切见 [`docs/plans/memo/ute-prep-20261116/`](../ute-prep-20261116/README.md)。原 rc.3 结论**未被静默改写**：rc.5 对 UTE 的实际影响只在 Web/Search 路由（见该目录 02）。
 > 
 > **发布边界**：仅在 PR #758 被合并、另行完成既定 v0.1.6 受限内部试用版冻结后，才规划下一版本的主机升级与代码迁移；此提案不更改 `AGENTS.md`、`docs/ROUTER_RULES.md`、`dev/engineering/current-authority.json`、任何 active plan、产品代码、测试基线或 PR #758。
 
@@ -31,7 +33,7 @@ AgentLoop prepares model step
   → batch Session tool/result (model-ordered)
   → next model step
 ```
-**校正**：`projectContent` 在 `tools/post-execute` 之前；有异常分支直接进入最终规范化而跳过 post-execute；`tools/result` 并不等待监听器异步落账。实际 `tools/execute` listener 与 Host Body 解析的最后时间窗口按受信运行时环境责任处理，保留现有防御，不引入 Core 修改。DSH [官方流水线图](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.3/docs/tool-execution-pipeline.zh.md)。
+**校正**：`projectContent` 在 `tools/post-execute` 之前；有异常分支直接进入最终规范化而跳过 post-execute；`tools/result` 并不等待监听器异步落账。实际 `tools/execute` listener 与 Host Body 解析的最后时间窗口按受信运行时环境责任处理，保留现有防御，不引入 Core 修改。 **[updated 2026-11-16 UTE-Prep]** 已在 rc.3→rc.5 的 448 条路径 diff 上复核：`packages/core/tools`、`tool-executor-native`、`tool-executor-ptc`、`agent-loop` 的**源码零改动**（只有 `package.json` 版本号），因此本时序图与“`tools/result` 不提供 commit-before-return”的判断在 rc.5 上逐字有效——上游没有修这个问题（见 [`ute-prep-20261116/02`](../ute-prep-20261116/02-INTERFACE-DELTA-RC3-RC5.md) §4）。DSH [官方流水线图](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.2.2-rc.3/docs/tool-execution-pipeline.zh.md)。
 
 ## 2. 新宿主重要接口
 - `ToolsService.register(definition,{when})`：可带条件激活；`resolve({agent,modelSelection,signal})` 产生单步骤 `ResolvedToolSet`，同一步骤模型可见 Schema 与 PTC 内层调用共享该集合；这是可用性而非权限准入。

@@ -2,7 +2,9 @@
 
 > **状态：DRAFT DESIGN / DOCUMENTS ONLY / DO NOT MERGE WITHOUT OWNER REVIEW。** 本目录记录下一版本的拟议架构，不是现行实施计划、权限裁决、生产配置或发布保证。批准本 PR 不等于授权开发或变更当前 Authority。
 > 
-> **技术基线**：DSH `dsh-v0.2.2-rc.3`（tag commit `38a6a5c965aa99ab525161efb7cc5cf1fe62fced`，2026-11-13）；Team 文档基线 `master@6361185d878ab2617193d51dd419e6dfe521a2ad`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，新版接口未在 Team 上集成或验收。
+> **技术基线（更新）**：DSH `dsh-v0.2.2-rc.5`（tag commit `9c2670d3bce5275e0d1610272958121af87787bb`，上游 lightweight tag，本仓 `origin` 不带该 tag）；Team 文档基线 `master@b7276ffa7bd8b040402460d2772c62576d08da5b`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，rc.5 接口未在 Team 上集成或验收。
+>
+> **[updated 2026-11-16 UTE-Prep]** 基线由 `dsh-v0.2.2-rc.3@38a6a5c` 迁至固定 `dsh-v0.2.2-rc.5@9c2670d3`（tag/commit 已用 `git ls-remote` + 上游 refs API 复验），Team 文档基线随 master 前进。差量判定、三条边界裁决与 G0/G1 首批纵切见 [`docs/plans/memo/ute-prep-20261116/`](../ute-prep-20261116/README.md)。原 rc.3 结论**未被静默改写**：rc.5 对 UTE 的实际影响只在 Web/Search 路由（见该目录 02）。
 > 
 > **发布边界**：仅在 PR #758 被合并、另行完成既定 v0.1.6 受限内部试用版冻结后，才规划下一版本的主机升级与代码迁移；此提案不更改 `AGENTS.md`、`docs/ROUTER_RULES.md`、`dev/engineering/current-authority.json`、任何 active plan、产品代码、测试基线或 PR #758。
 
@@ -28,6 +30,13 @@ NativeBindingAssembler 接受声明式 `source(package/version/digest)`、`toolN
 
 ## 3. 统一 FS/Web
 为 Trusted JS 绑定受控 `ctx.fs` 与 `ctx.web`。FS Provider 在真实操作边界评估路径、读/写轴、PolicyRevision；Web Provider 在真正网络请求前评估 network allow/deny。Web 上游 provider 选择、重定向、代理与远端服务的副作用另行披露；禁网不能因为 Host LLM/API 要联网而失效。Ctrl 服务使用独立可信 Host 能力，不可作为工具转发代理。
+
+**[updated 2026-11-16 UTE-Prep] `web_search` 的 provider 选择在 rc.5 变了，受控 Web 代理必须跟着改（三条硬要求）**：rc.5 起 `{ id: web }` 不再钉 `searchProvider`，未配置时按**模型请求的路由**优先选 provider（`deepseek-official` 路由 → legacy Messages 搜索；其他路由与模型请求之外 → `deepseek-search-api`），并给 `WebSearchRequest` 增加了可选字段 `llmProvider`（`tool-web/src/search.ts` 从 `exec.agent?.session.requestContext()?.provider` 取值后透传）。因此：
+1. **逐字段透传**：受控 `ctx.web` 代理必须原样转发 `WebSearchRequest`（含 `llmProvider` 及未来新增的可选字段），只允许在拒绝时短路。**禁止**“白名单复制已知字段”——那会把 provider 选择从“按路由”静默降级为“唯一可用/歧义”：网络准入判定没变，但被调用的 provider（计费、endpoint、可用性）变了。
+2. **负控必须带路由**：`web_search` 的“deny 时零连接”负控要在**有 `llmProvider`** 的情况下跑，否则测的是另一条选择分支。`WEB_PROVIDER_CONFIGURED_MISSING` / `_UNAVAILABLE` / `WEB_PROVIDER_AMBIGUOUS` 的语义**未变**，旧断言不失效，但不足以覆盖新分支。
+3. **钉 provider 就要披露**：配置里显式钉 `searchProvider` 时路由被忽略（`configuredId` 分支优先）。为确定性而钉 provider 的证据必须写明“本次固定 provider=X，未覆盖按路由选择”，否则就是把未测分支当已测。
+
+这是**语义变化**而非等价：rc.3 的 `WebSearchRequest` 没有该字段。按 [04](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) R-S3.1，它必须被记录并获 owner 批准后，才能作为退役旧 Web 路径的依据。
 
 ## 4. 统一 Process/PTY
 `SandboxGateway` 提供 Profile preflight、真实 launch、进程租约、termination confirmed、FD/UDS/IPC 证据。保留原生 `ctx.subprocess.spawn(): SubprocessHandle` **同步**签名与 `spawnTerminal` 的异步 PTY 合约；应预编译 Profile 或以同步句柄立即成立的方式适配，不得直接将 async confine 返回给同步接口。持久 Bash/PTC/LSP/MCP 在进程创建时固定 Profile；旧域不能为新一轮单次批准就地扩权。

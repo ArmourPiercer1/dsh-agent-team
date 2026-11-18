@@ -2,12 +2,16 @@
 
 > **状态：DRAFT DESIGN / DOCUMENTS ONLY / DO NOT MERGE WITHOUT OWNER REVIEW。** 本目录记录下一版本的拟议架构，不是现行实施计划、权限裁决、生产配置或发布保证。批准本 PR 不等于授权开发或变更当前 Authority。
 > 
-> **技术基线**：DSH `dsh-v0.2.2-rc.3`（tag commit `38a6a5c965aa99ab525161efb7cc5cf1fe62fced`，2026-11-13）；Team 文档基线 `master@6361185d878ab2617193d51dd419e6dfe521a2ad`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，新版接口未在 Team 上集成或验收。
+> **技术基线（更新）**：DSH `dsh-v0.2.2-rc.5`（tag commit `9c2670d3bce5275e0d1610272958121af87787bb`，上游 lightweight tag，本仓 `origin` 不带该 tag）；Team 文档基线 `master@b7276ffa7bd8b040402460d2772c62576d08da5b`。当前 Team 实际仍使用 DSH `0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84`，rc.5 接口未在 Team 上集成或验收。
+>
+> **[updated 2026-11-16 UTE-Prep]** 基线由 `dsh-v0.2.2-rc.3@38a6a5c` 迁至固定 `dsh-v0.2.2-rc.5@9c2670d3`（tag/commit 已用 `git ls-remote` + 上游 refs API 复验），Team 文档基线随 master 前进。差量判定、三条边界裁决与 G0/G1 首批纵切见 [`docs/plans/memo/ute-prep-20261116/`](../ute-prep-20261116/README.md)。原 rc.3 结论**未被静默改写**：rc.5 对 UTE 的实际影响只在 Web/Search 路由（见该目录 02）。
 > 
 > **发布边界**：仅在 PR #758 被合并、另行完成既定 v0.1.6 受限内部试用版冻结后，才规划下一版本的主机升级与代码迁移；此提案不更改 `AGENTS.md`、`docs/ROUTER_RULES.md`、`dev/engineering/current-authority.json`、任何 active plan、产品代码、测试基线或 PR #758。
 
 ## 1. 裁决来源
 用户明确允许“将上游某个适当的基础设施 plugin 复制到 Team 仓库，作小范围改动并由 Team 包管理”，但**不直接在上游仓库 Fork/Host checkout 上修改**。目的是隔离文档/发布责任与源码变更范围。现行 `AGENTS.md` 仍包含“禁止 vendored 修改过的上游副本”的旧红线；**本 Draft 仅记录下一版本提议，不能自行覆盖现行规则**。实施前必须由 Owner/Authority Migration 明确修订适用边界。引用 [原 ADR D6](../alpha5-sandbox-first-20261101/ADR.md)。
+
+**[updated 2026-11-16 UTE-Prep]** 上面的"提议"现在有**条文**，但**仍未生效**——它需要 owner 裁决并把例外写进 `AGENTS.md`。冻结文本与六项随请求证据见 [`ute-prep-20261116/03`](../ute-prep-20261116/03-RULINGS-AUTHORITY-BINDING-SETTLEMENT.md) 裁决 3；可直接应用的 `AGENTS.md` 补丁见 [`ute-prep-20261116/06`](../ute-prep-20261116/06-PROPOSED-ACTIVE-PLAN-PATCH.md) 补丁 B。三条之前没有写死的边界现在写死：**（i）缺口必须是可复现的公开 API 缺口**（最小脚本在钉住的 tag+commit 上稳定复现 ≥2 次，且公开 seam 逐条排除）；**（ii）首次实例逐个具名批准**，不是类别授权、不是"反正要升级先 fork 一份"；**（iii）顺序不可颠倒**——先报 `CORE_SEAM_BLOCKER`，再申请例外。不满足任一条即仍是阻塞，不是待办。
 
 ## 2. 有限 Fork 允许对象
 | 上游对象 | 默认选择 | 何时准许复制改动 |
