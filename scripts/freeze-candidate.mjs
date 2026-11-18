@@ -540,4 +540,14 @@ const invokedDirectly = (() => {
   try { return resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url)) } catch { return false }
 })()
 
-if (invokedDirectly) process.exit(main(process.argv.slice(2)))
+// NOT `process.exit(main(...))`. `process.stdout` is a PIPE under a test harness or a
+// CI dispatcher, and there the last chunk of the report (the `DIGEST`/`CLEAN`/`DRIFT`
+// summary line the suite asserts on) is still queued in the stream when the process
+// dies: ~21 KB of report exceeds the stream's 16 KB high-water mark, so everything past
+// the first flush is asynchronous. `process.exit()` tears the event loop down without
+// waiting, the queued chunk is dropped, and the caller sees exit 1 with a TRUNCATED
+// report — measured at 265/400 runs under a 200-way concurrent pool (see
+// dev/agent-workflow/evidence/residual-fixes-20261116/). Setting `process.exitCode` and
+// letting Node end the process on its own drains the pipe first; the exit code is the
+// same value, so no caller-visible semantics change.
+if (invokedDirectly) process.exitCode = main(process.argv.slice(2))
