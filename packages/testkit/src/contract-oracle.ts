@@ -139,6 +139,14 @@ export interface OracleInput {
    * agent). Absent, the pre-M7-B1 behaviour is unchanged.
    */
   requiredObservationWindowId?: string
+  /**
+   * The execution the contract grades (M7-B1b). When present, the trace MUST
+   * carry it on a `tool/call` or `tool/result` event: an id that is merely well
+   * formed is not an execution the host performed, and a verdict may not rest on
+   * a trace that never observed it. `TraceEvent.execution_id` has been declared
+   * since M7-A and was never read — this is where it is read.
+   */
+  requiredExecutionId?: string
 }
 
 /** The oracle's answer, with the reasons and the observation limits. */
@@ -329,6 +337,10 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
       (typeof input.requiredObservationWindowId !== 'string' || input.requiredObservationWindowId.trim() === '')) {
     faults.push('requiredObservationWindowId must be a non-empty string when present')
   }
+  if (input.requiredExecutionId !== undefined &&
+      (typeof input.requiredExecutionId !== 'string' || input.requiredExecutionId.trim() === '')) {
+    faults.push('requiredExecutionId must be a non-empty string when present')
+  }
   if (input.witnessProvenance !== undefined && input.witnessProvenance !== 'declared' && input.witnessProvenance !== 'witnessed') {
     faults.push(`witnessProvenance must be "declared" or "witnessed" (got ${JSON.stringify(String(input.witnessProvenance))})`)
   }
@@ -397,6 +409,26 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
     else events = [...input.events]
   } catch (error) {
     faults.push(`events could not be read: ${messageOf(error)}`)
+  }
+  // Execution binding (M7-B1b): the contract names the execution under grade, and
+  // the trace must SHOW it. Checked before the per-event walk so a trace that
+  // never carried the id is a named fault rather than "no effect observed".
+  if (typeof input.requiredExecutionId === 'string' && input.requiredExecutionId.trim() !== '') {
+    const wanted = input.requiredExecutionId
+    const carriers = events.filter((event) => {
+      if (typeof event !== 'object' || event === null) return false
+      const record = event as { event_type?: unknown; execution_id?: unknown }
+      return (record.event_type === 'tool/call' || record.event_type === 'tool/result') && record.execution_id === wanted
+    })
+    if (carriers.length === 0) {
+      const seen = [...new Set(events
+        .map((event) => (typeof event === 'object' && event !== null ? (event as { execution_id?: unknown }).execution_id : undefined))
+        .filter((id): id is string => typeof id === 'string'))]
+      faults.push(
+        `requiredExecutionId is ${JSON.stringify(wanted)} but no tool/call or tool/result event in the trace carries it ` +
+          `(ids present: ${seen.length === 0 ? 'none' : seen.join(', ')}); the execution under grade is not the execution this trace observed`,
+      )
+    }
   }
   let previous = Number.NEGATIVE_INFINITY
   for (const [index, event] of events.entries()) {

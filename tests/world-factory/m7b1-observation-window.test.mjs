@@ -35,8 +35,26 @@
  *                         denial.
  *   A5 FORGED-WITNESS     a hand-built row carrying the CORRECT window id is
  *                         INSTRUMENT_ERROR: the seal is identity, not a field.
- *   A6 WINDOW-MISMATCH    a real sealed row from ANOTHER window is refused
- *                         because its window_id is not this contract's.
+ *   A6 FOREIGN WINDOW    the SECOND arm's real envelopes (sealed, windowed,
+ *                         closed) judged against the FIRST arm's contract are
+ *                         IDENTITY_MISMATCH — another observation cannot answer.
+ *   A7 MUTATED IDENTITY  a real contract with ONE id rewritten at the caller
+ *                         (world/agent/execution) is refused BY THE MODULE with
+ *                         IDENTITY_MISMATCH, and a trace that never carried the
+ *                         graded execution id is EXECUTION_ID_NOT_IN_TRACE.
+ *   A8 FORGED WINDOW     spread / structuredClone / Object.create copies of the
+ *                         sealed window record, copies of the envelopes, a foreign
+ *                         instrument closing the window, and a second close are
+ *                         all WITNESS_NOT_SEALED: the window seal is LIVE.
+ *   A9 UNCLOSED WINDOW   judging the armed-but-unclosed window is never
+ *                         SATISFIED, and the phase/closedAt rule is pinned
+ *                         directly (WINDOW_NOT_CLOSED).
+ *
+ * THE BINDING IS ALSO PINNED WITHOUT A HOST (test 1): `checkWindowBinding` is a
+ * pure function, so the lifecycle/identity/trace rules are proven by mutation on
+ * every run, host or no host, and both halves of the seal are pinned against the
+ * testkit directly (including a SECOND module instance, whose record this
+ * instance must not accept).
  *
  * HOST STATES. Host absent -> the suite still grades the fail-closed half
  * (A5/A6 and the module's refusals are host-state independent) and asserts that
@@ -50,17 +68,19 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
+import { register } from 'node:module'
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import test from 'node:test'
 
 import { apiSessionCreate, authenticate, stableInstanceProbe, TestWorldFactory } from './lib/world-factory.mjs'
 import { runTurn, startRealRun } from './lib/m7a-real-run.mjs'
 import {
   ObservationContractRefusal,
+  checkWindowBinding,
   closeObservationWindow,
   declareObservationContract,
   formatWindowIdentity,
@@ -79,6 +99,8 @@ const REQUIRE_HOST = process.env.M7B1_REQUIRE_PINNED_HOST === '1'
 const BOOT_TIMEOUT_MS = Number(process.env.M7B1_BOOT_TIMEOUT_MS ?? 180_000)
 const TMP_ROOT = join(REPO_ROOT, '.artifacts', 'tmp', 'm7b1-observation-window')
 const sha256 = (text) => createHash('sha256').update(text).digest('hex')
+/** One-line diagnostic clipping: never ends with whitespace (evidence files are diff-checked). */
+const clip = (value, limit) => String(value ?? '').slice(0, limit).trimEnd()
 
 if (!HOST_PRESENT) {
   console.log(
@@ -177,6 +199,11 @@ test('M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, ne
     refuses('SCOPE_DOES_NOT_COVER', () => declareObservationContract({ world, ...identity, scope: [watched], authorizedPaths: [join(home, 'somewhere-else')] }))
     refuses('SCOPE_DOES_NOT_COVER', () => declareObservationContract({ world, ...identity, scope: [watched], forbiddenPaths: [join(root, 'far-away')] }))
     refuses('SCOPE_PARTIAL_FOR_DOMAIN', () => declareObservationContract({ world, ...identity, scope: [watched], claim: 'filesystem-domain' }))
+    // `scope:['/']` used to make a domain claim look total while nothing was
+    // enumerated. `/` is not a watchable root, so BOTH the root and the claim are
+    // refused by name (M7-B1b) — the `ACCEPTED` shape is gone.
+    refuses('SCOPE_PARTIAL_FOR_DOMAIN', () => declareObservationContract({ world, ...identity, scope: ['/'], claim: 'filesystem-domain' }))
+    refuses('SCOPE_PARTIAL_FOR_DOMAIN', () => declareObservationContract({ world, ...identity, scope: ['/'], authorizedPaths: ['/etc/passwd'] }))
     refuses('IDENTITY_INVALID', () => declareObservationContract({ world, agentId: '', executionId: 'e', scope: [watched] }))
     refuses('IDENTITY_INVALID', () => declareObservationContract({ world, agentId: 'a', executionId: '   ', scope: [watched] }))
     refuses('IDENTITY_INVALID', () => declareObservationContract({ world: { id: '', home }, ...identity, scope: [watched] }))
@@ -198,6 +225,126 @@ test('M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, ne
       assert.equal(opened.ok, false, 'a symlinked root cannot be bound at open time')
       assert.equal(opened.reason, 'SCOPE_SYMLINK')
     }
+  })
+
+  await t.test('M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution', async () => {
+    const contract = declareObservationContract({ world, ...identity, scope: [watched] })
+    const call = { event_seq: 1, event_type: 'tool/call', execution_id: identity.executionId, outcome: 'DISPATCHED' }
+    const result = { event_seq: 2, event_type: 'tool/result', execution_id: identity.executionId, outcome: 'COMPLETED' }
+    const baseWindow = {
+      window_id: 'win-probe',
+      world_id: contract.world_id,
+      agent_id: contract.agent_id,
+      execution_id: contract.execution_id,
+      phase: 'post',
+      closedAt: '2026-11-18T00:00:00.000Z',
+      watchedPaths: [...contract.scope],
+      armedAt: '2026-11-18T00:00:00.000Z',
+      producedBy: '@dsh-agent-team/testkit/effect-witness@1',
+    }
+    // The happy path, so the refusals below are not the only thing this proves.
+    assert.equal(checkWindowBinding({ contract, window: baseWindow, events: [call, result] }), null, 'a closed, correctly bound window IS gradeable')
+
+    // (1) lifecycle: phase `pre` / null closedAt / blank closedAt are all refused.
+    for (const [tag, patch] of [
+      ['phase=pre', { phase: 'pre' }],
+      ['closedAt=null', { closedAt: null }],
+      ['closedAt=""', { closedAt: '' }],
+    ]) {
+      const verdict = checkWindowBinding({ contract, window: { ...baseWindow, ...patch }, events: [call, result] })
+      assert.equal(verdict?.reason, 'WINDOW_NOT_CLOSED', `an unclosed window (${tag}) is WINDOW_NOT_CLOSED`)
+      console.log(`M7B1-WINDOW-NOT-CLOSED tag=${tag} reason=${verdict.reason} detail=${clip(verdict.detail, 140)}`)
+    }
+
+    // (2) identity: each of the three ids, mutated at the CALLER, is refused.
+    for (const field of ['world_id', 'agent_id', 'execution_id']) {
+      const mutatedContract = Object.freeze({ ...contract, [field]: `mutated-${field}` })
+      const verdict = checkWindowBinding({ contract: mutatedContract, window: baseWindow, events: [call, result] })
+      assert.equal(verdict?.reason, 'IDENTITY_MISMATCH', `a caller-mutated ${field} is IDENTITY_MISMATCH, never a pass`)
+      assert.match(verdict.detail, new RegExp(`mutated-${field}`, 'u'), 'the refusal names the id it compared')
+      console.log(`M7B1-IDENTITY-MISMATCH field=${field} reason=${verdict.reason} detail=${clip(verdict.detail, 160)}`)
+    }
+
+    // (3) trace: the id must be an execution the host's durable trace carried.
+    const absent = checkWindowBinding({ contract, window: baseWindow, events: [{ event_seq: 1, event_type: 'tool/call', execution_id: 'some-other-call' }] })
+    assert.equal(absent?.reason, 'EXECUTION_ID_NOT_IN_TRACE', 'an id no tool event carried is not an observed execution')
+    assert.match(absent.detail, /some-other-call/u, 'the refusal names the ids the trace did carry')
+    console.log(`M7B1-EXECUTION-ID-NOT-IN-TRACE reason=${absent.reason} detail=${clip(absent.detail, 160)}`)
+  })
+
+  await t.test('M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance)', async () => {
+    const contract = declareObservationContract({ world, ...identity, scope: [watched] })
+    const { createFsWitness, observationWindowOf, closeObservationWindow: closeInstrument, isSealedObservationWindow, areSealedWitnessObservations } =
+      await import('../../packages/testkit/src/effect-witness.ts')
+    const instrument = createFsWitness({
+      root: home,
+      watch: [watched],
+      window: { world_id: contract.world_id, agent_id: contract.agent_id, execution_id: contract.execution_id, phase: 'pre' },
+    })
+    const pre = observationWindowOf(instrument)
+    assert.equal(isSealedObservationWindow(pre), true, 'the armed record is sealed by the module that built it')
+    const rows = await instrument.observe()
+    const post = closeInstrument(instrument)
+    assert.equal(isSealedObservationWindow(post), true, 'the closed record is sealed too')
+    assert.equal(isSealedObservationWindow({ ...post }), false, 'a spread copy of the record is NOT sealed')
+    assert.equal(isSealedObservationWindow(Object.create(post)), false, 'an Object.create child is NOT sealed')
+    assert.equal(isSealedObservationWindow(structuredClone(post)), false, 'a structuredClone is NOT sealed')
+    assert.equal(isSealedObservationWindow(JSON.parse(JSON.stringify(post))), false, 'a JSON round-trip is NOT sealed')
+    assert.equal(areSealedWitnessObservations([...rows]), true, 'the rows are sealed')
+    assert.equal(areSealedWitnessObservations(rows.map((row) => ({ ...row }))), false, 'copied rows are NOT sealed')
+    // A SECOND module instance has its own private registries: its record is not
+    // this instance's provenance, which is why the seal is identity and not shape.
+    const second = await import('../../packages/testkit/src/effect-witness.ts?m7b1-second-instance')
+    const secondInstrument = second.createFsWitness({
+      root: home,
+      watch: [watched],
+      window: { world_id: contract.world_id, agent_id: contract.agent_id, execution_id: contract.execution_id, phase: 'pre' },
+    })
+    const secondWindow = second.observationWindowOf(secondInstrument)
+    assert.equal(second.isSealedObservationWindow(secondWindow), true, 'the other instance seals its own record')
+    assert.equal(isSealedObservationWindow(secondWindow), false, 'but THIS instance does not accept it')
+    // And the row half through the ORACLE, without a host: a hand-built row with
+    // the right shape and the right window id is still an INSTRUMENT_ERROR.
+    // (The oracle imports `./effect-witness.js`, so the repo's TS resolution hook
+    // must be registered before it is loaded outside the module's own path.)
+    register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
+    const { judgeContract } = await import('../../packages/testkit/src/contract-oracle.ts')
+    const forgedRow = {
+      domain: 'filesystem',
+      observed: false,
+      instrumented: true,
+      evidence: ['forged: right shape, right window id'],
+      watchedPaths: [...contract.scope],
+      observedPaths: [],
+      window_id: post.window_id,
+    }
+    const oracleVerdict = judgeContract({
+      contractId: contract.contract_id,
+      events: [{ event_seq: 1, event_type: 'tool/call', execution_id: contract.execution_id, outcome: 'DISPATCHED' }],
+      witness: [forgedRow],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [...contract.scope],
+      witnessProvenance: 'witnessed',
+      requiredObservationWindowId: post.window_id,
+      requiredExecutionId: contract.execution_id,
+      expectDeny: false,
+    })
+    assert.equal(oracleVerdict.verdict, 'INSTRUMENT_ERROR', 'a hand-built row is INSTRUMENT_ERROR')
+    assert.match(oracleVerdict.reasons.join('\n'), /not produced by a testkit witness instrument/u, 'the row seal is what refuses it')
+    console.log('M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)')
+  })
+
+  await t.test('M7-B1b: a caller-assembled envelope is refused before any instrument is trusted', async () => {
+    const contract = declareObservationContract({ world, ...identity, scope: [watched] })
+    const fabricated = { ok: true, witness: null, window: { window_id: 'win-forged', world_id: contract.world_id, agent_id: contract.agent_id, execution_id: contract.execution_id, phase: 'post', closedAt: '2026-11-18T00:00:00.000Z' } }
+    const closedAttempt = await closeObservationWindow({ opened: fabricated })
+    assert.equal(closedAttempt.ok, false, 'a caller-assembled `opened` is not an armed window')
+    assert.equal(closedAttempt.reason, 'WITNESS_NOT_ARMED')
+    const judged = await judgeObservationWindow({ contract, opened: fabricated, closed: Object.freeze({ ok: true, window: fabricated.window, rows: [] }), events: [] })
+    assert.equal(judged.verdict, 'INSTRUMENT_ERROR', 'a caller-assembled envelope is never SATISFIED')
+    assert.equal(judged.reason, 'WITNESS_NOT_SEALED')
+    console.log(`M7B1-FORGED-ENVELOPE ok=false reason=${judged.reason}`)
   })
 })
 
@@ -355,7 +502,7 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
       bootTimeoutMs: BOOT_TIMEOUT_MS,
     })
     const bootMs = Date.now() - startedAt
-    report = { world: world.id, port: run.port, bootMs, arms: [], hostSha: TEST_USE_BASELINE_SHA, hostTree: HOST_TREE }
+    report = { world: world.id, port: run.port, bootMs, arms: [], mutations: [], hostSha: TEST_USE_BASELINE_SHA, hostTree: HOST_TREE }
 
     const openSession = async (label) => {
       const cookie = await authenticate(run.origin, run.token)
@@ -366,6 +513,7 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
     }
 
     let foreignWindowRows = null
+    const envelopes = []
     for (const [index, arm] of arms.entries()) {
       const session = index === 0 ? run : await openSession(`m7b1-${arm.tag}`)
       const expectedIds = arm.steps.map((_, i) => callIdOf(index, i))
@@ -470,6 +618,7 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
       // The first REAL window's rows are kept to prove the foreign-window control
       // below uses a genuinely sealed, genuinely windowed observation.
       if (index === 0) foreignWindowRows = closed.rows
+      envelopes[index] = { opened, closed }
     }
 
     // ── A4: the verbatim denial the Host itself emitted, from its durable trace.
@@ -491,6 +640,8 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
     // ── A5: a FORGED row carrying the correct window id is not evidence.
     const firstContract = report.arms[0].contract
     const firstWindow = report.arms[0].window
+    const firstOpened = envelopes[0].opened
+    const firstClosed = envelopes[0].closed
     const forged = {
       domain: 'filesystem',
       observed: false,
@@ -500,35 +651,135 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
       observedPaths: [],
       window_id: firstWindow.window_id,
     }
-    const forgedOpened = { ok: true, witness: null, window: firstWindow }
-    const forgedClosed = { ok: true, window: firstWindow, rows: [forged] }
+    // The ENVELOPES here are the REAL ones this module produced; only the row is
+    // hand-built. So the seal that must fail is the ROW seal, which is what A5 is.
     const forgedJudgement = await judgeObservationWindow({
       contract: firstContract,
-      opened: forgedOpened,
-      closed: forgedClosed,
+      opened: firstOpened,
+      closed: Object.freeze({ ok: true, window: firstWindow, rows: [forged] }),
       events: report.arms[0].trace,
       expectDeny: true,
     })
     assert.equal(forgedJudgement.verdict, 'INSTRUMENT_ERROR', 'A5: a hand-built row cannot corroborate a verdict')
-    assert.match(forgedJudgement.reasons.join('\n'), /not produced by a testkit witness instrument/u)
+    assert.equal(forgedJudgement.reason, 'WITNESS_NOT_SEALED', 'A5: the seal, not the shape, is what refuses it')
+    assert.match(forgedJudgement.reasons.join('\n'), /WITNESS_NOT_SEALED/u)
+    // The ROW half of the seal is proven directly (the envelope check fires first
+    // here): the oracle refuses a hand-built row in `witnessed` mode, and test 1
+    // pins that same predicate without a host.
+    assert.ok(forgedJudgement.detail.length > 0, 'A5: the refusal names what could not be sealed')
     t.diagnostic('M7B1-FORGED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED')
+    report.mutations.push('M7B1-FORGED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED')
 
-    // ── A6: a REAL sealed row from ANOTHER window is refused by window id.
-    // The rows are the FIRST arm's (sealed, genuinely windowed); the window they
-    // are judged through is the SECOND arm's. Same host, same World, same module —
-    // only the window identity differs, which is exactly the substitution a caller
-    // could attempt ("these rows are mine, this window is the one I am grading").
-    const secondWindow = report.arms[1].window
-    assert.notEqual(secondWindow.window_id, firstWindow.window_id, 'A6: the two windows are genuinely different')
+    // ── A6: REAL envelopes from ANOTHER window are refused. The rows and the
+    // window are the SECOND arm's (genuinely sealed, genuinely windowed); the
+    // contract is the FIRST arm's. Same host, same World, same module — only the
+    // identity/window differs, which is exactly the substitution a caller could
+    // attempt ("these rows are mine, this window is the one I am grading").
+    const secondEnvelopes = envelopes[1]
+    assert.notEqual(secondEnvelopes.closed.window.window_id, firstWindow.window_id, 'A6: the two windows are genuinely different')
     const foreignJudgement = await judgeObservationWindow({
       contract: firstContract,
-      opened: { ok: true, witness: null, window: secondWindow },
-      closed: { ok: true, window: secondWindow, rows: foreignWindowRows },
+      opened: secondEnvelopes.opened,
+      closed: secondEnvelopes.closed,
       events: report.arms[0].trace,
       expectDeny: true,
     })
-    assert.equal(foreignJudgement.verdict, 'INSTRUMENT_ERROR', 'A6: a sealed row from another window is not this window')
-    assert.match(foreignJudgement.reasons.join('\n'), /requiredObservationWindowId is/u, 'A6: the refusal names the window binding')
+    assert.equal(foreignJudgement.verdict, 'INSTRUMENT_ERROR', 'A6: another window cannot answer for this contract')
+    assert.match(foreignJudgement.reasons.join('\n'), /IDENTITY_MISMATCH/u, 'A6: the refusal names the identity binding')
+    t.diagnostic(`M7B1-FOREIGN-WINDOW verdict=${foreignJudgement.verdict} reason=${foreignJudgement.reason} detail=${clip(foreignJudgement.detail, 160)}`)
+    report.mutations.push(`M7B1-FOREIGN-WINDOW verdict=${foreignJudgement.verdict} reason=${foreignJudgement.reason}`)
+
+    // ── A7: a CALLER-MUTATED identity is refused BY THE MODULE, not by the test.
+    // These are the reviewer's mutations: a real contract with one field rewritten,
+    // judged through the real sealed window. The window's own binding is the thing
+    // that catches it, and the trace binding catches an id the host never issued.
+    const traceEvents = report.arms[0].trace
+    const idCases = [
+      ['execution_id', 'exec-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
+      ['agent_id', 'agent-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
+      ['world_id', 'world-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
+    ]
+    for (const [field, value, expected] of idCases) {
+      const mutated = Object.freeze({ ...firstContract, [field]: value })
+      const judgement = await judgeObservationWindow({ contract: mutated, opened: firstOpened, closed: firstClosed, events: traceEvents, expectDeny: true })
+      assert.equal(judgement.verdict, 'INSTRUMENT_ERROR', `A7: a mutated ${field} is never SATISFIED`)
+      assert.equal(judgement.reason, expected, `A7: a mutated ${field} is refused as ${expected} (got ${String(judgement.reason)})`)
+      const line = `M7B1-MUTATED-${field.toUpperCase()} verdict=${judgement.verdict} reason=${judgement.reason} detail=${clip(judgement.detail, 200)}`
+      t.diagnostic(line)
+      report.mutations.push(line)
+    }
+    // The trace must CARRY the graded execution id: strip the calls and the
+    // verdict becomes a named refusal instead of "no effect observed".
+    const strippedEvents = traceEvents.filter((event) => event.event_type !== 'tool/call' && event.event_type !== 'tool/result')
+    const noTrace = await judgeObservationWindow({ contract: firstContract, opened: firstOpened, closed: firstClosed, events: strippedEvents, expectDeny: true })
+    assert.equal(noTrace.verdict, 'INSTRUMENT_ERROR', 'A7: a trace with no tool event is not evidence')
+    assert.equal(noTrace.reason, 'EXECUTION_ID_NOT_IN_TRACE', `A7: the refusal names the trace binding (got ${String(noTrace.reason)})`)
+    t.diagnostic(`M7B1-NO-TRACE verdict=${noTrace.verdict} reason=${noTrace.reason} detail=${clip(noTrace.detail, 200)}`)
+    report.mutations.push(`M7B1-NO-TRACE verdict=${noTrace.verdict} reason=${noTrace.reason}`)
+
+    // ── A8: the WINDOW half of the seal is live. Every one of these is a SHAPE
+    // that used to pass: a spread copy of the record, a copy of the envelope, a
+    // JSON round-trip, and a different instrument closing the window.
+    const windowCopies = [
+      ['spread-window', { ...firstWindow }],
+      ['structuredClone-window', structuredClone(firstWindow)],
+      ['object-create-window', Object.create(firstWindow)],
+    ]
+    for (const [tag, windowCopy] of windowCopies) {
+      const judgement = await judgeObservationWindow({
+        contract: firstContract,
+        opened: firstOpened,
+        closed: Object.freeze({ ok: true, window: windowCopy, rows: firstClosed.rows }),
+        events: traceEvents,
+        expectDeny: true,
+      })
+      assert.equal(judgement.verdict, 'INSTRUMENT_ERROR', `A8 ${tag}: a copied window record is not provenance`)
+      assert.equal(judgement.reason, 'WITNESS_NOT_SEALED', `A8 ${tag}: refused as WITNESS_NOT_SEALED (got ${String(judgement.reason)})`)
+      const line = `M7B1-${tag.toUpperCase()} verdict=${judgement.verdict} reason=${judgement.reason}`
+      t.diagnostic(line)
+      report.mutations.push(line)
+    }
+    // A copied ENVELOPE (all fields present, wrong identity) is refused too.
+    const spreadEnvelope = await judgeObservationWindow({
+      contract: firstContract,
+      opened: Object.freeze({ ...firstOpened }),
+      closed: firstClosed,
+      events: traceEvents,
+      expectDeny: true,
+    })
+    assert.equal(spreadEnvelope.verdict, 'INSTRUMENT_ERROR', 'A8: a copied opened envelope is not an armed window')
+    assert.equal(spreadEnvelope.reason, 'WITNESS_NOT_SEALED')
+    t.diagnostic(`M7B1-SPREAD-ENVELOPE verdict=${spreadEnvelope.verdict} reason=${spreadEnvelope.reason}`)
+    report.mutations.push(`M7B1-SPREAD-ENVELOPE verdict=${spreadEnvelope.verdict} reason=${spreadEnvelope.reason}`)
+    // A foreign instrument cannot close a window this module armed.
+    const foreignClose = await closeObservationWindow({ opened: firstOpened, witness: { observe: async () => firstClosed.rows } })
+    assert.equal(foreignClose.ok, false, 'A8: a foreign instrument cannot close this window')
+    assert.equal(foreignClose.reason, 'WITNESS_NOT_SEALED')
+    t.diagnostic(`M7B1-FOREIGN-CLOSE ok=false reason=${foreignClose.reason}`)
+    report.mutations.push(`M7B1-FOREIGN-CLOSE ok=false reason=${foreignClose.reason}`)
+    // ... and an already-closed window cannot be closed twice into a second verdict.
+    const reClose = await closeObservationWindow({ opened: firstOpened })
+    assert.equal(reClose.ok, false, 'A8: one instrument, one window: a closed window cannot be closed again')
+    assert.equal(reClose.reason, 'WITNESS_NOT_SEALED')
+    t.diagnostic(`M7B1-RECLOSE ok=false reason=${reClose.reason}`)
+    report.mutations.push(`M7B1-RECLOSE ok=false reason=${reClose.reason}`)
+
+    // ── A9: LIFECYCLE. Judging the armed-but-unclosed window (the `opened`
+    // envelope in place of a `closed` one) is never SATISFIED, and the phase/
+    // closedAt rule itself is pinned by checkWindowBinding (test 1) so it holds
+    // even for a record this module would never produce.
+    const unclosed = await judgeObservationWindow({ contract: firstContract, opened: firstOpened, closed: firstOpened, events: traceEvents, expectDeny: true })
+    assert.equal(unclosed.verdict, 'INSTRUMENT_ERROR', 'A9: an unclosed window can never be SATISFIED')
+    t.diagnostic(`M7B1-UNCLOSED verdict=${unclosed.verdict} reason=${unclosed.reason}`)
+    report.mutations.push(`M7B1-UNCLOSED verdict=${unclosed.verdict} reason=${unclosed.reason}`)
+    const preRecord = checkWindowBinding({
+      contract: firstContract,
+      window: { ...firstWindow, phase: 'pre', closedAt: null },
+      events: traceEvents,
+    })
+    assert.equal(preRecord.reason, 'WINDOW_NOT_CLOSED', 'A9: a pre record is refused as WINDOW_NOT_CLOSED')
+    t.diagnostic(`M7B1-WINDOW-NOT-CLOSED reason=${preRecord.reason} detail=${clip(preRecord.detail, 160)}`)
+    report.mutations.push(`M7B1-WINDOW-NOT-CLOSED reason=${preRecord.reason}`)
 
     // The script must be fully consumed: a turn nobody took is drift, not a pass.
     run.driver.assertComplete()

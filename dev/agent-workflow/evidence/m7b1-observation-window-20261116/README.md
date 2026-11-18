@@ -58,13 +58,38 @@ path and forbids the sibling path; the verdict reports the sibling alone and cla
 write as authorized. A directory-shaped watch (or one that treats "the harness uses this directory" as
 its own business) cannot produce that pair of answers.
 
+## 2b. Review round 1: three holes closed at the MODULE, and M1
+
+Review of draft #786 found the seal only half-live (rows sealed, window record not; the
+`opened`/`closed` envelopes were caller-supplied), identity only pinned by the test, and the
+lifecycle unenforced. The fixes are in `m7b1-observation-contract.mjs` (plus one oracle field),
+and each is proven by MUTATING the caller side and getting a named refusal:
+
+| hole | fix (where) | mutation, and the refusal the module returned |
+| --- | --- | --- |
+| **B1** identity not bound | `checkWindowBinding` compares window↔contract on world/agent/execution, and the contract's `execution_id` must appear on a `tool/call`/`tool/result` event (the oracle now also takes `requiredExecutionId` and faults when the trace never carried it) | `M7B1-MUTATED-EXECUTION_ID verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="m7b1-2" but the contract declares "exec-mutated-by-the-caller"…` · `M7B1-MUTATED-AGENT_ID … reason=IDENTITY_MISMATCH …` · `M7B1-NO-TRACE verdict=INSTRUMENT_ERROR reason=EXECUTION_ID_NOT_IN_TRACE detail=… no tool/call or tool/result event … carries it` |
+| **B2** window seal not checked | `OPENED`/`CLOSED` private `WeakSet`s keyed on OBJECT IDENTITY, `isSealedObservationWindow` now consulted by `close` and `judge`, `closeObservationWindow` refuses anything it did not arm | `M7B1-SPREAD-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED` · `M7B1-OBJECT-CREATE-WINDOW … WITNESS_NOT_SEALED` · `M7B1-STRUCTUREDCLONE-WINDOW … WITNESS_NOT_SEALED` · `M7B1-SPREAD-ENVELOPE … WITNESS_NOT_SEALED` · `M7B1-FOREIGN-CLOSE ok=false reason=WITNESS_NOT_SEALED` · `M7B1-RECLOSE ok=false reason=WITNESS_NOT_SEALED` |
+| **B3** lifecycle unenforced | `checkWindowBinding` requires `phase==='post'` **and** a non-blank `closedAt` before any judgement | `M7B1-UNCLOSED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED` (judging the armed window) · `M7B1-WINDOW-NOT-CLOSED reason=WINDOW_NOT_CLOSED detail=window win-… is phase=pre closedAt=null; a verdict needs the POST snapshot…` |
+| **M1** `/` bypassed the domain refusal | `/` is refused as a watch root, so no scope can establish a `filesystem-domain` claim; every such claim is `SCOPE_PARTIAL_FOR_DOMAIN` | the two `scope:['/']` cases (domain claim **and** `authorizedPaths:['/etc/passwd']`) are now refused at declare time — the `ACCEPTED` shape is gone |
+
+`checkWindowBinding` is a pure function, so the identity/lifecycle/trace rules are proven on EVERY
+run, host or no host (`host-absent.txt` shows the same refusal lines with the tree empty). The row
+seal is proven separately in `witnessed` mode through the oracle (`M7B1-ROW-SEAL verdict=
+INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED`), and a SECOND module instance's window record is
+refused by this instance (its private registry is a different one) — so the seal is identity, not
+shape, at both layers.
+
+**Unchanged and re-verified:** A1–A3 controls and the verbatim `FS_SANDBOX_DENIED` trace text, the
+old testkit suites (46/46), host-absent `INSTRUMENT_ERROR` + exit 1 with the flag, and the
+`ci-census` leg grading in `eb3-ci-required`.
+
 ## 3. The two runs
 
 | run | shape | result | wall |
 | --- | --- | --- | --- |
-| host PRESENT | pinned host + pinned assets, `M7B1_REQUIRE_PINNED_HOST=1` | **7/7 pass** (6 fail-closed + the real-host test), arms A1–A6 all as pre-registered | **80.2 s** (`bootMs=77827 totalMs=79964`), file `host-present.txt` |
-| host ABSENT, flag unset | host tree bind-mounted EMPTY (`unshare -m -r`, 0 entries) | exit 0: **6 pass / 1 skipped**, and the graded refusal line `M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT` | ~3 s, file `host-absent.txt` |
-| host ABSENT, flag set | same empty tree, `M7B1_REQUIRE_PINNED_HOST=1` | **exit 1**, `M7B1-HOST-ABSENT: …/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1` | ~3 s, file `host-absent.txt` |
+| host PRESENT | pinned host + pinned assets, `M7B1_REQUIRE_PINNED_HOST=1` | **10/10 pass** (8 fail-closed/binding + the real-host test), arms A1–A9 all as pre-registered | **75.8 s** (`bootMs` ≈ 73 s), file `host-present.txt` |
+| host ABSENT, flag unset | host tree bind-mounted EMPTY (`unshare -m -r`, 0 entries) | exit 0: **9 pass / 1 skipped**, and the graded refusal line `M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT` | ~1 s, file `host-absent.txt` |
+| host ABSENT, flag set | same empty tree, `M7B1_REQUIRE_PINNED_HOST=1` | **exit 1**, `M7B1-HOST-ABSENT: …/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1` | ~1 s, file `host-absent.txt` |
 
 So there are exactly two honest answers to a missing host — a *declared* `INSTRUMENT_ERROR` or a hard
 red — and no third path on which the window goes green.

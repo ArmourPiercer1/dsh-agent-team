@@ -53,6 +53,38 @@ The A3 arm is the one a directory-shaped watch cannot pass: the harness writes i
 the window**, in the same directory, and the tool writes a sibling. One directory, two rulings, both
 produced per-entry.
 
+## 3b. Review round 1 (three blocking holes, one medium) — closed in the module
+
+- **B1 identity.** `checkWindowBinding` compares the window's `world_id`/`agent_id`/`execution_id`
+  with the contract's, and the contract's `execution_id` must be carried by a `tool/call` or
+  `tool/result` event in the host's durable trace (the oracle gained `requiredExecutionId` and faults
+  when no event carries it). A caller-mutated id is refused by the module:
+  `M7B1-MUTATED-EXECUTION_ID verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH`,
+  `M7B1-MUTATED-AGENT_ID … IDENTITY_MISMATCH`, `M7B1-NO-TRACE … EXECUTION_ID_NOT_IN_TRACE`.
+- **B2 window seal.** `OPENED`/`CLOSED` private `WeakSet`s keyed on object identity; `close` and
+  `judge` consult `isSealedObservationWindow`; `closeObservationWindow` refuses an envelope or an
+  instrument it did not produce. Spread / `Object.create` / `structuredClone` copies of the record,
+  copies of the envelope, a foreign instrument closing the window, and a second close are all
+  `WITNESS_NOT_SEALED`. A second module instance's record is refused by this instance.
+- **B3 lifecycle.** `phase === 'post'` with a non-blank `closedAt` is required before judgement:
+  judging the armed window is `INSTRUMENT_ERROR`, and the rule itself answers `WINDOW_NOT_CLOSED`.
+- **M1 `/`.** `/` is refused as a watch root, so no scope can establish a `filesystem-domain` claim;
+  every domain claim is `SCOPE_PARTIAL_FOR_DOMAIN` — the `scope:['/'] … ACCEPTED` shape is gone.
+
+`checkWindowBinding` is pure, so these rules are re-proven on every run including with the host tree
+EMPTY (`host-absent.txt`). Host present: **10/10 in 75.8 s**.
+
+**On the reviewer's parity nit.** Converting the three census steps to `suites[]` + `--leg` was
+measured and REVERTED: `--parity --old-ref e5bf05670` then reports **problems=3** (`UNCONVERTED step
+"B4/1 …" / "B4/2 …" / "M7-B1 …" dispatches … but had no node --test argv on the old side`), because a
+brand-new dispatch step has no old-side argv at a fixed base — the trap this repo already documented
+in the B3 leg's `why` ("a new dispatch step has no `node --test` argv at the parity base
+(`e5bf05670`) … `--parity` could not stay at problems=0"). Nothing in `census-runtime.yml` is a
+dispatch step: every census leg (M7-A included) is a graded `cmd`+`check[]` argv, which
+`eb3-ci-required` compares token-for-token, so the workflow and the manifest cannot drift. Changing
+that shape for three legs requires a ruling on either the parity base ref or the UNCONVERTED rule
+(a rename is already caught by the other branch of the same check), which is above this task.
+
 ## 4. Host absent — two answers, no green path
 
 | shape | result |
