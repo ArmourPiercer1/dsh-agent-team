@@ -427,11 +427,10 @@ $ git diff --check
 # whitespace the review of #788 named:
 $ git diff --check b7276ffa...ce642dae2
 dev/agent-workflow/evidence/residual-fixes-20261116/f2-pd34-pin-depth1-after.txt:26: trailing whitespace.
-+  
++ <two spaces>            # the whitespace the gate caught, shown escaped
 dev/agent-workflow/evidence/residual-fixes-20261116/f2-pd34-pin-depth1-after.txt:28: trailing whitespace.
-+  
++ <two spaces>            # the whitespace the gate caught, shown escaped
 dev/agent-workflow/evidence/residual-fixes-20261116/gates.txt:418: new blank line at EOF.
   -> exit 2
 
 # commits in the range: 9
-
