@@ -51,12 +51,46 @@
  *
  * @module @dsh-agent-team/testkit/effect-witness
  */
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, lstatSync, readdirSync, readFileSync, readlinkSync, realpathSync } from 'node:fs'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 
 /** The effect domains a contract can be graded over. */
 export type EffectDomain = 'filesystem' | 'process' | 'network'
+
+/** Which half of the pre/post pair a window record describes (M7-B1). */
+export type ObservationWindowPhase = 'pre' | 'post'
+
+/**
+ * The identity an observation window is bound to (M7-B1). The World Factory
+ * declares it; the instrument records it; the oracle refuses a row from a
+ * different window.
+ */
+export interface ObservationWindowDescriptor {
+  /** World the observation belongs to (`TestWorldFactory` world id). */
+  world_id: string
+  /** Agent whose execution is being observed (the real session id). */
+  agent_id: string
+  /** The execution under grade (the tool call id). */
+  execution_id: string
+  /** `pre` when armed (baseline), `post` once closed (the delta). */
+  phase: ObservationWindowPhase
+}
+
+/**
+ * A window record THIS MODULE produced. Frozen and branded in a private
+ * `WeakSet`, so a caller cannot mint one with the right shape.
+ */
+export interface SealedObservationWindow extends ObservationWindowDescriptor {
+  window_id: string
+  watchedPaths: string[]
+  /** ISO timestamp the baseline snapshot was taken. */
+  armedAt: string
+  /** ISO timestamp the post snapshot was taken, or null while armed. */
+  closedAt: string | null
+  /** The module that produced this record (lifecycle provenance). */
+  producedBy: string
+}
 
 /** One raw observation of one effect domain. */
 export interface WitnessObservation {
@@ -82,6 +116,12 @@ export interface WitnessObservation {
    * against the contract's authorized paths — evidence strings are never parsed.
    */
   observedPaths?: string[]
+  /**
+   * The window this row belongs to (M7-B1). Set by the instrument when it was
+   * created with a `window` descriptor; absent on pre-M7-B1 instruments. The
+   * oracle refuses a row whose window is not the contract's window.
+   */
+  window_id?: string
 }
 
 /** A read-only, independent observation channel. */
@@ -120,6 +160,120 @@ const INSTRUMENTS = new WeakSet<object>()
  * carry a seal: `Object.create(sealedRow)` is not a key here.
  */
 const ROWS = new WeakMap<object, object>()
+
+/**
+ * The window records this module BUILT (M7-B1), and the window each instrument
+ * is bound to. Same law as `ROWS`: the brand is object identity in a private
+ * `WeakSet`, so a caller cannot mint a window record with the right shape.
+ */
+const WINDOWS = new WeakSet<object>()
+
+/** instrument -> the window record it is (currently) bound to. */
+const INSTRUMENT_WINDOW = new WeakMap<object, SealedObservationWindow>()
+
+/** The provenance string every window record carries. */
+const WINDOW_PRODUCER = '@dsh-agent-team/testkit/effect-witness@1'
+
+/** The two phases a window can be in. */
+const WINDOW_PHASES: readonly ObservationWindowPhase[] = ['pre', 'post']
+
+/**
+ * Build (and brand) the window record for one instrument.
+ *
+ * Identity is REQUIRED, never invented: a window with a blank world/agent/
+ * execution id would be a record that cannot say what it observed, which is the
+ * same false green as an unsealed row.
+ */
+function buildWindow(descriptor: ObservationWindowDescriptor, watchedPaths: string[]): SealedObservationWindow {
+  if (typeof descriptor !== 'object' || descriptor === null) {
+    throw new TypeError('createFsWitness: `window` must be an object {world_id, agent_id, execution_id, phase}')
+  }
+  for (const field of ['world_id', 'agent_id', 'execution_id'] as const) {
+    const value = descriptor[field]
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new TypeError(
+        `createFsWitness: window.${field} must be a non-empty string — an observation window that cannot name the identity it is bound to cannot be graded`,
+      )
+    }
+  }
+  if (!WINDOW_PHASES.includes(descriptor.phase)) {
+    throw new TypeError(`createFsWitness: window.phase must be "pre" or "post" (got ${JSON.stringify(String(descriptor.phase))})`)
+  }
+  const frozenPaths = Object.freeze([...watchedPaths])
+  const record: SealedObservationWindow = Object.freeze({
+    window_id: `win-${randomUUID()}`,
+    world_id: descriptor.world_id,
+    agent_id: descriptor.agent_id,
+    execution_id: descriptor.execution_id,
+    phase: descriptor.phase,
+    watchedPaths: frozenPaths,
+    armedAt: new Date().toISOString(),
+    closedAt: null,
+    producedBy: WINDOW_PRODUCER,
+  })
+  WINDOWS.add(record)
+  return record
+}
+
+/**
+ * Whether `value` is a window record THIS module produced (frozen, branded).
+ * Never throws: a hostile getter answers `false`.
+ */
+export function isSealedObservationWindow(value: unknown): boolean {
+  try {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+    if (!WINDOWS.has(value)) return false
+    if (!Object.isFrozen(value)) return false
+    const record = value as SealedObservationWindow
+    if (!Array.isArray(record.watchedPaths) || !Object.isFrozen(record.watchedPaths)) return false
+    if (typeof record.window_id !== 'string' || record.window_id.trim() === '') return false
+    return WINDOW_PHASES.includes(record.phase)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The window an instrument is bound to, or `null` when it has none.
+ *
+ * `null` is the honest answer for (a) an instrument created without a window
+ * descriptor (the M7-A / pre-M7-B1 shape) and (b) any object this module did
+ * not create — the caller may then not treat the observation as windowed.
+ */
+export function observationWindowOf(witness: unknown): SealedObservationWindow | null {
+  try {
+    if (typeof witness !== 'object' || witness === null || !INSTRUMENTS.has(witness)) return null
+    return INSTRUMENT_WINDOW.get(witness) ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Close the window of a windowed instrument: one instrument, one window.
+ *
+ * Returns the POST record (the same `window_id`, `phase: 'post'`, `closedAt`
+ * set) and rebinds the instrument to it, so a later `observationWindowOf` reads
+ * the closed record rather than the armed one. Rows already produced carry the
+ * `window_id`, which is unchanged across the pair — that is what lets the oracle
+ * grade a pre/post pair as ONE window.
+ */
+export function closeObservationWindow(witness: unknown): SealedObservationWindow {
+  if (typeof witness !== 'object' || witness === null || !INSTRUMENTS.has(witness)) {
+    throw new TypeError('closeObservationWindow: the object is not a witness instrument created by this module')
+  }
+  const current = INSTRUMENT_WINDOW.get(witness)
+  if (current === undefined) {
+    throw new TypeError('closeObservationWindow: this instrument was created without a `window` descriptor; there is no window to close')
+  }
+  if (current.closedAt !== null) {
+    throw new TypeError(`closeObservationWindow: window ${current.window_id} is already closed at ${current.closedAt}; one instrument, one window`)
+  }
+  const closed: SealedObservationWindow = Object.freeze({ ...current, phase: 'post' as const, closedAt: new Date().toISOString() })
+  WINDOWS.add(closed)
+  INSTRUMENT_WINDOW.set(witness, closed)
+  return closed
+}
 
 /** Whether `path` is `root` or lies inside it (both absolute, resolved). */
 function coveredBy(path: string, root: string): boolean {
@@ -289,6 +443,7 @@ export function createFsWitness(opts: {
   watch?: string[]
   exclude?: string[]
   marker?: string
+  window?: ObservationWindowDescriptor
 }): EffectWitness {
   const requested = [opts.outside, ...(opts.watch ?? [])]
     .filter((path): path is string => typeof path === 'string' && path.length > 0)
@@ -326,6 +481,7 @@ export function createFsWitness(opts: {
   const baseline = snapshot(realRoots, exclude)
   const absentAtBaseline = baseline.size === 0 && !realRoots.some((root) => existsSync(root))
 
+  const windowRecord = opts.window === undefined ? null : buildWindow(opts.window, realRoots)
   const instrument: EffectWitness = {
     blindDomains: ['process', 'network'],
     watchedPaths: Object.freeze([...realRoots]),
@@ -344,6 +500,7 @@ export function createFsWitness(opts: {
           ...(changed.length > EVIDENCE_CAP || changed.length > OBSERVED_CAP ? { truncated: true } : {}),
           watchedPaths: [...realRoots],
           observedPaths,
+          ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
         },
         {
           domain: 'process',
@@ -352,6 +509,7 @@ export function createFsWitness(opts: {
           evidence: ['not instrumented by the filesystem witness'],
           watchedPaths: [...realRoots],
           observedPaths: [],
+          ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
         },
         {
           domain: 'network',
@@ -360,11 +518,13 @@ export function createFsWitness(opts: {
           evidence: ['not instrumented by the filesystem witness'],
           watchedPaths: [...realRoots],
           observedPaths: [],
+          ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
         },
       ], instrument)
     },
   }
   INSTRUMENTS.add(instrument)
+  if (windowRecord !== null) INSTRUMENT_WINDOW.set(instrument, windowRecord)
   return instrument
 }
 

@@ -127,6 +127,18 @@ export interface OracleInput {
    * still names the blind domains and the point-in-time window.
    */
   witnessProvenance?: 'declared' | 'witnessed'
+  /**
+   * The ONE observation window every witness row must belong to (M7-B1).
+   *
+   * A witness instrument created with a `window` descriptor stamps its rows with
+   * `window_id`; that id is what ties a row to the World/Agent/Execution the
+   * World Factory declared. When this field is present, a row that (a) carries no
+   * `window_id`, (b) carries a different one, or (c) claims an id no instrument
+   * produced is an INSTRUMENT_ERROR — a verdict may not be corroborated by an
+   * observation taken in another window (before the tool ran, or for another
+   * agent). Absent, the pre-M7-B1 behaviour is unchanged.
+   */
+  requiredObservationWindowId?: string
 }
 
 /** The oracle's answer, with the reasons and the observation limits. */
@@ -191,6 +203,8 @@ interface RowView {
   /** Whether the row carried an `observedPaths` array at all. */
   placesEffects: boolean
   observedPaths: string[]
+  /** The window the row belongs to, or `null` when the row declares none. */
+  window_id: string | null
   /** The caller's original object, used only for the provenance check. */
   raw: unknown
 }
@@ -229,6 +243,14 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
     }
     const watchedPaths = readPaths('watchedPaths')
     const observedPaths = readPaths('observedPaths')
+    let windowId: string | null = null
+    if (value.window_id !== undefined) {
+      if (typeof value.window_id !== 'string' || value.window_id.trim() === '') {
+        faults.push(`${at}.window_id must be a non-empty string when present`)
+      } else {
+        windowId = value.window_id
+      }
+    }
     if (faults.length > 0) return { fault: faults.join('; ') }
     return {
       row: {
@@ -238,6 +260,7 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
         watchedPaths: watchedPaths ?? [],
         placesEffects: observedPaths !== undefined,
         observedPaths: observedPaths ?? [],
+        window_id: windowId,
         raw: value,
       },
     }
@@ -302,6 +325,10 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
   if (input.expectDeny !== undefined && typeof input.expectDeny !== 'boolean') {
     faults.push('expectDeny must be a boolean')
   }
+  if (input.requiredObservationWindowId !== undefined &&
+      (typeof input.requiredObservationWindowId !== 'string' || input.requiredObservationWindowId.trim() === '')) {
+    faults.push('requiredObservationWindowId must be a non-empty string when present')
+  }
   if (input.witnessProvenance !== undefined && input.witnessProvenance !== 'declared' && input.witnessProvenance !== 'witnessed') {
     faults.push(`witnessProvenance must be "declared" or "witnessed" (got ${JSON.stringify(String(input.witnessProvenance))})`)
   }
@@ -333,6 +360,22 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
     if (unsealed.length > 0) {
       faults.push(
         `witnessProvenance is "witnessed" but witness row(s) ${unsealed.join(', ')} were not produced by a testkit witness instrument (no provenance seal); a hand-built or derived observation cannot corroborate a verdict`,
+      )
+    }
+  }
+
+  // Window binding (M7-B1): an observation taken in another window cannot
+  // corroborate this contract. Checked for BOTH provenance modes, because a
+  // window claim is a statement about WHICH observation this is, independent of
+  // whether the row carries the module seal.
+  const requiredWindow = typeof input.requiredObservationWindowId === 'string' ? input.requiredObservationWindowId : null
+  if (requiredWindow !== null && rows.length > 0) {
+    const foreign = rows.filter((row) => row.window_id !== requiredWindow)
+    if (foreign.length > 0) {
+      faults.push(
+        `requiredObservationWindowId is ${JSON.stringify(requiredWindow)} but witness row(s) ` +
+          `${foreign.map((row) => (row.window_id === null ? 'no window_id' : row.window_id)).join(', ')} ` +
+          'were not taken in it; an observation from another window (another agent/execution, or the pre-tool baseline) cannot corroborate this contract',
       )
     }
   }

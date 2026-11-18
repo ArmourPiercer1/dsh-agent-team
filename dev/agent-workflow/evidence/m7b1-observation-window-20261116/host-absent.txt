@@ -1,0 +1,55 @@
+host-tree-entries=0  (bind-mounted EMPTY = the CI shape where the runtime checkout never arrives)
+
+=== RUN A: M7B1_REQUIRE_PINNED_HOST unset — grade the fail-closed half, DECLARE the absence
+RUN-A-EXIT=0
+M7B1-HOST-REFUSED host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use reason=apps/cli/lib/bin.js is absent (built runtime checkout missing) action=provision per docs/TEST_METHODS.md §1/§2 or set M7B1_REQUIRE_PINNED_HOST=1 to fail instead
+ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use
+ℹ tests 7
+ℹ pass 6
+ℹ fail 0
+ℹ skipped 1
+
+=== RUN B: M7B1_REQUIRE_PINNED_HOST=1 — absence is a HARD RED
+RUN-B-EXIT=1
+ℹ tests 7
+ℹ pass 6
+ℹ fail 1
+ℹ skipped 0
+✖ failing tests:
+  AssertionError [ERR_ASSERTION]: M7B1-HOST-ABSENT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1
+
+=== full stdout of B (the red, verbatim):
+M7B1-HOST-REFUSED host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use reason=apps/cli/lib/bin.js is absent (built runtime checkout missing) action=provision per docs/TEST_METHODS.md §1/§2 or set M7B1_REQUIRE_PINNED_HOST=1 to fail instead
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (0.970978ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (19.726597ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (13.913826ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.813824ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.262277ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (39.636033ms)
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.273083ms)
+ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.70096
+
+✖ failing tests:
+
+test at tests/world-factory/m7b1-observation-window.test.mjs:207:1
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.273083ms)
+  AssertionError [ERR_ASSERTION]: M7B1-HOST-ABSENT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/world-factory/m7b1-observation-window.test.mjs:222:30)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }

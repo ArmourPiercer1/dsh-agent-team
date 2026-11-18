@@ -351,10 +351,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
  * @param {string} args.tmpDir - the World's TMPDIR
  * @param {unknown} args.script - an `agent-script/1` document
  * @param {number} [args.bootTimeoutMs]
+ * @param {string} [args.callIdPrefix] - synthesized call-id prefix. M7-A uses
+ *   `m7a`; M7-B1 passes its own so the contract can BIND the execution id before
+ *   the turn runs and then assert the Host actually used it.
  */
-export async function startRealRun({ world, tmpDir, script, bootTimeoutMs = 180_000, signal = null }) {
+export async function startRealRun({ world, tmpDir, script, bootTimeoutMs = 180_000, signal = null, callIdPrefix = 'm7a' }) {
   const { createWireScriptDriver } = await wire()
-  const driver = createWireScriptDriver(script, { callIdPrefix: 'm7a' })
+  const driver = createWireScriptDriver(script, { callIdPrefix })
   scrubProviderEnv()
   // The Host's temp area becomes world-owned: a temp-area write can then only
   // land where this slice can see it (and the World deletes it at teardown).
