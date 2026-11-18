@@ -48,14 +48,21 @@
  *   CI_LAYER_LEG_ENV_MISSING    (B3, 2026-11-16) a leg declares `env` and the step that executes
  *                               it does not carry the SAME value — the declaration-grades-the-step
  *                               law that `cmd`/`check[]` already had, extended to env
- *   CI_HOST_REFUSAL_UNGUARDED   (B3, 2026-11-16) a `hostFree` layer's leg lists a suite that can
- *                               turn an ABSENT pinned host into a declared NOT_RUN (its source names
- *                               `A5SF_REQUIRE_PINNED_HOST`), and the leg neither sets that env to `1`
- *                               nor declares the reviewed exception `hostRefusal: 'declared-not-run'`.
- *                               Without it the leg stays green with `verdict=NOT_RUN, skipped=15`
- *                               when the host is gone — measured on the deferred B4 set. It is the
- *                               static half of the hidden-host control, so the trap cannot recur
- *                               silently in a lane that will never provision the host.
+ *   CI_HOST_REFUSAL_UNGUARDED   (B3, 2026-11-16; generalised 2026-11-18) a `hostFree` layer's leg
+ *                               lists a suite that can turn an ABSENT pinned host into a declared
+ *                               NOT_RUN (its source names one of `HOST_REFUSAL_MARKERS`), and the leg
+ *                               neither sets THAT marker to `1` nor declares a reviewed exception
+ *                               naming that exact suite. Without it the leg stays green with
+ *                               `verdict=NOT_RUN, skipped=15` when the host is gone — measured on the
+ *                               deferred B4 set. It is the static half of the hidden-host control, so
+ *                               the trap cannot recur silently in a lane that will never provision
+ *                               the host.
+ *   CI_HOST_REFUSAL_WAIVER_UNSCOPED / _INVALID / _UNKNOWN_SUITE   (2026-11-18) the exception is
+ *                               per-suite and must be earned: `hostRefusal: {mode, suites[], why}`.
+ *                               The old leg-wide string spelling is refused (an exception that
+ *                               covers suites nobody named is a waiver of the whole leg), a suite
+ *                               named by the waiver must actually be in the leg, and a suite added
+ *                               to the excepted leg without its own entry is a finding again.
  *   CI_SUMMARY_NOT_ALWAYS       the summary job lacks `if: always()` — when a layer fails a
  *                               summary without always() is SKIPPED, and skipped is not red
  *   CI_SUMMARY_NEEDS_INCOMPLETE the summary does not call + need every layer — that layer can
@@ -593,14 +600,85 @@ export const HOST_REFUSAL_MARKER = 'A5SF_REQUIRE_PINNED_HOST'
 export const HOST_REFUSAL_DECLARED = 'declared-not-run'
 
 /**
- * A `hostFree` layer's leg must not be able to pass on an ABSENT pinned host. Two ways to
- * satisfy the law, and a finding when a leg takes neither:
+ * THE EXCEPTION IS PER-SUITE, AND IT MUST BE EARNED (2026-11-18).
  *
- *   1. `env.A5SF_REQUIRE_PINNED_HOST === '1'` — absence is a red (the leg says so, and
- *      `checkStepEnvDeclaration` proves the step carries it);
- *   2. `hostRefusal === 'declared-not-run'` — a named, reviewed exception for a lane that
- *      deliberately provisions no host (today exactly one: the FS-face layer-B leg, whose
- *      suite reports `A5SF-FS-CONTRACT-HOST-REFUSED` with `pass 0` and 9 skips).
+ * The first spelling was `hostRefusal: 'declared-not-run'` on the LEG. It was scoped to nothing:
+ * once the leg carried it, ANY suite added to that leg — including one that can genuinely turn an
+ * absent host into a green `verdict=NOT_RUN` — inherited the waiver, and only `test-catalog`
+ * (a different gate) noticed the file had been collected. An exception that does not name what it
+ * covers is a waiver of the whole leg.
+ *
+ * The declared shape is therefore:
+ *
+ *   "hostRefusal": {
+ *     "mode":   "declared-not-run",
+ *     "suites": ["tests/world-factory/<the one suite>"],
+ *     "why":    "<why THIS suite's absence is a declared NOT_RUN rather than a red>"
+ *   }
+ *
+ * and every part of it is graded:
+ *   CI_HOST_REFUSAL_WAIVER_UNSCOPED   the legacy string form (a waiver of the whole leg)
+ *   CI_HOST_REFUSAL_WAIVER_INVALID    not an object / wrong `mode` / empty `suites[]` / no `why`
+ *   CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE  names a suite the leg does not list (a waiver that
+ *                                     drifted off its subject cannot be reviewed)
+ *
+ * @returns {{suites: Set<string>, problems: object[]}}
+ */
+export function hostRefusalWaiver(leg) {
+  const problems = []
+  const owner = { layer: leg?.__layerId, leg: leg?.id }
+  const push = (code, detail) => problems.push({ code, detail, ...(owner.leg === undefined ? {} : { leg: owner.leg }) })
+  const raw = leg?.hostRefusal
+  if (raw === undefined) return { suites: new Set(), problems }
+  if (typeof raw === 'string') {
+    push(
+      'CI_HOST_REFUSAL_WAIVER_UNSCOPED',
+      `leg "${String(leg?.id)}" declares the legacy leg-wide hostRefusal ${JSON.stringify(raw)}. An exception that names no suite covers every suite added to the leg, so a refusal-capable suite can inherit it silently. Spell it as hostRefusal {"mode": "${HOST_REFUSAL_DECLARED}", "suites": [<exact paths>], "why": <reason>} (${MANIFEST_REL})`,
+    )
+    return { suites: new Set(), problems }
+  }
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+    push('CI_HOST_REFUSAL_WAIVER_INVALID', `leg "${String(leg?.id)}" hostRefusal must be an object {mode, suites[], why}, got ${JSON.stringify(raw)} (${MANIFEST_REL})`)
+    return { suites: new Set(), problems }
+  }
+  if (raw.mode !== HOST_REFUSAL_DECLARED) {
+    push('CI_HOST_REFUSAL_WAIVER_INVALID', `leg "${String(leg?.id)}" hostRefusal.mode=${JSON.stringify(raw.mode)} — the only reviewed exception is ${JSON.stringify(HOST_REFUSAL_DECLARED)} (${MANIFEST_REL})`)
+    return { suites: new Set(), problems }
+  }
+  const why = typeof raw.why === 'string' ? raw.why.trim() : ''
+  if (why === '') {
+    push('CI_HOST_REFUSAL_WAIVER_INVALID', `leg "${String(leg?.id)}" hostRefusal names no reason (hostRefusal.why is empty) — an unexplained exception is the waiver this rule exists to refuse (${MANIFEST_REL})`)
+  }
+  const listed = Array.isArray(raw.suites) ? raw.suites : []
+  if (listed.length === 0) {
+    push('CI_HOST_REFUSAL_WAIVER_INVALID', `leg "${String(leg?.id)}" hostRefusal.suites is empty — a waiver with no subject is the leg-wide waiver again (${MANIFEST_REL})`)
+    return { suites: new Set(), problems }
+  }
+  const inLeg = new Set((Array.isArray(leg?.suites) ? leg.suites : []).map(String))
+  const suites = new Set()
+  for (const s of listed) {
+    if (typeof s !== 'string' || s.trim() === '') {
+      push('CI_HOST_REFUSAL_WAIVER_INVALID', `leg "${String(leg?.id)}" hostRefusal.suites carries a blank entry (${JSON.stringify(s)}) (${MANIFEST_REL})`)
+      continue
+    }
+    if (!inLeg.has(s)) {
+      push('CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE', `leg "${String(leg?.id)}" hostRefusal names ${s}, which the leg does not list — the waiver has drifted off its subject (${MANIFEST_REL})`)
+      continue
+    }
+    suites.add(s)
+  }
+  return { suites, problems }
+}
+
+/**
+ * A `hostFree` layer's leg must not be able to pass on an ABSENT pinned host. Two ways to
+ * satisfy the law, and a finding when a leg takes neither — PER SUITE, since 2026-11-18:
+ *
+ *   1. `env.<marker> === '1'` for every marker the suite names — absence is a red (the leg says
+ *      so, and `checkStepEnvDeclaration` proves the step carries it);
+ *   2. a `hostRefusal` waiver that NAMES this exact suite — a reviewed exception for a lane that
+ *      deliberately provisions no host (today exactly one: the FS-face layer-B leg, whose suite
+ *      reports `A5SF-FS-CONTRACT-HOST-REFUSED` with `pass 0` and 9 skips).
  *
  * The measured defect this closes: `a5sf-pty-contract` on a genuinely absent tree exits 0
  * with `A5SF-PTY-CONTRACT-HOST-REFUSED … skipped=15 cases=15 verdict=NOT_RUN`. A leg that
@@ -625,19 +703,22 @@ export function checkHostRefusalGuard({ root = ROOT, manifest = loadManifest(roo
   for (const layer of manifest.layers ?? []) {
     if (layer.hostFree !== true) continue
     for (const leg of layer.legs ?? []) {
-      if (leg.env?.[HOST_REFUSAL_MARKER] === '1') continue
-      if (leg.hostRefusal === HOST_REFUSAL_DECLARED) continue
+      const waiver = hostRefusalWaiver({ ...leg, __layerId: layer.id })
+      findings.push(...waiver.problems.map((p) => ({ ...p, layer: layer.id })))
       for (const suite of Array.isArray(leg.suites) ? leg.suites : []) {
         const text = read(String(suite))
         if (text === null) continue // a nonexistent suite is CI_SUITE_ABSENT / DISPATCH_SUITE_UNTRACKED elsewhere
         if (!text.includes(HOST_REFUSAL_MARKER)) continue
+        if (leg.env?.[HOST_REFUSAL_MARKER] === '1') continue
+        // The exception must NAME this suite. Being listed in the leg is not a declaration.
+        if (waiver.suites.has(String(suite))) continue
         findings.push({
           code: 'CI_HOST_REFUSAL_UNGUARDED',
           detail:
             `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which can turn an ABSENT pinned host into ` +
             `\`verdict=NOT_RUN\` with skips (it consults ${HOST_REFUSAL_MARKER}). Set env.${HOST_REFUSAL_MARKER}="1" on the leg ` +
-            `(and on its step) so absence is a red, or declare hostRefusal="${HOST_REFUSAL_DECLARED}" with the reason if this lane ` +
-            `deliberately provisions no host (${MANIFEST_REL})`,
+            `(and on its step) so absence is a red, or name THIS suite in hostRefusal {mode: "${HOST_REFUSAL_DECLARED}", ` +
+            `suites: ["${suite}"], why: <reason>} if this lane deliberately provisions no host (${MANIFEST_REL})`,
           layer: layer.id,
           leg: leg.id,
           path: suite,

@@ -738,6 +738,70 @@ control('C10c host-free-leg-refuses-unguarded-refusal-suite', () => {
 })
 
 
+// ───────────── control 10d: the exception is PER-SUITE, and it must be earned
+/**
+ * The B3 exception was `hostRefusal: 'declared-not-run'` on the LEG `a5sf-fs-contract-layer-b`.
+ * It was scoped to nothing: adding any other suite to that leg inherited the waiver, so a
+ * suite that can turn an absent pinned host into `verdict=NOT_RUN` would have stayed green —
+ * `eb3-ci-required` said `pass`, and only `test-catalog` (a different gate) saw the new file.
+ *
+ * This control plants exactly that defect and grades both directions:
+ *
+ *   a  honest manifest passes
+ *   b  a refusal-capable suite added to the excepted leg WITHOUT its own declaration => CI_HOST_REFUSAL_UNGUARDED
+ *   c  the legacy leg-wide string spelling => CI_HOST_REFUSAL_WAIVER_UNSCOPED (and the suite is still unguarded)
+ *   d  the SAME suite NAMED in the waiver => no finding (a declared suite passes)
+ *   e  a waiver naming a suite the leg does not list => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE
+ *   f  a waiver with no subject / no reason => CI_HOST_REFUSAL_WAIVER_INVALID
+ */
+control('C10d host-refusal-exception-is-per-suite', () => {
+  const { checkHostRefusalGuard, hostRefusalWaiver } = requireModule('scripts/eb3-ci-required.mjs')
+  if (typeof hostRefusalWaiver !== 'function') return { ok: false, detail: 'eb3-ci-required.mjs exports no hostRefusalWaiver — the exception shape is ungraded' }
+  const honest = checkHostRefusalGuard({ root: ROOT })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest manifest already fails: ${honest.findings.map((f) => f.code).join(',')}` }
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const LEG_ID = 'a5sf-fs-contract-layer-b'
+  const EXCEPTED = 'tests/world-factory/a5sf-fs-contract.test.mjs'
+  const PLANT = 'tests/world-factory/a5sf-pty-contract.test.mjs' // B3's measured NOT_RUN trap (skipped=15, exit 0)
+  if (!existsSync(join(ROOT, PLANT))) return { ok: false, detail: `${PLANT} is gone — the plant has no subject` }
+  const legOf = (m) => m.layers.find((l) => l.id === 'ci-integration').legs.find((l) => l.dispatch_id === LEG_ID)
+  const withLeg = (patch) => ({
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration'
+      ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, ...patch } : x)) }
+      : l)),
+  })
+  const codesFor = (m, path) => checkHostRefusalGuard({ root: ROOT, manifest: m }).findings.filter((f) => f.path === path).map((f) => f.code)
+  const misses = []
+  const planted = withLeg({ suites: [...legOf(manifest).suites, PLANT] })
+  // (b) the defect itself: an undeclared suite inherits nothing now
+  if (!codesFor(planted, PLANT).includes('CI_HOST_REFUSAL_UNGUARDED')) misses.push(`an undeclared refusal-capable suite added to the excepted leg: CI_HOST_REFUSAL_UNGUARDED not raised for ${PLANT.split('/').pop()} (got ${JSON.stringify(codesFor(planted, PLANT))})`)
+  // (c) the legacy spelling is a waiver of the whole leg, and it is refused as such
+  const legacy = withLeg({ suites: [...legOf(manifest).suites, PLANT], hostRefusal: 'declared-not-run' })
+  const legacyFindings = checkHostRefusalGuard({ root: ROOT, manifest: legacy }).findings
+  if (!legacyFindings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_UNSCOPED')) misses.push('the legacy leg-wide string spelling: CI_HOST_REFUSAL_WAIVER_UNSCOPED not raised')
+  if (!legacyFindings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === PLANT)) misses.push('the legacy leg-wide spelling still silences the planted suite: CI_HOST_REFUSAL_UNGUARDED not raised')
+  // (d) naming the suite is what earns the exception
+  const named = withLeg({ suites: [...legOf(manifest).suites, PLANT], hostRefusal: { mode: 'declared-not-run', suites: [EXCEPTED, PLANT], why: 'both suites refuse the host and this lane provisions none' } })
+  const namedFindings = checkHostRefusalGuard({ root: ROOT, manifest: named }).findings
+  if (namedFindings.length !== 0) misses.push(`a suite NAMED in the waiver is still refused: ${namedFindings.map((f) => `${f.code}:${f.path ?? ''}`).join(',')}`)
+  // (e) a waiver that drifted off its subject
+  const stray = withLeg({ hostRefusal: { mode: 'declared-not-run', suites: [EXCEPTED, 'tests/world-factory/not-in-this-leg.test.mjs'], why: 'x' } })
+  if (!checkHostRefusalGuard({ root: ROOT, manifest: stray }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE')) misses.push('a waiver naming a suite the leg does not list: CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE not raised')
+  // (f) a waiver with no subject, and one with no reason
+  for (const [name, waiver] of [['empty suites', { mode: 'declared-not-run', suites: [], why: 'x' }], ['no reason', { mode: 'declared-not-run', suites: [EXCEPTED], why: '  ' }], ['wrong mode', { mode: 'trust-me', suites: [EXCEPTED], why: 'x' }]]) {
+    const m = withLeg({ hostRefusal: waiver })
+    if (!checkHostRefusalGuard({ root: ROOT, manifest: m }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_INVALID')) misses.push(`a waiver with ${name}: CI_HOST_REFUSAL_WAIVER_INVALID not raised`)
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest manifest passes; ${PLANT.split('/').pop()} added to the excepted leg undeclared => CI_HOST_REFUSAL_UNGUARDED; the legacy leg-wide string => CI_HOST_REFUSAL_WAIVER_UNSCOPED plus the same suite finding; the suite NAMED in the waiver => no finding; a stray subject => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE; empty/no-why/wrong-mode => CI_HOST_REFUSAL_WAIVER_INVALID`
+      : misses.join(' ;; '),
+  }
+})
+
+
 /**
  * R1 review item 4: "re-check the rest of the manifest for the same pattern". The
  * leg rule was not the only one deciding by substring. Each mutation below satisfies
