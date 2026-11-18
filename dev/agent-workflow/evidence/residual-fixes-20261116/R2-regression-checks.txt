@@ -1,0 +1,29 @@
+# R2 — the review's do-not-regress list, re-measured on the round-2 head
+# utc: 2026-11-18T15:50:17Z  head: 125e32dc1
+
+## PD34 still fails CLOSED
+$ (depth-1 clone) node tests/world-factory/a5sf-pd34-member-stop.test.mjs
+  tests 8 / pass 7 / fail 1
+  AssertionError: PD34-PIN INCOMPLETE: the lane base 3101ca08f is not readable in this checkout
+$ (depth-0, this worktree) node tests/world-factory/a5sf-pd34-member-stop.test.mjs
+  tests 8 / pass 8 / fail 0
+
+## consumer-candidate still has teeth, and is still order-independent
+renderView() mutated (one extra key in the rendered object), suite run:
+  FAIL C10 rendered_fields_same=true bytes_same=false
+  RED (1/11 failing)
+restored; 20 pooled runs at concurrency 10:
+  GREEN 20 / RED 0 / OUTPUT_WITHOUT_VERDICT_LINE 0
+
+## Collection unchanged and reproducible
+$ node scripts/test-catalog.mjs --write-uncollected-baseline
+  uncollected=46 catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6
+  baseline file byte-identical to the committed one (cmp)
+
+## The collected leg, round-2 head
+$ node --test <50 collected suites>
+  tests 783 / pass 777 / fail 0 / skipped 6
+
+## Scope
+  packages/** changed by this branch: 0 files
+  untouched: scripts that are not evidence/gates, all product code, all workflows

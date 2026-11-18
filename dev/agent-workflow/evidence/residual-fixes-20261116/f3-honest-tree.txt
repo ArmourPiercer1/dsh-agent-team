@@ -1,0 +1,11 @@
+# F3 — the honest tree: eb3-ci-required and the controls after the generalisation
+# utc: 2026-11-18T14:21:36Z
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-ci-negative-controls.mjs | tail -1
+30/30 control(s) behaved as required
+
+$ node scripts/eb3-ci-negative-controls.mjs --only C10e
+PASS C10e every-host-refusal-marker-is-graded :: marker list equals the set derived from tests/ (A5SF_REQUIRE_PINNED_HOST, M7A_REQUIRE_PINNED_HOST); each marker planted in a hostFree leg with no env => CI_HOST_REFUSAL_UNGUARDED naming that marker; every OTHER marker set => still refused; that marker set => admitted; m7a-real-slice.test.mjs listed hostFree with no env => CI_HOST_REFUSAL_UNGUARDED naming M7A_REQUIRE_PINNED_HOST

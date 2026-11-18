@@ -1,0 +1,79 @@
+# REVIEW ROUND 2 — the five findings, each with a proof command + observed output
+# measured 2026-11-18T15:45:40Z (real UTC), worktree .worktrees/host-next-20261116
+
+## P0-1 port bands: partitioned by generation (code, not comment)
+  tests/paths.mjs: HOST_PORT_BANDS = [[3181,3199]]  ·  NEXT_HOST.portBands = [[13000,13049]]
+  rule cited in the code: RULING (UTE-Prep, 2026-11-16) — legacy confined to 3181-3199,
+  next host leases 13000-13049 only, disjoint; docs/TEST_METHODS.md §11.4 records it.
+
+  $ node --test --test-name-pattern "disjoint by generation" 'tests/next-host/*.test.mjs'
+  NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+  ✔ host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only (2.102981ms)
+  ✔ tests/next-host/native-api.test.mjs (153.71819ms)
+  ℹ pass 2
+  ℹ fail 0
+
+  $ node --test --test-name-pattern "port bands:" tests/world-factory/world-factory.test.mjs
+  ✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (2.48356ms)
+  ✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.58657ms)
+  ✔ port bands: legacy leasing is confined to 3181-3199, fails closed, and the next-generation 13000-13049 band is leased separately (zero binds) (23.242623ms)
+  ℹ pass 3
+  ℹ fail 0
+
+  the boot port is asserted from the value actually bound:
+  NEXT-SMOKE BOOT ok ms=1506 port=13000 ...  (∈ next band, ∉ legacy band)
+
+## P0-2 excludes is bounded + baselined, and the gate fires
+  dev/ci/excluded-baseline.json  schema=excluded-baseline/1 excluded_count=9
+  scripts/test-catalog.mjs: checkExcludedBaseline() -> EXCLUDED_NEW / EXCLUDED_GREW /
+  EXCLUDED_BASELINE_MISSING / EXCLUDED_FIXED; auditCatalog() runs it on EVERY invocation.
+  ci-integration.yml: node scripts/test-catalog.mjs --max-uncollected 48 --max-excluded 9
+
+  PLANT (tracked tests/planted-never-runs.test.mjs + registry exclude, untracked by baseline):
+      REFUSED EXCLUDED_NEW tests/planted-never-runs.test.mjs the registry excludes it but the reviewed excludes baseline does not — collect it, or add it to dev/ci/excluded-baseline.json in a reviewed change
+      REFUSED EXCLUDED_GREW  10 > baseline 9
+    DSH-TEST-CATALOG tests=875 digest=sha256:b1db7994e45af6a0323ac30565183a85bcc5769b6e856a535db56f7d11462016 refused=2 findings=2
+  (exit 2: EXCLUDED_NEW names the path, EXCLUDED_GREW bounds the population)
+
+  SAME PLANT WITH THE REASON DELETED:
+    REFUSED STALE_EXCLUDE tests/planted-never-runs.test.mjs exclude needs reason + review
+    REFUSED EXCLUDED_NEW tests/planted-never-runs.test.mjs the registry excludes it but the reviewed excludes baseline does not — collect it, or add it to dev/ci/excluded-baseline.json in a reviewed change
+    REFUSED EXCLUDED_GREW  10 > baseline 9
+
+  LEGITIMATE ENTRIES (this branch):
+  DSH-TEST-CATALOG tests=874 digest=sha256:d66c40dd4fdb6f6f19f97fa609b4ed9a67ad6803b3605de3e59c6042785840a3 refused=0 findings=0
+
+## P1 the legacy provisioning CLI no longer dies before preflight
+  fix: `const p = await preflightHostSandbox(...)` now precedes the first use of p.baseline
+  (a TDZ ReferenceError had killed EVERY invocation, legacy included).
+
+  $ node tests/world-factory/provision-host-sandbox.mjs --check
+  runtime tree : /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use
+  host baseline: legacy (0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84)
+  manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+  probe        : before-provision=full -> after-provision=full
+  backend      : full (usable: true)
+  launcher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+  porcelain    : empty (assets are gitignored)
+  EXIT=0
+
+  $ node tests/world-factory/provision-host-sandbox.mjs --host next --check
+  runtime tree : /home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/tests/deepseek-harness-next
+  host baseline: next (0.2.2-rc.5@9c2670d3bce5275e0d1610272958121af87787bb)
+  manifest     : tests/world-factory/lib/host-sandbox-assets-manifest.json
+  probe        : before-provision=full -> after-provision=full
+  backend      : full (usable: true)
+  launcher     : present a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+  porcelain    : empty (assets are gitignored)
+  EXIT=0
+
+## P2 the lane command in the docs + lib comment is the form that runs
+  node --test 'tests/next-host/*.test.mjs'   (the directory form fails on Node v24.21.0:
+  Cannot find module '.../tests/next-host')
+  node --test 'tests/next-host/*.test.mjs'   # 两条 suite：boot + native API smoke（Node 24 不接受目录参数）
+  node --test 'tests/next-host/*.test.mjs'
+   * (`node --test 'tests/next-host/*.test.mjs'`) because the tree is provisioned by a
+
+## P3 manifest nextHostVerifyCommand now includes --from-package
+  node scripts/provision-host-assets.mjs --from-package --host next --runtime-tree tests/deepseek-harness-next
+  run verbatim -> HOST-ASSETS-PROVISIONED (see provisioning-receipt.txt)

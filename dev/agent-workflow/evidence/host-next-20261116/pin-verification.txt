@@ -1,0 +1,34 @@
+# NEXT-HOST PIN VERIFICATION — measured 2026-11-18T14:17:03Z (real UTC)
+# worktree .worktrees/host-next-20261116, branch task/host-next-20261116
+
+## 1. upstream tags (git ls-remote --tags; proxy env unset — the local TLS proxy fails intermittently; retried per the flaky-network rule)
+f3803c96974ad4a94195fb97e5c637e9c2a3afe3	refs/tags/dsh-v0.2.2-alpha.2
+05b1cae8db6e674c5685101494d4eec24652424a	refs/tags/dsh-v0.2.2-alpha.3
+66491b05e3f05ad35bcdd4f6cd7ed26041d9e3db	refs/tags/dsh-v0.2.2-rc.1
+ddac96760b6edf8fa0fe17cbdcf0b512f4c12b2c	refs/tags/dsh-v0.2.2-rc.2
+38a6a5c965aa99ab525161efb7cc5cf1fe62fced	refs/tags/dsh-v0.2.2-rc.3
+3f321d32bfe382212a8ed8785c1d47a5a300aa23	refs/tags/dsh-v0.2.2-rc.4
+9c2670d3bce5275e0d1610272958121af87787bb	refs/tags/dsh-v0.2.2-rc.5
+
+## 2. peel check for the target tag (a ^{} line would mean an annotated tag; none = lightweight tag, the ref IS the commit)
+38a6a5c965aa99ab525161efb7cc5cf1fe62fced	refs/tags/dsh-v0.2.2-rc.3
+9c2670d3bce5275e0d1610272958121af87787bb	refs/tags/dsh-v0.2.2-rc.5
+
+## 3. the Team fork does NOT carry the 0.2.2 tags (clone must come from UPSTREAM)
+  (empty above = no such tag on the fork)
+
+## 4. clone at the tag, and what it actually checked out
+$ git clone --branch dsh-v0.2.2-rc.5 --depth 1 https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+  HEAD            = 9c2670d3bce5275e0d1610272958121af87787bb
+  describe --tags = dsh-v0.2.2-rc.5
+  package.json    = 0.2.2-rc.5
+  porcelain lines = 0
+
+## 5. native-asset npm package availability
+  published versions = 0.1.2
+  dist-tags          = {"latest":"0.1.2"}
+  FINDING: there is NO 0.2.2 asset publication. The next host needs none:
+  its own native/system/packages/{entry,linux-x64} package.json declare version 0.1.2, and
+  the native C sources/package manifests are byte-identical to the 0.2.0-rc.2 tree
+  (diff -rq empty — see addon-tarball.txt), so the PUBLISHED 0.1.2 tarball is the same
+  fixed artifact, pinned by the committed sha256 table.

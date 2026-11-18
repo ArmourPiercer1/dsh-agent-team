@@ -1,0 +1,19 @@
+# PD34-PIN — AFTER (fixed arm) in the CI SHAPE: depth 0 (this worktree, full history)
+# command: node --test tests/world-factory/a5sf-pd34-member-stop.test.mjs
+# utc: 2026-11-18T14:09:11Z
+✔ PD34-MODEL-SEQUENCE: the model issues get -> pause -> cancel -> get, and owns no archive (0.666261ms)
+✔ PD34-INJECT: the mount injects the public goals/session namespaces, no private endpoint (0.326118ms)
+✔ PD34-VIEW-ENTRY: a per-Member control and a DISTINCT Leader-turn control (0.265382ms)
+✔ PD34-DRIVER-WIRE: the live driver issues the same four calls in the same order (0.274801ms)
+✔ PD34-NO-SIMULATION: the stop handler patches nothing locally (0.224826ms)
+✔ PD34-EVIDENCE: the evidence README names the source id and the honest UI limit (0.183107ms)
+✔ PD34-MUTATION: deleting the pause call reddens the sequence pin (0.625574ms)
+✔ PD34-PIN: the entry did not exist at the lane base (7.752515ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.071895

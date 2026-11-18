@@ -1,0 +1,8 @@
+# AFTER — the suite itself under the same pool (fixed generator)
+# command: node .artifacts/tmp/repro-suite-concurrent.mjs tests/s2-authority/freeze-candidate.test.mjs 120 20
+# utc: 2026-11-18T14:07:10Z
+RUNS 120 concurrency=20
+GREEN 120
+RED 0
+GREEN_WITH_SUMMARY_LINE 120
+OUTPUT_WITHOUT_VERDICT_LINE 0

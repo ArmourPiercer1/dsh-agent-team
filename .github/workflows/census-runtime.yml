@@ -486,6 +486,69 @@ jobs:
           M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
         run: node scripts/m7a-step-ledger.mjs
 
+      # B4 BATCH 1/2 (2026-11-16) — the SUBPROCESS security boundary, collected.
+      # WHY HERE. These two suites resolve the pinned pristine host at module load
+      # (`findTestRepoRoot()` -> tests/paths.mjs) and were UNCOLLECTED: no lane ran
+      # them, so the PTY and subprocess contract laws were only ever demonstrated by
+      # hand. `ci-integration` cannot take them (it provisions no host, and a suite
+      # there would be a `hostFree` lie); this job provisions and builds the host and
+      # already treats a missing one as a failure. Measured 2026-11-16 with the host
+      # present: pty-contract 15/15 in 0.43 s, sub-contract 15/15 in 26.3 s.
+      # MISSING HOST = RED, proved twice (evidence
+      # dev/agent-workflow/evidence/b4-host-dependent-20261116/): with the host tree
+      # bind-mounted EMPTY both suites exit 1 with a NAMED refusal
+      # (`A5SF-PTY-CONTRACT-HOST-INCOMPLETE` / `A5SF-SUB-CONTRACT-HOST-INCOMPLETE`),
+      # and `A5SF_REQUIRE_PINNED_HOST=1` is what turns the declared NOT_RUN into that
+      # failure, so the flag is declared on the manifest leg AND set here.
+      # NO SKIP PATH: neither suite may report NOT_RUN-with-skips as a pass here.
+      - name: B4/1 subprocess boundary — PTY + subprocess contract (pinned host, absence is RED)
+        shell: bash
+        timeout-minutes: 15
+        env:
+          A5SF_REQUIRE_PINNED_HOST: '1'
+        run: node --test --test-force-exit --test-timeout=600000 --test-reporter=spec tests/world-factory/a5sf-pty-contract.test.mjs tests/world-factory/a5sf-sub-contract.test.mjs
+
+      # B4 BATCH 2/2 — the WEB face (confined fetch/search, row wiring) plus the
+      # `read_image` attachment face. Same rule, same reason: all three resolve the
+      # pinned host (web modules at module load, the read_image driver through the
+      # World graph). Measured with the host present: web-contract 10/10 in 0.42 s,
+      # web-row 10/10 in 0.44 s, pd31-read-image 7/7 in 0.12 s. Measured with the host
+      # tree EMPTY: web-contract 0/1 (`A5SF-WEB-CONTRACT-HOST-REFUSED`), web-row 0/1
+      # (`ERR_MODULE_NOT_FOUND` on the pinned `packages/web/web/lib/index.js`),
+      # pd31-read-image 4 pass / 3 fail. A separate step (not one argv with batch 1)
+      # so a red names WHICH boundary broke.
+      - name: B4/2 web + read_image face — confined web contract and the attachment face (pinned host, absence is RED)
+        shell: bash
+        timeout-minutes: 10
+        env:
+          A5SF_REQUIRE_PINNED_HOST: '1'
+        run: node --test --test-force-exit --test-timeout=300000 --test-reporter=spec tests/world-factory/a5sf-web-contract.test.mjs tests/world-factory/a5sf-web-row.test.mjs tests/world-factory/a5sf-pd31-read-image.test.mjs
+
+      # M7-B1 (2026-11-16): the World Factory OWNS the filesystem observation window
+      # (identity + declared scope + pre/post window + witness provenance) and three
+      # real FS controls prove the window bites: an authorized write is reported and
+      # excluded, a write outside the authorized set is VIOLATED naming the exact
+      # path, and a write in the SAME directory the harness itself writes to is caught
+      # per-entry (a directory-shaped watch would miss it). The verbatim
+      # `FS_SANDBOX_DENIED` line the Host emits is captured from its durable trace.
+      # WHY HERE: same reason as M7-A - this is the only job that provisions the
+      # pinned host and whose absence of one is already a failure.
+      # `M7B1_REQUIRE_PINNED_HOST=1` turns the declared refusal into a hard failure, so
+      # a green run cannot mean "the host was missing and nothing ran". Without it the
+      # suite still grades the fail-closed half and answers
+      # INSTRUMENT_ERROR reason=HOST_ABSENT.
+      # COST: one boot + three real arms, measured locally (host-present; the wall time
+      # is in dev/agent-workflow/evidence/m7b1-observation-window-20261116/) and
+      # bounded by `timeout-minutes: 15` so a regression is a bounded red rather than a
+      # cancelled job (the M7-A 41-minute hang is why every new step carries one).
+      - name: M7-B1 observation window — World-Factory-owned scope + three FS negative controls (pinned host, absence is RED)
+        shell: bash
+        timeout-minutes: 15
+        env:
+          M7B1_REQUIRE_PINNED_HOST: '1'
+          M7B1_BOOT_TIMEOUT_MS: '600000'
+        run: node --test --test-force-exit --test-timeout=1200000 --test-reporter=spec tests/world-factory/m7b1-observation-window.test.mjs
+
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the
       # 2026-10-18 forensics round — a BOUNDED key-line echo per failed command:

@@ -23,6 +23,9 @@ import {
   classifyInstruments,
   refOf,
   summarize,
+  excludedBaselineOf,
+  checkExcludedBaseline,
+  EXCLUDED_BASELINE_SCHEMA,
 } from './test-catalog.mjs'
 import { TEST_RE } from './test-collection-audit.mjs'
 import {
@@ -112,6 +115,58 @@ test('the CI step that dispatches this suite also runs the ratchet', () => {
   const step = steps.find((s) => s.includes(`--leg ${leg.id}`))
   assert.ok(step, `the step that dispatches ${leg.id} is gone from ci-integration.yml`)
   assert.ok(step.includes('--max-uncollected '), 'the ratchet command was removed from the catalog step')
+  // The excludes channel is a non-execution path: the step must bound it too, or
+  // "put the failing suite in excludes" silently retires it (review finding).
+  assert.ok(step.includes('--max-excluded '), 'the excludes ratchet command was removed from the catalog step')
+})
+
+test('excludes: the non-execution channel is baselined — a new exclude is REFUSED', () => {
+  const files = new Set([
+    'dev/agent-workflow/evidence/x/y.test.ts',
+    'tests/planted/never-runs.test.mjs',
+  ])
+  const registry = {
+    contracts: [],
+    excludes: [
+      { path: 'dev/agent-workflow/evidence/x/y.test.ts', reason: 'recorder', review: 'on rewrite' },
+      { path: 'tests/planted/never-runs.test.mjs', reason: 'planted', review: 'never' },
+    ],
+    instruments: [],
+  }
+  const { entries } = buildEntries(files, { vitestCfg: CFG, registry })
+  // The reviewed baseline has ONLY the legitimate recorder.
+  const baseline = excludedBaselineOf(entries.filter((e) => e.path !== 'tests/planted/never-runs.test.mjs'))
+  assert.equal(baseline.schema, EXCLUDED_BASELINE_SCHEMA)
+  assert.equal(baseline.excluded_count, 1)
+  const findings = checkExcludedBaseline(entries, { baseline, files })
+  assert.ok(findings.some((f) => f.code === 'EXCLUDED_NEW' && f.path === 'tests/planted/never-runs.test.mjs'), 'a planted exclude outside the baseline is EXCLUDED_NEW')
+  // A population larger than the bound is EXCLUDED_GREW even if every path is baselined.
+  const grown = excludedBaselineOf(entries)
+  const grew = checkExcludedBaseline(entries, { baseline: grown, files, maxExcluded: 1 })
+  assert.ok(grew.some((f) => f.code === 'EXCLUDED_GREW'), 'growth past --max-excluded is EXCLUDED_GREW')
+  // No amnesty without the artifact.
+  const missing = checkExcludedBaseline(entries, { baseline: null, files })
+  assert.ok(missing.some((f) => f.code === 'EXCLUDED_BASELINE_MISSING'), 'a missing excludes baseline refuses')
+  // And the legitimate, baselined entry passes with its reason + review carried through.
+  const ok = checkExcludedBaseline(entries.filter((e) => e.path === 'dev/agent-workflow/evidence/x/y.test.ts'), { baseline, files })
+  assert.equal(ok.length, 0, 'the reviewed entry is not refused')
+  assert.equal(baseline.entries[0].reason, 'recorder')
+  assert.equal(baseline.entries[0].review, 'on rewrite')
+})
+
+test('excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected', () => {
+  const files = new Set(['tests/planted/never-runs.test.mjs'])
+  const registry = { contracts: [], excludes: [{ path: 'tests/planted/never-runs.test.mjs', reason: 'planted', review: 'never' }], instruments: [] }
+  const { entries } = buildEntries(files, { vitestCfg: CFG, registry })
+  const findings = auditCatalog(entries, {
+    allowUncollected: true,
+    maxUncollected: 48,
+    excludedBaseline: { schema: EXCLUDED_BASELINE_SCHEMA, excluded_count: 0, entries: [] },
+    maxExcluded: 0,
+    files,
+  })
+  assert.ok(findings.some((f) => f.code === 'EXCLUDED_NEW'), 'the excludes law runs alongside the uncollected ratchet')
+  assert.ok(findings.some((f) => f.code === 'EXCLUDED_GREW'), 'and the count bound too')
 })
 
 test('classification: collected, uncollected and excluded are distinct', () => {
@@ -307,12 +362,22 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     // live `git status` count, so it reds beside a sibling suite) and freeze-candidate
     // (passed the hosted leg on head e0514df18, failed the same byte-identical leg on head
     // 49bb277f in one case and does not reproduce locally — unknown nondeterminism).
+    // Both were repaired in their own round (2026-11-18) and are collected BELOW: C10 now
+    // compares the RENDERED fields only (the live `runtime` instrument is not rendered by
+    // `renderView`), and freeze-candidate now drains stdout instead of `process.exit`ing.
     // Declared HERE so the next addition still cannot hide.
     'tests/s2-authority/authority-dual-read.test.mjs',
     'tests/s2-authority/authority-snapshot-isolated.test.mjs',
     'tests/s2-authority/candidate-track-negative-control.test.mjs',
     'tests/s2-authority/ci-snapshot-reader.test.mjs',
+    // Residual-fixes round (2026-11-18): the two B2 suites that were held back are repaired at
+    // their root and ride the SAME tinf-instruments leg (48 -> 50). freeze-candidate's generator
+    // no longer drops its queued stdout on exit; consumer-candidate's C10 compares the RENDERED
+    // fields only, not the live `runtime.dirty_paths` instrument. Both leave
+    // dev/ci/uncollected-baseline.json (48 -> 46).
+    'tests/s2-authority/consumer-candidate.test.mjs',
     'tests/s2-authority/current-authority-pointer.test.mjs',
+    'tests/s2-authority/freeze-candidate.test.mjs',
     'tests/s2-authority/probe-candidate.test.mjs',
     'tests/s2-authority/sync-candidate-resolver.test.mjs',
     'tests/s2-authority/verify-candidate.test.mjs',
@@ -358,6 +423,11 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'tests/world-factory/u7-tbash-seam.test.mjs',
     'tests/world-factory/u7-tbash.test.mjs',
     'tests/world-factory/u7-uileg0-answer-drive.test.mjs',
+    // Residual-fixes round (2026-11-18): the two B2 suites that were held back are repaired at
+    // their root and ride the SAME tinf-instruments leg (48 -> 50). freeze-candidate's generator
+    // no longer drops its queued stdout on exit; consumer-candidate's C10 compares the rendered
+    // fields only, not the live `runtime.dirty_paths` instrument. Both leave
+    // dev/ci/uncollected-baseline.json (48 -> 46).
   ])
   const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
   assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')

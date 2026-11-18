@@ -45,7 +45,7 @@ import { assertLiveDigest, decideKillHandshake, evaluateSurvivorSequencing, runS
 import { REAL_SURVIVOR_IO } from './u5-canary-runner.mjs'
 import { deleteWorldHomeIfMarked, validateWorldName, TestWorldFactory, HostBaseError } from './lib/world-factory.mjs'
 import { makeCanaryDecide, findToolResultInMessages, requestHasTool } from './lib/mock-script.mjs'
-import { HOST_PORT_BANDS, isSanctionedTestPort, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../paths.mjs'
+import { HOST_PORT_BANDS, isSanctionedTestPort, MOCK_PORT_BANDS, NEXT_HOST, portsOfBands, STABLE_INSTANCE_PORT, TEST_PORT_RANGES, TEST_USE_BASELINE_SHA } from '../paths.mjs'
 
 function tmp(label) {
   return mkdtempSync(join(tmpdir(), `u5test-${label}-`))
@@ -219,9 +219,10 @@ test('port lease: exclusive, live-holder refuses, dead-holder stale reclaims, po
 //  目前较大的端口区段（如13000甚至更大）应该都还是空置的" — tests/paths.mjs is the single
 // source; these legs pin (a) the new bands are sanctioned, (b) 3080 is still
 // refused, (c) one port outside EACH band edge is refused, (d) the World host
-// lease falls through to the 13000 band once 3181-3199 are held. ZERO binds:
-// the held slots are claim files naming OUR live pid; the one free port the
-// fall-through lands on is only TCP-probed (connect), as every acquisition is.
+// legacy lease NEVER leaves 3181-3199, and the 13000-13049 band belongs to the
+// next-generation host (NEXT_HOST.portBands), disjoint from it. ZERO binds: the
+// held slots are claim files naming OUR live pid; the one free port a next-host
+// lease lands on is only TCP-probed (connect), as every acquisition is.
 
 test('port bands: the widened sanctioned set, 3080 refused, every band edge exact', async () => {
   assert.deepEqual(TEST_PORT_RANGES.map((r) => [...r]), [[3180, 3199], [3491, 3500], [13000, 13099]])
@@ -249,9 +250,16 @@ test('port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock 
   assert.deepEqual(all.slice(0, 3), [3180, 3181, 3182])
   assert.equal(all.every((p) => isSanctionedTestPort(p)), true)
   const host = portsOfBands(HOST_PORT_BANDS)
+  const next = portsOfBands(NEXT_HOST.portBands)
   const mock = portsOfBands(MOCK_PORT_BANDS)
-  assert.deepEqual([host[0], host.at(-1), host.length], [3181, 13049, 19 + 50])
+  assert.deepEqual([host[0], host.at(-1), host.length], [3181, 3199, 19])
+  assert.deepEqual([next[0], next.at(-1), next.length], [13000, 13049, 50])
   assert.deepEqual([mock[0], mock.at(-1), mock.length], [3491, 13099, 10 + 50])
+  // RULING 2026-11-16: bands are partitioned BY GENERATION. A legacy lease and a
+  // next-host boot can never pick the same port because their sets are disjoint.
+  assert.equal(next.some((p) => host.includes(p)), false, 'legacy host band and next-generation host band are disjoint')
+  assert.equal(next.some((p) => mock.includes(p)), false, 'next-generation host band and mock band are disjoint')
+  assert.deepEqual(host.filter((p) => p >= 13000 && p <= 13049), [], 'the legacy band no longer leases 13000-13049')
   assert.equal(host.includes(3180), false, '3180 is never leased to a World host (hand-run/kit default)')
   assert.equal(host.includes(3080) || mock.includes(3080), false)
   assert.equal(host.some((p) => mock.includes(p)), false, 'host and mock bands are disjoint')
@@ -260,7 +268,7 @@ test('port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock 
   assert.throws(() => portsOfBands([[3079, 3081]]), /leaves the sanctioned ranges at 3079/)
 })
 
-test('port bands: host leasing falls through to the 13000 band when 3181-3199 are all held (simulated, zero binds)', async (t) => {
+test('port bands: legacy leasing is confined to 3181-3199, fails closed, and the next-generation 13000-13049 band is leased separately (zero binds)', async (t) => {
   const root = tmp('fallthrough')
   const held = []
   // Saturation helper. A port that a FOREIGN listener already owns is not
@@ -271,8 +279,9 @@ test('port bands: host leasing falls through to the 13000 band when 3181-3199 ar
   // NOT appear in /proc/net/tcp (WSL mirrored networking), e.g. 13030-13032
   // on 2026-10-30 (connect answers in 1ms AND bind says EADDRINUSE; see
   // dev/agent-workflow/evidence/a5w-portprobe-20261030/foreign-band-listeners.md).
-  // Both laws this leg owns stay asserted: fall-through lands in the 13000
-  // band, and exhausting every host band fails closed.
+  // Both laws this leg owns stay asserted: the legacy band never spills into
+  // 13000-13049 (it fails closed), and the next-generation band is its own
+  // disjoint population.
   const saturate = async (ports, world) => {
     const mine = []
     const foreign = []
@@ -287,31 +296,28 @@ test('port bands: host leasing falls through to the 13000 band when 3181-3199 ar
     return { mine, foreign }
   }
   try {
-    // Hold every low host port with a LIVE claim of our own pid — exactly what a
-    // concurrent World in this process would leave; acquisition must step over them.
+    // Hold every legacy host port with a LIVE claim of our own pid — exactly what a
+    // concurrent World in this process would leave.
     const low = await saturate(portsOfBands([HOST_PORT_BANDS[0]]), 'u7w0-held')
     held.push(...low.mine)
-    assert.equal(low.mine.length + low.foreign.length, 19, 'every low host port is claimed by us or by a foreign listener')
-    if (low.foreign.length > 0) t.diagnostic(`low band carried foreign listeners on ${low.foreign.join(',')}`)
-    const lease = await acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-fall', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) })
+    assert.equal(low.mine.length + low.foreign.length, 19, 'every legacy host port is claimed by us or by a foreign listener')
+    if (low.foreign.length > 0) t.diagnostic(`legacy band carried foreign listeners on ${low.foreign.join(',')}`)
+    // RULING 2026-11-16: exhausting the legacy band must FAIL CLOSED, not fall
+    // through into the next-generation band.
+    await assert.rejects(
+      acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-none', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) }),
+      (e) => e instanceof LeaseError && (e.code === 'LEASE_HELD' || e.code === 'EXTERNAL_BIND'),
+      'a saturated legacy band fails closed instead of leasing 13000-13049',
+    )
+    // The next-generation host leases ITS band even while the legacy band is fully
+    // held: disjointness is a property of the band sets, not of luck.
+    const nextPorts = portsOfBands(NEXT_HOST.portBands)
+    const nextLease = await acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-next', purpose: 'host', include: nextPorts })
     try {
-      assert.ok(lease.port >= 13000 && lease.port <= 13049, `fell through to the 13000 band (got ${lease.port})`)
+      assert.ok(nextLease.port >= 13000 && nextLease.port <= 13049, `next-generation lease lands in 13000-13049 (got ${nextLease.port})`)
+      assert.equal(HOST_PORT_BANDS.some(([lo, hi]) => nextLease.port >= lo && nextLease.port <= hi), false, 'a next-generation port is never in the legacy band')
     } finally {
-      lease.release()
-    }
-    // exhausting EVERY host band fails closed (no wandering outside the bands)
-    const upper = []
-    try {
-      const top = await saturate(portsOfBands([HOST_PORT_BANDS[1]]), 'u7w0-held2')
-      upper.push(...top.mine)
-      assert.equal(top.mine.length + top.foreign.length, 50, 'every upper host-band port is claimed by us or by a foreign listener')
-      if (top.foreign.length > 0) t.diagnostic(`upper band carried foreign listeners on ${top.foreign.join(',')}`)
-      await assert.rejects(
-        acquireFirstFreeLease({ leaseRoot: root, world: 'u7w0-none', purpose: 'host', include: portsOfBands(HOST_PORT_BANDS) }),
-        (e) => e instanceof LeaseError && (e.code === 'LEASE_HELD' || e.code === 'EXTERNAL_BIND'),
-      )
-    } finally {
-      for (const l of upper) l.release()
+      nextLease.release()
     }
   } finally {
     for (const l of held) l.release()

@@ -1,0 +1,75 @@
+# Merged tree #2: origin/master 82091ae4a (#787: second pinned host + excluded baseline)
+# head: 6bea34a9852091e4f9cde35adcebcc07823fdd30  (merge commit; no force-push)
+# previous merge: 554dbe1a5 (master b28728fef) — superseded by this one
+
+## Hosted L2 on 1922d957b (the pre-#787 merged head) — GREEN, and it settled the two runner-only questions
+Quoted from the hosted run the parent reported:
+  ci-census pass 18m45s — all THREE new steps success in ONE job, in order: B4/1 success, B4/2 success,
+    M7-B1 success. M7-B1 10/10 with 'M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED
+    unauthorized=[]', and the negative controls produced named refusals (M7B1-FOREIGN-WINDOW ...
+    IDENTITY_MISMATCH; WITNESS_NOT_SEALED in three forged shapes; WINDOW_NOT_CLOSED for phase=pre,
+    closedAt=null and closedAt=''). M7-A still 'M7A-ARM ... verdict=SATISFIED'.
+  B4/1 on the ABI-v8 runner: '✔ P3-PROBE-SHAPE (capability-paired) ... OR unsupported WITH a note
+    naming the ABI gap' and '✔ P3-DENY-KERNEL-REFUSED (capability-paired): ... unsupported => refused
+    BEFORE SPAWN with NETWORK_UNCONFINED_REALM and zero children'. The pairing fix is confirmed by the
+    environment that broke the old assertion — this is NOT simulation.
+  ci-integration pass 2m27s; ci-required pass.
+
+## This merge: five checks requested, each answered by a tool
+1. uncollected baseline  : node scripts/test-catalog.mjs --write-uncollected-baseline
+                           DSH-UNCOLLECTED-BASELINE written=ok uncollected=41
+                           (#787's floor was 46 and it collects nothing of mine; PROVED, not assumed)
+2. test-catalog.test.mjs : git diff origin/master --numstat -- scripts/test-catalog.test.mjs  => EMPTY
+                           (the file is byte-identical to master, so #787's two exclude tests ride)
+                           run: 28/28 pass
+3. ci-integration.yml    : it carried #787's line '--max-uncollected 46 --max-excluded 9'.
+                           Left the excluded floor at 9; tightened the uncollected floor to the
+                           measured 41: 'node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9'
+                           catalog test re-run after the edit: 28/28 (it asserts the step carries it)
+4. eb3-ci-manifest.json   : git diff origin/master --numstat => 55 insertions, 0 deletions
+                           hostRefusal occurrences: 3 (intact)
+5. excluded-baseline.json : excluded_count 9; entries = six alpha6/u7 scratch files,
+                           packages/client/test/s3-client-generation-spike.test.ts, and the two
+                           tests/next-host smoke suites (boot, native-api). NONE of this branch's five
+                           collected suites (a5sf-pty-contract, a5sf-sub-contract, a5sf-web-contract,
+                           a5sf-pd31-read-image, m7b1-observation-window) appears in it.
+
+## Merged-tree gate set (on 6bea34a98)
+
+| gate | result |
+| --- | --- |
+| test-catalog --max-uncollected 41 --max-excluded 9 | **UNCOLLECTED 41**, EXCLUDED_WITH_REASON 16, no REFUSED |
+| node --test scripts/test-catalog.test.mjs | **28/28** |
+| dispatch-tests --check | **PASS legs=18 bad=0** |
+| dispatch-tests --parity --old-ref e5bf05670 | **problems=0**, steps=18, union old=25 new=69,
+|   (re-derived in the clone, base present) | set=sha256:9d56a972… (the committed evidence digest) |
+| eb3-ci-required | **pass workflows=10 findings=0** |
+| eb3-ci-negative-controls | **32/32** |
+| census-plan.test.mjs | **50/50** |
+| census-cutover.test.mjs | **41/41** |
+| docs-sync --check | findings=0 blocking=0 contracts=20 |
+| lint-identities --diff …0237d487 | new 0, resolved 0 |
+| git diff --check | clean |
+| pnpm run typecheck | clean |
+| vitest packages/testkit/test | 512/512 |
+
+## Fresh FULL clone of THIS head, CI shape
+  clone: depth=2871  head=6bea34a98  porcelain=0  HEAD-MATCHES-PUSHED-HEAD ok
+  deps : pnpm install --frozen-lockfile -> 0 ; pnpm run build -> 0 ; pnpm build:composition -> 0
+  host : exact-SHA 639ed01539…, detached, porcelain=0, build exit 0
+  assets: pinned package; bin/glibc/system.node = 54a9c25c…600bc (the pin)
+
+  PART A — the three graded census steps, ONE job, in order (argv+env read from the workflow):
+STEP B4/1 exit=0 wall_s=26.5 env={'A5SF_REQUIRE_PINNED_HOST': '1'} ℹ tests 32 ℹ pass 32 ℹ fail 0 ℹ skipped 0
+STEP B4/2 exit=0 wall_s=0.5 env={'A5SF_REQUIRE_PINNED_HOST': '1'} ℹ tests 27 ℹ pass 27 ℹ fail 0 ℹ skipped 0
+STEP M7-B1 exit=0 wall_s=88.7 env={'M7B1_REQUIRE_PINNED_HOST': '1', 'M7B1_BOOT_TIMEOUT_MS': '600000'} ℹ tests 10 ℹ pass 10 ℹ fail 0 ℹ skipped 0
+
+  PART B — in the same clone:
+old-ref=e5bf05670f5a4867ff02834b033af4bbcc45b836
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+  UNCOLLECTED              41
+EB3-CI-REQUIRED pass workflows=10 findings=0
+32/32 control(s) behaved as required
+  plus, in the clone: test-catalog --max-uncollected 41 --max-excluded 9 (no REFUSED),
+  test-catalog.test.mjs 28/28, eb3-ci-negative-controls 32/32.

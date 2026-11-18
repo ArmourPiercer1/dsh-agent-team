@@ -1,0 +1,58 @@
+# LEGACY-HOST INVARIANCE — measured 2026-11-18T14:21:52Z (real UTC)
+
+## 1. the legacy pin block in tests/paths.mjs did not move
+$ git diff -U0 -- tests/paths.mjs   # only the appended NEXT_HOST block
+  removed/changed lines (excluding the --- header) = 0
+  legacy constants (HEAD == worktree):
+    export const DSH_BASELINE_VERSION = '0.2.0-rc.2'
+    export const TEST_USE_BASELINE_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
+    export const CLIENT_COMMIT_HASH = '639ed01539'
+
+## 2. the legacy runtime tree is still detached at the old SHA, porcelain empty
+  HEAD      = 639ed015397290b3745d163aafe02ffee4aa3f84
+  expected  = 639ed015397290b3745d163aafe02ffee4aa3f84
+  porcelain = 0
+
+## 3. legacy suite passes unchanged: node scripts/dispatch-tests.mjs --run --leg tinf-instruments
+  (post-merge master b28728fef: 50 suites. The run below was made inside `unshare -m -r` with
+   tests/deepseek-harness-test-use bind-mounted EMPTY, i.e. the pinned host tree genuinely ABSENT,
+   A5SF_REQUIRE_PINNED_HOST=1 A5SF_PD31_HOST_TREE=/nonexistent — the declared hostFree shape.)
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=50 files=50 exit=0 set=sha256:bcdd4b142ef4cf9484dfc0b1b65ef5f801f0e4a41a1f05db679b83dee6ef860e
+EXIT=0
+  ✔ 737
+  ✖ 0
+
+## 4. shared files: paths.mjs strictly additive; the provisioning lib only gains a DEFAULTED parameter
+ tests/paths.mjs                                    | 57 +++++++++++++++++++
+ .../lib/host-sandbox-assets-manifest.json          | 66 +++++++++++++++++++++-
+ tests/world-factory/lib/host-sandbox-assets.mjs    | 50 ++++++++++++----
+ 3 files changed, 160 insertions(+), 13 deletions(-)
+  The 13 removed lib lines are the hardcoded legacy baseline expressions replaced by
+  resolveHostBaseline(host) whose DEFAULT is exactly DSH_BASELINE_VERSION/TEST_USE_BASELINE_SHA;
+  legacy behaviour is unchanged (proved by the green tinf-instruments leg above).
+  The manifest only gains a second entry/package key (legacy entries untouched).
+
+## 3b. the shared provisioning CLI still works for BOTH hosts (P1 review fix)
+  $ node tests/world-factory/provision-host-sandbox.mjs --check            -> EXIT=0, backend full,
+    "host baseline: legacy (0.2.0-rc.2@639ed01539…)", launcher a752bc72…, porcelain empty
+  $ node tests/world-factory/provision-host-sandbox.mjs --host next --check -> EXIT=0, backend full,
+    "host baseline: next (0.2.2-rc.5@9c2670d3…)", launcher a752bc72…, porcelain empty
+  (Before the fix the first console.log read p.baseline before `const p = await preflight…`,
+  a TDZ ReferenceError that killed every invocation, legacy included.)
+  The a1/a6 kits invoke exactly this path (`node <worktree>/tests/world-factory/provision-host-sandbox.mjs
+  --check`) and now get a usable preflight instead of exit 2.
+
+## 4b. pre-existing red in this environment, NOT introduced here
+  node --test tests/world-factory/host-sandbox-assets.test.mjs
+    with my diff   : 35 red (same named set)
+    with my diff stashed (origin/master state): 35 red (same named set)
+  The 35 named failures are identical with and without this branch (the main checkout's
+  legacy runtime tree carries a drifted bin/glibc/system.node = 75450f92… and no bwrap), so
+  they are an environment asset-drift condition, not a regression from this branch.
+  tests/world-factory/world-factory.test.mjs: 44/45 pass; the one red ("RUN record: overall is
+  worst-of") is ALSO red with this branch's changes stashed (measured in the same worktree).
+
+## 5. why this required an install in the worktree
+  A fresh worktree has no root node_modules: the same leg first reported 6 suites red with
+  "Cannot find module '@deepseek-ai/cordis'" — an install-state artifact, not a behavioural diff.
+  After `pnpm install --ignore-scripts --frozen-lockfile` (lockfile v9, exit 0) the leg is green.

@@ -1,0 +1,9 @@
+# F5 — the suite concurrently with its siblings (the tinf-instruments s2-authority subset), 40 runs
+# command: node --test <8 s2-authority siblings> tests/s2-authority/consumer-candidate.test.mjs   (x40)
+# BEFORE (pre-fix assertion): RED 10/40, each 'FAIL C10 structure_same=false bytes_same=true'
+# AFTER  (rendered-fields-only): RED 0/40, each 'PASS C10 ... rendered fields equal'
+# utc: 2026-11-18T14:43:35Z
+
+counts as measured:
+BEFORE runs=40 C10_RED=10 GREEN=30 OTHER=0
+AFTER  runs=40 C10_RED=0  GREEN=40 OTHER=0

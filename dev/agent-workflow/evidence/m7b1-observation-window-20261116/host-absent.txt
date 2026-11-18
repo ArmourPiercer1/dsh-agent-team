@@ -1,0 +1,91 @@
+host-tree-entries=0  (bind-mounted EMPTY = the CI shape where the runtime checkout never arrives)
+
+=== RUN A: M7B1_REQUIRE_PINNED_HOST unset — grade the fail-closed half, DECLARE the absence
+RUN-A-EXIT=0
+M7B1-HOST-REFUSED host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use reason=apps/cli/lib/bin.js is absent (built runtime checkout missing) action=provision per docs/TEST_METHODS.md §1/§2 or set M7B1_REQUIRE_PINNED_HOST=1 to fail instead
+M7B1-WINDOW-NOT-CLOSED tag=phase=pre reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=pre closedAt=2026-11-18T00:00:00.000Z; a verdict needs the POST snapshot taken after the execution, so an armed-bu
+M7B1-WINDOW-NOT-CLOSED tag=closedAt=null reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window c
+M7B1-WINDOW-NOT-CLOSED tag=closedAt="" reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window can n
+M7B1-IDENTITY-MISMATCH field=world_id reason=IDENTITY_MISMATCH detail=the window is bound to world_id="m7b1-probe" but the contract declares "mutated-world_id"; an observation of one identity cannot corroborate a contract about an
+M7B1-IDENTITY-MISMATCH field=agent_id reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="agent-probe" but the contract declares "mutated-agent_id"; an observation of one identity cannot corroborate a contract about a
+M7B1-IDENTITY-MISMATCH field=execution_id reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="exec-probe" but the contract declares "mutated-execution_id"; an observation of one identity cannot corroborate a contract
+M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="exec-probe" but no tool/call or tool/result event in the host's durable trace carries it (ids present: some-other-call); the
+M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
+M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.001866ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (19.820284ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (14.221788ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.666755ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.229755ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (0.70284ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (65.510788ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.237488ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (107.745182ms)
+﹣ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.339243ms) # pinned host runtime absent (declared refusal above) — the fail-closed half was graded
+ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 185.678458
+
+=== RUN B: M7B1_REQUIRE_PINNED_HOST=1 — absence is a HARD RED
+RUN-B-EXIT=1
+ℹ tests 10
+ℹ pass 9
+ℹ fail 1
+ℹ skipped 0
+✖ failing tests:
+  AssertionError [ERR_ASSERTION]: M7B1-HOST-ABSENT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1
+
+=== RUN B full stdout (the red, verbatim):
+M7B1-HOST-REFUSED host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use reason=apps/cli/lib/bin.js is absent (built runtime checkout missing) action=provision per docs/TEST_METHODS.md §1/§2 or set M7B1_REQUIRE_PINNED_HOST=1 to fail instead
+M7B1-WINDOW-NOT-CLOSED tag=phase=pre reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=pre closedAt=2026-11-18T00:00:00.000Z; a verdict needs the POST snapshot taken after the execution, so an armed-bu
+M7B1-WINDOW-NOT-CLOSED tag=closedAt=null reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window c
+M7B1-WINDOW-NOT-CLOSED tag=closedAt="" reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window can n
+M7B1-IDENTITY-MISMATCH field=world_id reason=IDENTITY_MISMATCH detail=the window is bound to world_id="m7b1-probe" but the contract declares "mutated-world_id"; an observation of one identity cannot corroborate a contract about an
+M7B1-IDENTITY-MISMATCH field=agent_id reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="agent-probe" but the contract declares "mutated-agent_id"; an observation of one identity cannot corroborate a contract about a
+M7B1-IDENTITY-MISMATCH field=execution_id reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="exec-probe" but the contract declares "mutated-execution_id"; an observation of one identity cannot corroborate a contract
+M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="exec-probe" but no tool/call or tool/result event in the host's durable trace carries it (ids present: some-other-call); the
+M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
+M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (0.911966ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (19.745773ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (13.576286ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.640064ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.324153ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (0.796562ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (68.716725ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.312416ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (110.294118ms)
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.597376ms)
+ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 182.289663
+
+✖ failing tests:
+
+test at tests/world-factory/m7b1-observation-window.test.mjs:354:1
+✖ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.597376ms)
+  AssertionError [ERR_ASSERTION]: M7B1-HOST-ABSENT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/deepseek-harness-test-use/apps/cli/lib/bin.js is absent but M7B1_REQUIRE_PINNED_HOST=1
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/world-factory/m7b1-observation-window.test.mjs:369:30)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }

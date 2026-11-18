@@ -1,0 +1,90 @@
+# Merged tree: origin/master b28728fef (#788) merged into task/tinf-next-20261116
+# head: 554dbe1a58045860ea228b32b170599f47b78595  (merge commit; no force-push)
+# merge base: b7276ffa7   master side: b28728fef  (uncollected 46, tinf-instruments 50, controls 32/32)
+
+## What conflicted, and how each was resolved (both sides' intent kept)
+
+1. dev/ci/uncollected-baseline.json — CONFLICT (content). Resolved by taking master's file and
+   REGENERATING it from the tool on the merged tree:
+     node scripts/test-catalog.mjs --write-uncollected-baseline
+     DSH-UNCOLLECTED-BASELINE written=ok uncollected=41
+   The number is the tool's, not arithmetic: 46 (master) minus the 5 this branch collects = 41, and
+   the tool independently printed 41.
+
+2. dev/ci/eb3-ci-manifest.json — auto-merged, but the merge was SEMANTICALLY WRONG and was rebuilt.
+   master's manifest is generated JSON (indent=2, ensure_ascii=False). This branch had earlier
+   re-serialised it with escaped Unicode, so git could not isolate hunks and the auto-merge DROPPED
+   master's per-suite hostRefusal blocks (3 occurrences) from two legs. Rebuilt by taking
+   origin/master's bytes, adding the three ci-census legs, and re-serialising with the same settings:
+     diff origin/master..HEAD -- dev/ci/eb3-ci-manifest.json  =>  55 insertions(+), 0 deletions(-)
+     hostRefusal occurrences after the rebuild: 3
+     census layer legs: 5 (master) -> 8 (5 + b4/1, b4/2, m7b1)
+     tinf-instruments suites: 50 (unchanged)
+
+3. scripts/eb3-ci-required.mjs — the auto-merge kept #788's DERIVED-MARKER guard, and that guard
+   correctly refused this branch's new refusal switches:
+     FAIL C10e every-host-refusal-marker-is-graded :: CI_HOST_REFUSAL_MARKER_UNLISTED: the collected
+          paths consult M7B1_HOST_TREE, M7B1_REQUIRE_PINNED_HOST but HOST_REFUSAL_SWITCHES does not list it
+   Resolved by REGISTERING both spellings in the frozen lists (require-host role for
+   M7B1_REQUIRE_PINNED_HOST, host-tree role for M7B1_HOST_TREE) rather than weakening the guard.
+     eb3-ci-negative-controls: 31/32 -> 32/32
+
+4. scripts/test-catalog.test.mjs, .github/workflows/ci-integration.yml — NO edit was needed on this
+   side (this branch never touched them), so master's added= block, its derived controls and the
+   ratchet line stand unchanged. Verified: git diff origin/master -- those files = empty.
+
+## The parent's expected leg count (50 -> 55) does not hold, and this is why
+The five suites this branch collects are HOST-DEPENDENT (hostFree:false): a5sf-pty-contract,
+a5sf-sub-contract, a5sf-web-contract, a5sf-pd31-read-image, m7b1-observation-window. tinf-instruments
+lives in ci-integration, which provisions NO host, so collecting them there would make that layer's
+hostFree declaration a lie and would red on every runner. They therefore ride three NEW ci-census legs
+(b4/1: 2 suites, b4/2: 3, m7b1: 1) in the one job that provisions and builds the host. Tool facts:
+  test-catalog --max-uncollected 41            -> UNCOLLECTED 41   (46 -> 41, -5 as expected)
+  tinf-instruments suites                      -> 50 (unchanged, and correctly so)
+  census layer legs                            -> 8 (5 + 3)
+  dispatch-tests --check                       -> PASS legs=18 bad=0 (the three new legs are census
+                                                  raw-argv steps; dispatch legs are unchanged at 18)
+
+## Merged-tree gate set (all run on 554dbe1a5)
+
+| gate | result |
+| --- | --- |
+| test-catalog --max-uncollected 41 | **UNCOLLECTED 41** |
+| test-catalog --max-uncollected 40 | **REFUSED UNCOLLECTED_GREW 41 > baseline 40**, exit 1 |
+| node --test scripts/test-catalog.test.mjs | **26/26** |
+| dispatch-tests --check | **PASS legs=18 bad=0** |
+| dispatch-tests --parity --old-ref e5bf05670 | **problems=0**, steps=18, union old=25 new=69,
+|   (re-derived in the clone below) | set=sha256:9d56a972… = the committed evidence digest |
+| eb3-ci-required | **pass workflows=10 findings=0** |
+| eb3-ci-negative-controls | **32/32** |
+| census-plan.test.mjs | **50/50** |
+| census-cutover.test.mjs | **41/41** |
+| docs-sync --check | findings=0 blocking=0 contracts=20 |
+| lint-identities --diff …0237d487 | new 0, resolved 0 |
+| git diff --check | clean |
+| pnpm run typecheck | clean |
+| vitest packages/testkit/test | **512/512** |
+
+## Fresh FULL clone of the merged head, CI shape (the numbers below are from THAT clone)
+  clone : git clone --branch task/tinf-next-20261116 https://github.com/ArmourPiercer1/dsh-agent-team.git
+          depth=2866  head=554dbe1a5  porcelain=0  HEAD-MATCHES-PUSHED-HEAD ok
+  deps  : pnpm install --frozen-lockfile -> exit 0 ; pnpm run build -> 0 ; pnpm build:composition -> 0
+  host  : exact-SHA 639ed015397290b3745d163aafe02ffee4aa3f84, detached, porcelain=0, build exit 0
+  assets: provisioned from @deepseek-ai/node-addon-system-linux-x64@0.1.2;
+          bin/glibc/system.node = 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (the pin)
+
+  PART A — the three graded census steps, ONE job, in order (argv+env read from the workflow YAML):
+STEP B4/1 exit=0 wall_s=26.4 env={'A5SF_REQUIRE_PINNED_HOST': '1'} ℹ tests 32 ℹ pass 32 ℹ fail 0 ℹ skipped 0
+STEP B4/2 exit=0 wall_s=0.5 env={'A5SF_REQUIRE_PINNED_HOST': '1'} ℹ tests 27 ℹ pass 27 ℹ fail 0 ℹ skipped 0
+STEP M7-B1 exit=0 wall_s=94.0 env={'M7B1_REQUIRE_PINNED_HOST': '1', 'M7B1_BOOT_TIMEOUT_MS': '600000'} ℹ tests 10 ℹ pass 10 ℹ fail 0 ℹ skipped 0
+
+  PART B — in the same clone (it carries the parity base):
+old-ref=e5bf05670f5a4867ff02834b033af4bbcc45b836
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+  UNCOLLECTED              41
+EB3-CI-REQUIRED pass workflows=10 findings=0
+32/32 control(s) behaved as required
+
+  (for contrast, the FIRST attempt of this proof cloned the pre-merge head bd52511e4 and therefore
+   reported 43/67/18 — that transcript is NOT evidence for the merged tree and is superseded here.)

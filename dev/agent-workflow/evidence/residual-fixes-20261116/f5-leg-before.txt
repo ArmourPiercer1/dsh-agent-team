@@ -1,0 +1,28 @@
+# F5 — BEFORE: the first FULL-LEG run (tinf-instruments, 48 suites + the uncollected suite), host reachable
+# utc: 2026-11-18T14:3xZ  (log artifact .artifacts/tmp/leg-run-0.log)
+# command: node --test $(node scripts/dispatch-tests.mjs --leg tinf-instruments | tail -1 | sed 's/^node --test //') tests/s2-authority/consumer-candidate.test.mjs
+
+extract of the leg log:
+fatal: could not open '.tmp-s2-cw-1gUaAK/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+PASS C8 explicitly-provided falsy authorityCandidate refuses structured, never silently legacy
+PASS C9 helper with null/array/string options: structured refusal, no TypeError
+fatal: could not open '.tmp-s2-cw-lefBo7/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+fatal: could not open '.tmp-s2-cw-lefBo7/docs/contracts/engineering-baseline/ids.yaml' for reading: No such file or directory
+FAIL C10 structure_same=false bytes_same=true
+PASS C10 collision on the REAL staging path: pre-existing sentinel survives (no delete on EEXIST)
+RED (1/11 failing)
+✖ tests/s2-authority/consumer-candidate.test.mjs (1590.693833ms)
+PASS L1 valid pointer → six values + statement + digest, source = snapshot file
+PASS L2 missing pointer → status ABSENT, never values, never the mirror
+…
+ℹ tests 782
+ℹ pass 775
+ℹ fail 1
+ℹ skipped 6
+
+failing test block:
+✖ failing tests:
+
+test at tests/s2-authority/consumer-candidate.test.mjs:1:1
+✖ tests/s2-authority/consumer-candidate.test.mjs (1590.693833ms)
+  'test failed'

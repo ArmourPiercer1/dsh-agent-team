@@ -1,0 +1,77 @@
+# The flake hunt for the ci-integration tinf-instruments red (2026-11-18)
+# Hosted: run 44343691531 attempt 1, step 'test catalog + TINF instruments' exit 1;
+#         the rerun on the IDENTICAL head passed (48 suites, set=sha256:9ea399ec...).
+#         The red suite NAME is not in the retained job log (2231 of its lines, cut mid-
+#         line at a stdout line of a5sf-assembly.test.mjs: 'GAP1a a bind'), so the log
+#         cannot name it and this file does not pretend otherwise.
+
+## Shape (a fresh clone, its own install+build, host tree ABSENT)
+clone : git clone --branch task/tinf-next-20261116 ... (full history, depth 2863)
+head  : b212c473d056fb147a0b7509b2b5203ebad0405d
+deps  : pnpm install --frozen-lockfile --prefer-offline   -> exit 0
+build : pnpm run build                                   -> exit 0
+host  : tests/deepseek-harness-test-use MOVED ASIDE before every run (a fresh clone carries none):
+        the leg is host-free and must pass with the tree absent
+cmd   : node scripts/dispatch-tests.mjs --run --leg tinf-instruments
+        (= node --test <the 48 declared suites>, cwd = the clone; node default file
+         concurrency = 16 on this box vs about 4 on a hosted runner)
+tmp   : ONE bash invocation for all 10 runs, so /tmp is SHARED between runs (the runner shape:
+        a step leftovers are visible to the next attempt on the same machine)
+
+## 10 consecutive runs (transcript)
+RUN 1 exit=0 wall_s=225 dirty_before=8 dirty_after=9 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 2 exit=0 wall_s=225 dirty_before=9 dirty_after=10 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 3 exit=0 wall_s=226 dirty_before=10 dirty_after=11 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 4 exit=0 wall_s=225 dirty_before=11 dirty_after=12 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 5 exit=0 wall_s=226 dirty_before=12 dirty_after=13 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 6 exit=0 wall_s=226 dirty_before=13 dirty_after=14 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 7 exit=0 wall_s=226 dirty_before=14 dirty_after=15 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 8 exit=0 wall_s=226 dirty_before=15 dirty_after=16 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 9 exit=0 wall_s=227 dirty_before=16 dirty_after=17 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUN 10 exit=0 wall_s=227 dirty_before=17 dirty_after=18 red_lines=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f tests=781 pass=775 fail=0 skipped=6 
+RUNS=10 FAILS=0   (every run: exit 0, identically 781 tests / 775 pass / 0 fail / 6 skipped)
+every run set digest = sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f
+
+## Dirt left by each run = NONE. The dirty_before/dirty_after growth above is this harness OWN
+   leg-run-N.log files; the per-run DIRT report lists only those, never a file created by a suite.
+   Checked after EVERY run, because a dirty tree is what poisons the next run.
+
+## Two additional probes of the shared-state class
+1. TWO legs CONCURRENTLY in the same clone (96 test files at once), to force a fixed-path or port collision:
+ℹ tests 781 ℹ pass 775 ℹ fail 0 ℹ skipped 6 DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=48 files=48 exit=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f ℹ tests 781 ℹ pass 775 ℹ fail 0 ℹ skipped 6 DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=48 files=48 exit=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f 
+   -> both exit 0, both digests identical.
+
+2. The same 48 files at --test-concurrency=64 (4x this box cores, stressing ordering/load):
+   exit=0  ℹ tests 781  ℹ pass 775  ℹ fail 0  ℹ skipped 6
+   -> green; the concurrency class does not red the leg even at 4x oversubscription.
+
+
+## Static scan of the classes that have bitten this repo before (all 48 suite files)
+fixed ports      : NONE live. tests/world-factory/port-probe.test.mjs binds only ports proven in
+                   TEST_PORT_RANGES, its lease roots are mkdtemp'd, and it never binds 3080/3180;
+                   m7a-real-slice-unit.test.mjs listens on port 0.
+fixed /tmp paths : NONE written. a5sf-assembly.test.mjs mentions /tmp/a5sf-assembly-*.jsonl as
+                   CONFIG STRINGS in refusal assertions (A5SF_COVERAGE_UNDEFINED; a TypeError for an
+                   orphan expected-tools entry) -- no file is created there. No suite writes to a
+                   literal absolute path.
+repo writes      : NONE to a tracked path. binding-digests.test.mjs tampers ONE cited artifact under
+                   .artifacts/tmp/u7-g4r-c1/ (gitignored scratch, NOT tracked) and restores it two
+                   lines later; its two CLI fixtures also live under .artifacts/tmp/u7-g4r-c1/. Those
+                   are the only fixed scratch paths in the leg, and the two-concurrent-run probe above
+                   did not collide on them.
+git status class : NOT live in this leg. Only scripts/test-catalog.test.mjs touches git, and only
+                   'git ls-files -z' (read-only names, no index lock, no dirty-count assertion).
+                   The one suite whose C10 compares the live git-status count (consumer-candidate) and
+                   freeze-candidate (documented unknown nondeterminism) are NOT members of this leg:
+                   8 of the 10 s2-authority suites are collected, those two are not.
+timing asserts   : scripts/tinf-timing.test.mjs asserts on SYNTHETIC reports (fixed numbers), never
+                   on the wall clock.
+
+## Verdict: UNKNOWN -- not fixed, and not blamed on anything
+The hosted red did not reproduce in 10 sequential + 2 concurrent + 1 high-concurrency run of the
+IDENTICAL leg on the IDENTICAL head, with the identical set digest, and no run left the tree dirty.
+Residual suspect, stated as a suspect and not as a finding: the hosted step runs the same 48 files at
+node default file concurrency on a ~4-core runner shared with the rest of the job, while this box has
+16 cores -- a load-dependent race cannot be reproduced here. What CAN be said is that the rerun on the
+byte-identical head passed with the same digest, so the red was not a deterministic product defect, and
+that every shared-state class this repo has been bitten by was looked for and is clean (above).

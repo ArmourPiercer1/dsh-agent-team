@@ -1,0 +1,110 @@
+# M7-B1 + B4 in the CI CHECKOUT SHAPE (a full clone of the pushed head, not this worktree)
+# clone:      git clone --branch task/tinf-next-20261116 https://github.com/ArmourPiercer1/dsh-agent-team.git
+#             full history, porcelain=0, HEAD == the pushed head 92940605c2
+# deps:       pnpm install --frozen-lockfile (warm local pnpm store used ONLY to cut install time:
+#             the lockfile is frozen, so the dependency set is identical to a cold CI install)
+# repo build: pnpm run build + pnpm build:composition  -> exit 0
+# host:       exact-SHA fetch of 639ed015397290b3745d163aafe02ffee4aa3f84 from
+#             https://github.com/ArmourPiercer1/deepseek-harness, detached, porcelain=0;
+#             built with pnpm install --ignore-scripts + pnpm run build
+# assets:     a fresh clone carries NO usable assets -> provisioned from the pinned published
+#             package (HOST-ASSETS-PROVISIONED ... files=2 host=639ed01539...); installed digest
+#             bin/glibc/system.node = 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (the pin)
+# steps:      EXACTLY the three argv lines the census-runtime job runs, with their env
+# parity:     run in THIS clone (which carries the parity base e5bf05670) — see the tail
+
+CI-SHAPE head=92940605c2aedd421374fc5dddf68d2b00c2169a branch=task/tinf-next-20261116 host=639ed015397290b3745d163aafe02ffee4aa3f84
+clone-depth=2861 head=92940605c2aedd421374fc5dddf68d2b00c2169a porcelain=0
+HEAD-MATCHES-PUSHED-HEAD ok
+=== install (frozen lockfile, warm store at /home/armourpiercer/projects/dsh-agent-team/.worktrees/pnpm-store)
+install-exit=0
+
+Done in 7s using pnpm v11.7.0
+=== build this repo
+build-exit=0
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+build-composition-exit=0
+=== provision the pinned host (exact SHA fetch, detached, porcelain must stay empty)
+host-fetch-exit=0
+host-head=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=0
+=== build the host (the workflow's TEST_METHODS §2 chain)
+host-build-exit=0
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.13s
+build: recorded 347 client artifact(s) with 2 public value(s)
+-rwxr-xr-x 1 armourpiercer armourpiercer 11697 Nov 18 23:49 tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+=== native assets: ABSENT after a fresh clone? (that is the CI fact)
+1
+=== provision the PINNED PUBLISHED package (exact version, tarball only)
+HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 host=639ed015397290b3745d163aafe02ffee4aa3f84 manifestDigest=c99555f717b5dfc83f06bf4f9313e2ec020b1ebfad905b643e95077a2e304850 utc=2026-11-18T15:49:15.933Z receipt=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/.artifacts/tmp/host-assets/provision-receipt.json
+54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc  tests/deepseek-harness-test-use/native/system/packages/linux-x64/bin/glibc/system.node
+
+########## GRADED STEP 1: M7-B1 (M7B1_REQUIRE_PINNED_HOST=1) ##########
+ℹ M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+ℹ M7B1-WINDOW contract=obs-733e564bdd16a1ce world=u5m7b1-20261118T15-49-16Z agent=session-c6b0f61e-3ca4-4b90-87d2-0af578692e14 execution=m7b1-6 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/tests/homes/u5m7b1-20261118T15-49-16Z window=win-89a2dd0b-cf48-45c6-bbbd-f33b4895f10c phase=pre armedAt=2026-11-18T15:50:46.962Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/tests/homes/u5m7b1-20261118T15-49-16Z/m7b1-tmp/m7b1-watched/beside.txt"]
+ℹ M7B1-WINDOW contract=obs-ec5771f438607188 world=u5m7b1-20261118T15-49-16Z agent=session-658748be-c544-4a46-84e0-e8409819dea5 execution=m7b1-10 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/tests/homes/u5m7b1-20261118T15-49-16Z window=win-fafb4cff-e50e-46bb-a713-2e91f74b59cd phase=pre armedAt=2026-11-18T15:50:48.007Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/tests/homes/u5m7b1-20261118T15-49-16Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+ℹ M7B1-DENIAL FS_SANDBOX_DENIED error_code=FS_SANDBOX_DENIED outcome=DENIED message="Error: [sandbox: file access denied under workspace-write mode] [sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+ℹ M7B1-FORGED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-FOREIGN-WINDOW verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="session-c6b0f61e-3ca4-4b90-87d2-0af578692e14" but the contract declares "session-0c27e193-b983-4154-9710-0fee5bd95023"; an obse
+ℹ M7B1-MUTATED-EXECUTION_ID verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="m7b1-2" but the contract declares "exec-mutated-by-the-caller"; an observation of one identity cannot corroborate a contract about another
+ℹ M7B1-MUTATED-AGENT_ID verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="session-0c27e193-b983-4154-9710-0fee5bd95023" but the contract declares "agent-mutated-by-the-caller"; an observation of one identity cannot corroborate a contract abo
+ℹ M7B1-MUTATED-WORLD_ID verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to world_id="u5m7b1-20261118T15-49-16Z" but the contract declares "world-mutated-by-the-caller"; an observation of one identity cannot corroborate a contract about another
+ℹ M7B1-NO-TRACE verdict=INSTRUMENT_ERROR reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="m7b1-2" but no tool/call or tool/result event in the host's durable trace carries it (ids present: none); the execution under grade is not the execution this trace
+ℹ M7B1-SPREAD-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-STRUCTUREDCLONE-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-OBJECT-CREATE-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-SPREAD-ENVELOPE verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-FOREIGN-CLOSE ok=false reason=WITNESS_NOT_SEALED
+ℹ M7B1-RECLOSE ok=false reason=WITNESS_NOT_SEALED
+ℹ M7B1-UNCLOSED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-WINDOW-NOT-CLOSED reason=WINDOW_NOT_CLOSED detail=window win-12ee1876-7da7-4693-86df-34f5a5abc49d is phase=pre closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclose
+ℹ M7B1-EVIDENCE /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-ci-shape-20261116/.artifacts/tmp/m7b1-observation-window/run-2026-11-18T15-49-16-219Z/m7b1-window-report.json
+ℹ M7B1-WALL bootMs=89685 totalMs=92815
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93138.499573
+M7B1-EXIT=0 wall_s=94
+
+########## GRADED STEP 2: B4/1 subprocess boundary ##########
+✔ P4-CHMOD-WRITE-AXIS: a declared chmod outside the write lane is spawn:write and leaves mode+bytes unchanged (5.531359ms)
+✔ P5-ENV-SCRUB: the confined child drops credential-shaped and DSH_* names, keeps ordinary ones, and applies spec overrides (3284.652904ms)
+✔ P5-PROXY-DIVERGENCE: with a real proxy policy the unconfined child gets NODE_USE_ENV_PROXY=1 and the confined child does NOT (3286.916376ms)
+✔ GEN-NATIVE-MODULE-BOUNDARY: the shipped bash-local executor reaches the confined face and is refused at argv[0]; unconfined it runs (17.599507ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26618.121995
+B41-EXIT=0 wall_s=26
+
+########## GRADED STEP 3: B4/2 web + read_image ##########
+✔ ROW-AMBIGUOUS: compiled.web AND a config factory for one realm refuse (two web-face sources is a fork) (3.697589ms)
+✔ ROW-NO-FACE: a realm that declares no web face is unchanged — web: null and the real tool-web module is refused typed (3.992891ms)
+✔ ROW-PRODUCT-DECLARATION: the shipped product declaration path + a5sfWebFace mounts the confined face with NO teamA5sfRealm service (29.968248ms)
+✔ ROW-NO-SECOND-COMPILER: the row never compiles a lane, never intersects one and never evaluates a network decision (0.757464ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 530.734852
+B42-EXIT=0 wall_s=1
+CI-SHAPE-DONE
+
+########## --parity in this clone (parity base e5bf05670 is PRESENT here) ##########
+old-ref=e5bf05670f5a4867ff02834b033af4bbcc45b836 depth=2861
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=67 problems=0

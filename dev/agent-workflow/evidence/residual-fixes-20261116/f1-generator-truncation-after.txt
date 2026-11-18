@@ -1,0 +1,9 @@
+# AFTER — scripts/freeze-candidate.mjs sets process.exitCode and lets the loop drain
+# command: node .artifacts/tmp/repro-freeze-candidate-flush.mjs scripts/freeze-candidate.mjs 400 200 .artifacts/tmp/tampered-digest.json
+# utc: 2026-11-18T14:06:47Z
+RUNS 400 concurrency=200
+EMPTY_STDOUT 0
+EMPTY_STDOUT_EXIT1 0
+MISSING_DIGEST_LINE 0
+MISSING_DRIFT_SUMMARY 0
+WRONG_EXIT 0

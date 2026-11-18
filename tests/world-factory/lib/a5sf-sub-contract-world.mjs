@@ -288,6 +288,16 @@ export async function makeSubContractWorld({
   laneRoots = {},
   withNativeModule = true,
   launcherOverride = null,
+  /**
+   * Simulated CAPABILITY (a5sf-sub-contract P3 pairing, 2026-11-18 review): the
+   * product's `probe()` answer, replaced by a fixed one. The hosted runner's
+   * Landlock reports `network-destination: unsupported` (ABI v8) while a
+   * developer box reports `enforced`; a local machine cannot reproduce the
+   * runner's ABI, so the capability is INJECTED at the provider seam (the same
+   * seam the product probe reads) to prove the refusal path end to end. `null`
+   * (default) = the REAL provider probe, untouched.
+   */
+  capabilityOverride = null,
 }) {
   const seams = await loadSubContractSeams(repoRoot)
   const {
@@ -355,6 +365,12 @@ export async function makeSubContractWorld({
     assembly: { launcherPath, launcherSha256: launcherPin, minAbiVersion: 3 },
   })
   const counted = countingProvider(raw)
+  if (capabilityOverride !== null) {
+    // Only the PROBE is replaced: the spawn path is still the product provider,
+    // so a refusal measured here is the product's admission decision over a
+    // simulated capability, not a simulated refusal.
+    counted.provider.probe = async () => capabilityOverride
+  }
 
   const realm = await services.mountA5sfRealm({
     root: agent.ctx,

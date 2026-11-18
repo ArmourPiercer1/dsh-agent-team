@@ -1,0 +1,39 @@
+# MERGE OF MASTER b28728fef INTO task/host-next-20261116 — measured 2026-11-18T18:19:54Z (real UTC)
+
+## resolution (no side dropped)
+- dev/ci/uncollected-baseline.json: master's 46 kept; regenerated with
+  'node scripts/test-catalog.mjs --write-uncollected-baseline' from the MERGED tree -> 46, byte-identical to master's file (tool-derived, not hand-taken).
+- scripts/test-catalog.mjs: master's CF10-era hooks + our EXCLUDED_NEW/EXCLUDED_GREW/EXCLUDED_BASELINE_MISSING/
+  --max-excluded code both present; export diff vs master is ADD-ONLY (4 new symbols, none dropped).
+- scripts/test-catalog.test.mjs: master's tests + our two excludes tests; 28/28 pass.
+- .github/workflows/ci-integration.yml: catalog ratchet is now --max-uncollected 46 --max-excluded 9
+  (master's floor 46, our excludes bound 9).
+- dev/ci/eb3-ci-manifest.json: untouched by this branch; master's per-suite/waiver shape kept as-is
+  (the next-host lane is NOT in the manifest: its tree is gitignored and CI cannot provision it;
+   its two suites are bounded by dev/ci/excluded-baseline.json + --max-excluded instead).
+- dev/ci/test-contracts.json excludes / excluded-baseline.json: 9 entries unchanged; the two newly
+  collected suites (freeze-candidate, consumer-candidate) appear ONLY in the manifest suites[] list,
+  never in excludes / excluded-baseline / uncollected-baseline.
+
+## merged-tree numbers
+  test-catalog: tests=874 (872 master + 2 next-host excluded) uncollected=46 excluded=9 refused=0
+  catalog digest sha256:d66c40dd4fdb6f6f19f97fa609b4ed9a67ad6803b3605de3e59c6042785840a3
+  tinf-instruments: 50 suites, exit 0, 737 pass, 0 fail (host tree bind-mounted ABSENT)
+  negative controls: 32/32
+  dispatch parity vs e5bf05670: DIFFERS steps=18 old_files=25 new_files=69 problems=0
+  (identical to master's committed evidence line union old=25 new=69 set=sha256:9d56a972...;
+   DIFFERS is the pinned, deliberate growth recorded by #788 — no regeneration needed.)
+
+## gate table (all on the merged head)
+  node scripts/test-catalog.mjs --max-uncollected 46 --max-excluded 9   -> exit 0 (refused=0 findings=0)
+  node --test scripts/test-catalog.test.mjs                              -> 28/28
+  node scripts/dispatch-tests.mjs --check                               -> PASS legs=18 bad=0
+  node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670           -> DIFFERS problems=0 (matches pinned evidence)
+  node scripts/eb3-ci-required.mjs                                      -> pass workflows=10 findings=0
+  node scripts/eb3-ci-negative-controls.mjs                             -> 32/32
+  node scripts/docs-sync.mjs --check                                    -> findings=0 blocking=0
+  node scripts/lint-identities.mjs --diff <baseline>                    -> new 0, resolved 0
+  git diff --check b7276ffa...HEAD && git diff --check b28728fef...HEAD  -> clean
+  unshare -m -r <bind empty over tests/deepseek-harness-test-use> \
+    node scripts/dispatch-tests.mjs --run --leg tinf-instruments        -> suites=50 exit=0 737✔/0✖
+  node --test 'tests/next-host/*.test.mjs'                              -> 6/6 (port 13000, BANDS overlap=0)
