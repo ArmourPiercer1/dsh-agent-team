@@ -415,4 +415,3 @@ baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.t
 
 $ git diff --check
   -> exit 0
-

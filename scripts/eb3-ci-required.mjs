@@ -591,30 +591,88 @@ export function readSuiteList(text) {
 
 // ─────────────────── the deployed half of the hidden-host control (B3, 2026-11-16)
 /**
- * THE REAL SET OF HOST-REFUSAL MARKERS (2026-11-18; the predicate used to be ONE literal).
+ * THE REAL HOST-REFUSAL VOCABULARY (2026-11-18; the predicate used to be ONE literal, then one
+ * suffix).
  *
- * A suite is REFUSAL-CAPABLE when it consults an env var that decides whether an ABSENT pinned
- * host is a red or a declared `verdict=NOT_RUN`. The B3 rule hard-coded the a5sf spelling, so a
- * `hostFree` leg that listed `tests/world-factory/m7a-real-slice.test.mjs` — which consults
- * `M7A_REQUIRE_PINNED_HOST` and refuses exactly the same way — produced NO finding. The set is
- * derived from the repo, not remembered:
+ * A suite is HOST-DEPENDENT in two distinct ways, and a `hostFree` leg can honestly be blind to
+ * neither:
  *
- *   git grep -hoE '[A-Z][A-Z0-9_]*REQUIRE_PINNED_HOST' -- tests | sort -u
- *   => A5SF_REQUIRE_PINNED_HOST  (a5sf-fs-contract / a5sf-pty-contract / a5sf-sub-contract /
- *                                 a5sf-web-contract, through lib/a5sf-*-contract-world.mjs)
- *      M7A_REQUIRE_PINNED_HOST   (m7a-real-slice, m7a-real-slice-host-state, lib/m7a-step-verdict)
+ *   requireHost  `*_REQUIRE_PINNED_HOST` — "an absent pinned host is a RED, not a NOT_RUN".
+ *                The leg must carry `env.<marker>="1"`, otherwise the suite exits 0 while
+ *                running nothing (`A5SF-PTY-CONTRACT-HOST-REFUSED … skipped=15 verdict=NOT_RUN`).
+ *   hostTree     `*_HOST_TREE` — "which tree is the pinned host". A suite that reads one silently
+ *                falls back to `tests/deepseek-harness-test-use` when it is unset, so no env value
+ *                makes it host-free: it belongs in a host-dependent leg, or it is a declared
+ *                exception. `A5SF_PD31_HOST_TREE` is the planted case in control C10g.
  *
- * Two members today. A third spelling appearing in any tracked suite is
- * `CI_HOST_REFUSAL_MARKER_UNLISTED` in the controls (C10e derives the set again and refuses a
- * divergence), so this list cannot silently fall behind the repo it grades.
+ * The two lists are DERIVED from the repo, not remembered — over the paths the legs actually
+ * collect, every `*.test.mjs` under `tests/` AND under `scripts/` (the `tinf-instruments` leg collects
+ * four `scripts/` suites, so deriving under `tests/` alone missed a marker planted in one):
+ *
+ *   git grep -hoE 'process\.env\.[A-Z][A-Z0-9_]+' -- 'tests/*.test.mjs' 'scripts/*.test.mjs'
+ *   /REQUIRE_PINNED_HOST$/  => A5SF_REQUIRE_PINNED_HOST, M7A_REQUIRE_PINNED_HOST
+ *   /HOST_TREE$/            => A5SF_PD24_HOST_TREE, A5SF_PD25_HOST_TREE, A5SF_PD31_HOST_TREE,
+ *                              M7A_HOST_TREE
+ *
+ * `deriveHostRefusalSwitches()` performs exactly that classification, and the controls refuse a
+ * divergence in either direction (`CI_HOST_REFUSAL_MARKER_UNLISTED` / `_STALE`), so these lists
+ * cannot silently fall behind the repo they grade. SCOPE, stated honestly: a suite that reaches a
+ * switch only through a `lib/` module is not caught here unless the suite names it too (today all
+ * of them do); `areas[]` legs are still not expanded (see `checkHostRefusalGuard`).
  */
-export const HOST_REFUSAL_MARKERS = Object.freeze([
+export const HOST_REFUSAL_REQUIRE_MARKERS = Object.freeze([
   'A5SF_REQUIRE_PINNED_HOST',
   'M7A_REQUIRE_PINNED_HOST',
 ])
 
+export const HOST_REFUSAL_HOST_TREE_SWITCHES = Object.freeze([
+  'A5SF_PD24_HOST_TREE',
+  'A5SF_PD25_HOST_TREE',
+  'A5SF_PD31_HOST_TREE',
+  'M7A_HOST_TREE',
+])
+
+/** Every switch the guard knows, both roles (require-host first). */
+export const HOST_REFUSAL_SWITCHES = Object.freeze([
+  ...HOST_REFUSAL_REQUIRE_MARKERS,
+  ...HOST_REFUSAL_HOST_TREE_SWITCHES,
+])
+
+/** The require-host half — still the name controls C10c/C10d/C10e exercise. */
+export const HOST_REFUSAL_MARKERS = HOST_REFUSAL_REQUIRE_MARKERS
+
 /** The a5sf spelling on its own — the marker the B3 control (C10c) exercises. */
-export const HOST_REFUSAL_MARKER = HOST_REFUSAL_MARKERS[0]
+export const HOST_REFUSAL_MARKER = HOST_REFUSAL_REQUIRE_MARKERS[0]
+
+/**
+ * Classify the env switches a set of suite sources consults.
+ *
+ * The rule is the one the two lists are frozen from: a `process.env.NAME` read is a refusal
+ * switch when NAME ends in `REQUIRE_PINNED_HOST` (absence must be a red) or in `HOST_TREE` (the
+ * suite resolves the pinned tree itself). Both are read through `process.env`, never a constant,
+ * so a spelling that appears in a suite source is what the guard must know.
+ *
+ * @param {Iterable<{path?: string, text: string}>} files
+ * @returns {{requireHost: string[], hostTree: string[], all: string[]}}
+ */
+export function deriveHostRefusalSwitches(files) {
+  const requireHost = new Set()
+  const hostTree = new Set()
+  for (const file of files ?? []) {
+    const text = typeof file === 'string' ? file : file?.text
+    if (typeof text !== 'string') continue
+    for (const match of text.matchAll(/process\.env\.([A-Z][A-Z0-9_]+)/g)) {
+      const name = match[1]
+      if (/REQUIRE_PINNED_HOST$/.test(name)) requireHost.add(name)
+      else if (/HOST_TREE$/.test(name)) hostTree.add(name)
+    }
+  }
+  return {
+    requireHost: [...requireHost].sort(),
+    hostTree: [...hostTree].sort(),
+    all: [...new Set([...requireHost, ...hostTree])].sort(),
+  }
+}
 
 /** The reviewed exception spelling: a lane that provisions no host declares its NOT_RUN. */
 export const HOST_REFUSAL_DECLARED = 'declared-not-run'
@@ -728,25 +786,42 @@ export function checkHostRefusalGuard({ root = ROOT, manifest = loadManifest(roo
       for (const suite of Array.isArray(leg.suites) ? leg.suites : []) {
         const text = read(String(suite))
         if (text === null) continue // a nonexistent suite is CI_SUITE_ABSENT / DISPATCH_SUITE_UNTRACKED elsewhere
-        // EVERY marker the suite names must be set to '1' on this leg: one flag does not buy
-        // another (a suite that can refuse under either spelling is only guarded when both are).
-        const named = HOST_REFUSAL_MARKERS.filter((m) => text.includes(m))
-        if (named.length === 0) continue
-        const unguarded = named.filter((m) => leg.env?.[m] !== '1')
-        if (unguarded.length === 0) continue
+        // EVERY require-host marker the suite names must be set to '1' on this leg: one flag does
+        // not buy another (a suite that can refuse under either spelling is only guarded when all
+        // are). A `*_HOST_TREE` read is different in kind: no env value makes such a suite
+        // host-free, so it is a finding unless it is the declared exception.
+        const namedRequire = HOST_REFUSAL_REQUIRE_MARKERS.filter((m) => text.includes(m))
+        const namedTree = HOST_REFUSAL_HOST_TREE_SWITCHES.filter((m) => text.includes(m))
+        if (namedRequire.length === 0 && namedTree.length === 0) continue
+        const unguarded = namedRequire.filter((m) => leg.env?.[m] !== '1')
+        if (unguarded.length === 0 && namedTree.length === 0) continue
         // The exception must NAME this suite. Being listed in the leg is not a declaration.
         if (waiver.suites.has(String(suite))) continue
+        const reasons = []
+        if (unguarded.length > 0) {
+          reasons.push(
+            `it can turn an ABSENT pinned host into \`verdict=NOT_RUN\` with skips (it consults ${unguarded.join(', ')}); ` +
+              'set env.<that marker>="1" on the leg (and on its step) so absence is a red',
+          )
+        }
+        if (namedTree.length > 0) {
+          reasons.push(
+            `it resolves the pinned host TREE itself (it reads ${namedTree.join(', ')} and silently falls back to ` +
+              'tests/deepseek-harness-test-use when unset), so no env value makes it host-free: move it to a ' +
+              'host-dependent leg',
+          )
+        }
         findings.push({
           code: 'CI_HOST_REFUSAL_UNGUARDED',
           detail:
-            `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which can turn an ABSENT pinned host into ` +
-            `\`verdict=NOT_RUN\` with skips (it consults ${unguarded.join(', ')}). Set env.<that marker>="1" on the leg ` +
-            `(and on its step) so absence is a red, or name THIS suite in hostRefusal {mode: "${HOST_REFUSAL_DECLARED}", ` +
+            `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which is host-dependent: ` +
+            `${reasons.join('; and ')}. Or name THIS suite in hostRefusal {mode: "${HOST_REFUSAL_DECLARED}", ` +
             `suites: ["${suite}"], why: <reason>} if this lane deliberately provisions no host (${MANIFEST_REL})`,
           layer: layer.id,
           leg: leg.id,
           path: suite,
-          markers: unguarded,
+          markers: [...unguarded, ...namedTree],
+          switches: { requireHost: unguarded, hostTree: namedTree },
         })
       }
     }

@@ -23,9 +23,9 @@
 test at tests/world-factory/a5sf-pd34-member-stop.test.mjs:183:1
 ✖ PD34-PIN: the entry did not exist at the lane base (3.624666ms)
   AssertionError [ERR_ASSERTION]: PD34-PIN INCOMPLETE: the lane base 3101ca08f is not readable in this checkout (fatal: Not a valid object name 3101ca08f^{commit}). The pin cannot be evaluated; "cannot evaluate" must never be read as "does not exist". Check the checkout out with real history (the CI job declares fetch-depth: 0) or set A5SF_PD34_BASE to a base this clone carries.
-  
+
   128 !== 0
-  
+
       at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/residual-fixes-20261116/.artifacts/tmp/pd34-depth1/tests/world-factory/a5sf-pd34-member-stop.test.mjs:195:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1402:25)

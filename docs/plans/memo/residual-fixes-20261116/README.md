@@ -28,8 +28,16 @@ hosted red B2 recorded (`exit was 1 but the DIGEST line did not match`, byte-ide
   honest statement is *"the tail is truncated"*. A truncated tail is sufficient and is what the
   suite hit. The dose–response (40 → 96/200, 100 → 174/300, 200 → 265–267/400) is in
   `dev/agent-workflow/evidence/residual-fixes-20261116/f1-*.txt`.
-- **Change:** `scripts/freeze-candidate.mjs:543` — `process.exitCode = main(...)`. The test was
-  not touched; the exit code is the same value.
+- **Change:** `scripts/freeze-candidate.mjs` — `process.exitCode = main(...)`, plus the closed-reader
+  guard below. The test was not touched; the exit code is the value `main` computed.
+- **Round 2 (review of #788): the drain traded a silent tail-drop for a false DRIFT code.**
+  `--check | head -1` closes the pipe, the next write raises `EPIPE`, an unhandled stream error is an
+  uncaught exception → **exit 1** (the documented DRIFT code) with a Node stack trace. Measured
+  3/3 before, rc 0 3/3 after (the base commit is not the reference: it exits 0 only because it
+  drops the write). `keepSemanticExitCodeOnClosedReader()` swallows `EPIPE`/`ECONNRESET` on stdout
+  and stderr and rethrows everything else — a closed reader cannot change a verdict, and a real
+  stream error stays fatal. The flush guarantee is intact: 100 pooled runs, 0 missing `CLEAN` and
+  0 missing `DIGEST`; the suite 20/20 with a verdict line. See `P0-epipe.md`.
 
 ## 2. `PD34-PIN` failed open on absent history
 
@@ -50,10 +58,24 @@ The arm mapped both to `exists = false`.
 listed `tests/world-factory/m7a-real-slice.test.mjs` (which consults `M7A_REQUIRE_PINNED_HOST`
 and refuses identically) produced **no finding**.
 
-- **Marker set, derived from the repo and listed explicitly** in `HOST_REFUSAL_MARKERS`:
-  `git grep -hoE '[A-Z][A-Z0-9_]*REQUIRE_PINNED_HOST' -- tests` → `A5SF_REQUIRE_PINNED_HOST`
-  (22 uses) and `M7A_REQUIRE_PINNED_HOST` (11 uses). Controls derive it again (C10e) and refuse a
-  divergence in either direction (`CI_HOST_REFUSAL_MARKER_UNLISTED` / `_STALE`).
+- **Vocabulary, derived from the collected paths and listed explicitly** — TWO roles, because a
+  host-free leg can be blind in two different ways (`tests/` only missed a switch planted in a
+  collected `scripts/` suite; the suffix could not see a host-tree read):
+  - `HOST_REFUSAL_REQUIRE_MARKERS` (`*_REQUIRE_PINNED_HOST`): `A5SF_REQUIRE_PINNED_HOST`,
+    `M7A_REQUIRE_PINNED_HOST` — absence must be a red, so the leg must carry `env.<marker>="1"`.
+  - `HOST_REFUSAL_HOST_TREE_SWITCHES` (`*_HOST_TREE`): `A5SF_PD24_HOST_TREE`,
+    `A5SF_PD25_HOST_TREE`, `A5SF_PD31_HOST_TREE`, `M7A_HOST_TREE` — the suite resolves the pinned
+    tree itself and silently falls back to it, so **no env value makes it host-free**: it belongs in
+    a host-dependent leg, or it is a named exception.
+  - Derivation scope = the paths the legs actually collect (`tests/` **and** `scripts/`
+    `*.test.mjs`; `tinf-instruments` collects ten `scripts/` suites), through
+    `deriveHostRefusalSwitches()`; C10e re-derives with its own scan and refuses a divergence in
+    either direction (`CI_HOST_REFUSAL_MARKER_UNLISTED` / `_STALE`). Round 2 measured the two gaps:
+    a novel spelling planted in `scripts/dispatch-tests.test.mjs` left C10e green (now
+    `CI_HOST_REFUSAL_MARKER_UNLISTED`), and a real `A5SF_PD31_HOST_TREE` suite in a `hostFree` leg
+    gave 0 findings (now 1, naming the switch). Controls **C10f** (scripts/ plant; collected-path
+    derivation vs a tests/-only one) and **C10g** (host-tree switch; every require marker set still
+    refuses; a per-suite waiver admits).
 - **Before:** M7A plant → `findings=0`; **after:** `findings=1` naming the marker. A5SF plant:
   1 → 1.
 - **Honest-tree fallout, resolved honestly:** the wider predicate named
@@ -115,12 +137,12 @@ union `25 → 69`. `dev/ci/uncollected-baseline.json` regenerated: **46**, both 
 | `node scripts/dispatch-tests.mjs --check` | `PASS legs=18 bad=0` |
 | `node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670` | `DIFFERS steps=18 old_files=25 new_files=69 problems=0` (exit 1 by design) |
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=10 findings=0` |
-| `node scripts/eb3-ci-negative-controls.mjs` | `30/30` (was 28/28; C10d, C10e added) |
+| `node scripts/eb3-ci-negative-controls.mjs` | **32/32** (was 28/28; C10d, C10e, C10f, C10g added, none renumbered) |
 | `node scripts/census-plan.test.mjs` | green |
 | `node scripts/census-cutover.test.mjs` | green |
 | `node scripts/docs-sync.mjs --check` | `findings=0 blocking=0` |
 | `node scripts/lint-identities.mjs --diff …0237d487.txt` | `new 0, resolved 0` |
-| `git diff --check` | clean |
+| `git diff --check b7276ffa...HEAD` | clean (commit range; a bare `git diff --check` on a clean tree proves nothing) |
 | the collected leg, host ABSENT, 3 consecutive runs | green (telemetry in `dev/agent-workflow/evidence/residual-fixes-20261116/COLLECTION.md`) |
 
 ## 8. Explicitly not done / UNKNOWN
@@ -137,3 +159,14 @@ union `25 → 69`. `dev/ci/uncollected-baseline.json` regenerated: **46**, both 
 - **Not fixed (out of scope):** the marker predicate is textual (a suite that reaches a marker
   through a `lib/` file is caught, a suite that merely *tests* the marker is a false positive
   requiring a per-suite declaration); `areas[]` legs are still not expanded by the guard.
+
+## 9. Review round 2 (on #788 head `ce642dae2`)
+
+| finding | before | after |
+| --- | --- | --- |
+| **P0** `| head -1` → EPIPE → exit 1 = false DRIFT + stack | 3/3 rc 1, 1203-byte trace | 3/3 rc 0, no trace; tampered 3/3 rc 1 no trace; 100 pooled runs 0 missing `CLEAN`/`DIGEST` |
+| **MEDIUM** vocabulary scope (`tests/` only) and verbs (suffix only) | novel spelling planted in a collected `scripts/` suite: C10e **green**; real `A5SF_PD31_HOST_TREE` suite in a `hostFree` leg: **0 findings** | `CI_HOST_REFUSAL_MARKER_UNLISTED`; **1 finding** naming the switch; C10f + C10g |
+| **LOW** the recorded gate was vacuous (clean-tree `git diff --check`) | exit 0 regardless; the range showed trailing whitespace at `f2-pd34-pin-depth1-after.txt:26,28` and a blank EOF line in `gates.txt` | whitespace stripped across the evidence dir; the gate is recorded as `git diff --check b7276ffa...HEAD` |
+
+Evidence: `P0-epipe.md`, `R2-host-refusal-vocabulary.txt` (before/after transcripts, including the
+planted-file run that shows the old derivation staying green).
