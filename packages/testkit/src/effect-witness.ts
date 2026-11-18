@@ -83,7 +83,7 @@ export interface ObservationWindowDescriptor {
  */
 export interface SealedObservationWindow extends ObservationWindowDescriptor {
   window_id: string
-  watchedPaths: string[]
+  watchedPaths: readonly string[]
   /** ISO timestamp the baseline snapshot was taken. */
   armedAt: string
   /** ISO timestamp the post snapshot was taken, or null while armed. */
