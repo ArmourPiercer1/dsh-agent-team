@@ -79,7 +79,28 @@ import {
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { gunzipSync } from 'node:zlib'
-import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+import { DSH_BASELINE_VERSION, findTestRepoRoot, NEXT_HOST, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+
+/**
+ * The Host baseline a provisioning run is FOR. `legacy` (the default) is the
+ * pin in `tests/paths.mjs`'s legacy block; `next` is the second pinned Host
+ * (`NEXT_HOST`). There is no free-form form: a caller names one of the pins this
+ * repository commits, so a provisioning run can never invent a baseline.
+ */
+export const HOST_BASELINES = Object.freeze({
+  legacy: Object.freeze({ host: 'legacy', version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA }),
+  next: Object.freeze({ host: 'next', version: NEXT_HOST.version, sha: NEXT_HOST.sha }),
+})
+
+/** @throws {HostSandboxAssetError} HOST_BASELINE_UNKNOWN */
+export function resolveHostBaseline(host = null) {
+  if (host === null || host === undefined) return HOST_BASELINES.legacy
+  const found = typeof host === 'string' ? HOST_BASELINES[host] : null
+  if (found === undefined || found === null) {
+    throw new HostSandboxAssetError('HOST_BASELINE_UNKNOWN', `unknown host baseline ${JSON.stringify(host)}; this repository pins only ${Object.keys(HOST_BASELINES).join(' / ')} (tests/paths.mjs) — a baseline is never typed in free-form`)
+  }
+  return found
+}
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /**
@@ -370,15 +391,16 @@ export function assertTrustedSourceTree(tree, { repoRoot } = {}) {
  * @param {object} [opts.manifest] manifest override (tests; defaults to the committed file)
  * @returns {Promise<object>} the provenance record
  */
-export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = null, repoRoot, manifest = null } = {}) {
+export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = null, repoRoot, manifest = null, host = null } = {}) {
   const layout = await resolveHostSandboxLayout(runtimeTree)
   const m = manifest ?? readHostSandboxAssetManifest({ repoRoot })
   const libc = detectedLibcVariant()
+  const pin = resolveHostBaseline(host)
   const pinned = manifestPlatformEntry(m, {
-    version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, platform: `${process.platform}-${process.arch}`, libc,
+    version: pin.version, sha: pin.sha, platform: `${process.platform}-${process.arch}`, libc,
   })
   const relPaths = Object.keys(pinned.files).sort()
-  const baseline = { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, manifestKey: `${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}` }
+  const baseline = { host: pin.host, version: pin.version, sha: pin.sha, manifestKey: `${pin.version}@${pin.sha}` }
 
   // (0) WRITE SCOPE AND MODE, BEFORE ANY FILESYSTEM MUTATION (review round 1,
   // F6 + F7). A manifest is data this module does not trust blindly: a key is a
@@ -531,7 +553,7 @@ export async function provisionHostSandboxAssets({ runtimeTree, sourceTree = nul
     source: {
       kind: src.kind, tree: src.tree, realTree: src.realTree ?? null, runtimeHead,
       headEvidence: runtimeHead === null ? 'unavailable (source tree is not a git checkout)' : 'git rev-parse HEAD',
-      headMatchesPinnedBaseline: runtimeHead === null ? 'unknown' : runtimeHead === TEST_USE_BASELINE_SHA,
+      headMatchesPinnedBaseline: runtimeHead === null ? 'unknown' : runtimeHead === baseline.sha,
     },
   })
 }
@@ -591,9 +613,10 @@ export async function probeHostSandboxBackend(runtimeTree) {
 export async function preflightHostSandbox({
   runtimeTree, sourceTree = null, repoRoot, manifest = null,
   provision = process.env[PROVISION_ENV] !== '0' && process.env[PROVISION_ENV] !== 'false',
-  throwOnProbeError = false,
+  throwOnProbeError = false, host = null,
 } = {}) {
-  const baseline = { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA }
+  const pin = resolveHostBaseline(host)
+  const baseline = { host: pin.host, version: pin.version, sha: pin.sha }
   const base = {
     schema: SANDBOX_PREFLIGHT_SCHEMA,
     at: new Date().toISOString(),
@@ -633,7 +656,7 @@ export async function preflightHostSandbox({
 
   if (probe1.backend === 'unusable' && provision) {
     try {
-      base.asset = await provisionHostSandboxAssets({ runtimeTree, sourceTree, repoRoot, manifest })
+      base.asset = await provisionHostSandboxAssets({ runtimeTree, sourceTree, repoRoot, manifest, host })
     } catch (error) {
       const code = error instanceof HostSandboxAssetError ? error.code : 'PROVISION_FAILED'
       if (FATAL_PROVISION_CODES.includes(code)) throw error
@@ -1090,14 +1113,16 @@ export async function provisionHostSandboxAssetsFromPackage({
   receiptPath = null,
   receiptEnv = process.env,
   now = () => new Date(),
+  host = null,
 } = {}) {
   const root = resolve(repoRoot ?? DEFAULT_REPO_ROOT)
   const layout = await resolveHostSandboxLayout(runtimeTree)
   const m = manifest ?? readHostSandboxAssetManifest({ repoRoot: root })
   const libc = detectedLibcVariant()
   const platform = `${process.platform}-${process.arch}`
-  const baseline = { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, manifestKey: `${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}` }
-  const pinned = packagePlatformEntry(m, { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, platform, libc })
+  const pin = resolveHostBaseline(host)
+  const baseline = { host: pin.host, version: pin.version, sha: pin.sha, manifestKey: `${pin.version}@${pin.sha}` }
+  const pinned = packagePlatformEntry(m, { version: pin.version, sha: pin.sha, platform, libc })
 
   // (1) SPEC: exact version only, and it must be the pinned one.
   const parsed = parsePackageSpec(spec === undefined || spec === null || spec === '' ? `${pinned.package}@${pinned.version}` : spec)
@@ -1368,8 +1393,9 @@ export async function provisionHostSandboxAssetsFromPackage({
         tarballBytes: tarballBytes.length,
       },
       host: {
-        baselineVersion: DSH_BASELINE_VERSION,
-        sha: TEST_USE_BASELINE_SHA,
+        hostBaseline: pin.host,
+        baselineVersion: pin.version,
+        sha: pin.sha,
         runtimeTree: layout.runtimeTree,
         runtimeHead,
         platform,

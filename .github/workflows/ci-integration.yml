@@ -273,11 +273,14 @@ jobs:
         # exception is `a5sf-fs-contract-layer-b` (`hostRefusal: declared-not-run`), which lives in
         # this same no-host lane and declares its NOT_RUN on purpose.
         # The ratchet is tightened to the measured post-B2+B3 count (76 -> 48); it may only go down.
+        # --max-excluded bounds the OTHER non-execution channel (`excludes` in test-contracts.json):
+        # a path there is never run, so it gets a reviewed baseline (dev/ci/excluded-baseline.json)
+        # and this count ratchet. Without both, "add it to excludes" retires a suite in silence.
         env:
           A5SF_REQUIRE_PINNED_HOST: '1'
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-          node scripts/test-catalog.mjs --max-uncollected 48
+          node scripts/test-catalog.mjs --max-uncollected 46 --max-excluded 9
 
       - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
         # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is

@@ -118,3 +118,7 @@ agent-sandbox-hotfix-*.sh
 # (.artifacts/evidence/blobs/... indexed by dev/agent-workflow/evidence/RELOCATED-MANIFEST.tsv).
 # Local + temporary only; git history remains the durable fallback (see the manifest header).
 .artifacts/
+
+# next host runtime tree (second pinned DSH host, 0.2.2-rc.5) — gitignored,
+# reproducible with the documented command (docs/TEST_METHODS.md §11)
+tests/deepseek-harness-next/

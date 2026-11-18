@@ -1,0 +1,2 @@
+# instance-port13000.log excerpt (token redacted) — 2026-11-18T15:45:20Z
+dsh web: http://127.0.0.1:13000/?token=<REDACTED>

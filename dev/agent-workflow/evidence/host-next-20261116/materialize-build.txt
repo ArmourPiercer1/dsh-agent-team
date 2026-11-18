@@ -1,0 +1,40 @@
+# MATERIALIZE + BUILD — measured 2026-11-18T14:17:22Z (real UTC)
+
+## commands that produced the next host (all inside this worktree)
+$ git clone --branch dsh-v0.2.2-rc.5 --depth 1 \
+    https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+$ cd tests/deepseek-harness-next
+$ npm install --prefix ../.next-tools pnpm@11.28.5          # the tree pins pnpm@11.28.5
+$ XDG_* PNPM_HOME=... node ../.next-tools/node_modules/pnpm/bin/pnpm.cjs \
+    install --ignore-scripts --frozen-lockfile --store-dir <worktree>/.next-pnpm-store
+$ DSH_CLIENT_COMMIT_HASH=9c2670d3bc ESBUILD_WORKER_THREADS=1 \
+    node ../.next-tools/node_modules/pnpm/bin/pnpm.cjs run build
+
+## install (tail)
++ zod 4.6.6
+
+Done in 15.5s using pnpm v11.28.5
+EXIT=0
+
+## build (tail)
+run-gates: PASS Client bundle (8.38s)
+run-gates: start Web build
+run-gates: PASS Web build (6.67s)
+run-gates: PASS client aggregate check (34.24s)
+
+run-gates: 10 passed, 0 failed, 0 skipped in 130.16s.
+build: recorded 371 client artifact(s) with 2 public value(s)
+EXIT=0
+
+## attribution actually observed
+  tree HEAD                  = 9c2670d3bce5275e0d1610272958121af87787bb
+  tag                        = dsh-v0.2.2-rc.5
+  package.json version       = 0.2.2-rc.5
+  pnpm used                  = using pnpm v11.28.5
+  client artifacts recorded  = recorded 371 client artifact(s)
+  built CLI entry            = 1182 bytes  tests/deepseek-harness-next/apps/cli/lib/bin.js
+  built sandbox entry        = 5132 bytes  tests/deepseek-harness-next/native/system/packages/entry/lib/index.js
+  node                       = v24.21.0
+
+## the tree is gitignored (never committed) and reproducible by the commands above
+  porcelain lines = 0
