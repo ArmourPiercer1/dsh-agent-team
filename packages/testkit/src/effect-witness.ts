@@ -28,6 +28,16 @@
  * be edited into a different observation; (e) nothing survives JSON, so a
  * replayed evidence file is unsealed by construction.
  *
+ * WINDOWS (M7-B1). Rows also carry the WINDOW they were taken in. An instrument
+ * created with a `window` descriptor gets a branded window record
+ * (`observationWindowOf`) binding it to the World/Agent/Execution the World
+ * Factory declared, with a lifecycle (`armedAt` -> `closedAt`) and the producing
+ * module. `closeObservationWindow` moves the SAME `window_id` from `pre` to
+ * `post`, so a pre/post pair is one window; the oracle refuses a row whose
+ * `window_id` is not the contract's. There is no way to mint a window record or a
+ * row outside this module — same identity discipline as the row seal, not a
+ * second one.
+ *
  * SCOPE (M7-A, corrected). A witness watches PATHS, not "the filesystem". Every
  * row therefore declares the absolute paths its instrument actually watched
  * (`watchedPaths`) and, when it reports an effect, the absolute paths it saw

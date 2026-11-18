@@ -53,6 +53,14 @@ All five pass unchanged against the pinned host. Nothing was re-pinned, relaxed,
 suite collectable, and no expectation was mechanically updated. (This is the "investigate first" outcome:
 the old behaviour and the assertions agree on this host.)
 
+## 3b. The CI checkout shape
+
+`../m7b1-observation-window-20261116/ci-shape.txt` records the same two batches inside a **full clone
+of the pushed head** (`git clone`, 2859 commits, porcelain 0) with its own `pnpm install
+--frozen-lockfile` + build, the pinned host fetched by exact SHA and built, and the assets provisioned
+from the pinned published package: **B4/1 30/30 in 27 s**, **B4/2 27/27 in <1 s**. A fresh clone there
+carries no usable native assets, which is the CI fact the `host-sandbox assets` step exists for.
+
 ## 4. The ratchet
 
 `dev/ci/uncollected-baseline.json` was regenerated with

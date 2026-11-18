@@ -69,6 +69,30 @@ its own business) cannot produce that pair of answers.
 So there are exactly two honest answers to a missing host — a *declared* `INSTRUMENT_ERROR` or a hard
 red — and no third path on which the window goes green.
 
+## 3b. The CI checkout shape — the same three steps, in a FULL clone of the pushed head
+
+`ci-shape.txt` is the whole transcript. Shape: `git clone --branch task/tinf-next-20261116
+https://github.com/ArmourPiercer1/dsh-agent-team.git` (full history, **2859 commits**, porcelain 0,
+HEAD == the pushed head `325e34ce28`), `pnpm install --frozen-lockfile` (a warm local pnpm store was
+used only to cut install time; the lockfile is frozen, so the dependency set is a cold CI's), repo
+`build` + `build:composition` (exit 0), the pinned host fetched by exact SHA from the public remote
+(detached, porcelain 0) and built with the workflow's `TEST_METHODS §2` chain, then the native assets
+provisioned from the pinned published package (`bin/glibc/system.node` = `54a9c25c…` = the pin).
+
+| graded step | argv | result | wall |
+| --- | --- | --- | --- |
+| M7-B1 | `M7B1_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=1200000 --test-reporter=spec tests/world-factory/m7b1-observation-window.test.mjs` | **7/7 pass**, arms A1–A6 identical to the worktree run | **93 s** (`bootMs=89645`) |
+| B4/1 | `A5SF_REQUIRE_PINNED_HOST=1 … --test-timeout=600000 … a5sf-pty-contract.tests.mjs a5sf-sub-contract.test.mjs` | **30/30 pass** | **27 s** |
+| B4/2 | `A5SF_REQUIRE_PINNED_HOST=1 … --test-timeout=300000 … a5sf-web-contract a5sf-web-row a5sf-pd31-read-image` | **27/27 pass** | **<1 s** |
+
+A fresh clone in this shape carries **no usable native assets** — which is exactly why the
+`host-sandbox assets` step precedes both graded steps, and why a run without it fails closed
+(`HOST_ASSETS_UNPROVEN`) instead of grading an unpinned backend.
+
+**Disclosure:** the head tested in this clone is `325e34ce28`. The commits after it on this branch
+touch only a module doc comment and this evidence/memo prose — no executable change. Every other number
+in this file comes from the task worktree and is labelled as such.
+
 ## 4. Where CI grades it
 
 `.github/workflows/census-runtime.yml`, step **`M7-B1 observation window — World-Factory-owned scope +
