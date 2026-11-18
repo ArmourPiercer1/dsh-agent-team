@@ -93,16 +93,22 @@ export const CLIENT_COMMIT_HASH = '639ed01539'
  * The bands, by role (the World factory leases from these; legacy kits keep
  * their own candidate lists INSIDE the old 3180-3186 / 3491-3500 ranges, which
  * every band below still contains):
- *   HOST_PORT_BANDS  host instances: 3181-3199, then 13000-13049. 3180 is
+ *   HOST_PORT_BANDS  LEGACY host instances only: 3181-3199. 3180 is
  *                    deliberately NOT leased to World hosts: it is the
  *                    hand-run default of TEST_METHODS §2 and several kits pin
  *                    it, so a World never steals it from a human/kit run.
+ *                    RULING (UTE-Prep, 2026-11-16): the bands are partitioned BY
+ *                    GENERATION — legacy keeps 3181-3199, the second pinned host
+ *                    (NEXT_HOST.portBands) leases 13000-13049 ONLY. The two sets
+ *                    are disjoint, so a legacy World lease and a next-host boot
+ *                    can never collide on a port; tests/next-host asserts it.
  *   MOCK_PORT_BANDS  the in-process mock provider: 3491-3500, then 13050-13099.
- * The upper band is FINITE on purpose (100 ports: 50 host + 50 mock) — enough
- * for the six planned parallel family lanes at several Worlds each, while a
- * runaway leaser still exhausts quickly and fails closed instead of wandering
- * the port space. Widening it again is a one-line change here plus a recorded
- * ruling.
+ * The upper band is FINITE on purpose (100 ports: 50 next-generation host +
+ * 50 mock) — enough for the next-generation host lanes at several Worlds each,
+ * while a runaway leaser still exhausts quickly and fails closed instead of
+ * wandering the port space. Widening it again is a one-line change here plus a
+ * recorded ruling. Legacy host leasing stays in 3181-3199 by the 2026-11-16
+ * partition ruling; it no longer falls through to 13000-13049.
  */
 export const TEST_PORT_RANGES = Object.freeze([
   Object.freeze([3180, 3199]),
@@ -112,7 +118,6 @@ export const TEST_PORT_RANGES = Object.freeze([
 /** World-factory host-instance leasing order (3180 excluded — see above). */
 export const HOST_PORT_BANDS = Object.freeze([
   Object.freeze([3181, 3199]),
-  Object.freeze([13000, 13049]),
 ])
 /** World-factory mock-provider leasing order. */
 export const MOCK_PORT_BANDS = Object.freeze([
@@ -181,4 +186,63 @@ export function homeDir(repoRoot, name) {
     throw new Error(`homeDir: invalid home name: ${JSON.stringify(name)}`)
   }
   return join(homeRoot(repoRoot), name)
+}
+
+// ── NEXT HOST (0.2.2-rc.5) ─────────────────────────────────────────────────
+// The SECOND, INDEPENDENT pinned Host, standing beside the legacy one above.
+// The legacy constants (`DSH_BASELINE_VERSION`, `TEST_USE_BASELINE_SHA`,
+// `CLIENT_COMMIT_HASH`, `TEST_USE_REL`) are the pin of the legacy world and do
+// not move when this block changes — that separation is the point of the block
+// (a next-host upgrade must never be able to re-point the legacy suites).
+//
+// Verified 2026-11-16 with `git ls-remote --tags` against UPSTREAM (the `fork`
+// does not carry the `dsh-v0.2.2*` tags at all):
+//   dsh-v0.2.2-rc.5 = 9c2670d3bce5275e0d1610272958121af87787bb   (lightweight tag)
+//   dsh-v0.2.2-rc.3 = 38a6a5c965aa99ab525161efb7cc5cf1fe62fced   (the "38a6a5c" in
+//                     the earlier assessment — NOT this round's target)
+// The tree is a shallow clone at that tag; it is gitignored and reproducible by
+// the documented command in docs/TEST_METHODS.md §11:
+//   git clone --branch dsh-v0.2.2-rc.5 --depth 1 \
+//     https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+//
+// Its native sandbox assets are the SAME published package version the legacy
+// host pins (`@deepseek-ai/node-addon-system-linux-x64@0.1.2`): the rc.5 tree's
+// own `native/system/packages/{entry,linux-x64}` manifests and C sources are
+// byte-identical to the 0.2.0-rc.2 tree's, and the published tarball hashes to
+// the committed file digests (measured — see the manifest entry and
+// dev/agent-workflow/evidence/host-next-20261116/).
+export const NEXT_HOST = Object.freeze({
+  id: 'next',
+  version: '0.2.2-rc.5',
+  sha: '9c2670d3bce5275e0d1610272958121af87787bb',
+  shortSha: '9c2670d3bc',
+  tag: 'dsh-v0.2.2-rc.5',
+  /** Upstream remote (the Team fork does not carry the 0.2.2 tags). */
+  url: 'https://github.com/deepseek-ai/deepseek-harness.git',
+  /** Workspace-relative tree (gitignored, its own git checkout). */
+  treeRel: 'tests/deepseek-harness-next',
+  /** Manifest key in tests/world-factory/lib/host-sandbox-assets-manifest.json. */
+  manifestKey: '0.2.2-rc.5@9c2670d3bce5275e0d1610272958121af87787bb',
+  /** Its native-asset package version (identical to the published 0.1.2). */
+  nativeAddonVersion: '0.1.2',
+  /** DSH_HOME names are suffixed so a next world never shares a home. */
+  homeSuffix: '-next',
+  /**
+   * Its own host-port family: 13000-13049 — the upper sanctioned host band,
+   * which the legacy family no longer leases (RULING UTE-Prep 2026-11-16: the
+   * generations are partitioned, not interleaved). Disjoint from
+   * HOST_PORT_BANDS by construction; tests/next-host asserts the disjointness
+   * and that a boot lands here, never in the legacy 3181-3199 range. Never 3080.
+   */
+  portBands: Object.freeze([Object.freeze([13000, 13049])]),
+})
+
+/** Absolute path of the next-host tree for a resolved repo root. */
+export function nextHostTree(repoRoot) {
+  return join(resolve(repoRoot), NEXT_HOST.treeRel)
+}
+
+/** Absolute path of one next-host DSH_HOME (always `<world>-next`). */
+export function nextHostHomeDir(repoRoot, world) {
+  return homeDir(repoRoot, `${world}${NEXT_HOST.homeSuffix}`)
 }

@@ -32,7 +32,7 @@ import {
   provisionHostSandboxAssetsFromPackage,
   readHostSandboxAssetManifest,
 } from '../tests/world-factory/lib/host-sandbox-assets.mjs'
-import { findTestRepoRoot, testUseTree } from '../tests/paths.mjs'
+import { findTestRepoRoot, nextHostTree, testUseTree } from '../tests/paths.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The Team tree this CLI lives in (manifest + default destination lookup root). */
@@ -45,7 +45,9 @@ const usage = () => {
     '  --from-package [spec]  provision from the pinned published package; the spec may be',
     '                         omitted, in which case the manifest\'s pinned package@version is used.',
     '                         Only an EXACT version is accepted (no ranges, no tags, no `latest`).',
-    '  --runtime-tree <path>  destination runtime checkout (default: <this tree>/tests/deepseek-harness-test-use)',
+    '  --host <legacy|next>   which pinned Host baseline to provision (default: legacy).',
+    '                         `next` = the second pinned host at NEXT_HOST (tests/paths.mjs).',
+    '  --runtime-tree <path>  destination runtime checkout (default: the selected host\'s tree)',
     '  --receipt <path>       receipt file (default: <repo>/.artifacts/tmp/host-assets/provision-receipt.json)',
     '  --manifest             print the pinned manifest and exit',
     '  --help                 this text',
@@ -78,16 +80,20 @@ try {
     console.log(JSON.stringify(m, null, 2))
     process.exit(0)
   }
+  const host = opt('host') ?? 'legacy'
   const fromPackage = fromPackageValue()
   if (!fromPackage.present) {
     throw new HostSandboxAssetError('USAGE', 'nothing to do: pass --from-package [@scope/name@EXACT_VERSION] (see --help); this CLI only provisions the pinned published package')
   }
-  const runtimeTree = resolve(opt('runtime-tree') ?? testUseTree(findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE))
+  const repoRoot = findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE
+  const defaultTree = host === 'next' ? nextHostTree(repoRoot) : testUseTree(repoRoot)
+  const runtimeTree = resolve(opt('runtime-tree') ?? defaultTree)
   const receipt = await provisionHostSandboxAssetsFromPackage({
     runtimeTree,
     spec: fromPackage.spec ?? undefined,
     repoRoot: TEAM_TREE,
     receiptPath: opt('receipt') ?? undefined,
+    host,
   })
   console.log([
     'HOST-ASSETS-PROVISIONED',
@@ -96,6 +102,7 @@ try {
     `tarballSha256=${receipt.package.tarballSha256}`,
     `distIntegrity=${receipt.package.distIntegrity}`,
     `files=${String(receipt.files.length)}`,
+    `hostBaseline=${receipt.host.hostBaseline}`,
     `host=${receipt.host.sha}`,
     `manifestDigest=${receipt.manifest.digest}`,
     `utc=${receipt.at}`,

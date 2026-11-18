@@ -237,3 +237,111 @@ RUN record 另带 `recordClass` 与 `candidateClaimEligibility`（机器可读�
 ### 10.5 一页操作手册
 
 实现者按 `docs/DEV-LIVE-OPERATOR-GUIDE.md` 执行（如何自授权、写什么、禁止什么、3 次后如何升级）。
+
+## 11. 第二台 pinned Host（next host，0.2.2-rc.5）：pin、物化、原生资产与验收通道（2026-11-16）
+
+**目的**：legacy Host（`tests/deepseek-harness-test-use`，0.2.0-rc.2 @ `639ed01539`）保持不动，另立
+一台**独立**的 pinned Host 用于验证 UTE 设计依赖的 native API。两台 Host 的 pin、树、`DSH_HOME`、
+端口族、构建产物、原生资产与证据**全部隔离**；唯一来源仍是 `tests/paths.mjs`（legacy 常量
+`DSH_BASELINE_VERSION` / `TEST_USE_BASELINE_SHA` / `CLIENT_COMMIT_HASH` / `TEST_USE_REL` **不移动**，
+next host 的 pin 在文件末尾的 `NEXT_HOST` 块）。
+
+### 11.1 Pin（2026-11-16 复核）
+
+| 字段 | 值 | 复核方式 |
+| --- | --- | --- |
+| version | `0.2.2-rc.5` | `tests/paths.mjs#NEXT_HOST.version` |
+| tag | `dsh-v0.2.2-rc.5`（**轻量 tag**，无 `^{}` peel 行，ref 即 commit） | `git ls-remote --tags https://github.com/deepseek-ai/deepseek-harness.git 'dsh-v0.2.2*'` |
+| commit | `9c2670d3bce5275e0d1610272958121af87787bb` | 同上 + `git -C tests/deepseek-harness-next rev-parse HEAD` |
+| remote | **upstream** `https://github.com/deepseek-ai/deepseek-harness.git` | Team fork **不带** `dsh-v0.2.2*` tag（ls-remote 为空） |
+| 原生资产包 | `@deepseek-ai/node-addon-system-linux-x64@0.1.2` | 该包**只发布过 0.1.2**（无 0.2.2 资产发布）；rc.5 树自身声明 0.1.2 |
+
+证据：`dev/agent-workflow/evidence/host-next-20261116/pin-verification.txt`。**不要**用 fork、旧分支名或
+"最新的 0.2.2" 代替，也不要因 registry 没有 0.2.2 资产包而改用本地构建字节（见 11.3）。
+
+### 11.2 物化 / 构建（gitignored，可复现）
+
+```bash
+# 1) clone（浅克隆、在 tag 上 detached；目录 gitignored）
+git clone --branch dsh-v0.2.2-rc.5 --depth 1 \
+  https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+# 2) 安装：该树 pin 的包管理器是 pnpm@11.28.5（legacy 树是 11.7.0），故按树取版本
+npm install --prefix .next-tools pnpm@11.28.5        # 或任意等价的本地安装方式
+node .next-tools/node_modules/pnpm/bin/pnpm.cjs install --ignore-scripts --frozen-lockfile \
+  --store-dir "$PWD/.next-pnpm-store"
+# 3) 构建（与 §2 同一套确定性 env 约定；commit hash 用 NEXT_HOST.shortSha）
+DSH_CLIENT_COMMIT_HASH=9c2670d3bc ESBUILD_WORKER_THREADS=1 \
+  node .next-tools/node_modules/pnpm/bin/pnpm.cjs run build
+```
+
+实测（2026-11-16，本机）：install 15.5 s · build 130.16 s、`10 passed`、`recorded 371 client
+artifact(s)`；`apps/cli/lib/bin.js` 与 `native/system/packages/entry/lib/index.js` 为构建产物。
+证据：`.../materialize-build.txt`。**不要**在宿主的 TS 源码上跑 `tsc`/`tsx` 直连：启动一律走构建产物
+入口（§2 的同一理由）。
+
+### 11.3 原生沙箱资产：同一 pin 的已发布包（拒绝本地构建字节）
+
+rc.5 树的 `native/system/packages/{entry,linux-x64}/package.json` 都声明 version `0.1.2`，且其
+package 清单与 C 源（`entry/src/*.c`）与 0.2.0-rc.2 树 **逐字节相同**（`diff -rq` 空）——所以已发布的
+0.1.2 tarball 就是这台 Host 的**同一个固定产物**，其 per-file sha256 与已提交的 pin 相同：
+
+```bash
+node scripts/provision-host-assets.mjs --from-package --host next \
+  --runtime-tree tests/deepseek-harness-next
+# exit 0 → HOST-ASSETS-PROVISIONED package=… version=0.1.2 tarballSha256=77fb771b… hostBaseline=next host=9c2670d3… receipt=…
+# exit 1 → HOST-ASSETS-REFUSED code=…（精确版本、registry dist.integrity、逐文件 length+sha256+mode、0o755、回滚、零残留——语义与 §9/§9.1 完全相同）
+```
+
+**实测漂移（必须拒绝的那一类）**：`pnpm run build` 在本机产出的 `bin/glibc/system.node` 是
+`75450f92…`（17352 B），**不是** pin `54a9c25c…`（17360 B）；`bin/landlock-run` 根本不由该构建产出。
+供给后两者变为 pin 字节（`sha256sum` + `stat -c %a` = `0o755`），receipt 见
+`.../provisioning-receipt.txt`。**不得**把本地构建的 addon 当作 pinned host 验收。
+
+### 11.4 隔离（与 legacy 世界零共享可变状态）
+
+- 树：`tests/deepseek-harness-next/`（gitignored；`tests/deepseek-harness-test-use/` 不动）。
+- `DSH_HOME`：`tests/homes/<world>-next`（`nextHostHomeDir()`），永不与 legacy 的 `<world>` 同名；
+  home 内 token/会话永不提交，teardown 删除并在证据登记。
+- 端口：**按代际分区**（RULING，UTE-Prep，2026-11-16）：legacy host 只租 **3181-3199**（`HOST_PORT_BANDS`），
+  第二台 pinned host 只租 **13000-13049**（`NEXT_HOST.portBands`），两组**不相交**（13000-13049 不再属于
+  legacy 的 fall-through 段；mock 仍 3491-3500 / 13050-13099）。`3080` 永不使用。该分区是**代码断言**
+  （`tests/next-host` 的 `assertGenerationBandsDisjoint()` + boot 端口 ∈ 13000-13049 ∧ ∉ legacy 段；
+  `tests/world-factory/world-factory.test.mjs` 同步断言），不是靠"先探空闲端口"的运气。
+- 构建产物 / pnpm store / 日志：worktree 内各自独立；legacy 的构建与 node_modules 不参与。
+
+### 11.5 验收通道（fail-loud，无 skip）
+
+```bash
+node --test 'tests/next-host/*.test.mjs'   # 两条 suite：boot + native API smoke（Node 24 不接受目录参数）
+```
+
+- `tests/next-host/boot.test.mjs`：用既有 `packages/tools/harness/mock-deepseek.mjs` 脚本模型
+  （`DEEPSEEK_BASE_URL` 上线）真实启动 `apps/cli/lib/bin.js web`，记录 boot marker 行与
+  spawn→marker 墙钟；随后经公开 RPC（`session/create` + `session/prompt`）让该进程服务一个 session，
+  并核对 mock 侧的模型请求与 Host 自己写的 `sessions/**.jsonl.zstd`。
+- `tests/next-host/native-api.test.mjs`：只 import 宿主**已发布包入口**（`@deepseek-ai/dsh-tools`、
+  `@deepseek-ai/dsh-tool-executor-*`、`@deepseek-ai/dsh-agent-loop-testkit`、`@deepseek-ai/dsh-tool-testkit`、
+  `@deepseek-ai/dsh-ptc-runtime` 等；绝不 import 私有 `src/`），断言：`ToolsService.resolve()` →
+  `ResolvedToolSet`；`ToolExecutor` 被选中且工具体真的执行（可观测副作用）；pipeline 阶段顺序
+  `pre-execute → execute → post-execute → result`；PTC `run_code` 的嵌套调用到达**真实内层 executor**
+  （session 记录 `tool/ptc-dispatch-start` + `tool/ptc-dispatch`）；取消语义（mid-flight 取消 =
+  `ABORTED`，dispatch 前取消 = `ABORTED_BEFORE_DISPATCH`，工具忽略 abort 也不能把取消变成成功，
+  `tools/result` 仍通知该失败）。
+- **fail-loud**：树缺失/未构建/HEAD 漂移、原生资产缺失或 sha256 不符 → 直接 throw（`host-next-lib.mjs`），
+  **没有** skip 分支。因此该通道**不进入** CI census 腿（census runner 没有这台树的构建），
+  由上面的显式端命令跑；CI 仍只跑 legacy 腿。这是**有意的**分层，不是"缺 host 就跳过"。
+- **非执行通道必须可数**：两条 suite 在 `dev/ci/test-contracts.json#excludes` 里，而 `excludes` 是
+  **不执行**通道。它现在有独立基线 `dev/ci/excluded-baseline.json`（路径 + reason + review ref）和
+  `--max-excluded N` 计数闸；gate 在**每次** catalog 调用都检查：不在基线 → `EXCLUDED_NEW`，
+  超出上限 → `EXCLUDED_GREW`（实测：把一个 tracked 但从不运行的 suite 加进 `excludes` 会 refused=2；
+  去掉 reason 仍是 `STALE_EXCLUDE`；合法条目 0 findings）。CI 的 catalog step 跑
+  `--max-uncollected 48 --max-excluded 9`，两个通道同时有界。
+
+### 11.6 尚未证明（UNKNOWN）
+
+- PTC 的**真实子进程 runtime**（`@deepseek-ai/dsh-ptc-runtime-node`）未接入 smoke：smoke 用宿主公开的
+  `PtcRuntime` provider seam（与宿主自身 integration 测试同一写法）驱动嵌套 dispatch；真实 subprocess /
+  sandbox 执行路径仍待一条独立 lane。
+- 0.2.2-rc.5 上 legacy 的全部 census 腿未逐条重跑（本轮只证明 next-host 通道 + legacy `tinf-instruments`
+  腿不变）。
+- 发布字节能否由源码确定性重建（本通道只保证"发布字节 = pin 字节"）。
