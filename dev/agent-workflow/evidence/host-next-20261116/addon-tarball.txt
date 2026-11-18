@@ -1,0 +1,31 @@
+# NATIVE ASSET TARBALL — measured 2026-11-18T14:17:06Z (real UTC)
+
+## published package
+  versions      = 0.1.2
+  tarball       = node-addon-system-linux-x64-0.1.2.tgz
+  tarball bytes = 25758
+  sha256        = 77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20
+  registry dist.integrity = sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==
+
+## files the tarball carries, hashed after extraction (the pin is the COMMITTED table)
+a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31  .next-cache/ext/package/bin/landlock-run
+54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc  .next-cache/ext/package/bin/glibc/system.node
+fb39a23ed7c414b48d6a8ee35b02016400997b0eb15926b1fd53946c7403f1d2  .next-cache/ext/package/bin/musl/system.node
+
+## committed pin (tests/world-factory/lib/host-sandbox-assets-manifest.json)
+  bin/landlock-run       a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31  38552 B
+  bin/glibc/system.node  54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc  17360 B
+  -> equal: the published artifact IS the committed pin (not a local build).
+
+## why the 0.1.2 artifact is the right one for a 0.2.2-rc.5 host
+  rc.5 native/system/packages/linux-x64/package.json version = 0.1.2
+  rc.5 native/system/packages/entry/package.json version    = 0.1.2
+  diff -rq (legacy 0.2.0-rc.2 tree vs next 0.2.2-rc.5 tree, excluding lib/bin/node_modules):
+  (no output above = identical package manifests)
+  diff -rq of native/system/packages/entry/src (the C sources):
+  (no output above = identical sources, so the same published bytes are the same artifact)
+
+## measured DRIFT of a local build (why the package transport is mandatory)
+  a plain 'pnpm run build' in the next tree built bin/glibc/system.node =
+  75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd (17352 B)
+  which is NOT the pin 54a9c25c... (17360 B). The provisioner replaced it; see provisioning-receipt.txt.

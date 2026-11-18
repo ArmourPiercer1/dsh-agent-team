@@ -10,13 +10,40 @@
     "packageMeasuredAt": "2026-11-16",
     "packageMeasuredFrom": "https://registry.npmjs.org/@deepseek-ai/node-addon-system-linux-x64/-/node-addon-system-linux-x64-0.1.2.tgz downloaded 2026-11-16: 25758 bytes, sha256 77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20, registry dist.integrity sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==; package/bin/glibc/system.node and package/bin/landlock-run hash EXACTLY to the entries block above",
     "packageVerifyCommand": "node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2",
-    "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state (the package transport writes the same bin/ paths and nothing else)"
+    "rollback": "delete the files under that bin/ (all gitignored); a fresh clone returns the tree to the unprovisioned state (the package transport writes the same bin/ paths and nothing else)",
+    "nextHostMeasuredAt": "2026-11-16",
+    "nextHostMeasuredFrom": "upstream tag dsh-v0.2.2-rc.5 = 9c2670d3bce5275e0d1610272958121af87787bb (lightweight tag, hashed with git ls-remote); its native/system/packages/{entry,linux-x64} manifests and native/system/packages/entry/src/*.{c} are byte-identical to the 0.2.0-rc.2 tree (diff -rq, empty), and the published @deepseek-ai/node-addon-system-linux-x64@0.1.2 tarball (25758 B, sha256 77fb771b...) hashes to the SAME per-file digests committed for the legacy host (measured 2026-11-16, evidence dev/agent-workflow/evidence/host-next-20261116/addon-tarball.txt). The next-host entry is therefore the same pinned published asset, not a locally rebuilt byte set.",
+    "nextHostVerifyCommand": "node scripts/provision-host-assets.mjs --host next --runtime-tree tests/deepseek-harness-next"
   },
   "entries": {
     "0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84": {
       "hostBaseline": {
         "version": "0.2.0-rc.2",
         "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platforms": {
+        "linux-x64": {
+          "libc": "glibc",
+          "launcher": "bin/landlock-run",
+          "files": {
+            "bin/glibc/system.node": {
+              "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+              "bytes": 17360,
+              "mode": "0o755"
+            },
+            "bin/landlock-run": {
+              "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+              "bytes": 38552,
+              "mode": "0o755"
+            }
+          }
+        }
+      }
+    },
+    "0.2.2-rc.5@9c2670d3bce5275e0d1610272958121af87787bb": {
+      "hostBaseline": {
+        "version": "0.2.2-rc.5",
+        "sha": "9c2670d3bce5275e0d1610272958121af87787bb"
       },
       "platforms": {
         "linux-x64": {
@@ -43,6 +70,43 @@
       "hostBaseline": {
         "version": "0.2.0-rc.2",
         "sha": "639ed015397290b3745d163aafe02ffee4aa3f84"
+      },
+      "platforms": {
+        "linux-x64": {
+          "libc": "glibc",
+          "package": "@deepseek-ai/node-addon-system-linux-x64",
+          "version": "0.1.2",
+          "registry": "https://registry.npmjs.org",
+          "distIntegrity": "sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==",
+          "tarballSha256": "77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20",
+          "tarballBytes": 25758,
+          "launcher": "bin/landlock-run",
+          "files": {
+            "bin/glibc/system.node": {
+              "sha256": "54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc",
+              "bytes": 17360,
+              "mode": "0o755"
+            },
+            "bin/landlock-run": {
+              "sha256": "a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31",
+              "bytes": 38552,
+              "mode": "0o755"
+            }
+          },
+          "siblings": {
+            "bin/musl/system.node": {
+              "sha256": "fb39a23ed7c414b48d6a8ee35b02016400997b0eb15926b1fd53946c7403f1d2",
+              "bytes": 17960,
+              "note": "the musl variant the published tarball also carries; not installed on a glibc host, pinned so the package's whole bin/ subtree is accounted for (an unaccounted bin/ file is PACKAGE_EXTRA_BIN_FILE)"
+            }
+          }
+        }
+      }
+    },
+    "0.2.2-rc.5@9c2670d3bce5275e0d1610272958121af87787bb": {
+      "hostBaseline": {
+        "version": "0.2.2-rc.5",
+        "sha": "9c2670d3bce5275e0d1610272958121af87787bb"
       },
       "platforms": {
         "linux-x64": {

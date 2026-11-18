@@ -19,7 +19,7 @@ import {
   HostSandboxAssetError, MANIFEST_REL, SOURCE_TREE_ENV,
   preflightHostSandbox, readHostSandboxAssetManifest,
 } from './lib/host-sandbox-assets.mjs'
-import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, testUseTree } from '../paths.mjs'
+import { findTestRepoRoot, nextHostTree, testUseTree } from '../paths.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The Team tree this CLI lives in (manifest + default-source lookup root). */
@@ -29,7 +29,8 @@ const usage = () => {
   console.log([
     'usage: node tests/world-factory/provision-host-sandbox.mjs [options]',
     '',
-    '  --runtime-tree <path>  destination runtime checkout (default: <this tree>/tests/deepseek-harness-test-use)',
+    '  --host <legacy|next>   which pinned Host baseline to provision (default: legacy)',
+    '  --runtime-tree <path>  destination runtime checkout (default: the selected host\'s tree)',
     `  --source-tree <path>   LOCAL source tree (default: $${SOURCE_TREE_ENV} → the main Team checkout's runtime tree)`,
     '  --check                report only: never copy, never write',
     '  --manifest             print the pinned manifest and exit',
@@ -54,12 +55,14 @@ try {
     process.exit(0)
   }
 
-  const runtimeTree = resolve(opt('runtime-tree') ?? testUseTree(findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE))
+  const host = opt('host') ?? 'legacy'
+  const repoRoot = findTestRepoRoot(TEAM_TREE) ?? TEAM_TREE
+  const runtimeTree = resolve(opt('runtime-tree') ?? (host === 'next' ? nextHostTree(repoRoot) : testUseTree(repoRoot)))
   const sourceTree = opt('source-tree')
   const check = args.includes('--check')
 
   console.log(`runtime tree : ${runtimeTree}`)
-  console.log(`baseline pin : ${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}`)
+  console.log(`host baseline: ${host} (${p.baseline.version}@${p.baseline.sha})`)
   console.log(`manifest     : ${MANIFEST_REL}`)
   const p = await preflightHostSandbox({
     runtimeTree,
@@ -67,6 +70,7 @@ try {
     repoRoot: TEAM_TREE,
     provision: !check,
     throwOnProbeError: true,
+    host,
   })
   console.log(`probe        : ${p.verdicts.map((v) => `${v.phase}=${v.backend}`).join(' -> ')}`)
   console.log(`backend      : ${p.backend} (usable: ${p.usable})`)
