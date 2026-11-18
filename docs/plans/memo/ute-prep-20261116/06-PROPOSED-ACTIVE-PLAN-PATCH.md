@@ -1,6 +1,6 @@
 # 06 — 需要主 Agent 执行的精确补丁（worker 不改 active plan / AGENTS.md）
 
-**[updated 2026-11-16 UTE-Prep]** 本文件**不修改**任何受保护文件；只给出可逐字应用的补丁文本。按 `AGENTS.md` 目录约定，`docs/plans/active/**` 是"用户/主 Agent 产物，禁 worker 改动"，`AGENTS.md` 是权威文档，两者都只能由主 Agent（+ owner）执行。本文的两份补丁**都不是 G0/G1 的前置**——未应用时 [01](./01-BASELINE-REFRESH.md)–[05](./05-SCOPE-FENCE.md) 仍然成立；应用它们是让**别处的 agent 不会把围栏挪走**。
+**[updated 2026-11-16 UTE-Prep]** 本文件**不修改**任何受保护文件；只给出可逐字应用的补丁文本。**2026-11-18 复核：两份补丁仍然只是提案，本轮明确未应用**——即使 #786/#787/#788 已落地、即使 `M7-B1` 编号已进入代码，`AGENTS.md` 的 Fork 例外与 backlog §0.4 的围栏仍是 **owner 裁决文本**，worker 不得代写。按 `AGENTS.md` 目录约定，`docs/plans/active/**` 是"用户/主 Agent 产物，禁 worker 改动"，`AGENTS.md` 是权威文档，两者都只能由主 Agent（+ owner）执行。本文的两份补丁**都不是 G0/G1 的前置**——未应用时 [01](./01-BASELINE-REFRESH.md)–[05](./05-SCOPE-FENCE.md) 仍然成立；应用它们是让**别处的 agent 不会把围栏挪走**。
 
 ## 补丁 A — `docs/plans/active/alpha5-sandbox-first/ALPHA5-SANDBOX-BACKLOG.md`（新增 §0.4）
 

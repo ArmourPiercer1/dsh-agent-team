@@ -14,7 +14,7 @@
 **R1.4（MUST）** 宿主 pin 与资产 pin 是**两个 pin**。rc.5 今天没有匹配的发布资产包（npm 上 `@deepseek-ai/node-addon-system-linux-x64` 只有 `0.1.2`），因此宿主升级**必须先显式重建或显式记录资产 pin 的分歧**，其安全链才允许跑；机器规则 = `PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`（`tests/world-factory/lib/host-sandbox-assets.mjs`），不得发明第二套机制、不得改 sha 去凑 runner 构建。
 
 **可证伪现象**：两个 world 的 `port` 落在同一 band；两个代际的 `DSH_HOME` 解析到同一 realpath；某棵树的 HEAD 不是登记的 SHA；某份证据的 `RUN-SUMMARY` 没有 host tag+commit；`entries` 与 `packages` 的文件表不深相等却仍跑安全链。
-**当前状态**：R1.1–R1.3 的**规则**在本 memo 成立；**实现**在 G0-S1（[04](./04-FIRST-SLICES-G0-G1.md)）。R1.4 的机制已存在于 master（hosted 证据 `M7A-STEP verdict=VERIFIED arms=5`，run `43804251634-1`），rc.5 的"分歧记录"待 G0-S2。
+**当前状态（2026-11-18 更新）：R1.1–R1.4 已由 #787 行使，不是提案。** 落地物：`tests/paths.mjs` 的 `NEXT_HOST`（`treeRel:'tests/deepseek-harness-next'`、`homeSuffix:'-next'`、`portBands:[[13000,13049]]`）；`HOST_PORT_BANDS` 收窄为 `[[3181,3199]]`（legacy 不再溢出）；`tests/next-host/boot.test.mjs:61` 断言 `overlap=0` 且 boot 端口在 13000–13049；`native-api.test.mjs:229` 断言 tree 与 native 资产就是 pin 的字节；R1.4 的分歧被**显式记录**——rc.5 条目继续用已发布 `0.1.2`，本地重建被判 `DRIFTED`（`host-next-lib.mjs:123`）。缺口见 [04](./04-FIRST-SLICES-G0-G1.md) §1.5：跨代 home 的 typed 拒绝与 sha 变异自检尚未落地。
 
 **为什么"独立 DSH_HOME + 独立端口"不够**:光隔离目录不隔离**证据归属**。legacy 的 home 里有 launch token、session log、profile bundle；跨代复用一个 home 目录，等于用未验证的 schema 假设去解释另一代的日志。所以规则写的是"一个 World 只归属一个代际"，不是"两个 World 别撞目录"。
 
@@ -36,7 +36,7 @@
 - **S1.5** 可查询性有明确含义：给定 `ExecutionId`，在冷启动后的 Journal 里能读到该条事实（含 `dispatch` / `bodyOutcome` / `effectEvidence` / host result 引用），不需要活着的进程内 WeakMap。
 
 **可证伪现象**：已消费 Grant 的调用在 Journal 里**没有**任何记录；`isError:false` 被当作"无副作用"；崩溃后同一调用消失而不是 `unknown`；`ExecutionId` 出现两条终态。
-**当前状态**：设计已成型（[七](../unified-tool-execution-dsh-022-20261114/07-SETTLEMENT-RECOVERY.md) §3 的事件表），实现与负控在 G1-S3。
+**当前状态**：设计已成型（[七](../unified-tool-execution-dsh-022-20261114/07-SETTLEMENT-RECOVERY.md) §3 的事件表），实现与负控在 G1-S3。**观测前置已落地**：#786 的 World Factory FS 观测窗口（`tests/world-factory/lib/m7b1-observation-contract.mjs`，hosted `M7B1-ARM inside-authorized verdict=SATISFIED`，伪造形状分别被 `IDENTITY_MISMATCH`/`WITNESS_NOT_SEALED`/`WINDOW_NOT_CLOSED` 拒绝）——S1 的"fact 之外还必须能证否"这一半现在有仪器了；**fact 本身仍然没有**。
 
 ### S2 — 独立的更强门（不是 G1 的前置，也不能被 S1 冒充）
 

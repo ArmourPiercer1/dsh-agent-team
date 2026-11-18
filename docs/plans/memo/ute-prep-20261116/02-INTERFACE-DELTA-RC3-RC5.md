@@ -95,7 +95,7 @@ GitHub compare API 同区间返回 `status=ahead, ahead_by=13, behind_by=0, tota
 
 ## 7. UNKNOWN（本文件没有解决、也不假装解决的）
 
-- **UNKNOWN**：rc.5 的**运行期行为**。以上全部来自源码/测试/文档差量与生成式 API 目录，本 memo **没有在 rc.5 上启动 host**，也没有跑 `web_search` 的真实路由分支。G0-S2 的"可复现 rc.5 空载启动"正是为了消掉这一条，不是已经消掉。
+- **UNKNOWN（部分消解）**：rc.5 的**运行期行为**。以上全部来自源码/测试/文档差量与生成式 API 目录；本 memo **没有在 rc.5 上启动 host**，也没有跑 `web_search` 的真实路由分支。**2026-11-18 更新**：#787 已让 rc.5 宿主真正 boot 并通过六条 native-API 断言（`tests/next-host/`），所以"rc.5 能不能起"不再是未知；但**本文件 §1/§2 的差量结论仍未经运行期验证**——尤其 `llmProvider` 的透传分支从未被跑到，refusal 下的"先 yield usage 再 throw"也只在源码层确认。G1-S2/G1-S3 正是为了消掉这一条。
 - **UNKNOWN**：`deepseek-official` 路由上的 legacy Messages 搜索在 DeepSeek 账号下是否真的"不按次计费"——这只被上游文案与升级指南声称，属于产品条款，不是我可验证的源码事实。
 - **UNKNOWN**：rc.5 是否在 `packages/core/tools` 里保留了 rc.3 的**同名私有符号**（`ResolvedToolSet` 等）之外还悄悄加了行为（例如 batch 调度细节）。名称级 diff 只能证明"文件没动"，不能证明"行为没动"；行为等价要靠 G1 的实测对照，不能靠本节。
 - **UNKNOWN**：`WebSearchRequest.llmProvider` 在 rc.4 引入还是在 rc.5 引入——本 diff 只到区间粒度，不区分中间 rc；如需按 rc 归因，要单独 diff rc.4。（对 UTE 判定无影响。）

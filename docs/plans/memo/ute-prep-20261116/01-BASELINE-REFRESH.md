@@ -37,7 +37,7 @@ refs/tags/dsh-v0.2.2-rc.5 9c2670d3… commit
 
 ## 2. 规则：一个宿主代 = 一个固定 tag+commit（可执行条文）
 
-**H-1 固定性。** 每个宿主代际在 `tests/paths.mjs` 里登记为**两个名字 + 三个字面量**：`<GENERATION>_REL`（树路径）、`<GENERATION>_VERSION`（tag 去掉 `dsh-v` 前缀后的版本串）、`<GENERATION>_SHA`（40-hex commit）。禁 `latest`、禁 range、禁 `~`/`^`、禁浮动分支、禁"实施时再确认"。当前已登记：`TEST_USE_REL` / `DSH_BASELINE_VERSION='0.2.0-rc.2'` / `TEST_USE_BASELINE_SHA='639ed015…'`。rc.5 一代在 G0-S1 里以同样三个符号加入（见 [04](./04-FIRST-SLICES-G0-G1.md)），**不得**在测试/kit 里硬编码 40-hex 或版本串（`tests/paths.mjs` 是唯一来源，这条纪律 `docs/TEST_METHODS.md` §4.2 已有）。
+**H-1 固定性。** 每个宿主代际在 `tests/paths.mjs` 里登记为**两个名字 + 三个字面量**：`<GENERATION>_REL`（树路径）、`<GENERATION>_VERSION`（tag 去掉 `dsh-v` 前缀后的版本串）、`<GENERATION>_SHA`（40-hex commit）。禁 `latest`、禁 range、禁 `~`/`^`、禁浮动分支、禁"实施时再确认"。当前已登记：`TEST_USE_REL` / `DSH_BASELINE_VERSION='0.2.0-rc.2'` / `TEST_USE_BASELINE_SHA='639ed015…'`。**rc.5 一代已按本条落地（#787 `82091ae4a`）**：实现选择的是**一个冻结对象** `NEXT_HOST`（`id:'next'`、`treeRel:'tests/deepseek-harness-next'`、`homeSuffix:'-next'`、`portBands`）而不是本 memo 拟议的 `*_RC5_*` 三符号——语义等价（一个代际 = 一个路径 + 一个 tag + 一个 40-hex），legacy 的三个符号逐字未改。**不得**在测试/kit 里硬编码 40-hex 或版本串（`tests/paths.mjs` 是唯一来源，这条纪律 `docs/TEST_METHODS.md` §4.2 已有）。
 
 **H-2 冻结性。** 已登记的 `(VERSION, SHA)` 对**只增不改**。任何一次"换 pin"都是一个具名裁决 + 一个独立 commit，且必须同时更新：`tests/paths.mjs`、`docs/TEST_METHODS.md` §6 的基线表、以及所有 pin 断言（`scripts/census-plan.test.mjs` 一类）。**替换**一个代际的 pin（不是新增）属于退役动作，按 [05](./05-SCOPE-FENCE.md) §3 的退役顺序执行。
 
@@ -45,10 +45,10 @@ refs/tags/dsh-v0.2.2-rc.5 9c2670d3… commit
 
 | 维度 | legacy 代（现在） | rc.5 代（新增） | 强制规则 |
 |---|---|---|---|
-| checkout 路径 | `tests/deepseek-harness-test-use` | `tests/deepseek-harness-test-use-rc5`（gitignored，自身 git 仓，detached @ pin） | 两个 realpath 必须不同；**禁止** `git checkout` 迁就：同一棵树里切 tag = 一次 pin 覆盖 + legacy 世界全部失效 |
-| DSH_HOME 根 | `tests/homes/` | `tests/homes-rc5/`（或 `tests/homes/<world>-rc5`，二选一由 G0-S1 定死并写进 `paths.mjs`） | 一个 World 只归属一个代际；禁跨代复用同一 home 目录（home 里含 launch token、session log、profile bundle，跨代读 = 未验证的 schema 假设） |
-| 端口族 | `HOST_PORT_BANDS` = [3181–3199] → [13000–13049]（legacy 会溢出到第二段） | **代际分带**：legacy host 3181–3199 / legacy mock 3491–3500；rc.5 host 13000–13049 / rc.5 mock 13050–13099 | band 在 `paths.mjs` 里**按代际分区**，不在启动脚本里手写 `--port`。共存期间必须把 legacy 的租用限制在 3181–3199（今天它会溢出到 13000–13049，直接与 rc.5 撞），这是一次显式裁决 + G0-S1 的代码改动，不是“顺手改个常量” |
-| world 命名 | `<world>` | `<world>-rc5` 前缀/后缀 | 世界名跨代重复 = 证据归属歧义，一律拒绝 |
+| checkout 路径 | `tests/deepseek-harness-test-use` | **实际落地**：`tests/deepseek-harness-next`（gitignored，自身 git 仓，detached @ pin；拟议名 `…-test-use-rc5` 未被采用） | 两个 realpath 必须不同；**禁止** `git checkout` 迁就：同一棵树里切 tag = 一次 pin 覆盖 + legacy 世界全部失效 |
+| DSH_HOME 根 | `tests/homes/` | **实际落地**：`NEXT_HOST.homeSuffix='-next'` ⇒ `<world>-next`（由 `nextHostHomeDir()` 解析） | 一个 World 只归属一个代际；禁跨代复用同一 home 目录（home 里含 launch token、session log、profile bundle，跨代读 = 未验证的 schema 假设） |
+| 端口族 | `HOST_PORT_BANDS` 已收窄为 **`[[3181,3199]]`**（#787；legacy 不再溢出到第二段） | **实际落地**：`NEXT_HOST.portBands=[[13000,13049]]`；next mock 13050–13099 | band 在 `paths.mjs` 里**按代际分区**，不在启动脚本里手写 `--port`。`tests/next-host/boot.test.mjs:61` 断言 `legacy=3181-3199(19) next=13000-13049(50) overlap=0`，boot 端口断言落在 13000–13049；world-factory 端口腿同向断言 |
+| world 命名 | `<world>` | **实际落地**：`<world>-next` | 世界名跨代重复 = 证据归属歧义，一律拒绝 |
 | 可变世界状态 | `tests/homes/<world>/**`、mock provider（3491–3500 / 13050–13099） | 全代际私有 | **零共享可变状态**：不共享 home、不共享 mock 端口、不共享工作区目录、不共享正在运行的 host 进程 |
 | 证据目录 | `dev/agent-workflow/evidence/**` | 新目录 | 一代一盘；`RUN-SUMMARY` 必须带 host tag+commit，否则不计入该代证据 |
 
@@ -61,16 +61,18 @@ refs/tags/dsh-v0.2.2-rc.5 9c2670d3… commit
 - ⇒ "每个 DSH 发布都有配套发布资产包"**当前不成立**。rc.5 宿主今天**不存在**与之匹配的资产包。
 - ⇒ 规则：**宿主升级必须显式重建或显式记录资产 pin 的分歧，之后其安全链才允许跑**。机器规则已经存在，不要发明第二套：`tests/world-factory/lib/host-sandbox-assets.mjs` 的 `PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`（L780/898/901）要求 `packages` 块与 `entries` 块深度相等——发布包**传输**已提交的标准，不能定义第二个标准。因此 rc.5 的正确动作是：`entries` 继续 pin 那组字节，`packages` 继续指向 `0.1.2`，并在 G0-S2 的 RUN record 里**记录**"资产 pin 与宿主 pin 不同代"，而不是改 sha 去凑 rc.5 的构建产物、也不是把 `0.1.2` 说成 rc.5 的配套包。
 
+**已行使（#787 `82091ae4a`）**：manifest 的 rc.5 条目把 native assets 继续指向**同一份已发布 `0.1.2`**（`system.node 54a9c25c…` 17360 B、`landlock-run a752bc72…` 38552 B，与已提交摘要逐字节相等），**本地重建的宿主**被 `tests/next-host/host-next-lib.mjs:123` 判为 `DRIFTED` 并给出 re-provision 命令。这就是 H-5 说的"显式记录分歧"分支——没有移动 pin、没有加仓库依赖、没有 patch 宿主。
+
 ## 3. 为什么是"共存"而不是"升级"
 
 `tests/deepseek-harness-test-use` 同时是：(a) 唯一允许的运行时源码；(b) 现有 24 任务 / 12 roots / 712 文件 census 与 48 未收编套件的实际执行树；(c) v0.1.6 受限试用版的验收对象。原地换 tag 会一次性作废 (b) 与 (c) 的全部缓存与证据归属，并且违反"影响面必须可逆"。共存让 legacy 的回归基线在 rc.5 工作期间**保持可运行**——这正是 [05](./05-SCOPE-FENCE.md) 要求的"旧路径可运行回归基线"。
 
-**可逆性**：删除 `tests/deepseek-harness-test-use-rc5/` 与 `tests/homes-rc5/`、回退 `paths.mjs` 的两处新增（三个符号 + 一个 port band），即回到今天的单一基线状态。`git status --porcelain` 不应因此变化（两棵树与 home 均 gitignored）。
+**可逆性**：删除 `tests/deepseek-harness-next/` 与 `tests/homes/<world>-next/`、回退 `paths.mjs` 的 `NEXT_HOST` 块与 `HOST_PORT_BANDS` 的收窄，即回到单一基线状态。`git status --porcelain` 不应因此变化（两棵树与 home 均 gitignored）。
 
 ## 4. 未决 / 本文件不声称的事
 
-- **UNKNOWN**：我没有在 rc.5 上启动过任何 host；本文件只证明 tag/commit 存在且可解析，不证明它在 workspace-write 沙箱内能构建或启动（`docs/TEST_METHODS.md` §2/§5 的启动链是 0.2.0-rc.2 实测，不能外推）。
-- **UNKNOWN**：rc.5 与本仓现有 48 个未收编套件 / 712 文件 census 的兼容性未测（census 是 legacy 树的属性，不是 rc.5 的）。
+- ~~**UNKNOWN**：我没有在 rc.5 上启动过任何 host~~ → **已由 #787 消解，但不是我消解的**：`tests/next-host/boot.test.mjs` 在 13000 带内做过真实 boot（scripted mock model、自己的 `DSH_HOME`），`native-api.test.mjs` 六条 native-API 断言（`resolve`/`ResolvedToolSet`/ToolExecutor/pipeline 顺序/PTC nested/取消与结果通知）。本 memo **没有重跑**这次 boot；引用的是 #787 的 hosted 证据（`dev/agent-workflow/evidence/host-next-20261116/`）。
+- **UNKNOWN**：rc.5 与本仓现有未收编套件（#786 后 **41**）/ 712 文件 census 的兼容性**仍未测**（census 是 legacy 树的属性，不是 next 宿主的）；#787 只证明 next 宿主能 boot 并暴露 native API，不证明它能承载 census 人口。
 - **UNKNOWN**：`dsh-v0.2.2-rc.5` 是否会被后续 rc 取代、以及 owner 是否希望在 G0 冻结前改用更新的发布点——本 memo 按任务给的 rc.5 钉死，若 owner 改判，按 H-2 走一次具名换 pin 裁决，不改本文件的规则。
 
 ---

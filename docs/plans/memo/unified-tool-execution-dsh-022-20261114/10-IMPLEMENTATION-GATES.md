@@ -14,14 +14,16 @@
 
 本 PR 只有架构设计。PR #758 已合并；v0.1.6 是否已按既定程序冻结为内部版，**本 PR 未核实**（UNKNOWN，owner 确认）——在核实前不执行新版实施 Authority Migration，但这**不阻塞**对产品与 Authority 只读的 G0/G1 工程切片。
 
-新版本固定上游 `dsh-v0.2.2-rc.5` = `9c2670d3bce5275e0d1610272958121af87787bb`（lightweight tag，已用 `git ls-remote` + 上游 refs API 复验；本仓 `origin` 不带 `dsh-v*` tag）。**不可跟踪浮动分支、不可 `latest`、不可实施时再确认。** 新 Host 是**与 legacy `0.2.0-rc.2@639ed015` 并存的第二棵 pinned 树**：独立 checkout 路径、独立 `DSH_HOME` 根、不相交端口族（rc.5 只租 13000–13049）、独立 world 命名、零共享可变世界状态。宿主 pin 与沙箱资产 pin 是**两个 pin**（资产包今天只有 `0.1.2`，见 01 §2 H-5）。
+新版本固定上游 `dsh-v0.2.2-rc.5` = `9c2670d3bce5275e0d1610272958121af87787bb`（lightweight tag，已用 `git ls-remote` + 上游 refs API 复验；本仓 `origin` 不带 `dsh-v*` tag）。**不可跟踪浮动分支、不可 `latest`、不可实施时再确认。** 新 Host 是**与 legacy `0.2.0-rc.2@639ed015` 并存的第二棵 pinned 树**：独立 checkout 路径、独立 `DSH_HOME` 根、按代际分区的端口族、独立 world 命名、零共享可变世界状态。宿主 pin 与沙箱资产 pin 是**两个 pin**（资产包今天只有 `0.1.2`，见 01 §2 H-5）。
+
+**[updated 2026-11-16 UTE-Prep] 上述两条已落地，不再是提案**：#787 `82091ae4a` 新增 `tests/paths.mjs` 的 `NEXT_HOST`（`tests/deepseek-harness-next` / `homeSuffix:'-next'` / `portBands:[[13000,13049]]`），把 `HOST_PORT_BANDS` 收窄为 `[[3181,3199]]`，并在 `tests/next-host/` 里做了 13000 带内的真实 boot 与六条 native-API 断言；本地重建的宿主被判 `DRIFTED`（资产仍取已发布 `0.1.2`）。#786 `f46bcdd29` 把 M7-B1 的可信 FS 观测窗口落地（hosted `M7B1-ARM inside-authorized verdict=SATISFIED`）。因此"G1 前置三条"里**两条已有实物**，剩下的是旧路径可运行回归基线（G1-S4）。剩余缺口（跨代 home 的 typed 拒绝、sha 变异自检、legacy 双跑差异记录）逐条列在 [`ute-prep-20261116/04`](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) §1.5。
 
 **G1 的前置只有三条**（`ute-prep-20261116/05` §2）：新宿主可复现运行；M7-B1 最小可信 FS 窗口；旧路径可运行回归基线。B5–B9 收集归档、host 构建缓存身份修复、census 调优、L3 evals **都不是** G1 前置。
 
 ## 2. G0–G5
 | Gate | 工作 | 成功条件 |
 |---|---|---|
-| G0 frozen baseline | 第二棵 pinned 宿主树（rc.5）+ 代际登记 + 空载启动与公开 seam 探针（G0-S1/S2） | 两棵树并存且 realpath 不同；跨代 home/port 复用被机械拒绝；rc.5 可复现启动；**无** v0.1.6 代码/authority/发布副作用 |
+| G0 frozen baseline | 第二棵 pinned 宿主树（rc.5）+ 代际登记 + 空载启动与公开 seam 探针（G0-S1/S2） | 两棵树并存且 realpath 不同；跨代 home/port 复用被机械拒绝；rc.5 可复现启动；**无** v0.1.6 代码/authority/发布副作用。**现状**：G0-S1 已落地（#787，pin/tree/端口分带/资产身份），G0-S2 部分落地（真实 boot + 六条 native-API 断言；未知 agent typed 失败与 legacy 双跑差异**未做**） |
 | G1 latest host integration | FS / Web / settlement 三条纵切（G1-S1…S3）+ 旧路径基线（S4）+ S2 探测（S5） | 每片带**真实负控 + 旧路径对照 + 退役条件**；S1 结算事实成立；S2 要么有可等待点方案、要么是 `CORE_SEAM_BLOCKER` |
 | G2 binding+scope | Agent Execution Scope 扩至 Leader/Officer/Member；统一 native `apply`、Definition/Service 证明 | 每一个受管工具唯一绑定、失配拒绝、不落 inherited 旧定义 |
 | G3 I/O/OS enforcement | FS/Web/Subprocess/PTY 统一 Boundary，Landlock/bwrap/netns 能力探测 | 逐轴允许+禁止、真实文件/网络效果负控；不可兑现=UNSUPPORTED |
@@ -41,6 +43,8 @@
 | G1-S3 | S1 结算事实 | dispatch 后 kill -9 ⇒ `EXECUTION_UNCONFIRMED`，不是 succeeded |
 | G1-S4 | 旧路径可运行回归基线 | 基线自身有"改语义必须红"的负控 |
 | G1-S5 | S2 探测（只调查） | 可等待点方案 **或** `CORE_SEAM_BLOCKER` |
+
+> **落地状态（2026-11-18）**：G0-S1 已落地（#787），G0-S2 部分落地（缺"未绑定 agent 的 typed 失败"与"同探针在 legacy 树上双跑并记录差异"）。G1-S1…S5 **全部待办**；其中 G1-S1/G1-S3 的观测前置（M7-B1 FS 窗口）已由 #786 提供。逐条缺口见 [`ute-prep-20261116/04`](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) §1.5。
 
 最终族覆盖不变：`read/write`（受信 FS）、`grep/glob`（同步 spawn + Landlock rg）、`bash persistent`（原生 PTY + OS Profile 代际）、`web_fetch/web_search`（受控 Web）、`run_code`（PTC 直接 Node I/O 与 nested ToolCall）。每个至少正控与真实拒绝；不仅检测返回文案，还检测实际文件未落盘、web 服务器零连接、OS 子进程的 kernel refusal 与终止状态。第三方新的 CLI 验证**无需新增 Team ToolDefinition**即可接入。
 

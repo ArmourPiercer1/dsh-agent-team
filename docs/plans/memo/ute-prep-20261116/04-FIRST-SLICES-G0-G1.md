@@ -18,11 +18,27 @@
 
 **顺序**：G0-S1 → G0-S2 →（可并行）G1-S1 / G1-S2 → G1-S3 → G1-S4 → G1-S5。**G1-S4 必须在任何退役动作之前存在**；G1-S5 不阻塞 G1。
 
+## 1.5 落地现状（2026-11-18，forward-merge `f46bcdd29` 后实测）
+
+矩阵本身是**合同**（不因落地而改写）；但下面这些行已经不是提案了。逐条给出落地物与**仍未满足的验收项**——空缺照写，不拿"差不多"顶上。
+
+| ID | 状态 | 落地物 | 仍未满足的验收项（照原矩阵判） |
+|---|---|---|---|
+| **G0-S1** | **已落地**（#787 `82091ae4a`） | `tests/paths.mjs` 的 `NEXT_HOST`（`treeRel`/`homeSuffix`/`portBands`）+ `HOST_PORT_BANDS` 收窄为 `[[3181,3199]]`；`assertGenerationBandsDisjoint()`（重叠即 throw）；`host-next-lib.mjs:123` 的 `DRIFTED` 资产反判；`tests/next-host/native-api.test.mjs:229` 的 tree+asset 身份断言 | ① 跨代 `DSH_HOME` 复用的 **typed 拒绝**（`HOST_PIN_HOME_CROSS_GENERATION`）未落地（现有 `nextHostHomeDir()` 只保证后缀命名）；② sha 变异自检（把 next pin 改成 rc.3 的 sha 必须红）未见套件 |
+| **G0-S2** | **部分落地**（#787） | `tests/next-host/boot.test.mjs:74`：13000 带内真实 boot、起 session、线流量是 scripted model；`native-api.test.mjs` 六条：`resolve`/`ResolvedToolSet.dispose|view`/ToolExecutor 选择/pipeline 顺序 `pre-execute→execute→post-execute→result`/PTC nested dispatch/取消与结果通知 | ① "未绑定 agent 的 `resolve` 必须 typed 失败"未见；② 同一探针在 legacy 树上**双跑并记录差异**未见（memo 要求的"未记录的差异才是失败"因此仍悬空） |
+| **G1-S1** | 待办 | 观测前置已具备：`#786` 的 World Factory FS 观测窗口（`m7b1-observation-contract.mjs`） | 全部（read/write 正控、`FS_SANDBOX_DENIED` 且文件不存在、legacy 同判） |
+| **G1-S2** | 待办（**需 owner 批准语义变化**） | rc.5 已公开 `WebSearchRequest.llmProvider`（[02](./02-INTERFACE-DELTA-RC3-RC5.md) §2） | 全部；批准前不得把旧行为说成"等价" |
+| **G1-S3** | 待办 | 观测面已具备（#786），S1 条文见 [03](./03-RULINGS-AUTHORITY-BINDING-SETTLEMENT.md) | 全部；kill -9 负控必须真的产生 `EXECUTION_UNCONFIRMED` |
+| **G1-S4** | 待办 | #788 提高了基线可信度（负控 32/32、`freeze-candidate` 截断修复） | 全部；且基线必须自带"改语义必须红"的负控（理由见 [README](./README.md) §4.2 的 flake UNKNOWN） |
+| **G1-S5** | 待办（只调查） | 无 | 结论二选一：可实现等待点 / `CORE_SEAM_BLOCKER` |
+
+**因此下一刀是 G0-S1b（上面两个缺口）+ G1-S1/S2/S3**，不是重做 G0-S1。
+
 ## 2. 逐切片的验收细则
 
 ### G0-S1 — 代际登记与并存
 
-- **代码**：`tests/paths.mjs` 新增 `TEST_USE_RC5_REL='tests/deepseek-harness-test-use-rc5'`、`DSH_RC5_VERSION='0.2.2-rc.5'`、`TEST_USE_RC5_SHA='9c2670d3bce5275e0d1610272958121af87787bb'`、`HOST_RC5_PORT_BANDS=[[13000,13049]]` + `homeRootRc5()`。**不得**在套件里出现 40-hex 字面量。
+- **代码（拟议写法，保留作对照）**：`tests/paths.mjs` 新增 `TEST_USE_RC5_REL='tests/deepseek-harness-test-use-rc5'`、`DSH_RC5_VERSION='0.2.2-rc.5'`、`TEST_USE_RC5_SHA='9c2670d3bce5275e0d1610272958121af87787bb'`、`HOST_RC5_PORT_BANDS=[[13000,13049]]` + `homeRootRc5()`。**实际落地的形状**是单个冻结对象 `NEXT_HOST{id:'next', treeRel:'tests/deepseek-harness-next', homeSuffix:'-next', portBands:[[13000,13049]]}` + `nextHostTree()/nextHostHomeDir()`（语义等价；legacy 三符号未动）。**不得**在套件里出现 40-hex 字面量。
 - **真实负控**（不是断言函数返回 false，而是真的拒绝一次启动）：
   1. 用 rc.5 的 sha 起 world，但 `DSH_HOME` 指向 legacy 的 `tests/homes/<world>` → 必须在 spawn 之前以 typed code 拒绝（建议 `HOST_PIN_HOME_CROSS_GENERATION`），且**没有进程被创建**（PID 计数/`ss -ltn` 无新监听）。
   2. 用 legacy 的 port band（3181–3199）起 rc.5 world → 拒绝（`HOST_PIN_PORT_OUTSIDE_BAND`）；反向也要测：legacy world 试图租 13000–13049（今天它会溢出到那里）→ 必须被新的分区拒绝。
