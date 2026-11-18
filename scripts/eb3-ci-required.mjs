@@ -591,10 +591,30 @@ export function readSuiteList(text) {
 
 // ─────────────────── the deployed half of the hidden-host control (B3, 2026-11-16)
 /**
- * The env var a suite consults when it would otherwise turn an ABSENT pinned host into a
- * declared NOT_RUN. A suite whose source names it can SKIP when the host is gone.
+ * THE REAL SET OF HOST-REFUSAL MARKERS (2026-11-18; the predicate used to be ONE literal).
+ *
+ * A suite is REFUSAL-CAPABLE when it consults an env var that decides whether an ABSENT pinned
+ * host is a red or a declared `verdict=NOT_RUN`. The B3 rule hard-coded the a5sf spelling, so a
+ * `hostFree` leg that listed `tests/world-factory/m7a-real-slice.test.mjs` — which consults
+ * `M7A_REQUIRE_PINNED_HOST` and refuses exactly the same way — produced NO finding. The set is
+ * derived from the repo, not remembered:
+ *
+ *   git grep -hoE '[A-Z][A-Z0-9_]*REQUIRE_PINNED_HOST' -- tests | sort -u
+ *   => A5SF_REQUIRE_PINNED_HOST  (a5sf-fs-contract / a5sf-pty-contract / a5sf-sub-contract /
+ *                                 a5sf-web-contract, through lib/a5sf-*-contract-world.mjs)
+ *      M7A_REQUIRE_PINNED_HOST   (m7a-real-slice, m7a-real-slice-host-state, lib/m7a-step-verdict)
+ *
+ * Two members today. A third spelling appearing in any tracked suite is
+ * `CI_HOST_REFUSAL_MARKER_UNLISTED` in the controls (C10e derives the set again and refuses a
+ * divergence), so this list cannot silently fall behind the repo it grades.
  */
-export const HOST_REFUSAL_MARKER = 'A5SF_REQUIRE_PINNED_HOST'
+export const HOST_REFUSAL_MARKERS = Object.freeze([
+  'A5SF_REQUIRE_PINNED_HOST',
+  'M7A_REQUIRE_PINNED_HOST',
+])
+
+/** The a5sf spelling on its own — the marker the B3 control (C10c) exercises. */
+export const HOST_REFUSAL_MARKER = HOST_REFUSAL_MARKERS[0]
 
 /** The reviewed exception spelling: a lane that provisions no host declares its NOT_RUN. */
 export const HOST_REFUSAL_DECLARED = 'declared-not-run'
@@ -708,20 +728,25 @@ export function checkHostRefusalGuard({ root = ROOT, manifest = loadManifest(roo
       for (const suite of Array.isArray(leg.suites) ? leg.suites : []) {
         const text = read(String(suite))
         if (text === null) continue // a nonexistent suite is CI_SUITE_ABSENT / DISPATCH_SUITE_UNTRACKED elsewhere
-        if (!text.includes(HOST_REFUSAL_MARKER)) continue
-        if (leg.env?.[HOST_REFUSAL_MARKER] === '1') continue
+        // EVERY marker the suite names must be set to '1' on this leg: one flag does not buy
+        // another (a suite that can refuse under either spelling is only guarded when both are).
+        const named = HOST_REFUSAL_MARKERS.filter((m) => text.includes(m))
+        if (named.length === 0) continue
+        const unguarded = named.filter((m) => leg.env?.[m] !== '1')
+        if (unguarded.length === 0) continue
         // The exception must NAME this suite. Being listed in the leg is not a declaration.
         if (waiver.suites.has(String(suite))) continue
         findings.push({
           code: 'CI_HOST_REFUSAL_UNGUARDED',
           detail:
             `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which can turn an ABSENT pinned host into ` +
-            `\`verdict=NOT_RUN\` with skips (it consults ${HOST_REFUSAL_MARKER}). Set env.${HOST_REFUSAL_MARKER}="1" on the leg ` +
+            `\`verdict=NOT_RUN\` with skips (it consults ${unguarded.join(', ')}). Set env.<that marker>="1" on the leg ` +
             `(and on its step) so absence is a red, or name THIS suite in hostRefusal {mode: "${HOST_REFUSAL_DECLARED}", ` +
             `suites: ["${suite}"], why: <reason>} if this lane deliberately provisions no host (${MANIFEST_REL})`,
           layer: layer.id,
           leg: leg.id,
           path: suite,
+          markers: unguarded,
         })
       }
     }

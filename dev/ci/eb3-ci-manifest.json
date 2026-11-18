@@ -436,7 +436,14 @@
             "tests/world-factory/u7-tbash-seam.test.mjs",
             "tests/world-factory/u7-tbash.test.mjs",
             "tests/world-factory/u7-uileg0-answer-drive.test.mjs"
-          ]
+          ],
+          "hostRefusal": {
+            "mode": "declared-not-run",
+            "suites": [
+              "tests/world-factory/m7a-real-slice-host-state.test.mjs"
+            ],
+            "why": "this suite NAMES M7A_REQUIRE_PINNED_HOST but is not refusal-capable: it always runs its own body, creating an empty host directory and spawning the live M7-A suite twice with an EXPLICIT child env to assert BOTH sides of the marker (refusal at M7A_REQUIRE_PINNED_HOST='', hard failure 'M7A-REAL-SLICE-HOST-INCOMPLETE' at '1'). It cannot turn an absent host into its own verdict=NOT_RUN, so no env can guard it and setting M7A_REQUIRE_PINNED_HOST=1 on this leg would be a false claim about a suite that provisions nothing. The static predicate is a text predicate (it must be, because a5sf-pty-contract reaches the marker through lib/, not through its own source), so the honest resolution is this named per-suite exception rather than a weakened predicate."
+          }
         },
         {
           "id": "a5sf native route C",

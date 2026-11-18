@@ -802,6 +802,81 @@ control('C10d host-refusal-exception-is-per-suite', () => {
 })
 
 
+// ───────────── control 10e: EVERY host-refusal marker is graded, and the list is the repo's
+/**
+ * The B3 predicate was the single literal `A5SF_REQUIRE_PINNED_HOST`, so a `hostFree` leg that
+ * listed `tests/world-factory/m7a-real-slice.test.mjs` — which consults `M7A_REQUIRE_PINNED_HOST`
+ * across the repo and refuses exactly the same way — produced NO finding: the trap was open for
+ * a whole marker family.
+ *
+ * This control holds both halves of the generalisation:
+ *
+ *   0  the marker list EQUALS the set the tracked `tests/` sources actually name (derived again
+ *      here with git grep) — a third spelling in any suite is CI_HOST_REFUSAL_MARKER_UNLISTED,
+ *      and a list entry nothing consults is CI_HOST_REFUSAL_MARKER_STALE
+ *   1  each listed marker, planted into a suite of a hostFree leg that sets nothing, is caught
+ *   2  setting ONE marker does not guard a suite that names ANOTHER (one flag buys one marker)
+ */
+control('C10e every-host-refusal-marker-is-graded', () => {
+  const { checkHostRefusalGuard, HOST_REFUSAL_MARKERS } = requireModule('scripts/eb3-ci-required.mjs')
+  if (!Array.isArray(HOST_REFUSAL_MARKERS) || HOST_REFUSAL_MARKERS.length === 0) return { ok: false, detail: 'eb3-ci-required.mjs exports no HOST_REFUSAL_MARKERS — the predicate is a single literal again' }
+  const misses = []
+  // 0. the list is derived from the repo, not remembered
+  let derived = []
+  try {
+    derived = [...new Set(execFileSync('git', ['grep', '-hoE', '[A-Z][A-Z0-9_]*REQUIRE_PINNED_HOST', '--', 'tests'], { cwd: ROOT, encoding: 'utf8' }).split('\n').map((s) => s.trim()).filter(Boolean))].sort()
+  } catch (e) {
+    return { ok: false, detail: `could not derive the marker set from tests/ (git grep failed: ${String(e?.message ?? e).split('\n')[0]}) — the list cannot be shown to match the repo` }
+  }
+  if (derived.length === 0) return { ok: false, detail: 'git grep found no *REQUIRE_PINNED_HOST in tests/ — the derivation is broken, not the repo' }
+  const unlisted = derived.filter((m) => !HOST_REFUSAL_MARKERS.includes(m))
+  const stale = HOST_REFUSAL_MARKERS.filter((m) => !derived.includes(m))
+  if (unlisted.length > 0) misses.push(`CI_HOST_REFUSAL_MARKER_UNLISTED: tests/ consults ${unlisted.join(', ')} but HOST_REFUSAL_MARKERS does not list it`)
+  if (stale.length > 0) misses.push(`CI_HOST_REFUSAL_MARKER_STALE: HOST_REFUSAL_MARKERS lists ${stale.join(', ')} but no tracked suite consults it`)
+  // 1/2. each marker is caught on a hostFree leg that sets nothing, and one flag does not buy another
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const LEG_ID = 'a5sf-product-assembly'
+  const legOf = (m) => m.layers.find((l) => l.id === 'ci-integration').legs.find((l) => l.dispatch_id === LEG_ID)
+  const base = legOf(manifest)
+  if (base === undefined) return { ok: false, detail: `leg ${LEG_ID} is gone — the control has no hostFree subject` }
+  if (base.hostRefusal !== undefined || base.env !== undefined) return { ok: false, detail: `leg ${LEG_ID} now declares env/hostRefusal — this control needs a leg that declares neither` }
+  const SUITE = base.suites[0]
+  const withEnv = (env) => ({
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, env } : x)) } : l)),
+  })
+  for (const marker of HOST_REFUSAL_MARKERS) {
+    const text = `const required = process.env.${marker} === '1'\n`
+    const found = checkHostRefusalGuard({ root: ROOT, manifest: withEnv({}), override: { [SUITE]: text } }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE)
+    if (found.length === 0) misses.push(`marker ${marker} planted in a hostFree leg with no env: CI_HOST_REFUSAL_UNGUARDED not raised`)
+    else if (!(found[0].markers ?? []).includes(marker)) misses.push(`marker ${marker}: the finding does not NAME the marker (got ${JSON.stringify(found[0].markers)})`)
+    // the OTHER markers set to 1 must not admit this one
+    const otherEnv = Object.fromEntries(HOST_REFUSAL_MARKERS.filter((m) => m !== marker).map((m) => [m, '1']))
+    if (checkHostRefusalGuard({ root: ROOT, manifest: withEnv(otherEnv), override: { [SUITE]: text } }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE) === false) {
+      misses.push(`marker ${marker}: a leg that sets every OTHER marker still silences it — one flag bought another`)
+    }
+    // and setting THIS one admits it
+    if (checkHostRefusalGuard({ root: ROOT, manifest: withEnv({ [marker]: '1' }), override: { [SUITE]: text } }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE)) {
+      misses.push(`marker ${marker}: even a leg that sets ${marker}="1" is refused — the guard does not read the env`)
+    }
+  }
+  // the trap named in the finding that started this: the real M7-A live suite in a hostFree leg
+  const REAL = 'tests/world-factory/m7a-real-slice.test.mjs'
+  if (!existsSync(join(ROOT, REAL))) misses.push(`${REAL} is gone — the control's real subject is missing`)
+  else {
+    const real = { ...manifest, layers: manifest.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, suites: [...x.suites, REAL] } : x)) } : l)) }
+    const hits = checkHostRefusalGuard({ root: ROOT, manifest: real }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === REAL)
+    if (hits.length === 0) misses.push(`${REAL} listed by a hostFree leg with no env: CI_HOST_REFUSAL_UNGUARDED not raised (the original defect)`)
+    else if (!(hits[0].markers ?? []).includes('M7A_REQUIRE_PINNED_HOST')) misses.push(`${REAL}: the finding does not name M7A_REQUIRE_PINNED_HOST (got ${JSON.stringify(hits[0].markers)})`)
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `marker list equals the set derived from tests/ (${derived.join(', ')}); each marker planted in a hostFree leg with no env => CI_HOST_REFUSAL_UNGUARDED naming that marker; every OTHER marker set => still refused; that marker set => admitted; ${REAL.split('/').pop()} listed hostFree with no env => CI_HOST_REFUSAL_UNGUARDED naming M7A_REQUIRE_PINNED_HOST`
+      : misses.join(' ;; '),
+  }
+})
+
 /**
  * R1 review item 4: "re-check the rest of the manifest for the same pattern". The
  * leg rule was not the only one deciding by substring. Each mutation below satisfies
