@@ -25,7 +25,7 @@
 - **代码**：`tests/paths.mjs` 新增 `TEST_USE_RC5_REL='tests/deepseek-harness-test-use-rc5'`、`DSH_RC5_VERSION='0.2.2-rc.5'`、`TEST_USE_RC5_SHA='9c2670d3bce5275e0d1610272958121af87787bb'`、`HOST_RC5_PORT_BANDS=[[13000,13049]]` + `homeRootRc5()`。**不得**在套件里出现 40-hex 字面量。
 - **真实负控**（不是断言函数返回 false，而是真的拒绝一次启动）：
   1. 用 rc.5 的 sha 起 world，但 `DSH_HOME` 指向 legacy 的 `tests/homes/<world>` → 必须在 spawn 之前以 typed code 拒绝（建议 `HOST_PIN_HOME_CROSS_GENERATION`），且**没有进程被创建**（PID 计数/`ss -ltn` 无新监听）。
-  2. 用 legacy 的 port band（3181–3199）起 rc.5 world → 拒绝（`HOST_PIN_PORT_OUTSIDE_BAND`）。
+  2. 用 legacy 的 port band（3181–3199）起 rc.5 world → 拒绝（`HOST_PIN_PORT_OUTSIDE_BAND`）；反向也要测：legacy world 试图租 13000–13049（今天它会溢出到那里）→ 必须被新的分区拒绝。
   3. 把 `TEST_USE_RC5_SHA` 改成 `rc.3` 的 sha → pin 自检红（证明断言真的绑到字面量，而不是"存在即可"）。
 - **旧路径对照**：legacy 的 pin 断言与既有 world-factory 套件**逐字不改**并保持绿；两棵树的 `git rev-parse HEAD` 分别等于各自登记的 SHA，且 `realpath` 不同。
 - **退役条件**：G5 合并代际（rc.5 成为唯一代际）时，删除 `*_RC5_*` 后缀符号并把三个字面量并入现有名字；那是一次具名换 pin 裁决（R1.2/H-2），不是本切片的后续提交。

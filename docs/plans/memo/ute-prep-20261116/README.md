@@ -43,7 +43,7 @@
 
 ```
 node scripts/docs-sync.mjs --check
-  docs:sync --check: docs=180 notes=4 plans=139(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+  docs:sync --check: docs=187 notes=4 plans=146(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
 node scripts/test-catalog.mjs --max-uncollected 48
   UNCOLLECTED 48 … DSH-TEST-CATALOG tests=872 … refused=0 findings=0
 node scripts/dispatch-tests.mjs --check

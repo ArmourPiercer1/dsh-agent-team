@@ -9,7 +9,7 @@
 ## 裁决 1 — 宿主基线：一个固定 tag+commit，第二棵并存树
 
 **R1.1（MUST）** 每个宿主代际以 `dsh-v<version>` 固定 release tag + 其 peeled 40-hex commit 钉死，登记在 `tests/paths.mjs`（唯一来源）。禁浮动分支、禁 `latest`、禁 range、禁"实施时再确认"。本次钉：`dsh-v0.2.2-rc.5` = `9c2670d3bce5275e0d1610272958121af87787bb`。
-**R1.2（MUST）** 新代际是**第二棵** pinned 树，与 legacy `0.2.0-rc.2@639ed015…` 并存：独立 checkout 路径、独立 `DSH_HOME` 根、**不相交**端口族（rc.5 只租 13000–13049）、独立 world 命名、**零共享可变世界状态**（不共享 home 目录 / mock 端口 / 工作区 / 运行中的 host 进程）。禁止原地 `checkout` 换 tag。
+**R1.2（MUST）** 新代际是**第二棵** pinned 树，与 legacy `0.2.0-rc.2@639ed015…` 并存：独立 checkout 路径、独立 `DSH_HOME` 根、**按代际分区的端口族**（legacy host 3181–3199 / mock 3491–3500；rc.5 host 13000–13049 / mock 13050–13099，分区写进 `tests/paths.mjs`）、独立 world 命名、**零共享可变世界状态**（不共享 home 目录 / mock 端口 / 工作区 / 运行中的 host 进程）。注意当前 `HOST_PORT_BANDS` 会让 legacy 溢出到 13000–13049——共存期间必须把它限制在 3181–3199，这是一次显式裁决 + G0-S1 改动，**不是**常量微调。禁止原地 `checkout` 换 tag。
 **R1.3（MUST NOT）** 新 pin 的引入不得修改或删除 legacy 的 `(VERSION, SHA)` 对；替换代际 pin 属于退役动作，走 [05](./05-SCOPE-FENCE.md) §3。
 **R1.4（MUST）** 宿主 pin 与资产 pin 是**两个 pin**。rc.5 今天没有匹配的发布资产包（npm 上 `@deepseek-ai/node-addon-system-linux-x64` 只有 `0.1.2`），因此宿主升级**必须先显式重建或显式记录资产 pin 的分歧**，其安全链才允许跑；机器规则 = `PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`（`tests/world-factory/lib/host-sandbox-assets.mjs`），不得发明第二套机制、不得改 sha 去凑 runner 构建。
 

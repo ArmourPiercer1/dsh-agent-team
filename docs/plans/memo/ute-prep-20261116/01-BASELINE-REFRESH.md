@@ -47,7 +47,7 @@ refs/tags/dsh-v0.2.2-rc.5 9c2670d3… commit
 |---|---|---|---|
 | checkout 路径 | `tests/deepseek-harness-test-use` | `tests/deepseek-harness-test-use-rc5`（gitignored，自身 git 仓，detached @ pin） | 两个 realpath 必须不同；**禁止** `git checkout` 迁就：同一棵树里切 tag = 一次 pin 覆盖 + legacy 世界全部失效 |
 | DSH_HOME 根 | `tests/homes/` | `tests/homes-rc5/`（或 `tests/homes/<world>-rc5`，二选一由 G0-S1 定死并写进 `paths.mjs`） | 一个 World 只归属一个代际；禁跨代复用同一 home 目录（home 里含 launch token、session log、profile bundle，跨代读 = 未验证的 schema 假设） |
-| 端口族 | `HOST_PORT_BANDS` = 3181–3199 → 13000–13049 | 只租 **13000–13049**（与 legacy 的 3181–3199 不相交） | 端口 band 在 `paths.mjs` 里按代际分配，不在启动脚本里手写 `--port`；`isSanctionedTestPort` 继续拒 3080 |
+| 端口族 | `HOST_PORT_BANDS` = [3181–3199] → [13000–13049]（legacy 会溢出到第二段） | **代际分带**：legacy host 3181–3199 / legacy mock 3491–3500；rc.5 host 13000–13049 / rc.5 mock 13050–13099 | band 在 `paths.mjs` 里**按代际分区**，不在启动脚本里手写 `--port`。共存期间必须把 legacy 的租用限制在 3181–3199（今天它会溢出到 13000–13049，直接与 rc.5 撞），这是一次显式裁决 + G0-S1 的代码改动，不是“顺手改个常量” |
 | world 命名 | `<world>` | `<world>-rc5` 前缀/后缀 | 世界名跨代重复 = 证据归属歧义，一律拒绝 |
 | 可变世界状态 | `tests/homes/<world>/**`、mock provider（3491–3500 / 13050–13099） | 全代际私有 | **零共享可变状态**：不共享 home、不共享 mock 端口、不共享工作区目录、不共享正在运行的 host 进程 |
 | 证据目录 | `dev/agent-workflow/evidence/**` | 新目录 | 一代一盘；`RUN-SUMMARY` 必须带 host tag+commit，否则不计入该代证据 |
