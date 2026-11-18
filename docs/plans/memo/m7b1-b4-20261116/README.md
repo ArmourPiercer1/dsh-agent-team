@@ -113,6 +113,33 @@ proves the admitting half. Local: **17/17**, including `P3-PROBE-SHAPE (hosted c
 and `P3-DENY-REFUSED-BEFORE-SPAWN (hosted capability simulated)`. The manifest's `why` for the leg now
 records the pairing and quotes the hosted transcript.
 
+## 3d. Merged onto master `b28728fef` (#788) — the numbers, from tools
+
+`origin/master` was merged in (`554dbe1a5`), no force-push. Uncollected went **46 → 41**
+(`test-catalog --write-uncollected-baseline`, the tool's own number: master's 46 minus the five suites this
+branch collects). `tinf-instruments` stays at **50** and the census layer grew **5 → 8** legs, because the
+five suites collected here are host-dependent and `tinf-instruments` lives in the host-free
+`ci-integration` lane — collecting them there would make that layer's `hostFree:false` claim a lie. Three
+new `ci-census` legs (`b4/1` 2 suites, `b4/2` 3, `m7b1` 1) carry them in the one job that provisions the
+host.
+
+Two resolutions were not textual and are worth remembering:
+
+- **The manifest auto-merge was silently wrong.** master's `eb3-ci-manifest.json` is generated JSON
+  (`ensure_ascii=False`); this branch had once re-serialised it, so git could not isolate hunks and the
+  auto-merge dropped master's per-suite `hostRefusal` blocks. Rebuilt from master's bytes plus the three
+  legs: the diff is now 55 insertions / 0 deletions.
+- **#788's derived-marker guard did its job.** `C10e` refused this branch's `M7B1_REQUIRE_PINNED_HOST` /
+  `M7B1_HOST_TREE` (`CI_HOST_REFUSAL_MARKER_UNLISTED`); both are now registered in the frozen lists and
+  the negative controls are 32/32 again.
+
+Merged-tree gates: catalog **41** (and `--max-uncollected 40` refuses `UNCOLLECTED_GREW`), catalog test
+26/26, `dispatch --check` legs=18 bad=0, parity **problems=0** (union 69, digest unchanged) re-derived in
+the clone that carries `e5bf05670`, ci-required findings=0, controls 32/32, census-plan 50/50,
+census-cutover 41/41, docs-sync clean, lint new 0 / resolved 0, typecheck clean, testkit 512/512. In the
+fresh clone the three census steps ran in one job: **B4/1 32/32 (26.4 s), B4/2 27/27 (0.5 s), M7-B1 10/10
+(94.0 s)**.
+
 ## 4. Host absent — two answers, no green path
 
 | shape | result |
