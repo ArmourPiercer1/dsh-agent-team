@@ -145,9 +145,9 @@ export declare const CONTROL_REQUEST_KIND_VALUES: readonly string[];
  * - `envelope-mutation` -> { leader, human }: the leader's envelope is
  *   the subject; the human may stand in.
  *
- * A MEMBER is never a resolver for any kind (invariant 37: no
- * self-escalation) — even when the member's template envelope allows the
- * `resolve-control` op: the role closure is checked before the envelope.
+ * A MEMBER is admitted only by a case/leg-scoped ReviewCapability for a
+ * `leader-approval` leg, assigned to that case/leg's current Officer, never its
+ * own operation; a transferred leg is not decidable by the former Officer.
  */
 export declare const CONTROL_RESOLVER_ROLES: Record<ControlRequestKind, readonly string[]>;
 /**

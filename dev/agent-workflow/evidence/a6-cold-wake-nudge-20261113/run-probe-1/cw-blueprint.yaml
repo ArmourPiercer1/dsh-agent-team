@@ -1,0 +1,229 @@
+---
+schemaVersion: 5
+blueprintId: team.a1-gov
+revision: "1"
+requirements: []
+leader:
+  templateId: leader
+  persona: "You are the A1 acceptance leader. A1MK_DISC_2026-11-13T15-10-00-h0-r14ce53 is the discovery marker."
+  capabilities:
+    teamTools:
+      kind: allow
+      items:
+        - team_list_members
+        - team_list_templates
+        - team_inspect_config
+        - team_create_member
+        - team_delegate
+        - team_follow_up
+        - team_send_message
+        - team_collect
+        - team_list_pending_control
+        - team_resolve_control
+        - team_request_control
+    builtinToolDeny:
+      - create_goal
+      - exit_plan_mode
+      - get_goal
+      - glob
+      - grep
+      - job_kill
+      - job_list
+      - job_output
+      - present
+      - skill
+      - update_goal
+    skills:
+      kind: allow
+      items: []
+    mcp:
+      kind: allow
+      items: []
+    permissions:
+      default: ask
+      allow: []
+      ask:
+        - tool: bash
+          resource:
+            kind: any
+      deny: []
+teamEnvelope:
+  allow:
+    - assign-task
+    - create-member
+    - send-message
+    - report-progress
+    - request-control
+    - resolve-control
+  deny: []
+members:
+  - templateId: officer
+    persona: "You are the A1 Officer. Resolve the review legs routed to you; do not execute work."
+    capabilities:
+      teamTools:
+        kind: allow
+        items:
+          - team_list_pending_control
+          - team_resolve_control
+      builtinToolDeny:
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - present
+        - skill
+        - update_goal
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask: []
+        deny: []
+  - templateId: w-probe
+    persona: "You are A1 worker w-probe. Run exactly the shell commands you are asked to run."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - present
+        - skill
+        - update_goal
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+  - templateId: w-deny
+    persona: "You are A1 worker w-deny. Run exactly the shell commands you are asked to run."
+    capabilities:
+      teamTools:
+        kind: deny
+      builtinToolDeny:
+        - create_goal
+        - exit_plan_mode
+        - get_goal
+        - glob
+        - grep
+        - job_kill
+        - job_list
+        - job_output
+        - present
+        - skill
+        - update_goal
+      skills:
+        kind: allow
+        items: []
+      mcp:
+        kind: allow
+        items: []
+      permissions:
+        default: deny
+        allow: []
+        ask:
+          - tool: bash
+            resource:
+              kind: any
+        deny: []
+memberEnvelopes:
+  - templateId: officer
+    envelope:
+      allow:
+        - resolve-control
+      deny: []
+  - templateId: w-probe
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+  - templateId: w-deny
+    envelope:
+      allow:
+        - send-message
+        - report-progress
+        - request-control
+      deny: []
+permissionMutationEnvelope:
+  rules: []
+teamHardEnvelope:
+  rules: []
+policyStates: []
+metadata: {}
+memberIoCeilings:
+  - templateId: officer
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+  - templateId: w-probe
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+  - templateId: w-deny
+    io:
+      read:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      write:
+        mode: restricted
+        allow: ["/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/tests/homes/c1-smoke-2026-11-13T15-10-00-h0-r14ce53/workspace"]
+        ask: []
+        deny: []
+      network:
+        mode: allow
+reviewRouting:
+  enabled: true
+  officerTemplateId: officer
+  ordinaryToolApprovals:
+    default: officer
+    leaderExceptions: []
+  whenOfficerUnavailable: hold
+---

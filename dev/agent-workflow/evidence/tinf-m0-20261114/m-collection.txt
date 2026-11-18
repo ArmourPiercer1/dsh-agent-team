@@ -1,0 +1,54 @@
+### measurement: node:test collection on this head
+test-collection-audit (node:test suites under scripts/, tests/):
+  tracked suites   98
+  collected        19
+  exempted         0
+  UNCOLLECTED      79
+  not named by any workflow step or manifest leg:
+    scripts/sanitize-evidence.regression.test.mjs
+    tests/evidence-store/evidence-store.test.mjs
+    tests/kits/_shared/boot-preflight.test.mjs
+    tests/kits/pr-e-requirement-recovery-smoke/stage2-observer.test.mjs
+    tests/kits/pr-e-requirement-recovery-smoke/ui-observe.test.mjs
+    tests/kits/rc2-real-host-smoke/run-control.regression.test.mjs
+    tests/kits/rc2-real-host-smoke/runner-wiring.regression.test.mjs
+    tests/kits/team-view-sync-complete-e2e/carrier-import-preflight.test.mjs
+    tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-orchestration.test.mjs
+    tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-ownership.test.mjs
+    tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-dom.test.mjs
+    tests/kits/team-view-sync-complete-e2e/dod20-ui-driver-rail-identity.test.mjs
+    tests/kits/team-view-sync-complete-e2e/dod20-ui-driver.test.mjs
+    tests/s2-authority/authority-dual-read.test.mjs
+    tests/s2-authority/authority-snapshot-isolated.test.mjs
+    tests/s2-authority/candidate-track-negative-control.test.mjs
+    tests/s2-authority/ci-snapshot-reader.test.mjs
+    tests/s2-authority/consumer-candidate.test.mjs
+    tests/s2-authority/current-authority-pointer.test.mjs
+    tests/s2-authority/freeze-candidate.test.mjs
+    tests/s2-authority/probe-candidate.test.mjs
+    tests/s2-authority/sync-candidate-resolver.test.mjs
+    tests/s2-authority/verify-candidate.test.mjs
+    tests/world-factory/a5sf-acceptance-preflight.test.mjs
+    tests/world-factory/a5sf-ask-precedence.test.mjs
+    tests/world-factory/a5sf-assembly.test.mjs
+    tests/world-factory/a5sf-bash.test.mjs
+    tests/world-factory/a5sf-bl42-netdeny.test.mjs
+    tests/world-factory/a5sf-capability-defaults.test.mjs
+    tests/world-factory/a5sf-debt-register.test.mjs
+    tests/world-factory/a5sf-dev-live-slots.test.mjs
+    tests/world-factory/a5sf-dev-live.test.mjs
+    tests/world-factory/a5sf-dual-plane.test.mjs
+    tests/world-factory/a5sf-governed-preset.test.mjs
+    tests/world-factory/a5sf-instrument-graph.test.mjs
+    tests/world-factory/a5sf-native-bash-preservation.test.mjs
+    tests/world-factory/a5sf-p01-realm-binding.test.mjs
+    tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
+    tests/world-factory/a5sf-pd12-bash-governance.test.mjs
+    tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
+    ... 39 more
+  NOTE the L2 census only PARSES tests/world-factory as a raw corpus (ci-pr-gate.mjs:1368
+        "parse, no spawn"); it runs no world-factory suite, so parse is not collection.
+  a suite named in NO lane runs only on its author machine (TINF-01);
+  "collect it in M1 by discovery" is the fix, not another hand-written list.
+DSH-TEST-COLLECTION total=98 collected=19 exempt=0 uncollected=79 covered_pct=19
+exit=0

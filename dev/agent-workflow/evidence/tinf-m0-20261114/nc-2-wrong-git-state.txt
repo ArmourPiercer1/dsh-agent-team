@@ -1,0 +1,9 @@
+### NC-2 wrong git state — PR #768 graded from the #767 worktree: head is not the PR head and the branch is a different one.
+### Expected: LOCAL_HEAD_NOT_PR_HEAD (and UNPUSHED_COMMITS, since that branch is not #768's).
+pr-ready-check: PR #768 head=dcdd9608cd8b7c4f3d95272f2e93e4451895572b state=blocked draft=true
+  layers: fast=success integration=success security=success product=success
+  deferred=success census=skipped settlement=missing
+  git: head=bbee3fc98 branch=task/tinf-m0-20261114 upstream=origin/task/tinf-m0-20261114 ahead=3 clean=true
+  refuse reasons: SETTLEMENT_MISSING, LOCAL_HEAD_NOT_PR_HEAD, UNPUSHED_COMMITS
+DSH-PR-READY verdict=REFUSED pr=768 reasons=SETTLEMENT_MISSING,LOCAL_HEAD_NOT_PR_HEAD,UNPUSHED_COMMITS
+exit=1

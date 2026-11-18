@@ -1,0 +1,9 @@
+schema	run_id	phase	root	attempt	started_at	duration_ms	status	identity
+tinf-timing/1	demo-synthetic-2x3	census-capture	nine-roots	1	2026-11-14T19:00:00.500Z	250500	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/domain	1	2026-11-14T19:00:01.000Z	90000	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/runtime	1	2026-11-14T19:00:01.500Z	249500	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/storage	1	2026-11-14T19:00:00.500Z	60500	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-capture	nine-roots	2	2026-11-14T19:06:40.000Z	120000	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/domain	2	2026-11-14T19:06:40.000Z	60000	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/runtime	2	2026-11-14T19:06:40.200Z	119800	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a
+tinf-timing/1	demo-synthetic-2x3	census-root	packages/storage	2	2026-11-14T19:06:40.300Z	29700	ok	host_commit=639ed015397290b3745d163aafe02ffee4aa3f84;product_merge_tree=384ae0a40f37a75da636569b65efe5631bef8b5a

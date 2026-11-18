@@ -1,0 +1,5 @@
+{
+  "schema": "contract-tier-exceptions/1",
+  "note": "Reviewed ceiling for F-03 (contract tier coverage). Generated from MEASURED reality by `node scripts/contract-tiers.mjs --write-exceptions`; never hand-typed to hide a tier. Each row names the exact tests it covers, a REAL owner and an expiry; generated rows carry owner:null and are refused as CONTRACT_EXCEPTION_UNOWNED until a human assigns one. A row without tests[] covers every bound test only when its reason says \"all bound tests\". An entry that is expired, unowned or malformed is RED, not grandfathered.",
+  "exceptions": []
+}

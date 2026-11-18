@@ -1,0 +1,40 @@
+[2026-11-13T15:09:59.849Z] A6 cold-wake — stamp 2026-11-13T15-09-59-h0-r999956
+[2026-11-13T15:09:59.850Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113
+[2026-11-13T15:09:59.850Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T15:09:59.850Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/run-nr-1
+[2026-11-13T15:09:59.850Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T15:09:59.850Z] mode: cold-wake-nudge arm=leader-message kill=none windowMs=65000 leaderProbe=false userApproval=false memberWork=false | a6-on (alpha6ReviewRouting: true)
+[2026-11-13T15:09:59.975Z] sandbox backend in use: full (usable=true)
+[2026-11-13T15:09:59.983Z] ports: host=13010 mock=13060
+[2026-11-13T15:10:04.992Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T15:10:05.004Z] mock model listening on 13060
+[2026-11-13T15:10:06.565Z] boot: url seen (port 13010)
+[2026-11-13T15:10:06.693Z] boot: authenticated
+[2026-11-13T15:10:07.700Z] boot: row health ok (toolCount=15)
+[2026-11-13T15:10:07.705Z] host booted at http://127.0.0.1:13010; row ready — toolCount=15
+[2026-11-13T15:10:07.705Z] ── L0: discovery ──
+[2026-11-13T15:10:08.129Z] discovery surface=32 tools; deny list=11
+[2026-11-13T15:10:08.476Z] CW team-create {"ok":true}
+[2026-11-13T15:10:08.724Z] CW members-created {"officer":"inst-03ukeux0gftf","officerSession":"session-team-child-5b8f7734da867edbf1dd6e4a78f46981","worker":"inst-1iqbe161imti"}
+[2026-11-13T15:10:08.778Z] CW pre-crash-delegate {"status":200}
+[2026-11-13T15:10:08.879Z] CW pre-crash-bash-call {"callId":"call-c1-8hkots2b"}
+[2026-11-13T15:10:08.981Z] CW pre-crash-request {"requestId":"ctrl-028ddi10zsypdg1es1jen19k","actionName":"parameter-permission"}
+[2026-11-13T15:10:09.182Z] CW pre-crash-decision {"requestId":"ctrl-028ddi10zsypdg1es1jen19k","decider":{"instanceId":"inst-03ukeux0gftf","kind":"instance","role":"member"},"wakeTurns":3}
+[2026-11-13T15:10:10.186Z] CW pre-crash-completion {"consumed":9,"exec":"succeeded"}
+[2026-11-13T15:10:16.447Z] CW quiesced {"at":"2026-11-13T15:10:16.447Z","mockRequests":14,"stableForMs":6010}
+[2026-11-13T15:10:16.447Z] CW no-restart {"point":"none","seq":14,"wakeFiles":0}
+[2026-11-13T15:10:16.502Z] CW follow-up {"status":200,"refusal":null}
+[2026-11-13T15:10:16.603Z] CW new-bash-call {"callId":"call-c1-zfw9jzvg","vehicle":"follow_up on the same Member"}
+[2026-11-13T15:10:16.704Z] CW new-request-minted {"requestId":"ctrl-12pyawv1dkx9xu0jyi4xh0ad","actionName":"parameter-permission","at":"2026-11-13T15:10:16.704Z"}
+[2026-11-13T15:10:16.726Z] CW pending-listed {"count":1,"listedNewRequest":true,"listed":["ctrl-12pyawv1dkx9xu0jyi4xh0ad"]}
+[2026-11-13T15:10:16.726Z] CW authority-comparison {"sameRowIdentical":true,"fields":14}
+[2026-11-13T15:10:16.790Z] CW nudge-sent {"arm":"leader-message","tool":"team_send_message","target":"inst-03ukeux0gftf","httpStatus":200,"deliveryStatus":"delivered","refusal":null}
+[2026-11-13T15:10:16.790Z] CW wake-turn {"seq":17,"namesNewRequest":true,"persona":"unknown","wakeToken":"review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06"}
+[2026-11-13T15:10:17.041Z] CW wake-turn {"seq":18,"namesNewRequest":true,"persona":"unknown","wakeToken":"review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06"}
+[2026-11-13T15:10:17.292Z] CW model-turn {"seq":19,"kind":"team-message","persona":"unknown","markerSeen":true,"namesNewRequest":true}
+[2026-11-13T15:10:17.293Z] CW model-turn {"seq":20,"kind":"team-message","persona":"unknown","markerSeen":true,"namesNewRequest":true}
+[2026-11-13T15:10:17.293Z] CW model-turn {"seq":21,"kind":"team-message","persona":"unknown","markerSeen":true,"namesNewRequest":true}
+[2026-11-13T15:10:17.294Z] CW window-end {"decided":true,"decider":{"instanceId":"inst-03ukeux0gftf","kind":"instance","role":"member"},"nudgeTurns":3,"wakeTurns":2,"nudgeStartedTurn":true,"officerNudgeTurn":true,"wakeNamedNew":true}
+[2026-11-13T15:10:17.295Z] teardown: stopping host + mock
+[2026-11-13T15:10:22.300Z] VERDICT PASS
+EXIT=0

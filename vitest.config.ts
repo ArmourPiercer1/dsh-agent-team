@@ -21,10 +21,18 @@ export default defineConfig({
     // and this file is outside the packages/ scan universe of that audit, so
     // THIS comment is the disclosure): root CI now collects its six suites;
     // the lane's own runner stays valid for lane-local work.
+    // B1 (uncollected-test audit 2026-11-15, batch B1): the T5 compatibility
+    // suites sit at `packages/<pkg>/compatibility/test/`, TWO levels below the
+    // package root, so neither `packages/*/test/**` nor a package `test/**`
+    // include reaches them. They were discovered-but-uncollected
+    // (dev/ci/uncollected-baseline.json); the compatibility glob below is the
+    // one line that puts them in the root population (`pnpm test` / L2 census).
+    // Host-free: pure domain code, 76 tests / ~0.5 s.
     include: [
       'packages/*/test/**/*.test.ts',
       'packages/runtime/controlled-fs/test/**/*.test.ts',
       'packages/tools/a5p5-tools/test/**/*.test.ts',
+      'packages/*/compatibility/test/**/*.test.ts',
     ],
     // EVIDENCE-ONLY file (PR #31 supplemental S3, evidence-only commit
     // 833c699): the s3-client-generation-spike drives the pristine

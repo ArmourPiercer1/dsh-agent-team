@@ -1,0 +1,7 @@
+### NC-10 merge commit — a 500 KiB binary merged in. The first version measured 0 B / 0 files
+### because diff-tree without -m prints nothing for a merge.
+evidence-budget (last 1 first-parent commits, bytes of the evidence files each commit leaves):
+   500.0 KiB    1 file(s)  83f1be01bf  merge side
+  commits=1 measured=1 skipped=0 with_evidence=1 p50=512000 p90=512000 max=512000 cap=2097152 over_cap=0
+DSH-EVIDENCE-BUDGET mode=commits n=1 measured=1 skipped=0 with_evidence=1 p50=512000 p90=512000 max=512000 cap=2097152 over_cap=0
+exit=0

@@ -148,3 +148,8 @@ OFFENDING tests/kits/a6-cold-wake-20261113/a6-cold-wake.mjs :: L755=v5, L995=v5,
 # derived copy of the A1 kit and authors the SAME v5 Team-create document (the subject is the
 # cold-boot wake, not the document). Four v5 literals, appended in the open from a re-run of
 # scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
+OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=v5, L1084=v5, L1747=v5, L2135=v5
+# 2026-11-13 (A6-COLD-WAKE-NUDGE, task/a6-cold-wake-nudge-20261113): one new kit identity — the driver
+# is a derived copy of the A6 COLD-WAKE kit and authors the SAME v5 Team-create document (the subject
+# is the four-step restart flow, not the document). Four v5 literals, appended in the open from a re-run
+# of scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.

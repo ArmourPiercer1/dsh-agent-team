@@ -121,13 +121,13 @@
  * consumption"). Both probes fail closed (a thrown/malformed facts probe
  * is a deny) and are read-only (no durable row either way).
  *
- * Resolver authority (invariant 37 / Architecture 25.1): the closed
- * resolver role set per kind (CONTROL_RESOLVER_ROLES) is checked BEFORE
- * the envelope — a MEMBER is never a resolver for any kind, even when
- * its template envelope allows the `resolve-control` op (no
- * self-approval); `user-approval` may only be resolved by the human (the
- * leader cannot stand in for the user); a leader resolver still needs
- * the `resolve-control` op in its effective envelope.
+ * Resolver authority is by CASE/LEG, not role alone (invariant 37 successor;
+ * owner ruling 2026-11-13, issue #756): a MEMBER only via a case/leg-scoped
+ * ReviewCapability for a `leader-approval` leg, assigned to the case/leg's
+ * current Officer (the team's single live Officer; a leg transferred to the
+ * Leader is no longer decidable by it; self-approval is banned).
+ * leader-approval -> Leader|human|Officer; user-approval -> human ONLY;
+ * envelope-mutation -> Leader|human. The #756 all-requests view is REGISTERED, NOT implemented.
  *
  * The last-mile guard (`guardOperation`): the exported public seam the
  * P6-T6 tool layer consults BEFORE the DSH tool pipeline executes the
@@ -2538,9 +2538,9 @@ export function createControlService(options) {
             if (state.decisions.some((d) => d.payload.requestId === args.requestId)) {
                 throw new ControlError(CONTROL_ERROR_CODES.CONTROL_REQUEST_DECIDED, `ControlService: request '${args.requestId}' already carries a durable decision (the first decision is authoritative)`, { rootSessionId: root, requestId: args.requestId });
             }
-            // Role closure (BEFORE the envelope — invariant 37: a member is
-            // never a resolver, even with the resolve-control op; the
-            // user-approval kind admits only the human).
+            // Authority is by CASE/LEG (invariant 37 successor, #756), checked
+            // BEFORE the envelope: role closure for Leader/human, the case-scoped
+            // capability below for a MEMBER; self-approval banned (executor != reviewer).
             const allowedRoles = CONTROL_RESOLVER_ROLES[request.payload.kind];
             if (caller.role === 'member') {
                 if (state.transfers.some((t) => t.payload.currentLegRequestId === args.requestId)) {

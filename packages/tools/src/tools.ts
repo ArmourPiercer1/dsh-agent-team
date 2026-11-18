@@ -22,14 +22,14 @@
  * |                       | approval-flow entry point: unguarded,        |
  * |                       | idempotent over the scope identity)          |
  * | team_resolve_control  | control service `resolveControl` (unguarded: |
- * |                       | the service's resolver role closure is the   |
- * |                       | authority; a member is never a resolver);    |
- * |                       | `decision=escalate` routes to                |
+ * |                       | authority is by SCOPE: a MEMBER only via a   |
+ * |                       | case/leg-scoped ReviewCapability, never its  |
+ * |                       | own operation; `decision=escalate` routes to |
  * |                       | `escalateApprovalLeg` (A4-PR5, PR4 duty b)   |
  * | team_list_pending_control | control service `listControlState`     |
- * |                       | (C1: the read-only Leader discovery of      |
- * |                       | pending `leader-approval` requests — leader |
- * |                       | only, zero writes, no query language)       |
+ * |                       | (read-only, zero writes; the Leader sees    |
+ * |                       | every open case at its current leg; an      |
+ * |                       | assigned Officer its own legs — per-caller) |
  * | team_collect          | facade `work-status` (issue #1 / CCR-3: the  |
  * |                       | durable state read of admitted work units by |
  * |                       | request token — a read: unguarded, zero      |
@@ -974,7 +974,7 @@ function requestControlSpec(): ToolSpec {
   return {
     name: 'team_request_control',
     description:
-      'Request approval for one operation scope (kind: leader-approval | user-approval | envelope-mutation). The operation stays blocked until a resolver (leader/human per kind — never a member) records a decision. Idempotent over the scope identity: retrying with the same token returns the existing request.',
+      "Request approval for one operation scope (kind: leader-approval | user-approval | envelope-mutation). The operation stays blocked until a resolver records a decision — user-approval: the human only; envelope-mutation: the Leader or a human; leader-approval: the Leader or a human, or on an opt-in Alpha.6 team the case/leg's assigned Officer; the executor never decides its own operation. Idempotent over the scope identity: retrying with the same token returns the existing request.",
     properties: {
       rootSessionId: ROOT_SESSION_ID_ARG,
       requestToken: REQUEST_TOKEN_ARG,
@@ -1128,12 +1128,12 @@ function resolveControlSpec(): ToolSpec {
  * Authority rules:
  * - a READ: it creates no request, resolves nothing, consumes no allow,
  *   and mutates no member state (the service call is a durable read only);
- * - LEADER ONLY (the model-facing surface): the durable ledger itself is
- *   root-scoped and does not distinguish callers, but a member must not
- *   use this tool to inspect other members' command/resource approval
- *   metadata — the tool layer enforces `caller.instanceId ===
- *   LEADER_INSTANCE_ID` before any read (human/UI inspection is a separate
- *   remote/UI concern);
+ * - CALLER-SCOPED (the model-facing surface): the durable ledger is
+ *   root-scoped, so the tool layer decides what a caller sees — a
+ *   NON-instance caller is refused before any read; an INSTANCE caller
+ *   branches below (Leader: every open case; assigned Officer: its own
+ *   current legs; unassigned member: refused with zero rows, after the
+ *   two reads run — not a pre-read gate);
  * - the list spans what a reviewer can STILL act on, across carriers
  *   (A4-PR4, ADR A1-11). The carrier is NOT the reviewer (`reviewAuthority`
  *   is — spec 19), and a risen leg keeps its carrier, so the old
@@ -1180,9 +1180,9 @@ function listPendingControlSpec(): ToolSpec {
             }
             return args.limit
           })()
-      // Leader-only caller enforcement (BEFORE any read): a member caller
-      // never sees the ledger — the read itself is root-scoped, but the
-      // model-facing discovery surface is the Leader's.
+      // Caller discipline: a NON-instance caller is refused HERE, before any
+      // read; an instance caller branches Leader / assigned Officer below,
+      // and an unassigned member is refused with zero rows in the response.
       const caller = ctx.caller
       if (caller.kind !== 'instance') {
         return {

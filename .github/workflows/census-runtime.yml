@@ -376,6 +376,7 @@ jobs:
           mkdir -p "$XDG_CACHE_HOME"
           node scripts/ci-pr-gate.mjs --full \
             --only census \
+            --census-execution plan \
             --census-captures 2 \
             --census-test-timeout 90000 \
             --store-dir "$DSH_CI_STORE_DIR" \
@@ -393,6 +394,98 @@ jobs:
           set -euo pipefail
           node scripts/ci-pr-gate.mjs --check-transcript "$RUNNER_TEMP/census-run.txt"
 
+      # M7-A (2026-11-15): the C2 half of the real-host slice — the Contract Oracle in front of a
+      # REAL execution chain (scripted model on the provider wire -> dsh web -> real Agent Session
+      # -> real tool resolution -> real execution -> independent FS observation -> judgeContract).
+      # WHY IT LIVES HERE. This is the only job that provisions and builds the pinned pristine host,
+      # and the only one where a missing host is already a failure; the slice's five arms are
+      # worthless as a gate if the ordinary outcome is "host absent, declared refusal, skipped".
+      # M7A_REQUIRE_PINNED_HOST=1 is therefore not a convenience: with it the suite turns an absent
+      # host into a hard, named failure, which is the difference between collecting the suite and
+      # pretending to. M7A_BOOT_TIMEOUT_MS=600000 because this runner's first boot of the pinned
+      # host is slower than the 130 s measured locally (the census job's own note records a 2-4x
+      # hosted factor); a boot timeout below a real boot forfeits the suite rather than grading it.
+      # COST, stated so the 60-minute job timeout can be checked against it: one boot + five arms =
+      # 133 s measured locally (boot 130 s, teardown 0.1 s); at the same conservative 4x factor the
+      # delta is ~9 min on top of the census job's ~8-10 min floor, well inside 60.
+      # IT DOES NOT TOUCH THE CENSUS. This is a separate step after the census and its transcript
+      # re-grade: the census argv, its two captures, its population and the plan are unchanged; a
+      # failure here fails the job (and its layer verdict) without changing what the census graded.
+      # THREE DEFENCES, BECAUSE THE FIRST HOSTED RUN PROVED ONE IS NOT ENOUGH (2026-11-15,
+      # job 132898455498): the suite failed 166 ms in, the process then held an open handle for
+      # 41 MINUTES, and the 60-minute job timeout cancelled the whole L2. The step never
+      # printed the failure's text, because the spec reporter flushes failures at the END.
+      #   (1) the suite releases what it started on the throw itself, in `t.after`, and in its
+      #       `finally` (`scripts`-free: tests/world-factory/m7a-real-run.mjs startRealRun closes
+      #       the in-process mock provider on every failure path; U11 pins it);
+      #   (2) `--test-force-exit` closes the last escape hatch: a handle nobody tracks cannot
+      #       outlive the run, so the step exits with the verdict it actually reached;
+      #   (3) `timeout-minutes: 10` bounds the step even if both of the above regress — a red
+      #       inside ten minutes beats a cancelled job, which reports NOTHING about the code.
+      # The failure is also printed to stderr immediately (`[M7A] PRECONDITION <name> FAILED: …`
+      # and `[M7A] SUITE FAILED: …`), so a bounded red names its cause on the first line.
+      # NO EXEMPTION ANY MORE (2026-11-16). Until this commit the step accepted exactly one
+      # non-verification — the sandbox-asset digest refusal, named `M7A-HOST-ASSET-UNPROVISIONABLE`,
+      # zero arms graded — because it was set with `M7A_ALLOW_UNPROVISIONABLE_HOST=1` HERE and
+      # nowhere else. That is GONE: the step above provisions the pinned bytes from the PINNED
+      # PUBLISHED package, so the "this runner cannot carry the pinned bytes" fact no longer holds.
+      # The refusal code path still exists in `tests/world-factory/lib/m7a-step-verdict.mjs`, still
+      # defaults OFF, and is still tested — but no workflow sets it, so it is unreachable from CI
+      # (`tests/world-factory/host-sandbox-assets.test.mjs` T38 greps every workflow for it). A
+      # refusal here now fails the job; the slice must produce `M7A-STEP verdict=VERIFIED arms=5`.
+      # The assets are installed by the step immediately above (tarball only, exact version, verified
+      # against the UNCHANGED sha256 pin); this step's own contract is unchanged otherwise.
+      # HOST SANDBOX ASSETS (2026-11-16) — the PINNED PUBLISHED PACKAGE, not the runner's build.
+      # MEASURED (2026-11-16, owner download; recorded in the manifest's `packages` block and in
+      # docs/plans/memo/host-assets-20261116/README.md): the published tarball
+      # `@deepseek-ai/node-addon-system-linux-x64@0.1.2` (25758 bytes, sha256 77fb771b…, registry
+      # dist.integrity sha512-S2aPVHvY…) carries EXACTLY the bytes the committed manifest already
+      # pins — `bin/glibc/system.node` sha256 54a9c25c… (17360 B) and `bin/landlock-run` sha256
+      # a752bc72… (38552 B). A hosted runner's own host build produces DIFFERENT bytes for the addon
+      # (measured dfa6d586… in job 132898455498, the exact `DESTINATION_DIGEST_MISMATCH` the M7-A
+      # step used to disclose).
+      # THE DECISION (owner, 2026-11-16): the FIXED PUBLISHED ASSET is the standard; the runner's
+      # build is not. Keep the existing sha256 pin, do NOT move it to match a build, and provision
+      # from the pinned published version only (exact version — no ranges, no `latest`). The tarball
+      # is verified against the registry's published dist.integrity AND the pinned tarball sha256,
+      # every file against the pin, and only then installed. Tarball only: no pnpm install of the
+      # package, no repo dependency, no upstream patch (CORE PATCH BUDGET = 0).
+      # WHOLE-ARGV DISCIPLINE: this line is EXACTLY the `ci-census` leg
+      # `host-sandbox assets (pinned published package)` in dev/ci/eb3-ci-manifest.json, and
+      # `eb3-ci-required` grades it the same way it grades the M7-A step.
+      # ORDER: after the census and its re-grade (the census population and its captures are
+      # untouched), immediately before M7-A, which reads these assets.
+      - name: Host sandbox assets — provision the PINNED published package (exact version, verified)
+        shell: bash
+        run: node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+
+      - name: M7-A real-host slice — one real boot, five arms (pinned host REQUIRED, never skipped)
+        shell: bash
+        timeout-minutes: 10
+        env:
+          M7A_REQUIRE_PINNED_HOST: '1'
+          M7A_BOOT_TIMEOUT_MS: '600000'
+          # Recorded verbatim in m7a-step.json: a node:test child cannot see the flags the runner
+          # consumed (`--test-reporter=spec`), so the step declares its own command instead.
+          M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
+          # The record is bound to THIS run; a record left by an earlier job (or seeded by hand)
+          # is STALE at the ledger, not this run's verdict.
+          M7A_STEP_RUN_ID: '${{ github.run_id }}-${{ github.run_attempt }}'
+        run: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
+
+      # One line per L2, always: whether the real-host capability was VERIFIED (five arms graded)
+      # or DISCLOSED-REFUSED BY NAME on this runner. Strict reader: a missing `m7a-step.json` is a
+      # failure, a VERIFIED record needs graded arms, and the refusal needs the one accepted reason.
+      # Prints `M7A-STEP-LEDGER verdict=… reason=… …` on stdout.
+      - name: M7-A step ledger — VERIFIED or DISCLOSED-REFUSAL, in one greppable line
+        shell: bash
+        if: always()
+        env:
+          # Same identity + declared argv as the suite step: the ledger re-checks both.
+          M7A_STEP_RUN_ID: '${{ github.run_id }}-${{ github.run_attempt }}'
+          M7A_STEP_ARGV: 'node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs'
+        run: node scripts/m7a-step-ledger.mjs
+
       # What to read when this job is red: `census-run.txt` first (the gate's own
       # channel: the DSH-CI tokens, the graded identity sets, and — since the
       # 2026-10-18 forensics round — a BOUNDED key-line echo per failed command:
@@ -404,6 +497,14 @@ jobs:
       # under `census-transcripts/` — those stay the complete, uncut copies (the
       # caps live in scripts/ci-pr-gate.mjs: ECHO_LINE_LIMIT/ECHO_LINE_CAP/
       # ECHO_BYTE_CAP, pinned by that file's own bound-by-construction legs).
+      # TINF M3 (2026-11-14): `census-transcripts/tinf-timing.tsv` — the harness-level timing rows
+      # that decompose the ONE census step the Actions API reports (`scripts/tinf-timing.mjs`; the
+      # step-level split above the census stays with `scripts/census-profile.mjs`). Shadow: the file
+      # is written by the census leg only when `--transcript-dir` is set, nothing grades it, and a
+      # timer that cannot write degrades to a named warning line instead of a red census. Listed
+      # explicitly (it is also inside the directory above) so a reader can see that this milestone
+      # ships a measurement file, not just a transcript. NO new Required context, NO concurrency
+      # change, NO change to what `ci-required` grades.
       - name: Upload census transcripts
         if: always()
         uses: actions/upload-artifact@v4
@@ -412,6 +513,8 @@ jobs:
           path: |
             ${{ runner.temp }}/census-run.txt
             ${{ runner.temp }}/census-transcripts/
+            ${{ runner.temp }}/census-transcripts/tinf-timing.tsv
+            ${{ github.workspace }}/.artifacts/tmp/m7a-real-slice/m7a-step.json
           if-no-files-found: warn
 
       - name: Layer verdict token (feeds the Required summary; runs even when a step above failed)

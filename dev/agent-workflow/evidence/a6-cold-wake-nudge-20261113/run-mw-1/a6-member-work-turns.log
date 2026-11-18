@@ -1,0 +1,5 @@
+[team-relay] from=inst-leader (label: leader) to=inst-0il4mt20egzf (label: cw-w1)
+subject=restart: pull the work back up
+C1MK_MEMBER_WORK_2026-11-13T15-13-56-h0-rc7d8e1 The restart briefing is done and the pending approval is decided.
+Continue the work: run one governed bash probe carrying this marker.
+===

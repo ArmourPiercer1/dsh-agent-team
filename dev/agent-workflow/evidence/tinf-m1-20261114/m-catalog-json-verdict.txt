@@ -1,0 +1,2 @@
+### measurement: --json is an artifact, not a verdict — planted CONTRACT_UNKNOWN_TEST must still refuse
+### (run against a temporarily broken registry)

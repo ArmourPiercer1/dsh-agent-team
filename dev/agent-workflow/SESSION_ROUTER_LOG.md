@@ -8648,3 +8648,353 @@ decision 全部 `decider.role="leader"`。
 **4. 结果**：两模式各自两跑 7/7 PASS、`verdictsAgree=true`、`detailsAgree=true`；A6-on vs A6-off 也
 `true/true`。classification **DEV-LIVE**，无 `V@B`，非 `CANDIDATE-C2`；`CORE PATCH BUDGET = 0`，未动
 Authority/tag/candidate-ref/Required-CI，未触碰 `:3080`。
+
+## 2026-11-14 — TINF-M0：设计基线 #767 过独立评审后修正；M0 落地为 Draft PR（五件工具 + 收集审计 + step 级 profiling）
+
+**1. #767（设计集，14 文件）独立评审 → CHANGES REQUIRED，三处 blocking 已修**：评审席=review 子代理（deepseek-v4.1，非实现者）。
+- F1：08 原文称“无 step 级耗时、不能断言 24 分钟大部分是构建”——**错**。Actions jobs API 返回每 step 的
+  `started_at/completed_at`；run `43459947311`：census 1108 s、host build 272 s、repo build 22 s、job 1422 s。
+  改为实测表，并说明只有 census 内部九 root 分解看不到（M3 的 harness 计时）。
+- F2/F3：10 把 `pr-ready-check.mjs` 当成“既有、只待修正”，实际它只在未合并的 #759 分支；11 的 M0 无法照做。
+  改为：标明未合并，#759 由 M0 重写落地；M0 重写为逐项表（文件/符号、交付、负控）。
+- F4–F7：README 把 merge tree 误列为 Required context（实为三个 context + 两条不变量）；11 的“每个 milestone 一个 PR”
+  与 M0 打包七项矛盾（改为一 PR 五项、各自可回滚）；补证据配额（5995/6000 `.json`，只剩 5 个名额，M0 证据一律
+  `.md/.txt/.tsv`）；07 的“聚合产物由 ci-required 消费”改为真实 seam（layer verdict token + needs 判形）。
+- 修正 commit `f867a4c18` 已推送到 `docs/agent-testing-infrastructure-vnext-20261114`；L1 全绿。
+
+**2. M0 实施（分支 `task/tinf-m0-20261114`）**：按 #767 的 M0 逐项落地，五件工具 + 一个 host-free suite。
+- `pr-ready-check.mjs`：五处假通过改 refusal（unknown mergeable state / 本地 HEAD 与 PR head / 无 upstream /
+  pending 新 attempt / 评论分页）+ R9（带 `ci-defer-full` 不得 ready）。
+- `evidence-budget.mjs`：object DB 真实字节（二进制计入）、窗口=字面 last-N first-parent。
+  **推翻 #761**：近 30 commit p50 701,506 B、p90 2.31 MB、max 3.28 MB，**5 个超过 2 MiB**（#761 说上限永不触发）。
+- `coverage-audit.mjs`：UNKNOWN 按类命名（kit/脚本/根目录 scratch/other），保持 exit 2，不采纳 kit=zero-tests。
+  40 commit 里 53% undetermined，但 `other` **0** 次——最大两块是 kit（24）与误提交根文件（10）。
+- `test-collection-audit.mjs`（新）：98 个 in-scope tracked node:test，19 collected / 79 uncollected；census 对
+  `tests/world-factory` 只 parse 不 spawn，故不计入收集。#530 仍 OPEN，只复用其判定不落地其 gate。
+- `census-profile.mjs`（新）：n=3 实测 census 1100 s（77%）、host build 272 s（19%）、job p50 1427 s。
+- 测试：`scripts/tinf-m0.test.mjs` 11/11；接进 `ci-integration` 一个 leg + manifest 一个条目，
+  `node scripts/eb3-ci-required.mjs` = `pass workflows=10 findings=0`。
+
+**3. 负控 8 项全部按期望变红**（转录在 `dev/agent-workflow/evidence/tinf-m0-20261114/`）：未推送 head、错误 git 状态、
+dirty worktree、本地未推送 commit、未收集 suite、二进制证据（1,048,588 B）、kit 路径仍 undetermined、全 skipped job 拒绝。
+
+**4. 边界**：未改运行时代码/Authority/Candidate/release；三个 Required contexts、fail-closed 聚合、census 组成、
+deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md`，新增 `.json` = 0。
+
+## 2026-11-14 — TINF-M1：shadow Test Catalog（自动发现 + 合同绑定 + 收集棘轮）
+
+**前置**：#767（设计集）merged `f24c41337`；#768（M0）merged `db125a185`。M1 用 M0 修好的工具去量，结论变成可执行的东西。
+
+**1. 发现取代手工名单**：`scripts/test-catalog.mjs` 从 `git ls-files` + **每个** `vitest.config.ts`（根 + 9 个 package，各自按自身目录求值）解析 include/exclude，node:test 取任意位置的 `*.test.mjs|cjs|js`，再加上 `scripts/eb3-security-run.mjs` 执行的 65 条显式清单。
+- 结果：**857 个测试文件，752 collected，91 uncollected**（87 无 config + 4 仅 authoring 配置）；`catalog_digest=sha256:69d5b59f…`（两次运行一致；digest 不含 classification）。
+- 三个真问题：**7 个 `packages/domain/compatibility/test/*.test.ts` 不被任何 config 收集**（根 include 只一层，包内 include 是包根 `test/**`，security 清单也没它们）；**80 个 node:test 没有 lane**；**手写名单与发现是两套事实**（`--diff` 双向列出，`ci_only` 非空即拒绝——现在 0）。
+**三轮发现的都是同一类错误**：①按文件名后缀取套件，漏掉 client 的 32 个 `*.client.spec.ts[x]`；②只认 `vitest.config.ts`，看不见 `vitest.poc.config.ts`/`vitest.scratch.config.ts`；③把**所有** `vitest*.config.ts` 都当收集权威 → authoring-only 的 scratch 配置可以把一个根级 scratch recorder 说成 covered（**过度声明比漏报更危险**）。（评审给的 package 内 repro 经复核**不是**过度声明：`packages/runtime/vitest.config.ts` 的 include 确实收集 `test/**/*.test.ts`，根配置的 exclude 只管根那一次 run —— 该文件在包级 suite 里真的会跑。）最终规则：只有 lane 实际跑的配置（默认发现的 `vitest.config.ts`）是收集权威；非默认配置只用来解释「为什么没被收集」，四元组 glob 相对基准由配置自身判定；三项各有回归测试。
+
+**2. Critical Contract Registry**：`dev/ci/test-contracts.json`（`test-contracts/1`）登记 6 条安全合同（AUTH/EXEC/REVIEW/LIFE/RECOVERY/ISOLATION-01），每条绑定具名测试、witness_type、limitations。绑定含义写窄了：**说的是“谁承担”，不是“够了”**；ISOLATION-01 明写纯 JS 不能证明 OS 边界。缺 test_refs → `CONTRACT_WITHOUT_TEST`；绑定的路径消失 → `CONTRACT_UNKNOWN_TEST`（删掉关键合同的唯一测试是红）。
+
+**3. 棘轮而不是豁免**：CI 用 `--max-uncollected 91` —— 已知集合可以留到 M2–M5，**增长拒绝**（`UNCOLLECTED_GREW`）；删 manifest 的 `check[]` 是 `CI_LAYER_LEG_WEAKENED`，只删步内棘轮行由 suite 里那条读 workflow 的测试抓住。
+
+**4. 边界（明示）**：**不是权威**——没有任何 gate 读 catalog 决定跑什么，workflow 列表与 manifest 仍是唯一事实直到 M5；没有删除任何手写名单（设计 M1 要求）；“是否被收集”是**静态判定**，不是装载成功的证据；原生 `vitest list` 留给 M5。
+
+**5. 负控 5 项**（`dev/agent-workflow/evidence/tinf-m1-20261114/`）：删合同测试、重复逻辑 id、陈旧排除、缺 driver、未收集增长——全部按期望 exit 2。修的是一个真缺陷：排除表指向不存在文件时原本**不报**（只查 reason/review），现补 `STALE_EXCLUDE`。
+
+**6. 门禁**：`scripts/test-catalog.test.mjs` 19/19；`--self-test` 22 cases；eslint 干净；`eb3-ci-required` = `pass workflows=10 findings=0`；`docs:sync --check` findings=0。
+
+## 2026-11-14 — TINF-M2 合并记录 + TINF-M3：harness 级计时（shadow）+ Host 缓存键/校验（未启用）
+
+**1. M2 合并（记录，不是本轮工作）**：TINF M2（scripted model + 独立 effect witness + contract oracle）以 **`b471224aed35731e4b09fa456652d3121dd747aa`** 合入 `master`（PR **#770**，head `c2785b3ad35a9e394b3a6317c5d4317c07fcdb2b`）。L2 的 `ci-census` 一轮 **23m25s**；独立评审经 **一轮 CHANGES REQUIRED** 后 **PASS**（findings 逐条带证据关闭）。M3 即从该 commit 起算。
+
+**2. M3 两半，都不上线**：设计正本 `08-BUILD-CACHE-AND-PROVENANCE.md` §1 说「真正的未知量只剩 census 内部九个 root 的分解……由 M3 的 harness 级计时补齐」。本轮交付 **(A) 计时**（`scripts/tinf-timing.mjs`）与 **(B) 缓存键 + 制品校验**（`scripts/host-cache-key.mjs`），**缓存一步都没打开**（零 `actions/cache`、零 CI 读键路径、零「跑什么」的变化），memo 明写切换是另一次受审的动作。
+
+**3. (A) 计时：第一次有 root 行**。`tinf-timing/1` TSV 九列（schema/run_id/phase/root/attempt/started_at/duration_ms/status/identity），时长一律 `process.hrtime.bigint()`，`Date.now()` 只做时间戳。接进 `ci-pr-gate.mjs` 的 census 路径，**只在 `--transcript-dir` 存在时**写 `tinf-timing.tsv`（默认本地 run 一字节不多写），包住**每个 leg**、**每次 capture spawn**，并把 **9 root × 每次 attempt** 落成行；`census-runtime.yml` 既有 `if: always()` Upload step 显式带上该文件。计时器**永不 throw**：写不进目录 = `[tinf-timing] WARN …` 一行，verdict/exit/token/顺序全不改。
+- **一个诚实偏差（有据）**：设计稿说「wrap per root（root loop）」，但真实代码里**没有 root 循环**——九个 root 在**一次** `vitest run` 里并发（`vitest.config.ts` 注释原文 "the census single-capture runs nine package roots concurrently"，include 只有 `packages/<pkg>/test/**` + 两条 lane）。所以 root 行是从该次 capture 的 **vitest JSON report**（`testResults[].startTime/endTime`，本仓 vitest 4.1.11 实测存在）推导的**窗口** `max(end)-min(start)`，标在 `phase=census-root`；报告明说：窗口重叠、share 是「占 capture 中位数」、可超 100%、在 phase 表里 share 记 `n/a` 且不进分母；无 span 的 root 记 `failed` 而不是 0 ms 的 ok。
+- **不假装**：host provision / host build / repo build / 安全 suite 是 workflow YAML 的 step，**不在写行的进程里**，本轮不计（它们由 M0 的 `census-profile.mjs` 从 Actions step API 测）。cold/warm **不分组**：schema 没有热标签，不从 attempt 猜。
+- 拒绝集（exit 2，具名）：空输入 / 外来 schema / 坏行（坏 duration、未知 status、非 UTC 时间戳）/ **只有非 census 行**（`phase=leg` 名叫 census 也不算分解）。`--self-test` 26 cases。
+
+**4. (B) 缓存键：`sha256:` over canonical JSON 的九个 §3 字段**，每个都从真实文件/对象派生（`tests/paths.mjs` 的 pin、host 树 `pnpm-lock.yaml`、`census-runtime.yml` 的 host build **step 文本**、本仓 `pnpm-lock.yaml`、`tsconfig.base.json` + 两条 build step、`git rev-parse HEAD^{tree}`）；字段顺序不改键、**任一字段变化必改键**（九项逐一测）；**推不出来的 fact = exit 2 拒绝**，绝不填占位符；host 检出与 pin 不一致 = `HOST_CHECKOUT_DRIFT` 拒绝。`verifyHostArtifact` 三判决：**OK / INFRA_ERROR / MISS**——入口 `apps/cli/lib/bin.js` 必须存在且是文件、`host-artifact.json` 必须可读、`host_commit`/`host_lock_digest`/`toolchain_config_digest`（及整键）必须与期望相等、**文件数 + 全树清单摘要**必须与记录相等；**期望缺 fact 也是 INFRA_ERROR（缺期望 ≠ 任何制品都匹配）**；目录不存在是 **MISS**（「去构建」）而非 INFRA_ERROR（「找到的东西不许用」）。写窄：它证明不了「产物由那个 commit 构建」——只证明记录身份 + 内容摘要，摘要是摘要不是签名，也不能证明可运行。
+
+**5. 接线（按 M1 既有模式，不新增第二份名单）**：两个新 `node:test` 套件接进 **同一个** `ci-integration` leg 的 `node --test` 行（`test-catalog.test.mjs` + `tinf-timing.test.mjs` + `host-cache-key.test.mjs`）与 **同一个** manifest leg 的 `check[]`（leg id/why 同步陈述 M3）；`eb3-ci-required` = `pass workflows=10 findings=0`。`--max-uncollected 91` 仍 exit 0：**新文件必须被收集**，raised 数字不允许。
+
+**6. 门禁（本 head 实测）**：两个新套件 `36/36`；`test-catalog.mjs --max-uncollected 91` exit 0、`tests=862`、`UNCOLLECTED=91`、digest `sha256:1b2f3bc521f8b4ea6599b24c030a55f52c5dfc0b69d127c5f41e88456968be46`；`test-catalog.test.mjs` 19/19、`tinf-m0.test.mjs` 13/13（均未改）；`census-profile --self-test` PASS 8；`tinf-timing --self-test` PASS 26；`host-cache-key --self-test` PASS 13；eslint 5 文件 0 problems；`docs:sync --check` findings=0。**CLI 实跑**：`--summarize` 对 3 roots × 2 attempts 的真实 TSV 出报告（`evidence/tinf-m3-20261114/summarize-demo.txt`）；`--verify` 对**合成**宿主树 OK / 一字节改动 INFRA_ERROR / 缺目录 MISS（**本机没有 pristine host，也没有 `/srv/workspace/dsh-stable-3-0.2.0-rc.2/deepseek-harness`**，真实树校验留到切换前第二步，证据里已标注「合成」）。
+
+**7. 边界**：CORE PATCH BUDGET = 0（`packages/**` 零改动，p4t6 booking 不需条目）；未动 Authority / Candidate / release 状态 / 三个 Required contexts / concurrency / 保护规则；未新增/删除名测试名单；memo = `docs/plans/memo/tinf-m3-timing-hostcache-20261114/README.md`（含未做列表与回滚：删两个脚本 + 两个测试 + 接线行即回滚）。
+
+## 2026-11-14 — TINF-M3 合并记录 + **第一批真实测量** + TINF-M4：census 计划/聚合/不降级证明（shadow）
+
+**1. M3 合并（记录，不是本轮工作）**：TINF M3（harness 级计时 + Host 缓存键/校验，缓存未启用）以 **`b8496efc28128eb22a4c0f52540b45257b0df826`** 合入 `master`（PR **#771**；评审记录的 PR head = `938f9a04a08896b514bd0e2e18a17e275f87a6ef`）。L2 census 一轮 **23m37s**；独立评审经 **三轮 CHANGES REQUIRED** 后 **PASS**（findings 逐条带证据关闭）。M4 即从该 commit 起算；已核 `git rev-parse b8496efc2^{tree}` = `2214185978f5637bf3c7256c245970ad3a675bd8`。
+
+**2. 第一批真实测量（M3 的计时在 L2 上的第一次落地）**：`gh run download 43638954936 -n census-runtime-transcripts-1195` → `census-transcripts/tinf-timing.tsv`，**25 data rows**：1 `leg` + 2 `census-capture` + **22 `census-root`**（**11 roots** × 2 captures）。两次 capture 实测 **550.8 s / 544.8 s**（census 墙钟 **1095.6 s**；gate 的 step 行 `seconds=1095.9`，占 23m37s job 的 ~77%）。每 capture 中位数最重的两个 root 是 **`packages/runtime` 542.9 s**（545.3/543.0）与 **`packages/testkit` 539.2 s**（539.2/540.7）；其余 9 个 root 均在 74–114 s。
+- **可判定**：该 artifact 的 `product_merge_tree=2214185978…` **等于** M3 合并 commit 的 tree，所以那次 census 判的就是合并后的树。
+- **未解决（并列记录，不猜）**：artifact 的 `identity head=d13e94e6d2218107e1ea50b134a5cdd6ac60b2ba` 在本 checkout 中**不是对象**，与评审记录的 PR head `938f9a04…` 不一致；无法在本机判定哪一个对应那次 run，故两个都记下，标注 **UNRESOLVED-PROVENANCE**，不据此推断任何 head→run 绑定。
+- 数字摘录（工具生成，非手抄）随 M4 提交：`docs/plans/memo/tinf-m4-census-plan-20261114/L2-20261114-MEASURED.txt`；224 KB 原始 artifact **不提交**。
+
+**3. M4 交付三件工具（全部 shadow，零接线到 gate）**：
+- `scripts/census-plan.mjs`（`census-plan/1`）：root 集合**派生**自**根** `vitest.config.ts` 的 `include[]`（复用 `test-catalog.mjs` 的匹配 + M3 的 `rootOf`；本树 **11 roots / 705 files**，与 L2 打印的 `captured 705f/9213l` 及 11 个 `census-root` 名一致）；每 (root, capture) 一 task（22 tasks），每 root 的两次 capture 锁成**一个不可拆组**（`ordering-unproven`：并发无损性未证明，spec §1 禁止假定；**不声称**共享 World）；`est_ms` 取该 attempt 自己的实测行、否则该 root 中位数、否则 `null`（**只用于均衡**，任何估计值都不增删任务，`--balance` 遇未知估计**拒绝**）；命令由新模块 `scripts/census-invocation.mjs` 产生，`ci-pr-gate.mjs` 的 census leg **改为导入同一函数**（argv 逐字不变，行为等价重构）；`plan_digest` 覆盖 tasks+identity+roots+captures+clock；`--verify-plan` 拒绝 `PLAN_DIGEST_MISMATCH`/`PLAN_IDENTITY_DRIFT`/`PLAN_TASK_SET_CHANGED`/`PLAN_TASK_DUPLICATE`；root 集合推不出来时**拒绝**（`ROOT_CONFIG_MISSING`/`ROOT_CONFIG_UNREADABLE`/`CATALOG_UNREADABLE`/`ROOT_UNRESOLVED`/`ROOTS_NOT_DERIVED`），**没有**「九个 root」的 fallback。
+- `scripts/census-aggregate.mjs`（`census-summary/1`）：spec §5 规则 1–6 按序 fail-closed，每步命名 code；`exit 0 但 results 含 FAIL` → **FAIL**；`exit 0 与 status 矛盾` → `SHARD_EXIT_DISAGREES`；truncated 制品 → `SHARD_UNPARSEABLE`；单 capture 计划 → `CAPTURES_INSUFFICIENT`；`build_digest=null` → `IDENTITY_BUILD_UNRECORDED`（两个 null 的相等不是身份）；每 shard `artifact_digest` = **原始字节** sha256。文件头与 summary `scope_note` 明写：**不是权威、不被任何 Required context 读取、不写任何 gate 读的制品、不成为分支保护**。
+- 负控两个套件 **83 tests / 83 pass**（plan 36 + aggregate 47），每条只断言 code/verdict；正控（完整一致集合 → PASS）**存在**。接进**同一个** `ci-integration` leg 的 `node --test` 行与**同一个** manifest `check[]`（leg id/step name 补 M4，**没有**第二份名单）。
+
+**4. 真实数据的分片结论（本轮最有用的一条）**：对那 22 个 task 做**穷举**最小 makespan 均衡（11 个不可拆组），K=1/2/4 的 `work` makespan 为 **5226.0 / 2614.1 / 1315.9 s**，但按真实执行语义（每 capture 一个 vitest 进程、root 进程内并发）预测的**墙钟**是 **1088.3 / 1088.3 / 1088.3 s**（K=1 模型 1088.3 s vs 实测 1095.9 s，+0.7%）。**root 级分片在这份 census 上省不到墙钟**：墙钟 ≈ 2 × 最重 root（~543 s），而 runtime/testkit 两个最重 root 本来就并发。分片还**增加**固定成本（M0 step 中位数：host provision+build 272 s、repo build 22 s），K=2 约 +294 s runner time、K=4 约 +882 s，换 ~0 s 墙钟。要真的缩短只能**root 内部按文件分片**（M4 不做）或**两次 capture 并发**（未证明无损，故本轮锁成组）。M3 的 host 缓存键是唯一能改这笔固定成本的杠杆，**仍未启用**。
+
+**5. 明示的延期与边界**：spec §6 **step 2 的独立影子工作流故意延期** —— 新增 workflow 文件会改变 `eb3-ci-required` 的 `workflows=` 计数与 manifest 形状（它把声明与 workflow 实际 job 双向对齐），必须单独 review；本轮用 **step 3 的离线真实数据对照**替代（同一棵树、同一批记录转录）。**未做**：任何分片实跑、每 shard runner-minutes、host boot 计数、缓存命中、root 内分片、两次 capture 并发、真实 `required_oracles`（真实计划里为空 → 规则 5 检查 0 条，已披露）、真实 `build_digest`（无来源 → 聚合器对 null **拒绝 PASS**）。身份是**记录**不是重算。CORE PATCH BUDGET = 0（`packages/**` 零改动）；未动 Authority / Candidate / release / 三个 Required contexts / concurrency / 保护规则；memo = `docs/plans/memo/tinf-m4-census-plan-20261114/README.md`（含未做列表与回滚：删三工具 + 两套件 + 两处接线 + 恢复 `ci-pr-gate` 内联 argv）。
+
+**6. 门禁（本 head 实测）**：`node --test scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs` **83/83**；两个 `--self-test` 分别 `cases=31` / `cases=24` 全 PASS；`scripts/test-catalog.mjs --max-uncollected 91` exit 0 `tests=864 UNCOLLECTED=91 digest=sha256:ab4bd881…`；`node --test scripts/test-catalog.test.mjs scripts/tinf-m0.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs` **78/78**（未改）；`node scripts/eb3-ci-required.mjs` = `pass workflows=10 findings=0`；`docs:sync --check` = `findings=0 blocking=0`；`lint-identities` exit 0；`eslint` 六文件 0 problems、`node --check` 五新文件全过。
+
+## 2026-11-14 — TINF-M4 **第 1 轮独立评审 CHANGES REQUIRED → 六条逐条关闭**（同一分支，未开新 PR）
+
+**0. 背景与纪律**：PR **#772** 独立评审在 tip **`dd65c0e1a`** 上判 **CHANGES REQUIRED**（1 阻断 + 5 缺口）。本轮**只修这六条**，仍提交在 **`task/tinf-m4-census-plan-20261114`**，**不新建 PR**；`scripts/ci-pr-gate.mjs` 的 argv **一个字节未动**（`git status` 无该文件；评审已确认 byte-identical）。上一条日志里的 `83 tests` / `cases=31` / `cases=24` / `1,889,990` / `1,889,836` 等数字是**修复前 tip** 的记录，**已被本条取代**（日志只追加，旧条不改写）。
+
+**1（阻断）`build_digest` 哨兵绕过**：评审实测 `--plan --build-digest null` 把字符串 `"null"` 记成身份，两个 shard 原样回显后聚合为 `PASS expected=22 observed=22` exit 0。根因是「只拒绝 `=== null`」+「接受任意字符串」。修法：新增 **`scripts/census-digest.mjs`**（约 90 行）作为 digest 形状的**唯一定义**——`DIGEST_RE = /^(?:sha256:[0-9a-f]{64}|[0-9a-f]{40})$/`，`isValidDigest` / `digestProblem` / `identityProblems({scope:'plan'|'shard'})`；计划侧 `makeIdentity` 与 CLI `--build-digest` 都过它（哨兵 → `DIGEST_INVALID` exit 2 且**stdout 不打印计划**），聚合器对**每个**身份字段先验形状再比相等。计划与聚合器**共用同一个常量**，不再各写一遍正则。真实生产者的形状已在 memo 点名：`catalog_digest`/`plan_digest` 是 `sha256:`+64 hex，`merge_tree_sha`（sha1 仓库的 git tree）与 `host_sha`（`tests/paths.mjs` pin）是裸 40 hex，`build_digest` **还没有生产者**。
+
+**2 计划侧 null 也「相等」**：评审把计划改成 `merge_tree_sha: null` 并让 shard 也 null，聚合为 PASS（因为比较的是 `plan.identity?.[f] ?? null`）。修法：rule 1 **先**验计划身份（5 字段全查，build 含在内）——null/缺席 → `PLAN_IDENTITY_UNRECORDED` / `IDENTITY_BUILD_UNRECORDED`；`plan_digest` 缺失 → `PLAN_DIGEST_UNRECORDED`；畸形 → `DIGEST_INVALID`。**四个字段 + plan_digest 各有一条 null 测试、各一条缺席测试**。
+
+**3 每条 result 没有身份**：原来只按 `task_id` 索引，capture-2 的 id 可携带 capture-1 的数据而 PASS。修法：每条 result 必须带 `root`/`capture`，且必须等于**计划里那条 task**（`planTaskById` 查表，不做字符串切分自创语义），并带非空 `evidence`（缺/空/空白/非字符串都拒）；三个命名拒绝 `RESULT_ROOT_MISMATCH` / `RESULT_CAPTURE_MISMATCH` / `RESULT_EVIDENCE_MISSING`。**capture-2-with-capture-1-data 的评审探针已成正式测试。**
+
+**4 掉一个 root 静默缩水**：评审用两 root 夹具 + 根配置 `exclude: ['packages/b/**']` 得到只含 `packages/a` 的计划并 exit 0。修法：`deriveRoots` 统计「有 test-like 文件但被根配置 `exclude[]` 全部排除」的 root，写进 `roots_dropped: [{root, files_excluded}]`，**默认拒绝** `ROOT_DROPPED_BY_EXCLUDE`（exit 2，detail 带被排除文件数）；`--allow-dropped-root <root>`（可重复）才降级为 `{allowed: true}` 的**记录在案** drop，该记录**进入 `plan_digest`**，并在聚合器 `summary.roots_dropped` 与人类报告的 `DROPPED ROOTS` 行出现；命名一个没被 drop 的 root → `DROPPED_ROOT_UNKNOWN`（笔误不是许可）；`exclude[]` 抹掉全部 root 仍是 `ROOTS_NOT_DERIVED`。
+
+**5 memo 旧算术**：`README.md` 引的 k=2 `1,889,990` / 下界 `1,889,836` 属于**已被取代的「只用 root 中位数」模型**。本轮把两个模型分开命名并全部换成 **per-attempt** 数字：**模型 A（工作）** = 各 task 实测估计之和的最小 makespan —— K=1 **5,226,020 ms**、K=2 **2,614,139 ms**（下界 **2,613,010**，两 shard 2,614,139 / 2,611,881）、K=4 **1,315,867 ms**（四 shard **1,306,747 / 1,315,867 / 1,292,147 / 1,311,259**）；**模型 B（墙钟）** = `Σ_c max(est(root,c))` → **1,088,254 ms**，实测 census **1,095,606 ms**（**+0.7%**）。删掉一切只在旧模型下成立的数，并在表上明写「哪个模型产出哪个数字」「模型 B 只在 K=1 验证过」。`L2-20261114-MEASURED.txt` 由工具**重新生成**（重新 `gh run download` 到 `.artifacts`，**不入库**；25 行不变，`est_ms`/均衡结果不变，只有 `merge_tree_sha`/`plan_digest` 因本轮树变化而变）。
+
+**6 测试强度**：评审做了变异实验（删 multiset 块 / FAIL 终态规则 / build_digest 拒绝，负控变红但仍有 5–7 条测试绿），并点名 `census-plan.mjs:829/834/843`、`census-aggregate.mjs:561`、`census-aggregate.test.mjs:131` 的同义反复。处置：**散文正则 → 结构化断言**（summary 的 `scope` 改成 5 个布尔字段并逐个 `deepEqual`）；round-trip/长度类改为「改一个具体字段必须移动具体 digest」；self-verify 改为「用不同输入顺序重建同一计划」；**每条规则至少一条「只此一码 + 精确 `expected_task_ids`/`observed_task_ids`/counts delta」**测试（rule 1–6 各一条，另加 `summary: null` 断言：拒绝不产出可误读的测量）。本轮自查变异（临时改文件后恢复，工作树无残留）：删「终态非 PASS」+「TASK_MISSING」→ **13 条红**；删计划身份形状校验 → **8 条红**；删 evidence 校验 → **5 条红**；删 capture 比对 → **2 条红**；删 `ROOT_DROPPED_BY_EXCLUDE` → **2 条红**。
+
+**7 收紧后的诚实后果（memo §2/§9 明写）**：真实计划现在**不可能**聚合为 PASS —— `build_digest` 无生产者（null → `IDENTITY_BUILD_UNRECORDED`），也没有任何 shard 产物带 per-result `root`/`capture`/`evidence`。这是 shadow 工具的**正确状态**：它现在拒绝的正是「没有 build 身份、没有证据引用」的绿灯；要真正使用，必须先有 build 摘要生产者与带身份的 shard 产物。
+
+**8 门禁（本 head 实测，全部重跑）**：`node --test scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs` = **136 tests / 136 pass / 0 fail**（plan **45** + aggregate **91**，修复前为 83）；`census-plan --self-test` = `PASS cases=40 failed=0`、`census-aggregate --self-test` = `PASS cases=33 failed=0`；`test-catalog.mjs --max-uncollected 91` exit 0（`tests=865`、`UNCOLLECTED=91`、digest `sha256:2497b8f9…`；提交前为 864/`ab4bd881…`，因为未 track 的文件不在 catalog 里——tracked 后新套件 +1 且被收集，`UNCOLLECTED` 不变 = 棘轮未放宽）；`node --test test-catalog/tinf-m0/tinf-timing/host-cache-key` **78/78**（未改）；`eb3-ci-required` = **`pass workflows=10 findings=0`**；`docs:sync --check` = `findings=0 blocking=0`；`lint-identities` exit 0（162 lines / 76 distinct）；`eslint` **五个**改动/新增文件 **0 problems**；`node --check` **四个**文件全过。两套件仍接在**同一个** `ci-integration` leg 与**同一个** manifest `check[]`，没有第二份名单；`--max-uncollected 91` 未放宽。
+
+## 2026-11-14 — TINF-M4 合并记录 + TINF-M5：census 执行切到 plan + aggregator（Required contexts 不变）
+
+**1. M4 合并（记录，不是本轮工作）**：TINF M4（census plan + shard aggregator + 非退化证明，shadow）以 **`6330ef4c4139ecc1145259e1746cec768250c78f`** 合入 `master`（PR **#772**，head `0e5767a2c319a1d2c44b9b26fbb50e57554ed7da`）。L2 `ci-census` 一轮 **23m40s**（job 22:28:15Z→22:51:55Z = 1420 s；census leg `seconds=1091.3`，两份 capture 551.0 s + 540.0 s；身份集 705f/9213l 两次一致）。独立评审经**一轮 CHANGES REQUIRED** 后 **PASS**（findings 逐条带证据关闭）。M5 即从该 commit 起算。
+
+**2. M5 一句话**：census leg 的**内部执行**从「跑两次 vitest，把报告跟 baseline 文档比」换成「按 M4 的 plan 跑 22 个任务、逐任务产出 `root`/`capture`/`status`/`evidence`、由 M4 的 aggregator 判定」；**证据通道（`DSH-CI-LEG` / `DSH-CI-VERDICT`）、population、三个 Required contexts、job 名、`ci-required` 评分全不变**。开关 = `census-runtime.yml` **一行** `--census-execution plan`，回滚 = 删这一行（`legacy` 是代码默认值）。
+
+**3. 补上 M4 披露的 `build_digest` 缺口**：`scripts/census-build-stamp.mjs`（415 行）是**真实生产者**——载荷 `{schema, merge_tree, catalog_digest, surfaces, artifacts[{path,bytes,sha256}]}` 排序后走 M4 的 `digestJson()`（canonical JSON + sha256，**不是第二套格式**）；`built_at` 记录但不进摘要；用 `INSTALL_SURFACES` + 与 `check-artifacts-committed.mjs` 相同的 ignored 过滤。本树实测 `files=2088 bytes=16533772 digest=sha256:7eb039bd…`；一字节改动即变；缺面/空面 → `BUILD_ARTIFACTS_MISSING`/`BUILD_ARTIFACTS_EMPTY` **拒绝**，**绝不写占位符**。诚实边界：它证明**字节身份**，不证明「跑过 build」；后者仍由 census job 里 `build:composition` 末尾的 `check-artifacts-committed` 证明。
+
+**4. 逐结果 identity + evidence**：`scripts/census-execution.mjs`（357 行）为每个 plan 任务产出 `{task_id, root, capture, state: PASS|FAIL|INCOMPLETE, evidence: "<report>#<root> <sha256>"}`；`root`/`capture` **取自 plan 任务**，不从报告事后猜；报告里缺席的 root = `INCOMPLETE`（沉默不是通过），报告里出现 plan 没命名的 root = `RESULT_ROOT_UNPLANNED` 拒绝（multiset 双向）；`success=false` 但无归因失败 = `INCOMPLETE`。live 运行把真实派生的录制写成 `census-replay-<n>.json`（**输出**，不是手写 fixture）。
+
+**5. 执行模式开关（`ci-pr-gate.mjs`）**：`--census-execution legacy|plan`（**默认 legacy**，本 PR 合并当天零行为变化）、`--census-shards N`、`--census-dry-run DIR`、`--census-build-stamp FILE`；三个 plan-only 旋钮在 legacy 下**报错拒绝**而不是静默忽略。plan 路径五步：`deriveRoots` → `resolveBuildStamp` → `buildPlan`（identity 带 `build_digest`）→ `verifyPlan`（**用当前树重新派生**再比）→ 按 capture 顺序执行 → `buildShardArtifacts`/`writeShardArtifacts`/`aggregateArtifacts` → 出 `DSH-CENSUS-PLAN`/`-BUILD`/`-CAPTURE`/`-SHARDS`/`-SUMMARY` 与**同一个** `DSH-CI-VERDICT`。**任何拒绝 = leg verdict=fail + `DSH-CENSUS-REFUSED code=…`，绝不回落 legacy**（静默回落会让「plan 真跑了」不可测）。**不是 22 个进程**：census invocation 无文件过滤器，按任务 spawn 会把 population 跑 22 遍；root 级并发在 vitest 进程内（M4 已证）。`--census-shards N` 只是**产物布局**（连续切分），`execution.shared_invocation=true` 写在产物里，**不假装**独立 World/进程。
+
+**6. 接线（按 M1/M3/M4 既有模式，不新增第二份名单）**：`scripts/census-cutover.test.mjs`（638 行，**25 tests**）接进**同一个** `ci-integration` leg 的 `node --test` 行与**同一个** manifest leg 的 `check[]`（leg id 未改名，`why` 追加 M5 段）；从任一处删掉 = `CI_LAYER_LEG_WEAKENED`。`census-runtime.yml` 的 diff 是 **+1 行**：无新 job、无 matrix、无 concurrency、无 Required context、无 `ci-required` 输入变化；transcript re-grade step 实测仍 `pass class=ok :: 1 leg, final token pass`。
+
+**7. 离线 dry-run（可真跑，无宿主）+ 负控**：输入是**真实上传物**——从 M4 合并点 L2（run `43648221295`，artifact `census-runtime-transcripts-1198`）下载的 `tinf-timing.tsv`（26 行；`product_merge_tree=7fae3be1…` 与本 worktree 现算的 `merge_tree` 相同，故 plan 身份可复现），22 条 `census-root` 行按 `status=ok → PASS` 映射成两个 capture 的 replay。正向：`DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22`、`DSH-CI-VERDICT pass`、exit 0。负控（同一真实录制，全部 exit 1）：一条结果改 FAIL → `FAIL codes=TASK_STATE_FAIL`（shard 仍 `COMPLETED`/exit 0）；丢一个 root → `INCOMPLETE codes=TASK_MISSING expected=22 observed=21`；只有 capture 1 → `REFUSED DRYRUN_CAPTURE_MISSING`；缺 stamp → `REFUSED BUILD_STAMP_MISSING`；plan 拒绝（树无根 config）→ `REFUSED ROOT_CONFIG_MISSING`；聚合拒绝（1-capture plan）→ `REFUSED CAPTURES_INSUFFICIENT`。**录制不进仓库**：plan identity 含 `merge_tree_sha`，任何 commit 都会让它失效（M4 的 `L2-20261114-MEASURED.txt` 已记同一现象）→ 可复现的正/负控放在测试套件里，测试时按当前树现算。
+
+**8. 测量 before/after**：M3 最后一次 L2（run `43638954936` / #1195）`ci-census` job **23m37s**（1417 s），leg `seconds=1095.9`（550.8+544.8 s）；M4 合并点 L2（run `43648221295` / #1198）job **23m40s**（1420 s），leg `seconds=1091.3`（551.0+540.0 s）。**M5 尚未上机**，且**改的是「证明了什么」，不是墙钟**：plan 路径 invocation 数 = 2（与 legacy 相同）、argv 逐字节相同，plan+verify+aggregate 在 22 任务录制上实测 **0.8 s**。首次 plan 模式 L2 会把 `census-plan`/`census-plan-verify`/`census-capture ×2`/`census-root ×22`/`census-aggregate` 落成 tinf-timing 行——那时 plan 的开销才是实测。
+
+**9. 判决等价性的诚实说明**：今天的 baseline 容忍集是**空**的（`nine-root-u7-1-old-reds.md` = 0 条具名 red + 0 个 collection-error 文件），所以同一 population 上 plan 与 legacy 判决等价；但 plan **严格更严**（不接受 baseline 容忍、不做 load-family 重采样；legacy 的 3/3 重采样通道在发布口径 solo 绿率约 2/8 下几乎总是红）。有意的收紧，不是等价替换。aggregator 的 `scope` 块**未改**（`shadow:true / wired_to_ci_required:false`）：对**产物**仍成立（无 Required context 读它，产物写在 transcript 目录）；census **job** 现在在进程内消费 summary 决定 leg verdict——是「消费」，不是「权威」。
+
+**10. 未做（及理由）**：M6 的手写名单退场（会改「CI 跑什么」，须单独审）；独立 World / per-root 进程分片（`--census-shards` 只是布局；真独立 World 要新 host 供给与并发模型）；真机 live 首跑（本机无 pristine host，live 分支只经代码审查 + dry-run；**首跑 = 本 PR 合并后的下一次 L2**，也是 M5 唯一未被实测证伪的环节）；build stamp 未做成 workflow 单独 step（本轮限定 `census-runtime.yml` 只改一行，故在 plan leg 进程内算并写盘）。
+
+**11. 门禁（本 head 实测，全部重跑）**：`node --test scripts/census-cutover.test.mjs` = **25/25**；`node --test test-catalog/tinf-timing/host-cache-key/census-plan/census-aggregate` = **201/201**（M1/M3/M4 套件未改）；`census-plan --self-test` = `PASS cases=40 failed=0`；`census-aggregate --self-test` = `PASS cases=33 failed=0`；`ci-pr-gate --self-test` = `pass 94 assertions`；`test-catalog.mjs --max-uncollected 91` exit 0（`tests=865`、`UNCOLLECTED=91`、digest `sha256:2497b8f9…`；提交前为 864/`ab4bd881…`，因为未 track 的文件不在 catalog 里——tracked 后新套件 +1 且被收集，`UNCOLLECTED` 不变 = 棘轮未放宽）；`eb3-ci-required` = **`pass workflows=10 findings=0`**；`docs:sync --check` = `findings=0 blocking=0`；`lint-identities` exit 0（162 lines / 76 distinct）；`eslint` **4** 个改动/新增文件 **0 problems**；`node --check` **4** 个文件全过；`--check-transcript` 对 plan 模式 transcript = `pass class=ok :: 1 leg(s), final token pass`。CORE PATCH BUDGET = 0（`packages/**` 零改动）；未动 Authority / Candidate / release / 三个 Required contexts / concurrency / 保护规则；`scripts/census-plan.mjs` 与 `scripts/census-aggregate.mjs` **一个字节没改**。memo = `docs/plans/memo/tinf-m5-census-cutover-20261114/README.md`（含 `evidence/`：真实 tsv、正向/负控 transcript、before/after）。
+
+## 2026-11-15 — TINF-M5 review round 2：PR #773 的六条 findings 全部成立，逐条修复
+
+**0. 结论先行**：`4ff253a501e9a363d0164f61c154b9c78b63bc94` 的独立评审 = **CHANGES REQUIRED（六条）**，六条**全部为真**，没有误报。修复 commit **`32c1a5bd4`**（同分支 `task/tinf-m5-census-cutover-20261114`；PR #773 已存在，未新建 PR；`census-runtime.yml` 的切换行与三个 Required contexts 未动）。上一条日志末句「`census-aggregate.mjs` 一个字节没改」**自本条起失效**：为关闭 finding 3，该文件新增 `verifyEvidenceRefs()` 并在 CLI `--aggregate` 路径调用（判定代数 `aggregate()` 仍未改）。
+
+**1（阻断）套件不 hermetic**：`census-cutover.test.mjs` 用 `mkdtempSync(join(REPO_ROOT,'.artifacts',…))` 造夹具。**干净 checkout 没有 `.artifacts/`，25 条里 16 条在 setup 就 ENOENT**；CI 里能过纯粹因为**无关**的较早步骤（`tests/u7-3-devex/devex-integration.test.mjs`）留下了该目录——对另一个套件的执行顺序依赖。修复：夹具全部改到 `os.tmpdir()`，并把 leg 的 `shardDir`/`transcriptDir` 做成可注入，测试运行**不往 checkout 写一个字节**。证明（`git clone --no-hardlinks`，clone 内 `.artifacts/` **不存在**，跑**逐字**的六文件 CI 命令）：被审 head `4ff253a5` = **226 tests / 210 pass / 16 fail**；本 head `32c1a5bd4` = **238 tests / 238 pass / 0 fail**；跑完 clone 里 `ls .artifacts` 仍不存在。
+
+**2 潜在假红（skip 被当失败）**：`census-execution.mjs:81` 原来数 `status !== 'passed'`，于是 `pending`（`it.skip`/条件 `it.skipIf`）会被判 FAIL——population 里**已存在**条件 skip（如 `packages/runtime/test/a5rbn-runtime-base-narrow.test.ts`），只是 1198 轮恰好 0 skip，所以这是**潜伏**的假红。修复：只把 `status === 'failed'` 计为失败（与 legacy 的 `scripts/fail-set.mjs` 同义），`skipped`/`pending`/`todo` 单独**计数**并写进结果与 capture token（`assertions=` / `skipped=`）；**未知状态**仍 FAIL（`UNKNOWN_ASSERTION_STATUS`）——严格于 legacy，绝不更松。测试：`a skip is NOT a failure (legacy semantics) and the skip count is carried`、`an unknown assertion status is a FAIL, not a silent pass`。
+
+**3 证据被信任而不是被验证**：原来 `evidence` 只要求非空，评审用「22 条 PASS + `evidence=/nonexistent/report.json#…`」的伪造目录聚合出 `PASS expected=22 observed=22` exit 0。修复：新增 `verifyEvidenceRefs()`（`census-aggregate.mjs`），在**被评分的字节**上解析每条引用——必须存在（`RESULT_EVIDENCE_UNREADABLE`）、必须解析在 shard 目录内（`RESULT_EVIDENCE_OUTSIDE`）、证据产物必须列出该 root（`RESULT_EVIDENCE_UNKNOWN_ROOT`）；CLI 与 `aggregateArtifacts()` 都调用。运行器改为在 shard 目录写 `census-evidence-<capture>.json`（每 root 的 state/计数/摘要 + 来源报告路径与摘要），并把每条结果**重新锚定**到它，形成 报告 → 证据产物 → shard 的可走链。回放新增两道：录制必须带 `merge_tree` 且等于计划的树（否则 `DRYRUN_IDENTITY_MISMATCH`）、必须覆盖计划的**每一个 root**（否则 `DRYRUN_COVERAGE_MISMATCH`）。**证据更正**：上传的 `census-runtime-transcripts-1198` 只有 `census-run.txt`/`census-capture-{1,2}.txt`/`tinf-timing.tsv`，**没有 vitest JSON、没有 `census-replay-<n>.json`**，所以它**根本不能**当录制回放（会 `DRYRUN_CAPTURE_MISSING`）；本轮 PASS 用的是**运行时合成**的录制（tsv `census-root status=ok → PASS`，仅到 root 级），`evidence/dry-run-positive.txt` 顶部已标明 SYNTHESIZED、写明**目前不存在真实录制**，memo §5.1 同步更正。
+
+**4 死守卫**：`censusPlanLeg` 从 `EB3_MERGE_TREE` 取 `mergeTree`，再拿同一个变量比较，于是 `PLAN_MERGE_TREE_MISMATCH` 只要环境变量被设置就**永远不可达**。修复：身份**永远是** `gitTreeSha(checkout)`；`EB3_MERGE_TREE` 只当**声称**，在两处独立比较（声称 vs 现树、声称 vs plan 记录的 identity）。测试：`EB3_MERGE_TREE naming another tree refuses PLAN_MERGE_TREE_MISMATCH`。
+
+**5 旧报告复用**：plan 的报告路径是确定性的（`taskReportPath`），而 leg 原来只要 `existsSync(reportAbs)` 就评分——vitest 崩溃会留下**上一次**的报告被当成本次 PASS。修复：报告路径改为 `census-<stamp>-<pid>-<capture>.json`（legacy `censusCapturePath` 的同一形状），spawn 前 `rmSync(force)`；没有报告 = `CENSUS_REPORT_MISSING`，不是旧 PASS。plan argv 只重写 `--outputFile.json=` 这一项，其余逐字节来自计划。测试：`LIVE: one stamped invocation per capture…` 与 `NEGATIVE: a stale report at the graded path is UNLINKED…`（预先在**精确**的 stamped 路径放一份全绿报告、runner 不再写文件 → 必须 `CENSUS_REPORT_MISSING`）。
+
+**6 build stamp 过期**：`--census-build-stamp` 原来只校验 stamp 自洽（自己的 artifacts 摘要 = 自己的 digest），所以**同一棵树上较早时刻**的自洽 stamp 会被接受。修复：新增 `staleAgainstCurrent()`，对当前安装面重新哈希——字节/数量/路径任一不同 = `BUILD_STAMP_STALE`；面不可哈希 = `BUILD_STAMP_UNVERIFIABLE`（拒绝而不是信任）。`resolveBuildStamp({stampPath, cwd})` 与 `readBuildStamp(file,{cwd})`、CLI `--verify` 全部走它。测试：`a same-tree stamp whose bytes changed is BUILD_STAMP_STALE (not trusted)`（含不可哈希分支）。
+
+**7 测试强度（本轮新增 12 条，25 → 37）**：新增覆盖 skip 语义、未知状态、evidence 三类拒绝（库层 + **真 CLI exit 2**）、回放跨树/覆盖不足、错树的 `EB3_MERGE_TREE`、过期 stamp、**live 分支注入 runner**（每 capture 一次带 stamp 的 invocation、只评这份报告、stale 报告被 unlink）、hermetic 断言（夹具不在 checkout 内）。
+
+**8 门禁（本 head `32c1a5bd4` 实测，全部重跑）**：干净 clone 六文件 CI 命令 **238/238**（被审 head 210/16，见 §1）；`census-cutover.test.mjs` **37/37**；`census-plan --self-test` 40、`census-aggregate --self-test` 33、`ci-pr-gate --self-test` 94；`test-catalog.mjs --max-uncollected 91` exit 0（`tests=865`、`UNCOLLECTED=91`、digest `sha256:2497b8f9…`，棘轮未放宽）；`eb3-ci-required` = **`pass workflows=10 findings=0`**；`docs:sync --check` = `findings=0 blocking=0`；`lint-identities` exit 0（162 lines / 76 distinct）；`eslint` 六个改动文件 0 problems；`node --check` 五个脚本全过；`--check-transcript` 对 plan 模式 transcript = `pass class=ok :: 1 leg(s), final token pass`。
+
+**9 仍未实测（memo §7 明写）**：**live plan 路径从未在宿主上跑过**（本机无 pristine host；live 分支只经注入 runner 的测试）；**没有任何真实 replay 录制**（全部合成）；plan 模式墙钟仍只是结构论断（2 次 invocation、argv 相同 + 0.8 s 实测开销）；dry-run 的 `ok→PASS` 只到 root 级，不证明断言数/文件集合。证据汇总：`docs/plans/memo/tinf-m5-census-cutover-20261114/evidence/review-round-2.txt`。
+
+**10. round-2 补充（同一分支，紧接上条）**：§1 里「测试运行不往 checkout 写一个字节」当时还差**一个空目录**——`main()` 在 plan 模式下也会预创建 `.artifacts/census/`。已收紧为：**只有 legacy 路径**预创建该目录；plan 路径的产物（replay / evidence / shard / product-build）写在 `--transcript-dir` 旁边（shard 在 `<transcript>/plan/`），**证据链随 transcript 一起被上传**，checkout 零写入；仅当没有 transcript dir 时才回落到 gitignored 的 `.artifacts/census/`。实测：清掉 `.artifacts/census` 后单跑 `census-cutover.test.mjs`，目录不再出现；六文件命令仍 **238/238**。
+
+**11. round-2 补充（精度修正）**：上条 §10 的「checkout 零写入」实测应为「**无 tracked 变更**；完整六文件跑完后最多留一个**空的** gitignored `.artifacts/`」。这不影响 finding 1 的实质：被审版本是**依赖**该目录存在（缺席即 16 条红），本 head 是**不读它**、缺席照跑 238/238。memo §2.2 与 `evidence/review-round-2.txt` 已按此措辞更正；live 分支测试在 finally 里对空 `.artifacts` 做 best-effort `rmdir`（非空则不动）。
+
+## 2026-11-15 — TINF-M5 合并（PR #773）+ 首次 plan 模式 L2 上机
+
+**0. 结论先行**：PR **#773**（`feat(ci): TINF M5 — the census executes the plan and the aggregator grades it`）已合并为 **`e5bf05670f5a4867ff02834b033af4bbcc45b836`**（`master`，mergedAt `2026-11-15T01:00:40Z`），head `e0c1420a9bef244f8dc92a77860c34883e72ab2a`。评审一轮 **CHANGES REQUIRED** 后 PASS；唯一阻断项是**套件不 hermetic**（夹具写在 checkout 的 `.artifacts/` 下，干净 clone 16/25 在 setup 就 ENOENT，CI 里能过只是因为无关的较早步骤留下了该目录），已在 `32c1a5bd4` 修复并用 `git clone --no-hardlinks` 复验（210/16 → 238/238，clone 内 `.artifacts/` 连空目录都不出现）。
+
+**1. 首次 plan 模式 L2（run `43658816371` / #1201，M5 合并前最后一次 hosted 运行）**：`ci-census` job **22m05s**（1325 s，`00:34:33Z→00:56:38Z`），leg `seconds=1029.6`，两次 capture **517.7 s + 510.2 s**，每次 capture **9213 条断言**、22 tasks / 11 roots / 2 captures，`DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1`，`DSH-CI-VERDICT pass`。plan 自身协议开销：`census-plan` 0.714 s + `census-plan-verify` 0.694 s + `census-aggregate` 0.002 s ≈ **1.41 s**（M5 memo 原估 0.8 s 偏小，已更正）。
+
+**2. before/after（同口径 job 墙钟）**：legacy 四次 L2 = **1417 s（#1195）/ 1420 s（#1198 M4 合并点）/ 1405 s（#1190）/ 1495 s（#1182）**，leg `1095.9 / 1091.3 / 1094.1 / 1156.7 s`；plan 一次 = job **1325 s**、leg **1029.6 s**。**不声称 plan 更快**：legacy 自身极差 65.4 s，plan 与 legacy 中位数的差恰好也是 65.4 s（纯 runner 方差）；可声称的是「协议开销 ≈1.4 s（0.137%），且判决从「legacy 容忍集」变成「plan 自证」」。完整 L1/L2 报表 = `docs/plans/memo/tinf-m6-retire-handlists-20261115/METRICS.md`。
+
+**3. 判决口径**：plan 严格更严（不接受 baseline 容忍、不做 load-family 重采样），且 `--census-execution plan` 已在 `census-runtime.yml` 生效；aggregator 的 `scope` 块原写 `shadow:true / wired_to_ci_required:false`，在 M5 之后会误导读者以为「红 census 不挡合并」，已由 M6 改为 PLAN-MODE 结构化声明。
+
+## 2026-11-15 — TINF-M6：退役手写测试清单（single authority），关闭 M5 遗留的四类双真相
+
+**0. 结论先行**：分支 `task/tinf-m6-retire-handlists-20261115`（base `origin/master e5bf05670`），代码/spec 删除 commit **`f517a5194`**，账本 commit 见本条末。**第二份副本消失了，文件名没有消失（这一句早先写过头，已按 review 更正）**：**25 个 node:test 文件名仍然写在 manifest 里**（17 个被转换 leg 的 24 个 + settlement 的 1 个），每个 leg 的展开与被删的 `check[]` 逐元素相同（17 compared / **0 different**）——M6 是**去重 + 搬家 + 单一 owner + 单一谓词**，不是消除。退役的是：workflow 的 17 个 `node --test` 步骤（ci-integration 16 条单行 + 1 个 `run: |` 块；24 个唯一文件）与 manifest 17 个 leg 的 `check[]`（同一批 24 个 token），人口只声明在 manifest leg 的 `suites[]`/`areas[]` 一处；`scripts/dispatch-tests.mjs` 解析成显式 argv 再执行。**未新建 PR**（按要求只提交并报 SHA）。
+
+**1. 权威链（现在只有一条）**：`manifest leg`（`suites[]` 显式子集 / `areas[]` 整个目录）→ `scripts/dispatch-tests.mjs`（拒绝未知 leg、未跟踪/非 node:test 路径、空 area、**空 argv**）→ `scripts/test-suite-paths.mjs#isNodeSuitePath`（「什么算 node:test 套件」的唯一谓词，从 catalog 搬进叶子模块以断开 catalog↔audit 的环）→ `node --test <显式 argv>`。workflow 只写 `--run --leg <id>`。13 个 leg 保留 `suites[]` 是因为 `areas[]` 无法表达「65 个里的 9 个」，改成 `areas[]` 会把 56 个未收集套件拉进 CI = 行为变化（M6 禁止）；4 个 leg 已完全免枚举（`tests-checks`、`devex-diag`、`a5sf-golden-corpus`、`a5sf-diag-r4`）。
+
+**2. 第二处 worker：`pr-gate.yml#settlement`**：它原来是仓库里最后一条手写 `node --test scripts/pr-settlement-gate.test.mjs`。M6 把它也转成 dispatch（leg `pr-settlement-unit`），声明挂在 `knownNonRequired[]` 同一条目的 `legs[]` 下——「job 的 Required-ness」与「job 跑哪些套件」是两个问题，但两者由**同一套** leg 定律 grade。于是 `.github/workflows/*.yml` 里没有任何 `node --test <file>` 行了（由 `test-catalog.test.mjs` 的定律钉住）。
+
+**3. 关闭的四类「一个事实两个真相」**（M5 评审遗留）：(a) 证据引用原来 `existsSync` 即通过、尾部 digest 无人校验、目录/逃逸符号链接也算证据 → 现在 realpath 必须落在 artifact 目录内（`RESULT_EVIDENCE_OUTSIDE`）、必须是普通文件（`RESULT_EVIDENCE_NOT_REGULAR`）、尾部 `sha256` 必须等于文件字节（`RESULT_EVIDENCE_DIGEST_MISMATCH`/`_INVALID`），producer 改写**文件字节** digest；同时把「证据链」明确重述为**完整性/自证**，不是独立验证（M5 memo 与 `ci-pr-gate.mjs` 注释同步更正）。(b) `--verify-plan` 现在读 plan 自己 `allowed: true` 的 drop 再推导，未记录的 drop 仍拒，记录过的 drop 而树已不再 drop → `PLAN_TASK_SET_CHANGED`。(c) `DIGEST_RE` 与 header 对齐（裸 64-hex = sha256 git tree id，三形都接受），plan 侧与 shard 侧「接受/拒绝」两向都测。(d) `census-aggregate` 的 `scope` 从 `shadow:true` 改为 `shadow:false / execution_mode:'plan' / wired_to_census_leg:true / decides_census_leg_verdict:true`，并保留四条真实限制（无 ci-required job 读它、不写 Required 产物、非分支保护权威、不决定测试集合）。
+
+**4. 证明（不是声明）**：`node scripts/dispatch-tests.mjs --parity --old-ref origin/master` = **`DISPATCH-PARITY IDENTICAL steps=18 old_files=25 new_files=25 problems=0`**，union `set=sha256:5de65f5e…`，逐步骤 `missing=none added=none`；证据 `.txt` + 两个可重放负控脚本提交在 `dev/agent-workflow/evidence/tinf-m6-dispatch-parity/`。负控：`DSH-M6-NEGATIVE-CONTROLS PASS cases=9 failed=0`（含 5 条新 manifest 定律、settlement leg、padded-path 拒绝）；变异：**`DSH-M6-MUTATION kill=7/7 rate=100%`**（n=7 定向变异，不是全仓 mutation score，METRICS 已标注边界）。catalog 不变：`tests=865`、`digest=sha256:2497b8f9…`、`UNCOLLECTED=91`（棘轮 `--max-uncollected 91` 未放宽）。
+
+**5. 门禁（干净 clone `git clone --no-hardlinks` 内实测，commit `f517a5194`）**：七文件 CI 命令 **263/263**；`test-catalog --max-uncollected 91` exit 0（865/91/`2497b8f9…`，`node=110 none=7 vitest=748`）；`eb3-ci-required` = **`pass workflows=10 findings=0`**；`dispatch-tests --check` = `PASS legs=18 bad=0`；`--parity --old-ref HEAD^` = `IDENTICAL steps=18 old_files=25 new_files=25`；`test-collection-audit --self-test` = `PASS cases=6`；`docs:sync --check` = `findings=0 blocking=0`；`lint-identities` exit 0；`eslint` 13 个改动/新增文件 0 problems；`node --check` 9 个脚本全过；真跑 dispatcher：`--run --leg tinf-instruments` → `suites=6 set=sha256:882e0fe3…`，**250/250**，exit 0。CORE PATCH BUDGET = 0（`packages/**` 零改动）；未动 Authority/Candidate/release、三个 Required contexts、workflow 文件数（10）、job 名、census argv（`--census-shards`/`--census-captures` 未动）。
+
+**6. 未退役（明写理由）**：`tests/checks/eb3-security-suites.txt`（65 行）与 `eb3-host-security-suites.txt`（12 行）是 **vitest** 人口、行序参与运行行为，M6 没有 vitest dispatcher 与 parity 证据 → 保留；`LEG_ORDER`/`productLegs` 是 gate-leg 顺序不是文件清单；`dev/ci/test-contracts.json` 是契约权威；manifest `movedSuites` 是审计线索；`scripts/ci-local.mjs` 的 `TEST_RE` 回答「本地该跑哪些」（含 vitest `.ts`），与 CI 人口不同问题。
+
+**7. 已知偏差**：`ci-integration.yml` 有一个步骤名仍写「M1 catalog shadow」——`--parity` 以**步骤名**为键（`oldArgvByStep`/`legByStep` 按 `- name:` 分块建索引），改名会破坏配对，故保留并在账本 §6 记录；这不削弱 `CI_LAYER_LEG_DISPATCH_SHAPE`（该律只读 manifest 的 `leg.cmd` 形状，步骤归属由 `mentions()` 读 `run:` 文本，均不读 `name:`）。`--parity` 是一次性证据（合并后 `origin/master` 变新形态），长期回归靠 `test-catalog.test.mjs` 的集合 digest 定律。
+
+**7a. 更正（同日，协调者指出）**：上文早先版本声称 `docs/runbooks/PR-DRAFT-FIRST.md` 不存在——**错**。该文件存在（`docs/runbooks/PR-DRAFT-FIRST.md`，同目录另有 `REVIEW-WAKE-ACCEPTED-NOT-CLAIMED.md`，由 `3a7303ca2`（A6 cold-wake，#758）引入）；当时是在**落后的仓库根 checkout** 上看的（复核实测落后 `origin/master` 32 个 commit），不是本 worktree。已在 worktree 内通读并按状态机记账：本分支按任务书**未建 PR、未 push、未 ready**，故停在 `DRAFT` 之前；C1/C2/C5 有本地证据，C3（四层 L1）与 C4（独立审查）**未发生**，C6 settlement **由协调者在 PR 上发布**，本 memo 只提供四要素材料（审查裁决待补、作者席位+模型可披露、报告/证据路径、覆盖 head 由协调者在发布时刻读取——**不能照抄本文档的 sha**，因为文档自身每改一次 head 就前进一次）。账本 §7 有逐条表。
+
+**7b. PR #774 独立评审（PASS，三条 minor + 一条 repro 备注，全部已修，不靠披露糊过去）**：(1) `census-aggregate.mjs` 的尾部 `sha256:` 原先只在含 `#` 时解析，`'evidence.json sha256:…'`（无 fragment）静默通过——现在整体 tokenise，**有无 fragment 都校验**，且任何以 `sha256` 开头的 token 必须是合法摘要（`sha256` / `sha256:` / 截断 / 大写一律 `RESULT_EVIDENCE_DIGEST_INVALID`）；新增 1 个测试覆盖「无 `#` 的正例 + 无 `#` 的 mismatch/invalid + 有 `#` 的 invalid」，`census-cutover.test.mjs` 41/41。(2) manifest 里 17 条 `why` 仍描述退役的 `check[]`（含「an emptied check[] is NOT machine-detected」）——全部改写为当前律：人口就在 `suites[]`/`areas[]`，空声明 = `CI_LAYER_LEG_NO_SUITES`，空白项 = `CI_LAYER_LEG_SUITE_INVALID`，非 tracked 套件 = `CI_SUITE_ABSENT`；`check[]` 字样 0 处（仍保留 `check[]` 的 8 个非 node leg 未动，它们本来就靠自己的 `check[]` grade）。(3) 账本「文件清单消失了」改为「25 个名字仍在、展开逐元素相同、去重+搬家」；§1.1 标题 13 → **14**（13 layer + settlement）。(4) repro 备注写明 `--old-ref origin/master` 必须是**真远端 master**（`e5bf0567`）；从落后的本地 checkout 再 clone 会得到更旧的 `origin/master` 并报 `DIFFERS steps=16`，那是环境不是 parity 坏了；只有本分支的 clone 用 `HEAD~2`。
+
+**8. 账本与指标**：`docs/plans/memo/tinf-m6-retire-handlists-20261115/README.md`（逐清单 owner/替代/删除 commit/回滚，含未退役表与半回滚禁止说明）、`.../METRICS.md`（L1 24 次 PR 运行、L2 5 次 census、91/digest、kill=7/7、集合差异 0、UNKNOWN 9 项含 L3/长时模型/flakiness/分片墙钟/全仓 mutation score）。M4 memo 补 dated 附注区分「预测 vs 实测」，M5 memo §4 用实测数字替换「尚未上机」。
+
+## 2026-11-15 — TINF 信任收口（F-01…F-05 修复，F-06 明确不做）
+
+**0. 结论先行**：分支 `task/tinf-trust-fix-20261115`（base `origin/master 7e3b6532a`，M6 合并点），按外部专家对 `7e3b6532a` 的评审修 2 个 P0 + 3 个 P1；**F-06（effect witness 现实性）不在范围**，不声称已修；**L2 P50 ≤ 10 min 未达成**，本 PR 不声称。未 push、未开 PR。
+
+**1. F-01（P0）**：`--run` 与 `--json/--list/--check/--parity/--run-args/--help` 互斥，`DISPATCH_MODE_CONFLICT` exit 2 且先于任何输出/spawn；`--run` 缺 `--leg` = `DISPATCH_NO_LEG`；spawn 前断言 argv 非空；`mode=run` token 只在 spawn 后打印；inspect 输出 `mode=inspect`；返回 runner exit。`eb3-ci-required` 从 cmd 前缀改为**整个 argv 精确 grade**，dispatch leg 尾部白名单 `[]`，多一个 token 即 `CI_LAYER_LEG_EXTRA_ARGUMENT`；10 个 workflow + manifest 全部审计并声明既有尾部 token。
+
+**2. F-02（P0）**：计划每个 root 记录排序文件表/计数/`file_digest`，人口进入 `plan_digest`；report 与计划**双向**比较（`FILE_MISSING`/`FILE_UNPLANNED`/`COLLECTION_ERROR`）；aggregator 增加 `RESULT_FILE_SET_MISMATCH` / `SUMMARY_FILE_TOTAL_MISMATCH` / `PLAN_FILE_POPULATION_MISSING`；新增已评审 `dev/ci/census-population-baseline.json`（11 roots/705 files），root 少文件或同数换文件 = `POPULATION_SHRANK`。
+
+**3. F-03（P1）**：新增 `scripts/contract-tiers.mjs`，从 manifest dispatch leg（L1）与 census 人口（L2）推导每个测试文件实际执行层；`required_tiers` 不满足 = `CONTRACT_TIER_UNMET`。测得 6 个 contract 的 L1 要求全部只靠 L2 文件，故 `dev/ci/contract-tier-exceptions.json` 记录 6 条 `owner=UNASSIGNED`、`expires=2026-12-31` 的例外（状态 `excepted`，不是 `met`）；`required_oracles` 今天无人声明，规则改为 `CONTRACT_ORACLE_UNPLANNED`（真空绿，声明即生效），不伪造 oracle 覆盖。
+
+**4. F-04（P1）**：`resultsFromReport` 接收真实 exit 并写入每条结果；shard 写真实 `exit_code`/`exit_signal`；`censusPlanLeg` 对“非 0 进程 + 全 PASS”拒绝 `CENSUS_EXIT_NONZERO`；新增 `scripts/census-exit-policy.mjs`（`exitTolerances: []`，条目需精确 code/signal+owner+reason+未过期）；aggregator 校验策略 digest，shard 不能自声明容忍。
+
+**5. F-05（P1）**：`dev/ci/uncollected-baseline.json` 记录 91 条未收集路径（path+reason+classification）；每次 catalog 调用跑集合差：`UNCOLLECTED_NEW` 阻塞、`UNCOLLECTED_FIXED` 警告、`UNCOLLECTED_BASELINE_STALE` 警告、缺基线 = `UNCOLLECTED_BASELINE_MISSING`；“修一个+加一个”不再因总数不变而通过；计数棘轮保留为第二界。
+
+**6. 负控与接线**：四个新套件（`dispatch-tests.test.mjs`、`eb3-ci-required.test.mjs`、`tinf-trust-closeout.test.mjs`、`contract-tiers.test.mjs`）接入同一 `tinf-instruments` leg（10 suites，293/293）；`contract-tiers --check` 成为 ci-integration 新步骤 + manifest leg。F-02 的评审原例（100 文件计划 vs 1 文件绿报告）在单测与 CLI 两条路径都断言非 PASS；F-01 的 `--run --json` 断言 exit 2、无 spawn。
+
+**7. 门禁实测**：`eb3-ci-required` = `pass workflows=10 findings=0`；`dispatch-tests --check` = `PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` = exit 0（867 tests / 91 uncollected / findings 0）；`contract-tiers --check` = `contracts=6 met=0 excepted=6 unmet=0 findings=0`；`docs:sync --check` findings=0；`lint-identities` exit 0；eslint 0 problems；七文件+四新套件 306/306。
+
+**8. 偏差（必须记录）**：(a) 任务书同时要求“新负控接入同一 leg”和“parity IDENTICAL 25/25”，二者不可兼得；本分支选择接线，重生成 `old-vs-new-argv.txt`（对 `e5bf05670` 比较：`missing=none`、`problems=0`、`added` 恰为 4 个新文件、union 25→29），`test-catalog.test.mjs` 同时钉 digest 与允许 added 集合。(b) `--old-ref 7e3b6532a` 本身无法得到 25/25：该 commit 的 workflow 已无 `node --test` 旧 argv，parity 只能报 18 个 UNCONVERTED；正确 old-ref 是 pre-M6 的 `e5bf05670`。(c) 契约例外 owner 全为 `UNASSIGNED`，需人接手。
+
+**9. 残余**：F-06（真实 PTY/进程/网络 effect witness、`instrumented` 独立性、真 host E2 负控）未做，需 pristine host + World Factory 接线；L2 P50 ≤10 min 未达成；census exit 容忍策略为空；plan 的 oracle 列表仍为空（规则真空绿）。详细表与回滚见 `docs/plans/memo/tinf-trust-closeout-20261115/README.md`。
+
+## 2026-11-15 — TINF F-03 收口：L1 真正执行契约文件（例外清零）
+
+**0. 结论**：协调者指出“6/6 excepted 不是 gate，是缺口登记”。已加 `contract-tiers --run --tier L1`，从 `dev/ci/test-contracts.json` 的 `test_refs` 解析要求 L1 的契约文件（无新清单），用仓库自己的 `vitest.config.ts` 执行并原样返回 vitest exit；新 manifest leg `contracts-l1` 落在 **ci-product**（该 job 先 install + build + build:composition），workflow 加同名步骤。`deriveExecutedTiers` 读该 leg 的 `--run --tier L1` 声明作为 L1 执行集。
+
+**1. 结果**：`node scripts/contract-tiers.mjs --check` → `contracts=6 met=6 excepted=0 unmet=0 findings=0`；`dev/ci/contract-tier-exceptions.json` 已重生成为空（保留文件与 owner/expiry 规则，供未来真实缺口使用）。`node scripts/contract-tiers.mjs --run --tier L1` → `DSH-CONTRACT-TIERS-RUN tier=L1 contracts=6 files=12 exit=0`；本机 vitest `12 passed / 162 tests`，Duration 2.65 s，进程墙钟 3.6 s（**CI 未实测，标 UNVERIFIED**；本机需把 root 的 package `node_modules` 链接进来，CI 由 `pnpm install` 提供）。
+
+**2. 负控**：零文件 → `CONTRACT_TIER_RUN_NO_FILES`；绑定文件不存在 → `CONTRACT_TIER_RUN_FILE_MISSING`；注入 spawn 断言精确 argv 与 raw exit 7 被传播；删除/去掉 manifest leg 的 `--run` 会让 L1 从 executed 集消失并回到 UNMET（单测覆盖）；oracle gate 仍为真空绿，未伪造覆盖。
+
+**3. 形状**：`eb3-ci-required` 仍 `pass workflows=10 findings=0`（workflow 数 10、job 名未变、三个 Required contexts 未动）；新 leg 的 `check[]` 精确声明 `--run --tier L1`，整个 argv 法通过。parity 证据与 `test-catalog.test.mjs` 断言同时钉住 `e5bf05670` 这个 base，并写明 `7e3b6532a` 无旧 argv、不能作为 25/25 的比较基。
+
+## 2026-11-15 — TINF F-02/F-03/F-04 对抗审查收口（PR #775）
+
+**0. 背景**：协调者对 PR #775（`f1beb8021`，含其 fixture commit `09eeebbe8`）的对抗审查给出 CHANGES REQUIRED：F-02 仍只 grade 文件名（705 文件全枚举但零断言 → PASS）；F-04 replay 伪造 `exit_code: 0`；F-03 “executed” 仍可由 `check[]` 声明；baseline 可“删文件 + 重生成”洗白。已在同一分支修复，未 revert `09eeebbe8`。
+
+**1. F-02**：`rootsFromReport` 标记零断言文件；`resultsFromReport` → `INCOMPLETE/NO_ASSERTIONS`（点名文件）；aggregator → `RESULT_NO_ASSERTIONS`；capture token `assertions=`、summary token `assertions_total=`。边界：vitest 报告无法区分“整文件有意 skip”与“没跑”，故拒绝而非猜。三种零断言形状 + N 文件 N>0 正控均有测试。
+
+**2. F-04**：live `resultsFromReport` 缺 `exitCode` → `EXIT_CODE_UNRECORDED`；dry-run 显式 `exitCode:null, mode:'replay'`；shard `status=REPLAY/exit_code=null`；aggregator 接受 REPLAY 但拒绝 `REPLAY + 数字 exit`（`SHARD_REPLAY_WITH_EXIT`）。
+
+**3. F-03**：只有 `cmd` 同时含 `--run --tier <X>` 的 leg 才授予层，`check[]` 单独声明不算；并用 `eb3-ci-required.gradeLeg(job, leg)` 交叉校验 workflow step，manifest-only claim 记 `contract_runs_rejected` 且不授予。manifest `contracts-l1` 的 flags 已移入 `cmd`。
+
+**4. baseline**：`--write-population-baseline` 必须 `--accept-population-change <reason>`；文件记录 `generated_at/catalog_digest/accepted_reason/accepted_by`；catalog digest 漂移 → `POPULATION_BASELINE_UNREVIEWED`。
+
+**5. 门禁**：317/317；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18 bad=0`；`test-catalog` exit 0（869/91）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`--run --tier L1` exit 0（12 files/162 tests，Duration 2.50 s，墙钟 3.4 s，CI UNVERIFIED）；docs-sync/lint-identities/eslint 全过。`09eeebbe8` 保留：whole-argv 法先于 leg-specific 检查，新增测试沿用同一事实。
+
+## 2026-11-15 — TINF Round 2 审查收口（PR #775）
+
+**1. 全 skipped**：`executed` 只计非 `{skipped,pending,todo}`；root `executed===0` → `NO_EXECUTED_ASSERTIONS`；aggregator `RESULT_NO_EXECUTED_ASSERTIONS`（旧录制用 `skipped===assertions` 兜底）；token 分列 `assertions_executed=` / `skipped_total=`。
+
+**2. baseline 增长**：按 per-root `files_expected` membership 比较；新增 `POPULATION_GREW` 非阻塞并报告路径；删除/替换 `POPULATION_SHRANK`；catalog digest 不再是 verdict。
+
+**3. baseline 防篡改**：四字段必填（缺 → `POPULATION_BASELINE_UNREVIEWED`）；每行 `rows_digest` + 整体 `baseline_digest` 重算（改行不更新 → `POPULATION_BASELINE_TAMPERED`）。memo 明说：能重算 digest 的编辑者只能让篡改变成可见多字段 diff，committed file 的极限。
+
+**4. COMPLETED/null exit**：`SHARD_EXIT_UNRECORDED`；仅 REPLAY 可 null；summary token `mode=dry-run|live`。
+
+**5. C9**：`CI_LAYER_LEG_ARGUMENT_MISSING`（declared token 缺失）与 `EXTRA_ARGUMENT` 分离；C9 `c1/c3`→EXTRA、`c2`→MISSING；checkTrailing 对齐搜索 + 跳过同 cmd 的其它 leg。
+
+门禁：321/321；eb3 pass workflows=10 findings=0；catalog exit 0；contract-tiers met=6；C9 26/26。
+
+## 2026-11-15 — TINF P1 验证语义补丁（外部评审 of `32b132017`，P1-1/P1-2）
+
+**0. 背景**：外部评审接受 PR #775（`32b132017`）后指出两个残余验证语义缺口：(P1-1) `contract-tiers` 用“绑定文件执行层并集”代替逐测试量词，A(L1)+B(仅 L2) 的 contract 被误报 `met`；(P1-2) `census-aggregate` 把 `assertions_executed` 当可选并用 `skipped===assertions` 兜底，手写的 `{state:PASS, assertions:10, skipped:0}` 通过且 10 条断言被计为已执行。本分支在一个 worktree 内修复，两个 reviewable commit：contract-tiers、aggregator+docs。无新模块，无 Required-context/workflow 变更。
+
+**1. P1-1（契约层）**：量词改为 `∀contract ∀required tier ∀bound test：Runs(t,l)`；`missing:[{tier,tests}]` 按测试点名，`executed_tiers` 仅信息展示。例外行可带 `tests[]` 则只覆盖点名测试；无 `tests[]` 时 `reason` 必须明说 `all bound tests`，否则 `CONTRACT_TIER_EXCEPTION_INVALID`。owner `UNASSIGNED/TBD/TODO/nobody`（大小写不敏感）→ `CONTRACT_EXCEPTION_UNOWNED`；`measuredExceptions()` 生成 `owner:null` + 精确 `tests[]`。所有授层 leg（普通 dispatcher 与 contract leg）都先过 `gradeLeg()`；manifest-only `--run` 不授予层并记 `sources.dispatch_runs_rejected`。负控：A-L1/B-L2 反例 `unmet` 点名 B；只点名 A 的例外不覆盖 B；占位 owner 拒绝；manifest-only leg 零层；真实树仍 `contracts=6 met=6 excepted=0 unmet=0`。
+
+**2. P1-2（aggregator）**：plan 内 `state=PASS` 的结果必须携带非负整数 `assertions`/`assertions_executed`（`RESULT_EXECUTED_METADATA_MISSING`/`RESULT_EXECUTED_METADATA_INVALID`）、满足 `0≤executed≤assertions` 且 `executed+skipped===assertions`（`RESULT_METADATA_INCONSISTENT`）、且 `files_observed` 存在并等于 plan root 文件数（`RESULT_FILES_OBSERVED_MISSING`/`RESULT_FILES_OBSERVED_MISMATCH`）。**fallback 整体删除，REPLAY 也不保留**；summary totals 只累加合法字段，畸形结果计入 `counts.metadata_invalid`。负控覆盖缺失、-1、1.5、"10"、executed>assertions、和不等、files_observed 缺失/off-by-one；正控与 LIVE 路径（每 capture 9213 断言级别）仍绿。
+
+**3. 文档**：`tinf-trust-closeout-20261115/README.md` 更正 baseline 语义（per-root membership；增长允许并报告；`catalog_digest` 仅元数据、参数 `_catalogDigest` 不比较），删除“digest 漂移拒绝”错误表述；新增本轮 P1 小节、精确拒绝码与测试名、以及仍在开放项（F-06 不在范围、`required_oracles` 仍空、L2 P50 ≤ 10 min 未达成、91 未收集测试仍是 set-diff 债务）。新 memo：`docs/plans/memo/tinf-p1-verification-semantics-20261115/README.md`。
+
+**4. 门禁**：在干净 clone 的真实 base 上重跑七文件命令与受影响套件；`eb3-ci-required pass workflows=10 findings=0`；`dispatch-tests --check PASS legs=18`；`test-catalog --max-uncollected 91` exit 0（`uncollected=91`）；`contract-tiers --check contracts=6 met=6 excepted=0 unmet=0 findings=0`；`docs-sync --check`；`lint-identities`；eslint；`node --check`。具体数字见最终报告。
+
+## 2026-11-15 — M7-A 真实宿主纵向切片（首个把 Contract Oracle 架在真实执行链上的任务）
+
+**0. 背景**：M7-A 要求先用 file:line 证据回答六个侦察问题，再只做一条纵向切片：`脚本化模型 → 真实 DSH Agent Session → 真实工具解析 → 真实执行 → 独立观察 → Oracle 判决`，且 CORE PATCH BUDGET = 0、不得开 PR/推送。分支 `task/m7a-real-host-20261115`（base `6aba7365f`），四个 commit：`7f637debd`（testkit wire 脚本 + witness 溯源封印）、`2ff4bd152`（world-factory 真实宿主切片 + 无宿主单测）、`7f8230f3f`（侦察 memo）、`7d5bc8432`（uncollected baseline 91→93）。
+
+**1. 六问答案**（详见 `docs/plans/memo/m7a-real-host-20261115/README.md`）：World Factory 存在且独占生命周期（`tests/world-factory/lib/world-factory.mjs:226/333/622/844`）；脚本化模型经**公开 provider 端点**进入真实宿主（`DEEPSEEK_BASE_URL`，`packages/llm/llm-deepseek/src/config.ts:109/290`、trusted-env `app-boot/src/index.ts:148`、工厂注入 `world-factory.mjs:665`），不是打补丁；工具调用确实穿到 OS（`tool-fs/src/write.ts:111/112/118`、`fs-sandbox/src/index.ts:141`）；**没有公开的“效果观察” seam**——`session.event`（`sdk/protocol/src/types.ts:108`）与耐久 session log（`session-persistence-jsonl/src/format.ts:254/267/280`）都是被测系统的自述；独立观察只能来自宿主进程之外。
+
+**2. 能力矩阵（实测）**：filesystem = **可观察**（父进程快照 + sha256）；process / PTY / network = **不可观察**。真实工具面 27 个（含 `write`/`bash`，另有 canary `u5_canary`）。沙箱不对称：fs 工具可写平台临时区（TMPDIR 被指向世界内），bash 对同一路径只读（`Read-only file system`，exit 1）却仍以 `COMPLETED`（`isError:false`）入账——**非零退出不是工具错误**。
+
+**3. 切片（一次 boot、五个 session，2m13s wall，boot 130s）**：A1 拒绝写入工作区外 → `SATISFIED`（拒绝被独立见证 corroborate）；A2 真实写入被监视的非授权目录 → `VIOLATED`（负控，真实字节 + 独立可见）；A3 同一调用但观察被禁用 → `INCONCLUSIVE`（文件真实存在）；A4 空 witness → `INSTRUMENT_ERROR`；A5 bash 可达性与围栏 → `SATISFIED`。每臂都断言独立磁盘事实（拒绝=无字节+`FS_SANDBOX_DENIED`；允许=字节摘要相符）。观测对象由 observer 自己 arm/blind，调用方不写 `instrumented`。
+
+**4. `instrumented` 溯源**：新增模块私有 Symbol 封印 + `witnessProvenance:'declared'|'witnessed'`（默认 declared 向后兼容）。封印只能证明“行由 testkit 仪器产生”，**不能**证明监视的是哪个目录、时间窗口、也不能经 JSON 重放（有测试钉住）。真正的可信化需要 World Factory 拥有观察窗口并加盖 world/pid/lease 身份——列为 M7-B 候选，不在本任务范围。
+
+**5. 发现（未修，避免超范围）**：Oracle 的决策是 **contract 级而非 call 级**——A2 的 `VIOLATED` 由规则 3c（DENIED + 观察到的效果）触发，但它引用的拒绝属于另一个调用；判决对契约是对的，解释不精确。M7-B：要么 lane 产出 per-call decision 引用，要么 oracle 增加 execution 级规则。
+
+**6. 门禁**：无宿主单测 10/10（`node --test tests/world-factory/m7a-real-slice-unit.test.mjs`）；package vitest `m2-contract-oracle` 18、`m2-effect-witness` 10、`m2-scripted-model` 9、`m2-witness-provenance` 5、`m7a-real-slice`（宿主状态契约）2 全绿；四个无依赖模块在仓库 strict 旗标下 `tsc --noEmit` 通过；eslint 对改动 TS 文件 0 error；`test-catalog --write-uncollected-baseline` 后 exit 0。未推送、未开 PR；稳定实例 :3080 前后探针均为 `{"reachable":true,"status":401}`。
+
+## 2026-11-15 — M7-A 修正：两个套件真正被 CI 收集（基线回到 91）
+
+**0. 背景（必须修正）**：上一轮把 `uncollected` 基线从 91 抬到 93，且两个 M7-A 套件只在本地跑过——按 F-06 的定义，“只有手工演示过的能力”等于没有门禁。父代理拒绝以该状态合并。本轮在不改切片语义的前提下把两个半区放回 CI：C1（无宿主）进 L1，C2（一次真实 boot）进 ci-census。
+
+**1. C1（无宿主，每个 PR）**：`tests/world-factory/m7a-real-slice-unit.test.mjs`（10 例）与新增 `tests/world-factory/m7a-real-slice-host-state.test.mjs`（node:test，2 例：宿主缺失=逐字拒绝+skip；`M7A_REQUIRE_PINNED_HOST=1`=硬失败）声明进**既有** `tinf-instruments` 腿的 `suites[]`，由 `node scripts/dispatch-tests.mjs --run --leg tinf-instruments` 在 ci-integration 执行，整套 339 测试全绿。**不新建腿**的原因：M6 parity 法则要求每个 dispatch step 在 base（`e5bf05670`）有对应 `node --test` argv，新 step 会被判 `UNCONVERTED`；因此改为并入既有腿，并按既有流程**有意重生成** parity 证据（union 29→31、`problems=0`、`added=` 精确列出两文件），同时在 `scripts/test-catalog.test.mjs` 的 allowed-added 集合里点名声明，后续新增仍无法藏在该豁免后。
+
+**2. C2（真实宿主，ci-census）**：`census-runtime.yml` 在 census 与 transcript re-grade **之后**新增独立 step：`node --test --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs`，`env: M7A_REQUIRE_PINNED_HOST: '1'`、`M7A_BOOT_TIMEOUT_MS: '600000'`。宿主缺失在该 job 是**命名硬失败**（`M7A-REAL-SLICE-HOST-INCOMPLETE`），绝不 skip。census 的 argv、两次 capture、population 与 plan 均未触碰（独立 step）。成本：locally world wall 133.2s（boot 129.1s + teardown 0.1s），按 CI argv 实测 `node --test` 148.7s；按该 job 自己的 4× hosted 系数约 +9 min，叠加其 ~8–10 min 地板仍远低于 `timeout-minutes: 60`。
+
+**3. 基线**：`dev/ci/uncollected-baseline.json` 用 `--write-uncollected-baseline` 重生成回 **91**（两套件均被收集，不是抬闸）；`--max-uncollected 91` exit 0 且打印 `UNCOLLECTED 91`。census population 仍为 11 roots / **705** files（故 705 的钉住值不动）。
+
+**4. 测试面归并**（避免移动 705 的 reviewed population）：provenance 封印用例并入 `packages/testkit/test/m2-effect-witness.test.ts`，wire driver 并入 `packages/testkit/test/m2-scripted-model.test.ts`；宿主状态契约移出 vitest 成为 node:test（并剥离子进程的 `NODE_TEST_CONTEXT`，否则嵌套 runner 会跳过文件、两例变成空断言）。
+
+**5. 新 commit**：`e2aae32b0`（测试面归并 + host-state node:test + `M7A_BOOT_TIMEOUT_MS`）、`14b266f09`（CI 收集：manifest leg suites、ci-integration 注释、census step、baseline 91、parity 证据与 allowed-added）、`9d0cd5722`（memo §5/§9）。此前 `7d5bc8432` 的 91→93 已被 `14b266f09` 撤回为 91。
+
+**6. 门禁（本轮实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`；`test-catalog --max-uncollected 91` exit 0（`UNCOLLECTED 91`，`tests=872 digest=sha256:5f71c543…`）；`docs-sync --check` exit 0；`lint-identities` exit 0（1686 files）；`eb3-ci-negative-controls` 26/26；`census-plan.test.mjs` 50/50；C2 以 CI argv 在真实宿主上 5 臂全中（A1 SATISFIED / A2 VIOLATED / A3 INCONCLUSIVE / A4 INSTRUMENT_ERROR / A5 SATISFIED）。未推送、未开 PR；:3080 探针前后不变。
+
+## 2026-11-15 — M7-A 审查修复：溯源变成“仪器实例的属性”，域变成“被声明并真正被观察的路径”
+
+**0. 背景**：PR #779 审查判 CHANGES REQUIRED，两个 blocking 假绿。(1) 伪造溯源：旧封印盖在 `observe()` 的**返回值**上，故 `createBlindWitness(witness, [])` 能把任意对象重新封印成 `witnessed`；memo 中“调用方能伪造一行，不能伪造一台仪器”是**假的**，本轮撤回。(2) 一个目录冒充整个 `filesystem` 域：witness 只盯 `<home>/m7a-tmp/m7a-watch`，而 `judgeRealRun` 硬编码 `requiredEffectDomains:['filesystem']`；A5 实际写了 `workspace/bash-wrote.txt` 却判 `SATISFIED "no effect in filesystem"`。
+
+**1. 溯源改为实例属性**：`effect-witness.ts` 模块私有 `WeakSet` 记录**本模块构造的仪器实例**，每行带不可枚举的实例引用；`isSealedWitnessObservation` 只在实例仍在集合内时为真；`createBlindWitness` 对非本模块仪器**抛 TypeError**，已无重封印路径；公开面只剩两个只读谓词含 "seal"（有测试点名）；`witnessProvenance:'witnessed'` 现在**必须**同时声明 `requiredEffectScope`（否则 INSTRUMENT_ERROR）。负控：`TypeError: createBlindWitness: the wrapped object is not a witness instrument created by this module…`；`SEALED: [false,false,false]`；`FORGERY: INSTRUMENT_ERROR | witnessProvenance is "witnessed" but witness row(s) 0, 1, 2 were not produced by a testkit witness instrument (no provenance seal)…`。
+
+**2. 范围改为按路径判级**：每行新增 `watchedPaths`（绝对路径，目录覆盖子树）与 `observedPaths`（观测到的变更路径）；合同声明 `requiredEffectScope` / `authorizedEffectPaths` / `forbiddenEffectPaths`（**deny 压 allow**）。未覆盖必需范围 → `INCONCLUSIVE` 并点名未覆盖路径；授权路径上的效果**上报并排除**（`observedEffectPaths`/`authorizedEffectPaths`），绝不丢弃；其余路径按规则判级；行自报 `instrumented:false` 的域**无论调用方是否列在 `blindDomains`** 都算盲（盲区优先级）。负控原文：`SCOPE: INCONCLUSIVE | required effect scope is not covered by the witness: /w/other/file.txt; the instrument watched: /w/one. A partial watch cannot corroborate a claim about the whole domain`；`EFFECT: VIOLATED | unauthorized=["/w/home/tmp/x"] | …outside the authorized set…`；`BLIND: INCONCLUSIVE | required effect domain(s) declared blind by the witness: filesystem…`。
+
+**3. 重跑五臂（一次 boot，130.5s boot / 133.8s wall，:3193）**：A1 `SATISFIED`（观测 46 / 授权 46 / 非授权 **0**；拒绝目标在**被观察的 home 内**，不再是空洞通过）；A2 `VIOLATED`（46/45/**1**，非授权路径逐字为 `$HOME/m7a-tmp/m7a-watch/watched-escape.txt`）；A3 `INCONCLUSIVE`（盲；`limitations` 现在点名 watched paths）；A4 `INSTRUMENT_ERROR`；A5 `SATISFIED`（44/44/**0**，且其 observed 列表**含** `$HOME/workspace/bash-wrote.txt`——旧版不可见的真实写入现在被观测、分类、并写进判决理由）。每臂新增 `M7A-OBS` 诊断行（watched/observed/authorized/unauthorized）与 report 三张路径表。授权集合是**事先声明**的：workspace + 宿主自身执行态（`sessions/`、`storages/`、`m7a-tmp/dsh-*` spool）；禁止集合 = 授权 temp 根内的 watch 目录。宿主记账与工具写入授权根在本通道上不可区分——列为 memo §8.9 UNKNOWN，而不是静默通过。
+
+**4. memo**：§6 整节重写并**撤回**“cannot fabricate an instrument”；§4.2 换成新一次运行的逐字 transcript 与按臂计数表；§4.4 记录两条 blocking 与逐字负控输出；§7/§8 增补“授权集合内的效果不可归因于工具”“未观察路径只能 INCONCLUSIVE”。明示：若范围修复让某些臂变成 `INCONCLUSIVE`，那才是正确结果——本轮没有为了保绿而缩小范围（A1/A5 的 scope 是**整个 owned home**，不是单个目录）。
+
+**5. 新 commit**：`767b7d1ee`（testkit：实例溯源 + scope/授权/禁止判级 + 负控）、`a67603da0`（harness + 五臂声明与诊断行）、`b21b5f508`（memo）。此前 `e2aae32b0`/`14b266f09`/`9d0cd5722`/`e072ca7f5` 不变；未推送、未开 PR。
+
+**6. 门禁（本轮实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`；`dispatch-tests --parity --old-ref e5bf05670` → `union old=25 new=31 set=sha256:949f6499… problems=0`（与已记录证据一致）；`test-catalog --max-uncollected 91` → `UNCOLLECTED 91`、`findings=0`、`dev/ci/uncollected-baseline.json` 对 `origin/master` **零 diff**；C1 腿在宿主树隐藏下 `339 pass / 0 fail`（`M7A_HOST_TREE=/nonexistent/host node scripts/dispatch-tests.mjs --run --leg tinf-instruments`）；testkit `m2-effect-witness` 14 / `m2-contract-oracle` 27 / `m2-scripted-model` 11 全绿；`node --test` 无宿主套件 10/10、host-state 2/2；`docs-sync --check` findings=0；`lint-identities` exit 0；eslint 改动文件 0 error。**已知环境性失败（与本次改动无关）**：`p4t6-session-event-scan`（census 记账 1216 vs 树）、`a4p7-merge-gate`（workspace typecheck / client lane，本 worktree 无构建产物）——前者已在 `git stash` 后的干净树上复现为同一条失败。稳定实例 :3080 探针前后 `{"reachable":true,"status":401}` 不变。
+
+## 2026-11-15 — M7-A 审查修复（第 2 轮）：溯源=行身份（对象标识），而非属性查找
+
+**0. 背景**：PR #779 第 2 轮审查仍判 CHANGES REQUIRED。上轮把“溯源”从行内符号改成“指向仪器实例的不可枚举引用”，但 `isSealedWitnessObservation` 仍以**属性查找**读取该符号，于是 `Object.create(realSealedRow)` 会**沿原型链继承**封印：派生对象（未冻结）改掉 `observed:false` 后仍被判为 witnessed，诚实脏 witness 为 `VIOLATED`、派生行却可 `SATISFIED`，直接推翻 memo §6.1“行已冻结故不可改写”的说法。
+
+**1. BLOCKING（已修）**：溯源改为**行身份**。模块私有 `WeakMap<row, instrument>` 只由**构造该行的仪器**写入，另有 `WeakSet` 记录本模块构造的仪器；`isSealedWitnessObservation` 要求全部成立：该对象**就是** WeakMap 的键（身份，派生/复制对象不是键）、其仪器仍在集合、`Object.getPrototypeOf(row) === Object.prototype`（原型不能夹带）、行**与数组**（`evidence`/`watchedPaths`/`observedPaths`）均已冻结。谓词整体 try/catch，恶意 getter 一律答 false。逐字负控：`HONEST: VIOLATED`；`DERIVED sealed? false | INSTRUMENT_ERROR | witnessProvenance is "witnessed" but witness row(s) 0 were not produced by a testkit witness instrument (no provenance seal); a hand-built or derived observation cannot corroborate a verdict`；`Object.freeze({...sealedRow})` 普通复制对象同样 `INSTRUMENT_ERROR`。memo §6.1 已按此改写并撤回“仅靠冻结即可”的表述。
+
+**2. MEDIUM（Proxy 崩溃，已修）**：witness 行现在经 `readWitnessRow` **一次性**在 try/catch 内读取（代理陷阱抛错时返回 fault），`events`/`blindDomains`/scope 数组亦防御式读取，`judgeContract` 外层再兜底：恶意输入返回 `INSTRUMENT_ERROR` 而非抛异常。逐字：`PROXY: INSTRUMENT_ERROR | witness[0] could not be read (a throwing property access is not a witness row): proxy trap: get`；事件列表为抛错 Proxy 时同样 `INSTRUMENT_ERROR`。
+
+**3. MEDIUM（符号链接根被跟随，已修）**：`createFsWitness` 对每个 watch 根做 `realpath`，解析结果与声明路径不同即抛 `TypeError`（不静默跟随），`watchedPaths` 声明为真实路径；因此要求“链接之后”的路径覆盖不到 → `INCONCLUSIVE`（有测试）。逐字：`TypeError: createFsWitness: the watched root /tmp/…/link is a symlink (resolves to /tmp/…/real); a witness cannot claim a scope it reaches indirectly — declare the real path`。
+
+**4. LOW（计数不可复现，已改写法）**：不再把精确 observed 计数当 canonical。§4.2 表头标明“one run（`run-2026-11-15T16-25-46-433Z`，warm boot 43.1s / wall 48.2s / port 3184）”，并写明**不变量**才是钉住的东西：A1/A5 非授权 = 0、A2 = 1、A3 盲（INCONCLUSIVE）；数字随宿主把自身记账（`dsh-subprocess-*`、`dsh-workspace-changes-*`）写入同一 home 的时点而变（本轮 34/34/0、34/33/1、0/0/0、0/0/0、32/32/0；上一轮冷启动为 46/46/0、46/45/1、44/44/0）。§6.2 同步改写。**没有臂的判决或主张发生变化**：A1/A5 仍 `SATISFIED`（主张=授权集合外无效果，且 A5 的 observed 列表含 `workspace/bash-wrote.txt`），A2 `VIOLATED`，A3 `INCONCLUSIVE`，A4 `INSTRUMENT_ERROR`。
+
+**5. 新增 commit**：`88d4b5469`（身份溯源 + Proxy 防护 + symlink 拒绝 + 测试）、`715c2ef17`（memo §4.2/§4.4/§6.1/§6.2）。此前 `767b7d1ee`/`a67603da0`/`b21b5f508`/`43fd05dcd` 不变。按父代理本轮明确指示**推送本分支**（非 force）。
+
+**6. 门禁（本轮实测）**：testkit `m2-contract-oracle` 30 / `m2-effect-witness` 16 / `m2-scripted-model` 11 全绿；`node --test` 无宿主套件 10/10、host-state 2/2；C1 腿在宿主树隐藏下全绿；C2 以 CI argv（`M7A_REQUIRE_PINNED_HOST=1`）五臂全中（`✔ … (48218.0ms)`、`ℹ pass 1`）；`EB3-CI-REQUIRED pass workflows=10 findings=0`；`DSH-TEST-DISPATCH-CHECK PASS legs=18 bad=0`；`--parity --old-ref e5bf05670` → `problems=0`、union 25→31（added 仍为 4 控制 + 2 套件）；`test-catalog --max-uncollected 91` → `findings=0`、`tests=872 digest=sha256:5f71c543…`、baseline 对 `origin/master` 零 diff；`docs-sync --check` findings=0；`lint-identities` exit 0；eslint 改动 TS 0 error；`git diff --check` 干净。:3080 探针前后 `{"reachable":true,"status":401}`。
+
+## 2026-11-16 — F-06 真实宿主安全验证达成（Hosted `VERIFIED arms=5`）+ 性能 Rank 1 实测 + B1/B2 收编
+
+**0. 背景**：外部评估裁决 F-06 路线为「固定发布版原生资产供给，保留既有 manifest 与 SHA256 验证」，并要求「不要让当前 Runner 的构建结果自行定义它应当通过的安全标准」。本轮先验证再实现：npm 包 `@deepseek-ai/node-addon-system-linux-x64@0.1.2`（tarball 25 758 B，sha256 `77fb771b…`，`dist.integrity` `sha512-S2aPVHv…`）内 `bin/glibc/system.node` = `54a9c25c…`、`bin/landlock-run` = `a752bc72…`，与仓库 manifest 的 pin **逐字节相同**；同一宿主 SHA 的三次自建构建给出三个不同原生哈希（pin `54a9c25c…`、本地冷建 `75450f92…`、hosted 自建 `dfa6d586…`），故「runner 自建字节」从来不是标准。manifest 自己缺的只是运输方式（`"transport": "local copy only - the provisioner has no download path"`）。
+
+**1. PR #781（合并 `e3e93ea94`）**：新增**包运输**——只接受精确版本（未联网即拒绝）、要求 registry 元数据里的 `dist.integrity` **等于仓库内已提交的那个值**（缺失 `REGISTRY_INTEGRITY_MISSING`、不符 `REGISTRY_INTEGRITY_UNKNOWN`，元数据说什么都不作数）、tarball 再校验 sha512 与 `tarballSha256`/`tarballBytes`、解包后逐文件校验长度与 sha256、以**钉住的 `0o755`**（非归档的 `0o644`）安装、staging+rename+复读、任何失败回滚且零残留、写 `u7-sbx-host-asset-receipt/1` 收据（绑定包规格、tarball 摘要、逐文件摘要、宿主 SHA、manifest 摘要）。`entries[]` 与 master **逐字节相同**（pin 不动），新增 `packages` 块必须与其深相等（`PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`），本机复制运输仍对自建树拒绝 `DESTINATION_DIGEST_MISMATCH`。CI 在 M7-A 之前供给，并**删除 `M7A_ALLOW_UNPROVISIONABLE_HOST`**；拒绝路径保留在 `m7a-step-verdict.mjs`（默认关闭），T38 去注释后全仓库 grep 验证 CI 不可达。
+
+**2. 宿主实测（运行 43804251634，冷 runner）**：`HOST-ASSETS-PROVISIONED … tarballSha256=77fb771b… manifestDigest=c99555f7…` → `M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5` → `M7A-STEP-LEDGER verdict=VERIFIED arms=5 run=43804251634-1`。五臂：`deny-outside-workspace=SATISFIED`（真实写入被 `FS_SANDBOX_DENIED` 挡住，`unauthorized=[]`）、`unauthorized-observed=VIOLATED`（按契约故意越界，观察器抓到 `m7a-watch/watched-escape.txt`）、`INCONCLUSIVE`、`INSTRUMENT_ERROR`、`ATTESTED` 各按其声明判级。**这不是「豁免仍生效」，是「拒绝消失且五臂被独立账本验证」。**
+
+**3. PR #782（合并 `e6519b0d5`，性能 Rank 1）**：census 的 worker 上限显式化为 4（`scripts/census-invocation.mjs` 单一来源，capture / legacy 重采样 / plan 任务三处同源）。hosted 实测：`DSH-CI-RUN … available_parallelism=4 workers=4`，`DSH-CI-LEG leg=census verdict=pass seconds=761`（24 任务 / 12 roots / `aggregate=PASS`），对 pre-PR 同配置基线 1096.7 / 1107.5 / 1107.4 s（离散 10.8 s）即 **−335.7 至 −346.5 s**，整个 census job 24 min → 16m25s，M7-A 仍 `VERIFIED arms=5`。审查打回两次均属实：① 「唯一模块所以不会漂移」是假的（legacy 重采样另有 inline argv），已改为一处来源；② 回滚基线误用 2026-10-09 旧 508 文件 legacy census 的 485.3/355.3 s，已换成上述真实基线并把「60–130 s 不可判」改为基于 10.8 s 离散度的判据。本地 A/B（−276.9 s）只作本地事实。
+
+**4. Rank 3a 测后拒绝（PR #785，仅 memo）**：Rank 1 把 packing 从 2.46 抬到 3.3–4，`a4p7` 内三条重复仪器（hosted 后 66.2/59.8 s per capture，均值 63.0 s）虽仍是真实重复，但去除只换来本地 **−15.2 s/capture、−30.4 s/job**（model 校验 60.0/4≈15.0），低于其自身 ≥60 s 判据，故**不交付代码**。同时纠正 memo 两处：`ci-product` 不是 Required 上下文（Required 三者为 `pr-gate`、`ci-required`、`pr-settlement-gate`），它是 `ci-required` 的强制层；其 gate 跑**八**条 leg，三条仪器仅为子集。同树证据（`EB3-MERGE-TREE tree=d18ce684…`、"synthetic == checked-out tree"、两层 `head=276f1437c`、`product_merge_tree=d18ce684…`）与重入条件（`saving = W/P × captures`，需 packing ≲2.1 或仪器工作量翻倍）写入 memo。
+
+**5. B1（#780，合并 `7d1d55259`）**：7 个 compatibility 套件此前**无任何 leg 执行**（只在 baseline 行出现；root config 对其报 `No test files found`），现经 root `include[]` 一个 glob 进入 L2 census；`91 → 84`；census 人口 11 roots/705 files → **12/712**（`POPULATION_GREW` 具名 owner/reason，pins 24 任务）。独立审查确认「只收这 7 个、无过宽匹配、无双重收集」，且插入假文件仍 `REFUSED UNCOLLECTED_GREW 85 > baseline 84`。
+
+**6. B2（#784，合并 `81bf61ccf`）**：authority 10 个里收 **8**（`84 → 76`），两个被留出且都有实测理由：`consumer-candidate` 在收集后的并发形态下红（`C10 structure_same=false bytes_same=true`，因 `runtime.dirty_paths = (git status --porcelain).length` 是活仪器、`renderView` 不渲染它，兄弟套件在 repo 根 stage `.tmp-*` 把它从 11 变 12）——是**断言错**而非产品回归；`freeze-candidate` 在 hosted 红（`FAIL --check DETECTS a tampered content_digest … expected DIGEST ... MISMATCH`，子进程 exit 1 但 stdout 无摘要行），**原因未定**，后来在 leg 的并发形态下约 1/10–50 复现，并观察到一次「exit 1 + 空 stdout」，故给出标注为**未证明**的假设（`scripts/freeze-candidate.mjs` 以 `process.exit(main(...))` 结束，不等待管道写入），未顺手打补丁。此轮同时纠正了我自己的错误陈述：先前把该红归因为「history-dependent」，但 `ci-integration.yml` 用 `fetch-depth: 0`，且日志里的 `fatal: Not a valid commit name` 来自 `sync-candidate-resolver` 的**故意探测**（该套件同 job `ALL GREEN`）。另测得 depth-1 克隆下四个历史读取套件会红，作为**面向未来**的记录（CI 是 depth 0），不是当前条件。同时把收集判据补成「必须在 CI 检出形态（merge commit、depth 0）里跑过」，因为 B2 初版 9/10 是在 full clone 里量的。
+
+**7. 本轮已知瑕疵（记账用）**：合并 `81bf61ccf` 的 commit subject 仍写「9 of the 10 … 84 → 75」，而内容与 baseline 实为 **8/76**——subject 取自 PR 旧标题。master 为 gated 历史不做改写，故在此登记：以内容与 `dev/ci/uncollected-baseline.json`（`uncollected_count: 76`，`--max-uncollected 76`）为准。
+
+**8. 仍未证明**：process/PTY/network 三个效果域仍 `instrumented:false`（M7-B）；provenance 封印跨序列化是否存活未知；hosted 峰值内存无测量；B4（18 个 host-dependent）、B5–B9 未收；`freeze-candidate` 的真实机制未定。

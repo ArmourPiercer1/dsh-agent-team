@@ -160,6 +160,11 @@ directive: {boot, phase, rootSessionId, runStamp, mcpPort: 3491}   # 写 DSH_HOM
 - **T4.4 deny 路径**：请求 → leader/用户 deny → 操作**永不执行**（成员 trajectory 无副作用 + typed result）。
 - **T4.5 exactly-once**：allow 决策被 last-mile guard 消费后，**同 tuple + 同 correlation 的第二次尝试 → BLOCKED**（consumed）；新操作必须新 correlation（新 request）。
 - **T4.6 自升级禁止**：W1 以 team_resolve_control resolve **自己**的请求 → **被拒**（member never a resolver，invariant 37）。
+  > **2026-11-13 后继注记（issue #756；原文保留为历史）**：本条**观测**（自己 resolve 自己的请求被拒）仍然成立，
+  > 但**理由**不是 "member never a resolver"——冻结 Architecture 的 invariant 37 原文是 "Member 不能
+  > unrestricted self-escalate"，§25.1 是 Control/Approval 的目的节。现行规则：**裁决权威按 scope 归属**，
+  > 被禁止的是**执行者裁决自己的操作**（reviewer 与 reviewed 必须是不同实例）；按 scope 被指派的 Officer
+  > 可以裁决**他人**的 ask。
 - **T4.7 External Hard Policy（boot #3，phase=resume + `hard.tools: deny`）**：
   - a. W1 发起（unguarded，可建请求）leader-approval 请求 → leader/用户尝试 allow → resolve **拒绝** `CONTROL_EXTERNAL_POLICY_DENIED`；**durable deny 行（reason=external-policy）先落账**、请求 closed；**leader 重试不能推翻**。
   - b. UI 呈现核查：该状态呈现为"外部策略阻断"语义（Team Events / 决策面板），**不得显示成 "approval failed" 或成功**（UI 设计 §26.4 契约）。

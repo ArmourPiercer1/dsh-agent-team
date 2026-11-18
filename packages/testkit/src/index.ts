@@ -18,3 +18,42 @@
  * asserted by the package unit test and is part of the skeleton contract.
  */
 export const PACKAGE_ID = 'testkit'
+
+// TINF M2 (2026-11-14): deterministic model input, independent effect
+// observation, and the contract oracle that grades one against the other.
+// These are test-only instruments; no production package may depend on them.
+export {
+  AGENT_SCRIPT_SCHEMA,
+  ScriptedModelAdapter,
+  ScriptedModelError,
+  assertComplete,
+  createScriptedModel,
+  validateAgentScript,
+} from './scripted-model.js'
+export type {
+  AgentScript,
+  AgentScriptRequestExpectation,
+  AgentScriptResponse,
+  AgentScriptTurn,
+  ScriptedModelErrorCode,
+} from './scripted-model.js'
+
+// M7-A (2026-11-15): the same script at the real host's model WIRE boundary
+// (one in-process adapter cannot reach a `dsh web` child), plus the shared
+// schema/matching law both transports use. Dependency-free on purpose: the
+// real-host harness imports these modules under plain `node`.
+export { matchAgentScriptRequest } from './agent-script.js'
+export type { AgentScriptRequestFacts } from './agent-script.js'
+export { createWireScriptDriver, wireSerializedMessages, wireToolNames } from './wire-script.js'
+export type { WireModelRequest, WireScriptConsumption, WireScriptDriver, WireScriptReply } from './wire-script.js'
+
+export {
+  areSealedWitnessObservations,
+  createBlindWitness,
+  createFsWitness,
+  isSealedWitnessObservation,
+} from './effect-witness.js'
+export type { EffectDomain, EffectWitness, WitnessObservation } from './effect-witness.js'
+
+export { CONTRACT_SCHEMA, judgeContract } from './contract-oracle.js'
+export type { OracleInput, OracleJudgement, OracleVerdict, TraceEvent } from './contract-oracle.js'

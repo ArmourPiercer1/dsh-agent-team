@@ -1,0 +1,200 @@
+{
+  "schema": "test-contracts/1",
+  "note": "Critical contracts only (safety). A binding is a claim about which named tests the contract rests on, NOT a claim that those tests are sufficient. Unbound contracts are refused, and so is a bound path that stops existing.",
+  "contracts": [
+    {
+      "id": "AUTH-01",
+      "scope": "execution identity and its authorization binding (member/realm/host)",
+      "obligations": [
+        "each addressed team resolves its OWN bound authority document, never a shared one",
+        "an authorization decision names the identity it was made for"
+      ],
+      "required_tiers": [
+        "L1"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/a3p4-r4-authority-binding.test.ts",
+          "id": "auth.authority-binding"
+        },
+        {
+          "path": "packages/contracts/test/identity.test.ts",
+          "id": "auth.identity-grammar"
+        }
+      ],
+      "witness_type": "E0 in-process assertions over the resolver",
+      "limitations": "unit-level; the E2 census lanes remain the authority for a real DSH process"
+    },
+    {
+      "id": "EXEC-01",
+      "scope": "an unauthorized request produces no corresponding real side effect",
+      "obligations": [
+        "the deny arm runs BEFORE the effect, not after",
+        "default-deny covers planes that no rule names"
+      ],
+      "required_tiers": [
+        "L1",
+        "L2"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
+          "id": "exec.deny-before-effect"
+        },
+        {
+          "path": "packages/domain/test/a5sr3-default-deny-mapping.test.ts",
+          "id": "exec.default-deny-mapping"
+        }
+      ],
+      "witness_type": "E0 deny-lane assertions; effect witness lives in the E2 suites",
+      "limitations": "no filesystem/OS effect witness here; that is M2's oracle work"
+    },
+    {
+      "id": "REVIEW-01",
+      "scope": "an approval cannot be reused across request/execution identity",
+      "obligations": [
+        "escalation is caused by the ceiling, not by the requester",
+        "a terminal deny survives the production reader"
+      ],
+      "required_tiers": [
+        "L1"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
+          "id": "review.approval-authority"
+        },
+        {
+          "path": "packages/runtime/test/a4p3-approval-escalation.test.ts",
+          "id": "review.escalation-vocabulary"
+        }
+      ],
+      "witness_type": "E0 approval-document assertions",
+      "limitations": "cross-request replay is asserted at the document level, not against a live UI"
+    },
+    {
+      "id": "LIFE-01",
+      "scope": "after a sticky stop, no new dispatch without an explicit human resume",
+      "obligations": [
+        "cancel is fenced at the guard, with zero consumption",
+        "the fence is wired through the tool layer, not only the runtime"
+      ],
+      "required_tiers": [
+        "L1"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/a6-stop-fence.test.ts",
+          "id": "life.stop-fence"
+        },
+        {
+          "path": "packages/tools/test/a6-stop-fence-wiring.test.ts",
+          "id": "life.stop-fence-tool-wiring"
+        }
+      ],
+      "witness_type": "E0 fence assertions",
+      "limitations": "does not cover a crash between stop and fence; RECOVERY-01 owns that"
+    },
+    {
+      "id": "RECOVERY-01",
+      "scope": "crash recovery must not blindly retry an execution whose side effect is unknown",
+      "obligations": [
+        "recovery re-drives to a terminal row with an explicit decision",
+        "a denied recovery dispatch keeps zero effect"
+      ],
+      "required_tiers": [
+        "L1"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/p6t1-recovery.test.ts",
+          "id": "recovery.redrive-committed"
+        },
+        {
+          "path": "packages/runtime/test/recovery-dispatch-deny-zero-effect.test.ts",
+          "id": "recovery.deny-zero-effect"
+        }
+      ],
+      "witness_type": "E0 recovery-row assertions",
+      "limitations": "in-process; a real process kill is an E2 concern"
+    },
+    {
+      "id": "ISOLATION-01",
+      "scope": "tool execution must not exceed the declared OS/trusted-service bound",
+      "obligations": [
+        "a binding-realm mount of a real module is refused before any mount",
+        "the seam and the product composition agree"
+      ],
+      "required_tiers": [
+        "L1",
+        "L2"
+      ],
+      "test_refs": [
+        {
+          "path": "packages/runtime/test/a5sf-subprocess-unconfined-realm.test.ts",
+          "id": "isolation.unconfined-realm-refused"
+        },
+        {
+          "path": "packages/runtime/test/f1-webserver-shim-isolation.test.ts",
+          "id": "isolation.webserver-shim"
+        }
+      ],
+      "witness_type": "E0 refusal assertions; the OS boundary itself is E2",
+      "limitations": "a pure-JS mock can never prove the OS boundary (design 05/12); these bind the refusal logic only"
+    }
+  ],
+  "excludes": [
+    {
+      "path": "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts",
+      "reason": "authoring-time evidence recorder for the alpha6 rebase POC; asserts an archived chain, not shipped behaviour",
+      "review": "only if the POC evidence is ever re-run"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pauth.test.ts",
+      "reason": "authoring-time evidence recorder (same POC)",
+      "review": "only if the POC evidence is ever re-run"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-BP/pbp.test.ts",
+      "reason": "authoring-time evidence recorder (same POC)",
+      "review": "only if the POC evidence is ever re-run"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-INBOX/latch-model.test.ts",
+      "reason": "authoring-time evidence recorder (same POC)",
+      "review": "only if the POC evidence is ever re-run"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7-9a-fs-20261026/z-u79a-golden-recorder.scratch.test.ts",
+      "reason": "golden recorder that imports a detached worktree; the pinned digest in u7-9a-mutation-golden-vectors.test.ts guards drift",
+      "review": "if the golden vectors are regenerated"
+    },
+    {
+      "path": "dev/agent-workflow/evidence/u7-w0b-20261026/z-u7w0b-mount-fingerprint.scratch.test.ts",
+      "reason": "golden recorder for the mount fingerprint; same drift guard",
+      "review": "if the fingerprint vectors are regenerated"
+    },
+    {
+      "path": "packages/client/test/s3-client-generation-spike.test.ts",
+      "reason": "needs the client package's jsdom environment; excluded from the root node suite by vitest.config.ts",
+      "review": "if the client spike is promoted into the root suite"
+    }
+  ],
+  "instruments": [
+    {
+      "id": "f5-two-asks",
+      "driver": "tests/kits/f5-two-asks/run-f5-two-asks.mjs",
+      "contract_tests": []
+    },
+    {
+      "id": "joint-acceptance",
+      "driver": "tests/kits/joint-acceptance-20261111/run-joint-acceptance.mjs",
+      "contract_tests": []
+    },
+    {
+      "id": "packaging-v016",
+      "driver": "tests/kits/packaging-v016/run-packaging-acceptance.mjs",
+      "contract_tests": []
+    }
+  ]
+}

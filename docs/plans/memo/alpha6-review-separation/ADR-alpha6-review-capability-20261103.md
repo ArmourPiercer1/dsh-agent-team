@@ -31,6 +31,17 @@ manifest + 真实 `createPaEffectsVerifier` + 真实 `createPaControlLeg`）显�
 | `packages/runtime/tool-admission/approval-case.ts` `verifyEffectSetApproval()` | 逐 effect 用 reviewerAuthority 走 `mayReview` + `grantCeiling` |
 | `pa-control-bridge.ts` `issueApprovedGrant()` / `ControlService.guardOperation()` | 同一 presenter 结论，grant 与 guard 一致拒绝 |
 
+> **2026-11-13 后继注记（issue #756，只退役表述、不改机制）**：上表是 Alpha.6 落地**前**的源码事实快照。
+> "Member 永远不是 resolver" 是当时的实现简写，不是冻结 Architecture 的原文（§25.1 是 Control/Approval 的
+> 目的；invariant 37 原文为 "Member 不能 unrestricted self-escalate"）。后继规则：**裁决权威按 scope 归属**
+> ——请求所属 case/leg 的被指派评审实例可以裁决（团队内唯一在读的 Officer 实例）；被禁止的是**执行者裁决
+> 自己的操作**（reviewer 与 reviewed 必须是不同实例）；leg 转交 Leader 后原 Officer 不再可裁决。
+> 发现面同样是**按调用者**的：Leader 的 `team_list_pending_control` 列出每个 open approval case 的
+> 当前 leg（含 `user-approval`），被指派的 Officer 经 `listMyReviewTasks` 看自己的当前 leg，未被指派
+> 者被拒；#756 中**已登记、未实现**的只是"单一角色化 + resolver kind/identity"的全量视图。
+> `CONTROL_RESOLVER_ROLES` 全局表保持不变，member 只经 case/leg-scoped ReviewCapability 进入。落地机制
+> 未改，仅该绝对化表述退役。
+
 **根因不是“少一个 if”，而是模型把“Principal 的真实身份”与“该 Principal 在当前
 Case 中的有效审批能力”压成了一个 `role` 字段。** 只改任一入口都会造成跨层不一致；
 必须统一契约。

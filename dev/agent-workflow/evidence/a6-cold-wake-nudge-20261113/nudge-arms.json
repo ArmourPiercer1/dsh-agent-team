@@ -1,0 +1,4096 @@
+{
+  "schema": "a6-cold-wake-nudge-arms/1",
+  "lane": "A6 COLD-WAKE: Leader-to-Officer restart briefing (PD-44)",
+  "generatedAt": "2026-11-13T15:17:59.425Z",
+  "hostBinding": {
+    "testuse": "tests/deepseek-harness-test-use @ 639ed015397290b3745d163aafe02ffee4aa3f84",
+    "kit": "tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs",
+    "note": "per-run facts stay in run-*/cw-facts.md (fenced JSON); this file is the single committed .json for the lane"
+  },
+  "arms": {
+    "step3-officer-message": {
+      "runs": [
+        "run-lm-1",
+        "run-lm-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "officer-instance",
+        "officer-instance"
+      ],
+      "outcome": [
+        "officer-decided",
+        "officer-decided"
+      ],
+      "decisionByNudgeTurn": [
+        true,
+        true
+      ],
+      "nudgeTurns": [
+        3,
+        3
+      ],
+      "wakeTurnsNamingNew": [
+        0,
+        0
+      ],
+      "agrees": true
+    },
+    "step4-member-work": {
+      "runs": [
+        "run-mw-1",
+        "run-mw-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "officer-instance",
+        "officer-instance"
+      ],
+      "outcome": [
+        "officer-decided",
+        "officer-decided"
+      ],
+      "decisionByNudgeTurn": [
+        true,
+        true
+      ],
+      "nudgeTurns": [
+        3,
+        3
+      ],
+      "wakeTurnsNamingNew": [
+        0,
+        0
+      ],
+      "agrees": true
+    },
+    "control-b-restart-no-nudge": {
+      "runs": [
+        "run-none-1",
+        "run-none-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "operator",
+        "operator"
+      ],
+      "outcome": [
+        "no-turn",
+        "no-turn"
+      ],
+      "decisionByNudgeTurn": [
+        false,
+        false
+      ],
+      "nudgeTurns": [
+        0,
+        0
+      ],
+      "wakeTurnsNamingNew": [
+        0,
+        0
+      ],
+      "agrees": true
+    },
+    "control-a-no-restart": {
+      "runs": [
+        "run-nr-1",
+        "run-nr-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "officer-instance",
+        "officer-instance"
+      ],
+      "outcome": [
+        "officer-decided",
+        "officer-decided"
+      ],
+      "decisionByNudgeTurn": [
+        false,
+        false
+      ],
+      "nudgeTurns": [
+        3,
+        3
+      ],
+      "wakeTurnsNamingNew": [
+        2,
+        2
+      ],
+      "agrees": true
+    },
+    "step2-leader-resolve": {
+      "runs": [
+        "run-probe-1",
+        "run-probe-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "leader-instance:inst-leader",
+        "leader-instance:inst-leader"
+      ],
+      "outcome": [
+        "leader-decided",
+        "leader-decided"
+      ],
+      "decisionByNudgeTurn": [
+        false,
+        false
+      ],
+      "nudgeTurns": [
+        0,
+        0
+      ],
+      "wakeTurnsNamingNew": [
+        0,
+        0
+      ],
+      "agrees": true
+    },
+    "step1-user-approval": {
+      "runs": [
+        "run-ua-1",
+        "run-ua-2"
+      ],
+      "verdicts": [
+        "PASS",
+        "PASS"
+      ],
+      "decidedBy": [
+        "operator",
+        "operator"
+      ],
+      "outcome": [
+        "human-decided",
+        "human-decided"
+      ],
+      "decisionByNudgeTurn": [
+        null,
+        null
+      ],
+      "nudgeTurns": [
+        0,
+        0
+      ],
+      "wakeTurnsNamingNew": [
+        0,
+        0
+      ],
+      "agrees": true
+    }
+  },
+  "runs": [
+    {
+      "dir": "run-lm-1",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-03-46-h0-r4caae5",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:05:38.636Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-1xdor8w1mwx7y1019c1uy1r7"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0uur2xg1rruk",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1qr5q4j1vhn2220hzmzgh0w5"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:05:38.637Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-03-46-h0-r4caae5",
+        "pendingRequestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+        "targetInstanceId": "inst-1319fx811q6b",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:05:38.718Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-03-46-h0-r4caae5",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-1319fx811q6b",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-1319fx811q6b",
+            "deliveredToSessionId": "session-team-child-06de929eb00911e50f900469e834b485",
+            "factSequence": 23,
+            "deliveredSequence": 24,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-03-46-h0-r4caae5"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:05:38.718Z",
+        "endedAt": "2026-11-13T15:05:38.971Z",
+        "durationMs": 253,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 25,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-1319fx811q6b",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:05:38.906Z"
+      },
+      "decisionCall": {
+        "seq": 20,
+        "at": "2026-11-13T15:05:38.881Z",
+        "kind": "team-message",
+        "markerSeen": true,
+        "relayTo": "inst-1319fx811q6b",
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": true,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:05:38.710Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-03-46-h0-r4caae5:inst-1319fx811q6b:1:a6wake%3Av1%3A1%3Aa0f570ca",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-03-46-h0-r4caae5:inst-1319fx811q6b:1:a6wake%3Av1%3A1%3Aa0f570ca]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:05:38.798Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1319fx811q6b",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1319fx811q6b (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:05:38.881Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1319fx811q6b",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1319fx811q6b (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-03-46-h0-r4caae5\",\"pending\":[{\"requestId\":\"ctrl-1xdor8w1mwx7y1019c1uy1r7\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-03-46-h0-r4caae5\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-03-46-h0-r4caae5\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0uur2xg1rruk\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0uur2xg1rruk\"},\"targetInstanceId\":\"inst-0uur2xg1rruk\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-xw253sz8\",\"status\":\"pending\",\"create"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:05:38.939Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1319fx811q6b",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1319fx811q6b (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-03-46-h0-r4caae5\",\"pending\":[{\"requestId\":\"ctrl-1xdor8w1mwx7y1019c1uy1r7\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-03-46-h0-r4caae5\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-03-46-h0-r4caae5\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-0uur2xg1rruk\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0uur2xg1rruk\"},\"targetInstanceId\":\"inst-0uur2xg1rruk\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-xw253sz8\",\"status\":\"pending\",\"create",
+            "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xdor8w1mwx7y1019c1uy1r7\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-1319fx811q6b\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-03-46-h0-r4caae5\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0uur2xg1rruk\"},\"targetInstanceId\":\"inst-0uur2xg1rruk\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-xw253sz8\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:9e1eb0b53f35b97260ae85acafcaa690e882d33d3d39d25360a8b94263c831af\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kin"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0egesoa1s2iuqz0qpc6jo152",
+        "decider": {
+          "instanceId": "inst-1319fx811q6b",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:05:38.637Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0egesoa1s2iuqz0qpc6jo152",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1nlynn819ptz",
+          "correlation": "call-c1-m5qs6htt",
+          "approvalCaseId": "case-1ihuv8z0r1lgta1rmjvoh0m3",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:04:02.472Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0egesoa1s2iuqz0qpc6jo152",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1nlynn819ptz",
+          "correlation": "call-c1-m5qs6htt",
+          "approvalCaseId": "case-1ihuv8z0r1lgta1rmjvoh0m3",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:04:02.472Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0uur2xg1rruk",
+          "correlation": "call-c1-xw253sz8",
+          "approvalCaseId": "case-1qr5q4j1vhn2220hzmzgh0w5",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:05:38.539Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-1nlynn819ptz",
+            "leg1AfterRestart": "inst-1nlynn819ptz",
+            "postRestartLeg2": "inst-0uur2xg1rruk"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976",
+            "leg1AfterRestart": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976",
+            "postRestartLeg2": "sha256:15810fa87577a3013393865efcdcd2974950bebfcb93f8a2a1f682672e1aa976"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-1ihuv8z0r1lgta1rmjvoh0m3",
+            "leg1AfterRestart": "case-1ihuv8z0r1lgta1rmjvoh0m3",
+            "postRestartLeg2": "case-1qr5q4j1vhn2220hzmzgh0w5"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-1xdor8w1mwx7y1019c1uy1r7",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0uur2xg1rruk",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1qr5q4j1vhn2220hzmzgh0w5"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:04:01.668Z",
+      "endedAt": "2026-11-13T15:05:38.972Z",
+      "logTail": "[2026-11-13T15:05:43.979Z] VERDICT PASS",
+      "phase": "step3-officer-message"
+    },
+    {
+      "dir": "run-lm-2",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-06-50-h0-r6bd2cc",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:08:42.052Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-19rnomj02v7hme1bdepb90s1"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-04qqyw30vcsg",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1wth6hb177rlz60k3xbrl09d"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:08:42.053Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-06-50-h0-r6bd2cc",
+        "pendingRequestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+        "targetInstanceId": "inst-0njj4er14uol",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:08:42.118Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-0njj4er14uol",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-0njj4er14uol",
+            "deliveredToSessionId": "session-team-child-d95a9835c2e6749998a9461c7dee4c42",
+            "factSequence": 23,
+            "deliveredSequence": 24,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-06-50-h0-r6bd2cc"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:08:42.118Z",
+        "endedAt": "2026-11-13T15:08:42.369Z",
+        "durationMs": 251,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 25,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0njj4er14uol",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:08:42.271Z"
+      },
+      "decisionCall": {
+        "seq": 20,
+        "at": "2026-11-13T15:08:42.248Z",
+        "kind": "team-message",
+        "markerSeen": true,
+        "relayTo": "inst-0njj4er14uol",
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": true,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:08:42.094Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc:inst-0njj4er14uol:1:a6wake%3Av1%3A1%3A8e6f701a",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc:inst-0njj4er14uol:1:a6wake%3Av1%3A1%3A8e6f701a]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:08:42.169Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0njj4er14uol",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0njj4er14uol (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:08:42.248Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0njj4er14uol",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0njj4er14uol (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"pending\":[{\"requestId\":\"ctrl-19rnomj02v7hme1bdepb90s1\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-04qqyw30vcsg\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04qqyw30vcsg\"},\"targetInstanceId\":\"inst-04qqyw30vcsg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-jklafhtj\",\"status\":\"pending\",\"create"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:08:42.303Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0njj4er14uol",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0njj4er14uol (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"pending\":[{\"requestId\":\"ctrl-19rnomj02v7hme1bdepb90s1\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-04qqyw30vcsg\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04qqyw30vcsg\"},\"targetInstanceId\":\"inst-04qqyw30vcsg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-jklafhtj\",\"status\":\"pending\",\"create",
+            "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-19rnomj02v7hme1bdepb90s1\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-0njj4er14uol\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-06-50-h0-r6bd2cc\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04qqyw30vcsg\"},\"targetInstanceId\":\"inst-04qqyw30vcsg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-jklafhtj\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:7f6f489d28a1961259c84e482cd1ed3a52459a4f051bcde2c9aab70619ec0c0c\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kin"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0s21lvc1h1d41p0z6mapa0np",
+        "decider": {
+          "instanceId": "inst-0njj4er14uol",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:08:42.053Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0s21lvc1h1d41p0z6mapa0np",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-19eg3sz0kilp",
+          "correlation": "call-c1-8izo814h",
+          "approvalCaseId": "case-1riaa450j6gd2w102otm30lf",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:07:06.268Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0s21lvc1h1d41p0z6mapa0np",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-19eg3sz0kilp",
+          "correlation": "call-c1-8izo814h",
+          "approvalCaseId": "case-1riaa450j6gd2w102otm30lf",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:07:06.268Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-04qqyw30vcsg",
+          "correlation": "call-c1-jklafhtj",
+          "approvalCaseId": "case-1wth6hb177rlz60k3xbrl09d",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:08:41.936Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-19eg3sz0kilp",
+            "leg1AfterRestart": "inst-19eg3sz0kilp",
+            "postRestartLeg2": "inst-04qqyw30vcsg"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1",
+            "leg1AfterRestart": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1",
+            "postRestartLeg2": "sha256:802bb065db180b9264daafd63eccecc5eb1aba26621394ddab505a2b068e44f1"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-1riaa450j6gd2w102otm30lf",
+            "leg1AfterRestart": "case-1riaa450j6gd2w102otm30lf",
+            "postRestartLeg2": "case-1wth6hb177rlz60k3xbrl09d"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-19rnomj02v7hme1bdepb90s1",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-04qqyw30vcsg",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1wth6hb177rlz60k3xbrl09d"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:07:05.468Z",
+      "endedAt": "2026-11-13T15:08:42.371Z",
+      "logTail": "[2026-11-13T15:08:47.377Z] VERDICT PASS",
+      "phase": "step3-officer-message"
+    },
+    {
+      "dir": "run-mw-1",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": true
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-13-56-h0-rc7d8e1",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true,
+        "S-4": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:15:47.986Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-0ltsp231e380lu14d3aul0q9"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-04v967k1ijcn",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1gav1he1dpttpr1wuw6lk0m1"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:15:47.987Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-13-56-h0-rc7d8e1",
+        "pendingRequestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+        "targetInstanceId": "inst-061as941cqe5",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:15:48.071Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-061as941cqe5",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-061as941cqe5",
+            "deliveredToSessionId": "session-team-child-1f82ef7bf4c93d360ca36f485dbe7e5f",
+            "factSequence": 23,
+            "deliveredSequence": 24,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-13-56-h0-rc7d8e1"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:15:48.071Z",
+        "endedAt": "2026-11-13T15:15:48.324Z",
+        "durationMs": 253,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 25,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-061as941cqe5",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:15:48.276Z"
+      },
+      "decisionCall": {
+        "seq": 20,
+        "at": "2026-11-13T15:15:48.251Z",
+        "kind": "team-message",
+        "markerSeen": true,
+        "relayTo": "inst-061as941cqe5",
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": true,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:15:48.060Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1:inst-061as941cqe5:1:a6wake%3Av1%3A1%3Aa816954d",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1:inst-061as941cqe5:1:a6wake%3Av1%3A1%3Aa816954d]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:15:48.166Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-061as941cqe5",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-061as941cqe5 (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:15:48.251Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-061as941cqe5",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-061as941cqe5 (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"pending\":[{\"requestId\":\"ctrl-0ltsp231e380lu14d3aul0q9\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-04v967k1ijcn\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04v967k1ijcn\"},\"targetInstanceId\":\"inst-04v967k1ijcn\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-5flawddx\",\"status\":\"pending\",\"create"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:15:48.310Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-061as941cqe5",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-061as941cqe5 (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"pending\":[{\"requestId\":\"ctrl-0ltsp231e380lu14d3aul0q9\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-04v967k1ijcn\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04v967k1ijcn\"},\"targetInstanceId\":\"inst-04v967k1ijcn\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-5flawddx\",\"status\":\"pending\",\"create",
+            "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-0ltsp231e380lu14d3aul0q9\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-061as941cqe5\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-13-56-h0-rc7d8e1\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-04v967k1ijcn\"},\"targetInstanceId\":\"inst-04v967k1ijcn\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-5flawddx\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:33ccb6edb037517156a422f5f0411a0fa3692062966ae17c06008e10e5c93043\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kin"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-166jpgk1hfaa5l0d11bw20gm",
+        "decider": {
+          "instanceId": "inst-061as941cqe5",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:15:47.987Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-166jpgk1hfaa5l0d11bw20gm",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0il4mt20egzf",
+          "correlation": "call-c1-we5aox08",
+          "approvalCaseId": "case-0s3rtd41d7fg550w0u87y1e5",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:14:12.163Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-166jpgk1hfaa5l0d11bw20gm",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0il4mt20egzf",
+          "correlation": "call-c1-we5aox08",
+          "approvalCaseId": "case-0s3rtd41d7fg550w0u87y1e5",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:14:12.163Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-04v967k1ijcn",
+          "correlation": "call-c1-5flawddx",
+          "approvalCaseId": "case-1gav1he1dpttpr1wuw6lk0m1",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:15:47.894Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-0il4mt20egzf",
+            "leg1AfterRestart": "inst-0il4mt20egzf",
+            "postRestartLeg2": "inst-04v967k1ijcn"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+            "leg1AfterRestart": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+            "postRestartLeg2": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-0s3rtd41d7fg550w0u87y1e5",
+            "leg1AfterRestart": "case-0s3rtd41d7fg550w0u87y1e5",
+            "postRestartLeg2": "case-1gav1he1dpttpr1wuw6lk0m1"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-0ltsp231e380lu14d3aul0q9",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-04v967k1ijcn",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1gav1he1dpttpr1wuw6lk0m1"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": {
+        "at": "2026-11-13T15:15:48.706Z",
+        "status": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "turnStarted": true,
+        "turnSeq": 22,
+        "callId": "call-c1-k7b7iwo7",
+        "requestId": "ctrl-1o4qaga00n30e31844wh410w",
+        "request": {
+          "sequence": 29,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1o4qaga00n30e31844wh410w",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0il4mt20egzf",
+          "correlation": "call-c1-k7b7iwo7",
+          "approvalCaseId": "case-18jesu21ql4lgf0alw97o0ge",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#28",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:efb04e7d56537114646947891830378cae332eb8fcd355ad72843a0e8820989a",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:15:48.616Z"
+        }
+      },
+      "startedAt": "2026-11-13T15:14:11.372Z",
+      "endedAt": "2026-11-13T15:15:48.707Z",
+      "logTail": "[2026-11-13T15:15:53.714Z] VERDICT PASS",
+      "phase": "step4-member-work"
+    },
+    {
+      "dir": "run-mw-2",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": true
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-15-58-h0-rdef717",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true,
+        "S-4": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:17:43.437Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-12zw5940rmltm90prxzke0bx"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1vg5kep0lydg",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-0o131wo18wg67l17in36e0oj"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:17:43.438Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-15-58-h0-rdef717",
+        "pendingRequestId": "ctrl-12zw5940rmltm90prxzke0bx",
+        "targetInstanceId": "inst-0xzc2r904mxs",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:17:43.525Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-15-58-h0-rdef717",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-0xzc2r904mxs",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-0xzc2r904mxs",
+            "deliveredToSessionId": "session-team-child-012e0ce1f591241f0d5cdd1b9ff7fa3c",
+            "factSequence": 23,
+            "deliveredSequence": 24,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-15-58-h0-rdef717"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:17:43.525Z",
+        "endedAt": "2026-11-13T15:17:43.776Z",
+        "durationMs": 251,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 25,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-0xzc2r904mxs",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:17:43.734Z"
+      },
+      "decisionCall": {
+        "seq": 20,
+        "at": "2026-11-13T15:17:43.708Z",
+        "kind": "team-message",
+        "markerSeen": true,
+        "relayTo": "inst-0xzc2r904mxs",
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": true,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:17:43.513Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-15-58-h0-rdef717:inst-0xzc2r904mxs:1:a6wake%3Av1%3A1%3A06d7f99d",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-15-58-h0-rdef717:inst-0xzc2r904mxs:1:a6wake%3Av1%3A1%3A06d7f99d]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:17:43.622Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0xzc2r904mxs",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0xzc2r904mxs (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:17:43.708Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0xzc2r904mxs",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0xzc2r904mxs (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-15-58-h0-rdef717\",\"pending\":[{\"requestId\":\"ctrl-12zw5940rmltm90prxzke0bx\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-15-58-h0-rdef717\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-15-58-h0-rdef717\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1vg5kep0lydg\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1vg5kep0lydg\"},\"targetInstanceId\":\"inst-1vg5kep0lydg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-fbko4bgd\",\"status\":\"pending\",\"create"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:17:43.768Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-0xzc2r904mxs",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-0xzc2r904mxs (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-15-58-h0-rdef717\",\"pending\":[{\"requestId\":\"ctrl-12zw5940rmltm90prxzke0bx\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-15-58-h0-rdef717\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-15-58-h0-rdef717\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1vg5kep0lydg\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1vg5kep0lydg\"},\"targetInstanceId\":\"inst-1vg5kep0lydg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-fbko4bgd\",\"status\":\"pending\",\"create",
+            "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-12zw5940rmltm90prxzke0bx\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-0xzc2r904mxs\",\"role\":\"member\"},\"scope\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-15-58-h0-rdef717\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1vg5kep0lydg\"},\"targetInstanceId\":\"inst-1vg5kep0lydg\",\"actionName\":\"parameter-permission\",\"correlation\":\"call-c1-fbko4bgd\",\"toolName\":\"bash\",\"operationFingerprint\":\"sha256:8c2a51e2844f995194b0fbb03a623b8213042b2cbb5f74d42529cef893396c7c\",\"authorityScope\":{\"operationClass\":\"bash\",\"matcher\":{\"kin"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0c6j0ll1fcg5hs1s8rum305a",
+        "decider": {
+          "instanceId": "inst-0xzc2r904mxs",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:17:43.437Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0c6j0ll1fcg5hs1s8rum305a",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-05zu26z1gwig",
+          "correlation": "call-c1-oeh2dg3l",
+          "approvalCaseId": "case-140hxq71ixplm61la11vh1cf",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:16:07.150Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0c6j0ll1fcg5hs1s8rum305a",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-05zu26z1gwig",
+          "correlation": "call-c1-oeh2dg3l",
+          "approvalCaseId": "case-140hxq71ixplm61la11vh1cf",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:16:07.150Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1vg5kep0lydg",
+          "correlation": "call-c1-fbko4bgd",
+          "approvalCaseId": "case-0o131wo18wg67l17in36e0oj",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:17:43.344Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-05zu26z1gwig",
+            "leg1AfterRestart": "inst-05zu26z1gwig",
+            "postRestartLeg2": "inst-1vg5kep0lydg"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+            "leg1AfterRestart": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+            "postRestartLeg2": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-140hxq71ixplm61la11vh1cf",
+            "leg1AfterRestart": "case-140hxq71ixplm61la11vh1cf",
+            "postRestartLeg2": "case-0o131wo18wg67l17in36e0oj"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-12zw5940rmltm90prxzke0bx",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1vg5kep0lydg",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-0o131wo18wg67l17in36e0oj"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": {
+        "at": "2026-11-13T15:17:44.162Z",
+        "status": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "turnStarted": true,
+        "turnSeq": 22,
+        "callId": "call-c1-dn1n0fkk",
+        "requestId": "ctrl-15k4hvh1o9e5vk1bicunv1ak",
+        "request": {
+          "sequence": 29,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-15k4hvh1o9e5vk1bicunv1ak",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-05zu26z1gwig",
+          "correlation": "call-c1-dn1n0fkk",
+          "approvalCaseId": "case-1nx2yok0u979p11itkcmy0gq",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#28",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:eb6d5c822c0e8fbf3adad11d3b49dd4b78a244448cc4f59fb0ec7c3413d89910",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:17:44.080Z"
+        }
+      },
+      "startedAt": "2026-11-13T15:16:06.325Z",
+      "endedAt": "2026-11-13T15:17:44.162Z",
+      "logTail": "[2026-11-13T15:17:49.169Z] VERDICT PASS",
+      "phase": "step4-member-work"
+    },
+    {
+      "dir": "run-none-1",
+      "arm": "none",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-03-43-h0-r1386cd",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "no-turn",
+      "decidedBy": "operator",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-6": true,
+        "N-7": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:05:28.332Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-0gxdnbf1ynrwxa1cs1tjt0od"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-0gxdnbf1ynrwxa1cs1tjt0od",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0d99f4e0nvnc",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-02uo7uv1n5rjmu0zilsqt0c8"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "none",
+        "at": "2026-11-13T15:05:28.333Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-03-43-h0-r1386cd",
+        "pendingRequestId": "ctrl-0gxdnbf1ynrwxa1cs1tjt0od",
+        "targetInstanceId": null,
+        "tool": null,
+        "httpStatus": null,
+        "refusal": null,
+        "deliveryStatus": null,
+        "admitted": null
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:05:28.333Z",
+        "endedAt": "2026-11-13T15:06:33.506Z",
+        "durationMs": 65173,
+        "decidedWithinWindow": false
+      },
+      "newDecision": null,
+      "decisionCall": null,
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:05:28.450Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-03-43-h0-r1386cd:inst-0m5km7x1h273:1:a6wake%3Av1%3A1%3A97721378",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-03-43-h0-r1386cd:inst-0m5km7x1h273:1:a6wake%3Av1%3A1%3A97721378]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-1hj1deh0w125241xjkt2r14y",
+        "decider": {
+          "instanceId": "inst-0m5km7x1h273",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": {
+        "status": 200,
+        "code": null
+      },
+      "authorityComparison": {
+        "at": "2026-11-13T15:05:28.333Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1hj1deh0w125241xjkt2r14y",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0msfjo11s8ea",
+          "correlation": "call-c1-2he3aqxd",
+          "approvalCaseId": "case-010al421b8qj8j0e1u24s0kr",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:03:52.698Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1hj1deh0w125241xjkt2r14y",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0msfjo11s8ea",
+          "correlation": "call-c1-2he3aqxd",
+          "approvalCaseId": "case-010al421b8qj8j0e1u24s0kr",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:03:52.698Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0gxdnbf1ynrwxa1cs1tjt0od",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0d99f4e0nvnc",
+          "correlation": "call-c1-zay6gy6a",
+          "approvalCaseId": "case-02uo7uv1n5rjmu0zilsqt0c8",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:05:28.302Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-0msfjo11s8ea",
+            "leg1AfterRestart": "inst-0msfjo11s8ea",
+            "postRestartLeg2": "inst-0d99f4e0nvnc"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1",
+            "leg1AfterRestart": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1",
+            "postRestartLeg2": "sha256:5459ccedd62de74ea690728fd67ae9fb6f51966b368151440ff9eabee597d1d1"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#35",
+            "leg1AfterRestart": "def#35",
+            "postRestartLeg2": "def#35"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-010al421b8qj8j0e1u24s0kr",
+            "leg1AfterRestart": "case-010al421b8qj8j0e1u24s0kr",
+            "postRestartLeg2": "case-02uo7uv1n5rjmu0zilsqt0c8"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-0gxdnbf1ynrwxa1cs1tjt0od",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0d99f4e0nvnc",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-02uo7uv1n5rjmu0zilsqt0c8"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:03:51.960Z",
+      "endedAt": "2026-11-13T15:06:34.550Z",
+      "logTail": "[2026-11-13T15:06:39.556Z] VERDICT PASS",
+      "phase": "control-b-restart-no-nudge"
+    },
+    {
+      "dir": "run-none-2",
+      "arm": "none",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-06-50-h0-r242387",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "no-turn",
+      "decidedBy": "operator",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-6": true,
+        "N-7": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:08:35.799Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-1df83de0rczetf1g3ohtc14y"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-1df83de0rczetf1g3ohtc14y",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-00cc1kv0qdvk",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-0zaoltc1x8y4pt0vq95r61qr"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "none",
+        "at": "2026-11-13T15:08:35.800Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-06-50-h0-r242387",
+        "pendingRequestId": "ctrl-1df83de0rczetf1g3ohtc14y",
+        "targetInstanceId": null,
+        "tool": null,
+        "httpStatus": null,
+        "refusal": null,
+        "deliveryStatus": null,
+        "admitted": null
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:08:35.800Z",
+        "endedAt": "2026-11-13T15:09:40.994Z",
+        "durationMs": 65194,
+        "decidedWithinWindow": false
+      },
+      "newDecision": null,
+      "decisionCall": null,
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:08:35.916Z",
+          "kind": "review-wake",
+          "namesNewRequest": false,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-06-50-h0-r242387:inst-0xsphy60dl0z:1:a6wake%3Av1%3A1%3Aedbd56e0",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-06-50-h0-r242387:inst-0xsphy60dl0z:1:a6wake%3Av1%3A1%3Aedbd56e0]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0q6bpj10s60ts40cebzz31vv",
+        "decider": {
+          "instanceId": "inst-0xsphy60dl0z",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": {
+        "status": 200,
+        "code": null
+      },
+      "authorityComparison": {
+        "at": "2026-11-13T15:08:35.800Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0q6bpj10s60ts40cebzz31vv",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0ilh2b50hiup",
+          "correlation": "call-c1-9i5e1fhx",
+          "approvalCaseId": "case-1vzd1it07xguh011o8ucj001",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:06:59.785Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0q6bpj10s60ts40cebzz31vv",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0ilh2b50hiup",
+          "correlation": "call-c1-9i5e1fhx",
+          "approvalCaseId": "case-1vzd1it07xguh011o8ucj001",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:06:59.785Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1df83de0rczetf1g3ohtc14y",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-00cc1kv0qdvk",
+          "correlation": "call-c1-r1irgy7x",
+          "approvalCaseId": "case-0zaoltc1x8y4pt0vq95r61qr",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#35",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:08:35.770Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-0ilh2b50hiup",
+            "leg1AfterRestart": "inst-0ilh2b50hiup",
+            "postRestartLeg2": "inst-00cc1kv0qdvk"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1",
+            "leg1AfterRestart": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1",
+            "postRestartLeg2": "sha256:02b4976bd172f96ecca5906e581fa06a796c45eb4d15d8a40cdbcba389c14ad1"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#35",
+            "leg1AfterRestart": "def#35",
+            "postRestartLeg2": "def#35"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-1vzd1it07xguh011o8ucj001",
+            "leg1AfterRestart": "case-1vzd1it07xguh011o8ucj001",
+            "postRestartLeg2": "case-0zaoltc1x8y4pt0vq95r61qr"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-1df83de0rczetf1g3ohtc14y",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-00cc1kv0qdvk",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-0zaoltc1x8y4pt0vq95r61qr"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:06:58.970Z",
+      "endedAt": "2026-11-13T15:09:41.941Z",
+      "logTail": "[2026-11-13T15:09:46.949Z] VERDICT PASS",
+      "phase": "control-b-restart-no-nudge"
+    },
+    {
+      "dir": "run-nr-1",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "none",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-09-59-h0-r999956",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:10:16.725Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-12pyawv1dkx9xu0jyi4xh0ad"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1iqbe161imti",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-14tjbfb0q8xkiq0ka5jet08w"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:10:16.726Z",
+        "seqAtNudge": 16,
+        "marker": "C1MK_NUDGE_2026-11-13T15-09-59-h0-r999956",
+        "pendingRequestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+        "targetInstanceId": "inst-03ukeux0gftf",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:10:16.790Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-09-59-h0-r999956",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-03ukeux0gftf",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-03ukeux0gftf",
+            "deliveredToSessionId": "session-team-child-5b8f7734da867edbf1dd6e4a78f46981",
+            "factSequence": 20,
+            "deliveredSequence": 21,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-09-59-h0-r999956"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:10:16.790Z",
+        "endedAt": "2026-11-13T15:10:17.293Z",
+        "durationMs": 503,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 22,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-03ukeux0gftf",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:10:16.793Z"
+      },
+      "decisionCall": {
+        "seq": 17,
+        "at": "2026-11-13T15:10:16.771Z",
+        "kind": "review-wake",
+        "markerSeen": false,
+        "relayTo": null,
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [
+        {
+          "seq": 17,
+          "at": "2026-11-13T15:10:16.771Z",
+          "kind": "review-wake",
+          "namesNewRequest": true,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06]",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ]
+        },
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:10:16.826Z",
+          "kind": "review-wake",
+          "namesNewRequest": true,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-09-59-h0-r999956:inst-03ukeux0gftf:1:a6wake%3Av1%3A1%3Ae9b2ed06]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:10:17.069Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-03ukeux0gftf",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-03ukeux0gftf (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:10:17.105Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-03ukeux0gftf",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-03ukeux0gftf (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-09-59-h0-r999956\",\"pending\":[{\"requestId\":\"ctrl-0n7c6680n8r8cd0rc2vpa0oy\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-09-59-h0-r999956\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-09-59-h0-r999956\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1iqbe161imti\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1iqbe161imti\"},\"targetInstanceId\":\"inst-1iqbe161imti\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-a1-root-2026-11-13T15-09-59-h0-"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:10:17.139Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-03ukeux0gftf",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-03ukeux0gftf (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-09-59-h0-r999956\",\"pending\":[{\"requestId\":\"ctrl-0n7c6680n8r8cd0rc2vpa0oy\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-09-59-h0-r999956\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-09-59-h0-r999956\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1iqbe161imti\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1iqbe161imti\"},\"targetInstanceId\":\"inst-1iqbe161imti\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-a1-root-2026-11-13T15-09-59-h0-",
+            "{\"status\":\"rejected\",\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-12pyawv1dkx9xu0jyi4xh0ad' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-09-59-h0-r999956\",\"requestId\":\"ctrl-12pyawv1dkx9xu0jyi4xh0ad\"}}"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": null,
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-028ddi10zsypdg1es1jen19k",
+        "decider": {
+          "instanceId": "inst-03ukeux0gftf",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:10:16.726Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-028ddi10zsypdg1es1jen19k",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1iqbe161imti",
+          "correlation": "call-c1-8hkots2b",
+          "approvalCaseId": "case-1px3i5h0x7ve6o08dn81f18g",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:10:08.926Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-028ddi10zsypdg1es1jen19k",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1iqbe161imti",
+          "correlation": "call-c1-8hkots2b",
+          "approvalCaseId": "case-1px3i5h0x7ve6o08dn81f18g",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:10:08.926Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 19,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1iqbe161imti",
+          "correlation": "call-c1-zfw9jzvg",
+          "approvalCaseId": "case-14tjbfb0q8xkiq0ka5jet08w",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:10:16.630Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-1iqbe161imti",
+            "leg1AfterRestart": "inst-1iqbe161imti",
+            "postRestartLeg2": "inst-1iqbe161imti"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289",
+            "leg1AfterRestart": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289",
+            "postRestartLeg2": "sha256:f758ff25773b3a2248e1f9ec72b527194c9cf6021623909691072cfdbba53289"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-1px3i5h0x7ve6o08dn81f18g",
+            "leg1AfterRestart": "case-1px3i5h0x7ve6o08dn81f18g",
+            "postRestartLeg2": "case-14tjbfb0q8xkiq0ka5jet08w"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-12pyawv1dkx9xu0jyi4xh0ad",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1iqbe161imti",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-14tjbfb0q8xkiq0ka5jet08w"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:10:08.131Z",
+      "endedAt": "2026-11-13T15:10:17.294Z",
+      "logTail": "[2026-11-13T15:10:22.300Z] VERDICT PASS",
+      "phase": "control-a-no-restart"
+    },
+    {
+      "dir": "run-nr-2",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "none",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-11-02-h0-r197c70",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "officer-decided",
+      "decidedBy": "officer-instance",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "N-3": true,
+        "N-4": true,
+        "N-5": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:11:20.876Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-1cqd36q1eipxyj0rljx9803l"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1b7rluf0md5y",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1kfhuvc0lb2skp1n4rx5a00c"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:11:20.876Z",
+        "seqAtNudge": 16,
+        "marker": "C1MK_NUDGE_2026-11-13T15-11-02-h0-r197c70",
+        "pendingRequestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+        "targetInstanceId": "inst-1q335280kslt",
+        "tool": "team_send_message",
+        "httpStatus": 200,
+        "refusal": null,
+        "deliveryStatus": "delivered",
+        "admitted": true,
+        "sentAt": "2026-11-13T15:11:20.930Z",
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "delivered",
+            "rootSessionId": "session-a1-root-2026-11-13T15-11-02-h0-r197c70",
+            "action": "send-message",
+            "callerRole": "leader",
+            "recipientInstanceId": "inst-1q335280kslt",
+            "deliveryMode": "direct",
+            "deliveredToInstanceId": "inst-1q335280kslt",
+            "deliveredToSessionId": "session-team-child-b55e4bc07e8100f445db1c2243a0976c",
+            "factSequence": 20,
+            "deliveredSequence": 21,
+            "requestToken": "cw-nudge-msg-2026-11-13T15-11-02-h0-r197c70"
+          }
+        }
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:11:20.931Z",
+        "endedAt": "2026-11-13T15:11:21.433Z",
+        "durationMs": 502,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 22,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-1q335280kslt",
+          "kind": "instance",
+          "role": "member"
+        },
+        "createdAt": "2026-11-13T15:11:20.942Z"
+      },
+      "decisionCall": {
+        "seq": 17,
+        "at": "2026-11-13T15:11:20.924Z",
+        "kind": "review-wake",
+        "markerSeen": false,
+        "relayTo": null,
+        "toolCalls": [
+          {
+            "name": "team_resolve_control",
+            "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+            "decision": "allow",
+            "targetInstanceId": null
+          }
+        ]
+      },
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [
+        {
+          "seq": 17,
+          "at": "2026-11-13T15:11:20.924Z",
+          "kind": "review-wake",
+          "namesNewRequest": true,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-11-02-h0-r197c70:inst-1q335280kslt:1:a6wake%3Av1%3A1%3A111af3a1",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-11-02-h0-r197c70:inst-1q335280kslt:1:a6wake%3Av1%3A1%3A111af3a1]",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ]
+        },
+        {
+          "seq": 18,
+          "at": "2026-11-13T15:11:20.975Z",
+          "kind": "review-wake",
+          "namesNewRequest": true,
+          "relayTo": null,
+          "wakeToken": "review-wake:session-a1-root-2026-11-13T15-11-02-h0-r197c70:inst-1q335280kslt:1:a6wake%3Av1%3A1%3A111af3a1",
+          "firstLine": "[team-review-wake wakeId=review-wake:session-a1-root-2026-11-13T15-11-02-h0-r197c70:inst-1q335280kslt:1:a6wake%3Av1%3A1%3A111af3a1]",
+          "toolCalls": []
+        }
+      ],
+      "nudgeTurns": [
+        {
+          "seq": 19,
+          "at": "2026-11-13T15:11:21.221Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1q335280kslt",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1q335280kslt (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_list_pending_control",
+              "requestId": null,
+              "decision": null,
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": []
+        },
+        {
+          "seq": 20,
+          "at": "2026-11-13T15:11:21.255Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1q335280kslt",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1q335280kslt (label: cw-officer)",
+          "toolCalls": [
+            {
+              "name": "team_resolve_control",
+              "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+              "decision": "allow",
+              "targetInstanceId": null
+            }
+          ],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-11-02-h0-r197c70\",\"pending\":[{\"requestId\":\"ctrl-1ld4mx41m92qah1r5pzn20r5\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-11-02-h0-r197c70\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-11-02-h0-r197c70\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1b7rluf0md5y\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1b7rluf0md5y\"},\"targetInstanceId\":\"inst-1b7rluf0md5y\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-a1-root-2026-11-13T15-11-02-h0-"
+          ]
+        },
+        {
+          "seq": 21,
+          "at": "2026-11-13T15:11:21.287Z",
+          "kind": "team-message",
+          "markerSeen": true,
+          "relayTo": "inst-1q335280kslt",
+          "firstLine": "[team-relay] from=inst-leader (label: leader) to=inst-1q335280kslt (label: cw-officer)",
+          "toolCalls": [],
+          "toolResults": [
+            "{\"status\":\"pending-control-listed\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-11-02-h0-r197c70\",\"pending\":[{\"requestId\":\"ctrl-1ld4mx41m92qah1r5pzn20r5\",\"rootSessionId\":\"session-a1-root-2026-11-13T15-11-02-h0-r197c70\",\"ownerRootSessionId\":\"session-c1-smoke-root-2026-11-13T15-11-02-h0-r197c70\",\"kind\":\"leader-approval\",\"requester\":{\"kind\":\"instance\",\"instanceId\":\"inst-1b7rluf0md5y\",\"role\":\"member\"},\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1b7rluf0md5y\"},\"targetInstanceId\":\"inst-1b7rluf0md5y\",\"actionName\":\"team-tool-execute\",\"correlation\":\"pa:tadm:session-a1-root-2026-11-13T15-11-02-h0-",
+            "{\"status\":\"rejected\",\"code\":\"CONTROL_REQUEST_DECIDED\",\"message\":\"ControlService: request 'ctrl-1cqd36q1eipxyj0rljx9803l' already carries a durable decision (the first decision is authoritative)\",\"details\":{\"rootSessionId\":\"session-a1-root-2026-11-13T15-11-02-h0-r197c70\",\"requestId\":\"ctrl-1cqd36q1eipxyj0rljx9803l\"}}"
+          ]
+        }
+      ],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": null,
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-186jh1u0mzeu4312drfz80d2",
+        "decider": {
+          "instanceId": "inst-1q335280kslt",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:11:20.876Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-186jh1u0mzeu4312drfz80d2",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1b7rluf0md5y",
+          "correlation": "call-c1-xvlb3psm",
+          "approvalCaseId": "case-1jnsox90d8lzpk001h01v0im",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:11:13.093Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-186jh1u0mzeu4312drfz80d2",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1b7rluf0md5y",
+          "correlation": "call-c1-xvlb3psm",
+          "approvalCaseId": "case-1jnsox90d8lzpk001h01v0im",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:11:13.093Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 19,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1b7rluf0md5y",
+          "correlation": "call-c1-tebk3jaq",
+          "approvalCaseId": "case-1kfhuvc0lb2skp1n4rx5a00c",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:11:20.786Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-1b7rluf0md5y",
+            "leg1AfterRestart": "inst-1b7rluf0md5y",
+            "postRestartLeg2": "inst-1b7rluf0md5y"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e",
+            "leg1AfterRestart": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e",
+            "postRestartLeg2": "sha256:9dfc976a554863861cdb1fe528bda962c620d6adf8c41de1a974be7bb685396e"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-1jnsox90d8lzpk001h01v0im",
+            "leg1AfterRestart": "case-1jnsox90d8lzpk001h01v0im",
+            "postRestartLeg2": "case-1kfhuvc0lb2skp1n4rx5a00c"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-1cqd36q1eipxyj0rljx9803l",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1b7rluf0md5y",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1kfhuvc0lb2skp1n4rx5a00c"
+          }
+        ]
+      },
+      "leaderProbe": null,
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:11:12.298Z",
+      "endedAt": "2026-11-13T15:11:21.435Z",
+      "logTail": "[2026-11-13T15:11:26.482Z] VERDICT PASS",
+      "phase": "control-a-no-restart"
+    },
+    {
+      "dir": "run-probe-1",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": true,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-10-00-h0-r14ce53",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "leader-decided",
+      "decidedBy": "leader-instance:inst-leader",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "S-1": true,
+        "S-2": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:11:51.770Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-05n0vj50e6xsv81l49p770lo"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0sftxij03oku",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1yiirsj1x6qj760ev9tkx12n"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:11:51.869Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-10-00-h0-r14ce53",
+        "pendingRequestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+        "targetInstanceId": null,
+        "tool": "skipped",
+        "httpStatus": null,
+        "refusal": "leader-probe already closed the leg",
+        "deliveryStatus": null,
+        "admitted": null
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:11:51.869Z",
+        "endedAt": "2026-11-13T15:11:51.869Z",
+        "durationMs": 0,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 23,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-13T15:11:51.786Z"
+      },
+      "decisionCall": null,
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0winz610kl6y4k1tu0rdr0zz",
+        "decider": {
+          "instanceId": "inst-05pfzlo0e9nu",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:11:51.770Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0winz610kl6y4k1tu0rdr0zz",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1u85inv0ja46",
+          "correlation": "call-c1-c95mky6d",
+          "approvalCaseId": "case-134sryq0sme6bb0di4cq81pa",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:10:15.728Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0winz610kl6y4k1tu0rdr0zz",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1u85inv0ja46",
+          "correlation": "call-c1-c95mky6d",
+          "approvalCaseId": "case-134sryq0sme6bb0di4cq81pa",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:10:15.728Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0sftxij03oku",
+          "correlation": "call-c1-gmhsndl0",
+          "approvalCaseId": "case-1yiirsj1x6qj760ev9tkx12n",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:11:51.740Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-1u85inv0ja46",
+            "leg1AfterRestart": "inst-1u85inv0ja46",
+            "postRestartLeg2": "inst-0sftxij03oku"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212",
+            "leg1AfterRestart": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212",
+            "postRestartLeg2": "sha256:107ccffdc5ab4b3f495c10c39c605a29171379f3cf391a7d0f9206423f590212"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-134sryq0sme6bb0di4cq81pa",
+            "leg1AfterRestart": "case-134sryq0sme6bb0di4cq81pa",
+            "postRestartLeg2": "case-1yiirsj1x6qj760ev9tkx12n"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-0sftxij03oku",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1yiirsj1x6qj760ev9tkx12n"
+          }
+        ]
+      },
+      "leaderProbe": {
+        "at": "2026-11-13T15:11:51.868Z",
+        "status": 200,
+        "refusal": null,
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "control-resolved",
+            "decision": {
+              "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+              "decision": "allow",
+              "decider": {
+                "kind": "instance",
+                "instanceId": "inst-leader",
+                "role": "leader"
+              },
+              "scope": {
+                "rootSessionId": "session-a1-root-2026-11-13T15-10-00-h0-r14ce53",
+                "subject": {
+                  "kind": "instance",
+                  "instanceId": "inst-0sftxij03oku"
+                },
+                "targetInstanceId": "inst-0sftxij03oku",
+                "actionName": "parameter-permission",
+                "correlation": "call-c1-gmhsndl0",
+                "toolName": "bash",
+                "operationFingerprint": "sha256:65ea372ea1383dc10bf9cb0c1434082442e36787820eecc98a1a19e11224f419",
+                "authorityScope": {
+                  "operationClass": "bash",
+                  "matcher": {
+                    "kind": "exact",
+                    "resource": "bash"
+                  }
+                }
+              },
+              "requestSequence": 22,
+              "decisionSequence": 23,
+              "createdAt": "2026-11-13T15:11:51.866Z"
+            }
+          }
+        },
+        "decision": {
+          "sequence": 23,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-05n0vj50e6xsv81l49p770lo",
+          "decision": "allow",
+          "decider": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "createdAt": "2026-11-13T15:11:51.786Z"
+        }
+      },
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:10:14.897Z",
+      "endedAt": "2026-11-13T15:11:51.870Z",
+      "logTail": "[2026-11-13T15:11:56.876Z] VERDICT PASS",
+      "phase": "step2-leader-resolve"
+    },
+    {
+      "dir": "run-probe-2",
+      "arm": "leader-message",
+      "flags": {
+        "leaderProbe": true,
+        "userApproval": false,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-12-06-h0-rd45bb3",
+      "verdict": "PASS",
+      "armExpectationMet": true,
+      "outcome": "leader-decided",
+      "decidedBy": "leader-instance:inst-leader",
+      "clauses": {
+        "N-1": true,
+        "N-2": true,
+        "S-1": true,
+        "S-2": true
+      },
+      "pendingBefore": {
+        "at": "2026-11-13T15:13:51.963Z",
+        "httpStatus": 200,
+        "refusal": null,
+        "count": 1,
+        "requestIds": [
+          "ctrl-0ol83yw1nmhqpx1ybz1hu02g"
+        ],
+        "deciderState": [
+          {
+            "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1ev4f770t2rd",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1cny9mq0ppg05n1xyches1ay"
+          }
+        ],
+        "decisionAlreadyDurable": null
+      },
+      "nudge": {
+        "arm": "leader-message",
+        "at": "2026-11-13T15:13:51.993Z",
+        "seqAtNudge": 17,
+        "marker": "C1MK_NUDGE_2026-11-13T15-12-06-h0-rd45bb3",
+        "pendingRequestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+        "targetInstanceId": null,
+        "tool": "skipped",
+        "httpStatus": null,
+        "refusal": "leader-probe already closed the leg",
+        "deliveryStatus": null,
+        "admitted": null
+      },
+      "window": {
+        "startedAt": "2026-11-13T15:13:51.993Z",
+        "endedAt": "2026-11-13T15:13:51.994Z",
+        "durationMs": 1,
+        "decidedWithinWindow": true
+      },
+      "newDecision": {
+        "sequence": 23,
+        "factType": "control-decision-recorded",
+        "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+        "decision": "allow",
+        "decider": {
+          "instanceId": "inst-leader",
+          "kind": "instance",
+          "role": "leader"
+        },
+        "createdAt": "2026-11-13T15:13:51.979Z"
+      },
+      "decisionCall": null,
+      "decisionByNudgeTurn": false,
+      "wakeTurns": [],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-1hyxk3x1mmihc4171vhcn14i",
+        "decider": {
+          "instanceId": "inst-1m3mg2d0lr5k",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 2
+      },
+      "operatorResolve": null,
+      "authorityComparison": {
+        "at": "2026-11-13T15:13:51.963Z",
+        "sameLegPreCrash": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1hyxk3x1mmihc4171vhcn14i",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0ipt7301q1ql",
+          "correlation": "call-c1-o26jha8m",
+          "approvalCaseId": "case-0gkxf4f1cgiigq0tv4vt10im",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:12:15.819Z"
+        },
+        "sameLegAfterRestart": {
+          "sequence": 7,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-1hyxk3x1mmihc4171vhcn14i",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-0ipt7301q1ql",
+          "correlation": "call-c1-o26jha8m",
+          "approvalCaseId": "case-0gkxf4f1cgiigq0tv4vt10im",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:12:15.819Z"
+        },
+        "sameRowIdentical": true,
+        "postRestartNewLeg": {
+          "sequence": 22,
+          "factType": "control-request-recorded",
+          "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+          "kind": "leader-approval",
+          "toolName": "bash",
+          "actionName": "parameter-permission",
+          "targetInstanceId": "inst-1ev4f770t2rd",
+          "correlation": "call-c1-kpk4jar8",
+          "approvalCaseId": "case-1cny9mq0ppg05n1xyches1ay",
+          "legOrdinal": 1,
+          "reviewAuthority": "leader",
+          "operationOwnerTemplateId": "w-probe",
+          "operationToolOwner": "dsh-agent-team",
+          "operationToolName": "bash",
+          "operationToolDefinitionIdentity": "def#36",
+          "authorityGeneration": 0,
+          "blueprintContentHash": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557",
+          "blueprintRevision": "1",
+          "perEffectRequiredAuthorities": [
+            "leader"
+          ],
+          "createdAt": "2026-11-13T15:13:51.843Z"
+        },
+        "fieldTable": [
+          {
+            "field": "kind",
+            "preCrashLeg1": "leader-approval",
+            "leg1AfterRestart": "leader-approval",
+            "postRestartLeg2": "leader-approval"
+          },
+          {
+            "field": "toolName",
+            "preCrashLeg1": "bash",
+            "leg1AfterRestart": "bash",
+            "postRestartLeg2": "bash"
+          },
+          {
+            "field": "actionName",
+            "preCrashLeg1": "parameter-permission",
+            "leg1AfterRestart": "parameter-permission",
+            "postRestartLeg2": "parameter-permission"
+          },
+          {
+            "field": "targetInstanceId",
+            "preCrashLeg1": "inst-0ipt7301q1ql",
+            "leg1AfterRestart": "inst-0ipt7301q1ql",
+            "postRestartLeg2": "inst-1ev4f770t2rd"
+          },
+          {
+            "field": "reviewAuthority",
+            "preCrashLeg1": "leader",
+            "leg1AfterRestart": "leader",
+            "postRestartLeg2": "leader"
+          },
+          {
+            "field": "perEffectRequiredAuthorities",
+            "preCrashLeg1": [
+              "leader"
+            ],
+            "leg1AfterRestart": [
+              "leader"
+            ],
+            "postRestartLeg2": [
+              "leader"
+            ]
+          },
+          {
+            "field": "blueprintContentHash",
+            "preCrashLeg1": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557",
+            "leg1AfterRestart": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557",
+            "postRestartLeg2": "sha256:d164ef3d174dd8defe3b4d711b4e60cb0d2ce6371a753b8de77793929a902557"
+          },
+          {
+            "field": "blueprintRevision",
+            "preCrashLeg1": "1",
+            "leg1AfterRestart": "1",
+            "postRestartLeg2": "1"
+          },
+          {
+            "field": "authorityGeneration",
+            "preCrashLeg1": 0,
+            "leg1AfterRestart": 0,
+            "postRestartLeg2": 0
+          },
+          {
+            "field": "operationToolDefinitionIdentity",
+            "preCrashLeg1": "def#36",
+            "leg1AfterRestart": "def#36",
+            "postRestartLeg2": "def#36"
+          },
+          {
+            "field": "operationOwnerTemplateId",
+            "preCrashLeg1": "w-probe",
+            "leg1AfterRestart": "w-probe",
+            "postRestartLeg2": "w-probe"
+          },
+          {
+            "field": "legOrdinal",
+            "preCrashLeg1": 1,
+            "leg1AfterRestart": 1,
+            "postRestartLeg2": 1
+          },
+          {
+            "field": "approvalCaseId",
+            "preCrashLeg1": "case-0gkxf4f1cgiigq0tv4vt10im",
+            "leg1AfterRestart": "case-0gkxf4f1cgiigq0tv4vt10im",
+            "postRestartLeg2": "case-1cny9mq0ppg05n1xyches1ay"
+          },
+          {
+            "field": "status",
+            "preCrashLeg1": null,
+            "leg1AfterRestart": null,
+            "postRestartLeg2": null
+          }
+        ],
+        "listView": [
+          {
+            "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+            "status": "pending",
+            "kind": "leader-approval",
+            "actionName": "parameter-permission",
+            "targetInstanceId": "inst-1ev4f770t2rd",
+            "reviewAuthority": "leader",
+            "approvalCaseId": "case-1cny9mq0ppg05n1xyches1ay"
+          }
+        ]
+      },
+      "leaderProbe": {
+        "at": "2026-11-13T15:13:51.993Z",
+        "status": 200,
+        "refusal": null,
+        "body": {
+          "ok": true,
+          "value": {
+            "status": "control-resolved",
+            "decision": {
+              "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+              "decision": "allow",
+              "decider": {
+                "kind": "instance",
+                "instanceId": "inst-leader",
+                "role": "leader"
+              },
+              "scope": {
+                "rootSessionId": "session-a1-root-2026-11-13T15-12-06-h0-rd45bb3",
+                "subject": {
+                  "kind": "instance",
+                  "instanceId": "inst-1ev4f770t2rd"
+                },
+                "targetInstanceId": "inst-1ev4f770t2rd",
+                "actionName": "parameter-permission",
+                "correlation": "call-c1-kpk4jar8",
+                "toolName": "bash",
+                "operationFingerprint": "sha256:c463621e9f4a0cea84b69598d22ec3dc2c1db2644e4edc8cf0fc2d9a99d2f689",
+                "authorityScope": {
+                  "operationClass": "bash",
+                  "matcher": {
+                    "kind": "exact",
+                    "resource": "bash"
+                  }
+                }
+              },
+              "requestSequence": 22,
+              "decisionSequence": 23,
+              "createdAt": "2026-11-13T15:13:51.992Z"
+            }
+          }
+        },
+        "decision": {
+          "sequence": 23,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-0ol83yw1nmhqpx1ybz1hu02g",
+          "decision": "allow",
+          "decider": {
+            "instanceId": "inst-leader",
+            "kind": "instance",
+            "role": "leader"
+          },
+          "createdAt": "2026-11-13T15:13:51.979Z"
+        }
+      },
+      "userApproval": null,
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:12:14.997Z",
+      "endedAt": "2026-11-13T15:13:51.995Z",
+      "logTail": "[2026-11-13T15:13:57.002Z] VERDICT PASS",
+      "phase": "step2-leader-resolve"
+    },
+    {
+      "dir": "run-ua-1",
+      "arm": "none",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": true,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-12-10-h0-re9bf40",
+      "verdict": "PASS",
+      "outcome": "human-decided",
+      "decidedBy": "operator",
+      "clauses": {
+        "U-1": true,
+        "U-2": true,
+        "U-3": true,
+        "U-4": true
+      },
+      "wakeTurns": [],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-1duy0iz0o1s0vy18x62sd03s",
+        "decider": {
+          "instanceId": "inst-1mhrj4o1wefe",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 3
+      },
+      "operatorResolve": null,
+      "authorityComparison": null,
+      "leaderProbe": null,
+      "userApproval": {
+        "at": "2026-11-13T15:12:56.468Z",
+        "create": {
+          "status": 200,
+          "refusal": null,
+          "value": {
+            "status": "control-requested",
+            "request": {
+              "requestId": "ctrl-0rt9ztg15mnue11uqkvau1ab",
+              "rootSessionId": "session-a1-root-2026-11-13T15-12-10-h0-re9bf40",
+              "ownerRootSessionId": "session-c1-smoke-root-2026-11-13T15-12-10-h0-re9bf40",
+              "kind": "user-approval",
+              "requester": {
+                "kind": "instance",
+                "instanceId": "inst-leader",
+                "role": "leader"
+              },
+              "subject": {
+                "kind": "instance",
+                "instanceId": "inst-030kgum06xtp"
+              },
+              "targetInstanceId": "inst-030kgum06xtp",
+              "actionName": "user-signoff",
+              "correlation": "cw-user-approval-2026-11-13T15-12-10-h0-re9bf40",
+              "status": "pending",
+              "createdAt": "2026-11-13T15:12:56.447Z",
+              "requestSequence": 16,
+              "toolName": "bash",
+              "summary": "post-restart user-approval probe (the human is the only resolver)"
+            }
+          }
+        },
+        "requestId": "ctrl-0rt9ztg15mnue11uqkvau1ab",
+        "kind": "user-approval",
+        "reviewAuthority": null,
+        "listed": true,
+        "listCount": 1,
+        "listRequestIds": [
+          "ctrl-0rt9ztg15mnue11uqkvau1ab"
+        ],
+        "leaderProbe": {
+          "status": 200,
+          "refusal": "rejected: CONTROL_RESOLVER_NOT_AUTHORIZED ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "rejected",
+              "code": "CONTROL_RESOLVER_NOT_AUTHORIZED",
+              "message": "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
+              "details": {
+                "rootSessionId": "session-a1-root-2026-11-13T15-12-10-h0-re9bf40",
+                "requestId": "ctrl-0rt9ztg15mnue11uqkvau1ab",
+                "kind": "user-approval",
+                "role": "leader",
+                "allowedRoles": [
+                  "human"
+                ]
+              }
+            }
+          }
+        },
+        "leaderDecision": null,
+        "operatorResolve": {
+          "at": "2026-11-13T15:12:56.505Z",
+          "status": 200,
+          "code": null,
+          "body": {
+            "type": "server-response",
+            "rpcId": "cw-user-approval-operator-ncj5rb6es2",
+            "result": {
+              "ok": true,
+              "value": {
+                "data": {
+                  "decision": {
+                    "requestId": "ctrl-0rt9ztg15mnue11uqkvau1ab",
+                    "decision": "allow",
+                    "decider": {
+                      "kind": "human",
+                      "humanId": "session-a1-root-2026-11-13T15-12-10-h0-re9bf40"
+                    },
+                    "scope": {
+                      "rootSessionId": "session-a1-root-2026-11-13T15-12-10-h0-re9bf40",
+                      "subject": {
+                        "kind": "instance",
+                        "instanceId": "inst-030kgum06xtp"
+                      },
+                      "targetInstanceId": "inst-030kgum06xtp",
+                      "actionName": "user-signoff",
+                      "correlation": "cw-user-approval-2026-11-13T15-12-10-h0-re9bf40",
+                      "toolName": "bash"
+                    },
+                    "requestSequence": 16,
+                    "decisionSequence": 17,
+                    "createdAt": "2026-11-13T15:12:56.500Z",
+                    "note": "a6-cold-wake-nudge: the human resolves the user-approval leg"
+                  }
+                },
+                "provenance": {
+                  "origin": "team-remote",
+                  "method": "team.resolveControl",
+                  "endpoint": "team.resolveControl",
+                  "contractVersion": 4,
+                  "requestToken": null,
+                  "projectionGeneration": null,
+                  "effectSequence": null
+                }
+              }
+            }
+          }
+        },
+        "operatorDecision": {
+          "sequence": 17,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-0rt9ztg15mnue11uqkvau1ab",
+          "decision": "allow",
+          "decider": {
+            "humanId": "session-a1-root-2026-11-13T15-12-10-h0-re9bf40",
+            "kind": "human"
+          },
+          "createdAt": "2026-11-13T15:12:56.489Z"
+        }
+      },
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:12:20.372Z",
+      "endedAt": "2026-11-13T15:12:56.505Z",
+      "logTail": "[2026-11-13T15:13:01.515Z] VERDICT PASS",
+      "phase": "step1-user-approval"
+    },
+    {
+      "dir": "run-ua-2",
+      "arm": "none",
+      "flags": {
+        "leaderProbe": false,
+        "userApproval": true,
+        "memberWork": false
+      },
+      "killPoint": "after-decision",
+      "windowMs": 65000,
+      "nudgeMarker": "C1MK_NUDGE_2026-11-13T15-14-01-h0-r8abd59",
+      "verdict": "PASS",
+      "outcome": "human-decided",
+      "decidedBy": "operator",
+      "clauses": {
+        "U-1": true,
+        "U-2": true,
+        "U-3": true,
+        "U-4": true
+      },
+      "wakeTurns": [],
+      "nudgeTurns": [],
+      "recovery": {
+        "wakeFilesAtKill": null,
+        "recoveryWakeTurns": [],
+        "wakeIntentDirAtRecovery": null
+      },
+      "preCrash": {
+        "requestId": "ctrl-0lsa7yg00ac9090a34nuy1w5",
+        "decider": {
+          "instanceId": "inst-0d3ietk0yxpy",
+          "kind": "instance",
+          "role": "member"
+        },
+        "wakeTurns": 2
+      },
+      "operatorResolve": null,
+      "authorityComparison": null,
+      "leaderProbe": null,
+      "userApproval": {
+        "at": "2026-11-13T15:14:46.407Z",
+        "create": {
+          "status": 200,
+          "refusal": null,
+          "value": {
+            "status": "control-requested",
+            "request": {
+              "requestId": "ctrl-1ueuofk0q7ppr50olhzve0mk",
+              "rootSessionId": "session-a1-root-2026-11-13T15-14-01-h0-r8abd59",
+              "ownerRootSessionId": "session-c1-smoke-root-2026-11-13T15-14-01-h0-r8abd59",
+              "kind": "user-approval",
+              "requester": {
+                "kind": "instance",
+                "instanceId": "inst-leader",
+                "role": "leader"
+              },
+              "subject": {
+                "kind": "instance",
+                "instanceId": "inst-148l8ru1xas4"
+              },
+              "targetInstanceId": "inst-148l8ru1xas4",
+              "actionName": "user-signoff",
+              "correlation": "cw-user-approval-2026-11-13T15-14-01-h0-r8abd59",
+              "status": "pending",
+              "createdAt": "2026-11-13T15:14:46.389Z",
+              "requestSequence": 16,
+              "toolName": "bash",
+              "summary": "post-restart user-approval probe (the human is the only resolver)"
+            }
+          }
+        },
+        "requestId": "ctrl-1ueuofk0q7ppr50olhzve0mk",
+        "kind": "user-approval",
+        "reviewAuthority": null,
+        "listed": true,
+        "listCount": 1,
+        "listRequestIds": [
+          "ctrl-1ueuofk0q7ppr50olhzve0mk"
+        ],
+        "leaderProbe": {
+          "status": 200,
+          "refusal": "rejected: CONTROL_RESOLVER_NOT_AUTHORIZED ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
+          "body": {
+            "ok": true,
+            "value": {
+              "status": "rejected",
+              "code": "CONTROL_RESOLVER_NOT_AUTHORIZED",
+              "message": "ControlService: role 'leader' is not a resolver for kind 'user-approval' (allowed: [human])",
+              "details": {
+                "rootSessionId": "session-a1-root-2026-11-13T15-14-01-h0-r8abd59",
+                "requestId": "ctrl-1ueuofk0q7ppr50olhzve0mk",
+                "kind": "user-approval",
+                "role": "leader",
+                "allowedRoles": [
+                  "human"
+                ]
+              }
+            }
+          }
+        },
+        "leaderDecision": null,
+        "operatorResolve": {
+          "at": "2026-11-13T15:14:46.438Z",
+          "status": 200,
+          "code": null,
+          "body": {
+            "type": "server-response",
+            "rpcId": "cw-user-approval-operator-kapw3zdr7i",
+            "result": {
+              "ok": true,
+              "value": {
+                "data": {
+                  "decision": {
+                    "requestId": "ctrl-1ueuofk0q7ppr50olhzve0mk",
+                    "decision": "allow",
+                    "decider": {
+                      "kind": "human",
+                      "humanId": "session-a1-root-2026-11-13T15-14-01-h0-r8abd59"
+                    },
+                    "scope": {
+                      "rootSessionId": "session-a1-root-2026-11-13T15-14-01-h0-r8abd59",
+                      "subject": {
+                        "kind": "instance",
+                        "instanceId": "inst-148l8ru1xas4"
+                      },
+                      "targetInstanceId": "inst-148l8ru1xas4",
+                      "actionName": "user-signoff",
+                      "correlation": "cw-user-approval-2026-11-13T15-14-01-h0-r8abd59",
+                      "toolName": "bash"
+                    },
+                    "requestSequence": 16,
+                    "decisionSequence": 17,
+                    "createdAt": "2026-11-13T15:14:46.434Z",
+                    "note": "a6-cold-wake-nudge: the human resolves the user-approval leg"
+                  }
+                },
+                "provenance": {
+                  "origin": "team-remote",
+                  "method": "team.resolveControl",
+                  "endpoint": "team.resolveControl",
+                  "contractVersion": 4,
+                  "requestToken": null,
+                  "projectionGeneration": null,
+                  "effectSequence": null
+                }
+              }
+            }
+          }
+        },
+        "operatorDecision": {
+          "sequence": 17,
+          "factType": "control-decision-recorded",
+          "requestId": "ctrl-1ueuofk0q7ppr50olhzve0mk",
+          "decision": "allow",
+          "decider": {
+            "humanId": "session-a1-root-2026-11-13T15-14-01-h0-r8abd59",
+            "kind": "human"
+          },
+          "createdAt": "2026-11-13T15:14:46.425Z"
+        }
+      },
+      "memberWork": null,
+      "startedAt": "2026-11-13T15:14:09.667Z",
+      "endedAt": "2026-11-13T15:14:46.439Z",
+      "logTail": "[2026-11-13T15:14:51.445Z] VERDICT PASS",
+      "phase": "step1-user-approval"
+    }
+  ]
+}

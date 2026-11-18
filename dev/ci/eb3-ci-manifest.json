@@ -1,6 +1,6 @@
 {
   "schema": "eb3-ci-manifest/1",
-  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group. Each layer's `legs` name the CONCRETE invocation it must perform (cmd + required flags + forbidden flags), not a word to look for: a leg satisfied by an echo, a step name, a shell comment or a weaker flag set is not a leg. `hostFree` declares whether the layer may list a suite that resolves the pinned host checkout; eb3-ci-required refuses a host-dependent suite in a hostFree layer (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER). DATED 2026-11-03: ci-full split into ci-product (host-free gate legs) and ci-census (pinned host + census); the standalone census-runtime job is retired into ci-census and removed from knownNonRequired.",
+  "note": "EB3-A/B/C/D (plan U7-2). ONE declaration of the CI layers, read by scripts/eb3-ci-required.mjs. This file is the Required-ness claim; the workflows are the implementation. A job declared here that no workflow provides is CI_REQUIRED_JOB_ABSENT; a workflow job nobody declared is CI_JOB_UNDECLARED. Neither direction may be silent: an undeclared job can be deleted by the next tidy-up, and a declared-but-absent job is a merge gate that does not exist. Layers are reusable workflows called ONLY by the aggregate (mustRunOn=workflow_call): one caller, one run, one result — a standalone pull_request trigger would double-run every layer and expose it to GitHub's pending-run cancellation inside a shared concurrency group. Each layer's `legs` name the CONCRETE invocation it must perform (cmd + required flags + forbidden flags), not a word to look for: a leg satisfied by an echo, a step name, a shell comment or a weaker flag set is not a leg. `hostFree` declares whether the layer may list a suite that resolves the pinned host checkout; eb3-ci-required refuses a host-dependent suite in a hostFree layer (CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER). DATED 2026-11-03: ci-full split into ci-product (host-free gate legs) and ci-census (pinned host + census); the standalone census-runtime job is retired into ci-census and removed from knownNonRequired. DATED 2026-11-15 (TINF M6): every node:test leg is now dispatched by `scripts/dispatch-tests.mjs --leg <dispatch_id> --run`. The workflow no longer enumerates a single test file, so the twin list eb3-ci-required graded is gone; a leg declares its population ONCE as `suites[]` (an explicit subset of a larger discovered area) or `areas[]` (the whole area, so a new suite there is collected without editing anything), and the dispatcher refuses an unknown/untracked suite, an empty area or an empty argv. The catalog (`scripts/test-catalog.mjs`) owns the node:test filename predicate both sides use.",
   "aggregate": {
     "workflow": ".github/workflows/ci-required.yml",
     "job": "ci-required",
@@ -40,6 +40,11 @@
             "node",
             "scripts/eb3-impact.mjs"
           ],
+          "check": [
+            "--base",
+            "<value>",
+            "--github-output"
+          ],
           "why": "the selection itself must run"
         },
         {
@@ -47,6 +52,10 @@
           "cmd": [
             "node",
             "scripts/docs-probe.mjs"
+          ],
+          "check": [
+            "--base",
+            "<value>"
           ],
           "why": "MANDATORY per PR (plan: ci-fast 强制 docs:probe)"
         },
@@ -82,7 +91,9 @@
           ],
           "check": [
             "--only",
-            "graph-parse"
+            "graph-parse",
+            "--only",
+            "state-freshness"
           ]
         },
         {
@@ -97,6 +108,14 @@
           "cmd": [
             "node",
             "scripts/eb3-ci-required.mjs"
+          ]
+        },
+        {
+          "id": "contract tier coverage (F-03 — required_tiers proven against executed tiers)",
+          "cmd": [
+            "node",
+            "scripts/contract-tiers.mjs",
+            "--check"
           ]
         },
         {
@@ -125,6 +144,10 @@
           "cmd": [
             "node",
             "scripts/eb3-run-manifest.mjs"
+          ],
+          "check": [
+            "--new-since",
+            "<value>"
           ]
         },
         {
@@ -134,7 +157,8 @@
             "scripts/eb3-evidence-guard.mjs"
           ],
           "check": [
-            "--new-since"
+            "--new-since",
+            "<value>"
           ],
           "why": "Raw census captures (~3.8 MB) were committed into tracked evidence scratch/ three times in two days with only a prose rule against it (PR #396 untracked 32 MB; lanes re-committed 6-8 each). Refuses files the PR ADDS under dev/agent-workflow/evidence/ that match the raw-capture/resample grammar, or exceed 1 MiB without a reasoned entry in dev/ci/evidence-large-allowlist.json. --new-since is required: without a base it would grade against origin/master, which is not the merge ref's first parent."
         },
@@ -157,168 +181,308 @@
           "id": "devex+diag node:test suites",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "devex-diag"
           ],
-          "check": [
-            "tests/u7-3-devex/devex-integration.test.mjs",
-            "tests/diag-call-chain/diag-call-chain.test.mjs"
-          ],
-          "why": "EB4-B/D/E tooling (PR #394) shipped in no CI layer, so a real tool defect (integration-order dropped committed evidence and read untracked files) and a checkout-shape-dependent test (E2) went uncaught. These are node:test suites, not vitest, so they cannot ride a suiteList (eb3-security-run is vitest-only); they are a leg. Host-free: no HOST_DEPENDENCE_MARKERS, the only host reach (devex verify-zero) is not exercised; ci-integration checks out with fetch-depth 0, which E4/E5/D11 need for origin/master."
+          "why": "EB4-B/D/E tooling (PR #394) shipped in no CI layer, so a real tool defect (integration-order dropped committed evidence and read untracked files) and a checkout-shape-dependent test (E2) went uncaught. These are node:test suites, not vitest, so they cannot ride a suiteList (eb3-security-run is vitest-only); they are a leg. Host-free: no HOST_DEPENDENCE_MARKERS, the only host reach (devex verify-zero) is not exercised; ci-integration checks out with fetch-depth 0, which E4/E5/D11 need for origin/master. M6 (2026-11-15): the population is declared HERE, once — `areas[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg devex-diag` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "devex-diag",
+          "areas": [
+            "tests/u7-3-devex",
+            "tests/diag-call-chain"
+          ]
         },
         {
           "id": "tests/checks node:test suites",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "tests-checks"
           ],
-          "check": [
-            "tests/checks/dist-placements.test.mjs",
-            "tests/checks/eslint-node-globals.test.mjs"
-          ],
-          "why": "u7-fixfwd (2026-10-27): `tests/checks/dist-placements.test.mjs` stood at 4 pass / 5 fail on a CLEAN origin/master and nothing ever ran it, so nobody saw — it pinned the #397 38-placement/5-file snapshot while the ledger had grown to 82 placements in 9 files, and its mirror filter (mjs|py) read a legitimately placed manifest.json as untracked. The test now DERIVES its totals from the files on disk (mutation cases assert deltas from the measured N; the filter covers the measured shipped extensions) and THIS leg makes that regression undroppable. `tests/checks/eslint-node-globals.test.mjs` is the sibling suite in the same directory (the collected eslint-globals parity pin) and had the same exposure. Both are node:test, host-free: no ports, no DSH_HOME, no pristine host, so they cannot ride a vitest suiteList. Adding a suite to tests/checks means adding it to this leg's check list — dropping one is CI_LAYER_LEG_WEAKENED."
+          "why": "u7-fixfwd (2026-10-27): `tests/checks/dist-placements.test.mjs` stood at 4 pass / 5 fail on a CLEAN origin/master and nothing ever ran it, so nobody saw — it pinned the #397 38-placement/5-file snapshot while the ledger had grown to 82 placements in 9 files, and its mirror filter (mjs|py) read a legitimately placed manifest.json as untracked. The test now DERIVES its totals from the files on disk (mutation cases assert deltas from the measured N; the filter covers the measured shipped extensions) and THIS leg makes that regression undroppable. `tests/checks/eslint-node-globals.test.mjs` is the sibling suite in the same directory (the collected eslint-globals parity pin) and had the same exposure. Both are node:test, host-free: no ports, no DSH_HOME, no pristine host, so they cannot ride a vitest suiteList. Adding a suite to tests/checks means adding it to this leg's check list — dropping one is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `areas[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg tests-checks` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "tests-checks",
+          "areas": [
+            "tests/checks"
+          ]
         },
         {
           "id": "scripts node:test suite (eb3-tool-acceptance law fixtures — host-free)",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "eb3-tool-acceptance-laws"
           ],
-          "check": [
+          "why": "a5w-law1 (2026-10-31): the eb3 checker's law fixtures were seat-only until this PR gave law 1 (ACCEPT_DISCLOSED_UNSOURCED verbatim-in-source) real mutation enforcement ((m) red leg, (n) whitespace-normalized green leg, (o) self-proving copy-tree control). The #529 review seat proved by exhaustion that NO existing CI leg collected this file, so weakening containsVerbatim to always-true kept every layer green. This leg puts the suite inside ci-integration; its three legs are host-free node:test (synthetic ledgers, injected readFile, os.tmpdir() copy tree — no ports, no DSH_HOME, no pristine host). Dropping this file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg eb3-tool-acceptance-laws` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "eb3-tool-acceptance-laws",
+          "suites": [
             "scripts/eb3-tool-acceptance.test.mjs"
-          ],
-          "why": "a5w-law1 (2026-10-31): the eb3 checker's law fixtures were seat-only until this PR gave law 1 (ACCEPT_DISCLOSED_UNSOURCED verbatim-in-source) real mutation enforcement ((m) red leg, (n) whitespace-normalized green leg, (o) self-proving copy-tree control). The #529 review seat proved by exhaustion that NO existing CI leg collected this file, so weakening containsVerbatim to always-true kept every layer green. This leg puts the suite inside ci-integration; its three legs are host-free node:test (synthetic ledgers, injected readFile, os.tmpdir() copy tree — no ports, no DSH_HOME, no pristine host). Dropping this file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          ]
         },
         {
           "id": "a5sf harness C1",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-harness-c1"
           ],
-          "check": [
+          "why": "R2/BL-10 (2026-11-02): the Alpha.5 Sandbox-First P2 suites inherit the pre-existing TestWorldFactory / shared host-start ledger / Oracle / PR #394 diagnostics, and the harness that adapts them needs a CI-visible C1 proof of its own. Like the #394 and #529 legs, it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the file runs nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the candidate pin is imported as a constant from tests/paths.mjs, and the P1 TS seams load through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-harness-c1` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-harness-c1",
+          "suites": [
             "tests/world-factory/a5sf-harness.test.mjs"
-          ],
-          "why": "R2/BL-10 (2026-11-02): the Alpha.5 Sandbox-First P2 suites inherit the pre-existing TestWorldFactory / shared host-start ledger / Oracle / PR #394 diagnostics, and the harness that adapts them needs a CI-visible C1 proof of its own. Like the #394 and #529 legs, it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the file runs nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the candidate pin is imported as a constant from tests/paths.mjs, and the P1 TS seams load through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          ]
         },
         {
           "id": "a5sf evidence chain R3",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-evidence-r3"
           ],
-          "check": [
+          "why": "BL-11/R3 (2026-11-03): the Alpha.5 Sandbox-First P2 mechanisms each need an auditable chain PER CALL — the durable Alpha.4 consumption row, the compiled MemberPolicy/EffectiveIo (compileEffectiveIo is the ONE computation), the Provider the shipped installer mounted, and the independent oracle effect — lined up on one member instance + generation + invocation id + operation identity, with CHAIN_BROKEN/UNDECIDABLE never collapsed into ALIGNED. The same suite feeds the recorded JSONL to the R4 reader (scripts/a5sf-diag.mjs), including a real durable P6-T4 unit-world ControlService consumption row; no row shape is declared that the reader has not measured. Like the #394/#529/#542 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the chain laws run nowhere. Host-free: a durable unit world, no Host boot, no port, no DSH_HOME, no pristine host tree; the P1 TS seams load through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-evidence-r3` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-evidence-r3",
+          "suites": [
             "tests/world-factory/a5sf-evidence.test.mjs"
-          ],
-          "why": "BL-11/R3 (2026-11-03): the Alpha.5 Sandbox-First P2 mechanisms each need an auditable chain PER CALL — the durable Alpha.4 consumption row, the compiled MemberPolicy/EffectiveIo (compileEffectiveIo is the ONE computation), the Provider the shipped installer mounted, and the independent oracle effect — lined up on one member instance + generation + invocation id + operation identity, with CHAIN_BROKEN/UNDECIDABLE never collapsed into ALIGNED. The same suite feeds the recorded JSONL to the R4 reader (scripts/a5sf-diag.mjs), including a real durable P6-T4 unit-world ControlService consumption row; no row shape is declared that the reader has not measured. Like the #394/#529/#542 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the chain laws run nowhere. Host-free: a durable unit world, no Host boot, no port, no DSH_HOME, no pristine host tree; the P1 TS seams load through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          ]
         },
         {
           "id": "a5sf golden-vector regression corpus",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-golden-corpus"
           ],
-          "check": [
-            "tests/kits/a5sf-golden/compare.test.mjs"
-          ],
-          "why": "R5/BL-13 (2026-11-02): the retired Alpha.5 tool-family golden output vectors were converted into a small regression-comparison corpus for the new Provider/Service/OS-runner lanes. This is NOT an acceptance gate — a MATCH is a regression comparison only, and every RETIRE/UNUSABLE vector is refused before the observation is inspected. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the comparator's refusal laws run nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the P1 path algebra loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          "why": "R5/BL-13 (2026-11-02): the retired Alpha.5 tool-family golden output vectors were converted into a small regression-comparison corpus for the new Provider/Service/OS-runner lanes. This is NOT an acceptance gate — a MATCH is a regression comparison only, and every RETIRE/UNUSABLE vector is refused before the observation is inspected. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly — without this leg the comparator's refusal laws run nowhere. Host-free: no boot, no port, no DSH_HOME, no pristine host tree; the P1 path algebra loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `areas[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-golden-corpus` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-golden-corpus",
+          "areas": [
+            "tests/kits/a5sf-golden"
+          ]
         },
         {
           "id": "a5sf read budget gate C1",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-read-gate-c1"
           ],
-          "check": [
+          "why": "P2-01/BL-14 (2026-11-03): the first P2 vertical slice is the native `read` mechanism, and the slice's own law is that no Host boot may happen without a RECORDED budget grant ({grantId,maxStarts,grantedBy,boundCommit}) on the SHARED host-start ledger. The pool is 0 and a new boot needs a USER ruling, so the gate — not a convention — must refuse BUDGET_NOT_GRANTED for an absent / unreadable / ambiguous / malformed / too-small / foreign-commit / exhausted grant, BEFORE any World or start row exists, and a granted lease must append its one pre-registration row to the SAME ledger through run-record.mjs#logHostStart and boot exactly once. This suite also pins the suite-module contract: an absent grant refuses before the factory/World is touched and records no case verdict. Like the #394/#529/R2/R3/R4 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the gate runs nowhere. Host-free: temp JSONL ledgers, a recording boot stub, no boot, no port, no DSH_HOME, no pristine host tree, and no workspace runtime dependency (the C2 suite that owns the gate is not imported for a Host). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-read-gate-c1` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-read-gate-c1",
+          "suites": [
             "tests/world-factory/a5sf-read-gate.test.mjs"
-          ],
-          "why": "P2-01/BL-14 (2026-11-03): the first P2 vertical slice is the native `read` mechanism, and the slice's own law is that no Host boot may happen without a RECORDED budget grant ({grantId,maxStarts,grantedBy,boundCommit}) on the SHARED host-start ledger. The pool is 0 and a new boot needs a USER ruling, so the gate — not a convention — must refuse BUDGET_NOT_GRANTED for an absent / unreadable / ambiguous / malformed / too-small / foreign-commit / exhausted grant, BEFORE any World or start row exists, and a granted lease must append its one pre-registration row to the SAME ledger through run-record.mjs#logHostStart and boot exactly once. This suite also pins the suite-module contract: an absent grant refuses before the factory/World is touched and records no case verdict. Like the #394/#529/R2/R3/R4 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the gate runs nowhere. Host-free: temp JSONL ledgers, a recording boot stub, no boot, no port, no DSH_HOME, no pristine host tree, and no workspace runtime dependency (the C2 suite that owns the gate is not imported for a Host). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          ]
         },
         {
           "id": "a5sf P2 seam",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-p2-seam"
           ],
-          "check": [
+          "why": "BL-14/P2-01 follow-up (2026-11-03): the P2 blocking seam. A consultation of the shipped guard must be MECHANICALLY OBSERVABLE (the install used to build the closure and never return it) and its record must cross a PROCESS BOUNDARY (an in-process callback cannot reach a C2 suite). This leg pins the additive default-preserving installer input, one record per consultation with the guard's own decision, the plain append-only JSONL sink and its strict reader, the negative control (no consultation writes nothing), fail-closed transport (an unrecorded decision refuses the call), the ONE mount entry point `mountA5sfRealm` (harness `mountRealm()` is its caller), and a CHILD-process mount whose consultations THIS process reads back. Like the #394/#529/R2/R3/R4/BL-14 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the seam's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the P1/P2 TS seams load through the repo's existing scripts/run-tests-hooks.mjs. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-p2-seam` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-p2-seam",
+          "suites": [
             "tests/world-factory/a5sf-p2-seam.test.mjs"
-          ],
-          "why": "BL-14/P2-01 follow-up (2026-11-03): the P2 blocking seam. A consultation of the shipped guard must be MECHANICALLY OBSERVABLE (the install used to build the closure and never return it) and its record must cross a PROCESS BOUNDARY (an in-process callback cannot reach a C2 suite). This leg pins the additive default-preserving installer input, one record per consultation with the guard's own decision, the plain append-only JSONL sink and its strict reader, the negative control (no consultation writes nothing), fail-closed transport (an unrecorded decision refuses the call), the ONE mount entry point `mountA5sfRealm` (harness `mountRealm()` is its caller), and a CHILD-process mount whose consultations THIS process reads back. Like the #394/#529/R2/R3/R4/BL-14 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the seam's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the P1/P2 TS seams load through the repo's existing scripts/run-tests-hooks.mjs. The checker enforces that the matching run invocation carries this file as a token (check[]); it does NOT detect an emptied check[], because an absent list means 'no required token' for every leg (an inherited limitation, disclosed rather than overclaimed) — so keeping the token on the invocation line is a review obligation, not a machine law."
+          ]
         },
         {
           "id": "a5sf P2 wiring",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-p2-wiring"
           ],
-          "check": [
+          "why": "Alpha.5 P2 WIRING (this round): the product-row half of the P2 seam. #548 shipped the mechanism (observable guard consultation + cross-process JSONL transport + the ONE mount entry point) but recorded that the realm was still INERT in a Host because (a) nothing in the product row called the entry point, (b) `tsconfig.build.json` emitted neither `team-services/src` nor `member-io-policy/src`, so `mountA5sfRealm` resolved to nothing from the built runtime, and (c) the committed, freshness-gated dist tree carried no such artifacts. This leg pins the call site that closed (a): the exported helper the live Member setup uses mounts the compiled realm over the REAL P2 installers on a sink path taken from ROW CONFIG, emits ONE fact per consultation with the expected schema, releases both realms on dispose (same-identity remount proves it), does NOTHING when either half of the wiring is absent (no provider call, no mount, no file — the legacy path), and fails CLOSED when the sink cannot write (the consulted call is refused and the base Provider is never asked). It also structurally pins the both-halves guard and the row-kept disposer in `agent-bindings.mjs`. Like the #394/#529/R2/R3/R4/BL-14/P2-seam legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the wiring's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-p2-wiring` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-p2-wiring",
+          "suites": [
             "tests/world-factory/a5sf-p2-wiring.test.mjs"
-          ],
-          "why": "Alpha.5 P2 WIRING (this round): the product-row half of the P2 seam. #548 shipped the mechanism (observable guard consultation + cross-process JSONL transport + the ONE mount entry point) but recorded that the realm was still INERT in a Host because (a) nothing in the product row called the entry point, (b) `tsconfig.build.json` emitted neither `team-services/src` nor `member-io-policy/src`, so `mountA5sfRealm` resolved to nothing from the built runtime, and (c) the committed, freshness-gated dist tree carried no such artifacts. This leg pins the call site that closed (a): the exported helper the live Member setup uses mounts the compiled realm over the REAL P2 installers on a sink path taken from ROW CONFIG, emits ONE fact per consultation with the expected schema, releases both realms on dispose (same-identity remount proves it), does NOTHING when either half of the wiring is absent (no provider call, no mount, no file — the legacy path), and fails CLOSED when the sink cannot write (the consulted call is refused and the base Provider is never asked). It also structurally pins the both-halves guard and the row-kept disposer in `agent-bindings.mjs`. Like the #394/#529/R2/R3/R4/BL-14/P2-seam legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the wiring's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. The checker enforces that the matching run invocation carries this file as a token (check[]); an emptied check[] is NOT machine-detected (an inherited limitation of every leg, disclosed rather than overclaimed) — keeping the token on the invocation line is a review obligation, not a machine law."
+          ]
         },
         {
           "id": "a5sf diag R4",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-diag-r4"
           ],
-          "check": [
-            "tests/a5sf-diag/a5sf-diag.test.mjs"
-          ],
-          "why": "R4/BL-12 (2026-11-02): the approval-bypass / failure-classification report is one node CLI over run rows. It imports the PR #394 classifier (`scripts/diag-call-chain.mjs` FACE_TABLE/attribute/diagnose) and the P1 locator algebra (`path-rules.ts#matchLocator`) instead of restating either, and its suite pins the clean / synthetic-bypass / mis-scoped-allow / classification-pass-through legs, the R1 logical-operation binding (correlation | logicalOperationId | operationFingerprint, unbindable = UNDECIDABLE), the one-allow-per-durable-row law (DUPLICATE_CONSUMPTION), the disclosed a5sf-vocabulary gap and the refusal of an input with no answerable rows. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the suite runs nowhere. Host-free: JSONL fixtures under tests/a5sf-diag/fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seam loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          "why": "R4/BL-12 (2026-11-02): the approval-bypass / failure-classification report is one node CLI over run rows. It imports the PR #394 classifier (`scripts/diag-call-chain.mjs` FACE_TABLE/attribute/diagnose) and the P1 locator algebra (`path-rules.ts#matchLocator`) instead of restating either, and its suite pins the clean / synthetic-bypass / mis-scoped-allow / classification-pass-through legs, the R1 logical-operation binding (correlation | logicalOperationId | operationFingerprint, unbindable = UNDECIDABLE), the one-allow-per-durable-row law (DUPLICATE_CONSUMPTION), the disclosed a5sf-vocabulary gap and the refusal of an input with no answerable rows. Like the #394 and #529 legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the suite runs nowhere. Host-free: JSONL fixtures under tests/a5sf-diag/fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seam loads through the repo's existing scripts/run-tests-hooks.mjs (no new loader, no build). Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `areas[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-diag-r4` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-diag-r4",
+          "areas": [
+            "tests/a5sf-diag"
+          ]
         },
         {
           "id": "a5sf F1 tool plane",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-f1-tool-plane"
           ],
-          "check": [
+          "why": "Alpha.5 F1 EFFECTIVE HALF (2026-11-03): the product-row mount landed in the installer's isolated `fs` scope (`install.ts:182`), so the agent ctx and every tool scope kept the BASE provider and even a fully configured row yielded ZERO consultations. This leg pins the BINDING: `a5sfToolPlaneOf()` names the realm's isolated Member ctx as the Member's TOOL PLANE scope (captured confined fs instance, never a per-call lookup), the glue places the Team tool registrations and the governed plane on that scope, and the permission adapter's per-call fs seam canonicalizes against the SAME instance (no split authority). It drives the REAL tool runtime (`@deepseek-ai/dsh-tools`) with a definition of the SAME SHAPE a preset tool plugin has, and asserts the discriminating pair: the tool-invoked read outside the ceiling is DENIED with exactly ONE `a5sf-guard-consult/1` fact, while the identical shape through the base provider is ALLOWED and writes NOTHING; plus the default path (no realm = no tool-plane scope), the measured three-way split, the post-dispose fail-closed lookup, a no-fail-open pin on a malformed realm (the glue may not try/catch the naming call - review mutation M-g), the routed adapter accessor's semantics (one captured instance: guardless path algebra, guarded effects), and a structural pin of the glue call site. The four adapter CALL SITES are structural-pin only and disclosed as such: the row closure is not exported and driving it needs the full live dependency set (evidence README section 8.6, mutation receipt mutation-adapter.log). Limits are stated in the suite header: no Host boot, no live row, and the NATIVE preset `read` row is NOT covered (the upstream preset registry eagerly mounts preset plugins under its own generation scope before any agent exists; that is the P3 native takeover, BL-22). Like the #394/#529/R2/R3/R4/BL-14/P2-seam/P2-wiring legs it is node:test and ci-integration lists its files explicitly; without this leg the binding's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-f1-tool-plane` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-f1-tool-plane",
+          "suites": [
             "tests/world-factory/a5sf-f1-ctx.test.mjs"
-          ],
-          "why": "Alpha.5 F1 EFFECTIVE HALF (2026-11-03): the product-row mount landed in the installer's isolated `fs` scope (`install.ts:182`), so the agent ctx and every tool scope kept the BASE provider and even a fully configured row yielded ZERO consultations. This leg pins the BINDING: `a5sfToolPlaneOf()` names the realm's isolated Member ctx as the Member's TOOL PLANE scope (captured confined fs instance, never a per-call lookup), the glue places the Team tool registrations and the governed plane on that scope, and the permission adapter's per-call fs seam canonicalizes against the SAME instance (no split authority). It drives the REAL tool runtime (`@deepseek-ai/dsh-tools`) with a definition of the SAME SHAPE a preset tool plugin has, and asserts the discriminating pair: the tool-invoked read outside the ceiling is DENIED with exactly ONE `a5sf-guard-consult/1` fact, while the identical shape through the base provider is ALLOWED and writes NOTHING; plus the default path (no realm = no tool-plane scope), the measured three-way split, the post-dispose fail-closed lookup, a no-fail-open pin on a malformed realm (the glue may not try/catch the naming call - review mutation M-g), the routed adapter accessor's semantics (one captured instance: guardless path algebra, guarded effects), and a structural pin of the glue call site. The four adapter CALL SITES are structural-pin only and disclosed as such: the row closure is not exported and driving it needs the full live dependency set (evidence README section 8.6, mutation receipt mutation-adapter.log). Limits are stated in the suite header: no Host boot, no live row, and the NATIVE preset `read` row is NOT covered (the upstream preset registry eagerly mounts preset plugins under its own generation scope before any agent exists; that is the P3 native takeover, BL-22). Like the #394/#529/R2/R3/R4/BL-14/P2-seam/P2-wiring legs it is node:test and ci-integration lists its files explicitly; without this leg the binding's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. The checker enforces that the matching run invocation carries this file as a token (check[]); an emptied check[] is NOT machine-detected (an inherited limitation of every leg, disclosed rather than overclaimed) - keeping the token on the invocation line is a review obligation, not a machine law."
+          ]
         },
         {
           "id": "scripts node:test suite (ci-local selection laws — host-free)",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "ci-local-selection-laws"
           ],
-          "check": [
+          "why": "#552 (2026-11-03, external review of #552 problem B): `scripts/ci-local.test.mjs` pins the L0 selector's laws — test-file detection, package attribution, runner dispatch by import (including the quoted-string false positive), the directory-prefix vitest filter (a glob matched zero files), and the rule that an unrecognised path is `undetermined` and exits 2 rather than reporting 'no tests' (`eslint.config.mjs` was the path that proved it). The review's finding was that NO cloud lane collected the file, so a green L2 proved nothing about these rules; this leg is the collection. Host-free node:test: pure functions, no ports, no DSH_HOME, no pristine host, no build. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg ci-local-selection-laws` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "ci-local-selection-laws",
+          "suites": [
             "scripts/ci-local.test.mjs"
+          ]
+        },
+        {
+          "id": "scripts node:test suite (TINF M0 baseline tools — host-free)",
+          "cmd": [
+            "node",
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "tinf-m0-baseline"
           ],
-          "why": "#552 (2026-11-03, external review of #552 problem B): `scripts/ci-local.test.mjs` pins the L0 selector's laws — test-file detection, package attribution, runner dispatch by import (including the quoted-string false positive), the directory-prefix vitest filter (a glob matched zero files), and the rule that an unrecognised path is `undetermined` and exits 2 rather than reporting 'no tests' (`eslint.config.mjs` was the path that proved it). The review's finding was that NO cloud lane collected the file, so a green L2 proved nothing about these rules; this leg is the collection. Host-free node:test: pure functions, no ports, no DSH_HOME, no pristine host, no build. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          "why": "TINF M0 (2026-11-14, docs/plans/memo/agent-testing-infrastructure-20261114/ M0): the five baseline tools landed with ONE host-free suite covering their laws — the five false-PASS paths of the draft-first ready helper (unknown mergeability, stale local HEAD, missing upstream, a newer pending check-run, comment pagination), real object-DB bytes instead of `--numstat` lines in evidence-budget (binary blobs included, window = literal last N first-parent commits), the UNKNOWN reason classes in coverage-audit (kit/evidence-only is NOT a zero-test 'determined'), the collected-or-exempt split in test-collection-audit, and step-median arithmetic in census-profile (a skipped step is not 0 s). One suite, not five: until M1 discovery lands, every node:test leg is a hand-written entry in this manifest AND in the workflow run line, which is exactly the anti-pattern test-collection-audit measures (97 tracked in-scope suites, 79 uncollected at this commit). Host-free: pure functions plus one read-only `git ls-files`; no port, no DSH_HOME, no pristine host, no build, no network. Removing this file from `suites[]` is `CI_SUITE_ABSENT`; the workflow step names only the leg id, so it cannot be weakened separately. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg tinf-m0-baseline` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "tinf-m0-baseline",
+          "suites": [
+            "scripts/tinf-m0.test.mjs"
+          ]
+        },
+        {
+          "id": "test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free)",
+          "cmd": [
+            "node",
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "tinf-instruments"
+          ],
+          "why": "TINF M1 (2026-11-14, docs/plans/memo/agent-testing-infrastructure-20261114/ M1): the Test Catalog is a shadow instrument — discovery from git ls-files plus the include/exclude arrays of the vitest configs a lane actually runs (parsed from those files, never copied; a non-default config such as vitest.poc.config.ts only explains why a suite is uncollected, it never makes it collected), a canonical catalog_digest, a critical-contract binding table (dev/ci/test-contracts.json), and a two-way diff against the file lists these workflows still hand-maintain. It is NOT authority: nothing consults it to decide what runs, because two authorities would be worse than the one we have. Its refusal set is the deliverable: DUPLICATE_ID, CONTRACT_WITHOUT_TEST, CONTRACT_UNKNOWN_TEST (deleting a contract's only test is red, not a smaller catalog), STALE_EXCLUDE, UNKNOWN_DRIVER, INSTRUMENT_DRIVER_MISSING, and UNCOLLECTED_GREW — the last is a ratchet against the 91 uncollected suites measured at landing, so a newly discovered suite cannot be silently accepted and the number may only go down. Host-free: no Host boot, no DSH_HOME, no build, no network; one read-only `git ls-files` and two file reads. TINF M3 (2026-11-14) joins this SAME leg and the SAME node --test invocation with two more host-free instrument suites: scripts/tinf-timing.test.mjs (the shadow census timer — a wrapped throw is recorded `failed` and re-thrown, a sync leg stays sync, an unwritable timing dir is a warning and never a red census, and the summarizer refuses empty / foreign / tampered / census-less input with exit 2, the same zero-second-is-a-wrong-answer rule census-profile.mjs follows) and scripts/host-cache-key.test.mjs (the §3 host cache key is a canonical digest — field order cannot change it, every single field does — a fact that cannot be derived refuses instead of substituting a placeholder, and verifyHostArtifact answers OK only after entry point + recorded identity + file count + tree digest all agree, INFRA_ERROR for a missing entry point / one-byte change / wrong commit / missing expectation, MISS for an absent directory). Neither suite switches the cache on; nothing consults a key in CI. TINF M4 (2026-11-14, same SHADOW milestone) joins this SAME leg and the SAME node --test invocation with two more host-free suites: scripts/census-plan.test.mjs (the plan cannot be derived from a remembered root count — the root set comes from the ROOT vitest.config.ts through the catalog's own include[] matching and M3's rootOf, it equals the 12 roots / 712 files the current population reports (705 at the last real census plus the 7 batch-B1 compatibility suites), and a missing/unparsable/matched-nothing config REFUSES by name; one task per (root, capture); the two captures of a root are one indivisible group because parallelising them is unproven; est_ms is a hint that can be null and never drops a task; plan_digest moves on every task field; --verify-plan refuses on digest drift, identity drift and task-set drift) and scripts/census-aggregate.test.mjs (the fail-closed order of spec §5 rules 1–6 as named refusals and named non-PASS verdicts: omitted shard, duplicate shard/task id, extra and missing tasks, each identity field, a shard that exited 0 carrying a FAIL, INCOMPLETE/CANCELLED/INFRA_ERROR, a truncated artifact, a one-capture plan, a plan whose digest was recomputed after a task edit, a task with no terminal state, the three oracle classes, and the POSITIVE control that a complete consistent set is PASS). Neither tool decides what CI runs: no workflow, no Required context and no ci-required input reads the plan or the summary, and no workflow/matrix/concurrency/matrix change is in this PR — the shadow workflow of spec §6 step 2 is deliberately deferred (it would change eb3-ci-required's workflow count and the manifest shape, which must be reviewed separately). Removing either file from `suites[]` is `CI_SUITE_ABSENT`; the workflow step names only the leg id, so the two cannot drift apart. TINF M5 (2026-11-14) adds scripts/census-cutover.test.mjs to this SAME leg's `suites[]`, so it runs in the same `node --test` invocation: it pins the CUTOVER, not a shadow. The census plan path is driven through the real `LEGS.census` function (and the real CLI for the token/exit cases) with a RECORDED capture directory (`--census-dry-run`), so no host and no suite are needed: the positive control is 24 planned tasks / 24 observed / PASS, and every refusal the milestone names is itself asserted RED — a plan refusal on a tree whose root config cannot be derived, the M4 aggregator refusing a one-capture plan (CAPTURES_INSUFFICIENT), a missing second capture (DRYRUN_CAPTURE_MISSING), a shard that exited 0 while carrying a FAIL (aggregate FAIL / TASK_STATE_FAIL), a dropped root (TASK_MISSING / INCOMPLETE), and an absent build stamp (BUILD_STAMP_MISSING, with no placeholder written). The same file pins the M5 build stamp: the digest is sha256 over canonical JSON of the REAL install-surface bytes (one changed byte moves it, built_at does not), an absent or empty surface refuses, a tampered artifact list is caught by the stamp's own digest, and a stamp from another tree refuses. This suites the plan path and the stamp only; the census population, the three Required contexts, the job names and census-runtime.yml's step shape are unchanged, and `--census-execution legacy` remains the default so the leg is green before and after the one-line workflow switch. Removing this file from `suites[]` is `CI_SUITE_ABSENT`; the workflow step names only the leg id, so it cannot be weakened separately. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg tinf-instruments` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`. M7-A (2026-11-15) joins this SAME leg and the SAME node --test invocation with the two HOST-FREE halves of the real-host slice: tests/world-factory/m7a-real-slice-unit.test.mjs (the durable session-log reader over concatenated zstd frames and the nested `message.toolCallId` pairing, the DISPATCHED/DENIED/COMPLETED mapping, the wire script driver sharing ONE agent-script/1 law with the in-process adapter, and the witness provenance seal that makes a hand-built row INSTRUMENT_ERROR under `witnessProvenance: 'witnessed'`) and tests/world-factory/m7a-real-slice-host-state.test.mjs (the live suite's host-state contract: an absent host is a machine-readable refusal plus skips, M7A_REQUIRE_PINNED_HOST=1 makes it a hard failure). They ride THIS leg rather than a new one because of the M6 parity law: `scripts/dispatch-tests.mjs --parity` reports every dispatch step that had no `node --test` argv on the M6 base as UNCONVERTED, so a brand-new leg would be a permanent parity problem; the C2 half (one real boot, five arms, oracle verdicts) cannot run here at all — it lives in ci-census, where the pinned host is provisioned and REQUIRED. Neither file resolves the host: no boot, no port, no DSH_HOME, no pristine tree; the testkit TS modules load through the repo's existing scripts/run-tests-hooks.mjs. B2 (2026-11-16, batch B2 of docs/plans/memo/uncollected-audit-20261115/) joins this SAME leg with EIGHT of the ten host-free authority suites (authority-dual-read, authority-snapshot-isolated, candidate-track-negative-control, ci-snapshot-reader, current-authority-pointer, probe-candidate, sync-candidate-resolver, verify-candidate) declared EXPLICITLY in `suites[]` rather than through `areas[]: [tests/s2-authority]`: the tenth, consumer-candidate.test.mjs, is a latent test-side defect that only reds once it is collected — its C10 case compares `runtime`, which carries the LIVE `git status --porcelain` count of the repository, so a concurrent sibling suite that stages or removes a temp path between the two builds makes `structure_same=false` (measured in this leg: dirty_paths 11 vs 12). It stays UNCOLLECTED and is named in dev/ci/uncollected-baseline.json until its assertion is repaired in its own reviewed change (the fix is to drop `runtime` from that structural comparison — the field is documented as live state and is not part of renderView). The NINTH candidate, freeze-candidate.test.mjs, was collected in the first cut of this batch and UN-COLLECTED after the hosted run: it PASSED the hosted leg on head e0514df18 (✔ freeze-candidate.test.mjs (3316.5ms), leg exit 0) and FAILED the same leg on head 49bb277f with byte-identical inputs — the dispatch set is the same `set=sha256:a7d049433f021adca492385969a54634a157fe36111e63c0a348a51ac7e27c48`, and `git diff e0514df18 49bb277f` touches neither the suite, nor scripts/freeze-candidate.mjs, nor dev/engineering/candidates/. The failing case was `--check DETECTS a tampered content_digest (exit 1, DIGEST MISMATCH)` → `expected DIGEST ... MISMATCH`; exit was 1 but the DIGEST line did not match, and it reproduces in neither the worktree nor a clean full clone (3/3 green), so the runner-side cause is UNKNOWN. Unknown nondeterminism is disqualifying on its own: it stays UNCOLLECTED until the case is root-caused. Note the HISTORY class explicitly, because it is adjacent but NOT the cause of that failure: four of the eight collected suites (ci-snapshot-reader, probe-candidate, sync-candidate-resolver, verify-candidate) read pinned ANCESTOR commits through `git show <rev>:<path>`, so they are green only where the checkout carries real history. That history is a DECLARED contract, not runner luck — ci-integration checks out with `fetch-depth: 0`; census-runtime.yml requires `fetch-depth: 0` by root ruling (2026-10-22) and its PIN precheck fails loudly (`the clone is too shallow for the census ancestor claims`); and the only depth-1 checkouts in ci-required.yml read the manifest and grade verdicts, never a suite. Measured 2026-11-16: a `--depth 1` clone of this branch reds four of these (plus freeze-candidate) because the pinned objects are absent, while the same suites pass in the depth-0 shape the workflows declare — so a future workflow that runs suites at depth 1 must either fetch the pinned objects deliberately (failing loudly when it cannot) or these four must come out. They are the repo-governance machine's own regression laws: the dev/engineering pointer's transactional switch and byte-exact restore, the F0 snapshot digest and publisher whitelist, dual-read divergence/missing/derivation-refusal diagnostics, and the candidate freeze/probe/sync/verify pipeline with its digest and schema refusals. They are node:test files with a hand-rolled `t()` harness (one `node:test` case per file; a failing `t()` exits 1). All TEN files were measured (133 cases, ~14 s serial) and all ten are green with the pinned host tree bind-mounted EMPTY; the eight above are collected here and the two below are held back for two DIFFERENT reasons — live-repo state at check time (consumer-candidate) and a hosted-runner-only flake with no reproduced cause (freeze-candidate). They ride THIS leg for the same M6 parity reason M7-A's two suites do: a brand-new dispatch step has no `node --test` argv at the parity base (`e5bf05670`) and would be a permanent UNCONVERTED problem, so `--parity` and the pinned evidence in scripts/test-catalog.test.mjs could not stay at problems=0. The list is explicit (not an area) precisely so neither held-back suite can be swept in by adding a file; an untracked entry is `DISPATCH_SUITE_UNTRACKED`, an empty declaration is `CI_LAYER_LEG_NO_SUITES`, and the workflow step names only the leg id. B3 (2026-11-16, batch B3 of docs/plans/memo/uncollected-audit-20261115/) joins this SAME leg with the 28 world-factory suites the audit called host-free — RE-MEASURED, because that audit's own rev-2 records that its first host-free claim was wrong: `findTestRepoRoot()` walks up out of `.worktrees/<task>` into the main checkout, where `tests/deepseek-harness-test-use` exists. Each of the 31 B3 candidates was re-run with that tree ABSENT (the parent `tests/` bind-mounted empty inside `unshare -m -r`), with `A5SF_REQUIRE_PINNED_HOST=1` and `A5SF_PD31_HOST_TREE=/nonexistent`, on a clean `pnpm install --frozen-lockfile` tree (the CI install shape, no NODE_PATH). 28 are green there (426 arms, 420 pass, 0 fail, 6 source-declared PRE-FIX/PIN/FORK skips, 6.5 s) and are the `suites[]` appended here, which takes this leg from 20 to 48 suites; the other 3 stay UNCOLLECTED with their measured red output recorded in docs/plans/memo/b3-collect-20261116/README.md: `a5sf-governed-preset` and `a5sf-pd14-sandbox-root` are red in the CI install shape because they `require.resolve` `@deepseek-ai/dsh-persona`, `@deepseek-ai/dsh-sandbox-policy` and `@deepseek-ai/dsh-sandbox-local` from `packages/runtime/package.json`, and NONE of the three is declared there OR in the root manifest — their green in the audit came from `NODE_PATH=node_modules/.pnpm/node_modules`, which no workflow sets; the correct repair site is `packages/runtime/package.json` `devDependencies` on all three (a manifest/lockfile change, its own reviewed PR), and `a5sf-debt-register` pins a PRODUCT-DEBT-REGISTER anchor (`tests/world-factory/lib/world-factory.mjs#L604`) that #779 moved to :614. They ride THIS leg rather than a new one for the SAME M6 parity reason as M7-A and B2: a new dispatch step has no `node --test` argv at the parity base (`e5bf05670`), so `--parity` could not stay at problems=0 (measured on the first revision of this change: problems=1, UNCONVERTED step) and the pinned evidence in scripts/test-catalog.test.mjs would record a permanent UNCONVERTED step. THE ENV IS PART OF THE DECLARATION: this leg's `env` sets `A5SF_REQUIRE_PINNED_HOST=1`, so if a suite that CAN refuse on an absent host is ever added here, absence is a RED, not `NOT_RUN` with 15 skips (measured on the deferred B4 set: `a5sf-pty-contract` on a genuinely absent tree exits 0 with `A5SF-PTY-CONTRACT-HOST-REFUSED … skipped=15 cases=15 verdict=NOT_RUN`). `eb3-ci-required` grades both halves: the workflow step must carry the declared env (`CI_LAYER_LEG_ENV_MISSING`) and any hostFree leg whose `suites[]` names a refusal-capable suite must declare it (`CI_HOST_REFUSAL_UNGUARDED`). THREE of the 28 read pinned ANCESTOR commits through `git show` / `git cat-file` (`a5sf-pd26-confined-skill` at 06adbf850, `a5sf-pd29-goal-stop` at 24d2cf760, `a5sf-pd34-member-stop`), so this leg depends on the job's declared `fetch-depth: 0` checkout exactly as B2's three do — a depth-1 checkout would red them for a reason that is not the code, which is why the leg was also verified in a full clone.",
+          "dispatch_id": "tinf-instruments",
+          "env": {
+            "A5SF_REQUIRE_PINNED_HOST": "1"
+          },
+          "suites": [
+            "scripts/test-catalog.test.mjs",
+            "scripts/tinf-timing.test.mjs",
+            "scripts/host-cache-key.test.mjs",
+            "scripts/census-plan.test.mjs",
+            "scripts/census-aggregate.test.mjs",
+            "scripts/census-cutover.test.mjs",
+            "scripts/dispatch-tests.test.mjs",
+            "scripts/eb3-ci-required.test.mjs",
+            "scripts/tinf-trust-closeout.test.mjs",
+            "scripts/contract-tiers.test.mjs",
+            "tests/world-factory/m7a-real-slice-unit.test.mjs",
+            "tests/world-factory/m7a-real-slice-host-state.test.mjs",
+            "tests/s2-authority/authority-dual-read.test.mjs",
+            "tests/s2-authority/authority-snapshot-isolated.test.mjs",
+            "tests/s2-authority/candidate-track-negative-control.test.mjs",
+            "tests/s2-authority/ci-snapshot-reader.test.mjs",
+            "tests/s2-authority/current-authority-pointer.test.mjs",
+            "tests/s2-authority/probe-candidate.test.mjs",
+            "tests/s2-authority/sync-candidate-resolver.test.mjs",
+            "tests/s2-authority/verify-candidate.test.mjs",
+            "tests/world-factory/a5sf-acceptance-preflight.test.mjs",
+            "tests/world-factory/a5sf-assembly.test.mjs",
+            "tests/world-factory/a5sf-ask-precedence.test.mjs",
+            "tests/world-factory/a5sf-bash.test.mjs",
+            "tests/world-factory/a5sf-capability-defaults.test.mjs",
+            "tests/world-factory/a5sf-dev-live-slots.test.mjs",
+            "tests/world-factory/a5sf-dev-live.test.mjs",
+            "tests/world-factory/a5sf-dual-plane.test.mjs",
+            "tests/world-factory/a5sf-instrument-graph.test.mjs",
+            "tests/world-factory/a5sf-p01-realm-binding.test.mjs",
+            "tests/world-factory/a5sf-pd1-revocation-escape.test.mjs",
+            "tests/world-factory/a5sf-pd12-bash-governance.test.mjs",
+            "tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs",
+            "tests/world-factory/a5sf-pd26-confined-skill.test.mjs",
+            "tests/world-factory/a5sf-pd29-goal-stop.test.mjs",
+            "tests/world-factory/a5sf-pd33-preview-e2e.test.mjs",
+            "tests/world-factory/a5sf-pd34-member-stop.test.mjs",
+            "tests/world-factory/a5sf-run-record-binding.test.mjs",
+            "tests/world-factory/a5sf-search-live.test.mjs",
+            "tests/world-factory/a5sf-window-taxonomy.test.mjs",
+            "tests/world-factory/arm-verdict.test.mjs",
+            "tests/world-factory/binding-digests.test.mjs",
+            "tests/world-factory/port-probe.test.mjs",
+            "tests/world-factory/u6-arc-d.test.mjs",
+            "tests/world-factory/u7-tbash-offline-drive.test.mjs",
+            "tests/world-factory/u7-tbash-seam.test.mjs",
+            "tests/world-factory/u7-tbash.test.mjs",
+            "tests/world-factory/u7-uileg0-answer-drive.test.mjs"
+          ]
         },
         {
           "id": "a5sf native route C",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-native-route-c"
           ],
-          "check": [
+          "why": "Alpha.5 ROUTE C (2026-11-03): the NATIVE preset tool rows (`@deepseek-ai/dsh-tool-fs` read/write/edit) were ruled out of the a5sf confinement lane as CORE_SEAM_BLOCKER - the argument being that the preset registry mounts them under its own generation scope, structurally never below the agent scope, so no plugin-side registration could shadow them. That argument is wrong at this baseline: the preset scope is the agent scope's PARENT (`bindScopeParent(agentKey, generationKey)`), so a registration made from the Member's isolated scope - `root.isolate('fs', label)`, whose DSH scope key is still the agent's - is an OWN registration that legally shadows the inherited preset definition, and its body resolves the confined Provider. This leg pins the wiring that makes that safe: `config.a5sfNativeToolModules` (row-composition specifiers, absent = pre-route-C byte-identical) is imported by the row helper and re-mounted inside the Member's isolated scope by `mountA5sfRealm`; the mount is SURFACE-NEUTRAL OR REFUSED (a name that appears or disappears in the agent's model-visible set disposes the realm and raises, because an own registration sits OUTSIDE the inherited `tools.restrict` filter and would otherwise silently re-enable a `builtinToolDeny` lane); disposal disposes the re-mounted fibers BEFORE the confined Provider; and exactly one Member ceiling per agent scope is enforced (every Member realm shares one scope key, so a second re-mount of the same names collides). The four arms are N1 config reader (absent/valid/malformed), N2 the discriminating pair (before the mount the SAME native read on the preset scope is served by the BASE provider; after it the identical read outside the ceiling is REFUSED with exactly one `a5sf-guard-consult/1` fact and an inside read still succeeds, ONE model-visible `read` and ONE `tool:read` section), N3 surface neutrality (a deny-hidden native tool makes the mount refuse and leaves no shadow), N4 teardown (after dispose the preset definition is visible again on BASE - confinement does not outlive the realm, disclosed). The suite uses a FIXTURE native module with the shipped tool packages' injection shape; the REAL `@deepseek-ai/dsh-tool-fs` module is measured by the probe in dev/agent-workflow/evidence/a5sf-native-route-c/probe-route-c.mjs (route A/B/B2/C/D legs, record `ctxBoundViewIsAgentScope`), which is the receipt for the real package. Like the #394/#529/R2/R3/R4/BL-14/P2 legs it is node:test and ci-integration lists its files explicitly; without this leg route C's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. Partnered with the F1 leg this closes the 'native preset read is not covered' limit F1 disclosed - but only for tools the Member may already see. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-native-route-c` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-native-route-c",
+          "suites": [
             "tests/world-factory/a5sf-native-route-c.test.mjs"
-          ],
-          "why": "Alpha.5 ROUTE C (2026-11-03): the NATIVE preset tool rows (`@deepseek-ai/dsh-tool-fs` read/write/edit) were ruled out of the a5sf confinement lane as CORE_SEAM_BLOCKER - the argument being that the preset registry mounts them under its own generation scope, structurally never below the agent scope, so no plugin-side registration could shadow them. That argument is wrong at this baseline: the preset scope is the agent scope's PARENT (`bindScopeParent(agentKey, generationKey)`), so a registration made from the Member's isolated scope - `root.isolate('fs', label)`, whose DSH scope key is still the agent's - is an OWN registration that legally shadows the inherited preset definition, and its body resolves the confined Provider. This leg pins the wiring that makes that safe: `config.a5sfNativeToolModules` (row-composition specifiers, absent = pre-route-C byte-identical) is imported by the row helper and re-mounted inside the Member's isolated scope by `mountA5sfRealm`; the mount is SURFACE-NEUTRAL OR REFUSED (a name that appears or disappears in the agent's model-visible set disposes the realm and raises, because an own registration sits OUTSIDE the inherited `tools.restrict` filter and would otherwise silently re-enable a `builtinToolDeny` lane); disposal disposes the re-mounted fibers BEFORE the confined Provider; and exactly one Member ceiling per agent scope is enforced (every Member realm shares one scope key, so a second re-mount of the same names collides). The four arms are N1 config reader (absent/valid/malformed), N2 the discriminating pair (before the mount the SAME native read on the preset scope is served by the BASE provider; after it the identical read outside the ceiling is REFUSED with exactly one `a5sf-guard-consult/1` fact and an inside read still succeeds, ONE model-visible `read` and ONE `tool:read` section), N3 surface neutrality (a deny-hidden native tool makes the mount refuse and leaves no shadow), N4 teardown (after dispose the preset definition is visible again on BASE - confinement does not outlive the realm, disclosed). The suite uses a FIXTURE native module with the shipped tool packages' injection shape; the REAL `@deepseek-ai/dsh-tool-fs` module is measured by the probe in dev/agent-workflow/evidence/a5sf-native-route-c/probe-route-c.mjs (route A/B/B2/C/D legs, record `ctxBoundViewIsAgentScope`), which is the receipt for the real package. Like the #394/#529/R2/R3/R4/BL-14/P2 legs it is node:test and ci-integration lists its files explicitly; without this leg route C's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. Partnered with the F1 leg this closes the 'native preset read is not covered' limit F1 disclosed - but only for tools the Member may already see."
+          ]
         },
         {
           "id": "a5sf product assembly",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-product-assembly"
           ],
-          "check": [
+          "why": "Alpha.5 PRODUCT ASSEMBLY (2026-11-05): the confined Member realm was reachable only from evidence rows and test presets, so a World composed from the acceptance preset alone gave NO agent a confined face (measured by the search live round). This leg pins the product-visible declaration `config.a5sfMemberPolicies` and the SAME install/mount seams driven from it: a declared template gets its ceiling + binding realm with no evidence path and no `teamA5sfRealm` service, an undeclared template stays byte-identical, the compiled INTERSECTION is what binds in both directions, and every unexpressible face refuses typed before any call (SUBPROCESS_UNCONFINED_REALM / NETWORK_UNCONFINED_REALM / REALM_DECLARATION_INVALID / REALM_DECLARATION_EXCEEDS_BLUEPRINT). The fix round this leg carries (review findings B1-B8) adds: PA8 (a legal v4 `mode: all` + `deny` restriction is refused at the realm with IO_READ_DENIED and zero provider reads - the projector used to collapse it to 'no-additional-narrowing' and DROP the deny), PA9/PA12 (policy-source fix, 2026-11-05: the declaration is the EXCEPTION path and `config.blueprintSource` is REQUIRED and must resolve to the same team AND revision - absent/blank/unparseable/other-team/other-revision refuses MEMBER_POLICY_WITHOUT_BLUEPRINT, a widening ceiling refuses REALM_DECLARATION_EXCEEDS_BLUEPRINT, and a strictly narrower declaration is the typed residual declaration-narrows-bound-blueprint), PA13/PA14 (derivation is the PRODUCT path: `config.a5sfMemberAuthority` + the bound blueprint produce the plan with NO `a5sfMemberPolicies`, and the derived and declared paths are asserted to compile to the SAME effective lanes), PA15 (a Team-scoped `toolBindings` family is NAMED as blueprint-tool-bindings-not-member-scoped, never invented into a per-Member binding), PA10 (B3/B4: `authorization` is validated against the shipped v4 table and `deny` is refused instead of mounted; the restriction family rides the shipped `toolBindings` grammar so a bogus implementationOrigin or a scalar allow is refused, not silently deny-all), and PA11 (B8: the contentHash, hence the MemberPolicy revision, covers the bindings). Like the #394/#529/R2/R3/R4/BL-14/P2/F1/route-C legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the product assembly's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-product-assembly` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`.",
+          "dispatch_id": "a5sf-product-assembly",
+          "suites": [
             "tests/world-factory/a5sf-product-assembly.test.mjs"
-          ],
-          "why": "Alpha.5 PRODUCT ASSEMBLY (2026-11-05): the confined Member realm was reachable only from evidence rows and test presets, so a World composed from the acceptance preset alone gave NO agent a confined face (measured by the search live round). This leg pins the product-visible declaration `config.a5sfMemberPolicies` and the SAME install/mount seams driven from it: a declared template gets its ceiling + binding realm with no evidence path and no `teamA5sfRealm` service, an undeclared template stays byte-identical, the compiled INTERSECTION is what binds in both directions, and every unexpressible face refuses typed before any call (SUBPROCESS_UNCONFINED_REALM / NETWORK_UNCONFINED_REALM / REALM_DECLARATION_INVALID / REALM_DECLARATION_EXCEEDS_BLUEPRINT). The fix round this leg carries (review findings B1-B8) adds: PA8 (a legal v4 `mode: all` + `deny` restriction is refused at the realm with IO_READ_DENIED and zero provider reads - the projector used to collapse it to 'no-additional-narrowing' and DROP the deny), PA9/PA12 (policy-source fix, 2026-11-05: the declaration is the EXCEPTION path and `config.blueprintSource` is REQUIRED and must resolve to the same team AND revision - absent/blank/unparseable/other-team/other-revision refuses MEMBER_POLICY_WITHOUT_BLUEPRINT, a widening ceiling refuses REALM_DECLARATION_EXCEEDS_BLUEPRINT, and a strictly narrower declaration is the typed residual declaration-narrows-bound-blueprint), PA13/PA14 (derivation is the PRODUCT path: `config.a5sfMemberAuthority` + the bound blueprint produce the plan with NO `a5sfMemberPolicies`, and the derived and declared paths are asserted to compile to the SAME effective lanes), PA15 (a Team-scoped `toolBindings` family is NAMED as blueprint-tool-bindings-not-member-scoped, never invented into a per-Member binding), PA10 (B3/B4: `authorization` is validated against the shipped v4 table and `deny` is refused instead of mounted; the restriction family rides the shipped `toolBindings` grammar so a bogus implementationOrigin or a scalar allow is refused, not silently deny-all), and PA11 (B8: the contentHash, hence the MemberPolicy revision, covers the bindings). Like the #394/#529/R2/R3/R4/BL-14/P2/F1/route-C legs it is node:test (not vitest, so it cannot ride a suiteList) and ci-integration lists its files explicitly; without this leg the product assembly's laws run nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree; the TS seams load through the repo's existing scripts/run-tests-hooks.mjs. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          ]
         },
         {
           "id": "a5sf fs contract (layer B — per-native-tool, host-free)",
           "cmd": [
             "node",
-            "--test"
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "a5sf-fs-contract-layer-b"
           ],
-          "check": [
+          "why": "Alpha.5 LAYER B on the FS face (2026-11-07): layer A pins the LANE (ceiling ∩ restriction, allow/deny/ask, member isolation, fact attribution) but nothing pinned the PER-NATIVE-TOOL contract inside an admitted call, so 'read/write/edit are accepted' rested on lane arms plus live rows. This leg pins four tool-specific properties against the REAL pinned `@deepseek-ai/dsh-tool-fs` module, the REAL pinned `LocalFileSystem` and the REAL `fs-observation-policy`, through the PRODUCT route-C seam (`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`): FSB-EDIT-1/2 the version guard is policy-supplied and provider-enforced (a stale edit is one typed FS_STALE_VERSION, zero bytes changed, exactly one editText call and one allow fact; a fresh edit still writes); FSB-READ-1/2 the 10 MiB threshold ROUTES to streamText (readText zero), the window is byte-capped with the exact continuation footer, the past-window bytes never reach the model and the continuation streams too, while a below-threshold file buffers; FSB-ABORT-1/2 an abort after staging but before publication is FS_ABORTED, leaves the target byte-identical and removes the staging dir, while the un-aborted control publishes; FSB-IMG-1/2/3 read_image's attachment contract (exactly one attachment with the file's real metadata after stat→readBytes; a refused image is one stat deny with zero reads and zero attachment bytes) and the routed-composition failure GAP-FS-CONTRACT-1 today (routed definition shadows the preset one and fails closed with zero reads/attachments/facts). The arms assert ORDER and IDENTITY, never mere presence; six mutation controls (drop version guard / under-report stat size / drop write signal / silent attachment store / post-fix composition) each red exactly their own arm, so a green run cannot be vacuous — `dev/agent-workflow/evidence/a5sf-fs-face/mutations.mjs`. Like the #394/#529/R2/R3/R4/BL-14/P2/F1/route-C/product-assembly legs it is node:test and ci-integration lists its files explicitly; without this leg the tool contract runs nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree at run time except the pinned module entries resolved through tests/paths.mjs; the TS seams load through scripts/run-tests-hooks.mjs. HOST-REQUIRED: every arm loads the pinned baseline's BUILT `lib/` entries (`packages/fs/{tool-fs,fs-local,fs-observation-policy}/lib/index.js`); a hosted ci-integration runner provisions neither that checkout (gitignored) nor a build (`lib/` is not committed in the pinned tree either), so on such a runner the suite prints ONE machine-readable `A5SF-FS-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=9 cases=9 verdict=NOT_RUN pinned=<40-hex>` line and registers all nine cases as SKIPPED (`pass 0`) — a declared refusal counted as NOT RUN, never as pass; a host that is present but incomplete is a HARD failure (`A5SF-FS-CONTRACT-HOST-INCOMPLETE`), and `A5SF_REQUIRE_PINNED_HOST=1` turns any absence into a failure for a lane that is supposed to provision the host. Two provisioning proposals (pinned checkout + build, or the three `@deepseek-ai/dsh-*@0.2.0-rc.2` npm packages) are in `dev/agent-workflow/evidence/a5sf-fs-face/README.md` Section 10. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED. M6 (2026-11-15): the population is declared HERE, once — `suites[]` (explicit subset / whole directory collected by the catalog's discovery). `scripts/dispatch-tests.mjs --leg a5sf-fs-contract-layer-b` turns it into an explicit `node --test` argv and the workflow step names only the leg id, so a step can no longer drift from this declaration. An emptied declaration is `CI_LAYER_LEG_NO_SUITES` (never an empty argv), a blank entry is `CI_LAYER_LEG_SUITE_INVALID`, and a file that is not a tracked suite is `CI_SUITE_ABSENT`. DECLARATION (2026-11-16): `hostRefusal: declared-not-run` names the ONE reviewed exception to `CI_HOST_REFUSAL_UNGUARDED`. This lane deliberately does NOT provision the pinned host (it lives in ci-integration), so this suite's absence path is its own declared `A5SF-FS-CONTRACT-HOST-REFUSED` NOT_RUN with 9 skips instead of a red; that is a written declaration, not a silent allow — the guard refuses any OTHER leg that lists a refusal-capable suite without `env.A5SF_REQUIRE_PINNED_HOST='1'`, and moving this suite to a host-provisioned leg is the repair that removes the exception.",
+          "dispatch_id": "a5sf-fs-contract-layer-b",
+          "suites": [
             "tests/world-factory/a5sf-fs-contract.test.mjs"
           ],
-          "why": "Alpha.5 LAYER B on the FS face (2026-11-07): layer A pins the LANE (ceiling ∩ restriction, allow/deny/ask, member isolation, fact attribution) but nothing pinned the PER-NATIVE-TOOL contract inside an admitted call, so 'read/write/edit are accepted' rested on lane arms plus live rows. This leg pins four tool-specific properties against the REAL pinned `@deepseek-ai/dsh-tool-fs` module, the REAL pinned `LocalFileSystem` and the REAL `fs-observation-policy`, through the PRODUCT route-C seam (`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`): FSB-EDIT-1/2 the version guard is policy-supplied and provider-enforced (a stale edit is one typed FS_STALE_VERSION, zero bytes changed, exactly one editText call and one allow fact; a fresh edit still writes); FSB-READ-1/2 the 10 MiB threshold ROUTES to streamText (readText zero), the window is byte-capped with the exact continuation footer, the past-window bytes never reach the model and the continuation streams too, while a below-threshold file buffers; FSB-ABORT-1/2 an abort after staging but before publication is FS_ABORTED, leaves the target byte-identical and removes the staging dir, while the un-aborted control publishes; FSB-IMG-1/2/3 read_image's attachment contract (exactly one attachment with the file's real metadata after stat→readBytes; a refused image is one stat deny with zero reads and zero attachment bytes) and the routed-composition failure GAP-FS-CONTRACT-1 today (routed definition shadows the preset one and fails closed with zero reads/attachments/facts). The arms assert ORDER and IDENTITY, never mere presence; six mutation controls (drop version guard / under-report stat size / drop write signal / silent attachment store / post-fix composition) each red exactly their own arm, so a green run cannot be vacuous — `dev/agent-workflow/evidence/a5sf-fs-face/mutations.mjs`. Like the #394/#529/R2/R3/R4/BL-14/P2/F1/route-C/product-assembly legs it is node:test and ci-integration lists its files explicitly; without this leg the tool contract runs nowhere. Host-free: an in-process Cordis unit root, mkdtemp fixtures, no boot, no port, no DSH_HOME, no pristine host tree at run time except the pinned module entries resolved through tests/paths.mjs; the TS seams load through scripts/run-tests-hooks.mjs. HOST-REQUIRED: every arm loads the pinned baseline's BUILT `lib/` entries (`packages/fs/{tool-fs,fs-local,fs-observation-policy}/lib/index.js`); a hosted ci-integration runner provisions neither that checkout (gitignored) nor a build (`lib/` is not committed in the pinned tree either), so on such a runner the suite prints ONE machine-readable `A5SF-FS-CONTRACT-HOST-REFUSED schema=a5sf-host-refusal/1 refused=1 skipped=9 cases=9 verdict=NOT_RUN pinned=<40-hex>` line and registers all nine cases as SKIPPED (`pass 0`) — a declared refusal counted as NOT RUN, never as pass; a host that is present but incomplete is a HARD failure (`A5SF-FS-CONTRACT-HOST-INCOMPLETE`), and `A5SF_REQUIRE_PINNED_HOST=1` turns any absence into a failure for a lane that is supposed to provision the host. Two provisioning proposals (pinned checkout + build, or the three `@deepseek-ai/dsh-*@0.2.0-rc.2` npm packages) are in `dev/agent-workflow/evidence/a5sf-fs-face/README.md` Section 10. Dropping the file from the step or the check list is CI_LAYER_LEG_WEAKENED."
+          "hostRefusal": "declared-not-run"
         }
       ],
       "hostFree": true
@@ -338,6 +502,10 @@
           "cmd": [
             "node",
             "scripts/eb3-security-run.mjs"
+          ],
+          "check": [
+            "--timeout",
+            "20000"
           ]
         }
       ],
@@ -365,6 +533,18 @@
       ],
       "legs": [
         {
+          "id": "contracts-l1",
+          "cmd": [
+            "node",
+            "scripts/contract-tiers.mjs",
+            "--run",
+            "--tier",
+            "L1"
+          ],
+          "check": [],
+          "why": "F-03 closeout: an exception registry is a disclosure of a gap, not a gate. This leg runs the contract-bound vitest files of every contract whose required_tiers include L1, using the repo's own vitest.config.ts, and propagates vitest's raw exit. It lives in ci-product because that job installs and builds the packages before the gate legs; the population is derived from dev/ci/test-contracts.json test_refs (no new list), and contract-tiers --check reads this leg's --run --tier L1 declaration as the L1 executed set, so a missing/emptied run is CONTRACT_TIER_UNMET rather than an exception."
+        },
+        {
           "id": "product-gate",
           "cmd": [
             "node",
@@ -372,7 +552,12 @@
           ],
           "check": [
             "--full",
-            "--only"
+            "--only",
+            "graph-parse,kit-home-guard,state-freshness,install,blueprint-fence,typecheck,lint-identities,artifacts-at-head",
+            "--store-dir",
+            "<value>",
+            "--transcript-dir",
+            "<value>"
           ],
           "forbid": [
             "--allow-refused",
@@ -395,9 +580,10 @@
             "scripts/ci-pr-gate.mjs"
           ],
           "check": [
-            "--check-transcript"
+            "--check-transcript",
+            "<value>"
           ],
-          "why": "the transcript, not the exit code, is the authority"
+          "why": "the transcript, not the exit code, is the authority (one VALUE slot: the transcript path; no extra flag)"
         }
       ]
     },
@@ -423,7 +609,9 @@
             "--layer",
             "ci-census",
             "--list-file",
-            "tests/checks/eb3-host-security-suites.txt"
+            "tests/checks/eb3-host-security-suites.txt",
+            "--timeout",
+            "20000"
           ],
           "why": "the security controls that need the pinned host, token-graded"
         },
@@ -437,8 +625,16 @@
             "--full",
             "--only",
             "census",
+            "--census-execution",
+            "plan",
             "--census-captures",
-            "--census-test-timeout"
+            "2",
+            "--census-test-timeout",
+            "90000",
+            "--store-dir",
+            "<value>",
+            "--transcript-dir",
+            "<value>"
           ],
           "forbid": [
             "--allow-refused",
@@ -458,9 +654,36 @@
             "scripts/ci-pr-gate.mjs"
           ],
           "check": [
-            "--check-transcript"
+            "--check-transcript",
+            "<value>"
           ],
-          "why": "second reader, same rule as ci-product"
+          "why": "second reader, same rule as ci-product (one VALUE slot: the transcript path)"
+        },
+        {
+          "id": "host-sandbox assets (pinned published package: exact version, tarball only, digest-verified)",
+          "cmd": [
+            "node",
+            "scripts/provision-host-assets.mjs"
+          ],
+          "check": [
+            "--from-package",
+            "@deepseek-ai/node-addon-system-linux-x64@0.1.2"
+          ],
+          "why": "2026-11-16, owner decision: the hosted census job cannot carry the pinned native sandbox assets from a local tree, and its own host build produces DIFFERENT bytes - bin/glibc/system.node measured dfa6d586... on the runner vs the committed pin 54a9c25c... (hosted job 132898455498). The M7-A step used to accept that as a named DISCLOSED_REFUSAL under M7A_ALLOW_UNPROVISIONABLE_HOST=1. That exemption is DELETED and this leg replaces it: the published package @deepseek-ai/node-addon-system-linux-x64@0.1.2 carries EXACTLY the pinned bytes (tarball 25758 bytes, sha256 77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20, registry dist.integrity sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==; package/bin/glibc/system.node = 54a9c25c...(17360 B), package/bin/landlock-run = a752bc72...(38552 B)), so the transport fetches that tarball, verifies it against the registry's published dist.integrity AND a committed tarball sha256, verifies every installed file's sha256 AND byte length, applies the pinned mode, and writes a receipt under .artifacts/tmp/host-assets/. The sha256 pin is UNCHANGED and is never moved to match a runner build; the asset is a fixed published artifact, not a local build. Tarball only - no pnpm install of the package, no repo dependency, CORE PATCH BUDGET = 0. The step sits immediately BEFORE the M7-A slice (after the census and its transcript re-grade, so neither the census argv nor its two captures change); the whole-argv law applies as it does to M7-A: the declared check[] is exactly the two trailing tokens, and the workflow line must be exactly this cmd+check. Watch: the leg is graded by eb3-ci-required like any other, and tests/world-factory/host-sandbox-assets.test.mjs T38 pins the parity plus the absence of the old exemption from every workflow. Provenance of the refusal matrix (tampered tarball, tampered extracted file, wrong version, missing dist.integrity, symlinked destination, extra bin/ file) and of the positive control: docs/plans/memo/host-assets-20261116/README.md."
+        },
+        {
+          "id": "m7a real-host slice (node:test, ONE real boot against the pinned host; absence is a hard failure here)",
+          "cmd": [
+            "node",
+            "--test",
+            "--test-force-exit",
+            "--test-timeout=900000",
+            "--test-reporter=spec"
+          ],
+          "check": [
+            "tests/world-factory/m7a-real-slice.test.mjs"
+          ],
+          "why": "M7-A (2026-11-15): the C2 half of the milestone — the Contract Oracle in front of a REAL DSH execution chain (scripted model on the provider wire -> dsh web -> real Agent Session -> real tool resolution -> real execution -> independent FS observation -> judgeContract). It lives in THIS layer, not ci-integration, because it needs what this job already provisions: the pinned pristine host and its build, the repo build, and a runner that made a missing host a failure. The step sets M7A_REQUIRE_PINNED_HOST=1 (and M7A_BOOT_TIMEOUT_MS=600000, because a hosted runner's first boot is 2-4x the local 130 s), so a host that failed to provision is a NAMED hard failure instead of the declared refusal + skips the suite produces on an unprovisioned checkout — a green census job that skipped the slice is exactly the F-06 failure mode (a capability only demonstrated by hand) this milestone exists to end. It runs one Host for its five arms (A1 denied write -> SATISFIED, A2 real effect in the watched non-authorized directory -> VIOLATED, A3 same calls with observation disabled -> INCONCLUSIVE, A4 empty witness -> INSTRUMENT_ERROR, A5 bash reachability/confinement), each arm a separate session on the same boot; the World Factory owns the lifecycle and teardown deletes the home. NO argv change to the census leg above and no change to the plan: this is a separate step, so the census population and its two captures are untouched. The whole-argv law is strict: the declared check[] is exactly the one trailing token, and dropping M7A_REQUIRE_PINNED_HOST makes this leg runnable-but-skippable, which is why the requirement is part of the step's env rather than a caller's choice. `--test-force-exit` (Node 24) was added after hosted job 132898455498: the suite failed at 166 ms, an in-process mock provider it had already started kept the event loop alive, and the step held the job for 41 minutes until the 60-minute timeout cancelled the whole L2. The step also carries `timeout-minutes: 10`, so even a regression is a bounded red rather than a cancelled job The step is now a NAMED DISCLOSED REFUSAL OR a verification, never a blanket pass (reviewer decision 2026-11-15, option B): this runner cannot boot the pinned host, because the sandbox-asset manifest pins one machine's native bytes and a cold hosted checkout cannot reproduce or fetch them (measured: hosted job 132898455498; cold-checkout reproduction DESTINATION_DIGEST_MISMATCH). 2026-11-16: THE EXEMPTION IS GONE. The step before this one provisions the pinned bytes from the pinned published package (leg `host-sandbox assets (pinned published package ...)`), so the DESTINATION_DIGEST_MISMATCH disclosure is no longer reachable and M7A_ALLOW_UNPROVISIONABLE_HOST is not set by any workflow (pinned by tests/world-factory/host-sandbox-assets.test.mjs T38; the code path and its tests remain, default off). This leg must now produce `M7A-STEP verdict=VERIFIED arms=5`; any refusal fails the job. The step's env/argv contract is otherwise unchanged, and the following step (scripts/m7a-step-ledger.mjs, always()) still prints one M7A-STEP-LEDGER line per L2. Provenance: docs/plans/memo/m7a-real-host-20261115/README.md plus docs/plans/memo/host-assets-20261116/README.md."
         }
       ]
     }
@@ -484,7 +707,24 @@
     {
       "workflow": ".github/workflows/pr-gate.yml",
       "job": "settlement",
-      "why": "The machine settle-before-merge gate (ROUTER_RULES §8.5.6, audit P1-1): grades marker-first-line presence and dated-settlement coverage of the CURRENT head sha; a required check can only grade what exists at evaluation time, and §8.5.2 head-advance retirement makes the settlement comment the durable authority — this job reports the verdict token for the merge agent (§8.5.3) and reds visibly on drift/marker, without itself being the sole Required context. Skipped on push/dispatch (no PR object), never silently."
+      "why": "The machine settle-before-merge gate (ROUTER_RULES §8.5.6, audit P1-1): grades marker-first-line presence and dated-settlement coverage of the CURRENT head sha; a required check can only grade what exists at evaluation time, and §8.5.2 head-advance retirement makes the settlement comment the durable authority — this job reports the verdict token for the merge agent (§8.5.3) and reds visibly on drift/marker, without itself being the sole Required context. Skipped on push/dispatch (no PR object), never silently.",
+      "legs": [
+        {
+          "id": "pr-settlement-unit",
+          "dispatch_id": "pr-settlement-unit",
+          "cmd": [
+            "node",
+            "scripts/dispatch-tests.mjs",
+            "--run",
+            "--leg",
+            "pr-settlement-unit"
+          ],
+          "suites": [
+            "scripts/pr-settlement-gate.test.mjs"
+          ],
+          "why": "M6: the settlement gate's exported detectors run under `node --test`. This job keeps its own declaration (the job's Required-ness is a separate fact, recorded above), but the file name lives HERE rather than in the workflow: with the settlement step converted, no workflow file in the repository names a test file any more."
+        }
+      ]
     },
     {
       "workflow": ".github/workflows/candidate-verify.yml",

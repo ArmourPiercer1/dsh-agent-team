@@ -355,8 +355,18 @@ export class TestWorldFactory {
       throw new Error(`invalid centerAssembly: ${JSON.stringify(centerAssembly)} (expected 'off' | 'shadow' | null)`)
     }
     const suffix = restartIndex === null ? '' : `-r${restartIndex}`
-    const name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
-    const home = homeDir(this.repoRoot, name)
+    // The stamp has ONE-SECOND resolution, so two Worlds created in the same second refused each
+    // other (observed 2026-11-15: a C1 host-state child and the live C2 suite, a `world-create`
+    // failure in a run that was otherwise green). A World is an identity, not a time: when the
+    // natural name is taken, move the stamp forward a second at a time (the §7 name grammar is
+    // `u5<line>-<UTC>`, so the discriminator has to be the clock, not a suffix). A genuine leftover
+    // from an earlier run still refuses after the bounded search.
+    let name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
+    let home = homeDir(this.repoRoot, name)
+    for (let bump = 1; bump <= 5 && (existsSync(home) || lstatSafe(home) !== null); bump += 1) {
+      name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp(new Date(Date.now() + bump * 1_000))}${suffix}`)
+      home = homeDir(this.repoRoot, name)
+    }
     if (existsSync(home) || lstatSafe(home) !== null) {
       throw new Error(`world home path already exists or is a symlink: ${home}`)
     }

@@ -54,28 +54,37 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import {
-  chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync,
+  chmodSync, copyFileSync, existsSync, linkSync, lstatSync, mkdirSync, mkdtempSync, readFileSync,
   readdirSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync,
 } from 'node:fs'
 import { basename, dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createHash } from 'node:crypto'
+import { gzipSync } from 'node:zlib'
 import { DSH_BASELINE_VERSION, findTestRepoRoot, TEST_USE_BASELINE_SHA, testUseTree } from '../paths.mjs'
 import {
   FATAL_PROVISION_CODES,
+  HOST_ASSET_RECEIPT_SCHEMA,
   HostSandboxAssetError,
   MANIFEST_REL,
+  PACKAGE_TRANSPORT_CODES,
   SANDBOX_PREFLIGHT_SCHEMA,
   SHARED_BASELINE_ROOTS,
   SOURCE_TREE_ENV,
   allowedSourceRoots,
   assertTrustedSourceTree,
+  canonicalJson,
+  extractPackageTarball,
   isSandboxPreflightRecord,
   manifestAssetPathIsSafe,
+  manifestDigest,
   nativeConfinementEnvBlock,
+  packagePlatformEntry,
+  parsePackageSpec,
   preflightHostSandbox,
   probeHostSandboxBackend,
   provisionHostSandboxAssets,
+  provisionHostSandboxAssetsFromPackage,
   readHostSandboxAssetManifest,
   resolveHostSandboxLayout,
   sandboxUnavailableSignal,
@@ -338,11 +347,26 @@ test('T9 provisioning keeps the destination runtime tree git status --porcelain 
   assert.equal(r.porcelainAfter.empty, true)
 })
 
-test('T10 the provisioner has no network path (local copy only)', () => {
-  // Comments legitimately tell an operator to run the runtime install; the
-  // CODE is what must never reach a network or a package manager.
-  const code = readFileSync(join(HERE, 'lib', 'host-sandbox-assets.mjs'), 'utf8')
-    .replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ').replace(/(?<=\s|\(|`)\/\/[^'`\n]*/g, ' ')
+test('T10 the LOCAL-COPY transport has no network path (the package transport is the module\'s ONE network path, and it is explicit)', () => {
+  // T10 used to assert the whole module contained no network primitive. That was
+  // true while the local copy was the ONLY transport; as of 2026-11-16 the module
+  // also carries the PINNED PACKAGE transport, which fetches exactly one verified
+  // tarball on request. The law an operator relies on survives unchanged: the
+  // DEFAULT path (and every pre-flight) is a local copy that never touches a
+  // network. The check is therefore REGIONAL now — the local-copy function is
+  // offline, and the network primitive exists in exactly one named function a
+  // caller must invoke deliberately (`--from-package`).
+  const raw = readFileSync(join(HERE, 'lib', 'host-sandbox-assets.mjs'), 'utf8')
+  const code = raw.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/^\s*\/\/.*$/gm, ' ').replace(/(?<=\s|\(|`)\/\/[^'`\n]*/g, ' ')
+  const region = (startMarker, endMarker) => {
+    const start = code.indexOf(startMarker)
+    assert.notEqual(start, -1, `the module must declare ${startMarker}`)
+    const end = endMarker === null ? code.length : code.indexOf(endMarker, start + startMarker.length)
+    assert.notEqual(end, -1, `the module must declare ${endMarker}`)
+    return code.slice(start, end)
+  }
+  const localCopy = region('export async function provisionHostSandboxAssets(', 'function provenance(')
+  const packageTransport = region('export async function provisionHostSandboxAssetsFromPackage(', null)
   const forbidden = [
     ['network import', /node:(http|https|net|tls|dgram|dns)/],
     ['fetch call', /\bfetch\s*\(/],
@@ -351,11 +375,15 @@ test('T10 the provisioner has no network path (local copy only)', () => {
     ['tarball extraction', /\b(tar|unzip|gunzip)\b/],
   ]
   for (const [what, re] of forbidden) {
-    const m = code.match(re)
-    assert.equal(m === null, true, `the provisioner must contain no ${what}${m === null ? '' : ` (matched: ${JSON.stringify(m[0])})`}`)
+    const m = localCopy.match(re)
+    assert.equal(m === null, true, `the LOCAL-COPY transport must contain no ${what}${m === null ? '' : ` (matched: ${JSON.stringify(m[0])})`}`)
   }
-  // and it does reach for the file system, i.e. the local copy is real
-  assert.match(code, /copyFileSync\(/)
+  assert.match(localCopy, /copyFileSync\(/, 'the local copy is real')
+  // The network primitive is not ambient: it lives in the named package
+  // transport, reached only through an explicit call / `--from-package`, and it
+  // checks the registry integrity BEFORE extracting anything.
+  assert.match(packageTransport, /fetcher\.get\(|fetch\(/, 'the package transport is the module\'s ONE network path')
+  assert.match(packageTransport, /TARBALL_INTEGRITY_MISMATCH/, 'and it verifies the registry integrity before extraction')
 })
 
 // ── B. pre-flight ──────────────────────────────────────────────────────────
@@ -1114,4 +1142,629 @@ test('T27 (R451 O-1) setuid on LOW BITS THAT MATCH THE PIN (0o4755 vs 0o755) is 
   // Law 4 (same as T23/T25/T26): bytes and mode left in place, unmodified.
   assert.equal(sha256File(launcher), digestBefore, 'the drifted file is left in place (digest untouched)')
   assert.equal(statSync(launcher).mode & 0o7777, 0o4755, 'the setuid mode is not silently re-published')
+})
+
+// ── G. package transport (2026-11-16) ────────────────────────────────────────
+// THE DEFECT this pins (measured 2026-11-16; memo host-assets-20261116): the
+// hosted census job CANNOT carry the pinned native bytes from a local tree, and
+// its own host build produces DIFFERENT bytes (`bin/glibc/system.node`
+// `dfa6d586…` on the runner vs the pin `54a9c25c…`). The M7-A step used to
+// accept that as a named DISCLOSED_REFUSAL. The owner's decision is that the
+// FIXED PUBLISHED ASSET is the standard: the same bytes are published in
+// `@deepseek-ai/node-addon-system-linux-x64@0.1.2` (tarball sha256 `77fb771b…`,
+// registry dist.integrity `sha512-S2aPVHvY…`), so the provisioner fetches that
+// tarball, verifies it, verifies every file against the UNCHANGED sha256 pin,
+// and installs it — the runner's build never defines the standard.
+//
+// Legs:
+//   T28 the committed package pin exists, is complete, and IS the host pin
+//   T29 (g) POSITIVE: a fresh/shell-built tree is replaced by the pinned bytes
+//       (sha256+mode), with a receipt binding the artifact, the pin and the host
+//   T30 (a) tampered tarball bytes: dist.integrity mismatch AND the sha256 pin
+//       mismatch each refuse, with nothing extracted/installed
+//   T31 (b) tampered extracted `system.node`: digest refusal, zero residue
+//   T32 (c) wrong version / `latest` / a range / no version: typed refusals,
+//       raised BEFORE any network call
+//   T33 (d) registry metadata without `dist.integrity` (and with an unknown
+//       integrity): typed refusals
+//   T34 (e) a destination that is a symlink (directory-level AND file-level):
+//       refused before a write, nothing lands through the link
+//   T35 (f) an extra file under `bin/`: refused, nothing installed
+//   T36 a pinned byte length that the extracted file does not have: refused
+//   T37 the pin-divergence law: the package file table may not differ from the
+//       host pin (`PACKAGE_PIN_DIVERGES_FROM_HOST_PIN`)
+//   T38 the CI wiring: the workflow step is EXACTLY the manifest leg's command,
+//       it runs BEFORE the M7-A slice, and no workflow carries the exemption
+//   T39 the CLI: `--help`/`--manifest` succeed, an unpinned version and a
+//       missing verb print the ONE greppable line and exit 1 (offline)
+const PKG = '@deepseek-ai/node-addon-system-linux-x64'
+const PKG_EXACT = '0.1.2'
+const PLATFORM = `linux-${process.arch}`
+const BASELINE_KEY = `${DSH_BASELINE_VERSION}@${TEST_USE_BASELINE_SHA}`
+const FIXTURE_LAUNCHER = Buffer.from('#!/bin/sh\necho fixture launcher\n')
+const FIXTURE_ADDON = Buffer.from('fixture-addon-bytes-0123456789abcdef')
+const sha256Hex = (buf) => createHash('sha256').update(buf).digest('hex')
+const sriSha512 = (buf) => `sha512-${createHash('sha512').update(buf).digest('base64')}`
+
+/** One ustar header (the tests build real .tar.gz fixtures, they do not mock the format). */
+function tarHeader(name, size, mode = 0o644, mtime = 0) {
+  const header = Buffer.alloc(512)
+  header.write(name, 0, 100, 'utf8')
+  header.write(`${mode.toString(8).padStart(7, '0')}\0`, 100, 8, 'ascii')
+  header.write('0000000\0', 108, 8, 'ascii')
+  header.write('0000000\0', 116, 8, 'ascii')
+  header.write(`${size.toString(8).padStart(11, '0')}\0`, 124, 12, 'ascii')
+  header.write(`${mtime.toString(8).padStart(11, '0')}\0`, 136, 12, 'ascii')
+  header.write('        ', 148, 8, 'ascii') // checksum placeholder
+  header.write('0', 156, 1, 'ascii')
+  header.write('ustar\0', 257, 6, 'ascii')
+  header.write('00', 263, 2, 'ascii')
+  let sum = 0
+  for (const byte of header) sum += byte
+  header.write(`${sum.toString(8).padStart(6, '0')}\0 `, 148, 8, 'ascii')
+  return header
+}
+
+/** A real gzip+ustar tarball whose entries live under npm's `package/` prefix. */
+function makePackageTarball(entries) {
+  const blocks = []
+  for (const [rel, bytes] of entries) {
+    blocks.push(tarHeader(`package/${rel}`, bytes.length))
+    blocks.push(bytes)
+    blocks.push(Buffer.alloc((512 - (bytes.length % 512)) % 512))
+  }
+  blocks.push(Buffer.alloc(1024)) // end-of-archive
+  return gzipSync(Buffer.concat(blocks))
+}
+
+/**
+ * A TEST manifest + tarball pair that obeys every real invariant (the two file
+ * tables agree, the tarball pins are computed from the tarball) but uses SMALL
+ * synthetic bytes, so the suite stays offline and does not depend on the
+ * machine's runtime tree still carrying the pinned binaries. The REAL pins are
+ * covered by T28 (manifest) and by the CLI/CI run (memo host-assets-20261116).
+ */
+function packageFixture({
+  launcher = FIXTURE_LAUNCHER, addon = FIXTURE_ADDON, extraEntries = [],
+  siblings = {}, packageName = PKG, version = PKG_EXACT, files = null,
+  distIntegrity = null, tarballSha256 = null,
+} = {}) {
+  const installFiles = files ?? {
+    'bin/glibc/system.node': { sha256: sha256Hex(addon), bytes: addon.length, mode: '0o755' },
+    'bin/landlock-run': { sha256: sha256Hex(launcher), bytes: launcher.length, mode: '0o755' },
+  }
+  const entries = [['bin/glibc/system.node', addon], ['bin/landlock-run', launcher], ...extraEntries]
+  const tarball = makePackageTarball(entries)
+  const platformEntry = {
+    libc: 'glibc',
+    package: packageName,
+    version,
+    registry: 'https://registry.npmjs.org',
+    distIntegrity: distIntegrity ?? sriSha512(tarball),
+    tarballSha256: tarballSha256 ?? sha256Hex(tarball),
+    tarballBytes: tarball.length,
+    launcher: 'bin/landlock-run',
+    files: installFiles,
+    siblings,
+  }
+  const manifest = {
+    schema: 'u7-sbx-host-sandbox-assets/1',
+    entries: {
+      [BASELINE_KEY]: {
+        hostBaseline: { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA },
+        platforms: { [PLATFORM]: { libc: 'glibc', launcher: 'bin/landlock-run', files: structuredClone(installFiles) } },
+      },
+    },
+    packages: {
+      [BASELINE_KEY]: {
+        hostBaseline: { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA },
+        platforms: { [PLATFORM]: platformEntry },
+      },
+    },
+  }
+  return { manifest, tarball, entries, installFiles }
+}
+
+/** A fake registry: metadata for the exact version, then the tarball. Records every URL. */
+function fakeRegistry({ tarball, integrity, packageName = PKG, version = PKG_EXACT, omitIntegrity = false, tarballStatus = 200 }) {
+  const requests = []
+  const tarballUrl = `https://registry.npmjs.org/${packageName}/-/${packageName.split('/').pop()}-${version}.tgz`
+  const metadata = {
+    name: packageName,
+    version,
+    dist: {
+      ...(omitIntegrity ? {} : { integrity }),
+      tarball: tarballUrl,
+    },
+  }
+  const fetcher = {
+    async get(url) {
+      requests.push(url)
+      if (url.includes('/-/')) {
+        return tarballStatus === 200
+          ? { ok: true, status: 200, bytes: tarball }
+          : { ok: false, status: tarballStatus, bytes: Buffer.alloc(0) }
+      }
+      return { ok: true, status: 200, bytes: Buffer.from(JSON.stringify(metadata)) }
+    },
+  }
+  return { fetcher, requests, metadata, tarballUrl }
+}
+
+/** Run the transport and assert the typed refusal; then assert ZERO residue. */
+async function assertPackageRefusal(label, options, code, extraChecks = () => {}) {
+  const { tree, ...rest } = options
+  const bin = join(tree, 'native/system/packages/linux-x64/bin')
+  await assert.rejects(
+    provisionHostSandboxAssetsFromPackage({ repoRoot: REPO_ROOT, runtimeTree: tree, ...rest }),
+    (error) => {
+      assert.ok(error instanceof HostSandboxAssetError, `${label}: typed error expected, got ${String(error)}`)
+      assert.equal(error.code, code, `${label}: expected ${code}, got ${error.code} (${error.message})`)
+      return true
+    },
+    label,
+  )
+  // A pre-existing destination may be a symlink (the symlink control): it is
+  // "nothing installed" only if it is still a link, never a published file.
+  const launcherIsLink = (() => { try { return lstatSync(join(bin, 'landlock-run')).isSymbolicLink() } catch { return false } })()
+  assert.equal(existsSync(join(bin, 'landlock-run')) && !launcherIsLink, false, `${label}: no launcher may be installed`)
+  assert.equal(existsSync(join(bin, 'glibc/system.node')), false, `${label}: no addon may be installed`)
+  // `bin/` may be the empty symlink target in the symlink control; either way it
+  // carries nothing but the pre-existing `glibc/` directory and no staging file.
+  const residue = readdirSync(bin).filter((name) => name !== 'glibc' && !lstatSync(join(bin, name)).isSymbolicLink())
+  assert.deepEqual(residue, [], `${label}: no temp/staging residue in bin/`)
+  if (existsSync(join(bin, 'glibc'))) assert.deepEqual(readdirSync(join(bin, 'glibc')), [], `${label}: glibc/ stayed empty`)
+  extraChecks()
+}
+
+/** `stat` of a file, with the FULL mode (special bits included). */
+const fullMode = (p) => statSync(p).mode & 0o7777
+
+test('T28 (G0) the committed package pin exists, is complete, and IS the host pin — one standard, two spellings', () => {
+  const m = readHostSandboxAssetManifest({ repoRoot: REPO_ROOT })
+  assert.ok(m.packages !== undefined, 'the manifest carries a `packages` block (the package transport)')
+  const bundle = m.packages[BASELINE_KEY]
+  assert.ok(bundle, `the package pin is keyed by the pinned host baseline ${BASELINE_KEY}`)
+  const p = bundle.platforms[PLATFORM]
+  assert.ok(p, `the package pin names this platform ${PLATFORM}`)
+  assert.equal(p.package, PKG)
+  assert.equal(p.version, PKG_EXACT)
+  assert.equal(p.launcher, 'bin/landlock-run')
+  // MEASURED 2026-11-16 (the owner's download): these are the bytes of the
+  // published tarball, and they are the same pin as `entries` — the package is a
+  // transport, not a second standard.
+  assert.equal(p.distIntegrity, 'sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg==')
+  assert.equal(p.tarballSha256, '77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20')
+  assert.equal(p.tarballBytes, 25758)
+  assert.equal(p.files['bin/glibc/system.node'].sha256, '54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc')
+  assert.equal(p.files['bin/glibc/system.node'].bytes, 17360)
+  assert.equal(p.files['bin/landlock-run'].sha256, 'a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31')
+  assert.equal(p.files['bin/landlock-run'].bytes, 38552)
+  for (const [rel, spec] of Object.entries(p.files)) assert.equal(spec.mode, '0o755', `${rel} installs executable`)
+  assert.deepEqual(p.files, m.entries[BASELINE_KEY].platforms[PLATFORM].files, 'the package file table EQUALS the host pin, path for path')
+  assert.equal(packagePlatformEntry(m, { version: DSH_BASELINE_VERSION, sha: TEST_USE_BASELINE_SHA, platform: PLATFORM, libc: 'glibc' }), p)
+  // and the sibling the tarball also carries is pinned, so bin/ is fully accounted for
+  assert.equal(p.siblings['bin/musl/system.node'].bytes, 17960)
+  assert.match(p.siblings['bin/musl/system.node'].sha256, /^[0-9a-f]{64}$/u)
+})
+
+test('T29 (g) POSITIVE: a tree carrying a runner build is REPLACED by the pinned bytes, mode 0o755, and the receipt binds artifact+pin+host', async () => {
+  const { manifest, tarball } = packageFixture()
+  const { fetcher, requests, tarballUrl } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+  const tree = makeRuntimeFixture('pkg-positive')
+  const platformDir = join(tree, 'native/system/packages/linux-x64')
+  const bin = join(platformDir, 'bin')
+  // The runner's own build: same paths, DIFFERENT bytes (the reason this transport exists).
+  writeFileSync(join(bin, 'landlock-run'), 'runner-built-launcher')
+  chmodSync(join(bin, 'landlock-run'), 0o755)
+  writeFileSync(join(bin, 'glibc/system.node'), 'runner-built-addon')
+  chmodSync(join(bin, 'glibc/system.node'), 0o755)
+  const beforeLauncher = sha256Hex(Buffer.from('runner-built-launcher'))
+  const receiptDir = scratch('pkg-receipt')
+  const receiptPath = join(receiptDir, 'provision-receipt.json')
+  const tmpRoot = join(REPO_ROOT, '.artifacts', 'tmp')
+  const tempBefore = readdirSync(tmpRoot).filter((n) => n.startsWith('host-assets-pkg-')).sort()
+
+  const receipt = await provisionHostSandboxAssetsFromPackage({
+    runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher, receiptPath,
+  })
+
+  // metadata FIRST, tarball SECOND — never a tarball from an unverified version.
+  assert.equal(requests.length, 2, `exactly two registry requests, got ${requests.length}: ${requests.join(', ')}`)
+  assert.ok(requests[0].endsWith(`/${PKG_EXACT}`), `request 0 is the exact-version metadata: ${requests[0]}`)
+  assert.equal(requests[1], tarballUrl)
+
+  // the pinned bytes are installed, at the pinned mode, and the built bytes are gone
+  for (const rel of ['bin/landlock-run', 'bin/glibc/system.node']) {
+    const spec = manifest.entries[BASELINE_KEY].platforms[PLATFORM].files[rel]
+    assert.equal(sha256File(join(platformDir, rel)), spec.sha256, `${rel} hashes to the pin`)
+    assert.equal(fullMode(join(platformDir, rel)), 0o755, `${rel} is installed 0o755 (the manifest's mode)`)
+    assert.equal(statSync(join(platformDir, rel)).size, spec.bytes, `${rel} has the pinned byte length`)
+  }
+  assert.equal(receipt.files.find((f) => f.relPath === 'bin/landlock-run').preExistingSha256, beforeLauncher, 'the receipt records what the runner build had')
+  assert.deepEqual(readdirSync(bin).sort(), ['glibc', 'landlock-run'], 'no staging file survives')
+  assert.deepEqual(readdirSync(join(bin, 'glibc')), ['system.node'])
+  assert.deepEqual(readdirSync(tmpRoot).filter((n) => n.startsWith('host-assets-pkg-')).sort(), tempBefore, 'the extraction scratch directory is removed')
+
+  // the installed launcher is executable by the HOST's own probe
+  const probed = await probeHostSandboxBackend(tree)
+  assert.ok(['full', 'partial'].includes(probed.backend), `the installed launcher probes usable, got ${probed.backend}`)
+
+  // the receipt: schema, artifact identity, host identity, per-file digest and the MANIFEST digest
+  assert.equal(receipt.schema, HOST_ASSET_RECEIPT_SCHEMA)
+  assert.equal(receipt.action, 'provisioned-from-package')
+  assert.equal(receipt.transport, 'pinned-package')
+  assert.deepEqual(receipt.package, {
+    spec: `${PKG}@${PKG_EXACT}`, name: PKG, version: PKG_EXACT, registry: 'https://registry.npmjs.org',
+    metadataUrl: requests[0], tarballUrl, distIntegrity: sriSha512(tarball), tarballSha256: sha256Hex(tarball), tarballBytes: tarball.length,
+  })
+  assert.equal(receipt.host.sha, TEST_USE_BASELINE_SHA)
+  assert.equal(receipt.host.baselineVersion, DSH_BASELINE_VERSION)
+  assert.equal(receipt.host.runtimeTree, tree)
+  assert.equal(receipt.host.platform, PLATFORM)
+  assert.equal(receipt.host.libc, 'glibc')
+  assert.equal(receipt.manifest.path, MANIFEST_REL)
+  assert.match(receipt.manifest.digest, /^[0-9a-f]{64}$/u)
+  assert.equal(receipt.manifest.digest, manifestDigest(manifest))
+  // independent recomputation of the canonical digest (not the module's own helper)
+  const canonical = (value) => Array.isArray(value)
+    ? `[${value.map(canonical).join(',')}]`
+    : value !== null && typeof value === 'object'
+      ? `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${canonical(value[k])}`).join(',')}}`
+      : JSON.stringify(value)
+  assert.equal(receipt.manifest.digest, sha256Hex(Buffer.from(canonical(manifest), 'utf8')), 'the receipt names the EXACT pin table it verified against')
+  assert.equal(receipt.files.length, 2)
+  for (const f of receipt.files) {
+    assert.equal(f.sha256, f.expectedSha256)
+    assert.equal(f.mode, '0o755')
+    assert.match(f.preExistingSha256, /^[0-9a-f]{64}$/u)
+  }
+  assert.ok(Date.parse(receipt.at) > 0, 'the receipt carries a UTC time')
+  assert.equal(receipt.receiptPath, receiptPath)
+  // written to disk, next to the evidence convention, and readable
+  assert.ok(existsSync(receiptPath), 'the receipt is written')
+  assert.equal(JSON.parse(readFileSync(receiptPath, 'utf8')).manifest.digest, receipt.manifest.digest)
+})
+
+test('T30 (a) tampered tarball bytes: dist.integrity AND the pinned sha256 each refuse, with nothing extracted', async () => {
+  // (a1) the registry attests the pin, the bytes are not it → sha512 refusal.
+  {
+    const { manifest, tarball } = packageFixture()
+    const tampered = Buffer.from(tarball)
+    tampered[tampered.length - 1] ^= 0xff
+    const { fetcher, requests } = fakeRegistry({ tarball: tampered, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+    const tree = makeRuntimeFixture('pkg-tarball-sha512')
+    await assertPackageRefusal('a1 dist.integrity mismatch', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'TARBALL_INTEGRITY_MISMATCH', () => {
+      assert.equal(requests.length, 2, 'the tarball WAS fetched — the refusal is about its bytes, not the URL')
+      assert.equal(existsSync(join(tree, '.artifacts')), false, 'no scratch directory is created for a tarball that fails integrity')
+    })
+  }
+  // (a2) the registry "agrees" with the tampered bytes (its integrity is over
+  // them), but the manifest's tarballSha256 still names the pinned artifact →
+  // the committed pin, not the registry's opinion, is the standard.
+  {
+    const { manifest, tarball } = packageFixture()
+    const tampered = Buffer.from(tarball)
+    tampered[tampered.length - 1] ^= 0xff
+    const p = manifest.packages[BASELINE_KEY].platforms[PLATFORM]
+    p.distIntegrity = sriSha512(tampered)
+    p.tarballBytes = tampered.length
+    const { fetcher } = fakeRegistry({ tarball: tampered, integrity: sriSha512(tampered) })
+    const tree = makeRuntimeFixture('pkg-tarball-sha256')
+    await assertPackageRefusal('a2 tarball sha256 mismatch', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'TARBALL_DIGEST_MISMATCH')
+  }
+})
+
+test('T31 (b) tampered EXTRACTED system.node: per-file digest refusal, zero residue', async () => {
+  const { manifest, tarball } = packageFixture()
+  const { fetcher } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+  const tree = makeRuntimeFixture('pkg-tampered-extract')
+  // The tarball is the pinned one; the EXTRACTED bytes are not (a tampered
+  // scratch directory / a compromised extractor is the threat).
+  const extractor = (bytes, dir) => {
+    const result = extractPackageTarball(bytes, dir)
+    const target = join(dir, 'package/bin/glibc/system.node')
+    const tampered = Buffer.from(readFileSync(target))
+    tampered[0] ^= 0xff // SAME length, different digest
+    writeFileSync(target, tampered)
+    return result
+  }
+  await assertPackageRefusal('tampered extracted addon', {
+    tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher, extractor,
+  }, 'PACKAGE_FILE_DIGEST_MISMATCH')
+})
+
+test('T32 (c) wrong version / `latest` / a range / no version: typed refusal BEFORE any network call', async () => {
+  const { manifest } = packageFixture()
+  const tree = makeRuntimeFixture('pkg-unpinned')
+  const forbiddenFetcher = { async get(url) { throw new Error(`network must not be reached for an unpinned spec (${url})`) } }
+  const cases = [
+    [`${PKG}@0.1.1`, 'PACKAGE_VERSION_UNPINNED', 'a different exact version is still unpinned'],
+    [`${PKG}@latest`, 'PACKAGE_SPEC_NOT_EXACT', 'a dist-tag is not a version'],
+    [`${PKG}@^0.1.2`, 'PACKAGE_SPEC_NOT_EXACT', 'a range is not a version'],
+    [`${PKG}@0.1`, 'PACKAGE_SPEC_NOT_EXACT', 'a partial version is not a version'],
+    [`${PKG}@*`, 'PACKAGE_SPEC_NOT_EXACT', 'a wildcard is not a version'],
+    [PKG, 'PACKAGE_SPEC_INVALID', 'no version at all'],
+  ]
+  for (const [spec, code, why] of cases) {
+    await assertPackageRefusal(`spec ${spec}`, { tree, manifest, spec, fetcher: forbiddenFetcher }, code, () => {
+      const parsed = parsePackageSpecSafe(spec)
+      if (code === 'PACKAGE_VERSION_UNPINNED') {
+        // syntactically exact — refused because it is not the version the pin names.
+        assert.equal(parsed.ok, true, why)
+      } else {
+        assert.equal(parsed.ok, false, why)
+        assert.equal(parsed.code, code, why)
+      }
+    })
+  }
+})
+
+/** parsePackageSpec without throwing, for the fixture guard above. */
+function parsePackageSpecSafe(spec) {
+  try {
+    return { ok: true, ...parsePackageSpec(spec) }
+  } catch (error) {
+    return { ok: false, code: error.code }
+  }
+}
+
+test('T33 (d) registry metadata with NO dist.integrity — and with an integrity the pin does not know — refuses', async () => {
+  // (d1) no dist.integrity at all.
+  {
+    const { manifest, tarball } = packageFixture()
+    const { fetcher } = fakeRegistry({ tarball, integrity: null, omitIntegrity: true })
+    const tree = makeRuntimeFixture('pkg-noint')
+    await assertPackageRefusal('missing dist.integrity', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'REGISTRY_INTEGRITY_MISSING')
+  }
+  // (d2) a valid sha512 SRI that is NOT the pinned one: "unknown" is not weaker.
+  {
+    const { manifest, tarball } = packageFixture()
+    const unknown = sriSha512(Buffer.from('a different published artifact'))
+    const { fetcher } = fakeRegistry({ tarball, integrity: unknown })
+    const tree = makeRuntimeFixture('pkg-unknownint')
+    await assertPackageRefusal('unknown dist.integrity', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'REGISTRY_INTEGRITY_UNKNOWN')
+  }
+})
+
+test('T34 (e) a destination SYMLINK (node_modules-style dir link, then a file link) is refused before any write', async () => {
+  // (e1) the platform package's whole bin/ is a link into node_modules.
+  {
+    const { manifest, tarball } = packageFixture()
+    const { fetcher } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+    const tree = makeRuntimeFixture('pkg-symlink-dir')
+    const platformDir = join(tree, 'native/system/packages/linux-x64')
+    const linkTarget = join(tree, 'node_modules/@deepseek-ai/node-addon-system-linux-x64/bin')
+    mkdirSync(linkTarget, { recursive: true })
+    rmSync(join(platformDir, 'bin'), { recursive: true, force: true })
+    symlinkSync(linkTarget, join(platformDir, 'bin'), 'dir')
+    await assertPackageRefusal('symlinked bin/', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'DESTINATION_IS_SYMLINK', () => {
+      assert.deepEqual(readdirSync(linkTarget), [], 'nothing is written THROUGH the link either')
+    })
+  }
+  // (e2) the launcher FILE itself is a link (the path the host would exec).
+  {
+    const { manifest, tarball } = packageFixture()
+    const { fetcher } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+    const tree = makeRuntimeFixture('pkg-symlink-file')
+    const bin = join(tree, 'native/system/packages/linux-x64/bin')
+    const realTarget = join(tree, 'node_modules/landlock-run')
+    mkdirSync(join(tree, 'node_modules'), { recursive: true })
+    writeFileSync(realTarget, 'not-the-launcher')
+    symlinkSync(realTarget, join(bin, 'landlock-run'))
+    const before = readFileSync(realTarget)
+    await assertPackageRefusal('symlinked launcher file', {
+      tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+    }, 'DESTINATION_IS_SYMLINK', () => {
+      assert.deepEqual(readFileSync(realTarget), before, 'the link target is never overwritten')
+    })
+  }
+})
+
+test('T35 (f) an EXTRA file under bin/ that the pin does not account for: refused, nothing installed', async () => {
+  const { manifest, tarball } = packageFixture({
+    extraEntries: [['bin/glibc/evil.node', Buffer.from('unaccounted')]],
+  })
+  const { fetcher } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+  const tree = makeRuntimeFixture('pkg-extra-bin')
+  await assertPackageRefusal('extra bin file', {
+    tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+  }, 'PACKAGE_EXTRA_BIN_FILE')
+})
+
+test('T36 a pinned byte length the extracted file does not have is refused (before any digest could bless it)', async () => {
+  const { manifest, tarball } = packageFixture()
+  // Pin a length that the (otherwise valid) pinned bytes do not have.
+  const p = manifest.packages[BASELINE_KEY].platforms[PLATFORM]
+  const hostFiles = manifest.entries[BASELINE_KEY].platforms[PLATFORM].files
+  for (const table of [p.files, hostFiles]) {
+    table['bin/landlock-run'] = { ...table['bin/landlock-run'], bytes: table['bin/landlock-run'].bytes + 1 }
+  }
+  const { fetcher } = fakeRegistry({ tarball, integrity: p.distIntegrity })
+  const tree = makeRuntimeFixture('pkg-length')
+  await assertPackageRefusal('length mismatch', {
+    tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+  }, 'PACKAGE_FILE_LENGTH_MISMATCH')
+})
+
+test('T37 the package pin may not define a SECOND standard: a file table that differs from the host pin is refused', async () => {
+  const { manifest, tarball } = packageFixture()
+  manifest.packages[BASELINE_KEY].platforms[PLATFORM].files['bin/landlock-run'].sha256 = 'f'.repeat(64)
+  const { fetcher } = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+  const tree = makeRuntimeFixture('pkg-diverge')
+  await assertPackageRefusal('package/host pin divergence', {
+    tree, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher,
+  }, 'PACKAGE_PIN_DIVERGES_FROM_HOST_PIN')
+})
+
+test('T38 CI wiring: the step is EXACTLY the manifest leg, it runs BEFORE the M7-A slice, and the exemption is unreachable', () => {
+  const workflowsDir = join(REPO_ROOT, '.github', 'workflows')
+  // (a) the temporary exemption is GONE from every workflow: M7-A must now
+  // produce VERIFIED or fail the job — a refusal is not accepted anywhere.
+  for (const file of readdirSync(workflowsDir).filter((f) => f.endsWith('.yml') || f.endsWith('.yaml'))) {
+    // Strip full-line YAML comments: prose may NAME the retired exemption, but
+    // no effective line may set it.
+    const effective = readFileSync(join(workflowsDir, file), 'utf8').replace(/^\s*#.*$/gm, '')
+    assert.equal(effective.includes('M7A_ALLOW_UNPROVISIONABLE_HOST'), false, `${file} must not set M7A_ALLOW_UNPROVISIONABLE_HOST — the disclosed-refusal exemption is not reachable from CI any more`)
+  }
+  const workflow = readFileSync(join(workflowsDir, 'census-runtime.yml'), 'utf8')
+  // (b) whole-argv parity: the workflow executes exactly the manifest leg's
+  // cmd+check (the same law eb3-ci-required applies to the M7-A step).
+  const ciManifest = JSON.parse(readFileSync(join(REPO_ROOT, 'dev', 'ci', 'eb3-ci-manifest.json'), 'utf8'))
+  const layer = ciManifest.layers.find((l) => l.id === 'ci-census')
+  assert.ok(layer, 'the ci-census layer is declared')
+  const legs = layer.legs.filter((l) => Array.isArray(l.cmd) && l.cmd[1] === 'scripts/provision-host-assets.mjs')
+  assert.equal(legs.length, 1, 'ci-census declares exactly ONE package-transport leg')
+  const leg = legs[0]
+  assert.equal(leg.check.join(' '), `--from-package ${PKG}@${PKG_EXACT}`, 'the declared argv is the exact pinned package spec')
+  const expected = [...leg.cmd, ...leg.check].join(' ')
+  const at = workflow.indexOf(expected)
+  assert.notEqual(at, -1, `census-runtime.yml executes exactly \`${expected}\``)
+  // (c) it runs BEFORE the M7-A suite (the assets are installed while the host
+  // is built, and the slice reads them), and its comment names the measurements.
+  const m7aSuiteAt = workflow.indexOf('tests/world-factory/m7a-real-slice.test.mjs')
+  assert.ok(m7aSuiteAt > at, 'the package provisioning step precedes the M7-A slice')
+  const comment = workflow.slice(Math.max(0, at - 5000), at)
+  assert.match(comment, /54a9c25c/u, 'the step comment names the measured glibc addon digest')
+  assert.match(comment, /a752bc72/u, 'the step comment names the measured launcher digest')
+  assert.match(comment, /77fb771b|sha512-S2aPVHvY/u, 'the step comment names the measured tarball identity')
+})
+
+test('T39 the CLI: one greppable line, exit 0/1, no network for an unpinned version', () => {
+  const cli = join(REPO_ROOT, 'scripts', 'provision-host-assets.mjs')
+  const run = (args) => spawnSync(process.execPath, [cli, ...args], { encoding: 'utf8', cwd: REPO_ROOT })
+  const help = run(['--help'])
+  assert.equal(help.status, 0, '--help exits 0')
+  assert.match(help.stdout, /--from-package/)
+  const printed = run(['--manifest'])
+  assert.equal(printed.status, 0, '--manifest exits 0')
+  assert.deepEqual(JSON.parse(printed.stdout), readHostSandboxAssetManifest({ repoRoot: REPO_ROOT }), 'the CLI prints ITS tree\'s committed manifest')
+  const tree = makeRuntimeFixture('cli-unpinned')
+  const bad = run(['--from-package', `${PKG}@0.1.1`, '--runtime-tree', tree, '--receipt', join(scratch('cli-receipt'), 'r.json')])
+  assert.equal(bad.status, 1, 'an unpinned version exits 1')
+  assert.match(bad.stderr, /^HOST-ASSETS-REFUSED code=PACKAGE_VERSION_UNPINNED detail=\S/m, 'one machine-greppable refusal line, typed')
+  assert.equal(existsSync(join(tree, 'native/system/packages/linux-x64/bin/landlock-run')), false, 'nothing was installed')
+  const usage = run([])
+  assert.equal(usage.status, 1, 'no verb = usage refusal, exit 1')
+  assert.match(usage.stderr, /^HOST-ASSETS-REFUSED code=USAGE detail=/m)
+  // every refusal code the transport documents is reachable through the CLI's
+  // line contract (the line prints the typed code it got).
+  assert.ok(PACKAGE_TRANSPORT_CODES.includes('PACKAGE_VERSION_UNPINNED'))
+  assert.ok(PACKAGE_TRANSPORT_CODES.includes('TARBALL_DIGEST_MISMATCH'))
+  assert.ok(PACKAGE_TRANSPORT_CODES.includes('PACKAGE_EXTRA_BIN_FILE'))
+  assert.ok(PACKAGE_TRANSPORT_CODES.includes('DESTINATION_IS_SYMLINK'))
+})
+
+test('T40 a destination that is NOT a regular file refuses by name and RETURNS (a FIFO must never block the provisioner)', async () => {
+  const { manifest, tarball } = packageFixture()
+  const platformDirOf = (tree) => join(tree, 'native/system/packages/linux-x64')
+  const binOf = (tree) => join(platformDirOf(tree), 'bin')
+  // The refusal must happen BEFORE any network call: this fetcher must never run.
+  const offline = { async get(url) { throw new Error(`network reached before the destination type check (${url})`) } }
+  const mkfifo = (path) => {
+    const r = spawnSync('mkfifo', [path], { encoding: 'utf8' })
+    if (r.status !== 0) return false
+    return true
+  }
+  // Bounded: assert the CALL returns within a small wall-clock budget. Not a
+  // test timeout — a hung readFileSync on a FIFO would otherwise be recorded as
+  // a cancelled job (the 41-minute incident's exact failure class).
+  const boundedRefusal = async (label, promise) => {
+    let timer
+    const timeout = new Promise((resolveTimeout) => { timer = setTimeout(() => resolveTimeout({ settled: 'timeout' }), 4000) })
+    const result = await Promise.race([
+      promise.then((value) => ({ settled: 'resolved', value }), (error) => ({ settled: 'rejected', error })),
+      timeout,
+    ])
+    clearTimeout(timer)
+    assert.equal(result.settled, 'rejected', `${label}: must return a typed refusal, not hang for 4 s (settled=${result.settled})`)
+    assert.ok(result.error instanceof HostSandboxAssetError, `${label}: typed error expected, got ${String(result.error)}`)
+    assert.equal(result.error.code, 'DESTINATION_NOT_REGULAR_FILE', `${label}: expected DESTINATION_NOT_REGULAR_FILE, got ${result.error.code} (${result.error.message})`)
+    return result.error
+  }
+  const controls = []
+
+  // (1) the launcher path is a FIFO — the exact shape that blocked probe3 forever.
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-launcher')
+    const fifo = join(binOf(tree), 'landlock-run')
+    if (!mkfifo(fifo)) return // mkfifo(1) unavailable on this host: the other controls still run
+    const error = await boundedRefusal('FIFO launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /FIFO/u, 'the detail names the shape (FIFO)')
+    assert.equal(lstatSync(fifo).isFIFO(), true, 'the FIFO is left in place, untouched')
+    assert.equal(existsSync(join(binOf(tree), 'glibc/system.node')), false, 'nothing else was written')
+    controls.push('fifo-launcher')
+  }
+  // (2) the addon path is a FIFO (both install-set paths are checked, not just the launcher).
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-addon')
+    const fifo = join(binOf(tree), 'glibc/system.node')
+    if (!mkfifo(fifo)) return
+    const error = await boundedRefusal('FIFO addon', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /bin\/glibc\/system\.node/u, 'the detail names the addon path')
+    assert.equal(lstatSync(fifo).isFIFO(), true)
+    controls.push('fifo-addon')
+  }
+  // (3) a DIRECTORY where the launcher should be: raw EISDIR before, typed now.
+  {
+    const tree = makeRuntimeFixture('pkg-dir-launcher')
+    mkdirSync(join(binOf(tree), 'landlock-run'))
+    const error = await boundedRefusal('directory launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /directory/u, 'the detail names the shape (directory)')
+    assert.equal(lstatSync(join(binOf(tree), 'landlock-run')).isDirectory(), true)
+    controls.push('directory-launcher')
+  }
+  // (4) a HARDLINK destination (nlink=2): an in-place overwrite would rewrite
+  //     bytes that belong to another path, so it is refused, not followed.
+  {
+    const tree = makeRuntimeFixture('pkg-hardlink-launcher')
+    const other = join(platformDirOf(tree), 'other-bytes')
+    writeFileSync(other, 'somebody-elses-bytes')
+    linkSync(other, join(binOf(tree), 'landlock-run'))
+    const error = await boundedRefusal('hardlink launcher', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: offline }))
+    assert.match(error.message, /nlink=2/u, 'the detail names the link count')
+    assert.equal(readFileSync(other, 'utf8'), 'somebody-elses-bytes', 'the other link is untouched')
+    controls.push('hardlink-launcher')
+  }
+  // (5) the STAGING path is a FIFO: writeFileSync would block there too. This
+  //     one is checked at install time, so the registry must answer.
+  {
+    const tree = makeRuntimeFixture('pkg-fifo-staging')
+    const fifo = join(binOf(tree), 'landlock-run.u7-sbx-staging')
+    if (!mkfifo(fifo)) return
+    const registry = fakeRegistry({ tarball, integrity: manifest.packages[BASELINE_KEY].platforms[PLATFORM].distIntegrity })
+    const error = await boundedRefusal('FIFO staging path', provisionHostSandboxAssetsFromPackage({ runtimeTree: tree, repoRoot: REPO_ROOT, manifest, spec: `${PKG}@${PKG_EXACT}`, fetcher: registry.fetcher }))
+    assert.match(error.message, /staging path/u, 'the detail names the staging path')
+    assert.equal(existsSync(join(binOf(tree), 'landlock-run')), false, 'no published file was created')
+    controls.push('fifo-staging')
+  }
+  assert.ok(controls.length >= 4, `at least four controls ran, got ${controls.join(', ')}`)
+})
+
+test('T41 the LOCAL-COPY transport shares the destination-type law (a FIFO destination is a refusal, not a hang)', async () => {
+  const tree = makeRuntimeFixture('local-fifo')
+  const fifo = join(tree, 'native/system/packages/linux-x64/bin/landlock-run')
+  const made = spawnSync('mkfifo', [fifo], { encoding: 'utf8' })
+  if (made.status !== 0) return
+  let timer
+  const timeout = new Promise((resolveTimeout) => { timer = setTimeout(() => resolveTimeout({ settled: 'timeout' }), 4000) })
+  const result = await Promise.race([
+    provisionHostSandboxAssets({ runtimeTree: tree, sourceTree: pinnedSourceFixture('local-fifo-src'), repoRoot: REPO_ROOT })
+      .then((value) => ({ settled: 'resolved', value }), (error) => ({ settled: 'rejected', error })),
+    timeout,
+  ])
+  clearTimeout(timer)
+  assert.equal(result.settled, 'rejected', `the local-copy transport must refuse, not hang (settled=${result.settled})`)
+  assert.equal(result.error.code, 'DESTINATION_NOT_REGULAR_FILE', `got ${result.error.code}: ${result.error.message}`)
+  assert.equal(lstatSync(fifo).isFIFO(), true, 'the FIFO is untouched')
 })

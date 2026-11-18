@@ -1,0 +1,30 @@
+# M5 dry run — SYNTHESIZED recording, re-verified at review round 2
+# generated 2026-11-15T00:24:26.007Z from the checkout at eaa02269837bc2319d4a4590f158e89e67ecb1d1
+#
+# THE INPUT IS NOT A REPLAY RECORDING. It is synthesized at run time from the M4 census job's
+# uploaded tinf-timing.tsv (job 43648221295, artifact census-runtime-transcripts-1198): per root,
+# `census-root status=ok` -> PASS. That table carries no per-file results, so nothing here proves
+# WHICH files ran — only that the dry-run MECHANISM replays a 22-task recording and aggregates it.
+# NO REAL REPLAY RECORDING EXISTS YET: the plan path has never run on a host (memo §7).
+# The recording names its own recorded_tree=7fae3be14d927068520b77aef5662ee63569c690 (the M4 tree, which is NOT this
+# checkout's tree) and its synthesized_tree=eaa02269837bc2319d4a4590f158e89e67ecb1d1 (this checkout).
+# The 'OTHER TREE' control (dry-run-negative.txt) replays it under the RECORDED tree and is refused.
+# Generated BEFORE the commit that adds these files, so `head=` names that commit; any LATER
+# commit moves merge_tree by construction, and a recording is only valid at the tree it was made on.
+# Re-run .artifacts/tmp/round2.mjs (gitignored, not shipped) to regenerate at another head.
+
+# input: 25 rows, 22 census-root rows, 11 roots status=ok, 0 not-ok
+
+## PASS — current tree, synthesized recording
+DSH-CI-RUN head=df2b248c6 mode=default node=v24.21.0 cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5 store-dir=default allow-refused=none
+DSH-CENSUS-BUILD digest=sha256:108f24b4ddc465eb4891d32f7f3549d00407d5c80cda74f67207e853279ef48a mode=computed files=2088 bytes=16533772 built_at=2026-11-15T00:24:21.693Z merge_tree=eaa02269837bc2319d4a4590f158e89e67ecb1d1 path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5/.artifacts/tmp/round2/pass-transcript/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=22 roots=11 captures=2 plan=sha256:9c7dc4f2cef65c5bf2c939745ae521b6331f0c19d6f9e66bfa845289991377e1 catalog=sha256:2497b8f97dcabc973e738188a1eb71ad28597ab54d1a823da4f8dfd4f5944884 build=sha256:108f24b4ddc465eb4891d32f7f3549d00407d5c80cda74f67207e853279ef48a merge_tree=eaa02269837bc2319d4a4590f158e89e67ecb1d1 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=11
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=11 passed=11 failed=0 incomplete=0 assertions=0 skipped=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-CAPTURE capture=2 mode=dry-run order=capture-major tasks=11 passed=11 failed=0 incomplete=0 assertions=0 skipped=0 evidence=census-evidence-2.json report=recorded:2
+DSH-CENSUS-PLAN execution=plan tasks=22 roots=11 captures=2 plan=sha256:9c7dc4f2cef65c5bf2c939745ae521b6331f0c19d6f9e66bfa845289991377e1 catalog=sha256:2497b8f97dcabc973e738188a1eb71ad28597ab54d1a823da4f8dfd4f5944884 build=sha256:108f24b4ddc465eb4891d32f7f3549d00407d5c80cda74f67207e853279ef48a merge_tree=eaa02269837bc2319d4a4590f158e89e67ecb1d1 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=1 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY verdict=PASS codes=none expected=22 observed=22 missing=0 extra=0 shards=1 plan=sha256:9c7dc4f2cef65c5bf2c939745ae521b6331f0c19d6f9e66bfa845289991377e1
+DSH-CI-LEG leg=census verdict=pass seconds=0.9 detail=plan-mode census — tasks=22 roots=11 captures=2 plan=sha256:9c7dc4f2cef65c5bf2c939745ae521b6331f0c19d6f9e66bfa845289991377e1 build=sha256:108f24b4ddc465eb4891d32f7f3549d00407d5c80cda74f67207e853279ef48a shards=1 aggregate=PASS expected=22 observed=22 codes=none
+  [tinf-timing] 4 row(s) -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-m5/.artifacts/tmp/round2/pass-transcript/tinf-timing.tsv
+DSH-CI-VERDICT pass pass=1 fail=0 skip=0 skipped=none legs=1 refused=0 refusedlegs=none seconds=0.9
+exit=0

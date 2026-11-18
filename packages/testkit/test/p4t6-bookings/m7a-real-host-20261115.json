@@ -1,0 +1,14 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "M7A-REAL-HOST-20261115",
+  "paths": [
+    "packages/testkit/src/agent-script.ts",
+    "packages/testkit/src/wire-script.ts"
+  ],
+  "expectedDelta": {
+    "from": 1517,
+    "to": 1519
+  },
+  "reason": "M7-A (task/m7a-real-host-20261115): TWO new scannable sources under\npackages/**. The scripted-model surface was split into the document law\n(`agent-script.ts`: `agent-script/1` validation + tool-argument checks) and the\nwire driver (`wire-script.ts`: the request/response script the deployment seam\nreplays), with `scripted-model.ts` keeping the in-process adapter and an index\nre-export. An edit is not an increment: every other file this lane touched under\npackages/** already existed and is counted by the scan (contract-oracle,\neffect-witness, scripted-model, index, and the three existing test files).\nDeleted-then-recreated test files inside this branch (`m7a-real-slice.test.mjs`\nis node:test under tests/**, outside the scan) net to zero here.",
+  "tieNote": "Both endpoints MEASURED on this branch with the two files on disk and no\nbooking, not computed: `checkLedger` reports\n`scanner counts 1519, ledger derives 983 + 534 = 1517` (the scanner walks the\nworking tree, so a stray untracked file under packages/** inflates it — the\nmeasurement was re-run after removing the probe). Adding this booking makes the\nderived total 983 + 536 = 1519, equal to the scanner's 1519. The numeric\nassertion in the coverage leg (`expect(scanResult.filesScanned).toBe(ledger.expected)`)\nsits after the violation check, so the unbooked run surfaces the delta as that\n`total` violation rather than the `expected <from> to be <to>` line."
+}

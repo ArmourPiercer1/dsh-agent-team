@@ -1,0 +1,40 @@
+[2026-11-13T15:12:06.578Z] A6 cold-wake — stamp 2026-11-13T15-12-06-h0-rd45bb3
+[2026-11-13T15:12:06.578Z] worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113
+[2026-11-13T15:12:06.578Z] testuse=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use @ 639ed01539
+[2026-11-13T15:12:06.579Z] evidence=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6-cold-wake-nudge-20261113/dev/agent-workflow/evidence/a6-cold-wake-nudge-20261113/run-probe-2
+[2026-11-13T15:12:06.579Z] host default sandbox mode: danger-full-access (A1-6 needs a FULL-access default to narrow)
+[2026-11-13T15:12:06.579Z] mode: cold-wake-nudge arm=leader-message kill=after-decision windowMs=65000 leaderProbe=true userApproval=false memberWork=false | a6-on (alpha6ReviewRouting: true)
+[2026-11-13T15:12:06.688Z] sandbox backend in use: full (usable=true)
+[2026-11-13T15:12:06.694Z] ports: host=13020 mock=13070
+[2026-11-13T15:12:11.905Z] stable pre-probe: 3080=401 3180=unreachable
+[2026-11-13T15:12:11.913Z] mock model listening on 13070
+[2026-11-13T15:12:13.469Z] boot: url seen (port 13020)
+[2026-11-13T15:12:13.560Z] boot: authenticated
+[2026-11-13T15:12:14.567Z] boot: row health ok (toolCount=15)
+[2026-11-13T15:12:14.572Z] host booted at http://127.0.0.1:13020; row ready — toolCount=15
+[2026-11-13T15:12:14.572Z] ── L0: discovery ──
+[2026-11-13T15:12:14.996Z] discovery surface=32 tools; deny list=11
+[2026-11-13T15:12:15.332Z] CW team-create {"ok":true}
+[2026-11-13T15:12:15.586Z] CW members-created {"officer":"inst-1m3mg2d0lr5k","officerSession":"session-team-child-04c06349c8247cb25cf98e35cb04fb96","worker":"inst-0ipt7301q1ql"}
+[2026-11-13T15:12:15.645Z] CW pre-crash-delegate {"status":200}
+[2026-11-13T15:12:15.745Z] CW pre-crash-bash-call {"callId":"call-c1-o26jha8m"}
+[2026-11-13T15:12:15.846Z] CW pre-crash-request {"requestId":"ctrl-1hyxk3x1mmihc4171vhcn14i","actionName":"parameter-permission"}
+[2026-11-13T15:12:16.046Z] CW pre-crash-decision {"requestId":"ctrl-1hyxk3x1mmihc4171vhcn14i","decider":{"instanceId":"inst-1m3mg2d0lr5k","kind":"instance","role":"member"},"wakeTurns":2}
+[2026-11-13T15:12:37.052Z] CW kill-point {"point":"after-decision","consumed":null,"exec":null}
+[2026-11-13T15:12:37.103Z] CW sigkill {"at":"2026-11-13T15:12:37.103Z","dead":true,"seqAtKill":13,"wakeFilesAtKill":["wake-1c1d6e88.json"],"point":"after-decision"}
+[2026-11-13T15:12:39.260Z] CW cold-boot {"port":13020,"seq":13}
+[2026-11-13T15:12:51.263Z] CW recovery-settled {"wakeFiles":1,"seq":13}
+[2026-11-13T15:12:51.263Z] CW recovery-wake-turns {"count":0}
+[2026-11-13T15:12:51.375Z] CW follow-up {"status":200,"refusal":null}
+[2026-11-13T15:13:51.566Z] CW fresh-member {"instanceId":"inst-1ev4f770t2rd","refusal":null}
+[2026-11-13T15:13:51.643Z] CW post-restart-delegate {"status":200,"refusal":null}
+[2026-11-13T15:13:51.744Z] CW new-bash-call {"callId":"call-c1-kpk4jar8","vehicle":"fresh Member delegate (follow_up was admitted but started no turn in 60 s)"}
+[2026-11-13T15:13:51.945Z] CW new-request-minted {"requestId":"ctrl-0ol83yw1nmhqpx1ybz1hu02g","actionName":"parameter-permission","at":"2026-11-13T15:13:51.945Z"}
+[2026-11-13T15:13:51.963Z] CW pending-listed {"count":1,"listedNewRequest":true,"listed":["ctrl-0ol83yw1nmhqpx1ybz1hu02g"]}
+[2026-11-13T15:13:51.963Z] CW authority-comparison {"sameRowIdentical":true,"fields":14}
+[2026-11-13T15:13:51.993Z] CW leader-probe {"status":200,"refusal":null,"decidedBy":{"instanceId":"inst-leader","kind":"instance","role":"leader"}}
+[2026-11-13T15:13:51.993Z] CW nudge-skipped {"arm":"leader-message","reason":"leader-resolved"}
+[2026-11-13T15:13:51.995Z] CW window-end {"decided":true,"decider":{"instanceId":"inst-leader","kind":"instance","role":"leader"},"nudgeTurns":0,"wakeTurns":0,"nudgeStartedTurn":false,"officerNudgeTurn":false,"wakeNamedNew":false}
+[2026-11-13T15:13:51.996Z] teardown: stopping host + mock
+[2026-11-13T15:13:57.002Z] VERDICT PASS
+EXIT=0

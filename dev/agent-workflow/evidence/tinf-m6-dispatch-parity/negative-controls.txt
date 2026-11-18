@@ -1,0 +1,47 @@
+# TINF M6 — dispatcher refusal & law negative controls
+
+dated: 2026-11-15  base: origin/master e5bf0567 (M5 merged)
+host: v24.21.0
+
+Reproduce from the repo root:
+  node dev/agent-workflow/evidence/tinf-m6-dispatch-parity/negative-controls.mjs
+  node dev/agent-workflow/evidence/tinf-m6-dispatch-parity/mutation-controls.mjs
+
+1. eb3-ci-required M6 laws: mutate the manifest, grade the REAL workflows
+
+  ok   a dispatch leg with no population -> CI_LAYER_LEG_NO_SUITES
+  ok   a declared suite that does not exist -> CI_SUITE_ABSENT
+  ok   an area that does not exist -> CI_SUITE_AREA_ABSENT
+  ok   a dispatch cmd without --run -> CI_LAYER_LEG_DISPATCH_SHAPE
+  ok   a dispatch cmd ending in the shared token -> CI_LAYER_LEG_DISPATCH_SHAPE
+  ok   dispatch_id disagreeing with --leg -> CI_LAYER_LEG_DISPATCH_ID
+  ok   a padded suite path is refused (not silently trimmed) -> CI_SUITE_ABSENT
+  ok   a blank suite -> CI_LAYER_LEG_SUITE_INVALID
+  ok   the settlement job leg is graded too -> CI_SUITE_ABSENT
+  ok   positive control: the unmodified manifest has 0 findings
+DSH-M6-NEGATIVE-CONTROLS PASS cases=9 failed=0
+
+2. dispatcher refusals at the CLI (a refusal is exit 2, never a green no-op)
+
+$ node scripts/dispatch-tests.mjs --leg no-such-leg
+REFUSED DISPATCH_LEG_UNKNOWN "no-such-leg" is not a dispatch leg in dev/ci/eb3-ci-manifest.json (known: devex-diag, tests-checks, eb3-tool-acceptance-laws, a5sf-harness-c1, a5sf-evidence-r3, a5sf-golden-corpus, a5sf-read-gate-c1, a5sf-p2-seam, a5sf-p2-wiring, a5sf-diag-r4, a5sf-f1-tool-plane, ci-local-selection-laws, tinf-m0-baseline, tinf-instruments, a5sf-native-route-c, a5sf-product-assembly, a5sf-fs-contract-layer-b, pr-settlement-unit)
+exit=2
+
+$ node scripts/dispatch-tests.mjs            # no argv: must NOT run the repository
+       node scripts/dispatch-tests.mjs --list | --check
+       node scripts/dispatch-tests.mjs --parity [--old-ref origin/master]
+exit=2
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK PASS legs=18 bad=0
+
+3. mutation controls: delete the thing a law claims to protect, run its suite
+
+  KILLED   evidence-digest-not-compared exit=1 red-count=1
+  KILLED   empty-argv-allowed exit=1 red-count=1
+  KILLED   workflow-list-restored exit=1 red-count=1
+  KILLED   node-suite-predicate-loosened exit=1 red-count=5
+  KILLED   ratchet-removed exit=1 red-count=1
+  KILLED   recorded-drop-verification-reverted exit=1 red-count=1
+  KILLED   dispatch-leg-cmd-loses-run exit=1 red-count=2 codes=CI_LAYER_LEG_UNPROVEN,CI_LAYER_LEG_DISPATCH_SHAPE
+DSH-M6-MUTATION kill=7/7 rate=100%

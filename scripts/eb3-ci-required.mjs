@@ -23,8 +23,39 @@
  *   CI_LAYER_LEG_WEAKENED       the invocation runs but with a required flag missing, a forbidden
  *                               flag present (e.g. --allow-refused census), `|| true`, an
  *                               un-pipefailed pipe, or a conditional step
+ *   CI_LAYER_LEG_ARGUMENT_MISSING (TINF round 2, C9 naming) the step executes a declared `check[]`
+ *                               token-set with a required token ABSENT (e.g. `--full` dropped); this
+ *                               is distinct from an undeclared EXTRA token, which keeps its own code
+ *   CI_LAYER_LEG_EXTRA_ARGUMENT (TINF trust-closeout, F-01) the step executes MORE argv tokens than
+ *                               the leg declares — `--json`, `--list`, a second `--leg`, an env
+ *                               assignment, anything. The old reader graded a PREFIX, so appending
+ *                               `--json` to a manifest cmd kept this gate green while the step
+ *                               printed a plan and ran nothing. The whole trailing argv must now be
+ *                               exactly the leg's `check[]` grammar (and for a dispatch leg it must
+ *                               be exactly empty after its declared cmd).
+ *   CI_LAYER_LEG_NO_SUITES      (TINF M6) a `scripts/dispatch-tests.mjs` leg declares neither
+ *                               suites[] nor areas[] — the dispatcher's argv would be empty, and
+ *                               `node --test` with no argv runs the whole repository
+ *   CI_LAYER_LEG_SUITE_INVALID  a dispatched leg declares a blank suite
+ *   CI_SUITE_AREA_ABSENT        a dispatched leg's `areas[]` names a directory that is not there
+ *   CI_LAYER_LEG_DISPATCH_SHAPE a dispatched leg's cmd lacks `--run` (it would print an argv and
+ *                               run nothing) or ENDS with a token shared by every dispatch leg
+ *                               (`--run`), which makes the allowlisted line reader unable to tell
+ *                               one leg's step from another's
+ *   CI_LAYER_LEG_DISPATCH_ID    the leg's `dispatch_id` disagrees with the `--leg` value in its cmd
  *   CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER   a hostFree layer lists a suite that resolves
  *                               the pinned host checkout (checkSuiteLists)
+ *   CI_LAYER_LEG_ENV_MISSING    (B3, 2026-11-16) a leg declares `env` and the step that executes
+ *                               it does not carry the SAME value — the declaration-grades-the-step
+ *                               law that `cmd`/`check[]` already had, extended to env
+ *   CI_HOST_REFUSAL_UNGUARDED   (B3, 2026-11-16) a `hostFree` layer's leg lists a suite that can
+ *                               turn an ABSENT pinned host into a declared NOT_RUN (its source names
+ *                               `A5SF_REQUIRE_PINNED_HOST`), and the leg neither sets that env to `1`
+ *                               nor declares the reviewed exception `hostRefusal: 'declared-not-run'`.
+ *                               Without it the leg stays green with `verdict=NOT_RUN, skipped=15`
+ *                               when the host is gone — measured on the deferred B4 set. It is the
+ *                               static half of the hidden-host control, so the trap cannot recur
+ *                               silently in a lane that will never provision the host.
  *   CI_SUMMARY_NOT_ALWAYS       the summary job lacks `if: always()` — when a layer fails a
  *                               summary without always() is SKIPPED, and skipped is not red
  *   CI_SUMMARY_NEEDS_INCOMPLETE the summary does not call + need every layer — that layer can
@@ -271,6 +302,60 @@ function preludeRefusal(line) {
   return `\`${argv[0]}\` before the leg is outside the reader's allowlist (cd/source/trap/functions/alias/shopt and every compound construct are)`
 }
 
+/**
+ * Is this `check[]` entry a one-token VALUE SLOT? `<value>` matches exactly one trailing token that
+ * does not itself look like an option (`-…`). Slots exist because a real invocation passes dynamic
+ * values (`--new-since "$CI_BASE"`, `--store-dir "$DSH_CI_STORE_DIR"`); before slots the reader had to
+ * treat every value as an allowed token, which is the prefix hole again. A slot never matches an
+ * option, so a step cannot smuggle `--json` into a value position.
+ */
+export function isValueSlot(token) {
+  return typeof token === 'string' && /^<[^<>]+>$/.test(token)
+}
+
+/**
+ * THE WHOLE TRAILING ARGV LAW (TINF trust-closeout, F-01).
+ *
+ * `check[]` used to mean "every one of these tokens appears somewhere after cmd", so `--json`,
+ * `--list`, a second `--leg` or an env assignment all passed. It is now the ONLY permitted trailing
+ * SEQUENCE, matched token-for-token and end-to-end. No check[] means no trailing tokens at all.
+ *
+ * @returns {{extra: string[], missing: string[]}} extra = tokens the step carries but the leg does
+ *   not declare (CI_LAYER_LEG_EXTRA_ARGUMENT); missing = declared tokens the step does not carry.
+ */
+export function checkTrailing(rest, check) {
+  const allowed = Array.isArray(check) ? check : []
+  const extra = []
+  const missing = []
+  let j = 0
+  for (let i = 0; i < allowed.length; i += 1) {
+    if (j >= rest.length) { missing.push(...allowed.slice(i)); break }
+    const want = allowed[i]
+    const got = rest[j]
+    if (isValueSlot(want)) {
+      if (got.startsWith('-')) { missing.push(want); extra.push(got) }
+      j += 1
+      continue
+    }
+    if (got !== want) {
+      // Align by SEARCHING for the declared token before calling the rest extra. Otherwise a single
+      // missing flag (`--full` removed) would cascade into a dozen false "extra" tokens and be
+      // misnamed CI_LAYER_LEG_EXTRA_ARGUMENT. Tokens skipped on the way are genuinely extra.
+      const at = rest.indexOf(want, j)
+      if (at === -1) { missing.push(want); continue }
+      extra.push(...rest.slice(j, at))
+      j = at + 1
+      continue
+    }
+    j += 1
+  }
+  if (j < rest.length) extra.push(...rest.slice(j))
+  return { extra, missing }
+}
+
+/** The dispatcher's own argv[0..1]; every dispatch leg must declare EXACTLY this + `--run --leg <id>`. */
+export const DISPATCHER_CMD = Object.freeze(['node', 'scripts/dispatch-tests.mjs'])
+
 /** Positive recognition of the leg on ONE logical line. Returns { argv } or { why }. */
 function legLine(line, leg, pipefailSet) {
   let body = line
@@ -305,7 +390,12 @@ export function gradeLeg(job, leg) {
   const steps = Array.isArray(job?.steps) ? job.steps : []
   const unproven = []
   const weakened = []
-  const mentions = (s) => typeof s?.run === 'string' && s.run.includes(leg.cmd[leg.cmd.length - 1])
+  const extraArgs = []
+  const missingArgs = []
+  // A cmd token can be a value SLOT (`<value>`, see checkTrailing); a slot never appears literally in
+  // a workflow, so the prefilter keys on the program/script token instead (cmd[1], else cmd[0]).
+  const markers = [leg.cmd[1], leg.cmd[0]].filter((t) => typeof t === 'string' && t !== '')
+  const mentions = (s) => typeof s?.run === 'string' && markers.some((m) => s.run.includes(m))
   for (const step of steps) {
     if (!mentions(step)) continue
     const stepWhy = stepRefusal(step)
@@ -319,8 +409,29 @@ export function gradeLeg(job, leg) {
         const why = stepWhy ?? blocked ?? scriptWide ?? hit.why ?? null
         if (why !== null) { unproven.push(`${String(step.name ?? 'unnamed step')}: ${why}`); break }
         const rest = hit.argv.slice(leg.cmd.length)
+        // THE WHOLE TRAILING ARGV. `check[]` is not a "these tokens must be present" subset any more:
+        // it is the ONLY permitted trailing sequence, matched token-for-token (a `<value>` entry is a
+        // one-token slot). For a dispatch leg the permitted trailing set is exactly empty — the cmd
+        // already carries `--run --leg <id>`, so any extra token is a mode the step may not add.
+        const trailing = checkTrailing(rest, leg.check)
+        if (trailing.extra.length > 0) {
+          extraArgs.push(`${String(step.name ?? 'unnamed step')}: unexpected argv token(s) ${trailing.extra.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (allowed trailing set: ${leg.check === undefined || leg.check.length === 0 ? 'empty' : JSON.stringify(leg.check)})`)
+          break
+        }
+        // Another leg with the same cmd can share this step's line (`--check-transcript` is the
+        // clearest case): it matches cmd but declares NONE of this leg's check[] and carries its own
+        // flags. That is not this leg running without argv; skip it instead of reporting every token
+        // as missing. A genuine dropped token still has at least one declared token matched (c2).
+        const declared = new Set(Array.isArray(leg.check) ? leg.check : [])
+        const matchedDeclared = rest.some((t) => declared.has(t))
+        if (!matchedDeclared && rest.length > 0) continue
         const problems = []
-        for (const f of leg.check ?? []) if (!rest.includes(f)) problems.push(`missing ${f}`)
+        if (trailing.missing.length > 0) {
+          // A declared `check[]` token that is ABSENT is a different defect from an undeclared token:
+          // dropping `--full` (c2) must not be reported as "extra argument". Keep the two names.
+          missingArgs.push(`${String(step.name ?? 'unnamed step')}: missing declared argv token(s) ${trailing.missing.map((t) => JSON.stringify(t)).join(', ')} after \`${leg.cmd.join(' ')}\` (declared: ${JSON.stringify(leg.check ?? [])})`)
+          break
+        }
         for (const f of leg.forbid ?? []) {
           const at = rest.indexOf(f)
           if (at === -1) continue
@@ -350,9 +461,93 @@ export function gradeLeg(job, leg) {
       unproven.push(`${String(step.name ?? 'unnamed step')}: \`${leg.cmd.join(' ')}\` appears only inside a construct the reader does not prove (if/case/loop/function/substitution/\`-c\` string/heredoc/operator)`)
     }
   }
+  if (missingArgs.length > 0) return { code: 'CI_LAYER_LEG_ARGUMENT_MISSING', why: `\`${leg.cmd.join(' ')}\` runs without argv it declares — ${missingArgs.join(' ;; ')}` }
+  if (extraArgs.length > 0) return { code: 'CI_LAYER_LEG_EXTRA_ARGUMENT', why: `\`${leg.cmd.join(' ')}\` runs with tokens it does not declare — ${extraArgs.join(' ;; ')}` }
   if (weakened.length > 0) return { code: 'CI_LAYER_LEG_WEAKENED', why: `\`${leg.cmd.join(' ')}\` runs but weakened — ${weakened.join(' ;; ')}` }
   if (unproven.length > 0) return { code: 'CI_LAYER_LEG_UNPROVEN', why: `\`${leg.cmd.join(' ')}\` is not PROVEN to gate its step — ${unproven.join(' ;; ')}` }
   return { code: 'CI_LAYER_LEG_MISSING', why: `no step executes \`${leg.cmd.join(' ')}\`` }
+}
+
+/** Does this leg hand its file set to `scripts/dispatch-tests.mjs`? */
+export function isDispatchLeg(leg) {
+  const cmd = Array.isArray(leg?.cmd) ? leg.cmd : []
+  return cmd[0] === 'node' && cmd[1] === 'scripts/dispatch-tests.mjs' && cmd.includes('--leg')
+}
+
+/** Grade one declared leg against its job, plus the M6 dispatch-population laws. */
+/**
+ * WHOLE-ARGV LAW, the other direction (#775 dividend).
+ *
+ * A step that DECLARES its command (`env.M7A_STEP_ARGV`, recorded in the step's evidence so a
+ * node:test child can report the argv it actually ran under) must declare the leg the manifest
+ * grades. The manifest and the declaration are two copies of one command; a one-sided edit would
+ * otherwise desync silently — the manifest would keep grading a command nobody runs, or the record
+ * would name a command the gate never saw.
+ */
+export function checkStepArgvDeclaration(job, leg) {
+  const check = Array.isArray(leg.check) ? leg.check : []
+  if (check.length === 0) return null
+  // A `<value>` slot cannot be compared textually; those legs are out of scope for this rule.
+  if (check.some((token) => String(token).startsWith('<'))) return null
+  const whole = [...(leg.cmd ?? []), ...check].join(' ')
+  const step = (job?.steps ?? []).find((s) => typeof s?.run === 'string' && check.every((token) => s.run.includes(token)))
+  const declared = typeof step?.env?.M7A_STEP_ARGV === 'string' ? step.env.M7A_STEP_ARGV.trim() : ''
+  if (declared === '') return null
+  if (declared === whole) return null
+  return {
+    code: 'CI_LAYER_STEP_ARGV_DESYNC',
+    why: `the step declares M7A_STEP_ARGV=${JSON.stringify(declared)} but the manifest leg is ${JSON.stringify(whole)} — one command, two copies, and they disagree`,
+  }
+}
+
+function checkDeclaredLeg(job, leg, where, add) {
+      const miss = gradeLeg(job, leg)
+      if (miss !== null) add(miss.code, `${where.prefix}: leg "${leg.id}" — ${miss.why} (${where.workflow}#${where.job})`, { layer: where.layer, leg: leg.id })
+      // TINF M6: a dispatched leg carries the population the old `check[]` file list used to carry.
+      // The workflow no longer names a suite, so these three checks are what stands between a leg and
+      // "it runs nothing" / "it runs the whole repository" / "it runs a path that does not exist".
+      if (isDispatchLeg(leg)) {
+        const cmd = leg.cmd
+        // F-01: the manifest cmd is a COMPLETE invocation, not a prefix. Only
+        // [node, scripts/dispatch-tests.mjs, --run, --leg, <id>] is executable; appending `--json`
+        // (or `--list`, a second `--leg`, an env assignment …) to the manifest used to leave this
+        // gate green because every check was a prefix check.
+        if (cmd.includes('--run') && cmd.includes('--leg')) {
+          const idAt = cmd.indexOf('--leg')
+          const canonical = [...DISPATCHER_CMD, '--run', '--leg', cmd[idAt + 1]]
+          const extraTokens = []
+          if (cmd.length > canonical.length) extraTokens.push(...cmd.slice(canonical.length))
+          for (let k = 0; k < Math.min(cmd.length, canonical.length); k += 1) {
+            if (cmd[k] !== canonical[k] && !extraTokens.includes(cmd[k])) extraTokens.push(cmd[k])
+          }
+          if (Array.isArray(leg.check) && leg.check.length > 0) extraTokens.push(...leg.check.map((t) => `check:${t}`))
+          if (extraTokens.length > 0) {
+            add('CI_LAYER_LEG_EXTRA_ARGUMENT', `${where.prefix}: leg "${leg.id}" declares tokens a dispatch invocation may not carry (${extraTokens.map((t) => JSON.stringify(t)).join(', ')}) — the only executable form is ${JSON.stringify(canonical)}; expectation is declared by suites[]/areas[], not by extra argv`, { layer: where.layer, leg: leg.id })
+          }
+        }
+        if (!cmd.includes('--run')) {
+          add('CI_LAYER_LEG_DISPATCH_SHAPE', `${where.prefix}: leg "${leg.id}" dispatches without \`--run\` — the step would print an argv and gate nothing`, { layer: where.layer, leg: leg.id })
+        } else if (cmd[cmd.length - 1] === '--run') {
+          add('CI_LAYER_LEG_DISPATCH_SHAPE', `${where.prefix}: leg "${leg.id}" ends with \`--run\`; every dispatch leg would share that last token and the line reader could not attribute a step to one leg`, { layer: where.layer, leg: leg.id })
+        }
+        const legIdArg = cmd[cmd.indexOf('--leg') + 1]
+        if (typeof leg.dispatch_id === 'string' && leg.dispatch_id !== legIdArg) {
+          add('CI_LAYER_LEG_DISPATCH_ID', `${where.prefix}: leg "${leg.id}" declares dispatch_id=${leg.dispatch_id} but its cmd runs --leg ${String(legIdArg)}`, { layer: where.layer, leg: leg.id })
+        }
+        const suites = Array.isArray(leg.suites) ? leg.suites : []
+        const areas = Array.isArray(leg.areas) ? leg.areas : []
+        if (suites.length === 0 && areas.length === 0) {
+          add('CI_LAYER_LEG_NO_SUITES', `${where.prefix}: leg "${leg.id}" dispatches but declares no suites[]/areas[] — an empty argv would make \`node --test\` run the whole repository`, { layer: where.layer, leg: leg.id })
+        }
+        for (const s of suites) {
+          if (typeof s !== 'string' || s.trim() === '') add('CI_LAYER_LEG_SUITE_INVALID', `${where.prefix}: leg "${leg.id}" declares a blank suite`, { layer: where.layer, leg: leg.id })
+          else if (!existsSync(join(ROOT, s.replace(/^\.\//, '')))) add('CI_SUITE_ABSENT', `${where.prefix}: leg "${leg.id}" declares ${s}, which does not exist`, { layer: where.layer, leg: leg.id })
+        }
+        for (const a of areas) {
+          const rel = String(a).replace(/^\.\//, '').replace(/\/+$/, '')
+          if (!existsSync(join(ROOT, rel))) add('CI_SUITE_AREA_ABSENT', `${where.prefix}: leg "${leg.id}" declares area ${a}, which does not exist`, { layer: where.layer, leg: leg.id })
+        }
+      }
 }
 
 /** Step-level conditions under which no leg in the step is proven. */
@@ -361,7 +556,7 @@ function stepRefusal(step) {
   if (step['continue-on-error'] !== undefined && step['continue-on-error'] !== false) return `step continue-on-error=${JSON.stringify(step['continue-on-error'])}`
   if (step.shell !== undefined && step.shell !== 'bash') return `step shell: ${JSON.stringify(step.shell)} (only unset or exactly \`bash\` is proven errexit)`
   if (step['working-directory'] !== undefined) return `step working-directory: ${JSON.stringify(step['working-directory'])} moves the relative script path`
-  if (step.env !== undefined && Object.keys(step.env).some((k) => ['PATH', 'BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(k))) return 'step env reassigns PATH/BASH_ENV/ENV/NODE_OPTIONS — what `node` resolves to is not proven'
+  if (step.env !== undefined && Object.keys(step.env ?? {}).some((k) => ['PATH', 'BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(k))) return 'step env reassigns PATH/BASH_ENV/ENV/NODE_OPTIONS — what `node` resolves to is not proven'
   return null
 }
 
@@ -385,6 +580,100 @@ export const HOST_DEPENDENCE_MARKERS = Object.freeze([
 /** Read a suite list file: one path per line, `#` comments and blanks ignored. */
 export function readSuiteList(text) {
   return String(text).split('\n').map((l) => l.trim()).filter((l) => l !== '' && !l.startsWith('#'))
+}
+
+// ─────────────────── the deployed half of the hidden-host control (B3, 2026-11-16)
+/**
+ * The env var a suite consults when it would otherwise turn an ABSENT pinned host into a
+ * declared NOT_RUN. A suite whose source names it can SKIP when the host is gone.
+ */
+export const HOST_REFUSAL_MARKER = 'A5SF_REQUIRE_PINNED_HOST'
+
+/** The reviewed exception spelling: a lane that provisions no host declares its NOT_RUN. */
+export const HOST_REFUSAL_DECLARED = 'declared-not-run'
+
+/**
+ * A `hostFree` layer's leg must not be able to pass on an ABSENT pinned host. Two ways to
+ * satisfy the law, and a finding when a leg takes neither:
+ *
+ *   1. `env.A5SF_REQUIRE_PINNED_HOST === '1'` — absence is a red (the leg says so, and
+ *      `checkStepEnvDeclaration` proves the step carries it);
+ *   2. `hostRefusal === 'declared-not-run'` — a named, reviewed exception for a lane that
+ *      deliberately provisions no host (today exactly one: the FS-face layer-B leg, whose
+ *      suite reports `A5SF-FS-CONTRACT-HOST-REFUSED` with `pass 0` and 9 skips).
+ *
+ * The measured defect this closes: `a5sf-pty-contract` on a genuinely absent tree exits 0
+ * with `A5SF-PTY-CONTRACT-HOST-REFUSED … skipped=15 cases=15 verdict=NOT_RUN`. A leg that
+ * lists such a suite without either declaration stays green while running nothing, and no
+ * other rule in this file sees it (`checkSuiteLists` only reads `suiteList` files, and
+ * `ci-integration` has none).
+ *
+ * SCOPE, stated honestly: explicit `suites[]` only. An `areas[]` leg's population is
+ * discovered from git at dispatch time; this rule does not expand areas (it is pure over
+ * the manifest, with no git read), so an area leg that later swallows a refusal-capable
+ * suite is not caught here. `scripts/dispatch-tests.mjs` still refuses untracked/empty
+ * declarations, and the catalog still grades collection.
+ *
+ * @param {object} p
+ * @param {string} [p.root]
+ * @param {object} [p.manifest]
+ * @param {Record<string,string>} [p.override]  path → text, for controls (no disk writes)
+ */
+export function checkHostRefusalGuard({ root = ROOT, manifest = loadManifest(root), override = {} } = {}) {
+  const findings = []
+  const read = (rel) => (rel in override ? override[rel] : existsSync(join(root, rel)) ? readFileSync(join(root, rel), 'utf8') : null)
+  for (const layer of manifest.layers ?? []) {
+    if (layer.hostFree !== true) continue
+    for (const leg of layer.legs ?? []) {
+      if (leg.env?.[HOST_REFUSAL_MARKER] === '1') continue
+      if (leg.hostRefusal === HOST_REFUSAL_DECLARED) continue
+      for (const suite of Array.isArray(leg.suites) ? leg.suites : []) {
+        const text = read(String(suite))
+        if (text === null) continue // a nonexistent suite is CI_SUITE_ABSENT / DISPATCH_SUITE_UNTRACKED elsewhere
+        if (!text.includes(HOST_REFUSAL_MARKER)) continue
+        findings.push({
+          code: 'CI_HOST_REFUSAL_UNGUARDED',
+          detail:
+            `layer ${layer.id} is hostFree but leg "${String(leg.id)}" lists ${suite}, which can turn an ABSENT pinned host into ` +
+            `\`verdict=NOT_RUN\` with skips (it consults ${HOST_REFUSAL_MARKER}). Set env.${HOST_REFUSAL_MARKER}="1" on the leg ` +
+            `(and on its step) so absence is a red, or declare hostRefusal="${HOST_REFUSAL_DECLARED}" with the reason if this lane ` +
+            `deliberately provisions no host (${MANIFEST_REL})`,
+          layer: layer.id,
+          leg: leg.id,
+          path: suite,
+        })
+      }
+    }
+  }
+  return { findings }
+}
+
+/**
+ * The declaration-grades-the-step law, extended to `env`. `cmd`/`check[]` already had it
+ * (`CI_LAYER_LEG_MISSING` answers "does a step EXECUTE this invocation?"); without this rule
+ * a leg could declare `env.A5SF_REQUIRE_PINNED_HOST=1` and the step that runs it could omit
+ * it, restoring the silent-skip trap while the manifest still looked guarded.
+ *
+ * @returns {{code: string, why: string}|null}
+ */
+export function checkStepEnvDeclaration(job, leg) {
+  const declared = leg?.env
+  if (declared === undefined || declared === null) return null
+  if (typeof declared !== 'object' || Array.isArray(declared)) return { code: 'CI_LAYER_LEG_ENV_MISSING', why: 'leg.env must be an object of NAME -> value' }
+  const names = Object.keys(declared)
+  if (names.length === 0) return null
+  const cmd = Array.isArray(leg.cmd) ? leg.cmd : []
+  if (cmd.length === 0) return null
+  const step = (job?.steps ?? []).find((s) => typeof s?.run === 'string' && s.run.includes(cmd.join(' ')))
+  if (step === undefined) return null // CI_LAYER_LEG_MISSING names the absent step; do not double-report
+  const missing = names.filter((k) => String(step?.env?.[k] ?? '') !== String(declared[k]))
+  if (missing.length === 0) return null
+  return {
+    code: 'CI_LAYER_LEG_ENV_MISSING',
+    why:
+      `the manifest leg declares env ${JSON.stringify(declared)} but the step that executes \`${cmd.join(' ')}\` ` +
+      `sets ${JSON.stringify(step?.env ?? {})} — one invocation, two copies, and they disagree (missing/mismatched: ${missing.join(', ')})`,
+  }
 }
 
 /**
@@ -495,14 +784,19 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
       add('CI_LAYER_LEG_MISSING', `layer ${layer.id}: the manifest declares no legs — a layer with nothing to invoke gates nothing`, { layer: layer.id })
     }
     for (const leg of layer.legs ?? []) {
-      const miss = gradeLeg(job, leg)
-      if (miss !== null) add(miss.code, `layer ${layer.id}: leg "${leg.id}" — ${miss.why} (${layer.workflow}#${layer.job})`, { layer: layer.id, leg: leg.id })
+      checkDeclaredLeg(job, leg, { prefix: `layer ${layer.id}`, layer: layer.id, workflow: layer.workflow, job: layer.job }, add)
+      const argvDrift = checkStepArgvDeclaration(job, leg)
+      if (argvDrift !== null) add(argvDrift.code, `layer ${layer.id}: leg "${leg.id}" — ${argvDrift.why}`, { layer: layer.id, leg: leg.id })
+      // B3: a declared `env` is a claim about the step that executes this leg, and it is
+      // graded the same way `cmd`/`check[]` is — otherwise the guard is prose.
+      const envDrift = checkStepEnvDeclaration(job, leg)
+      if (envDrift !== null) add(envDrift.code, `layer ${layer.id}: leg "${leg.id}" — ${envDrift.why}`, { layer: layer.id, leg: leg.id })
     }
     // The merge-tree binding is a leg too: a layer that never compares its checkout to
     // the synthetic tree may be grading a different tree than the one reported.
     // Graded by the SAME allowlist as every other leg, plus: its argument must be the
     // caller's merge_tree input and the step must pass the event in.
-    const bindLeg = { id: 'merge-tree-binding', cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--assert-tree'] }
+    const bindLeg = { id: 'merge-tree-binding', cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--assert-tree', '<value>'] }
     const bindMiss = gradeLeg(job, bindLeg)
     const bindStep = (job.steps ?? []).find((s) => typeof s?.run === 'string' && s.run.includes('--assert-tree'))
     const bindArg = bindStep !== undefined && /--assert-tree\s+"\$\{\{\s*inputs\.merge_tree\s*\}\}"/.test(bindStep.run)
@@ -634,7 +928,7 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
     // The synthesize job must EXECUTE the merge-tree script (same invocation law).
     const synth = aggDoc?.jobs?.synthesize
     const synthMiss = synth === undefined ? { code: 'CI_SUMMARY_NOT_SYNTHESIZING', why: 'no synthesize job' }
-      : gradeLeg(synth, { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--synthesize'] })
+      : gradeLeg(synth, { cmd: ['node', 'scripts/eb3-merge-tree.mjs'], check: ['--synthesize', '--from-merge-ref', '--github-output'] })
     if (synthMiss !== null) {
       add(synthMiss.code === 'CI_LAYER_LEG_WEAKENED' ? 'CI_SUMMARY_NOT_SYNTHESIZING' : 'CI_SUMMARY_NOT_SYNTHESIZING', `summary: synthesize job — ${synthMiss.why}`, { layer: 'aggregate' })
     }
@@ -648,8 +942,17 @@ export function checkRequiredJobs({ files, manifest = loadManifest() }) {
   // silently vanishes (census-runtime deleted, say) is drift in the CI's own description
   // of itself, and the C2 baseline showed the existing gate saw nothing when it happened.
   for (const k of manifest.knownNonRequired ?? []) {
-    if (jobAt(k.workflow, k.job) === null) {
+    const job = jobAt(k.workflow, k.job)
+    if (job === null) {
       add('CI_DECLARED_JOB_ABSENT', `declared non-required job ${k.workflow}#${k.job} is gone — remove it from ${MANIFEST_REL} in the same change if that is intended, so the removal is a reviewed line`, { job: k.job })
+      continue
+    }
+    // A declared job may carry dispatch legs of its own (M6: pr-gate.yml#settlement, the third
+    // Required context). Its Required-ness is the declaration above; its POPULATION is graded by
+    // exactly the same laws as a layer leg, because "which suite runs" is a different question
+    // from "does a red here block the merge", and both deserve an answer.
+    for (const leg of k.legs ?? []) {
+      checkDeclaredLeg(job, leg, { prefix: `job ${k.workflow}#${k.job}`, layer: `${k.workflow}#${k.job}`, workflow: k.workflow, job: k.job }, add)
     }
   }
 
@@ -790,6 +1093,7 @@ if (invokedDirectly) {
     const files = workflowFiles(ROOT)
     const wf = checkRequiredJobs({ files })
     const sl = checkSuiteLists({ root: ROOT })
+    const hg = checkHostRefusalGuard({ root: ROOT })
     const rawLabels = process.env['EB3_PR_LABELS_JSON']
     const conclusion = process.env['EB3_CI_REQUIRED_CONCLUSION']
     const rawDraft = process.env['EB3_PR_DRAFT']
@@ -801,7 +1105,7 @@ if (invokedDirectly) {
         dc = { findings: [{ code: 'CI_DEFERRAL_CONFLICT_UNREADABLE', detail: `EB3_PR_LABELS_JSON is set but unreadable: ${String(e?.message ?? e).slice(0, 80)}` }] }
       }
     }
-    out = { files: files.size, findings: [...wf.findings, ...sl.findings, ...dc.findings] }
+    out = { files: files.size, findings: [...wf.findings, ...sl.findings, ...hg.findings, ...dc.findings] }
   } catch (e) {
     console.error(`EB3-CI-REQUIRED refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)

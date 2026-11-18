@@ -1,0 +1,9 @@
+### NC-3 dirty worktree — identical to NC-1 plus one untracked file.
+### Expected: adds WORKTREE_DIRTY.
+pr-ready-check: PR #768 head=dcdd9608cd8b7c4f3d95272f2e93e4451895572b state=blocked draft=true
+  layers: fast=success integration=success security=success product=success
+  deferred=success census=skipped settlement=missing
+  git: head=dcdd9608c branch=task/tinf-m0-20261114 upstream=origin/task/tinf-m0-20261114 ahead=0 clean=false
+  refuse reasons: SETTLEMENT_MISSING, WORKTREE_DIRTY
+DSH-PR-READY verdict=REFUSED pr=768 reasons=SETTLEMENT_MISSING,WORKTREE_DIRTY
+exit=1

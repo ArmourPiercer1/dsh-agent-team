@@ -1,0 +1,114 @@
+# Review round 2 on PR #773 — the six findings, and what was measured after fixing them
+
+Review of `4ff253a501e9a363d0164f61c154b9c78b63bc94` = CHANGES REQUIRED (six findings). Fixes:
+`32c1a5bd4` on the same branch (`task/tinf-m5-census-cutover-20261114`). No PR was opened (PR #773
+already exists); the `census-runtime.yml` cutover line and the three Required contexts were not
+touched in this round.
+
+## 1. Hermeticity — the BLOCKING finding, reproduced and closed
+
+The old suite created its fixtures with `mkdtempSync(join(REPO_ROOT, '.artifacts', …))`. On a clean
+checkout `.artifacts/` does not exist, so 16 of the 25 cases died with `ENOENT` at setup — and the
+suite passed in CI only because an UNRELATED earlier step
+(`tests/u7-3-devex/devex-integration.test.mjs`) had created `.artifacts/` first. Fixtures now live
+under `os.tmpdir()`.
+
+Both runs below are `git clone --no-hardlinks` of this worktree into `/tmp`, with `.artifacts/`
+ABSENT at the start, and the EXACT six-file CI command:
+
+```
+node --test scripts/test-catalog.test.mjs scripts/tinf-timing.test.mjs scripts/host-cache-key.test.mjs \
+           scripts/census-plan.test.mjs scripts/census-aggregate.test.mjs scripts/census-cutover.test.mjs
+```
+
+| checkout | `.artifacts/` present before | tests | pass | fail |
+| --- | --- | --- | --- | --- |
+| `4ff253a5` (the reviewed commit) | no | 226 | **210** | **16** |
+| `32c1a5bd4` (this round) | no | 238 | **238** | **0** |
+
+What the clone looks like afterwards: `git status --porcelain` is EMPTY (no tracked change), and the
+only thing that can appear is an EMPTY gitignored `.artifacts/` directory. That matters because
+nothing READS it: the old suite failed when it was missing, the new one passes without it, and the
+leg's output directories are tmp dirs (or `<transcript>/plan` in production).
+
+## 2. Gates at `32c1a5bd4`–`df2b248c6` (this worktree)
+
+Code froze at `32c1a5bd4`; `29bd642e0`/`df2b248c6` add two finishing fixes (plan artifacts live beside
+the transcript; live-test cleanup) and the six-file command was re-run at `df2b248c6` = 238/238.
+
+```
+node --test <the six files> ................ 238 tests / 238 pass / 0 fail   (was 226/210/16 at 4ff253a5)
+  └─ census-cutover.test.mjs ...............  37 tests / 37 pass / 0 fail   (was 25)
+node scripts/census-plan.mjs --self-test ...... PASS cases=40 failed=0
+node scripts/census-aggregate.mjs --self-test . PASS cases=33 failed=0
+node scripts/ci-pr-gate.mjs --self-test ....... pass 94 assertions
+node scripts/test-catalog.mjs --max-uncollected 91
+  ............................................ exit 0 tests=865 UNCOLLECTED=91 digest=sha256:2497b8f9…
+node scripts/eb3-ci-required.mjs .............. pass workflows=10 findings=0
+node scripts/docs-sync.mjs --check ............ findings=0 blocking=0
+node scripts/lint-identities.mjs .............. exit 0 (162 identity lines / 76 distinct)
+npx eslint <the 6 changed files> .............. 0 problems
+node --check <the 5 changed scripts> .......... all pass
+node scripts/ci-pr-gate.mjs --check-transcript <plan-mode transcript>
+  ............................................ pass class=ok :: 1 leg(s), final token pass
+```
+
+## 3. The dry run, re-verified at this head (`df2b248c6`) — and what it does NOT claim
+
+See `dry-run-positive.txt` / `dry-run-negative.txt`. The recorded artifact the M4 job uploaded
+(`census-runtime-transcripts-1198`) contains only `census-run.txt`, `census-capture-{1,2}.txt` and
+`tinf-timing.tsv`: **no vitest JSON report and no `census-replay-<n>.json`**, so it cannot be replayed
+as a recording (a dry run over it refuses `DRYRUN_CAPTURE_MISSING`). The PASS below is over a
+recording **synthesized at run time** from the timing table (`census-root status=ok → PASS`), which
+proves the plan→result→aggregate→token chain and nothing about which files ran. There is no real
+replay recording yet: the plan path has never executed on a host.
+
+Six controls, each RED:
+
+| control | outcome | exit |
+| --- | --- | --- |
+| one root FAIL | `verdict=FAIL codes=TASK_STATE_FAIL expected=22 observed=22` | 1 |
+| a root missing from the recording | `REFUSED DRYRUN_COVERAGE_MISMATCH` (10 of 11 roots) | 1 |
+| only capture 1 recorded | `REFUSED DRYRUN_CAPTURE_MISSING` | 1 |
+| the recording labelled with its RECORDED tree (7fae3be1…) | `REFUSED DRYRUN_IDENTITY_MISMATCH` | 1 |
+| missing build stamp | `REFUSED BUILD_STAMP_MISSING` | 1 |
+| the reviewer's doctored dir (22 PASS, `evidence=/nonexistent/…`) | `REFUSED RESULT_EVIDENCE_OUTSIDE` | **2** |
+
+## 4. Finding-by-finding
+
+1. **Suite not hermetic** — fixed (tmpdir fixtures, injectable output dirs); before/after in §1.
+2. **Latent false RED** — `rootsFromReport` now counts exactly `status === 'failed'` (legacy
+   `scripts/fail-set.mjs` semantics), counts `skipped`/`pending`/`todo` separately, and prints
+   `skipped=` plus `assertions=` on the capture line. An UNKNOWN status is a FAIL
+   (`UNKNOWN_ASSERTION_STATUS`) — stricter than legacy, never looser. Tests: "a skip is NOT a
+   failure (legacy semantics)…", "an unknown assertion status is a FAIL…".
+3. **Evidence trusted, not verified** — `verifyEvidenceRefs()` resolves each reference against the
+   shard's own directory and requires an existing, non-escaping file whose evidence artifact lists
+   the fragment's root (`RESULT_EVIDENCE_OUTSIDE` / `RESULT_EVIDENCE_UNREADABLE` /
+   `RESULT_EVIDENCE_UNKNOWN_ROOT`); it runs on the GRADED BYTES in the aggregator CLI and in
+   `aggregateArtifacts`. The runner writes `census-evidence-<capture>.json` beside the shards and
+   re-anchors every result to it. A replay now must carry `merge_tree` == the plan's
+   (`DRYRUN_IDENTITY_MISMATCH`) and cover every planned root (`DRYRUN_COVERAGE_MISMATCH`). Evidence
+   files relabelled (§3): the replay is SYNTHESIZED; no real recording exists.
+4. **Dead guard** — the identity is always the checkout's `gitTreeSha`; `EB3_MERGE_TREE` is a CLAIM
+   compared in two independent places (claim vs checkout, claim vs the plan's recorded identity).
+   Test: "EB3_MERGE_TREE naming another tree refuses PLAN_MERGE_TREE_MISMATCH".
+5. **Stale report reuse** — plan reports are written to `census-<stamp>-<pid>-<capture>.json` and
+   unlinked before the spawn; a crash leaves no report, so the leg refuses `CENSUS_REPORT_MISSING`
+   instead of grading the previous bytes. The plan argv is otherwise untouched (only
+   `--outputFile.json=` is rewritten). Test: "a stale report at the graded path is UNLINKED…".
+6. **Build stamp staleness** — the current surface is re-hashed on every recorded stamp:
+   `BUILD_STAMP_STALE` on any byte/count/path difference, `BUILD_STAMP_UNVERIFIABLE` when the
+   surface cannot be hashed at all (refused, never trusted). Tests: "a same-tree stamp whose bytes
+   changed is BUILD_STAMP_STALE" (and the unverifiable branch in the same case), plus the CLI's
+   `--verify` now re-hashes.
+
+## 5. Still not verified (unchanged by this round)
+
+- **The live plan path has never run on a host.** This machine has no pristine host tree, and the
+  dry run replays a recording; the live branch is exercised only through an injected runner in the
+  suite (one stamped invocation per capture, report written by the runner).
+- **No real replay recording exists.** Every recording in the evidence was synthesized at run time.
+- **Wall clock for plan mode is still structural** (2 invocations, same argv) + 0.8 s measured
+  plan/verify/aggregate overhead, not a measured census job.
+- The dry run maps `status=ok → PASS` at ROOT level: it does not prove assertion counts or file sets.

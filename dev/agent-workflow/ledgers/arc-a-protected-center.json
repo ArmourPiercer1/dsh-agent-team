@@ -463,6 +463,18 @@
       "sha256": "84aa3820dd47a1358677c5d661e4a01d6e7a53f41e8060e9bd3cc7f439c0f221",
       "pr": "PR #754 (PD42-RELAY: PA-leg fact + real terminal texts) - NAMED center-interface change, same interface as #751, J05J06/#733 precedent",
       "reason": "The #751 classifier was corrected twice on the SAME interface: the PA leg now classifies the pinned tool STRING (it had answered unknown, which settleNative dropped, so 10 consumptions carried 5 facts) and the last-line anchor steps over the tool reset sentence when the tool own timeout/session-exit/signal trailer precedes it (timeout and session-exit now unknown, SIGKILL failed; they were succeeded). No new authority, decision or durable schema; denials still write no execution fact. Evidence dev/agent-workflow/evidence/pd42-relfix-20261117/ (A1 10 cons = 10 facts, PA 5/5, joint PA 1; pd42 PASS x2; 18 tests from verbatim captured texts, RED 7/18 pre-fix)."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "sha256": "ea0171b1ab9000365f637f3c790b1a6f3b38cc8c831da72fa070a6df8bcd9bb4",
+      "pr": "PR #758 (folds in the closed PR #757; see also issue #756) — INVARIANT-37-SUCCESSORS, NAMED centre-interface text correction on the SAME interface",
+      "reason": "PR #758 (folds in the closed PR #757; see also issue #756) — INVARIANT-37-SUCCESSORS, NAMED centre-interface text correction on the SAME interface. `service.ts` and `types.ts` carry comment blocks that still assert the superseded rule \"a MEMBER is never a resolver\", which contradicts the Alpha.6 Officer adjudication path this release ships. Comment text only: no signature, type, constant, branch or durable-write change; line counts preserved so anchors do not move, and the `packages/runtime/dist` mirror is rebuilt in the same commit because the comment text changes. No new capability, authority or scope is introduced. Evidence: `RELEASE-NOTES-0.1.6.md` §13, `PREVIEW-CONTRACT-2026-11-16.md` §8, the PR #758 correction comment."
+    },
+    {
+      "path": "packages/runtime/control/types.ts",
+      "sha256": "c2ab764810eac22b866fe75d1680c1213be2bd40ff896ca3392e04c6940b282f",
+      "pr": "PR #758 (folds in the closed PR #757; see also issue #756) — INVARIANT-37-SUCCESSORS, NAMED centre-interface text correction on the SAME interface",
+      "reason": "PR #758 (folds in the closed PR #757; see also issue #756) — INVARIANT-37-SUCCESSORS, NAMED centre-interface text correction on the SAME interface. `service.ts` and `types.ts` carry comment blocks that still assert the superseded rule \"a MEMBER is never a resolver\", which contradicts the Alpha.6 Officer adjudication path this release ships. Comment text only: no signature, type, constant, branch or durable-write change; line counts preserved so anchors do not move, and the `packages/runtime/dist` mirror is rebuilt in the same commit because the comment text changes. No new capability, authority or scope is introduced. Evidence: `RELEASE-NOTES-0.1.6.md` §13, `PREVIEW-CONTRACT-2026-11-16.md` §8, the PR #758 correction comment."
     }
   ]
 }
