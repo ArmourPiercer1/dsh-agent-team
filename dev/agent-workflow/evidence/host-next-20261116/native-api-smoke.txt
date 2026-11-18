@@ -1,7 +1,7 @@
 NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
-NEXT-SMOKE BOOT ok ms=1506 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
-NEXT-SMOKE SESSION ok sessionId=session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f createStatus=200 promptStatus=200 modelRequests=2
-NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/tests/homes/next-boot-2026-11-18T15-44-48-032Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-h3SWKf--/session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-h3SWKf--/session-11ba6c03-3fb3-49b3-ac2f-f8989dd7ce6f/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
+NEXT-SMOKE BOOT ok ms=2008 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-d2425640-2fec-4cf3-88b4-5cd2144ae66b createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/host-next-20261116/tests/homes/next-boot-2026-11-18T18-19-09-361Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-a2JWN5--/session-d2425640-2fec-4cf3-88b4-5cd2144ae66b/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-host-next-20261116-.artifacts-tmp-next-host-lane-cwd-a2JWN5--/session-d2425640-2fec-4cf3-88b4-5cd2144ae66b/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
 NEXT-SMOKE A1 ok resolve=ResolvedToolSet dispose=function admitted=observe
 NEXT-SMOKE A2 ok executor=selected tool=observe value=observed:one bodyObserved=["one"]
 NEXT-SMOKE A3 ok order=tools/pre-execute>tools/execute>tools/post-execute>tools/result

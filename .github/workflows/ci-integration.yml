@@ -280,7 +280,7 @@ jobs:
           A5SF_REQUIRE_PINNED_HOST: '1'
         run: |
           node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-          node scripts/test-catalog.mjs --max-uncollected 48 --max-excluded 9
+          node scripts/test-catalog.mjs --max-uncollected 46 --max-excluded 9
 
       - name: "contract tier coverage (F-03 — every contract's required tiers are executed)"
         # dev/ci/test-contracts.json declares required_tiers; dev/ci/contract-tier-exceptions.json is

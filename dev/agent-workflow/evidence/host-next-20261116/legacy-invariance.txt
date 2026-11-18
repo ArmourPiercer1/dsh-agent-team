@@ -14,9 +14,12 @@ $ git diff -U0 -- tests/paths.mjs   # only the appended NEXT_HOST block
   porcelain = 0
 
 ## 3. legacy suite passes unchanged: node scripts/dispatch-tests.mjs --run --leg tinf-instruments
-DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=48 files=48 exit=0 set=sha256:9ea399ecadc29135457f6d1f3d1b2bbc58d731f13d0314420c96e2047cb40a5f
+  (post-merge master b28728fef: 50 suites. The run below was made inside `unshare -m -r` with
+   tests/deepseek-harness-test-use bind-mounted EMPTY, i.e. the pinned host tree genuinely ABSENT,
+   A5SF_REQUIRE_PINNED_HOST=1 A5SF_PD31_HOST_TREE=/nonexistent — the declared hostFree shape.)
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=50 files=50 exit=0 set=sha256:bcdd4b142ef4cf9484dfc0b1b65ef5f801f0e4a41a1f05db679b83dee6ef860e
 EXIT=0
-  ✔ 735
+  ✔ 737
   ✖ 0
 
 ## 4. shared files: paths.mjs strictly additive; the provisioning lib only gains a DEFAULTED parameter
