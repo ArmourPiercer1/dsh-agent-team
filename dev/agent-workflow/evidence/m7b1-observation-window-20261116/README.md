@@ -41,8 +41,8 @@ From `host-present.txt` (unmodified reporter output, `ℹ ` prefix stripped):
 
 ```text
 M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
-M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/homes/u5m7b1-20261118T14-14-12Z/m7b1-tmp/m7b1-watched/beside.txt"]
-M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/homes/u5m7b1-20261118T14-14-12Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/homes/u5m7b1-20261118T15-39-13Z/m7b1-tmp/m7b1-watched/beside.txt"]
+M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-next-20261116/tests/homes/u5m7b1-20261118T15-39-13Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
 ```
 
 and the denial the Host itself emitted (A4), captured from its durable session trace — not fabricated:
@@ -106,7 +106,7 @@ provisioned from the pinned published package (`bin/glibc/system.node` = `54a9c2
 
 | graded step | argv | result | wall |
 | --- | --- | --- | --- |
-| M7-B1 | `M7B1_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=1200000 --test-reporter=spec tests/world-factory/m7b1-observation-window.test.mjs` | **7/7 pass**, arms A1–A6 identical to the worktree run | **93 s** (`bootMs=89645`) |
+| M7-B1 | `M7B1_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=1200000 --test-reporter=spec tests/world-factory/m7b1-observation-window.test.mjs` | **10/10 pass**, arms A1–A9 identical to the worktree run — including the B1/B2/B3/M1 mutation refusals | **94 s** |
 | B4/1 | `A5SF_REQUIRE_PINNED_HOST=1 … --test-timeout=600000 … a5sf-pty-contract.tests.mjs a5sf-sub-contract.test.mjs` | **30/30 pass** | **27 s** |
 | B4/2 | `A5SF_REQUIRE_PINNED_HOST=1 … --test-timeout=300000 … a5sf-web-contract a5sf-web-row a5sf-pd31-read-image` | **27/27 pass** | **<1 s** |
 
@@ -114,9 +114,12 @@ A fresh clone in this shape carries **no usable native assets** — which is exa
 `host-sandbox assets` step precedes both graded steps, and why a run without it fails closed
 (`HOST_ASSETS_UNPROVEN`) instead of grading an unpinned backend.
 
-**Disclosure:** the head tested in this clone is `325e34ce28`. The commits after it on this branch
-touch only a module doc comment and this evidence/memo prose — no executable change. Every other number
-in this file comes from the task worktree and is labelled as such.
+`--parity --old-ref e5bf05670` is ALSO run in this clone (it carries the base, `depth=2861`), because
+the parity tool needs the OLD workflow text: `DISPATCH-PARITY … problems=0`.
+
+**Disclosure:** the head tested in this clone is `92940605c2` (the review-round fix). Any later commit
+on the branch is evidence/prose only. Every other number in this file comes from the task worktree and
+is labelled as such.
 
 ## 4. Where CI grades it
 

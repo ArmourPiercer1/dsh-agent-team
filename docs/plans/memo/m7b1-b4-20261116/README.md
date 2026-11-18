@@ -108,14 +108,15 @@ does not have).
 ## 5b. Proven in the CI checkout shape, not only in the worktree
 
 `dev/agent-workflow/evidence/m7b1-observation-window-20261116/ci-shape.txt`: a **full clone**
-(`git clone --branch …`, 2859 commits, porcelain 0, HEAD == `325e34ce28`), its own `pnpm install
+(`git clone --branch …`, 2861 commits, porcelain 0, HEAD == `92940605c2`, which also carries the parity
+base `e5bf05670` so `--parity` is run in it: `problems=0`), its own `pnpm install
 --frozen-lockfile` + build, the pinned host fetched by exact SHA and built, the native assets
 provisioned from the pinned published package (`54a9c25c…` = the pin) — then the three graded argv
 lines exactly as the job runs them:
 
 | step | result | wall |
 | --- | --- | --- |
-| M7-B1 (`M7B1_REQUIRE_PINNED_HOST=1`) | 7/7 | 93 s (`bootMs=89645`) |
+| M7-B1 (`M7B1_REQUIRE_PINNED_HOST=1`) | 10/10 | 94 s |
 | B4/1 subprocess (`A5SF_REQUIRE_PINNED_HOST=1`) | 30/30 | 27 s |
 | B4/2 web + read_image | 27/27 | <1 s |
 
