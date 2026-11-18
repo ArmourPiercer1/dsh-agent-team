@@ -738,6 +738,266 @@ control('C10c host-free-leg-refuses-unguarded-refusal-suite', () => {
 })
 
 
+// ───────────── control 10d: the exception is PER-SUITE, and it must be earned
+/**
+ * The B3 exception was `hostRefusal: 'declared-not-run'` on the LEG `a5sf-fs-contract-layer-b`.
+ * It was scoped to nothing: adding any other suite to that leg inherited the waiver, so a
+ * suite that can turn an absent pinned host into `verdict=NOT_RUN` would have stayed green —
+ * `eb3-ci-required` said `pass`, and only `test-catalog` (a different gate) saw the new file.
+ *
+ * This control plants exactly that defect and grades both directions:
+ *
+ *   a  honest manifest passes
+ *   b  a refusal-capable suite added to the excepted leg WITHOUT its own declaration => CI_HOST_REFUSAL_UNGUARDED
+ *   c  the legacy leg-wide string spelling => CI_HOST_REFUSAL_WAIVER_UNSCOPED (and the suite is still unguarded)
+ *   d  the SAME suite NAMED in the waiver => no finding (a declared suite passes)
+ *   e  a waiver naming a suite the leg does not list => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE
+ *   f  a waiver with no subject / no reason => CI_HOST_REFUSAL_WAIVER_INVALID
+ */
+control('C10d host-refusal-exception-is-per-suite', () => {
+  const { checkHostRefusalGuard, hostRefusalWaiver } = requireModule('scripts/eb3-ci-required.mjs')
+  if (typeof hostRefusalWaiver !== 'function') return { ok: false, detail: 'eb3-ci-required.mjs exports no hostRefusalWaiver — the exception shape is ungraded' }
+  const honest = checkHostRefusalGuard({ root: ROOT })
+  if (honest.findings.length !== 0) return { ok: false, detail: `honest manifest already fails: ${honest.findings.map((f) => f.code).join(',')}` }
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const LEG_ID = 'a5sf-fs-contract-layer-b'
+  const EXCEPTED = 'tests/world-factory/a5sf-fs-contract.test.mjs'
+  const PLANT = 'tests/world-factory/a5sf-pty-contract.test.mjs' // B3's measured NOT_RUN trap (skipped=15, exit 0)
+  if (!existsSync(join(ROOT, PLANT))) return { ok: false, detail: `${PLANT} is gone — the plant has no subject` }
+  const legOf = (m) => m.layers.find((l) => l.id === 'ci-integration').legs.find((l) => l.dispatch_id === LEG_ID)
+  const withLeg = (patch) => ({
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration'
+      ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, ...patch } : x)) }
+      : l)),
+  })
+  const codesFor = (m, path) => checkHostRefusalGuard({ root: ROOT, manifest: m }).findings.filter((f) => f.path === path).map((f) => f.code)
+  const misses = []
+  const planted = withLeg({ suites: [...legOf(manifest).suites, PLANT] })
+  // (b) the defect itself: an undeclared suite inherits nothing now
+  if (!codesFor(planted, PLANT).includes('CI_HOST_REFUSAL_UNGUARDED')) misses.push(`an undeclared refusal-capable suite added to the excepted leg: CI_HOST_REFUSAL_UNGUARDED not raised for ${PLANT.split('/').pop()} (got ${JSON.stringify(codesFor(planted, PLANT))})`)
+  // (c) the legacy spelling is a waiver of the whole leg, and it is refused as such
+  const legacy = withLeg({ suites: [...legOf(manifest).suites, PLANT], hostRefusal: 'declared-not-run' })
+  const legacyFindings = checkHostRefusalGuard({ root: ROOT, manifest: legacy }).findings
+  if (!legacyFindings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_UNSCOPED')) misses.push('the legacy leg-wide string spelling: CI_HOST_REFUSAL_WAIVER_UNSCOPED not raised')
+  if (!legacyFindings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === PLANT)) misses.push('the legacy leg-wide spelling still silences the planted suite: CI_HOST_REFUSAL_UNGUARDED not raised')
+  // (d) naming the suite is what earns the exception
+  const named = withLeg({ suites: [...legOf(manifest).suites, PLANT], hostRefusal: { mode: 'declared-not-run', suites: [EXCEPTED, PLANT], why: 'both suites refuse the host and this lane provisions none' } })
+  const namedFindings = checkHostRefusalGuard({ root: ROOT, manifest: named }).findings
+  if (namedFindings.length !== 0) misses.push(`a suite NAMED in the waiver is still refused: ${namedFindings.map((f) => `${f.code}:${f.path ?? ''}`).join(',')}`)
+  // (e) a waiver that drifted off its subject
+  const stray = withLeg({ hostRefusal: { mode: 'declared-not-run', suites: [EXCEPTED, 'tests/world-factory/not-in-this-leg.test.mjs'], why: 'x' } })
+  if (!checkHostRefusalGuard({ root: ROOT, manifest: stray }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE')) misses.push('a waiver naming a suite the leg does not list: CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE not raised')
+  // (f) a waiver with no subject, and one with no reason
+  for (const [name, waiver] of [['empty suites', { mode: 'declared-not-run', suites: [], why: 'x' }], ['no reason', { mode: 'declared-not-run', suites: [EXCEPTED], why: '  ' }], ['wrong mode', { mode: 'trust-me', suites: [EXCEPTED], why: 'x' }]]) {
+    const m = withLeg({ hostRefusal: waiver })
+    if (!checkHostRefusalGuard({ root: ROOT, manifest: m }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_WAIVER_INVALID')) misses.push(`a waiver with ${name}: CI_HOST_REFUSAL_WAIVER_INVALID not raised`)
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest manifest passes; ${PLANT.split('/').pop()} added to the excepted leg undeclared => CI_HOST_REFUSAL_UNGUARDED; the legacy leg-wide string => CI_HOST_REFUSAL_WAIVER_UNSCOPED plus the same suite finding; the suite NAMED in the waiver => no finding; a stray subject => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE; empty/no-why/wrong-mode => CI_HOST_REFUSAL_WAIVER_INVALID`
+      : misses.join(' ;; '),
+  }
+})
+
+
+// ───────────── control 10e: EVERY host-refusal marker is graded, and the list is the repo's
+/**
+ * The B3 predicate was the single literal `A5SF_REQUIRE_PINNED_HOST`, so a `hostFree` leg that
+ * listed `tests/world-factory/m7a-real-slice.test.mjs` — which consults `M7A_REQUIRE_PINNED_HOST`
+ * across the repo and refuses exactly the same way — produced NO finding: the trap was open for
+ * a whole marker family.
+ *
+ * This control holds both halves of the generalisation:
+ *
+ *   0  the marker list EQUALS the set the tracked `tests/` sources actually name (derived again
+ *      here with git grep) — a third spelling in any suite is CI_HOST_REFUSAL_MARKER_UNLISTED,
+ *      and a list entry nothing consults is CI_HOST_REFUSAL_MARKER_STALE
+ *   1  each listed marker, planted into a suite of a hostFree leg that sets nothing, is caught
+ *   2  setting ONE marker does not guard a suite that names ANOTHER (one flag buys one marker)
+ */
+control('C10e every-host-refusal-marker-is-graded', () => {
+  const { checkHostRefusalGuard, HOST_REFUSAL_MARKERS } = requireModule('scripts/eb3-ci-required.mjs')
+  if (!Array.isArray(HOST_REFUSAL_MARKERS) || HOST_REFUSAL_MARKERS.length === 0) return { ok: false, detail: 'eb3-ci-required.mjs exports no HOST_REFUSAL_MARKERS — the predicate is a single literal again' }
+  const misses = []
+  const { HOST_REFUSAL_REQUIRE_MARKERS, HOST_REFUSAL_HOST_TREE_SWITCHES, HOST_REFUSAL_SWITCHES, deriveHostRefusalSwitches } = requireModule('scripts/eb3-ci-required.mjs')
+  // 0. the vocabulary is derived from the repo, not remembered — and over THE PATHS THE LEGS
+  //    COLLECT, which includes `scripts/*.test.mjs` (four of them ride tinf-instruments). The
+  //    earlier derivation only ran `git grep -- tests`, so a switch planted in a collected
+  //    `scripts/` suite was invisible to this control (C10f is that plant).
+  const scan = () => {
+    const files = execFileSync('git', ['ls-files', '-z', 'tests', 'scripts'], { cwd: ROOT, encoding: 'utf8' })
+      .split('\0')
+      .filter((f) => /^(tests|scripts)\//.test(f) && f.endsWith('.test.mjs'))
+    const requireHost = new Set()
+    const hostTree = new Set()
+    for (const f of files) {
+      const text = readFileSync(join(ROOT, f), 'utf8')
+      for (const m of text.matchAll(/process\.env\.([A-Z][A-Z0-9_]+)/g)) {
+        if (/REQUIRE_PINNED_HOST$/.test(m[1])) requireHost.add(m[1])
+        else if (/HOST_TREE$/.test(m[1])) hostTree.add(m[1])
+      }
+    }
+    return { files, requireHost: [...requireHost].sort(), hostTree: [...hostTree].sort() }
+  }
+  let derived
+  try {
+    derived = scan()
+  } catch (e) {
+    return { ok: false, detail: `could not derive the switch vocabulary from the collected paths (${String(e?.message ?? e).split('\n')[0]}) — the list cannot be shown to match the repo` }
+  }
+  if (derived.files.length === 0) return { ok: false, detail: 'no tracked *.test.mjs found — the derivation is broken, not the repo' }
+  if (!derived.files.some((f) => f.startsWith('scripts/'))) return { ok: false, detail: 'the derivation sees no scripts/ suite — the scope regressed to tests/ only' }
+  const derivedAll = [...new Set([...derived.requireHost, ...derived.hostTree])].sort()
+  const unlisted = derivedAll.filter((m) => !HOST_REFUSAL_SWITCHES.includes(m))
+  const stale = HOST_REFUSAL_SWITCHES.filter((m) => !derivedAll.includes(m))
+  if (unlisted.length > 0) misses.push(`CI_HOST_REFUSAL_MARKER_UNLISTED: the collected paths consult ${unlisted.join(', ')} but HOST_REFUSAL_SWITCHES does not list it`)
+  if (stale.length > 0) misses.push(`CI_HOST_REFUSAL_MARKER_STALE: HOST_REFUSAL_SWITCHES lists ${stale.join(', ')} but no tracked suite consults it`)
+  // the exported classifier must agree with this control's own scan (two implementations)
+  const classified = deriveHostRefusalSwitches(derived.files.map((f) => ({ path: f, text: readFileSync(join(ROOT, f), 'utf8') })))
+  if (JSON.stringify(classified.requireHost) !== JSON.stringify(derived.requireHost)) misses.push(`deriveHostRefusalSwitches() disagrees on the REQUIRE half: ${JSON.stringify(classified.requireHost)} vs ${JSON.stringify(derived.requireHost)}`)
+  if (JSON.stringify(classified.hostTree) !== JSON.stringify(derived.hostTree)) misses.push(`deriveHostRefusalSwitches() disagrees on the HOST_TREE half: ${JSON.stringify(classified.hostTree)} vs ${JSON.stringify(derived.hostTree)}`)
+  // and the two roles are disjoint and non-empty, so "all" cannot be one list wearing two names
+  if (HOST_REFUSAL_REQUIRE_MARKERS.length === 0 || HOST_REFUSAL_HOST_TREE_SWITCHES.length === 0) misses.push('one of the two roles is empty — the vocabulary collapsed back to a single suffix')
+  if (HOST_REFUSAL_REQUIRE_MARKERS.some((m) => HOST_REFUSAL_HOST_TREE_SWITCHES.includes(m))) misses.push('a switch is listed in both roles')
+  // 1/2. each marker is caught on a hostFree leg that sets nothing, and one flag does not buy another
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const LEG_ID = 'a5sf-product-assembly'
+  const legOf = (m) => m.layers.find((l) => l.id === 'ci-integration').legs.find((l) => l.dispatch_id === LEG_ID)
+  const base = legOf(manifest)
+  if (base === undefined) return { ok: false, detail: `leg ${LEG_ID} is gone — the control has no hostFree subject` }
+  if (base.hostRefusal !== undefined || base.env !== undefined) return { ok: false, detail: `leg ${LEG_ID} now declares env/hostRefusal — this control needs a leg that declares neither` }
+  const SUITE = base.suites[0]
+  const withEnv = (env) => ({
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, env } : x)) } : l)),
+  })
+  for (const marker of HOST_REFUSAL_REQUIRE_MARKERS) {
+    const text = `const required = process.env.${marker} === '1'\n`
+    const found = checkHostRefusalGuard({ root: ROOT, manifest: withEnv({}), override: { [SUITE]: text } }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE)
+    if (found.length === 0) misses.push(`marker ${marker} planted in a hostFree leg with no env: CI_HOST_REFUSAL_UNGUARDED not raised`)
+    else if (!(found[0].markers ?? []).includes(marker)) misses.push(`marker ${marker}: the finding does not NAME the marker (got ${JSON.stringify(found[0].markers)})`)
+    // the OTHER markers set to 1 must not admit this one
+    const otherEnv = Object.fromEntries(HOST_REFUSAL_MARKERS.filter((m) => m !== marker).map((m) => [m, '1']))
+    if (checkHostRefusalGuard({ root: ROOT, manifest: withEnv(otherEnv), override: { [SUITE]: text } }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE) === false) {
+      misses.push(`marker ${marker}: a leg that sets every OTHER marker still silences it — one flag bought another`)
+    }
+    // and setting THIS one admits it
+    if (checkHostRefusalGuard({ root: ROOT, manifest: withEnv({ [marker]: '1' }), override: { [SUITE]: text } }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SUITE)) {
+      misses.push(`marker ${marker}: even a leg that sets ${marker}="1" is refused — the guard does not read the env`)
+    }
+  }
+  // the trap named in the finding that started this: the real M7-A live suite in a hostFree leg
+  const REAL = 'tests/world-factory/m7a-real-slice.test.mjs'
+  if (!existsSync(join(ROOT, REAL))) misses.push(`${REAL} is gone — the control's real subject is missing`)
+  else {
+    const real = { ...manifest, layers: manifest.layers.map((l) => (l.id === 'ci-integration' ? { ...l, legs: l.legs.map((x) => (x.dispatch_id === LEG_ID ? { ...x, suites: [...x.suites, REAL] } : x)) } : l)) }
+    const hits = checkHostRefusalGuard({ root: ROOT, manifest: real }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === REAL)
+    if (hits.length === 0) misses.push(`${REAL} listed by a hostFree leg with no env: CI_HOST_REFUSAL_UNGUARDED not raised (the original defect)`)
+    else if (!(hits[0].markers ?? []).includes('M7A_REQUIRE_PINNED_HOST')) misses.push(`${REAL}: the finding does not name M7A_REQUIRE_PINNED_HOST (got ${JSON.stringify(hits[0].markers)})`)
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `switch vocabulary equals the set derived from the collected paths (${derivedAll.join(', ')}); each marker planted in a hostFree leg with no env => CI_HOST_REFUSAL_UNGUARDED naming that marker; every OTHER marker set => still refused; that marker set => admitted; ${REAL.split('/').pop()} listed hostFree with no env => CI_HOST_REFUSAL_UNGUARDED naming M7A_REQUIRE_PINNED_HOST`
+      : misses.join(' ;; '),
+  }
+})
+
+control('C10f a switch planted in a COLLECTED scripts/ suite is graded', () => {
+  // R2 of the residual-fixes review: C10e derived only over `tests/`, but the tinf-instruments
+  // leg collects four `scripts/` suites, so a marker planted in one of them was invisible to the
+  // only control that proves the list matches the repo.
+  const { checkHostRefusalGuard, deriveHostRefusalSwitches } = requireModule('scripts/eb3-ci-required.mjs')
+  const misses = []
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const layer = manifest.layers.find((l) => l.id === 'ci-integration')
+  const leg = layer?.legs.find((l) => l.dispatch_id === 'tinf-instruments')
+  if (!leg) return { ok: false, detail: 'the tinf-instruments leg is gone — this control has no collected subject' }
+  if (layer.hostFree !== true) return { ok: false, detail: 'ci-integration is no longer hostFree — the control grades the wrong layer' }
+  const SCRIPT_SUITE = 'scripts/dispatch-tests.test.mjs'
+  if (!leg.suites.includes(SCRIPT_SUITE)) misses.push(`${SCRIPT_SUITE} is no longer collected by tinf-instruments — the control's premise ("a scripts/ suite rides the leg") is false`)
+  // (a) a LISTED marker planted in the collected scripts/ suite: the guard grades the file the
+  //     leg actually collects, wherever it lives
+  const LISTED = 'M7A_REQUIRE_PINNED_HOST'
+  const listedPlant = `const required = process.env.${LISTED} === '1'\n`
+  const hits = checkHostRefusalGuard({ root: ROOT, manifest, override: { [SCRIPT_SUITE]: listedPlant } })
+    .findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === SCRIPT_SUITE)
+  if (hits.length === 0) misses.push(`${LISTED} planted in ${SCRIPT_SUITE} (a collected scripts/ suite) raised no CI_HOST_REFUSAL_UNGUARDED`)
+  else if (!(hits[0].markers ?? []).includes(LISTED)) misses.push(`the finding does not name ${LISTED} (got ${JSON.stringify(hits[0].markers)})`)
+  // (b) a NOVEL spelling there is what C10e must not miss: derive over the collected corpus with
+  //     the plant counted as a real scripts/ file, then show the OLD tests/-only scope loses it
+  const NOVEL = 'XSCALE_REQUIRE_PINNED_HOST'
+  const novelPlant = { path: SCRIPT_SUITE, text: `const required = process.env.${NOVEL} === '1'\n` }
+  const corpus = execFileSync('git', ['ls-files', '-z', 'tests', 'scripts'], { cwd: ROOT, encoding: 'utf8' })
+    .split('\0')
+    .filter((f) => /^(tests|scripts)\//.test(f) && f.endsWith('.test.mjs'))
+    .map((f) => ({ path: f, text: readFileSync(join(ROOT, f), 'utf8') }))
+  const collectedScope = deriveHostRefusalSwitches([...corpus, novelPlant]).all
+  const oldScope = deriveHostRefusalSwitches([...corpus, novelPlant].filter((f) => f.path.startsWith('tests/'))).all
+  if (!collectedScope.includes(NOVEL)) misses.push(`the collected-path derivation does not classify ${NOVEL} planted in ${SCRIPT_SUITE}`)
+  if (oldScope.includes(NOVEL)) misses.push(`${NOVEL} is visible to a tests/-only derivation — the scope regression cannot be demonstrated on this subject`)
+  if (SCRIPT_SUITE.startsWith('tests/')) misses.push(`${SCRIPT_SUITE} starts with tests/ — the scope regression cannot be demonstrated on this subject`)
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `${LISTED} planted in ${SCRIPT_SUITE} (collected by hostFree tinf-instruments) => CI_HOST_REFUSAL_UNGUARDED naming it; a novel ${NOVEL} there is classified by the collected-path derivation and INVISIBLE to a tests/-only one (the file is under scripts/)`
+      : misses.join(' ;; '),
+  }
+})
+
+control('C10g a *_HOST_TREE switch makes a suite host-dependent, not guardable', () => {
+  // R2: the vocabulary was the REQUIRE_PINNED_HOST suffix only. A suite that resolves the pinned
+  // host TREE itself silently falls back to tests/deepseek-harness-test-use, so no env value makes
+  // it host-free — collecting it in a hostFree leg is the defect, env="1" is not a repair.
+  const { checkHostRefusalGuard, HOST_REFUSAL_HOST_TREE_SWITCHES } = requireModule('scripts/eb3-ci-required.mjs')
+  const misses = []
+  if (!HOST_REFUSAL_HOST_TREE_SWITCHES.includes('A5SF_PD31_HOST_TREE')) misses.push('A5SF_PD31_HOST_TREE is not in HOST_REFUSAL_HOST_TREE_SWITCHES')
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const LEG_ID = 'a5sf-product-assembly'
+  const legOf = (m) => m.layers.find((l) => l.id === 'ci-integration').legs.find((l) => l.dispatch_id === LEG_ID)
+  const base = legOf(manifest)
+  if (base === undefined) return { ok: false, detail: `leg ${LEG_ID} is gone — the control has no hostFree subject` }
+  const REAL = 'tests/world-factory/a5sf-pd31-read-image.test.mjs'
+  if (!existsSync(join(ROOT, REAL))) return { ok: false, detail: `${REAL} is gone — the control's real subject is missing` }
+  const text = readFileSync(join(ROOT, REAL), 'utf8')
+  if (!text.includes('A5SF_PD31_HOST_TREE')) return { ok: false, detail: `${REAL} no longer reads A5SF_PD31_HOST_TREE — the control's subject changed` }
+  const withSuite = (env, waiver) => ({
+    ...manifest,
+    layers: manifest.layers.map((l) => (l.id === 'ci-integration'
+      ? {
+        ...l,
+        legs: l.legs.map((x) => (x.dispatch_id === LEG_ID
+          ? { ...x, suites: [...x.suites, REAL], ...(env === undefined ? {} : { env }), ...(waiver === undefined ? {} : { hostRefusal: waiver }) }
+          : x)),
+      }
+      : l)),
+  })
+  const hits = checkHostRefusalGuard({ root: ROOT, manifest: withSuite() }).findings.filter((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === REAL)
+  if (hits.length === 0) misses.push(`${REAL} (a *_HOST_TREE suite) listed by a hostFree leg with no env => no finding`)
+  else {
+    if (!(hits[0].switches?.hostTree ?? []).includes('A5SF_PD31_HOST_TREE')) misses.push(`the finding does not name A5SF_PD31_HOST_TREE as a hostTree switch (got ${JSON.stringify(hits[0].switches)})`)
+    if (!(hits[0].markers ?? []).includes('A5SF_PD31_HOST_TREE')) misses.push(`the finding's markers do not name A5SF_PD31_HOST_TREE (got ${JSON.stringify(hits[0].markers)})`)
+  }
+  // no env value admits it: every require-host marker set to '1' still refuses
+  const allRequire = Object.fromEntries(['A5SF_REQUIRE_PINNED_HOST', 'M7A_REQUIRE_PINNED_HOST'].map((m) => [m, '1']))
+  if (checkHostRefusalGuard({ root: ROOT, manifest: withSuite(allRequire) }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === REAL) === false) {
+    misses.push('setting every require-host marker silenced a *_HOST_TREE suite — the guard still thinks env buys host-independence')
+  }
+  // the declared exception still admits it, per suite
+  const waived = withSuite(undefined, { mode: 'declared-not-run', suites: [REAL], why: 'control: the exception is the reviewed repair for a host-dependent suite in a host-free lane' })
+  if (checkHostRefusalGuard({ root: ROOT, manifest: waived }).findings.some((f) => f.code === 'CI_HOST_REFUSAL_UNGUARDED' && f.path === REAL)) {
+    misses.push('a per-suite declared-not-run waiver did not admit the *_HOST_TREE suite it names')
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `${REAL} (reads A5SF_PD31_HOST_TREE) listed by hostFree ${LEG_ID} => CI_HOST_REFUSAL_UNGUARDED naming the hostTree switch; every require marker set => still refused; a per-suite declared-not-run waiver => admitted`
+      : misses.join(' ;; '),
+  }
+})
+
 /**
  * R1 review item 4: "re-check the rest of the manifest for the same pattern". The
  * leg rule was not the only one deciding by substring. Each mutation below satisfies

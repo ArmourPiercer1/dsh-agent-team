@@ -1,0 +1,436 @@
+# Gate table — final tree, 2026-11-18T15:48:17Z (real UTC)
+# head: b3e95182b  node v24.21.0
+# NOTE round 2: the whitespace gate is the COMMIT RANGE form. A bare `git diff --check` on a
+# clean tree is exit 0 regardless and proves nothing (review of #788, LOW).
+
+$ node scripts/test-catalog.mjs --max-uncollected 46
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=872 instruments=3 digest=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6
+  DISCOVERED_AND_COLLECTED 812
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              46
+  by runner: node=117 none=7 vitest=748
+DSH-TEST-CATALOG tests=872 digest=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 refused=0 findings=0
+  -> exit 0
+
+$ node --test scripts/test-catalog.test.mjs
+✔ discovery: vitest and node tests are catalogued, non-tests are not (1.773216ms)
+✔ discovery follows config include[], not the .test.ts suffix (0.477073ms)
+✔ a config whose include spells out its own directory is repo-relative (0.222371ms)
+✔ an authoring-only config does not make a suite collected (0.264911ms)
+✔ a contract ref that is not a test file is refused (0.247038ms)
+✔ the CI step that dispatches this suite also runs the ratchet (0.74022ms)
+✔ classification: collected, uncollected and excluded are distinct (0.334192ms)
+✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.209667ms)
+✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (0.331428ms)
+✔ refusal: deleting a contract test is red, not a smaller catalog (0.234183ms)
+✔ refusal: a contract with no test_refs is an unbacked promise (0.23241ms)
+✔ refusal: an exclude without reason+review is stale (0.12165ms)
+✔ refusal: two tests sharing one logical id is red (0.144894ms)
+✔ refusal: an instrument without its driver is red (0.178558ms)
+✔ logical ids survive a path move, and refOf tolerates both shapes (0.136899ms)
+✔ digest ignores order and entry classification but tracks the test set (0.413963ms)
+✔ glob semantics: ** crosses directories, * does not (0.093316ms)
+✔ vitest.config.ts is the source for include/exclude (no copy here) (0.340785ms)
+✔ live read-only check: every registered contract test exists on this head (225.822796ms)
+✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.984063ms)
+✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (1.403477ms)
+✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (15.229226ms)
+✔ dispatch: the catalog classifies every dispatched suite as collected (277.22855ms)
+✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.223092ms)
+✔ dispatch: the committed parity evidence still describes the resolved set (13.471954ms)
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.111641ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 614.169131
+  -> exit 0
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+  -> exit 0
+
+$ node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
+dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+  .github/workflows/ci-integration.yml
+    EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
+      old tests/diag-call-chain/diag-call-chain.test.mjs
+      old tests/u7-3-devex/devex-integration.test.mjs
+      new tests/diag-call-chain/diag-call-chain.test.mjs
+      new tests/u7-3-devex/devex-integration.test.mjs
+    tests/checks node:test suites (dist-placements, eslint-node-globals — host-free): old=2 new=2 missing=none added=none
+      old tests/checks/dist-placements.test.mjs
+      old tests/checks/eslint-node-globals.test.mjs
+      new tests/checks/dist-placements.test.mjs
+      new tests/checks/eslint-node-globals.test.mjs
+    scripts node:test suite (eb3-tool-acceptance law fixtures — host-free): old=1 new=1 missing=none added=none
+      old scripts/eb3-tool-acceptance.test.mjs
+      new scripts/eb3-tool-acceptance.test.mjs
+    scripts node:test suite (L0 selection laws — host-free): old=1 new=1 missing=none added=none
+      old scripts/ci-local.test.mjs
+      new scripts/ci-local.test.mjs
+    scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
+      old scripts/tinf-m0.test.mjs
+      new scripts/tinf-m0.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=50 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/consumer-candidate.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/freeze-candidate.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/a5sf-acceptance-preflight.test.mjs,tests/world-factory/a5sf-ask-precedence.test.mjs,tests/world-factory/a5sf-assembly.test.mjs,tests/world-factory/a5sf-bash.test.mjs,tests/world-factory/a5sf-capability-defaults.test.mjs,tests/world-factory/a5sf-dev-live-slots.test.mjs,tests/world-factory/a5sf-dev-live.test.mjs,tests/world-factory/a5sf-dual-plane.test.mjs,tests/world-factory/a5sf-instrument-graph.test.mjs,tests/world-factory/a5sf-p01-realm-binding.test.mjs,tests/world-factory/a5sf-pd1-revocation-escape.test.mjs,tests/world-factory/a5sf-pd12-bash-governance.test.mjs,tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs,tests/world-factory/a5sf-pd26-confined-skill.test.mjs,tests/world-factory/a5sf-pd29-goal-stop.test.mjs,tests/world-factory/a5sf-pd33-preview-e2e.test.mjs,tests/world-factory/a5sf-pd34-member-stop.test.mjs,tests/world-factory/a5sf-run-record-binding.test.mjs,tests/world-factory/a5sf-search-live.test.mjs,tests/world-factory/a5sf-window-taxonomy.test.mjs,tests/world-factory/arm-verdict.test.mjs,tests/world-factory/binding-digests.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs,tests/world-factory/port-probe.test.mjs,tests/world-factory/u6-arc-d.test.mjs,tests/world-factory/u7-tbash-offline-drive.test.mjs,tests/world-factory/u7-tbash-seam.test.mjs,tests/world-factory/u7-tbash.test.mjs,tests/world-factory/u7-uileg0-answer-drive.test.mjs
+      old scripts/census-aggregate.test.mjs
+      old scripts/census-cutover.test.mjs
+      old scripts/census-plan.test.mjs
+      old scripts/host-cache-key.test.mjs
+      old scripts/test-catalog.test.mjs
+      old scripts/tinf-timing.test.mjs
+      new scripts/census-aggregate.test.mjs
+      new scripts/census-cutover.test.mjs
+      new scripts/census-plan.test.mjs
+      new scripts/contract-tiers.test.mjs
+      new scripts/dispatch-tests.test.mjs
+      new scripts/eb3-ci-required.test.mjs
+      new scripts/host-cache-key.test.mjs
+      new scripts/test-catalog.test.mjs
+      new scripts/tinf-timing.test.mjs
+      new scripts/tinf-trust-closeout.test.mjs
+      new tests/s2-authority/authority-dual-read.test.mjs
+      new tests/s2-authority/authority-snapshot-isolated.test.mjs
+      new tests/s2-authority/candidate-track-negative-control.test.mjs
+      new tests/s2-authority/ci-snapshot-reader.test.mjs
+      new tests/s2-authority/consumer-candidate.test.mjs
+      new tests/s2-authority/current-authority-pointer.test.mjs
+      new tests/s2-authority/freeze-candidate.test.mjs
+      new tests/s2-authority/probe-candidate.test.mjs
+      new tests/s2-authority/sync-candidate-resolver.test.mjs
+      new tests/s2-authority/verify-candidate.test.mjs
+      new tests/world-factory/a5sf-acceptance-preflight.test.mjs
+      new tests/world-factory/a5sf-ask-precedence.test.mjs
+      new tests/world-factory/a5sf-assembly.test.mjs
+      new tests/world-factory/a5sf-bash.test.mjs
+      new tests/world-factory/a5sf-capability-defaults.test.mjs
+      new tests/world-factory/a5sf-dev-live-slots.test.mjs
+      new tests/world-factory/a5sf-dev-live.test.mjs
+      new tests/world-factory/a5sf-dual-plane.test.mjs
+      new tests/world-factory/a5sf-instrument-graph.test.mjs
+      new tests/world-factory/a5sf-p01-realm-binding.test.mjs
+      new tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
+      new tests/world-factory/a5sf-pd12-bash-governance.test.mjs
+      new tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
+      new tests/world-factory/a5sf-pd26-confined-skill.test.mjs
+      new tests/world-factory/a5sf-pd29-goal-stop.test.mjs
+      new tests/world-factory/a5sf-pd33-preview-e2e.test.mjs
+      new tests/world-factory/a5sf-pd34-member-stop.test.mjs
+      new tests/world-factory/a5sf-run-record-binding.test.mjs
+      new tests/world-factory/a5sf-search-live.test.mjs
+      new tests/world-factory/a5sf-window-taxonomy.test.mjs
+      new tests/world-factory/arm-verdict.test.mjs
+      new tests/world-factory/binding-digests.test.mjs
+      new tests/world-factory/m7a-real-slice-host-state.test.mjs
+      new tests/world-factory/m7a-real-slice-unit.test.mjs
+      new tests/world-factory/port-probe.test.mjs
+      new tests/world-factory/u6-arc-d.test.mjs
+      new tests/world-factory/u7-tbash-offline-drive.test.mjs
+      new tests/world-factory/u7-tbash-seam.test.mjs
+      new tests/world-factory/u7-tbash.test.mjs
+      new tests/world-factory/u7-uileg0-answer-drive.test.mjs
+    a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-harness.test.mjs
+      new tests/world-factory/a5sf-harness.test.mjs
+    a5sf evidence chain R3 (BL-11 — node:test, host-free, records the four links and re-reads them with a5sf-diag): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-evidence.test.mjs
+      new tests/world-factory/a5sf-evidence.test.mjs
+    a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free): old=1 new=1 missing=none added=none
+      old tests/kits/a5sf-golden/compare.test.mjs
+      new tests/kits/a5sf-golden/compare.test.mjs
+    a5sf diag R4 (BL-12 — node:test, host-free, delegates to the PR #394 classifier): old=1 new=1 missing=none added=none
+      old tests/a5sf-diag/a5sf-diag.test.mjs
+      new tests/a5sf-diag/a5sf-diag.test.mjs
+    a5sf read budget gate C1 (P2-01/BL-14 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-read-gate.test.mjs
+      new tests/world-factory/a5sf-read-gate.test.mjs
+    a5sf P2 seam C1 (BL-14/P2-01 follow-up — node:test, zero Host boots, host-free, cross-process transport): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-seam.test.mjs
+      new tests/world-factory/a5sf-p2-seam.test.mjs
+    a5sf P2 WIRING C1 (product-row call site — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-wiring.test.mjs
+      new tests/world-factory/a5sf-p2-wiring.test.mjs
+    a5sf F1 TOOL PLANE (effective half — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-f1-ctx.test.mjs
+      new tests/world-factory/a5sf-f1-ctx.test.mjs
+    a5sf NATIVE ROUTE C (native tool confinement — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-native-route-c.test.mjs
+      new tests/world-factory/a5sf-native-route-c.test.mjs
+    a5sf PRODUCT ASSEMBLY (product-visible member-policy declaration — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-product-assembly.test.mjs
+      new tests/world-factory/a5sf-product-assembly.test.mjs
+    a5sf FS face layer B (per-native-tool contract — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-fs-contract.test.mjs
+      new tests/world-factory/a5sf-fs-contract.test.mjs
+  .github/workflows/pr-gate.yml
+    Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
+      old scripts/pr-settlement-gate.test.mjs
+      new scripts/pr-settlement-gate.test.mjs
+  union old=25 new=69 set=sha256:9d56a97244aa89274b578f91d3ed4e687cc7bf434b00e7e9fb5f16f43dbf0704
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+  -> exit 1
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+  -> exit 0
+
+$ node scripts/eb3-ci-negative-controls.mjs
+PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
+PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
+PASS C3 execution-definition-replaced :: honest tree passes; 3a detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3b detected on packages/tools/agent-control-family/src/fork-row.mjs, 3c detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3d detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs
+PASS C4 cross-family-influence :: honest tree passes (9 lanes declare edges); 4a detected, 4b detected, 4c detected, 4d computed-dynamic detected, 4e prose-in-string masked, 4f static-edge detected, 4g booked-allowlist closed, engines agree (auto+ast+regex) (mutations staged on packages/tools/search-family/src/search-mechanics.mjs + packages/tools/search-family/src/r-dynimport-negctl.mjs)
+PASS C5 required-context-nongreen-states :: all-green => pass; each of absent, skip, cancel, failure, ENV_BLOCK, refused, SKIP-token, verdict-missing, unrecognised-result, empty-needs on layer ci-integration => fail
+PASS C6 summary-wiring-loosened :: honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected
+PASS C7 impact-unknown-nonzero :: unknown path => all 5 layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law
+PASS C8 run-manifest-refuses-rewrites :: honest evidence/a5sf-candidate1/run-record.json passes; rewritten-overall, env-block-case-graded-pass, unknown-verdict-token, dropped-selected-case, host-generation-mixed, team-sha-unresolvable, invented-authority-generation, superseded-generation-on-new-record, wrong-evidence-digest, missing-evidence each refused
+PASS C9 mandatory-leg-invoked-not-mentioned :: honest workflows pass; a-echo, b-name-only, c1-allow-refused, c2-no-full, c3-skip-census, d1-shell-comment, d2-yaml-commented-step, e-quoted-string, f-or-true each detected
+PASS C10 host-free-layer-refuses-host-dependent-suite :: honest lists pass; re-listing a5-pindir-reserved-native.test.ts in host-free ci-security => CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER
+PASS C10b leg-env-declaration-grades-the-step :: honest tree passes; step loses the flag => CI_LAYER_LEG_ENV_MISSING; manifest flips the value => CI_LAYER_LEG_ENV_MISSING
+PASS C10c host-free-leg-refuses-unguarded-refusal-suite :: honest manifest passes; m7a-real-slice-unit.test.mjs made refusal-capable with flag+declaration removed => CI_HOST_REFUSAL_UNGUARDED; the same with the declared flag in place => no finding
+PASS C10d host-refusal-exception-is-per-suite :: honest manifest passes; a5sf-pty-contract.test.mjs added to the excepted leg undeclared => CI_HOST_REFUSAL_UNGUARDED; the legacy leg-wide string => CI_HOST_REFUSAL_WAIVER_UNSCOPED plus the same suite finding; the suite NAMED in the waiver => no finding; a stray subject => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE; empty/no-why/wrong-mode => CI_HOST_REFUSAL_WAIVER_INVALID
+PASS C10e every-host-refusal-marker-is-graded :: switch vocabulary equals the set derived from the collected paths (A5SF_PD24_HOST_TREE, A5SF_PD25_HOST_TREE, A5SF_PD31_HOST_TREE, A5SF_REQUIRE_PINNED_HOST, M7A_HOST_TREE, M7A_REQUIRE_PINNED_HOST); each marker planted in a hostFree leg with no env => CI_HOST_REFUSAL_UNGUARDED naming that marker; every OTHER marker set => still refused; that marker set => admitted; m7a-real-slice.test.mjs listed hostFree with no env => CI_HOST_REFUSAL_UNGUARDED naming M7A_REQUIRE_PINNED_HOST
+PASS C10f a switch planted in a COLLECTED scripts/ suite is graded :: M7A_REQUIRE_PINNED_HOST planted in scripts/dispatch-tests.test.mjs (collected by hostFree tinf-instruments) => CI_HOST_REFUSAL_UNGUARDED naming it; a novel XSCALE_REQUIRE_PINNED_HOST there is classified by the collected-path derivation and INVISIBLE to a tests/-only one (the file is under scripts/)
+PASS C10g a *_HOST_TREE switch makes a suite host-dependent, not guardable :: tests/world-factory/a5sf-pd31-read-image.test.mjs (reads A5SF_PD31_HOST_TREE) listed by hostFree a5sf-product-assembly => CI_HOST_REFUSAL_UNGUARDED naming the hostTree switch; every require marker set => still refused; a per-suite declared-not-run waiver => admitted
+PASS C11 remaining-text-rules-not-textually-satisfiable :: honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected
+PASS C12 reusable-workflow-output-boundary :: honest workflows pass; removing on.workflow_call.outputs from each of the four layers => CI_WORKFLOW_CALL_OUTPUT_MISSING
+PASS C13 merge-tree-job-is-graded :: layers all green + synthesize failure/cancelled/skipped/absent => fail each
+PASS C14 leg-allowlist-not-denylist :: 52 negatives all UNSATISFIED; 9 allowed shapes satisfied; every real layer satisfies every leg
+PASS C15 evidence-guard-refuses-raw-capture :: 3 planted raw captures/resamples (tiny, so the NAME rule alone refuses them) => EVIDENCE_RAW_CAPTURE each
+PASS C16 evidence-guard-refuses-oversized :: a planted 2 MiB huge-log.txt => EVIDENCE_OVERSIZED (bound 1048576 B)
+PASS C17 evidence-guard-allowlist-accepts-reviewed-large :: the same 2 MiB file listed WITH a reason => accepted; a listed raw capture => still EVIDENCE_RAW_CAPTURE; an entry with no reason => EVIDENCE_ALLOWLIST_INVALID
+PASS C18 evidence-guard-accepts-sidecar :: 3 sidecar-shaped additions (census-comparison-*, a named census note) => accepted, and all 3 were graded
+PASS C19 census-leg-writes-captures-outside-tracked-evidence :: captures -> .artifacts/census/ and resamples -> .artifacts/census/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/
+PASS C20 acceptance-ledger-refuses-unproven-proven :: honest dev/agent-workflow/ledgers/u7-tool-acceptance.json passes (31 rows); (a) PROVEN on a FAIL case, (b) PROVEN on a missing record, (c) claimed read with no row, (d) DISCLOSED with an empty reason — each refused
+PASS C21 deferred-run-cannot-produce-ci-required-success :: deferred run (ci-census skipped) grades fail on the Required path and the CLI exits non-zero, ci-census:skipped named; the deferred report passes on every other layer green; the deferred job is not the Required context
+PASS C22 no-deferral-census-missing-is-a-failure :: without a deferral a missing or skipped ci-census is a failure; all layers green still passes
+PASS C23 both-deferral-sources-and-their-complement :: draft+success and label+success each raise CI_DEFERRAL_CONFLICT; ready+success, draft+failure and absent inputs do not; the census caller requires NOT-draft AND NOT-labelled (no disjunction), and the deferred report is always() AND (draft OR label)
+PASS C24 product-layer-pinned-to-the-gate-leg-list :: honest productLegs equal LEG_ORDER minus census (8 legs); a manifest-level dropped leg => CI_PRODUCT_LEGS_INCOMPLETE; a YAML level added census or dropped leg => CI_PRODUCT_LEGS_DRIFT
+PASS P1 non-Team-native-positive-preserved :: both non-Team native positive controls present and still asserting the native ride (u6-pr3-bl01-ask-door.test.ts, u6-pr2-review-r1.test.ts); pinned BY ASSERTION, not by title
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md is zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass (correct), one planted new red => fail (correct)
+
+32/32 control(s) behaved as required
+  -> exit 0
+
+$ node scripts/census-plan.test.mjs
+✔ deriveRoots: the root set is the 12 roots the current census population reports, from the config (656.049293ms)
+✔ deriveRoots: every root is a real directory with a test/ subtree, and rootOf agrees with it (649.204664ms)
+✔ deriveRoots: no root config is a refusal, never a recorded count (22.187951ms)
+✔ deriveRoots: an unparsable include[] is ROOT_CONFIG_UNREADABLE (19.306572ms)
+✔ deriveRoots: a matched file outside every census root is ROOT_UNRESOLVED (24.04711ms)
+✔ deriveRoots: an include[] that matches nothing is ROOTS_NOT_DERIVED (20.259647ms)
+✔ deriveRoots: a missing catalog registry is CATALOG_UNREADABLE (not "no roots") (17.201066ms)
+✔ deriveRoots: a root that exclude[] removes is REFUSED, not silently dropped (25.741613ms)
+✔ deriveRoots: --allow-dropped-root records the drop instead of hiding it (24.266571ms)
+✔ --verify-plan verifies a plan that used --allow-dropped-root (M6) (226.12592ms)
+✔ deriveRoots: --allow-dropped-root naming a root that was NOT dropped is refused (21.781145ms)
+✔ deriveRoots: an exclude[] that empties the whole config is still ROOTS_NOT_DERIVED (22.214699ms)
+✔ deriveRoots: the package configs are not the census population (root config only) (19.811423ms)
+✔ buildPlan: one task per (root, capture), stable ids, runner argv from the census invocation (0.578034ms)
+✔ buildPlan: both captures of a root are one indivisible group, with the reason stated (0.314706ms)
+✔ buildPlan: an estimate is a hint — unknown is null, and it never changes the task set (0.411889ms)
+✔ buildPlan: captures must be a positive integer (0.21107ms)
+✔ planDigest: canonical, order-insensitive for keys, but sensitive to every task field (0.678144ms)
+✔ verifyPlan: an unchanged plan verifies (0.444622ms)
+✔ verifyPlan: an edited task without a new digest is PLAN_DIGEST_MISMATCH (0.360889ms)
+✔ verifyPlan: a moved tree is PLAN_IDENTITY_DRIFT (0.232089ms)
+✔ verifyPlan: a changed root set is PLAN_TASK_SET_CHANGED, in both directions (0.357627ms)
+✔ verifyPlan: a duplicate task id is refused even when the digest was recomputed (0.284007ms)
+✔ verifyPlan: a plan identity field that is null/absent/sentinel is refused for ALL five fields (0.667007ms)
+✔ verifyPlan: a plan whose dropped-root set changed is a changed population (0.306631ms)
+✔ verifyPlan: a foreign schema and a non-object are refusals, not crashes (0.182726ms)
+✔ balance: exact minimum makespan on a partition with a known answer (0.760119ms)
+✔ balance: every task appears exactly once, and a group is never split (0.514273ms)
+✔ balance: unknown estimates refuse instead of guessing (0.281343ms)
+✔ balance: more shards than indivisible units refuses (0.810695ms)
+✔ loadTimings: per-root medians come from M3 rows, and a failed span is not a duration (1.016845ms)
+✔ loadTimings: missing, garbage and census-less inputs are refused by name (0.270181ms)
+✔ cli: --plan on a fixture derives the plan and exits 0 (85.361303ms)
+✔ cli: --plan --out writes the artifact and prints a token, never the JSON (79.227699ms)
+✔ cli: --build-digest sentinels are DIGEST_INVALID exit 2, and no plan is printed (346.150448ms)
+✔ cli: --allow-dropped-root makes the drop explicit in the emitted plan (137.511454ms)
+✔ cli: --allow-dropped-root with no value is UNKNOWN_ARGUMENT, not a silent no-op (46.228792ms)
+✔ cli: an underivable root set is exit 2 with a named code and NO plan on stdout (73.085983ms)
+✔ cli: --captures 1 plans one capture per root (and the aggregator refuses to PASS it) (87.766901ms)
+✔ cli: --captures 0 is a refusal (82.927992ms)
+✔ cli: --verify-plan passes on an unchanged tree and refuses after the tree moves (236.423216ms)
+✔ cli: --verify-plan refuses a plan whose digest no longer matches its tasks (132.504408ms)
+✔ cli: --verify-plan on a missing file is PLAN_UNREADABLE, and no mode is a refusal (103.670698ms)
+✔ cli: --balance prints the shard assignment; unknown estimates refuse (132.860942ms)
+✔ cli: the real repository plans 24 tasks for 12 roots and two captures (561.638483ms)
+✔ cli: --self-test stays green (56.625057ms)
+✔ F-02: each plan root carries a sorted file list, its count and a recomputable digest (486.395195ms)
+✔ F-02: the plan digest moves when a file is swapped at the same count (0.313714ms)
+✔ F-02: the population baseline refuses a loss or an equal-count swap, and accepts growth (0.969966ms)
+✔ F-02 CLI: --write-population-baseline writes a reviewed artifact and a token, not stdout JSON (580.665577ms)
+ℹ tests 50
+ℹ suites 0
+ℹ pass 50
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4999.763092
+  -> exit 0
+
+$ node scripts/census-cutover.test.mjs
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:28.132Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-iafDOh/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-CAPTURE capture=2 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-2.json report=recorded:2
+DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=1 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=24 observed=24 missing=0 extra=0 shards=1 assertions_total=24 assertions_executed=24 skipped_total=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+fatal: not a git repository (or any parent up to mount point /)
+Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+DSH-CENSUS-REFUSED code=GIT_READ_FAILED detail=the collection authority could not be read: Command failed: git ls-files -z fatal: not a git repository (or any parent up to mount point /) Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=GIT_READ_FAILED expected=0 observed=0
+DSH-CENSUS-REFUSED code=PLAN_MERGE_TREE_MISMATCH detail=EB3_MERGE_TREE claims ffffffffffffffffffffffffffffffffffffffff but this checkout's tree is be8c082fc8fa3a53eeffbc1aa93173cf253584b6 — grading one tree under another tree's name is the mixed-tree failure TINF-13 names
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=PLAN_MERGE_TREE_MISMATCH expected=0 observed=0
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:29.624Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-pcXAut/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-REFUSED code=DRYRUN_IDENTITY_MISMATCH detail=/tmp/m5-other-tree-tN6P1p/census-replay-1.json was recorded on merge_tree=ffffffffffffffffffffffffffffffffffffffff but this plan is be8c082fc8fa3a53eeffbc1aa93173cf253584b6 — replaying another tree's bytes would grade a census this checkout never ran
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=DRYRUN_IDENTITY_MISMATCH expected=24 observed=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:30.634Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-niFPmM/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-REFUSED code=DRYRUN_COVERAGE_MISMATCH detail=/tmp/m5-coverage-9ImO3L/census-replay-1.json covers 11 of 12 planned root(s); missing: packages/client — a dry run must replay the whole planned population
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=DRYRUN_COVERAGE_MISMATCH expected=24 observed=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-REFUSED code=BUILD_STAMP_MISSING detail=/tmp/m5-stamp-red-O1sNVZ/absent.json could not be read (ENOENT: no such file or directory, open '/tmp/m5-stamp-red-O1sNVZ/absent.json') — a census with no recorded build identity refuses instead of inventing one
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=BUILD_STAMP_MISSING expected=0 observed=0
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:32.154Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-wBMnjT/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=12 roots=12 captures=1 plan=sha256:25235e7f05f347202610ebe6af96754d6d3c4aa1157065d5790a34f5823db767 catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-PLAN execution=plan tasks=12 roots=12 captures=1 plan=sha256:25235e7f05f347202610ebe6af96754d6d3c4aa1157065d5790a34f5823db767 catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-REFUSED code=CAPTURES_INSUFFICIENT detail=the plan declares 1 capture(s) per root; the L2 census population is 2 (a single-capture plan is a smaller population, not a shard layout)
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=CAPTURES_INSUFFICIENT expected=12 observed=0
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:33.196Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-gOz8iM/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-REFUSED code=DRYRUN_CAPTURE_MISSING detail=neither census-replay-2.json nor census-capture-2.json exists in /tmp/m5-no-capture-2-RtEEGH — a dry run of a two-capture census needs both captures recorded
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=DRYRUN_CAPTURE_MISSING expected=24 observed=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:34.163Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-ncFGhR/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=11 failed=1 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-CAPTURE capture=2 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-2.json report=recorded:2
+DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=1 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY mode=dry-run verdict=FAIL codes=TASK_STATE_FAIL expected=24 observed=24 missing=0 extra=0 shards=1 assertions_total=24 assertions_executed=24 skipped_total=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:35.311Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-xbEdnL/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-CAPTURE capture=2 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-2.json report=recorded:2
+DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=2 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=24 observed=24 missing=0 extra=0 shards=2 assertions_total=24 assertions_executed=24 skipped_total=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:36.817Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-qMpNqZ/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=live order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=712 assertions_total=724 skipped_total=12 evidence=census-evidence-1.json report=.artifacts/census/census-m5-test-620-1.json
+DSH-CENSUS-CAPTURE capture=2 mode=live order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=712 assertions_total=724 skipped_total=12 evidence=census-evidence-2.json report=.artifacts/census/census-m5-test-620-2.json
+DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=1 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY mode=live verdict=PASS codes=none expected=24 observed=24 missing=0 extra=0 shards=1 assertions_total=1448 assertions_executed=1424 skipped_total=24 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:38.333Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-MbcAXz/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-REFUSED code=CENSUS_REPORT_MISSING detail=vitest exited 0 and wrote no JSON report to .artifacts/census/census-m5-test-620-1.json; a census with no report cannot be graded:
+DSH-CENSUS-SUMMARY verdict=REFUSED codes=CENSUS_REPORT_MISSING expected=24 observed=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+DSH-CENSUS-BUILD digest=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 mode=computed files=2088 bytes=16533772 built_at=2026-11-18T15:48:43.634Z merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 path=/tmp/m5-ctx-transcripts-AQTeYF/product-build.json
+DSH-CENSUS-PLAN verify=ok tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84 est_unknown=12
+DSH-CENSUS-POPULATION baseline=ok roots=12 files=712 baseline_files=712 growth=none added=0
+DSH-CENSUS-CAPTURE capture=1 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-1.json report=recorded:1
+DSH-CENSUS-CAPTURE capture=2 mode=dry-run order=capture-major tasks=12 passed=12 failed=0 incomplete=0 assertions_executed=12 assertions_total=12 skipped_total=0 evidence=census-evidence-2.json report=recorded:2
+DSH-CENSUS-PLAN execution=plan tasks=24 roots=12 captures=2 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd catalog=sha256:5f71c543f353fe49d099095289d2824263f4e99c8a41bd5eb60747ee2dd618b6 build=sha256:1ed9e567dd2addc189eac136bc303e92314dc928fdeccc6c0e58d65a3bab7135 merge_tree=be8c082fc8fa3a53eeffbc1aa93173cf253584b6 host=639ed015397290b3745d163aafe02ffee4aa3f84
+DSH-CENSUS-SHARDS shards=1 layout=contiguous-artifact
+DSH-CENSUS-SUMMARY mode=dry-run verdict=PASS codes=none expected=24 observed=24 missing=0 extra=0 shards=1 assertions_total=24 assertions_executed=24 skipped_total=0 plan=sha256:33dd0e2c80f4c0defba37df5d5368048d12408461e9a66f7b971c2531410cbcd
+✔ fixtures live outside the checkout, so a clean checkout can run this suite (0.943226ms)
+✔ the build stamp digests the real install surfaces, and the same bytes give the same digest (600.383717ms)
+✔ one changed byte changes the build digest (it is not a constant or a name) (5.904929ms)
+✔ a build that did not happen cannot be stamped: absent / empty surfaces refuse by name (0.429944ms)
+✔ a tampered stamp is caught: its own digest covers its own artifact list (5.677556ms)
+✔ a stamp from another tree is not this census build (5.632391ms)
+✔ NEGATIVE: a same-tree stamp whose bytes changed is BUILD_STAMP_STALE (not trusted) (6.208551ms)
+✔ an explicitly named stamp must EXIST — no substitute is computed in its place (5.254315ms)
+✔ a recorded stamp round-trips through a file and verifies (46.494803ms)
+✔ resultsFromReport derives root identity, a terminal state and evidence from the report (4.891868ms)
+✔ a skip is NOT a failure (legacy semantics) and the skip count is carried (0.525164ms)
+✔ an unknown assertion status is a FAIL, not a silent pass (0.435995ms)
+✔ NEGATIVE: a root that RAN without being planned is refused (the invariant runs both ways) (1.525207ms)
+✔ a failed assertion is a FAIL; an unattributed report failure is INCOMPLETE, not PASS (4.397043ms)
+✔ resultsFromReplay refuses every identity mismatch by name (0.685917ms)
+✔ NEGATIVE: evidence that names a file which does not exist is refused (0.974294ms)
+✔ NEGATIVE: evidence that escapes the artifact directory is refused by name (0.508615ms)
+✔ NEGATIVE: the aggregator CLI refuses a doctored shard directory (exit 2, named code) (49.843551ms)
+✔ NEGATIVE: evidence must be a REGULAR FILE — a directory is not a pointer (M6) (0.562625ms)
+✔ NEGATIVE: a symlink that escapes the artifact directory is refused after resolution (M6) (0.578776ms)
+✔ NEGATIVE: a reference whose bytes changed is a DIGEST_MISMATCH, and a bogus digest is refused (M6) (0.785577ms)
+✔ NEGATIVE: the trailing digest is verified with OR without a `#root` fragment (M6 review) (3.052908ms)
+✔ POSITIVE: the plan leg runs 24 planned tasks to a PASS with expected==observed (1060.880721ms)
+✔ NEGATIVE: a plan refusal is RED with a named code (and never falls back to legacy) (4.289318ms)
+✔ NEGATIVE: EB3_MERGE_TREE naming another tree refuses PLAN_MERGE_TREE_MISMATCH (491.219344ms)
+✔ NEGATIVE: a replay from another tree refuses DRYRUN_IDENTITY_MISMATCH (989.847048ms)
+✔ NEGATIVE: a replay that omits a root refuses DRYRUN_COVERAGE_MISMATCH (1049.258713ms)
+✔ NEGATIVE: a missing build stamp is RED and the plan refuses (no placeholder) (484.815134ms)
+✔ NEGATIVE: an aggregation refusal is RED (a one-capture plan is a smaller population) (1050.394222ms)
+✔ NEGATIVE: a missing second capture refuses instead of aggregating a one-capture census (974.470237ms)
+✔ NEGATIVE: a shard that exited 0 while carrying FAIL is not a verdict (aggregate FAIL) (1007.493689ms)
+✔ NEGATIVE: a dropped shard result is TASK_MISSING/INCOMPLETE, never a smaller green census (1.08875ms)
+✔ shards: N artifacts carry the SAME task multiset and still aggregate to PASS (1522.071089ms)
+✔ the shard artifacts carry per-result root/capture/evidence and the plan identity (0.336898ms)
+✔ LIVE: one stamped invocation per capture, graded from the report it just wrote (1314.360662ms)
+✔ NEGATIVE: a stale report at the graded path is UNLINKED, so its absence is a named refusal (1475.030291ms)
+✔ CLI: plan mode dry-run prints the same DSH-CI-VERDICT channel and exits 0 on PASS (1881.514482ms)
+✔ CLI: a FAIL result is a fail token and exit 1 (the token and the code agree) (2130.423365ms)
+✔ CLI: the plan-only flags are refused with legacy instead of being silently ignored (105.185314ms)
+✔ the plan leg writes the build stamp it used, and its digest equals the plan identity (1059.152689ms)
+✔ the stamp digest is a digest of the artifact BYTES, not of a list of names (7.146342ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17367.721217
+  -> exit 0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=169 notes=4 plans=128(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+  -> exit 0
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1688 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+  -> exit 0
+
+$ git diff --check b7276ffa...HEAD
+  -> exit 0
+
+$ git diff --check
+  -> exit 0
+
+# the same gate is NOT vacuous — it fails on the reviewed head ce642dae2, which is exactly the
+# whitespace the review of #788 named:
+$ git diff --check b7276ffa...ce642dae2
+dev/agent-workflow/evidence/residual-fixes-20261116/f2-pd34-pin-depth1-after.txt:26: trailing whitespace.
++ <two spaces>            # the whitespace the gate caught, shown escaped
+dev/agent-workflow/evidence/residual-fixes-20261116/f2-pd34-pin-depth1-after.txt:28: trailing whitespace.
++ <two spaces>            # the whitespace the gate caught, shown escaped
+dev/agent-workflow/evidence/residual-fixes-20261116/gates.txt:418: new blank line at EOF.
+  -> exit 2
+
+# commits in the range: 9

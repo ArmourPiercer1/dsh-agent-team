@@ -1,0 +1,9 @@
+# F4 probe — POST-FIX tree
+# utc: 2026-11-18T14:16:37Z
+# command: node .artifacts/tmp/probe-waiver.mjs
+
+manifest hostRefusal as committed: {"mode":"declared-not-run","suites":["tests/world-factory/a5sf-fs-contract.test.mjs"],"why":"the ONE reviewed exception to CI_HOST_REFUSAL_UNGUARDED, scoped to the one suite it covers. This lane deliberately does NOT provision the pinned host (it lives in ci-integration), so this suite's absence path is its own declared `A5SF-FS-CONTRACT-HOST-REFUSED … verdict=NOT_RUN` with 9 skips instead of a red. Before 2026-11-18 the waiver was the string 'declared-not-run' on the LEG, which covered every suite added there later; the exception now has to name its subject, so a second suite added to this leg is CI_HOST_REFUSAL_UNGUARDED again until it is declared here. Moving the suite to a host-provisioned leg is the repair that removes the exception."}
+honest                 : findings=0 []
+planted-undeclared     : findings=1 ["CI_HOST_REFUSAL_UNGUARDED(a5sf-pty-contract.test.mjs)"]
+planted-legacy-string  : findings=3 ["CI_HOST_REFUSAL_WAIVER_UNSCOPED","CI_HOST_REFUSAL_UNGUARDED(a5sf-fs-contract.test.mjs)","CI_HOST_REFUSAL_UNGUARDED(a5sf-pty-contract.test.mjs)"]
+planted-named-in-waiver: findings=0 []

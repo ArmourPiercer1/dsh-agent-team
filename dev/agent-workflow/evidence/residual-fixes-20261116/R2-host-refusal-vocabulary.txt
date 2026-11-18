@@ -1,0 +1,53 @@
+# R2 — the host-refusal vocabulary: scope and verbs (review of #788, head ce642dae2)
+# utc: 2026-11-18T15:42:46Z
+
+## The collected paths the derivation must cover
+tinf-instruments collects 50 suites, of which 10 are scripts/ suites:
+  scripts/test-catalog.test.mjs
+  scripts/tinf-timing.test.mjs
+  scripts/host-cache-key.test.mjs
+  scripts/census-plan.test.mjs
+  scripts/census-aggregate.test.mjs
+  scripts/census-cutover.test.mjs
+  scripts/dispatch-tests.test.mjs
+  scripts/eb3-ci-required.test.mjs
+  scripts/tinf-trust-closeout.test.mjs
+  scripts/contract-tiers.test.mjs
+
+## (i) a marker planted in a COLLECTED scripts/ suite
+plant appended to scripts/dispatch-tests.test.mjs:
+    const __plant = process.env.XSCALE_REQUIRE_PINNED_HOST === '1'
+
+### BEFORE (C10e at ce642dae2, derivation = git grep -- tests):
+
+  1/1 control(s) behaved as required
+
+### AFTER (C10e now derives over the collected paths, tests/ + scripts/):
+
+  0/1 control(s) behaved as required
+
+### plant removed; C10e on the honest tree:
+  PASS C10e every-host-refusal-marker-is-graded :: switch vocabulary equals the set derived from the collected paths (A5SF
+
+### AFTER, verbatim (the missed spelling is now UNLISTED):
+  FAIL C10e every-host-refusal-marker-is-graded :: CI_HOST_REFUSAL_MARKER_UNLISTED: the collected paths consult XSCALE_REQUIRE_PINNED_HOST but HOST_REFUSAL_SWITCHES does not list it
+
+## (ii) the verbs: a *_HOST_TREE suite in a hostFree leg
+### BEFORE (eb3-ci-required.mjs at ce642dae2):
+  IMPLANT tests/world-factory/a5sf-pd31-read-image.test.mjs (reads A5SF_PD31_HOST_TREE) in hostFree a5sf-product-assembly
+  findings for that suite: 0
+  HOST_REFUSAL_SWITCHES exported: null
+
+### AFTER:
+  IMPLANT tests/world-factory/a5sf-pd31-read-image.test.mjs (reads A5SF_PD31_HOST_TREE) in hostFree a5sf-product-assembly
+  findings for that suite: 1
+    code=CI_HOST_REFUSAL_UNGUARDED markers=["A5SF_PD31_HOST_TREE"] switches={"requireHost":[],"hostTree":["A5SF_PD31_HOST_TREE"]}
+  HOST_REFUSAL_SWITCHES exported: ["A5SF_REQUIRE_PINNED_HOST","M7A_REQUIRE_PINNED_HOST","A5SF_PD24_HOST_TREE","A5SF_PD25_HOST_TREE","A5SF_PD31_HOST_TREE","M7A_HOST_TREE"]
+
+### The new controls, verbatim:
+  PASS C10f a switch planted in a COLLECTED scripts/ suite is graded :: M7A_REQUIRE_PINNED_HOST planted in scripts/dispatch-tests.test.mjs (collected by hostFree tinf-instruments) => CI_HOST_REFUSAL_UNGUARDED naming it; a novel XSCALE_REQUIRE_PINNED_HOST there is classified by the collected-path deriv
+  PASS C10g a *_HOST_TREE switch makes a suite host-dependent, not guardable :: tests/world-factory/a5sf-pd31-read-image.test.mjs (reads A5SF_PD31_HOST_TREE) listed by hostFree a5sf-product-assembly => CI_HOST_REFUSAL_UNGUARDED naming the hostTree switch; every require marker set => still refused; a p
+
+### Whole suite:
+  32/32 control(s) behaved as required
+  EB3-CI-REQUIRED pass workflows=10 findings=0
