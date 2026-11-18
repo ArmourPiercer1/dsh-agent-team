@@ -548,6 +548,28 @@ const invokedDirectly = (() => {
 // waiting, the queued chunk is dropped, and the caller sees exit 1 with a TRUNCATED
 // report — measured at 265/400 runs under a 200-way concurrent pool (see
 // dev/agent-workflow/evidence/residual-fixes-20261116/). Setting `process.exitCode` and
-// letting Node end the process on its own drains the pipe first; the exit code is the
-// same value, so no caller-visible semantics change.
-if (invokedDirectly) process.exitCode = main(process.argv.slice(2))
+// letting Node end the process on its own drains the pipe first, and the exit code is the
+// value `main` computed.
+//
+// Draining and an early-closing reader are two halves of the same seam. `--check | head -1`
+// closes the pipe after one line; Node then emits `error` (EPIPE) on the next write, and an
+// UNHANDLED stream error is an uncaught exception: exit 1 — the documented DRIFT code — with
+// a stack trace, i.e. a clean candidate read as drift. A reader that stops reading is not a
+// verdict about the candidate, so the closed-pipe codes are swallowed here and the computed
+// code stands (measured: 3/3 false-drift+stack before, 3/3 rc 0 without a trace after; see
+// dev/agent-workflow/evidence/residual-fixes-20261116/P0-epipe.md). Every other stream error
+// stays fatal — this is a narrow exemption, not a blanket `process.on('error')`.
+const CLOSED_READER_CODES = new Set(['EPIPE', 'ECONNRESET'])
+
+function keepSemanticExitCodeOnClosedReader(stream) {
+  stream.on('error', (error) => {
+    if (error && CLOSED_READER_CODES.has(error.code)) return
+    throw error
+  })
+}
+
+if (invokedDirectly) {
+  keepSemanticExitCodeOnClosedReader(process.stdout)
+  keepSemanticExitCodeOnClosedReader(process.stderr)
+  process.exitCode = main(process.argv.slice(2))
+}
