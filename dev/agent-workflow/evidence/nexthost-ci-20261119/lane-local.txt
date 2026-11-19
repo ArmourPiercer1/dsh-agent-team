@@ -1,0 +1,59 @@
+$ node scripts/provision-next-host.mjs --verify
+NEXT-HOST-VERIFIED head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc:17360:0o755|bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31:38552:0o755 manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c
+exit=0
+
+$ node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+✔ host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only (1.534556ms)
+NEXT-SMOKE BOOT ok ms=1505 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-643bcfdb-deac-48e5-a7cd-c692a29fb91d createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/homes/next-boot-2026-11-19T16-10-55-314Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-nexthost-ci-20261119-.artifacts-tmp-next-host-lane-cwd-g4sAeA--/session-643bcfdb-deac-48e5-a7cd-c692a29fb91d/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-nexthost-ci-20261119-.artifacts-tmp-next-host-lane-cwd-g4sAeA--/session-643bcfdb-deac-48e5-a7cd-c692a29fb91d/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
+✔ the pinned next host boots, serves a session, and its wire traffic is the scripted model (3493.359534ms)
+NEXT-SMOKE A1 ok resolve=ResolvedToolSet dispose=function admitted=observe
+NEXT-SMOKE A2 ok executor=selected tool=observe value=observed:one bodyObserved=["one"]
+NEXT-SMOKE A3 ok order=tools/pre-execute>tools/execute>tools/post-execute>tools/result
+✔ A1/A2/A3 — resolve, executor selection and pipeline order on the pinned host (19.149425ms)
+NEXT-SMOKE A4 ok transport=run_code innerBodyObserved=["nested"] sessionEvents=tool/ptc-dispatch-start,tool/ptc-dispatch outerResult={"logs":[],"result":"observed:nested"}
+✔ A4 — a PTC run_code nested call reaches a real inner executor (14.213964ms)
+NEXT-SMOKE A5 ok bodySawAbort=true resultIsError=true notified=1 resultText="Error: cooperative tool saw the abort"
+NEXT-SMOKE A6 ok lateSuccessOverridden=ABORTED preDispatch=ABORTED_BEFORE_DISPATCH dispatched=0
+NEXT-SMOKE HOST ok tag=0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/deepseek-harness-next assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc|bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+✔ A5/A6 — cancellation mid-flight, result notification, and the abort override (148.80475ms)
+✔ host identity — the tree and its native assets are the pinned bytes (0.299397ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3572.751071
+exit=0
+
+$ node --test --test-reporter=spec tests/next-host/provisioning-controls.test.mjs
+NEXT-CONTROL asset-digest-drift refused code=ASSET_DIGEST_DRIFT message="next host lane: ASSET_DIGEST_DRIFT: pinned native asset glibc/system.node is DRIFTED: 4491495b60519a5ed579c324ca95c9a4a4710d496885c761b358adb995448840 (17360 B), pin is 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (17360 B) — a locally built binary is not the pinned host; re-prov"
+NEXT-CONTROL asset-bytes-drift refused code=ASSET_BYTES_DRIFT message="next host lane: ASSET_BYTES_DRIFT: pinned native asset landlock-run has the pinned sha256 but 27 B, pin is 28 B — the manifest's own row is inconsistent, so the pin cannot be trusted"
+NEXT-CONTROL asset-mode-drift refused code=ASSET_MODE_DRIFT message="next host lane: ASSET_MODE_DRIFT: pinned native asset landlock-run has mode 0o644, pin is 0o755 — the published bytes arrive executable or they are not the published artifact"
+NEXT-CONTROL host-pin ok tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 addon=0.1.2 ports=13000-13049
+✔ POSITIVE control: an honest fixture tree + its own pinned bytes pass (the refusals below are not vacuous) (39.060512ms)
+✔ TREE_MISSING — a lane with no host tree is RED and names the tree it looked for (0.872702ms)
+✔ NOT_BUILT — a pinned clone that was never built is RED, never "nothing to run" (22.116956ms)
+✔ NOT_A_GIT_CHECKOUT — a directory that is not a checkout cannot claim a commit (4.395649ms)
+✔ HEAD_DRIFT — a tree at the wrong commit is refused, and the message names both commits (27.791157ms)
+✔ VERSION_DRIFT — a tree that declares another version is not the pinned host (29.073209ms)
+✔ VERSION_UNREADABLE — an unreadable package.json refuses instead of guessing a version (27.863608ms)
+✔ PIN_INVALID — an unpinned expectation is refused before any file is read (24.321414ms)
+✔ ASSET_MISSING — absent native assets are RED and name the provisioning command (34.994777ms)
+✔ ASSET_DIGEST_DRIFT — a LOCALLY BUILT system.node is not the published pin (35.408299ms)
+✔ ASSET_BYTES_DRIFT — a manifest row whose length disagrees with its own sha256 is refused (29.951712ms)
+✔ ASSET_MODE_DRIFT — the pinned mode (0o755) is part of the pin (30.281064ms)
+✔ HOST PIN — the fixture controls grade the SAME pin the lane executes (0.345174ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 368.173523
+exit=0

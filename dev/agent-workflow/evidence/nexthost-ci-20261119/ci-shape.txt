@@ -1,0 +1,16 @@
+$ node --test scripts/test-catalog.test.mjs
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.086574ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 566.10386
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0

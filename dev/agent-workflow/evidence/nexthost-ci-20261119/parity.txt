@@ -1,0 +1,12 @@
+$ node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
+      old scripts/pr-settlement-gate.test.mjs
+      new scripts/pr-settlement-gate.test.mjs
+  union old=25 new=69 set=sha256:9d56a97244aa89274b578f91d3ed4e687cc7bf434b00e7e9fb5f16f43dbf0704
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+
+# the three new legs are NOT dispatch legs (no `--run --leg <id>`): the dispatch union is unchanged (legs=18, new=69). problems=0 above.
+
+$ git diff origin/master --stat -- .github/workflows/census-runtime.yml dev/ci/eb3-ci-manifest.json
+ .github/workflows/census-runtime.yml | 57 +++++++++++++++++++++++++++++++++++-
+ dev/ci/eb3-ci-manifest.json          | 34 +++++++++++++++++++++
+ 2 files changed, 90 insertions(+), 1 deletion(-)
