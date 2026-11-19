@@ -1,6 +1,6 @@
 # UTE G1-S1 (FS) — non-invasive prototype + golden vectors (2026-11-19)
 
-**Dated:** 2026-11-19 (session calendar). **Branch:** `task/ute-g1-fs-20261119`
+**Dated:** 2026-11-19 (session calendar). **PR:** #792 (draft, base `master`). **Branch:** `task/ute-g1-fs-20261119`
 (worktree `.worktrees/ute-g1-fs-20261119`, base `origin/master`
 `00429852cc9c9284fd6817da57503bac9501bc9d`).
 **Design input:** the UTE memo on PR #765 draft head `c97420fd…`

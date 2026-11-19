@@ -1,4 +1,5 @@
-# gate transcript — ute-g1-fs-20261119
+# gate transcript — ute-g1-fs-20261119 (final head)
+# captured on branch task/ute-g1-fs-20261119 (each block is verbatim; the commands are the authority)
 
 $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
@@ -18,7 +19,7 @@ $ node --test scripts/test-catalog.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 598.685833
+ℹ duration_ms 574.294858
 exit=0
 
 $ node scripts/dispatch-tests.mjs --check
@@ -30,39 +31,80 @@ EB3-CI-REQUIRED pass workflows=10 findings=0
 exit=0
 
 $ node scripts/docs-sync.mjs --check
-docs:sync --check: docs=170 notes=4 plans=129(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:sync --check: docs=171 notes=4 plans=130(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
 AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
 LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
 exit=0
 
-$ node scripts/lint-identities.mjs --diff origin/master
-  syscall: 'open',
-  path: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/origin/master'
-}
-
-Node.js v24.21.0
-exit=1
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1688 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+exit=0
 
 $ git diff --check
 exit=0
 
-$ git diff --stat origin/master
- tests/ute-g1-fs/capture-old-path.mjs       |  60 +++++++++
- tests/ute-g1-fs/golden/old-path.tsv        |  11 ++
- tests/ute-g1-fs/lane-suite.mjs             |  49 +++++++
- tests/ute-g1-fs/lib/binding.mjs            |  60 +++++++++
- tests/ute-g1-fs/lib/compare.mjs            | 106 +++++++++++++++
- tests/ute-g1-fs/lib/corpus.mjs             | 169 +++++++++++++++++++++++
- tests/ute-g1-fs/lib/effect-oracle.mjs      | 140 +++++++++++++++++++
- tests/ute-g1-fs/lib/host.mjs               | 111 +++++++++++++++
- tests/ute-g1-fs/lib/lane.mjs               |  84 ++++++++++++
- tests/ute-g1-fs/lib/new-path.mjs           | 120 +++++++++++++++++
- tests/ute-g1-fs/lib/old-path.mjs           |  95 +++++++++++++
- tests/ute-g1-fs/lib/prototype-provider.mjs | 209 +++++++++++++++++++++++++++++
- tests/ute-g1-fs/lib/scenario.mjs           | 155 +++++++++++++++++++++
- tests/ute-g1-fs/negative-controls.mjs      | 127 ++++++++++++++++++
- tests/ute-g1-fs/run-prototype.mjs          |  50 +++++++
- 15 files changed, 1546 insertions(+)
+$ node tests/ute-g1-fs/capture-old-path.mjs
+OLD-PATH-VECTOR FS-M1-mode-preserved outcome=allow refusal=none effects=inside/mode.txt:4B/0o600 codes=- leaks=none
+OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=10
+OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/tests/ute-g1-fs/golden/old-path.tsv
+exit=0
 
-$ git status --short (excluding the new tests/ute-g1-fs files)
-?? dev/agent-workflow/evidence/ute-g1-fs-20261119/
+$ node tests/ute-g1-fs/run-prototype.mjs
+NEW-PATH-VECTOR FS-M1-mode-preserved PASS outcome=allow refusal=none effects=inside/mode.txt|present|4|27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a|0o600 leaks=-
+PROTOTYPE-VERDICT GREEN vectors=10 failed=0
+exit=0
+
+$ node tests/ute-g1-fs/negative-controls.mjs
+NC NC-1-lane-bites ok outcome=deny refusal=lane-deny denyFact=writeText/write targetExists=false
+NC NC-2-harness-bites ok cleanFailures=0 mutatedFailures=1 mutatedFields=effects
+NC NC-3-no-fallback ok typed=NextHostMissingError namesPin=true namesLegacy=false
+NC NC-4-lane-load-bearing ok outcome=allow targetExists=true bytes=5
+NC-VERDICT GREEN controls=4 failed=0
+exit=0
+
+$ node tests/ute-g1-fs/lane-suite.mjs
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 295.209398
+exit=0
+
+$ git diff --stat origin/master
+ .../evidence/ute-g1-fs-20261119/README.md          |  39 ++
+ .../evidence/ute-g1-fs-20261119/gates.txt          |  79 ++++
+ .../ute-g1-fs-20261119/host-provisioning.txt       |  10 +
+ .../evidence/ute-g1-fs-20261119/isolation.txt      |  74 ++++
+ .../ute-g1-fs-20261119/negative-controls.txt       |   5 +
+ .../evidence/ute-g1-fs-20261119/new-path-run.txt   |  12 +
+ .../evidence/ute-g1-fs-20261119/next-lane.txt      |  25 ++
+ .../ute-g1-fs-20261119/old-path-capture.txt        |  12 +
+ .../ute-g1-fs-20261119/testkit-after.log.txt       | 450 +++++++++++++++++++++
+ docs/plans/memo/ute-g1-fs-20261119/README.md       | 202 +++++++++
+ tests/ute-g1-fs/README.md                          | 186 +++++++++
+ tests/ute-g1-fs/capture-old-path.mjs               |  60 +++
+ tests/ute-g1-fs/golden/old-path.meta.txt           |  52 +++
+ tests/ute-g1-fs/golden/old-path.tsv                |  11 +
+ tests/ute-g1-fs/lane-suite.mjs                     |  49 +++
+ tests/ute-g1-fs/lib/binding.mjs                    |  60 +++
+ tests/ute-g1-fs/lib/compare.mjs                    | 106 +++++
+ tests/ute-g1-fs/lib/corpus.mjs                     | 169 ++++++++
+ tests/ute-g1-fs/lib/effect-oracle.mjs              | 140 +++++++
+ tests/ute-g1-fs/lib/host.mjs                       | 111 +++++
+ tests/ute-g1-fs/lib/lane.mjs                       |  84 ++++
+ tests/ute-g1-fs/lib/new-path.mjs                   | 120 ++++++
+ tests/ute-g1-fs/lib/old-path.mjs                   |  95 +++++
+ tests/ute-g1-fs/lib/prototype-provider.mjs         | 209 ++++++++++
+ tests/ute-g1-fs/lib/scenario.mjs                   | 155 +++++++
+ tests/ute-g1-fs/negative-controls.mjs              | 127 ++++++
+ tests/ute-g1-fs/run-prototype.mjs                  |  50 +++
+ 27 files changed, 2692 insertions(+)
+
+$ git status --short
+ M dev/agent-workflow/evidence/ute-g1-fs-20261119/gates.txt
+(empty = clean)
