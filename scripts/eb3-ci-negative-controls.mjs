@@ -1681,8 +1681,6 @@ control('P2 known-old-red-identity-set-complete', () => {
 control('C-NH1 next-host-lane-is-collected-and-graded', () => {
   const { checkRequiredJobs, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
   const wf = new Map(workflowFiles(ROOT))
-  const honest = checkRequiredJobs({ files: wf }).findings
-  if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
   const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
   const layer = manifest.layers.find((l) => l.id === 'ci-census')
   if (layer === undefined) return { ok: false, detail: 'the manifest has no ci-census layer — the next host lane is not declared anywhere' }
@@ -1690,19 +1688,65 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
   const before = wf.get(WF)
   if (before === undefined) return { ok: false, detail: `${WF} absent` }
 
-  const MATERIALIZE = '        run: node scripts/provision-next-host.mjs --materialize\n'
-  const ASSETS = '        run: node scripts/provision-next-host.mjs --assets\n'
-  const LANE = '        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs\n'
-  if (!before.includes(MATERIALIZE) || !before.includes(ASSETS) || !before.includes(LANE)) {
-    return { ok: false, detail: `the census workflow does not carry the three next-host invocations verbatim — the legs are declared but not executed (${[MATERIALIZE, ASSETS, LANE].filter((x) => !before.includes(x)).map((x) => x.trim()).join(' ;; ')})` }
+  /**
+   * The ONE derivation of "what the workflow must execute", taken from the
+   * manifest leg itself. The law this control enforces is *the workflow's
+   * `run:` line is byte-identical to the manifest leg's `cmd[] + check[]`*, NOT
+   * "the argv never changes": a suite joining the lane (as `ute-g1-fs` did) must
+   * not require a second, hand-typed copy of the truth here — that copy is what
+   * drifts and what would make this control refuse an honest PR.
+   *
+   * Returns `{ error }` for an absent layer/leg/argv, never an empty success:
+   * the derivation is itself a graded step (see the vacuity arm below).
+   */
+  const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const legArgv = (m, needle) => {
+    const scope = m.layers.find((l) => l.id === 'ci-census')
+    if (scope === undefined) return { error: 'the manifest has no ci-census layer — the next host lane is not declared anywhere' }
+    const leg = (scope.legs ?? []).find((l) => String(l.id).includes(needle))
+    if (leg === undefined) {
+      return { error: `the manifest has no ci-census leg named ${JSON.stringify(needle)} (legs: ${(scope.legs ?? []).map((l) => l.id).join(' | ')})` }
+    }
+    const argv = [...(leg.cmd ?? []), ...(leg.check ?? [])]
+    if (argv.length === 0) return { error: `ci-census leg ${JSON.stringify(needle)} declares no argv` }
+    return { leg, argv, re: new RegExp(`^[ \\t]*run: ${escapeRe(argv.join(' '))}$`, 'm') }
   }
-  // The declared legs must be the ones this control names, or the mutations grade nothing.
-  const legIds = (layer.legs ?? []).map((l) => l.id)
-  for (const needle of ['next host materialize', 'next host assets', 'next host lane']) {
-    if (!legIds.some((id) => id.includes(needle))) return { ok: false, detail: `the manifest has no ci-census leg named ${JSON.stringify(needle)} (legs: ${legIds.join(' | ')})` }
+  const NEEDLES = ['next host materialize', 'next host assets', 'next host lane']
+  const derived = new Map()
+  for (const needle of NEEDLES) {
+    const declaration = legArgv(manifest, needle)
+    if (declaration.error !== undefined) return { ok: false, detail: declaration.error }
+    derived.set(needle, declaration)
   }
+  // (d) the honest state: every declared leg's argv appears as one `run:` line.
+  const diverged = NEEDLES.filter((needle) => !derived.get(needle).re.test(before))
+  if (diverged.length > 0) {
+    const detail = diverged.map((needle) => {
+      const declaration = derived.get(needle)
+      const { argv } = declaration
+      // Locate the ONE step this leg declares: prefer its first declared check
+      // file (a path token, so the regex cannot match a sibling step's argv the
+      // way `node` alone did), else the leg's last argv token.
+      const carrierNeedle = declaration.leg.check?.[0] ?? argv[argv.length - 1]
+      const carrierLine = (before.match(new RegExp(`^[ \\t]*run: .*${escapeRe(carrierNeedle)}.*$`, 'm')) ?? [''])[0]
+      const carrierTokens = carrierLine.replace(/^[ \t]*run: /, '').trim().split(/\s+/).filter((token) => token.length > 0)
+      const absent = argv.filter((token) => !carrierTokens.includes(token))
+      const extra = carrierTokens.filter((token) => !argv.includes(token))
+      if (absent.length > 0) return `${needle}: the workflow run line drops ${absent.map((token) => JSON.stringify(token)).join(', ')} that the manifest leg declares (${JSON.stringify(argv.join(' '))})`
+      if (extra.length > 0) return `${needle}: the workflow run line carries ${extra.map((token) => JSON.stringify(token)).join(', ')} that the manifest leg does not declare (${JSON.stringify(argv.join(' '))})`
+      return `${needle}: the workflow run: line has the same tokens in a DIFFERENT order (the law is byte-identical argv, not set equality): ${JSON.stringify(argv.join(' '))}`
+    }).join(' ;; ')
+    return { ok: false, detail: `the census workflow and the manifest leg disagree — ${detail}` }
+  }
+  // The repo-wide shape checker is the second belt: if it already refuses the
+  // honest tree, this control cannot attribute anything below it.
+  const honest = checkRequiredJobs({ files: wf }).findings
+  if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
+  const MATERIALIZE = `        run: ${derived.get('next host materialize').argv.join(' ')}\n`
+  const ASSETS = `        run: ${derived.get('next host assets').argv.join(' ')}\n`
+  const LANE = `        run: ${derived.get('next host lane').argv.join(' ')}\n`
 
-  /** Stage one edit; return the findings it produced (never write to disk). */
+  /** Stage one workflow edit; return the findings it produced (never write to disk). */
   const stage = (name, edit) => {
     const after = edit(before)
     if (after === before) return { name, error: 'mutation did not apply' }
@@ -1710,8 +1754,20 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
     m.set(WF, after)
     return { name, findings: checkRequiredJobs({ files: m }).findings }
   }
+  /** Stage one MANIFEST edit; the workflow bytes stay honest (never write to disk). */
+  const stageManifest = (name, mutate) => {
+    const m = structuredClone(manifest)
+    const scope = m.layers.find((l) => l.id === 'ci-census')
+    const leg = (scope.legs ?? []).find((l) => String(l.id).includes('next host lane'))
+    if (leg === undefined) return { name, error: 'the clone lost the next host lane leg' }
+    mutate(leg)
+    return { name, findings: checkRequiredJobs({ files: wf, manifest: m }).findings }
+  }
   /** Did this code fire, on a finding that names `needle`? */
   const fired = (findings, code, needle) => findings.some((f) => f.code === code && String(f.detail ?? '').includes(needle))
+  /** Did ANY of these codes fire, naming `needle`? (the argv checker has three refusal shapes) */
+  const firedAny = (findings, codes, needle) => findings.some((f) => codes.includes(f.code) && String(f.detail ?? '').includes(needle))
+  const ARGV_CODES = ['CI_LAYER_LEG_ARGUMENT_MISSING', 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'CI_LAYER_LEG_UNPROVEN']
 
   const misses = []
   const arms = [
@@ -1736,18 +1792,45 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
     // (7) the lane replaced by an echo of its own words
     { name: 'lane-echo', code: 'CI_LAYER_LEG_UNPROVEN', needle: '--test-force-exit',
       edit: (t) => t.replace(LANE, `        run: echo ${LANE.trim().slice('run: '.length)}\n`) },
+    // (8) the workflow REORDERS two declared suites: every token is present, the
+    //     argv is no longer the declared one — a set-equality check would miss it
+    { name: 'lane-argv-reordered', anyCodes: ARGV_CODES, needle: 'boot.test.mjs',
+      edit: (t) => t.replace(LANE, LANE.replace('tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs', 'tests/next-host/native-api.test.mjs tests/next-host/boot.test.mjs')) },
   ]
   for (const arm of arms) {
     const staged = stage(arm.name, arm.edit)
     if (staged.error !== undefined) { misses.push(`${arm.name}: ${staged.error}`); continue }
-    if (!fired(staged.findings, arm.code, arm.needle)) {
-      misses.push(`${arm.name}: ${arm.code} not raised naming ${JSON.stringify(arm.needle)} (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+    const ok = arm.anyCodes !== undefined
+      ? firedAny(staged.findings, arm.anyCodes, arm.needle)
+      : fired(staged.findings, arm.code, arm.needle)
+    if (!ok) {
+      misses.push(`${arm.name}: ${arm.anyCodes?.join('|') ?? arm.code} not raised naming ${JSON.stringify(arm.needle)} (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+    }
+  }
+  // (b) the MANIFEST drops a suite the workflow still executes: the workflow now
+  //     runs more argv than declared. The workflow bytes stay honest — this grades
+  //     the other side of the byte-identical law, which no workflow mutation reaches.
+  {
+    const staged = stageManifest('manifest-check-dropped', (leg) => {
+      leg.check = leg.check.filter((file) => !file.includes('provisioning-controls.test.mjs'))
+    })
+    if (staged.error !== undefined) misses.push(`manifest-check-dropped: ${staged.error}`)
+    else if (!fired(staged.findings, 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'provisioning-controls.test.mjs')) {
+      misses.push(`manifest-check-dropped: CI_LAYER_LEG_EXTRA_ARGUMENT not raised naming "provisioning-controls.test.mjs" (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+    }
+  }
+  // derivation vacuity: a leg that does not exist must produce an ERROR, not an
+  // empty argv that makes the honest check pass over nothing.
+  {
+    const vacuous = legArgv(manifest, 'next host lane THAT DOES NOT EXIST')
+    if (vacuous.error === undefined) {
+      misses.push('derivation-vacuity: legArgv() returned an argv for a leg that does not exist — a silent pass is the failure mode this arm exists for')
     }
   }
   return {
     ok: misses.length === 0,
     detail: misses.length === 0
-      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.code}`).join(', ')} each detected on the next-host legs`
+      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.anyCodes?.join('|') ?? a.code}`).join(', ')}, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held`
       : misses.join(' ;; '),
   }
 })

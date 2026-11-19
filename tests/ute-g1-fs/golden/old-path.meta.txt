@@ -1,0 +1,61 @@
+# old-path.tsv — what this fixture is, and what it is not
+
+This file is the reviewed golden fixture for the UTE G1-S1 (FS) prototype: ten
+`(request → effect)` pairs measured on the CURRENT legacy governed path and
+serialized by `tests/ute-g1-fs/lib/scenario.mjs`.
+
+It is a fixture, not a golden oracle: `run-prototype.mjs` compares the prototype
+against it field for field, and `capture-old-path.mjs` re-derives it from the
+legacy path (exit 1 on any drift or on a contradiction with the corpus design
+claim).
+
+## Identity
+
+| field | value |
+|---|---|
+| host tree | `tests/deepseek-harness-test-use` |
+| host version | `0.2.0-rc.2` |
+| host commit | `639ed015397290b3745d163aafe02ffee4aa3f84` |
+| governance seam | `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` (product route C), i.e. the P1 `EffectiveIo` ceiling + the confined provider subclass in `packages/runtime/team-services/src/fs.ts` |
+| dispatch | `ctx.tools.execute({'calls':[…]})` |
+| capture form | host-free world (`tests/world-factory/lib/a5sf-fs-contract-world.mjs`, `composition: 'route-c'`), `mkdtemp` per vector |
+| capture command | `node tests/ute-g1-fs/capture-old-path.mjs --write` |
+| oracle | `lib/effect-oracle.mjs` — existence, bytes, sha256, mode; refusal class; leak scan |
+
+## KNOWN-SEMANTIC-DIFFERENCE
+
+The corpus grades effects and refusal CLASSES, so it tolerates known semantic
+differences between the two host generations. Those differences are recorded —
+with cause and retirement-blocking status — in the sibling file
+`SEMANTIC-DIFFERENCES.md`, declared in `../lib/semantic-differences.mjs`, printed
+by `run-prototype.mjs` on every run and asserted by `../lane-suite.test.mjs`.
+A difference the harness cannot print is not recorded.
+
+## Record shape
+
+Header: `id entry lane_read lane_write outcome refusal codes effects leaks`.
+
+* `lane_*` — world-relative lane tokens, never absolute paths.
+* `outcome` — `allow` | `deny`.
+* `refusal` — closed class (`lane-deny`, `write-requires-read`, `stale-version`,
+  `other`) or `-` when the call was allowed. The old path's *typed* codes are
+  empty here: route-C refusals are prose (`authored locator '…' is outside every
+  allow subtree of the lane`, `file has not been read — read the file, then
+  retry`, `file changed since it was read — re-read the file, then retry`), which
+  `classifyRefusal` maps onto the same class vocabulary the next host's typed
+  codes map onto.
+* `effects` — `path|present|<bytes>|<sha256>|<mode>` joined by `;`; `absent`
+  carries `-` for the remaining cells.
+* `leaks` — secret tokens that appeared in the model-facing result text (`-`:
+  none).
+
+## What it does NOT cover (mirrored in ../README.md §7)
+
+* **Read confinement is not proven.** No effect record can prove an
+  unauthorized `read()` did not happen; `FS-R1` pins a refusal + the absence of
+  the secret token from result text + unchanged bytes, nothing stronger.
+* **Delete / move** — the FS tool family exposes no model-facing delete/move
+  tool and the legacy governed provider does not override `deleteFile`/
+  `moveFile`, so there is no old-path vector to compare against.
+* **Streaming / byte-range / `read_image`** — not exercised.
+* **Live boot** — C1 host-free capture, not a booted run.

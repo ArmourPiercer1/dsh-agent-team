@@ -1,0 +1,10 @@
+HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 hostBaseline=next host=9c2670d3bce5275e0d1610272958121af87787bb manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c utc=2026-11-19T16:25:50.961Z receipt=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/host-assets/provision-receipt.json
+
+# command
+#   node scripts/provision-host-assets.mjs --from-package --host next \
+#     --runtime-tree tests/deepseek-harness-next
+# exit 0
+#
+# The next-host lane then verified the installed bytes are the pin:
+#   NEXT-SMOKE HOST ok tag=0.2.2-rc.5 head=9c2670d3… assets=bin/glibc/system.node:54a9c25c…|bin/landlock-run:a752bc72…
+# (see next-lane.txt)

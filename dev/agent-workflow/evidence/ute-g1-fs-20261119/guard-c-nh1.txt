@@ -1,0 +1,22 @@
+# C-NH1 redesign — four mutation verdicts (verbatim)
+# The guard's law: the workflow run: line is byte-identical to the manifest leg's cmd[]+check[].
+# Each case below edits the tracked file on disk, runs the control, and restores with git checkout.
+
+## (a) workflow drops a declared file (tests/ute-g1-fs/lane-suite.test.mjs)
+FAIL C-NH1 next-host-lane-is-collected-and-graded :: the census workflow and the manifest leg disagree — next host lane: the workflow run line drops "tests/ute-g1-fs/lane-suite.test.mjs" that the manifest leg declares ("node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs")
+
+## (b) manifest check[] drops a file the workflow still runs (provisioning-controls.test.mjs)
+FAIL C-NH1 next-host-lane-is-collected-and-graded :: the census workflow and the manifest leg disagree — next host lane: the workflow run line carries "tests/next-host/provisioning-controls.test.mjs" that the manifest leg does not declare ("node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/ute-g1-fs/lane-suite.test.mjs")
+
+## (c) workflow reorders two declared files (same token set, different argv)
+FAIL C-NH1 next-host-lane-is-collected-and-graded :: the census workflow and the manifest leg disagree — next host lane: the workflow run: line has the same tokens in a DIFFERENT order (the law is byte-identical argv, not set equality): "node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs"
+
+## (d) honest state
+PASS C-NH1 next-host-lane-is-collected-and-graded :: honest census workflow passes; extra-argv=>CI_LAYER_LEG_EXTRA_ARGUMENT, if-false=>CI_LAYER_LEG_UNPROVEN, assets-mode-dropped=>CI_LAYER_LEG_UNPROVEN, assets-or-true=>CI_LAYER_LEG_UNPROVEN, lane-suite-dropped=>CI_LAYER_LEG_ARGUMENT_MISSING, lane-continue-on-error=>CI_LAYER_CONTINUE_ON_ERROR, lane-echo=>CI_LAYER_LEG_UNPROVEN, lane-argv-reordered=>CI_LAYER_LEG_ARGUMENT_MISSING|CI_LAYER_LEG_EXTRA_ARGUMENT|CI_LAYER_LEG_UNPROVEN, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held
+
+## derivation vacuity (inside the control): a leg that does not exist must ERROR
+derivation-vacuity=>RED each detected/held
+
+## full guard suite after the redesign
+
+33/33 control(s) behaved as required
