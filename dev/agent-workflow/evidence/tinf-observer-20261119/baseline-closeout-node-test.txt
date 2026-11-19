@@ -1,35 +1,35 @@
 $ node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
 ▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
-  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (59.357862ms)
-  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (49.513056ms)
-✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (109.60065ms)
-✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.481892ms)
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (60.451745ms)
+  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (51.09465ms)
+✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (112.234689ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.594325ms)
 ▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
-  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.229604ms)
-  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.169701ms)
-  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.154172ms)
-  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (1.924853ms)
-  ✔ ONE denial naming another call, with no pin -> INCONCLUSIVE (the tightened F-08 rule) (0.293635ms)
-  ✔ without an attribution key, denials naming SEVERAL calls are unattributed too (0.189228ms)
-  ✔ a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed (0.125017ms)
-✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (4.94471ms)
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.24312ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.21126ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.210608ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.083514ms)
+  ✔ ONE denial naming another call, with no pin -> INCONCLUSIVE (the tightened F-08 rule) (0.290049ms)
+  ✔ without an attribution key, denials naming SEVERAL calls are unattributed too (0.17965ms)
+  ✔ a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed (0.13251ms)
+✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (5.154257ms)
 ▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
-  ✔ the REAL World is accepted and the contract records its receipt (0.464939ms)
-  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.146918ms)
-  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.136679ms)
-  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.13742ms)
-  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.175332ms)
-  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.192515ms)
-  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.409816ms)
-  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.127631ms)
-  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.088768ms)
-✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.193566ms)
+  ✔ the REAL World is accepted and the contract records its receipt (0.440994ms)
+  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.14785ms)
+  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.093818ms)
+  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.187595ms)
+  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.144554ms)
+  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.16359ms)
+  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.472504ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.138983ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.106872ms)
+✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.236448ms)
 ▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
-  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.11082ms)
-  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.622087ms)
-  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.357477ms)
-  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.114677ms)
-✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (3.043381ms)
+  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.119837ms)
+  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.686118ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.38553ms)
+  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.111661ms)
+✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (3.194015ms)
 ℹ tests 27
 ℹ suites 0
 ℹ pass 27
@@ -37,5 +37,5 @@ $ node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.te
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 253.522364
+ℹ duration_ms 268.01539
 EXIT=0

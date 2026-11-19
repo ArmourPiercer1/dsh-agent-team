@@ -1,0 +1,42 @@
+# CI-shape census job, four steps, real pinned host, on the MERGED head (origin/master 038e822d2)
+# host: 639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=0 version=0.2.0-rc.2
+# node: v24.21.0
+
+=== STEP 1 — M7-A real-host slice (M7A_REQUIRE_PINNED_HOST=1)
+M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+ℹ M7A-ARM deny-outside-workspace verdict=SATISFIED expectation=SATISFIED
+ℹ M7A-ARM unauthorized-observed verdict=VIOLATED expectation=VIOLATED
+ℹ M7A-ARM observation-disabled verdict=INCONCLUSIVE expectation=INCONCLUSIVE
+ℹ M7A-ARM trace-only-no-witness verdict=INSTRUMENT_ERROR expectation=INSTRUMENT_ERROR
+ℹ M7A-ARM bash-reachable-and-confined verdict=SATISFIED expectation=SATISFIED
+ℹ M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+ℹ M7A-STEP-RECORD /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/.artifacts/tmp/census-job/merged/m7a-step.json
+ℹ tests 1
+ℹ pass 1
+ℹ fail 0
+ℹ skipped 0
+
+=== STEP 2 — B4/1 PTY + subprocess contract
+ℹ tests 32
+ℹ pass 32
+ℹ fail 0
+ℹ skipped 0
+
+=== STEP 3 — B4/2 web + read_image face
+ℹ tests 27
+ℹ pass 27
+ℹ fail 0
+ℹ skipped 0
+
+=== STEP 4 — M7-B1 observation window
+ℹ M7B1-WINDOW contract=obs-b37036db4ac48412 world=u5m7b1-20261119T19-08-30Z agent=session-c0618d68-87cb-43a4-bd3b-5c7f225eb55d execution=m7b1-2 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T19-08-30Z window=win-86bea8d9-a39c-474c-b98b-9016157eb6a8 phase=pre armedAt=2026-11-19T19:08:58.017Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+ℹ M7B1-WINDOW contract=obs-ad8328cd9719c0ad world=u5m7b1-20261119T19-08-30Z agent=session-75017e2a-093f-43ba-a905-4f3032cefea7 execution=m7b1-6 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T19-08-30Z window=win-fa5cd759-9caa-4234-8338-09bee6574885 phase=pre armedAt=2026-11-19T19:08:58.560Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T19-08-30Z/m7b1-tmp/m7b1-watched/beside.txt"]
+ℹ M7B1-WINDOW contract=obs-76d5210b9e3c81c8 world=u5m7b1-20261119T19-08-30Z agent=session-c467d690-32e4-49c3-bcdf-bf18cff3bc7b execution=m7b1-10 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T19-08-30Z window=win-17d24002-c4c9-4197-8eaf-8f014b5c3719 phase=pre armedAt=2026-11-19T19:08:59.098Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T19-08-30Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+ℹ tests 10
+ℹ pass 10
+ℹ fail 0
+ℹ skipped 0
+

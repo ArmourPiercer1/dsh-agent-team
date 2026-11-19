@@ -74,6 +74,22 @@
 
 **M7-A 调用方 pin 的再审视**：`judgeRealRun` 的 pin 只在这条 turn **恰好命名一个执行**时生效；A1 因此拿到 `pin=m7a-0`（判决不变），A2 有 2 个执行、A5 有 3 个执行，都是 `pin=undefined`——**A2/A5 的判决变化不是 pin 造成的**，而是“无 pin 时不再消费带 id 的 denial”这条规则造成的。这也说明 pin 派生是保守的：它只在没有选择余地时落到一个具体调用上。
 
+## 第二次合并 master `038e822d2`（#792 的 UTE G1-S1 落地后）
+
+`git merge origin/master` **零冲突**（两边都只追加日志，且追加位置不重叠），自动合并后逐项复核：
+
+| 项 | 实测 | 结论 |
+| --- | --- | --- |
+| `dev/ci/eb3-ci-manifest.json` vs master | 结构 diff：**只多 1 个数组元素**（本分支的 closeout suite）+ 1 处 `why`；无删除、无其它改动 | 两侧内容都在 ✓ |
+| #792 的 `ci-census` lane 接线 | `check[]` = `[boot, native-api, provisioning-controls, **tests/ute-g1-fs/lane-suite.test.mjs**]`（四个文件），workflow 的 `run:` 行同样是这四个文件；`eb3-ci-required pass workflows=10 findings=0` 逐字校验了这一点 | argv 仍带全部四个测试文件 ✓ |
+| `scripts/eb3-ci-negative-controls.mjs`（#792 改成从 manifest 派生 C-NH1 的 argv） | `33/33 control(s) behaved as required` | 派生式 C-NH1 与本分支的 `suites[]` 追加**不冲突** ✓ |
+| `scripts/test-catalog.test.mjs` | `28/28`（两侧允许集合都在，无需再加路径：UTE lane suite 不在 dispatch parity 的 union 里） | ✓ |
+| catalog | `tests=878`、`UNCOLLECTED 41`、`--max-excluded 7`、`refused=0 findings=0` | ✓ |
+| parity `--old-ref e5bf05670` | `union old=25 new=70 set=sha256:991845176257f0bf51cd0ca264b8c7272709e45e57eaeea81934f277f1d4c234`、`problems=0`、`new_files=70` | **union 与 digest 未变**：#792 的 lane suite 在 census raw-argv leg，不是 dispatch leg ✓ |
+| `tinf-instruments` leg | `suites=51 files=51 exit=0`、`tests 813 / pass 807 / fail 0 / skipped 6` | ✓ |
+| `docs-sync` | `docs=172 notes=4 plans=131(0 declaring) findings=0 blocking=0`（#792 带了一份 memo，故计数 +1） | ✓ |
+| 四条 census 步骤（本地、真实宿主） | M7-A `VERIFIED arms=5`（ledger 同）、B4/1 `32/32`、B4/2 `27/27`、M7-B1 `10/10` | 合并头上重跑仍全绿（`census-four-steps-real-host.txt` 的合并版在 `census-four-steps-merged-038e822d2.txt`） |
+
 ## 这个观察器能证明什么、不能证明什么
 
 **能证明**（在本 worktree 实测的形态下）：
@@ -106,13 +122,13 @@
 | `cd packages/testkit && tsc -p tsconfig.json --noEmit` | 无输出，exit 0（`gate-testkit-tsc.txt`） |
 | `cd packages/testkit && vitest run`（全量，宿主缺席时） | `Test Files 3 failed | 31 passed (34)`、`Tests 13 failed | 501 passed (514)`；红的是 `plugin-dsh-compat`（缺宿主）、`a4p7-blueprint-version-clean`（12）、`a4p7-merge-gate`（1）——与本 PR 无关的既有红；改动前 `13 failed | 486 passed (499)`，即 +15 个新测试、0 个新失败（`gate-testkit-vitest.txt`） |
 | 同上（**宿主在位**） | `Test Files 2 failed | 32 passed (34)`、`Tests 13 failed | 514 passed (527)`；`plugin-dsh-compat` 变为绿（它只需要宿主），说明“3 个红文件”里有一个本来只是缺宿主（`gate-testkit-vitest.txt`） |
-| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `UNCOLLECTED 41`、`by runner: node=122 none=7 vitest=748`、`DSH-TEST-CATALOG tests=877 digest=sha256:a0b283cc8f5df76b5ac8f4e6560d47684ff29ffb10246e06356d98322a664ce0 refused=0 findings=0`，exit 0（`gate-test-catalog.txt`）。**排除上界是 master 的 7**（#790 删了两条 next-host 行并把 `--max-excluded` 9 → 7）；`dev/ci/excluded-baseline.json` 与本分支的 diff = **0 行**，即 master 版本原样保留，没有把那两行加回来 |
+| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `UNCOLLECTED 41`、`by runner: node=123 none=7 vitest=748`、`DSH-TEST-CATALOG tests=878 digest=sha256:b6f8e550607607958c8c188b9f47cbde4063b3fd76fdb6323b7b43994c122d4c refused=0 findings=0`，exit 0（`gate-test-catalog.txt`）。**878 = 876（两轮 merge 前的 master）+ 本分支 1 + #792 的 1**；**排除上界是 master 的 7**（#790 把 `--max-excluded` 9 → 7）；`dev/ci/excluded-baseline.json` 与本分支的 diff = **0 行** |
 | `node --test scripts/test-catalog.test.mjs` | `tests 28 / pass 28 / fail 0`，exit 0（`gate-test-catalog-test.txt`） |
 | `node scripts/dispatch-tests.mjs --check` | `DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`（`gate-dispatch-check.txt`） |
 | `A5SF_REQUIRE_PINNED_HOST=1 node scripts/dispatch-tests.mjs --leg tinf-instruments --run` | `tests 813 / pass 807 / fail 0 / skipped 6`、`DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=51 files=51 exit=0 set=sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556`（`gate-tinf-instruments-leg.txt`；新套件四条测试在其中可见） |
 | `node scripts/eb3-ci-required.mjs` | `EB3-CI-REQUIRED pass workflows=10 findings=0`（`gate-eb3-ci-required.txt`） |
 | `node scripts/eb3-negative-controls.mjs` | `33/33 control(s) behaved as required`（`gate-eb3-negative-controls.txt`；32 条是本分支之前的基线，#790 加了 `C-NH1`） |
-| `node scripts/docs-sync.mjs --check` | `docs:sync --check: … findings=0 blocking=0 contracts=20 pairs compared`（`gate-docs-sync.txt`） |
+| `node scripts/docs-sync.mjs --check` | `docs:sync --check: docs=172 notes=4 plans=131(0 declaring) findings=0 blocking=0 contracts=20 pairs compared`（`gate-docs-sync.txt`；doc/plan 计数含 #792 的 memo） |
 | `node scripts/lint-identities.mjs` | `162 identity lines, 76 distinct`、`1688 file(s) linted, 0 of them gitignored`（`gate-lint-identities.txt`） |
 | `git diff --check` / `git diff --cached --check` | 均无输出，`EXIT=0`（`gate-git-diff-check.txt`） |
 
@@ -140,5 +156,5 @@
 
 ## 文件清单
 
-新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（27 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
+新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（28 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
 修改：`packages/testkit/src/{effect-witness,contract-oracle,index}.ts`、`packages/testkit/test/{m2-effect-witness,m2-contract-oracle}.test.ts`、`tests/world-factory/lib/{world-factory,m7b1-observation-contract,m7a-real-run}.mjs`、`tests/world-factory/m7b1-observation-window.test.mjs`、`dev/ci/eb3-ci-manifest.json`、`scripts/test-catalog.test.mjs`、`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`。

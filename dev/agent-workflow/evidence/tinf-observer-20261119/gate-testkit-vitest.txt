@@ -2,152 +2,151 @@ $ cd packages/testkit && ../../node_modules/.bin/vitest run
 
  RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit
 
- ✓ test/rc2-kit-pin-hygiene.test.ts (7 tests) 225ms
- ✓ test/rc2-kit-preset-seam.test.ts (15 tests) 156ms
- ✓ test/u7-0-census-reconcile.test.ts (26 tests) 387ms
- ✓ test/a4-artifacts-nonempty.test.ts (4 tests) 659ms
- ✓ test/plugin-dsh-compat.test.ts (13 tests) 781ms
-     ✓ the canonical pin is the 0.2.0-rc.2 generation, and the pinned test-use runtime self-reports exactly that version  344ms
- ✓ test/a3p1-seam-additive-tables.test.ts (8 tests) 44ms
- ✓ test/t6-4-policy-precedence.test.ts (11 tests) 126ms
- ✓ test/a5-current-contract.test.ts (35 tests) 479ms
-     ✓ production integration: the real state-freshness leg passes on this tree (graph-parse + contract Q1-Q8)  442ms
- ✓ test/bp1h-blueprint-authoring.test.ts (8 tests) 54ms
- ✓ test/t6-7-fresh-per-delegation.test.ts (6 tests) 44ms
- ✓ test/t6-6-snapshot-immutability.test.ts (8 tests) 78ms
- ✓ test/t6-2-template-n-instances.test.ts (8 tests) 159ms
- ✓ test/t6-5-compat-complete-true.test.ts (6 tests) 43ms
- ✓ test/t6-8-serialization-roundtrip.test.ts (9 tests) 60ms
- ❯ test/a4p7-blueprint-version-clean.test.ts (60 tests | 12 failed) 1744ms
-     × the scan ran (a scan that could not run is never reported as clean) 18ms
-     × invoking the script by name is a real gate: non-zero exit while dirty sites exist 349ms
-     ✓ a directory that is not a repository reports not-run with exit 2, never clean 72ms
-     ✓ run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3) 75ms
+ ✓ test/rc2-kit-preset-seam.test.ts (15 tests) 146ms
+ ✓ test/rc2-kit-pin-hygiene.test.ts (7 tests) 278ms
+ ✓ test/u7-0-census-reconcile.test.ts (26 tests) 359ms
+ ✓ test/plugin-dsh-compat.test.ts (13 tests) 662ms
+ ✓ test/a4-artifacts-nonempty.test.ts (4 tests) 640ms
+ ✓ test/a3p1-seam-additive-tables.test.ts (8 tests) 42ms
+ ✓ test/t6-4-policy-precedence.test.ts (11 tests) 128ms
+ ✓ test/bp1h-blueprint-authoring.test.ts (8 tests) 86ms
+ ✓ test/a5-current-contract.test.ts (35 tests) 524ms
+     ✓ production integration: the real state-freshness leg passes on this tree (graph-parse + contract Q1-Q8)  457ms
+ ✓ test/t6-7-fresh-per-delegation.test.ts (6 tests) 28ms
+ ✓ test/t6-6-snapshot-immutability.test.ts (8 tests) 61ms
+ ✓ test/t6-2-template-n-instances.test.ts (8 tests) 98ms
+ ✓ test/a3p1-team-domain-tenth-store.test.ts (10 tests) 97ms
+ ✓ test/t6-5-compat-complete-true.test.ts (6 tests) 40ms
+ ✓ test/t6-8-serialization-roundtrip.test.ts (9 tests) 54ms
+ ✓ test/t6-9-negative-matrix.test.ts (12 tests) 182ms
+ ❯ test/a4p7-blueprint-version-clean.test.ts (60 tests | 12 failed) 1717ms
+     × the scan ran (a scan that could not run is never reported as clean) 12ms
+     × invoking the script by name is a real gate: non-zero exit while dirty sites exist 315ms
+     ✓ a directory that is not a repository reports not-run with exit 2, never clean 78ms
+     ✓ run from a SUBDIRECTORY the fence reports not-run with exit 2, never a false clean (round-3 F3) 66ms
      ✓ the dirty set is EXACTLY the recorded Task 7.4 deferral set (no new path) 1ms
-     × every deferred path is still dirty (a migrated path must leave the list) 26ms
-     ✓ the fence needs no exemption for its own author 10ms
-     × the fence reports sites, not a bare count, and names a file the reader can open 14ms
+     × every deferred path is still dirty (a migrated path must leave the list) 20ms
+     ✓ the fence needs no exemption for its own author 6ms
+     × the fence reports sites, not a bare count, and names a file the reader can open 37ms
      × the YAML-string factory file (the probe instrument's hardest case) is DIRTY by path and line 1ms
-     ✓ packages/*/test is in scope: a SYNTHETIC .mjs test-tree emitter is in scope AND its version literal is classified 2ms
+     ✓ packages/*/test is in scope: a SYNTHETIC .mjs test-tree emitter is in scope AND its version literal is classified 3ms
      ✓ the named namespace traps are never reported as Blueprint sites 1ms
      × the probe-green file is split BY SITE: real Blueprint literal = advisory dispatch, session rows = refused 1ms
      × the REFUSED lines are visible with namespace AND deciding channel, so a refusal is auditable 0ms
-     × every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 0ms
-     × unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated 0ms
-     ✓ every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row 5ms
-     ✓ the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2) 70ms
-     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)  328ms
-     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  635ms
-     × the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4) 22ms
+     × every ADVISORY line carries its per-site caveat; the named launderings are named (review dispatch condition #2) 1ms
+     × unknowns are adjudicated BY FILE: the fence reads the ledger, prints ADJUDICATED, gates only the unadjudicated 1ms
+     ✓ every ledger entry cites hand-verified <its own path>:<line> — silence costs a written row 1ms
+     ✓ the ledger is keyed path::L<line>::v<version>: an old two-part key is NOT-RUN naming it (G2) 89ms
+     ✓ dropping ONE row sends THAT site back to UNKNOWN — a second literal on a ledgered line costs its own row (G2)  325ms
+     ✓ evidence must cite the key's FULL tracked path with a real range containing the site line (G3)  649ms
+     × the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4) 6ms
      ✓ the blind-spot note prints the load-bearing sentence and the two-number audit clause is gone 0ms
-     ✓ the blind-spot line names the numeric-form family the text predicate does not read 0ms
-     ✓ the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3) 79ms
+     ✓ the blind-spot line names the numeric-form family the text predicate does not read 7ms
+     ✓ the RETIRED intentionally-dirty row kind is refused as not-run — a retired class never silently ignores its old rows (R3) 71ms
      ✓ the scope function is the plan's list plus the measured third class — no more, no less 1ms
-     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 2ms
-     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 1ms
+     ✓ f01 YAML-string carrier is DIRTY (the type system cannot see it) 1ms
+     ✓ f02 quoted "1" form is DIRTY (a numeric-rewrite probe edits nothing here) 0ms
      ✓ f03 typed code literal is ADVISORY, never DIRTY (tsc + the 7.3 flip own it) 0ms
      ✓ f04 multi-line template carrier is DIRTY (per-line quote scanning must not decide) 0ms
      ✓ f05 untyped .mjs object literal is DIRTY (nothing type-checks the file) 0ms
      ✓ f06 comment-carried versions are PROSE, not sites (predicate half: not prose about versions) 0ms
      ✓ f07 overlay/projection-service option is UNKNOWN (deciding text on the enclosing line may not refuse) 0ms
      ✓ f08 projection wire envelope is REFUSED (projection-envelope) 0ms
-     ✓ f09 session-binding row is REFUSED (session-binding) 2ms
+     ✓ f09 session-binding row is REFUSED (session-binding) 0ms
      ✓ f10 MemberInstance row is REFUSED (member-instance-record) 0ms
      ✓ f11 registry ROW stamps are UNKNOWN (same-line name but SPREAD-hidden keys; head-line name) — F1 adjudicated by hand 0ms
      ✓ f12 ledger row (shorthand sequence/payload) is UNKNOWN — outer-line evidence gates, never a silent drop 0ms
      ✓ f13 TeamSessionRecordDto row is REFUSED (team-session-record) 0ms
      ✓ f14 governance-override row is REFUSED (governance-override) 0ms
-     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 0ms
-     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 0ms
+     ✓ f15 approval-case + operation rows are REFUSED (governance-ledger) 7ms
+     ✓ f16 artifact-grant payload is REFUSED (artifact-grant-payload) 1ms
      ✓ f17 prose document without the blueprintId half is not a site at all 0ms
      ✓ f18 ambiguous hybrid shape is UNKNOWN and gates (no silent drop, no guessed verdict) 0ms
      ✓ f19 JSON data is DIRTY (data is never type-checked) 0ms
      ✓ f20 YAML config blueprintSource block is DIRTY (cordis.patch.yml shape) 1ms
      ✓ f21 supported-version fixtures stay clean in every carrier (reading decision) 0ms
-     × f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 2ms
+     × f22 string-embedded TeamSessionRecord JSON is REFUSED (siblings live inside the string) 3ms
      ✓ f23 string-embedded SessionBinding JSON is REFUSED (kind+sessionId) 0ms
      ✓ f24 string-carried YAML WITH document siblings stays DIRTY (no own-pool ns signature, no refusal) 0ms
      ✓ f25 a complete document smuggled under a row-type annotation is UNKNOWN, never REFUSED 0ms
      ✓ f26 document fields + row signature in ONE literal is a conflict UNKNOWN (widened doc-only set) 0ms
-     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 7ms
-     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 1ms
+     ✓ f27 backtick carriers reach the SAME verdict AND channel as the single-quoted twin 0ms
+     ✓ f28 a document in a multi-line backtick under a row call is UNKNOWN, never refused by the row 0ms
      ✓ f29 a backtick inside a regex literal opens no phantom template (YAML stays DIRTY) 0ms
      ✓ f30 a backslash-newline string continuation keeps the carrier a carrier (DIRTY) 0ms
      ✓ f31 quoted and bare key spellings of one typed object share ONE class 0ms
-     ✓ f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1) 1ms
+     ✓ f33 one document, two brace spellings under a row: SAME class, both visible (round-3 F1) 0ms
      ✓ f32 V3: members + identity triple under a row conflict is UNKNOWN; f32b: members WITHOUT the triple stays refused (round-3 F2) 0ms
      ✓ f35 + scope notes: a closed continuation revives CODE on the line tail; both blind spots print (round-3 D) 0ms
      ✓ the fixture corpus exists and every fixture was exercised 0ms
-     × a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 0ms
- ✓ test/a3p1-team-domain-tenth-store.test.ts (10 tests) 106ms
- ✓ test/t6-9-negative-matrix.test.ts (12 tests) 169ms
+     × a real in-scope file that keys blueprintId WITHOUT a version literal is not a site 1ms
+ ✓ test/m2-scripted-model.test.ts (11 tests) 31ms
+ ✓ test/m2-contract-oracle.test.ts (43 tests) 39ms
+ ✓ test/m2-effect-witness.test.ts (18 tests) 42ms
+ ✓ test/t6-3-lifecycle-matrix.test.ts (8 tests) 12ms
+ ✓ test/t6-1-no-agent-dependency.test.ts (6 tests) 13ms
  ✓ test/rc2-kit-wire-shape.test.ts (17 tests) 10ms
- ✓ test/t6-3-lifecycle-matrix.test.ts (8 tests) 22ms
- ✓ test/m2-scripted-model.test.ts (11 tests) 16ms
- ✓ test/m2-effect-witness.test.ts (18 tests) 23ms
- ✓ test/m2-contract-oracle.test.ts (43 tests) 15ms
- ✓ test/t6-10-composition-pipeline.test.ts (5 tests) 15ms
- ✓ test/rc2-kit-fixture-invariants.test.ts (7 tests) 9ms
-composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD fdffd878f, 3 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
- ✓ test/testkit.test.ts (2 tests) 8ms
- ✓ test/t6-1-no-agent-dependency.test.ts (6 tests) 20ms
- ✓ test/p4t5-corrupt-version.test.ts (10 tests) 14ms
- ✓ test/p4t5-retry-restart.test.ts (11 tests) 6ms
- ✓ test/p4t5-crash-matrix.test.ts (13 tests) 9ms
- ✓ test/p4t6-session-event-scan.test.ts (20 tests) 10ms
- ✓ test/rc2-sanitize-evidence.test.ts (13 tests) 3196ms
-     ✓ S13 file aliases, quoted values, and capture formats pass the standalone regressions  2401ms
- ✓ test/rc2-kit-fault-injection.test.ts (8 tests) 4600ms
-     ✓ F0 the healthy path completes, stops its child, touches nothing else  430ms
-     ✓ F1 the total-request ceiling trips on distinct states and aborts via the owner  462ms
-     ✓ F2 a repeated state trips even with other sessions interleaved  466ms
-     ✓ F3 consecutive wait timeouts trip and unwind through the owner  473ms
-     ✓ F4 an unrecognized wire shape fails loudly and still runs cleanup  511ms
-     ✓ F5 the independent lifetime watchdog fires with no progress at all  957ms
-     ✓ F6 the abort reason is written where the next reader will look  436ms
-     ✓ F7 the actual runner callback and owned-process cleanup regressions pass  858ms
-composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — tree before: HEAD fdffd878f, 3 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
-    tree after:  HEAD fdffd878f, 3 tracked file(s) changed vs HEAD, 4 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
- ✓ test/a4p75-composition-smoke-classification.test.ts (54 tests) 5950ms
-     ✓ requires by id every arm this repository actually reports  3313ms
-     ✓ never reports a passing gate over a step it did not run  1018ms
-lint-visibility: eslint read 1689 of 3477 OFFERED tracked lintable file(s); 1788 are hidden by an ignore pattern (dev/ 315, docs/ 6, packages/client/composition-shim/ 2, packages/runtime/dist/ 1097, tests/ 368); 1689 + 1788 = 3477 offered, + 0 skipped = 3477 tracked lintable path(s); nothing skipped
- ❯ test/a4p7-merge-gate.test.ts (35 tests | 1 failed) 114455ms
-     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 16ms
-       × is green, asserted by arm name and by absence of a skip — never by the exit code 1784ms
+composition-smoke leg: RED BY DESIGN — packages/client/dist/packages/client/src/plugin/client.js is not on disk, so the client plugin (packages/client) arm did not run. Tree: HEAD 29c16773e, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. Run `pnpm build` and re-run this gate.
+ ✓ test/rc2-kit-fixture-invariants.test.ts (7 tests) 7ms
+ ✓ test/t6-10-composition-pipeline.test.ts (5 tests) 16ms
+ ✓ test/testkit.test.ts (2 tests) 2ms
+ ✓ test/p4t5-corrupt-version.test.ts (10 tests) 4ms
+ ✓ test/p4t5-retry-restart.test.ts (11 tests) 15ms
+ ✓ test/p4t5-crash-matrix.test.ts (13 tests) 14ms
+ ✓ test/p4t6-session-event-scan.test.ts (20 tests) 9ms
+ ✓ test/rc2-sanitize-evidence.test.ts (13 tests) 3070ms
+     ✓ S13 file aliases, quoted values, and capture formats pass the standalone regressions  2277ms
+ ✓ test/rc2-kit-fault-injection.test.ts (8 tests) 4449ms
+     ✓ F0 the healthy path completes, stops its child, touches nothing else  447ms
+     ✓ F1 the total-request ceiling trips on distinct states and aborts via the owner  479ms
+     ✓ F2 a repeated state trips even with other sessions interleaved  453ms
+     ✓ F3 consecutive wait timeouts trip and unwind through the owner  479ms
+     ✓ F4 an unrecognized wire shape fails loudly and still runs cleanup  461ms
+     ✓ F5 the independent lifetime watchdog fires with no progress at all  849ms
+     ✓ F6 the abort reason is written where the next reader will look  432ms
+     ✓ F7 the actual runner callback and owned-process cleanup regressions pass  837ms
+composition-smoke live leg: this checkout has no built artifact for packages/client/dist/packages/client/src/plugin/client.js — tree before: HEAD 29c16773e, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+    tree after:  HEAD 29c16773e, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]; packages/client/dist/packages/client/src/plugin/client.js absent (build output root packages/client/dist carries 0 file(s))
+ ✓ test/a4p75-composition-smoke-classification.test.ts (54 tests) 5870ms
+     ✓ requires by id every arm this repository actually reports  3323ms
+     ✓ never reports a passing gate over a step it did not run  985ms
+lint-visibility: eslint read 1689 of 3492 OFFERED tracked lintable file(s); 1803 are hidden by an ignore pattern (dev/ 315, docs/ 6, packages/client/composition-shim/ 2, packages/runtime/dist/ 1097, tests/ 383); 1689 + 1803 = 3492 offered, + 0 skipped = 3492 tracked lintable path(s); nothing skipped
+ ❯ test/a4p7-merge-gate.test.ts (35 tests | 1 failed) 114336ms
+     ✓ runs where its instruments can see the tree, and refuses to run anywhere else 15ms
+       × is green, asserted by arm name and by absence of a skip — never by the exit code 1713ms
        ✓ treats a step that did not run as a failure that says why, even at exit 0 0ms
-       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  467ms
-       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  432ms
-       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1185ms
-       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1174ms
-       ✓ refuses the leg, by name, when the host module closure cannot be traversed  852ms
-       ✓ reports every verdict class with its set by path when run at the toplevel 278ms
-       ✓ refuses a directory that is not a repository, and is never believed as clean 67ms
-       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 84ms
+       ✓ asks where a missing artifact came from before calling it a regression, on synthetic trees  453ms
+       ✓ refuses the wrong question: the absent-artifact helper, called over a PRESENT artifact  407ms
+       ✓ reads a never-built checkout as refused, by name, and still refuses to call it green  1147ms
+       ✓ reads a partial build output as failed, not refused: a build ran and produced the wrong surface  1186ms
+       ✓ refuses the leg, by name, when the host module closure cannot be traversed  828ms
+       ✓ reports every verdict class with its set by path when run at the toplevel 269ms
+       ✓ refuses a directory that is not a repository, and is never believed as clean 68ms
+       ✓ will not accept a run from below the toplevel as a whole-tree clean (measured false-clean) 78ms
        ✓ classifies a lint run by its verdict line and its universe line, on captured output 1ms
-       ✓ lint closes as an identity diff against the named baseline, not against a count  14278ms
+       ✓ lint closes as an identity diff against the named baseline, not against a count  14444ms
        ✓ names the three states of a captured stderr, including the arm this gate cannot reach 0ms
-       ✓ no tracked file is invisible to lint except under a prefix this leg names  14033ms
-       ✓ the committed install surface is fresh against the tree, and a missing surface is refused 163ms
-       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  15250ms
-       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 44ms
-       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  42627ms
-       ✓ a crashed run's scratch is swept, and a live one is not 66ms
-       ✓ every workspace package that declares a typecheck script typechecks  12295ms
-       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 0ms
-       ✓ the client lane runs, and no failure appears outside the disclosed baseline  8759ms
+       ✓ no tracked file is invisible to lint except under a prefix this leg names  14138ms
+       ✓ the committed install surface is fresh against the tree, and a missing surface is refused 165ms
+       ✓ the commit carries its own build, judged in a scratch worktree — the question the working tree cannot ask  15308ms
+       ✓ a check:artifacts run from a subdirectory is refused, never an OK over nothing 46ms
+       ✓ the scratch the commit-level instrument builds cannot change another instrument's measurement  42745ms
+       ✓ a crashed run's scratch is swept, and a live one is not 65ms
+       ✓ every workspace package that declares a typecheck script typechecks  12121ms
+       ✓ no *.client.spec file is reachable from the root vitest include, so a root-suite claim proves nothing here 1ms
+       ✓ the client lane runs, and no failure appears outside the disclosed baseline  8539ms
        ✓ tolerates a green trio and refuses a vanished one — the two are different answers 1ms
        ✓ the hosted census capture reads as a report — never again as "no vitest summary at all" 3ms
-       ✓ reads a coloured client-lane transcript with the disclosed trio — styling may not change the verdict 4ms
+       ✓ reads a coloured client-lane transcript with the disclosed trio — styling may not change the verdict 3ms
        ✓ a synthesised FOURTH failure past the disclosed trio is refused by name, coloured included 1ms
        ✓ a capture with no summary is still refused — the refusal G2 could have quietly deleted to get green 0ms
        ✓ a summary that exists but cannot be parsed names the shape it saw 0ms
        ✓ the JSON report is the machine-readable source, and the exit status is part of the report 2ms
-       ✓ a missing instrument is a refusal that names it, never a pass 61ms
+       ✓ a missing instrument is a refusal that names it, never a pass 59ms
        ✓ an instrument that is killed before reporting is a refusal that says so  511ms
-       ✓ a child killed by a signal is refused even when it printed a complete report 8ms
-       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 3ms
-       ✓ this spec itself is counted by the p4t6 scannable-file ledger 0ms
+       ✓ a child killed by a signal is refused even when it printed a complete report 11ms
+       ✓ every §7.6 command this gate claims is invoked from a test, so none becomes another verify-zero-core 4ms
+       ✓ this spec itself is counted by the p4t6 scannable-file ledger 1ms
 
 ⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
 
@@ -409,7 +408,7 @@ AssertionError: expected 0 to be greater than 0
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
 
  FAIL  test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
-AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD fdffd878f, 3 tracked file(s) changed vs HEAD, 5 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
+AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD 29c16773e, 0 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
     output tail:
         at fail (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:202:15)
         at validateTeamPluginConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:206:9)
@@ -447,7 +446,7 @@ Received: "refused"
 
  Test Files  2 failed | 32 passed (34)
       Tests  13 failed | 514 passed (527)
-   Start at  02:30:57
-   Duration  115.15s (transform 13.72s, setup 0ms, import 17.41s, tests 133.69s, environment 7ms)
+   Start at  03:09:33
+   Duration  115.01s (transform 13.42s, setup 0ms, import 16.38s, tests 133.08s, environment 3ms)
 
 EXIT=1
