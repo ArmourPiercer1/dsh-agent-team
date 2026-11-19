@@ -76,7 +76,7 @@ import { join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import test from 'node:test'
 
-import { apiSessionCreate, authenticate, stableInstanceProbe, TestWorldFactory } from './lib/world-factory.mjs'
+import { apiSessionCreate, authenticate, stableInstanceProbe, TestWorld, TestWorldFactory } from './lib/world-factory.mjs'
 import { runTurn, startRealRun } from './lib/m7a-real-run.mjs'
 import {
   ObservationContractRefusal,
@@ -129,7 +129,18 @@ function refuses(code, fn) {
   }
 }
 
-const fakeWorld = (root, id = 'm7b1-probe') => ({ id, home: root, workspaceDir: join(root, 'workspace') })
+// F-09 (2026-11-19): the contract refuses a hand-written `{id, home}` now, so the
+// fail-closed half uses a REAL World object — the Factory's own class, minted by
+// its constructor, never booted and rooted at a scratch home (a declaration only
+// needs an identity and an owned root). `probeWorld` is not a literal wearing a
+// receipt: `isFactoryWorld` answers true for this object and false for a copy.
+const PROBE_FACTORY = new TestWorldFactory({
+  repoRoot: REPO_ROOT,
+  evidenceRoot: join(TMP_ROOT, 'evidence'),
+  hostTree: HOST_TREE,
+})
+const probeWorld = (root, id = 'm7b1-probe') =>
+  new TestWorld(PROBE_FACTORY, { id, name: id, home: root, workspaceDir: join(root, 'workspace'), visible: false })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. The fail-closed half. No host, no boot: every refusal is a named verdict.
@@ -139,7 +150,7 @@ test('M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, ne
   const home = join(root, 'home')
   const watched = join(home, 'watched')
   mkdirSync(watched, { recursive: true })
-  const world = fakeWorld(home)
+  const world = probeWorld(home)
   const identity = { agentId: 'agent-probe', executionId: 'exec-probe' }
 
   await t.test('host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED', async () => {
@@ -359,7 +370,7 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
     const home = join(root, 'home')
     const watched = join(home, 'watched')
     mkdirSync(watched, { recursive: true })
-    const contract = declareObservationContract({ world: fakeWorld(home), agentId: 'a', executionId: 'e', scope: [watched] })
+    const contract = declareObservationContract({ world: probeWorld(home), agentId: 'a', executionId: 'e', scope: [watched] })
     const opened = await openObservationWindow({ contract, hostTree: HOST_TREE })
     assert.equal(opened.ok, false)
     assert.equal(opened.reason, 'HOST_ABSENT', `an absent pinned host must be answered by name, got ${JSON.stringify(opened.reason)}`)
@@ -411,6 +422,8 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
 
     // The arms. `gradedTurn` is the 1-based turn whose call id the contract binds
     // (the execution under grade); `expect` is the pre-registered verdict.
+    // `expectDeny` is OFF unless an arm explicitly grades a REFUSED call: the
+    // graded execution in all three arms is turn 2, which the Host completes.
     const arms = [
       {
         tag: 'inside-authorized',
@@ -550,7 +563,18 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
       const closed = await closeObservationWindow({ opened })
       assert.equal(closed.ok, true, `${arm.tag}: the window closes with sealed, in-window rows (got ${JSON.stringify(closed.reason ?? '')})`)
 
-      const judgement = await judgeObservationWindow({ contract, opened, closed, events, expectDeny: true })
+      // NO BLANKET DENY CONTRACT (F-08, 2026-11-19). `expectDeny: true` used to be
+      // hardcoded for every arm, and it was only ever satisfied by STEP 1's denial
+      // of a DIFFERENT call (the refused escape) — the graded call here is turn 2
+      // and it COMPLETED. That is the F-08 defect exactly: a denial belonging to
+      // another call manufacturing a pass for this one. Now that the oracle pins
+      // the graded execution, an arm must DECLARE a deny contract, and these three
+      // do not have one: they grade the effect boundary (inside / outside /
+      // same-directory). The refusal they depend on is asserted where it is
+      // observable — the A4 block below pins outcome=DENIED,
+      // error_code=FS_SANDBOX_DENIED and "no bytes on disk" verbatim — so nothing
+      // about the refusal becomes unverified by dropping a claim that was false.
+      const judgement = await judgeObservationWindow({ contract, opened, closed, events, expectDeny: arm.expectDeny === true })
       const observed = judgement.observedEffectPaths ?? []
       const authorized = judgement.authorizedEffectPaths ?? []
       const unauthorized = judgement.unauthorizedEffectPaths ?? []

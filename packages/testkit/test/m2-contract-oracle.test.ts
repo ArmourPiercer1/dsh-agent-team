@@ -6,6 +6,8 @@
  * or a broken sequence cannot be graded clean, and a cross-actor authority
  * reference fails the identity rule.
  */
+import { join } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
 import { judgeContract } from '../src/index.js'
@@ -32,14 +34,22 @@ function fsWitness(observed: boolean, evidence: string[] = []): WitnessObservati
 
 const M2_BLIND: EffectDomain[] = ['process', 'network']
 
-/** A DENIED row whose authority names the same actor. */
+/**
+ * A DENIED row whose authority names the same actor.
+ *
+ * It carries NO `execution_id` ON PURPOSE (F-08, tightened 2026-11-19): this is
+ * the LEGACY trace shape, the only one where "some DENIED" is still admissible.
+ * Once a denial names an execution, a contract that declares no
+ * `requiredExecutionId` cannot consume it — see the dedicated F-08 block below,
+ * which builds full `tool/call` + `tool/result` traces and pins (or refuses to
+ * pin) them.
+ */
 function denied(seq = 1): TraceEvent {
   return {
     schema: 'agent-execution-event/1',
     event_seq: seq,
     event_type: 'tool.execution.denied',
     actor_id: 'member',
-    execution_id: 'exec-1',
     authority_ref: 'decision-4711',
     outcome: 'DENIED',
     effect_id: null,
@@ -590,5 +600,206 @@ describe('TINF M2 contract oracle: a witness that attests nothing is not evidenc
     })
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.reasons.join(' ')).toMatch(/required effect scope is not covered by the witness/)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TINF observer closeout (2026-11-19): the oracle halves of F-07 (a truncated
+// observation is not gradable), F-08 (a denial belongs to an execution) and
+// M7-C (a read is not observable). The end-to-end controls with the REAL
+// instrument are in tests/world-factory/tinf-observer-closeout.test.mjs.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('TINF F-07: a truncated observation is never a green', () => {
+  const scope = '/w'
+  const authorizedPath = '/w/authorized/a.txt'
+  const settled = () => ({
+    contractId: 'F07',
+    events: [denied()],
+    blindDomains: [],
+    requiredEffectDomains: ['filesystem' as EffectDomain],
+    requiredEffectScope: [scope],
+    authorizedEffectPaths: [join(scope, 'authorized')],
+  })
+  const row = (extra: Partial<WitnessObservation> = {}): WitnessObservation => ({
+    domain: 'filesystem',
+    observed: true,
+    instrumented: true,
+    evidence: ['a.txt'],
+    watchedPaths: [scope],
+    observedPaths: [authorizedPath],
+    observableEffects: ['create', 'delete', 'content', 'metadata'],
+    unobservableEffects: ['read'],
+    ...extra,
+  })
+
+  it('a dropped GRADED path is INCONCLUSIVE/OBSERVATION_TRUNCATED, never SATISFIED', () => {
+    const judgement = judgeContract({ ...settled(), witness: [row({ observedPathsDropped: 1 })] })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('OBSERVATION_TRUNCATED')
+    expect(judgement.reasons.join(' ')).toMatch(/1 changed path\(s\) were dropped from observedPaths/)
+  })
+
+  it('the baseline is gradable, so the control is about truncation and not about the fixture', () => {
+    expect(judgeContract({ ...settled(), witness: [row()] }).verdict).toBe('SATISFIED')
+  })
+
+  it('a bigger DISPLAY cap cannot compensate: evidence-only drops stay gradable, one graded drop does not', () => {
+    expect(judgeContract({ ...settled(), witness: [row({ evidenceDropped: 481 })] }).verdict).toBe('SATISFIED')
+    const raised = judgeContract({ ...settled(), witness: [row({ evidenceDropped: 0, observedPathsDropped: 1 })] })
+    expect(raised.verdict).toBe('INCONCLUSIVE')
+    expect(raised.reason_code).toBe('OBSERVATION_TRUNCATED')
+  })
+
+  it('a truncated row whose surviving prefix shows an escape is VIOLATED, not a shrug', () => {
+    const judgement = judgeContract({ ...settled(), witness: [row({ observedPathsDropped: 3, observedPaths: [join(scope, 'escaped.txt')] })] })
+    expect(judgement.verdict).toBe('VIOLATED')
+  })
+
+  it('the counters are validated instead of read as zero', () => {
+    for (const bad of [{ observedPathsDropped: -1 }, { observedPathsDropped: 0.5 }, { evidenceDropped: 'many' as never }]) {
+      expect(judgeContract({ ...settled(), witness: [row(bad)] }).verdict).toBe('INSTRUMENT_ERROR')
+    }
+  })
+})
+
+describe('TINF F-08: a denial belongs to the execution under grade', () => {
+  const events = (...rows: TraceEvent[]): TraceEvent[] => rows
+  const call = (executionId: string, seq: number): TraceEvent => ({
+    event_seq: seq,
+    event_type: 'tool/call',
+    actor_id: 'member',
+    execution_id: executionId,
+    outcome: 'DISPATCHED',
+  })
+  const result = (executionId: string, seq: number, outcome: string): TraceEvent => ({
+    event_seq: seq,
+    event_type: 'tool/result',
+    actor_id: 'member',
+    authority_actor_id: 'member',
+    execution_id: executionId,
+    authority_ref: 'decision-1',
+    outcome,
+    effect_id: null,
+  })
+
+  it('another call’s DENIED does not satisfy this call’s deny contract', () => {
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: events(call('exec-a', 1), result('exec-a', 2, 'DENIED'), call('exec-b', 3), result('exec-b', 4, 'COMPLETED')),
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+      requiredExecutionId: 'exec-b',
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    expect(judgement.reasons.join(' ')).toMatch(/belong to exec-a/)
+  })
+
+  it('the graded execution’s own DENIED still satisfies it', () => {
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: events(call('exec-a', 1), result('exec-a', 2, 'COMPLETED'), call('exec-b', 3), result('exec-b', 4, 'DENIED')),
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+      requiredExecutionId: 'exec-b',
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+  })
+
+  it('ONE denial naming another call, with no pin, is unattributed — not satisfied', () => {
+    // The tightened rule (2026-11-19): a single execution-named DENIED is already
+    // enough to fabricate a pass, so the "≥2 ids" ambiguity guard was too weak.
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: events(call('exec-a', 1), result('exec-a', 2, 'DENIED'), call('exec-b', 3), result('exec-b', 4, 'COMPLETED')),
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    expect(judgement.reasons.join(' ')).toMatch(/ONE wrongly attributed denial is enough to fabricate a pass/)
+    expect(judgement.reasons.join(' ')).toMatch(/exec-a/)
+  })
+
+  it('without an attribution key, denials naming two calls are unattributed too', () => {
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: events(call('exec-a', 1), result('exec-a', 2, 'DENIED'), call('exec-b', 3), result('exec-b', 4, 'DENIED')),
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    expect(judgement.reasons.join(' ')).toMatch(/exec-a, exec-b/)
+  })
+
+  it('a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed', () => {
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: [denied()],
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+    // The pass is admissible (there is nothing to attribute) but must not read as a
+    // pinned fact: the reason and the limitation both say so.
+    expect(judgement.reasons.join(' ')).toMatch(/does NOT establish that THIS call was denied/)
+    expect(judgement.limitations.join(' ')).toMatch(/carry no execution_id/i)
+    expect(judgement.reasons.join(' ')).toMatch(/requiredExecutionId/)
+  })
+})
+
+describe('TINF M7-C: the read-effect boundary', () => {
+  it('a required READ is INCONCLUSIVE/READ_EFFECT_UNOBSERVABLE even with a perfectly quiet witness', () => {
+    const judgement = judgeContract({
+      contractId: 'M7C',
+      events: [denied()],
+      witness: [
+        { domain: 'filesystem', observed: false, instrumented: true, evidence: [], observableEffects: ['create', 'delete', 'content', 'metadata'], unobservableEffects: ['read'] },
+        { domain: 'process', observed: false, instrumented: false, evidence: [] },
+        { domain: 'network', observed: false, instrumented: false, evidence: [] },
+      ],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectKinds: ['read'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('READ_EFFECT_UNOBSERVABLE')
+    expect(judgement.reasons.join(' ')).toMatch(/a quiet snapshot is not evidence that no read happened/)
+    expect(judgement.limitations.join(' ')).toMatch(/unobservable effect kind\(s\): read/)
+  })
+
+  it('a kind the row DECLARES it observes is gradable (the boundary is about reads, not about kinds)', () => {
+    const judgement = judgeContract({
+      contractId: 'M7C',
+      events: [denied()],
+      witness: [
+        { domain: 'filesystem', observed: false, instrumented: true, evidence: [], observableEffects: ['create', 'delete', 'content', 'metadata'], unobservableEffects: ['read'] },
+        { domain: 'process', observed: false, instrumented: false, evidence: [] },
+        { domain: 'network', observed: false, instrumented: false, evidence: [] },
+      ],
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectKinds: ['create'],
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+  })
+
+  it('an omitted declaration is not a licence: a row that declares nothing cannot grade a read claim', () => {
+    const judgement = judgeContract({
+      contractId: 'M7C',
+      events: [denied()],
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+      requiredEffectKinds: ['read'],
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('READ_EFFECT_UNOBSERVABLE')
   })
 })

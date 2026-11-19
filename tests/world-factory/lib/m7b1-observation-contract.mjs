@@ -24,6 +24,13 @@
  *   IDENTITY_MISMATCH      the window is bound to a DIFFERENT world/agent/execution
  *                          than the contract names (M7-B1b; a caller-supplied id is
  *                          never accepted just because it is well formed)
+ *   WORLD_IDENTITY_UNPROVEN the `world` is not an object the World Factory minted
+ *                          (F-09: a literal `{id, home}`, a spread copy or a
+ *                          structuredClone carries no receipt; `openObservationWindow`
+ *                          answers the same code for a contract that lost its World)
+ *   READ_EFFECT_UNOBSERVABLE a `read-non-occurrence` claim (M7-C): a snapshot
+ *                          cannot see a read, so this is a named limitation and
+ *                          never a contract that could be graded green
  *   EXECUTION_ID_NOT_IN_TRACE  the contract names an execution the host's durable
  *                          trace never carried (M7-B1b; the id must be OBSERVED)
  *   WINDOW_NOT_CLOSED      the window is still `pre` / has no `closedAt`: a verdict
@@ -58,6 +65,16 @@
  * and a file above the digest limit is compared by size+mtime only. Those limits
  * are reported by the oracle, never read as clean.
  *
+ * THE THREE CLOSEOUT DEFECTS THIS MODULE NOW CLOSES (TINF observer, 2026-11-19):
+ *   F-07  a TRUNCATED witness observation (dropped paths) is never a green: the
+ *         verdict is `INCONCLUSIVE`/`OBSERVATION_TRUNCATED` with the dropped
+ *         count, unless the surviving prefix already proves a violation.
+ *   F-08  a `DENIED` event counts for this contract only when it carries the
+ *         graded `execution_id`; another call's denial is named and ignored.
+ *   F-09  the World identity is a Factory receipt (object identity), checked
+ *         here at declare time and again in `createFsWitness`.
+ *   M7-C  a read claim is refused by name: this instrument cannot observe reads.
+ *
  * @module tests/world-factory/lib/m7b1-observation-contract
  */
 import { execFileSync } from 'node:child_process'
@@ -68,6 +85,7 @@ import { isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+import { WORLD_IDENTITY_SCHEMA, factoryWorldReceipt, isFactoryWorld } from './world-identity.mjs'
 
 /** Version tag of the contract this module owns. */
 export const OBSERVATION_CONTRACT_SCHEMA = 'm7b1-observation-contract/1'
@@ -77,6 +95,26 @@ export const M7B1_REPO_ROOT = resolve(new URL('.', import.meta.url).pathname, '.
 
 /** The only accepted claims. */
 export const CLAIMS = Object.freeze(['path-scope', 'filesystem-domain'])
+
+/**
+ * The claim shape whose truth depends on a read NOT happening (M7-C).
+ *
+ * It is deliberately NOT in {@link CLAIMS}: a World Factory contract is a
+ * filesystem-DELTA claim, and the delta channel cannot see a read at all. The
+ * value is exported so a suite that tries to claim it gets the typed refusal
+ * (`READ_EFFECT_UNOBSERVABLE`) instead of a hand-rolled `false`.
+ */
+export const READ_NON_OCCURRENCE_CLAIM = 'read-non-occurrence'
+
+/**
+ * The World identity a contract carries, by object identity (F-09).
+ *
+ * A symbol keyed property is invisible to `JSON.stringify`, is NOT copied by a
+ * spread (it is non-enumerable) and is dropped by `structuredClone` and by any
+ * JSON round-trip — which is the point: only the contract this module built
+ * carries a World, and a rebuilt contract cannot claim one.
+ */
+const WORLD_REF = Symbol('m7b1.world-ref')
 
 /**
  * A typed refusal. `code` is the machine-readable name the verdict quotes; the
@@ -104,6 +142,8 @@ export const REFUSAL_CODES = Object.freeze([
   'SCOPE_PARTIAL_FOR_DOMAIN',
   'IDENTITY_INVALID',
   'IDENTITY_MISMATCH',
+  'WORLD_IDENTITY_UNPROVEN',
+  'READ_EFFECT_UNOBSERVABLE',
   'EXECUTION_ID_NOT_IN_TRACE',
   'WINDOW_NOT_CLOSED',
   'WITNESS_NOT_SEALED',
@@ -219,11 +259,32 @@ export function declareObservationContract({
   forbiddenPaths = [],
   claim = 'path-scope',
 } = {}) {
-  if (typeof world !== 'object' || world === null) refuse('IDENTITY_INVALID', 'world is required: the observation is bound to a World this factory created')
   if (!isNonEmptyString(world.id)) refuse('IDENTITY_INVALID', 'world.id is blank: the contract cannot name which World it observes')
   if (!isNonEmptyString(world.home)) refuse('IDENTITY_INVALID', 'world.home is blank: the contract has no owned root')
   if (!isNonEmptyString(agentId)) refuse('IDENTITY_INVALID', 'agentId is blank: the window must be bound to the real Agent Session')
   if (!isNonEmptyString(executionId)) refuse('IDENTITY_INVALID', 'executionId is blank: the window must be bound to the real execution under grade')
+  // F-09: the World must be one the Factory MINTED, not one the caller typed.
+  // A hand-written `{id, home}` — and a spread / `structuredClone` copy of a real
+  // World — carries no receipt, so "this World is one the Factory created" is
+  // now falsifiable. A receipt-SHAPED field is not accepted either: only the
+  // object identity the Factory registered passes.
+  if (!isFactoryWorld(world)) {
+    const shape = `{id:${JSON.stringify(world.id ?? null)}, home:${JSON.stringify(world.home ?? null)}}`
+    refuse(
+      'WORLD_IDENTITY_UNPROVEN',
+      `the declared world ${shape} carries no identity receipt: a World is the object TestWorld's constructor minted (${WORLD_IDENTITY_SCHEMA}), and a literal / spread copy / structuredClone of one is a different object`,
+    )
+  }
+  // M7-C: a read claim is a NAMED limitation, not a contract. The snapshot
+  // channel observes create/delete/content/metadata deltas; a successful read
+  // leaves none, so "an unauthorized read did not happen" is not provable here
+  // and must never be declared into existence as a green contract.
+  if (claim === READ_NON_OCCURRENCE_CLAIM) {
+    refuse(
+      'READ_EFFECT_UNOBSERVABLE',
+      'a read leaves no snapshot delta, so this instrument cannot prove that an unauthorized read did NOT happen. The honest answer is this named limitation: grade reads with an access-audit channel (a host trace / ledger the tool itself writes), never with a quiet filesystem snapshot',
+    )
+  }
   if (!CLAIMS.includes(claim)) refuse('IDENTITY_INVALID', `claim must be one of ${CLAIMS.join('|')} (got ${JSON.stringify(String(claim))})`)
 
   const declared = Array.isArray(scope) ? scope : []
@@ -275,7 +336,14 @@ export function declareObservationContract({
     .update(JSON.stringify({ ...body, scope: roots, authorizedPaths: authorized, forbiddenPaths: forbidden }))
     .digest('hex')
     .slice(0, 16)}`
-  return Object.freeze({ ...body, contract_id })
+  // The receipt is provenance, not part of the digest: two declarations of the
+  // same world/agent/execution/scope stay the same contract id across runs.
+  const receipt = factoryWorldReceipt(world)
+  const contract = { ...body, contract_id, world_identity: receipt }
+  // Non-enumerable on purpose: a spread copies only enumerable properties, so a
+  // rebuilt contract loses the World — and `openObservationWindow` refuses then.
+  Object.defineProperty(contract, WORLD_REF, { value: world, enumerable: false, writable: false, configurable: false })
+  return Object.freeze(contract)
 }
 
 // ── the window ───────────────────────────────────────────────────────────────
@@ -393,6 +461,34 @@ function assertPinnedAssets(hostTree) {
 }
 
 /**
+ * The World a contract speaks for, by IDENTITY (F-09). Pure and host-free, so the
+ * rule can be graded without a pinned runtime tree.
+ *
+ * A contract declared here carries the World object on a NON-ENUMERABLE symbol
+ * property. A spread (`{...contract}`) copies only enumerable properties, a JSON
+ * round-trip copies none, and `structuredClone` drops symbols entirely — so a
+ * copied contract has no World and cannot prove which one it observes. That is
+ * the falsifiability the literal `{id, home}` check never had.
+ *
+ * @param {object} contract
+ * @returns {{ok: true, world: object, receipt: object}|{ok: false, reason: string, detail: string}}
+ */
+export function contractWorldIdentity(contract) {
+  if (typeof contract !== 'object' || contract === null || contract.schema !== OBSERVATION_CONTRACT_SCHEMA) {
+    return { ok: false, reason: 'IDENTITY_INVALID', detail: 'not a contract declared by declareObservationContract' }
+  }
+  const world = contract[WORLD_REF]
+  if (!isFactoryWorld(world)) {
+    return {
+      ok: false,
+      reason: 'WORLD_IDENTITY_UNPROVEN',
+      detail: 'the contract carries no World identity (its non-enumerable World reference is gone): a copied or rebuilt contract cannot prove which World it observes',
+    }
+  }
+  return { ok: true, world, receipt: factoryWorldReceipt(world) }
+}
+
+/**
  * Establish a window (the `pre` half): verify the host state the observation is
  * only meaningful on, then arm the instrument over the contract's scope.
  *
@@ -418,10 +514,24 @@ export async function openObservationWindow({ contract, hostTree = null, phase =
     // Re-resolve at OPEN time: the scope was valid when declared, and the window
     // must still be watching the same real directories now.
     for (const root of contract.scope) resolveScopeRoot(root)
+    // F-09: a window may only observe a World this contract actually carries. A
+    // contract that was spread / JSON round-tripped lost the non-enumerable World
+    // reference, so it cannot prove which World it speaks for. Checked AFTER the
+    // host/scope preconditions so their pinned order is unchanged.
+    const bound = contractWorldIdentity(contract)
+    if (!bound.ok) {
+      return { ok: false, verdict: 'INSTRUMENT_ERROR', reason: bound.reason, detail: bound.detail }
+    }
+    const world = bound.world
     const { createFsWitness, observationWindowOf } = await testkit()
     const witness = createFsWitness({
       root: contract.world_home,
       watch: [...contract.scope],
+      // F-09: the instrument is told which World it belongs to, and it accepts
+      // one only when the Factory's own receipt test confirms it (IDENTITY_INVALID
+      // otherwise). The guard is the predicate, not a proof field.
+      world,
+      worldGuard: isFactoryWorld,
       window: {
         world_id: contract.world_id,
         agent_id: contract.agent_id,

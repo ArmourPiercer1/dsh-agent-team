@@ -1,0 +1,40 @@
+# M7-B1 real-host window — BEFORE vs AFTER (host PRESENT: this is the part the hosted job never reached on fdffd878f)
+# host: 639ed015397290b3745d163aafe02ffee4aa3f84, porcelain 0, native assets from the pinned published package
+
+## (1) BEFORE — tree at 00429852c, host present: 10/10, and 'inside-authorized' is SATISFIED
+$ M7B1_REQUIRE_PINNED_HOST=1 node --test --test-force-exit --test-timeout=1200000 --test-reporter=spec tests/world-factory/m7b1-observation-window.test.mjs
+M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+M7B1-REASONS inside-authorized ["trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/dsh-subprocess-Yft2rF, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/dsh-workspace-changes-Hl7C0L, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/dsh-workspace-changes-Hl7C0L/captures, +25 more)"]
+M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/m7b1-watched/beside.txt"]
+M7B1-REASONS outside-authorized ["trace reports DENIED but the independent witness observed an effect outside the authorized set in: filesystem (/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/m7b1-watched/beside.txt)"]
+M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+M7B1-REASONS same-directory-as-harness ["trace reports DENIED but the independent witness observed an effect outside the authorized set in: filesystem (/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-24-21Z/m7b1-tmp/m7b1-harness/beside-harness.txt)"]
+tests 10
+pass 10
+fail 0
+
+## (2) AFTER the tightening, expectDeny: true still hardcoded for every arm (the intermediate red):
+M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-20-41Z/m7b1-tmp/m7b1-watched/beside.txt"]
+M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-20-41Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+tests 10
+pass 10
+fail 0
+(that run's reason, verbatim: deny contract requires a DENIED event for execution "m7b1-2", but the trace's 1 DENIED event(s) belong to m7b1-0; a denial of another tool call is evidence about that call, not about this one)
+
+## (3) FINAL — per-arm deny contract (none of the three arms grades a refused call); A4's step-level refusal assertions unchanged:
+M7B1-WINDOW contract=obs-74926c981a07abd5 world=u5m7b1-20261119T18-29-13Z agent=session-cbddd70d-9568-4e2b-9dde-1beb5066fc8e execution=m7b1-2 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-29-13Z window=win-dbb9d445-fc4b-42a7-9c7b-f3fb542b4226 phase=pre armedAt=2026-11-19T18:29:41.377Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+M7B1-WINDOW contract=obs-fb9157cb6363c391 world=u5m7b1-20261119T18-29-13Z agent=session-5f998ccc-2be8-4f2c-8288-e791fb4e988a execution=m7b1-6 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-29-13Z window=win-a89ee484-e3cf-49d2-9554-ebec2a09cc42 phase=pre armedAt=2026-11-19T18:29:41.921Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-29-13Z/m7b1-tmp/m7b1-watched/beside.txt"]
+M7B1-WINDOW contract=obs-cc27c712a7d53550 world=u5m7b1-20261119T18-29-13Z agent=session-7813cfe5-4753-4fa1-8a2b-4f32121a8a0a execution=m7b1-10 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-29-13Z window=win-d4f21600-bc8b-4eab-ac83-41dc7105a9fc phase=pre armedAt=2026-11-19T18:29:42.456Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7b1-20261119T18-29-13Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+tests 10
+pass 10
+fail 0
+
+## WHAT THE BEFORE STATE PROVES
+# 'inside-authorized' grades turn 2, which the Host COMPLETES. Before the tightening the oracle counted
+# STEP 1's denial (call m7b1-0) as this contract's denial, so the arm was SATISFIED through the exact
+# defect F-08 names. The refusal is still asserted, verbatim and independently, in the A4 block:
+# outcome=DENIED, error_code=FS_SANDBOX_DENIED, and no bytes on disk.

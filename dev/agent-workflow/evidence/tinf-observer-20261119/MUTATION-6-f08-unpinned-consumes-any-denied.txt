@@ -1,0 +1,170 @@
+### MUTATION RUN MUTATION-6-f08-unpinned-consumes-any-denied.txt
+### tree: 5c018fc48 + mutation (restored after this transcript)
+### mutation: contract-oracle.ts attributionRefused -> false (an unpinned contract consumes ANY DENIED, i.e. the pre-tightening rule)
+### command: node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
+▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (58.817898ms)
+  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (50.595977ms)
+✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (110.13512ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.625714ms)
+▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.310878ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.166876ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.161055ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.002401ms)
+  ✖ ONE denial naming another call, with no pin -> INCONCLUSIVE (the tightened F-08 rule) (0.607971ms)
+  ✖ without an attribution key, denials naming SEVERAL calls are unattributed too (0.476432ms)
+  ✔ a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed (0.157899ms)
+✖ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (5.802644ms)
+▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
+  ✔ the REAL World is accepted and the contract records its receipt (0.425826ms)
+  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.14816ms)
+  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.108365ms)
+  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.210789ms)
+  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.117442ms)
+  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.164331ms)
+  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.49139ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.144213ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.081544ms)
+✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.163841ms)
+▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
+  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.111972ms)
+  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.632297ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.373628ms)
+  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.111531ms)
+✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (2.912934ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 24
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 266.6234
+
+✖ failing tests:
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:343:11
+✖ ONE denial naming another call, with no pin -> INCONCLUSIVE (the tightened F-08 rule) (0.607971ms)
+  AssertionError [ERR_ASSERTION]: an unpinned contract may not consume an execution-named denial
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:356:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:343:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'SATISFIED',
+    expected: 'SATISFIED',
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:364:11
+✖ without an attribution key, denials naming SEVERAL calls are unattributed too (0.476432ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'SATISFIED'
+  - 'INCONCLUSIVE'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:374:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:364:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'SATISFIED',
+    expected: 'INCONCLUSIVE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+### command: vitest run test/m2-contract-oracle.test.ts test/m2-effect-witness.test.ts
+     ✓ a decision issued for another actor is VIOLATED 0ms
+     ✓ a missing required domain is INCONCLUSIVE 0ms
+     ✓ a sequence regression is INSTRUMENT_ERROR 0ms
+     ✓ an empty witness is INSTRUMENT_ERROR 0ms
+     ✓ a trace with no computed/denied event is INCONCLUSIVE 0ms
+     ✓ a deny contract without a DENIED event is INCONCLUSIVE, not SATISFIED 0ms
+     ✓ all domains blind can never be SATISFIED 1ms
+     ✓ a trace-only input (witness reports everything blind) is INCONCLUSIVE 0ms
+     ✓ fabricated rows without instrumented cannot be graded SATISFIED 0ms
+     ✓ M7-A blindness precedence: an uninstrumented row is blind even when the caller forgets to list it 0ms
+     ✓ an invented network row cannot cover a blind network domain 0ms
+     ✓ a DENIED event carrying an effect_id is VIOLATED even with a clean witness 0ms
+     ✓ an effect outside the graded scope is INCONCLUSIVE and named, not dismissed 0ms
+     ✓ a domain declared blind cannot be graded even if a row claims instrumented 0ms
+     ✓ a decision id in authority_ref is not an identity mismatch 0ms
+     ✓ M7-A scope control: an effect outside the watched set is not SATISFIED 0ms
+     ✓ M7-A scope control: a declared scope with no watch set is INCONCLUSIVE 0ms
+     ✓ M7-A scope control: a watched but UNauthorized effect is VIOLATED and named by path 0ms
+     ✓ M7-A scope control: an AUTHORIZED observed effect is reported and excluded, never dropped 1ms
+     ✓ M7-A scope control: without an authorized set, the same observed effect is not a pass 0ms
+     ✓ M7-A provenance control: witnessed rows without a declared scope are INSTRUMENT_ERROR 0ms
+     ✓ M7-A scope control: a FORBIDDEN path inside an authorized root is unauthorized (deny beats allow) 0ms
+     ✓ M7-A scope control: an authorized effect elsewhere is still excluded when a sibling is forbidden 0ms
+     ✓ M7-A crash control: a throwing Proxy row is INSTRUMENT_ERROR, never an exception 1ms
+     ✓ M7-A crash control: a throwing Proxy event list is INSTRUMENT_ERROR, never an exception 0ms
+     ✓ M7-A scope control: a required path behind a link is not covered by the real watched path 0ms
+     ✓ a dropped GRADED path is INCONCLUSIVE/OBSERVATION_TRUNCATED, never SATISFIED 0ms
+     ✓ the baseline is gradable, so the control is about truncation and not about the fixture 0ms
+     ✓ a bigger DISPLAY cap cannot compensate: evidence-only drops stay gradable, one graded drop does not 0ms
+     ✓ a truncated row whose surviving prefix shows an escape is VIOLATED, not a shrug 0ms
+     ✓ the counters are validated instead of read as zero 0ms
+     ✓ another call’s DENIED does not satisfy this call’s deny contract 0ms
+     ✓ the graded execution’s own DENIED still satisfies it 0ms
+     × ONE denial naming another call, with no pin, is unattributed — not satisfied 6ms
+     × without an attribution key, denials naming two calls are unattributed too 1ms
+     ✓ a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed 0ms
+     ✓ a required READ is INCONCLUSIVE/READ_EFFECT_UNOBSERVABLE even with a perfectly quiet witness 0ms
+     ✓ a kind the row DECLARES it observes is gradable (the boundary is about reads, not about kinds) 0ms
+     ✓ an omitted declaration is not a licence: a row that declares nothing cannot grade a read claim 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/m2-contract-oracle.test.ts > TINF F-08: a denial belongs to the execution under grade > ONE denial naming another call, with no pin, is unattributed — not satisfied
+AssertionError: expected 'SATISFIED' to be 'INCONCLUSIVE' // Object.is equality
+
+Expected: "INCONCLUSIVE"
+Received: "SATISFIED"
+
+ ❯ test/m2-contract-oracle.test.ts:721:31
+    719|       requiredEffectDomains: ALL_DOMAINS,
+    720|     })
+    721|     expect(judgement.verdict).toBe('INCONCLUSIVE')
+       |                               ^
+    722|     expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    723|     expect(judgement.reasons.join(' ')).toMatch(/ONE wrongly attribute…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/m2-contract-oracle.test.ts > TINF F-08: a denial belongs to the execution under grade > without an attribution key, denials naming two calls are unattributed too
+AssertionError: expected 'SATISFIED' to be 'INCONCLUSIVE' // Object.is equality
+
+Expected: "INCONCLUSIVE"
+Received: "SATISFIED"
+
+ ❯ test/m2-contract-oracle.test.ts:735:31
+    733|       requiredEffectDomains: ALL_DOMAINS,
+    734|     })
+    735|     expect(judgement.verdict).toBe('INCONCLUSIVE')
+       |                               ^
+    736|     expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    737|     expect(judgement.reasons.join(' ')).toMatch(/exec-a, exec-b/)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 59 passed (61)
+   Start at  00:44:11
+   Duration  239ms (transform 150ms, setup 0ms, import 209ms, tests 34ms, environment 0ms)
+

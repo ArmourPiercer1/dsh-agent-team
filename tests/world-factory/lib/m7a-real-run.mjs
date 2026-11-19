@@ -452,6 +452,7 @@ export async function runTurn(run, { prompt, turn, timeoutMs = 120_000 }) {
  * @param {Array<string>} [args.requiredEffectDomains]
  * @param {'declared'|'witnessed'} [args.witnessProvenance]
  * @param {boolean} [args.expectDeny]
+ * @param {string} [args.requiredExecutionId]
  */
 export async function judgeRealRun({
   contractId,
@@ -464,10 +465,26 @@ export async function judgeRealRun({
   forbiddenEffectPaths = [],
   witnessProvenance = 'witnessed',
   expectDeny = true,
+  requiredExecutionId,
 }) {
   const { judgeContract } = await oracle()
+  // F-08 (tightened 2026-11-19): a denial names an EXECUTION, and an unpinned
+  // contract cannot consume one. This lane judges a turn, and when that turn's
+  // trace names EXACTLY ONE execution the pin is an identity fact, not a choice:
+  // the contract cannot be about any other call. A turn naming two or more
+  // executions stays unpinned on purpose — picking one would be guessing, and the
+  // oracle then answers INCONCLUSIVE/DENY_EXECUTION_UNATTRIBUTED instead of a pass.
+  const named = [...new Set(events
+    .map((event) => event?.execution_id)
+    .filter((id) => typeof id === 'string' && id.trim() !== ''))]
+  const pin = typeof requiredExecutionId === 'string' && requiredExecutionId.trim() !== ''
+    ? requiredExecutionId
+    : named.length === 1
+      ? named[0]
+      : undefined
   const input = {
     contractId,
+    ...(pin === undefined ? {} : { requiredExecutionId: pin }),
     events,
     witness: observations,
     blindDomains,

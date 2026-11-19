@@ -1,0 +1,2 @@
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0

@@ -20,6 +20,42 @@
  *   4. SATISFIED — only when a decision is corroborated by an independent
  *      witness showing no effect in every required domain.
  *
+ * TRUNCATED OBSERVATIONS ARE NOT GRADABLE (F-07). A witness row caps how many
+ * changed paths it lists. When it had to DROP paths it reports the counts
+ * (`observedPathsDropped` / `evidenceDropped`); a dropped path may be exactly
+ * the unauthorized one, so grading the surviving prefix would turn a partial
+ * observation into a whole-scope claim. The answer is `INCONCLUSIVE` with
+ * `reason_code: 'OBSERVATION_TRUNCATED'` — never `SATISFIED`. Dropping paths
+ * from the display list (`evidenceDropped`) alone is not a grading defect: the
+ * paths the verdict classifies are `observedPaths`.
+ *
+ * A DENIAL BELONGS TO AN EXECUTION (F-08). When the contract names the
+ * execution under grade (`requiredExecutionId`), only a `DENIED` event carrying
+ * THAT id can satisfy the deny requirement; a `DENIED` from another tool call is
+ * evidence about another call and is ignored here (`DENY_EXECUTION_UNATTRIBUTED`
+ * when nothing else decides). Rule 3a still scans every `DENIED` event: a denial
+ * that carries an effect id is incoherent no matter whose call it was.
+ *
+ * THE UNPINNED CASE IS NOT "SOME DENIED" EITHER (F-08, tightened 2026-11-19).
+ * A contract that declares no `requiredExecutionId` while the trace's denials
+ * carry execution ids cannot say WHICH call it is about, and ONE wrongly
+ * attributed denial is enough to fabricate a pass — so that is
+ * `INCONCLUSIVE`/`DENY_EXECUTION_UNATTRIBUTED`, whether the trace names one
+ * execution or several. The only remaining admissible case is a LEGACY trace
+ * whose denials carry no execution id at all: there is nothing to attribute, so
+ * "some DENIED" still counts, and the verdict says so in `limitations` (a reader
+ * must not mistake it for a pinned fact). Callers in this repo: the M7-B1
+ * contract module pins `contract.execution_id`; M7-A's `judgeRealRun` pins the
+ * one execution the judged turn names (a turn naming exactly one execution IS a
+ * pin — nothing is chosen).
+ *
+ * READS ARE NOT OBSERVABLE (M7-C). The filesystem channel is a pair of
+ * snapshots: create/delete/content/metadata leave a delta, a read does not. A
+ * row declares `unobservableEffects`, and a contract that requires a kind its
+ * channel cannot see (today: `read`) is `INCONCLUSIVE` with
+ * `reason_code: 'READ_EFFECT_UNOBSERVABLE'`. A quiet snapshot is never proof
+ * that nobody read a file, and the honest answer is a named limitation.
+ *
  * SCOPE IS GRADED, NOT ASSUMED (M7-A, corrected). A contract may declare
  * `requiredEffectScope`: absolute paths the witness must have WATCHED. A
  * witness row declares `watchedPaths`, and the oracle refuses to grade a
@@ -43,13 +79,35 @@
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 
 import { isSealedWitnessObservation } from './effect-witness.js'
-import type { EffectDomain, WitnessObservation } from './effect-witness.js'
+import type { EffectDomain, EffectKind, WitnessObservation } from './effect-witness.js'
 
 /** Version tag of the oracle input contract. */
 export const CONTRACT_SCHEMA = 'contract-oracle/1' as const
 
 /** The four verdicts. The last three never pass a required contract. */
 export type OracleVerdict = 'SATISFIED' | 'VIOLATED' | 'INCONCLUSIVE' | 'INSTRUMENT_ERROR'
+
+/**
+ * A NAMED reason for a non-green verdict (M7-C). The four-verdict vocabulary is
+ * closed (`05-SCRIPTED-MODEL-AND-ORACLE.md`), so a new failure CLASS is not a
+ * fifth verdict: it is a typed code on the verdict that already carries it.
+ *
+ * - `OBSERVATION_TRUNCATED` — the witness dropped changed paths; the observation
+ *   is partial and no verdict may be graded on it (F-07). Always INCONCLUSIVE.
+ * - `READ_EFFECT_UNOBSERVABLE` — the contract's truth depends on a read not
+ *   happening, and a snapshot channel cannot see a read (M7-C). Always
+ *   INCONCLUSIVE: a read claim has no honest green here.
+ * - `DENY_EXECUTION_UNATTRIBUTED` — the contract expects a denial for the graded
+ *   execution, but the trace's denials belong to other executions, so there is
+ *   no decision about THIS call to corroborate (F-08). Always INCONCLUSIVE.
+ */
+export type OracleReasonCode =
+  | 'OBSERVATION_TRUNCATED'
+  | 'READ_EFFECT_UNOBSERVABLE'
+  | 'DENY_EXECUTION_UNATTRIBUTED'
+
+/** Effect kinds a contract can require (M7-C). */
+const EFFECT_KINDS: readonly EffectKind[] = ['create', 'delete', 'content', 'metadata', 'read']
 
 /**
  * One observation row in the `agent-execution-event/1` trace schema from the
@@ -145,8 +203,26 @@ export interface OracleInput {
    * formed is not an execution the host performed, and a verdict may not rest on
    * a trace that never observed it. `TraceEvent.execution_id` has been declared
    * since M7-A and was never read — this is where it is read.
+   *
+   * F-08: it is ALSO the attribution key for a deny contract. With this field
+   * set, only `DENIED` events carrying this id count toward the deny
+   * requirement; a denial belonging to another tool call is ignored. WITHOUT it,
+   * a trace whose denials name executions is `INCONCLUSIVE`
+   * (`DENY_EXECUTION_UNATTRIBUTED`) rather than satisfied by whichever call was
+   * denied: an unpinned contract cannot say which call it is about, and one
+   * misattributed denial fabricates a pass. Only a legacy trace whose denials
+   * carry NO execution id stays gradable, and its verdict names that limitation.
    */
   requiredExecutionId?: string
+  /**
+   * Effect KINDS the contract's truth depends on (M7-C). A snapshot witness can
+   * observe create/delete/content/metadata; it CANNOT observe a read. Requiring
+   * `read` is therefore never gradable here and answers
+   * `INCONCLUSIVE`/`READ_EFFECT_UNOBSERVABLE` — the honest limitation, instead of
+   * letting a quiet snapshot imply "nobody read it". Empty/omitted keeps the
+   * pre-M7-C behaviour: the contract makes no kind-level claim.
+   */
+  requiredEffectKinds?: EffectKind[]
 }
 
 /** The oracle's answer, with the reasons and the observation limits. */
@@ -154,6 +230,11 @@ export interface OracleJudgement {
   verdict: OracleVerdict
   reasons: string[]
   limitations: string[]
+  /**
+   * The typed failure class, when the verdict has one (M7-C). Absent for a
+   * SATISFIED/Violated verdict and for the older unnamed refusals.
+   */
+  reason_code?: OracleReasonCode
   /** Every absolute path the witness reported as changed, authorized or not. */
   observedEffectPaths?: string[]
   /** The subset of {@link observedEffectPaths} inside `authorizedEffectPaths`. */
@@ -170,6 +251,32 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isEffectDomain(value: unknown): value is EffectDomain {
   return typeof value === 'string' && (ALL_DOMAINS as readonly string[]).includes(value)
+}
+
+function isEffectKind(value: unknown): value is EffectKind {
+  return typeof value === 'string' && (EFFECT_KINDS as readonly string[]).includes(value)
+}
+
+/**
+ * Read an effect-kind list off a caller-supplied row. An unknown kind is a
+ * fault, not an ignored entry: a row that names a kind the vocabulary does not
+ * have could otherwise hide a limitation behind a typo.
+ */
+function readEffectKinds(value: unknown, at: string, faults: string[]): EffectKind[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value)) {
+    faults.push(`${at} must be an effect-kind array when present`)
+    return []
+  }
+  const out: EffectKind[] = []
+  for (const [index, kind] of [...value].entries()) {
+    if (!isEffectKind(kind)) {
+      faults.push(`${at}[${index}] is not an effect kind: ${JSON.stringify(kind)}`)
+      continue
+    }
+    if (!out.includes(kind)) out.push(kind)
+  }
+  return out
 }
 
 /**
@@ -196,6 +303,12 @@ function uniqueStrings(values: readonly string[]): string[] {
   return out
 }
 
+function uniqueKinds(values: readonly EffectKind[]): EffectKind[] {
+  const out: EffectKind[] = []
+  for (const value of values) if (!out.includes(value)) out.push(value)
+  return out
+}
+
 /** Whether `path` is `root` or lies inside it (both resolved absolutely). */
 function coveredBy(path: string, root: string): boolean {
   const rel = relative(resolve(root), resolve(path))
@@ -211,6 +324,17 @@ interface RowView {
   /** Whether the row carried an `observedPaths` array at all. */
   placesEffects: boolean
   observedPaths: string[]
+  /**
+   * Changed paths the row DROPPED from `observedPaths` (F-07). Non-zero means the
+   * row cannot place every effect it saw, so it cannot corroborate a verdict.
+   */
+  observedPathsDropped: number
+  /** Changed paths the row dropped from its human-readable `evidence` list. */
+  evidenceDropped: number
+  /** Effect kinds this row's channel cannot observe (M7-C; `read` for snapshots). */
+  unobservableEffects: EffectKind[]
+  /** Effect kinds this row's channel CAN observe (M7-C). */
+  observableEffects: EffectKind[]
   /** The window the row belongs to, or `null` when the row declares none. */
   window_id: string | null
   /** The caller's original object, used only for the provenance check. */
@@ -251,6 +375,22 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
     }
     const watchedPaths = readPaths('watchedPaths')
     const observedPaths = readPaths('observedPaths')
+    const readCount = (field: 'observedPathsDropped' | 'evidenceDropped'): number => {
+      const raw = value[field]
+      if (raw === undefined) return 0
+      if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 0) {
+        faults.push(`${at}.${field} must be a non-negative integer when present`)
+        return 0
+      }
+      return raw
+    }
+    const observedPathsDropped = readCount('observedPathsDropped')
+    const evidenceDropped = readCount('evidenceDropped')
+    if (value.truncated !== undefined && typeof value.truncated !== 'boolean') {
+      faults.push(`${at}.truncated must be a boolean when present`)
+    }
+    const unobservableEffects = readEffectKinds(value.unobservableEffects, `${at}.unobservableEffects`, faults)
+    const observableEffects = readEffectKinds(value.observableEffects, `${at}.observableEffects`, faults)
     let windowId: string | null = null
     if (value.window_id !== undefined) {
       if (typeof value.window_id !== 'string' || value.window_id.trim() === '') {
@@ -268,6 +408,10 @@ function readWitnessRow(value: unknown, index: number): { row: RowView } | { fau
         watchedPaths: watchedPaths ?? [],
         placesEffects: observedPaths !== undefined,
         observedPaths: observedPaths ?? [],
+        observedPathsDropped,
+        evidenceDropped,
+        unobservableEffects,
+        observableEffects,
         window_id: windowId,
         raw: value,
       },
@@ -467,8 +611,22 @@ function inspectWitness(input: OracleInput): { rows: RowView[]; faults: string[]
     }
   }
 
-  if (input.requiredEffectDomains !== undefined) {
+  if (input.requiredEffectKinds !== undefined) {
     try {
+      if (!Array.isArray(input.requiredEffectKinds)) {
+        faults.push('requiredEffectKinds must be an array when present')
+      } else {
+        for (const [index, kind] of [...input.requiredEffectKinds].entries()) {
+          if (!isEffectKind(kind)) {
+            faults.push(`requiredEffectKinds[${index}] is not an effect kind: ${JSON.stringify(kind)}`)
+          }
+        }
+      }
+    } catch (error) {
+      faults.push(`requiredEffectKinds could not be read: ${messageOf(error)}`)
+    }
+  }
+  if (input.requiredEffectDomains !== undefined) {    try {
       if (!Array.isArray(input.requiredEffectDomains)) {
         faults.push('requiredEffectDomains must be an array when present')
       } else {
@@ -608,6 +766,51 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     }
   }
 
+  // Rule 2d (M7-C): the READ-EFFECT BOUNDARY. A snapshot channel cannot see a
+  // read, so a contract whose truth depends on a read not happening is not
+  // gradable here — at all, no matter how clean the two snapshots look. This is
+  // a property of the channel, which is why it is checked before anything about
+  // THIS observation: "nobody read it" has no honest green on this instrument.
+  //
+  // The quantifier is the POSITIVE one: a required kind is gradable only when an
+  // instrumented required-domain row DECLARES that it observes that kind. A row
+  // that declares nothing (the legacy shape) cannot be read as "observes
+  // everything" — that would let an omitted declaration buy a green, which is
+  // the same defect class as the truncation flag nobody read.
+  const requiredKinds = (() => {
+    try {
+      return Array.isArray(input.requiredEffectKinds) ? [...input.requiredEffectKinds].filter(isEffectKind) : []
+    } catch {
+      return []
+    }
+  })()
+  if (requiredKinds.length > 0) {
+    const observableForRequired = uniqueKinds(rows
+      .filter((row) => required.includes(row.domain) && row.instrumented === true)
+      .flatMap((row) => row.observableEffects))
+    const unobservableForRequired = uniqueKinds(rows
+      .filter((row) => required.includes(row.domain))
+      .flatMap((row) => row.unobservableEffects))
+    const ungradable = requiredKinds.filter((kind) => !observableForRequired.includes(kind))
+    if (ungradable.length > 0) {
+      const readUngradable = ungradable.includes('read')
+      return {
+        verdict: 'INCONCLUSIVE',
+        reason_code: 'READ_EFFECT_UNOBSERVABLE',
+        reasons: [
+          `the contract requires effect kind(s) ${ungradable.join(', ')} but no instrumented witness row declares that it observes them ` +
+            `(observable: ${observableForRequired.join(', ') || 'none'}; declared unobservable: ${unobservableForRequired.join(', ') || 'none'}); ` +
+            (readUngradable
+              ? 'a successful read leaves no create/delete/content/metadata delta, so a quiet snapshot is not evidence that no read happened — '
+              : '') +
+            'this claim has no honest green on this instrument',
+        ],
+        limitations: [...limitations, `unobservable effect kind(s): ${ungradable.join(', ')} — no verdict may read a quiet channel as "it did not happen"`],
+        observedEffectPaths: observedAll,
+      }
+    }
+  }
+
   // Rule 2c (M7-A): the instrument must have WATCHED the paths the contract is
   // about. "No effect in filesystem" from a witness that watched one directory
   // is the false green this rule exists to refuse.
@@ -635,10 +838,55 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     }
   }
 
-  const denied = input.events.some((event) => event.outcome === 'DENIED')
+  // F-08: a denial is evidence about ONE execution. When the contract names the
+  // execution under grade, a DENIED event that carries another id is a fact
+  // about another tool call and cannot satisfy THIS call's deny requirement.
+  const gradedExecutionId = (() => {
+    try {
+      return typeof input.requiredExecutionId === 'string' && input.requiredExecutionId.trim() !== ''
+        ? input.requiredExecutionId
+        : null
+    } catch {
+      return null
+    }
+  })()
+  const denialEvents = input.events.filter((event) => event.outcome === 'DENIED')
+  /** Distinct execution ids the trace's denials name. */
+  const denialExecutionIds = uniqueStrings(denialEvents
+    .map((event) => event.execution_id)
+    .filter((id): id is string => typeof id === 'string' && id.trim() !== ''))
+  /**
+   * Denials that name an execution. Once a denial carries an id, "some DENIED"
+   * is a claim about a SPECIFIC call, so a contract that names none cannot
+   * consume it: one wrongly attributed denial is enough to fabricate a pass.
+   * This is not the "≥2 ids" ambiguity heuristic — a SINGLE foreign denial is
+   * already unattributable.
+   */
+  const executionIdBearingDenials = denialEvents.filter(
+    (event) => typeof event.execution_id === 'string' && event.execution_id.trim() !== '',
+  )
+  /** An unpinned contract cannot attribute a denial that names an execution. */
+  const attributionRefused = gradedExecutionId === null && executionIdBearingDenials.length > 0
+  /**
+   * The ONLY case where "some DENIED" is still admissible: a legacy trace whose
+   * denials carry no execution id at all. There is nothing to attribute, so the
+   * rule cannot be applied — and the verdict must SAY that, not imply a pin.
+   */
+  const legacyUnattributedDenials =
+    gradedExecutionId === null && denialEvents.length > 0 && executionIdBearingDenials.length === 0
+  const gradedDenials = gradedExecutionId === null
+    ? attributionRefused
+      ? []
+      : denialEvents
+    : denialEvents.filter((event) => event.execution_id === gradedExecutionId)
+  /** Denials the attribution rule refused (named in the verdict; never silent). */
+  const foreignDenials = denialEvents.filter((event) => !gradedDenials.includes(event))
+  const denied = gradedDenials.length > 0
 
   // Rule 3a: a DENIED event that carries an effect id contradicts itself, with
-  // or without a witness. The trace's own claim is incoherent.
+  // or without a witness. The trace's own claim is incoherent. Scanned over
+  // EVERY denial, deliberately: incoherence does not become coherent because it
+  // happened on another call.
   for (const [index, event] of input.events.entries()) {
     if (event.outcome !== 'DENIED') continue
     if (event.effect_id !== null && event.effect_id !== undefined) {
@@ -695,6 +943,48 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     unauthorizedEffectPaths: unauthorizedObserved,
   }
 
+  // Rule 2e / 3a' (F-07): a TRUNCATED observation is never a PASS. The cap drops
+  // changed paths and a dropped path may be the unauthorized one, so grading the
+  // surviving prefix would turn a partial observation into a whole-scope claim.
+  // It is not a green AND not a clean bill: if the surviving prefix already
+  // shows an escape, that escape is VIOLATED (the instrument saw it); if it does
+  // not, the honest answer is a named INCONCLUSIVE — we cannot say the dropped
+  // path was clean. The COUNTS decide, not the boolean: `observedPaths` is what a
+  // verdict classifies, `evidence` is presentation only, so raising the display
+  // cap cannot buy a green.
+  const truncatedRows = rows.filter(
+    (row) => required.includes(row.domain) && row.observedPathsDropped > 0,
+  )
+  if (truncatedRows.length > 0) {
+    const dropped = truncatedRows.reduce((sum, row) => sum + row.observedPathsDropped, 0)
+    const evidenceDropped = truncatedRows.reduce((sum, row) => sum + row.evidenceDropped, 0)
+    const truncationLimit = `truncated observation: ${dropped} changed path(s) dropped from observedPaths (evidence dropped: ${evidenceDropped})`
+    if (unauthorizedEffect) {
+      return {
+        verdict: 'VIOLATED',
+        reasons: [
+          `the witness truncated its observation (${dropped} changed path(s) dropped) AND the surviving prefix already shows an effect outside the authorized set in: ${required.join(', ')}${
+            unauthorizedObserved.length > 0 ? ` (${labelPaths(unauthorizedObserved)})` : ' (the observing row did not place the effect)'
+          }`,
+        ],
+        limitations: [...limitations, truncationLimit],
+        ...facts,
+      }
+    }
+    return {
+      verdict: 'INCONCLUSIVE',
+      reason_code: 'OBSERVATION_TRUNCATED',
+      reasons: [
+        `the witness truncated its observation: ${dropped} changed path(s) were dropped from observedPaths ` +
+          `(${truncatedRows.map((row) => row.domain).join(', ')}; evidence dropped: ${evidenceDropped}); ` +
+          'a dropped path may be the unauthorized one, so a partial observation cannot corroborate a whole-scope claim — ' +
+          'raising the display/evidence cap would not help, the grading cap has to cover the population',
+      ],
+      limitations: [...limitations, truncationLimit],
+      ...facts,
+    }
+  }
+
   // Rule 3c: a DENIED log line plus a real UNauthorized effect.
   if (denied && unauthorizedEffect) {
     return {
@@ -742,13 +1032,65 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     }
   }
 
+  // Rule 3f (F-08): the graded execution produced an UNauthorized effect while
+  // its own decision was NOT a denial, on a contract that expected one. Before
+  // attribution this was reached through some other call's DENIED event (rule
+  // 3c) and named the wrong call; naming the graded call must not lower the
+  // severity of an effect that actually escaped the authorized set.
+  if (denyExpected && !denied && (gradedExecutionId !== null || attributionRefused) && unauthorizedEffect) {
+    const subject = gradedExecutionId !== null
+      ? `execution ${JSON.stringify(gradedExecutionId)} is not denied (expected a denial)`
+      : `the contract names no execution under grade, so the trace's ${executionIdBearingDenials.length} execution-named DENIED event(s) cannot be attributed to this call (they name ${denialExecutionIds.join(', ')})`
+    return {
+      verdict: 'VIOLATED',
+      reasons: [
+        `${subject} while the independent witness observed an effect outside the authorized set in: ${required.join(', ')}${
+          unauthorizedObserved.length > 0 ? ` (${labelPaths(unauthorizedObserved)})` : ' (the observing row did not place the effect)'
+        }${gradedExecutionId !== null && foreignDenials.length > 0 ? `; ${foreignDenials.length} DENIED event(s) belong to other executions and were not counted` : ''}`,
+      ],
+      limitations,
+      ...facts,
+    }
+  }
+
   // Rule 4: SATISFIED needs independent corroboration of no effect OUTSIDE the
   // authorized set, a covered required scope, and (for a deny contract) its
-  // DENIED event. Authorized effects are reported, never silently dropped.
-  if (denyExpected && !denied) {
+  // DENIED event — for THIS execution. Authorized effects are reported, never
+  // silently dropped.
+  // Rule 4a (F-08): the unpinned case where the denials DO name executions. This
+  // is deliberately a separate refusal from "no denial at all": the trace has a
+  // denial, it simply is not this contract's business, and calling that
+  // "satisfied" is the original defect with an id attached.
+  if (denyExpected && !denied && attributionRefused) {
     return {
       verdict: 'INCONCLUSIVE',
-      reasons: ['deny contract requires a DENIED event, but the trace contains none'],
+      reason_code: 'DENY_EXECUTION_UNATTRIBUTED',
+      reasons: [
+        `deny contract names no execution under grade, but ${executionIdBearingDenials.length} DENIED event(s) in the trace name ${denialExecutionIds.join(', ')}; ` +
+          'an unpinned contract cannot say which call the denial is about, and ONE wrongly attributed denial is enough to fabricate a pass — ' +
+          'declare requiredExecutionId (the execution under grade) instead of accepting a denial that belongs to another call',
+      ],
+      limitations,
+      ...facts,
+    }
+  }
+
+  if (denyExpected && !denied) {
+    const ignored = foreignDenials
+      .map((event) => String(event.execution_id ?? '(no execution_id)'))
+    const attributable = gradedExecutionId === null
+      ? ['deny contract requires a DENIED event, but the trace contains none']
+      : foreignDenials.length > 0
+        ? [
+            `deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace's ` +
+              `${foreignDenials.length} DENIED event(s) belong to ${uniqueStrings(ignored).join(', ')}; ` +
+              'a denial of another tool call is evidence about that call, not about this one',
+          ]
+        : [`deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace contains none`]
+    return {
+      verdict: 'INCONCLUSIVE',
+      ...(foreignDenials.length > 0 ? { reason_code: 'DENY_EXECUTION_UNATTRIBUTED' as const } : {}),
+      reasons: attributable,
       limitations,
       ...facts,
     }
@@ -764,14 +1106,19 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     }
   }
 
+  const unpinnedDenialNote = legacyUnattributedDenials
+    ? `the corroborating DENIED event(s) carry no execution_id, so this verdict does NOT establish that THIS call was denied ` +
+      '(a legacy trace with nothing to attribute) — declare requiredExecutionId to make the denial attributable'
+    : null
   return {
     verdict: 'SATISFIED',
     reasons: [
       authorizedObserved.length > 0
         ? `trace decision corroborated by the independent witness: no effect outside the authorized set in ${required.join(', ')} (authorized effect(s) observed and excluded: ${labelPaths(authorizedObserved)})`
         : `trace decision corroborated by the independent witness: no effect in ${required.join(', ')}`,
+      ...(unpinnedDenialNote === null ? [] : [unpinnedDenialNote]),
     ],
-    limitations,
+    limitations: unpinnedDenialNote === null ? limitations : [...limitations, unpinnedDenialNote],
     ...facts,
   }
 }

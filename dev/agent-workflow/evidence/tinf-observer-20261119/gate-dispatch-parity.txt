@@ -1,0 +1,119 @@
+$ node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670f5a4867ff02834b033af4bbcc45b836
+dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+  .github/workflows/ci-integration.yml
+    EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
+      old tests/diag-call-chain/diag-call-chain.test.mjs
+      old tests/u7-3-devex/devex-integration.test.mjs
+      new tests/diag-call-chain/diag-call-chain.test.mjs
+      new tests/u7-3-devex/devex-integration.test.mjs
+    tests/checks node:test suites (dist-placements, eslint-node-globals — host-free): old=2 new=2 missing=none added=none
+      old tests/checks/dist-placements.test.mjs
+      old tests/checks/eslint-node-globals.test.mjs
+      new tests/checks/dist-placements.test.mjs
+      new tests/checks/eslint-node-globals.test.mjs
+    scripts node:test suite (eb3-tool-acceptance law fixtures — host-free): old=1 new=1 missing=none added=none
+      old scripts/eb3-tool-acceptance.test.mjs
+      new scripts/eb3-tool-acceptance.test.mjs
+    scripts node:test suite (L0 selection laws — host-free): old=1 new=1 missing=none added=none
+      old scripts/ci-local.test.mjs
+      new scripts/ci-local.test.mjs
+    scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
+      old scripts/tinf-m0.test.mjs
+      new scripts/tinf-m0.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=51 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/consumer-candidate.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/freeze-candidate.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/a5sf-acceptance-preflight.test.mjs,tests/world-factory/a5sf-ask-precedence.test.mjs,tests/world-factory/a5sf-assembly.test.mjs,tests/world-factory/a5sf-bash.test.mjs,tests/world-factory/a5sf-capability-defaults.test.mjs,tests/world-factory/a5sf-dev-live-slots.test.mjs,tests/world-factory/a5sf-dev-live.test.mjs,tests/world-factory/a5sf-dual-plane.test.mjs,tests/world-factory/a5sf-instrument-graph.test.mjs,tests/world-factory/a5sf-p01-realm-binding.test.mjs,tests/world-factory/a5sf-pd1-revocation-escape.test.mjs,tests/world-factory/a5sf-pd12-bash-governance.test.mjs,tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs,tests/world-factory/a5sf-pd26-confined-skill.test.mjs,tests/world-factory/a5sf-pd29-goal-stop.test.mjs,tests/world-factory/a5sf-pd33-preview-e2e.test.mjs,tests/world-factory/a5sf-pd34-member-stop.test.mjs,tests/world-factory/a5sf-run-record-binding.test.mjs,tests/world-factory/a5sf-search-live.test.mjs,tests/world-factory/a5sf-window-taxonomy.test.mjs,tests/world-factory/arm-verdict.test.mjs,tests/world-factory/binding-digests.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs,tests/world-factory/port-probe.test.mjs,tests/world-factory/tinf-observer-closeout.test.mjs,tests/world-factory/u6-arc-d.test.mjs,tests/world-factory/u7-tbash-offline-drive.test.mjs,tests/world-factory/u7-tbash-seam.test.mjs,tests/world-factory/u7-tbash.test.mjs,tests/world-factory/u7-uileg0-answer-drive.test.mjs
+      old scripts/census-aggregate.test.mjs
+      old scripts/census-cutover.test.mjs
+      old scripts/census-plan.test.mjs
+      old scripts/host-cache-key.test.mjs
+      old scripts/test-catalog.test.mjs
+      old scripts/tinf-timing.test.mjs
+      new scripts/census-aggregate.test.mjs
+      new scripts/census-cutover.test.mjs
+      new scripts/census-plan.test.mjs
+      new scripts/contract-tiers.test.mjs
+      new scripts/dispatch-tests.test.mjs
+      new scripts/eb3-ci-required.test.mjs
+      new scripts/host-cache-key.test.mjs
+      new scripts/test-catalog.test.mjs
+      new scripts/tinf-timing.test.mjs
+      new scripts/tinf-trust-closeout.test.mjs
+      new tests/s2-authority/authority-dual-read.test.mjs
+      new tests/s2-authority/authority-snapshot-isolated.test.mjs
+      new tests/s2-authority/candidate-track-negative-control.test.mjs
+      new tests/s2-authority/ci-snapshot-reader.test.mjs
+      new tests/s2-authority/consumer-candidate.test.mjs
+      new tests/s2-authority/current-authority-pointer.test.mjs
+      new tests/s2-authority/freeze-candidate.test.mjs
+      new tests/s2-authority/probe-candidate.test.mjs
+      new tests/s2-authority/sync-candidate-resolver.test.mjs
+      new tests/s2-authority/verify-candidate.test.mjs
+      new tests/world-factory/a5sf-acceptance-preflight.test.mjs
+      new tests/world-factory/a5sf-ask-precedence.test.mjs
+      new tests/world-factory/a5sf-assembly.test.mjs
+      new tests/world-factory/a5sf-bash.test.mjs
+      new tests/world-factory/a5sf-capability-defaults.test.mjs
+      new tests/world-factory/a5sf-dev-live-slots.test.mjs
+      new tests/world-factory/a5sf-dev-live.test.mjs
+      new tests/world-factory/a5sf-dual-plane.test.mjs
+      new tests/world-factory/a5sf-instrument-graph.test.mjs
+      new tests/world-factory/a5sf-p01-realm-binding.test.mjs
+      new tests/world-factory/a5sf-pd1-revocation-escape.test.mjs
+      new tests/world-factory/a5sf-pd12-bash-governance.test.mjs
+      new tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
+      new tests/world-factory/a5sf-pd26-confined-skill.test.mjs
+      new tests/world-factory/a5sf-pd29-goal-stop.test.mjs
+      new tests/world-factory/a5sf-pd33-preview-e2e.test.mjs
+      new tests/world-factory/a5sf-pd34-member-stop.test.mjs
+      new tests/world-factory/a5sf-run-record-binding.test.mjs
+      new tests/world-factory/a5sf-search-live.test.mjs
+      new tests/world-factory/a5sf-window-taxonomy.test.mjs
+      new tests/world-factory/arm-verdict.test.mjs
+      new tests/world-factory/binding-digests.test.mjs
+      new tests/world-factory/m7a-real-slice-host-state.test.mjs
+      new tests/world-factory/m7a-real-slice-unit.test.mjs
+      new tests/world-factory/port-probe.test.mjs
+      new tests/world-factory/tinf-observer-closeout.test.mjs
+      new tests/world-factory/u6-arc-d.test.mjs
+      new tests/world-factory/u7-tbash-offline-drive.test.mjs
+      new tests/world-factory/u7-tbash-seam.test.mjs
+      new tests/world-factory/u7-tbash.test.mjs
+      new tests/world-factory/u7-uileg0-answer-drive.test.mjs
+    a5sf harness C1 (R2/BL-10 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-harness.test.mjs
+      new tests/world-factory/a5sf-harness.test.mjs
+    a5sf evidence chain R3 (BL-11 — node:test, host-free, records the four links and re-reads them with a5sf-diag): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-evidence.test.mjs
+      new tests/world-factory/a5sf-evidence.test.mjs
+    a5sf golden-vector regression corpus (R5/BL-13 — node:test, host-free): old=1 new=1 missing=none added=none
+      old tests/kits/a5sf-golden/compare.test.mjs
+      new tests/kits/a5sf-golden/compare.test.mjs
+    a5sf diag R4 (BL-12 — node:test, host-free, delegates to the PR #394 classifier): old=1 new=1 missing=none added=none
+      old tests/a5sf-diag/a5sf-diag.test.mjs
+      new tests/a5sf-diag/a5sf-diag.test.mjs
+    a5sf read budget gate C1 (P2-01/BL-14 — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-read-gate.test.mjs
+      new tests/world-factory/a5sf-read-gate.test.mjs
+    a5sf P2 seam C1 (BL-14/P2-01 follow-up — node:test, zero Host boots, host-free, cross-process transport): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-seam.test.mjs
+      new tests/world-factory/a5sf-p2-seam.test.mjs
+    a5sf P2 WIRING C1 (product-row call site — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-p2-wiring.test.mjs
+      new tests/world-factory/a5sf-p2-wiring.test.mjs
+    a5sf F1 TOOL PLANE (effective half — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-f1-ctx.test.mjs
+      new tests/world-factory/a5sf-f1-ctx.test.mjs
+    a5sf NATIVE ROUTE C (native tool confinement — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-native-route-c.test.mjs
+      new tests/world-factory/a5sf-native-route-c.test.mjs
+    a5sf PRODUCT ASSEMBLY (product-visible member-policy declaration — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-product-assembly.test.mjs
+      new tests/world-factory/a5sf-product-assembly.test.mjs
+    a5sf FS face layer B (per-native-tool contract — node:test, zero Host boots, host-free): old=1 new=1 missing=none added=none
+      old tests/world-factory/a5sf-fs-contract.test.mjs
+      new tests/world-factory/a5sf-fs-contract.test.mjs
+  .github/workflows/pr-gate.yml
+    Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
+      old scripts/pr-settlement-gate.test.mjs
+      new scripts/pr-settlement-gate.test.mjs
+  union old=25 new=70 set=sha256:991845176257f0bf51cd0ca264b8c7272709e45e57eaeea81934f277f1d4c234
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=70 problems=0

@@ -1,0 +1,2 @@
+$ cd packages/testkit && ../../node_modules/.bin/tsc -p tsconfig.json --noEmit
+EXIT=0

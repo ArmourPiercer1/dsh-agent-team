@@ -4,7 +4,8 @@ dated: 2026-11-16 (regenerated for batch B2, then re-regenerated that day when t
        forced one B2 suite back out — see the second B2 paragraph below)
 base:  e5bf05670f5a4867ff02834b033af4bbcc45b836 (M5 merged, PR #773 — the last commit whose
        workflows still carried the hand-written `node --test` lists)
-head:  task/b3-collect-20261116 (M6 + trust-closeout + M7-A + B2 as merged at 81bf61ccf
+head:  task/tinf-observer-20261119 (TINF observer closeout off 00429852c: the
+       F-07/F-08/F-09/M7-C controls wired into tinf-instruments, 50 -> 51 suites)
        (8 of 9 suites) + B3's twenty-eight host-free world-factory suites)
 host:  v24.21.0 / git 2.53.0 / Linux x86_64
 
@@ -78,6 +79,18 @@ WHY THIS FILE EXISTS
   and `added=` now names exactly forty-four files (42 + these two). Both suites leave
   dev/ci/uncollected-baseline.json (48 -> 46).
 
+
+  REGENERATED 2026-11-19 (TINF observer closeout, Task A). ONE suite is added to the SAME
+  `tinf-instruments` leg: tests/world-factory/tinf-observer-closeout.test.mjs, the host-free
+  controls for the three observer defects (F-07 truncated observation, F-08 denial attribution,
+  F-09 World provenance) plus the M7-C read boundary. Same reason as M7-A/B2/B3: a brand-new
+  dispatch step has no `node --test` argv at the base, so it would be a permanent `UNCONVERTED`
+  problem. The union is DELIBERATELY 70 instead of 69; every row still has `missing=none`,
+  `problems=0`, and `added=` now names exactly forty-five files (44 + this one). It is a new
+  suite, not a moved one, so dev/ci/uncollected-baseline.json is unchanged (nothing left the
+  uncollected set). `scripts/test-catalog.test.mjs` pins both the digest and the allowed added
+  set, which is why that allowed set gains exactly this path.
+
 WHY THIS BASE.
 WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --test`
   argv, so `--old-ref 7e3b6532a` reports 18 UNCONVERTED and 0 old files — it cannot be
@@ -86,7 +99,6 @@ WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --
 
 REPRODUCE
   node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
-
 dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
@@ -108,7 +120,7 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     scripts node:test suite (TINF M0 baseline tools — host-free): old=1 new=1 missing=none added=none
       old scripts/tinf-m0.test.mjs
       new scripts/tinf-m0.test.mjs
-    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=50 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/consumer-candidate.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/freeze-candidate.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/a5sf-acceptance-preflight.test.mjs,tests/world-factory/a5sf-ask-precedence.test.mjs,tests/world-factory/a5sf-assembly.test.mjs,tests/world-factory/a5sf-bash.test.mjs,tests/world-factory/a5sf-capability-defaults.test.mjs,tests/world-factory/a5sf-dev-live-slots.test.mjs,tests/world-factory/a5sf-dev-live.test.mjs,tests/world-factory/a5sf-dual-plane.test.mjs,tests/world-factory/a5sf-instrument-graph.test.mjs,tests/world-factory/a5sf-p01-realm-binding.test.mjs,tests/world-factory/a5sf-pd1-revocation-escape.test.mjs,tests/world-factory/a5sf-pd12-bash-governance.test.mjs,tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs,tests/world-factory/a5sf-pd26-confined-skill.test.mjs,tests/world-factory/a5sf-pd29-goal-stop.test.mjs,tests/world-factory/a5sf-pd33-preview-e2e.test.mjs,tests/world-factory/a5sf-pd34-member-stop.test.mjs,tests/world-factory/a5sf-run-record-binding.test.mjs,tests/world-factory/a5sf-search-live.test.mjs,tests/world-factory/a5sf-window-taxonomy.test.mjs,tests/world-factory/arm-verdict.test.mjs,tests/world-factory/binding-digests.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs,tests/world-factory/port-probe.test.mjs,tests/world-factory/u6-arc-d.test.mjs,tests/world-factory/u7-tbash-offline-drive.test.mjs,tests/world-factory/u7-tbash-seam.test.mjs,tests/world-factory/u7-tbash.test.mjs,tests/world-factory/u7-uileg0-answer-drive.test.mjs
+    test catalog + TINF instruments (M1 catalog shadow, M3 timing/host-cache, M4 plan/aggregate — host-free): old=6 new=51 missing=none added=scripts/contract-tiers.test.mjs,scripts/dispatch-tests.test.mjs,scripts/eb3-ci-required.test.mjs,scripts/tinf-trust-closeout.test.mjs,tests/s2-authority/authority-dual-read.test.mjs,tests/s2-authority/authority-snapshot-isolated.test.mjs,tests/s2-authority/candidate-track-negative-control.test.mjs,tests/s2-authority/ci-snapshot-reader.test.mjs,tests/s2-authority/consumer-candidate.test.mjs,tests/s2-authority/current-authority-pointer.test.mjs,tests/s2-authority/freeze-candidate.test.mjs,tests/s2-authority/probe-candidate.test.mjs,tests/s2-authority/sync-candidate-resolver.test.mjs,tests/s2-authority/verify-candidate.test.mjs,tests/world-factory/a5sf-acceptance-preflight.test.mjs,tests/world-factory/a5sf-ask-precedence.test.mjs,tests/world-factory/a5sf-assembly.test.mjs,tests/world-factory/a5sf-bash.test.mjs,tests/world-factory/a5sf-capability-defaults.test.mjs,tests/world-factory/a5sf-dev-live-slots.test.mjs,tests/world-factory/a5sf-dev-live.test.mjs,tests/world-factory/a5sf-dual-plane.test.mjs,tests/world-factory/a5sf-instrument-graph.test.mjs,tests/world-factory/a5sf-p01-realm-binding.test.mjs,tests/world-factory/a5sf-pd1-revocation-escape.test.mjs,tests/world-factory/a5sf-pd12-bash-governance.test.mjs,tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs,tests/world-factory/a5sf-pd26-confined-skill.test.mjs,tests/world-factory/a5sf-pd29-goal-stop.test.mjs,tests/world-factory/a5sf-pd33-preview-e2e.test.mjs,tests/world-factory/a5sf-pd34-member-stop.test.mjs,tests/world-factory/a5sf-run-record-binding.test.mjs,tests/world-factory/a5sf-search-live.test.mjs,tests/world-factory/a5sf-window-taxonomy.test.mjs,tests/world-factory/arm-verdict.test.mjs,tests/world-factory/binding-digests.test.mjs,tests/world-factory/m7a-real-slice-host-state.test.mjs,tests/world-factory/m7a-real-slice-unit.test.mjs,tests/world-factory/port-probe.test.mjs,tests/world-factory/tinf-observer-closeout.test.mjs,tests/world-factory/u6-arc-d.test.mjs,tests/world-factory/u7-tbash-offline-drive.test.mjs,tests/world-factory/u7-tbash-seam.test.mjs,tests/world-factory/u7-tbash.test.mjs,tests/world-factory/u7-uileg0-answer-drive.test.mjs
       old scripts/census-aggregate.test.mjs
       old scripts/census-cutover.test.mjs
       old scripts/census-plan.test.mjs
@@ -160,6 +172,7 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
       new tests/world-factory/m7a-real-slice-host-state.test.mjs
       new tests/world-factory/m7a-real-slice-unit.test.mjs
       new tests/world-factory/port-probe.test.mjs
+      new tests/world-factory/tinf-observer-closeout.test.mjs
       new tests/world-factory/u6-arc-d.test.mjs
       new tests/world-factory/u7-tbash-offline-drive.test.mjs
       new tests/world-factory/u7-tbash-seam.test.mjs
@@ -202,8 +215,8 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=69 set=sha256:9d56a97244aa89274b578f91d3ed4e687cc7bf434b00e7e9fb5f16f43dbf0704
-DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+  union old=25 new=70 set=sha256:991845176257f0bf51cd0ca264b8c7272709e45e57eaeea81934f277f1d4c234
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=70 problems=0
 
 EXIT CODE
 1

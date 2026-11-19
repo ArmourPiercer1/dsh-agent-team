@@ -305,6 +305,75 @@ test('M7A-U10 without a decision event the oracle refuses to call an effect a vi
   assert.ok(judged.reasons.some((line) => line.includes('no computed/denied event')))
 })
 
+// ── M7A-U12: the A2 arm's assertion is FALSIFIABLE, and it is about the verdict ──
+//
+// WHY (2026-11-19, hosted L2 on fdffd878f). A2 asserts "the verdict names the
+// unauthorized effect". It used to assert one RULE's phrase ("outside the
+// authorized set"), which only rule 3c emits; when F-08's tightening stopped an
+// unpinned contract from consuming another call's DENIED, the same trace started
+// reaching rule 3d ("carries no authority_ref ... unauthorized effect in ...").
+// The verdict never changed (VIOLATED before and after), so the arm was red for a
+// change of JUSTIFICATION — but the fix must not become "accept any reason".
+// These controls hold both ends, host-free, on the real A2 trace shape:
+//   (a) two calls, an execution-named denial from the OTHER call (unpinned), the
+//       escape observed => VIOLATED, and the reason names the escaping path;
+//   (b) the SAME trace with a witness that did not see the escape => NOT
+//       VIOLATED, so "names the path" cannot pass by accident.
+test('M7A-U13 the A2 assertion is about the verdict and the named escape, and it is falsifiable', async () => {
+  const dir = tmp('a2-shape')
+  const watched = join(dir, 'watched')
+  mkdirSync(watched, { recursive: true })
+  const witness = testkitWitness.createFsWitness({ root: dir, outside: watched })
+  const rowsClean = await witness.observe()
+
+  const trace = [
+    // the Host refused the call OUTSIDE the workspace (a real denial, and it
+    // names its own execution — so it is NOT this contract's denial)
+    { event_seq: 17, event_type: 'tool/call', actor_id: 's', execution_id: 'm7a-2', authority_ref: null, outcome: 'DISPATCHED' },
+    { event_seq: 19, event_type: 'tool/result', actor_id: 's', execution_id: 'm7a-2', authority_ref: null, outcome: 'DENIED' },
+    // the call that escaped into the watched, non-authorized directory
+    { event_seq: 31, event_type: 'tool/call', actor_id: 's', execution_id: 'm7a-4', authority_ref: null, outcome: 'DISPATCHED' },
+    { event_seq: 32, event_type: 'tool/result', actor_id: 's', execution_id: 'm7a-4', authority_ref: null, outcome: 'COMPLETED' },
+  ]
+  const judge = (rows) => testkitOracle.judgeContract({
+    contractId: 'm7a.unit',
+    events: trace,
+    witness: rows,
+    blindDomains: witness.blindDomains,
+    requiredEffectDomains: ['filesystem'],
+    requiredEffectScope: [watched],
+    // No authorized set: every observed effect is outside it, exactly like the
+    // real arm, where the escape lands in the watched-but-not-authorized dir.
+    witnessProvenance: 'witnessed',
+  })
+
+  const escaped = join(watched, 'watched-escape.txt')
+  writeFileSync(escaped, 'M7A-A2B\n')
+  const withEscape = judge(await witness.observe())
+  assert.equal(withEscape.verdict, 'VIOLATED', 'A2 shape: an observed escape is a violation, not a pass')
+  assert.ok(
+    withEscape.reasons.some((line) => line.includes('watched-escape.txt')),
+    `A2 shape: the reason names the escaping path (reasons: ${JSON.stringify(withEscape.reasons)})`,
+  )
+  // The justification may be 3c (DENIED + effect) or 3d (no authority_ref +
+  // effect); asserting one of them is what broke the hosted arm.
+  assert.ok(
+    withEscape.reasons.some((line) => line.includes('carries no authority_ref') || line.includes('DENIED')),
+    `A2 shape: the violation is attributed to the trace, not asserted bare (reasons: ${JSON.stringify(withEscape.reasons)})`,
+  )
+
+  // (b) NEGATIVE CONTROL: same trace, no escape seen => the same assertion cannot
+  // hold. An unpinned contract whose only denial belongs to another call is not
+  // satisfied either (F-08), so the honest answer is INCONCLUSIVE — the point is
+  // that "names the path" is not vacuously true.
+  const clean = judge(rowsClean)
+  assert.notEqual(clean.verdict, 'VIOLATED', 'A2 shape: without an observed escape there is nothing to name')
+  assert.ok(
+    clean.reasons.every((line) => !line.includes('watched-escape.txt')),
+    `A2 shape: the escape path is not named when it was not observed (reasons: ${JSON.stringify(clean.reasons)})`,
+  )
+})
+
 // ── M7A-U11: a failing start must not leave the mock provider listening ──────
 //
 // MEASURED (hosted `census-runtime` job 132898455498): the live suite failed
