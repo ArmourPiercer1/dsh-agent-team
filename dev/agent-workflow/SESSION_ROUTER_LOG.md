@@ -9020,3 +9020,19 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **`#765` UTE-Prep 仍是 draft**：设计 memo 已按 rc.3→rc.5 增量、两份共存的端口分区、S1/S2 结算保证等级、受限 fork 授权迁移三项裁决更新，并补了「hosted 轮推翻了什么」；三条治理性文本（`AGENTS.md` 的窄口径 fork 例外、`ALPHA5-SANDBOX-BACKLOG.md` §0.4）仍作**提案**留在 memo 06，等 owner 裁决后由主 Agent 落文，本轮不自行改。
 
 **仍未做（明确不在本轮范围）**：其余 13 条 host-dependent（Realm/surface 8、Web-egress/seam 4、provisioning 1）、`M7-B2`（process/PTY/network 域）、`M7-C`（approval/Stop/recovery）、host 构建缓存（rank 2）、L3 evals、census 调优。**宿主仍冻结在 `0.2.0-rc.2`**：第二份是新增，不是升级，旧宿主与其套件一行未动。
+
+## 2026-11-19 — Task B：把第二台 pinned Host（rc.5）放进受控 CI（PR #790，draft，等 hosted L2）
+
+**问题（不是"缺少覆盖"，而是"覆盖被声明为不执行"）**：`#787` 落下的 rc.5 lane（`tests/next-host/boot.test.mjs`、`native-api.test.mjs`）在本地通过，但两条 suite 都在 `dev/ci/excluded-baseline.json` 里——那是**不执行**通道；exclusion reason 原文就写着 "the CI census does not provision/build that tree, so a CI lane would be red on missing host rather than on behaviour"。换言之，第二台宿主在 runner 上唯一可能的状态是 **discovered but never executed**。
+
+**做法**：在**唯一已经获准 provision 宿主**的 job（`ci-census`，`census-runtime.yml`）加三条**已声明、不可 skip、能把层判红**的 leg，插在 `Build this repo` 之前（provisioning 红不必先付 census 成本）：`node scripts/provision-next-host.mjs --materialize`（upstream tag → 断言 tag 的 commit 就是 pin → 断言树自身 version → 用**树自己 pin 的** pnpm 11.28.5 install+build → 构建后再断言 HEAD 与 porcelain 空）→ `--assets`（pin 的**已发布包** `@deepseek-ai/node-addon-system-linux-x64@0.1.2`，走既有共享 transport，host=next）→ lane 本身（boot + A1–A6 + 拒码负控）。每一步失败都是 `NEXT-HOST-REFUSED code=…` + exit 1；lane suite 在**模块加载**时 throw，所以"没有树"= 红 leg，不是缺席。job timeout 60 → 90（L2 实测 ~24 min 的地板 + 第二次宿主构建，仍留 ~2x）。模式开关放在 leg 的 `cmd` 而不是 `check[]`：两条 provisioning leg 共享 argv[0..1]，只靠 check[] 区分会让整段尾随 argv 读取器把一条 leg 的 token 记到另一条上（本轮实测过这个误报）。
+
+**为什么复用而不是另写**：资产供给复用 `provisionHostSandboxAssetsFromPackage`（host=`next`）——它已具备精确版本、registry `dist.integrity`、已提交 tarball sha256、逐文件 sha256+length+mode 的校验。宿主版本 ≠ 资产版本（宿主 0.2.2-rc.5、npm 只发布过 addon 0.1.2），二者各自从 pin 读取，绝不互相推导。
+
+**拒码不是 README 里的承诺**：`tests/next-host/provisioning-controls.test.mjs` 用 fixture 一条一码开火（13/13，~0.4 s，host-free，含正控），并且抓到一个**真缺陷**：`git -C <dir> rev-parse HEAD` 会**向上走**，所以本仓下一层普通目录曾报 Team HEAD 而不是 `NOT_A_GIT_CHECKOUT`——改为比对 `rev-parse --show-toplevel` 与目录 realpath。资产 pin 现在把 **mode** 也纳入（同字节不同 0o644 也是漂移）。`scripts/eb3-ci-negative-controls.mjs` 增 `C-NH1`（7 个变异：extra-argv / if-false / assets-mode-dropped / assets-or-true / lane-suite-dropped / lane-continue-on-error / lane-echo），全套 32 → **33/33**。
+
+**账目**：两条 exclude 行删除、baseline 由工具重生成，`--max-excluded` **9 → 7**，`--max-uncollected` **保持 41**——它们本来就是 EXCLUDED 而不是 UNCOLLECTED，用分类计数证明（base `875/818/16/41`、node=118、none=9 → head `876/821/14/41`、node=121、none=7），不是从总数假设。census 人口 **12 roots / 712 files** 逐 root 不变；`tests/paths.mjs` 与 `origin/master` 的 diff = **0 行**（legacy pin 块逐字节相同）。
+
+**实测（本机 2026-11-19，证据 `dev/agent-workflow/evidence/nexthost-ci-20261119/`）**：`--materialize` 从空目录 **4 m 49 s**；该次 fresh build 的 `bin/glibc/system.node` = **`75450f92…` 17352 B**、`landlock-run` 不存在（与 `#787` 记录的漂移一致），`--assets` 后变 pin `54a9c25c…` 17360 B / `a752bc72…` 38552 B、mode 0o755；在**这棵新树**上跑完整通道 **19/19**（6 lane + 13 控制）；把树移走后 lane **红**（`TREE_MISSING`，两条 suite 都在模块加载时拒）。其余：catalog `refused=0 findings=0`、`test-catalog.test` 28/28、`dispatch --check` PASS legs=18、`--parity` problems=0（union 未变，新 leg 不是 dispatch leg）、`eb3-ci-required` pass workflows=10。
+
+**UNKNOWN（明写，不猜）**：hosted runner 的实网可达性（本机 ls-remote = pin、registry HTTP 200；runner 未测，失败具名）、rc.5 在 hosted 内核上的 boot、hosted 的 materialize 墙钟。**未合并、未 push master**；hosted L2 由主 Agent 跑。

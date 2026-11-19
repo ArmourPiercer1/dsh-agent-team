@@ -1,6 +1,6 @@
 # NEXT HOST (0.2.2-rc.5) INTO CONTROLLED CI — Task B, 2026-11-19
 
-**Branch** `task/nexthost-ci-20261119` · **base** `origin/master` @ `00429852cc9c9284fd6817da57503bac9501bc9d`
+**PR** [#790](https://github.com/ArmourPiercer1/dsh-agent-team/pull/790) (draft) · **Branch** `task/nexthost-ci-20261119` · **base** `origin/master` @ `00429852cc9c9284fd6817da57503bac9501bc9d`
 **Verdict of this round**: the second pinned host's lane is COLLECTED — it boots on a runner that is made to
 provision it, the native API seam (A1–A6) executes against that boot, and every absence/drift is a NAMED red.
 
