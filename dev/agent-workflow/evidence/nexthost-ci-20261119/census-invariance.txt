@@ -1,0 +1,41 @@
+# census population: the SAME tool (scripts/census-plan.mjs deriveRoots) on the base commit and on this head.
+
+--- BASE 00429852cc9c9284fd6817da57503bac9501bc9d (temp worktree .worktrees/census-baseline-proof)
+00429852cc9c9284fd6817da57503bac9501bc9d
+
+cat: /tmp/census-before.txt: No such file or directory
+
+--- THIS HEAD
+roots=12 files=712
+  packages/client 29
+  packages/contracts 13
+  packages/domain 43
+  packages/domain/compatibility 7
+  packages/legacy 7
+  packages/remote 16
+  packages/runtime 511
+  packages/runtime/controlled-fs 4
+  packages/storage 23
+  packages/testkit 34
+  packages/tools 15
+  packages/tools/a5p5-tools 10
+roots_dropped=[]
+catalog_digest=sha256:cdb27023e0477bff40b4f93319daf5ab515fd4a80ae9da9441296e9887baecc7
+
+# per-root counts are IDENTICAL: 12 roots / 712 files both sides. catalog_digest moves only because the
+# catalog also covers the ONE new node:test file added by this PR (tests/next-host/provisioning-controls.test.mjs).
+# The census population itself (root vitest files) is untouched: no vitest file was added/removed/renamed.
+
+--- LEGACY HOST PIN BLOCK, byte-identical (tests/paths.mjs untouched by this PR)
+$ git diff --stat origin/master -- tests/paths.mjs
+(no output = no change)
+
+$ git diff origin/master -- tests/paths.mjs | wc -l
+0
+
+$ grep -n "DSH_BASELINE_VERSION\|TEST_USE_BASELINE_SHA\|CLIENT_COMMIT_HASH\|TEST_USE_REL" tests/paths.mjs
+38:export const TEST_USE_REL = 'tests/deepseek-harness-test-use'
+70:export const DSH_BASELINE_VERSION = '0.2.0-rc.2'
+71:export const TEST_USE_BASELINE_SHA = '639ed015397290b3745d163aafe02ffee4aa3f84'
+72:export const CLIENT_COMMIT_HASH = '639ed01539'
+119:export const HOST_PORT_BANDS = Object.freeze([

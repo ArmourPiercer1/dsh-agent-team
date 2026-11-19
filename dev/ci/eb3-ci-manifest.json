@@ -616,6 +616,40 @@
       "suiteList": "tests/checks/eb3-host-security-suites.txt",
       "legs": [
         {
+          "id": "next host materialize (tag -> commit -> version -> build)",
+            "cmd": [
+              "node",
+              "scripts/provision-next-host.mjs",
+              "--materialize"
+            ],
+            "why": "Task B (2026-11-19): the second pinned host (NEXT_HOST, 0.2.2-rc.5 @ 9c2670d3bce5275e0d1610272958121af87787bb) is gitignored, so a runner has no tree until this step makes one. scripts/provision-next-host.mjs resolves the tag from UPSTREAM, refuses unless the tag's commit IS the pin (TAG_DRIFT), clones/fetches exactly that tag, then asserts HEAD (HEAD_DRIFT), the tree's declared version (VERSION_DRIFT), installs and builds with the tree's OWN pinned package manager (pnpm 11.28.5, read from the host's package.json \u2014 this repo's pnpm is 11.7.0), and re-asserts HEAD plus porcelain-clean AFTER the build (TREE_DIRTY). No env and no skip flag: every refusal is a named code on a NEXT-HOST-REFUSED line and exit 1, so an absent/drifted/unbuildable host is a RED job, never a NOT_RUN. The mode flag is in cmd, not check[], because two legs of this CLI share its argv[0..1] and a check[]-only distinction would make each leg read the other's step as an extra argument. Network (github.com + the npm registry for the tree's deps) is required and a failure is loud and named \u2014 measured reachable from the authoring box (git ls-remote refs/tags/dsh-v0.2.2-rc.5 => the pin; registry.npmjs.org HTTP 200); the hosted runner's reachability is the one fact this leg measures on its first L2. CORE PATCH BUDGET = 0: the host tree is cloned/installed/built, never edited."
+          },
+          {
+            "id": "next host assets (pinned published package, exact version, host=next)",
+            "cmd": [
+              "node",
+              "scripts/provision-next-host.mjs",
+              "--assets"
+            ],
+            "why": "Task B (2026-11-19): the rc.5 tree's native sandbox payload is NOT in git (native/system/.gitignore ignores every platform package bin/), and its own build produces different bytes \u2014 measured 75450f92.../17352 B for bin/glibc/system.node vs the committed pin 54a9c25c.../17360 B \u2014 so a locally built addon is never the pinned host. This leg delegates to the ONE shared transport (provisionHostSandboxAssetsFromPackage, host 'next'): it fetches @deepseek-ai/node-addon-system-linux-x64@0.1.2 (npm has published exactly one version of that addon \u2014 HOST VERSION 0.2.2-rc.5 is a different fact from ASSET VERSION 0.1.2, and neither is derived from the other), verifies the registry's dist.integrity (sha512) AND the committed tarball sha256, then verifies every installed file's sha256 + byte length + mode 0o755 before publishing it, and finally re-verifies the tree with assertNextHostAssets. The step's argv is the CLI's own mode, deliberately NOT the legacy `provision-host-assets.mjs` step: two legs whose argv share a prefix make the whole-trailing-argv reader attribute one leg's tokens to the other (measured in this change's own dry run), so the next-host transport has its own entry point. No env, no skip flag; a missing/drifted asset is ASSET_MISSING / ASSET_DIGEST_DRIFT / ASSET_BYTES_DRIFT / ASSET_MODE_DRIFT and the leg goes red."
+          },
+          {
+            "id": "next host lane (node:test: real boot + native API A1-A6 + provisioning negative controls)",
+            "cmd": [
+              "node",
+              "--test",
+              "--test-force-exit",
+              "--test-timeout=1500000",
+              "--test-reporter=spec"
+            ],
+            "check": [
+              "tests/next-host/boot.test.mjs",
+              "tests/next-host/native-api.test.mjs",
+              "tests/next-host/provisioning-controls.test.mjs"
+            ],
+            "why": "Task B (2026-11-19): the rc.5 lane EXECUTES here instead of being excluded. tests/next-host/boot.test.mjs REALLY boots the pinned host (<next tree>/apps/cli/lib/bin.js, own DSH_HOME tests/homes/<world>-next, its own port from NEXT_HOST.portBands 13000-13049 \u2014 never 3080, never the legacy 3181-3199 family), serves a session through the public HTTP/RPC surface against the in-process scripted model provider, and checks the host's own durable session log. tests/next-host/native-api.test.mjs proves against the host's PUBLISHED package entries: A1 ToolsService.resolve -> ResolvedToolSet, A2 a real ToolExecutor executing the tool BODY, A3 the tools/pre-execute -> execute -> post-execute -> result pipeline order, A4 a PTC run_code nested dispatch reaching a REAL inner executor (tool/ptc-dispatch-start + tool/ptc-dispatch recorded by the session), A5 mid-flight cancellation (body sees the abort, call settles as a failure, tools/result still notifies) and A6 the host's override (a tool that ignores the abort cannot become a success: ABORTED; pre-dispatch abort: ABORTED_BEFORE_DISPATCH). tests/next-host/provisioning-controls.test.mjs fires the provisioning refusals one arm each against fixture trees (host-free, seconds): TREE_MISSING, NOT_BUILT, NOT_A_GIT_CHECKOUT, HEAD_DRIFT, VERSION_DRIFT, VERSION_UNREADABLE, PIN_INVALID, ASSET_MISSING, ASSET_DIGEST_DRIFT (a locally built system.node of the published LENGTH is still refused), ASSET_BYTES_DRIFT, ASSET_MODE_DRIFT, plus a positive control proving the refusals are not vacuous. Both lane suites throw at MODULE LOAD on a missing/drifted tree or non-pinned asset (host-next-lib.mjs), so there is no skip path in this step: `--test-force-exit` keeps a leaked handle from holding the job, and the distinct --test-timeout value (1500000) keeps this leg's invocation attributable to exactly this step. Measured locally 2026-11-19 on the pinned tree + published assets: 6/6 tests pass in 4.1 s (boot 2.0 s, session served, modelRequests=2; A1-A6 all ok)."
+        },
+        {
           "id": "host-security-suites",
           "cmd": [
             "node",

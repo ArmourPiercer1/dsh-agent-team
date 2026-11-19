@@ -178,16 +178,6 @@
       "path": "packages/client/test/s3-client-generation-spike.test.ts",
       "reason": "needs the client package's jsdom environment; excluded from the root node suite by vitest.config.ts",
       "review": "if the client spike is promoted into the root suite"
-    },
-    {
-      "path": "tests/next-host/boot.test.mjs",
-      "reason": "explicit NEXT-HOST lane (node --test tests/next-host/): boots the second pinned DSH host (0.2.2-rc.5) from a gitignored tree; the CI census does not provision/build that tree, so a CI lane would be red on missing host rather than on behaviour — docs/TEST_METHODS.md §11",
-      "review": "when CI provisions the next-host tree, or when the next host is promoted to the legacy slot"
-    },
-    {
-      "path": "tests/next-host/native-api.test.mjs",
-      "reason": "explicit NEXT-HOST lane: native API smoke (resolve/ToolExecutor/pipeline/PTC/cancellation) against the second pinned host tree; same gitignored-tree reason as boot.test.mjs — docs/TEST_METHODS.md §11",
-      "review": "when CI provisions the next-host tree, or when the next host is promoted to the legacy slot"
     }
   ],
   "instruments": [

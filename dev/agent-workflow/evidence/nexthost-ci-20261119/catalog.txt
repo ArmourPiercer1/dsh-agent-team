@@ -1,0 +1,14 @@
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=876 instruments=3 digest=sha256:cdb27023e0477bff40b4f93319daf5ab515fd4a80ae9da9441296e9887baecc7
+  DISCOVERED_AND_COLLECTED 821
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+  by runner: node=121 none=7 vitest=748
+DSH-TEST-CATALOG tests=876 digest=sha256:cdb27023e0477bff40b4f93319daf5ab515fd4a80ae9da9441296e9887baecc7 refused=0 findings=0
+exit=0
+
+# ownership proof: these two paths were EXCLUDED, never UNCOLLECTED — so the uncollected ratchet did not move.
+# BEFORE (base 00429852): tests=875 collected=818 excluded=16 uncollected=41 by-runner node=118 none=9
+# AFTER  (this head):      tests=876 collected=821 excluded=14 uncollected=41 by-runner node=121 none=7
+# delta: +1 new control suite (collected), +3 collected (+2 de-excluded +1 new), -2 excluded, 0 uncollected.

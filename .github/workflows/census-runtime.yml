@@ -99,7 +99,11 @@ jobs:
     # a legible verdict — the job then says "could not grade in 60 minutes" instead of pretending to
     # abstain — so this margin costs queue time, never correctness. NARROW IT from the first hosted
     # run's per-step timings; that is the one measurement this lane cannot make.
-    timeout-minutes: 60
+    # 90, not 60, since 2026-11-19 (Task B): the measured L2 floor is ~24 min today and the
+    # next-host lane adds a SECOND host provisioning + build (clone + install + build: 130 s
+    # measured locally, 2–4x hosted) plus one boot. 90 keeps the same order of headroom over
+    # the new floor instead of tightening it; a timeout expiry is still a legible verdict.
+    timeout-minutes: 90
     # The value is derived from job.status inside an `if: always()` step, so a layer cannot
     # report PASS for a job GitHub calls a failure.
     outputs:
@@ -310,6 +314,57 @@ jobs:
             exit 1
           fi
           echo "host build ok: $HOST_DIR/apps/cli/lib/bin.js present at $BUILT_SHA"
+
+      # NEXT HOST LANE (Task B, 2026-11-19) — THE SECOND PINNED HOST, COLLECTED.
+      #
+      # WHY HERE. `tests/deepseek-harness-next/` is a gitignored checkout at upstream
+      # tag `dsh-v0.2.2-rc.5` and its native `bin/` payload is not in the host's git
+      # either, so a runner NEVER has it. Before this change the two suites that
+      # prove the rc.5 lane (`tests/next-host/boot.test.mjs`, `native-api.test.mjs`)
+      # were listed in `dev/ci/excluded-baseline.json` — the non-execution channel —
+      # so "discovered but never executed" was the only state they could be in on a
+      # hosted run, and the exclusion reason said so. This job is the one that
+      # WAS ALREADY ALLOWED TO PROVISION A HOST (and already treats a missing one as
+      # a failure), so it is the only honest home for the second one.
+      #
+      # THREE STEPS, ONE PER FAILURE BOUNDARY, so a red names which boundary broke:
+      #   1. materialize: tag -> commit -> version -> build, with named refusals
+      #      (`TAG_DRIFT`, `HEAD_DRIFT`, `VERSION_DRIFT`, `INSTALL_FAILED`,
+      #      `BUILD_FAILED`, `TREE_DIRTY`). Network: upstream git + the tree's own
+      #      pinned pnpm (its `packageManager` is 11.28.5, NOT this repo's 11.7.0).
+      #   2. assets: the pinned PUBLISHED package (exact version, registry
+      #      dist.integrity + committed sha256 + per-file sha256/length/mode), never
+      #      a local build — a hosted `pnpm run build` produces a DIFFERENT
+      #      `bin/glibc/system.node` (measured 75450f92…/17352 B vs pin
+      #      54a9c25c…/17360 B), so the published artifact is the standard.
+      #   3. the lane: real boot + the native API arms A1–A6 + the provisioning
+      #      negative controls (the refusals above, fired against fixtures).
+      # NO SKIP PATH IS DECLARED. There is no `if:`, no `continue-on-error`, no
+      # allow-flag: an absent tree, a drifted HEAD, a wrong version or non-pinned
+      # bytes FAIL this job (the suites throw at module load; the CLI exits 1), which
+      # is exactly the difference between collecting a lane and pretending to.
+      # COST: one clone + one install + one build (a second host build: 130 s locally,
+      # 2–4x hosted) + one boot (2.0 s locally). The job timeout below carries the
+      # headroom; the census argv, its two captures and its population are untouched
+      # by these steps, which run BEFORE the census precisely so a provisioning red
+      # does not cost the census first.
+      # ARGV DISCIPLINE: each `run:` line is EXACTLY one manifest leg of `ci-census`
+      # in dev/ci/eb3-ci-manifest.json (`next host materialize`, `next host assets`,
+      # `next host lane`); the whole trailing argv law applies to all three.
+      - name: Next host — materialize the pinned rc.5 tree (tag → commit → version → build)
+        shell: bash
+        timeout-minutes: 30
+        run: node scripts/provision-next-host.mjs --materialize
+
+      - name: Next host — native sandbox assets from the pinned published package (exact version, digest-verified)
+        shell: bash
+        timeout-minutes: 10
+        run: node scripts/provision-next-host.mjs --assets
+
+      - name: Next host — the rc.5 lane (real boot, native API A1–A6, provisioning negative controls)
+        shell: bash
+        timeout-minutes: 15
+        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs
 
       - name: Build this repo (packages + composition) — the census leg REFUSES without this
         # Verbatim `pr-gate`'s working step. A fresh checkout has the committed package artifacts

@@ -1,0 +1,28 @@
+### FINAL CHECKS on the shipped head (after the lint fix)
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1689 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+exit=0
+
+$ node --test --test-reporter=spec tests/next-host/provisioning-controls.test.mjs tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs
+ℹ tests 19
+ℹ pass 19
+ℹ fail 0
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  by runner: node=121 none=7 vitest=748
+DSH-TEST-CATALOG tests=876 digest=sha256:cdb27023e0477bff40b4f93319daf5ab515fd4a80ae9da9441296e9887baecc7 refused=0 findings=0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=170 notes=4 plans=129(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ git diff --check origin/master
+exit=0

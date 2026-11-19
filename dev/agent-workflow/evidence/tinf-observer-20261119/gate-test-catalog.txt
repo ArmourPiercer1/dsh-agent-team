@@ -1,8 +1,8 @@
-$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
-  tests=876 instruments=3 digest=sha256:8fef1caa1a13e894d5ed2cb01537f559e74b3a8e5ece5191df8f4d00ae10f86b
-  DISCOVERED_AND_COLLECTED 819
-  EXCLUDED_WITH_REASON     16
+  tests=877 instruments=3 digest=sha256:a0b283cc8f5df76b5ac8f4e6560d47684ff29ffb10246e06356d98322a664ce0
+  DISCOVERED_AND_COLLECTED 822
+  EXCLUDED_WITH_REASON     14
   UNCOLLECTED              41
-  by runner: node=119 none=9 vitest=748
-DSH-TEST-CATALOG tests=876 digest=sha256:8fef1caa1a13e894d5ed2cb01537f559e74b3a8e5ece5191df8f4d00ae10f86b refused=0 findings=0
+  by runner: node=122 none=7 vitest=748
+DSH-TEST-CATALOG tests=877 digest=sha256:a0b283cc8f5df76b5ac8f4e6560d47684ff29ffb10246e06356d98322a664ce0 refused=0 findings=0
