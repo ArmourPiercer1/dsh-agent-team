@@ -76,5 +76,5 @@
 
 ## 文件清单
 
-新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（21 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
+新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（20 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
 修改：`packages/testkit/src/{effect-witness,contract-oracle,index}.ts`、`packages/testkit/test/{m2-effect-witness,m2-contract-oracle}.test.ts`、`tests/world-factory/lib/{world-factory,m7b1-observation-contract}.mjs`、`tests/world-factory/m7b1-observation-window.test.mjs`、`dev/ci/eb3-ci-manifest.json`、`scripts/test-catalog.test.mjs`、`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`。

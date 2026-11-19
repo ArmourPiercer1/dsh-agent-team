@@ -9025,7 +9025,7 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 
 **背景**：外部评审在 M6/M7 合并点列出的三个观察器缺陷——F-07（`OBSERVED_CAP` 500 之后 `observedPaths` 被 slice，oracle 从不读 `truncated`，501 个变更路径可以在只看到 500 个时判 `SATISFIED`）、F-08（`events.some(e => e.outcome === 'DENIED')`：任何 ToolCall 的拒绝都满足当前调用的 deny 契约）、F-09（`declareObservationContract` 只查 `typeof world === 'object'` + 非空 `id`/`home`，手写 `{id, home}` 即被当作 World），外加一条必须以代码而不是散文表达的边界（M7-C：快照观察不到 `read`，所以“没看到 read”不能读成“没有 read”）。
 
-**分支**：`task/tinf-observer-20261119`（worktree `.worktrees/tinf-observer-20261119`，base `origin/master 00429852c`）。memo = `docs/plans/memo/tinf-observer-20261119/README.md`，transcript 21 份 + 可复跑探针在 `dev/agent-workflow/evidence/tinf-observer-20261119/`。
+**分支**：`task/tinf-observer-20261119`（worktree `.worktrees/tinf-observer-20261119`，base `origin/master 00429852c`）。memo = `docs/plans/memo/tinf-observer-20261119/README.md`，transcript 20 份 + 可复跑探针在 `dev/agent-workflow/evidence/tinf-observer-20261119/`。
 
 **修法（四值词表未动，新增的是 typed `reason_code`）**：
 
