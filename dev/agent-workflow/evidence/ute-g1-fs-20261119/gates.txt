@@ -1,0 +1,68 @@
+# gate transcript — ute-g1-fs-20261119
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=875 instruments=3 digest=sha256:df24c182474a0bfd8ef506a3a61c412a763075e882f7f03e8cd08c6a9d4cb198
+  DISCOVERED_AND_COLLECTED 818
+  EXCLUDED_WITH_REASON     16
+  UNCOLLECTED              41
+  by runner: node=118 none=9 vitest=748
+DSH-TEST-CATALOG tests=875 digest=sha256:df24c182474a0bfd8ef506a3a61c412a763075e882f7f03e8cd08c6a9d4cb198 refused=0 findings=0
+exit=0
+
+$ node --test scripts/test-catalog.test.mjs
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 598.685833
+exit=0
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+exit=0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+exit=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=170 notes=4 plans=129(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+exit=0
+
+$ node scripts/lint-identities.mjs --diff origin/master
+  syscall: 'open',
+  path: '/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/origin/master'
+}
+
+Node.js v24.21.0
+exit=1
+
+$ git diff --check
+exit=0
+
+$ git diff --stat origin/master
+ tests/ute-g1-fs/capture-old-path.mjs       |  60 +++++++++
+ tests/ute-g1-fs/golden/old-path.tsv        |  11 ++
+ tests/ute-g1-fs/lane-suite.mjs             |  49 +++++++
+ tests/ute-g1-fs/lib/binding.mjs            |  60 +++++++++
+ tests/ute-g1-fs/lib/compare.mjs            | 106 +++++++++++++++
+ tests/ute-g1-fs/lib/corpus.mjs             | 169 +++++++++++++++++++++++
+ tests/ute-g1-fs/lib/effect-oracle.mjs      | 140 +++++++++++++++++++
+ tests/ute-g1-fs/lib/host.mjs               | 111 +++++++++++++++
+ tests/ute-g1-fs/lib/lane.mjs               |  84 ++++++++++++
+ tests/ute-g1-fs/lib/new-path.mjs           | 120 +++++++++++++++++
+ tests/ute-g1-fs/lib/old-path.mjs           |  95 +++++++++++++
+ tests/ute-g1-fs/lib/prototype-provider.mjs | 209 +++++++++++++++++++++++++++++
+ tests/ute-g1-fs/lib/scenario.mjs           | 155 +++++++++++++++++++++
+ tests/ute-g1-fs/negative-controls.mjs      | 127 ++++++++++++++++++
+ tests/ute-g1-fs/run-prototype.mjs          |  50 +++++++
+ 15 files changed, 1546 insertions(+)
+
+$ git status --short (excluding the new tests/ute-g1-fs files)
+?? dev/agent-workflow/evidence/ute-g1-fs-20261119/

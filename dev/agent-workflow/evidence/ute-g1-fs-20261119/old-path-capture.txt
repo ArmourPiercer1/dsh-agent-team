@@ -1,0 +1,12 @@
+OLD-PATH-VECTOR FS-W1-create outcome=allow refusal=none effects=inside/created.txt:14B/0o600 codes=- leaks=none
+OLD-PATH-VECTOR FS-W2-overwrite-read outcome=allow refusal=none effects=inside/doc.txt:12B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-W3-unobserved-overwrite outcome=deny refusal=write-requires-read effects=inside/unread.txt:28B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-W4-outside-write outcome=deny refusal=lane-deny effects=outside/escape.txt:absent codes=- leaks=none
+OLD-PATH-VECTOR FS-E1-edit-read outcome=allow refusal=none effects=inside/edit.txt:11B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-E2-stale-edit outcome=deny refusal=stale-version effects=inside/stale.txt:28B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-W5-write-axis outcome=deny refusal=lane-deny effects=inside/doc.txt:11B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-S1-symlink-escape outcome=deny refusal=lane-deny effects=outside/sym-target.txt:9B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-R1-outside-read-leak outcome=deny refusal=lane-deny effects=outside/secret.txt:31B/0o644 codes=- leaks=none
+OLD-PATH-VECTOR FS-M1-mode-preserved outcome=allow refusal=none effects=inside/mode.txt:4B/0o600 codes=- leaks=none
+OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=10
+OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/tests/ute-g1-fs/golden/old-path.tsv

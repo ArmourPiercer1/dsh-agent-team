@@ -1,0 +1,74 @@
+# isolation transcript — ute-g1-fs-20261119
+
+## 1. the branch touches only tests/ute-g1-fs
+$ git diff --stat origin/master -- . ':!tests/ute-g1-fs'
+(empty above = nothing outside the new directory)
+
+$ git diff --stat origin/master
+ tests/ute-g1-fs/negative-controls.mjs      | 127 ++++++++++++++++++
+ tests/ute-g1-fs/run-prototype.mjs          |  50 +++++++
+ 15 files changed, 1546 insertions(+)
+
+## 2. the legacy pin block, CI manifests and product packages are untouched
+$ git diff --name-only origin/master -- tests/paths.mjs packages scripts dev/ci .github package.json pnpm-lock.yaml
+exit=0 (no paths listed = untouched)
+
+## 3. the legacy census population is still 712 files / 12 roots
+$ node scripts/census-plan.mjs --plan | python3 -c "import json,sys; d=json.load(sys.stdin); print('file_count', d['file_count']); print('roots', len(d['roots'])); print('catalog_digest', d['identity']['catalog_digest'])"
+file_count 712
+roots 12
+catalog_digest sha256:df24c182474a0bfd8ef506a3a61c412a763075e882f7f03e8cd08c6a9d4cb198
+
+## 4. the legacy FS suite: pristine origin/master vs this branch
+$ git -C .worktrees/ute-g1-fs-baseline rev-parse HEAD
+00429852cc9c9284fd6817da57503bac9501bc9d
+
+normalized per-test verdicts (timings stripped; same ordering as node:test printed it)
+before lines=39 after lines=39 identical=True
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success
+✔ FSB-ABORT-2 control: the same write without an abort publishes
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures)
+✔ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads
+✔ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact
+✔ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes
+✔ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact
+✔ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact
+✔ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts
+✔ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes
+✔ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store
+✔ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced
+✔ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged
+✔ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place)
+TOTAL tests 35
+TOTAL pass 34
+TOTAL fail 0
+TOTAL skipped 1
+TOTAL todo 0
+
+## 5. the testkit vitest suite: the same 13 pre-existing failures on both trees
+$ (cd packages/testkit && ../../node_modules/.bin/vitest run)   # baseline worktree and this branch
+.artifacts/tmp/testkit-before.log: Test Files  2 failed | 32 passed (34)
+.artifacts/tmp/testkit-after.log: Test Files  2 failed | 32 passed (34)
+
+baseline failure set vs branch failure set:
+IDENTICAL (13 FAIL lines each; the failures are environment red pre-existing on origin/master, e.g. no built client artifact and dirty Blueprint sites)
