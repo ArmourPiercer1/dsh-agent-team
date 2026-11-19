@@ -17,6 +17,8 @@ runbook and the non-coverage list live in `tests/ute-g1-fs/README.md`.
 | `new-path-run.txt` | the prototype on `0.2.2-rc.5 @ 9c2670d3…`: `PROTOTYPE-HOST …`, one `NEW-PATH-VECTOR … PASS` per vector with its effect cell, `PROTOTYPE-VERDICT GREEN vectors=10 failed=0` |
 | `lane-suite.txt` | the lane suite as a collected `*.test.mjs` (3/3: corpus vs golden, semantic-difference shape, negative controls) |
 | `ci-lane-step.txt` | the exact CI step argv (`node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/{boot,native-api,provisioning-controls}.test.mjs tests/ute-g1-fs/lane-suite.test.mjs`): 22/22 pass, real rc.5 boot on 13000 |
+| `eb3-ci-negative-controls.txt` | the full guard suite after the C-NH1 redesign: 33/33 behaved as required |
+| `guard-c-nh1.txt` | the four C-NH1 mutation verdicts verbatim — workflow drops a file, manifest drops a file, argv reordered, honest state — plus the derivation-vacuity arm |
 | `parity.txt` | `dispatch-tests --parity --old-ref e5bf05670`: `DIFFERS … old_files=25 new_files=69 problems=0` — the union grew (Task B's three rc.5 suites + this one), no argv problem |
 | `negative-controls.txt` | NC-1 (deny fact + target absent), NC-2 (one mutated golden sha → RED, fixture unchanged), NC-3 (typed `NextHostMissingError`, names the pin, never the legacy tree), NC-4 (widened lane ⇒ the same call creates the file) |
 | `gates.txt` | verbatim `test-catalog`, `test-catalog.test`, `dispatch-tests --check`, `eb3-ci-required`, `docs-sync --check`, `lint-identities --diff`, `git diff --check`, plus `git diff --stat origin/master` |

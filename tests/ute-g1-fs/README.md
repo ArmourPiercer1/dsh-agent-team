@@ -162,11 +162,14 @@ Negative controls (`negative-controls.mjs`), one per claim:
   silently hand it the legacy package (a real failure mode found during bring-up).
 * The prototype runs in fresh `Context`s with its own scratch directories, no
   boot, no port, no `DSH_HOME`, no shared mutable state with the legacy host.
-* `packages/**`, `scripts/**` and `tests/paths.mjs` are unchanged. The only
-  files outside `tests/ute-g1-fs/**` that this PR touches are the `ci-census`
-  "next host lane" wiring (one workflow `run:` line + its mirrored manifest leg)
-  and one memo + one evidence directory — the argv edit only **adds** this suite
-  to a step that already provisions the host and already runs.
+* `packages/**` and `tests/paths.mjs` are unchanged. Outside
+  `tests/ute-g1-fs/**` this PR touches: the `ci-census` "next host lane" wiring
+  (one workflow `run:` line + its mirrored manifest leg — the argv edit only
+  **adds** this suite to a step that already provisions, boots and runs), the
+  `C-NH1` guard in `scripts/eb3-ci-negative-controls.mjs` (its expected argv is
+  now derived from the manifest leg instead of a hand-typed copy, so the next
+  suite to join the lane needs no edit there), one memo and one evidence
+  directory.
 * The legacy census population still plans **712 files / 12 roots**
   (`node scripts/census-plan.mjs --plan`); the legacy FS suites produce the same
   result before and after (evidence: identical normative output on a pristine

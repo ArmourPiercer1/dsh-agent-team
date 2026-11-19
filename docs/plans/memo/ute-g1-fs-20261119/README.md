@@ -95,7 +95,8 @@ on a `ctx.isolate('fs')` scope.
 | `node --test scripts/test-catalog.test.mjs` | 28 pass / 0 fail |
 | `node scripts/dispatch-tests.mjs --check` | `PASS legs=18 bad=0` |
 | `node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670` | `DIFFERS steps=18 old_files=25 new_files=69 problems=0` — the union changed (Task B's three rc.5 suites + this one); no argv problem |
-| `node scripts/eb3-ci-required.mjs` | `pass workflows=10 findings=0` |
+| `node scripts/eb3-ci-required.mjs` | `pass workflows=10 findings=0` — its leg-argument rules accept the 4-file lane argv because they compare against the manifest, not a literal |
+| `node scripts/eb3-ci-negative-controls.mjs` | `33/33 control(s) behaved as required` — including the redesigned C-NH1 (derives the expected argv from the manifest leg; workflow-drop / manifest-drop / reorder RED, honest GREEN, derivation vacuity RED) |
 | `node scripts/docs-sync.mjs --check` | `findings=0 blocking=0 contracts=20` |
 | `node scripts/lint-identities.mjs --diff <a4 baseline>` | 76 distinct, `new 0 resolved 0` |
 | `git diff --check` | clean |
@@ -192,6 +193,18 @@ Mirrored in `tests/ute-g1-fs/README.md` §7 and `golden/old-path.meta.txt`:
 4. **Mode is a real part of the contract**: created files are `0o600` on both
    paths, preserved file modes survive overwrite. A future provider that drops
    the create-temp-inode dance would diverge here.
+5. **#790's C-NH1 guard was a second copy of the truth, and this branch had to
+   fix the copy, not the teeth.** It pinned the three next-host `run:` lines as
+   literals; appending this suite to the lane made the literal stale and the
+   hosted run refused (correctly — workflow and manifest had diverged from the
+   guard's copy). The redesign in `scripts/eb3-ci-negative-controls.mjs` derives
+   the expected argv from the `ci-census` leg's `cmd[] + check[]` and compares it
+   to the workflow's `run:` line as one byte-identical string, so a future suite
+   joining the lane needs no edit here. Teeth are kept and extended: workflow
+   drops a file → RED naming it; manifest `check[]` drops a file → RED naming it;
+   argv reordered → RED ("same tokens in a DIFFERENT order"); honest state →
+   GREEN; nonexistent leg → the derivation itself RED (vacuity arm). Evidence:
+   `guard-c-nh1.txt`.
 
 ## 7. UNKNOWNs
 
