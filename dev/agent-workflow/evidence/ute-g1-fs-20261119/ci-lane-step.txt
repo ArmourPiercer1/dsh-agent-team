@@ -1,0 +1,62 @@
+NEXT-SMOKE BANDS ok legacy=3181-3199(19) next=13000-13049(50) overlap=0
+✔ host port bands are disjoint by generation: legacy 3181-3199, next host 13000-13049 only (2.850736ms)
+NEXT-SMOKE BOOT ok ms=1255 port=13000 treeHead=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 line="dsh web: http://127.0.0.1:13000/?token=<redacted>"
+NEXT-SMOKE SESSION ok sessionId=session-218b1c51-af7a-41c8-91bd-364e025c0b48 createStatus=200 promptStatus=200 modelRequests=2
+NEXT-SMOKE SERVED ok home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/tests/homes/next-boot-2026-11-19T17-12-28-467Z-next sessionFiles=sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-ute-g1-fs-20261119-.artifacts-tmp-next-host-lane-cwd-JHKNJl--/session-218b1c51-af7a-41c8-91bd-364e025c0b48/session.lock,sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-ute-g1-fs-20261119-.artifacts-tmp-next-host-lane-cwd-JHKNJl--/session-218b1c51-af7a-41c8-91bd-364e025c0b48/session.v4.jsonl.zstd hostLogs=absent modelReplies=2
+✔ the pinned next host boots, serves a session, and its wire traffic is the scripted model (3316.289049ms)
+NEXT-SMOKE A1 ok resolve=ResolvedToolSet dispose=function admitted=observe
+NEXT-SMOKE A2 ok executor=selected tool=observe value=observed:one bodyObserved=["one"]
+NEXT-SMOKE A3 ok order=tools/pre-execute>tools/execute>tools/post-execute>tools/result
+✔ A1/A2/A3 — resolve, executor selection and pipeline order on the pinned host (32.96529ms)
+NEXT-SMOKE A4 ok transport=run_code innerBodyObserved=["nested"] sessionEvents=tool/ptc-dispatch-start,tool/ptc-dispatch outerResult={"logs":[],"result":"observed:nested"}
+✔ A4 — a PTC run_code nested call reaches a real inner executor (22.786018ms)
+NEXT-SMOKE A5 ok bodySawAbort=true resultIsError=true notified=1 resultText="Error: cooperative tool saw the abort"
+NEXT-SMOKE A6 ok lateSuccessOverridden=ABORTED preDispatch=ABORTED_BEFORE_DISPATCH dispatched=0
+NEXT-SMOKE HOST ok tag=0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/tests/deepseek-harness-next assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc|bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31
+✔ A5/A6 — cancellation mid-flight, result notification, and the abort override (149.779366ms)
+✔ host identity — the tree and its native assets are the pinned bytes (0.418973ms)
+NEXT-CONTROL positive ok head=00fc7e49e019100eee274fc055e826f5e0b08f2b files=2
+NEXT-CONTROL tree-missing refused code=TREE_MISSING message="next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-missing-L5HcD1/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone "
+NEXT-CONTROL not-built refused code=NOT_BUILT message="next host lane: NOT_BUILT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-not-built-lbyIlk is not BUILT (apps/cli/lib/bin.js missing) — run: node scripts/provision-next-host.mjs --materialize"
+NEXT-CONTROL not-a-git-checkout refused code=NOT_A_GIT_CHECKOUT message="next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-not-git-Exzh9L is not its own git checkout: git resolves its toplevel to /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119 — a "
+NEXT-CONTROL head-drift refused code=HEAD_DRIFT message="next host lane: HEAD_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-head-drift-Z6tZs2 is at 8045b09c42cd2249c7e97d05ea280010e76e4b30, the pin is 0000000000000000000000000000000000000000 (0.2.2-rc.5) — refusing "
+NEXT-CONTROL version-drift refused code=VERSION_DRIFT message="next host lane: VERSION_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-version-drift-FUztFp declares version 0.2.2-rc.3, the pin is 0.2.2-rc.5"
+NEXT-CONTROL version-unreadable refused code=VERSION_UNREADABLE message="next host lane: VERSION_UNREADABLE: could not read /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-version-unreadable-x9olap/package.json: Expected property name or '}' in JSON at position 2 (line 1 column 3)"
+NEXT-CONTROL pin-invalid-tree refused code=PIN_INVALID message="next host lane: PIN_INVALID: the expected pin is not a 40-hex commit (\"not-a-sha\") — the verifier refuses to grade against an unpinned expectation"
+NEXT-CONTROL pin-invalid-assets refused code=PIN_INVALID message="next host lane: PIN_INVALID: the asset pin is empty (no files) — an empty pin accepts every tree, which is never a pinned host"
+NEXT-CONTROL asset-missing refused code=ASSET_MISSING message="next host lane: ASSET_MISSING: pinned native asset landlock-run is ABSENT from the next host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/.artifacts/tmp/next-host-lane/controls-asset-missing-wng1D2 — provision it: node scripts/provision-next-host.mjs --assets"
+NEXT-CONTROL asset-digest-drift refused code=ASSET_DIGEST_DRIFT message="next host lane: ASSET_DIGEST_DRIFT: pinned native asset glibc/system.node is DRIFTED: 4491495b60519a5ed579c324ca95c9a4a4710d496885c761b358adb995448840 (17360 B), pin is 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc (17360 B) — a locally built binary is not the pinned host; re-prov"
+NEXT-CONTROL asset-bytes-drift refused code=ASSET_BYTES_DRIFT message="next host lane: ASSET_BYTES_DRIFT: pinned native asset landlock-run has the pinned sha256 but 27 B, pin is 28 B — the manifest's own row is inconsistent, so the pin cannot be trusted"
+NEXT-CONTROL asset-mode-drift refused code=ASSET_MODE_DRIFT message="next host lane: ASSET_MODE_DRIFT: pinned native asset landlock-run has mode 0o644, pin is 0o755 — the published bytes arrive executable or they are not the published artifact"
+NEXT-CONTROL host-pin ok tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 addon=0.1.2 ports=13000-13049
+✔ POSITIVE control: an honest fixture tree + its own pinned bytes pass (the refusals below are not vacuous) (54.339421ms)
+✔ TREE_MISSING — a lane with no host tree is RED and names the tree it looked for (0.985525ms)
+✔ NOT_BUILT — a pinned clone that was never built is RED, never "nothing to run" (31.652339ms)
+✔ NOT_A_GIT_CHECKOUT — a directory that is not a checkout cannot claim a commit (5.022142ms)
+✔ HEAD_DRIFT — a tree at the wrong commit is refused, and the message names both commits (35.939058ms)
+✔ VERSION_DRIFT — a tree that declares another version is not the pinned host (38.678218ms)
+✔ VERSION_UNREADABLE — an unreadable package.json refuses instead of guessing a version (36.388846ms)
+✔ PIN_INVALID — an unpinned expectation is refused before any file is read (30.133947ms)
+✔ ASSET_MISSING — absent native assets are RED and name the provisioning command (42.78411ms)
+✔ ASSET_DIGEST_DRIFT — a LOCALLY BUILT system.node is not the published pin (48.185985ms)
+✔ ASSET_BYTES_DRIFT — a manifest row whose length disagrees with its own sha256 is refused (35.204802ms)
+✔ ASSET_MODE_DRIFT — the pinned mode (0o755) is part of the pin (35.808123ms)
+✔ HOST PIN — the fixture controls grade the SAME pin the lane executes (0.368949ms)
+UTE-G1-FS-VERDICT GREEN vectors=10 host=9c2670d3bce5275e0d1610272958121af87787bb
+UTE-G1-FS-SEMANTIC-DIFF class=refusal-code old=FS_SANDBOX_DENIED new=FS_PERMISSION_DENIED cause=upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143 reason=not-a-patch blocking=yes id=lane-refusal-code
+UTE-G1-FS-SEMANTIC-DIFF class=refusal-observation old=prose new=typed-FsError-code cause=host-generation reason=class-not-code blocking=yes id=refusal-observation-shape
+✔ the prototype reproduces the old-path golden corpus (332.676465ms)
+✔ every known semantic difference is declared and printable (0.602891ms)
+UTE-G1-FS-NC NC-1-lane-bites ok outcome=deny refusal=lane-deny denyFact=writeText/write targetExists=false
+UTE-G1-FS-NC NC-2-harness-bites ok cleanFailures=0 mutatedFailures=1 mutatedFields=effects
+UTE-G1-FS-NC NC-3-no-fallback ok typed=NextHostMissingError namesPin=true namesLegacy=false
+UTE-G1-FS-NC NC-4-lane-load-bearing ok outcome=allow targetExists=true bytes=5
+✔ the four negative controls hold (75.237696ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3432.1931

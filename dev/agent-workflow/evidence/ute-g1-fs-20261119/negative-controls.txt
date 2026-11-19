@@ -1,0 +1,5 @@
+NC NC-1-lane-bites ok outcome=deny refusal=lane-deny denyFact=writeText/write targetExists=false
+NC NC-2-harness-bites ok cleanFailures=0 mutatedFailures=1 mutatedFields=effects
+NC NC-3-no-fallback ok typed=NextHostMissingError namesPin=true namesLegacy=false
+NC NC-4-lane-load-bearing ok outcome=allow targetExists=true bytes=5
+NC-VERDICT GREEN controls=4 failed=0

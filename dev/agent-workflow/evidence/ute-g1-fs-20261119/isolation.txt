@@ -1,0 +1,71 @@
+# isolation transcript — ute-g1-fs-20261119 (rebased onto origin/master 4fc703d0a)
+
+## 1. what changed, by category
+$ git diff --stat origin/master | tail -1
+ 35 files changed, 3281 insertions(+), 19 deletions(-)
+
+$ git diff --name-only origin/master | grep -v '^tests/ute-g1-fs/'
+.github/workflows/census-runtime.yml
+dev/agent-workflow/evidence/ute-g1-fs-20261119/README.md
+dev/agent-workflow/evidence/ute-g1-fs-20261119/ci-lane-step.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/gates.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/host-provisioning.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/isolation.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/lane-suite.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/next-lane.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/old-path-capture.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/parity.txt
+dev/agent-workflow/evidence/ute-g1-fs-20261119/testkit-after.log.txt
+dev/ci/eb3-ci-manifest.json
+docs/plans/memo/ute-g1-fs-20261119/README.md
+scripts/eb3-ci-negative-controls.mjs
+
+(outside tests/ute-g1-fs: the ci-census next-host lane wiring — one workflow run: line and its mirrored manifest leg, which ADD this suite to a step that already provisions and boots rc.5 — the C-NH1 guard redesign in scripts/eb3-ci-negative-controls.mjs (it derived its expected argv from a hand-typed literal; it now derives from the manifest leg), plus the memo and the evidence directory.)
+
+## 2. the legacy pin block and product code are untouched
+$ git diff --name-only origin/master -- tests/paths.mjs packages package.json pnpm-lock.yaml
+(no paths listed = untouched)
+
+## 3. the CI diff is an argv addition, not a lane change
+$ git diff -U0 origin/master -- .github/workflows/census-runtime.yml dev/ci/eb3-ci-manifest.json | grep -E '(next-host|ute-g1)'
+-        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs
++        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs
+-              "tests/next-host/provisioning-controls.test.mjs"
++              "tests/next-host/provisioning-controls.test.mjs",
++              "tests/ute-g1-fs/lane-suite.test.mjs"
+
+## 4. the C-NH1 guard now derives its expectation from the manifest (no second copy of the truth)
+$ grep -n -e 'const legArgv' -e manifest-check-dropped -e lane-argv-reordered -e derivation-vacuity scripts/eb3-ci-negative-controls.mjs
+1703:  const legArgv = (m, needle) => {
+1797:    { name: 'lane-argv-reordered', anyCodes: ARGV_CODES, needle: 'boot.test.mjs',
+1814:    const staged = stageManifest('manifest-check-dropped', (leg) => {
+1817:    if (staged.error !== undefined) misses.push(`manifest-check-dropped: ${staged.error}`)
+1819:      misses.push(`manifest-check-dropped: CI_LAYER_LEG_EXTRA_ARGUMENT not raised naming "provisioning-controls.test.mjs" (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+1827:      misses.push('derivation-vacuity: legArgv() returned an argv for a leg that does not exist — a silent pass is the failure mode this arm exists for')
+1833:      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.anyCodes?.join('|') ?? a.code}`).join(', ')}, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held`
+
+(the four mutation verdicts, verbatim: guard-c-nh1.txt)
+
+## 5. the legacy census population is still 712 files / 12 roots
+$ node scripts/census-plan.mjs --plan | python3 -c "..."
+file_count 712
+roots 12
+catalog_digest sha256:81489ff3a42f742331d3f247cd619d21986478c2789010edc437d34f4ea4a037
+
+## 6. the legacy FS suite: verdicts identical to the pristine origin/master baseline
+before lines=39 after lines=39 identical=True
+  TOTAL tests 35
+  TOTAL pass 34
+  TOTAL fail 0
+  TOTAL skipped 1
+  TOTAL todo 0
+
+## 7. testkit vitest suite: same 13 pre-existing failures as pristine origin/master
+.artifacts/tmp/testkit-before.log: Test Files  2 failed | 32 passed (34)
+.artifacts/tmp/testkit-after.log: Test Files  2 failed | 32 passed (34)
+IDENTICAL (13 FAIL lines each; environment red pre-existing on origin/master)
+
+## 8. the collected lane is visible to the catalog
+{"id":"node:tests/ute-g1-fs/lane-suite","path":"tests/ute-g1-fs/lane-suite.test.mjs","runner":"node","kind":"unit","contract_ids":[],"classification":"DISCOVERED_AND_COLLECTED","explicit_id":null}
