@@ -10,7 +10,7 @@
 |---|---|---|---|---|---|
 | **G0-S1** | 第二棵 pinned 宿主树 + 代际登记 | `tests/paths.mjs` 新增符号；无产品接口 | `tests/paths.mjs`（+3 符号/1 band）、`tests/world-factory/host-pin-rc5.test.mjs`（新）、`docs/TEST_METHODS.md` §6（+1 行基线表） | 代码：pin 断言；负控：跨代 home/port 复用必须 typed 拒绝；旧路径：legacy pin 断言逐字不改仍绿；退役：G5 合并代际时删除后缀符号 | 小 |
 | **G0-S2** | rc.5 空载启动 + 公开 seam 探针（**零产品代码**） | `ToolsService.resolve()` / `ResolvedToolSet` / `setExecutor` / `tools/result` 形状 | `tests/world-factory/suites/<n>-rc5-seam-smoke.mjs`（新）、`dev/agent-workflow/evidence/ute-prep-rc5-seam/**`（新） | 代码：boot + resolve 断言；负控：未知 agent 的 `resolve` 必须 typed 失败；旧路径：同探针在 legacy 树上跑一遍并记录差异；退役：rc.5 成为唯一代际后删除双跑 | 小 |
-| **G1-S1** | FS 纵切：受控 `ctx.fs` 的 read/write 在 rc.5 上跑通 | `ctx.fs`（Provider 侧）；**不碰** `ToolsService` | 能力面 FS provider 适配 + 该面 C1 套件 + 证据目录 | 代码：read/write 正控；负控：workspace 外写入被 `FS_SANDBOX_DENIED` 且文件**不存在**；旧路径：同一场景在 legacy 路径同判；退役：legacy FS Family 只在 G5 且对照基线存在后退役 | 中 |
+| **G1-S1** | FS 纵切：受控 `ctx.fs` 的 read/write 在 rc.5 上跑通（**effect 轴可证 / read 轴不可证**，两轴分开声明） | `ctx.fs`（Provider 侧）；**不碰** `ToolsService` | 能力面 FS provider 适配 + 该面 C1 套件 + 证据目录 | 代码：read/write 正控；负控：workspace 外写入被 `FS_SANDBOX_DENIED` 且文件**不存在**、见证看得见 create/truncate/mode；**read 轴**：未授权读被拒 + 见证对"未授权读取没有发生"必须回 `CLAIM_NOT_OBSERVABLE`（**拒不答，不是绿**）；旧路径：同一场景在 legacy 路径同判；退役：legacy FS Family 只在 G5 且对照基线存在后退役 | 中 |
 | **G1-S2** | `web_search` 的 `llmProvider` 路由透传（**语义变化**） | `WebSearchRequest.llmProvider`（rc.5 公开字段）；受控 `ctx.web` 代理 | 该面 web provider/代理 + 套件 + 证据 | 代码：路由透传断言（一路透传到 provider）；负控：代理**丢掉** `llmProvider` 时用例必须红（mutation 证明）；旧路径：rc.3 无此字段，记录为**语义变化**而非等价；退役：无可退役项（新增能力） | 小 |
 | **G1-S3** | S1 结算事实：单次原生调用的 fact-or-unknown | `tools/execute` 包装 + Journal（Team 侧） | settlement 适配 + `execution-fact` 套件 + 证据 | 代码：一次调用一条 fact，`ExecutionId` 幂等；负控：dispatch 后 kill -9 → `EXECUTION_UNCONFIRMED`（不是 succeeded）；旧路径：legacy `recordExecutionResult` 投影读得通；退役：旧 result 解析路径在 G5 退役 | 中 |
 | **G1-S4** | 旧路径可运行回归基线（**退役前置**） | 无（只读旧路径 + 记录 verdict） | `tests/world-factory/suites/<n>-oldpath-baseline.mjs`（新）、基线 `.tsv` 证据 | 代码：跑旧路径并落基线；负控：基线**不得**因新路径改动而变化（变了就是等价性被破坏）；旧路径：本身即旧路径；退役：无（这是退役的前提，最后才退役它） | 中 |
@@ -18,7 +18,21 @@
 
 **顺序**：G0-S1 → G0-S2 →（可并行）G1-S1 / G1-S2 → G1-S3 → G1-S4 → G1-S5。**G1-S4 必须在任何退役动作之前存在**；G1-S5 不阻塞 G1。
 
-## 1.5 落地现状（2026-11-18，forward-merge `f46bcdd29` 后实测）
+## 1.5 落地现状与 owner 裁决（2026-11-18，forward-merge `f46bcdd29` 后实测）
+
+> **Owner ruling（原文照录，未改写）** —— 本节是状态，不是提案：
+>
+> - **G1 development is authorised to start** (public API / binding / executor prototypes, old and new coexisting and isolated);
+> - but **not** replacing the governed production execution path;
+> - **not** deleting the old ToolPlane/Family Body (needs G1-S4 old-path baseline + equivalence + a retirement gate);
+> - **not** changing production Authority;
+> - **not** enabling a fork.
+>
+> Three parallel lanes now in flight: **Task A** observer closeout (F-07 / F-08 / F-09), **Task B** rc.5 into controlled CI, **Task C** G1-S1 FS prototype + old-path golden vectors. **#765's G1-S1 is not blocked by A/B for prototyping, only for issuing a safety verdict.**
+
+三条 lane 与 G1-S1 的关系（据此判定"能不能动手"）：**可以动手做 prototype**（公开 API / binding / executor，新旧并存且隔离）；**不能**替换生产执行路径、**不能**删旧 ToolPlane/Family Body（要等 G1-S4 基线 + 等价 + 退役门）、**不能**改生产 Authority、**不能**启用 fork。Task A 的 F-07（truncation）属于 effect 轴的仪器前置，**不阻塞** prototype；但**签发安全结论**（safety verdict）必须等 A/B 落定。
+
+本节其余部分是已落地事实与缺口。
 
 矩阵本身是**合同**（不因落地而改写）；但下面这些行已经不是提案了。逐条给出落地物与**仍未满足的验收项**——空缺照写，不拿"差不多"顶上。
 
@@ -26,7 +40,7 @@
 |---|---|---|---|
 | **G0-S1** | **已落地**（#787 `82091ae4a`） | `tests/paths.mjs` 的 `NEXT_HOST`（`treeRel`/`homeSuffix`/`portBands`）+ `HOST_PORT_BANDS` 收窄为 `[[3181,3199]]`；`assertGenerationBandsDisjoint()`（重叠即 throw）；`host-next-lib.mjs:123` 的 `DRIFTED` 资产反判；`tests/next-host/native-api.test.mjs:229` 的 tree+asset 身份断言 | ① 跨代 `DSH_HOME` 复用的 **typed 拒绝**（`HOST_PIN_HOME_CROSS_GENERATION`）未落地（现有 `nextHostHomeDir()` 只保证后缀命名）；② sha 变异自检（把 next pin 改成 rc.3 的 sha 必须红）未见套件 |
 | **G0-S2** | **部分落地**（#787） | `tests/next-host/boot.test.mjs:74`：13000 带内真实 boot、起 session、线流量是 scripted model；`native-api.test.mjs` 六条：`resolve`/`ResolvedToolSet.dispose|view`/ToolExecutor 选择/pipeline 顺序 `pre-execute→execute→post-execute→result`/PTC nested dispatch/取消与结果通知 | ① "未绑定 agent 的 `resolve` 必须 typed 失败"未见；② 同一探针在 legacy 树上**双跑并记录差异**未见（memo 要求的"未记录的差异才是失败"因此仍悬空） |
-| **G1-S1** | 待办 | 观测前置已具备：`#786` 的 World Factory FS 观测窗口（`m7b1-observation-contract.mjs`） | 全部（read/write 正控、`FS_SANDBOX_DENIED` 且文件不存在、legacy 同判） |
+| **G1-S1** | 待办（**验收设计已按 owner 否决重写**，见 §2 G1-S1） | effect 轴的观测前置已具备：#786 的 World Factory FS 窗口（`m7b1-observation-contract.mjs`）。**read 轴没有可用的观测仪器**，本切片取 (b) 降级 | effect 轴全部（write/create/delete/mode 正控、`FS_SANDBOX_DENIED` 且文件不存在、legacy 同判、F-07 truncation 回归锁）；read 轴：拒绝 + `CLAIM_NOT_OBSERVABLE` 拒答（不是绿）；升级到 (a) 另立切片 |
 | **G1-S2** | 待办（**需 owner 批准语义变化**） | rc.5 已公开 `WebSearchRequest.llmProvider`（[02](./02-INTERFACE-DELTA-RC3-RC5.md) §2） | 全部；批准前不得把旧行为说成"等价" |
 | **G1-S3** | 待办 | 观测面已具备（#786），S1 条文见 [03](./03-RULINGS-AUTHORITY-BINDING-SETTLEMENT.md) | 全部；kill -9 负控必须真的产生 `EXECUTION_UNCONFIRMED` |
 | **G1-S4** | 待办 | #788 提高了基线可信度（负控 32/32、`freeze-candidate` 截断修复） | 全部；且基线必须自带"改语义必须红"的负控（理由见 [README](./README.md) §4.2 的 flake UNKNOWN） |
@@ -53,15 +67,32 @@
 - **旧路径对照**：同一探针在 legacy `0.2.0-rc.2` 树上跑一遍，把**差异**写进证据（schema/字段名/错误码不同处）。差异不是失败，**未记录的差异**才是。
 - **退役条件**：rc.5 成为唯一代际后，探针合并进常驻 smoke（保留负控，删掉双跑分支）。
 
-### G1-S1 — FS 纵切
+### G1-S1 — FS 纵切：两条**分别声明、分别判定**的事实（effect 轴可证 / read 轴不可证）
+
+**[updated 2026-11-16 UTE-Prep —— owner 否决了原验收设计，以下为修正版]** 原写法把"越界写入没有发生"与"未授权读取没有发生"当成**同一个** Oracle 能证的两件事。**这是错的**：FS 见证是**快照式**的（比较 create/delete/content/metadata 变化），一次成功的 `read()` 在多数文件系统上**不产生任何可检测变化**——所以**没有任何快照见证能证明"未授权读取没有发生"**，即使 F-07 的截断缺陷（Task A 的 observer closeout）修好也一样。G1-S1 因此拆成两条事实，各自有各自的仪器、声明与负控。
+
+| 轴 | 本仪器可证吗 | 允许的声明 | 仪器/机制 |
+|---|---|---|---|
+| **effect 轴**：create / delete / 内容变更 / metadata(mode) / truncation | **可证**（快照见证；前提是截断策略已修好并声明 capture limit） | 可升格为 **"no unauthorized write effect"** | `tests/world-factory/lib/m7b1-observation-contract.mjs` 的窗口 + `a5sf-fs-contract-world.mjs` 的字节级对比 |
+| **read 轴**：`open()` / 内容泄漏 | **不可证**（结构性看不见） | **本切片取 (b)**：降级为具名限制 **`CLAIM_NOT_OBSERVABLE` / read-confinement UNPROVEN** | 无；升级到 (a) 的条件见下 |
+
+**(b) = 本切片的选择，具体写法**：
+1. **拒绝本身**才是负控：未授权 read → typed `FS_SANDBOX_DENIED`，且返回体不泄漏内容。这是"拒绝发生"，**不是**"证明没有读"。
+2. **见证必须拒答**：任何要求"从快照见证判定未授权读取没有发生"的判定，必须返回 typed **`CLAIM_NOT_OBSERVABLE`**，**不得**返回 PASS。静默不是证据——与本仓已有的 `a5sf-acceptance-preflight.mjs:2490`（"cannot certify from silence → UNKNOWN, not PASS"）同一条纪律。
+3. **read 轴的负控是"红/拒"，不是"绿"**：把判定器改回"快照安静 ⇒ PASS" → 用例必须红；再加一条**真实越权读**（例如绕过 Provider 直接拿 fd，或一条合法路径上的读）→ 结论仍是 `read-confinement UNPROVEN`，**不得**因为快照安静而变绿。
+4. **(b)→(a) 的升级条件**（写下来，避免 (b) 变成永久借口）：需要**真正记录 open 的 Provider/OS 级执行观测**——host 自己的 pipeline 事件（`tools/execute` 前后的 open/fd 记录）或一个 audit provider（`fanotify` / `openat` 拦截 / `/proc/<pid>/fd` 采样），且必须满足 M7-B1 已有的窗口身份要求（world/pid/lease、provenance 跨序列化可复核）。升级完成之前，任何文档/证据**不得**把 read-confinement 写成已验收。
+
+**effect 轴的真实验收（缺一不算过）**：
+1. 写 workspace 外 → typed `FS_SANDBOX_DENIED`，并且**事后 stat 该路径不存在**（不是只看返回文案）。
+2. **见证确实看得见** effect：create / 内容替换 / truncation / mode 变更加正控（写成功 → 见证必须记录该变化）；把见证的 truncation 检测关掉 → 用例必须红（F-07 的回归锁）。
+3. 破坏性的：把 Provider 换成"只检查字符串路径"的实现 → 负控必须红（UTE-12 的可证伪化）。
+4. 见证自身若声明过 capture limit，超限必须 `CLAIM_NOT_OBSERVABLE`/UNKNOWN，而不是"没有变化"。
 
 - **代码**：受控 `ctx.fs` 的 read/write 在 rc.5 上经 Provider 执行；Binding 只提供 service，不改 `ToolDefinition` 业务体（UTE-01/02）。
-- **真实负控**（缺一不算过）：
-  1. 写 workspace 外 → typed `FS_SANDBOX_DENIED`，并且**事后 stat 该路径不存在**（不是只看返回文案）。
-  2. read 一个未授权路径 → 拒绝且**没有发生 open**（用 oracle/观测窗口证明，不靠返回文本）。
-  3. 破坏性的：把 Provider 换成"只检查字符串路径"的实现 → 负控必须红（这是对 UTE-12 的可证伪化）。
 - **旧路径对照**：同一脚本在 legacy 路径跑，判定相同（允许差异，但必须记录）。
-- **退役条件**：legacy FS Family 只在 G5 退役，且必须先有 G1-S4 的基线 + 本切片的等价证据。**FS 的 PASS 不推出** Bash/PTC/PTY 的隔离或恢复安全（见 §3）。
+- **退役条件**：legacy FS Family 只在 G5 退役，且必须先有 G1-S4 的基线 + 本切片的等价证据。
+
+> **声明边界（与结论同句，防止被放大引用）**：一个绿的 FS Oracle 只证明"**在被观测窗口内、对该仪器可检测的效果（create/delete/content/metadata/truncation）没有发生未授权写入效果**"；它**不**证明读取被限制，**不**证明 sandbox 安全，也**不**外推到 Bash/PTC/PTY 的隔离或恢复安全（见 §3）。
 
 ### G1-S2 — `llmProvider` 路由透传（语义变化，需 owner 批准）
 
@@ -115,6 +146,7 @@
 
 - 四个效果域的 evidence 分开记：FS（读写路径、symlink/TOCTOU）、Bash（进程树、退出与终止确认）、PTC（直接 `node:fs/net` + 嵌套工具调用）、PTY（持久终端代际、stop 竞态）。
 - 跨域外推的典型违规：用"write 被拒"证明"bash 也逃不出 workspace"；用"FS oracle 没看到越界"证明"PTY 没有副作用"。
+- **同域也不可跨轴外推**（owner 2026-11-16 否决的正是这一条）：FS 的 **effect 轴**绿**不推出** **read 轴**被限制——快照见证看不见 `open()`，所以 read-confinement 只能是 `CLAIM_NOT_OBSERVABLE`/UNPROVEN，见 §2 G1-S1 (b)。
 - rc.5 的现状是：**只有 filesystem 效果域被观测**；process / PTY / network 三个域仍 `instrumented:false`（M7-B）。所以 G1 任何"完整隔离"的措辞都必须带 scope 限定。
 
 ## 4. 每个 PR 的通用门（与 `docs/runbooks/PR-DRAFT-FIRST.md` 一致）

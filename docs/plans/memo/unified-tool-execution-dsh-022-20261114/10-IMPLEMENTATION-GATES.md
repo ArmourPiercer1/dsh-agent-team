@@ -38,17 +38,19 @@
 |---|---|---|
 | G0-S1 | 第二棵 pinned 宿主树 + 代际登记 | 跨代 home/port 复用被 typed 拒绝，且零进程创建 |
 | G0-S2 | rc.5 空载启动 + 公开 seam 探针 | `resolve`/`ResolvedToolSet`/`setExecutor` 形状 + 未知 agent 的 typed 失败 |
-| G1-S1 | FS 纵切（read/write） | 越界写入被拒**且文件不存在**；"只检查字符串路径"的 mutation 必须红 |
+| G1-S1 | FS 纵切（read/write，**两轴分开声明**） | effect 轴：越界写入被拒**且文件不存在**、见证看得见 create/truncate/mode、"只检查字符串路径"的 mutation 必须红；read 轴：未授权读被拒 + 见证对"未授权读取没有发生"必须回 `CLAIM_NOT_OBSERVABLE`（**拒不答，不是绿**） |
 | G1-S2 | `web_search` 的 `llmProvider` 路由透传 | 代理丢字段时用例红；**语义变化**，需 owner 批准 |
 | G1-S3 | S1 结算事实 | dispatch 后 kill -9 ⇒ `EXECUTION_UNCONFIRMED`，不是 succeeded |
 | G1-S4 | 旧路径可运行回归基线 | 基线自身有"改语义必须红"的负控 |
 | G1-S5 | S2 探测（只调查） | 可等待点方案 **或** `CORE_SEAM_BLOCKER` |
 
-> **落地状态（2026-11-18）**：G0-S1 已落地（#787），G0-S2 部分落地（缺"未绑定 agent 的 typed 失败"与"同探针在 legacy 树上双跑并记录差异"）。G1-S1…S5 **全部待办**；其中 G1-S1/G1-S3 的观测前置（M7-B1 FS 窗口）已由 #786 提供。逐条缺口见 [`ute-prep-20261116/04`](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) §1.5。
+> **落地状态（2026-11-18）**：G0-S1 已落地（#787），G0-S2 部分落地（缺"未绑定 agent 的 typed 失败"与"同探针在 legacy 树上双跑并记录差异"）。G1-S1…S5 **全部待办**；其中 G1-S1/G1-S3 的观测前置（M7-B1 FS 窗口）已由 #786 提供——但该窗口只覆盖 **effect 轴**，不覆盖 `open()`（见 G1-S1 行）。逐条缺口见 [`ute-prep-20261116/04`](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) §1.5。
+>
+> **owner 2026-11-16 裁决**：G1 开发**已获授权开工**（公开 API / binding / executor 的 prototype，新旧并存且隔离）；**不**替换生产执行路径、**不**删旧 ToolPlane/Family Body（需 G1-S4 基线 + 等价 + 退役门）、**不**改生产 Authority、**不**启用 fork。Task A（observer closeout F-07/F-08/F-09）、Task B（rc.5 进受控 CI）、Task C（G1-S1 FS prototype + old-path golden vectors）三线并行；**G1-S1 的 prototype 不被 A/B 阻塞，只有签发 safety verdict 才被阻塞**。
 
 最终族覆盖不变：`read/write`（受信 FS）、`grep/glob`（同步 spawn + Landlock rg）、`bash persistent`（原生 PTY + OS Profile 代际）、`web_fetch/web_search`（受控 Web）、`run_code`（PTC 直接 Node I/O 与 nested ToolCall）。每个至少正控与真实拒绝；不仅检测返回文案，还检测实际文件未落盘、web 服务器零连接、OS 子进程的 kernel refusal 与终止状态。第三方新的 CLI 验证**无需新增 Team ToolDefinition**即可接入。
 
-**两条不可协商的规则**（全文见 04 §3）：**（i）退役顺序**——任何工具族都不得在新路径被证明等价、或语义变化已记录并获 owner 批准之前退役；**（ii）效果域不可外推**——FS 的成功永不推出 Bash/PTC/PTY 的隔离或恢复安全。rc.5 上目前只有 filesystem 效果域被观测，process/PTY/network 仍 `instrumented:false`（M7-B）。
+**两条不可协商的规则**（全文见 04 §3）：**（i）退役顺序**——任何工具族都不得在新路径被证明等价、或语义变化已记录并获 owner 批准之前退役；**（ii）效果域不可外推**——FS 的成功永不推出 Bash/PTC/PTY 的隔离或恢复安全，**也不推出读取被限制**（快照见证看不见 `open()`，read-confinement 只能是 `CLAIM_NOT_OBSERVABLE`）。rc.5 上目前只有 filesystem 效果域被观测，process/PTY/network 仍 `instrumented:false`（M7-B）。
 
 ## 4. 竞态与故障矩阵
 - 并发 Agent 同名 read，不能共享身份/Provider；并发 FS/Search/Web 的 `currentMember` 全局变量方案一律禁止。

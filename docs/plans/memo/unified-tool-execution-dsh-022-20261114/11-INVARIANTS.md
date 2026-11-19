@@ -39,6 +39,8 @@
 
 **UTE-12 — Path Semantics & TOCTOU Honesty**。文件权限以授权路径语义实施，预打开 FD、symlink、目录替换、truncation/新文件按实际机制验收；已存在 hardlink 别名按旧用户裁决披露，不能许诺 inode 跨路径不影响。证伪：只检查字符串路径后真实 open 已越界而仍报告 PASS。**所有者**：FS Provider/OS。
 
+> **[updated 2026-11-16 UTE-Prep —— owner 否决后的补注]** 本不变量按**效果**可验收，但**读取侧不可由快照见证证否**：一次成功的 `read()` 在多数文件系统上不留可检测变化。因此 `write/create/delete/mode` 可声明 "no unauthorized write effect"，而 **read-confinement 在快照仪器下只能是 `CLAIM_NOT_OBSERVABLE`/UNPROVEN**；要升级必须换成记录 `open()` 的 Provider/OS 级观测（host pipeline 事件或 audit provider）。细则见 [`ute-prep-20261116/04`](../ute-prep-20261116/04-FIRST-SLICES-G0-G1.md) §2 G1-S1。**一个绿的 FS oracle 不得被引用为"读取被限制"或"sandbox 安全"。**
+
 ## C. 审批、执行事实与事件
 **UTE-13 — No Second Grant Authority**。审批、ReviewCapability、Grant 消费和 Stop 沿用既有 Control 权威；Executor/Provider/Settlement 不创建或扩权。证伪：Native Bash wrapper 从自己的表签发许可。**所有者**：ControlService。
 

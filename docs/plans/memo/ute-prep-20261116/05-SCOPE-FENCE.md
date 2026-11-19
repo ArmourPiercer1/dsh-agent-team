@@ -20,7 +20,7 @@
 | 项 | 定义（可判定） | 缺了会怎样 | 归属 |
 |---|---|---|---|
 | **P1. 新宿主可复现运行** ✅ **已落地**（#787，证据 `dev/agent-workflow/evidence/host-next-20261116/`） | 在一棵**登记过的**第二棵树上，用登记的 SHA/detached HEAD 起一个 rc.5 world；`git status --porcelain` 空；两次启动得到同一 host 身份；证据带 tag+commit。**实测**：`tests/next-host/boot.test.mjs` 在 13000–13049 带内真实 boot，`native-api.test.mjs` 六条原生 API 断言 | 所有"rc.5 上如何"的结论都只是源码阅读，G1 变成纸面 | G0-S1 + G0-S2 |
-| **P2. M7-B1 最小可信 FS 窗口** ✅ **已落地**（#786 `f46bcdd29`） | World Factory **拥有**观测窗口：窗口带 world/pid/lease 身份，provenance 能在序列化后存活（不只是进程内 Symbol 封印），且窗口起止与"被观测调用"绑定到**同一个** execution scope | "没看到越界"只是 oracle 的自述，不是证据；G1-S1 的第 2 条负控（"没有发生 open"）无法成立 | M7-B 的第一项（见 §4） |
+| **P2. M7-B1 最小可信 FS 窗口** ✅ **已落地**（#786 `f46bcdd29`） | World Factory **拥有**观测窗口：窗口带 world/pid/lease 身份，provenance 能在序列化后存活（不只是进程内 Symbol 封印），且窗口起止与"被观测调用"绑定到**同一个** execution scope | "没看到越界"只是 oracle 的自述，不是证据。**注意（owner 2026-11-16 裁决）：P2 落地也不使 read 轴可证**——窗口是快照式的，看不见 `open()`；G1-S1 的 read 轴因此降级为 `CLAIM_NOT_OBSERVABLE`（[04](./04-FIRST-SLICES-G0-G1.md) §2 G1-S1 (b)），P2 只解 effect 轴 | M7-B 的第一项（见 §4） |
 | **P3. 旧路径可运行回归基线** | 每个将被替换的旧工具族有一个**能跑**的场景集，落 `verdict` 到 `.tsv`；基线自身有"故意改语义必须变红"的负控 | 没有基线就没有"等价"的定义，[04](./04-FIRST-SLICES-G0-G1.md) R-S3.1 的退役禁令无法执行 | G1-S4（必须先于任何退役） |
 
 **P2 落地后的形态**：窗口归 World Factory 所有（`tests/world-factory/lib/m7b1-observation-contract.mjs`），hosted 判据是 `M7B1-ARM inside-authorized verdict=SATISFIED`，伪造的窗口/见证/身份分别以 `WITNESS_NOT_SEALED`/`WINDOW_NOT_CLOSED`/`IDENTITY_MISMATCH` 被拒——即"窗口里没有出现 X"现在是**可被判否**的陈述，而不是 oracle 自述。仍未覆盖：process/PTY/network 三个域（`instrumented:false` 仍在），所以 P2 只解 FS 这一格。

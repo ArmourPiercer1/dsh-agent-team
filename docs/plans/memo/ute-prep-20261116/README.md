@@ -8,6 +8,11 @@
 
 ## 1. 这份准备包回答什么
 
+> **Owner ruling（原文照录，2026-11-16）** —— G1 development **is authorised to start** (public API / binding / executor prototypes, old and new coexisting and isolated); but **not** replacing the governed production execution path; **not** deleting the old ToolPlane/Family Body (needs G1-S4 old-path baseline + equivalence + a retirement gate); **not** changing production Authority; **not** enabling a fork. Three parallel lanes now in flight: **Task A** observer closeout (F-07/F-08/F-09), **Task B** rc.5 into controlled CI, **Task C** G1-S1 FS prototype + old-path golden vectors. **#765's G1-S1 is not blocked by A/B for prototyping, only for issuing a safety verdict.**
+>
+> 同一轮评审的**另一条裁决（否决）**：G1-S1 原验收设计"用 FS Oracle 证明未授权读取没有发生"**不成立**——快照见证看不见 `read()`。修正版见 [04](./04-FIRST-SLICES-G0-G1.md) §2 G1-S1：effect 轴可证（可声明 "no unauthorized write effect"），read 轴取 (b) 降级为 `CLAIM_NOT_OBSERVABLE` / **read-confinement UNPROVEN**，read 轴的负控是**拒绝**而不是绿。
+
+
 #765 是"下一版本统一工具执行"的设计草案，外部评估的结论是：**方向可留，基线不可留，门禁不可执行**。具体三件事：#765 钉在 rc.3、而 rc.5 已发布；#765 的三大边界（宿主基线 / 结算保证 / Fork 授权）写成了意图而不是规则；#765 的 G0–G5 是横向大 Gate，没有可单独评审的第一刀。本目录逐条处理，并且**只处理这三件事**——不重写 UTE 的架构主张。
 
 | 文件 | 内容 | 对应 #765 章节 |
@@ -105,7 +110,7 @@ git diff --check
 1. **基线可以钉死了**：`dsh-v0.2.2-rc.5` = `9c2670d3bce5275e0d1610272958121af87787bb`，上游 lightweight tag，两次独立通路复验；**且 #787 已经把它变成 `tests/deepseek-harness-next` 这棵真实存在、能 boot 的第二棵 pin 树**（不再只是提案）。
 2. **rc.3→rc.5 对 UTE 只真正碰到两处**：Web 搜索按模型路由选 provider（`WebSearchRequest.llmProvider`），以及 refusal 路径要求"执行事实的写入不依赖回合收尾"；ToolsService / Executor / Pipeline / `ResolvedToolSet` / Batch **源码零改动**。
 3. **三条裁决里两条已有实物、一条仍是纸面**：R1（宿主基线）由 #787 行使；M7-B1 观测窗口由 #786 行使（hosted `M7B1-ARM inside-authorized verdict=SATISFIED`）；S1/S2 与 R3（Fork 例外）**仍未实现/未裁决**——S1 在 G1-S3，R3 等 owner 把条文写进 `AGENTS.md`。
-4. **下一刀是 G1-S1/S2/S3**（G0-S1/S2 已落地）。退役旧工具族仍要等 G1-S4 基线；FS 的 PASS 永不外推到 Bash/PTC/PTY，而任何跨代能力差异必须按 §4.1 的**配对断言**写，不能钉一台机器的能力。
+4. **G1 已获授权开工（prototype，不是生产替换）**：owner 裁决见 §1；下一刀是 G1-S1/S2/S3（G0-S1/S2 已落地）。退役旧工具族仍要等 G1-S4 基线；FS 的 PASS 不外推到 Bash/PTC/PTY，**也不外推到 read 轴**——read-confinement 在 (b) 下就是 UNPROVEN；任何跨代能力差异必须按 §4.1 的**配对断言**写，不能钉一台机器的能力。
 
 ---
 
