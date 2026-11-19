@@ -10,16 +10,16 @@ M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contr
 M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
 M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
 ▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
-  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.147553ms)
-  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (21.370347ms)
-  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (19.783323ms)
-  ✔ the scope algebra refuses everything it cannot bind (5.991041ms)
-  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.295139ms)
-  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (0.861732ms)
-  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (77.720759ms)
-  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.321652ms)
-✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (133.821702ms)
-﹣ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.465275ms) # pinned host runtime absent (declared refusal above) — the fail-closed half was graded
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.060147ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (25.8194ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (15.402304ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.978566ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.254422ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (0.755741ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (66.507466ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.32045ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (117.049151ms)
+﹣ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (2.30858ms) # pinned host runtime absent (declared refusal above) — the fail-closed half was graded
 ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/deepseek-harness-test-use
 ℹ tests 10
 ℹ suites 0
@@ -28,5 +28,5 @@ M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
 ℹ cancelled 0
 ℹ skipped 1
 ℹ todo 0
-ℹ duration_ms 237.093966
+ℹ duration_ms 195.01174
 EXIT=0

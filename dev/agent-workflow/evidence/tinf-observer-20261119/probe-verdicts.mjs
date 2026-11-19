@@ -96,7 +96,28 @@ console.log('===== F-08: a DENIED is evidence about ONE execution =====')
     ...pair('exec-graded', { seq: 1 }),
     { schema: 'agent-execution-event/1', event_seq: 3, event_type: 'tool/result', execution_id: 'exec-foreign', outcome: 'DENIED', effect_id: 'effect-9' },
   ])
-  show('two denials, no requiredExecutionId (ambiguous)', judgeContract({
+  show('ONE denial naming exec-foreign, no requiredExecutionId (tightened: the hole)', judgeContract({
+    contractId: 'DENY-SINGLE-FOREIGN-UNPINNED',
+    events: [...pair('exec-foreign', { denied: true, seq: 1 }), ...pair('exec-graded', { seq: 3 })],
+    witness: rows,
+    blindDomains: ['process', 'network'],
+    requiredEffectDomains: ['filesystem'],
+    requiredEffectScope: [watched],
+    witnessProvenance: 'witnessed',
+  }))
+  show('a LEGACY denial with no execution_id at all (still gradable, and it says so)', judgeContract({
+    contractId: 'DENY-LEGACY-UNATTRIBUTED',
+    events: [
+      { schema: 'agent-execution-event/1', event_seq: 1, event_type: 'tool/call', actor_id: 'member', authority_ref: 'decision-legacy', outcome: 'DISPATCHED' },
+      { schema: 'agent-execution-event/1', event_seq: 2, event_type: 'tool/result', actor_id: 'member', authority_actor_id: 'member', authority_ref: 'decision-legacy', outcome: 'DENIED', effect_id: null },
+    ],
+    witness: rows,
+    blindDomains: ['process', 'network'],
+    requiredEffectDomains: ['filesystem'],
+    requiredEffectScope: [watched],
+    witnessProvenance: 'witnessed',
+  }))
+  show('two denials, no requiredExecutionId (both unattributed)', judgeContract({
     contractId: 'DENY-AMBIGUOUS',
     events: [...pair('exec-one', { denied: true, seq: 1 }), ...pair('exec-two', { denied: true, seq: 3 })],
     witness: rows,

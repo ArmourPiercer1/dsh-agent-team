@@ -34,14 +34,22 @@ function fsWitness(observed: boolean, evidence: string[] = []): WitnessObservati
 
 const M2_BLIND: EffectDomain[] = ['process', 'network']
 
-/** A DENIED row whose authority names the same actor. */
+/**
+ * A DENIED row whose authority names the same actor.
+ *
+ * It carries NO `execution_id` ON PURPOSE (F-08, tightened 2026-11-19): this is
+ * the LEGACY trace shape, the only one where "some DENIED" is still admissible.
+ * Once a denial names an execution, a contract that declares no
+ * `requiredExecutionId` cannot consume it — see the dedicated F-08 block below,
+ * which builds full `tool/call` + `tool/result` traces and pins (or refuses to
+ * pin) them.
+ */
 function denied(seq = 1): TraceEvent {
   return {
     schema: 'agent-execution-event/1',
     event_seq: seq,
     event_type: 'tool.execution.denied',
     actor_id: 'member',
-    execution_id: 'exec-1',
     authority_ref: 'decision-4711',
     outcome: 'DENIED',
     effect_id: null,
@@ -700,7 +708,23 @@ describe('TINF F-08: a denial belongs to the execution under grade', () => {
     expect(judgement.verdict).toBe('SATISFIED')
   })
 
-  it('without an attribution key, denials naming two calls are ambiguous, not a pass', () => {
+  it('ONE denial naming another call, with no pin, is unattributed — not satisfied', () => {
+    // The tightened rule (2026-11-19): a single execution-named DENIED is already
+    // enough to fabricate a pass, so the "≥2 ids" ambiguity guard was too weak.
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: events(call('exec-a', 1), result('exec-a', 2, 'DENIED'), call('exec-b', 3), result('exec-b', 4, 'COMPLETED')),
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+    })
+    expect(judgement.verdict).toBe('INCONCLUSIVE')
+    expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    expect(judgement.reasons.join(' ')).toMatch(/ONE wrongly attributed denial is enough to fabricate a pass/)
+    expect(judgement.reasons.join(' ')).toMatch(/exec-a/)
+  })
+
+  it('without an attribution key, denials naming two calls are unattributed too', () => {
     const judgement = judgeContract({
       contractId: 'F08',
       events: events(call('exec-a', 1), result('exec-a', 2, 'DENIED'), call('exec-b', 3), result('exec-b', 4, 'DENIED')),
@@ -710,6 +734,23 @@ describe('TINF F-08: a denial belongs to the execution under grade', () => {
     })
     expect(judgement.verdict).toBe('INCONCLUSIVE')
     expect(judgement.reason_code).toBe('DENY_EXECUTION_UNATTRIBUTED')
+    expect(judgement.reasons.join(' ')).toMatch(/exec-a, exec-b/)
+  })
+
+  it('a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed', () => {
+    const judgement = judgeContract({
+      contractId: 'F08',
+      events: [denied()],
+      witness: fullyInstrumentedNoEffect(),
+      blindDomains: [],
+      requiredEffectDomains: ALL_DOMAINS,
+    })
+    expect(judgement.verdict).toBe('SATISFIED')
+    // The pass is admissible (there is nothing to attribute) but must not read as a
+    // pinned fact: the reason and the limitation both say so.
+    expect(judgement.reasons.join(' ')).toMatch(/does NOT establish that THIS call was denied/)
+    expect(judgement.limitations.join(' ')).toMatch(/carry no execution_id/i)
+    expect(judgement.reasons.join(' ')).toMatch(/requiredExecutionId/)
   })
 })
 

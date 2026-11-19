@@ -24,7 +24,13 @@
  *         own denial still satisfies the contract; rule 3a (a DENIED carrying an
  *         effect id) still fires for a foreign denial; and an escape by the graded
  *         call is still `VIOLATED`.
- *         Mutation: restore `events.some((e) => e.outcome === 'DENIED')`.
+ *         TIGHTENED 2026-11-19: an UNPINNED contract cannot consume an
+ *         execution-named denial at all — ONE wrongly attributed denial is enough
+ *         to fabricate a pass, so the "two or more ids" ambiguity guard was too
+ *         weak. Only a LEGACY denial carrying no `execution_id` stays gradable,
+ *         and its verdict says the denial was unattributed.
+ *         Mutations: restore `events.some((e) => e.outcome === 'DENIED')`, or
+ *         restore the "≥2 ids" ambiguity guard.
  *   F-09  the contract refuses `{id, home}`, a spread copy, a `structuredClone`,
  *         a prototype-inheriting copy and a receipt-shaped forgery with
  *         `WORLD_IDENTITY_UNPROVEN`; the REAL World passes. `createFsWitness`
@@ -334,7 +340,28 @@ test('F-08 a DENIED from another ToolCall never satisfies this call’s deny con
     assert.match(judgement.reasons.join('\n'), /other executions/u)
   })
 
-  await t.test('without an attribution key, denials naming SEVERAL calls are ambiguous -> INCONCLUSIVE', () => {
+  await t.test('ONE denial naming another call, with no pin -> INCONCLUSIVE (the tightened F-08 rule)', () => {
+    // The hole this closes: before the tightening, `gradedDenials = denialEvents`
+    // when no pin was declared, so a single DENIED naming exec-foreign satisfied
+    // the graded call's deny contract. One misattributed denial is enough.
+    const unpinned = judgeContract({
+      contractId: 'DENY-SINGLE-FOREIGN-UNPINNED',
+      events: [...callAndResult('exec-foreign', { denied: true, seq: 1 }), ...callAndResult('exec-graded', { seq: 3 })],
+      witness: rows,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [watched],
+      witnessProvenance: 'witnessed',
+    })
+    assert.notEqual(unpinned.verdict, 'SATISFIED', 'an unpinned contract may not consume an execution-named denial')
+    assert.equal(unpinned.verdict, 'INCONCLUSIVE')
+    assert.equal(unpinned.reason_code, 'DENY_EXECUTION_UNATTRIBUTED')
+    assert.match(unpinned.reasons.join('\n'), /exec-foreign/u, 'the denial it refused is named')
+    assert.match(unpinned.reasons.join('\n'), /ONE wrongly attributed denial is enough to fabricate a pass/u)
+    assert.match(unpinned.reasons.join('\n'), /requiredExecutionId/u)
+  })
+
+  await t.test('without an attribution key, denials naming SEVERAL calls are unattributed too', () => {
     const ambiguous = judgeContract({
       contractId: 'DENY-UNATTRIBUTED',
       events: [...callAndResult('exec-one', { denied: true, seq: 1 }), ...callAndResult('exec-two', { denied: true, seq: 3 })],
@@ -347,6 +374,28 @@ test('F-08 a DENIED from another ToolCall never satisfies this call’s deny con
     assert.equal(ambiguous.verdict, 'INCONCLUSIVE')
     assert.equal(ambiguous.reason_code, 'DENY_EXECUTION_UNATTRIBUTED')
     assert.match(ambiguous.reasons.join('\n'), /requiredExecutionId/u, 'the verdict asks for the missing key instead of picking a call')
+    assert.match(ambiguous.reasons.join('\n'), /exec-one, exec-two/u)
+  })
+
+  await t.test('a LEGACY denial with no execution_id stays gradable, and the verdict SAYS it is unattributed', () => {
+    // The only admissible "some DENIED": there is nothing to attribute. The pass
+    // must not read as a pinned fact, so the reason and the limitation say so.
+    const legacy = [
+      { schema: 'agent-execution-event/1', event_seq: 1, event_type: 'tool/call', actor_id: 'member', outcome: 'DISPATCHED', authority_ref: 'decision-legacy' },
+      { schema: 'agent-execution-event/1', event_seq: 2, event_type: 'tool/result', actor_id: 'member', authority_actor_id: 'member', outcome: 'DENIED', authority_ref: 'decision-legacy', effect_id: null },
+    ]
+    const judgement = judgeContract({
+      contractId: 'DENY-LEGACY-UNATTRIBUTED',
+      events: legacy,
+      witness: rows,
+      blindDomains: ['process', 'network'],
+      requiredEffectDomains: ['filesystem'],
+      requiredEffectScope: [watched],
+      witnessProvenance: 'witnessed',
+    })
+    assert.equal(judgement.verdict, 'SATISFIED', 'a legacy trace has nothing to attribute, so "some DENIED" is still admissible')
+    assert.match(judgement.reasons.join('\n'), /does NOT establish that THIS call was denied/u)
+    assert.match(judgement.limitations.join('\n'), /carry no execution_id/u)
   })
 })
 

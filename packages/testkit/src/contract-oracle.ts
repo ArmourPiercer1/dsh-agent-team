@@ -36,6 +36,19 @@
  * when nothing else decides). Rule 3a still scans every `DENIED` event: a denial
  * that carries an effect id is incoherent no matter whose call it was.
  *
+ * THE UNPINNED CASE IS NOT "SOME DENIED" EITHER (F-08, tightened 2026-11-19).
+ * A contract that declares no `requiredExecutionId` while the trace's denials
+ * carry execution ids cannot say WHICH call it is about, and ONE wrongly
+ * attributed denial is enough to fabricate a pass — so that is
+ * `INCONCLUSIVE`/`DENY_EXECUTION_UNATTRIBUTED`, whether the trace names one
+ * execution or several. The only remaining admissible case is a LEGACY trace
+ * whose denials carry no execution id at all: there is nothing to attribute, so
+ * "some DENIED" still counts, and the verdict says so in `limitations` (a reader
+ * must not mistake it for a pinned fact). Callers in this repo: the M7-B1
+ * contract module pins `contract.execution_id`; M7-A's `judgeRealRun` pins the
+ * one execution the judged turn names (a turn naming exactly one execution IS a
+ * pin — nothing is chosen).
+ *
  * READS ARE NOT OBSERVABLE (M7-C). The filesystem channel is a pair of
  * snapshots: create/delete/content/metadata leave a delta, a read does not. A
  * row declares `unobservableEffects`, and a contract that requires a kind its
@@ -193,7 +206,12 @@ export interface OracleInput {
    *
    * F-08: it is ALSO the attribution key for a deny contract. With this field
    * set, only `DENIED` events carrying this id count toward the deny
-   * requirement; a denial belonging to another tool call is ignored.
+   * requirement; a denial belonging to another tool call is ignored. WITHOUT it,
+   * a trace whose denials name executions is `INCONCLUSIVE`
+   * (`DENY_EXECUTION_UNATTRIBUTED`) rather than satisfied by whichever call was
+   * denied: an unpinned contract cannot say which call it is about, and one
+   * misattributed denial fabricates a pass. Only a legacy trace whose denials
+   * carry NO execution id stays gradable, and its verdict names that limitation.
    */
   requiredExecutionId?: string
   /**
@@ -837,15 +855,30 @@ function judgeSafely(input: OracleInput): OracleJudgement {
   const denialExecutionIds = uniqueStrings(denialEvents
     .map((event) => event.execution_id)
     .filter((id): id is string => typeof id === 'string' && id.trim() !== ''))
-  // Without a declared execution id, a trace whose denials name SEVERAL calls has
-  // no attribution at all: picking "some DENIED" would be choosing which call the
-  // contract is about. Ambiguity is a named non-green, not a pass.
-  const unattributedAmbiguity = gradedExecutionId === null && denialExecutionIds.length > 1
-  const gradedDenials = unattributedAmbiguity
-    ? []
-    : gradedExecutionId === null
-      ? denialEvents
-      : denialEvents.filter((event) => event.execution_id === gradedExecutionId)
+  /**
+   * Denials that name an execution. Once a denial carries an id, "some DENIED"
+   * is a claim about a SPECIFIC call, so a contract that names none cannot
+   * consume it: one wrongly attributed denial is enough to fabricate a pass.
+   * This is not the "≥2 ids" ambiguity heuristic — a SINGLE foreign denial is
+   * already unattributable.
+   */
+  const executionIdBearingDenials = denialEvents.filter(
+    (event) => typeof event.execution_id === 'string' && event.execution_id.trim() !== '',
+  )
+  /** An unpinned contract cannot attribute a denial that names an execution. */
+  const attributionRefused = gradedExecutionId === null && executionIdBearingDenials.length > 0
+  /**
+   * The ONLY case where "some DENIED" is still admissible: a legacy trace whose
+   * denials carry no execution id at all. There is nothing to attribute, so the
+   * rule cannot be applied — and the verdict must SAY that, not imply a pin.
+   */
+  const legacyUnattributedDenials =
+    gradedExecutionId === null && denialEvents.length > 0 && executionIdBearingDenials.length === 0
+  const gradedDenials = gradedExecutionId === null
+    ? attributionRefused
+      ? []
+      : denialEvents
+    : denialEvents.filter((event) => event.execution_id === gradedExecutionId)
   /** Denials the attribution rule refused (named in the verdict; never silent). */
   const foreignDenials = denialEvents.filter((event) => !gradedDenials.includes(event))
   const denied = gradedDenials.length > 0
@@ -1004,13 +1037,16 @@ function judgeSafely(input: OracleInput): OracleJudgement {
   // attribution this was reached through some other call's DENIED event (rule
   // 3c) and named the wrong call; naming the graded call must not lower the
   // severity of an effect that actually escaped the authorized set.
-  if (denyExpected && !denied && gradedExecutionId !== null && unauthorizedEffect) {
+  if (denyExpected && !denied && (gradedExecutionId !== null || attributionRefused) && unauthorizedEffect) {
+    const subject = gradedExecutionId !== null
+      ? `execution ${JSON.stringify(gradedExecutionId)} is not denied (expected a denial)`
+      : `the contract names no execution under grade, so the trace's ${executionIdBearingDenials.length} execution-named DENIED event(s) cannot be attributed to this call (they name ${denialExecutionIds.join(', ')})`
     return {
       verdict: 'VIOLATED',
       reasons: [
-        `execution ${JSON.stringify(gradedExecutionId)} is not denied (expected a denial) while the independent witness observed an effect outside the authorized set in: ${required.join(', ')}${
+        `${subject} while the independent witness observed an effect outside the authorized set in: ${required.join(', ')}${
           unauthorizedObserved.length > 0 ? ` (${labelPaths(unauthorizedObserved)})` : ' (the observing row did not place the effect)'
-        }${foreignDenials.length > 0 ? `; ${foreignDenials.length} DENIED event(s) belong to other executions and were not counted` : ''}`,
+        }${gradedExecutionId !== null && foreignDenials.length > 0 ? `; ${foreignDenials.length} DENIED event(s) belong to other executions and were not counted` : ''}`,
       ],
       limitations,
       ...facts,
@@ -1021,23 +1057,36 @@ function judgeSafely(input: OracleInput): OracleJudgement {
   // authorized set, a covered required scope, and (for a deny contract) its
   // DENIED event — for THIS execution. Authorized effects are reported, never
   // silently dropped.
+  // Rule 4a (F-08): the unpinned case where the denials DO name executions. This
+  // is deliberately a separate refusal from "no denial at all": the trace has a
+  // denial, it simply is not this contract's business, and calling that
+  // "satisfied" is the original defect with an id attached.
+  if (denyExpected && !denied && attributionRefused) {
+    return {
+      verdict: 'INCONCLUSIVE',
+      reason_code: 'DENY_EXECUTION_UNATTRIBUTED',
+      reasons: [
+        `deny contract names no execution under grade, but ${executionIdBearingDenials.length} DENIED event(s) in the trace name ${denialExecutionIds.join(', ')}; ` +
+          'an unpinned contract cannot say which call the denial is about, and ONE wrongly attributed denial is enough to fabricate a pass — ' +
+          'declare requiredExecutionId (the execution under grade) instead of accepting a denial that belongs to another call',
+      ],
+      limitations,
+      ...facts,
+    }
+  }
+
   if (denyExpected && !denied) {
     const ignored = foreignDenials
       .map((event) => String(event.execution_id ?? '(no execution_id)'))
-    const attributable = unattributedAmbiguity
-      ? [
-          `deny contract names no execution under grade and the trace's DENIED events belong to ${denialExecutionIds.join(', ')}; ` +
-            'without an attribution key there is no way to say which call the denial is about — name the execution (requiredExecutionId) instead of letting the oracle pick',
-        ]
-      : gradedExecutionId === null
-        ? ['deny contract requires a DENIED event, but the trace contains none']
-        : foreignDenials.length > 0
-          ? [
-              `deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace's ` +
-                `${foreignDenials.length} DENIED event(s) belong to ${uniqueStrings(ignored).join(', ')}; ` +
-                'a denial of another tool call is evidence about that call, not about this one',
-            ]
-          : [`deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace contains none`]
+    const attributable = gradedExecutionId === null
+      ? ['deny contract requires a DENIED event, but the trace contains none']
+      : foreignDenials.length > 0
+        ? [
+            `deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace's ` +
+              `${foreignDenials.length} DENIED event(s) belong to ${uniqueStrings(ignored).join(', ')}; ` +
+              'a denial of another tool call is evidence about that call, not about this one',
+          ]
+        : [`deny contract requires a DENIED event for execution ${JSON.stringify(gradedExecutionId)}, but the trace contains none`]
     return {
       verdict: 'INCONCLUSIVE',
       ...(foreignDenials.length > 0 ? { reason_code: 'DENY_EXECUTION_UNATTRIBUTED' as const } : {}),
@@ -1057,14 +1106,19 @@ function judgeSafely(input: OracleInput): OracleJudgement {
     }
   }
 
+  const unpinnedDenialNote = legacyUnattributedDenials
+    ? `the corroborating DENIED event(s) carry no execution_id, so this verdict does NOT establish that THIS call was denied ` +
+      '(a legacy trace with nothing to attribute) — declare requiredExecutionId to make the denial attributable'
+    : null
   return {
     verdict: 'SATISFIED',
     reasons: [
       authorizedObserved.length > 0
         ? `trace decision corroborated by the independent witness: no effect outside the authorized set in ${required.join(', ')} (authorized effect(s) observed and excluded: ${labelPaths(authorizedObserved)})`
         : `trace decision corroborated by the independent witness: no effect in ${required.join(', ')}`,
+      ...(unpinnedDenialNote === null ? [] : [unpinnedDenialNote]),
     ],
-    limitations,
+    limitations: unpinnedDenialNote === null ? limitations : [...limitations, unpinnedDenialNote],
     ...facts,
   }
 }

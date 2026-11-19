@@ -2,12 +2,12 @@ $ cd packages/testkit && ../../node_modules/.bin/vitest run test/m2-contract-ora
 
  RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit
 
- ✓ test/m2-contract-oracle.test.ts (41 tests) 11ms
- ✓ test/m2-effect-witness.test.ts (18 tests) 17ms
+ ✓ test/m2-contract-oracle.test.ts (43 tests) 11ms
+ ✓ test/m2-effect-witness.test.ts (18 tests) 16ms
 
  Test Files  2 passed (2)
-      Tests  59 passed (59)
-   Start at  00:25:59
-   Duration  211ms (transform 144ms, setup 0ms, import 196ms, tests 27ms, environment 0ms)
+      Tests  61 passed (61)
+   Start at  00:44:25
+   Duration  207ms (transform 132ms, setup 0ms, import 190ms, tests 27ms, environment 0ms)
 
 EXIT=0
