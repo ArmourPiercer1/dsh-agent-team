@@ -261,6 +261,14 @@ next host 的 pin 在文件末尾的 `NEXT_HOST` 块）。
 
 ### 11.2 物化 / 构建（gitignored，可复现）
 
+**CI / 一条命令（2026-11-19 起，`ci-census` 用它）**：`node scripts/provision-next-host.mjs --materialize`
+——从 upstream 解析 tag 并**先**断言 `refs/tags/dsh-v0.2.2-rc.5` 的 commit 就是 pin（`TAG_DRIFT`），再
+clone/fetch 该 tag，随后断言 HEAD（`HEAD_DRIFT`）、树自身 `version`（`VERSION_DRIFT`）、用**树自己 pin 的**
+包管理器（读 `package.json#packageManager`，本树 `pnpm@11.28.5`，不是本仓的 11.7.0）install + build，构建后
+**再**断言 HEAD 与 `git status --porcelain` 为空（`TREE_DIRTY`）。任何一步失败 = `NEXT-HOST-REFUSED
+code=…` + exit 1，绝不 skip。`--verify` 是同一套断言的无网络/零写入版本；`--assets` 见 §11.3。
+下面这条手工链是 2026-11-16 的实测原始记录（**实测数字以它为准**），两步等价：
+
 ```bash
 # 1) clone（浅克隆、在 tag 上 detached；目录 gitignored）
 git clone --branch dsh-v0.2.2-rc.5 --depth 1 \
@@ -286,6 +294,7 @@ package 清单与 C 源（`entry/src/*.c`）与 0.2.0-rc.2 树 **逐字节相同
 0.1.2 tarball 就是这台 Host 的**同一个固定产物**，其 per-file sha256 与已提交的 pin 相同：
 
 ```bash
+node scripts/provision-next-host.mjs --assets     # CI 用这条；等价于下面那条（同一共享 transport）
 node scripts/provision-host-assets.mjs --from-package --host next \
   --runtime-tree tests/deepseek-harness-next
 # exit 0 → HOST-ASSETS-PROVISIONED package=… version=0.1.2 tarballSha256=77fb771b… hostBaseline=next host=9c2670d3… receipt=…
@@ -327,18 +336,40 @@ node --test 'tests/next-host/*.test.mjs'   # 两条 suite：boot + native API sm
   （session 记录 `tool/ptc-dispatch-start` + `tool/ptc-dispatch`）；取消语义（mid-flight 取消 =
   `ABORTED`，dispatch 前取消 = `ABORTED_BEFORE_DISPATCH`，工具忽略 abort 也不能把取消变成成功，
   `tools/result` 仍通知该失败）。
-- **fail-loud**：树缺失/未构建/HEAD 漂移、原生资产缺失或 sha256 不符 → 直接 throw（`host-next-lib.mjs`），
-  **没有** skip 分支。因此该通道**不进入** CI census 腿（census runner 没有这台树的构建），
-  由上面的显式端命令跑；CI 仍只跑 legacy 腿。这是**有意的**分层，不是"缺 host 就跳过"。
-- **非执行通道必须可数**：两条 suite 在 `dev/ci/test-contracts.json#excludes` 里，而 `excludes` 是
-  **不执行**通道。它现在有独立基线 `dev/ci/excluded-baseline.json`（路径 + reason + review ref）和
-  `--max-excluded N` 计数闸；gate 在**每次** catalog 调用都检查：不在基线 → `EXCLUDED_NEW`，
-  超出上限 → `EXCLUDED_GREW`（实测：把一个 tracked 但从不运行的 suite 加进 `excludes` 会 refused=2；
-  去掉 reason 仍是 `STALE_EXCLUDE`；合法条目 0 findings）。CI 的 catalog step 跑
-  `--max-uncollected 48 --max-excluded 9`，两个通道同时有界。
+- **fail-loud，且 2026-11-19 起在 CI 里执行**：树缺失/未构建/HEAD 漂移/版本漂移、原生资产缺失或
+  sha256/length/mode 不符 → 直接 throw（`host-next-lib.mjs` 的 `NextHostMissingError`，带 `code`：
+  `TREE_MISSING` / `NOT_BUILT` / `NOT_A_GIT_CHECKOUT` / `HEAD_DRIFT` / `VERSION_DRIFT` /
+  `VERSION_UNREADABLE` / `PIN_INVALID` / `ASSET_MISSING` / `ASSET_DIGEST_DRIFT` /
+  `ASSET_BYTES_DRIFT` / `ASSET_MODE_DRIFT` / `MODULE_UNRESOLVED`），**没有** skip 分支。
+  **此前**该通道不进 CI，理由是"census runner 没有这台树的构建"——那句话在 2026-11-19 被改成
+  "runner 负责物化它"：`ci-census`（唯一已经获准 provision host 的 job）新增三条**已声明、不可 skip、
+  能把层判红**的 leg（`dev/ci/eb3-ci-manifest.json`）：`--materialize` → `--assets` →
+  `node --test … tests/next-host/{boot,native-api,provisioning-controls}.test.mjs`。缺失/漂移因此是
+  **RED job**，不是 NOT_RUN；这是"不执行"与"执行后失败"的区别，也是本通道进 CI 的唯一理由。
+  拒码不是 README 里的承诺：`tests/next-host/provisioning-controls.test.mjs` 用 fixture 逐码开火
+  （正控证明这些拒码不是"永远拒绝"），13/13 在 4 s 内跑完，host-free。
+  **端到端实测（2026-11-19，本机）**：`--materialize` 从空目录起（fresh clone → 树自己 pnpm 11.28.5 →
+  install → build）**4 m 49 s**，tag/HEAD/version 全绿、构建后 porcelain 为空；该次构建产出的
+  `bin/glibc/system.node` = `75450f92…`（17352 B，与 §11.3 记录的漂移一致）、`bin/landlock-run` 不存在；
+  `--assets` 后两者变为 pin（`54a9c25c…`/17360 B、`a752bc72…`/38552 B、mode 0o755）；随后在**这棵新树**上
+  跑完整通道 19/19（6 条 lane + 13 条拒码控制）通过。证据 `dev/agent-workflow/evidence/nexthost-ci-20261119/`。
+- **非执行通道必须可数，且现在少了 2 条**：两条 suite 曾同时在 `dev/ci/test-contracts.json#excludes`
+  （不执行通道）里，`dev/ci/excluded-baseline.json` 记录路径 + reason + review ref，
+  `--max-excluded N` 是计数闸（不在基线 → `EXCLUDED_NEW`，超上限 → `EXCLUDED_GREW`）。
+  2026-11-19 两条 next-host suite 被 CI 真正执行，因此 2 条 exclude 行**被删除**、基线由工具重生成
+  （`--write-excluded-baseline`，非手写），闸从 **9 → 7**；`--max-uncollected` **保持 41 不变**，
+  因为这两条本来就是 **EXCLUDED 而不是 UNCOLLECTED**（用 `--json` 逐类计数实测，不是从总数假设）。
+  于是 `tests/next-host/*` 现为 `DISCOVERED_AND_COLLECTED`，且不再出现在任何不执行清单里。
 
 ### 11.6 尚未证明（UNKNOWN）
 
+- **hosted runner 的实网可达性**：本机实测（2026-11-19）`git ls-remote` upstream 的
+  `refs/tags/dsh-v0.2.2-rc.5` = pin、`registry.npmjs.org` HTTP 200；但 runner 能否 clone upstream +
+  装该树的 pnpm 依赖，只有第一次 hosted L2 才能给出答案。失败形态是**具名**的
+  （`TAG_UNRESOLVABLE` / `CLONE_FAILED` / `PNPM_INSTALL_FAILED` / `INSTALL_FAILED` / `BUILD_FAILED`），
+  不是静默 skip。
+- **rc.5 的 boot 在 runner 上**（hosted kernel、无本机 WSL2 前提）未测：本机 6/6 通过（boot 2.0 s、
+  服务一个 session、`modelRequests=2`），runner 上的第一次执行就是 L2 的 next-host leg。
 - PTC 的**真实子进程 runtime**（`@deepseek-ai/dsh-ptc-runtime-node`）未接入 smoke：smoke 用宿主公开的
   `PtcRuntime` provider seam（与宿主自身 integration 测试同一写法）驱动嵌套 dispatch；真实 subprocess /
   sandbox 执行路径仍待一条独立 lane。

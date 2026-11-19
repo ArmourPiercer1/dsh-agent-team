@@ -61,7 +61,7 @@
  *   node scripts/test-catalog.mjs --max-uncollected 91  # count ratchet (the weaker second bound)
  *   node scripts/test-catalog.mjs --write-uncollected-baseline [--out FILE]
  *   node scripts/test-catalog.mjs --check-uncollected   # set-diff: new uncollected is RED
- *   node scripts/test-catalog.mjs --max-excluded 9      # excludes ratchet (the non-execution channel)
+ *   node scripts/test-catalog.mjs --max-excluded 7      # excludes ratchet (the non-execution channel)
  *   node scripts/test-catalog.mjs --write-excluded-baseline [--out FILE]
  *   node scripts/test-catalog.mjs --self-test
  */

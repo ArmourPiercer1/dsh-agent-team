@@ -1,0 +1,190 @@
+$ node scripts/provision-next-host.mjs --materialize --tree .artifacts/tmp/next-host-e2e/tree   # FRESH clone from upstream + install + build (second attempt; the first attempt was refused by name on a transient TLS failure: NEXT-HOST-REFUSED code=TAG_UNRESOLVABLE)
+$ date -u
+Thu Nov 19 16:13:37 UTC 2026
+NEXT-HOST-STEP git -C /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree fetch --depth 1 --no-tags origin refs/tags/dsh-v0.2.2-rc.5
+From https://github.com/deepseek-ai/deepseek-harness
+ * tag                 dsh-v0.2.2-rc.5 -> FETCH_HEAD
+NEXT-HOST-STEP git -C /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree checkout --detach --force FETCH_HEAD
+HEAD is now at 9c2670d3 Merge pull request #8728 from deepseek-harness/worktree-release-dsh-0.2.2-rc.5
+NEXT-HOST-STEP npm install --prefix /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host/tools --no-save --no-audit --no-fund pnpm@11.28.5
+
+added 1 package in 10s
+NEXT-HOST-STEP /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host/tools/node_modules/pnpm/bin/pnpm.cjs install --ignore-scripts --frozen-lockfile --store-dir /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host/pnpm-store (cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree)
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+packages/experimental/cua-macos          | [WARN] Unsupported platform: wanted: {"cpu":["any"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+Scope: all 398 workspace projects
+[WARN] There are cyclic workspace dependencies: /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/apps/cli, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/sdk/client; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/apps/web, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/test-support/client-runtime, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/bundle/web-app; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/api/gateway, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/api/remote-access; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/api/remotes, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-trajectory, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-chat, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-sidebar-documentpreview, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-sidebar-files; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-conversation, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/client/ui-workspace; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/compaction/compaction, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/interaction/commands, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/core/agent, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/session/session-projection, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/test-support/loader-smoke, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/core/tools, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/test-support/agent-loop-testkit, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/core/agent-loop, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/session/session-persistence-jsonl, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/session/session-format-catalog, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/compaction/compaction-image-offload, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/compaction/compaction-basic, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/compaction/compaction-tool-result-pruner; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/core/agent-default-model, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/settings/settings; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/experimental/client-ui-creation-recommendations, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/experimental/creation-recommendations; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/experimental/client-ui-plugin-recommendations, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/experimental/plugin-recommendations; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/llm/llm-deepseek, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/llm/llm-deepseek-api-key; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/preset/agent-preset, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/preset/agent-preset-registry; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/sandbox/sandbox-local, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/sandbox/sandbox-windows-acl; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/session/tool-working-directory, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/session/working-directory; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/ssh/fs-ssh, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/ssh/ssh; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/subagent/subagent-spawn-in-process, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/packages/subagent/tool-subagent; /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/vendor/cordis, /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree/vendor/include
+? Verifying lockfile against supply-chain policies (1755 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1433
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 1433, reused 0, downloaded 32, added 0
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host/pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Update available! 11.28.5 → 12.21.0.
+Changelog: https://pnpm.io/v/12.21.0
+To update, run: curl -fsSL https://get.pnpm.io/install.sh | sh -
+Progress: resolved 1433, reused 0, downloaded 123, added 124
+Progress: resolved 1433, reused 0, downloaded 184, added 187
+Progress: resolved 1433, reused 0, downloaded 258, added 261
+Progress: resolved 1433, reused 0, downloaded 343, added 346
+Progress: resolved 1433, reused 0, downloaded 421, added 426
+Progress: resolved 1433, reused 0, downloaded 479, added 484
+Progress: resolved 1433, reused 0, downloaded 526, added 531
+Progress: resolved 1433, reused 0, downloaded 573, added 578
+Progress: resolved 1433, reused 0, downloaded 616, added 621
+Progress: resolved 1433, reused 0, downloaded 671, added 676
+Progress: resolved 1433, reused 0, downloaded 741, added 746
+Progress: resolved 1433, reused 0, downloaded 825, added 831
+Progress: resolved 1433, reused 0, downloaded 917, added 923
+Progress: resolved 1433, reused 0, downloaded 987, added 994
+Progress: resolved 1433, reused 0, downloaded 1049, added 1054
+Progress: resolved 1433, reused 0, downloaded 1113, added 1120
+Progress: resolved 1433, reused 0, downloaded 1198, added 1203
+Progress: resolved 1433, reused 0, downloaded 1280, added 1287
+Progress: resolved 1433, reused 0, downloaded 1395, added 1402
+Progress: resolved 1433, reused 0, downloaded 1406, added 1413
+Progress: resolved 1433, reused 0, downloaded 1409, added 1416
+Progress: resolved 1433, reused 0, downloaded 1411, added 1418
+Progress: resolved 1433, reused 0, downloaded 1414, added 1421
+Progress: resolved 1433, reused 0, downloaded 1415, added 1422
+Progress: resolved 1433, reused 0, downloaded 1417, added 1424
+✓ Lockfile passes supply-chain policies (1755 entries in 27s)
+Progress: resolved 1433, reused 0, downloaded 1419, added 1426
+Progress: resolved 1433, reused 0, downloaded 1420, added 1427
+Progress: resolved 1433, reused 0, downloaded 1421, added 1427
+Progress: resolved 1433, reused 0, downloaded 1421, added 1428
+Progress: resolved 1433, reused 0, downloaded 1422, added 1428
+Progress: resolved 1433, reused 0, downloaded 1422, added 1429
+Progress: resolved 1433, reused 0, downloaded 1423, added 1429
+Progress: resolved 1433, reused 0, downloaded 1423, added 1430
+Progress: resolved 1433, reused 0, downloaded 1424, added 1430
+Progress: resolved 1433, reused 0, downloaded 1424, added 1431
+Progress: resolved 1433, reused 0, downloaded 1425, added 1431
+Progress: resolved 1433, reused 0, downloaded 1425, added 1432
+Progress: resolved 1433, reused 0, downloaded 1426, added 1432
+Progress: resolved 1433, reused 0, downloaded 1426, added 1433, done
+
+devDependencies:
++ @deepseek-ai/dsh-action-cards 0.2.2-rc.5 <- packages/experimental/action-cards
++ @deepseek-ai/dsh-agent 0.2.2-rc.5 <- packages/core/agent
++ @deepseek-ai/dsh-browser-use 0.2.2-rc.5 <- packages/browser-use/browser-use
++ @deepseek-ai/dsh-computer-use 0.2.2-rc.5 <- packages/computer-use/computer-use
++ @deepseek-ai/dsh-cua 0.2.2-rc.5 <- packages/experimental/cua
++ @deepseek-ai/dsh-cua-bundle 0.2.2-rc.5 <- packages/experimental/cua-bundle
++ @deepseek-ai/dsh-experimental-browser-use-chrome-devtools-mcp 0.2.2-rc.5 <- packages/experimental/browser-use-chrome-devtools-mcp
++ @deepseek-ai/dsh-experimental-browser-use-playwright-mcp 0.2.2-rc.5 <- packages/experimental/browser-use-playwright-mcp
++ @deepseek-ai/dsh-experimental-browser-use-runtime 0.2.2-rc.5 <- packages/experimental/browser-use-runtime
++ @deepseek-ai/dsh-experimental-browser-use-stagehand-native 0.2.2-rc.5 <- packages/experimental/browser-use-stagehand-native
++ @deepseek-ai/dsh-experimental-claude-code-mods 0.2.2-rc.5 <- packages/experimental/claude-code-mods
++ @deepseek-ai/dsh-experimental-computer-use-cua-driver-mcp 0.2.2-rc.5 <- packages/experimental/computer-use-cua-driver-mcp
++ @deepseek-ai/dsh-experimental-computer-use-cua-driver-native 0.2.2-rc.5 <- packages/experimental/computer-use-cua-driver-native
++ @deepseek-ai/dsh-experimental-cua-macos 0.2.2-rc.5 <- packages/experimental/cua-macos
++ @deepseek-ai/dsh-experimental-forge 0.2.2-rc.5 <- packages/experimental/forge
++ @deepseek-ai/dsh-experimental-forge-github 0.2.2-rc.5 <- packages/experimental/forge-github
++ @deepseek-ai/dsh-experimental-forge-session 0.2.2-rc.5 <- packages/experimental/forge-session
++ @deepseek-ai/dsh-experimental-subagent-oar 0.2.2-rc.5 <- packages/experimental/subagent-oar
++ @deepseek-ai/dsh-experimental-tool-subagent-oar 0.2.2-rc.5 <- packages/experimental/tool-subagent-oar
++ @deepseek-ai/dsh-experimental-tool-worktree 0.2.2-rc.5 <- packages/experimental/tool-worktree
++ @deepseek-ai/dsh-experimental-worktree 0.2.2-rc.5 <- packages/experimental/worktree
++ @deepseek-ai/dsh-hooks-claude-code 0.2.2-rc.5 <- packages/experimental/hooks-claude-code
++ @deepseek-ai/dsh-hooks-codex 0.2.2-rc.5 <- packages/experimental/hooks-codex
++ @deepseek-ai/dsh-llm 0.2.2-rc.5 <- packages/llm/llm
++ @deepseek-ai/dsh-llm-replay 0.2.2-rc.5 <- packages/test-support/llm-replay
++ @deepseek-ai/dsh-mcp-client 0.2.2-rc.5 <- packages/mcp/mcp-client
++ @deepseek-ai/dsh-skill-office 0.2.2-rc.5 <- packages/skill/skill-office
++ @deepseek-ai/dsh-subagent-dsh-sdk 0.2.2-rc.5 <- packages/subagent/subagent-dsh-sdk
++ @deepseek-ai/dsh-terminal-panel 0.2.2-rc.5 <- packages/experimental/terminal-panel
++ @deepseek-ai/dsh-tool-executor-native 0.2.2-rc.5 <- packages/core/tool-executor-native
++ @deepseek-ai/dsh-tool-executor-ptc 0.2.2-rc.5 <- packages/core/tool-executor-ptc
++ @deepseek-ai/dsh-tool-ralph 0.2.2-rc.5 <- packages/experimental/tool-ralph
++ @deepseek-ai/dsh-tool-session-query 0.2.2-rc.5 <- packages/experimental/tool-session-query
++ @deepseek-ai/dsh-tool-terminal 0.2.2-rc.5 <- packages/experimental/tool-terminal
++ @deepseek-ai/dsh-tool-working-directory 0.2.2-rc.5 <- packages/session/tool-working-directory
++ @deepseek-ai/dsh-tool-workspace-dependencies 0.2.2-rc.5 <- packages/skill/tool-workspace-dependencies
++ @deepseek-ai/dsh-web-fetch-http 0.2.2-rc.5 <- packages/web/web-fetch-http
++ @deepseek-ai/dsh-working-directory 0.2.2-rc.5 <- packages/session/working-directory
++ @stylistic/eslint-plugin 5.10.0
++ @testing-library/dom 10.4.2
++ @testing-library/react 16.3.3
++ @types/js-yaml 4.0.9
++ @types/jsdom 28.0.3
++ @types/mdast 4.0.4
++ @types/node 22.20.1
++ @types/papaparse 5.5.2
++ @types/react 18.3.31
++ @types/react-dom 18.3.7
++ @types/semver 7.8.0
++ @types/spdx-expression-parse 4.0.0
++ @vitest/coverage-v8 4.1.11
++ @yao-pkg/pkg 6.21.0
++ @yarnpkg/cli-dist 4.18.0
++ eslint-plugin-sonarjs 4.2.0
++ execa 10.0.1
++ extract-zip 2.0.1
++ fast-check 4.9.0
++ fflate 0.8.3
++ istanbul-lib-report 3.0.1
++ js-yaml 4.3.2
++ jscpd 5.1.2
++ jsdom 29.1.1
++ lefthook 2.1.12
++ lightningcss 1.33.0
++ mdast-util-from-markdown 2.0.3
++ mdast-util-gfm 3.1.0
++ mermaid 11.17.2
++ micromark-extension-gfm 3.0.0
++ oxlint 1.81.0
++ oxlint-tsgolint 7.0.2001
++ papaparse 5.5.3
++ pnpm 11.28.5
++ publint 0.3.24
++ semver 7.8.5
++ smol-toml 1.9.0
++ spdx-expression-parse 5.0.0
++ tar 7.5.22
++ tsdown 0.22.2
++ tsx 4.23.13
++ typescript 6.0.3
++ vite 8.2.2
++ vite-tsconfig-paths 6.1.1
++ vitest 4.1.11
++ zod 4.6.6
+
+Done in 2m 30.5s using pnpm v11.28.5
+NEXT-HOST-STEP /home/armourpiercer/.nvm/versions/node/v24.21.0/bin/node /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host/tools/node_modules/pnpm/bin/pnpm.cjs run build (cwd=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree)
+$ tsx scripts/build.ts
+run-gates: build running 10 gate(s) with 10 worker(s) from 12 local default worker(s) of 16 CPU(s).
+run-gates: start native addon
+run-gates: start Host Typert
+run-gates: PASS native addon (0.67s)
+run-gates: PASS Host Typert (5.98s)
+run-gates: start host compiler
+run-gates: PASS host compiler (39.29s)
+run-gates: start Host bundle
+run-gates: start host aggregate check
+run-gates: PASS Host bundle (7.18s)
+run-gates: start Desktop bundle
+run-gates: PASS Desktop bundle (1.50s)
+run-gates: start client compiler
+run-gates: PASS client compiler (35.17s)
+run-gates: start Client bundle
+run-gates: start client aggregate check
+run-gates: PASS host aggregate check (50.52s)
+run-gates: PASS Client bundle (8.37s)
+run-gates: start Web build
+run-gates: PASS Web build (5.29s)
+run-gates: PASS client aggregate check (34.44s)
+
+run-gates: 10 passed, 0 failed, 0 skipped in 123.58s.
+build: recorded 371 client artifact(s) with 2 public value(s)
+NEXT-HOST-MATERIALIZED tag=dsh-v0.2.2-rc.5 head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 pnpm=11.28.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-e2e/tree
+
+real	4m48.930s
+user	4m48.282s
+sys	1m10.636s
+exit=0

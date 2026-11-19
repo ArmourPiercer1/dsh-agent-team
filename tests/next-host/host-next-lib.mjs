@@ -10,10 +10,12 @@
  *
  * FAIL-LOUD LAW (repo precedent: "missing host -> skip" hid two real breaks):
  * every export here THROWS on a missing/mismatched host tree or asset. There is
- * no skip path, no `t.skip()`, no faked fallback. The lane is run explicitly
- * (`node --test 'tests/next-host/*.test.mjs'`) because the tree is provisioned by a
- * documented command (docs/TEST_METHODS.md §11) and is not part of CI's
- * census; a run without the tree is a RED run, not a green skip.
+ * no skip path, no `t.skip()`, no faked fallback. Since 2026-11-19 (Task B) the
+ * lane RUNS IN CI: `ci-census` materializes the tree (`scripts/provision-next-host.mjs
+ * --materialize`), provisions its published native assets (`--assets`), and runs
+ * `node --test tests/next-host/*.test.mjs` as a declared, unskippable leg — so a
+ * runner without the tree is a RED lane, not an absent one. The refusal codes are
+ * pinned one arm each by `provisioning-controls.test.mjs` (host-free fixtures).
  *
  * CORE PATCH BUDGET = 0: nothing here writes to the host tree except the
  * provisioning CLI's own `bin/` write (via the shared, digest-verified
@@ -21,7 +23,7 @@
  */
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -54,10 +56,22 @@ export function assertGenerationBandsDisjoint() {
 /** Repo root of the worktree this module lives in (tests/next-host -> ../..). */
 export const NEXT_LANE_REPO_ROOT = resolve(new URL('.', import.meta.url).pathname, '..', '..')
 
+/**
+ * The named refusal of this lane. EVERY absence/drift path throws THIS type with
+ * a machine-greppable `code`, so a red run names what is wrong instead of
+ * surfacing as a generic assertion or (worse) a skip. The codes are the fixed
+ * vocabulary the provisioning negative-control suite pins one arm each:
+ *
+ *   TREE_MISSING · NOT_A_GIT_CHECKOUT · NOT_BUILT · HEAD_DRIFT ·
+ *   VERSION_UNREADABLE · VERSION_DRIFT ·
+ *   ASSET_MISSING · ASSET_DIGEST_DRIFT · ASSET_BYTES_DRIFT · ASSET_MODE_DRIFT ·
+ *   MODULE_UNRESOLVED
+ */
 export class NextHostMissingError extends Error {
-  constructor(detail) {
-    super(`next host lane: ${detail}`)
+  constructor(code, detail) {
+    super(`next host lane: ${code}: ${detail}`)
     this.name = 'NextHostMissingError'
+    this.code = code
   }
 }
 
@@ -69,62 +83,141 @@ export function nextTree(repoRoot = NEXT_LANE_REPO_ROOT) {
 const git = (args, cwd) => spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8' })
 
 /**
- * Assert the next-host tree exists, is a git checkout at EXACTLY the pinned
- * commit, and that its package version is the pinned version. Throws otherwise.
+ * THE TREE VERIFIER (pure over a given path + expected pin).
+ *
+ * Split out of `assertNextHostTree` so the provisioning negative controls can
+ * drive it against fixture trees (`tests/next-host/provisioning-controls.test.mjs`)
+ * instead of only against the one machine-global tree — a refusal that cannot be
+ * shown to fire is a comment, not a control. The real lane calls it through
+ * `assertNextHostTree()`, which supplies the committed pin; there is exactly ONE
+ * implementation of the law.
+ *
+ * @param {string} tree absolute path of the candidate next-host tree
+ * @param {{version: string, sha: string, tag?: string, treeRel?: string}} pinned
+ * @param {{requireBuilt?: boolean}} [opts] `requireBuilt: false` is for the provisioning
+ *   step's PRE-build identity assertion only; the lane and `--verify` always require it.
  * @returns {{tree: string, head: string, version: string}}
  */
-export function assertNextHostTree(repoRoot = NEXT_LANE_REPO_ROOT) {
-  const tree = nextTree(repoRoot)
-  if (!existsSync(tree) || !statSync(tree).isDirectory()) {
-    throw new NextHostMissingError(`no host tree at ${tree} — provision it with the documented command (docs/TEST_METHODS.md §11): git clone --branch ${NEXT_HOST.tag} --depth 1 ${NEXT_HOST.url} ${NEXT_HOST.treeRel}`)
+export function verifyNextHostTree(tree, pinned, { requireBuilt = true } = {}) {
+  if (typeof pinned?.sha !== 'string' || !/^[0-9a-f]{40}$/.test(pinned.sha)) {
+    throw new NextHostMissingError('PIN_INVALID', `the expected pin is not a 40-hex commit (${JSON.stringify(pinned?.sha ?? null)}) — the verifier refuses to grade against an unpinned expectation`)
   }
-  if (!existsSync(join(tree, 'apps/cli/lib/bin.js'))) {
-    throw new NextHostMissingError(`the host tree at ${tree} is not BUILT (apps/cli/lib/bin.js missing) — run: cd ${NEXT_HOST.treeRel} && pnpm install --ignore-scripts --frozen-lockfile && DSH_CLIENT_COMMIT_HASH=${NEXT_HOST.shortSha} pnpm run build`)
+  if (!existsSync(tree) || !statSync(tree).isDirectory()) {
+    throw new NextHostMissingError('TREE_MISSING', `no host tree at ${tree} — provision it with \`node scripts/provision-next-host.mjs --materialize\` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch ${pinned.tag ?? '<tag>'} --depth 1 ${NEXT_HOST.url} ${pinned.treeRel ?? NEXT_HOST.treeRel}`)
+  }
+  // NOT A CHECKOUT, precisely: `git -C <dir> rev-parse HEAD` WALKS UP and happily
+  // answers with an enclosing repository's commit (measured: a plain directory
+  // under this Team checkout reported the Team HEAD instead of refusing). The
+  // tree's own toplevel must BE the tree, or there is no checkout here to pin.
+  const toplevel = git(['rev-parse', '--show-toplevel'], tree)
+  let top = ''
+  try {
+    top = realpathSync(String(toplevel.stdout ?? '').trim())
+  } catch {
+    top = ''
+  }
+  if (toplevel.status !== 0 || top === '') {
+    throw new NextHostMissingError('NOT_A_GIT_CHECKOUT', `${tree} is not a git checkout: ${String(toplevel.stderr ?? '').trim()}`)
+  }
+  let self = tree
+  try {
+    self = realpathSync(tree)
+  } catch {
+    self = tree
+  }
+  if (top !== self) {
+    throw new NextHostMissingError('NOT_A_GIT_CHECKOUT', `${tree} is not its own git checkout: git resolves its toplevel to ${top} — a directory nested in another repository is not a pinned host tree`)
   }
   const head = git(['rev-parse', 'HEAD'], tree)
-  if (head.status !== 0) throw new NextHostMissingError(`${tree} is not a git checkout: ${String(head.stderr ?? '').trim()}`)
+  if (head.status !== 0) throw new NextHostMissingError('NOT_A_GIT_CHECKOUT', `${tree} is not a git checkout: ${String(head.stderr ?? '').trim()}`)
   const sha = String(head.stdout ?? '').trim()
-  if (sha !== NEXT_HOST.sha) {
-    throw new NextHostMissingError(`the host tree at ${tree} is at ${sha}, the pin is ${NEXT_HOST.sha} (${NEXT_HOST.tag}) — refusing to test a drifted tree`)
+  if (sha !== pinned.sha) {
+    throw new NextHostMissingError('HEAD_DRIFT', `the host tree at ${tree} is at ${sha}, the pin is ${pinned.sha} (${pinned.tag ?? pinned.version}) — refusing to test a drifted tree`)
   }
-  const version = JSON.parse(readFileSync(join(tree, 'package.json'), 'utf8')).version
-  if (version !== NEXT_HOST.version) {
-    throw new NextHostMissingError(`the host tree at ${tree} declares version ${version}, the pin is ${NEXT_HOST.version}`)
+  let version
+  try {
+    version = JSON.parse(readFileSync(join(tree, 'package.json'), 'utf8')).version
+  } catch (error) {
+    throw new NextHostMissingError('VERSION_UNREADABLE', `could not read ${join(tree, 'package.json')}: ${String(error?.message ?? error)}`)
+  }
+  if (version !== pinned.version) {
+    throw new NextHostMissingError('VERSION_DRIFT', `the host tree at ${tree} declares version ${String(version)}, the pin is ${pinned.version}`)
+  }
+  // The BUILD check is last and optional: `--materialize` must be able to assert
+  // identity (tag's commit + declared version) on a FRESH CLONE, before it has
+  // built anything. Everything else always requires the build, because the lane
+  // boots `apps/cli/lib/bin.js` and a pinned-but-unbuilt tree cannot serve.
+  if (requireBuilt && !existsSync(join(tree, 'apps/cli/lib/bin.js'))) {
+    throw new NextHostMissingError('NOT_BUILT', `the host tree at ${tree} is not BUILT (apps/cli/lib/bin.js missing) — run: node scripts/provision-next-host.mjs --materialize`)
   }
   return { tree, head: sha, version }
 }
 
 /**
- * Assert the pinned native assets are the COMMITTED bytes (per-file length +
- * sha256 + mode from the manifest's `next` entry). A locally built addon is NOT
- * accepted — measured on this very tree: a plain `pnpm run build` produced
- * `bin/glibc/system.node` = dfa6d586-shaped 75450f92… (17352 B), not the pin.
+ * THE ASSET VERIFIER (pure over a platform dir + the manifest's file pin).
+ *
+ * Bytes, LENGTH and MODE are all part of the pin (docs/TEST_METHODS.md §9/§11.3):
+ * a sha256 match with the wrong length is not a match, and a 0o644 launcher is
+ * not the pinned launcher even when its bytes are right. A locally built addon is
+ * NOT accepted — measured on this tree: a plain `pnpm run build` produced
+ * `bin/glibc/system.node` = 75450f92… (17352 B), not the pin 54a9c25c… (17360 B).
+ *
  * @returns {{files: Array<{relPath: string, sha256: string, bytes: number, mode: string}>}}
  */
-export function assertNextHostAssets(repoRoot = NEXT_LANE_REPO_ROOT) {
-  const { tree } = assertNextHostTree(repoRoot)
+export function verifyNextHostAssets({ platformDir, files: pinnedFiles, launcher, tree = platformDir }) {
+  if (pinnedFiles === null || typeof pinnedFiles !== 'object' || Object.keys(pinnedFiles).length === 0) {
+    throw new NextHostMissingError('PIN_INVALID', `the asset pin is empty (no files) — an empty pin accepts every tree, which is never a pinned host`)
+  }
+  const out = []
+  for (const [relPath, spec] of Object.entries(pinnedFiles)) {
+    const path = join(platformDir, relPath)
+    if (!existsSync(path)) {
+      throw new NextHostMissingError('ASSET_MISSING', `pinned native asset ${relPath} is ABSENT from the next host tree at ${tree} — provision it: node scripts/provision-next-host.mjs --assets`)
+    }
+    const bytes = readFileSync(path)
+    const sha256 = createHash('sha256').update(bytes).digest('hex')
+    if (sha256 !== spec.sha256) {
+      throw new NextHostMissingError('ASSET_DIGEST_DRIFT', `pinned native asset ${relPath} is DRIFTED: ${sha256} (${bytes.length} B), pin is ${spec.sha256} (${spec.bytes} B) — a locally built binary is not the pinned host; re-provision with node scripts/provision-next-host.mjs --assets`)
+    }
+    if (bytes.length !== spec.bytes) {
+      throw new NextHostMissingError('ASSET_BYTES_DRIFT', `pinned native asset ${relPath} has the pinned sha256 but ${bytes.length} B, pin is ${spec.bytes} B — the manifest's own row is inconsistent, so the pin cannot be trusted`)
+    }
+    if (typeof spec.mode === 'string') {
+      const mode = `0o${(statSync(path).mode & 0o777).toString(8)}`
+      if (mode !== spec.mode) {
+        throw new NextHostMissingError('ASSET_MODE_DRIFT', `pinned native asset ${relPath} has mode ${mode}, pin is ${spec.mode} — the published bytes arrive executable or they are not the published artifact`)
+      }
+    }
+    out.push({ relPath, sha256, bytes: bytes.length, mode: spec.mode })
+  }
+  return { files: out, launcher }
+}
+
+/**
+ * Assert the next-host tree exists, is a git checkout at EXACTLY the pinned
+ * commit, and that its package version is the pinned version. Throws otherwise.
+ * @returns {{tree: string, head: string, version: string}}
+ */
+export function assertNextHostTree(repoRoot = NEXT_LANE_REPO_ROOT, pinned = NEXT_HOST) {
+  return verifyNextHostTree(nextTree(repoRoot), pinned)
+}
+
+/**
+ * Assert the pinned native assets are the COMMITTED bytes (per-file length +
+ * sha256 + mode from the manifest's `next` entry).
+ * @returns {{files: Array<{relPath: string, sha256: string, bytes: number, mode: string}>}}
+ */
+export function assertNextHostAssets(repoRoot = NEXT_LANE_REPO_ROOT, pinned = NEXT_HOST) {
+  const { tree } = assertNextHostTree(repoRoot, pinned)
   const manifest = readHostSandboxAssetManifest({ repoRoot })
-  const pinned = manifestPlatformEntry(manifest, {
-    version: NEXT_HOST.version,
-    sha: NEXT_HOST.sha,
+  const entry = manifestPlatformEntry(manifest, {
+    version: pinned.version,
+    sha: pinned.sha,
     platform: `${process.platform}-${process.arch}`,
     libc: detectedLibcVariant(),
   })
   const platformDir = join(tree, 'native', 'system', 'packages', `${process.platform}-${process.arch}`)
-  const files = []
-  for (const [relPath, spec] of Object.entries(pinned.files)) {
-    const path = join(platformDir, relPath)
-    if (!existsSync(path)) {
-      throw new NextHostMissingError(`pinned native asset ${relPath} is ABSENT from the next host tree — provision it: node scripts/provision-host-assets.mjs --from-package --host next`)
-    }
-    const bytes = readFileSync(path)
-    const sha256 = createHash('sha256').update(bytes).digest('hex')
-    if (sha256 !== spec.sha256 || bytes.length !== spec.bytes) {
-      throw new NextHostMissingError(`pinned native asset ${relPath} is DRIFTED: ${sha256} (${bytes.length} B), pin is ${spec.sha256} (${spec.bytes} B) — a locally built binary is not the pinned host; re-provision with node scripts/provision-host-assets.mjs --from-package --host next`)
-    }
-    files.push({ relPath, sha256, bytes: bytes.length, mode: spec.mode })
-  }
-  return { files, launcher: pinned.launcher }
+  return verifyNextHostAssets({ platformDir, files: entry.files, launcher: entry.launcher, tree })
 }
 
 /**
@@ -150,7 +243,7 @@ export function resolveHostModule(spec, tree = nextTree()) {
       if (error?.code !== 'MODULE_NOT_FOUND') throw error
     }
   }
-  throw new NextHostMissingError(`the next host tree at ${tree} does not resolve ${spec} — is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?`)
+  throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} — is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?`)
 }
 
 /** Dynamic-import one host public package entry by package name. */

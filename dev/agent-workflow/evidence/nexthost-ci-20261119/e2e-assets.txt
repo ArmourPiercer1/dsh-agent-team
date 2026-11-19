@@ -1,0 +1,15 @@
+# the fresh build is NOT the pin (this is why the assets leg exists)
+$ ls -la .artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/glibc/system.node .artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/landlock-run
+ls: cannot access '.artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/landlock-run': No such file or directory
+-rwxr-xr-x 1 armourpiercer armourpiercer 17352 Nov 20 00:16 .artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/glibc/system.node
+
+$ sha256sum .artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/glibc/system.node
+75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd  .artifacts/tmp/next-host-e2e/tree/native/system/packages/linux-x64/bin/glibc/system.node
+
+$ node scripts/provision-next-host.mjs --assets --tree .artifacts/tmp/next-host-e2e/tree
+NEXT-HOST-ASSETS package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 hostBaseline=next host=9c2670d3bce5275e0d1610272958121af87787bb manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c utc=2026-11-19T16:18:53.200Z receipt=/home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/host-assets/next-provision-receipt.json
+exit=0
+
+$ node scripts/provision-next-host.mjs --verify --tree .artifacts/tmp/next-host-e2e/tree
+NEXT-HOST-VERIFIED head=9c2670d3bce5275e0d1610272958121af87787bb version=0.2.2-rc.5 assets=bin/glibc/system.node:54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc:17360:0o755|bin/landlock-run:a752bc72f111fcc573c3e61fb90fa544541dac0ca498d2e279e1630d7c659b31:38552:0o755 manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c
+exit=0

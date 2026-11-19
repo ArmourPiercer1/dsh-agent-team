@@ -1,0 +1,11 @@
+$ node scripts/provision-next-host.mjs --verify --tree <fixture checkout at a different commit>
+NEXT-HOST-REFUSED code=HEAD_DRIFT detail=next host lane: HEAD_DRIFT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-lane/cli-kDPrah/tree is at 73d5073432a7e330ec47ebfc3d0c08e69a1d3dca, the pin is 9c2670d3bce5275e0d1610272958121af87787bb (dsh-v0.2.2-rc.5) — refusing to test a drifted tree
+exit=1
+
+$ node scripts/provision-next-host.mjs --verify --tree <plain directory, no .git>
+NEXT-HOST-REFUSED code=NOT_A_GIT_CHECKOUT detail=next host lane: NOT_A_GIT_CHECKOUT: /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-lane/cli-kDPrah/plain is not its own git checkout: git resolves its toplevel to /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119 — a directory nested in another repository is not a pinned host tree
+exit=1
+
+$ node scripts/provision-next-host.mjs --verify --tree <checkout without a build entry>
+NEXT-HOST-REFUSED code=NOT_BUILT detail=next host lane: NOT_BUILT: the host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/.artifacts/tmp/next-host-lane/cli-kDPrah/unbuilt is not BUILT (apps/cli/lib/bin.js missing) — run: node scripts/provision-next-host.mjs --materialize
+exit=1

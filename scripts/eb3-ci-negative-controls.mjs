@@ -1662,6 +1662,96 @@ control('P2 known-old-red-identity-set-complete', () => {
   }
 })
 
+// ─────────────────────── control NH1: the NEXT-HOST lane is collected AND graded
+/**
+ * Task B (2026-11-19) moved the second pinned host (0.2.2-rc.5) from the
+ * non-execution channel (`dev/ci/excluded-baseline.json`) into `ci-census`: three
+ * new legs, and the two suites they run are now `DISCOVERED_AND_COLLECTED`. That
+ * change is only worth anything if the shape checker actually POLICES the new
+ * legs — a leg nobody grades is a step that can quietly rot into `echo`, gain a
+ * skip flag, or lose a suite from its argv while the harness stays green.
+ *
+ * Each mutation below stages ONE evasion on an in-memory copy of the census
+ * workflow and asserts the named refusal. The mutations are not hypothetical:
+ * they are the four historical evasions C9 already pins for the pre-existing
+ * legs (echo, extra argv, dropped declared argv, `|| true`), plus the two
+ * step-level skip shapes (`if: false`, `continue-on-error`) that would let a
+ * provisioning failure be reported as a passing step.
+ */
+control('C-NH1 next-host-lane-is-collected-and-graded', () => {
+  const { checkRequiredJobs, workflowFiles } = requireModule('scripts/eb3-ci-required.mjs')
+  const wf = new Map(workflowFiles(ROOT))
+  const honest = checkRequiredJobs({ files: wf }).findings
+  if (honest.length !== 0) return { ok: false, detail: `honest workflows already fail: ${honest.map((f) => f.code).join(',')}` }
+  const manifest = JSON.parse(readFileSync(join(ROOT, 'dev/ci/eb3-ci-manifest.json'), 'utf8'))
+  const layer = manifest.layers.find((l) => l.id === 'ci-census')
+  if (layer === undefined) return { ok: false, detail: 'the manifest has no ci-census layer — the next host lane is not declared anywhere' }
+  const WF = layer.workflow
+  const before = wf.get(WF)
+  if (before === undefined) return { ok: false, detail: `${WF} absent` }
+
+  const MATERIALIZE = '        run: node scripts/provision-next-host.mjs --materialize\n'
+  const ASSETS = '        run: node scripts/provision-next-host.mjs --assets\n'
+  const LANE = '        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs\n'
+  if (!before.includes(MATERIALIZE) || !before.includes(ASSETS) || !before.includes(LANE)) {
+    return { ok: false, detail: `the census workflow does not carry the three next-host invocations verbatim — the legs are declared but not executed (${[MATERIALIZE, ASSETS, LANE].filter((x) => !before.includes(x)).map((x) => x.trim()).join(' ;; ')})` }
+  }
+  // The declared legs must be the ones this control names, or the mutations grade nothing.
+  const legIds = (layer.legs ?? []).map((l) => l.id)
+  for (const needle of ['next host materialize', 'next host assets', 'next host lane']) {
+    if (!legIds.some((id) => id.includes(needle))) return { ok: false, detail: `the manifest has no ci-census leg named ${JSON.stringify(needle)} (legs: ${legIds.join(' | ')})` }
+  }
+
+  /** Stage one edit; return the findings it produced (never write to disk). */
+  const stage = (name, edit) => {
+    const after = edit(before)
+    if (after === before) return { name, error: 'mutation did not apply' }
+    const m = new Map(wf)
+    m.set(WF, after)
+    return { name, findings: checkRequiredJobs({ files: m }).findings }
+  }
+  /** Did this code fire, on a finding that names `needle`? */
+  const fired = (findings, code, needle) => findings.some((f) => f.code === code && String(f.detail ?? '').includes(needle))
+
+  const misses = []
+  const arms = [
+    // (1) the materialize step executes MORE argv than it declares
+    { name: 'extra-argv', code: 'CI_LAYER_LEG_EXTRA_ARGUMENT', needle: '--materialize',
+      edit: (t) => t.replace(MATERIALIZE, '        run: node scripts/provision-next-host.mjs --materialize --json\n') },
+    // (2) the materialize step made conditional — a skipped step is not a red one
+    { name: 'if-false', code: 'CI_LAYER_LEG_UNPROVEN', needle: 'provision-next-host.mjs',
+      edit: (t) => t.replace(MATERIALIZE, `        if: \${{ false }}\n${MATERIALIZE}`) },
+    // (3) the assets step loses its mode: it is no longer the declared invocation
+    { name: 'assets-mode-dropped', code: 'CI_LAYER_LEG_UNPROVEN', needle: '--assets',
+      edit: (t) => t.replace(ASSETS, '        run: node scripts/provision-next-host.mjs\n') },
+    // (4) the assets step's failure is swallowed
+    { name: 'assets-or-true', code: 'CI_LAYER_LEG_UNPROVEN', needle: '--assets',
+      edit: (t) => t.replace(ASSETS, '        run: node scripts/provision-next-host.mjs --assets || true\n') },
+    // (5) the lane drops one of its three declared suites — the remaining argv still matches
+    { name: 'lane-suite-dropped', code: 'CI_LAYER_LEG_ARGUMENT_MISSING', needle: 'native-api.test.mjs',
+      edit: (t) => t.replace(' tests/next-host/native-api.test.mjs', '') },
+    // (6) the lane step is continue-on-error: a red lane reported as a green step
+    { name: 'lane-continue-on-error', code: 'CI_LAYER_CONTINUE_ON_ERROR', needle: 'the rc.5 lane',
+      edit: (t) => t.replace(LANE, `        continue-on-error: true\n${LANE}`) },
+    // (7) the lane replaced by an echo of its own words
+    { name: 'lane-echo', code: 'CI_LAYER_LEG_UNPROVEN', needle: '--test-force-exit',
+      edit: (t) => t.replace(LANE, `        run: echo ${LANE.trim().slice('run: '.length)}\n`) },
+  ]
+  for (const arm of arms) {
+    const staged = stage(arm.name, arm.edit)
+    if (staged.error !== undefined) { misses.push(`${arm.name}: ${staged.error}`); continue }
+    if (!fired(staged.findings, arm.code, arm.needle)) {
+      misses.push(`${arm.name}: ${arm.code} not raised naming ${JSON.stringify(arm.needle)} (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+    }
+  }
+  return {
+    ok: misses.length === 0,
+    detail: misses.length === 0
+      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.code}`).join(', ')} each detected on the next-host legs`
+      : misses.join(' ;; '),
+  }
+})
+
 // ───────────────────────────────────────────────────────────────────── module loader
 /** Resolve a pre-imported module; an absent enforcement module FAILS the control. */
 function requireModule(rel) {

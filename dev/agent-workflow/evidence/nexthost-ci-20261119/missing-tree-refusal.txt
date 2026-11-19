@@ -1,0 +1,42 @@
+$ node scripts/provision-next-host.mjs --verify   # (the pinned tree is moved aside)
+NEXT-HOST-REFUSED code=TREE_MISSING detail=next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch dsh-v0.2.2-rc.5 --depth 1 https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+exit=1
+
+$ node --test --test-reporter=spec tests/next-host/boot.test.mjs   # (tree absent: module-load refusal)
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:104
+    throw new NextHostMissingError('TREE_MISSING', `no host tree at ${tree} — provision it with \`node scripts/provision-next-host.mjs --materialize\` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch ${pinned.tag ?? '<tag>'} --depth 1 ${NEXT_HOST.url} ${pinned.treeRel ?? NEXT_HOST.treeRel}`)
+          ^
+
+NextHostMissingError: next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch dsh-v0.2.2-rc.5 --depth 1 https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+    at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:104:11)
+    at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:196:10)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/boot.test.mjs:36:14 {
+  code: 'TREE_MISSING'
+}
+
+Node.js v24.21.0
+✖ tests/next-host/boot.test.mjs (126.269947ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.454756
+
+
+$ node --test --test-reporter=spec tests/next-host/native-api.test.mjs   # (tree absent)
+file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:104
+    throw new NextHostMissingError('TREE_MISSING', `no host tree at ${tree} — provision it with \`node scripts/provision-next-host.mjs --materialize\` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch ${pinned.tag ?? '<tag>'} --depth 1 ${NEXT_HOST.url} ${pinned.treeRel ?? NEXT_HOST.treeRel}`)
+          ^
+
+NextHostMissingError: next host lane: TREE_MISSING: no host tree at /home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/deepseek-harness-next — provision it with `node scripts/provision-next-host.mjs --materialize` (or the documented clone in docs/TEST_METHODS.md §11.2): git clone --branch dsh-v0.2.2-rc.5 --depth 1 https://github.com/deepseek-ai/deepseek-harness.git tests/deepseek-harness-next
+    at verifyNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:104:11)
+    at assertNextHostTree (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/host-next-lib.mjs:196:10)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/nexthost-ci-20261119/tests/next-host/native-api.test.mjs:35:14
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5) {
+  code: 'TREE_MISSING'
+}
