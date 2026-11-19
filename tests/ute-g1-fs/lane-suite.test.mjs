@@ -23,6 +23,7 @@ import { CORPUS } from './lib/corpus.mjs'
 import { loadHostSurface } from './lib/host.mjs'
 import { runCorpus } from './lib/new-path.mjs'
 import { runNegativeControls } from './negative-controls.mjs'
+import { SEMANTIC_DIFF_LINE_RE, SEMANTIC_DIFFERENCES, semanticDifferenceLines } from './lib/semantic-differences.mjs'
 
 const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
 
@@ -40,6 +41,19 @@ test('the prototype reproduces the old-path golden corpus', async () => {
   assert.equal(verdicts.length, CORPUS.length)
   assert.deepEqual(failures, [], `${failures.length} of ${verdicts.length} vectors diverged from the old path`)
   console.log(`UTE-G1-FS-VERDICT GREEN vectors=${verdicts.length} host=${host.host.head}`)
+})
+
+test('every known semantic difference is declared and printable', () => {
+  const lines = semanticDifferenceLines()
+  assert.equal(lines.length, SEMANTIC_DIFFERENCES.length)
+  assert.ok(lines.length > 0, 'an empty semantic-difference list is a claim of equivalence; delete it deliberately, not silently')
+  for (const line of lines) {
+    console.log(`UTE-G1-FS-${line}`)
+    assert.match(line, SEMANTIC_DIFF_LINE_RE)
+  }
+  const blocking = SEMANTIC_DIFFERENCES.filter((difference) => difference.blocking)
+  assert.ok(blocking.length > 0, 'at least the refusal-code difference must block a silent retirement')
+  assert.ok(blocking.some((difference) => difference.klass === 'refusal-code'), 'the lane refusal-code difference must be recorded')
 })
 
 test('the four negative controls hold', async () => {

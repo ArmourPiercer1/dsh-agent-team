@@ -1,14 +1,14 @@
-# gate transcript — ute-g1-fs-20261119 (final head)
+# gate transcript — ute-g1-fs-20261119 (rebased onto origin/master 4fc703d0a)
 # captured on branch task/ute-g1-fs-20261119 (each block is verbatim; the commands are the authority)
 
-$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
-  tests=875 instruments=3 digest=sha256:df24c182474a0bfd8ef506a3a61c412a763075e882f7f03e8cd08c6a9d4cb198
-  DISCOVERED_AND_COLLECTED 818
-  EXCLUDED_WITH_REASON     16
+  tests=877 instruments=3 digest=sha256:81489ff3a42f742331d3f247cd619d21986478c2789010edc437d34f4ea4a037
+  DISCOVERED_AND_COLLECTED 822
+  EXCLUDED_WITH_REASON     14
   UNCOLLECTED              41
-  by runner: node=118 none=9 vitest=748
-DSH-TEST-CATALOG tests=875 digest=sha256:df24c182474a0bfd8ef506a3a61c412a763075e882f7f03e8cd08c6a9d4cb198 refused=0 findings=0
+  by runner: node=122 none=7 vitest=748
+DSH-TEST-CATALOG tests=877 digest=sha256:81489ff3a42f742331d3f247cd619d21986478c2789010edc437d34f4ea4a037 refused=0 findings=0
 exit=0
 
 $ node --test scripts/test-catalog.test.mjs
@@ -19,12 +19,17 @@ $ node --test scripts/test-catalog.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 574.294858
+ℹ duration_ms 1117.14564
 exit=0
 
 $ node scripts/dispatch-tests.mjs --check
 DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
 exit=0
+
+$ node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
+  union old=25 new=69 set=sha256:9d56a97244aa89274b578f91d3ed4e687cc7bf434b00e7e9fb5f16f43dbf0704
+DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=69 problems=0
+exit=1
 
 $ node scripts/eb3-ci-required.mjs
 EB3-CI-REQUIRED pass workflows=10 findings=0
@@ -38,7 +43,7 @@ exit=0
 
 $ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
 lint-identities: 162 identity lines, 76 distinct (target .)
-lint-identities: universe: 1688 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+lint-identities: universe: 1689 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
 baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
 exit=0
 
@@ -52,7 +57,9 @@ OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent
 exit=0
 
 $ node tests/ute-g1-fs/run-prototype.mjs
-NEW-PATH-VECTOR FS-M1-mode-preserved PASS outcome=allow refusal=none effects=inside/mode.txt|present|4|27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a|0o600 leaks=-
+SEMANTIC-DIFF class=refusal-code old=FS_SANDBOX_DENIED new=FS_PERMISSION_DENIED cause=upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143 reason=not-a-patch blocking=yes id=lane-refusal-code
+SEMANTIC-DIFF class=refusal-observation old=prose new=typed-FsError-code cause=host-generation reason=class-not-code blocking=yes id=refusal-observation-shape
+SEMANTIC-DIFF-COUNT total=2 blocking=2
 PROTOTYPE-VERDICT GREEN vectors=10 failed=0
 exit=0
 
@@ -64,33 +71,46 @@ NC NC-4-lane-load-bearing ok outcome=allow targetExists=true bytes=5
 NC-VERDICT GREEN controls=4 failed=0
 exit=0
 
-$ node tests/ute-g1-fs/lane-suite.mjs
-ℹ tests 2
+$ node tests/ute-g1-fs/lane-suite.test.mjs
+ℹ tests 3
 ℹ suites 0
-ℹ pass 2
+ℹ pass 3
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 295.209398
+ℹ duration_ms 301.868591
+exit=0
+
+$ node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs   # the exact CI step argv
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2530.003104
 exit=0
 
 $ git diff --stat origin/master
+ .github/workflows/census-runtime.yml               |   2 +-
  .../evidence/ute-g1-fs-20261119/README.md          |  39 ++
- .../evidence/ute-g1-fs-20261119/gates.txt          |  79 ++++
+ .../evidence/ute-g1-fs-20261119/gates.txt          |  96 +++++
  .../ute-g1-fs-20261119/host-provisioning.txt       |  10 +
  .../evidence/ute-g1-fs-20261119/isolation.txt      |  74 ++++
  .../ute-g1-fs-20261119/negative-controls.txt       |   5 +
- .../evidence/ute-g1-fs-20261119/new-path-run.txt   |  12 +
+ .../evidence/ute-g1-fs-20261119/new-path-run.txt   |  15 +
  .../evidence/ute-g1-fs-20261119/next-lane.txt      |  25 ++
  .../ute-g1-fs-20261119/old-path-capture.txt        |  12 +
  .../ute-g1-fs-20261119/testkit-after.log.txt       | 450 +++++++++++++++++++++
- docs/plans/memo/ute-g1-fs-20261119/README.md       | 202 +++++++++
- tests/ute-g1-fs/README.md                          | 186 +++++++++
+ dev/ci/eb3-ci-manifest.json                        |   3 +-
+ docs/plans/memo/ute-g1-fs-20261119/README.md       | 219 ++++++++++
+ tests/ute-g1-fs/README.md                          | 204 ++++++++++
  tests/ute-g1-fs/capture-old-path.mjs               |  60 +++
- tests/ute-g1-fs/golden/old-path.meta.txt           |  52 +++
+ tests/ute-g1-fs/golden/old-path.meta.txt           |  61 +++
  tests/ute-g1-fs/golden/old-path.tsv                |  11 +
- tests/ute-g1-fs/lane-suite.mjs                     |  49 +++
+ tests/ute-g1-fs/lane-suite.test.mjs                |  63 +++
  tests/ute-g1-fs/lib/binding.mjs                    |  60 +++
  tests/ute-g1-fs/lib/compare.mjs                    | 106 +++++
  tests/ute-g1-fs/lib/corpus.mjs                     | 169 ++++++++
@@ -102,9 +122,36 @@ $ git diff --stat origin/master
  tests/ute-g1-fs/lib/prototype-provider.mjs         | 209 ++++++++++
  tests/ute-g1-fs/lib/scenario.mjs                   | 155 +++++++
  tests/ute-g1-fs/negative-controls.mjs              | 127 ++++++
- tests/ute-g1-fs/run-prototype.mjs                  |  50 +++
- 27 files changed, 2692 insertions(+)
+ tests/ute-g1-fs/run-prototype.mjs                  |  55 +++
+ 29 files changed, 2778 insertions(+), 2 deletions(-)
 
 $ git status --short
+ M .github/workflows/census-runtime.yml
+ M dev/agent-workflow/evidence/ute-g1-fs-20261119/README.md
  M dev/agent-workflow/evidence/ute-g1-fs-20261119/gates.txt
-(empty = clean)
+ M dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt
+ M dev/ci/eb3-ci-manifest.json
+ M docs/plans/memo/ute-g1-fs-20261119/README.md
+ M tests/ute-g1-fs/README.md
+ M tests/ute-g1-fs/golden/old-path.meta.txt
+RM tests/ute-g1-fs/lane-suite.mjs -> tests/ute-g1-fs/lane-suite.test.mjs
+ M tests/ute-g1-fs/run-prototype.mjs
+?? dev/agent-workflow/evidence/ute-g1-fs-20261119/ci-lane-step.txt
+?? dev/agent-workflow/evidence/ute-g1-fs-20261119/lane-suite.txt
+?? dev/agent-workflow/evidence/ute-g1-fs-20261119/parity.txt
+?? tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md
+?? tests/ute-g1-fs/lib/semantic-differences.mjs
+(only expected new/modified paths; .artifacts is gitignored)
+
+## post-edit re-run (after the final memo/README wording changes)
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=171 notes=4 plans=130(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+exit=0
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+exit=0
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=877 digest=sha256:81489ff3a42f742331d3f247cd619d21986478c2789010edc437d34f4ea4a037 refused=0 findings=0
+exit=0
+$ git diff --check
+exit=0

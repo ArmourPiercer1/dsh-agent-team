@@ -39,7 +39,7 @@ adds transport, not evidence. It is not a claim that a live boot was run.
 capture-old-path.mjs      # (re)capture the golden fixture from the legacy governed path
 run-prototype.mjs         # run the corpus on the prototype and grade it against the fixture
 negative-controls.mjs     # NC-1..NC-4, one per claim (see §5)
-lane-suite.mjs            # node:test wrapper: corpus-vs-golden + the four controls
+lane-suite.test.mjs            # node:test wrapper: corpus-vs-golden + the four controls
 golden/old-path.tsv       # the reviewed fixture (10 vectors)
 golden/old-path.meta.txt  # fixture identity: pins, seam, capture command, limits
 lib/corpus.mjs            # the 10 vectors: entry, declared lanes, steps, expected effects
@@ -103,7 +103,7 @@ node tests/ute-g1-fs/run-prototype.mjs               # exit 1 on any divergence
 node tests/ute-g1-fs/negative-controls.mjs
 
 # 6. the lane suite (node:test, no boot, no ports, no DSH_HOME)
-node tests/ute-g1-fs/lane-suite.mjs
+node tests/ute-g1-fs/lane-suite.test.mjs
 ```
 
 Every command prints machine-greppable lines: `OLD-PATH-VECTOR …`,
@@ -135,6 +135,16 @@ sees one (`packages/fs/tool-fs/src/sandbox.ts:139-143`; measured crash
 `Cannot read properties of undefined (reading 'mode')`). Claiming to be that
 backend would be a false capability claim, so this lane provider does not.
 
+**Known semantic differences are printed, not remembered.** `run-prototype.mjs`
+prints one `SEMANTIC-DIFF class=… old=… new=… cause=… reason=… blocking=… id=…`
+line for each entry in `lib/semantic-differences.mjs` (spec:
+`golden/SEMANTIC-DIFFERENCES.md`). The lane suite asserts the lines exist and
+match the pinned shape, so a future equivalence run reads the difference instead
+of rediscovering it. Today there are two, both retirement-blocking: the lane
+refusal code (`FS_SANDBOX_DENIED` → `FS_PERMISSION_DENIED`, caused by the rc.5
+`tool-fs` `policy.mode` dereference) and the refusal observation shape (legacy
+prose vs typed `FsError` codes).
+
 Negative controls (`negative-controls.mjs`), one per claim:
 
 | id | control | passes when |
@@ -152,16 +162,24 @@ Negative controls (`negative-controls.mjs`), one per claim:
   silently hand it the legacy package (a real failure mode found during bring-up).
 * The prototype runs in fresh `Context`s with its own scratch directories, no
   boot, no port, no `DSH_HOME`, no shared mutable state with the legacy host.
-* `packages/**`, `scripts/**`, `tests/paths.mjs` and the CI manifests are
-  unchanged (`git diff --stat origin/master` = only `tests/ute-g1-fs/**`).
+* `packages/**`, `scripts/**` and `tests/paths.mjs` are unchanged. The only
+  files outside `tests/ute-g1-fs/**` that this PR touches are the `ci-census`
+  "next host lane" wiring (one workflow `run:` line + its mirrored manifest leg)
+  and one memo + one evidence directory — the argv edit only **adds** this suite
+  to a step that already provisions the host and already runs.
 * The legacy census population still plans **712 files / 12 roots**
   (`node scripts/census-plan.mjs --plan`); the legacy FS suites produce the same
   result before and after (evidence: identical normative output on a pristine
   `origin/master` worktree and on this branch).
-* **No catalogued test file is added.** `lane-suite.mjs` deliberately does not
-  match `*.test.mjs`, so `test-catalog` still reports `tests=875`,
-  `UNCOLLECTED 41` and the `dev/ci/uncollected-baseline.json` ratchet is
-  untouched. The suite is a lane run, like the next-host lane.
+* **The lane suite is collected in the job that already has the host.**
+  `lane-suite.test.mjs` is appended to the `ci-census` "next host lane" step
+  (`tests/next-host/{boot,native-api,provisioning-controls}.test.mjs` + this
+  suite), whose argv is mirrored byte-for-byte in the `ci-census` manifest leg
+  (`dev/ci/eb3-ci-manifest.json`). It therefore runs in CI, is counted as
+  `DISCOVERED_AND_COLLECTED`, and needs no `excluded-baseline.json` entry and no
+  uncollected-ratchet change. A missing/drifted next-host tree makes the whole
+  step red (the suite throws at module load), which is the same no-skip law the
+  rc.5 lane already follows.
 
 ## 7. What this does NOT prove (honest non-coverage)
 

@@ -19,6 +19,7 @@ import { join } from 'node:path'
 import { compareAll, fieldValue, parseGolden } from './lib/compare.mjs'
 import { loadHostSurface, hostIdentity } from './lib/host.mjs'
 import { runCorpus } from './lib/new-path.mjs'
+import { SEMANTIC_DIFFERENCES, semanticDifferenceLines } from './lib/semantic-differences.mjs'
 
 const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
 const argv = process.argv.slice(2)
@@ -27,6 +28,10 @@ const only = onlyIndex === -1 ? undefined : argv.slice(onlyIndex + 1).filter((ar
 
 const host = await loadHostSurface()
 console.log(`PROTOTYPE-HOST ${hostIdentity(host.host)}`)
+// Known semantic differences the corpus tolerates: printed on EVERY run so a
+// future equivalence/retirement check reads them instead of remembering them.
+for (const line of semanticDifferenceLines()) console.log(line)
+console.log(`SEMANTIC-DIFF-COUNT total=${SEMANTIC_DIFFERENCES.length} blocking=${SEMANTIC_DIFFERENCES.filter((difference) => difference.blocking).length}`)
 const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
 const { records } = await runCorpus({ only })
 const scopedGolden = only === undefined ? golden : golden.filter((record) => only.includes(record.id))

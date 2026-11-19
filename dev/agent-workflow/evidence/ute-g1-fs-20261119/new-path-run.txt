@@ -1,4 +1,7 @@
 PROTOTYPE-HOST host=next version=0.2.2-rc.5 tag=dsh-v0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/tests/deepseek-harness-next
+SEMANTIC-DIFF class=refusal-code old=FS_SANDBOX_DENIED new=FS_PERMISSION_DENIED cause=upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143 reason=not-a-patch blocking=yes id=lane-refusal-code
+SEMANTIC-DIFF class=refusal-observation old=prose new=typed-FsError-code cause=host-generation reason=class-not-code blocking=yes id=refusal-observation-shape
+SEMANTIC-DIFF-COUNT total=2 blocking=2
 NEW-PATH-VECTOR FS-W1-create PASS outcome=allow refusal=none effects=inside/created.txt|present|14|f5c770359300496c09375941fd64f94618846b27ecc17b0676a07be7cf3523ec|0o600 leaks=-
 NEW-PATH-VECTOR FS-W2-overwrite-read PASS outcome=allow refusal=none effects=inside/doc.txt|present|12|8b75c8fe4ce7617b716326b2b19ed5b3b7302b272081e4646aa976643c4a54ec|0o644 leaks=-
 NEW-PATH-VECTOR FS-W3-unobserved-overwrite PASS outcome=deny refusal=write-requires-read effects=inside/unread.txt|present|28|be882e0af13fbc002bf0b78f05a7de2a188cabbd62f1ec1c4472aad8b2bbc861|0o644 leaks=-

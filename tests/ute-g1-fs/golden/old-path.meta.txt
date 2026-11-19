@@ -22,6 +22,15 @@ claim).
 | capture command | `node tests/ute-g1-fs/capture-old-path.mjs --write` |
 | oracle | `lib/effect-oracle.mjs` — existence, bytes, sha256, mode; refusal class; leak scan |
 
+## KNOWN-SEMANTIC-DIFFERENCE
+
+The corpus grades effects and refusal CLASSES, so it tolerates known semantic
+differences between the two host generations. Those differences are recorded —
+with cause and retirement-blocking status — in the sibling file
+`SEMANTIC-DIFFERENCES.md`, declared in `../lib/semantic-differences.mjs`, printed
+by `run-prototype.mjs` on every run and asserted by `../lane-suite.test.mjs`.
+A difference the harness cannot print is not recorded.
+
 ## Record shape
 
 Header: `id entry lane_read lane_write outcome refusal codes effects leaks`.

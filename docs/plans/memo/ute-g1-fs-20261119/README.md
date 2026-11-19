@@ -28,7 +28,7 @@ origin/master` touches **nothing else**.
 | The **old path** produces comparable (request → effect) pairs | `old-path-capture.txt` + `tests/ute-g1-fs/golden/old-path.tsv` — 10 vectors captured on legacy `0.2.0-rc.2 @ 639ed01539` through the **product** route-C seam (`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`) |
 | The **comparison harness** grades the new adapter against those pairs and bites | `new-path-run.txt` `PROTOTYPE-VERDICT GREEN vectors=10 failed=0`; NC-2 mutates one golden cell → RED |
 | **One honest negative control per claim** | `negative-controls.txt` — NC-1 lane bites (deny fact + target absent), NC-2 harness bites (mutated sha → RED), NC-3 no fallback (typed `NextHostMissingError`, never names the legacy tree), NC-4 lane is load-bearing (same call, widened lane → 5-byte file appears) |
-| **Isolation** | `isolation.txt` — only `tests/ute-g1-fs/**` changed; legacy pin block / CI / `packages/**` / `scripts/**` untouched; census still **712 files / 12 roots**; legacy FS suite verdicts identical on pristine `origin/master` and on the branch; testkit suite has the **same 13 pre-existing** failures on both |
+| **Isolation** | `isolation.txt` — the only changes outside `tests/ute-g1-fs/**` are the `ci-census` next-host lane wiring (one workflow `run:` line + its mirrored manifest leg, which **adds** this suite to a step that already provisions and boots rc.5), one memo and one evidence directory; legacy pin block / `packages/**` / `scripts/**` untouched; census still **712 files / 12 roots**; legacy FS suite verdicts identical on pristine `origin/master` and on the branch; testkit suite has the **same 13 pre-existing** failures on both |
 | Next-host lane still green with the prototype present | `next-lane.txt` — 6/6, boot on port 13000, pinned native assets verified |
 
 ### Prototype surface (new files + exported symbols)
@@ -87,30 +87,35 @@ on a `ctx.isolate('fs')` scope.
    mounts in the real composition, nor whether the prototype provider should
    become an `fs-sandbox`-shaped backend (§6).
 
-## 3. Gate table (all run on this branch; verbatim in `evidence/gates.txt`)
+## 3. Gate table (all re-run on the rebased head; verbatim in `evidence/gates.txt`)
 
 | gate | result |
 |---|---|
-| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 9` | `tests=875 UNCOLLECTED 41 EXCLUDED_WITH_REASON 16`, `refused=0 findings=0` |
+| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `tests=877 DISCOVERED_AND_COLLECTED 822 EXCLUDED_WITH_REASON 14 UNCOLLECTED 41`, `refused=0 findings=0` |
 | `node --test scripts/test-catalog.test.mjs` | 28 pass / 0 fail |
 | `node scripts/dispatch-tests.mjs --check` | `PASS legs=18 bad=0` |
+| `node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670` | `DIFFERS steps=18 old_files=25 new_files=69 problems=0` — the union changed (Task B's three rc.5 suites + this one); no argv problem |
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=10 findings=0` |
 | `node scripts/docs-sync.mjs --check` | `findings=0 blocking=0 contracts=20` |
-| `node scripts/lint-identities.mjs --diff origin/master` | no new identity lines |
+| `node scripts/lint-identities.mjs --diff <a4 baseline>` | 76 distinct, `new 0 resolved 0` |
 | `git diff --check` | clean |
 | `node tests/ute-g1-fs/capture-old-path.mjs` | 10 vectors, fixture identical, 0 claim mismatches |
-| `node tests/ute-g1-fs/run-prototype.mjs` | `GREEN vectors=10 failed=0` |
+| `node tests/ute-g1-fs/run-prototype.mjs` | `GREEN vectors=10 failed=0` + two `SEMANTIC-DIFF` lines |
 | `node tests/ute-g1-fs/negative-controls.mjs` | `GREEN controls=4 failed=0` |
-| `node tests/ute-g1-fs/lane-suite.mjs` | 2/2 pass |
-| `node --test 'tests/next-host/*.test.mjs'` | 6/6 pass (boot on 13000, pinned assets) |
+| `node tests/ute-g1-fs/lane-suite.test.mjs` | 3/3 pass (corpus + semantic-difference shape + negative controls) |
+| the CI step itself, verbatim (`node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/{boot,native-api,provisioning-controls}.test.mjs tests/ute-g1-fs/lane-suite.test.mjs`) | **22/22 pass** (real rc.5 boot on 13000, A1–A6, provisioning controls, this suite) |
 | legacy FS suites (`a5sf-fs-contract`, `a5sf-pd17-fs-read-axis`) | before = after: 34 pass / 1 skip, identical verdicts |
 | `packages/testkit` vitest suite | 13 failed / 499 passed — **identical failure set** on pristine `origin/master` (pre-existing environment red, not caused by this branch) |
 
-**No catalogued test file was added.** `lane-suite.mjs` does not match
-`*.test.mjs`, so the uncollected ratchet and
-`dev/ci/uncollected-baseline.json` are untouched (adding an uncollected suite
-would have moved 41 → 42, i.e. a CI-manifest change this task must not make).
-The suite is a lane run, exactly like the next-host lane.
+**Collection wiring (the reviewer's condition).** `lane-suite.test.mjs` is a real
+`*.test.mjs` appended to the `ci-census` "next host lane" step — the job that
+already materializes the rc.5 tree, installs the pinned assets and boots the host
+(Task B, `4fc703d0a`). The workflow `run:` line and the mirrored
+`dev/ci/eb3-ci-manifest.json` leg carry the byte-identical argv
+(`dispatch-tests --check` enforces it), the catalog classifies the suite
+`DISCOVERED_AND_COLLECTED`, and a missing/drifted tree makes the step red
+(module-load throw). No `excluded-baseline.json` entry and no
+uncollected-ratchet change was needed (`UNCOLLECTED` stays 41).
 
 ## 4. Design decisions (and why)
 
@@ -164,7 +169,14 @@ Mirrored in `tests/ute-g1-fs/README.md` §7 and `golden/old-path.meta.txt`:
    prototype therefore raises `FS_PERMISSION_DENIED` for lane refusals. This is a
    real design constraint on any future "lane provider" that is not the
    `fs-sandbox` backend: either speak its protocol (declare `sandboxMode`, mount
-   `sandbox-policy`) or use a non-sandbox code. It is recorded, not patched.
+   `sandbox-policy`) or use a non-sandbox code. It is **recorded as a
+   retirement-blocking limitation, not memo prose**: `tests/ute-g1-fs/golden/
+   SEMANTIC-DIFFERENCES.md` (KNOWN-SEMANTIC-DIFFERENCE 1–2), the machine list in
+   `lib/semantic-differences.mjs`, a `SEMANTIC-DIFF class=refusal-code
+   old=FS_SANDBOX_DENIED new=FS_PERMISSION_DENIED cause=upstream-deref
+   reason=not-a-patch blocking=yes` line printed by `run-prototype.mjs` on every
+   run, and an assertion in `lane-suite.test.mjs` that the lines exist and keep
+   their shape. A difference the harness cannot print is not recorded.
 2. **The FS family needs no ToolPlane / Family Body machinery at this seam.** The
    prototype reaches a governed, confined effect entirely through the public
    `ToolsService` + a provider subclass + the observation policy. That is
@@ -192,7 +204,12 @@ Mirrored in `tests/ute-g1-fs/README.md` §7 and `golden/old-path.meta.txt`:
   effects but not every path shape.
 * Whether the rc.5 `mapError` assumption is fixed in a later host generation.
 * Whether the owner wants the prototype provider to adopt `sandboxMode` +
-  `sandbox-policy` and speak the `[sandbox: …]` protocol.
+  `sandbox-policy` and speak the `[sandbox: …]` protocol — this is the
+  retirement-blocking decision recorded as `KNOWN-SEMANTIC-DIFFERENCE 1`.
+* Whether a future equivalence oracle will compare refusal codes directly; the
+  corpus compares classes by design (`KNOWN-SEMANTIC-DIFFERENCE 2`), and the
+  harness now prints both differences on every run so the decision cannot be
+  made by memory.
 
 ## 8. Reproduction
 
