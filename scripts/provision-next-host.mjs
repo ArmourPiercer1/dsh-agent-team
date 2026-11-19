@@ -163,7 +163,7 @@ function assertTagPinned(treeOrNull) {
 }
 
 /** Clone or refresh the tree at the pinned tag, then assert HEAD/version/build. */
-function materialize({ repoRoot, tree, store, tools }) {
+function materialize({ tree, store, tools }) {
   assertTagPinned(null)
   const gitDir = join(tree, '.git')
   if (existsSync(tree) && !existsSync(gitDir)) {
@@ -330,7 +330,7 @@ try {
   const store = resolve(opt('store-dir') ?? join(work, 'pnpm-store'))
   const tools = resolve(opt('tools-dir') ?? join(work, 'tools'))
   const receipt = opt('receipt') ?? join(repoRoot, '.artifacts', 'tmp', 'host-assets', 'next-provision-receipt.json')
-  if (modes[0] === 'materialize') materialize({ repoRoot, tree, store, tools })
+  if (modes[0] === 'materialize') materialize({ tree, store, tools })
   else if (modes[0] === 'assets') await provisionAssets({ repoRoot, tree, receipt })
   else verify({ repoRoot, tree })
   process.exit(0)
