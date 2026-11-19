@@ -1,0 +1,18 @@
+# Legacy pinned host provisioning (the census job's step chain), reproduced locally on 2026-11-19
+$ git -C tests/deepseek-harness-test-use rev-parse HEAD
+639ed015397290b3745d163aafe02ffee4aa3f84
+$ git -C tests/deepseek-harness-test-use status --porcelain | wc -l
+0
+$ node -p "require('./tests/deepseek-harness-test-use/package.json').version"
+0.2.0-rc.2
+$ ls tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+11697 tests/deepseek-harness-test-use/apps/cli/lib/bin.js
+$ node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2
+HOST-ASSETS-PROVISIONED package=@deepseek-ai/node-addon-system-linux-x64 version=0.1.2 tarballSha256=77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20 distIntegrity=sha512-S2aPVHvYCpNCppCFyNlooMYuTB7ucK5lvD9oXQQ42v5Z2s5AoaiCdjz9r2l+ED2rI5oS1x0cUZmKjJH2dxV0pg== files=2 hostBaseline=legacy host=639ed015397290b3745d163aafe02ffee4aa3f84 manifestDigest=7f367c7a964ca9fdb33e93e889a5a999c481da35e81edc67976fffbc3cc8c52c utc=2026-11-19T18:30:13.773Z receipt=/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/.artifacts/tmp/host-assets/provision-receipt.json
+
+# The build already existed in this environment's shared pristine tree (copied in, same commit and
+# porcelain-clean); the two facts that matter are the pin and the ASSET bytes, and the asset step
+# above is the one that moves bin/glibc/system.node from the local build (75450f92…, 17352 B) to the
+# published pin (54a9c25c…, 17360 B). Before running it, M7-B1 refused by name:
+#   A1 inside-authorized: ... {"ok":false,"verdict":"INSTRUMENT_ERROR","reason":"HOST_ASSETS_UNPROVEN",
+#   "detail":"bin/glibc/system.node sha256=75450f9225f5005410a0a719b590f84ab33e3df80c0285095797e153404b70bd != the pinned 54a9c25c05186c17520f6b7a5ced5f005752c08044c3eb76524cd517287600bc"}

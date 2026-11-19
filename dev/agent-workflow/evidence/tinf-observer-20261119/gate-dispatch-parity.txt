@@ -1,3 +1,4 @@
+$ node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670f5a4867ff02834b033af4bbcc45b836
 dispatch-parity mode=inspect old=e5bf05670f5a4867ff02834b033af4bbcc45b836 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none

@@ -422,6 +422,8 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
 
     // The arms. `gradedTurn` is the 1-based turn whose call id the contract binds
     // (the execution under grade); `expect` is the pre-registered verdict.
+    // `expectDeny` is OFF unless an arm explicitly grades a REFUSED call: the
+    // graded execution in all three arms is turn 2, which the Host completes.
     const arms = [
       {
         tag: 'inside-authorized',
@@ -561,7 +563,18 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
       const closed = await closeObservationWindow({ opened })
       assert.equal(closed.ok, true, `${arm.tag}: the window closes with sealed, in-window rows (got ${JSON.stringify(closed.reason ?? '')})`)
 
-      const judgement = await judgeObservationWindow({ contract, opened, closed, events, expectDeny: true })
+      // NO BLANKET DENY CONTRACT (F-08, 2026-11-19). `expectDeny: true` used to be
+      // hardcoded for every arm, and it was only ever satisfied by STEP 1's denial
+      // of a DIFFERENT call (the refused escape) — the graded call here is turn 2
+      // and it COMPLETED. That is the F-08 defect exactly: a denial belonging to
+      // another call manufacturing a pass for this one. Now that the oracle pins
+      // the graded execution, an arm must DECLARE a deny contract, and these three
+      // do not have one: they grade the effect boundary (inside / outside /
+      // same-directory). The refusal they depend on is asserted where it is
+      // observable — the A4 block below pins outcome=DENIED,
+      // error_code=FS_SANDBOX_DENIED and "no bytes on disk" verbatim — so nothing
+      // about the refusal becomes unverified by dropping a claim that was false.
+      const judgement = await judgeObservationWindow({ contract, opened, closed, events, expectDeny: arm.expectDeny === true })
       const observed = judgement.observedEffectPaths ?? []
       const authorized = judgement.authorizedEffectPaths ?? []
       const unauthorized = judgement.unauthorizedEffectPaths ?? []

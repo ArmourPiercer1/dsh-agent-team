@@ -3,7 +3,7 @@
 **日期**：2026-11-19
 **分支**：`task/tinf-observer-20261119`（worktree `.worktrees/tinf-observer-20261119`，base `origin/master 00429852cc9c9284fd6817da57503bac9501bc9d`）
 **范围**：外部评审在 M6/M7 合并点列出的三个观察器缺陷（F-07 截断假绿、F-08 拒绝事件归属、F-09 World 身份可伪造）＋ 一条必须写进代码而不是文字的边界（M7-C：快照观察不到 `read`）。
-**结论先行**：三条缺陷都已修，每条都有可执行负控与“变异→红”记录（6 个变异，全部在目标用例上变红；F-08 在评审追查“无 pin + 单条外来 denial”仍可取绿后做了第二轮收紧，规则从“≥2 个执行才歧义”改为“只要 denial 命名了执行而契约没 pin 就拒绝”），transcript 在 `dev/agent-workflow/evidence/tinf-observer-20261119/`）；四值判决词表（`SATISFIED | VIOLATED | INCONCLUSIVE | INSTRUMENT_ERROR`）**未改动**，新增的是 typed `reason_code`；**读边界没有被“修绿”，而是被编码成一条永不返回绿的具名结论**；本 worktree 内钉住的宿主运行时树不存在，因此 M7-B1 的真宿主臂（inside/outside/同目录对照、逐字 denial、伪造 witness）**仍是 UNKNOWN**（见“偏差 1”）。
+**结论先行**：三条缺陷都已修，每条都有可执行负控与“变异→红”记录（6 个变异，全部在目标用例上变红；F-08 在评审追查“无 pin + 单条外来 denial”仍可取绿后做了第二轮收紧，规则从“≥2 个执行才歧义”改为“只要 denial 命名了执行而契约没 pin 就拒绝”），transcript 在 `dev/agent-workflow/evidence/tinf-observer-20261119/`）；四值判决词表（`SATISFIED | VIOLATED | INCONCLUSIVE | INSTRUMENT_ERROR`）**未改动**，新增的是 typed `reason_code`；**读边界没有被“修绿”，而是被编码成一条永不返回绿的具名结论**；**第三轮（2026-11-19 晚）：hosted `ci-census` 在 `fdffd878f` 上红了，红在我声称“本地无法执行”的 M7-A 真实宿主臂上。本轮把宿主真正 provision 起来（pin `639ed01539` + 发布包原生资产），逐臂复现：A2 的判决从未改变（前=后=`VIOLATED`），改变的是**到达它的规则**（3c → 3d），而 arm 把某条规则的措辞当成了契约；同时查出**两处真实的假绿**——M7-A 的 A5 与 M7-B1 的 `inside-authorized` 的 `SATISFIED` 都只能靠**另一个调用**的 denial 满足，正是 F-08 指名的缺陷。四条 census 步骤（M7-A、B4/1、B4/2、M7-B1）在本地以 CI 形状一次跑完：`VERIFIED arms=5` / 32/32 / 27/27 / 10/10。见“真实宿主复现”一节与 `*-real-host-before-after.txt`。
 
 ## 一张表
 
@@ -49,6 +49,31 @@
 | `tinf-instruments` leg | `suites=51 files=51 exit=0`（master 50 + 本分支 1） | ✓ |
 | catalog | `tests=877`（master 876 + 1）、`UNCOLLECTED 41`、`--max-excluded 7` 通过 | ✓ |
 
+## 真实宿主复现与修正（2026-11-19，hosted `ci-census` 在 `fdffd878f` 上红之后）
+
+**hosted 现象**：`M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED detail=A2: the verdict names the unauthorized effect (reasons: ["events[0] DISPATCHED carries no authority_ref while the witness observed an unauthorized effect in: … watched-escape.txt"])`，随后 B4/M7-B1 三步全部被跳过（前一步红），所以那次运行只答了一半问题。
+
+先纠正一个术语：`REFUSAL_NOT_ACCEPTED` **不是**“oracle 拒绝判决”，而是 `tests/world-factory/lib/m7a-step-verdict.mjs` 对“抛出的错误不是那个被接受的 host-asset refusal”的**步骤级标签**——任何别的异常都落在这里。真正红的是 arm 的**文本断言**。
+
+**本地把宿主真正 provision 起来**（不是推理）：
+- 宿主树 = `tests/deepseek-harness-test-use`，`rev-parse HEAD` = `639ed015397290b3745d163aafe02ffee4aa3f84`（= `tests/paths.mjs` 的 pin），`git status --porcelain` = 0 行，`package.json` version = `0.2.0-rc.2`；
+- 原生资产用 census 的同一条 argv 从**已发布**包取：`node scripts/provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2` → `HOST-ASSETS-PROVISIONED … files=2 host=639ed015397290b3745d163aafe02ffee4aa3f84`。在跑它之前 M7-B1 以 `HOST_ASSETS_UNPROVEN`（本地 build 的 `bin/glibc/system.node` = `75450f92…` 17352 B ≠ pin `54a9c25c…` 17360 B）**具名拒绝**——这正是“本地 build 的字节不是已发布字节”的同一条规矩在起作用；
+- 四条步骤按 CI 形状、同一台宿主、顺序执行（`census-four-steps-real-host.txt`）：M7-A `VERIFIED arms=5`；B4/1 `32/32`；B4/2 `27/27`；M7-B1 `10/10`。
+
+**同一个真实 trace 的前后判决**（`m7a-real-host-before-after.txt`、`m7b1-real-host-before-after.txt`，全部逐字）：
+
+| arm | 改前（`00429852c` 树 + 真宿主） | 收紧后、arm 未改 | 最终 |
+| --- | --- | --- | --- |
+| M7-A A2 `unauthorized-observed` | `VIOLATED`，理由走 **3c**：`trace reports DENIED but the independent witness observed an effect outside the authorized set in: … watched-escape.txt` | `VIOLATED`，理由走 **3d**：`events[0] DISPATCHED carries no authority_ref while the witness observed an unauthorized effect in: … watched-escape.txt` | `VIOLATED`（同一判决；断言改为“判决是 VIOLATED 且理由点名逃生路径”） |
+| M7-A A5 `bash-reachable-and-confined` | `SATISFIED`（`pin=undefined`，靠 step 1 的 `DENIED`） | `INCONCLUSIVE` / `DENY_EXECUTION_UNATTRIBUTED`（`1 DENIED event(s) … name m7a-14`） | `SATISFIED`（arm 声明 `expectDeny: false`，拒绝由 step 级三条断言证明） |
+| M7-B1 A1 `inside-authorized` | `SATISFIED`（硬的 `expectDeny: true`，被 `m7b1-0` 的 denial 满足） | `INCONCLUSIVE`：`deny contract requires a DENIED event for execution "m7b1-2", but the trace's 1 DENIED event(s) belong to m7b1-0` | `SATISFIED`（per-arm `expectDeny`，三条 arm 都不评判被拒调用） |
+
+**哪一边错了**：
+1. **A2：arm 的断言错，oracle 没错**。判决前后都是 `VIOLATED`；变的是规则编号与措辞。A2 的 trace 的第一个事件确实是 `DISPATCHED` 且 `authority_ref: null`（这是 M7-A 通道的构造事实：它不计算 per-call 授权），witness 确实观察到 `watched-escape.txt` 这个未授权写入——所以 `VIOLATED` 是对的。arm 原来断言的 `includes('outside the authorized set')` 只是 rule 3c 的措辞，而它自己的注释早就写着“rule 3d fires => VIOLATED”。这条断言此前能过，是因为 3c 先命中；F-08 收紧后 3c 不再命中（不再把别的调用的 DENIED 算给这个调用），于是同一个判决从 3d 出来。**判据换成了“判决 + 点名路径”，并加了 host-free 负控 `M7A-U13`：同一 trace 去掉逃生观测 ⇒ 不再 `VIOLATED` 且理由不点名该路径**（否则“点名路径”可能空过）。
+2. **A5 与 M7-B1 A1：是真实的假绿，oracle 收紧后正确地拒绝**。两处 `SATISFIED` 都只能由**另一个调用**的 denial 满足（A5 的 `m7a-14`、M7-B1 的 `m7b1-0`），而它们评判的调用（turn 2）是 `COMPLETED`。把 `expectDeny` 从“硬编码 true”改成“由 arm 声明、这三条臂都不声明”，不是把期望翻绿：拒绝本身仍在**步骤级**逐字断言（`outcome=DENIED`、`error_code=FS_SANDBOX_DENIED`、`exists=false`），而 deny 规则的可证伪性由 F-08 的四条负控与变异 3/6 守住。
+
+**M7-A 调用方 pin 的再审视**：`judgeRealRun` 的 pin 只在这条 turn **恰好命名一个执行**时生效；A1 因此拿到 `pin=m7a-0`（判决不变），A2 有 2 个执行、A5 有 3 个执行，都是 `pin=undefined`——**A2/A5 的判决变化不是 pin 造成的**，而是“无 pin 时不再消费带 id 的 denial”这条规则造成的。这也说明 pin 派生是保守的：它只在没有选择余地时落到一个具体调用上。
+
 ## 这个观察器能证明什么、不能证明什么
 
 **能证明**（在本 worktree 实测的形态下）：
@@ -75,14 +100,16 @@
 | 命令 | 输出（逐字） |
 | --- | --- |
 | `node --test tests/world-factory/tinf-observer-closeout.test.mjs` | `tests 27 / pass 27 / fail 0 / skipped 0`，exit 0（`baseline-closeout-node-test.txt`） |
-| `node --test tests/world-factory/m7b1-observation-window.test.mjs` | `tests 10 / pass 9 / fail 0 / skipped 1`，`M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT`，exit 0（`baseline-m7b1-window-host-absent.txt`） |
+| `node --test tests/world-factory/m7b1-observation-window.test.mjs`（宿主缺席） | `tests 10 / pass 9 / fail 0 / skipped 1`，`M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT`，exit 0（`baseline-m7b1-window-host-absent.txt`） |
+| 同上（**宿主在位**，`M7B1_REQUIRE_PINNED_HOST=1`） | `tests 10 / pass 10 / fail 0 / skipped 0`；`M7B1-ARM inside-authorized verdict=SATISFIED`、`outside-authorized verdict=VIOLATED`、`same-directory-as-harness verdict=VIOLATED`（`m7b1-real-host-before-after.txt`） |
 | `vitest run test/m2-contract-oracle.test.ts test/m2-effect-witness.test.ts` | `Test Files 2 passed (2)`、`Tests 61 passed (61)`（43 + 18）（`baseline-vitest-m2.txt`） |
 | `cd packages/testkit && tsc -p tsconfig.json --noEmit` | 无输出，exit 0（`gate-testkit-tsc.txt`） |
-| `cd packages/testkit && vitest run`（全量） | `Test Files 3 failed | 31 passed (34)`、`Tests 13 failed | 501 passed (514)`；红的三个文件是 `plugin-dsh-compat`（需 provisioned host）、`a4p7-blueprint-version-clean`（12）、`a4p7-merge-gate`（1）——与本 PR 无关的既有红，且**改动前**同样是 `13 failed | 486 passed (499)`，即 +15 个新测试、0 个新失败（`gate-testkit-vitest.txt`） |
+| `cd packages/testkit && vitest run`（全量，宿主缺席时） | `Test Files 3 failed | 31 passed (34)`、`Tests 13 failed | 501 passed (514)`；红的是 `plugin-dsh-compat`（缺宿主）、`a4p7-blueprint-version-clean`（12）、`a4p7-merge-gate`（1）——与本 PR 无关的既有红；改动前 `13 failed | 486 passed (499)`，即 +15 个新测试、0 个新失败（`gate-testkit-vitest.txt`） |
+| 同上（**宿主在位**） | `Test Files 2 failed | 32 passed (34)`、`Tests 13 failed | 514 passed (527)`；`plugin-dsh-compat` 变为绿（它只需要宿主），说明“3 个红文件”里有一个本来只是缺宿主（`gate-testkit-vitest.txt`） |
 | `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `UNCOLLECTED 41`、`by runner: node=122 none=7 vitest=748`、`DSH-TEST-CATALOG tests=877 digest=sha256:a0b283cc8f5df76b5ac8f4e6560d47684ff29ffb10246e06356d98322a664ce0 refused=0 findings=0`，exit 0（`gate-test-catalog.txt`）。**排除上界是 master 的 7**（#790 删了两条 next-host 行并把 `--max-excluded` 9 → 7）；`dev/ci/excluded-baseline.json` 与本分支的 diff = **0 行**，即 master 版本原样保留，没有把那两行加回来 |
 | `node --test scripts/test-catalog.test.mjs` | `tests 28 / pass 28 / fail 0`，exit 0（`gate-test-catalog-test.txt`） |
 | `node scripts/dispatch-tests.mjs --check` | `DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0`（`gate-dispatch-check.txt`） |
-| `A5SF_REQUIRE_PINNED_HOST=1 node scripts/dispatch-tests.mjs --leg tinf-instruments --run` | `tests 812 / pass 806 / fail 0 / skipped 6`、`DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=51 files=51 exit=0 set=sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556`（`gate-tinf-instruments-leg.txt`；新套件四条测试在其中可见） |
+| `A5SF_REQUIRE_PINNED_HOST=1 node scripts/dispatch-tests.mjs --leg tinf-instruments --run` | `tests 813 / pass 807 / fail 0 / skipped 6`、`DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=51 files=51 exit=0 set=sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556`（`gate-tinf-instruments-leg.txt`；新套件四条测试在其中可见） |
 | `node scripts/eb3-ci-required.mjs` | `EB3-CI-REQUIRED pass workflows=10 findings=0`（`gate-eb3-ci-required.txt`） |
 | `node scripts/eb3-negative-controls.mjs` | `33/33 control(s) behaved as required`（`gate-eb3-negative-controls.txt`；32 条是本分支之前的基线，#790 加了 `C-NH1`） |
 | `node scripts/docs-sync.mjs --check` | `docs:sync --check: … findings=0 blocking=0 contracts=20 pairs compared`（`gate-docs-sync.txt`） |
@@ -102,8 +129,8 @@
 
 ## 偏差与必须知道的事（含 UNKNOWN）
 
-1. **UNKNOWN：M7-B1 的真宿主臂没有在本 worktree 执行**。`tests/deepseek-harness-test-use/` 作为 gitignored 的 pristine 树在此 worktree 不存在，`m7b1-observation-window.test.mjs` 因此只跑了 fail-closed 半边（9 pass / 1 skip，`verdict=INSTRUMENT_ERROR reason=HOST_ABSENT`）。inside/outside/同目录对照、逐字 denial、伪造+外来 witness 的编译级负控，以及 `census-runtime` 里的重测，都**未**在本分支验证，状态 UNKNOWN；该套件在 `ci-census` leg（需要 provisioned host），不在本 PR 触碰的 `tinf-instruments` leg。
-2. **UNKNOWN：全量 testkit vitest 的 3 个红文件**在 CI 的 product lane 是否为绿（`plugin-dsh-compat` 需要 provisioned host，`a4p7-*` 需要已构建产物）。本 PR 只证明“改动前 13 failed / 486 passed，改动后 13 failed / 499 passed”，失败集合未扩大；不声称它们在 CI 绿。
+1. **M7-B1 的真宿主臂已在本机执行（不再是 UNKNOWN）**：宿主 pin `639ed01539` + 发布包原生资产在位，`tests 10 / pass 10 / fail 0`，inside/outside/同目录三条对照、逐字 denial、伪造+外来 witness 全部通过（`m7b1-real-host-before-after.txt`）。**仍然 UNKNOWN 的是 hosted runner 自己的环境**（实网、内核、以及 census 里 `provision-host-assets` 那一步在 runner 上的可达性）——本地证明的是“代码 + 这棵树 + 这组资产”，不是“任何 runner”。
+2. **全量 testkit vitest 的红文件**：宿主缺席时 3 个（`plugin-dsh-compat` + `a4p7-blueprint-version-clean` + `a4p7-merge-gate`），**宿主在位时只剩 2 个**（`plugin-dsh-compat` 转绿，它就是缺宿主）；`a4p7-*` 的 13 条失败与本 PR 无关（改动前同样 13 条）。它们在 CI 的 product lane 是否绿仍未验证。
 3. **契约面只增不减**：`WitnessObservation` 新增 4 个可选/新建字段、`OracleInput.requiredEffectKinds` 可选、`OracleJudgement.reason_code` 可选、`createFsWitness({ world?, worldGuard? })` 可选、新导出 `FS_OBSERVABLE_EFFECTS`/`FS_UNOBSERVABLE_EFFECTS`/`EffectKind`/`OracleReasonCode`/`WORLD_IDENTITY_SCHEMA`/`READ_NON_OCCURRENCE_CLAIM`/`contractWorldIdentity`。`git grep` 面：`declareObservationContract` 只被 1 个既有测试文件消费（`tests/world-factory/m7b1-observation-window.test.mjs`）；`createFsWitness(` 共 44 处调用（testkit 自身与测试 25、`tests/` 19），除本 PR 新增的两处外**没有**调用方传 `world`，故全部保持旧行为。
 4. **parity 证据有意重生成**：新套件接入同一 `tinf-instruments` leg（50 → 51），union 69 → 70，`problems=0`、每行 `missing=none`、`added=` 恰为 45 个文件（44 + 这 1 个）。`scripts/test-catalog.test.mjs` 的允许集合同步加这一条，未来不能借重生成偷加文件。**未收集基线未改**（新套件是“收集”而非“未收集”），`UNCOLLECTED` 仍为 41。
 5. **F-09 的边界是进程内**（见上表“仍然开放”）：不要把它当安全隔离；它关闭的是“手写 fixture 冒充 World”这类**假绿**，不是恶意代码。
@@ -113,5 +140,5 @@
 
 ## 文件清单
 
-新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（23 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
+新增：`tests/world-factory/lib/world-identity.mjs`、`tests/world-factory/tinf-observer-closeout.test.mjs`、本 memo 与 `dev/agent-workflow/evidence/tinf-observer-20261119/`（27 份 transcript + 可复跑的 `probe-verdicts.mjs`）。
 修改：`packages/testkit/src/{effect-witness,contract-oracle,index}.ts`、`packages/testkit/test/{m2-effect-witness,m2-contract-oracle}.test.ts`、`tests/world-factory/lib/{world-factory,m7b1-observation-contract,m7a-real-run}.mjs`、`tests/world-factory/m7b1-observation-window.test.mjs`、`dev/ci/eb3-ci-manifest.json`、`scripts/test-catalog.test.mjs`、`dev/agent-workflow/evidence/tinf-m6-dispatch-parity/old-vs-new-argv.txt`。

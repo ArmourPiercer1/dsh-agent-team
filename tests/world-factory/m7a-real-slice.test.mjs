@@ -241,6 +241,16 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
         tag: 'bash-reachable-and-confined',
         session: 'bash',
         expectation: 'SATISFIED',
+        // NO DENY CONTRACT (F-08, 2026-11-19). This turn issues THREE calls, so it
+        // has no single execution to pin, and the tightened rule refuses to let one
+        // call's DENIED satisfy a per-call deny claim (`DENY_EXECUTION_UNATTRIBUTED`)
+        // — the old SATISFIED was reached through exactly that hole ("some DENIED
+        // exists somewhere in the trace"). The refusal this arm is about is asserted
+        // where it is observable, at the step level below: outcome DENIED, error
+        // code FS_SANDBOX_DENIED, and no bytes on disk. What the ORACLE grades here
+        // is the effect boundary (the authorized workspace write is observed and
+        // excluded, nothing escaped), which needs no deny claim.
+        expectDeny: false,
         witness: 'observed',
         steps: [
           { prompt: 'M7A-ARM-A5a write outside the workspace', file: '../bash-deny.txt', content: 'M7A-A5A\n', outcome: 'DENIED' },
@@ -457,7 +467,25 @@ test('M7-A real-host slice: scripted model -> real DSH session -> real tool -> w
             record.unauthorizedObserved.some((path) => path.endsWith('watched-escape.txt')),
             `A2: the observed effect is classified UNAUTHORIZED (got ${JSON.stringify(record.unauthorizedObserved)})`,
           )
-          assert.ok(judged.judgement.reasons.some((line) => line.includes('outside the authorized set')), `A2: the verdict names the unauthorized effect (reasons: ${JSON.stringify(judged.judgement.reasons)})`)
+          // The VERDICT is the arm's contract; the RULE that reaches it is not.
+          // Two legitimate routes to VIOLATED name the effect: rule 3c (a DENIED
+          // log line plus a real unauthorized effect) and rule 3d (an event with no
+          // authority_ref plus that effect). Which one fires depends on
+          // attribution — since F-08 was tightened (2026-11-19) an unpinned
+          // contract does not let ANOTHER call's DENIED decide this one, so this
+          // trace now reaches 3d instead of 3c. Pinning on one rule's PHRASE made
+          // the arm red for a change of justification while the verdict it
+          // registered (VIOLATED) stayed correct; the arm therefore asserts what
+          // it is really about: the verdict, and that its reason names the escape.
+          assert.equal(judged.judgement.verdict, 'VIOLATED', `A2: an escape the witness saw is a violation (reasons: ${JSON.stringify(judged.judgement.reasons)})`)
+          assert.ok(
+            judged.judgement.reasons.some((line) => line.includes('watched-escape.txt')),
+            `A2: the verdict NAMES the unauthorized effect it is about (reasons: ${JSON.stringify(judged.judgement.reasons)})`,
+          )
+          assert.ok(
+            judged.judgement.reasons.some((line) => line.includes('filesystem')),
+            `A2: the verdict states the graded domain the effect escaped (reasons: ${JSON.stringify(judged.judgement.reasons)})`,
+          )
         }
         if (arm.tag === 'observation-disabled') {
           const escape = record.steps[1]

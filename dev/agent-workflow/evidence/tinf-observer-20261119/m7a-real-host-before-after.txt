@@ -1,0 +1,57 @@
+# Hosted ci-census regression (20261119) — M7-A arm A2, real host, BEFORE vs AFTER
+# machine: local, same pinned host tree the CI census provisions
+# host: 639ed015397290b3745d163aafe02ffee4aa3f84 (tests/paths.mjs pin 639ed015397290b3745d163aafe02ffee4aa3f84), porcelain 0 lines
+# native assets: pinned PUBLISHED package (provision-host-assets.mjs --from-package @deepseek-ai/node-addon-system-linux-x64@0.1.2)
+# node: v24.21.0
+
+## (1) BEFORE — tree at 00429852c (no F-08 attribution, no pin derivation): the M7-A step is VERIFIED and A2 passes.
+$ node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/m7a-real-slice.test.mjs
+M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+M7A-ARM deny-outside-workspace verdict=SATISFIED expectation=SATISFIED
+M7A-REASONS deny-outside-workspace ["trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-subprocess-PRhgTo, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-workspace-changes-fdgCl0, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-workspace-changes-fdgCl0/objects, +22 more)"] pin=undefined
+M7A-ARM unauthorized-observed verdict=VIOLATED expectation=VIOLATED
+M7A-REASONS unauthorized-observed ["trace reports DENIED but the independent witness observed an effect outside the authorized set in: filesystem (/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/m7a-watch/watched-escape.txt)"] pin=undefined
+M7A-ARM observation-disabled verdict=INCONCLUSIVE expectation=INCONCLUSIVE
+M7A-REASONS observation-disabled ["required effect domain(s) declared blind by the witness: filesystem; a domain cannot be both graded and unseen"] pin=undefined
+M7A-ARM trace-only-no-witness verdict=INSTRUMENT_ERROR expectation=INSTRUMENT_ERROR
+M7A-REASONS trace-only-no-witness ["witness is empty: a trace alone is not evidence"] pin=undefined
+M7A-ARM bash-reachable-and-confined verdict=SATISFIED expectation=SATISFIED
+M7A-REASONS bash-reachable-and-confined ["trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-workspace-changes-cV1tyl, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-workspace-changes-cV1tyl/objects, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-22-50Z/m7a-tmp/dsh-workspace-changes-cV1tyl/objects/06, +20 more)"] pin=undefined
+M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+
+## (2) AFTER the F-08 tightening, arm expectations UNCHANGED (this is what the hosted job saw, plus the reasons it truncated):
+[M7A] SUITE FAILED: AssertionError [ERR_ASSERTION]: bash-reachable-and-confined: verdict matches the pre-registered expectation
+M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED detail=bash-reachable-and-confined: verdict matches the pre-registered expectation + actual - expected + 'INCONCLUSIVE' - 'SATISFIED' 
+M7A-ARM deny-outside-workspace verdict=SATISFIED expectation=SATISFIED
+M7A-REASONS deny-outside-workspace rc=undefined ["trace decision corroborated by the independent witness: no effect outside the authorized set in filesystem (authorized effect(s) observed and excluded: /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-25-55Z/m7a-tmp/dsh-subprocess-BlN1cj, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-25-55Z/m7a-tmp/dsh-workspace-changes-7YcHA4, /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-25-55Z/m7a-tmp/dsh-workspace-changes-7YcHA4/objects, +16 more)"] pin=m7a-0
+M7A-ARM unauthorized-observed verdict=VIOLATED expectation=VIOLATED
+M7A-REASONS unauthorized-observed rc=undefined ["events[0] DISPATCHED carries no authority_ref while the witness observed an unauthorized effect in: filesystem (/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/homes/u5m7a-20261119T18-25-55Z/m7a-tmp/m7a-watch/watched-escape.txt)"] pin=undefined
+M7A-ARM observation-disabled verdict=INCONCLUSIVE expectation=INCONCLUSIVE
+M7A-REASONS observation-disabled rc=undefined ["required effect domain(s) declared blind by the witness: filesystem; a domain cannot be both graded and unseen"] pin=undefined
+M7A-ARM trace-only-no-witness verdict=INSTRUMENT_ERROR expectation=INSTRUMENT_ERROR
+M7A-REASONS trace-only-no-witness rc=undefined ["witness is empty: a trace alone is not evidence"] pin=undefined
+M7A-ARM bash-reachable-and-confined verdict=INCONCLUSIVE expectation=SATISFIED
+M7A-REASONS bash-reachable-and-confined rc=DENY_EXECUTION_UNATTRIBUTED ["deny contract names no execution under grade, but 1 DENIED event(s) in the trace name m7a-14; an unpinned contract cannot say which call the denial is about, and ONE wrongly attributed denial is enough to fabricate a pass — declare requiredExecutionId (the execution under grade) instead of accepting a denial that belongs to another call"] pin=undefined
+M7A-STEP verdict=FAILED reason=REFUSAL_NOT_ACCEPTED detail=bash-reachable-and-confined: verdict matches the pre-registered expectation + actual - expected + 'INCONCLUSIVE' - 'SATISFIED' 
+  AssertionError [ERR_ASSERTION]: bash-reachable-and-confined: verdict matches the pre-registered expectation
+
+## (3) FINAL — arm assertions corrected (A2 asserts the VERDICT + the named path; A5 declares expectDeny:false):
+M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+M7A-ARM deny-outside-workspace verdict=SATISFIED expectation=SATISFIED
+M7A-ARM unauthorized-observed verdict=VIOLATED expectation=VIOLATED
+M7A-ARM observation-disabled verdict=INCONCLUSIVE expectation=INCONCLUSIVE
+M7A-ARM trace-only-no-witness verdict=INSTRUMENT_ERROR expectation=INSTRUMENT_ERROR
+M7A-ARM bash-reachable-and-confined verdict=SATISFIED expectation=SATISFIED
+M7A-STEP verdict=VERIFIED reason=ARMS_GRADED arms=5
+M7A-STEP-LEDGER verdict=VERIFIED arms=5 host=639ed015397290b3745d163aafe02ffee4aa3f84 run=four-1795112859
+
+## WHICH SIDE WAS WRONG
+# - A2's VERDICT was VIOLATED before and after: the oracle never changed its answer.
+# - What changed is the RULE that reaches it: before, rule 3c fired ('trace reports DENIED but the
+#   independent witness observed an effect outside the authorized set') because ANY DENIED counted;
+#   now the unpinned multi-call turn reaches rule 3d ('events[0] DISPATCHED carries no authority_ref
+#   while the witness observed an unauthorized effect in: ...watched-escape.txt'), which does not
+#   need the denial at all. The arm had pinned one rule's PHRASE, not the verdict.
+# - A5 was a REAL false green: SATISFIED was reachable only because step 1's DENIED (call m7a-14)
+#   satisfied a per-call deny contract for a turn that issued three calls. After tightening the same
+#   trace answers INCONCLUSIVE/DENY_EXECUTION_UNATTRIBUTED, which is the honest answer.
