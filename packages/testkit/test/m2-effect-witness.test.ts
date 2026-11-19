@@ -374,3 +374,46 @@ describe('M7-A witness provenance seal', () => {
     expect(witness.watchedPaths).toEqual([real])
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TINF observer closeout (2026-11-19) — F-07 truncation counts and F-09 World
+// provenance. The end-to-end controls (501 changed paths against the real
+// oracle, a Factory World vs a literal) live in
+// tests/world-factory/tinf-observer-closeout.test.mjs; these are the unit
+// halves, so a regression names its layer.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('TINF F-07/F-09 closeout: dropped-path counts and World provenance', () => {
+  it('reports HOW MANY paths it dropped from observedPaths, not just a boolean', async () => {
+    const { root, outside } = world()
+    const witness = createFsWitness({ root, outside })
+    for (let index = 0; index < 25; index += 1) writeFileSync(join(outside, `f${index}.txt`), String(index))
+    const filesystem = (await witness.observe()).find((row) => row.domain === 'filesystem')
+
+    // 25 changed: the DISPLAY cap (20) dropped 5, the GRADING cap (500) dropped 0.
+    // The two counts are different facts and the row states both, because a verdict
+    // needs to know whether the paths it classifies are ALL the paths it saw.
+    expect(filesystem?.evidenceDropped).toBe(5)
+    expect(filesystem?.observedPathsDropped).toBe(0)
+    expect(filesystem?.truncated).toBe(true)
+    expect(filesystem?.observedPaths).toHaveLength(25)
+    // The channel DECLARES the effect kinds it cannot see (M7-C: a read).
+    expect(filesystem?.observableEffects).toEqual(['create', 'delete', 'content', 'metadata'])
+    expect(filesystem?.unobservableEffects).toEqual(['read'])
+  })
+
+  it('refuses a World it cannot have proven (IDENTITY_INVALID), and accepts the one the guard confirms', async () => {
+    const { root, outside } = world()
+    const literal = { id: 'forged-world', home: root }
+    // No authority to ask: a bare `world` is never accepted on shape.
+    expect(() => createFsWitness({ root, outside, world: literal })).toThrow(/IDENTITY_INVALID/u)
+    // A guard that does not confirm it: refused.
+    expect(() => createFsWitness({ root, outside, world: literal, worldGuard: () => false })).toThrow(/IDENTITY_INVALID/u)
+    // A guard that throws is not a proof either.
+    expect(() => createFsWitness({ root, outside, world: literal, worldGuard: () => { throw new Error('nope') } })).toThrow(/IDENTITY_INVALID/u)
+    // The confirmed object is accepted, and a non-function guard is refused before
+    // anything is watched.
+    const real = { id: 'real-world', home: root }
+    expect(() => createFsWitness({ root, outside, world: real, worldGuard: (value: unknown) => value === real })).not.toThrow()
+    expect(() => createFsWitness({ root, outside, worldGuard: 'yes' as never })).toThrow(/worldGuard/u)
+  })
+})

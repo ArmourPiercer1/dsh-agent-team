@@ -9020,3 +9020,22 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **`#765` UTE-Prep 仍是 draft**：设计 memo 已按 rc.3→rc.5 增量、两份共存的端口分区、S1/S2 结算保证等级、受限 fork 授权迁移三项裁决更新，并补了「hosted 轮推翻了什么」；三条治理性文本（`AGENTS.md` 的窄口径 fork 例外、`ALPHA5-SANDBOX-BACKLOG.md` §0.4）仍作**提案**留在 memo 06，等 owner 裁决后由主 Agent 落文，本轮不自行改。
 
 **仍未做（明确不在本轮范围）**：其余 13 条 host-dependent（Realm/surface 8、Web-egress/seam 4、provisioning 1）、`M7-B2`（process/PTY/network 域）、`M7-C`（approval/Stop/recovery）、host 构建缓存（rank 2）、L3 evals、census 调优。**宿主仍冻结在 `0.2.0-rc.2`**：第二份是新增，不是升级，旧宿主与其套件一行未动。
+
+## 2026-11-19 — TINF 安全观察器收口：F-07 截断假绿 / F-08 拒绝归属 / F-09 World 身份（+ M7-C 读边界编码）
+
+**背景**：外部评审在 M6/M7 合并点列出的三个观察器缺陷——F-07（`OBSERVED_CAP` 500 之后 `observedPaths` 被 slice，oracle 从不读 `truncated`，501 个变更路径可以在只看到 500 个时判 `SATISFIED`）、F-08（`events.some(e => e.outcome === 'DENIED')`：任何 ToolCall 的拒绝都满足当前调用的 deny 契约）、F-09（`declareObservationContract` 只查 `typeof world === 'object'` + 非空 `id`/`home`，手写 `{id, home}` 即被当作 World），外加一条必须以代码而不是散文表达的边界（M7-C：快照观察不到 `read`，所以“没看到 read”不能读成“没有 read”）。
+
+**分支**：`task/tinf-observer-20261119`（worktree `.worktrees/tinf-observer-20261119`，base `origin/master 00429852c`）。memo = `docs/plans/memo/tinf-observer-20261119/README.md`，transcript 21 份 + 可复跑探针在 `dev/agent-workflow/evidence/tinf-observer-20261119/`。
+
+**修法（四值词表未动，新增的是 typed `reason_code`）**：
+
+- **F-07**：witness 永远写出两个**实测计数**——`observedPathsDropped`（被判分的截断）与 `evidenceDropped`（仅展示的 `EVIDENCE_CAP` 截断），`truncated` 只留作兼容位、**不参与判决**；oracle 新增规则 2e：`observedPathsDropped > 0` ⇒ 若残余前缀已含未授权 effect 则 `VIOLATED`（截断不得洗白已看见的越界），否则 `INCONCLUSIVE` + `reason_code: 'OBSERVATION_TRUNCATED'`，reasons 带丢弃条数并写明“抬高展示/证据 cap 没有帮助”；非法计数 ⇒ `INSTRUMENT_ERROR` 而非当 0。负控：真实 instrument 上 **500 → `SATISFIED`**（`observedPathsDropped=0` / `evidenceDropped=480`）、**501 → `INCONCLUSIVE`/`OBSERVATION_TRUNCATED`**（`observedPaths=500`、`dropped=1`）；另证“cap 低于人口不能被更大 `EVIDENCE_CAP` 补偿”。
+- **F-08**：`gradedExecutionId` 来自 `requiredExecutionId`；有 pin 时只认该执行的 denial，其余记为 foreign 并在理由里**点名**；无 pin 且 denial 分属 ≥2 执行 ⇒ 不猜（`DENY_EXECUTION_UNATTRIBUTED`）。规则 3a（DENIED 携带 `effect_id`）仍扫全部 denial，新增 3f 覆盖“已 pin + 期望拒绝 + 观察到该执行的未授权 effect”。负控：外来拒绝 ⇒ `INCONCLUSIVE`/`DENY_EXECUTION_UNATTRIBUTED`；被评自己的拒绝 ⇒ `SATISFIED`；外来带 effect_id ⇒ 仍 `VIOLATED`；被评越界 + 仅外来拒绝 ⇒ `VIOLATED` 且点名被评执行；两拒绝无 pin ⇒ `INCONCLUSIVE`。
+- **F-09**：新叶模块 `tests/world-factory/lib/world-identity.mjs`（私有 `BRAND` symbol + `MINTED` WeakSet + `RECEIPTS` WeakMap，`TestWorld` 构造函数铸 receipt），`isFactoryWorld` 用**对象身份**；契约把 World 挂不可枚举 symbol（spread/JSON/`structuredClone` 全丢），纯函数 `contractWorldIdentity` 供无宿主判分；`createFsWitness({world, worldGuard})` 要求调用方注入权威（testkit 不 import `tests/`），否则 `IDENTITY_INVALID`。负控六条：手写 / spread / clone / 原型继承 / receipt-形状伪造 → `WORLD_IDENTITY_UNPROVEN`，真 World → 接受；拷贝契约 → 拒。
+- **M7-C**：witness 行必须声明 `observableEffects` / `unobservableEffects`（`read` 永远在后者）；oracle 规则 2d 只在“某插桩行声明可观测该 kind”时可判，否则 `INCONCLUSIVE` + `READ_EFFECT_UNOBSERVABLE`；声明层按名拒绝 `claim: 'read-non-occurrence'`。量词是“声明可观测”，不是“没有否认”，所以不写声明也买不到绿。
+
+**变异→红 5/5**（每个变异把源码改回缺陷形态、跑完整套件、再恢复，transcript 存证）：oracle 忽略丢弃计数 → 3 红；witness 不再计数 → 2 红；恢复“任意 DENIED 计数” → 4 红；`isFactoryWorld` 回到 shape-only → 7 红；删读边界 → 4 红。
+
+**门禁（实测）**：新套件 25/25；M7-B1 套件 9 pass/1 skip（`verdict=INSTRUMENT_ERROR reason=HOST_ABSENT`，见下）；testkit 两个 M2 套件 59/59；testkit `tsc --noEmit` exit 0；全量 testkit vitest `3 failed | 31 passed (34)` / `13 failed | 499 passed (512)`，三个红文件（`plugin-dsh-compat`、`a4p7-blueprint-version-clean`、`a4p7-merge-gate`）与改动前**同一集合**（改动前 `13 failed | 486 passed (499)`，+13 个新测试、0 新失败）；catalog `tests=876 … UNCOLLECTED 41 refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch --check PASS legs=18 bad=0`；`tinf-instruments` leg（`A5SF_REQUIRE_PINNED_HOST=1`）`suites=51 files=51 exit=0`、`tests 810 / pass 804 / fail 0 / skipped 6`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-negative-controls 32/32`；`docs-sync findings=0 blocking=0`；`lint-identities` exit 0；`git diff --check` 0。parity 证据有意重生成（union 69 → 70，`problems=0`，每行 `missing=none`，`added=` 恰 45 个），`scripts/test-catalog.test.mjs` 的允许集合同步加这一条；未收集基线**未改**（新套件是收集而非未收集）。
+
+**UNKNOWN（不写成就绪）**：本 worktree 没有 gitignored 的 pristine 宿主树，M7-B1 的真宿主臂（inside/outside/同目录对照、逐字 denial、伪造 witness）未在此执行，等 `ci-census` 的 provisioned host；全量 testkit vitest 的三个红文件在 CI product lane 是否为绿未验证（本 PR 只证失败集合未扩大）；F-09 的信任边界是**进程内**（同进程能 import 私有模块者可以伪造 seal/铸 receipt，与既有 seal 同模型，不是安全隔离）；`createFsWitness` 的 `worldGuard` 是调用方自报权威，生产路径传 `isFactoryWorld`。

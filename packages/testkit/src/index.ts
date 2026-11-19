@@ -48,12 +48,14 @@ export { createWireScriptDriver, wireSerializedMessages, wireToolNames } from '.
 export type { WireModelRequest, WireScriptConsumption, WireScriptDriver, WireScriptReply } from './wire-script.js'
 
 export {
+  FS_OBSERVABLE_EFFECTS,
+  FS_UNOBSERVABLE_EFFECTS,
   areSealedWitnessObservations,
   createBlindWitness,
   createFsWitness,
   isSealedWitnessObservation,
 } from './effect-witness.js'
-export type { EffectDomain, EffectWitness, WitnessObservation } from './effect-witness.js'
+export type { EffectDomain, EffectKind, EffectWitness, WitnessObservation } from './effect-witness.js'
 
 export { CONTRACT_SCHEMA, judgeContract } from './contract-oracle.js'
-export type { OracleInput, OracleJudgement, OracleVerdict, TraceEvent } from './contract-oracle.js'
+export type { OracleInput, OracleJudgement, OracleReasonCode, OracleVerdict, TraceEvent } from './contract-oracle.js'

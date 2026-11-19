@@ -1,0 +1,4 @@
+$ git diff --check (staged + unstaged)
+EXIT=0
+$ git diff --cached --check
+EXIT=0

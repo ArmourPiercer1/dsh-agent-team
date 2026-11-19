@@ -1,0 +1,74 @@
+### MUTATION RUN MUTATION-2-f07-witness-reports-no-count.txt
+### tree: 00429852c + mutation (restored after this transcript)
+### command: node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
+▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (69.100388ms)
+  ✖ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (54.60019ms)
+✖ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (124.548963ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.781099ms)
+▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.353568ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.233733ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.194488ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.56705ms)
+  ✔ without an attribution key, denials naming SEVERAL calls are ambiguous -> INCONCLUSIVE (0.314996ms)
+✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (5.513875ms)
+▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
+  ✔ the REAL World is accepted and the contract records its receipt (0.442006ms)
+  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.109998ms)
+  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.117202ms)
+  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.132121ms)
+  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.150445ms)
+  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.166205ms)
+  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.513803ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.24333ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.098757ms)
+✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.27388ms)
+▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
+  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.474129ms)
+  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.762514ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.430725ms)
+  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.127692ms)
+✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (4.109902ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 23
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 304.755353
+
+✖ failing tests:
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:176:11
+✖ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (54.60019ms)
+  AssertionError [ERR_ASSERTION]: the row does not merely flag truncation: it counts what it dropped
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:179:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:176:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+### command: vitest run test/m2-contract-oracle.test.ts test/m2-effect-witness.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit
+
+ ✓ test/m2-contract-oracle.test.ts (41 tests) 13ms
+ ✓ test/m2-effect-witness.test.ts (18 tests) 19ms
+
+ Test Files  2 passed (2)
+      Tests  59 passed (59)
+   Start at  00:17:18
+   Duration  240ms (transform 153ms, setup 0ms, import 217ms, tests 32ms, environment 0ms)
+

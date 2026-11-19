@@ -418,6 +418,9 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     'tests/world-factory/m7a-real-slice-host-state.test.mjs',
     'tests/world-factory/m7a-real-slice-unit.test.mjs',
     'tests/world-factory/port-probe.test.mjs',
+    // TINF observer closeout (2026-11-19): F-07/F-08/F-09 + M7-C controls, host-free, wired into
+    // the same tinf-instruments leg (50 -> 51 suites; union 69 -> 70).
+    'tests/world-factory/tinf-observer-closeout.test.mjs',
     'tests/world-factory/u6-arc-d.test.mjs',
     'tests/world-factory/u7-tbash-offline-drive.test.mjs',
     'tests/world-factory/u7-tbash-seam.test.mjs',

@@ -55,6 +55,30 @@
  * {@link DIGEST_LIMIT} is compared by size+mtime only. Those are limits of the
  * channel; the oracle reports them and no verdict may read them as clean.
  *
+ * THE READ-EFFECT BOUNDARY (F-09-adjacent, M7-C). A successful READ produces no
+ * create/delete/content/metadata delta, so this snapshot channel cannot see it
+ * AT ALL. That is not a blind spot to be worked around by inference: the rows
+ * declare `unobservableEffects: ['read']`, and the oracle refuses to grade a
+ * claim whose truth depends on a read not happening
+ * (`READ_EFFECT_UNOBSERVABLE`). A quiet snapshot is never evidence that nobody
+ * read a file.
+ *
+ * TRUNCATION IS COUNTED, NOT FLAGGED (F-07). `observedPaths` is capped at
+ * {@link OBSERVED_CAP}; when more paths changed than that, the row reports HOW
+ * MANY it dropped (`observedPathsDropped`, plus `evidenceDropped` for the
+ * display cap) and `truncated: true`. A dropped path could be the unauthorized
+ * one, so the oracle treats a truncated observation as NOT GRADABLE
+ * (`OBSERVATION_TRUNCATED`) instead of grading the surviving prefix — a
+ * boolean flag nobody reads was exactly the false green this replaces.
+ *
+ * WORLD PROVENANCE (F-09). When a caller names the World an instrument belongs
+ * to (`world`), the instrument refuses to accept it on shape alone: the caller
+ * must also supply the producer's identity check (`worldGuard`, e.g. the World
+ * Factory's receipt test) and it must answer `true`. An `{id, home}` literal, a
+ * spread copy and a `structuredClone` all fail that check; the original World
+ * object passes. An instrument with no `world` (the pre-M7-C shape) keeps
+ * working, because it makes no World claim.
+ *
  * M2/M7-A SCOPE: only the filesystem channel is implemented. No process, PTY,
  * HTTP proxy, or network-outlet witness exists yet; those need E2 (real
  * confined subprocess / OS fidelity).
@@ -102,6 +126,29 @@ export interface SealedObservationWindow extends ObservationWindowDescriptor {
   producedBy: string
 }
 
+/**
+ * An effect KIND inside a domain (M7-C). The snapshot channel observes four of
+ * them and cannot observe the fifth:
+ *
+ * - `create` / `delete` / `content` / `metadata` — every one of them leaves a
+ *   snapshot delta (a new entry, a missing entry, a different digest, a
+ *   different mode/target/mtime).
+ * - `read` — leaves NO delta by definition. A read-only workload and an
+ *   idle workload are the same two snapshots.
+ */
+export type EffectKind = 'create' | 'delete' | 'content' | 'metadata' | 'read'
+
+/** Effect kinds the filesystem snapshot channel CAN observe. */
+export const FS_OBSERVABLE_EFFECTS: readonly EffectKind[] = Object.freeze([
+  'create',
+  'delete',
+  'content',
+  'metadata',
+])
+
+/** Effect kinds the filesystem snapshot channel CANNOT observe (a read is one). */
+export const FS_UNOBSERVABLE_EFFECTS: readonly EffectKind[] = Object.freeze(['read'])
+
 /** One raw observation of one effect domain. */
 export interface WitnessObservation {
   domain: EffectDomain
@@ -113,7 +160,25 @@ export interface WitnessObservation {
    */
   instrumented: boolean
   evidence: string[]
+  /**
+   * Whether this row's observation is PARTIAL: it dropped changed paths from
+   * `evidence` and/or `observedPaths`. Kept for readers that only need the
+   * fact; the oracle reads the COUNTS below, because "how many" is the
+   * difference between a complete and a partial observation.
+   */
   truncated?: boolean
+  /** Changed paths dropped from `evidence` (the display cap, {@link EVIDENCE_CAP}). */
+  evidenceDropped?: number
+  /**
+   * Changed paths dropped from `observedPaths` (the grading cap,
+   * {@link OBSERVED_CAP}). Non-zero means the row CANNOT place every effect it
+   * saw, so no verdict may be built on it (F-07).
+   */
+  observedPathsDropped?: number
+  /** Effect kinds this row's channel can observe. */
+  observableEffects?: EffectKind[]
+  /** Effect kinds this row's channel cannot observe — `read` for a snapshot. */
+  unobservableEffects?: EffectKind[]
   /**
    * ABSOLUTE paths this row's instrument actually watched for `domain`. A
    * directory covers its subtree; the oracle grades a required path only when a
@@ -377,6 +442,8 @@ function instrumentRows(rows: WitnessObservation[], instrument: object): Witness
     Object.freeze(row.evidence)
     if (row.watchedPaths !== undefined) Object.freeze(row.watchedPaths)
     if (row.observedPaths !== undefined) Object.freeze(row.observedPaths)
+    if (row.observableEffects !== undefined) Object.freeze(row.observableEffects)
+    if (row.unobservableEffects !== undefined) Object.freeze(row.unobservableEffects)
     Object.freeze(row)
     ROWS.set(row, instrument)
   }
@@ -405,7 +472,7 @@ export function isSealedWitnessObservation(value: unknown): boolean {
     if (!Object.isFrozen(value)) return false
     const row = value as WitnessObservation
     if (!Array.isArray(row.evidence) || !Object.isFrozen(row.evidence)) return false
-    for (const field of ['watchedPaths', 'observedPaths'] as const) {
+    for (const field of ['watchedPaths', 'observedPaths', 'observableEffects', 'unobservableEffects'] as const) {
       const paths = row[field]
       if (paths === undefined) continue
       if (!Array.isArray(paths) || !Object.isFrozen(paths)) return false
@@ -446,6 +513,13 @@ export function areSealedWitnessObservations(rows: readonly unknown[]): boolean 
  * @param opts.marker - optional caller provenance for a keyed World. Accepted
  *   for API symmetry and NOT consulted: the change rule is never narrowed by a
  *   marker.
+ * @param opts.world - the World this instrument observes. When present it is
+ *   NOT taken at face value: `opts.worldGuard` must prove it (see below), so a
+ *   hand-written `{id, home}` cannot claim to be a Factory World (F-09).
+ * @param opts.worldGuard - the PRODUCER's identity check for `opts.world` (the
+ *   World Factory's receipt test). Required whenever `world` is supplied; an
+ *   instrument that cannot ask an authority about the World must not accept
+ *   one. A guard that throws or answers anything but `true` refuses.
  */
 export function createFsWitness(opts: {
   root: string
@@ -454,7 +528,29 @@ export function createFsWitness(opts: {
   exclude?: string[]
   marker?: string
   window?: ObservationWindowDescriptor
+  world?: object
+  worldGuard?: (value: unknown) => boolean
 }): EffectWitness {
+  if (opts.worldGuard !== undefined && typeof opts.worldGuard !== 'function') {
+    throw new TypeError('createFsWitness: `worldGuard` must be a function (the producer\'s identity check), not a value')
+  }
+  if (opts.world !== undefined) {
+    // IDENTITY, NOT SHAPE (F-09): `{id, home}` is what a caller can type; the
+    // receipt lives in the Factory's private registry and survives neither a
+    // spread nor a structuredClone. No guard = no accepted World.
+    let proven = false
+    try {
+      proven = typeof opts.worldGuard === 'function' && opts.worldGuard(opts.world) === true
+    } catch {
+      proven = false
+    }
+    if (!proven) {
+      throw new TypeError(
+        'createFsWitness: IDENTITY_INVALID — the `world` has no provenance receipt: a World this instrument may name is the object the World Factory minted (identity, not shape), and `worldGuard` did not confirm it. ' +
+          'A literal {id, home}, a spread copy and a structuredClone all lack the receipt',
+      )
+    }
+  }
   const requested = [opts.outside, ...(opts.watch ?? [])]
     .filter((path): path is string => typeof path === 'string' && path.length > 0)
   if (requested.length === 0) {
@@ -499,6 +595,12 @@ export function createFsWitness(opts: {
       const changed = changes(baseline, snapshot(realRoots, exclude))
       const listed = changed.slice(0, EVIDENCE_CAP).map((path) => label(path, opts.root))
       const observedPaths = changed.slice(0, OBSERVED_CAP)
+      // The counts, not the flag: a dropped path may be the unauthorized one,
+      // and "1 of 501 dropped" is a different fact from "480 of 501 dropped
+      // from the display list". `truncated` stays as the human-readable OR.
+      const evidenceDropped = Math.max(0, changed.length - EVIDENCE_CAP)
+      const observedPathsDropped = Math.max(0, changed.length - OBSERVED_CAP)
+      const truncation = { evidenceDropped, observedPathsDropped }
       return instrumentRows([
         {
           domain: 'filesystem',
@@ -507,7 +609,10 @@ export function createFsWitness(opts: {
           evidence: absentAtBaseline
             ? [...listed, `${label(realRoots[0] as string, opts.root)} did not exist when the witness was created`]
             : listed,
-          ...(changed.length > EVIDENCE_CAP || changed.length > OBSERVED_CAP ? { truncated: true } : {}),
+          ...(evidenceDropped > 0 || observedPathsDropped > 0 ? { truncated: true } : {}),
+          ...truncation,
+          observableEffects: [...FS_OBSERVABLE_EFFECTS],
+          unobservableEffects: [...FS_UNOBSERVABLE_EFFECTS],
           watchedPaths: [...realRoots],
           observedPaths,
           ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
@@ -517,6 +622,8 @@ export function createFsWitness(opts: {
           observed: false,
           instrumented: false,
           evidence: ['not instrumented by the filesystem witness'],
+          observableEffects: [],
+          unobservableEffects: [...FS_UNOBSERVABLE_EFFECTS],
           watchedPaths: [...realRoots],
           observedPaths: [],
           ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
@@ -526,6 +633,8 @@ export function createFsWitness(opts: {
           observed: false,
           instrumented: false,
           evidence: ['not instrumented by the filesystem witness'],
+          observableEffects: [],
+          unobservableEffects: [...FS_UNOBSERVABLE_EFFECTS],
           watchedPaths: [...realRoots],
           observedPaths: [],
           ...(windowRecord === null ? {} : { window_id: windowRecord.window_id }),
@@ -586,6 +695,10 @@ export function createBlindWitness(witness: EffectWitness, domains: EffectDomain
               observed: false,
               instrumented: false,
               evidence: ['blinded by createBlindWitness (sensitivity negative control)'],
+              // A blinded channel observes NO kind, and the read boundary is
+              // unchanged: it never observed reads either.
+              observableEffects: [],
+              unobservableEffects: [...FS_OBSERVABLE_EFFECTS, ...FS_UNOBSERVABLE_EFFECTS],
               watchedPaths: [...base.watchedPaths],
               observedPaths: [],
             }], instrument)[0] as WitnessObservation

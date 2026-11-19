@@ -1,0 +1,39 @@
+$ node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
+▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (63.87923ms)
+  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (73.060156ms)
+✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (137.758666ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.645782ms)
+▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.244623ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.162297ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.199358ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.152774ms)
+  ✔ without an attribution key, denials naming SEVERAL calls are ambiguous -> INCONCLUSIVE (0.286342ms)
+✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (4.882802ms)
+▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
+  ✔ the REAL World is accepted and the contract records its receipt (0.445453ms)
+  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.12135ms)
+  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.120438ms)
+  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.133192ms)
+  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.110269ms)
+  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.168138ms)
+  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.475871ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.24828ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.071866ms)
+✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.367798ms)
+▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
+  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.14817ms)
+  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.688393ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.414214ms)
+  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.115028ms)
+✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (3.099146ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 308.946061
+EXIT=0

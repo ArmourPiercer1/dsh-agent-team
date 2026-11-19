@@ -56,6 +56,7 @@ import { preflightHostSandbox as measureSandboxPreflight } from './host-sandbox-
 import { bindSandboxPreflight } from './run-record.mjs'
 import { bindTeamDefaultWorkspace } from './team-workspace.mjs'
 import { provisionProfileModuleGraph, verifyProfileModuleGraph } from './profile-module-graph.mjs'
+import { mintFactoryWorldIdentity } from './world-identity.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 /** The canary plugin fixture that gets mounted into every World. */
@@ -524,6 +525,13 @@ export class TestWorld {
     // until `startHost` assembles the rows.
     this.teamWorkspaceBinding = null
     this.receipts = { booted: [], killedPids: [], releasedPorts: [], homeDeleted: null, notes: [] }
+    // F-09: the World's identity receipt. Minted HERE — the only constructor of
+    // a World — as object identity in a private WeakSet plus a non-enumerable
+    // module-private symbol, so a literal, a spread copy or a structuredClone
+    // cannot be passed off as a World this Factory created. `isFactoryWorld` /
+    // `factoryWorldReceipt` live in `./world-identity.mjs` (a leaf module: the
+    // contract validator must be able to ask without loading the whole Factory).
+    this.identityReceipt = mintFactoryWorldIdentity(this)
   }
 
   /** Write/refresh the ownership ledger (runner + host pids, ports). */

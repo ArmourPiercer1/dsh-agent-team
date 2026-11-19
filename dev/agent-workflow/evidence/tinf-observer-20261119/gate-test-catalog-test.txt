@@ -1,0 +1,37 @@
+$ node --test scripts/test-catalog.test.mjs
+✔ discovery: vitest and node tests are catalogued, non-tests are not (1.85431ms)
+✔ discovery follows config include[], not the .test.ts suffix (0.524413ms)
+✔ a config whose include spells out its own directory is repo-relative (0.375741ms)
+✔ an authoring-only config does not make a suite collected (0.246506ms)
+✔ a contract ref that is not a test file is refused (0.328853ms)
+✔ the CI step that dispatches this suite also runs the ratchet (1.160201ms)
+✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.641113ms)
+✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.267446ms)
+✔ classification: collected, uncollected and excluded are distinct (0.465721ms)
+✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.37537ms)
+✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (0.342639ms)
+✔ refusal: deleting a contract test is red, not a smaller catalog (1.303021ms)
+✔ refusal: a contract with no test_refs is an unbacked promise (0.218894ms)
+✔ refusal: an exclude without reason+review is stale (0.123744ms)
+✔ refusal: two tests sharing one logical id is red (0.180972ms)
+✔ refusal: an instrument without its driver is red (0.249422ms)
+✔ logical ids survive a path move, and refOf tolerates both shapes (0.158359ms)
+✔ digest ignores order and entry classification but tracks the test set (0.543975ms)
+✔ glob semantics: ** crosses directories, * does not (0.118875ms)
+✔ vitest.config.ts is the source for include/exclude (no copy here) (0.313934ms)
+✔ live read-only check: every registered contract test exists on this head (244.697972ms)
+✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.795736ms)
+✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (0.950629ms)
+✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (17.047431ms)
+✔ dispatch: the catalog classifies every dispatched suite as collected (265.191959ms)
+✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.202132ms)
+✔ dispatch: the committed parity evidence still describes the resolved set (14.592134ms)
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.133352ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 626.776105

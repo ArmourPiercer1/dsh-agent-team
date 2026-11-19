@@ -1,0 +1,202 @@
+### MUTATION RUN MUTATION-5-m7c-read-boundary-removed.txt
+### tree: 00429852c + mutation (restored after this transcript)
+### command: node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
+▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (65.849649ms)
+  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (59.589068ms)
+✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (126.281382ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.614454ms)
+▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.285701ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.172096ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.180051ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.918094ms)
+  ✔ without an attribution key, denials naming SEVERAL calls are ambiguous -> INCONCLUSIVE (0.385881ms)
+✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (6.103483ms)
+▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
+  ✔ the REAL World is accepted and the contract records its receipt (0.525285ms)
+  ✔ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.155354ms)
+  ✔ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.175322ms)
+  ✔ a structuredClone of the real World is refused (cloning must not move an identity) (0.142841ms)
+  ✔ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.127391ms)
+  ✔ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.161696ms)
+  ✔ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.512169ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.303023ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.099078ms)
+✔ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (4.91317ms)
+▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
+  ✖ declareObservationContract refuses a read-non-occurrence claim by name (0.90881ms)
+  ✖ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (1.186615ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.504926ms)
+  ✖ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.257527ms)
+✖ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (5.15176ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 21
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 297.28598
+
+✖ failing tests:
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:458:11
+✖ declareObservationContract refuses a read-non-occurrence claim by name (0.90881ms)
+  AssertionError [ERR_ASSERTION]: the refusal names IDENTITY_INVALID, expected READ_EFFECT_UNOBSERVABLE (IDENTITY_INVALID: claim must be one of path-scope|filesystem-domain (got "read-non-occurrence"))
+  + actual - expected
+  
+  + 'IDENTITY_INVALID'
+  - 'READ_EFFECT_UNOBSERVABLE'
+  
+      at refuses (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:96:14)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:459:21)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:458:11)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'IDENTITY_INVALID',
+    expected: 'READ_EFFECT_UNOBSERVABLE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:465:11
+✖ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (1.186615ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'READ_EFFECT_UNOBSERVABLE'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:484:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:465:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'READ_EFFECT_UNOBSERVABLE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:505:11
+✖ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.257527ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'SATISFIED'
+  - 'INCONCLUSIVE'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:516:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:505:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'SATISFIED',
+    expected: 'INCONCLUSIVE',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+### command: vitest run test/m2-contract-oracle.test.ts test/m2-effect-witness.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit
+
+ ❯ test/m2-contract-oracle.test.ts (41 tests | 2 failed) 17ms
+     ✓ no effect + DENIED + full instrumentation is SATISFIED 2ms
+     ✓ the M2 filesystem witness can corroborate a filesystem-only contract and names the blind domains 0ms
+     ✓ DENIED plus a real effect is VIOLATED 0ms
+     ✓ a DISPATCHED event with null authority_ref while effects were observed is VIOLATED 0ms
+     ✓ a decision issued for another actor is VIOLATED 0ms
+     ✓ a missing required domain is INCONCLUSIVE 0ms
+     ✓ a sequence regression is INSTRUMENT_ERROR 0ms
+     ✓ an empty witness is INSTRUMENT_ERROR 0ms
+     ✓ a trace with no computed/denied event is INCONCLUSIVE 0ms
+     ✓ a deny contract without a DENIED event is INCONCLUSIVE, not SATISFIED 0ms
+     ✓ all domains blind can never be SATISFIED 0ms
+     ✓ a trace-only input (witness reports everything blind) is INCONCLUSIVE 0ms
+     ✓ fabricated rows without instrumented cannot be graded SATISFIED 0ms
+     ✓ M7-A blindness precedence: an uninstrumented row is blind even when the caller forgets to list it 0ms
+     ✓ an invented network row cannot cover a blind network domain 0ms
+     ✓ a DENIED event carrying an effect_id is VIOLATED even with a clean witness 0ms
+     ✓ an effect outside the graded scope is INCONCLUSIVE and named, not dismissed 0ms
+     ✓ a domain declared blind cannot be graded even if a row claims instrumented 0ms
+     ✓ a decision id in authority_ref is not an identity mismatch 0ms
+     ✓ M7-A scope control: an effect outside the watched set is not SATISFIED 0ms
+     ✓ M7-A scope control: a declared scope with no watch set is INCONCLUSIVE 0ms
+     ✓ M7-A scope control: a watched but UNauthorized effect is VIOLATED and named by path 0ms
+     ✓ M7-A scope control: an AUTHORIZED observed effect is reported and excluded, never dropped 1ms
+     ✓ M7-A scope control: without an authorized set, the same observed effect is not a pass 0ms
+     ✓ M7-A provenance control: witnessed rows without a declared scope are INSTRUMENT_ERROR 0ms
+     ✓ M7-A scope control: a FORBIDDEN path inside an authorized root is unauthorized (deny beats allow) 0ms
+     ✓ M7-A scope control: an authorized effect elsewhere is still excluded when a sibling is forbidden 0ms
+     ✓ M7-A crash control: a throwing Proxy row is INSTRUMENT_ERROR, never an exception 0ms
+     ✓ M7-A crash control: a throwing Proxy event list is INSTRUMENT_ERROR, never an exception 0ms
+     ✓ M7-A scope control: a required path behind a link is not covered by the real watched path 0ms
+     ✓ a dropped GRADED path is INCONCLUSIVE/OBSERVATION_TRUNCATED, never SATISFIED 0ms
+     ✓ the baseline is gradable, so the control is about truncation and not about the fixture 0ms
+     ✓ a bigger DISPLAY cap cannot compensate: evidence-only drops stay gradable, one graded drop does not 0ms
+     ✓ a truncated row whose surviving prefix shows an escape is VIOLATED, not a shrug 0ms
+     ✓ the counters are validated instead of read as zero 0ms
+     ✓ another call’s DENIED does not satisfy this call’s deny contract 0ms
+     ✓ the graded execution’s own DENIED still satisfies it 0ms
+     ✓ without an attribution key, denials naming two calls are ambiguous, not a pass 0ms
+     × a required READ is INCONCLUSIVE/READ_EFFECT_UNOBSERVABLE even with a perfectly quiet witness 5ms
+     ✓ a kind the row DECLARES it observes is gradable (the boundary is about reads, not about kinds) 0ms
+     × an omitted declaration is not a licence: a row that declares nothing cannot grade a read claim 1ms
+ ✓ test/m2-effect-witness.test.ts (18 tests) 18ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  test/m2-contract-oracle.test.ts > TINF M7-C: the read-effect boundary > a required READ is INCONCLUSIVE/READ_EFFECT_UNOBSERVABLE even with a perfectly quiet witness
+AssertionError: expected 'SATISFIED' to be 'INCONCLUSIVE' // Object.is equality
+
+Expected: "INCONCLUSIVE"
+Received: "SATISFIED"
+
+ ❯ test/m2-contract-oracle.test.ts:730:31
+    728|       requiredEffectKinds: ['read'],
+    729|     })
+    730|     expect(judgement.verdict).toBe('INCONCLUSIVE')
+       |                               ^
+    731|     expect(judgement.reason_code).toBe('READ_EFFECT_UNOBSERVABLE')
+    732|     expect(judgement.reasons.join(' ')).toMatch(/a quiet snapshot is n…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  test/m2-contract-oracle.test.ts > TINF M7-C: the read-effect boundary > an omitted declaration is not a licence: a row that declares nothing cannot grade a read claim
+AssertionError: expected 'SATISFIED' to be 'INCONCLUSIVE' // Object.is equality
+
+Expected: "INCONCLUSIVE"
+Received: "SATISFIED"
+
+ ❯ test/m2-contract-oracle.test.ts:761:31
+    759|       requiredEffectKinds: ['read'],
+    760|     })
+    761|     expect(judgement.verdict).toBe('INCONCLUSIVE')
+       |                               ^
+    762|     expect(judgement.reason_code).toBe('READ_EFFECT_UNOBSERVABLE')
+    763|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  2 failed | 57 passed (59)
+   Start at  00:17:21
+   Duration  244ms (transform 166ms, setup 0ms, import 216ms, tests 35ms, environment 0ms)
+

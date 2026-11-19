@@ -1,0 +1,195 @@
+### MUTATION RUN MUTATION-4-f09-shape-only-identity.txt
+### tree: 00429852c + mutation (restored after this transcript)
+### command: node --test --test-reporter=spec tests/world-factory/tinf-observer-closeout.test.mjs
+▶ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable
+  ✔ 500 changed paths under the watched root: the observation is complete, so it is gradable (69.850352ms)
+  ✔ 501 changed paths: the FS verdict is OBSERVATION_TRUNCATED, never SATISFIED (57.630316ms)
+✔ F-07 a truncated observation is a NAMED non-green with the dropped COUNT; one path fewer is still gradable (128.500248ms)
+✔ F-07b a cap below the population cannot be compensated by a bigger EVIDENCE_CAP (or by ignoring the count) (0.676561ms)
+▶ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract
+  ✔ call A DENIED, graded call B has no denial -> INCONCLUSIVE, never SATISFIED (0.297894ms)
+  ✔ the graded call’s OWN denial still satisfies the contract (the rule did not become "never deny") (0.220557ms)
+  ✔ rule 3a is intact: a foreign DENIED carrying an effect_id is still VIOLATED (0.280521ms)
+  ✔ an escape by the graded call is still VIOLATED, and the reason names the graded execution (2.270188ms)
+  ✔ without an attribution key, denials naming SEVERAL calls are ambiguous -> INCONCLUSIVE (0.397242ms)
+✔ F-08 a DENIED from another ToolCall never satisfies this call’s deny contract (5.698066ms)
+▶ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted
+  ✔ the REAL World is accepted and the contract records its receipt (0.460962ms)
+  ✖ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.595278ms)
+  ✖ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.358619ms)
+  ✖ a structuredClone of the real World is refused (cloning must not move an identity) (0.219035ms)
+  ✖ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.156937ms)
+  ✖ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.144113ms)
+  ✖ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.552546ms)
+  ✔ a copied contract cannot prove its World at open time (contractWorldIdentity names the refusal) (0.180642ms)
+  ✔ the refusal vocabulary is a closed set that includes the two new codes (0.112914ms)
+✖ F-09 the World identity is a receipt: literals, clones and forgeries are refused; the real World is accepted (5.523125ms)
+▶ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen
+  ✔ declareObservationContract refuses a read-non-occurrence claim by name (0.183778ms)
+  ✔ a quiet snapshot plus requiredEffectKinds ["read"] is INCONCLUSIVE, never SATISFIED (0.751472ms)
+  ✔ the boundary is about READS, not about every kind: a create/metadata claim is still gradable (0.516136ms)
+  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.171715ms)
+✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (3.575416ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 18
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 310.941053
+
+✖ failing tests:
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:375:11
+✖ a hand-written {id, home} is refused: the claim "a World the Factory created" is falsifiable (0.595278ms)
+  AssertionError [ERR_ASSERTION]: expected the contract module to refuse WORLD_IDENTITY_UNPROVEN, got {"schema":"m7b1-observation-contract/1","claim":"path-scope","world_id":"forged-world","agent_id":"agent-probe","execution_id":"exec-probe","world_home":"/anywhere","workspace":null,"scope":["/home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/.artifacts/tmp/tinf-observer-closeout/world-identity-0cCZhO/home/watched"],"authorizedPaths":[],"forbiddenPaths":[],"contract_id":"obs-3f48a8a3f375f078","world_identity":null}
+      at refuses (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:93:12)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:376:5)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:375:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:379:11
+✖ a spread copy of the real World is refused (the receipt is object identity, not a field) (0.358619ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:380:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:379:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:384:11
+✖ a structuredClone of the real World is refused (cloning must not move an identity) (0.219035ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:386:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:384:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:390:11
+✖ a prototype-inheriting copy is refused (the brand is inherited, the WeakSet entry is not) (0.156937ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:394:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:390:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:398:11
+✖ a receipt-SHAPED object is refused: a receipt is never accepted as proof of a World (0.144113ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:400:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:398:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/tinf-observer-closeout.test.mjs:405:11
+✖ createFsWitness refuses a World it cannot have proven, and accepts the real one (0.552546ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /IDENTITY_INVALID/u. Input:
+  
+  'TypeError: createFsWitness: refuses to watch nothing — pass `outside` and/or `watch` (an empty watch set could only ever report "no effect")'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:417:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:405:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: TypeError: createFsWitness: refuses to watch nothing — pass `outside` and/or `watch` (an empty watch set could only ever report "no effect")
+        at createFsWitness (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit/src/effect-witness.ts:557:11)
+        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:418:13
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:417:12)
+        at Test.runInAsyncScope (node:async_hooks:227:14)
+        at Test.run (node:internal/test_runner/test:1402:25)
+        at Test.start (node:internal/test_runner/test:1262:17)
+        at TestContext.test (node:internal/test_runner/test:400:20)
+        at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/tests/world-factory/tinf-observer-closeout.test.mjs:405:11),
+    expected: /IDENTITY_INVALID/u,
+    operator: 'throws',
+    diff: 'simple'
+  }
+
+### command: vitest run test/m2-contract-oracle.test.ts test/m2-effect-witness.test.ts
+
+ RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/tinf-observer-20261119/packages/testkit
+
+ ✓ test/m2-effect-witness.test.ts (18 tests) 17ms
+ ✓ test/m2-contract-oracle.test.ts (41 tests) 15ms
+
+ Test Files  2 passed (2)
+      Tests  59 passed (59)
+   Start at  00:17:20
+   Duration  235ms (transform 147ms, setup 0ms, import 211ms, tests 33ms, environment 0ms)
+
