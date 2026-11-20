@@ -1,15 +1,19 @@
-# UTE-1 isolation: the old path is provably untouched
+# UTE-1 isolation: the old path is provably untouched (plus the post-build wiring correction)
 
 ## 1. git diff --stat origin/master (worktree vs the pinned base; new files appear as added)
- .github/workflows/census-runtime.yml               |   2 +-
+ .github/workflows/census-runtime.yml               |  17 +
+ dev/agent-workflow/SESSION_ROUTER_LOG.md           |  22 +
  .../evidence/ute1-fs-binding-20261120/gates.txt    | 306 +++++++++
  .../ute1-fs-binding-20261120/isolation.txt         |   3 +
+ .../legacy-fs-before-after.txt                     |  99 +++
  .../mutation-transcript.txt                        |  59 ++
  .../evidence/ute1-fs-binding-20261120/suite.txt    |  99 +++
- dev/ci/eb3-ci-manifest.json                        |   3 +-
+ dev/ci/eb3-ci-manifest.json                        |  16 +-
+ docs/plans/memo/ute1-fs-binding-20261120/README.md | 283 ++++++++
  packages/tools/src/index.ts                        |  33 +
  packages/tools/src/native-fs-binding.ts            | 750 +++++++++++++++++++++
  packages/tools/test/p6t6-bypass-scan.test.ts       |   9 +-
+ scripts/eb3-ci-negative-controls.mjs               |  34 +-
  tests/ute1-fs/lib/arms.mjs                         | 281 ++++++++
  tests/ute1-fs/lib/assembly.mjs                     | 243 +++++++
  tests/ute1-fs/lib/fake-host.mjs                    | 176 +++++
@@ -17,7 +21,7 @@
  tests/ute1-fs/lib/host.mjs                         | 119 ++++
  tests/ute1-fs/mutation-transcript.mjs              | 218 ++++++
  tests/ute1-fs/native-fs-binding.test.mjs           | 286 ++++++++
- 16 files changed, 2699 insertions(+), 4 deletions(-)
+ 20 files changed, 3160 insertions(+), 9 deletions(-)
 
 ## 2. git diff origin/master -- packages/ (the ENTIRE product diff: 1 new module, 1 additive barrel export, 1 test-pin widening)
  packages/tools/src/index.ts                  |  33 ++
@@ -74,8 +78,10 @@ index dacf97312..e3642f04b 100644
 
 ## 3. no shipped assembly imports the module (git grep over tracked sources)
 $ git grep -n "native-fs-binding" -- packages/ scripts/ .github/ dev/ci/
-.github/workflows/census-runtime.yml:367:        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
-dev/ci/eb3-ci-manifest.json:650:              "tests/ute1-fs/native-fs-binding.test.mjs"
+.github/workflows/census-runtime.yml:401:        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+dev/ci/eb3-ci-manifest.json:653:            "why": "Task B (2026-11-19): the rc.5 lane EXECUTES here instead of being excluded. tests/next-host/boot.test.mjs REALLY boots the pinned host (<next tree>/apps/cli/lib/bin.js, own DSH_HOME tests/homes/<world>-next, its own port from NEXT_HOST.portBands 13000-13049 \u2014 never 3080, never the legacy 3181-3199 family), serves a session through the public HTTP/RPC surface against the in-process scripted model provider, and checks the host's own durable session log. tests/next-host/native-api.test.mjs proves against the host's PUBLISHED package entries: A1 ToolsService.resolve -> ResolvedToolSet, A2 a real ToolExecutor executing the tool BODY, A3 the tools/pre-execute -> execute -> post-execute -> result pipeline order, A4 a PTC run_code nested dispatch reaching a REAL inner executor (tool/ptc-dispatch-start + tool/ptc-dispatch recorded by the session), A5 mid-flight cancellation (body sees the abort, call settles as a failure, tools/result still notifies) and A6 the host's override (a tool that ignores the abort cannot become a success: ABORTED; pre-dispatch abort: ABORTED_BEFORE_DISPATCH). tests/next-host/provisioning-controls.test.mjs fires the provisioning refusals one arm each against fixture trees (host-free, seconds): TREE_MISSING, NOT_BUILT, NOT_A_GIT_CHECKOUT, HEAD_DRIFT, VERSION_DRIFT, VERSION_UNREADABLE, PIN_INVALID, ASSET_MISSING, ASSET_DIGEST_DRIFT (a locally built system.node of the published LENGTH is still refused), ASSET_BYTES_DRIFT, ASSET_MODE_DRIFT, plus a positive control proving the refusals are not vacuous. Both lane suites throw at MODULE LOAD on a missing/drifted tree or non-pinned asset (host-next-lib.mjs), so there is no skip path in this step: `--test-force-exit` keeps a leaked handle from holding the job, and the distinct --test-timeout value (1500000) keeps this leg's invocation attributable to exactly this step. F-10 (2026-11-20): tests/world-factory/f10-contract-identity.test.mjs joins this SAME argv (and the same hand-written workflow line). It is the host-free contract-identity closeout: the contract object minted by declareObservationContract is the only accepted one (WeakSet identity + a frozen five-field snapshot), Object.create children / Reflect.ownKeys+getOwnPropertySymbols reflection copies / post-mint field drift / two-World cross-wiring are named refusals, and checkWindowBinding requires the graded execution's trace event to carry actor_id === contract.agent_id. No boot, no port, no DSH_HOME, no pristine tree; it rides this leg for the same M6 reason the lane suites do (a new dispatch step would be a permanent --parity UNCONVERTED). Measured locally 2026-11-19 on the pinned tree + published assets: 6/6 tests pass in 4.1 s (boot 2.0 s, session served, modelRequests=2; A1-A6 all ok). UTE-1 (2026-11-20): tests/ute1-fs/native-fs-binding.test.mjs briefly rode this argv and was MOVED OUT by the hosted measurement on 2ec811f6f — this step runs BEFORE `Build this repo`, a fresh job has no repo node_modules yet, and the suite\u2019s assembly arms import the repo\u2019s own packages, so three assembly tests died at 7m45s with ERR_MODULE_NOT_FOUND: Cannot find package \u0027@deepseek-ai/dsh-scope\u0027 imported from packages/runtime/src/plugin/live/a5sf-realm-row.mjs while the host-free arms passed. The suite now has its own post-build leg below; the F-10 and retirement-gate suites stay here because they are host-free and passed."
+dev/ci/eb3-ci-manifest.json:665:            "tests/ute1-fs/native-fs-binding.test.mjs"
+dev/ci/eb3-ci-manifest.json:667:          "why": "UTE-1 (2026-11-20): the product module `packages/tools/src/native-fs-binding.ts` and its acceptance suite run on the PINNED rc.5 tree (0.2.2-rc.5 @ 9c2670d3bce5275e0d1610272958121af87787bb, provisioned by the two host legs above). WHY THIS LEG MUST SIT AFTER `Build this repo`: the suite’s seven host-free arms need only the rc.5 tree, but its three assembly tests mount the product route-C row (mountMemberA5sfRealm with the module’s providerClass, then attachA5sfNativeToolModules) on a real Member agent.ctx and dispatch through the host’s own ToolsService/ToolExecutor \\u2014 that path imports THIS REPO’s packages (`@deepseek-ai/dsh-scope`, the runtime row, the team services), which a fresh job cannot resolve until `pnpm install` runs. Hosted run 2ec811f6f measured the failure at 7m45s when the suite rode the pre-build `Next host \\u2014 the rc.5 lane` step: `ERR_MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope' imported from packages/runtime/src/plugin/live/a5sf-realm-row.mjs` for the assembly, fallback-control and lifecycle arms, with the host-free arms green. The distinct --test-timeout value (480000, used by no other leg, vs the lane’s 1500000) keeps this leg’s invocation ATTRIBUTABLE to exactly this step: the whole-trailing-argv reader keys a leg on its cmd, and two legs sharing every cmd token could each read the other’s line. WHAT IT PROVES: 9/9 tests \\u2014 (a) the module is additive, dependency-free and imported by no shipped assembly; (b) the seven host-free arms (lane denial, use-after-dispose, double-dispose, overlapping scopes, provider swap, generation mismatch, in-lane allow); (c) the six-mutation transcript where each mutation turns exactly the expected arm RED; (d) golden parity, the product module reproducing G1-S1’s 10 old-path vectors; (e) on the REAL host: an in-lane write lands, an out-of-lane write is refused FS_PERMISSION_DENIED / lane-write with no file, the allow/deny facts carry the binding id and the pinned generation, and `members[0].fs instanceof scope.providerClass`; (f) the assembly-path control (same call, no product providerClass \\u2192 it SUCCEEDS with zero facts, so the deny measured the binding); (g) the scope lifecycle inside the assembly (dispose \\u2192 named scope-disposed refusal through the tool path and a held provider reference; double dispose is a named no-op); (h) the two `blocking=yes` semantic differences are still declared and have not been quietly resolved. CORE PATCH BUDGET = 0: the host tree is read, never edited; the module is additive and no shipped assembly imports it."
 packages/tools/src/index.ts:59:} from './native-fs-binding.js'
 packages/tools/src/index.ts:77:} from './native-fs-binding.js'
 packages/tools/src/native-fs-binding.ts:49: * @module @dsh-agent-team/tools/native-fs-binding
@@ -83,7 +89,11 @@ packages/tools/src/native-fs-binding.ts:56:export const NATIVE_FS_BINDING_MODULE
 packages/tools/src/native-fs-binding.ts:59:export const NATIVE_FS_BINDING_FACT_SCHEMA = 'native-fs-binding-fact/1'
 packages/tools/src/native-fs-binding.ts:673:  const id = input.id ?? `native-fs-binding-${host.generation}`
 packages/tools/test/p6t6-bypass-scan.test.ts:157:      'packages/tools/src/native-fs-binding.ts',
-  (the only hits are the module itself, the barrel export, and the scan pin)
+scripts/eb3-ci-negative-controls.mjs:1802:    { name: 'ute-lane-suite-dropped', code: 'CI_LAYER_LEG_ARGUMENT_MISSING', needle: 'tests/ute1-fs/native-fs-binding.test.mjs',
+scripts/eb3-ci-negative-controls.mjs:1803:      edit: (t) => t.replace(' tests/ute1-fs/native-fs-binding.test.mjs', '') },
+scripts/eb3-ci-negative-controls.mjs:1840:    else if (!fired(staged.findings, 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'tests/ute1-fs/native-fs-binding.test.mjs')) {
+scripts/eb3-ci-negative-controls.mjs:1841:      misses.push(`ute-manifest-suite-dropped: CI_LAYER_LEG_EXTRA_ARGUMENT not raised naming "tests/ute1-fs/native-fs-binding.test.mjs" (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+  (the only hits are the module itself, the barrel export, the scan pin, the suite path and the CI wiring)
 
 ## 4. legacy pin block + census unchanged
 $ git diff origin/master -- tests/paths.mjs
@@ -99,13 +109,26 @@ next   tests/deepseek-harness-next:    0 entries @ 9c2670d3bce5275e0d16102729581
 ## 6. the new suite is DISCOVERED_AND_COLLECTED by the catalog (tracked=>discovered)
 catalog exit=0
 {"id":"node:tests/ute1-fs/native-fs-binding","path":"tests/ute1-fs/native-fs-binding.test.mjs","runner":"node","kind":"unit","contract_ids":[],"classification":"DISCOVERED_AND_COLLECTED","explicit_id":null}
-catalog tests 865
+catalog tests 867
 
-## 7. the workflow lane run: line and the manifest check[] agree byte for byte
+## 7. BOTH census legs the suite touches agree with the workflow byte for byte
 $ node scripts/dispatch-tests.mjs --check
 DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
 $ node .artifacts/tmp/ute1-lane-argv.mjs   (reads both sources, joins cmd[]+check[], compares strings)
-workflow: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
-manifest: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
-byte-identical: true
+leg: next host lane (node:test: real boot + native API A1-A6 + provisioning negative controls)
+  workflow: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
+  manifest: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
+  byte-identical: true
+leg: UTE G1 FS binding product lane (node:test: the product module + a REAL assembly on the pinned rc.5 host, AFTER the repo build)
+  workflow: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+  manifest: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+  byte-identical: true
+ALL-LEGS byte-identical: true
+exit=0
+
+## 8. C-NH1 covers the new leg (a leg the controls do not grade is a leg nobody grades)
+$ node scripts/eb3-ci-negative-controls.mjs --only C-NH1
+PASS C-NH1 next-host-lane-is-collected-and-graded :: honest census workflow passes; extra-argv=>CI_LAYER_LEG_EXTRA_ARGUMENT, if-false=>CI_LAYER_LEG_UNPROVEN, assets-mode-dropped=>CI_LAYER_LEG_UNPROVEN, assets-or-true=>CI_LAYER_LEG_UNPROVEN, lane-suite-dropped=>CI_LAYER_LEG_ARGUMENT_MISSING, lane-continue-on-error=>CI_LAYER_CONTINUE_ON_ERROR, lane-echo=>CI_LAYER_LEG_UNPROVEN, lane-argv-reordered=>CI_LAYER_LEG_ARGUMENT_MISSING|CI_LAYER_LEG_EXTRA_ARGUMENT|CI_LAYER_LEG_UNPROVEN, ute-lane-suite-dropped=>CI_LAYER_LEG_ARGUMENT_MISSING, ute-lane-echo=>CI_LAYER_LEG_UNPROVEN, ute-lane-continue-on-error=>CI_LAYER_CONTINUE_ON_ERROR, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, ute-manifest-suite-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held
+
+1/1 control(s) behaved as required
 exit=0

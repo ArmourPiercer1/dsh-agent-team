@@ -9127,3 +9127,26 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 **UNKNOWN（明写）**：fresh checkout 没有 gitignored 的 legacy 宿主树，before/after 比较用的是同 pin（`639ed01539…`，porcelain 空）兄弟 worktree 的**拷贝**，不是本环境重新 provision；装配臂未用 `unshare`/内核命名空间；完整 census leg（`ci-pr-gate.mjs`）本机未跑，hosted CI 是否绿由 draft PR 的 L2 度量；本机 `pnpm install` 因 store 在工作区外无法执行（`[ERR_SQLITE_ERROR]`），`node_modules` 来自兄弟 worktree 拷贝；hosted runner 对 GitHub/npm 的可达性未测。
 
 **未合并、未 push master**；分支推送到 `origin/task/ute1-fs-binding-20261120` 并开 **draft** PR（不标 ready，因为两条 blocking 差异未解决、且 UTE-1 只是 G1 的一个工作包）。
+
+## 2026-11-20（第二次）— UTE-1 CI 接线修正：assembly 臂必须跑在 `Build this repo` 之后
+
+**问题（hosted `ci-census` on `2ec811f6f`，7m45s 红）**：UTE-1 的套件被挂进了 **next-host lane** 步骤，而该步骤在 `Build this repo` **之前**。runner 的 fresh job 在 build 之前没有任何 repo `node_modules`（只有两台宿主），而套件的三个 assembly 测试要 mount 产品 route-C row（`packages/runtime/src/plugin/live/a5sf-realm-row.mjs`），该 row import 本仓自己的包，于是：
+
+```
+✖ assembly: a real Member on rc.5 writes inside the lane and is refused outside it
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-scope'
+  imported from …/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+ℹ fail 3
+```
+
+host-free 臂在该步骤里是绿的；本机此前没暴露是因为 `node_modules` 来自兄弟 worktree 拷贝。**这是接线错误，不是代码缺陷。**
+
+**修法（不削弱任何东西）**：① 把套件从 next-host lane argv 移出（`f10-contract-identity` 与 `ute-retirement-gate` 留在原处，它们 host-free 且在日志里是绿的）；② 在 `Build this repo (packages + composition)` 之后新增步骤 `"UTE G1 — FS binding: product module + real assembly (pinned rc.5 host)"`（`timeout-minutes: 10`），`run:` 只跑本套件；③ manifest 的 `ci-census` 层新增匹配 leg `UTE G1 FS binding product lane (node:test: the product module + a REAL assembly on the pinned rc.5 host, AFTER the repo build)`，`cmd` = `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec`，`check` = 套件路径，`why` 写明“为什么必须在 build 之后”和该 leg 证什么。**`480000` 是刻意选的唯一值**：初版用 `600000` 与 B4/1 的 cmd 完全相同，`eb3-ci-required` 以 `CI_LAYER_LEG_ENV_MISSING` 点名两条 invocation 的 env 不一致（实测后改值，而不是加豁免）；整个 trailing-argv 读取器按 cmd 归属 leg，唯一 timeout 使该步骤可归属。
+
+**负控跟着扩（a leg nobody grades is a leg nobody grades）**：`scripts/eb3-ci-negative-controls.mjs` 的 `C-NH1` 原本只派生 materialize/assets/lane 三条 leg；本轮把 `UTE G1 FS binding` 加入派生集（byte-identical 诚实态检查），并新增三个 workflow 变异 + 一个 manifest 变异：`ute-lane-suite-dropped`→`CI_LAYER_LEG_ARGUMENT_MISSING`、`ute-lane-echo`→`CI_LAYER_LEG_UNPROVEN`、`ute-lane-continue-on-error`→`CI_LAYER_CONTINUE_ON_ERROR`、`ute-manifest-suite-dropped`→`CI_LAYER_LEG_EXTRA_ARGUMENT`；C-NH1 通过，全套仍 **33/33**。
+
+**实测复现（不是假设）**：在 `/tmp` 造一个**仓库外**的独立 checkout（`git archive HEAD` + 真实拷贝 rc.5 宿主树，避免 Node 向上解析到父 checkout 的 `node_modules`），`node_modules` 数为 0：`MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope'`，套件 `tests 9 / pass 6 / fail 3`，三个 assembly 测试以与 hosted 完全相同的 `ERR_MODULE_NOT_FOUND`（来自 `a5sf-realm-row.mjs`）失败；同一棵树补上已 build 的 `node_modules` 后 **9/9 pass**。transcript = `dev/agent-workflow/evidence/ute1-fs-binding-20261120/prebuild-failure.txt` / `postbuild-pass.txt`。
+
+**门禁（本机实测，全部 exit 0）**：新套件 9/9；`test-catalog --max-uncollected 41 --max-excluded 7` ⇒ `tests=881`、`DISCOVERED_AND_COLLECTED 826`、`EXCLUDED 14`、`UNCOLLECTED 41`、`refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch-tests --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`（含新 leg）；`eb3-ci-required.test.mjs` 全绿；`eb3-ci-negative-controls` 33/33（C-NH1 已覆盖新 leg）；`docs-sync --check` docs=177 plans=136 findings=0 blocking=0；`lint-identities --diff <a4 baseline>` 76 distinct、new 0 resolved 0；`tsc --noEmit -p packages/tools` 0；`packages/tools` vitest 179/179；`git diff --check` 0；census 仍 **712 files / 12 roots**；两棵宿主树 porcelain 0；两条 census leg 的 `run:` 与 manifest `cmd[]+check[]` 均 **byte-identical: true**。
+
+**UNKNOWN**：hosted runner 是否在 build 之后能解析全部 repo 包由下一次 L2 实测（本机只能复现“无 node_modules 必红”与“有 node_modules 必绿”两端）；`/tmp` 16G tmpfs 的复现树已清理，不留远端副作用。draft PR #796 保持 draft；PR 正文更新为推送后的 40-hex head。

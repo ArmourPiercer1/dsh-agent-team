@@ -364,7 +364,7 @@ jobs:
       - name: Next host — the rc.5 lane (real boot, native API A1–A6, provisioning negative controls)
         shell: bash
         timeout-minutes: 15
-        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
+        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
 
       - name: Build this repo (packages + composition) — the census leg REFUSES without this
         # Verbatim `pr-gate`'s working step. A fresh checkout has the committed package artifacts
@@ -382,6 +382,23 @@ jobs:
           pnpm install --frozen-lockfile --store-dir "$PNPM_STORE_DIR"
           pnpm run build
           pnpm build:composition
+
+      - name: "UTE G1 — FS binding: product module + real assembly (pinned rc.5 host)"
+        # WHY THIS STEP SITS AFTER THE BUILD. The suite's host-free arms need only the pinned
+        # rc.5 tree, but its three assembly tests mount the product route-C row, which imports
+        # this repo's own packages (`@deepseek-ai/dsh-scope`, the runtime row, the team services).
+        # A fresh job has no repo `node_modules` until `pnpm install` runs, and the `Next host —
+        # the rc.5 lane` step above deliberately runs BEFORE this build. Hosted run
+        # `2ec811f6f` measured the consequence at 7m45s: the assembly arms died with
+        # `ERR_MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope' imported from
+        # packages/runtime/src/plugin/live/a5sf-realm-row.mjs`, while the host-free arms passed.
+        # The suite therefore runs here, after `pnpm install && pnpm run build`, with its OWN
+        # --test-timeout value: the manifest leg is then attributable to exactly this step (the
+        # whole-trailing-argv reader keys a leg on its cmd, so two legs sharing `--test-timeout`
+        # could each read the other's line).
+        shell: bash
+        timeout-minutes: 10
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,

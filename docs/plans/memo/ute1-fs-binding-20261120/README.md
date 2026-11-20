@@ -77,7 +77,8 @@ real host.Context (tests/deepseek-harness-next, 0.2.2-rc.5 @ 9c2670d3…)
 
 The realm and the attach must sit on `agent.ctx` (mounting them at the root ctx makes the host
 refuse the second prompt-section registration — the host's own `SERVICE_MOUNT_FAILED`, not a test
-workaround).
+workaround). Because this row imports the repo's own packages, the assembly arms require an
+`pnpm install`-ed (and built) checkout; the suite's CI step therefore sits after the build (§7a).
 
 Dispatch goes through `executeModelToolFixture` → the host's `ToolsService` → the host's real
 ToolExecutor → the tool body → the realm's provider. Observed in `evidence/suite.txt`:
@@ -181,23 +182,65 @@ Full transcripts: `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`.
 | --- | --- |
 | new suite | `tests 9 / pass 9 / fail 0 / skipped 0` (`suite.txt`) |
 | mutation transcript | `MUTATION-BASELINE-VERDICT GREEN arms=7`, `MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7`, every arm `verdict=RED-AS-REQUIRED` (`mutation-transcript.txt`) |
-| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=879 … UNCOLLECTED 41 … refused=0 findings=0`, the new suite `DISCOVERED_AND_COLLECTED` (`gates.txt`, `isolation.txt` §6) |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=881 … UNCOLLECTED 41 … refused=0 findings=0`, the new suite `DISCOVERED_AND_COLLECTED` (`gates.txt`, `isolation.txt` §6) |
 | `test-catalog.test.mjs` | `tests 28 / pass 28 / fail 0` |
 | `dispatch-tests --check` | `DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0` |
 | `eb3-ci-required` | `EB3-CI-REQUIRED pass workflows=10 findings=0` |
 | `eb3-ci-negative-controls` | `33/33 control(s) behaved as required` (incl. C-NH1 byte-identical lane argv) |
-| `docs-sync --check` | `docs=173 notes=4 plans=132(0 declaring) findings=0 blocking=0` (the +1 plan is this memo) |
+| `docs-sync --check` | `docs=177 notes=4 plans=136(0 declaring) findings=0 blocking=0` (the merged #793/#794 plans and this memo included) |
 | `lint-identities --diff <a4 baseline>` | `76 distinct; new 0, resolved 0` |
 | `tsc --noEmit -p packages/tools` | exit 0 |
 | `packages/tools` vitest | `15 files / 179 tests` pass (the bypass scan now covers the new module) |
 | `git diff --check` | clean |
 | legacy FS suites (before/after) | `35 tests / 34 pass / 0 fail / 1 skip` on BOTH; verdict sets `identical=True` (`legacy-fs-before-after.txt`) |
 | census population | `file_count 712`, `roots 12` (`isolation.txt` §4) |
-| CI wiring | the workflow `run:` line and the manifest `cmd[]+check[]` agree byte for byte (`isolation.txt` §7) |
+| CI wiring — the suite's own leg | a NEW post-build census step (`UTE G1 — FS binding: product module + real assembly`) runs the suite after `pnpm install && pnpm run build`; its `run:` line and the manifest leg's `cmd[]+check[]` agree byte for byte (`isolation.txt` §7) |
+| CI wiring — the next-host lane | the rc.5 lane keeps `f10-contract-identity` + `ute-retirement-gate` and no longer carries this suite (it runs before the build; `evidence/prebuild-failure.txt` shows why) |
 | host trees | legacy `0 entries @ 639ed01539…`, next `0 entries @ 9c2670d3…` — never edited |
 
 Commands are echoed verbatim above each output in `gates.txt` / `isolation.txt`; every one of them
 can be re-run from the worktree root.
+
+### 7a. Hosted correction (run `2ec811f6f`, 7 m 45 s): the assembly arms need the repo build
+
+The first wiring appended the suite to the **next-host lane** step, which runs *before* `Build this
+repo`. That was wrong, and the hosted run measured it:
+
+```
+✖ assembly: a real Member on rc.5 writes inside the lane and is refused outside it
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-scope'
+  imported from …/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+ℹ fail 3
+```
+
+The two host-free arms families pass there; the three assembly tests cannot, because the product
+route-C row imports this repo's own packages and a fresh job has no repo `node_modules` until
+`pnpm install` runs. The suite now has its own step **after** the build:
+
+* `.github/workflows/census-runtime.yml` → `UTE G1 — FS binding: product module + real assembly
+  (pinned rc.5 host)`, `timeout-minutes: 10`, running
+  `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs`;
+* `dev/ci/eb3-ci-manifest.json` → a matching `ci-census` leg
+  `UTE G1 FS binding product lane (node:test: the product module + a REAL assembly on the pinned rc.5 host, AFTER the repo build)`
+  with `cmd` = the same `node --test … --test-timeout=480000 …`, `check` = the suite;
+* `480000` is used by no other leg, so the whole-trailing-argv reader can attribute the step to this
+  leg alone (the earlier `600000` collided with B4/1 and `eb3-ci-required` refused the ambiguity with
+  `CI_LAYER_LEG_ENV_MISSING` — observed, then fixed);
+* `scripts/eb3-ci-negative-controls.mjs` **C-NH1 was extended**, because a leg the controls do not
+  cover is a leg nobody grades: `UTE G1 FS binding` joined its derivation set and three workflow
+  mutations (`ute-lane-suite-dropped` → `CI_LAYER_LEG_ARGUMENT_MISSING`, `ute-lane-echo` →
+  `CI_LAYER_LEG_UNPROVEN`, `ute-lane-continue-on-error` → `CI_LAYER_CONTINUE_ON_ERROR`) plus one
+  manifest mutation (`ute-manifest-suite-dropped` → `CI_LAYER_LEG_EXTRA_ARGUMENT`) now grade it.
+
+**Reproduced locally, not assumed.** A standalone copy of the tree outside the repo (so Node's upward
+resolution walk cannot reach a parent checkout's `node_modules`) with the rc.5 host copied in as a
+real directory and **zero** `node_modules`:
+
+* `evidence/prebuild-failure.txt` — `MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope'`,
+  then `tests 9 / pass 6 / fail 3`, the three assembly tests failing with exactly the hosted
+  `ERR_MODULE_NOT_FOUND` from `a5sf-realm-row.mjs`;
+* `evidence/postbuild-pass.txt` — the SAME tree with the repo's installed deps present:
+  `tests 9 / pass 9 / fail 0`.
 
 ---
 
@@ -209,6 +252,8 @@ can be re-run from the worktree root.
 | `evidence/mutation-transcript.txt` | the 6 mutations + 7 baseline arms, each with its verdict line |
 | `evidence/gates.txt` | catalog, dispatch, eb3 required/negative controls, docs-sync, identities, tsc, vitest, diff-check — command + output + exit code |
 | `evidence/isolation.txt` | `git diff` vs master, importer census, pin block, census population, host-tree porcelain, catalog entry, CI byte-match |
+| `evidence/prebuild-failure.txt` | the suite in a standalone checkout with NO repo `node_modules`: the three assembly tests die with the hosted `ERR_MODULE_NOT_FOUND` (`@deepseek-ai/dsh-scope` from `a5sf-realm-row.mjs`), host-free arms pass |
+| `evidence/postbuild-pass.txt` | the SAME tree plus the built repo's `node_modules`: 9/9 pass — where the new census step runs |
 | `evidence/legacy-fs-before-after.txt` | the legacy FS suites on a pristine `origin/master` worktree vs this branch, verdict-set diff |
 
 Scratch (untracked, gitignored): mutation copies and assembly worlds under
@@ -219,9 +264,13 @@ Scratch (untracked, gitignored): mutation copies and assembly worlds under
 ## 9. Branch / PR
 
 * branch: `task/ute1-fs-binding-20261120`
-* module commit (this change, before the memo/CI-log commit):
+* module commit (the original change, before the memo/CI-log commit):
   `296793c32ed0f7ebafa33e86b14521459a61e493`
-* base: `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892`
+* merge of `origin/master` (#793 + #794, lane argv rebuilt from the manifest):
+  `d510523d6f7e3b0547e6836312b41491202588b9`
+* wiring correction (§7a, hosted failure on `2ec811f6f`): the commit that carries this memo
+  revision; the PR body states its exact 40-hex head at push time.
+* original base: `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892`
 * PR: a DRAFT pull request against `master` is created from this branch; the PR body carries the
   exact 40-hex head at push time. It is intentionally **not** marked ready: UTE-1 is one work
   package of the gate, and the two `blocking=yes` differences above are unresolved.
