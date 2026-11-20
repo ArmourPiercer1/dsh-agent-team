@@ -26,5 +26,7 @@ export type { TeamToolSet } from './tools.js';
 export { selectTeamTools } from './tool-selector.js';
 export { applyBuiltInToolDeny } from './builtin-deny.js';
 export type { ToolRestrictionDisposer } from './builtin-deny.js';
+export { FS_BINDING_REFUSAL, NATIVE_FS_BINDING_FACT_SCHEMA, NATIVE_FS_BINDING_MODULE_ID, NativeFsBindingError, createNativeFsBindingScope, laneAdmits, mountNativeFsBinding, normalizeLaneRoots, } from './native-fs-binding.js';
+export type { AbortSignalLike, CreateNativeFsBindingScopeInput, FsBindingLane, FsBindingRefusal, FsBindingStatus, FsErrorConstructor, FsErrorLike, MountNativeFsBindingInput, NativeFileSystemConstructor, NativeFileSystemSurface, NativeFsBinding, NativeFsBindingContext, NativeFsBindingDisposal, NativeFsBindingFact, NativeFsBindingHost, NativeFsBindingScope, NativeFsToolModule, } from './native-fs-binding.js';
 export type { ResolvedTeamToolCaller, TeamPermissionExecIntent, TeamToolDefinition, TeamToolExecContext, TeamToolParameterSchema, TeamToolsOptions, TeamToolsResult, } from './types.js';
 //# sourceMappingURL=index.d.ts.map
