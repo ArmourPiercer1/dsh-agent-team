@@ -96,10 +96,10 @@ export const PIXEL_PNG = Buffer.from(
 )
 
 /**
- * `GAP-FS-CONTRACT-1` — **REPAIRED 2026-11-20** by the route-C repair
- * (`packages/runtime/team-services/src/mount.ts` now continues a routed module's
- * OWN declared `fs` into its deferred children; the PR number is recorded here
- * in the follow-up commit). HISTORICAL STATEMENT (kept verbatim in substance):
+ * `GAP-FS-CONTRACT-1` — **REPAIRED 2026-11-20 by PR #802** (route-C repair:
+ * `packages/runtime/team-services/src/mount.ts` now continues a routed module's
+ * OWN declared `fs` into its deferred children).
+ * HISTORICAL STATEMENT (kept verbatim in substance):
  * `mount.ts`'s `ROUTED_SERVICE_NAMES` omitted `fs`, so a routed (deferred)
  * `read_image` child could not resolve `ctx.fs` and failed closed with
  * `cannot get property "fs" without inject` before any provider I/O.

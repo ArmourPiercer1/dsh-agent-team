@@ -488,3 +488,36 @@ DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verd
 [check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (2104 compared file(s)).
 ### exit=0
 
+### (PR #802 follow-up: GAP doc block records the PR number)
+### $ node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/a5sf-fs-contract.test.mjs
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (304.786412ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (28.983666ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (72.41998ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (20.429177ms)
+✔ FSB-IMG-1 the PRODUCT route serves read_image: one attachment in-lane, lane refusal with zero bytes out-of-lane (20.597033ms)
+✔ FSB-IMG-1b WITHHELD continuation (historical GAP-FS-CONTRACT-1 fixture) still fails closed: zero reads, zero bytes, zero facts (13.640178ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (18.708289ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (17.343814ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (22.745282ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (21.342045ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (19.668712ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (17.045024ms)
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (22.30054ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (27.795499ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (24.924745ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (17.648454ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (21.916672ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (20.677727ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (18.306358ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (14.84549ms)
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures) (14.177313ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 827.242059
+### exit=0
+
