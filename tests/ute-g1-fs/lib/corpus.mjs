@@ -207,7 +207,7 @@ export const CORPUS = Object.freeze([
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' } }],
     effects: ['inside/pixel.png'],
     leaks: [],
-    expect: { outcome: 'deny', refusal: 'other' },
+    expect: { outcome: 'deny', refusal: 'route-unresolved' },
     note: 'the PRODUCT route-C composition cannot reach read_image at all (GAP-FS-CONTRACT-1 / PD-5): refused before any image work, zero attachment bytes. Recorded as the route product fact, NOT as a lane refusal',
   },
   {
@@ -267,7 +267,7 @@ export const CORPUS = Object.freeze([
     steps: [{ tool: 'read_image', args: { file_path: 'inside/absent.png' } }],
     effects: ['inside/absent.png'],
     leaks: [],
-    expect: { outcome: 'deny', refusal: 'other' },
+    expect: { outcome: 'deny', refusal: 'missing-path' },
     note: 'a missing target is a typed refusal, not an empty image: the file is still absent and no attachment is created',
   },
   {
@@ -283,7 +283,7 @@ export const CORPUS = Object.freeze([
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' } }],
     effects: ['inside/pixel.png'],
     leaks: [],
-    expect: { outcome: 'deny', refusal: 'other' },
+    expect: { outcome: 'deny', refusal: 'image-modality-denied' },
     note: 'the image-capability route gate refuses a text-only model BEFORE any fs read or attachment write; zero attachment bytes',
   },
   {
@@ -298,7 +298,7 @@ export const CORPUS = Object.freeze([
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' }, abort: true }],
     effects: ['inside/pixel.png'],
     leaks: [],
-    expect: { outcome: 'deny', refusal: 'other' },
+    expect: { outcome: 'deny', refusal: 'cancelled' },
     note: 'cancellation is expressible only BEFORE dispatch on this path (an aborted signal is refused by the registry); the image is unchanged and no attachment is created. A mid-read cancellation arm is not claimed',
   },
 ])

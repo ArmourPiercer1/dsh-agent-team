@@ -55,6 +55,15 @@ const TEXT_CLASS = Object.freeze([
   [/changed since it was read|has been modified since|FS_STALE_VERSION/, REFUSAL.STALE_VERSION],
   [/has not been read|not been observed|read the file, then retry|IO_WRITE_REQUIRES_READ|FS_NOT_OBSERVED/, REFUSAL.WRITE_REQUIRES_READ],
   [/outside every allow subtree of the lane|outside the declared .* lane|FS_SANDBOX_DENIED|FS_PERMISSION_DENIED|IO_READ_DENIED|IO_WRITE_DENIED|permission denied/i, REFUSAL.LANE_READ],
+  // The image rows' four distinct causes must not collapse into `other`: the
+  // corpus compares CLASS, so a route gap, a missing file, a modality refusal
+  // and a cancellation have to be distinguishable in the machine-readable cell.
+  // Each pattern is named from the text the legacy path actually emitted
+  // (transcripts in dev/agent-workflow/evidence/ute-g1-fs-20261120/).
+  [/cannot get property ["']?fs["']? without inject/, REFUSAL.ROUTE_UNRESOLVED],
+  [/\bread target\b[^\n]*\bdoes not exist\b/, REFUSAL.MISSING_PATH],
+  [/does not declare image input/, REFUSAL.IMAGE_MODALITY_DENIED],
+  [/aborted before dispatch/, REFUSAL.CANCELLED],
 ])
 
 /**

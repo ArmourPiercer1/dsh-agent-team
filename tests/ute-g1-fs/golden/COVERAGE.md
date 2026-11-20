@@ -28,6 +28,24 @@ load-bearing rather than decorative.
 Transcript: `dev/agent-workflow/evidence/ute-g1-fs-20261120/negative-controls.txt`
 (and the same lines are re-run by `lane-suite.test.mjs`).
 
+## Refusal classes (machine-readable, not prose)
+
+The four `read_image` denials that are not lane denials each get a distinct class
+in the `refusal` column, named from the text the legacy path actually emitted:
+
+| vector | `refusal` | observed signal |
+|---|---|---|
+| `FS-I0-route-c-gap` | `route-unresolved` | `cannot get property "fs" without inject` (route-C deferred child cannot resolve `fs`) |
+| `FS-I4-missing-image` | `missing-path` | `read target '…' does not exist` |
+| `FS-I5-route-unresolved` | `image-modality-denied` | `… does not declare image input; switch to an image-capable model …` |
+| `FS-I6-cancel-before-dispatch` | `cancelled` | `tool call aborted before dispatch` |
+
+`other` remains the honest terminal class for genuinely unclassifiable
+refusals, but **no corpus row rests there**: `lane-suite.test.mjs` asserts it and
+the capture command refuses to write a row whose `refusal=other` has an empty
+`codes` cell. `FS-I2`/`FS-I3` stay `lane-deny` (their cause is the lane, and the
+lane axis is deliberately collapsed across generations).
+
 ## What the `read_image` rows actually observed
 
 `read_image` has no filesystem effect: it commits an ATTACHMENT and returns a

@@ -63,13 +63,20 @@ Header: `id entry lane_read lane_write outcome refusal codes effects leaks`.
 
 * `lane_*` — world-relative lane tokens, never absolute paths.
 * `outcome` — `allow` | `deny`.
-* `refusal` — closed class (`lane-deny`, `write-requires-read`, `stale-version`,
-  `other`) or `-` when the call was allowed. The old path's *typed* codes are
-  empty here: route-C refusals are prose (`authored locator '…' is outside every
-  allow subtree of the lane`, `file has not been read — read the file, then
-  retry`, `file changed since it was read — re-read the file, then retry`), which
-  `classifyRefusal` maps onto the same class vocabulary the next host's typed
-  codes map onto.
+* `refusal` — closed class or `-` when the call was allowed. Classes:
+  `lane-deny`, `write-requires-read`, `stale-version`, `route-unresolved`,
+  `missing-path`, `image-modality-denied`, `cancelled`, and the honest terminal
+  `other`. `other` is NOT used by any corpus row (asserted by
+  `../lane-suite.test.mjs` and by the capture guard). The old path's *typed*
+  codes are empty here: route-C refusals are prose (`authored locator '…' is
+  outside every allow subtree of the lane`, `file has not been read — read the
+  file, then retry`, `file changed since it was read — re-read the file, then
+  retry`, `cannot get property "fs" without inject`, `read target '…' does not
+  exist`, `… does not declare image input`, `tool call aborted before dispatch`),
+  which `classifyRefusal` maps onto the same class vocabulary the next host's
+  typed codes map onto. The four image-specific classes exist so the corpus can
+  tell a route gap from a missing file from a modality refusal from a
+  cancellation in the machine-readable column, not only in prose.
 * `effects` — `path|present|<bytes>|<sha256>|<mode>` joined by `;`; `absent`
   carries `-` for the remaining cells.
 * `leaks` — secret tokens that appeared in the model-facing result text (`-`:

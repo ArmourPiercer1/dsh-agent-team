@@ -80,5 +80,14 @@ export const REFUSAL = Object.freeze({
   LANE_WRITE: 'lane-write',
   WRITE_REQUIRES_READ: 'write-requires-read',
   STALE_VERSION: 'stale-version',
+  /** The routed definition could not resolve a service it needs (route-C `fs`). */
+  ROUTE_UNRESOLVED: 'route-unresolved',
+  /** The target does not exist at read/stat time. */
+  MISSING_PATH: 'missing-path',
+  /** The model route does not declare image input, so no image may be read. */
+  IMAGE_MODALITY_DENIED: 'image-modality-denied',
+  /** The call was cancelled (observed: before dispatch; mid-read would map here too). */
+  CANCELLED: 'cancelled',
+  /** Genuinely unclassifiable. A corpus vector may NOT rest here silently. */
   OTHER: 'other',
 })

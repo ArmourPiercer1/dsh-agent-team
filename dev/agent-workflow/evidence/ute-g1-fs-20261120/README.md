@@ -10,7 +10,7 @@ The NEW-path half (`NEW-PATH-VECTOR <FS-I*>` PASS) is PR B2.
 |---|---|---|
 | `old-path-capture.txt` | `node tests/ute-g1-fs/capture-old-path.mjs` | the 17-vector golden fixture re-derives from the legacy path with no drift (exit 0), including the 7 `read_image` vectors and their per-vector composition |
 | `negative-controls.txt` | `node tests/ute-g1-fs/negative-controls.mjs` | family-level NC-1..NC-4 plus `NC-MEMBER read/write/edit/read_image` and their `NC-MEMBER-POSITIVE` pairs; `NC-VERDICT GREEN controls=12 failed=0` |
-| `lane-suite.txt` | `node --test tests/ute-g1-fs/lane-suite.test.mjs` | the prototype still reproduces the 10 non-pending golden rows; the 7 image rows are declared `newPathPending` (B2 scope) and printed, not silently skipped |
+| `lane-suite.txt` | `node --test tests/ute-g1-fs/lane-suite.test.mjs` | the prototype still reproduces the 10 non-pending golden rows; the 7 image rows are declared `newPathPending` (B2 scope, every pending id asserted `^FS-I`) and printed, not silently skipped; and no golden row rests in the `other` refusal bucket |
 | `gate-refusal.txt` | `node scripts/ute-retirement-gate.mjs --all` | the FS row is still REFUSED (`exit=1`), now by `UTE_VECTOR_UNREPRODUCED` for the image vectors + the unresolved semantic differences; `oldBaseline` and `negativeControlsPass` no longer refuse `read_image` |
 | `member-map.txt` | `node scripts/ute-retirement-gate.mjs --family fs --json` (derived) | the gate's own coverage sets: `oldBaseline 4/4`, `negativeControlsPass 4/4`, `newPathVerified 3/4` |
 | `retirement-gate-suite.txt` | `node --test scripts/ute-retirement-gate.test.mjs` | the gate's own 31/31 suite, with its REAL arm updated to the post-B1 state (old-path axes covered, new-path reproduction still refused) |
@@ -44,6 +44,16 @@ cross-checked against that digest (byte count) and against the model-facing
 content blocks (one text block + one image block with the same attachment id).
 A refused call that commits anything makes the capture throw instead of
 recording a zero-effect refusal.
+
+## Refusal classes
+
+The four non-lane image denials are not prose-only: `FS-I0` is
+`route-unresolved`, `FS-I4` `missing-path`, `FS-I5` `image-modality-denied`,
+`FS-I6` `cancelled` (patterns named from the text the legacy run actually
+emitted; see `golden/COVERAGE.md`). `FS-I2`/`FS-I3` remain `lane-deny`.
+`other` stays in the vocabulary as the honest terminal bucket, but no corpus row
+uses it: the capture command refuses to write `other` with an empty `codes` cell,
+and the lane suite's fourth test fails if any golden row rests there.
 
 ## Still missing
 
