@@ -89,6 +89,32 @@ test('product module: additive, dependency-free, and imported by no shipped asse
   assert.match(barrel, /from '\.\/native-fs-binding\.js'/, 'the barrel must re-export the module')
 })
 
+test('product module: names no ambient global the PRODUCTION compile face does not provide', () => {
+  // WHY THIS TEST EXISTS (hosted run after 2ec811f6f, "Build this repo" red).
+  // `tsc -p packages/tools/tsconfig.json --noEmit` includes `test` + vitest.config.ts,
+  // whose type graph pulls the DOM lib in, so ambient globals like `AbortSignal`
+  // compile there. The census builds with `tsconfig.build.json`, which includes only
+  // `src` and `lib: ["ES2022"]` — no DOM, no ambient node types — so the same code is
+  // TS2304 there. The module must therefore declare its own structural types. This
+  // assertion is the cheap, host-free half; the real check is the build config itself,
+  // which CI runs and `evidence/build-config-before-after.txt` records.
+  const source = readFileSync(MODULE_SOURCE, 'utf8')
+  // Prose may NAME the global (the module header explains why it is avoided);
+  // only CODE positions matter, so strip comments before scanning.
+  const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
+  const withoutStructuralName = code.split('AbortSignalLike').join('')
+  assert.ok(
+    !/\bAbortSignal\b/.test(withoutStructuralName),
+    'the module must not name the ambient DOM global AbortSignal (TS2304 under tsconfig.build.json); declare a structural type instead',
+  )
+  assert.match(source, /export interface AbortSignalLike/, 'the structural abort surface must be declared locally')
+  const buildConfig = readFileSync(join(REPO_ROOT, 'packages', 'tools', 'tsconfig.build.json'), 'utf8')
+  assert.ok(
+    !/["']test["']/.test(buildConfig),
+    'the production compile face must keep excluding the test graph (that graph is what hides ambient globals)',
+  )
+})
+
 test('host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module', async (t) => {
   const results = await runAllArms(nativeFsBinding)
   for (const result of results) t.diagnostic(`${result.id}: ${result.ok ? 'GREEN' : 'RED'} — ${result.detail}`)

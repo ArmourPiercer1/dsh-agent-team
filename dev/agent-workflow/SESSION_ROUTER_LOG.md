@@ -9150,3 +9150,39 @@ host-free 臂在该步骤里是绿的；本机此前没暴露是因为 `node_mod
 **门禁（本机实测，全部 exit 0）**：新套件 9/9；`test-catalog --max-uncollected 41 --max-excluded 7` ⇒ `tests=881`、`DISCOVERED_AND_COLLECTED 826`、`EXCLUDED 14`、`UNCOLLECTED 41`、`refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch-tests --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`（含新 leg）；`eb3-ci-required.test.mjs` 全绿；`eb3-ci-negative-controls` 33/33（C-NH1 已覆盖新 leg）；`docs-sync --check` docs=177 plans=136 findings=0 blocking=0；`lint-identities --diff <a4 baseline>` 76 distinct、new 0 resolved 0；`tsc --noEmit -p packages/tools` 0；`packages/tools` vitest 179/179；`git diff --check` 0；census 仍 **712 files / 12 roots**；两棵宿主树 porcelain 0；两条 census leg 的 `run:` 与 manifest `cmd[]+check[]` 均 **byte-identical: true**。
 
 **UNKNOWN**：hosted runner 是否在 build 之后能解析全部 repo 包由下一次 L2 实测（本机只能复现“无 node_modules 必红”与“有 node_modules 必绿”两端）；`/tmp` 16G tmpfs 的复现树已清理，不留远端副作用。draft PR #796 保持 draft；PR 正文更新为推送后的 40-hex head。
+
+## 2026-11-20（第三次）— UTE-1 第二次 hosted 失败：`tsc --noEmit` 不是 build 检查（`AbortSignal` TS2304）
+
+**问题（hosted `Build this repo`，在套件步骤之前就红）**：
+
+```
+[error]packages/tools build: src/native-fs-binding.ts(519,54): error TS2304: Cannot find name 'AbortSignal'.
+… (539, 540, 551, 562, 572, 583 — seven sites)
+packages/tools build: Failed
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/tools@0.1.6 build: `tsc -p tsconfig.build.json`
+```
+
+模块把七个参数写成了**环境全局 DOM 类型** `AbortSignal`。我上一轮本地跑的是 `tsc --noEmit -p packages/tools/tsconfig.json`：该 config 还 include `test` + `vitest.config.ts`，其类型图把 **DOM lib** 拉进来，所以全局存在；而 census 用 `tsconfig.build.json`，只 include `src`、继承 `lib: ["ES2022"]`，没有 DOM/ambient node types，同一份代码在那里是 `TS2304`。**两个不同的 program，其中只有一个是会 ship 的。**
+
+本机对 BEFORE 模块复现（`evidence/build-config-before-after.txt`）：`tsc -p tsconfig.build.json --noEmit` → TS2304 ×21、exit 2；`tsc -p tsconfig.json --noEmit` → 无输出、exit 0。
+
+**修法：改模块，不改共享 build config**（为容纳一个全局而放宽整包编译面是本 PR 不需要的 blast radius）。模块自声明结构化类型：
+
+```ts
+export interface AbortSignalLike {
+  readonly aborted: boolean
+  readonly reason?: unknown
+}
+```
+
+全部参数改用它；真实 `AbortController.signal` 结构上满足它，宿主调用点不变；绑定只把值转发给宿主 provider、从不订阅，所以不建模 `addEventListener`（那会是 DOM 签名的第二份弱副本且无消费者）。barrel 也导出该 type（additive）。用 census 的**精确命令**验证：`pnpm --filter @dsh-agent-team/tools run build` → `tsc -p tsconfig.build.json`、exit 0；`pnpm run build`（整个 workspace）→ exit 0。
+
+新增 host-free 回归测试 *"product module: names no ambient global the PRODUCTION compile face does not provide"*：去注释后断言无裸 `AbortSignal`、断言 `AbortSignalLike` 已声明、断言 `tsconfig.build.json` 仍排除 `test` 图（正是隐藏 ambient 全局的那张图）。它只是 tripwire；真正的检查仍是 CI 跑的 build config，证据在 `evidence/build-config*.txt`。套件因此 9→**10** 个测试，全绿；prebuild 复现相应变为 7 pass / 3 fail（同三个 assembly 臂、同一 `ERR_MODULE_NOT_FOUND`）。
+
+**committed artefacts**：`packages/tools/dist/**` 被 gitignore、**未跟踪**（没有提交任何该目录文件）；但 workspace build 同时把各包产物镜像进**已跟踪**的 install surface `packages/runtime/dist/packages/<pkg>/…`，`check-artifacts-committed` 对本次给出 `verdict=stale drift=8`。因此 8 个产物文件（4 改：`index.{js,d.ts,js.map,d.ts.map}`；4 新：`native-fs-binding.{js,d.ts,js.map,d.ts.map}`）与源码**同一 commit** 提交，使 HEAD 重新成为 built tree。
+
+**教训（写进 memo §7b，防下一 lane 重犯）**：验证编译必须用**发布用的那个 tsconfig**；`tsc --noEmit` 若指向包含测试图的 config，它会把测试依赖引入的 lib 当成生产可用，从而放过真实 build 失败。本轮把 `pnpm --filter <pkg> run build` 与 `pnpm run build` 都纳入证据，并把"无 ambient 全局"钉成套件断言。
+
+**门禁**：见下一 commit 的 `evidence/gates.txt`（含 `pnpm ... run build` exit 0、`pnpm run build` exit 0、`check-artifacts-committed verdict=fresh`、`eb3-ci-required`、C-NH1/负控、catalog、dispatch、docs-sync、identities、vitest、diff-check）。lane argv / manifest / 新 leg **未改动**（scheduler 已确认该步骤存在、只因先前的 build 失败而跳过）。
+
+**UNKNOWN**：hosted 全量 build 之后的 suite 运行仍由 L2 实测；本机不能 `pnpm install`（store 在 workspace 外），build 半程已实测，install 半程未复现。

@@ -58,6 +58,7 @@ export {
   normalizeLaneRoots,
 } from './native-fs-binding.js'
 export type {
+  AbortSignalLike,
   CreateNativeFsBindingScopeInput,
   FsBindingLane,
   FsBindingRefusal,

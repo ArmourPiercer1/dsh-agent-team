@@ -23,4 +23,9 @@ export { consultGuard } from './guard.js';
 export { createTeamTools } from './tools.js';
 export { selectTeamTools } from './tool-selector.js';
 export { applyBuiltInToolDeny } from './builtin-deny.js';
+// UTE-1 — additive, UNUSED BY ANY SHIPPED ASSEMBLY (see the module header):
+// the native FS binding product module. `git grep` over the product entries
+// finds no importer; the export exists so a reviewed composition can consume it
+// without a second copy. It has no imports and therefore adds no dependency.
+export { FS_BINDING_REFUSAL, NATIVE_FS_BINDING_FACT_SCHEMA, NATIVE_FS_BINDING_MODULE_ID, NativeFsBindingError, createNativeFsBindingScope, laneAdmits, mountNativeFsBinding, normalizeLaneRoots, } from './native-fs-binding.js';
 //# sourceMappingURL=index.js.map

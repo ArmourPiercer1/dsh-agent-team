@@ -180,7 +180,7 @@ Full transcripts: `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`.
 
 | gate | result |
 | --- | --- |
-| new suite | `tests 9 / pass 9 / fail 0 / skipped 0` (`suite.txt`) |
+| new suite | `tests 10 / pass 10 / fail 0 / skipped 0` (`suite.txt`) |
 | mutation transcript | `MUTATION-BASELINE-VERDICT GREEN arms=7`, `MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7`, every arm `verdict=RED-AS-REQUIRED` (`mutation-transcript.txt`) |
 | `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=881 … UNCOLLECTED 41 … refused=0 findings=0`, the new suite `DISCOVERED_AND_COLLECTED` (`gates.txt`, `isolation.txt` §6) |
 | `test-catalog.test.mjs` | `tests 28 / pass 28 / fail 0` |
@@ -189,7 +189,9 @@ Full transcripts: `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`.
 | `eb3-ci-negative-controls` | `33/33 control(s) behaved as required` (incl. C-NH1 byte-identical lane argv) |
 | `docs-sync --check` | `docs=177 notes=4 plans=136(0 declaring) findings=0 blocking=0` (the merged #793/#794 plans and this memo included) |
 | `lint-identities --diff <a4 baseline>` | `76 distinct; new 0, resolved 0` |
-| `tsc --noEmit -p packages/tools` | exit 0 |
+| **production compile face** `pnpm --filter @dsh-agent-team/tools run build` (= `tsc -p packages/tools/tsconfig.build.json`) | exit 0 (`build-config.txt`); the BEFORE state fails there with 21× `TS2304: Cannot find name 'AbortSignal'` (`build-config-before-after.txt`) |
+| full workspace build `pnpm run build` | exit 0 (`full-workspace-build.txt`) — the census's own build half |
+| `check-artifacts-committed` | `verdict=fresh` at HEAD; the emitted mirror under tracked `packages/runtime/dist/packages/tools/src/**` is committed with the source |
 | `packages/tools` vitest | `15 files / 179 tests` pass (the bypass scan now covers the new module) |
 | `git diff --check` | clean |
 | legacy FS suites (before/after) | `35 tests / 34 pass / 0 fail / 1 skip` on BOTH; verdict sets `identical=True` (`legacy-fs-before-after.txt`) |
@@ -237,10 +239,69 @@ resolution walk cannot reach a parent checkout's `node_modules`) with the rc.5 h
 real directory and **zero** `node_modules`:
 
 * `evidence/prebuild-failure.txt` — `MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope'`,
-  then `tests 9 / pass 6 / fail 3`, the three assembly tests failing with exactly the hosted
+  then `tests 10 / pass 7 / fail 3`, the three assembly tests failing with exactly the hosted
   `ERR_MODULE_NOT_FOUND` from `a5sf-realm-row.mjs`;
 * `evidence/postbuild-pass.txt` — the SAME tree with the repo's installed deps present:
-  `tests 9 / pass 9 / fail 0`.
+  `tests 10 / pass 10 / fail 0`.
+
+### 7b. Hosted correction #2 (`Build this repo`, type-level): `tsc --noEmit` is NOT the build check
+
+The next hosted run failed **inside the build itself**, before the suite step:
+
+```
+[error]packages/tools build: src/native-fs-binding.ts(519,54): error TS2304: Cannot find name 'AbortSignal'.
+… (539, 540, 551, 562, 572, 583 — seven sites)
+packages/tools build: Failed
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/tools@0.1.6 build: `tsc -p tsconfig.build.json`
+```
+
+The module had typed seven parameters as the **ambient DOM global** `AbortSignal`. My local check
+was `tsc --noEmit -p packages/tools/tsconfig.json` and it passed — because that config also includes
+`test` + `vitest.config.ts`, and their type graph pulls the **DOM lib** in, so the global exists
+there. The census builds with `tsconfig.build.json`, which includes **only `src`** and inherits
+`lib: ["ES2022"]` from `tsconfig.base.json` — no DOM, no ambient node types — so the same code is
+`TS2304` there. **Two different programs, one of them the shipped one.**
+
+Reproduced locally against the BEFORE module (`evidence/build-config-before-after.txt`):
+
+```
+$ tsc -p tsconfig.build.json --noEmit   →  TS2304 ×21, exit 2
+$ tsc -p tsconfig.json --noEmit        →  no output, exit 0
+```
+
+**Fix in the module, never in the shared build config** (admitting DOM/node globals package-wide
+would be a blast-radius change this PR does not need). The module now declares its own structural
+surface:
+
+```ts
+export interface AbortSignalLike {
+  readonly aborted: boolean
+  readonly reason?: unknown
+}
+```
+
+and every parameter uses `AbortSignalLike`; a real `AbortController.signal` satisfies it, so host
+call sites are unchanged, and the binding only forwards the value — it never subscribes, so
+modelling `addEventListener` would be a second, weaker copy of the DOM signature with no consumer.
+The barrel exports the type too (additive). Verified with the **exact** command the census runs:
+
+```
+$ pnpm --filter @dsh-agent-team/tools run build     → $ tsc -p tsconfig.build.json, exit 0
+$ pnpm run build                                    → whole workspace, exit 0
+```
+
+A suite test now pins the lesson host-free: *"product module: names no ambient global the PRODUCTION
+compile face does not provide"* strips comments, asserts no bare `AbortSignal` survives, asserts
+`AbortSignalLike` is declared, and asserts `tsconfig.build.json` still excludes `test` (the graph
+that hides ambient globals). The cheap assertion is a tripwire; the build config itself remains the
+real check, which CI runs and `evidence/build-config*.txt` records.
+
+**Committed artefacts.** `packages/tools/dist/**` is gitignored and untracked (no files committed
+there). But the workspace build also mirrors package emissions into the **tracked** install surface
+`packages/runtime/dist/packages/<pkg>/…`; `check-artifacts-committed` reported `verdict=stale`,
+`drift=8` for exactly our module. Those eight emitted files (4 modified: `index.{js,d.ts,js.map,
+d.ts.map}`; 4 new: `native-fs-binding.{js,d.ts,js.map,d.ts.map}`) are committed **in the same
+commit** as the source change, so HEAD is a built tree again.
 
 ---
 
@@ -248,12 +309,15 @@ real directory and **zero** `node_modules`:
 
 | file | content |
 | --- | --- |
-| `evidence/suite.txt` | the whole `node --test … tests/ute1-fs/native-fs-binding.test.mjs` transcript, 9/9 |
+| `evidence/suite.txt` | the whole `node --test … tests/ute1-fs/native-fs-binding.test.mjs` transcript, 10/10 |
 | `evidence/mutation-transcript.txt` | the 6 mutations + 7 baseline arms, each with its verdict line |
 | `evidence/gates.txt` | catalog, dispatch, eb3 required/negative controls, docs-sync, identities, tsc, vitest, diff-check — command + output + exit code |
 | `evidence/isolation.txt` | `git diff` vs master, importer census, pin block, census population, host-tree porcelain, catalog entry, CI byte-match |
 | `evidence/prebuild-failure.txt` | the suite in a standalone checkout with NO repo `node_modules`: the three assembly tests die with the hosted `ERR_MODULE_NOT_FOUND` (`@deepseek-ai/dsh-scope` from `a5sf-realm-row.mjs`), host-free arms pass |
-| `evidence/postbuild-pass.txt` | the SAME tree plus the built repo's `node_modules`: 9/9 pass — where the new census step runs |
+| `evidence/postbuild-pass.txt` | the SAME tree plus the built repo's `node_modules`: 10/10 pass — where the new census step runs |
+| `evidence/build-config-before-after.txt` | the BEFORE module `TS2304` on `tsconfig.build.json` vs PASS on `tsconfig.json`, then the AFTER build — the evidence for §7b |
+| `evidence/build-config.txt` | `pnpm --filter @dsh-agent-team/tools run build` (the exact CI command for this package), exit 0 |
+| `evidence/full-workspace-build.txt` | `pnpm run build`, the census's whole-workspace build half, exit 0 |
 | `evidence/legacy-fs-before-after.txt` | the legacy FS suites on a pristine `origin/master` worktree vs this branch, verdict-set diff |
 
 Scratch (untracked, gitignored): mutation copies and assembly worlds under
@@ -268,8 +332,10 @@ Scratch (untracked, gitignored): mutation copies and assembly worlds under
   `296793c32ed0f7ebafa33e86b14521459a61e493`
 * merge of `origin/master` (#793 + #794, lane argv rebuilt from the manifest):
   `d510523d6f7e3b0547e6836312b41491202588b9`
-* wiring correction (§7a, hosted failure on `2ec811f6f`): the commit that carries this memo
-  revision; the PR body states its exact 40-hex head at push time.
+* wiring correction (§7a, hosted failure on `2ec811f6f`): `dfde5ceb7028f1f8d554fc3144582e05333f5af6`
+* production-compile-face correction (§7b, hosted `Build this repo` failure): the commit that
+  carries this memo revision plus the rebuilt tracked artefacts; the PR body states its exact
+  40-hex head at push time.
 * original base: `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892`
 * PR: a DRAFT pull request against `master` is created from this branch; the PR body carries the
   exact 40-hex head at push time. It is intentionally **not** marked ready: UTE-1 is one work

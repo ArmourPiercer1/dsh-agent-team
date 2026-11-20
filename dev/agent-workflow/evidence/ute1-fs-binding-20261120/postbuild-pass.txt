@@ -1,25 +1,26 @@
 # POST-BUILD PASS — the SAME standalone tree, now with the repo's installed deps
 # (node_modules linked from the built worktree, i.e. after 'pnpm install --frozen-lockfile').
-# This is where the new census step runs: after 'Build this repo'.
+# This is where the census step runs: after 'Build this repo'.
 
-# node_modules paths now visible in the tree: 0
+# node_modules paths now visible in the tree: 6
 $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
-✔ product module: additive, dependency-free, and imported by no shipped assembly (9.467399ms)
-✔ host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module (3.33069ms)
+✔ product module: additive, dependency-free, and imported by no shipped assembly (12.626528ms)
+✔ product module: names no ambient global the PRODUCTION compile face does not provide (0.893522ms)
+✔ host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module (2.627725ms)
 ℹ a1-write-inside: GREEN — create landed and one allow fact was recorded
 ℹ a2-lane-denial: GREEN — refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ a3-use-after-dispose: GREEN — refused named=scope-disposed untouched=true
-ℹ a4-double-dispose: GREEN — first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.948Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.948Z"} status=disposed
+ℹ a4-double-dispose: GREEN — first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.263Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.263Z"} status=disposed
 ℹ a5-overlap-scopes: GREEN — a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ a6-provider-swap: GREEN — old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ a7-generation-mismatch: GREEN — refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
-✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (17.682567ms)
+✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (18.511269ms)
 ℹ MUTATION-MODULE /tmp/ute1-runner-sim/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-BASELINE arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.950Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.950Z"} status=disposed
+ℹ MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.265Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.265Z"} status=disposed
 ℹ MUTATION-BASELINE arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-BASELINE arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-BASELINE arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -28,7 +29,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
-ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.954Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.954Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.268Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.268Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -36,7 +37,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a2-lane-denial observed=red detail=call was ALLOWED (expected a lane-write refusal)
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.956Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.956Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.270Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.270Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=ALLOWED cross-effect=PRESENT own-lane=true facts-attributed=false
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -44,7 +45,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
-ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.958Z"} second={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"second","disposedAt":"2026-11-20T08:14:11.958Z"} status=open
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.273Z"} second={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"second","disposedAt":"2026-11-20T09:05:28.273Z"} status=open
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -52,7 +53,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.961Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.961Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.276Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.276Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=refused cross-effect=PRESENT own-lane=true facts-attributed=false
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -60,7 +61,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.964Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.964Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.278Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.278Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a7-generation-mismatch observed=red detail=mount was ALLOWED
@@ -68,21 +69,21 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:14:11.966Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:14:11.966Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:05:28.282Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:05:28.282Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a5-overlap-scopes observed=red detail=arm threw: native-fs-binding/1: lane-write — 'writeText' on "/world/side/b-own.txt" is outside the declared write lane (binding "scope-b", host "0.2.2-rc.5")
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=DENIED old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7
-✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (361.294263ms)
+✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (345.140438ms)
 ℹ host=0.2.2-rc.5 tree=/tmp/ute1-runner-sim/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
-✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (49.794887ms)
-ℹ fallback isError=false code=- text="<path>/tmp/ute1-runner-sim/.artifacts/tmp/ute1-fs-assembly/assembly-fallback-pixOlK/outside/fallback-escape.txt</path>\n<"
-✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (47.461421ms)
+✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (44.507823ms)
+ℹ fallback isError=false code=- text="<path>/tmp/ute1-runner-sim/.artifacts/tmp/ute1-fs-assembly/assembly-fallback-GjP6lW/outside/fallback-escape.txt</path>\n<"
+✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (50.297082ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope was disposed (ute1-scope-end"
-✔ wrong host generation is refused by name and never falls back to the legacy tree (0.504394ms)
-✔ golden parity: the product module reproduces the 10 old-path vectors (98.297309ms)
+✔ wrong host generation is refused by name and never falls back to the legacy tree (0.47018ms)
+✔ golden parity: the product module reproduces the 10 old-path vectors (109.111533ms)
 ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/tmp/ute1-runner-sim/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
@@ -94,13 +95,13 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ golden FS-S1-symlink-escape: PASS
 ℹ golden FS-R1-outside-read-leak: PASS
 ℹ golden FS-M1-mode-preserved: PASS
-✔ disclosure: both retirement-blocking semantic differences are still declared (0.342578ms)
-ℹ tests 9
+✔ disclosure: both retirement-blocking semantic differences are still declared (0.497514ms)
+ℹ tests 10
 ℹ suites 0
-ℹ pass 9
+ℹ pass 10
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 683.302452
+ℹ duration_ms 690.214734
 # suite exit=0

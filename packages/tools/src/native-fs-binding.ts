@@ -124,6 +124,28 @@ export type FsErrorConstructor =
   new (message: string, code: string, options?: { readonly cause?: unknown }) => FsErrorLike
 
 /**
+ * The abort surface a host provider accepts, declared STRUCTURALLY.
+ *
+ * WHY NOT THE DOM `AbortSignal`. This package's production compile face is
+ * `tsconfig.build.json` (the census runs `tsc -p tsconfig.build.json`), and it
+ * compiles `src` alone with `lib: ["ES2022"]` — no DOM lib and no ambient node
+ * types. Naming the global `AbortSignal` there is `TS2304: Cannot find name
+ * 'AbortSignal'`, even though `tsc -p tsconfig.json --noEmit` accepts it: that
+ * config also includes `test` + `vitest.config.ts`, whose types pull the DOM
+ * lib in. The two commands are NOT the same check, and the build one is the
+ * one that ships. Declaring the smallest surface this binding actually needs
+ * (`aborted`) keeps the module free of ambient globals; a real
+ * `AbortController.signal` satisfies it, so host call sites are unchanged, and
+ * the binding only forwards the value to the host provider — it never
+ * subscribes. Event methods are deliberately not modelled: requiring them
+ * would add a second, weaker copy of the DOM signature for no consumer.
+ */
+export interface AbortSignalLike {
+  readonly aborted: boolean
+  readonly reason?: unknown
+}
+
+/**
  * The structural host provider surface this module relies on. It is declared
  * here (not imported) so the `tools` package gains no host dependency; every
  * member is the host provider's own published method.
@@ -133,29 +155,29 @@ export interface NativeFileSystemSurface {
   resolve(path: string, opts?: unknown): Promise<unknown>
   processPath(target: unknown): string
   contains(parent: unknown, child: unknown): boolean
-  stat(target: unknown, signal?: AbortSignal): Promise<unknown>
-  lstat(path: string, opts?: unknown, signal?: AbortSignal): Promise<unknown>
-  readText(target: unknown, signal?: AbortSignal): Promise<string>
-  streamText(target: unknown, signal?: AbortSignal): Promise<AsyncIterable<string>>
-  readBytes(target: unknown, signal: AbortSignal | undefined, maxBytes: number): Promise<Uint8Array>
-  readByteRange(target: unknown, range: unknown, signal?: AbortSignal): Promise<Uint8Array>
-  listDir(target: unknown, signal?: AbortSignal): Promise<readonly unknown[]>
-  watch(target: unknown, changed: (error?: Error) => void, signal: AbortSignal): Promise<() => Promise<void>>
+  stat(target: unknown, signal?: AbortSignalLike): Promise<unknown>
+  lstat(path: string, opts?: unknown, signal?: AbortSignalLike): Promise<unknown>
+  readText(target: unknown, signal?: AbortSignalLike): Promise<string>
+  streamText(target: unknown, signal?: AbortSignalLike): Promise<AsyncIterable<string>>
+  readBytes(target: unknown, signal: AbortSignalLike | undefined, maxBytes: number): Promise<Uint8Array>
+  readByteRange(target: unknown, range: unknown, signal?: AbortSignalLike): Promise<Uint8Array>
+  listDir(target: unknown, signal?: AbortSignalLike): Promise<readonly unknown[]>
+  watch(target: unknown, changed: (error?: Error) => void, signal: AbortSignalLike): Promise<() => Promise<void>>
   writeText(
     target: unknown,
     content: string,
     expected?: unknown,
-    signal?: AbortSignal,
+    signal?: AbortSignalLike,
     sandboxPolicy?: unknown,
   ): Promise<unknown>
-  editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
-  patchText(target: unknown, hunks: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
-  deleteFile(target: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
+  editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignalLike, sandboxPolicy?: unknown): Promise<unknown>
+  patchText(target: unknown, hunks: unknown, expected?: unknown, signal?: AbortSignalLike, sandboxPolicy?: unknown): Promise<unknown>
+  deleteFile(target: unknown, expected?: unknown, signal?: AbortSignalLike, sandboxPolicy?: unknown): Promise<unknown>
   moveFile(
     source: unknown,
     destination: unknown,
     options?: unknown,
-    signal?: AbortSignal,
+    signal?: AbortSignalLike,
     sandboxPolicy?: unknown,
   ): Promise<unknown>
 }
@@ -456,7 +478,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
     }
 
     /** Write on an EXISTING target also requires read coverage (`write ⇒ read`). */
-    async admitExistingMutation(method: string, target: unknown, signal?: AbortSignal): Promise<void> {
+    async admitExistingMutation(method: string, target: unknown, signal?: AbortSignalLike): Promise<void> {
       assertLive(method)
       const hostPath = this.processPath(target)
       admit(method, 'write', hostPath)
@@ -473,13 +495,13 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
     }
 
     // ── read axis ────────────────────────────────────────────────────────
-    override async stat(target: unknown, signal?: AbortSignal): Promise<unknown> {
+    override async stat(target: unknown, signal?: AbortSignalLike): Promise<unknown> {
       assertLive('stat')
       admit('stat', 'read', this.processPath(target))
       return super.stat(target, signal)
     }
 
-    override async lstat(path: string, opts?: unknown, signal?: AbortSignal): Promise<unknown> {
+    override async lstat(path: string, opts?: unknown, signal?: AbortSignalLike): Promise<unknown> {
       // `lstat` is path-shaped and does not follow the final component: the
       // guarded object is the path itself, so containment is evaluated on the
       // absolute path (a link's own metadata discloses no target content).
@@ -492,31 +514,31 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
       return super.lstat(path, opts, signal)
     }
 
-    override async readText(target: unknown, signal?: AbortSignal): Promise<string> {
+    override async readText(target: unknown, signal?: AbortSignalLike): Promise<string> {
       assertLive('readText')
       admit('readText', 'read', this.processPath(target))
       return super.readText(target, signal)
     }
 
-    override async streamText(target: unknown, signal?: AbortSignal): Promise<AsyncIterable<string>> {
+    override async streamText(target: unknown, signal?: AbortSignalLike): Promise<AsyncIterable<string>> {
       assertLive('streamText')
       admit('streamText', 'read', this.processPath(target))
       return super.streamText(target, signal)
     }
 
-    override async readBytes(target: unknown, signal: AbortSignal | undefined, maxBytes: number): Promise<Uint8Array> {
+    override async readBytes(target: unknown, signal: AbortSignalLike | undefined, maxBytes: number): Promise<Uint8Array> {
       assertLive('readBytes')
       admit('readBytes', 'read', this.processPath(target))
       return super.readBytes(target, signal, maxBytes)
     }
 
-    override async readByteRange(target: unknown, range: unknown, signal?: AbortSignal): Promise<Uint8Array> {
+    override async readByteRange(target: unknown, range: unknown, signal?: AbortSignalLike): Promise<Uint8Array> {
       assertLive('readByteRange')
       admit('readByteRange', 'read', this.processPath(target))
       return super.readByteRange(target, range, signal)
     }
 
-    override async listDir(target: unknown, signal?: AbortSignal): Promise<readonly unknown[]> {
+    override async listDir(target: unknown, signal?: AbortSignalLike): Promise<readonly unknown[]> {
       assertLive('listDir')
       admit('listDir', 'read', this.processPath(target))
       return super.listDir(target, signal)
@@ -525,7 +547,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
     override async watch(
       target: unknown,
       changed: (error?: Error) => void,
-      signal: AbortSignal,
+      signal: AbortSignalLike,
     ): Promise<() => Promise<void>> {
       assertLive('watch')
       admit('watch', 'read', this.processPath(target))
@@ -537,7 +559,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
       target: unknown,
       content: string,
       expected?: unknown,
-      signal?: AbortSignal,
+      signal?: AbortSignalLike,
       sandboxPolicy?: unknown,
     ): Promise<unknown> {
       await this.admitExistingMutation('writeText', target, signal)
@@ -548,7 +570,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
       target: unknown,
       edit: unknown,
       expected?: unknown,
-      signal?: AbortSignal,
+      signal?: AbortSignalLike,
       sandboxPolicy?: unknown,
     ): Promise<unknown> {
       await this.admitExistingMutation('editText', target, signal)
@@ -559,7 +581,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
       target: unknown,
       hunks: unknown,
       expected?: unknown,
-      signal?: AbortSignal,
+      signal?: AbortSignalLike,
       sandboxPolicy?: unknown,
     ): Promise<unknown> {
       await this.admitExistingMutation('patchText', target, signal)
@@ -569,7 +591,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
     override async deleteFile(
       target: unknown,
       expected?: unknown,
-      signal?: AbortSignal,
+      signal?: AbortSignalLike,
       sandboxPolicy?: unknown,
     ): Promise<unknown> {
       await this.admitExistingMutation('deleteFile', target, signal)
@@ -580,7 +602,7 @@ export function createNativeFsBindingScope(input: CreateNativeFsBindingScopeInpu
       source: unknown,
       destination: unknown,
       options?: unknown,
-      signal?: AbortSignal,
+      signal?: AbortSignalLike,
       sandboxPolicy?: unknown,
     ): Promise<unknown> {
       await this.admitExistingMutation('moveFile', source, signal)
