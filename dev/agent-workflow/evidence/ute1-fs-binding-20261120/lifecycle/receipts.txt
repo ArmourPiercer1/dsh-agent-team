@@ -1,0 +1,15 @@
+A.while-draining {"status":"draining","inFlight":1}
+A.receipt {"bindingId":"receipt-a","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"A","disposedAt":"2026-11-20T09:28:03.504Z","inFlightAtDispose":1,"drainTimeoutMs":2000,"releaseErrors":[]}
+A.status-after "released"
+B.receipt {"bindingId":"receipt-b","state":"termination-unconfirmed","changed":true,"alreadyDisposed":false,"drained":false,"newOperationsRefused":true,"releaseConfirmed":false,"refusalCode":"scope-termination-unconfirmed","reason":"drain-timeout: 1 admitted operation(s) still unfinished after 25ms","disposedAt":"2026-11-20T09:28:03.536Z","inFlightAtDispose":1,"drainTimeoutMs":25,"releaseErrors":[]}
+B.repeat {"state":"termination-unconfirmed","drained":false,"releaseConfirmed":false,"changed":false}
+B.status-after-late-finish "termination-unconfirmed"
+C.during {"code":"FS_PERMISSION_DENIED","name":"scope-draining"}
+C.after {"code":"FS_PERMISSION_DENIED","name":"scope-disposed"}
+C.receipt {"bindingId":"receipt-c","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"C","disposedAt":"2026-11-20T09:28:03.591Z","inFlightAtDispose":1,"drainTimeoutMs":2000,"releaseErrors":[]}
+C.facts ["allow:writeText"]
+D.outcome "ok"
+D.recorder {"attempts":1,"delivered":0,"bindingFacts":1}
+D.receipt {"bindingId":"receipt-d","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"D","disposedAt":"2026-11-20T09:28:03.602Z","inFlightAtDispose":0,"drainTimeoutMs":1000,"releaseErrors":[]}
+E.receipt {"bindingId":"receipt-e","state":"termination-unconfirmed","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":false,"refusalCode":"scope-termination-unconfirmed","reason":"release-failed: fiber-dispose-failed:fs; fiber-dispose-failed:fs","disposedAt":"2026-11-20T09:28:03.602Z","inFlightAtDispose":0,"drainTimeoutMs":2000,"releaseErrors":["fiber-dispose-failed:fs","fiber-dispose-failed:fs"]}
+E.status "termination-unconfirmed"

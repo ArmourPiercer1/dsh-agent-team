@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "UTE1FSBINDING",
+  "paths": [
+    "packages/tools/src/native-fs-binding.ts"
+  ],
+  "expectedDelta": {
+    "from": 1519,
+    "to": 1520
+  },
+  "reason": "UTE-1 (this round, PR #796, branch task/ute1-fs-binding-20261120) adds its ONE scannable source: `packages/tools/src/native-fs-binding.ts`, the product-side native FS binding module (lane admission + scope lifecycle: refuse new work, drain admitted work, separate the receipt's drained/releaseConfirmed/newOperationsRefused facts). It is a NEW file under the scanner's existing `packages/**/*.ts` scope, so it is an increment of exactly one. Everything else this lane writes is an EDIT to already-counted paths or sits outside the scan: `packages/tools/src/index.ts` is an additive barrel export on an already-counted file (an edit is not an increment), `packages/tools/test/p6t6-bypass-scan.test.ts` is an edit, the suite and its libs live under `tests/ute1-fs/**` (outside `packages/**`), the memo/log/evidence live under `docs/` and `dev/agent-workflow/evidence/` (outside the scan), and the emitted `dist/**` is outside it too. The module contains ZERO denylist vocabulary: it names no Team SessionEvent type, no event kind and no legacy session field - measured by the denylist legs of this same spec with the file on disk.",
+  "tieNote": "MEASURED on THIS tree at booking time (head 17a71f7e7, scanner run in-place with `packages/tools/src/native-fs-binding.ts` present and no UTE1FSBINDING booking): the coverage leg read `scanner counts 1520, ledger derives 983 + 536 = 1519` (violation kind `total`), and the same scanner call reported `files 1520, has native-fs-binding true`. `536` is the derived sum of every booking not counted in the 983 base; the single new path above is the whole movement, so 1519 + 1 = 1520. Exactly this one path; the title/measured value equals 1520; no chain value copied. The same run measured zero new denylist vocabulary with the quarantine hits unchanged (the denylist legs pass with the file on disk)."
+}
