@@ -1,0 +1,174 @@
+# UTE-2 gates — verbatim, run 2026-11-20T06:05:51Z on ef7e3af00 (base ef7e3af00); worktree content of this commit
+node v24.21.0; pnpm 11.7.0
+$ node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs
+UTE2-FACT executionId=exec-ute2-canonical transitions=3 state=COMPLETED duplicate=DUPLICATE_SETTLEMENT
+UTE2-CONFLICT conflicting-terminal=SETTLEMENT_CONFLICT conflicting-admission=SETTLEMENT_CONFLICT last-writer-wins=absent
+UTE2-TRANSITION ADMITTED->COMPLETED=ILLEGAL_TRANSITION terminal->RUNNING=ILLEGAL_TRANSITION settle(RUNNING)=SETTLEMENT_INPUT_INVALID backwards-time=SETTLEMENT_TIMESTAMP_REGRESSION
+UTE2-STOP before state=CANCELLED effect=none-confirmed stopPhase=pre-dispatch
+UTE2-STOP during state=CANCELLED observedEffects=1 unbacked-claim=EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-STOP after state=COMPLETED terminalReason=unchanged stopPhase=post-completion
+UTE2-SIGKILL signal=SIGKILL durable=ADMITTED,RUNNING recovered=UNKNOWN reason=PROCESS_TERMINATED_WITHOUT_OUTCOME missing=terminal-observation|host-result|backend-receipt
+UTE2-EFFECT observed-without-observation=EFFECT_CLAIM_WITHOUT_OBSERVATION unknown-without-missing=UNCONFIRMED_WITHOUT_UNCERTAINTY
+UTE2-CROSSWIRE admission=SETTLEMENT_CROSS_WIRED running=SETTLEMENT_CROSS_WIRED settle=SETTLEMENT_CROSS_WIRED
+UTE2-ADMISSION allow+REFUSED=SETTLEMENT_ADMISSION_MISMATCH deny+REFUSED=recorded deny+RUNNING=SETTLEMENT_ADMISSION_MISMATCH
+UTE2-AUTHORITY exports=4 grant-shaped=0 store-methods=recordAdmission,enterRunning,recordStop,settle,recoverUnsettled,read,list control-imports=0 ref-frozen=true
+UTE2-CRASH temp-invisible=true truncated=SETTLEMENT_CORRUPT tampered=SETTLEMENT_CORRUPT stale-temp-does-not-disturb=true
+UTE2-CONTROL duplicate-conflict GREEN conflicting second settle -> SETTLEMENT_CONFLICT
+UTE2-CONTROL illegal-transition GREEN COMPLETED -> RUNNING -> ILLEGAL_TRANSITION; state now COMPLETED
+UTE2-CONTROL recovery-unknown GREEN recovered state -> UNKNOWN (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-CONTROL effect-without-observation GREEN observed-effect claim with zero observations -> EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-CONTROL cross-wired GREEN execution A carrying execution B's admission reference -> SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL corrupt-record GREEN checksum-mismatched record read -> SETTLEMENT_CORRUPT
+UTE2-CONTROL authority-surface GREEN no grant-shaped export
+UTE2-MUTANT conflict-becomes-last-writer-wins RED conflicting second settle -> accepted (last-writer-wins)
+UTE2-MUTANT illegal-transition-allowed RED COMPLETED -> RUNNING -> accepted; state now CORRUPT:SETTLEMENT_CORRUPT
+UTE2-MUTANT fabricate-completed-on-recovery RED recovered state -> COMPLETED (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-MUTANT trust-effect-claim RED observed-effect claim with zero observations -> accepted
+UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's admission reference -> accepted
+UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
+UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
+UTE2-MUTANTS total=7 red=7 scenarios=7
+✔ one canonical record per physical execution, and the same facts twice is a named duplicate (12.834433ms)
+✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (11.72369ms)
+✔ illegal transitions are refused by NAME, never silently rewritten (15.443543ms)
+✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (13.086311ms)
+✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (22.707531ms)
+✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (14.712708ms)
+✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (72.596613ms)
+✔ a settlement claiming an effect with no observation is refused (5.753483ms)
+✔ two settlements cross-wired between executions are refused (12.353041ms)
+✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (10.776297ms)
+✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.970419ms)
+✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (15.979336ms)
+✔ negative controls: every mutated behaviour turns its public-surface scenario RED (111.440049ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 417.646664
+[exit 0]
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=879 instruments=3 digest=sha256:83c90a56639ea96a6914357dbe123d77321ec5013dfbbb505359563d80aa9130
+  DISCOVERED_AND_COLLECTED 824
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+  by runner: node=124 none=7 vitest=748
+DSH-TEST-CATALOG tests=879 digest=sha256:83c90a56639ea96a6914357dbe123d77321ec5013dfbbb505359563d80aa9130 refused=0 findings=0
+[exit 0]
+$ node --test --test-reporter=spec scripts/test-catalog.test.mjs
+✔ discovery: vitest and node tests are catalogued, non-tests are not (2.275597ms)
+✔ discovery follows config include[], not the .test.ts suffix (0.540373ms)
+✔ a config whose include spells out its own directory is repo-relative (0.331848ms)
+✔ an authoring-only config does not make a suite collected (0.207112ms)
+✔ a contract ref that is not a test file is refused (0.183507ms)
+✔ the CI step that dispatches this suite also runs the ratchet (0.865729ms)
+✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.327049ms)
+✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.200349ms)
+✔ classification: collected, uncollected and excluded are distinct (0.325927ms)
+✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.25906ms)
+✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (1.171838ms)
+✔ refusal: deleting a contract test is red, not a smaller catalog (0.177125ms)
+✔ refusal: a contract with no test_refs is an unbacked promise (0.125127ms)
+✔ refusal: an exclude without reason+review is stale (0.1746ms)
+✔ refusal: two tests sharing one logical id is red (0.154553ms)
+✔ refusal: an instrument without its driver is red (0.182124ms)
+✔ logical ids survive a path move, and refOf tolerates both shapes (0.162317ms)
+✔ digest ignores order and entry classification but tracks the test set (0.587623ms)
+✔ glob semantics: ** crosses directories, * does not (0.109427ms)
+✔ vitest.config.ts is the source for include/exclude (no copy here) (0.325837ms)
+✔ live read-only check: every registered contract test exists on this head (221.976969ms)
+✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.857182ms)
+✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (0.926093ms)
+✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (13.841039ms)
+✔ dispatch: the catalog classifies every dispatched suite as collected (247.59344ms)
+✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.185882ms)
+✔ dispatch: the committed parity evidence still describes the resolved set (14.563956ms)
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.083258ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 581.828807
+[exit 0]
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+[exit 0]
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+[exit 0]
+$ node scripts/eb3-ci-negative-controls.mjs
+PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
+PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
+PASS C3 execution-definition-replaced :: honest tree passes; 3a detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3b detected on packages/tools/agent-control-family/src/fork-row.mjs, 3c detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs, 3d detected on packages/tools/agent-control-family/src/agent-control-contribution.mjs
+PASS C4 cross-family-influence :: honest tree passes (9 lanes declare edges); 4a detected, 4b detected, 4c detected, 4d computed-dynamic detected, 4e prose-in-string masked, 4f static-edge detected, 4g booked-allowlist closed, engines agree (auto+regex) (mutations staged on packages/tools/search-family/src/search-mechanics.mjs + packages/tools/search-family/src/r-dynimport-negctl.mjs)
+PASS C5 required-context-nongreen-states :: all-green => pass; each of absent, skip, cancel, failure, ENV_BLOCK, refused, SKIP-token, verdict-missing, unrecognised-result, empty-needs on layer ci-integration => fail
+PASS C6 summary-wiring-loosened :: honest workflows pass; drop-always, drop-need, paths-filter, continue-on-error, cancel-in-progress, job-level-if each detected
+PASS C7 impact-unknown-nonzero :: unknown path => all 5 layers; empty change => ci-fast+docs:probe; doc hit => docs:sync --check; family path keeps family checks under the union law
+PASS C8 run-manifest-refuses-rewrites :: honest evidence/a5sf-candidate1/run-record.json passes; rewritten-overall, env-block-case-graded-pass, unknown-verdict-token, dropped-selected-case, host-generation-mixed, team-sha-unresolvable, invented-authority-generation, superseded-generation-on-new-record, wrong-evidence-digest, missing-evidence each refused
+PASS C9 mandatory-leg-invoked-not-mentioned :: honest workflows pass; a-echo, b-name-only, c1-allow-refused, c2-no-full, c3-skip-census, d1-shell-comment, d2-yaml-commented-step, e-quoted-string, f-or-true each detected
+PASS C10 host-free-layer-refuses-host-dependent-suite :: honest lists pass; re-listing a5-pindir-reserved-native.test.ts in host-free ci-security => CI_HOST_DEPENDENT_SUITE_IN_HOST_FREE_LAYER
+PASS C10b leg-env-declaration-grades-the-step :: honest tree passes; step loses the flag => CI_LAYER_LEG_ENV_MISSING; manifest flips the value => CI_LAYER_LEG_ENV_MISSING
+PASS C10c host-free-leg-refuses-unguarded-refusal-suite :: honest manifest passes; m7a-real-slice-unit.test.mjs made refusal-capable with flag+declaration removed => CI_HOST_REFUSAL_UNGUARDED; the same with the declared flag in place => no finding
+PASS C10d host-refusal-exception-is-per-suite :: honest manifest passes; a5sf-pty-contract.test.mjs added to the excepted leg undeclared => CI_HOST_REFUSAL_UNGUARDED; the legacy leg-wide string => CI_HOST_REFUSAL_WAIVER_UNSCOPED plus the same suite finding; the suite NAMED in the waiver => no finding; a stray subject => CI_HOST_REFUSAL_WAIVER_UNKNOWN_SUITE; empty/no-why/wrong-mode => CI_HOST_REFUSAL_WAIVER_INVALID
+PASS C10e every-host-refusal-marker-is-graded :: switch vocabulary equals the set derived from the collected paths (A5SF_PD24_HOST_TREE, A5SF_PD25_HOST_TREE, A5SF_PD31_HOST_TREE, A5SF_REQUIRE_PINNED_HOST, M7A_HOST_TREE, M7A_REQUIRE_PINNED_HOST, M7B1_HOST_TREE, M7B1_REQUIRE_PINNED_HOST); each marker planted in a hostFree leg with no env => CI_HOST_REFUSAL_UNGUARDED naming that marker; every OTHER marker set => still refused; that marker set => admitted; m7a-real-slice.test.mjs listed hostFree with no env => CI_HOST_REFUSAL_UNGUARDED naming M7A_REQUIRE_PINNED_HOST
+PASS C10f a switch planted in a COLLECTED scripts/ suite is graded :: M7A_REQUIRE_PINNED_HOST planted in scripts/dispatch-tests.test.mjs (collected by hostFree tinf-instruments) => CI_HOST_REFUSAL_UNGUARDED naming it; a novel XSCALE_REQUIRE_PINNED_HOST there is classified by the collected-path derivation and INVISIBLE to a tests/-only one (the file is under scripts/)
+PASS C10g a *_HOST_TREE switch makes a suite host-dependent, not guardable :: tests/world-factory/a5sf-pd31-read-image.test.mjs (reads A5SF_PD31_HOST_TREE) listed by hostFree a5sf-product-assembly => CI_HOST_REFUSAL_UNGUARDED naming the hostTree switch; every require marker set => still refused; a per-suite declared-not-run waiver => admitted
+PASS C11 remaining-text-rules-not-textually-satisfiable :: honest workflows pass; a-summary-always-and-false, b-verdict-step-always-and-false, c-verdict-job-status-in-comment, d-synthesize-echoed, e-grader-echoed, f-needs-unbound each detected
+PASS C12 reusable-workflow-output-boundary :: honest workflows pass; removing on.workflow_call.outputs from each of the four layers => CI_WORKFLOW_CALL_OUTPUT_MISSING
+PASS C13 merge-tree-job-is-graded :: layers all green + synthesize failure/cancelled/skipped/absent => fail each
+PASS C14 leg-allowlist-not-denylist :: 52 negatives all UNSATISFIED; 9 allowed shapes satisfied; every real layer satisfies every leg
+PASS C15 evidence-guard-refuses-raw-capture :: 3 planted raw captures/resamples (tiny, so the NAME rule alone refuses them) => EVIDENCE_RAW_CAPTURE each
+PASS C16 evidence-guard-refuses-oversized :: a planted 2 MiB huge-log.txt => EVIDENCE_OVERSIZED (bound 1048576 B)
+PASS C17 evidence-guard-allowlist-accepts-reviewed-large :: the same 2 MiB file listed WITH a reason => accepted; a listed raw capture => still EVIDENCE_RAW_CAPTURE; an entry with no reason => EVIDENCE_ALLOWLIST_INVALID
+PASS C18 evidence-guard-accepts-sidecar :: 3 sidecar-shaped additions (census-comparison-*, a named census note) => accepted, and all 3 were graded
+PASS C19 census-leg-writes-captures-outside-tracked-evidence :: captures -> .artifacts/census/ and resamples -> .artifacts/census/ (gitignored, outside the evidence root, still raw-capture-named); sidecar stays in dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/
+PASS C20 acceptance-ledger-refuses-unproven-proven :: honest dev/agent-workflow/ledgers/u7-tool-acceptance.json passes (31 rows); (a) PROVEN on a FAIL case, (b) PROVEN on a missing record, (c) claimed read with no row, (d) DISCLOSED with an empty reason — each refused
+PASS C21 deferred-run-cannot-produce-ci-required-success :: deferred run (ci-census skipped) grades fail on the Required path and the CLI exits non-zero, ci-census:skipped named; the deferred report passes on every other layer green; the deferred job is not the Required context
+PASS C22 no-deferral-census-missing-is-a-failure :: without a deferral a missing or skipped ci-census is a failure; all layers green still passes
+PASS C23 both-deferral-sources-and-their-complement :: draft+success and label+success each raise CI_DEFERRAL_CONFLICT; ready+success, draft+failure and absent inputs do not; the census caller requires NOT-draft AND NOT-labelled (no disjunction), and the deferred report is always() AND (draft OR label)
+PASS C24 product-layer-pinned-to-the-gate-leg-list :: honest productLegs equal LEG_ORDER minus census (8 legs); a manifest-level dropped leg => CI_PRODUCT_LEGS_INCOMPLETE; a YAML level added census or dropped leg => CI_PRODUCT_LEGS_DRIFT
+PASS P1 non-Team-native-positive-preserved :: both non-Team native positive controls present and still asserting the native ride (u6-pr3-bl01-ask-door.test.ts, u6-pr2-review-r1.test.ts); pinned BY ASSERTION, not by title
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md is zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass (correct), one planted new red => fail (correct)
+PASS C-NH1 next-host-lane-is-collected-and-graded :: honest census workflow passes; extra-argv=>CI_LAYER_LEG_EXTRA_ARGUMENT, if-false=>CI_LAYER_LEG_UNPROVEN, assets-mode-dropped=>CI_LAYER_LEG_UNPROVEN, assets-or-true=>CI_LAYER_LEG_UNPROVEN, lane-suite-dropped=>CI_LAYER_LEG_ARGUMENT_MISSING, lane-continue-on-error=>CI_LAYER_CONTINUE_ON_ERROR, lane-echo=>CI_LAYER_LEG_UNPROVEN, lane-argv-reordered=>CI_LAYER_LEG_ARGUMENT_MISSING|CI_LAYER_LEG_EXTRA_ARGUMENT|CI_LAYER_LEG_UNPROVEN, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held
+
+33/33 control(s) behaved as required
+[exit 0]
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=173 notes=4 plans=132(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+[exit 0]
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1691 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+[exit 0]
+$ pnpm typecheck
+$ pnpm -r run typecheck
+Scope: 9 of 10 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json
+packages/domain typecheck$ tsc -p tsconfig.json
+packages/remote typecheck$ tsc -p tsconfig.json
+packages/runtime typecheck$ tsc -p tsconfig.json
+packages/contracts typecheck: Done
+packages/storage typecheck$ tsc -p tsconfig.json
+packages/remote typecheck: Done
+packages/testkit typecheck$ tsc -p tsconfig.json
+packages/domain typecheck: Done
+packages/tools typecheck$ tsc -p tsconfig.json
+packages/storage typecheck: Done
+packages/testkit typecheck: Done
+packages/tools typecheck: Done
+packages/runtime typecheck: Done
+packages/client typecheck$ tsc -p tsconfig.json
+packages/client typecheck: Done
+[exit 0]
+$ git diff --check
+[exit 0]

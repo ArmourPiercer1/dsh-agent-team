@@ -1,0 +1,48 @@
+UTE2-FACT executionId=exec-ute2-canonical transitions=3 state=COMPLETED duplicate=DUPLICATE_SETTLEMENT
+UTE2-CONFLICT conflicting-terminal=SETTLEMENT_CONFLICT conflicting-admission=SETTLEMENT_CONFLICT last-writer-wins=absent
+UTE2-TRANSITION ADMITTED->COMPLETED=ILLEGAL_TRANSITION terminal->RUNNING=ILLEGAL_TRANSITION settle(RUNNING)=SETTLEMENT_INPUT_INVALID backwards-time=SETTLEMENT_TIMESTAMP_REGRESSION
+UTE2-STOP before state=CANCELLED effect=none-confirmed stopPhase=pre-dispatch
+UTE2-STOP during state=CANCELLED observedEffects=1 unbacked-claim=EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-STOP after state=COMPLETED terminalReason=unchanged stopPhase=post-completion
+UTE2-SIGKILL signal=SIGKILL durable=ADMITTED,RUNNING recovered=UNKNOWN reason=PROCESS_TERMINATED_WITHOUT_OUTCOME missing=terminal-observation|host-result|backend-receipt
+UTE2-EFFECT observed-without-observation=EFFECT_CLAIM_WITHOUT_OBSERVATION unknown-without-missing=UNCONFIRMED_WITHOUT_UNCERTAINTY
+UTE2-CROSSWIRE admission=SETTLEMENT_CROSS_WIRED running=SETTLEMENT_CROSS_WIRED settle=SETTLEMENT_CROSS_WIRED
+UTE2-ADMISSION allow+REFUSED=SETTLEMENT_ADMISSION_MISMATCH deny+REFUSED=recorded deny+RUNNING=SETTLEMENT_ADMISSION_MISMATCH
+UTE2-AUTHORITY exports=4 grant-shaped=0 store-methods=recordAdmission,enterRunning,recordStop,settle,recoverUnsettled,read,list control-imports=0 ref-frozen=true
+UTE2-CRASH temp-invisible=true truncated=SETTLEMENT_CORRUPT tampered=SETTLEMENT_CORRUPT stale-temp-does-not-disturb=true
+UTE2-CONTROL duplicate-conflict GREEN conflicting second settle -> SETTLEMENT_CONFLICT
+UTE2-CONTROL illegal-transition GREEN COMPLETED -> RUNNING -> ILLEGAL_TRANSITION; state now COMPLETED
+UTE2-CONTROL recovery-unknown GREEN recovered state -> UNKNOWN (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-CONTROL effect-without-observation GREEN observed-effect claim with zero observations -> EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-CONTROL cross-wired GREEN execution A carrying execution B's admission reference -> SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL corrupt-record GREEN checksum-mismatched record read -> SETTLEMENT_CORRUPT
+UTE2-CONTROL authority-surface GREEN no grant-shaped export
+UTE2-MUTANT conflict-becomes-last-writer-wins RED conflicting second settle -> accepted (last-writer-wins)
+UTE2-MUTANT illegal-transition-allowed RED COMPLETED -> RUNNING -> accepted; state now CORRUPT:SETTLEMENT_CORRUPT
+UTE2-MUTANT fabricate-completed-on-recovery RED recovered state -> COMPLETED (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-MUTANT trust-effect-claim RED observed-effect claim with zero observations -> accepted
+UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's admission reference -> accepted
+UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
+UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
+UTE2-MUTANTS total=7 red=7 scenarios=7
+✔ one canonical record per physical execution, and the same facts twice is a named duplicate (12.34225ms)
+✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (11.459413ms)
+✔ illegal transitions are refused by NAME, never silently rewritten (14.982232ms)
+✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (12.902414ms)
+✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (21.817934ms)
+✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (15.152995ms)
+✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (74.882321ms)
+✔ a settlement claiming an effect with no observation is refused (6.11079ms)
+✔ two settlements cross-wired between executions are refused (11.956881ms)
+✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (11.062322ms)
+✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.752685ms)
+✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (16.203804ms)
+✔ negative controls: every mutated behaviour turns its public-surface scenario RED (111.557784ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 420.37221

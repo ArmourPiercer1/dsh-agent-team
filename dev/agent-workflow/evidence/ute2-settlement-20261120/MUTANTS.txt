@@ -1,0 +1,8 @@
+UTE2-MUTANT conflict-becomes-last-writer-wins RED conflicting second settle -> accepted (last-writer-wins)
+UTE2-MUTANT illegal-transition-allowed RED COMPLETED -> RUNNING -> accepted; state now CORRUPT:SETTLEMENT_CORRUPT
+UTE2-MUTANT fabricate-completed-on-recovery RED recovered state -> COMPLETED (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-MUTANT trust-effect-claim RED observed-effect claim with zero observations -> accepted
+UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's admission reference -> accepted
+UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
+UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
+UTE2-MUTANTS total=7 red=7 scenarios=7
