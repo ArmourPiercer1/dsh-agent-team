@@ -1,0 +1,53 @@
+# UTE-3 PR B2 — gates, run verbatim on 60dfe5e03 + working tree
+# branch task/ute3-search-b2-20261120  base 60dfe5e03
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+exit=0
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=888 instruments=3 digest=sha256:81e8c1cd6f54b75ce50af37b9ae520eb518a1f57f02e0b35192c774a826cec7a
+  DISCOVERED_AND_COLLECTED 833
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+  by runner: node=133 none=7 vitest=748
+DSH-TEST-CATALOG tests=888 digest=sha256:81e8c1cd6f54b75ce50af37b9ae520eb518a1f57f02e0b35192c774a826cec7a refused=0 findings=0
+exit=0
+
+$ node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=37 findings=0
+exit=0
+
+$ node scripts/ute-family-inventory.mjs
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.search-family members=2 files=9 definitions=2 steps=12 readiness=baseline:complete,newPath:complete,negativeControls:complete testOnly=false
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+exit=0
+
+$ node scripts/ute-retirement-gate.mjs --all
+UTE-RETIREMENT-GATE ledger=dev/agent-workflow/ledgers/ute-retirement.json schema=ute-retirement/1 families=2
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4
+UTE-RETIREMENT-REFUSED family=search codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=2/2
+UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
+(findings elided above: each is one UTE_SEMANTIC_DIFFERENCES_UNRESOLVED; full text reproducible by running the command)
+exit=1
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=180 notes=4 plans=139(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+exit=0
+
+$ node scripts/check-append-only-log.mjs
+DSH-APPEND-ONLY-LOG verdict=pass base=60dfe5e0311632ca53e089b9cc9d211640086e04 lines=9418 added=28 removed=0 detail="appended 28 line(s)"
+exit=0
+
+$ git diff --check
+exit=0
+
+$ git diff --cached --check
+exit=0
+
+$ node --check (each new/modified .mjs)
+exit=0 (silence = all parsed)
+

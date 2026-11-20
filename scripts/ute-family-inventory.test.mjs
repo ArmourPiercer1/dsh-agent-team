@@ -86,6 +86,18 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.deepEqual(result.shared.length, 14)
   const fs = result.families.find((f) => f.familyId === 'dsh.fs-family')
   assert.deepEqual(fs.readiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
+  // Readiness is DERIVED from the retirement gate's coverage, so the committed
+  // value and the measured value are asserted separately and exactly: a row
+  // that declares progress it cannot show is INVENTORY_READINESS_DRIFT above.
+  assert.deepEqual(fs.derivedReadiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
+  // SEARCH: UTE-3 B2 reproduced all fifteen vectors on the pinned rc.5 host, so
+  // BOTH members are covered on every axis. Only the semantic-difference term
+  // stays false (three blocking, unapproved differences), which readiness does
+  // not grade — the retirement gate reports that refusal by name.
+  const search = result.families.find((f) => f.familyId === 'dsh.search-family')
+  assert.deepEqual(search.members, ['grep', 'glob'])
+  assert.deepEqual(search.readiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
+  assert.deepEqual(search.derivedReadiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])

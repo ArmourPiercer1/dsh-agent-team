@@ -696,7 +696,7 @@
       },
       "retirementReadiness": {
         "baseline": "complete",
-        "newPath": "none",
+        "newPath": "complete",
         "negativeControls": "complete"
       },
       "note": "`search-backend.mjs` / `glob-backend.mjs` are classed `executor` (they are the effect backends); `search-mechanics.mjs` is the port-level wrapper the plane hands the rows. The two rows share ONE candidate and one row file."

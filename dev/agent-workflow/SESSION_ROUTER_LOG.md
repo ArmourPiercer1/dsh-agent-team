@@ -9423,3 +9423,31 @@ UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
 - Web B1：先做组合探针（可达性 + **零真实网络**证明），再决定是否采基线。
 - 之后：Process/PTY、PTC、inspect、agent-control、ui、agent-state 依次同法。
 - 最终一次**合并发布请求**（迁移/退役矩阵、切换与回滚计划、预计可删旧代码清单），在此之前不做任何真实切换或退役。
+
+## 2026-11-20 — UTE-3 / G1 SEARCH PR B2：新路径复现全部 15 向量（零声明分歧），删除 new-path pending 通道
+
+**背景**：B1 只交了旧路径基线（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`）。B2 交另一半：在钉住的下一代宿主上跑**同一条产品 route-C seam**，逐向量与 B1 golden 行比对，并让执行者 provenance 可断言。
+
+**分支**：`task/ute3-search-b2-20261120`（worktree `.worktrees/ute3-search-b2-20261120`），base `origin/master 60dfe5e03`。draft PR，settlement 后转 ready，未合并。
+
+**新路径是真的新（不是重实现）**：`lib/host-next.mjs` 经 `tests/paths.mjs#NEXT_HOST` 解析**钉住的** `0.2.2-rc.5 @ 9c2670d3bc` 树（`assertNextHostTree`，realpath 包含校验，逃逸/缺失=抛错，无 legacy 回退）。`lib/new-path.mjs` 用该宿主自己的 `mountAgentLoopTestDependencies` + `mountAgentLoopTestHarness` 建真实 agent，把宿主自己的 `@deepseek-ai/dsh-tool-fs-search` 通过 `a5sfNativeToolModules[].expectedTools` 声明为 search owner（PD-16 shadow 因声明而沉默），再走 `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` 的产品 mount 与 `executeModelToolFixture`（宿主 `ToolsService` 批次）dispatch。工具体、argv 模板、parser、formatter 全是宿主的；Team 只提供同一条 confined `subprocess` face。**无 test-only 组合、无工具体复制、CORE PATCH BUDGET = 0**。
+
+**结果（实测）**：15 向量全部 `NEW-PATH-VECTOR <id> PASS`，`TOTAL vectors=15 exact=15 diverging=0`，`NEW-PATH-VERDICT GREEN vectors=15 exact=15 divergences=0 provenance=next-host`。逐格相同：规范化 match 集、树摘要 `unchanged`、呈现/保留条数、confined spawn 数、guard fact、经闭合词汇（`tests/ute-g1-fs/lib/refusal-categories.mjs`，import 未 fork）判定的拒因。成员覆盖 grep 9/9 + glob 6/6 ⇒ 退役门 derive `unit=2/2`。
+
+**任务预期与实测不一致，按实测记录（不伪造分歧）**：brief 预期 "SR-G2 在旧/新之间必然分歧"（governed row 2 条 vs route C 0 条）。实测：B1 golden 的 `SR-G2` 就是 **allow / 0 条**（这正是 route-C 产品行为，B1 已评审），rc.5 新路径同样 **0 条**，成因与代次无关（宿主模块在调用方不给 `path` 时 argv 不带 path operand，且 confined 子进程 fd 0 是可读 socket，rg 转读 stdin）。governed row 的 2 条属于 **route-C face vs governed plane** 的差异，已在 B1 声明为 `SD-SEARCH-1-grep-path-default`（blocking、未批准）。故新-旧比较的分歧表**合法为空**（`NEW-PATH-DIVERGENCE-TOTAL declared=0 observed=0 ids=-`），而语义差异项**仍未解决**——不伪造分歧、不删向量、不宣称 `SD-SEARCH-1` 已解决。
+
+**执行者 provenance（断言而非假设）**：`NEW-PATH-PROVENANCE` 逐向量记录被服务的模块入口与每个 spawn 程序；两者都 realpath 落在 `tests/deepseek-harness-next` 内（入口 `packages/fs/tool-fs-search/lib/index.js`，spawn `…/@vscode+ripgrep-linux-x64@1.18.0/…/bin/rg`）。落到 legacy 树或树外即类型化 provenance 失败并 RED。
+
+**变异控制（12 条，全 GREEN）**：`NEW-PATH-NC-VERDICT GREEN controls=12 failed=0` —— 篡改期望 match 集、注入未声明分歧、声明已消失的分歧、声明正确但钉错观测格（值漂移）、正确声明+钉住必须 PASS（通道不得拒绝诚实分歧）、引用未声明 difference id、pending 标记、丢向量、定义/spawn 移出下一代树、非法声明表、以及两条**真实运行**的 lane 放宽（`SR-G3` grep 返回内容、`SR-L2` glob 返回 lane 外路径——listing 无字节，见证是路径）。旧路径 8 条负控未动，仍 `NC-VERDICT GREEN controls=8 failed=0`。
+
+**lane suite 反转（B1 的 pending/absent 渠道已删）**：`lane-suite.test.mjs` 由 6 测变 8 测，删除 `SEARCH_NEW_PATH_PENDING`/`SEARCH_NEW_PATH_PENDING_IDS`，改为完整性断言：新路径 15 条 PASS 且 `records.length === golden.length`、`missingObserved`/`missingGolden`/`failures`/provenance 全空、`declaredCount=0` 且 `observedCount === DECLARED_DIVERGENCES.length`、每个 witness 的 `entry === host.searchModuleEntry`；提交证据必须含全部 15 条 PASS + 分歧总计 + GREEN verdict + `host=next version=0.2.2-rc.5`；**硬断言**：语料无 `newPathPending` 键、B2 证据目录任何文件都不含 `NEW-PATH-ABSENT`、不出现 `NEW-PATH-VECTOR <id> (PENDING|ABSENT|SKIP)`；三条语义差异仍为 blocking 且 `approval=null`，且只能引用这三个 id。另修 `SEMANTIC_DIFF_LINE_RE` 的**既有**缺陷（原式第一分支是字面 `-kebab`、第二分支 `[a-z-]+` 不含数字，会拒绝它自己的合法行）：改为 `^SEMANTIC-DIFF SD-SEARCH-[0-9]+-[a-z0-9-]+ …`，更严（强制族前缀）且能匹配真实行。
+
+**账本/盘点**：`ute-retirement.json` 的 search `newPathVerified` 翻为 `true`，evidence 指向 `dev/agent-workflow/evidence/ute3-search-b2-20261120/new-path-run.txt`，expect 逐条列 15 个 PASS + 分歧总计 + verdict + host + provenance，`contradicts=["NEW-PATH-ABSENT","NEW-PATH-FAIL "]`；`semanticDifferencesResolved`、`approval`、`state=NOT_RETIREABLE` **未触碰**。`ute-family-inventory.json` 的 `dsh.search-family.retirementReadiness.newPath` 由 gate 实测驱动 `none`→`complete`（不是 state 翻转）。
+
+**门禁种子变更（只变强）**：`scripts/ute-retirement-gate.test.mjs` 的 `--all` 臂中 search 代码表由四码改为**恰好** `['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED']`、`unit=2/2`，并把"有 newPathVerified finding"/"有 UTE_VECTOR_UNREPRODUCED|UTE_NEW_PATH_UNVERIFIED"改为**必须为零**的硬断言（fs 行期望逐字保留：同码、`unit=4/4`）；`SUMMARY` 仍从打印出的拒绝行推导。`scripts/ute-family-inventory.test.mjs` 新增 fs 与 search 的 `readiness` **与** `derivedReadiness` 精确深断言。
+
+**门禁（本机实测，逐行见 `evidence/ute3-search-b2-20261120/gates.txt`）**：`eb3-ci-required` → `pass workflows=10 findings=0`；`test-catalog --max-uncollected 41 --max-excluded 7` → `tests=888 refused=0 findings=0`；`eb3-family-definitions` → `pass files=37 findings=0`；`ute-family-inventory` → `families=9 files=92 findings=0`；`ute-retirement-gate --all` → exit 1，`fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED unit=4/4`、`search codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED unit=2/2`、`SUMMARY requested=2 allowed=0 refused=2`；`docs-sync --check` → `findings=0 blocking=0`；`check-append-only-log` → `verdict=pass`；`git diff --check`/`node --check` 0；`lane-suite.test.mjs` 8/8（`UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=VERIFIED semantic-differences=UNRESOLVED new-path-controls=GREEN negative-controls=GREEN retirement=FORBIDDEN`）；`ute-retirement-gate.test.mjs` 31/31；`ute-family-inventory.test.mjs` 35/35；旧路径重采 `OLD-PATH-GOLDEN compare=identical`（golden TSV 未动）。
+
+**未触碰**：`packages/**` 产品代码、`tests/ute-g1-fs/**`、其他 family 行、`docs/plans/active/**`、memo 语义、上游/host 树（只读，且 `tests/deepseek-harness-next` 为本地 symlink，已在 `.git/info/exclude` 本地排除，交付树 `git ls-tree -r HEAD | grep -c '^tests/deepseek-harness'` 必须为 0）；无新 workflow 行、无新 manifest leg（新脚本由既有 "UTE G1 FS binding product lane" leg 内的 lane suite 以子进程驱动）；**未 push master/stable、未 force-push、未合并**。
+
+**明写的限制（不是 PASS）**：① 不证明读隔离（拒绝记录只证明"拒绝了 + 无泄漏 + 树未变"）；② governed plane 的 `team_grep`/`team_glob` 实际 dispatch 未运行（`SD-SEARCH-2` 因此仍开）；③ 无 live boot（C1 host-free）；④ 15 向量之外的行为差异未被本跑测量（控制只证明比较器会抓到，不证明不存在）；⑤ glob 顺序/超限采样、搜索中途取消、调用方 cap、symlink 逃逸、stream-drain 截断、`--pre`/config 转向、`spillStore` 仍未覆盖；⑥ `rg` 只钉路径不钉版本语义；⑦ 无 path grep 的缺陷仍只是**记录**（`SD-SEARCH-1`），未修。

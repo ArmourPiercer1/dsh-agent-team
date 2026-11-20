@@ -1,4 +1,4 @@
-# SEARCH retirement unit — member coverage (UTE-3 PR B1, old path)
+# SEARCH retirement unit — member coverage (UTE-3 PR B1 old path, reproduced by B2 new path)
 
 The Search family is ONE retirement unit of two model-visible members
 (`grep`, `glob`), derived from
