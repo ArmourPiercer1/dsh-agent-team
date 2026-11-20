@@ -141,16 +141,17 @@ S1 的定义（UTE-Prep 裁决 2 / S1.2）是“进入执行阶段的调用最�
 | 门 | 结果 |
 | --- | --- |
 | 套件 `node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs` | 13/13 pass；`UTE2-MUTANTS total=7 red=7 scenarios=7` |
-| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=879 … UNCOLLECTED 41 EXCLUDED 14 refused=0 findings=0` |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=881 … UNCOLLECTED 41 EXCLUDED 14 refused=0 findings=0` |
 | `node --test scripts/test-catalog.test.mjs` | 28/28 |
 | `dispatch-tests --check` | `PASS legs=18 bad=0` |
 | `eb3-ci-required` | `pass workflows=10 findings=0` |
 | `eb3-ci-negative-controls` | 33/33（含 C-NH1 从 manifest 派生 argv） |
-| `docs-sync --check` | `docs=173 … plans=132 … findings=0 blocking=0` |
+| `docs-sync --check` | `docs=177 … plans=136 … findings=0 blocking=0` |
 | `lint-identities --diff <baseline>` | `new 0, resolved 0` |
 | `tsc --noEmit`（repo-wide `pnpm typecheck`） | 9/9 workspace projects Done |
 | `git diff --check` | clean |
-| legacy 套件 | 未改动任何既有测试文件；`tests/world-factory/tinf-observer-closeout.test.mjs` 27/27 |
+| `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=2096 glue=113`（dist 与 source 同一提交；`pnpm run build` 9/9 Done，`pnpm build:composition` 通过） |
+| legacy 套件 | 未改动任何既有测试文件；`tests/world-factory/tinf-observer-closeout.test.mjs` 27/27（`origin/master` 上 848 个测试文件逐一 `cmp` 字节相同，0 changed） |
 
 ## 8. UNKNOWN（诚实清单）
 

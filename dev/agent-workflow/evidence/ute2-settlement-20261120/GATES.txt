@@ -1,4 +1,4 @@
-# UTE-2 gates — verbatim, run 2026-11-20T06:05:51Z on ef7e3af00 (base ef7e3af00); worktree content of this commit
+# UTE-2 gates — verbatim, run 2026-11-20T08:37:54Z on the working tree committed as the dist follow-up; parent 54444847c; base origin/master 06de9751a
 node v24.21.0; pnpm 11.7.0
 $ node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs
 UTE2-FACT executionId=exec-ute2-canonical transitions=3 state=COMPLETED duplicate=DUPLICATE_SETTLEMENT
@@ -28,19 +28,19 @@ UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's adm
 UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
 UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
 UTE2-MUTANTS total=7 red=7 scenarios=7
-✔ one canonical record per physical execution, and the same facts twice is a named duplicate (12.834433ms)
-✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (11.72369ms)
-✔ illegal transitions are refused by NAME, never silently rewritten (15.443543ms)
-✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (13.086311ms)
-✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (22.707531ms)
-✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (14.712708ms)
-✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (72.596613ms)
-✔ a settlement claiming an effect with no observation is refused (5.753483ms)
-✔ two settlements cross-wired between executions are refused (12.353041ms)
-✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (10.776297ms)
-✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.970419ms)
-✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (15.979336ms)
-✔ negative controls: every mutated behaviour turns its public-surface scenario RED (111.440049ms)
+✔ one canonical record per physical execution, and the same facts twice is a named duplicate (14.715764ms)
+✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (11.778309ms)
+✔ illegal transitions are refused by NAME, never silently rewritten (15.088107ms)
+✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (13.099354ms)
+✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (22.270173ms)
+✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (14.847347ms)
+✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (71.65984ms)
+✔ a settlement claiming an effect with no observation is refused (5.795325ms)
+✔ two settlements cross-wired between executions are refused (12.033732ms)
+✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (11.381638ms)
+✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.085691ms)
+✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (16.093701ms)
+✔ negative controls: every mutated behaviour turns its public-surface scenario RED (112.115208ms)
 ℹ tests 13
 ℹ suites 0
 ℹ pass 13
@@ -48,46 +48,46 @@ UTE2-MUTANTS total=7 red=7 scenarios=7
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 417.646664
+ℹ duration_ms 417.904641
 [exit 0]
 $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
-  tests=879 instruments=3 digest=sha256:83c90a56639ea96a6914357dbe123d77321ec5013dfbbb505359563d80aa9130
-  DISCOVERED_AND_COLLECTED 824
+  tests=881 instruments=3 digest=sha256:0aa1dce415961d27167824755c5a6ad88115f83625fabf247df7286125adffe2
+  DISCOVERED_AND_COLLECTED 826
   EXCLUDED_WITH_REASON     14
   UNCOLLECTED              41
-  by runner: node=124 none=7 vitest=748
-DSH-TEST-CATALOG tests=879 digest=sha256:83c90a56639ea96a6914357dbe123d77321ec5013dfbbb505359563d80aa9130 refused=0 findings=0
+  by runner: node=126 none=7 vitest=748
+DSH-TEST-CATALOG tests=881 digest=sha256:0aa1dce415961d27167824755c5a6ad88115f83625fabf247df7286125adffe2 refused=0 findings=0
 [exit 0]
 $ node --test --test-reporter=spec scripts/test-catalog.test.mjs
-✔ discovery: vitest and node tests are catalogued, non-tests are not (2.275597ms)
-✔ discovery follows config include[], not the .test.ts suffix (0.540373ms)
-✔ a config whose include spells out its own directory is repo-relative (0.331848ms)
-✔ an authoring-only config does not make a suite collected (0.207112ms)
-✔ a contract ref that is not a test file is refused (0.183507ms)
-✔ the CI step that dispatches this suite also runs the ratchet (0.865729ms)
-✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.327049ms)
-✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.200349ms)
-✔ classification: collected, uncollected and excluded are distinct (0.325927ms)
-✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.25906ms)
-✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (1.171838ms)
-✔ refusal: deleting a contract test is red, not a smaller catalog (0.177125ms)
-✔ refusal: a contract with no test_refs is an unbacked promise (0.125127ms)
-✔ refusal: an exclude without reason+review is stale (0.1746ms)
-✔ refusal: two tests sharing one logical id is red (0.154553ms)
-✔ refusal: an instrument without its driver is red (0.182124ms)
-✔ logical ids survive a path move, and refOf tolerates both shapes (0.162317ms)
-✔ digest ignores order and entry classification but tracks the test set (0.587623ms)
-✔ glob semantics: ** crosses directories, * does not (0.109427ms)
-✔ vitest.config.ts is the source for include/exclude (no copy here) (0.325837ms)
-✔ live read-only check: every registered contract test exists on this head (221.976969ms)
-✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.857182ms)
-✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (0.926093ms)
-✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (13.841039ms)
-✔ dispatch: the catalog classifies every dispatched suite as collected (247.59344ms)
-✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.185882ms)
-✔ dispatch: the committed parity evidence still describes the resolved set (14.563956ms)
-✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.083258ms)
+✔ discovery: vitest and node tests are catalogued, non-tests are not (1.674419ms)
+✔ discovery follows config include[], not the .test.ts suffix (0.46452ms)
+✔ a config whose include spells out its own directory is repo-relative (0.354922ms)
+✔ an authoring-only config does not make a suite collected (0.189198ms)
+✔ a contract ref that is not a test file is refused (0.172687ms)
+✔ the CI step that dispatches this suite also runs the ratchet (0.828148ms)
+✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.313634ms)
+✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.194969ms)
+✔ classification: collected, uncollected and excluded are distinct (0.324093ms)
+✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.278287ms)
+✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (0.983572ms)
+✔ refusal: deleting a contract test is red, not a smaller catalog (0.149663ms)
+✔ refusal: a contract with no test_refs is an unbacked promise (0.165453ms)
+✔ refusal: an exclude without reason+review is stale (0.111381ms)
+✔ refusal: two tests sharing one logical id is red (0.115198ms)
+✔ refusal: an instrument without its driver is red (0.155234ms)
+✔ logical ids survive a path move, and refOf tolerates both shapes (0.144183ms)
+✔ digest ignores order and entry classification but tracks the test set (0.518121ms)
+✔ glob semantics: ** crosses directories, * does not (0.151517ms)
+✔ vitest.config.ts is the source for include/exclude (no copy here) (0.387633ms)
+✔ live read-only check: every registered contract test exists on this head (232.734897ms)
+✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.805785ms)
+✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (1.031111ms)
+✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (14.93311ms)
+✔ dispatch: the catalog classifies every dispatched suite as collected (252.666136ms)
+✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.214486ms)
+✔ dispatch: the committed parity evidence still describes the resolved set (14.315826ms)
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.069441ms)
 ℹ tests 28
 ℹ suites 0
 ℹ pass 28
@@ -95,7 +95,7 @@ $ node --test --test-reporter=spec scripts/test-catalog.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 581.828807
+ℹ duration_ms 592.421381
 [exit 0]
 $ node scripts/dispatch-tests.mjs --check
 DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
@@ -141,13 +141,13 @@ PASS C-NH1 next-host-lane-is-collected-and-graded :: honest census workflow pass
 33/33 control(s) behaved as required
 [exit 0]
 $ node scripts/docs-sync.mjs --check
-docs:sync --check: docs=173 notes=4 plans=132(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:sync --check: docs=177 notes=4 plans=136(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
 AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
 LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
 [exit 0]
 $ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
 lint-identities: 162 identity lines, 76 distinct (target .)
-lint-identities: universe: 1691 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+lint-identities: universe: 1693 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
 baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
 [exit 0]
 $ pnpm typecheck
@@ -169,6 +169,10 @@ packages/tools typecheck: Done
 packages/runtime typecheck: Done
 packages/client typecheck$ tsc -p tsconfig.json
 packages/client typecheck: Done
+[exit 0]
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2096 glue=113
+[check-artifacts-committed] OK: 2096 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
 [exit 0]
 $ git diff --check
 [exit 0]

@@ -1,14 +1,12 @@
-# legacy test files vs origin/master (ef7e3af00)
+# legacy test files vs origin/master (06de9751a)
 
 ## modified/added test files (git diff --name-status)
 A	tests/ute2-settlement/settlement.test.mjs
 
 ## byte-identical check of every test file tracked at origin/master
-test files at origin/master: 846; byte-identical in worktree: 846; changed: 0
+test files at origin/master: 848; byte-identical in worktree: 848; changed: 0
 
 ## existing legacy host-free suite, unchanged and re-run
-  ✔ an omitted kind declaration cannot buy a green: the quantifier is "declares it observes", not "does not deny it" (0.117522ms)
-✔ M7-C a read claim is a NAMED limitation: a snapshot cannot prove a read did not happen (2.971224ms)
 ℹ tests 27
 ℹ suites 0
 ℹ pass 27
@@ -16,4 +14,4 @@ test files at origin/master: 846; byte-identical in worktree: 846; changed: 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 268.237833
+ℹ duration_ms 269.042336

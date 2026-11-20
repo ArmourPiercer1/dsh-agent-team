@@ -11,8 +11,8 @@ retyped by hand. Commands are recorded in the capture file itself.
 | --- | --- |
 | `SUITE.txt` | Full `node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs` output, 13/13 pass, including every `UTE2-*` property line. |
 | `MUTANTS.txt` | The negative-control transcript only: 7× `UTE2-CONTROL … GREEN` (real module) then 7× `UTE2-MUTANT … RED` (one behaviour removed each), plus `UTE2-MUTANTS total=7 red=7 scenarios=7`. |
-| `GATES.txt` | Every gate, verbatim, with `$ command` and `[exit N]`: suite, test-catalog ratchet, test-catalog.test.mjs, dispatch `--check`, `eb3-ci-required`, `eb3-ci-negative-controls` (33/33 incl. C-NH1), `docs-sync --check`, `lint-identities --diff`, repo-wide `pnpm typecheck`, `git diff --check`. |
-| `LEGACY-IDENTICAL.txt` | Proof that no legacy test file moved: `git diff --name-status` lists only the new suite (`A tests/ute2-settlement/settlement.test.mjs`); all **846** test files tracked at `origin/master` are byte-identical in the worktree (0 changed); plus a re-run of the existing host-free legacy suite (`tests/world-factory/tinf-observer-closeout.test.mjs`, 27/27) to show it still passes untouched. |
+| `GATES.txt` | Every gate, verbatim, with `$ command` and `[exit N]`: suite, test-catalog ratchet, test-catalog.test.mjs, dispatch `--check`, `eb3-ci-required`, `eb3-ci-negative-controls` (33/33 incl. C-NH1), `docs-sync --check`, `lint-identities --diff`, repo-wide `pnpm typecheck`, `check-artifacts-committed` (`verdict=ok`), `git diff --check`. |
+| `LEGACY-IDENTICAL.txt` | Proof that no legacy test file moved: `git diff --name-status` lists only the new suite (`A tests/ute2-settlement/settlement.test.mjs`); all **848** test files tracked at `origin/master` are byte-identical in the worktree (0 changed); plus a re-run of the existing host-free legacy suite (`tests/world-factory/tinf-observer-closeout.test.mjs`, 27/27) to show it still passes untouched. |
 
 ## Environment of these runs
 

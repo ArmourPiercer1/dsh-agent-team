@@ -25,19 +25,19 @@ UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's adm
 UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
 UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
 UTE2-MUTANTS total=7 red=7 scenarios=7
-✔ one canonical record per physical execution, and the same facts twice is a named duplicate (12.34225ms)
-✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (11.459413ms)
-✔ illegal transitions are refused by NAME, never silently rewritten (14.982232ms)
-✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (12.902414ms)
-✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (21.817934ms)
-✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (15.152995ms)
-✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (74.882321ms)
-✔ a settlement claiming an effect with no observation is refused (6.11079ms)
-✔ two settlements cross-wired between executions are refused (11.956881ms)
-✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (11.062322ms)
-✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.752685ms)
-✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (16.203804ms)
-✔ negative controls: every mutated behaviour turns its public-surface scenario RED (111.557784ms)
+✔ one canonical record per physical execution, and the same facts twice is a named duplicate (13.309001ms)
+✔ writing twice with CONFLICTING facts is a named refusal, never last-writer-wins (12.381956ms)
+✔ illegal transitions are refused by NAME, never silently rewritten (16.07704ms)
+✔ Stop BEFORE the effect: recorded pre-dispatch, settles CANCELLED with zero effect (13.755595ms)
+✔ Stop DURING the effect: settles CANCELLED and carries only effects an observation supports (23.651452ms)
+✔ Stop AFTER completion: recorded additively; the achieved outcome is never rewritten (15.389157ms)
+✔ SIGKILL hard death: recovery yields UNKNOWN (never COMPLETED, never REFUSED), naming what is missing (75.885902ms)
+✔ a settlement claiming an effect with no observation is refused (5.99194ms)
+✔ two settlements cross-wired between executions are refused (13.413229ms)
+✔ admission coherence is recorded, never re-decided: REFUSED needs a deny reference (11.688483ms)
+✔ NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an admission reference (4.703856ms)
+✔ an interrupted write never reads as a complete record: temp files are invisible, corrupt bytes refuse (17.347344ms)
+✔ negative controls: every mutated behaviour turns its public-surface scenario RED (117.083591ms)
 ℹ tests 13
 ℹ suites 0
 ℹ pass 13
@@ -45,4 +45,4 @@ UTE2-MUTANTS total=7 red=7 scenarios=7
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 420.37221
+ℹ duration_ms 434.832391
