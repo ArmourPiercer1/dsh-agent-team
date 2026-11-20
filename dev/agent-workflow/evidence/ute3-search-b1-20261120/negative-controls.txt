@@ -1,0 +1,9 @@
+NC NC-HARNESS-BITES ok
+NC NC-CATEGORY-TOTAL ok
+NC-MEMBER-POSITIVE grep ok (the unmodified SR-G3-outside-denied row still reproduces)
+NC NC-MEMBER grep ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked content UTE3_SEARCH_OUTLANE_SECRET_5be1)
+NC-MEMBER-POSITIVE glob ok (the unmodified SR-L2-outside-denied row still reproduces)
+NC NC-MEMBER glob ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked path abs:<scratch>/<world>/outside/secret.txt)
+NC NC-SHADOW-LOAD-BEARING ok
+NC NC-STDIN-LOAD-BEARING ok
+NC-VERDICT GREEN controls=8 failed=0

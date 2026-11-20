@@ -1,0 +1,12 @@
+SD-ROUTE-C argv=["<rg>","--no-config","--no-ignore-parent","--no-ignore-vcs","--json","--regexp=UTE3_SEARCH_INLANE_NEEDLE","--","."]
+SD-ROUTE-C selected=["ignored.txt:1","keep.txt:1","sub/nested.txt:1"]
+SD-GOVERNED additions=["--no-ignore-parent","--no-ignore-global"]
+SD-GOVERNED argv=["<rg>","--no-config","--json","--regexp=UTE3_SEARCH_INLANE_NEEDLE","--no-ignore-parent","--no-ignore-global","--","."]
+SD-GOVERNED selected=["keep.txt:1","sub/nested.txt:1"]
+SD-IGNORE only-route-c=["ignored.txt:1"] only-governed=[]
+SD-PATHLESS route-c matches=0 argv=["<rg>","--no-config","--no-ignore-parent","--no-ignore-vcs","--json","--regexp=UTE3_SEARCH_INLANE_NEEDLE"]
+SD-PATHLESS governed matches=2 selected=["keep.txt:1","sub/nested.txt:1"]
+SEMANTIC-DIFF SD-SEARCH-1-grep-path-default blocking=YES approval=PENDING — a `grep` call WITHOUT `path` returns ZERO matches on the product route: the host module omits the path operand from argv and the confined child's fd 0 is a readable socket, so ripgrep searches stdin instead of the session workspace (the tool description says it defaults to the workspace). The governed row always appends `.`, so the same call searches the anchored root.
+SEMANTIC-DIFF SD-SEARCH-2-grep-vcs-ignore blocking=YES approval=PENDING — the two implementations select DIFFERENT file sets for the same pattern: the route-C confined face runs ripgrep with `--no-ignore-parent --no-ignore-vcs` (a VCS-ignored file IS searched and the allow fact discloses it), while the governed row adds `--no-ignore-parent --no-ignore-global` only (VCS ignore stays in force, so the same file is NOT searched).
+SEMANTIC-DIFF SD-SEARCH-3-refusal-surface blocking=YES approval=PENDING — a withheld search surfaces differently: on route C the engine reports the SAME model-facing text for every confined denial ("grep subprocess failed before reporting an outcome (ripgrep provider failure)") and the actual cause exists only as the realm's `a5sf-guard-consult/1` fact (`IO_READ_DENIED`, same code for a lane denial and a missing target); the governed row owns a closed, per-cause `SEARCH_REFUSAL_TEXT` vocabulary and no guard-fact channel. Both are mapped onto the same closed category here, but a consumer keying on the model-facing error cannot distinguish them on route C.
+SD-TOTAL declared=3 blocking=3 approved=0

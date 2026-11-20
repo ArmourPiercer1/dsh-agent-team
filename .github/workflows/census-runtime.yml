@@ -402,9 +402,14 @@ jobs:
         # vocabulary + its five mutation controls) rides this same argv. It is host-free and
         # dependency-free, so it needs nothing from this build; it is here for family
         # co-location with the FS binding contract (and to add no new dispatch leg).
+        # UTE-3 B1 SEARCH (2026-11-20): `tests/ute-g1-search/lane-suite.test.mjs` rides the same
+        # argv for the same post-build reason (its C1 world imports this repo's packages through
+        # a5sf-realm-row.mjs). It grades the 15-vector SEARCH old-path golden, both members'
+        # coverage, the closed refusal vocabulary, the pinned PENDING new path, and the family +
+        # per-member negative controls (`NC-VERDICT GREEN controls=8 failed=0`).
         shell: bash
         timeout-minutes: 10
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-search/lane-suite.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,
