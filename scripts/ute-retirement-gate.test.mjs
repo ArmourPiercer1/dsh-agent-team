@@ -365,18 +365,25 @@ test('NC-10 — a fabricated owner approval record is contradicted evidence', ()
   }
 })
 
-test('REAL — the seeded fs row is refused for unit coverage and unresolved differences, and fabricated claims change nothing', () => {
+test('REAL — the seeded fs row is refused for new-path reproduction and unresolved differences, and fabricated claims change nothing', () => {
   const loaded = loadLedger({ root: ROOT })
   assert.equal(loaded.refused, undefined, `the committed ledger must be gradable: ${loaded.detail ?? ''}`)
   const verdict = checkRetirement({ ledger: loaded.ledger, family: 'fs', root: ROOT })
   assert.equal(verdict.allowed, false, 'fs must NOT be retireable while read_image is uncovered and both differences are unapproved')
   assert.deepEqual(verdict.unit.members, ['read', 'write', 'edit', 'read_image'], 'the unit is derived from the census, not chosen by the row')
-  assert.ok(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'oldBaseline'), 'read_image has no baseline vector')
-  assert.ok(verdict.findings.some((f) => f.code === 'UTE_MEMBER_UNCOVERED' && f.term === 'oldBaseline' && f.detail.includes('read_image')))
+  // UTE-3 PR B1 added the read_image baselines and one control per member; the
+  // OLD-PATH axes are now 4/4. The NEW path is still 3/4 (PR B2), which is why
+  // the row stays refused — for reproduction, not for missing baselines.
+  assert.deepEqual(verdict.coverage.oldBaseline, ['read', 'write', 'edit', 'read_image'], 'every member has a baseline vector')
+  assert.deepEqual(verdict.coverage.negativeControlsPass, ['read', 'write', 'edit', 'read_image'], 'every member has its own NC-MEMBER control')
+  assert.equal(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'oldBaseline'), false, 'read_image HAS a baseline vector')
+  assert.equal(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'negativeControlsPass'), false, 'each member HAS its own control')
   assert.ok(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'newPathVerified'), 'read_image has nothing for the new path to reproduce')
+  assert.ok(verdict.findings.some((f) => f.code === 'UTE_VECTOR_UNREPRODUCED' && f.detail.includes('FS-I1-inlane-image')))
+  assert.ok(verdict.findings.some((f) => f.code === 'UTE_MEMBER_UNCOVERED' && f.term === 'newPathVerified' && f.detail.includes('read_image')))
   assert.ok(codes(verdict).includes('UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'))
-  assert.ok(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'negativeControlsPass'), 'the family-level controls are not per-member controls')
-  assert.ok(codes(verdict).includes('UTE_OLD_BASELINE_MISSING') === false, 'the old baseline IS established for the three covered members')
+  assert.deepEqual(verdict.coverage.newPathVerified, ['read', 'write', 'edit'])
+  assert.ok(codes(verdict).includes('UTE_OLD_BASELINE_MISSING') === false, 'the old baseline IS established for all four members')
   assert.ok(codes(verdict).includes('UTE_NEW_PATH_UNVERIFIED') === false, 'the prototype path IS verified for the ten recorded vectors')
   assert.ok(codes(verdict).includes('UTE_NEGATIVE_CONTROLS_FAILING') === false, 'the FS negative controls DO pass at family level')
 
@@ -646,14 +653,17 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.ok(payload.refused[0].codes.includes('UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'))
   assert.ok(payload.refused[0].codes.includes('UTE_MEMBER_UNCOVERED'))
   assert.deepEqual(payload.refused[0].unit.members, ['read', 'write', 'edit', 'read_image'])
-  assert.deepEqual(payload.refused[0].coverage.oldBaseline, ['read', 'write', 'edit'])
+  assert.deepEqual(payload.refused[0].coverage.oldBaseline, ['read', 'write', 'edit', 'read_image'])
+  assert.deepEqual(payload.refused[0].coverage.negativeControlsPass, ['read', 'write', 'edit', 'read_image'])
+  assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit'])
   assert.equal(payload.verdicts[0].allowed, false)
 
   const all = run(['--all'])
   assert.equal(all.status, 1)
   assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=[^\n]*UTE_SEMANTIC_DIFFERENCES_UNRESOLVED/)
   assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=[^\n]*UTE_MEMBER_UNCOVERED/)
-  assert.match(all.stdout, /term=oldBaseline[^\n]*read_image/)
+  assert.match(all.stdout, /term=newPathVerified[^\n]*read_image/)
+  assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*FS-I1-inlane-image/)
   assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1/)
 
   const unknown = run(['--family', 'mcp'])

@@ -364,7 +364,7 @@ jobs:
       - name: Next host — the rc.5 lane (real boot, native API A1–A6, provisioning negative controls)
         shell: bash
         timeout-minutes: 15
-        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs tests/ute2-settlement/settlement.test.mjs
+        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs tests/ute2-settlement/settlement.test.mjs
 
       - name: Build this repo (packages + composition) — the census leg REFUSES without this
         # Verbatim `pr-gate`'s working step. A fresh checkout has the committed package artifacts
@@ -395,10 +395,12 @@ jobs:
         # The suite therefore runs here, after `pnpm install && pnpm run build`, with its OWN
         # --test-timeout value: the manifest leg is then attributable to exactly this step (the
         # whole-trailing-argv reader keys a leg on its cmd, so two legs sharing `--test-timeout`
-        # could each read the other's line).
+        # could each read the other's line). UTE-3's `tests/ute-g1-fs/lane-suite.test.mjs` rides
+        # the SAME argv for the same measured reason: its per-member controls mount the realm row,
+        # so hosted run 44759369386 red it pre-build with the identical ERR_MODULE_NOT_FOUND.
         shell: bash
         timeout-minutes: 10
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,

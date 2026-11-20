@@ -69,12 +69,12 @@ export async function runVector(vector, host, { widenWriteTokens } = {}) {
     const { outcome, text, codes } = await runSteps({
       root,
       steps: vector.steps,
-      dispatch: async (name, args) => {
+      dispatch: async (name, args, options) => {
         const result = await host.executeModelToolFixture(ctx, {
           callId: `ute-g1-${vector.id}-${name}`,
           name,
           arguments: args,
-          signal,
+          signal: options?.signal ?? signal,
           agent,
           toolSet,
         })
@@ -108,7 +108,12 @@ export async function runVector(vector, host, { widenWriteTokens } = {}) {
  */
 export async function runCorpus({ only } = {}) {
   const host = await loadHostSurface()
-  const vectors = only === undefined ? CORPUS : CORPUS.filter((vector) => only.includes(vector.id))
+  // `newPathPending` is a DECLARED, printed non-coverage for the vectors whose
+  // prototype support lands in UTE-3 PR B2 (today: `read_image`). It is never a
+  // silent skip: lane-suite.test.mjs asserts the pending set is exactly the
+  // read_image member and that every pending id still has a baseline row.
+  const available = CORPUS.filter((vector) => vector.newPathPending !== true)
+  const vectors = only === undefined ? available : available.filter((vector) => only.includes(vector.id))
   const records = []
   const facts = []
   for (const vector of vectors) {

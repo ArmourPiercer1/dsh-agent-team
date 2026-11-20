@@ -22,13 +22,140 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { compareAll, parseGolden, serializeGolden } from './lib/compare.mjs'
-import { CORPUS } from './lib/corpus.mjs'
+import { compareAll, compareRecord, parseGolden, serializeGolden } from './lib/compare.mjs'
+import { CORPUS, SECRET_TOKEN } from './lib/corpus.mjs'
 import { loadHostSurface } from './lib/host.mjs'
 import { runCorpus, runVector } from './lib/new-path.mjs'
+import { captureVector } from './lib/old-path.mjs'
 import { assertNextHostTree, NextHostMissingError } from '../next-host/host-next-lib.mjs'
 
 const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
+
+/** The synthetic `@result:…` effect a read_image record carries, or undefined. */
+function imageResult(record) {
+  return record.effects.find((effect) => effect.path.startsWith('@result:'))
+}
+
+/** Find one golden row by id (a control must state the baseline it tests). */
+function goldenRow(golden, id) {
+  const row = golden.find((candidate) => candidate.id === id)
+  if (row === undefined) throw new Error(`the golden fixture has no row for ${id}`)
+  return row
+}
+
+/**
+ * One real control per retirement-unit MEMBER. Each control runs the legacy
+ * path twice on the SAME vector: once unmodified (must equal the golden row)
+ * and once with exactly that member's claim disabled (widened lane, or the
+ * edit version guard dropped). A control is GREEN only when the unmodified run
+ * reproduces the baseline AND the disabled-claim run changes the observed
+ * effect. If the member's claim were vacuous, the "mutant" would look like the
+ * baseline and the control would go RED.
+ */
+async function runMemberControls(golden) {
+  const results = []
+  const positive = []
+
+  /** Shared shape: base run must match golden; mutant must differ. */
+  const evaluate = async ({ member, controlId, vector, override, checkMutant, detail }) => {
+    const base = await captureVector(vector)
+    const mutant = await captureVector(vector, override)
+    const expected = goldenRow(golden, vector.id)
+    const baseMatches = compareRecord(expected, base).ok
+    const differs = compareRecord(base, mutant).ok === false
+    const mutantOk = checkMutant(mutant) === true
+    results.push({
+      id: `NC-MEMBER ${member}`,
+      ok: baseMatches && differs && mutantOk,
+      detail: `control=${controlId} baseline=${base.outcome}/${base.refusal ?? 'none'} baselineMatchesGolden=${baseMatches} mutant=${mutant.outcome}/${mutant.refusal ?? 'none'} differs=${differs} ${detail}`,
+    })
+    positive.push({
+      id: `NC-MEMBER-POSITIVE ${member}`,
+      ok: baseMatches && differs,
+      detail: `baseline=${base.outcome}/${base.refusal ?? 'none'} mutant=${mutant.outcome}/${mutant.refusal ?? 'none'} — the mutant is the only difference, so the control is not vacuous`,
+    })
+  }
+
+  // ── read: widening ONLY the read lane must turn the refusal into a leak ──
+  {
+    const vector = CORPUS.find((candidate) => candidate.id === 'FS-R1-outside-read-leak')
+    await evaluate({
+      member: 'read',
+      controlId: 'widen-read-lane',
+      vector,
+      override: { lane: { read: ['inside', 'outside'], write: ['inside'] } },
+      checkMutant: (mutant) => mutant.outcome === 'allow' && mutant.leaks.includes(SECRET_TOKEN),
+      detail: 'mutantLeaks=SECRET_TOKEN present',
+    })
+  }
+
+  // ── write: widening ONLY the write lane must make the file appear ────────
+  {
+    const vector = CORPUS.find((candidate) => candidate.id === 'FS-W4-outside-write')
+    await evaluate({
+      member: 'write',
+      controlId: 'widen-write-lane',
+      vector,
+      override: { lane: { read: ['inside'], write: ['inside', 'outside'] } },
+      checkMutant: (mutant) => {
+        const effect = mutant.effects.find((candidate) => candidate.path === 'outside/escape.txt')
+        return mutant.outcome === 'allow' && effect?.exists === true && effect.bytes === 5
+      },
+      detail: 'targetExists=true bytes=5',
+    })
+  }
+
+  // ── edit: the version guard is the edit member's own load-bearing seam ───
+  // The vector's external rewrite is chosen so the edit MATCHES after the
+  // external write; without the guard the edit applies, with the guard it is
+  // refused stale. (FS-E2's own rewrite deliberately removes the match, so it
+  // cannot distinguish "guard fired" from "old_string not found".)
+  {
+    const source = CORPUS.find((candidate) => candidate.id === 'FS-E2-stale-edit')
+    const vector = {
+      ...source,
+      id: 'FS-E2-stale-edit-control',
+      steps: [
+        source.steps[0],
+        { op: 'externalWrite', path: 'inside/stale.txt', content: 'one and only\n' },
+        { tool: 'edit', args: { file_path: 'inside/stale.txt', old_string: 'one', new_string: 'three' } },
+      ],
+    }
+    const base = await captureVector(vector)
+    const mutant = await captureVector(vector, { mutations: { dropVersionGuard: true } })
+    const expected = goldenRow(golden, 'FS-E2-stale-edit')
+    const baseIsStale = base.outcome === 'deny' && base.refusal === 'stale-version'
+    const mutantChanged = mutant.outcome === 'allow'
+      && mutant.effects[0]?.sha256 !== base.effects[0]?.sha256
+    results.push({
+      id: 'NC-MEMBER edit',
+      ok: baseIsStale && mutantChanged,
+      detail: `control=drop-edit-version-guard baseline=${base.outcome}/${base.refusal ?? 'none'} mutant=${mutant.outcome}/${mutant.refusal ?? 'none'} bytes=${mutant.effects[0]?.bytes ?? '-'}`,
+    })
+    positive.push({
+      id: 'NC-MEMBER-POSITIVE edit',
+      ok: expected.outcome === 'deny' && expected.refusal === 'stale-version' && baseIsStale && mutantChanged,
+      detail: `golden FS-E2=${expected.outcome}/${expected.refusal} baseline=${base.outcome}/${base.refusal} mutant=${mutant.outcome} — the guard, not a missing old_string, is what refused`,
+    })
+  }
+
+  // ── read_image: widening ONLY the read lane must materialise an attachment ─
+  {
+    const vector = CORPUS.find((candidate) => candidate.id === 'FS-I2-outside-image-denied')
+    await evaluate({
+      member: 'read_image',
+      controlId: 'widen-read-lane-image',
+      vector,
+      override: { lane: { read: ['inside', 'outside'], write: ['inside'] } },
+      checkMutant: (mutant) => mutant.outcome === 'allow'
+        && imageResult(mutant)?.exists === true
+        && imageResult(mutant)?.bytes === 70,
+      detail: 'attachmentBytes=70 modelBlocks=text+image',
+    })
+  }
+
+  return { results, positive }
+}
 
 /**
  * Run every control.
@@ -111,6 +238,14 @@ export async function runNegativeControls() {
       detail: `outcome=${widened.record.outcome} targetExists=${effect?.exists} bytes=${effect?.bytes ?? '-'}`,
     })
   }
+
+  // ── ONE REAL CONTROL PER RETIREMENT-UNIT MEMBER (UTE-3) ─────────────────
+  // The family-level controls above prove the harness bites SOMEWHERE; the
+  // retirement gate needs a control per member that goes RED when THAT member's
+  // claim is false. Each runs on the legacy path, and each is paired with a
+  // positive line showing the unmodified run still reproduces the golden row.
+  const { results: memberResults, positive } = await runMemberControls(golden)
+  results.push(...memberResults, ...positive)
 
   return results
 }

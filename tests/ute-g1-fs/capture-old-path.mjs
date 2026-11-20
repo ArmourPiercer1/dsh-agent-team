@@ -31,13 +31,21 @@ let problems = 0
 for (const record of records) {
   const vector = CORPUS.find((candidate) => candidate.id === record.id)
   console.log(
-    `OLD-PATH-VECTOR ${record.id} outcome=${record.outcome} refusal=${record.refusal ?? 'none'}`
+    `OLD-PATH-VECTOR ${record.id} entry=${record.entry} composition=${vector.composition ?? 'route-c'}`
+    + ` outcome=${record.outcome} refusal=${record.refusal ?? 'none'}`
     + ` effects=${record.effects.map((effect) => `${effect.path}:${effect.exists ? `${effect.bytes}B/${effect.mode}` : 'absent'}`).join(',') || '-'}`
     + ` codes=${record.codes.join(',') || '-'} leaks=${record.leaks.length === 0 ? 'none' : record.leaks.join(',')}`,
   )
   for (const problem of checkDesignClaim(vector, record)) {
     problems += 1
     console.error(`OLD-PATH-CLAIM-MISMATCH ${record.id} ${problem}`)
+  }
+  // `other` is the honest terminal bucket, never a silent one. A corpus vector
+  // must name its cause (see lib/lane.mjs); if a future vector genuinely needs
+  // `other`, its row must at least carry an observed code, never `-`.
+  if (record.refusal === 'other' && record.codes.length === 0) {
+    problems += 1
+    console.error(`OLD-PATH-UNCLASSIFIED ${record.id} refusal=other codes=-; name the observed cause in lib/effect-oracle.mjs or record a code`)
   }
 }
 

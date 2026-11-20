@@ -8,6 +8,7 @@
  * @module tests/ute-g1-fs/lib/scenario
  */
 import { chmodSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
+import { Buffer } from 'node:buffer'
 import { dirname, join } from 'node:path'
 
 import { classifyRefusal, codesOf, effectsCell, findLeaks, snapshotAll } from './effect-oracle.mjs'
@@ -48,7 +49,10 @@ export function applySetup(root, setup) {
     const absolute = worldPath(root, op.path)
     if (op.op === 'writeFile') {
       mkdirSync(dirname(absolute), { recursive: true })
-      writeFileSync(absolute, op.content, 'utf8')
+      // `base64` is for binary fixtures (an image must be a real decodable PNG,
+      // not text with a .png name); text fixtures keep the utf8 default.
+      if (op.base64 !== undefined) writeFileSync(absolute, Buffer.from(op.base64, 'base64'))
+      else writeFileSync(absolute, op.content, 'utf8')
       if (op.mode !== undefined) chmodSync(absolute, op.mode)
     } else if (op.op === 'symlink') {
       mkdirSync(dirname(absolute), { recursive: true })
@@ -75,18 +79,24 @@ export function materializeArgs(root, args) {
  * @param {object} input
  * @param {string} input.root - world root.
  * @param {readonly object[]} input.steps - corpus steps.
- * @param {(name: string, args: object) => Promise<{isError: boolean, text: string, codes?: string[]}>} input.dispatch
- * @returns {Promise<{outcome: 'allow'|'deny', text: string, codes: string[]}>}
+ * @param {(name: string, args: object, options?: {signal?: AbortSignal}) => Promise<{isError: boolean, text: string, codes?: string[], resultEffects?: object[]}>} input.dispatch
+ * @returns {Promise<{outcome: 'allow'|'deny', text: string, codes: string[], resultEffects: object[]}>}
  */
 export async function runSteps({ root, steps, dispatch }) {
   const texts = []
   const codes = []
+  const resultEffects = []
   let outcome = 'allow'
   for (const step of steps) {
     if (step.tool !== undefined) {
-      const settled = await dispatch(step.tool, materializeArgs(root, step.args))
+      // A cancellation arm is expressed by a PRE-ABORTED signal: the path's own
+      // registry decides what a cancelled call looks like, this harness only
+      // hands it the signal. Nothing here times a mid-read abort.
+      const options = step.abort === true ? { signal: abortedSignal() } : undefined
+      const settled = await dispatch(step.tool, materializeArgs(root, step.args), options)
       texts.push(settled.text ?? '')
       codes.push(...(settled.codes ?? []), ...codesOf(settled.text))
+      resultEffects.push(...(settled.resultEffects ?? []))
       outcome = settled.isError === true ? 'deny' : 'allow'
     } else if (step.op === 'externalWrite') {
       writeFileSync(worldPath(root, step.path), step.content, 'utf8')
@@ -94,15 +104,28 @@ export async function runSteps({ root, steps, dispatch }) {
       throw new Error(`unknown step op '${step.op}'`)
     }
   }
-  return { outcome, text: texts.join('\n'), codes: [...new Set(codes)] }
+  return { outcome, text: texts.join('\n'), codes: [...new Set(codes)], resultEffects }
+}
+
+/** An already-aborted signal (the corpus's cancellation arm). */
+function abortedSignal() {
+  const controller = new AbortController()
+  controller.abort()
+  return controller.signal
 }
 
 /**
  * Build one normalized record: the tuple the fixture stores and the comparison
  * harness grades.
  */
-export function makeRecord({ vector, root, outcome, text, codes }) {
-  const effects = snapshotAll(root, vector.effects)
+export function makeRecord({ vector, root, outcome, text, codes, resultEffects = [] }) {
+  // File effects are always snapshotted from the world. A tool whose result is
+  // not a file effect (read_image's committed attachment) contributes a
+  // synthetic `@result:…` entry built by the caller from what the STORE
+  // received — merged here so both paths serialize one comparable effect cell.
+  const effects = resultEffects.length === 0
+    ? snapshotAll(root, vector.effects)
+    : [...snapshotAll(root, vector.effects), ...resultEffects].sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0))
   const { refusal } = classifyRefusal(codes, text)
   return {
     id: vector.id,

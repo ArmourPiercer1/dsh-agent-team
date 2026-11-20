@@ -55,6 +55,15 @@ const TEXT_CLASS = Object.freeze([
   [/changed since it was read|has been modified since|FS_STALE_VERSION/, REFUSAL.STALE_VERSION],
   [/has not been read|not been observed|read the file, then retry|IO_WRITE_REQUIRES_READ|FS_NOT_OBSERVED/, REFUSAL.WRITE_REQUIRES_READ],
   [/outside every allow subtree of the lane|outside the declared .* lane|FS_SANDBOX_DENIED|FS_PERMISSION_DENIED|IO_READ_DENIED|IO_WRITE_DENIED|permission denied/i, REFUSAL.LANE_READ],
+  // The image rows' four distinct causes must not collapse into `other`: the
+  // corpus compares CLASS, so a route gap, a missing file, a modality refusal
+  // and a cancellation have to be distinguishable in the machine-readable cell.
+  // Each pattern is named from the text the legacy path actually emitted
+  // (transcripts in dev/agent-workflow/evidence/ute-g1-fs-20261120/).
+  [/cannot get property ["']?fs["']? without inject/, REFUSAL.ROUTE_UNRESOLVED],
+  [/\bread target\b[^\n]*\bdoes not exist\b/, REFUSAL.MISSING_PATH],
+  [/does not declare image input/, REFUSAL.IMAGE_MODALITY_DENIED],
+  [/aborted before dispatch/, REFUSAL.CANCELLED],
 ])
 
 /**
@@ -125,6 +134,42 @@ export function parseEffectsCell(cell) {
     const [path, existence, bytes, sha256, mode] = part.split('|')
     return { path, exists: existence === 'present', bytes: bytes === '-' ? null : Number(bytes), sha256: sha256 === '-' ? null : sha256, mode: mode === '-' ? null : mode }
   })
+}
+
+/**
+ * `read_image` does not produce a filesystem effect: it commits an ATTACHMENT
+ * and returns a model-facing text+image result. The oracle records that as one
+ * synthetic effect entry so it lands in the SAME compared/effect cell as every
+ * other vector:
+ *
+ *   `@result:<mediaType>:<w>x<h>|present|<bytes>|<sha256>|blocks=<shape>`
+ *
+ * The digest is over the bytes the ATTACHMENT STORE received (observed at the
+ * store seam), never over the path string and never over the tool's own
+ * metadata. A refusal records `@result:none|absent|-|-|-`: "no attachment was
+ * materialised". `@` marks the path column as synthetic, not an FS locator.
+ *
+ * @param {{mediaType: string, width: number, height: number, bytes: number, sha256: string, blocks: string}} input
+ * @returns {Readonly<object>}
+ */
+export function imageResultEffect({ mediaType, width, height, bytes, sha256, blocks }) {
+  return Object.freeze({
+    path: `@result:${mediaType}:${width}x${height}`,
+    exists: true,
+    bytes,
+    sha256,
+    mode: `blocks=${blocks}`,
+  })
+}
+
+/** The "no attachment materialised" companion entry. */
+export function noImageResultEffect() {
+  return Object.freeze({ path: '@result:none', exists: false, bytes: null, sha256: null, mode: null })
+}
+
+/** sha256 of a byte buffer, hex. */
+export function sha256Of(bytes) {
+  return createHash('sha256').update(bytes).digest('hex')
 }
 
 /**

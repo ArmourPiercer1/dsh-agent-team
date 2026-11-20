@@ -1,0 +1,28 @@
+Hosted `ci-required` on #799 at 6a7f0e8391990c5f0b5246346df774bd4664a274 was RED.
+Run 44759369386, job `ci-census / census-runtime`, verbatim:
+
+  ✖ the family-level and per-member negative controls hold (127.6ms)
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-scope'
+    imported from /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+
+CAUSE (same class as UTE-1 on 2ec811f6f): the `Next host — the rc.5 lane` step runs
+BEFORE `Build this repo`, so a fresh job has no repo node_modules yet. The UTE-3
+per-member controls mount the realm row (post-gap-1 for the image control), which
+imports this repo's own `@deepseek-ai/dsh-scope`. Locally the worktree has
+node_modules, so the failure was invisible.
+
+FIX: `tests/ute-g1-fs/lane-suite.test.mjs` moved OUT of the pre-build rc.5 lane
+and INTO the post-build `UTE G1 FS binding product lane` leg (same leg as
+tests/ute1-fs/native-fs-binding.test.mjs), which already exists for exactly this
+reason and keeps its distinct `--test-timeout=480000`. The manifest `check[]`
+and the workflow `run:` line are byte-identical; `eb3-ci-required` grades it.
+The retirement-gate suite stays in the pre-build lane because it is host-free.
+
+SECOND DEFECT FOUND WHILE VALIDATING THE MOVE (also fixed here): the UTE-1
+golden-parity test read the SHARED `tests/ute-g1-fs/golden/old-path.tsv` and
+asserted `records.length === 10`, but UTE-3 B1 grew the corpus/golden to 17.
+That would have red the product lane on the next hosted run. The runner now
+grades the 10 read/write/edit vectors its module serves and returns the 7 image
+rows as an explicit excluded set; the test asserts their exact ids and that each
+is still `newPathPending`, so B2 must grow the claim rather than this filter
+quietly hiding it. No control was removed or weakened.
