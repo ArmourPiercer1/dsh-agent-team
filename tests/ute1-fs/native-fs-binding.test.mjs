@@ -441,7 +441,7 @@ test('lifecycle race C: draining and released refusals are distinct, create no f
 
   const duringPromise = binding.provider.writeText('/world/inside/race-c-during.txt', 'no\n').catch((error) => error)
   const during = await Promise.race([duringPromise, sleep(150).then(() => 'still-admitted')])
-  t.diagnostic(`during draining: ${during instanceof Error ? `${during.code} ${during.message.slice(0, 120)}` : during}`)
+  t.diagnostic(`during draining: ${during instanceof Error ? `${during.code} ${during.message.slice(0, 120).trimEnd()}` : during}`)
   assert.ok(during instanceof Error, 'a call during draining must be refused')
   assert.equal(during.code, 'FS_PERMISSION_DENIED')
   assert.match(during.message, /scope-draining/)
@@ -454,7 +454,7 @@ test('lifecycle race C: draining and released refusals are distinct, create no f
   assert.equal(receipt.state, 'released')
   const factsBefore = facts.length
   const after = await binding.provider.writeText('/world/inside/race-c-after.txt', 'no\n').catch((error) => error)
-  t.diagnostic(`after released: ${after instanceof Error ? `${after.code} ${after.message.slice(0, 120)}` : after}`)
+  t.diagnostic(`after released: ${after instanceof Error ? `${after.code} ${after.message.slice(0, 120).trimEnd()}` : after}`)
   assert.ok(after instanceof Error)
   assert.match(after.message, /scope-disposed/)
   assert.doesNotMatch(after.message, /scope-draining/)
