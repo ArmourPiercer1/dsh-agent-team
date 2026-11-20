@@ -1,0 +1,138 @@
+# old-path.tsv — what this fixture is, and what it is not
+
+This file is the reviewed golden fixture for the **UTE G1 SEARCH family**
+(`grep`, `glob`): fifteen `(request → effect)` pairs measured on the CURRENT
+product path and serialized by `tests/ute-g1-search/lib/scenario.mjs`. Nine
+cover `grep`, six cover `glob`.
+
+`OLD-PATH-META vectors=15 host=0.2.0-rc.2 host_commit=639ed015397290b3745d163aafe02ffee4aa3f84 members=grep,glob composition=route-c`
+
+It is a fixture, NOT a golden oracle and NOT a retirement claim:
+`tests/ute-g1-search/capture-old-path.mjs` re-derives it from the old path
+(exit 1 on any drift, or on a contradiction with the corpus design claim), and
+`tests/ute-g1-search/lane-suite.test.mjs` grades it.
+
+## Identity
+
+| field | value |
+|---|---|
+| host tree | `tests/deepseek-harness-test-use` (pinned; read-only) |
+| host version | `0.2.0-rc.2` |
+| host commit | `639ed015397290b3745d163aafe02ffee4aa3f84` |
+| governance seam | `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` (product route C), i.e. the compiled `EffectiveIo` read lane + the confined `subprocess` face + the PD-16 search shadow (`packages/runtime/src/plugin/live/confined-search-tool.mjs`, module name `a5sf-confined-search`) that the attach places |
+| dispatch | `ctx.tools.execute({…})` — the host registry's real model-call path |
+| capture form | host-free C1 world (`tests/ute-g1-search/lib/world.mjs`), `mkdtemp` per vector under `.artifacts/tmp/ute-g1-search/`; no boot, no DSH_HOME, no port |
+| capture command | `node tests/ute-g1-search/capture-old-path.mjs --write` |
+| verify command | `node tests/ute-g1-search/capture-old-path.mjs` (prints `OLD-PATH-GOLDEN compare=identical` or exits 1) |
+| oracle | `lib/effect-oracle.mjs` — the canonical match set (each match corroborated against the filesystem), the tree digest, the retained/presented count, the model-facing text, the confined provider's spawn count and the realm's guard facts |
+
+## Composition (measured, not assumed)
+
+`node tests/ute-g1-search/probe-composition.mjs` records the measurement in
+`dev/agent-workflow/evidence/ute3-search-b1-20261120/composition-probe.txt`:
+
+* BOTH members are **reachable** on the product route-C composition and BOTH
+  reach the **confined** provider (`confined=1`, `inheritedServiceCalls=0`);
+* the legacy governed plane (`packages/tools/families/search.mjs` via
+  `createTeamToolPlaneAssembly`) **refuses the native names** at mount with
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`; it mounts Search only as the aliases
+  `team_grep` / `team_glob`;
+* therefore the old path for the native `grep`/`glob` names IS route C. There is
+  **no mounting gap** for either member in this family, and no test-only
+  composition is used anywhere in this fixture.
+
+A governed-plane `team_grep`/`team_glob` dispatch is **NOT** run here: it needs
+the full governed kernel/PA mount (the `u6-arc-a` boot lane's job). That is an
+UNKNOWN, stated as such in the evidence README, and it is why the retired-plane
+comparison in `lib/semantic-differences.mjs` compares the governed row's OWN
+argv builder against the argv route C actually received.
+
+## Record shape
+
+Header: `id entry lane_read lane_write outcome refusal codes effects facts leaks`.
+
+* `entry` — the Search member that produced the effect (`grep` | `glob`); the
+  retirement gate derives member coverage from this column.
+* `lane_*` — world-relative lane tokens, never absolute paths.
+* `outcome` — `allow` | `deny`.
+* `refusal` — a closed category or `-` when allowed. The vocabulary is the
+  nine-category one imported from `tests/ute-g1-fs/lib/refusal-categories.mjs`
+  (**reused, not forked**): `denied-by-lane`, `read-before-write`,
+  `stale-version`, `missing-path`, `invalid-argument`, `unsupported-mode`,
+  `route-unresolved`, `cancelled`, `unknown`. This corpus uses five of them and
+  **never** the residual `unknown` (asserted by the capture guard and by
+  `lane-suite.test.mjs`). `read-before-write`/`stale-version`/`unsupported-mode`
+  are FS-shaped and no Search vector produces them; `route-unresolved` is not
+  produced on this composition either (both members mount).
+* `codes` — the typed codes the model-facing text and the realm's guard facts
+  carried (`IO_READ_DENIED`, …). Recorded, never a pass condition. Two refusal
+  classes have a TEXTUAL cause by construction (`cancelled` = the registry's
+  pre-dispatch abort; `invalid-argument` = ripgrep's own pattern rejection), so
+  their code cell is legitimately empty.
+* `effects` — synthetic entries (`@`) in the FS serializer's grammar,
+  `path|present|bytes|sha256|mode` joined by `;`:
+  * `@matches:<entry>` — `bytes` = the number of matches returned in the
+    structured `value`, `sha256` = the digest of the CANONICALLY SORTED match
+    records (`grep`: `{path,lineNumber,line}`; `glob`: `{path}`), `mode` =
+    `retained=<presented>,paths=<distinct paths>,keys=<up to 8 sorted paths>`.
+    A refusal records `@matches:<entry>|absent|-|-|no-match-observation`.
+  * `@fs:tree` — the digest over every non-dot regular file under the fixture's
+    `inside/` and `outside/` trees, `mode=unchanged` (or `CHANGED`, which would
+    be a defect: a search must not mutate the tree).
+* `facts` — `confined=<spawns>,allow=<allow facts>,deny=<deny facts>,base=<inherited service calls>`.
+  This is the "the confined face was actually reached, and no unconfined
+  fallback answered" witness. It is an ADDITIVE column over the FS fixture's
+  header (which stops at `leaks`); the retirement gate parses by column NAME.
+* `leaks` — secret tokens that appeared in the model-facing text or the returned
+  match set (`-`: none).
+
+## Retained semantics of the product path (measured, disclosed)
+
+* **A `grep` call with NO `path` returns ZERO matches** on this composition
+  (`SR-G2-no-path-stdin`). The host module omits the path operand from argv and
+  the confined child's fd 0 is a readable socket, so ripgrep searches stdin.
+  The tool description says a missing `path` defaults to the session workspace;
+  the governed row always appends `.`. This is recorded as the product
+  behaviour and declared as a blocking semantic difference
+  (`SD-SEARCH-1-grep-path-default`), never as a lane refusal.
+* **A binary file IS searched, not skipped** (`SR-G9-binary-file`): the returned
+  line carries the file's NUL bytes. The fixture digests those bytes and never
+  embeds them.
+* **The retention boundary is real** (`SR-G8-retention-limit`): the tool
+  observed 300 matches, presented 250 (the host `GREP_MAX_MATCHES` default) and
+  said so. No `spillStore` is mounted in this world, so the complete result
+  cannot be saved and the text says that instead of inventing a locator. This
+  fixture therefore pins the "could not be saved" branch, not a spill locator.
+* **VCS ignore is disabled** on the confined face (`--no-ignore-vcs`), so a
+  `.gitignore`d file IS searched — declared as `SD-SEARCH-2-grep-vcs-ignore`.
+* The route-C refusal TEXT is generic for every confined denial
+  (`grep subprocess failed before reporting an outcome (ripgrep provider
+  failure)`); the cause lives only in the guard fact (`IO_READ_DENIED`, the SAME
+  code for a lane denial and a missing target). The classification therefore
+  uses the deny locator plus a filesystem witness, and the difference from the
+  governed row's closed per-cause text table is declared as
+  `SD-SEARCH-3-refusal-surface`.
+
+## What it does NOT cover (mirrored in ../README.md §7)
+
+* **No new path exists.** Every vector is old-path evidence; `newPathVerified`
+  is false by construction, and the lane suite pins that with an explicit
+  (empty) pending-id list.
+* **The governed plane's `team_grep`/`team_glob` dispatch** — not run (needs the
+  governed kernel/PA mount). Its argv builder is measured, its dispatch is an
+  UNKNOWN.
+* **Read confinement is not PROVEN.** A refusal record pins the refusal, the
+  absence of the secret token and an unchanged tree. It cannot prove no
+  unauthorized read happened.
+* **Caller-supplied limits** — the host `grep`/`glob` schemas expose none
+  (`head_limit`, context, case modes, multiline all absent), so only the
+  deployment cap is exercised.
+* **glob over-cap sampling** (`sampleOverCapGlobResults`) — not configured on
+  the product route; the shadow takes the host default.
+* **glob ordering** — `--sort=modified` makes walk order mtime-dependent and
+  ties non-deterministic; the fixture digests the SORTED set and claims nothing
+  about order.
+* **Mid-search cancellation** — only a pre-dispatch abort is expressible.
+* **Symlink escapes, stream-drain truncation, glob over-cap, `--pre` config
+  paths** — not exercised.
+* **Live boot** — C1 host-free capture, not a booted run.

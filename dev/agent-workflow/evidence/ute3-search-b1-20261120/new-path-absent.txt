@@ -1,0 +1,45 @@
+NEW-PATH-ABSENT — UTE G1 SEARCH family, PR B1 (2026-11-20)
+
+This round delivers the OLD-PATH baseline for `grep` and `glob` ONLY. There is
+no new-path implementation for the Search family in this tree, and this file is
+the explicit statement of that fact so the retirement gate can grade the
+`newPathVerified` term as FALSE with a readable pointer instead of an
+unreadable one.
+
+What exists:
+  * the old path: the pinned host module `@deepseek-ai/dsh-tool-fs-search`
+    (0.2.0-rc.2 @ 639ed01539) served through the product route-C composition —
+    `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` — with the PD-16
+    confined search shadow and the confined subprocess face.
+  * a reproducible 15-vector golden fixture for that path
+    (tests/ute-g1-search/golden/old-path.tsv), two identical capture runs, a
+    family-level + per-member negative-control transcript, and three MEASURED,
+    retirement-blocking semantic differences
+    (probe-semantic-differences.mjs).
+
+What does NOT exist:
+  * no new-path enumerator, no new-path provider, no next-host run for Search;
+  * therefore ZERO per-vector reproduction lines exist for any Search baseline
+    vector. This pointer records an ABSENCE: the gate's per-vector reproduction
+    token appears nowhere in this file (the ledger's `contradicts` list makes a
+    forged appearance of it a RED finding). The absence IS the claim.
+
+Consequence for the retirement predicate
+(RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved
+AND NegativeControlsPass):
+
+  oldBaseline                 = TRUE   (reproducible, observed, reviewed)
+  newPathVerified             = FALSE  (no new path exists)
+  semanticDifferencesResolved = FALSE  (3 blocking differences, approval: null)
+  negativeControlsPass        = TRUE   (NC-VERDICT GREEN controls=8 failed=0)
+  => state = NOT_RETIREABLE
+
+The search family therefore MUST be refused by `scripts/ute-retirement-gate.mjs`
+with `UTE_NEW_PATH_UNVERIFIED` plus `UTE_VECTOR_UNREPRODUCED` (15 vectors) and
+`UTE_MEMBER_UNCOVERED` on the new-path axis, and with
+`UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`. Nothing in this round may flip those.
+
+UNKNOWN, stated rather than implied: a governed-plane `team_grep`/`team_glob`
+dispatch was not run (it needs the full governed kernel/PA mount). Only the
+plane's native-name mount refusal and its own argv builder were measured. That
+is an open question for the new-path task, not a hidden pass.
