@@ -1,0 +1,28 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+PROBE fixture=<tmp>/inside,<tmp>/outside lane=read:inside
+PROBE-REGISTRY grep=registered glob=registered
+PROBE-MEMBER grep reachable=yes outcome=allow
+PROBE-MEMBER grep confined=yes providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER grep argv=["<abs>/rg","--no-config","--no-ignore-parent","--no-ignore-vcs","--json","--regexp=UTE3_SEARCH_INLANE_NEEDLE","--","<abs>/inside"]
+PROBE-MEMBER grep out-of-lane outcome=deny text="Error: grep subprocess failed before reporting an outcome (ripgrep provider failure)"
+PROBE-MEMBER grep out-of-lane fact decision=deny locator=<last-path-segment>/outside code=IO_READ_DENIED
+PROBE-MEMBER grep fallback reached-inherited-service=no
+PROBE-MEMBER glob reachable=yes outcome=allow
+PROBE-MEMBER glob confined=yes providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER glob argv=["<abs>/rg","--no-config","--files","--glob=**/*.txt","--sort=modified","--no-ignore","--hidden","--glob=!**/.git","--glob=!**/.git/**","--glob=!**/.svn","--glob=!**/.svn/**","--glob=!**/.hg","--glob=!**/.hg/**","--glob=!**/.bzr","--glob=!**/.bzr/**","--glob=!**/.jj","--glob=!**/.jj/**","--glob=!**/.sl","--glob=!**/.sl/**","--","<abs>/inside"]
+PROBE-MEMBER glob out-of-lane outcome=deny text="Error: glob subprocess failed before reporting an outcome (ripgrep provider failure)"
+PROBE-MEMBER glob out-of-lane fact decision=deny locator=<last-path-segment>/outside code=IO_READ_DENIED
+PROBE-MEMBER glob fallback reached-inherited-service=no
+PROBE-PLANE names=native gate=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-PLANE names=native message="plane row 'grep' cannot mount under reserved native name 'grep' — this install surface assembles no same-name, same-meaning implementation for that pair (the PLANE_SUPPORTED_NATIVE_TAKEOVERS ledger is the complete truth of the pairs this su"
+PROBE-PLANE names=alias gate=accepted
+PROBE-PLANE reserved-name=grep own-name gate=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-PLANE reserved-name=grep alias-name gate=accepted
+PROBE-PLANE reserved-name=glob own-name gate=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-PLANE reserved-name=glob alias-name gate=accepted
+PROBE-PLANE assembly-alias=TOOL_BINDING_UNVERIFIED (past the name gate; a full governed mount needs the PA kernel and is NOT attempted here)
+PROBE-PLANE assembly-native=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-CONCLUSION native-grep=route-c/mountMemberA5sfRealm+attachA5sfNativeToolModules native-glob=route-c/same-shadow
+PROBE-CONCLUSION governed-plane=aliases-team_grep/team_glob-only; native names REFUSED at mount by PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-CONCLUSION mounting-gap=NONE for grep and glob (both are reachable on the product composition and both reach the confined face)
+PROBE-CONCLUSION governed-plane-dispatch=NOT-RUN (a team_grep/team_glob dispatch needs the full governed kernel/PA mount; recorded as UNKNOWN in the evidence README)

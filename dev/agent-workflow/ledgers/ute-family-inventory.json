@@ -695,9 +695,9 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
       "note": "`search-backend.mjs` / `glob-backend.mjs` are classed `executor` (they are the effect backends); `search-mechanics.mjs` is the port-level wrapper the plane hands the rows. The two rows share ONE candidate and one row file."
     },

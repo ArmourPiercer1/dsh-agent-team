@@ -9351,6 +9351,30 @@ export interface AbortSignalLike {
 
 **UNKNOWN（明写）**：前缀检查证明“旧字节被保留”，**不**证明新条目为真，也不能区分“合法追加”与“恰好复现旧字节的重写”。它需要可解析的 base（pr-gate 用 fetch-depth 0 检出，这是它能工作的前提）；本地无 `origin/master` 时该 leg 会 refuse，而不是假装通过。
 
+## 2026-11-20 — UTE-3 / G1 SEARCH 族旧路径基线 + 逐成员负控（draft PR #806，合并 master 后追加）
+
+**背景**：UTE G1 退役判据 `RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved AND NegativeControlsPass`，单元 = census 装配。FS 族已有 B1 先例，SEARCH 族（`dsh.search-family`，成员 `grep`/`glob`）此前**零基线**。本轮只做**旧路径基线**，不做新路径、不宣称退役。
+
+**分支**：`task/ute3-search-b1-20261120`（worktree `.worktrees/ute3-search-b1-20261120`），base `origin/master 4aaae4c0b`，合并 `origin/master 19a7fa641`（#802 route-C `read_image` 修复）后继续。交付 `tests/ute-g1-search/**`（`lib/{world,corpus,scenario,effect-oracle,compare,semantic-differences,old-path}.mjs`、`capture-old-path.mjs`、`probe-composition.mjs`、`probe-semantic-differences.mjs`、`negative-controls.mjs`、`lane-suite.test.mjs`、`golden/{old-path.tsv,old-path.meta.txt,COVERAGE.md}`）与证据 `dev/agent-workflow/evidence/ute3-search-b1-20261120/`。
+
+**组合先测量（STEP 0，不假设）**：`probe-composition.mjs` 实测 —— 两个成员在产品 route-C（`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`，PD-16 confined search shadow）上**都可达且都打到 confined provider**（`providerCalls=1`、`inheritedServiceCalls=0`）；legacy governed plane（`packages/tools/families/search.mjs` via `createTeamToolPlaneAssembly`）对**同名原生名**在挂载处拒绝（`PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED`，真实 assembly 尝试同样拒绝），只以 `team_grep`/`team_glob` 别名挂载。⇒ SEARCH 族**无 mounting gap**，基线与负控都跑产品组合，**不存在 test-only 组合**。governed plane 的 `team_grep`/`team_glob` **实际 dispatch 未运行**（需完整 governed kernel/PA 挂载），列为 UNKNOWN。
+
+**基线**：15 向量（grep 9 / glob 6）。效果 = 规范化排序后的 match 集（每条 match 回查文件系统佐证）、fixture 树摘要（15/15 `unchanged`）、呈现/保留条数、confined spawn 数、realm guard fact、泄漏扫描；walk 顺序不入记录（glob `--sort=modified` 同 mtime 并列不确定，只对排序集取摘要）。拒因复用 `tests/ute-g1-fs/lib/refusal-categories.mjs` 的**闭合九类词汇**（import 而非 fork；`tests/ute-g1-fs/**` 不在本轮写权限内），映射**全函数**（无法解释的拒绝抛 `REFUSAL_VOCABULARY_INCOMPLETE`，绝不落桶），残余 `unknown` 不可达；通用 `IO_READ_DENIED` 由 deny locator + **文件系统见证**区分为 `missing-path` / `denied-by-lane`。
+
+**三条实测、blocking、未批准（`approval: null`）语义差异**：`SD-SEARCH-1-grep-path-default`（无 `path` 的 grep 在 confined face 返回 **0** 条，argv 省略 path operand，子进程 fd 0 是可读 socket，rg 改为读 stdin；governed row 恒追加 `.`）、`SD-SEARCH-2-grep-vcs-ignore`（route-C 带 `--no-ignore-vcs`，`.gitignore` 的文件**会被搜到**；governed row 只带 `--no-ignore-global`，同一文件**搜不到**）、`SD-SEARCH-3-refusal-surface`（route-C 所有 confined 拒绝共用同一句模型可见文本，真因只在 guard fact；governed row 有闭合逐因 `SEARCH_REFUSAL_TEXT` 表）。三条均为**测量**（`probe-semantic-differences.mjs` 同时跑 governed row 自带的 `searchArgv()` 与 confined provider **实际收到的 argv**，同一 fixture 比较选中集）。
+
+**负控（能红才算数）**：`NC-VERDICT GREEN controls=8 failed=0` —— `NC-HARNESS-BITES`（篡改 golden match 摘要必红）、`NC-CATEGORY-TOTAL`（无法解释的拒绝必须抛 `REFUSAL_VOCABULARY_INCOMPLETE`，`unknown` 不可达）、`NC-MEMBER grep`（只放宽读 lane → 同一调用成功并泄露植入的外部机密）、`NC-MEMBER glob`（同样放宽 → 列出 lane 外路径）、两条 `-POSITIVE`（未改动向量仍复现 golden 行）、`NC-SHADOW-LOAD-BEARING`（释放 realm 自己的 search shadow → lane 外 grep 成功泄露）、`NC-STDIN-LOAD-BEARING`（同一释放让无 path 的 0 条变成真实命中，证明空结果来自 confined stdin 而非 fixture）。
+
+**合并 master（#802）后的重新测量**（`post-merge-remeasurement.txt`，不靠"大概没变"）：golden 重采两次**逐字节相同**（`OLD-PATH-GOLDEN compare=identical vectors=15 captured=15`）；组合探针不变；三条语义差异**均未改变**；负控仍 GREEN；`ute-retirement-gate --all` 仍拒绝两族。合并冲突仅 workflow/manifest 同一 leg：按**并集**解析（master 的 `product-route-image` token + 本分支 `ute-g1-search` token，两侧 `why` 段落逐字保留），`eb3-ci-required` 通过 ⇒ manifest argv 与 workflow `run:` 行仍逐字节一致。`SESSION_ROUTER_LOG.md` 自动合并后经 `cmp` 验证仍是 master 版本的**字节前缀扩展**（只追加本条，不改写、不缩短）。
+
+**门禁种子变更（本轮必须修，且只能变强）**：SEARCH 行让 `--all` 的 `requested` 从 1 变 2，hosted run 44792229625 的 `ci-census` 因 `requested=1` 红。`scripts/ute-retirement-gate.test.mjs` 的 CLI `--all` 臂改为：从**打印出的** `UTE-RETIREMENT-REFUSED` 行推导族集合（必须恰好 `['fs','search']`）、**逐族钉住各自的代码表**（fs 三码 / search 四码）与各自的 `state=`/`unit=`（`3/4` / `0/2`）、按名断言 search 的成员与三条 `SD-SEARCH-*`、并要求 `SUMMARY requested` 与 `refused` **等于打印出的拒绝行数**（第三个族无法被旧常数静默吸收）。非空洞性实测：`gate-arm-nonvacuity.txt` —— 真账本 GREEN；临时移除 search 行后该臂 RED（`--all must refuse exactly the seeded families; it refused 1`），随后逐字节复原。
+
+**门禁（本机实测）**：`ute-retirement-gate --all` → exit 1，`family=fs` 同三码 `unit=3/4`，`family=search` 四码 `unit=0/2`，`SUMMARY requested=2 allowed=0 refused=2`；`scripts/ute-retirement-gate.test.mjs` 31/31；`lane-suite.test.mjs` 6/6（`UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=PENDING semantic-differences=UNRESOLVED negative-controls=GREEN retirement=FORBIDDEN`）；`eb3-ci-required pass workflows=10`；`test-catalog --max-uncollected 41 --max-excluded 7` refused=0；`eb3-family-definitions`、`ute-family-inventory`、`docs-sync --check`、`git diff --check`、`node --check` 全 0。退役账本新增 `search` 行（`fs` 行**逐字节未动**），族盘点的 readiness 按**实测**跟随（`baseline: complete` / `negativeControls: complete` / `newPath: none`）。
+
+**未触碰**：`packages/**` 产品代码、`tests/ute-g1-fs/**`、`docs/plans/active/**`、上游/host 树、`tests/paths.mjs`；除既有 leg 的一个收集 token 外无 workflow 改动；**未 push master/stable、未 force-push、未合并**。
+
+**明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② 不证明读隔离（拒绝记录只证明"拒绝了 + 无泄漏 token + 树未变"）；③ 无 live boot（C1 host-free）；④ glob 顺序/超限采样、搜索中途取消（只能表达 dispatch 前取消）、调用方 cap（host schema 无 `head_limit`/context/case/multiline）、symlink 逃逸、stream-drain 截断、`--pre`/config 转向、`spillStore` 均未覆盖；⑤ 无 path 的 grep 缺陷是**记录**的产品差异，未修（属产品任务）。
+
 ## 2026-11-21 — UTE-3 / G1-S1 FS PR B2：新路径复现全部 16 向量，删除 newPathPending（draft PR #807）
 
 **分支**：`task/ute3-fs-b2-20261120`（worktree `.worktrees/ute3-fs-b2-20261120`，base `origin/master 6a5d45d30`）。**draft PR #807**，settlement 后转 ready，未合并。

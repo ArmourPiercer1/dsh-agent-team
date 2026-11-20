@@ -665,13 +665,64 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit', 'read_image'])
   assert.equal(payload.verdicts[0].allowed, false)
 
+  // `--all` now grades TWO seeded families (fs + search). The SEARCH row (UTE-3
+  // PR B1) moved this from `requested=1` to `requested=2`, so the arm pins the
+  // NEW seeded state EXACTLY — and derives the summary's counts from the
+  // printed `UTE-RETIREMENT-REFUSED` lines instead of trusting the constant, so
+  // a third family added to the ledger can never be absorbed silently by a
+  // stale number here. Changing a family or its code list means updating THIS
+  // arm: silence is not an option, and a looser match would be the regression.
   const all = run(['--all'])
   assert.equal(all.status, 1)
-  assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=[^\n]*UTE_SEMANTIC_DIFFERENCES_UNRESOLVED/)
-  assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4\/4/)
-  assert.equal(all.stdout.includes('UTE_MEMBER_UNCOVERED'), false, 'no member is uncovered any more')
-  assert.equal(all.stdout.includes('UTE_VECTOR_UNREPRODUCED'), false, 'no vector is unreproduced any more')
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1/)
+  const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
+  assert.deepEqual(
+    refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
+    ['fs', 'search'],
+    `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
+  )
+  const codesFor = (family) => {
+    const line = refusedLines.find((candidate) => candidate.startsWith(`UTE-RETIREMENT-REFUSED family=${family} `))
+    assert.ok(line !== undefined, `no UTE-RETIREMENT-REFUSED line for family=${family}`)
+    const match = line.match(/ codes=(\S+) state=/u)
+    assert.ok(match !== null, `family=${family} line carries no code list: ${line}`)
+    assert.match(line, / unit=(?:\d+\/\d+)$/u, `family=${family} line carries no unit strip: ${line}`)
+    return { line, codes: match[1].split(',').sort() }
+  }
+  // fs — PR B2 reproduced all sixteen vectors, so the coverage axes are complete and the
+  // ONLY remaining refusal is the unapproved difference. Asserted as an exact set: a
+  // regression that drops a member would add a code and red here rather than hide inside
+  // a still-refused row.
+  const fs = codesFor('fs')
+  assert.deepEqual(fs.codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
+  assert.match(fs.line, /state=NOT_RETIREABLE unit=4\/4$/u)
+  // The SEARCH row legitimately still reports both codes (it has no new path at all), so
+  // the assertion is scoped to FS evidence: a finding that names an FS vector or the
+  // read_image member is what must be gone. Scoping by family beats dropping the check —
+  // an unscoped `includes` would either be false for the right reason or pass vacuously.
+  const fsFindings = all.stdout.split('\n').filter((line) => line.includes('FS-') || line.includes('read_image'))
+  assert.equal(
+    fsFindings.some((line) => line.includes('UTE_VECTOR_UNREPRODUCED') || line.includes('term=newPathVerified')),
+    false,
+    `no FS evidence is unreproduced any more: ${JSON.stringify(fsFindings)}`,
+  )
+  // search — its OWN code list: no new path, unresolved blocking differences,
+  // and per-vector/per-member coverage absent on the new-path axis.
+  const search = codesFor('search')
+  assert.deepEqual(search.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.match(search.line, /state=NOT_RETIREABLE unit=0\/2$/u)
+  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"grep\\"/)
+  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"glob\\"/)
+  assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*SR-G1-inlane-match/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-1-grep-path-default/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-2-grep-vcs-ignore/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-3-refusal-surface/)
+  // the summary is DERIVED from the printed refusals, never a constant.
+  const summary = all.stdout.match(/UTE-RETIREMENT-SUMMARY requested=(\d+) allowed=(\d+) refused=(\d+)/u)
+  assert.ok(summary !== null, 'the summary line is absent')
+  assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
+  assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
+  assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)

@@ -1,0 +1,27 @@
+OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b1-20261120/tests/ute-g1-search/golden/old-path.tsv vectors=15 captured=15
+OLD-PATH-COVERAGE grep=9 glob=6 vectors=15
+NEW-PATH-PENDING all (no new-path vector is claimed by this lane)
+NC NC-HARNESS-BITES ok
+NC NC-CATEGORY-TOTAL ok
+NC-MEMBER-POSITIVE grep ok (the unmodified SR-G3-outside-denied row still reproduces)
+NC NC-MEMBER grep ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked content UTE3_SEARCH_OUTLANE_SECRET_5be1)
+NC-MEMBER-POSITIVE glob ok (the unmodified SR-L2-outside-denied row still reproduces)
+NC NC-MEMBER glob ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked path abs:<scratch>/<world>/outside/secret.txt)
+NC NC-SHADOW-LOAD-BEARING ok
+NC NC-STDIN-LOAD-BEARING ok
+NC-VERDICT GREEN controls=8 failed=0
+UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=PENDING semantic-differences=UNRESOLVED negative-controls=GREEN retirement=FORBIDDEN
+✔ old path: every corpus vector reproduces its golden row (23214.994777ms)
+✔ golden: both members are covered and every refusal is a closed category (0.514113ms)
+✔ the new path is still pending, pinned by an explicit id list (0.765309ms)
+✔ golden metadata and coverage agree with the fixture (0.614283ms)
+✔ negative controls: the family-level and per-member mutations are GREEN (13426.791843ms)
+✔ VERDICT: the Search family is NOT retireable from this lane (0.219225ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36725.432116
