@@ -1,13 +1,15 @@
-$ git diff origin/master HEAD --stat     # HEAD = 3e09d08ff3410424659869b07505ccda3d973513 (the UTE-0 content commit)
+$ git diff origin/master HEAD --stat     # HEAD = 436098521394a7b9358e4820f4c54049c6c6850a (branch content head at the time of this snapshot)
  .github/workflows/census-runtime.yml               |   2 +-
+ dev/agent-workflow/SESSION_ROUTER_LOG.md           |  16 +
  .../evidence/ute0-contract-20261120/README.md      |  80 ++++
  .../gate-allow-synthetic.txt                       |   4 +
  .../ute0-contract-20261120/gate-refusal.txt        |  35 ++
  .../gate-unknown-and-all.txt                       |  11 +
+ .../evidence/ute0-contract-20261120/isolation.txt  |  46 ++
  .../evidence/ute0-contract-20261120/repo-gates.txt |  48 ++
  .../evidence/ute0-contract-20261120/suite.txt      |  36 ++
  dev/agent-workflow/ledgers/ute-retirement.json     |  78 ++++
- dev/ci/eb3-ci-manifest.json                        |   3 +-
+ dev/ci/eb3-ci-manifest.json                        |   5 +-
  docs/plans/memo/ute-g1-20261120/CONTRACT.md        | 228 ++++++++++
  docs/plans/memo/ute-g1-20261120/README.md          | 179 ++++++++
  docs/plans/memo/ute-g1-20261120/RETIREMENT.md      | 229 ++++++++++
@@ -19,14 +21,16 @@ $ git diff origin/master HEAD --stat     # HEAD = 3e09d08ff3410424659869b07505cc
  scripts/fixtures/ute-retirement-selftest/sem.md    |   2 +
  scripts/ute-retirement-gate.mjs                    | 488 +++++++++++++++++++++
  scripts/ute-retirement-gate.test.mjs               | 340 ++++++++++++++
- 20 files changed, 1824 insertions(+), 2 deletions(-)
+ 22 files changed, 1887 insertions(+), 3 deletions(-)
 
 $ git diff origin/master HEAD --name-status
 M	.github/workflows/census-runtime.yml
+M	dev/agent-workflow/SESSION_ROUTER_LOG.md
 A	dev/agent-workflow/evidence/ute0-contract-20261120/README.md
 A	dev/agent-workflow/evidence/ute0-contract-20261120/gate-allow-synthetic.txt
 A	dev/agent-workflow/evidence/ute0-contract-20261120/gate-refusal.txt
 A	dev/agent-workflow/evidence/ute0-contract-20261120/gate-unknown-and-all.txt
+A	dev/agent-workflow/evidence/ute0-contract-20261120/isolation.txt
 A	dev/agent-workflow/evidence/ute0-contract-20261120/repo-gates.txt
 A	dev/agent-workflow/evidence/ute0-contract-20261120/suite.txt
 A	dev/agent-workflow/ledgers/ute-retirement.json
@@ -43,4 +47,9 @@ A	scripts/fixtures/ute-retirement-selftest/sem.md
 A	scripts/ute-retirement-gate.mjs
 A	scripts/ute-retirement-gate.test.mjs
 
-# Note: this file (isolation.txt) is the only path added AFTER that commit (the evidence snapshot itself); it is therefore not listed above. Everything listed is either a NEW file or an ADDITIVE argv line in the two CI files; nothing was deleted and no existing script behaviour changed.
+# This is the complete UTE-0 branch change set. Every path is NEW except three additive edits:
+#   .github/workflows/census-runtime.yml  (one token appended to an existing run: argv)
+#   dev/ci/eb3-ci-manifest.json           (the same token in the mirrored check[]; + one sentence in why)
+#   dev/agent-workflow/SESSION_ROUTER_LOG.md (one appended entry; append-only log)
+# No path was deleted, no existing script behaviour changed, no upstream file touched.
+# The stat was taken with this file at its previous revision, so its own line below is stale by one edit; it is the only such path.
