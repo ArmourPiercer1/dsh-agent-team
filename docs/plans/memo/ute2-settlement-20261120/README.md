@@ -1,21 +1,24 @@
 # UTE-2 — Execution Settlement S1：一次物理执行，一份规范事实
 
 **日期**：2026-11-20（真实 UTC；读写时锚点）
-**分支**：`task/ute2-settlement-20261120`（worktree `.worktrees/ute2-settlement-20261120`，base `origin/master ef7e3af0088bf3af8fc765ce27951f9dbad92892`）
+**分支**：`task/ute2-settlement-20261120`（worktree `.worktrees/ute2-settlement-20261120`，base `origin/master 06de9751a`，已合入本分支）
 **层次**：UTE G1 / 工作包 3（`docs/plans/memo/unified-tool-execution-dsh-022-20261114/07-SETTLEMENT-RECOVERY.md` §3–§6 与 `06-STATE-MACHINES.md` §3 的 S1 部分）
 **证据**：`dev/agent-workflow/evidence/ute2-settlement-20261120/`（逐字 transcript + 变异记录）
-**结论先行**：一个**加成式、未接线**的产品模块 `packages/runtime/settlement/execution-settlement.ts` 已落地并公开导出为 `@dsh-agent-team/runtime/settlement`；它把一次物理执行写成**恰好一条**规范事实，按 `ExecutionId` 幂等，重复相同事实是具名 `DUPLICATE_SETTLEMENT` no-op，不同事实是具名 `SETTLEMENT_CONFLICT` 拒绝（无 last-writer-wins），非法状态跃迁按**名字**拒绝（`ILLEGAL_TRANSITION`）；Stop 在效果前 / 中 / 后各自有正确的终态；**真实 SIGKILL 子进程**恢复为 `UNKNOWN`（不是 `COMPLETED`，不是 `REFUSED`），并点名缺失的证据；模块**没有**任何签发/否决/扩权路径（结构测试 + 变异负控）；记录以“临时文件 + fsync + 原子 rename”的**带校验和信封**发布，截断/篡改/半写永远不会被读成完整记录。7 个变异负控全部把各自的控制打红。**它没有被接进任何生产路径**；S2（durable-before-Host-returns）明确**未**声明。
+**结论先行**：一个**加成式、未接线**的产品模块 `packages/runtime/settlement/execution-settlement.ts`（store）与其 UTE-1 合同适配器 `packages/runtime/settlement/writer-adapter.ts` 已落地并公开导出为 `@dsh-agent-team/runtime/settlement`；它把一次物理执行写成**恰好一条**规范事实，按 `ExecutionId` 幂等，重复相同事实是具名 `DUPLICATE_SETTLEMENT` no-op，不同事实是具名 `SETTLEMENT_CONFLICT` 拒绝（无 last-writer-wins），非法状态跃迁按**名字**拒绝（`ILLEGAL_TRANSITION`）；Stop 在效果前 / 中 / 后各自有正确的终态；**真实 SIGKILL 子进程**恢复为 `UNKNOWN`（不是 `COMPLETED`，不是 `REFUSED`），并点名缺失的证据；模块**没有**任何签发/否决/扩权路径（结构测试 + 变异负控）；记录以“临时文件 + fsync + 原子 rename + **父目录 fsync**”的**带校验和信封**发布，截断/篡改/半写永远不会被读成完整记录；`recordAdmission` 返回即代表准入事实已耐久（返回后立刻 SIGKILL 也不会丢、不会变成 COMPLETED）；每个 root 有**排他写者锁**（活着的异进程 = 具名 `SETTLEMENT_WRITER_CONFLICT`，可证明已死的 pid = 具名证据行后回收）。合同适配器实现 UTE-1 §3 的 `ExecutionSettlementWriter`（`record/read/listUnsettled/projectControlResult`），`projectControlResult` 只是既有 `ControlService.recordExecutionResult` 结果的**读兼容投影**，不写第二权威、不伪造 `requestId`。15 个变异负控全部把各自的控制打红（20/20 用例）。**它没有被接进任何生产路径**；S2（durable-before-Host-returns）明确**未**声明，且被显式记为 `CORE_SEAM_BLOCKER`。
 
 ## 1. 交付物与“未接线”声明
 
 | 文件 | 性质 |
 | --- | --- |
 | `packages/runtime/settlement/execution-settlement.ts` | 新模块（记录器 + 原子持久化 + 状态机） |
-| `packages/runtime/settlement/index.ts` | 公开入口（`export ... from './execution-settlement.js'`） |
+| `packages/runtime/settlement/writer-adapter.ts` | UTE-1 §3 合同适配器（结构类型 + store 转移派生；**零运行时 import**） |
+| `packages/runtime/settlement/index.ts` | 公开入口（store + adapter 的加成式 re-export） |
 | `packages/runtime/package.json` | **加成式** `exports["./settlement"]`（不改任何既有子路径） |
 | `packages/runtime/tsconfig{,.build}.json` | 仅把 `settlement` 加入 include（typecheck + build 覆盖；与 `review-wake` 同一先例） |
-| `tests/ute2-settlement/settlement.test.mjs` | 主套件（13 个 `node:test` 用例，host-free） |
-| `tests/ute2-settlement/lib/mutations.mjs` | 变异负控（7 个 mutant + 7 个公开面场景） |
+| `tests/ute2-settlement/settlement.test.mjs` | 主套件（20 个 `node:test` 用例，host-free；含 adapter / fsync / 锁 / durable-admission 崩溃窗） |
+| `tests/ute2-settlement/lib/mutations.mjs` | 变异负控（15 个 mutant + 15 个公开面场景，含 `target:'adapter'`） |
+| `packages/testkit/test/p4t6-bookings/ute2settlement.json` | p4t6 冻结扫描的 lane booking（3 个 paths，1519→1522） |
+| `dev/agent-workflow/evidence/ute2-settlement-20261120/{CRASH-WINDOW,WRITER-LOCK,FSYNC-ORDERING,P4T6}.txt` | 本轮新增测量（真实子进程 SIGKILL / 锁冲突与回收 / fsync 顺序 / p4t6 20/20） |
 | `.github/workflows/census-runtime.yml` + `dev/ci/eb3-ci-manifest.json` | 套件加入 census “next host lane” argv；两侧 argv 逐字一致（C-NH1 从 manifest 派生校验） |
 
 **未接线在本 PR 中是事实，不是省略**：全仓没有任何生产文件 import `settlement`；
@@ -62,6 +65,10 @@ ADMITTED ──enterRunning──▶ RUNNING ──settle──▶ COMPLETED
    `{decisionId, decisionDigest(64-hex sha256), decision:'allow'|'deny', decisionKind, subjectExecutionId}`，
    拒绝缺少/伪造摘要的引用（`SETTLEMENT_ADMISSION_REFERENCE_INVALID`）。它与引用不一致时拒绝
    （`SETTLEMENT_ADMISSION_MISMATCH`）——这是**记录一致性**检查，不是重新裁决。
+   **引用型准入**（`admissionKind: 'control-request-reference' | 'no-control-request'`）只为合同事实而存在：
+   它只绑定 `requestIds`（或“本执行没有任何 control request”），**不携带 `decision`**，因此适配器
+   不需要、也不被允许为它没观察到的裁决编一个 allow/deny。`REFUSED` 可以引用 deny，也可以引用
+   引用型准入；它**永远不能**与记录为 `allow` 的准入共存（`SETTLEMENT_ADMISSION_MISMATCH`）。
 3. **同一 ExecutionId 幂等**。相同事实重复写 → 同一条记录 + `DUPLICATE_SETTLEMENT`；
    不同事实 → `SETTLEMENT_CONFLICT`，原记录字节不变（测试比较写前/写后文件字节）。
 4. **越权归属拒绝**。引用里的 `subjectExecutionId`、观察里的 `executionId` 必须等于本记录的
@@ -77,6 +84,13 @@ ADMITTED ──enterRunning──▶ RUNNING ──settle──▶ COMPLETED
 7. **记录自身崩溃安全**（见 §5）。
 8. **读回不信任磁盘**。信封 schema、`sha256` 校验和、payload 结构、状态链、身份归属全部复验；
    任何一项失败 = `SETTLEMENT_CORRUPT`，绝不“当作不存在”或“当作完整”。
+9. **合同写入面是适配器，不是第二权威**（`writer-adapter.ts`）。它只导出
+   `createExecutionSettlementWriter(store, clock?)`，结构上实现 UTE-1 §3 的
+   `record/read/listUnsettled/projectControlResult`；**零运行时 import**（类型 import 在运行时被擦除），
+   因此既 import 不到 `packages/runtime/control`，也 import 不到 store 的裁决词汇。`record` 只做
+   “事实 → store 转移”的派生；第二次终态是 `DUPLICATE_SETTLEMENT`（同核）或 `SETTLEMENT_CONFLICT`
+   （不同核），跨 root/agent 是既有的 `SETTLEMENT_CROSS_WIRED`。`listUnsettled` 是 S1 完整性面
+   （准入已耐久、尚无终态事实）。
 
 ## 4. 为什么 `UNKNOWN` 是一等终态
 
@@ -111,7 +125,15 @@ S1 的定义（UTE-Prep 裁决 2 / S1.2）是“进入执行阶段的调用最�
    序列化差异。
 3. 写到**私有临时文件** `<target>.<pid>.<n>.tmp`（`O_EXCL`、0600），`write` → `fsync` → `close`。
 4. `rename(temp, target)` 原子发布；失败时清理 temp 并抛 `SETTLEMENT_WRITE_FAILED`。
-5. 读侧只认 `<ExecutionId>.settlement.json`：`.tmp` 文件对 `read`/`list` **不可见**；
+5. **父目录 fsync**：`fsync(dir)` 成功之后调用才返回。失败 = 具名
+   `SETTLEMENT_DIRECTORY_FSYNC_FAILED`（记录可能已 rename，但绝不冒充“已耐久”）。
+   这正是 `recordAdmission` 的耐久承诺：返回即意味着“冷读者一定能看到 ADMITTED”。
+6. **排他写者锁**：`<dir>/.settlement-writer.lock`（JSON `{pid,bootId,host,acquiredAt}`，`O_EXCL`，
+   fsync 文件 + 目录）。同 pid + 同 boot = 可重入（冷读者不是第二写者）；活着的异 pid = 
+   `SETTLEMENT_WRITER_CONFLICT`；已死 pid（或不同 boot，防 pid 复用）= 回收，并在 stdout 打出
+   `UTE2-WRITER-LOCK reclaimed previousPid=… previousBootId=… at=…`。每次写前重读锁；锁被外部移除
+   或替换时写操作以 `SETTLEMENT_WRITER_CONFLICT` 停止，而不是与新主人赛跑。
+7. 读侧只认 `<ExecutionId>.settlement.json`：`.tmp` 文件对 `read`/`list` **不可见**；
    截断 JSON、缺信封、校验和不符、结构/状态链/归属非法 → `SETTLEMENT_CORRUPT`（`list` 同样拒绝，
    不会静默跳过）。
 
@@ -130,8 +152,16 @@ S1 的定义（UTE-Prep 裁决 2 / S1.2）是“进入执行阶段的调用最�
 | 5 | 两笔结算串线 | 接受别家执行的准入/观察 | `SETTLEMENT_CROSS_WIRED`，零写入 | `ignore-execution-identity` | RED（accepted） |
 | 6 | 记录半写 / 篡改 | 读成完整记录 | `SETTLEMENT_CORRUPT` | `accept-bad-checksum` | RED（read as complete） |
 | 7 | 模块面提供 grant | 暴露 `grantExecution` 一类函数 | 公开面无 grant 形状函数，无裁决构造器 | `expose-a-grant` | RED（grant-shaped export(s)） |
+| 8 | 适配器重复终态 | 第二次写回 `recorded:true` | `DUPLICATE_SETTLEMENT`，字节不变 | `adapter-duplicate-recorded-true` | RED（second=true） |
+| 9 | S1 完整性面 | `listUnsettled` 永远为空 | 准入未结算时列出该 ExecutionId | `adapter-list-unsettled-empty` | RED（unsettled=[]） |
+| 10 | 投影不伪造 | 歧义三元组取第一个 `requestId` | `PROJECTION_AMBIGUOUS`，无 `requestId` | `adapter-fabricate-request-id` | RED（requestId=req-ute2-1） |
+| 11 | 投影不撒谎 | 结果不一致仍返回 `recorded:true` | `PROJECTION_OUTCOME_MISMATCH` | `adapter-accept-outcome-mismatch` | RED（mismatched=true） |
+| 12 | 适配器归属 | 接受异 root/agent 的事实 | `SETTLEMENT_CROSS_WIRED` | `adapter-ignore-identity` | RED（true/undefined） |
+| 13 | 活写者排他 | 把活锁当陈旧并抢 root | 真实第二进程 `SETTLEMENT_WRITER_CONFLICT` | `accept-live-foreign-writer` | RED（子进程 LOCK=acquired） |
+| 14 | 死写者回收 | 死 pid 也判冲突（重启不可用） | 回收并点名 `previousPid` | `never-reclaim-dead-writer` | RED（not reclaimed） |
+| 15 | 父目录耐久 | rename 后不 fsync 就返回 | 目录 fsync 后才返回；失败具名 | `skip-directory-fsync` | RED（fsync calls=0） |
 
-套件先跑**正半场**：7 个场景在真实模块上全 GREEN（防止“场景因无关原因失败”造成的假红）；
+套件先跑**正半场**：15 个场景在真实模块上全 GREEN（防止“场景因无关原因失败”造成的假红）；
 再逐个跑变异、断言 RED，并拒绝 byte-identical 的“变异”（`noop-mutation` 被 `assert.rejects` 拒绝，
 证明变异器本身不是空的）。逐字 transcript 见
 `dev/agent-workflow/evidence/ute2-settlement-20261120/SUITE.txt`。
@@ -140,7 +170,10 @@ S1 的定义（UTE-Prep 裁决 2 / S1.2）是“进入执行阶段的调用最�
 
 | 门 | 结果 |
 | --- | --- |
-| 套件 `node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs` | 13/13 pass；`UTE2-MUTANTS total=7 red=7 scenarios=7` |
+| 套件 `node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs` | **20/20 pass**；`UTE2-MUTANTS total=15 red=15 scenarios=15` |
+| p4t6 `./node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts` | **20/20 pass**（booking lane `UTE2SETTLEMENT`，3 paths，1519→1522） |
+| `node scripts/ute-retirement-gate.mjs --all` | `UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1`；family `fs` 的 `UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`（本 PR 不请求退役，逐字见 GATES.txt） |
+| `node scripts/check-artifacts-committed.mjs` | 同一提交集内 `verdict=ok`（见 GATES.txt 本轮条目） |
 | `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=881 … UNCOLLECTED 41 EXCLUDED 14 refused=0 findings=0` |
 | `node --test scripts/test-catalog.test.mjs` | 28/28 |
 | `dispatch-tests --check` | `PASS legs=18 bad=0` |
@@ -161,13 +194,18 @@ S1 的定义（UTE-Prep 裁决 2 / S1.2）是“进入执行阶段的调用最�
 2. **真实 SIGKILL 的覆盖面**：本机以独立 `node` 子进程做了真实 SIGKILL（硬死亡、无 cleanup、
    `RUNNING` 已 fsync），但**没有**在“真实 DSH Host 正在执行原生工具、并且同时承受负载/并发”的
    条件下测过；也没有验证宿主自身（而非本模块）在 SIGKILL 后是否还会写第二条事实。
-3. **S2 未声明**。模块不保证“durable commit 早于 Host 把 tool/result 返回给模型”；S2 需要
-   `ToolExecutor` / `ToolExecutionPipeline` 的可等待公开点（G1-S5 的探测），本 PR 不冒充。
+3. **S2 未声明 = `CORE_SEAM_BLOCKER`**。模块不保证“durable commit 早于 Host 把 tool/result 返回给模型”；
+   S2 需要一个**公开可等待**的 Host seam（在耐久写之后）。今天可测的调用点都是 fire-and-forget
+   （`tools/result` 是发射，不是耐久），因此 S2 的正确输出是 `CORE_SEAM_BLOCKER`，**不是** fork，
+   **不是** 在 `tools/result` handler 里假装排序。
 4. **进程内信任边界**。`decisionDigest` 的**内容真实性**由调用方/ControlService 保证：本模块只能校验
-   它是 64-hex 并与同一引用一同复制。它不读取 ControlService 存储，也不验证该摘要对应哪条真实裁决——
+   它是 64-hex 并与同一引用一同复制；适配器路径只用**引用型**准入，因此它连“裁决摘要”都不声称。它不读取 ControlService 存储，也不验证该摘要对应哪条真实裁决——
    这是“不建第二权威”的代价，必须由 adapter 的可信来源补上。
 5. **持久化介质**：原子 rename 依赖同一文件系统的 POSIX 语义（本机 WSL2 ext4 实测）；网络文件系统 /
-   跨设备 rename / 断电时目录项未落盘的极端情形未测。fsync 覆盖文件内容，**未** fsync 父目录。
+   跨设备 rename / 真断电（而非进程 SIGKILL）的极端情形未测。父目录 fsync 已实现并由注入见证测试
+   证明“rename 之后、返回之前”发生；但**硬件/内核缓存层**的真实断电保证不在本机能证明的范围。
+   写者锁的“死亡”判定依赖 `kill(pid,0)` + `/proc/sys/kernel/random/boot_id`；非 Linux 或拿不到
+   boot id 时退化为 `boot-id-unavailable`，此时**不**把异 boot 锁当作可回收，宁可拒绝。
 6. **观测词汇的边界**：`EffectKind` 是 S1 的最小闭集（file-* / process-* / network-connect），
    与 `contract-oracle.ts` 的 effect kind 同向但尚未做逐字合并；`read` 的可观测性仍是 M7-C 的
    `CLAIM_NOT_OBSERVABLE`，本模块不声称能证明“没有读”。

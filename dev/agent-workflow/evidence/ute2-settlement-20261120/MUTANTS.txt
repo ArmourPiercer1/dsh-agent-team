@@ -1,8 +1,31 @@
+UTE2-CONTROL duplicate-conflict GREEN conflicting second settle -> SETTLEMENT_CONFLICT
+UTE2-CONTROL illegal-transition GREEN COMPLETED -> RUNNING -> ILLEGAL_TRANSITION; state now COMPLETED
+UTE2-CONTROL recovery-unknown GREEN recovered state -> UNKNOWN (must be UNKNOWN, never COMPLETED/REFUSED)
+UTE2-CONTROL effect-without-observation GREEN observed-effect claim with zero observations -> EFFECT_CLAIM_WITHOUT_OBSERVATION
+UTE2-CONTROL cross-wired GREEN execution A carrying execution B's admission reference -> SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL corrupt-record GREEN checksum-mismatched record read -> SETTLEMENT_CORRUPT
+UTE2-CONTROL adapter-duplicate GREEN first=true second=false/DUPLICATE_SETTLEMENT conflict=false/SETTLEMENT_CONFLICT
+UTE2-CONTROL adapter-unsettled GREEN record=true unsettled=["exec-ute2-adapter-unsettled"] otherRoot=0 settled=true after=0 cold=completed
+UTE2-CONTROL projection-fabricate GREEN ambiguous projection -> recorded=false requestId=undefined reason=PROJECTION_AMBIGUOUS
+UTE2-CONTROL projection-outcome-mismatch GREEN matched=true/req-ute2-1 mismatched=false/PROJECTION_OUTCOME_MISMATCH
+UTE2-CONTROL adapter-cross-wire GREEN foreign-root fact -> false/SETTLEMENT_CROSS_WIRED
+UTE2-CONTROL writer-lock-conflict GREEN second process while acquired holder alive -> LOCK=SETTLEMENT_WRITER_CONFLICT
+UTE2-CONTROL writer-lock-reclaim GREEN stale lock of dead pid 58 -> reclaimed previousPid=58
+UTE2-CONTROL directory-fsync GREEN recordAdmission durable-before-return -> directory fsync calls=1
+UTE2-CONTROL authority-surface GREEN no grant-shaped export
 UTE2-MUTANT conflict-becomes-last-writer-wins RED conflicting second settle -> accepted (last-writer-wins)
 UTE2-MUTANT illegal-transition-allowed RED COMPLETED -> RUNNING -> accepted; state now CORRUPT:SETTLEMENT_CORRUPT
 UTE2-MUTANT fabricate-completed-on-recovery RED recovered state -> COMPLETED (must be UNKNOWN, never COMPLETED/REFUSED)
 UTE2-MUTANT trust-effect-claim RED observed-effect claim with zero observations -> accepted
 UTE2-MUTANT ignore-execution-identity RED execution A carrying execution B's admission reference -> accepted
 UTE2-MUTANT accept-bad-checksum RED checksum-mismatched record read -> read as complete
+UTE2-MUTANT adapter-duplicate-recorded-true RED first=true second=true/undefined conflict=false/SETTLEMENT_CONFLICT
+UTE2-MUTANT adapter-list-unsettled-empty RED record=true unsettled=[] otherRoot=0 settled=true after=0 cold=completed
+UTE2-MUTANT adapter-fabricate-request-id RED ambiguous projection -> recorded=true requestId=req-ute2-1 reason=undefined
+UTE2-MUTANT adapter-accept-outcome-mismatch RED matched=true/req-ute2-1 mismatched=true/undefined
+UTE2-MUTANT adapter-ignore-identity RED foreign-root fact -> true/undefined
+UTE2-MUTANT accept-live-foreign-writer RED second process while acquired holder alive -> UTE2-WRITER-LOCK reclaimed previousPid=10 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-20T09:41:29.841Z
+UTE2-MUTANT never-reclaim-dead-writer RED stale lock of dead pid 74 -> SETTLEMENT_WRITER_CONFLICT (not reclaimed)
+UTE2-MUTANT skip-directory-fsync RED recordAdmission durable-before-return -> directory fsync calls=0
 UTE2-MUTANT expose-a-grant RED grant-shaped export(s): grantExecution
-UTE2-MUTANTS total=7 red=7 scenarios=7
+UTE2-MUTANTS total=15 red=15 scenarios=15

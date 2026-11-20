@@ -1,0 +1,16 @@
+# UTE-2 round-3 p4t6 frozen-denylist scan booking
+
+$ ./node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+
+
+ ✓ packages/testkit/test/p4t6-session-event-scan.test.ts (20 tests) 8ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  17:41:30
+   Duration  480ms (transform 76ms, setup 0ms, import 380ms, tests 8ms, environment 0ms)
+
+
+Booking: packages/testkit/test/p4t6-bookings/ute2settlement.json
+  lane=UTE2SETTLEMENT paths=3 expectedDelta 1519 -> 1522 (3 = 1522 - 1519)
+  unbooked measurement cited verbatim: "scanner counts 1522, ledger derives 983 + 538 = 1521"

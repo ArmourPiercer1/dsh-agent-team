@@ -176,3 +176,45 @@ DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok c
 [exit 0]
 $ git diff --check
 [exit 0]
+
+==========================================================================
+ROUND 3 (2026-11-20): adapter + durability + writer lock
+==========================================================================
+
+$ node node_modules/typescript/bin/tsc -p packages/runtime/tsconfig.build.json
+[exit 0]
+
+$ pnpm --filter @dsh-agent-team/runtime run build
+[exit 0]  ($ tsc -p tsconfig.build.json)
+
+$ node --test --test-reporter=spec tests/ute2-settlement/settlement.test.mjs
+ℹ tests 20
+ℹ pass 20
+ℹ fail 0
+UTE2-MUTANTS total=15 red=15 scenarios=15
+[exit 0]
+
+$ ./node_modules/.bin/vitest run packages/testkit/test/p4t6-session-event-scan.test.ts
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+[exit 0]
+
+$ node scripts/ute-retirement-gate.mjs --all
+UTE-RETIREMENT-GATE ledger=dev/agent-workflow/ledgers/ute-retirement.json schema=ute-retirement/1 families=1
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference lane-refusal-code has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)"
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference refusal-observation-shape has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)"
+UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1
+[exit 0]  (the refusal is the ledger state, not a gate crash; this PR requests no retirement)
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+[exit 0]
+
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2100 glue=113
+[check-artifacts-committed] OK: 2100 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+[exit 0]
+
+$ git diff --check
+[exit 0]
