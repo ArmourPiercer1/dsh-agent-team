@@ -19,13 +19,44 @@
  *   - It does not route production traffic, does not replace the governed
  *     route-C path and does not delete or modify any existing path.
  *
- * WHY THE BINDING OWNS A SCOPE (UTE-1 §3). A binding has an explicit lifetime:
- * created (`open`), used, disposed (once). Disposal is monotonic and every
- * later target-bearing operation is refused with the NAMED reason
- * `scope-disposed` instead of silently reaching the host provider or crashing
- * on a torn-down service. The scope is also the only place the binding's lane
- * lives: two overlapping scopes never share a lane, and replacing a scope's
- * provider never resurrects the previous lane.
+ * WHY THE BINDING OWNS A SCOPE (UTE-1 §3), AND WHAT DISPOSAL MEANS.
+ * A binding has an explicit, monotonic lifetime:
+ *
+ *     active ──dispose()──► draining ──drain complete + release resolved──► released
+ *                                    └──timeout, or a release step failed──► termination-unconfirmed
+ *
+ * Three facts that used to be conflated are now three receipt fields, because a
+ * caller who needs one of them must not have to infer the other two:
+ *
+ *   - `newOperationsRefused` — a call arriving after `dispose()` started is
+ *     refused by name: `scope-draining` while draining, `scope-disposed` after
+ *     `released`, `scope-termination-unconfirmed` after an unconfirmed stop.
+ *     This is the one thing this binding proves about FUTURE work.
+ *   - `drained` — every operation the binding ADMITTED has finished (success,
+ *     throw, or a refusal after admission) before the receipt was produced.
+ *     `dispose()` waits for that up to `drainTimeoutMs`.
+ *   - `releaseConfirmed` — the tools/provider fibers this mount created were
+ *     disposed and none of those disposals threw. Only `released` may claim it.
+ *
+ * RESPONSIBILITY BOUNDARY (contract, not a caveat). This binding owns exactly
+ * two things: (a) refusing new operations once disposal starts, and (b) counting
+ * and draining the operations it admitted. Terminating a provider that will not
+ * drain is the HOST/lifecycle owner's job unless that provider honours the
+ * injected abort signal; this binding does not kill fibers out from under a
+ * parked call. Correspondingly, a Scope receipt is evidence ABOUT THE BINDING —
+ * never proof that an OS effect did not happen. `drained: true` says the
+ * admitted promise-shaped operations returned; it does not say the kernel did
+ * nothing, and it does not cover a stream that outlives its iterator, a watch
+ * registration, or any effect started by code the binding did not admit.
+ *
+ * DOUBLE DISPOSE IS IDEMPOTENT AND TERMINAL. The first call performs the
+ * transition and memoises its receipt; every later call returns the SAME
+ * terminal facts with `changed:false, alreadyDisposed:true`. A binding that
+ * ended `termination-unconfirmed` never later reports `released`.
+ *
+ * The scope is also the only place the binding's lane lives: two overlapping
+ * scopes never share a lane, and replacing a scope's provider never resurrects
+ * the previous lane.
  *
  * HOST GENERATION IS PINNED AT MOUNT. `mountNativeFsBinding` records the host
  * generation the caller expects and refuses a different one by name
@@ -67,8 +98,12 @@ export const FS_BINDING_REFUSAL = Object.freeze({
     LANE_WRITE: 'lane-write',
     /** A mutation of an existing target that the read axis does not cover. */
     WRITE_REQUIRES_READ: 'write-requires-read',
-    /** The binding's scope was disposed; the operation is refused by name. */
+    /** The binding's scope is DRAINING: disposal started, admitted work is unfinished. */
+    SCOPE_DRAINING: 'scope-draining',
+    /** The binding's scope is released; the operation is refused by name. */
     SCOPE_DISPOSED: 'scope-disposed',
+    /** The binding's scope stopped with `termination-unconfirmed`; refuse by that name. */
+    SCOPE_TERMINATION_UNCONFIRMED: 'scope-termination-unconfirmed',
     /** The provider instance does not belong to a live binding scope. */
     SCOPE_UNKNOWN: 'scope-unknown',
 });
@@ -83,6 +118,17 @@ export class NativeFsBindingError extends Error {
 }
 /** Reserved: the host code a lane refusal carries (see the module header). */
 const LANE_REFUSAL_CODE = 'FS_PERMISSION_DENIED';
+/**
+ * Timers, read OFF `globalThis` through a local structural cast.
+ *
+ * WHY: this module compiles under `lib: ["ES2022"]` with no DOM and no ambient
+ * node types, so the bare identifiers `setTimeout`/`clearTimeout` are TS2304
+ * there (the same class of defect as the earlier `AbortSignal` one). Reading
+ * them as properties of `globalThis` adds no ambient name, keeps the module
+ * dependency-free, and degrades to "no bound" only in a runner that has no
+ * timers at all — in which case the drain waits exactly as long as the work.
+ */
+const TIMERS = globalThis;
 /** Reserved: the host code a write-without-read refusal carries. */
 const WRITE_REQUIRES_READ_CODE = 'FS_NOT_OBSERVED';
 /** Is `child` the root or beneath it? Lexical, `..`-escaping, never absolute. */
@@ -188,8 +234,25 @@ export function createNativeFsBindingScope(input) {
         write: Object.freeze([...base.write]),
     });
     const facts = [];
-    /** Mutable lifecycle state, closed over by the class (never a private field). */
-    const state = { status: 'open', reason: 'open', disposedAt: null };
+    /** How long disposal waits for admitted work before it stops confirming. */
+    const DEFAULT_DRAIN_TIMEOUT_MS = 5_000;
+    const drainTimeoutMs = typeof input.drainTimeoutMs === 'number' && Number.isFinite(input.drainTimeoutMs)
+        ? Math.max(0, input.drainTimeoutMs)
+        : DEFAULT_DRAIN_TIMEOUT_MS;
+    /**
+     * Mutable lifecycle state, closed over by the class (never a private field):
+     * the admission guard reads it synchronously, and the in-flight counter is the
+     * ONLY thing disposal waits on.
+     */
+    const state = {
+        status: 'active',
+        reason: 'active',
+        disposedAt: null,
+        inFlight: 0,
+        inFlightAtDispose: 0,
+        receipt: null,
+        drainWaiters: [],
+    };
     function pushFact(method, axis, path, refusal) {
         const fact = Object.freeze({
             schema: NATIVE_FS_BINDING_FACT_SCHEMA,
@@ -217,15 +280,75 @@ export function createNativeFsBindingScope(input) {
         throw new FsError(`${label}: ${refusal} — '${method}' on ${JSON.stringify(path)} is outside the declared ${axis} lane`
             + ` (binding ${JSON.stringify(id)}, host ${JSON.stringify(generation)})`, code);
     }
+    /** The refusal a NEW operation receives in the current lifecycle state. */
+    function lifecycleRefusal() {
+        if (state.status === 'active')
+            return null;
+        if (state.status === 'draining')
+            return FS_BINDING_REFUSAL.SCOPE_DRAINING;
+        if (state.status === 'released')
+            return FS_BINDING_REFUSAL.SCOPE_DISPOSED;
+        return FS_BINDING_REFUSAL.SCOPE_TERMINATION_UNCONFIRMED;
+    }
     function assertLive(operation) {
-        if (state.status === 'open')
+        const refusal = lifecycleRefusal();
+        if (refusal === null)
             return;
-        // The scope is closed. Record the refusal on the SAME fact stream so the
-        // evidence can prove no host effect followed a disposal.
-        pushFact(operation, 'read', '', FS_BINDING_REFUSAL.SCOPE_DISPOSED);
-        throw new FsError(`${label}: ${FS_BINDING_REFUSAL.SCOPE_DISPOSED} — '${operation}' on binding ${JSON.stringify(id)}`
-            + ` was refused: the scope was disposed (${state.reason}) at ${String(state.disposedAt)};`
-            + ' a disposed binding never falls back to the host provider', LANE_REFUSAL_CODE);
+        // A lifecycle refusal is NOT a lane fact: no admission decision was
+        // evaluated, so the fact stream stays a pure record of lane decisions. The
+        // refusal's evidence is the thrown name plus the receipt.
+        throw new FsError(`${label}: ${refusal} — '${operation}' on binding ${JSON.stringify(id)} was refused:`
+            + ` the scope is ${state.status} (${state.reason})`
+            + (state.disposedAt === null ? '' : ` since ${state.disposedAt}`)
+            + '; a non-active binding never falls back to the host provider', LANE_REFUSAL_CODE);
+    }
+    function enterAdmitted() {
+        state.inFlight += 1;
+    }
+    function leaveAdmitted() {
+        state.inFlight -= 1;
+        if (state.inFlight === 0 && state.drainWaiters.length > 0) {
+            const waiters = state.drainWaiters.splice(0);
+            for (const wake of waiters)
+                wake();
+        }
+    }
+    /**
+     * Run one admitted, promise-shaped operation: refuse if not `active`, count it
+     * BEFORE the first await, and decrement on EVERY exit (success, throw, or a
+     * refusal raised after admission). The counter is what `dispose()` drains.
+     */
+    async function guarded(method, body) {
+        assertLive(method);
+        enterAdmitted();
+        try {
+            return await body();
+        }
+        finally {
+            leaveAdmitted();
+        }
+    }
+    /** Resolve `true` when the counter reaches 0, `false` when the bound expires. */
+    function waitForDrain(timeoutMs) {
+        if (state.inFlight === 0)
+            return Promise.resolve(true);
+        return new Promise((resolve) => {
+            let settled = false;
+            const finish = (value) => {
+                if (settled)
+                    return;
+                settled = true;
+                resolve(value);
+            };
+            // Deliberately NOT unref'd: a drain bound that the event loop may drop is
+            // not a bound. The timer lives exactly as long as the disposal that
+            // installed it.
+            const timer = TIMERS.setTimeout?.(() => finish(false), timeoutMs);
+            state.drainWaiters.push(() => {
+                TIMERS.clearTimeout?.(timer);
+                finish(true);
+            });
+        });
     }
     function admit(method, axis, hostPath) {
         const roots = axis === 'read' ? lane.read : lane.write;
@@ -239,13 +362,16 @@ export function createNativeFsBindingScope(input) {
         constructor(ctx, config) {
             super(ctx, config);
         }
-        /** Every decision this INSTANCE made, in call order (evidence only). */
+        /** Every LANE decision this INSTANCE made, in call order (evidence only). */
         get laneFacts() {
             return facts;
         }
-        /** Write on an EXISTING target also requires read coverage (`write ⇒ read`). */
+        /**
+         * Write on an EXISTING target also requires read coverage (`write ⇒ read`).
+         * Runs INSIDE the caller's `guarded()` body, so its own `super.stat` await is
+         * counted as part of the same admitted operation.
+         */
         async admitExistingMutation(method, target, signal) {
-            assertLive(method);
             const hostPath = this.processPath(target);
             admit(method, 'write', hostPath);
             let observed;
@@ -262,95 +388,172 @@ export function createNativeFsBindingScope(input) {
         }
         // ── read axis ────────────────────────────────────────────────────────
         async stat(target, signal) {
-            assertLive('stat');
-            admit('stat', 'read', this.processPath(target));
-            return super.stat(target, signal);
+            return guarded('stat', async () => {
+                admit('stat', 'read', this.processPath(target));
+                return super.stat(target, signal);
+            });
         }
         async lstat(path, opts, signal) {
-            // `lstat` is path-shaped and does not follow the final component: the
-            // guarded object is the path itself, so containment is evaluated on the
-            // absolute path (a link's own metadata discloses no target content).
-            assertLive('lstat');
-            const options = opts;
-            const hostPath = path.startsWith('/')
-                ? normalizePath(path)
-                : normalizePath(joinPath(options?.cwd ?? this.config?.cwd ?? '/', path));
-            admit('lstat', 'read', hostPath);
-            return super.lstat(path, opts, signal);
+            return guarded('lstat', async () => {
+                // `lstat` is path-shaped and does not follow the final component: the
+                // guarded object is the path itself, so containment is evaluated on the
+                // absolute path (a link's own metadata discloses no target content).
+                const options = opts;
+                const hostPath = path.startsWith('/')
+                    ? normalizePath(path)
+                    : normalizePath(joinPath(options?.cwd ?? this.config?.cwd ?? '/', path));
+                admit('lstat', 'read', hostPath);
+                return super.lstat(path, opts, signal);
+            });
         }
         async readText(target, signal) {
-            assertLive('readText');
-            admit('readText', 'read', this.processPath(target));
-            return super.readText(target, signal);
+            return guarded('readText', async () => {
+                admit('readText', 'read', this.processPath(target));
+                return super.readText(target, signal);
+            });
         }
         async streamText(target, signal) {
-            assertLive('streamText');
-            admit('streamText', 'read', this.processPath(target));
-            return super.streamText(target, signal);
+            return guarded('streamText', async () => {
+                admit('streamText', 'read', this.processPath(target));
+                return super.streamText(target, signal);
+            });
         }
         async readBytes(target, signal, maxBytes) {
-            assertLive('readBytes');
-            admit('readBytes', 'read', this.processPath(target));
-            return super.readBytes(target, signal, maxBytes);
+            return guarded('readBytes', async () => {
+                admit('readBytes', 'read', this.processPath(target));
+                return super.readBytes(target, signal, maxBytes);
+            });
         }
         async readByteRange(target, range, signal) {
-            assertLive('readByteRange');
-            admit('readByteRange', 'read', this.processPath(target));
-            return super.readByteRange(target, range, signal);
+            return guarded('readByteRange', async () => {
+                admit('readByteRange', 'read', this.processPath(target));
+                return super.readByteRange(target, range, signal);
+            });
         }
         async listDir(target, signal) {
-            assertLive('listDir');
-            admit('listDir', 'read', this.processPath(target));
-            return super.listDir(target, signal);
+            return guarded('listDir', async () => {
+                admit('listDir', 'read', this.processPath(target));
+                return super.listDir(target, signal);
+            });
         }
         async watch(target, changed, signal) {
-            assertLive('watch');
-            admit('watch', 'read', this.processPath(target));
-            return super.watch(target, changed, signal);
+            return guarded('watch', async () => {
+                admit('watch', 'read', this.processPath(target));
+                // Only REGISTRATION is admitted and drained. The returned disposer owns
+                // the live watcher, which is why the receipt never claims the OS stopped.
+                return super.watch(target, changed, signal);
+            });
         }
         // ── write axis ───────────────────────────────────────────────────────
         async writeText(target, content, expected, signal, sandboxPolicy) {
-            await this.admitExistingMutation('writeText', target, signal);
-            return super.writeText(target, content, expected, signal, sandboxPolicy);
+            return guarded('writeText', async () => {
+                await this.admitExistingMutation('writeText', target, signal);
+                return super.writeText(target, content, expected, signal, sandboxPolicy);
+            });
         }
         async editText(target, edit, expected, signal, sandboxPolicy) {
-            await this.admitExistingMutation('editText', target, signal);
-            return super.editText(target, edit, expected, signal, sandboxPolicy);
+            return guarded('editText', async () => {
+                await this.admitExistingMutation('editText', target, signal);
+                return super.editText(target, edit, expected, signal, sandboxPolicy);
+            });
         }
         async patchText(target, hunks, expected, signal, sandboxPolicy) {
-            await this.admitExistingMutation('patchText', target, signal);
-            return super.patchText(target, hunks, expected, signal, sandboxPolicy);
+            return guarded('patchText', async () => {
+                await this.admitExistingMutation('patchText', target, signal);
+                return super.patchText(target, hunks, expected, signal, sandboxPolicy);
+            });
         }
         async deleteFile(target, expected, signal, sandboxPolicy) {
-            await this.admitExistingMutation('deleteFile', target, signal);
-            return super.deleteFile(target, expected, signal, sandboxPolicy);
+            return guarded('deleteFile', async () => {
+                await this.admitExistingMutation('deleteFile', target, signal);
+                return super.deleteFile(target, expected, signal, sandboxPolicy);
+            });
         }
         async moveFile(source, destination, options, signal, sandboxPolicy) {
-            await this.admitExistingMutation('moveFile', source, signal);
-            admit('moveFile', 'write', this.processPath(destination));
-            return super.moveFile(source, destination, options, signal, sandboxPolicy);
+            return guarded('moveFile', async () => {
+                await this.admitExistingMutation('moveFile', source, signal);
+                admit('moveFile', 'write', this.processPath(destination));
+                return super.moveFile(source, destination, options, signal, sandboxPolicy);
+            });
         }
-        /** Resolution only: unguarded by design (the lane check runs on its RESULT). */
+        /** Resolution only: admitted and counted, but unguarded by the lane (the check runs on its RESULT). */
         async resolve(path, opts) {
-            assertLive('resolve');
-            return super.resolve(path, opts);
+            return guarded('resolve', async () => super.resolve(path, opts));
         }
     };
-    function dispose(reason) {
-        const changed = state.status === 'open';
-        if (changed) {
-            state.status = 'disposed';
-            state.reason = reason ?? 'disposed';
-            state.disposedAt = new Date().toISOString();
-        }
+    function terminalReceipt(terminal, changed, alreadyDisposed, drained, releaseErrors, reason) {
         return Object.freeze({
             bindingId: id,
-            status: 'disposed',
+            state: terminal,
             changed,
-            alreadyDisposed: !changed,
-            reason: state.reason,
+            alreadyDisposed,
+            drained,
+            newOperationsRefused: true,
+            releaseConfirmed: terminal === 'released',
+            refusalCode: terminal === 'released'
+                ? FS_BINDING_REFUSAL.SCOPE_DISPOSED
+                : FS_BINDING_REFUSAL.SCOPE_TERMINATION_UNCONFIRMED,
+            reason,
             disposedAt: String(state.disposedAt),
+            inFlightAtDispose: state.inFlightAtDispose,
+            drainTimeoutMs,
+            releaseErrors: Object.freeze([...releaseErrors]),
         });
+    }
+    /**
+     * Dispose the scope: `active → draining`, refuse new work, drain admitted work
+     * up to `drainTimeoutMs`, then release (when a handler is supplied). Terminal
+     * and idempotent: the first call memoises the receipt, later calls return the
+     * SAME terminal facts with `changed:false`.
+     *
+     * A drain timeout does NOT release: killing a provider out from under a parked
+     * call is the lifecycle owner's decision, and this binding refuses to pretend
+     * it happened. A release step that throws also yields `termination-unconfirmed`
+     * — the receipt never claims what did not happen.
+     */
+    async function dispose(reason, release) {
+        if (state.receipt !== null) {
+            return Object.freeze({ ...state.receipt, changed: false, alreadyDisposed: true });
+        }
+        state.status = 'draining';
+        state.reason = reason ?? 'disposed';
+        state.disposedAt = new Date().toISOString();
+        state.inFlightAtDispose = state.inFlight;
+        const drained = await waitForDrain(drainTimeoutMs);
+        const releaseErrors = [];
+        let terminal;
+        let why = state.reason;
+        if (!drained) {
+            terminal = 'termination-unconfirmed';
+            why = `drain-timeout: ${state.inFlight} admitted operation(s) still unfinished after ${drainTimeoutMs}ms`;
+        }
+        else if (release === undefined) {
+            terminal = 'released';
+        }
+        else {
+            try {
+                await release();
+                terminal = 'released';
+            }
+            catch (error) {
+                terminal = 'termination-unconfirmed';
+                const failure = error;
+                if (Array.isArray(failure.errors)) {
+                    for (const entry of failure.errors) {
+                        releaseErrors.push(entry instanceof Error ? entry.message : String(entry));
+                    }
+                }
+                else {
+                    releaseErrors.push(failure.message ?? String(error));
+                }
+                why = `release-failed: ${releaseErrors.join('; ') || 'unknown release error'}`;
+            }
+        }
+        state.status = terminal;
+        state.reason = why;
+        const receipt = terminalReceipt(terminal, true, false, drained, releaseErrors, why);
+        state.receipt = receipt;
+        return receipt;
     }
     return Object.freeze({
         id,
@@ -359,6 +562,9 @@ export function createNativeFsBindingScope(input) {
         providerClass: ConfinedFileSystem,
         get status() {
             return state.status;
+        },
+        get inFlight() {
+            return state.inFlight;
         },
         get facts() {
             return facts;
@@ -409,6 +615,7 @@ export async function mountNativeFsBinding(input) {
         FsError: host.FsError,
         ...(input.record === undefined ? {} : { record: input.record }),
         ...(input.label === undefined ? {} : { label: input.label }),
+        ...(input.drainTimeoutMs === undefined ? {} : { drainTimeoutMs: input.drainTimeoutMs }),
     });
     const fibers = [];
     let iso;
@@ -425,7 +632,23 @@ export async function mountNativeFsBinding(input) {
         }
         const providerMounted = true;
         const toolMounted = true;
-        let disposed = false;
+        /** Release = dispose the fibers this mount created, reporting every failure. */
+        const releaseFibers = async () => {
+            const errors = [];
+            for (const entry of [...fibers].reverse()) {
+                try {
+                    await entry.fiber.dispose();
+                }
+                catch (error) {
+                    errors.push(error);
+                }
+            }
+            if (errors.length > 0) {
+                const failure = new Error(`release-failed: ${errors.length} of ${fibers.length} fiber disposal(s) threw`);
+                failure.errors = errors;
+                throw failure;
+            }
+        };
         return Object.freeze({
             id: scope.id,
             generation: scope.generation,
@@ -437,43 +660,36 @@ export async function mountNativeFsBinding(input) {
             get status() {
                 return scope.status;
             },
+            get inFlight() {
+                return scope.inFlight;
+            },
             get facts() {
                 return scope.facts;
             },
             assertLive: scope.assertLive,
             /**
-             * Teardown order is part of the contract: mark the scope disposed FIRST
-             * (so an in-flight call is refused by name), then dispose the tool fiber
-             * (no new dispatch), then the provider fiber.
+             * Teardown order is part of the contract: the scope starts DRAINING and
+             * refuses new work FIRST, disposal then waits for admitted work, and only
+             * a completed drain releases the tool fiber (no new dispatch) and then the
+             * provider fiber. If a fiber disposal throws, the receipt says
+             * `termination-unconfirmed` and the scope NEVER claims release.
              */
-            dispose: async (reason) => {
-                const receipt = scope.dispose(reason ?? 'binding-disposed');
-                if (disposed)
-                    return receipt;
-                disposed = true;
-                for (const entry of [...fibers].reverse()) {
-                    try {
-                        await entry.fiber.dispose();
-                    }
-                    catch {
-                        // A teardown failure is reported by the receipt `reason`, not by
-                        // resurrecting the scope: the state stays disposed either way.
-                    }
-                }
-                return receipt;
-            },
+            dispose: async (reason) => scope.dispose(reason ?? 'binding-disposed', releaseFibers),
         });
     }
     catch (error) {
-        scope.dispose('mount-failed');
-        for (const entry of [...fibers].reverse()) {
-            try {
-                await entry.fiber.dispose();
+        // Rollback path: the ORIGINAL failure is the one reported; the receipt of a
+        // failed mount is deliberately not surfaced.
+        await scope.dispose('mount-failed', async () => {
+            for (const entry of [...fibers].reverse()) {
+                try {
+                    await entry.fiber.dispose();
+                }
+                catch {
+                    // Swallowed here, not by the scope: the mount failure is the report.
+                }
             }
-            catch {
-                // Rollback path: the ORIGINAL failure is the one reported.
-            }
-        }
+        });
         void iso;
         throw error;
     }

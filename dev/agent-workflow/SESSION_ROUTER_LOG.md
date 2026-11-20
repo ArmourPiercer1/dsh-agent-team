@@ -9186,3 +9186,24 @@ export interface AbortSignalLike {
 **门禁**：见下一 commit 的 `evidence/gates.txt`（含 `pnpm ... run build` exit 0、`pnpm run build` exit 0、`check-artifacts-committed verdict=fresh`、`eb3-ci-required`、C-NH1/负控、catalog、dispatch、docs-sync、identities、vitest、diff-check）。lane argv / manifest / 新 leg **未改动**（scheduler 已确认该步骤存在、只因先前的 build 失败而跳过）。
 
 **UNKNOWN**：hosted 全量 build 之后的 suite 运行仍由 L2 实测；本机不能 `pnpm install`（store 在 workspace 外），build 半程已实测，install 半程未复现。
+
+## 2026-11-20（第四次）— UTE-1 生命周期补齐：dispose ≠ 排空（review 20261120-1700 §3.3）
+
+**发现（外审实测，不是观点）**：`native-fs-binding.ts` 只有 `open`/`disposed` 两态；`dispose()` 设 `disposed` 后释放 tool/Provider fiber，且**吞掉** fiber 释放异常仍返回"已 disposed"收据。一个已过准入、停在 `super.stat()` 等 await 的操作，可以在 `dispose()` 返回"已释放"之后继续落盘。三件事被混为一谈：**新操作被拒**（有效）、**在飞操作排空/终止**（未证明）、**资源释放确认**（无法表达）。
+
+**实现（改模块，不改上层）**：
+- 单调状态机 `active → draining → released | termination-unconfirmed`；
+- 在飞计数器：准入时（第一个 await 之前）`+1`，`finally` 无条件 `-1`（成功/抛错/准入后被拒都算）；`dispose()` 以 `drainTimeoutMs`（默认 5000，可 per-scope 覆盖）为界等待；
+- `active→draining` 立即拒绝新调用且名字不同：`scope-draining`（排空中）/ `scope-disposed`（已 released）/ `scope-termination-unconfirmed`（未确认终止）；
+- 排空完成才释放 tool fiber → provider fiber；释放任一步抛错 ⇒ `termination-unconfirmed` + `releaseErrors`，收据不声称 released；
+- 排空超时**不释放**：终止一个不肯排空的 provider 是 host/lifecycle owner 的决定，binding 不假装做过（header 写成责任边界合同）；
+- 收据字段彼此独立：`state / drained / newOperationsRefused / releaseConfirmed / refusalCode / reason / inFlightAtDispose / drainTimeoutMs / releaseErrors`；
+- 二次 dispose 幂等：首次收据被 memo，后续返回同一组终态事实（`changed:false`）；一旦 `termination-unconfirmed`，永不改报 `released`；
+- 生命周期拒绝**不写 lane fact**（没有准入判定被评估），fact 流保持"纯 lane 决策"；
+- `record(fact)` 文档明确为**纯诊断**、非 S1 持久化通路；套件钉死"抛错的 recorder 交付 0 条、不改结果、也不影响 binding 自己的事实缓冲"。
+
+**证据（真数）**：套件 **14/14**；host-free 臂 **12**（原 7 + 生命周期 5）；变异 **11**，每个新不变量都有能把它变红的变异：`MUTATION-BASELINE-VERDICT GREEN arms=12`、`MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12`；四个 race（A 排空等待 + 收据返回后按字节/文件集测无新效果；B 超时⇒unconfirmed 且事后不翻转；C draining/released 名字互斥、无 fact 无效果；D 幂等 + 抛错 recorder）。独立树复现：prebuild 11 pass / 3 fail（同三个 `ERR_MODULE_NOT_FOUND` assembly 臂），postbuild **14/14**。证据目录 `dev/agent-workflow/evidence/ute1-fs-binding-20261120/lifecycle/`（README + receipts + suite + mutation-transcript）。
+
+**边界（UNKNOWN 保留）**：`drained` 只覆盖 binding 准入的 promise 型操作；流（stream 迭代器交出后）、watch 注册、以及 binding 未准入的效果不在计数内——这正是"收据是 binding 的证据、不是 OS 效果没发生的证明"的含义。排空超时后的强制终止仍由 host/lifecycle owner 负责；本 PR 不实现进程级 kill。
+
+**其它**：`AbortSignalLike` 与 production-compile-face 回归测试**未动**；`pnpm run build` 重建的 tracked 安装面（`packages/runtime/dist/packages/tools/src/native-fs-binding.*` 4 个文件）随源码同 commit 提交，`DSH-ARTIFACT-VERDICT … verdict=ok`。lane argv / manifest / 新 leg 未改；hosted rc.5 leg 仍待协调者 L2 实测（套件继续跑在 build 之后的 census leg，无 pre-build 导入）。

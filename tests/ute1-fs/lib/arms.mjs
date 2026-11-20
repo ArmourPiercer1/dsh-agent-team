@@ -67,7 +67,7 @@ export const ARMS = Object.freeze([
         const landed = host.files.get(`${INSIDE}/created.txt`)
         const ok = landed === 'hello\n'
           && facts.some((fact) => fact.decision === 'allow' && fact.method === 'writeText')
-          && binding.status === 'open'
+          && binding.status === 'active'
         return { id: this.id, ok, detail: ok ? 'create landed and one allow fact was recorded' : `landed=${JSON.stringify(landed)} facts=${facts.length}` }
       } finally {
         await binding.dispose('arm-done')
@@ -120,7 +120,7 @@ export const ARMS = Object.freeze([
       const refused = result.threw && String(result.error?.message).includes('scope-disposed')
       return {
         id: this.id,
-        ok: receipt.status === 'disposed' && refused && untouched,
+        ok: receipt.state === 'released' && refused && untouched,
         detail: refused
           ? `refused named=scope-disposed untouched=${untouched}`
           : `call was ${result.threw ? `refused as ${String(result.error?.message).slice(0, 60)}` : 'ALLOWED after disposal'}; bytes ${untouched ? 'unchanged' : 'CHANGED'}`,
@@ -140,11 +140,14 @@ export const ARMS = Object.freeze([
       const first = await binding.dispose('first')
       const second = await binding.dispose('second')
       const third = await binding.dispose()
-      const ok = first.changed === true && first.status === 'disposed'
+      const ok = first.changed === true && first.state === 'released'
+        && first.releaseConfirmed === true && first.drained === true
         && second.changed === false && second.alreadyDisposed === true
         && third.changed === false && third.alreadyDisposed === true
-        && binding.status === 'disposed'
-        && second.reason === 'first'
+        && binding.status === 'released'
+        && second.state === first.state
+        && second.reason === first.reason
+        && second.refusalCode === 'scope-disposed'
       return {
         id: this.id,
         ok,
@@ -224,7 +227,7 @@ export const ARMS = Object.freeze([
           && !host.files.has(`${INSIDE}/three.txt`)
         return {
           id: this.id,
-          ok: firstReceipt.status === 'disposed' && oldLaneGone && newLaneLive && oldProviderDisposed
+          ok: firstReceipt.state === 'released' && oldLaneGone && newLaneLive && oldProviderDisposed
             && second.id === 'swap-2' && second.lane.read[0] === SIDE,
           detail: `old-lane-through-new=${oldLaneGone ? 'refused' : 'ALLOWED'} new-lane=${newLaneLive ? 'live' : 'DENIED'}`
             + ` old-provider=${oldProviderDisposed ? 'scope-disposed' : 'still serving or unnamed'}`,
@@ -257,6 +260,226 @@ export const ARMS = Object.freeze([
         detail: named
           ? `refused code=${result.error.code} both-generations=${namesBoth} plugin-calls=${ctx.pluginCalls.length}`
           : `mount was ${result.threw ? `refused as ${result.error?.code ?? result.error?.name}` : 'ALLOWED'}`,
+      }
+    },
+  },
+  {
+    id: 'a8-drain-waits',
+    title: 'dispose() waits for an admitted operation, and no effect lands after the receipt',
+    async run(mod) {
+      let releasePark
+      const parkGate = new Promise((resolve) => { releasePark = resolve })
+      let parkedResolve
+      const parked = new Promise((resolve) => { parkedResolve = resolve })
+      const host = createFakeHost({
+        park: async (method) => {
+          if (method !== 'stat') return
+          parkedResolve()
+          await parkGate
+        },
+      })
+      const ctx = createFakeContext()
+      const binding = await mod.mountNativeFsBinding({
+        ctx, host, lane: laneOf([INSIDE], [INSIDE]), expectedGeneration: host.generation,
+        id: 'arm-a8', cwd: '/world', drainTimeoutMs: 2_000,
+      })
+      const pending = binding.provider.writeText(`${INSIDE}/a8.txt`, 'drained\n').catch((error) => error)
+      await parked
+      let disposeReturned = false
+      const disposing = binding.dispose('arm-a8').then((receipt) => {
+        disposeReturned = true
+        return receipt
+      })
+      await new Promise((resolve) => { setTimeout(resolve, 30) })
+      const waited = disposeReturned === false
+      releasePark()
+      const receipt = await disposing
+      const result = await pending
+      const bytesAtReceipt = host.files.get(`${INSIDE}/a8.txt`)
+      const entriesAtReceipt = [...host.files.keys()].sort().join('|')
+      await new Promise((resolve) => { setTimeout(resolve, 40) })
+      const bytesAfter = host.files.get(`${INSIDE}/a8.txt`)
+      const entriesAfter = [...host.files.keys()].sort().join('|')
+      const ok = waited
+        && receipt.state === 'released'
+        && receipt.drained === true
+        && receipt.releaseConfirmed === true
+        && receipt.inFlightAtDispose === 1
+        && !(result instanceof Error)
+        && bytesAtReceipt === 'drained\n'
+        && bytesAfter === bytesAtReceipt
+        && entriesAfter === entriesAtReceipt
+      return {
+        id: this.id,
+        ok,
+        detail: `waited=${waited} state=${receipt.state} drained=${receipt.drained} confirmed=${receipt.releaseConfirmed}`
+          + ` inFlightAtDispose=${receipt.inFlightAtDispose} bytes-after-receipt=${bytesAfter === bytesAtReceipt ? 'unchanged' : 'CHANGED'} files-after=${entriesAfter === entriesAtReceipt ? 'unchanged' : 'CHANGED'}`,
+      }
+    },
+  },
+  {
+    id: 'a9-drain-timeout',
+    title: 'a drain timeout is termination-unconfirmed, never released, and does not flip later',
+    async run(mod) {
+      let releasePark
+      const parkGate = new Promise((resolve) => { releasePark = resolve })
+      let parkedResolve
+      const parked = new Promise((resolve) => { parkedResolve = resolve })
+      const host = createFakeHost({
+        park: async (method) => {
+          if (method !== 'stat') return
+          parkedResolve()
+          await parkGate
+        },
+      })
+      const ctx = createFakeContext()
+      const binding = await mod.mountNativeFsBinding({
+        ctx, host, lane: laneOf([INSIDE], [INSIDE]), expectedGeneration: host.generation,
+        id: 'arm-a9', cwd: '/world', drainTimeoutMs: 25,
+      })
+      const pending = binding.provider.writeText(`${INSIDE}/a9.txt`, 'late\n').catch((error) => error)
+      await parked
+      const receipt = await binding.dispose('arm-a9')
+      const terminalAtReceipt = binding.status
+      releasePark()
+      await pending
+      await new Promise((resolve) => { setTimeout(resolve, 40) })
+      const later = await binding.dispose('again')
+      const ok = receipt.state === 'termination-unconfirmed'
+        && receipt.drained === false
+        && receipt.releaseConfirmed === false
+        && receipt.newOperationsRefused === true
+        && receipt.refusalCode === 'scope-termination-unconfirmed'
+        && /drain-timeout/.test(receipt.reason)
+        && terminalAtReceipt === 'termination-unconfirmed'
+        && later.state === 'termination-unconfirmed'
+        && binding.status === 'termination-unconfirmed'
+        && ctx.disposeCalls === 0
+      return {
+        id: this.id,
+        ok,
+        detail: `state=${receipt.state} drained=${receipt.drained} confirmed=${receipt.releaseConfirmed}`
+          + ` later=${later.state} status=${binding.status} release-calls=${ctx.disposeCalls}`,
+      }
+    },
+  },
+  {
+    id: 'a10-refusal-codes',
+    title: 'draining and released refusals are DISTINCT and create no fact or effect',
+    async run(mod) {
+      let releasePark
+      const parkGate = new Promise((resolve) => { releasePark = resolve })
+      let parkedResolve
+      const parked = new Promise((resolve) => { parkedResolve = resolve })
+      const host = createFakeHost({
+        park: async (method) => {
+          if (method !== 'stat') return
+          parkedResolve()
+          await parkGate
+        },
+      })
+      const ctx = createFakeContext()
+      const facts = []
+      const binding = await mod.mountNativeFsBinding({
+        ctx, host, lane: laneOf([INSIDE], [INSIDE]), expectedGeneration: host.generation,
+        id: 'arm-a10', cwd: '/world', drainTimeoutMs: 2_000, record: (fact) => facts.push(fact),
+      })
+      const pending = binding.provider.writeText(`${INSIDE}/a10.txt`, 'first\n').catch((error) => error)
+      await parked
+      const disposing = binding.dispose('arm-a10')
+      await new Promise((resolve) => { setTimeout(resolve, 10) })
+      // Race the during-drain call against a bound so a mutant that ADMITS it
+      // (instead of refusing) reports red here rather than deadlocking on the
+      // still-parked first operation.
+      const duringPromise = attempt(() => binding.provider.writeText(`${INSIDE}/during.txt`, 'no\n'))
+      const duringDrain = await Promise.race([
+        duringPromise,
+        new Promise((resolve) => { setTimeout(() => resolve({ threw: false, value: 'admitted' }), 150) }),
+      ])
+      const refusedDuring = duringDrain.threw
+        && duringDrain.error?.code === 'FS_PERMISSION_DENIED'
+        && /scope-draining/.test(String(duringDrain.error?.message))
+      releasePark()
+      await disposing
+      await pending
+      await duringPromise
+      const factsBefore = facts.length
+      const afterRelease = await attempt(() => binding.provider.writeText(`${INSIDE}/after.txt`, 'no\n'))
+      const refusedAfter = afterRelease.threw
+        && afterRelease.error?.code === 'FS_PERMISSION_DENIED'
+        && /scope-disposed/.test(String(afterRelease.error?.message))
+        && !/scope-draining/.test(String(afterRelease.error?.message))
+      const noEffects = !host.files.has(`${INSIDE}/during.txt`) && !host.files.has(`${INSIDE}/after.txt`)
+      const noNewFacts = facts.length === factsBefore
+      return {
+        id: this.id,
+        ok: refusedDuring && refusedAfter && noEffects && noNewFacts,
+        detail: `draining=${refusedDuring ? 'scope-draining' : refusedDuring ? 'wrong' : 'ALLOWED'}`
+          + ` released=${refusedAfter ? 'scope-disposed' : 'wrong'} effects=${noEffects ? 'absent' : 'PRESENT'} facts+${facts.length - factsBefore}`,
+      }
+    },
+  },
+  {
+    id: 'a11-record-is-diagnostic',
+    title: 'a throwing record callback changes neither the outcome nor the lane decision',
+    async run(mod) {
+      const host = createFakeHost()
+      const ctx = createFakeContext()
+      let attempts = 0
+      const delivered = []
+      const binding = await mod.mountNativeFsBinding({
+        ctx, host, lane: laneOf([INSIDE], [INSIDE]), expectedGeneration: host.generation,
+        id: 'arm-a11', cwd: '/world',
+        // The recorder throws on its FIRST delivery and would collect later ones.
+        // "Zero facts" here is measured at the recorder: a diagnostic sink that
+        // throws delivers nothing, is never retried, and never changes the
+        // operation. The binding's own fact buffer is deliberately INDEPENDENT
+        // of the sink, which is what makes the sink non-load-bearing for S1.
+        record: (fact) => {
+          attempts += 1
+          if (attempts === 1) throw new Error('recorder exploded')
+          delivered.push(fact)
+        },
+      })
+      try {
+        const result = await attempt(() => binding.provider.writeText(`${INSIDE}/a11.txt`, 'ok\n'))
+        const landed = host.files.get(`${INSIDE}/a11.txt`) === 'ok\n'
+        const ok = !result.threw && landed && attempts === 1 && delivered.length === 0 && binding.facts.length === 1
+        return {
+          id: this.id,
+          ok,
+          detail: `outcome=${result.threw ? 'THREW' : 'ok'} landed=${landed} recorder-attempts=${attempts}`
+            + ` recorder-delivered=${delivered.length} binding-facts=${binding.facts.length}`,
+        }
+      } finally {
+        await binding.dispose('arm-done')
+      }
+    },
+  },
+  {
+    id: 'a12-release-must-be-confirmed',
+    title: 'a release step that throws yields termination-unconfirmed, not a false "released"',
+    async run(mod) {
+      const host = createFakeHost()
+      const ctx = createFakeContext({ failDispose: true })
+      const binding = await mod.mountNativeFsBinding({
+        ctx, host, lane: laneOf([INSIDE], [INSIDE]), expectedGeneration: host.generation,
+        id: 'arm-a12', cwd: '/world', drainTimeoutMs: 2_000,
+      })
+      const receipt = await binding.dispose('arm-a12')
+      const ok = receipt.state === 'termination-unconfirmed'
+        && receipt.drained === true
+        && receipt.releaseConfirmed === false
+        && receipt.refusalCode === 'scope-termination-unconfirmed'
+        && /release-failed/.test(receipt.reason)
+        && receipt.releaseErrors.length > 0
+        && binding.status === 'termination-unconfirmed'
+        && ctx.disposeFailures > 0
+      return {
+        id: this.id,
+        ok,
+        detail: `state=${receipt.state} drained=${receipt.drained} confirmed=${receipt.releaseConfirmed}`
+          + ` errors=${receipt.releaseErrors.length} status=${binding.status}`,
       }
     },
   },

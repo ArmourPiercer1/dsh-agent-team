@@ -42,7 +42,7 @@ index dacf97312..186a5cd3f 100644
 @@ -43,6 +43,40 @@ export { selectTeamTools } from './tool-selector.js'
  export { applyBuiltInToolDeny } from './builtin-deny.js'
  export type { ToolRestrictionDisposer } from './builtin-deny.js'
- 
+
 +// UTE-1 — additive, UNUSED BY ANY SHIPPED ASSEMBLY (see the module header):
 +// the native FS binding product module. `git grep` over the product entries
 +// finds no importer; the export exists so a reviewed composition can consume it

@@ -33,6 +33,15 @@ export class FakeFileSystem {
     this.config = config ?? {}
     this.files = (config && config.files) instanceof Map ? config.files : new Map()
     this.calls = []
+    // Test-only hook: `park(method, path)` is awaited BEFORE the effect, so an
+    // arm can hold an admitted operation inside a provider await (the disposal
+    // race). It is never installed by production wiring.
+    this.park = typeof config?.park === 'function' ? config.park : undefined
+  }
+
+  /** Await the optional park hook (no-op in every non-race arm). */
+  async _park(method, path) {
+    if (this.park !== undefined) await this.park(method, path)
   }
 
   resolve(path) {
@@ -51,6 +60,7 @@ export class FakeFileSystem {
   async stat(target) {
     this.calls.push('stat')
     const path = this.processPath(target)
+    await this._park('stat', path)
     if (!this.files.has(path)) return undefined
     return { path, size: Buffer.byteLength(this.files.get(path), 'utf8') }
   }
@@ -95,7 +105,9 @@ export class FakeFileSystem {
 
   async writeText(target, content) {
     this.calls.push('writeText')
-    this.files.set(this.processPath(target), String(content))
+    const path = this.processPath(target)
+    await this._park('writeText', path)
+    this.files.set(path, String(content))
     return { path: this.processPath(target), bytes: Buffer.byteLength(String(content), 'utf8') }
   }
 
@@ -121,6 +133,7 @@ export class FakeFileSystem {
 
   async deleteFile(target) {
     this.calls.push('deleteFile')
+    await this._park('deleteFile', this.processPath(target))
     this.files.delete(this.processPath(target))
     return { deleted: true }
   }
@@ -136,12 +149,24 @@ export class FakeFileSystem {
   }
 }
 
-/** A Cordis-shaped context double: `isolate(name)` + `plugin()` + `get()`. */
-export function createFakeContext() {
-  const state = { pluginCalls: [], services: new Map() }
+/**
+ * A Cordis-shaped context double: `isolate(name)` + `plugin()` + `get()`.
+ *
+ * `failDispose` makes EVERY fiber disposer throw, which is how the release-arm
+ * proves a receipt can say `termination-unconfirmed` instead of claiming a
+ * release that did not happen.
+ */
+export function createFakeContext({ failDispose = false } = {}) {
+  const state = { pluginCalls: [], services: new Map(), disposeCalls: 0, disposeFailures: 0 }
   return {
     pluginCalls: state.pluginCalls,
     services: state.services,
+    get disposeCalls() {
+      return state.disposeCalls
+    },
+    get disposeFailures() {
+      return state.disposeFailures
+    },
     isolate(name) {
       const scoped = {
         plugin: async (plugin, config) => {
@@ -150,7 +175,15 @@ export function createFakeContext() {
           // a plugin object: it registers tools, not `fs`, so it must not
           // overwrite the provider the binding just mounted.
           if (typeof plugin === 'function') state.services.set(name, new plugin(scoped, config))
-          return { dispose: async () => undefined }
+          return {
+            dispose: async () => {
+              state.disposeCalls += 1
+              if (failDispose) {
+                state.disposeFailures += 1
+                throw new Error(`fiber-dispose-failed:${name}`)
+              }
+            },
+          }
         },
         get: (serviceName) => (serviceName === name ? state.services.get(name) : undefined),
       }
@@ -160,10 +193,10 @@ export function createFakeContext() {
 }
 
 /** A host surface with the given generation (defaults to the rc.5 pin). */
-export function createFakeHost({ generation = '0.2.2-rc.5', files = new Map() } = {}) {
+export function createFakeHost({ generation = '0.2.2-rc.5', files = new Map(), park } = {}) {
   class FileSystem extends FakeFileSystem {
     constructor(ctx, config) {
-      super(ctx, { ...(config ?? {}), files })
+      super(ctx, { ...(config ?? {}), files, park })
     }
   }
   return Object.freeze({

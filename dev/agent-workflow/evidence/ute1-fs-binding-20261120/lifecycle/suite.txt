@@ -1,0 +1,214 @@
+✔ product module: additive, dependency-free, and imported by no shipped assembly (10.675826ms)
+✔ product module: names no ambient global the PRODUCTION compile face does not provide (0.321549ms)
+✔ host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module (152.20064ms)
+ℹ a1-write-inside: GREEN — create landed and one allow fact was recorded
+ℹ a2-lane-denial: GREEN — refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ a3-use-after-dispose: GREEN — refused named=scope-disposed untouched=true
+ℹ a4-double-dispose: GREEN — first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.433Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.433Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ a5-overlap-scopes: GREEN — a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ a6-provider-swap: GREEN — old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ a7-generation-mismatch: GREEN — refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ a8-drain-waits: GREEN — waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ a9-drain-timeout: GREEN — state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ a10-refusal-codes: GREEN — draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1949.408977ms)
+ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE-ID native-fs-binding/1
+ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-BASELINE arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.585Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.585Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-BASELINE arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-BASELINE arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-BASELINE arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-BASELINE arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-BASELINE arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-BASELINE arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-BASELINE arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-BASELINE arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-BASELINE-VERDICT GREEN arms=12
+ℹ MUTATION-ARM id=M1-remove-lifecycle-guard removed="the lifecycle check in assertLive (use-after-dispose)" expected-red=a3-use-after-dispose observed-red=a3-use-after-dispose,a6-provider-swap,a10-refusal-codes verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.737Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:58.737Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a10-refusal-codes observed=red detail=draining=ALLOWED released=wrong effects=PRESENT facts+1
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-lifecycle-guard arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M2-lane-admits-everything removed="the lane containment check in admit()" expected-red=a2-lane-denial observed-red=a2-lane-denial,a5-overlap-scopes,a6-provider-swap verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a2-lane-denial observed=red detail=call was ALLOWED (expected a lane-write refusal)
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.039Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.039Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=ALLOWED cross-effect=PRESENT own-lane=true facts-attributed=false
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M3-dispose-never-terminates removed="the monotonic transition into a terminal state in dispose()" expected-red=a4-double-dispose observed-red=a3-use-after-dispose,a4-double-dispose,a6-provider-swap,a9-drain-timeout,a10-refusal-codes,a12-release-must-be-confirmed verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a3-use-after-dispose observed=red detail=call was refused as native-fs-binding/1: scope-draining — 'writeText' on binding; bytes unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.192Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.192Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=draining
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a9-drain-timeout observed=red detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=draining release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a10-refusal-codes observed=red detail=draining=scope-draining released=wrong effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-never-terminates arm=a12-release-must-be-confirmed observed=red detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=draining
+ℹ MUTATION-ARM id=M4-shared-lane-across-scopes removed="per-scope lane isolation (the lane becomes the last created)" expected-red=a5-overlap-scopes observed-red=a5-overlap-scopes verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.344Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.344Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=refused cross-effect=PRESENT own-lane=true facts-attributed=false
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M5-drop-generation-pin removed="the host-generation pin in mountNativeFsBinding" expected-red=a7-generation-mismatch observed-red=a7-generation-mismatch verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.498Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.498Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a7-generation-mismatch observed=red detail=mount was ALLOWED
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M7-ignore-the-drain removed="the drain wait before release (dispose must not return while work is parked)" expected-red=a8-drain-waits observed-red=a8-drain-waits,a9-drain-timeout,a10-refusal-codes verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.650Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.650Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a8-drain-waits observed=red detail=waited=false state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a9-drain-timeout observed=red detail=state=released drained=true confirmed=true later=released status=released release-calls=2
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a10-refusal-codes observed=red detail=draining=ALLOWED released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M7-ignore-the-drain arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M8-claim-release-without-confirmation removed="the receipt's releaseConfirmed being tied to the terminal state" expected-red=a9-drain-timeout,a12-release-must-be-confirmed observed-red=a9-drain-timeout,a12-release-must-be-confirmed verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.777Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.777Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a9-drain-timeout observed=red detail=state=termination-unconfirmed drained=false confirmed=true later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M8-claim-release-without-confirmation arm=a12-release-must-be-confirmed observed=red detail=state=termination-unconfirmed drained=true confirmed=true errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M9-one-refusal-code-for-every-stop removed="the distinct draining vs released refusal names" expected-red=a10-refusal-codes observed-red=a10-refusal-codes verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.928Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:27:59.928Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a10-refusal-codes observed=red detail=draining=ALLOWED released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M9-one-refusal-code-for-every-stop arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M10-swallow-release-failure removed="release failure forcing termination-unconfirmed instead of released" expected-red=a12-release-must-be-confirmed observed-red=a12-release-must-be-confirmed verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.080Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.080Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M10-swallow-release-failure arm=a12-release-must-be-confirmed observed=red detail=state=released drained=true confirmed=true errors=2 status=released
+ℹ MUTATION-ARM id=M11-record-failure-becomes-fatal removed="the diagnostic recorder being swallowed (record must never decide)" expected-red=a11-record-is-diagnostic observed-red=a11-record-is-diagnostic verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.233Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.233Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a11-record-is-diagnostic observed=red detail=outcome=THREW landed=false recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M11-record-failure-becomes-fatal arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-ARM id=M6-retain-previous-lane removed="the fresh lane of a re-mounted scope (provider swap)" expected-red=a6-provider-swap observed-red=a5-overlap-scopes,a6-provider-swap verdict=RED-AS-REQUIRED
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.385Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} second={"bindingId":"arm-a4","state":"released","changed":false,"alreadyDisposed":true,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"first","disposedAt":"2026-11-20T09:28:00.385Z","inFlightAtDispose":0,"drainTimeoutMs":5000,"releaseErrors":[]} status=released
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a5-overlap-scopes observed=red detail=arm threw: native-fs-binding/1: lane-write — 'writeText' on "/world/side/b-own.txt" is outside the declared write lane (binding "scope-b", host "0.2.2-rc.5")
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=DENIED old-provider=scope-disposed
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a8-drain-waits observed=green detail=waited=true state=released drained=true confirmed=true inFlightAtDispose=1 bytes-after-receipt=unchanged files-after=unchanged
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a9-drain-timeout observed=green detail=state=termination-unconfirmed drained=false confirmed=false later=termination-unconfirmed status=termination-unconfirmed release-calls=0
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a10-refusal-codes observed=green detail=draining=scope-draining released=scope-disposed effects=absent facts+0
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a11-record-is-diagnostic observed=green detail=outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
+ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
+✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (418.079082ms)
+ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
+ℹ member=member-assembly-deny
+ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
+✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (59.787097ms)
+ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/.artifacts/tmp/ute1-fs-assembly/as"
+✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (62.943676ms)
+ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
+✔ wrong host generation is refused by name and never falls back to the legacy tree (0.504725ms)
+✔ golden parity: the product module reproduces the 10 old-path vectors (156.206194ms)
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
+ℹ golden FS-W1-create: PASS
+ℹ golden FS-W2-overwrite-read: PASS
+ℹ golden FS-W3-unobserved-overwrite: PASS
+ℹ golden FS-W4-outside-write: PASS
+ℹ golden FS-E1-edit-read: PASS
+ℹ golden FS-E2-stale-edit: PASS
+ℹ golden FS-W5-write-axis: PASS
+ℹ golden FS-S1-symlink-escape: PASS
+ℹ golden FS-R1-outside-read-leak: PASS
+ℹ golden FS-M1-mode-preserved: PASS
+✔ disclosure: both retirement-blocking semantic differences are still declared (0.34332ms)
+✔ lifecycle race A: dispose WAITS for an admitted operation and no effect lands after the receipt (100.383301ms)
+ℹ receipt={"bindingId":"race-a","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"race-a","disposedAt":"2026-11-20T09:28:01.232Z","inFlightAtDispose":1,"drainTimeoutMs":2000,"releaseErrors":[]} write=ok
+✔ lifecycle race B: a drain timeout is termination-unconfirmed, never released, and never flips later (66.061624ms)
+ℹ receipt={"bindingId":"race-b","state":"termination-unconfirmed","changed":true,"alreadyDisposed":false,"drained":false,"newOperationsRefused":true,"releaseConfirmed":false,"refusalCode":"scope-termination-unconfirmed","reason":"drain-timeout: 1 admitted operation(s) still unfinished after 25ms","disposedAt":"2026-11-20T09:28:01.333Z","inFlightAtDispose":1,"drainTimeoutMs":25,"releaseErrors":[]}
+✔ lifecycle race C: draining and released refusals are distinct, create no fact and no effect (16.091741ms)
+ℹ during draining: FS_PERMISSION_DENIED native-fs-binding/1: scope-draining — 'writeText' on binding "race-c" was refused: the scope is draining (race-c) since
+ℹ after released: FS_PERMISSION_DENIED native-fs-binding/1: scope-disposed — 'writeText' on binding "race-c" was refused: the scope is released (race-c) since
+✔ lifecycle race D: a receipt never claims more than it measured (throwing record arm) (0.408974ms)
+ℹ attempts=1 delivered=0 binding-facts=1 receipt={"bindingId":"race-d","state":"released","changed":true,"alreadyDisposed":false,"drained":true,"newOperationsRefused":true,"releaseConfirmed":true,"refusalCode":"scope-disposed","reason":"race-d","disposedAt":"2026-11-20T09:28:01.415Z","inFlightAtDispose":0,"drainTimeoutMs":1000,"releaseErrors":[]}
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3087.298634

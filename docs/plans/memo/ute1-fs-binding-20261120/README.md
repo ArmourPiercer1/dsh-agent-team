@@ -180,8 +180,8 @@ Full transcripts: `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`.
 
 | gate | result |
 | --- | --- |
-| new suite | `tests 10 / pass 10 / fail 0 / skipped 0` (`suite.txt`) |
-| mutation transcript | `MUTATION-BASELINE-VERDICT GREEN arms=7`, `MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7`, every arm `verdict=RED-AS-REQUIRED` (`mutation-transcript.txt`) |
+| new suite | `tests 14 / pass 14 / fail 0 / skipped 0` (`suite.txt`) |
+| mutation transcript | `MUTATION-BASELINE-VERDICT GREEN arms=12`, `MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12`, every arm `verdict=RED-AS-REQUIRED` (`mutation-transcript.txt`) |
 | `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=881 … UNCOLLECTED 41 … refused=0 findings=0`, the new suite `DISCOVERED_AND_COLLECTED` (`gates.txt`, `isolation.txt` §6) |
 | `test-catalog.test.mjs` | `tests 28 / pass 28 / fail 0` |
 | `dispatch-tests --check` | `DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0` |
@@ -239,10 +239,10 @@ resolution walk cannot reach a parent checkout's `node_modules`) with the rc.5 h
 real directory and **zero** `node_modules`:
 
 * `evidence/prebuild-failure.txt` — `MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope'`,
-  then `tests 10 / pass 7 / fail 3`, the three assembly tests failing with exactly the hosted
+  then `tests 14 / pass 11 / fail 3`, the three assembly tests failing with exactly the hosted
   `ERR_MODULE_NOT_FOUND` from `a5sf-realm-row.mjs`;
 * `evidence/postbuild-pass.txt` — the SAME tree with the repo's installed deps present:
-  `tests 10 / pass 10 / fail 0`.
+  `tests 14 / pass 14 / fail 0`.
 
 ### 7b. Hosted correction #2 (`Build this repo`, type-level): `tsc --noEmit` is NOT the build check
 
@@ -296,6 +296,56 @@ compile face does not provide"* strips comments, asserts no bare `AbortSignal` s
 that hides ambient globals). The cheap assertion is a tripwire; the build config itself remains the
 real check, which CI runs and `evidence/build-config*.txt` records.
 
+### 7c. Review finding (§3.3, 2026-11-20 17:00): disposal is not drain
+
+The external review measured a lifecycle gap: `dispose()` set a single `disposed` state and released
+the fibers while swallowing release errors, so three different facts were conflated — *new
+operations refused* (worked), *admitted operations drained* (unproven: a call parked in an async
+`super.stat()` could still land its effect after the receipt), *resources released* (not
+expressible).
+
+Fixed in the module, not around it:
+
+* monotonic state machine `active → draining → released | termination-unconfirmed`;
+* an in-flight counter incremented at admission **before the first await** and decremented in
+  `finally` on every exit (success, throw, refusal after admission); `dispose()` awaits it up to
+  `drainTimeoutMs` (default 5 000 ms, per-scope override);
+* `active → draining` refuses new calls by name (`scope-draining`), stays non-terminal while it
+  waits, and reaches a terminal state only when the outcome is measured;
+* a completed drain releases the tool fiber and then the provider fiber; a throwing disposer yields
+  `termination-unconfirmed` with `releaseErrors`, never a receipt that reads as success;
+* a drain timeout does **not** release: terminating a provider that will not drain is the
+  host/lifecycle owner's decision, and the binding does not pretend it happened;
+* the receipt carries, as separate fields, `state`, `drained`, `newOperationsRefused`,
+  `releaseConfirmed`, `refusalCode`, `reason`, `inFlightAtDispose`, `drainTimeoutMs`,
+  `releaseErrors`. No field implies another;
+* double dispose is idempotent: the first receipt is memoised and repeats return the same terminal
+  facts with `changed:false`; a binding that ended `termination-unconfirmed` never later reports
+  `released`;
+* lifecycle refusals are **not** lane facts (no admission was evaluated), so the fact stream stays a
+  pure record of lane decisions;
+* `record(fact)` is documented as **diagnostic-only** and is not the S1 durable-settlement path;
+  the suite pins that a throwing recorder delivers zero facts and changes neither the outcome nor
+  the binding's own evidence buffer.
+
+The module header now states the responsibility boundary as a contract and says explicitly that a
+Scope receipt is evidence about the binding, **never** proof that an OS effect did not happen
+(streams, watches and any effect the binding did not admit are outside `drained`).
+
+Proof, with real numbers (`evidence/lifecycle/`):
+
+* four races in the suite (A drain-waits + no effect after receipt, measured on bytes and file set,
+  not only the counter; B timeout ⇒ unconfirmed and no later flip; C distinct draining/released
+  names, no fact, no effect; D idempotence + throwing recorder);
+* **12 host-free arms** (7 pre-existing + 5 lifecycle) and **11 mutations**, every new invariant
+  paired with a mutation that turns it RED: `MUTATION-BASELINE-VERDICT GREEN arms=12`,
+  `MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12`;
+* suite **14/14**; the standalone pre-build reproduction is accordingly 11 pass / 3 fail (same three
+  `ERR_MODULE_NOT_FOUND` assembly arms), post-build **14/14**;
+* `evidence/lifecycle/receipts.txt` records the actual receipts for A–E (including a
+  `termination-unconfirmed` release failure), and `evidence/lifecycle/README.md` tabulates what each
+  race measures and what a caller may rely on.
+
 **Committed artefacts.** `packages/tools/dist/**` is gitignored and untracked (no files committed
 there). But the workspace build also mirrors package emissions into the **tracked** install surface
 `packages/runtime/dist/packages/<pkg>/…`; `check-artifacts-committed` reported `verdict=stale`,
@@ -309,15 +359,19 @@ commit** as the source change, so HEAD is a built tree again.
 
 | file | content |
 | --- | --- |
-| `evidence/suite.txt` | the whole `node --test … tests/ute1-fs/native-fs-binding.test.mjs` transcript, 10/10 |
+| `evidence/suite.txt` | the whole `node --test … tests/ute1-fs/native-fs-binding.test.mjs` transcript, 14/14 |
 | `evidence/mutation-transcript.txt` | the 6 mutations + 7 baseline arms, each with its verdict line |
 | `evidence/gates.txt` | catalog, dispatch, eb3 required/negative controls, docs-sync, identities, tsc, vitest, diff-check — command + output + exit code |
 | `evidence/isolation.txt` | `git diff` vs master, importer census, pin block, census population, host-tree porcelain, catalog entry, CI byte-match |
 | `evidence/prebuild-failure.txt` | the suite in a standalone checkout with NO repo `node_modules`: the three assembly tests die with the hosted `ERR_MODULE_NOT_FOUND` (`@deepseek-ai/dsh-scope` from `a5sf-realm-row.mjs`), host-free arms pass |
-| `evidence/postbuild-pass.txt` | the SAME tree plus the built repo's `node_modules`: 10/10 pass — where the new census step runs |
+| `evidence/postbuild-pass.txt` | the SAME tree plus the built repo's `node_modules`: 14/14 pass — where the new census step runs |
 | `evidence/build-config-before-after.txt` | the BEFORE module `TS2304` on `tsconfig.build.json` vs PASS on `tsconfig.json`, then the AFTER build — the evidence for §7b |
 | `evidence/build-config.txt` | `pnpm --filter @dsh-agent-team/tools run build` (the exact CI command for this package), exit 0 |
 | `evidence/full-workspace-build.txt` | `pnpm run build`, the census's whole-workspace build half, exit 0 |
+| `evidence/lifecycle/README.md` | the disposal finding, the state machine, the receipt field table, the responsibility contract, and what each race/mutation measures |
+| `evidence/lifecycle/receipts.txt` | the actual receipts for races A–E, incl. `termination-unconfirmed` from a drain timeout and from a throwing fiber disposer |
+| `evidence/lifecycle/suite.txt` | the 14/14 suite transcript at this head |
+| `evidence/lifecycle/mutation-transcript.txt` | the 11 mutations × 12 arms transcript (`GREEN mutations=11 arms=12`) |
 | `evidence/legacy-fs-before-after.txt` | the legacy FS suites on a pristine `origin/master` worktree vs this branch, verdict-set diff |
 
 Scratch (untracked, gitignored): mutation copies and assembly worlds under
@@ -333,9 +387,10 @@ Scratch (untracked, gitignored): mutation copies and assembly worlds under
 * merge of `origin/master` (#793 + #794, lane argv rebuilt from the manifest):
   `d510523d6f7e3b0547e6836312b41491202588b9`
 * wiring correction (§7a, hosted failure on `2ec811f6f`): `dfde5ceb7028f1f8d554fc3144582e05333f5af6`
-* production-compile-face correction (§7b, hosted `Build this repo` failure): the commit that
-  carries this memo revision plus the rebuilt tracked artefacts; the PR body states its exact
-  40-hex head at push time.
+* production-compile-face correction (§7b, hosted `Build this repo` failure):
+  `0685e8ab28e4189252541b24dd08418c642124fd`
+* lifecycle rewrite (§7c, review §3.3 on the dfde5ceb tree): the commit that carries this memo
+  revision plus the rebuilt tracked artefacts; the PR body states its exact 40-hex head at push time.
 * original base: `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892`
 * PR: a DRAFT pull request against `master` is created from this branch; the PR body carries the
   exact 40-hex head at push time. It is intentionally **not** marked ready: UTE-1 is one work

@@ -37,15 +37,15 @@ const SCRATCH = join(REPO_ROOT, '.artifacts', 'tmp', 'ute1-fs-mutations')
  */
 export const MUTATIONS = Object.freeze([
   Object.freeze({
-    id: 'M1-remove-dispose-guard',
-    behaviour: 'the scope-state check in assertLive (use-after-dispose)',
+    id: 'M1-remove-lifecycle-guard',
+    behaviour: 'the lifecycle check in assertLive (use-after-dispose)',
     expectedRed: Object.freeze(['a3-use-after-dispose']),
     apply(source) {
       return replaceOnce(
         source,
-        '    if (state.status === \'open\') return',
+        '    if (refusal === null) return',
         '    if (true) return',
-        'assertLive no longer consults the scope state',
+        'assertLive no longer consults the lifecycle state',
       )
     },
   }),
@@ -63,15 +63,15 @@ export const MUTATIONS = Object.freeze([
     },
   }),
   Object.freeze({
-    id: 'M3-dispose-keeps-scope-open',
-    behaviour: 'the monotonic open→disposed transition in dispose()',
+    id: 'M3-dispose-never-terminates',
+    behaviour: 'the monotonic transition into a terminal state in dispose()',
     expectedRed: Object.freeze(['a4-double-dispose']),
     apply(source) {
       return replaceOnce(
         source,
-        '      state.status = \'disposed\'',
-        '      state.status = \'open\'',
-        'disposal no longer closes the scope',
+        '    state.status = terminal',
+        '    state.status = \'draining\'',
+        'disposal never leaves the draining state',
       )
     },
   }),
@@ -110,6 +110,71 @@ export const MUTATIONS = Object.freeze([
         '  if (host.generation !== input.expectedGeneration) {',
         '  if (false) {',
         'a host of any generation is accepted',
+      )
+    },
+  }),
+  Object.freeze({
+    id: 'M7-ignore-the-drain',
+    behaviour: 'the drain wait before release (dispose must not return while work is parked)',
+    expectedRed: Object.freeze(['a8-drain-waits']),
+    apply(source) {
+      return replaceOnce(
+        source,
+        '    const drained = await waitForDrain(drainTimeoutMs)',
+        '    const drained = true',
+        'disposal stops waiting for admitted work',
+      )
+    },
+  }),
+  Object.freeze({
+    id: 'M8-claim-release-without-confirmation',
+    behaviour: 'the receipt\'s releaseConfirmed being tied to the terminal state',
+    expectedRed: Object.freeze(['a9-drain-timeout', 'a12-release-must-be-confirmed']),
+    apply(source) {
+      return replaceOnce(
+        source,
+        '      releaseConfirmed: terminal === \'released\',',
+        '      releaseConfirmed: true,',
+        'every receipt claims a confirmed release',
+      )
+    },
+  }),
+  Object.freeze({
+    id: 'M9-one-refusal-code-for-every-stop',
+    behaviour: 'the distinct draining vs released refusal names',
+    expectedRed: Object.freeze(['a10-refusal-codes']),
+    apply(source) {
+      return replaceOnce(
+        source,
+        "    if (state.status === 'draining') return FS_BINDING_REFUSAL.SCOPE_DRAINING\n    if (state.status === 'released') return FS_BINDING_REFUSAL.SCOPE_DISPOSED",
+        "    if (state.status !== 'active') return FS_BINDING_REFUSAL.SCOPE_DISPOSED",
+        'every non-active state is refused with the released code',
+      )
+    },
+  }),
+  Object.freeze({
+    id: 'M10-swallow-release-failure',
+    behaviour: 'release failure forcing termination-unconfirmed instead of released',
+    expectedRed: Object.freeze(['a12-release-must-be-confirmed']),
+    apply(source) {
+      return replaceOnce(
+        source,
+        "      } catch (error) {\n        terminal = 'termination-unconfirmed'",
+        "      } catch (error) {\n        terminal = 'released'",
+        'a throwing release step still reports released',
+      )
+    },
+  }),
+  Object.freeze({
+    id: 'M11-record-failure-becomes-fatal',
+    behaviour: 'the diagnostic recorder being swallowed (record must never decide)',
+    expectedRed: Object.freeze(['a11-record-is-diagnostic']),
+    apply(source) {
+      return replaceOnce(
+        source,
+        "    try {\n      record(fact)\n    } catch {\n      // A recorder is evidence only; its failure must not change a decision.\n    }",
+        '    record(fact)',
+        'a throwing recorder now aborts the operation',
       )
     },
   }),

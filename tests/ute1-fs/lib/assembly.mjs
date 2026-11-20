@@ -227,14 +227,14 @@ export async function makeAssembledMemberWorld({
         // The binding scope closes FIRST so a call that races the teardown is
         // refused by name rather than hitting a torn-down service; then the
         // realm (which owns the native + provider fibers); then the root.
-        scope.dispose('assembly-world-disposed')
+        await scope.dispose('assembly-world-disposed')
         if (realm !== undefined) await realm.dispose()
         await ctx.fiber.dispose()
         rmSync(dir, { recursive: true, force: true })
       },
     }
   } catch (error) {
-    scope.dispose('assembly-mount-failed')
+    await scope.dispose('assembly-mount-failed')
     if (realm !== undefined) await realm.dispose().catch(() => undefined)
     await ctx.fiber.dispose().catch(() => undefined)
     rmSync(dir, { recursive: true, force: true })

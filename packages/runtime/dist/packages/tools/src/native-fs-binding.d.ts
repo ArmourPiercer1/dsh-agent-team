@@ -19,13 +19,44 @@
  *   - It does not route production traffic, does not replace the governed
  *     route-C path and does not delete or modify any existing path.
  *
- * WHY THE BINDING OWNS A SCOPE (UTE-1 §3). A binding has an explicit lifetime:
- * created (`open`), used, disposed (once). Disposal is monotonic and every
- * later target-bearing operation is refused with the NAMED reason
- * `scope-disposed` instead of silently reaching the host provider or crashing
- * on a torn-down service. The scope is also the only place the binding's lane
- * lives: two overlapping scopes never share a lane, and replacing a scope's
- * provider never resurrects the previous lane.
+ * WHY THE BINDING OWNS A SCOPE (UTE-1 §3), AND WHAT DISPOSAL MEANS.
+ * A binding has an explicit, monotonic lifetime:
+ *
+ *     active ──dispose()──► draining ──drain complete + release resolved──► released
+ *                                    └──timeout, or a release step failed──► termination-unconfirmed
+ *
+ * Three facts that used to be conflated are now three receipt fields, because a
+ * caller who needs one of them must not have to infer the other two:
+ *
+ *   - `newOperationsRefused` — a call arriving after `dispose()` started is
+ *     refused by name: `scope-draining` while draining, `scope-disposed` after
+ *     `released`, `scope-termination-unconfirmed` after an unconfirmed stop.
+ *     This is the one thing this binding proves about FUTURE work.
+ *   - `drained` — every operation the binding ADMITTED has finished (success,
+ *     throw, or a refusal after admission) before the receipt was produced.
+ *     `dispose()` waits for that up to `drainTimeoutMs`.
+ *   - `releaseConfirmed` — the tools/provider fibers this mount created were
+ *     disposed and none of those disposals threw. Only `released` may claim it.
+ *
+ * RESPONSIBILITY BOUNDARY (contract, not a caveat). This binding owns exactly
+ * two things: (a) refusing new operations once disposal starts, and (b) counting
+ * and draining the operations it admitted. Terminating a provider that will not
+ * drain is the HOST/lifecycle owner's job unless that provider honours the
+ * injected abort signal; this binding does not kill fibers out from under a
+ * parked call. Correspondingly, a Scope receipt is evidence ABOUT THE BINDING —
+ * never proof that an OS effect did not happen. `drained: true` says the
+ * admitted promise-shaped operations returned; it does not say the kernel did
+ * nothing, and it does not cover a stream that outlives its iterator, a watch
+ * registration, or any effect started by code the binding did not admit.
+ *
+ * DOUBLE DISPOSE IS IDEMPOTENT AND TERMINAL. The first call performs the
+ * transition and memoises its receipt; every later call returns the SAME
+ * terminal facts with `changed:false, alreadyDisposed:true`. A binding that
+ * ended `termination-unconfirmed` never later reports `released`.
+ *
+ * The scope is also the only place the binding's lane lives: two overlapping
+ * scopes never share a lane, and replacing a scope's provider never resurrects
+ * the previous lane.
  *
  * HOST GENERATION IS PINNED AT MOUNT. `mountNativeFsBinding` records the host
  * generation the caller expects and refuses a different one by name
@@ -67,15 +98,26 @@ export declare const FS_BINDING_REFUSAL: Readonly<{
     readonly LANE_WRITE: "lane-write";
     /** A mutation of an existing target that the read axis does not cover. */
     readonly WRITE_REQUIRES_READ: "write-requires-read";
-    /** The binding's scope was disposed; the operation is refused by name. */
+    /** The binding's scope is DRAINING: disposal started, admitted work is unfinished. */
+    readonly SCOPE_DRAINING: "scope-draining";
+    /** The binding's scope is released; the operation is refused by name. */
     readonly SCOPE_DISPOSED: "scope-disposed";
+    /** The binding's scope stopped with `termination-unconfirmed`; refuse by that name. */
+    readonly SCOPE_TERMINATION_UNCONFIRMED: "scope-termination-unconfirmed";
     /** The provider instance does not belong to a live binding scope. */
     readonly SCOPE_UNKNOWN: "scope-unknown";
 }>;
 /** One member of {@link FS_BINDING_REFUSAL}. */
 export type FsBindingRefusal = (typeof FS_BINDING_REFUSAL)[keyof typeof FS_BINDING_REFUSAL];
-/** The binding lifecycle. `open` is the only state in which I/O is admitted. */
-export type FsBindingStatus = 'open' | 'disposed';
+/**
+ * The binding lifecycle. `active` is the only state in which I/O is admitted;
+ * `draining` refuses new work while admitted work finishes; the two terminal
+ * states are `released` (drain + release confirmed) and `termination-unconfirmed`
+ * (drain timed out, or a release step threw — the provider was NOT terminated).
+ */
+export type FsBindingStatus = 'active' | 'draining' | 'released' | 'termination-unconfirmed';
+/** The terminal states a disposal receipt can report. */
+export type FsBindingTerminalState = 'released' | 'termination-unconfirmed';
 /** A binding's declared lane: canonical absolute roots per axis. */
 export interface FsBindingLane {
     readonly read: readonly string[];
@@ -185,16 +227,40 @@ export interface NativeFsBindingContext {
         get(name: string): unknown;
     };
 }
-/** The disposal receipt: a named, monotonic lifecycle answer. */
+/**
+ * The disposal receipt: three separable facts, never one implied by another.
+ *
+ * `state === 'released'` is the ONLY shape that may be read as "the binding is
+ * stopped and its resources are gone". `drained` speaks about admitted
+ * operations; `releaseConfirmed` speaks about the fibers; `newOperationsRefused`
+ * speaks about calls that arrive later. A receipt is evidence about the binding,
+ * never proof that an OS effect did not happen (see the module header).
+ */
 export interface NativeFsBindingDisposal {
     readonly bindingId: string;
-    readonly status: 'disposed';
-    /** True when this call performed the disposal; false on a repeat call. */
+    /** The terminal lifecycle state of the binding. */
+    readonly state: FsBindingTerminalState;
+    /** True when this call performed the transition; false on a repeat call. */
     readonly changed: boolean;
-    /** True when a repeat call found the scope already disposed. */
+    /** True when a repeat call returned the memoised terminal facts. */
     readonly alreadyDisposed: boolean;
+    /** True iff every operation ADMITTED before disposal finished before the receipt. */
+    readonly drained: boolean;
+    /** True iff new operations are refused after this transition (always true here). */
+    readonly newOperationsRefused: boolean;
+    /** True iff `state === 'released'` AND the release step resolved without error. */
+    readonly releaseConfirmed: boolean;
+    /** The refusal class a NEW operation would receive now. */
+    readonly refusalCode: string;
+    /** Why the binding reached this state (for `termination-unconfirmed`: the cause). */
     readonly reason: string;
     readonly disposedAt: string;
+    /** Operations admitted but unfinished at the moment `dispose()` started. */
+    readonly inFlightAtDispose: number;
+    /** The bound this disposal waited for the drain (milliseconds). */
+    readonly drainTimeoutMs: number;
+    /** Errors thrown by release steps, in attempt order (empty on a confirmed release). */
+    readonly releaseErrors: readonly string[];
 }
 /**
  * A binding SCOPE: the lane + lifecycle state + the provider class that reads
@@ -208,12 +274,18 @@ export interface NativeFsBindingScope {
     readonly lane: FsBindingLane;
     readonly providerClass: NativeFileSystemConstructor;
     readonly status: FsBindingStatus;
-    /** Every decision so far, in call order (evidence only). */
+    /** Operations admitted but not yet finished (0 when `active` and idle). */
+    readonly inFlight: number;
+    /** Every LANE decision so far, in call order (evidence only; lifecycle refusals are not facts). */
     readonly facts: readonly NativeFsBindingFact[];
-    /** Throw the named refusal unless the scope is `open`. */
+    /** Throw the named lifecycle refusal unless the scope is `active`. */
     assertLive(operation: string): void;
-    /** Dispose the SCOPE (state only — fibers belong to the caller). Idempotent. */
-    dispose(reason?: string): NativeFsBindingDisposal;
+    /**
+     * Dispose the SCOPE: refuse new work, drain admitted work up to
+     * `drainTimeoutMs`, then (when a release handler is supplied) release.
+     * Idempotent and terminal — a repeat returns the memoised terminal facts.
+     */
+    dispose(reason?: string, release?: () => Promise<void>): Promise<NativeFsBindingDisposal>;
 }
 /** Options for {@link createNativeFsBindingScope}. */
 export interface CreateNativeFsBindingScopeInput {
@@ -222,10 +294,19 @@ export interface CreateNativeFsBindingScopeInput {
     readonly lane: FsBindingLane;
     readonly Base: NativeFileSystemConstructor;
     readonly FsError: FsErrorConstructor;
-    /** Optional recorder, called once per decision before it returns/throws. */
+    /**
+     * DIAGNOSTIC-ONLY recorder, called once per LANE decision.
+     *
+     * Its failure is swallowed on purpose: a diagnostic sink must never change
+     * what the binding decides. It is therefore NOT a settlement channel — do not
+     * use it as (or in place of) the S1 durable-settlement writer, whose failures
+     * MUST be fatal to the operation that depends on them. See the module header.
+     */
     readonly record?: (fact: NativeFsBindingFact) => void;
     /** Optional label used in refusal messages (defaults to {@link NATIVE_FS_BINDING_MODULE_ID}). */
     readonly label?: string;
+    /** How long `dispose()` waits for admitted operations before declaring `termination-unconfirmed`. */
+    readonly drainTimeoutMs?: number;
 }
 /** Options for {@link mountNativeFsBinding}. */
 export interface MountNativeFsBindingInput {
@@ -238,8 +319,14 @@ export interface MountNativeFsBindingInput {
     readonly cwd?: string;
     /** Config forwarded verbatim to the native tool module. */
     readonly toolConfig?: Record<string, unknown>;
+    /**
+     * DIAGNOSTIC-ONLY recorder (see {@link CreateNativeFsBindingScopeInput.record}):
+     * swallowed on failure, never the S1 durable-settlement path.
+     */
     readonly record?: (fact: NativeFsBindingFact) => void;
     readonly label?: string;
+    /** How long `dispose()` waits for admitted operations (default 5_000 ms). */
+    readonly drainTimeoutMs?: number;
 }
 /**
  * The mounted binding: a scope plus the fibers its mount created. `dispose` is
@@ -256,11 +343,13 @@ export interface NativeFsBinding {
     readonly providerMounted: boolean;
     readonly toolMounted: boolean;
     readonly status: FsBindingStatus;
-    /** Every decision so far, in call order (evidence only). */
+    /** Operations admitted but not yet finished (0 when `active` and idle). */
+    readonly inFlight: number;
+    /** Every LANE decision so far, in call order (evidence only). */
     readonly facts: readonly NativeFsBindingFact[];
-    /** Throw the named refusal unless the scope is `open`. */
+    /** Throw the named lifecycle refusal unless the scope is `active`. */
     assertLive(operation: string): void;
-    /** Tear the fibers down AND dispose the scope. Idempotent. */
+    /** Drain admitted work, tear the fibers down, and dispose the scope. Idempotent. */
     dispose(reason?: string): Promise<NativeFsBindingDisposal>;
 }
 /**
