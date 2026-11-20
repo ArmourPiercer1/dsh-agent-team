@@ -1,8 +1,10 @@
 # old-path.tsv — what this fixture is, and what it is not
 
-This file is the reviewed golden fixture for the UTE G1-S1 (FS) prototype: ten
-`(request → effect)` pairs measured on the CURRENT legacy governed path and
-serialized by `tests/ute-g1-fs/lib/scenario.mjs`.
+This file is the reviewed golden fixture for the UTE G1-S1 (FS) prototype:
+**seventeen** `(request → effect)` pairs measured on the CURRENT legacy path and
+serialized by `tests/ute-g1-fs/lib/scenario.mjs`. Ten cover `write`/`read`/`edit`
+on the product route-C seam; seven cover `read_image` (UTE-3 PR B1), the fourth
+member of the indivisible FS assembly.
 
 It is a fixture, not a golden oracle: `run-prototype.mjs` compares the prototype
 against it field for field, and `capture-old-path.mjs` re-derives it from the
@@ -18,9 +20,33 @@ claim).
 | host commit | `639ed015397290b3745d163aafe02ffee4aa3f84` |
 | governance seam | `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` (product route C), i.e. the P1 `EffectiveIo` ceiling + the confined provider subclass in `packages/runtime/team-services/src/fs.ts` |
 | dispatch | `ctx.tools.execute({'calls':[…]})` |
-| capture form | host-free world (`tests/world-factory/lib/a5sf-fs-contract-world.mjs`, `composition: 'route-c'`), `mkdtemp` per vector |
+| capture form | host-free world (`tests/world-factory/lib/a5sf-fs-contract-world.mjs`), `mkdtemp` per vector; composition per vector: `route-c` (default, all 10 read/write/edit vectors + `FS-I0-route-c-gap`) or `post-gap-1` (the six remaining `read_image` vectors — see below) |
 | capture command | `node tests/ute-g1-fs/capture-old-path.mjs --write` |
-| oracle | `lib/effect-oracle.mjs` — existence, bytes, sha256, mode; refusal class; leak scan |
+| oracle | `lib/effect-oracle.mjs` — existence, bytes, sha256, mode; refusal class; leak scan; for `read_image`, the committed attachment (bytes + sha256 observed at the store seam) and the model-facing block shape, recorded as a synthetic `@result:…` effect |
+
+## `read_image` composition (disclosed, not implied)
+
+The PRODUCT route-C composition cannot reach `read_image` at all:
+`packages/runtime/team-services/src/mount.ts:445` keeps
+`ROUTED_SERVICE_NAMES = ['tools','systemPrompt']`, so the tool's deferred child
+cannot resolve `ctx.fs` and the call throws `cannot get property "fs" without
+inject` before any provider call (GAP-FS-CONTRACT-1 / PD-5). That product fact is
+recorded as `FS-I0-route-c-gap`.
+
+The other six image vectors run the SAME legacy host, SAME real
+`@deepseek-ai/dsh-tool-fs` module and SAME confined provider under the world
+factory's `post-gap-1` composition — the one-line deferred-inject merge the FS
+face already uses to pin the attachment contract. This is disclosed so the
+fixture cannot be read as "the unpatched product route serves `read_image`"; it
+is NOT. Whether a retirement baseline may be taken under that proposed
+composition, rather than requiring the product-route fix first, is an owner
+decision and is not decided by this fixture.
+
+The `@result:…` effect entry is synthetic (marked with `@`) because `read_image`
+produces an attachment, not a filesystem mutation:
+`@result:<mediaType>:<w>x<h>|present|<bytes>|<sha256>|blocks=<shape>`. The digest
+is over the bytes the ATTACHMENT STORE received, not over the path string. A
+refusal records `@result:none|absent|-|-|-` (no attachment materialised).
 
 ## KNOWN-SEMANTIC-DIFFERENCE
 
@@ -57,5 +83,13 @@ Header: `id entry lane_read lane_write outcome refusal codes effects leaks`.
 * **Delete / move** — the FS tool family exposes no model-facing delete/move
   tool and the legacy governed provider does not override `deleteFile`/
   `moveFile`, so there is no old-path vector to compare against.
-* **Streaming / byte-range / `read_image`** — not exercised.
+* **`read_image` on the PRODUCT route-C composition** — it is dead there
+  (PD-5), so only its failure is pinned (`FS-I0-route-c-gap`). The allow/lane/
+  route/cancel image vectors run under the disclosed `post-gap-1` composition.
+* **`read_image` beyond those vectors** — no JPEG/WebP/GIF fixture, no
+  downscale/`originalDimensions` arm, no byte-cap (`maxImageBytes`) refusal, no
+  extension-less sniff arm, no mid-read cancellation (the corpus can only
+  pre-abort before dispatch), no attachment-store failure arm. These are
+  explicitly NOT claimed by the fixture.
+* **Streaming / byte-range** — not exercised.
 * **Live boot** — C1 host-free capture, not a booted run.

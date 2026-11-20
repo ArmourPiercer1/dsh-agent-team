@@ -38,11 +38,12 @@ adds transport, not evidence. It is not a claim that a live boot was run.
 ```
 capture-old-path.mjs      # (re)capture the golden fixture from the legacy governed path
 run-prototype.mjs         # run the corpus on the prototype and grade it against the fixture
-negative-controls.mjs     # NC-1..NC-4, one per claim (see §5)
+negative-controls.mjs     # NC-1..NC-4 family-level + NC-MEMBER <m> per member (see §5)
 lane-suite.test.mjs            # node:test wrapper: corpus-vs-golden + the four controls
-golden/old-path.tsv       # the reviewed fixture (10 vectors)
+golden/old-path.tsv       # the reviewed fixture (17 vectors)
 golden/old-path.meta.txt  # fixture identity: pins, seam, capture command, limits
-lib/corpus.mjs            # the 10 vectors: entry, declared lanes, steps, expected effects
+golden/COVERAGE.md        # member -> vector ids / NC line map, read_image composition disclosure
+lib/corpus.mjs            # the 17 vectors: entry, declared lanes, steps, expected effects
 lib/old-path.mjs          # capture on the legacy route-C world
 lib/new-path.mjs          # run on the pinned next host
 lib/prototype-provider.mjs# the confined FS provider prototype (public base class only)
@@ -73,11 +74,26 @@ Normalized record per vector: `id`, `entry` (the native tool name), the declared
 | `FS-S1-symlink-escape` | `write` | a symlink inside the lane pointing outside → refused, target untouched |
 | `FS-R1-outside-read-leak` | `read` | read outside the lane → refused, and the secret token never appears in result text |
 | `FS-M1-mode-preserved` | `write` | overwriting a `0o600` file keeps the mode |
+| `FS-I0-route-c-gap` | `read_image` | the PRODUCT route-C composition cannot reach `read_image` at all (PD-5): refused before any image work, zero attachment bytes |
+| `FS-I1-inlane-image` | `read_image` | an in-lane image read commits exactly one attachment; the recorded digest is over the committed bytes and the result shape is one text + one image block |
+| `FS-I2-outside-image-denied` | `read_image` | an out-of-lane image is refused; the out-of-lane file is unchanged and zero attachment bytes appear |
+| `FS-I3-lane-bound-image` | `read_image` | the read lane is a bound subtree: a path outside every declared read root is refused before bytes or attachment work |
+| `FS-I4-missing-image` | `read_image` | a missing target is a typed refusal, not an empty image |
+| `FS-I5-route-unresolved` | `read_image` | the image-capability route gate refuses a text-only model before any fs read or attachment write |
+| `FS-I6-cancel-before-dispatch` | `read_image` | cancellation is expressible only before dispatch on this path; the image is unchanged and no attachment is created |
 
 Modes are *measured*, not assumed: the old path creates files `0o600`
 (atomic-create temp inode) and preserves an existing file's mode on overwrite.
 
 `FS-R1` is a **refusal + no-leak** check, not a read-confinement proof — see §7.
+
+The `read_image` rows carry a synthetic `@result:…` effect entry (marked with
+`@`): the committed attachment's byte length + sha256 observed at the store seam
+and the model-facing block shape. The six allow/lane/route/cancel image vectors
+run under the world factory's `post-gap-1` composition because the product
+route-C composition cannot reach `read_image` today (PD-5); `FS-I0-route-c-gap`
+pins that product fact. The per-member map and the full disclosure are in
+[`golden/COVERAGE.md`](./golden/COVERAGE.md).
 
 ## 4. Running it
 
@@ -153,6 +169,14 @@ Negative controls (`negative-controls.mjs`), one per claim:
 | `NC-2-harness-bites` | mutate ONE golden cell (created file's sha256) in memory | the comparison goes RED on `effects`; the fixture on disk is unchanged; the unmutated run is GREEN |
 | `NC-3-no-fallback` | point the host resolver at a nonexistent tree | `NextHostMissingError` naming `dsh-v0.2.2-rc.5` + `tests/deepseek-harness-next`, never the legacy tree |
 | `NC-4-lane-load-bearing` | re-run the SAME refused vector with the refused token added to the write lane | the call succeeds and the file appears (5 bytes) — otherwise NC-1 would not be evidence about the lane |
+| `NC-MEMBER read` | widen ONLY the read lane on `FS-R1` | the refusal becomes a result-text leak of the planted secret (the read lane is load-bearing) |
+| `NC-MEMBER write` | widen ONLY the write lane on `FS-W4` | the refused out-of-lane file appears (5 bytes) |
+| `NC-MEMBER edit` | drop ONLY the edit version guard on a stale-edit vector | the stale edit applies and the external bytes change |
+| `NC-MEMBER read_image` | widen ONLY the image read lane on `FS-I2` | the refused out-of-lane image materialises a 70-byte attachment |
+
+Each `NC-MEMBER` is paired with `NC-MEMBER-POSITIVE <member>`, which re-runs the
+unmodified vector and proves it still reproduces its golden row (the control is
+not vacuous).
 
 ## 6. Isolation
 
@@ -197,8 +221,13 @@ Negative controls (`negative-controls.mjs`), one per claim:
    (measured). The prototype guards them, but there is **no old-path vector to
    compare against**, so they are not in the corpus and no equivalence is
    claimed.
-3. **Streaming / byte-range / attachments.** `read_image`, `streamText`,
-   `readByteRange` are not exercised.
+3. **Streaming / byte-range / most attachment behaviour.** `read_image` is now
+   exercised on the old path (see `golden/COVERAGE.md`), but NOT on the product
+   route-C composition in any allow shape (it is dead there: PD-5), and several
+   image arms are explicitly not claimed (JPEG/WebP/GIF, downscale, byte cap,
+   content sniffing, mid-read cancellation, store failure). `streamText` and
+   `readByteRange` are not exercised. The new path (`NEW-PATH-VECTOR` for
+   `FS-I*`) is PR B2's scope.
 4. **A live boot.** Both paths are host-free C1 runs (see §1).
 5. **The production execution path.** This is a prototype. No production traffic
    goes through it, no ToolPlane/Family Body was removed, no product Authority

@@ -30,17 +30,30 @@ const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv
 test('the prototype reproduces the old-path golden corpus', async () => {
   const host = await loadHostSurface()
   const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
-  const { records } = await runCorpus()
   assert.equal(golden.length, CORPUS.length, 'the golden fixture must cover every corpus vector')
-  const { verdicts, failures, missingGolden, missingObserved } = compareAll(golden, records)
+  // UTE-3 PR B1 adds `read_image` baselines; the prototype's image support is
+  // PR B2's scope. The pending set is DECLARED and printed — never a silent
+  // skip, and it may not widen to another member.
+  const runnable = CORPUS.filter((vector) => vector.newPathPending !== true)
+  const pending = CORPUS.filter((vector) => vector.newPathPending === true)
+  assert.deepEqual(
+    pending.map((vector) => vector.entry),
+    pending.map(() => 'read_image'),
+    'only the read_image member may be new-path-pending in B1',
+  )
+  const runnableIds = new Set(runnable.map((vector) => vector.id))
+  const goldenRunnable = golden.filter((row) => runnableIds.has(row.id))
+  const { records } = await runCorpus()
+  console.log(`UTE-G1-FS-NEW-PATH-PENDING ids=${pending.map((vector) => vector.id).join(',') || 'none'} reason=prototype-image-support-lands-in-B2`)
+  const { verdicts, failures, missingGolden, missingObserved } = compareAll(goldenRunnable, records)
   for (const failure of failures) {
     console.log(`UTE-G1-FS-DIFF ${failure.id} ${failure.diffs.map((diff) => `${diff.field}: old="${diff.expected}" new="${diff.observed}"`).join(' | ')}`)
   }
   assert.deepEqual(missingGolden, [], 'the corpus must not add vectors without a captured old-path record')
-  assert.deepEqual(missingObserved, [], 'every golden vector must run on the prototype')
-  assert.equal(verdicts.length, CORPUS.length)
+  assert.deepEqual(missingObserved, [], 'every non-pending golden vector must run on the prototype')
+  assert.equal(verdicts.length, runnable.length)
   assert.deepEqual(failures, [], `${failures.length} of ${verdicts.length} vectors diverged from the old path`)
-  console.log(`UTE-G1-FS-VERDICT GREEN vectors=${verdicts.length} host=${host.host.head}`)
+  console.log(`UTE-G1-FS-VERDICT GREEN vectors=${verdicts.length} pending=${pending.length} host=${host.host.head}`)
 })
 
 test('every known semantic difference is declared and printable', () => {
@@ -56,7 +69,7 @@ test('every known semantic difference is declared and printable', () => {
   assert.ok(blocking.some((difference) => difference.klass === 'refusal-code'), 'the lane refusal-code difference must be recorded')
 })
 
-test('the four negative controls hold', async () => {
+test('the family-level and per-member negative controls hold', async () => {
   const results = await runNegativeControls()
   for (const result of results) console.log(`UTE-G1-FS-NC ${result.id} ${result.ok ? 'ok' : 'FAIL'} ${result.detail}`)
   assert.deepEqual(results.filter((result) => !result.ok), [], 'every negative control must hold')

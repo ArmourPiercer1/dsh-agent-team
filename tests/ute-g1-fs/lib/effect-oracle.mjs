@@ -128,6 +128,42 @@ export function parseEffectsCell(cell) {
 }
 
 /**
+ * `read_image` does not produce a filesystem effect: it commits an ATTACHMENT
+ * and returns a model-facing text+image result. The oracle records that as one
+ * synthetic effect entry so it lands in the SAME compared/effect cell as every
+ * other vector:
+ *
+ *   `@result:<mediaType>:<w>x<h>|present|<bytes>|<sha256>|blocks=<shape>`
+ *
+ * The digest is over the bytes the ATTACHMENT STORE received (observed at the
+ * store seam), never over the path string and never over the tool's own
+ * metadata. A refusal records `@result:none|absent|-|-|-`: "no attachment was
+ * materialised". `@` marks the path column as synthetic, not an FS locator.
+ *
+ * @param {{mediaType: string, width: number, height: number, bytes: number, sha256: string, blocks: string}} input
+ * @returns {Readonly<object>}
+ */
+export function imageResultEffect({ mediaType, width, height, bytes, sha256, blocks }) {
+  return Object.freeze({
+    path: `@result:${mediaType}:${width}x${height}`,
+    exists: true,
+    bytes,
+    sha256,
+    mode: `blocks=${blocks}`,
+  })
+}
+
+/** The "no attachment materialised" companion entry. */
+export function noImageResultEffect() {
+  return Object.freeze({ path: '@result:none', exists: false, bytes: null, sha256: null, mode: null })
+}
+
+/** sha256 of a byte buffer, hex. */
+export function sha256Of(bytes) {
+  return createHash('sha256').update(bytes).digest('hex')
+}
+
+/**
  * Scan the text the MODEL would have received for secret tokens.
  * @param {string} text
  * @param {readonly string[]} tokens

@@ -1,0 +1,151 @@
+{
+  "schema": "ute-retirement-verdict/1",
+  "ledger": "dev/agent-workflow/ledgers/ute-retirement.json",
+  "requested": 1,
+  "allowed": [],
+  "refused": [
+    {
+      "family": "fs",
+      "state": "NOT_RETIREABLE",
+      "codes": [
+        "UTE_SEMANTIC_DIFFERENCES_UNRESOLVED",
+        "UTE_VECTOR_UNREPRODUCED",
+        "UTE_MEMBER_UNCOVERED"
+      ],
+      "findings": [
+        {
+          "code": "UTE_SEMANTIC_DIFFERENCES_UNRESOLVED",
+          "detail": "blocking difference lane-refusal-code has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)",
+          "term": "semanticDifferencesResolved"
+        },
+        {
+          "code": "UTE_SEMANTIC_DIFFERENCES_UNRESOLVED",
+          "detail": "blocking difference refusal-observation-shape has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)",
+          "term": "semanticDifferencesResolved"
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I0-route-c-gap\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I0-route-c-gap PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I1-inlane-image\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I1-inlane-image PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I2-outside-image-denied\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I2-outside-image-denied PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I3-lane-bound-image\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I3-lane-bound-image PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I4-missing-image\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I4-missing-image PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I5-route-unresolved\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I5-route-unresolved PASS\""
+        },
+        {
+          "code": "UTE_VECTOR_UNREPRODUCED",
+          "term": "newPathVerified",
+          "detail": "vector \"FS-I6-cancel-before-dispatch\" is not reproduced: dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I6-cancel-before-dispatch PASS\""
+        },
+        {
+          "code": "UTE_MEMBER_UNCOVERED",
+          "term": "newPathVerified",
+          "detail": "member \"read_image\" has baseline vector(s) \"FS-I0-route-c-gap\", \"FS-I1-inlane-image\", \"FS-I2-outside-image-denied\", \"FS-I3-lane-bound-image\", \"FS-I4-missing-image\", \"FS-I5-route-unresolved\", \"FS-I6-cancel-before-dispatch\" but none is reproduced by dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt"
+        }
+      ],
+      "terms": {
+        "oldBaseline": true,
+        "newPathVerified": false,
+        "semanticDifferencesResolved": false,
+        "negativeControlsPass": true
+      },
+      "unit": {
+        "familyId": "dsh.fs-family",
+        "members": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ],
+        "declared": null
+      },
+      "coverage": {
+        "oldBaseline": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ],
+        "newPathVerified": [
+          "read",
+          "write",
+          "edit"
+        ],
+        "negativeControlsPass": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ]
+      }
+    }
+  ],
+  "verdicts": [
+    {
+      "family": "fs",
+      "allowed": false,
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": true,
+        "newPathVerified": false,
+        "semanticDifferencesResolved": false,
+        "negativeControlsPass": true
+      },
+      "unit": {
+        "familyId": "dsh.fs-family",
+        "members": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ],
+        "declared": null
+      },
+      "coverage": {
+        "oldBaseline": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ],
+        "newPathVerified": [
+          "read",
+          "write",
+          "edit"
+        ],
+        "negativeControlsPass": [
+          "read",
+          "write",
+          "edit",
+          "read_image"
+        ]
+      },
+      "codes": [
+        "UTE_SEMANTIC_DIFFERENCES_UNRESOLVED",
+        "UTE_VECTOR_UNREPRODUCED",
+        "UTE_MEMBER_UNCOVERED"
+      ]
+    }
+  ]
+}

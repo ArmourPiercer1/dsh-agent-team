@@ -14,6 +14,7 @@
  *
  * @module tests/ute-g1-fs/lib/host
  */
+import { realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -42,6 +43,11 @@ const ANCHORS = Object.freeze([
  * @returns {string} absolute file path beneath `tree`.
  */
 export function treeResolve(tree, spec) {
+  // A provisioned next-host tree may be a SYMLINK shared between worktrees
+  // (this lane's worktree symlinks the already-provisioned tree). Containment
+  // is therefore checked on the RESOLVED tree: resolving through the symlink is
+  // not an escape, while a package that resolves to a DIFFERENT tree still is.
+  const resolvedTree = realpathSync(tree)
   let last
   for (const anchor of ANCHORS) {
     let require
@@ -52,8 +58,8 @@ export function treeResolve(tree, spec) {
       continue
     }
     try {
-      const file = require.resolve(spec)
-      if (file !== tree && !file.startsWith(`${tree}${sep}`)) {
+      const file = realpathSync(require.resolve(spec))
+      if (file !== resolvedTree && !file.startsWith(`${resolvedTree}${sep}`)) {
         throw new Error(`ute-g1-fs: '${spec}' resolved OUTSIDE the pinned next-host tree (${file}); refusing the legacy fallback`)
       }
       return file

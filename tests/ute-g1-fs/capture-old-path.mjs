@@ -31,7 +31,8 @@ let problems = 0
 for (const record of records) {
   const vector = CORPUS.find((candidate) => candidate.id === record.id)
   console.log(
-    `OLD-PATH-VECTOR ${record.id} outcome=${record.outcome} refusal=${record.refusal ?? 'none'}`
+    `OLD-PATH-VECTOR ${record.id} entry=${record.entry} composition=${vector.composition ?? 'route-c'}`
+    + ` outcome=${record.outcome} refusal=${record.refusal ?? 'none'}`
     + ` effects=${record.effects.map((effect) => `${effect.path}:${effect.exists ? `${effect.bytes}B/${effect.mode}` : 'absent'}`).join(',') || '-'}`
     + ` codes=${record.codes.join(',') || '-'} leaks=${record.leaks.length === 0 ? 'none' : record.leaks.join(',')}`,
   )
