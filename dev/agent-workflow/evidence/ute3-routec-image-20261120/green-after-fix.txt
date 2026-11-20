@@ -1,0 +1,53 @@
+# POST-FIX (this tree)
+# command: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute-g1-fs/product-route-image.test.mjs
+UTE3-ROUTE-C-ALLOW entry=read_image storeBytes=70 storeSha256=c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77 facts=2
+✔ the product route serves read_image inside the declared read lane: one digested attachment on the CONFINED provider (305.204536ms)
+UTE3-ROUTE-C-DENY entry=read_image committed=0 providerCalls=0 facts=1
+✔ read_image outside the declared lane is REFUSED: zero attachment bytes, outside file unchanged, zero provider reads (22.240883ms)
+✔ a text-only model route refuses the image modality before any read (16.300613ms)
+✔ an aborted-before-dispatch read_image is still refused and materialises nothing (16.286607ms)
+UTE3-ROUTE-C-MUTATION unconfined-fs confined=deny/0B mutant=allow/70B guardFacts=0
+UTE3-ROUTE-C-SCOPE continuedOnlyWhenDeclared=true noFsMapUnchanged=true
+✔ MUTATION unconfined-fs: the same module on the base provider allows the same out-of-lane read (21.970189ms)
+✔ the continuation is scoped to services the module ITSELF declares: a module without fs gets a shape-identical inject map (0.915243ms)
+UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=member
+✔ the deferred child's fs is the MEMBER's confined provider: in-lane served, out-of-lane refused, guard realm=member (20.226685ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 469.360364
+
+# command: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/a5sf-fs-contract.test.mjs
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (310.602688ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (28.021107ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (71.702656ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (21.181411ms)
+✔ FSB-IMG-1 the PRODUCT route serves read_image: one attachment in-lane, lane refusal with zero bytes out-of-lane (20.762298ms)
+✔ FSB-IMG-1b WITHHELD continuation (historical GAP-FS-CONTRACT-1 fixture) still fails closed: zero reads, zero bytes, zero facts (19.23115ms)
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (23.100043ms)
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (18.815864ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (24.162544ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (22.455453ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (19.720025ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (17.831349ms)
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (22.889013ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (26.030149ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (26.411271ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (17.54646ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (21.871167ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (20.820039ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (19.340927ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (15.457777ms)
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures) (14.966178ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 21
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 852.272672

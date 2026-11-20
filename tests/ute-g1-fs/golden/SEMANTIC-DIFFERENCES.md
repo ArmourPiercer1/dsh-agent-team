@@ -76,12 +76,17 @@ than literal text or code equality (route C). The mapping that implements it is
 `REFUSAL_VOCABULARY_INCOMPLETE` refusal means an unmapped legacy value or
 `FsError` code is a refusal, never a default bucket.
 
-The vocabulary is nine categories and covers all seven legacy refusal classes the
-corpus now records — including the four the B1 `read_image` baselines added
-(`missing-path`, `image-modality-denied` → `unsupported-mode`, `cancelled`, and
-`route-unresolved`, which gets its own category because FS-I0's cause is the
-product route-C gap (GAP-FS-CONTRACT-1 / PD-5), not an undetermined refusal; see
-`docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md` §2.5).
+The vocabulary is nine categories and covers all legacy refusal classes the corpus
+records — SIX since the route-C repair (`lane-deny`, `write-requires-read`,
+`stale-version`, `missing-path`, `image-modality-denied` → `unsupported-mode`,
+`cancelled`) — plus one that the corpus no longer emits and that is kept
+reachable by a MEASURED fixture: `route-unresolved`, the historical
+GAP-FS-CONTRACT-1 failure mode, produced by `FSB-IMG-1b` on the
+`withheld-fs-continuation` composition and classified by the same
+`classifyRefusal` the capture uses. `lib/refusal-categories.test.mjs` fails by
+name if a declared class has neither a corpus row nor an executed fixture
+(`assertClassVocabularyCovered`); see
+`docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md` §2.5.
 
 **This is NOT `SemanticDifferencesResolved` and it is NOT an approval.**
 `approval: PENDING (owner signature required)`. The owner ruling chose the
