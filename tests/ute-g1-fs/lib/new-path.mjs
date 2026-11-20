@@ -75,9 +75,13 @@ export async function runVector(vector, host, { widenWriteTokens } = {}) {
     const saved = []
     class ObservedAttachmentStore extends host.LocalAttachmentStore {
       async saveImage(image) {
-        const data = Buffer.from(image.data)
         const ref = await super.saveImage(image)
-        saved.push({ bytes: data.length, sha256: sha256Of(data) })
+        // Read the bytes BACK from the store: the digest is over the committed
+        // object, not the caller's buffer and not the ref's self-reported
+        // metadata. (The store may normalize before publishing.)
+        const stored = await this.readImage(ref)
+        const committed = Buffer.from(stored.data)
+        saved.push({ bytes: committed.length, sha256: sha256Of(committed) })
         return ref
       }
     }
