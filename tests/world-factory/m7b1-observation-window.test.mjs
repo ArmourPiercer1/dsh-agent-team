@@ -38,9 +38,12 @@
  *   A6 FOREIGN WINDOW    the SECOND arm's real envelopes (sealed, windowed,
  *                         closed) judged against the FIRST arm's contract are
  *                         IDENTITY_MISMATCH — another observation cannot answer.
- *   A7 MUTATED IDENTITY  a real contract with ONE id rewritten at the caller
- *                         (world/agent/execution) is refused BY THE MODULE with
- *                         IDENTITY_MISMATCH, and a trace that never carried the
+ *   A7 MUTATED IDENTITY  an `Object.create(realContract)` child overriding one id
+ *                         is refused BY THE MODULE with CONTRACT_IDENTITY_UNPROVEN
+ *                         (F-10: inheriting the fields is not being the contract),
+ *                         a window bound to another id is IDENTITY_MISMATCH, the
+ *                         graded execution carried by another `actor_id` is
+ *                         ACTOR_ID_MISMATCH, and a trace that never carried the
  *                         graded execution id is EXECUTION_ID_NOT_IN_TRACE.
  *   A8 FORGED WINDOW     spread / structuredClone / Object.create copies of the
  *                         sealed window record, copies of the envelopes, a foreign
@@ -240,8 +243,8 @@ test('M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, ne
 
   await t.test('M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution', async () => {
     const contract = declareObservationContract({ world, ...identity, scope: [watched] })
-    const call = { event_seq: 1, event_type: 'tool/call', execution_id: identity.executionId, outcome: 'DISPATCHED' }
-    const result = { event_seq: 2, event_type: 'tool/result', execution_id: identity.executionId, outcome: 'COMPLETED' }
+    const call = { event_seq: 1, event_type: 'tool/call', actor_id: identity.agentId, execution_id: identity.executionId, outcome: 'DISPATCHED' }
+    const result = { event_seq: 2, event_type: 'tool/result', actor_id: identity.agentId, execution_id: identity.executionId, outcome: 'COMPLETED' }
     const baseWindow = {
       window_id: 'win-probe',
       world_id: contract.world_id,
@@ -267,13 +270,25 @@ test('M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, ne
       console.log(`M7B1-WINDOW-NOT-CLOSED tag=${tag} reason=${verdict.reason} detail=${clip(verdict.detail, 140)}`)
     }
 
-    // (2) identity: each of the three ids, mutated at the CALLER, is refused.
+    // (2) identity: each of the three ids, mutated on the WINDOW at the caller, is
+    // refused. A contract itself can no longer be mutated (it is frozen and minted,
+    // F-10), so the honest caller-controlled half of the identity pair is the
+    // window record — and a DERIVED contract is refused by the contract identity.
     for (const field of ['world_id', 'agent_id', 'execution_id']) {
-      const mutatedContract = Object.freeze({ ...contract, [field]: `mutated-${field}` })
-      const verdict = checkWindowBinding({ contract: mutatedContract, window: baseWindow, events: [call, result] })
-      assert.equal(verdict?.reason, 'IDENTITY_MISMATCH', `a caller-mutated ${field} is IDENTITY_MISMATCH, never a pass`)
+      const mutatedWindow = { ...baseWindow, [field]: `mutated-${field}` }
+      const verdict = checkWindowBinding({ contract, window: mutatedWindow, events: [call, result] })
+      assert.equal(verdict?.reason, 'IDENTITY_MISMATCH', `a caller-mutated window ${field} is IDENTITY_MISMATCH, never a pass`)
       assert.match(verdict.detail, new RegExp(`mutated-${field}`, 'u'), 'the refusal names the id it compared')
       console.log(`M7B1-IDENTITY-MISMATCH field=${field} reason=${verdict.reason} detail=${clip(verdict.detail, 160)}`)
+
+      // F-10: `Object.create(validContract)` inherits the schema and the World
+      // symbol, so it used to answer for a field it overrides. It is not the minted
+      // object and is refused before any field comparison.
+      const derived = Object.create(contract)
+      Object.defineProperty(derived, field, { value: `derived-${field}`, enumerable: true, writable: true, configurable: true })
+      const derivedVerdict = checkWindowBinding({ contract: derived, window: baseWindow, events: [call, result] })
+      assert.equal(derivedVerdict?.reason, 'CONTRACT_IDENTITY_UNPROVEN', `a derived contract overriding ${field} is not a declared contract`)
+      console.log(`M7B1-DERIVED-CONTRACT field=${field} reason=${derivedVerdict.reason}`)
     }
 
     // (3) trace: the id must be an execution the host's durable trace carried.
@@ -713,25 +728,36 @@ test('M7-B1 real-host window: inside/outside/same-directory controls, verbatim d
     t.diagnostic(`M7B1-FOREIGN-WINDOW verdict=${foreignJudgement.verdict} reason=${foreignJudgement.reason} detail=${clip(foreignJudgement.detail, 160)}`)
     report.mutations.push(`M7B1-FOREIGN-WINDOW verdict=${foreignJudgement.verdict} reason=${foreignJudgement.reason}`)
 
-    // ── A7: a CALLER-MUTATED identity is refused BY THE MODULE, not by the test.
-    // These are the reviewer's mutations: a real contract with one field rewritten,
-    // judged through the real sealed window. The window's own binding is the thing
-    // that catches it, and the trace binding catches an id the host never issued.
+    // ── A7: a CALLER-OVERRIDDEN identity is refused BY THE MODULE, not by the test.
+    // `Object.create(realContract)` inherits every field AND the World symbol; only
+    // the object identity says it is not the declared contract (F-10). The window's
+    // own binding is still the thing that catches a swapped window, and the trace
+    // binding catches an id the host never issued.
     const traceEvents = report.arms[0].trace
-    const idCases = [
-      ['execution_id', 'exec-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
-      ['agent_id', 'agent-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
-      ['world_id', 'world-mutated-by-the-caller', 'IDENTITY_MISMATCH'],
-    ]
-    for (const [field, value, expected] of idCases) {
-      const mutated = Object.freeze({ ...firstContract, [field]: value })
-      const judgement = await judgeObservationWindow({ contract: mutated, opened: firstOpened, closed: firstClosed, events: traceEvents, expectDeny: true })
-      assert.equal(judgement.verdict, 'INSTRUMENT_ERROR', `A7: a mutated ${field} is never SATISFIED`)
-      assert.equal(judgement.reason, expected, `A7: a mutated ${field} is refused as ${expected} (got ${String(judgement.reason)})`)
-      const line = `M7B1-MUTATED-${field.toUpperCase()} verdict=${judgement.verdict} reason=${judgement.reason} detail=${clip(judgement.detail, 200)}`
+    const idCases = ['execution_id', 'agent_id', 'world_id']
+    for (const field of idCases) {
+      const derived = Object.create(firstContract)
+      Object.defineProperty(derived, field, { value: `derived-${field}`, enumerable: true, writable: true, configurable: true })
+      const judgement = await judgeObservationWindow({ contract: derived, opened: firstOpened, closed: firstClosed, events: traceEvents, expectDeny: true })
+      assert.equal(judgement.verdict, 'INSTRUMENT_ERROR', `A7: a derived ${field} is never SATISFIED`)
+      assert.equal(judgement.reason, 'CONTRACT_IDENTITY_UNPROVEN', `A7: a derived ${field} is refused as CONTRACT_IDENTITY_UNPROVEN (got ${String(judgement.reason)})`)
+      const line = `M7B1-DERIVED-${field.toUpperCase()} verdict=${judgement.verdict} reason=${judgement.reason} detail=${clip(judgement.detail, 200)}`
       t.diagnostic(line)
       report.mutations.push(line)
     }
+    // F-10: the graded execution_id is carried by an event whose actor is ANOTHER
+    // agent. A shared call id must not let two sessions swap evidence.
+    const foreignActorEvents = traceEvents.map((event) =>
+      event.execution_id === firstContract.execution_id && (event.event_type === 'tool/call' || event.event_type === 'tool/result')
+        ? { ...event, actor_id: 'agent-that-did-not-make-this-call' }
+        : event,
+    )
+    const actorMismatch = await judgeObservationWindow({ contract: firstContract, opened: firstOpened, closed: firstClosed, events: foreignActorEvents, expectDeny: true })
+    assert.equal(actorMismatch.verdict, 'INSTRUMENT_ERROR', 'F-10: a foreign actor on the graded execution is never SATISFIED')
+    assert.equal(actorMismatch.reason, 'ACTOR_ID_MISMATCH', `F-10: a foreign actor is refused as ACTOR_ID_MISMATCH (got ${String(actorMismatch.reason)})`)
+    assert.match(actorMismatch.detail, /agent-that-did-not-make-this-call/u, 'F-10: the refusal names the actor it saw')
+    t.diagnostic(`M7B1-ACTOR-MISMATCH verdict=${actorMismatch.verdict} reason=${actorMismatch.reason} detail=${clip(actorMismatch.detail, 200)}`)
+    report.mutations.push(`M7B1-ACTOR-MISMATCH verdict=${actorMismatch.verdict} reason=${actorMismatch.reason}`)
     // The trace must CARRY the graded execution id: strip the calls and the
     // verdict becomes a named refusal instead of "no effect observed".
     const strippedEvents = traceEvents.filter((event) => event.event_type !== 'tool/call' && event.event_type !== 'tool/result')

@@ -1,0 +1,2 @@
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+EXIT=0
