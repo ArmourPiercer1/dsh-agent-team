@@ -1,0 +1,20 @@
+FIX-SESSION-LOG restore 2026-11-20
+
+# damage
+ dev/agent-workflow/SESSION_ROUTER_LOG.md | 9276 +-----------------------------
+ 1 file changed, 13 insertions(+), 9263 deletions(-)
+
+# measurement
+lines_at_38be84c32=9276
+lines_at_313643100=26
+lines_restored=9290
+entries_38=284 entries_restored=285
+
+# prefix identity (restored file = 38be84c32 bytes + the B+C entry appended)
+PREFIX-IDENTICAL
+
+# state-freshness (grades the log headings)
+DSH-CI-LEG leg=state-freshness verdict=pass seconds=0.1 detail=pointer agrees both ways (round 58 = newest record = last log heading), records contiguous, a23e5c8f reachable (lag 1302 commits); current contract ok (phase_id alpha5-sandbox-first, baseline cb2e41483af8…, matrix rows 21 claimed 0, drift 253 path(s))
+
+# docs
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
