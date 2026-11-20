@@ -1,0 +1,35 @@
+# Scope of the widening: which modules the routed seam mounts, and which declare `fs`
+#
+# The routed seam (packages/runtime/team-services/src/mount.ts ->
+# routedModuleContext/mergeRoutedInject) is used for:
+#   (a) every module a Member realm APPENDS: shell / search / fs / skill / present / web
+#       (a5sf-realm-row.mjs `attachA5sfNativeToolModules`, `appended`);
+#   (b) every module a composition CONFIGURES as a managed native module
+#       (`a5sfNativeToolModules`; the live composed profiles configure the pinned host
+#       `@deepseek-ai/dsh-tool-fs` and, where adopted, `@deepseek-ai/dsh-tool-fs-search`).
+#
+# The rule under test (continuedServiceNamesOf): the merged declaration gains `fs`
+# ONLY for a module whose OWN `inject` already names `fs`. For every other module
+# the merged map is byte-identical to the pre-fix map (same shape, same order, no
+# added key). The unit assertions live in
+# tests/ute-g1-fs/product-route-image.test.mjs ("the continuation is scoped ...").
+#
+# MEASURED 2026-11-20 (grep of each module's exported `inject`):
+
+# (a) modules the realm appends
+path=packages/runtime/src/plugin/live/confined-fs-tool.mjs            name=a5sf-confined-fs            inject=['tools','fs','systemPrompt']                      declares_fs=yes  deferred_children=yes (narrowing view; ALREADY carried fs itself)  change=none
+path=packages/runtime/src/plugin/live/confined-bash-tool.mjs         name=a5sf-confined-bash          inject=['tools','subprocess']                              declares_fs=no   deferred_children=no                                            change=NONE (empty continuation)
+path=packages/runtime/src/plugin/live/confined-terminal-tool.mjs     name=a5sf-confined-terminal-bash inject=['tools','terminals']                               declares_fs=no   deferred_children=no                                            change=NONE (empty continuation)
+path=packages/runtime/src/plugin/live/confined-search-tool.mjs       name=a5sf-confined-search        inject=['tools','systemPrompt','subprocess']               declares_fs=no   deferred_children=no                                            change=NONE (empty continuation)
+path=packages/runtime/src/plugin/live/a5sf-skill-provider.mjs        name=a5sf-skill-provider         inject=['skills','fs']                                     declares_fs=yes  deferred_children=no                                            change=none (no child to continue into)
+path=packages/runtime/src/plugin/live/confined-web-tool.mjs          name=a5sf-confined-web           inject=['tools','web','systemPrompt']                      declares_fs=no   deferred_children=no                                            change=NONE (empty continuation)
+path=tests/deepseek-harness-test-use/packages/deliverables/tool-present/src/index.ts  name=tool-present  inject=['tools','fs','sessionProjections']                declares_fs=yes  deferred_children=no                                            change=none (no child to continue into)
+
+# (b) modules a composition configures (the live composed profiles)
+path=tests/deepseek-harness-test-use/packages/fs/tool-fs/src/index.ts   name=tool-fs        inject=['tools','fs','systemPrompt']            declares_fs=yes  deferred_children=yes (ctx.inject(['attachments']) => read_image)  change=THE FIX TARGET
+path=tests/deepseek-harness-test-use/packages/fs/tool-fs-search/src/index.ts name=tool-fs-search inject=['tools','systemPrompt','subprocess'] declares_fs=no   deferred_children=no                                                 change=NONE (empty continuation)
+
+# SUMMARY: four routed modules declare `fs`; exactly ONE (`@deepseek-ai/dsh-tool-fs`)
+# has a deferred child that dereferences it. `a5sf-confined-fs` already carried `fs`
+# into its own children before the fix, and the other two declare it without a
+# deferred child. No module that does NOT declare `fs` gains a key.

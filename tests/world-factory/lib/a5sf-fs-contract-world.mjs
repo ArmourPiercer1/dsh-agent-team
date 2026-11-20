@@ -26,16 +26,28 @@
  *                 subclass from `team-services/src/fs.ts` over the isolated
  *                 `ctx.isolate('fs', …)` scope.
  *
- * TWO COMPOSITIONS:
+ * COMPOSITIONS:
  *
  *   'route-c'    the product route (the exact call the live Member setup makes).
- *   'post-gap-1' the SAME realm and the SAME real module, mounted on the realm's
- *                isolated ctx through a ctx whose deferred `inject(...)` children
- *                also declare `fs` — the minimal diff proposed for
- *                GAP-FS-CONTRACT-1 (see the evidence README). It exists to pin
- *                `read_image`'s attachment contract, which the unpatched product
- *                route cannot reach at all. It is NOT a product claim: the arm
- *                that runs 'route-c' pins the failure.
+ *                Since the 2026-11-20 repair of GAP-FS-CONTRACT-1 it serves
+ *                `read_image` too (the routed mount continues a module's OWN
+ *                declared `fs` into its deferred children).
+ *   'withheld-fs-continuation'
+ *                a FIXTURE, not a product route: the SAME realm and the SAME
+ *                real module mounted directly on the realm's isolated ctx with
+ *                NO deferred-service continuation, so the `read_image` child is
+ *                refused by Cordis exactly as the unpatched router refused it.
+ *                It keeps the seam's FAIL-CLOSED behaviour pinned (no fallback
+ *                to a root `fs`) without claiming that refusal is the product's
+ *                current behaviour.
+ *   'post-gap-1' HISTORICAL: the one-line deferred-inject `fs` merge that was
+ *                proposed for the gap. Kept because the evidence tooling
+ *                (`dev/agent-workflow/evidence/a5sf-fs-face/mutations.mjs`) and
+ *                the binding lane below still use it; the contract arms now run
+ *                the product composition.
+ *   'binding-post-gap-1'
+ *                the same merge applied to a BINDING realm's isolated ctx, so
+ *                `read_image` can be observed through a binding lane at all.
  *
  * MUTATIONS are applied AFTER mounting, on the confined instance, and only ever
  * drop a forwarding argument (`expected`, `signal`) or under-report a stat size.
@@ -84,13 +96,28 @@ export const PIXEL_PNG = Buffer.from(
 )
 
 /**
- * `GAP-FS-CONTRACT-1` — the KNOWN product gap this face pinned in the previous
- * increment and must NOT fix here: `mount.ts`'s `ROUTED_SERVICE_NAMES` omits
- * `fs`, so a routed (deferred) `read_image` child cannot resolve `ctx.fs` and
- * fails closed before any provider I/O. The image-route-gate arms must be
- * meaningful either way: under the proposed post-GAP-1 composition they pin the
- * tool's OWN route refusal; under the product route they pin THIS code instead
- * of silently passing.
+ * `GAP-FS-CONTRACT-1` — **REPAIRED 2026-11-20 by PR #802** (route-C repair:
+ * `packages/runtime/team-services/src/mount.ts` now continues a routed module's
+ * OWN declared `fs` into its deferred children).
+ * HISTORICAL STATEMENT (kept verbatim in substance):
+ * `mount.ts`'s `ROUTED_SERVICE_NAMES` omitted `fs`, so a routed (deferred)
+ * `read_image` child could not resolve `ctx.fs` and failed closed with
+ * `cannot get property "fs" without inject` before any provider I/O.
+ *
+ * WHAT IS PROVEN NOW, AND WHAT IS NOT:
+ *   - proven: the product route reaches the FOURTH member with the Member's
+ *     CONFINED provider (in-lane allow = exactly one attachment; out-of-lane
+ *     deny = zero attachment bytes, zero provider reads; the guard facts carry
+ *     `realm: member`), and the historical failure shape is still fail-closed
+ *     when the continuation is withheld (FSB-IMG-1b fixture).
+ *   - NOT proven here: native-path correctness (the FS family's equivalence
+ *     obligations live in `tests/ute-g1-fs/`), and NOT a confinement verdict
+ *     for any other tool. This is a route-C REACHABILITY repair: it changes what
+ *     the product route serves, not the Member's authority or the FS member set.
+ *
+ * The image-route-gate arms stay meaningful: on the product route FSB-IMG-4b
+ * pins the tool's OWN route refusal (and that the old inject text cannot be
+ * mistaken for it); FSB-IMG-1b pins the fail-closed shape.
  */
 export const A5SF_FS_CONTRACT_GAP = 'GAP-FS-CONTRACT-1'
 
@@ -283,8 +310,10 @@ function memberCeiling(readRoots, writeRoots) {
 
 /**
  * A ctx whose DEFERRED `inject(...)` children also declare `fs` — the one-line
- * composition change proposed for GAP-FS-CONTRACT-1. Used only by the
- * 'post-gap-1' composition; the product route is measured unpatched.
+ * composition change that was proposed for GAP-FS-CONTRACT-1 and is now the
+ * product router's behaviour. Kept for the HISTORICAL 'post-gap-1' and the
+ * binding composition (used by the evidence tooling); the contract arms run the
+ * product route.
  */
 export function deferredFsContext(baseCtx, extra = ['fs']) {
   return baseCtx.extend({
@@ -325,7 +354,7 @@ async function settleDeferred(getDefinition, rounds = 20) {
  * @param {object} input
  * @param {string} input.repoRoot - the tree under test.
  * @param {string} input.label - mkdtemp label (one world per arm).
- * @param {'route-c'|'post-gap-1'|'binding-post-gap-1'} [input.composition] - which composition.
+ * @param {'route-c'|'withheld-fs-continuation'|'post-gap-1'|'binding-post-gap-1'} [input.composition] - which composition.
  * @param {object} [input.mutations] - see {@link applyMutations}; the two
  *   compile-time mutants ({@link widenReadLane}, {@link widenBindingTool}) are
  *   consumed HERE because a compiled lane cannot be re-opened after mount.
@@ -559,9 +588,18 @@ export async function makeFsContractWorld({
       row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath, a5sfNativeToolModules: [pathToFileURL(toolFsEntry).href] }),
       agentKey,
     )
+  } else if (composition === 'withheld-fs-continuation') {
+    // FIXTURE, NOT THE PRODUCT ROUTE (see FSB-IMG-1b): the real module mounted
+    // directly on the realm's isolated ctx, with NO deferred-service
+    // continuation. Its `read_image` child is refused by Cordis exactly as the
+    // unpatched router refused it; the world factory keeps that fail-closed
+    // shape pinned without claiming it is the product's current behaviour.
+    await realm.installation.members[0].ctx.plugin(nativeToolModules)
+    await settleDeferred(() => root.get('tools').get('read_image', agentKey))
   } else if (composition === 'post-gap-1') {
-    // The realm's isolated ctx, with the deferred-inject merge proposed for
-    // GAP-FS-CONTRACT-1. Same real module, same confined provider.
+    // HISTORICAL: the realm's isolated ctx with the deferred-inject merge that
+    // was proposed for GAP-FS-CONTRACT-1 (the product router now does this
+    // itself). Same real module, same confined provider.
     await deferredFsContext(realm.installation.members[0].ctx).plugin(nativeToolModules)
     await settleDeferred(() => root.get('tools').get('read_image', agentKey))
   } else if (composition === 'binding-post-gap-1') {
@@ -1014,17 +1052,19 @@ export async function armWriteControl(world) {
 }
 
 /**
- * FSB-IMG-1 — the PRODUCT route-C composition, measured as it is
- * (GAP-FS-CONTRACT-1): the routed `read_image` definition is a DIFFERENT object
- * from the preset one (the shadow really took), and its deferred fiber cannot
- * resolve `fs`, so a call fails CLOSED with ZERO provider reads and ZERO
- * attachment bytes.
+ * FSB-IMG-1 — THE PRODUCT ROUTE SERVES THE FOURTH MEMBER (converted 2026-11-20
+ * from the GAP-FS-CONTRACT-1 failure pin, which is now FSB-IMG-1b).
  *
- * This is a layer-B fact in its own right ("a refused read materialises
- * nothing") but it is NOT the lane refusing, and it must never be written up as
- * if it were.
+ * The routed definition really shadows the preset one, and a call through it
+ * reaches the MemBER's confined provider: an in-lane read materialises exactly
+ * ONE attachment (with the file's own metadata) after one `stat` + one
+ * `readBytes`, and an out-of-lane read is refused by the LANE with ZERO
+ * provider reads and ZERO attachment bytes.
+ *
+ * This arm is deliberately a SUMMARY; FSB-IMG-2/3 add the detailed metadata,
+ * block-shape and fact-order assertions on the same product composition.
  */
-export async function armReadImageRouteCRefusal(world) {
+export async function armReadImageProductRoute(world) {
   assert.notEqual(world.routedDefinition, undefined, 'the routed mount must expose read_image')
   assert.notEqual(world.presetDefinition, undefined, 'the preset definition exists')
   assert.notEqual(
@@ -1032,26 +1072,96 @@ export async function armReadImageRouteCRefusal(world) {
     'IDENTITY: the routed definition shadows the preset one (otherwise the call below would run on the BASE provider)',
   )
 
+  // (a) IN-LANE: allowed, exactly one attachment, confined provider did the read.
+  const allowedFactsBefore = world.facts().length
+  const allowedCallsBefore = world.calls()
+  const allowedSavedBefore = world.attachments.saved.length
+
+  const allowed = await world.dispatch('read_image', { file_path: world.fixtures.pixel }, { callId: 'fsb-img-product-allow' })
+  assert.equal(allowed.isError, false, `the product route must serve an in-lane read_image: ${allowed.text}`)
+  assert.equal(
+    /cannot get property ["']?fs["']? without inject/u.test(allowed.text),
+    false,
+    'the repaired route must not surface the historical GAP-1 fault',
+  )
+  assert.deepEqual(callDelta(allowedCallsBefore, world.calls()), {
+    stat: 1, lstat: 0, readText: 0, streamText: 0, readBytes: 1, writeText: 0, editText: 0,
+  }, 'exactly one stat + one readBytes through the CONFINED provider')
+  assert.equal(world.attachments.saved.length, allowedSavedBefore + 1, 'EXACTLY ONE attachment for the allowed read')
+  const ref = world.attachments.saved.at(-1)
+  assert.deepEqual(
+    { mediaType: ref.mediaType, bytes: ref.bytes, width: ref.width, height: ref.height },
+    { mediaType: 'image/png', bytes: PIXEL_PNG.length, width: 1, height: 1 },
+    'the committed attachment is the file',
+  )
+  assert.equal(allowed.value?.image?.attachmentId, ref.attachmentId, 'the tool value names the SAME commit')
+  assert.deepEqual(
+    factDelta(world, allowedFactsBefore).map((fact) => [fact.method, fact.decision, fact.realm]),
+    [['stat', 'allow', 'member'], ['readBytes', 'allow', 'member']],
+    'the Member realm admitted stat → readBytes',
+  )
+
+  // (b) OUT-OF-LANE: the LANE refuses, zero bytes, zero provider reads.
+  const deniedFactsBefore = world.facts().length
+  const deniedCallsBefore = world.calls()
+  const deniedSavedBefore = world.attachments.saved.length
+  const deniedBytesBefore = world.attachments.saved.reduce((sum, saved) => sum + saved.bytes, 0)
+
+  const denied = await world.dispatch('read_image', { file_path: world.fixtures.secretPng }, { callId: 'fsb-img-product-deny' })
+  assert.equal(denied.isError, true, 'an out-of-lane image must be refused')
+  assert.match(denied.text, /outside every allow subtree/u, 'the LANE\'s refusal, not a composition fault')
+  assert.deepEqual(callDelta(deniedCallsBefore, world.calls()), {
+    stat: 0, lstat: 0, readText: 0, streamText: 0, readBytes: 0, writeText: 0, editText: 0,
+  }, 'ZERO provider reads: the guard refused before super.stat')
+  assert.equal(world.attachments.saved.length, deniedSavedBefore, 'ZERO attachments for the refused read')
+  assert.equal(world.attachments.saved.reduce((sum, saved) => sum + saved.bytes, 0), deniedBytesBefore, 'ZERO attachment bytes')
+  assert.deepEqual(
+    factDelta(world, deniedFactsBefore).map((fact) => [fact.method, fact.decision, fact.realm]),
+    [['stat', 'deny', 'member']],
+    'ONE stat deny fact on the Member realm, no read admission',
+  )
+  assertContiguous(world.facts())
+}
+
+/**
+ * FSB-IMG-1b — THE HISTORICAL FAILURE MODE, STILL FAIL-CLOSED (fixture, NOT the
+ * product route).
+ *
+ * The pre-repair product composition mounted the real module through a router
+ * that did not continue `fs` into deferred children; the `read_image` child was
+ * therefore refused by Cordis with `cannot get property "fs" without inject`
+ * before any provider I/O. The repair fixed the PRODUCT route, so that text must
+ * no longer be asserted as the current product behaviour — this arm reproduces
+ * the shape with the `withheld-fs-continuation` fixture and keeps the property
+ * that made it safe: fail CLOSED, with ZERO provider reads, ZERO attachment
+ * bytes and ZERO guard facts, and NO fallback to a root/base `fs` (a fallback
+ * would have read the file instead of throwing).
+ */
+export async function armReadImageWithheldContinuation(world) {
+  assert.equal(world.composition, 'withheld-fs-continuation', 'FSB-IMG-1b must run the withheld-continuation fixture')
+  assert.notEqual(world.routedDefinition, undefined, 'the fixture mounts read_image')
+  assert.notEqual(world.presetDefinition, undefined, 'the preset definition exists')
+
   const factsBefore = world.facts().length
   const callsBefore = world.calls()
   const savedBefore = world.attachments.saved.length
 
-  const outcome = await world.dispatch('read_image', { file_path: world.fixtures.pixel }, { callId: 'fsb-img-route-c' })
-  assert.equal(outcome.isError, true, 'the routed read_image fails closed today')
-  assert.match(outcome.text, /cannot get property "fs" without inject/u, 'the observed GAP-1 failure, verbatim')
+  const outcome = await world.dispatch('read_image', { file_path: world.fixtures.pixel }, { callId: 'fsb-img-withheld' })
+  assert.equal(outcome.isError, true, 'the withheld continuation fails closed')
+  assert.match(outcome.text, /cannot get property "fs" without inject/u, 'the historical failure, verbatim, when the continuation is withheld')
 
   assert.deepEqual(callDelta(callsBefore, world.calls()), {
     stat: 0, lstat: 0, readText: 0, streamText: 0, readBytes: 0, writeText: 0, editText: 0,
-  }, 'ZERO provider reads: no stat, no readBytes')
+  }, 'ZERO provider reads: no fallback to a root/base fs')
   assert.equal(world.attachments.saved.length, savedBefore, 'ZERO attachments were materialised')
   assert.equal(factDelta(world, factsBefore).length, 0, 'ZERO guard facts: the lane was never consulted')
 }
 
 /**
  * FSB-IMG-2 — the attachment contract on a REAL module + REAL confined provider
- * under the post-GAP-1 composition: an allowed read materialises EXACTLY ONE
- * attachment with the file's real metadata after exactly one stat + one
- * readBytes, in that order.
+ * on the PRODUCT composition (route-c, since the 2026-11-20 repair): an allowed
+ * read materialises EXACTLY ONE attachment with the file's real metadata after
+ * exactly one stat + one readBytes, in that order.
  */
 export async function armReadImageAllowed(world) {
   const fixture = world.fixtures.pixel
@@ -1626,9 +1736,10 @@ export async function armReadStreamAbort(world) {
  * `tool-fs/src/read-image.ts:119-130` — `assertImageCapableRoute` resolves the
  * calling route and throws when `inputModalities` omits `image`; `:256` calls it
  * before `:258` (resolve+stat) and `:263` (readBytes), so the ordering is a
- * property of the tool, not of the lane. The case runs under the proposed
- * post-GAP-1 composition ONLY because the product route cannot reach `execute`
- * at all (see FSB-IMG-4b).
+ * property of the tool, not of the lane. Runs on the PRODUCT composition; the
+ * pre-repair reason it once ran elsewhere (the deferred child threw before
+ * `execute` could reach the gate) no longer holds — FSB-IMG-4b adds the
+ * distinct-failure-code assertion on the same product route.
  */
 export async function armImageRouteGateTextOnly(world) {
   const fixture = world.fixtures.pixel
@@ -1661,14 +1772,15 @@ export async function armImageRouteGateTextOnly(world) {
  * LAZY property access (`cannot get property "fs" without inject` happens only
  * when the body reaches `ctx.fs`), so `execute` runs and the route gate
  * (`read-image.ts:119-130`, called at `:256`) refuses BEFORE the first `ctx.fs`
- * access (`:258`). The GAP therefore blocks only the POSITIVE image path
- * (FSB-IMG-1 pins it with the inject text); the text-only refusal is fully
- * observable on the product route.
+ * access (`:258`). The (now repaired) gap therefore never blocked the text-only
+ * refusal; it blocked only the POSITIVE image path, which the product route now
+ * serves (FSB-IMG-1/2), while FSB-IMG-1b keeps the historical failure shape
+ * pinned with the withheld-continuation fixture.
  *
- * This arm pins that ordering with a DISTINCT code from the GAP: a refusal here
- * is the gate's, and the inject fault must NOT appear. If a future composition
- * change makes the gate unreachable, the arm reds on the gate reason (never a
- * vacuous pass), and the GAP stays separately pinned by FSB-IMG-1.
+ * This arm pins the ordering with a DISTINCT code from that historical failure:
+ * a refusal here is the gate's, and the inject fault must NOT appear. If a
+ * future composition change makes the gate unreachable, the arm reds on the gate
+ * reason (never a vacuous pass).
  */
 export async function armImageRouteGateUnderProductRoute(world) {
   const fixture = world.fixtures.pixel
@@ -1682,7 +1794,7 @@ export async function armImageRouteGateUnderProductRoute(world) {
   assert.match(outcome.text, /does not declare image input/u,
     'the TOOL route gate refused (TEXT-ONLY-GATE) — not the composition')
   assert.equal(/cannot get property "fs" without inject/u.test(outcome.text), false,
-    `${A5SF_FS_CONTRACT_GAP} is a DISTINCT failure: the gate ran BEFORE the deferred child touched ctx.fs`)
+    `${A5SF_FS_CONTRACT_GAP} (historical, FSB-IMG-1b fixture) is a DISTINCT failure: the gate ran BEFORE the deferred child touched ctx.fs`)
   assert.equal(world.llmResolutions.length, resolutionsBefore + 1, 'exactly ONE route resolution on the product route')
   assert.deepEqual(callDelta(callsBefore, world.calls()), {
     stat: 0, lstat: 0, readText: 0, streamText: 0, readBytes: 0, writeText: 0, editText: 0,

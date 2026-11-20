@@ -13,13 +13,19 @@
  *      `REFUSAL-CATEGORY-MUTANTS total=N red=N` is computed from that run —
  *      there is no hand-written PASS anywhere in this file.
  *
- * Host-free: no boot, no port, no DSH_HOME. Plain `node --test`.
+ * Host-free except ONE arm: the corpus no longer emits `route-unresolved` (the
+ * route-C repair deleted FS-I0), so that class's reachability is measured by
+ * DRIVING the withheld-continuation fixture (`FSB-IMG-1b`) and classifying its
+ * refusal with the same `classifyRefusal` the golden capture uses. That arm
+ * mounts the world factory, which is why this suite rides the post-build UTE FS
+ * leg (it already did) — no boot, no port, no DSH_HOME.
  *
  * @module tests/ute-g1-fs/lib/refusal-categories.test
  */
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { test } from 'node:test'
 
 import { CORPUS } from './corpus.mjs'
@@ -29,7 +35,9 @@ import {
   LEGACY_REFUSAL_MAP,
   NATIVE_FS_ERROR_MAP,
   REFUSAL_CATEGORIES,
+  FIXTURE_CLASS_EVIDENCE,
   RefusalVocabularyError,
+  assertClassVocabularyCovered,
   assertCorpusVocabularyComplete,
   auditCorpus,
   categoryOfLegacyRefusal,
@@ -38,6 +46,7 @@ import {
   isNoRefusal,
   selfCheck,
 } from './refusal-categories.mjs'
+import { classifyRefusal } from './effect-oracle.mjs'
 
 const ROOT = process.cwd()
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8')
@@ -337,41 +346,88 @@ test('the corpus vocabulary is exhaustive today (classes, codes and prose all ma
   assert.equal(auditCorpus({ legacy, native }).findings.length, 0)
 })
 
-test('the merged golden TSV yields EXACTLY the seven legacy refusal classes (named, not counted)', () => {
+test('the merged golden TSV yields EXACTLY the six legacy refusal classes (named, not counted)', () => {
   const derived = sorted(goldenVocabulary().classes)
   const expected = [
     'cancelled',
     'image-modality-denied',
     'lane-deny',
     'missing-path',
-    'route-unresolved',
     'stale-version',
     'write-requires-read',
   ]
   console.log(`REFUSAL-CATEGORY-DERIVATION classes=${derived.length} ${derived.join(',')}`)
-  assert.deepEqual(derived, expected, 'the corpus derivation must yield exactly these seven class names')
+  assert.deepEqual(derived, expected, 'the corpus derivation must yield exactly these six class names')
   // and every one of them is mapped, by the closed map, to a real category
   for (const value of expected) {
     assert.ok(Object.hasOwn(REFUSAL_CATEGORIES, categoryOfLegacyRefusal(value).category), `${value} must map to a declared category`)
   }
 })
 
-test('the SAME derivation refuses an EIGHTH class (the exhaustiveness law is not a count)', () => {
+test('the class the corpus no longer emits is produced by the EXECUTED withheld-continuation fixture', async () => {
+  // The corpus lost `route-unresolved` with FS-I0. The class must stay reachable
+  // by MEASUREMENT, not by a comment: drive FSB-IMG-1b's composition, take the
+  // refusal the tool actually produced, and run it through the SAME classifier
+  // the golden capture uses.
+  const { makeFsContractWorld } = await import(pathToFileURL(join(ROOT, 'tests/world-factory/lib/a5sf-fs-contract-world.mjs')).href)
+  const world = await makeFsContractWorld({
+    repoRoot: ROOT,
+    label: 'refusal-categories-withheld',
+    composition: 'withheld-fs-continuation',
+  })
+  try {
+    const callsBefore = world.calls()
+    const factsBefore = world.facts().length
+    const savedBefore = world.attachments.saved.length
+    const outcome = await world.dispatch('read_image', { file_path: world.fixtures.pixel }, { callId: 'refusal-categories-withheld' })
+    assert.equal(outcome.isError, true, 'the withheld continuation must fail closed')
+
+    const measured = classifyRefusal([], outcome.text)
+    console.log(`REFUSAL-CATEGORY-FIXTURE class=${measured.refusal} fixture=FSB-IMG-1b composition=${world.composition}`)
+    assert.equal(measured.refusal, 'route-unresolved',
+      'the fixture refusal must classify into the same class the corpus used to record')
+    assert.equal(categoryOfLegacyRefusal(measured.refusal).category, 'route-unresolved')
+
+    // the measurement is fail-closed: no provider read, no attachment, no lane fact
+    assert.deepEqual(world.calls(), callsBefore, 'ZERO provider calls: no fallback to a root/base fs')
+    assert.equal(world.attachments.saved.length, savedBefore, 'ZERO attachments were materialised')
+    assert.equal(world.facts().length, factsBefore, 'ZERO guard facts: the lane was never consulted')
+
+    // the exhaustiveness law over BOTH producers: corpus classes + this measured one
+    const fixtureClasses = [measured.refusal]
+    const coverage = assertClassVocabularyCovered({ corpus: goldenVocabulary().classes, fixtures: fixtureClasses })
+    for (const finding of coverage.findings) console.log(`REFUSAL-CATEGORY-COVERAGE code=${finding.code} value=${finding.value}`)
+    assert.equal(coverage.findings.length, 0,
+      'every declared class must be produced by the corpus or by the declared, executed fixture')
+    assert.deepEqual(FIXTURE_CLASS_EVIDENCE.map((entry) => entry.class), fixtureClasses,
+      'the declared fixture evidence and the measured fixture classes must agree exactly')
+
+    // and the negative direction: drop the measured producer and the SAME law refuses by name
+    const stripped = assertClassVocabularyCovered({ corpus: goldenVocabulary().classes, fixtures: [] })
+    assert.equal(stripped.ok, false)
+    assert.ok(stripped.findings.some((finding) => finding.code === 'REFUSAL_CLASS_UNPRODUCED' && finding.value === 'route-unresolved'),
+      'losing every producer of route-unresolved must be reported by name, not absorbed')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('the SAME derivation refuses an EXTRA class (the exhaustiveness law is not a count)', () => {
   const text = read('tests/ute-g1-fs/golden/old-path.tsv')
   const [header, ...rows] = text.trimEnd().split('\n')
   const columns = header.split('\t')
   const refusalAt = columns.indexOf('refusal')
   const cells = new Array(columns.length).fill('-')
-  cells[columns.indexOf('id')] = 'FS-Z9-synthetic-eighth-class'
+  cells[columns.indexOf('id')] = 'FS-Z9-synthetic-extra-class'
   cells[columns.indexOf('entry')] = 'read'
   cells[refusalAt] = 'image-downscale-denied'
   const synthetic = `${[header, ...rows, cells.join('\t')].join('\n')}\n`
 
   const derived = parseGoldenVocabulary(synthetic)
-  console.log(`REFUSAL-CATEGORY-DERIVATION-EIGHTH classes=${derived.classes.length} new=${JSON.stringify('image-downscale-denied')}`)
+  console.log(`REFUSAL-CATEGORY-DERIVATION-EXTRA classes=${derived.classes.length} new=${JSON.stringify('image-downscale-denied')}`)
 
-  // 1. the derivation itself sees eight classes (so the proof is not vacuous)
-  assert.equal(derived.classes.length, 8, 'the synthetic corpus must actually add an eighth class')
+  // 1. the derivation itself sees SEVEN classes (so the proof is not vacuous)
+  assert.equal(derived.classes.length, 7, 'the synthetic corpus must actually add an extra class')
   // 2. the closed map REFUSES it rather than defaulting it to a category
   assert.throws(() => categoryOfLegacyRefusal('image-downscale-denied'), (error) => {
     assert.equal(error.name, 'RefusalVocabularyError')
@@ -381,7 +437,7 @@ test('the SAME derivation refuses an EIGHTH class (the exhaustiveness law is not
   // 3. the corpus audit reports it by VALUE, so the failure names the new refusal
   const audit = auditCorpus({ legacy: derived.classes })
   const finding = audit.findings.find((entry) => entry.value === 'image-downscale-denied')
-  assert.equal(audit.ok, false, 'a corpus that gained an eighth class must not audit clean')
+  assert.equal(audit.ok, false, 'a corpus that gained an extra class must not audit clean')
   assert.ok(finding !== undefined, 'the audit must name the unmapped value, not just fail')
   assert.equal(finding.code, 'REFUSAL_VOCABULARY_INCOMPLETE')
 })
@@ -443,6 +499,17 @@ const MUTANTS = [
     mutate: () => ({ selfCheck: () => ({ ok: true, findings: [] }) }),
   },
   {
+    id: 'drop-route-unresolved-fixture-evidence',
+    probe(facade) {
+      // route-unresolved is emitted by no corpus row; if its fixture evidence is
+      // dropped, the coverage law must still name it as unproduced.
+      const audit = facade.assertClassVocabularyCovered({ corpus: facade.CORPUS_CLASSES, fixtures: [] })
+      return audit.ok === false
+        && audit.findings.some((finding) => finding.code === 'REFUSAL_CLASS_UNPRODUCED' && finding.value === 'route-unresolved')
+    },
+    mutate: () => ({ assertClassVocabularyCovered: () => ({ ok: true, findings: [] }) }),
+  },
+  {
     id: 'bucket-route-unresolved-as-unknown',
     probe(facade) {
       // The failure mode the memo forbids: keep the corpus value but quietly call it
@@ -477,10 +544,12 @@ const MUTANTS = [
 test('REAL MUTATIONS: every injected defect is caught by the probes above', async () => {
   const real = {
     auditCorpus,
+    assertClassVocabularyCovered,
     categoryOfNativeFsError,
     selfCheck,
     REFUSAL_CATEGORIES,
     LEGACY_REFUSAL_MAP,
+    CORPUS_CLASSES: CORPUS_VOCABULARY_BASELINE.legacyClasses,
   }
   const results = []
   for (const mutant of MUTANTS) {
