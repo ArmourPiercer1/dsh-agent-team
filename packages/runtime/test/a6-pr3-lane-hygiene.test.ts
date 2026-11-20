@@ -74,6 +74,25 @@ function readJsonc(file: string): { include?: string[] } {
   return JSON.parse(raw) as { include?: string[] }
 }
 
+/**
+ * The keys the runtime package currently advertises. This is an EXPLICIT
+ * allowlist, not a copy of the manifest: adding a subpath export is a review
+ * event, so the owner of this pin has to see and update this line. The pin's
+ * subject is the review-wake lane — `('.' , './settlement')` only records what
+ * else is legitimately advertised today.
+ */
+const ADVERTISED_EXPORT_ALLOWLIST = ['.', './settlement'] as const
+
+/** Advertised subpath keys, sorted, from a package manifest. */
+function advertisedExportKeys(manifest: { exports?: Record<string, unknown> }): string[] {
+  return Object.keys(manifest.exports ?? {}).sort()
+}
+
+/** The subset of advertised keys that name the dormant review-wake lane. */
+function reviewWakeExportKeys(keys: readonly string[]): string[] {
+  return keys.filter((key) => /review-wake/i.test(key))
+}
+
 const laneSources = walk(LANE_DIR)
 const laneCode = new Map(
   laneSources.map((file) => [relative(LANE_DIR, file), codeOnly(readFileSync(file, 'utf8'))] as const),
@@ -169,8 +188,23 @@ describe('A6-PR3 zero production consumers', () => {
     const manifest = JSON.parse(
       readFileSync(join(RUNTIME_DIR, 'package.json'), 'utf8'),
     ) as { exports?: Record<string, unknown> }
-    expect(Object.keys(manifest.exports ?? {})).toEqual(['.'])
+    const keys = advertisedExportKeys(manifest)
+    // The property this arm is NAMED for: no advertised key reaches the lane.
+    expect(reviewWakeExportKeys(keys)).toEqual([])
     expect(JSON.stringify(manifest.exports)).not.toMatch(/review-wake/)
+    // Bite without over-reach: the exact set is pinned so ANY new subpath is a
+    // review event, while unrelated legitimate exports (e.g. './settlement')
+    // are not mistaken for a lane advertisement.
+    expect(keys).toEqual([...ADVERTISED_EXPORT_ALLOWLIST])
+  })
+
+  it('non-vacuity: the same predicate refuses a synthetic review-wake export', () => {
+    const synthetic = {
+      exports: { '.': {}, './review-wake': {}, './review-wake/coordinator': {} },
+    }
+    const keys = advertisedExportKeys(synthetic)
+    expect(reviewWakeExportKeys(keys)).toEqual(['./review-wake', './review-wake/coordinator'])
+    expect(keys).not.toEqual([...ADVERTISED_EXPORT_ALLOWLIST])
   })
 })
 
