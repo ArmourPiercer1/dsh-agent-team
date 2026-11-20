@@ -33,7 +33,7 @@ named refusal; it exits 0 only on the fixed module. `probe-output.txt` = final-h
 | `eb3-ci-negative-controls.txt` | `node scripts/eb3-ci-negative-controls.mjs` | 33/33 controls behaved as required, exit 0 |
 | `docs-sync-check.txt` | `node scripts/docs-sync.mjs --check` | exit 0 |
 | `lint-identities-diff.txt` | `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | new 0, resolved 0, exit 0 |
-| `tsc-noemit.txt` | per-package `tsc -p packages/<pkg>/tsconfig.json --noEmit` | 6/9 exit 0; `runtime`, `client`, `legacy` exit 2 on missing dev deps of a fresh worktree (no `packages/**` file changed) |
+| `tsc-noemit.txt` | per-package `tsc -p packages/<pkg>/tsconfig.json --noEmit` (8 configs; `packages/legacy` has none) | 5/8 exit 0; `runtime`, `client`, `testkit` exit 2 on missing dev deps of a fresh worktree (no `packages/**` file changed) |
 | `git-diff-check.txt` | `git diff --check` | clean, exit 0 |
 
 ## Mutation → RED
@@ -52,7 +52,7 @@ mutation, copied back afterwards, `sha256sum` compared (both match), `git add`ed
 - The main checkout's pinned tree has locally built native assets, so it is refused
   (`HOST_ASSETS_UNPROVEN`); the 10/10 real-host run used an already-provisioned tree in
   `.worktrees/tinf-merge-shape`. This session provisioned nothing.
-- `tsc --noEmit` for `runtime`/`client`/`legacy` cannot run in this fresh worktree (missing
+- `tsc --noEmit` for `runtime`/`client`/`testkit` cannot run in this fresh worktree (missing
   `@types/node` / React / client-store packages). No `packages/**` file is in this diff.
 - `lint-identities`/`tsc` were invoked from a worktree without its own `node_modules`; ESLint and
   TypeScript resolve through the repo-root install. Removing a temporary `node_modules` symlink was

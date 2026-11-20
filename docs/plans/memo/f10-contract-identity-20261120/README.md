@@ -160,9 +160,10 @@ the exact commands. Summary of what was **observed green**:
   `eb3-ci-negative-controls` **33/33**; `docs-sync --check` exit 0; `lint-identities --diff
   dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` 0 new / 0 resolved;
   `git diff --check` clean;
-- `tsc --noEmit`: 6 of 9 package tsconfigs green (`contracts`, `domain`, `storage`, `tools`, `remote`,
-  `testkit`); `runtime`, `client`, `legacy` fail on missing dev dependencies of a fresh worktree
-  (`@types/node`, React/client store packages), see UNKNOWN.
+- `tsc --noEmit`: 5 of the 8 package tsconfigs green (`contracts`, `domain`, `storage`, `tools`,
+  `remote`); `runtime`, `client`, `testkit` fail on missing dev dependencies of a fresh worktree
+  (`@types/node`, React/client store packages), see UNKNOWN. (`packages/legacy` has no tsconfig, so
+  the loop runs 8 configs, not 9.)
 
 ## 8. UNKNOWN / disclosed boundaries
 
