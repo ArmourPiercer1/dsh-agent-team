@@ -1,0 +1,25 @@
+✔ M7A-U1 session log: concatenated zstd frames decode into every appended row (1.96544ms)
+✔ M7A-U2 session log: durable rows map to DISPATCHED / DENIED / COMPLETED honestly (0.36436ms)
+✔ M7A-U3 session log: a call-id filter keeps exactly the arm it names (0.178598ms)
+✔ M7A-U4 wire script: structural match, aux traffic consumes nothing, completion is enforced (0.72416ms)
+✔ M7A-U5 wire script: a request that does not carry the declared tool/text is refused, not replayed (0.334914ms)
+✔ M7A-U6 the wire driver and the in-process adapter share ONE schema law (0.187485ms)
+✔ M7A-U7 witness rows carry the module seal; hand-built rows do not (0.795326ms)
+✔ M7A-U8 witnessed mode: a hand-built clean row is INSTRUMENT_ERROR, never SATISFIED (1.201625ms)
+✔ M7A-U9 witnessed mode: honest instrument -> SATISFIED, real effect -> VIOLATED, blinded -> INCONCLUSIVE (1.367178ms)
+✔ M7A-U10 without a decision event the oracle refuses to call an effect a violation (0.577514ms)
+✔ M7A-U13 the A2 assertion is about the verdict and the named escape, and it is falsifiable (0.69205ms)
+✔ M7A-U11 a host-start failure closes the mock provider it already started (7.162736ms)
+✔ M7A-U12 the refusal gate: the ONE accepted outcome is a named asset refusal with zero arms (0.488034ms)
+✔ M7A-U12a NOTHING ELSE IS ACCEPTED: no opt-in, another failure, a refusal with arms, and a green run with no arms all FAIL (0.160685ms)
+✔ M7A-U12b the opt-in is an explicit 1: unset, 0, true and yes all keep the hard failure (0.421759ms)
+✔ M7A-U12c the ledger re-checks the record instead of echoing it: VERIFIED and the refusal pass, everything else exits 1 (185.413645ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 339.363983
+EXIT=0

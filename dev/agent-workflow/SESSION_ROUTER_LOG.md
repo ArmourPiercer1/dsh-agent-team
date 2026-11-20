@@ -9064,6 +9064,32 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 
 **UNKNOWN（不写成就绪）**：本 worktree 没有 gitignored 的 pristine 宿主树，M7-B1 的真宿主臂（inside/outside/同目录对照、逐字 denial、伪造 witness）未在此执行，等 `ci-census` 的 provisioned host；全量 testkit vitest 的三个红文件在 CI product lane 是否为绿未验证（本 PR 只证失败集合未扩大）；F-09 的信任边界是**进程内**（同进程能 import 私有模块者可以伪造 seal/铸 receipt，与既有 seal 同模型，不是安全隔离）；`createFsWitness` 的 `worldGuard` 是调用方自报权威，生产路径传 `isFactoryWorld`。
 
+## 2026-11-20 — F-10 观察契约自身身份 + 轨迹 actor 绑定（契约对象伪造收口）
+
+**背景**：F-09 把 **World** 身份改成对象身份（私有 `WeakSet` + 不可枚举 symbol），但 **契约对象本身**仍然只有形状 + 继承来的 symbol。`contractWorldIdentity()` 读 `contract[WORLD_REF]`，而属性读取走原型链，因此 `Object.create(validContract)` + `defineProperty(child,'world_id',...)` 会用一个继承来的 World receipt 为一个被覆盖的字段背书；同样可通过 `Reflect.ownKeys`/`Object.getOwnPropertySymbols` 的反射拷贝带走那个“不可枚举” symbol（spread 丢 symbol 只是 spread 的性质，不是 symbol 的私有性）。第二半是 `checkWindowBinding()` 只按 `execution_id` 匹配持久轨迹，两个 session 共享 call id 时可互换证据（轨迹里本就有 `actor_id`，从未与契约 `agent_id` 比较）。
+
+**分支/基线**：`task/f10-contract-identity-20261120`，worktree `.worktrees/f10-contract-identity-20261120`，base `origin/master ef7e3af0088bf3af8fc765ce27951f9dbad92892`。memo = `docs/plans/memo/f10-contract-identity-20261120/README.md`；transcript 18 份 + 可复跑探针在 `dev/agent-workflow/evidence/f10-contract-identity-20261120/`。
+
+**修法**：
+
+- **契约身份**：`tests/world-factory/lib/world-identity.mjs` 增 `CONTRACTS` 语义的 `DECLARED_CONTRACTS`（私有 `WeakSet`）+ `CONTRACT_SNAPSHOTS`（私有 `WeakMap`，五个字段 `world_id`/`world_home`/`agent_id`/`execution_id`/`contract_id` 的冻结快照）+ `declareContractIdentity()` / `isDeclaredContract()` / `declaredContractFields()`。mint 只在 `declareObservationContract()` 里、`Object.freeze` 之前调用，且 **mint-once**（第二次返回首份快照，不允许把变异对象重新基线化）。
+- **三层拒绝**（`contractWorldIdentity`，按序）：`CONTRACT_IDENTITY_UNPROVEN`（不是 mint 的那个对象）→ `CONTRACT_FIELDS_MISMATCH`（own field 与快照不符 / 不再是 own **data** property / `world_identity` 被替换 / 契约字段与它携带的 Factory receipt 不一致＝跨 World 交叉接线）→ `WORLD_IDENTITY_UNPROVEN`（F-09 原规则，World 非 mint）。`checkWindowBinding()` 先用 `contractWorldIdentity()` 拒绝，再比 window/trace。
+- **actor 绑定**：所有 `tool/call`/`tool/result` 中 `execution_id === contract.execution_id` 的事件，必须 `actor_id === contract.agent_id`；外来或缺失 → `ACTOR_ID_MISMATCH`（detail 同时点名轨迹里的 actor 与契约声明的 agent）。
+- **不可变**：契约节点原本就是 `Object.freeze`；调用方普查 **0 处**声明后写字段，故保留 freeze、无例外。freeze 不作为身份（任何人都能冻结伪造对象），快照让字段漂移可观察（控制 (d) 用可写 minted 对象证明）。
+- **控制 (b) 决策**：无覆盖的 `Object.create(valid)` 也拒绝（`CONTRACT_IDENTITY_UNPROVEN`），不给“字段当前一致就归属”的例外——它与 (a) 只差一次 `defineProperty`，按字段重推导会把下一次写入重新放进来。
+
+**负控 6 + 1 正控**（`tests/world-factory/f10-contract-identity.test.mjs`，host-free）：(a) 派生+覆盖 `world_id`；(b) 派生无覆盖；(c) `Reflect.ownKeys`/symbol 反射拷贝；(d) minted 后 `world_id` 变异（+ accessor 遮蔽）；(e) 两 World 契约交叉接线（含 minted 交叉线，被 receipt cross-check 拒）；(f) `execution_id` 相同、`actor_id` 属另一 agent（含缺失 actor）；正控=真实 declared 契约仍被接受、其 actor 匹配轨迹可判。**变异→红**：把两个 lib 文件退回 `ef7e3af00` 后新套件 `tests 9 / pass 1 / fail 8`（唯一绿=正控），探针 6 项 `ACCEPTED`；恢复后 sha256 逐文件比对 + 新套件 9/9 绿。transcript `mutation-prefix-red.txt` / `mutation-prefix-probe.txt` / `f10-suite-green.txt`。
+
+**调用方普查**（`git grep`，排除 docs/log 散文）：`declareObservationContract` 无生产调用方，只有 `m7b1-observation-window.test.mjs`、`tinf-observer-closeout.test.mjs`、新套件与历史 evidence probe；`contractWorldIdentity`/`checkWindowBinding`/`open|close|judgeObservationWindow` 同样只在 lib + 这两个旧套件 + 新套件。旧套件两处行为变化已随之更新：拷贝/派生契约的拒码改为 `CONTRACT_IDENTITY_UNPROVEN`；纯函数 `checkWindowBinding` 的合成 trace 事件补 `actor_id`。
+
+**CI 接线**：`tests/world-factory/f10-contract-identity.test.mjs` 追加到 `census-runtime.yml` 的 `Next host — the rc.5 lane` **同一 argv** 与 `dev/ci/eb3-ci-manifest.json` 的 `next host lane` 镜像 `check[]`（C-NH1 派生式校验要求两处逐字节一致）；未动 dispatch legs、`--parity` 证据、`scripts/test-catalog.test.mjs`。
+
+**门禁（最终 head 实测）**：新套件 9/9；`tinf-observer-closeout` 27/27；`m7b1-observation-window` 宿主缺席 9 pass/1 declared skip、**正确 provision 的 pin 宿主上 10/10**（含 A7 派生契约→`CONTRACT_IDENTITY_UNPROVEN`、外来 actor→`ACTOR_ID_MISMATCH`）；`m7a-real-slice-unit` 16/16；`world-factory.test` 44/45，红的是既有 RUN-record `teamSha/hostSha` 环境项，**把 lib 退回 pre-fix 后同一红**（早先一次 43/45 的 C1 dry-run 为 flaky，重跑与 pre-fix 都过）；`test-catalog --max-uncollected 41 --max-excluded 7` → `tests=879`（878+1）、`UNCOLLECTED 41`、`refused=0 findings=0`；`dispatch --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-negative-controls 33/33`；`docs-sync findings=0 blocking=0`；`lint-identities` new 0/resolved 0；`tsc --noEmit` 6/9 包绿；`git diff --check` 0。
+
+**UNKNOWN（明写）**：信任边界仍是**进程内**——能 import `world-identity.mjs` 并调用 `declareContractIdentity` 的代码可以给自建对象铸身份（与 `mintFactoryWorldIdentity` 同一模型），本修只关“对象伪造/拷贝/序列化/原型反射”，不是对恶意 in-module 代码或进程隔离的边界；`actor_id` 绑定是字符串相等，证明轨迹自称的 actor 与契约一致，不证明宿主诚实；`tsc --noEmit` 的 `runtime`/`client`/`legacy` 因 fresh worktree 缺 `@types/node`/React/client-store 无法执行（本 diff 未触 `packages/**`）；本机主 checkout 的 pinned 树原生资产是本地 build（`75450f92…`），被正确拒为 `HOST_ASSETS_UNPROVEN`，10/10 真实宿主 transcript 用的是 `.worktrees/tinf-merge-shape` 已 provision 的 pin 树（`54a9c25c…`、HEAD pin、porcelain 0），本会话未重新 provision。**未 push master、未合并**；分支以 draft PR 形式交协调者结算。
+
+**更正（同一轮，2026-11-20）**：上面门禁行的 `tsc --noEmit` 计数应为 **8 个 package config 中 5 绿**（`contracts`/`domain`/`storage`/`tools`/`remote`），红的是 `runtime`/`client`/`testkit`（fresh worktree 缺 `@types/node`、React/client-store）；`packages/legacy` 没有 tsconfig，故不是 9 个。原文的“6/9”为计数错误，代码/证据 transcript 不变（`tsc-noemit.txt` 逐包 EXIT 行仍然 Correct）。
+
 ## 2026-11-20 — UTE-0：冻结实施合同 + 机器可判的退役门（UTE G1 第 1 包）
 
 **背景**：owner 批准启动 UTE G1 开发轮，顺序 UTE-0（冻结合同）→ UTE-1（FS native binding）→ UTE-2（执行结算）→ UTE-3（逐族迁移）→ UTE-4（旧实现退役），并固定退役谓词 `RetireAllowed = OldBaseline ∧ NewPathVerified ∧ SemanticDifferencesResolved ∧ NegativeControlsPass`；`SemanticDifferencesResolved` 可以是**获批准的语义变更**，不必字节等价；退役逐族增量（FS 可先于 Web/PTY）；`ControlService` 仍是唯一审批/Grant/Stop 权威。

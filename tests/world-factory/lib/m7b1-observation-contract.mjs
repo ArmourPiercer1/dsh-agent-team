@@ -28,6 +28,18 @@
  *                          (F-09: a literal `{id, home}`, a spread copy or a
  *                          structuredClone carries no receipt; `openObservationWindow`
  *                          answers the same code for a contract that lost its World)
+ *   CONTRACT_IDENTITY_UNPROVEN (F-10) the CONTRACT is not the object
+ *                          `declareObservationContract` minted: `Object.create(valid)`,
+ *                          a `Reflect.ownKeys`/`getOwnPropertySymbols` reflection copy,
+ *                          a spread copy, a proxy and a JSON round-trip are all
+ *                          different objects, so their `world_id` is not evidence
+ *   CONTRACT_FIELDS_MISMATCH (F-10) a minted contract's own fields no longer equal
+ *                          the frozen snapshot taken at mint, or no longer equal
+ *                          the Factory receipt the contract claims to speak for
+ *   ACTOR_ID_MISMATCH      (F-10) the trace event carrying the graded
+ *                          `execution_id` belongs to a different `actor_id` than
+ *                          the contract's `agent_id`; two sessions sharing a call
+ *                          id cannot swap evidence
  *   READ_EFFECT_UNOBSERVABLE a `read-non-occurrence` claim (M7-C): a snapshot
  *                          cannot see a read, so this is a named limitation and
  *                          never a contract that could be graded green
@@ -85,7 +97,7 @@ import { isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
-import { WORLD_IDENTITY_SCHEMA, factoryWorldReceipt, isFactoryWorld } from './world-identity.mjs'
+import { WORLD_IDENTITY_SCHEMA, declareContractIdentity, declaredContractFields, factoryWorldReceipt, isFactoryWorld } from './world-identity.mjs'
 
 /** Version tag of the contract this module owns. */
 export const OBSERVATION_CONTRACT_SCHEMA = 'm7b1-observation-contract/1'
@@ -143,6 +155,9 @@ export const REFUSAL_CODES = Object.freeze([
   'IDENTITY_INVALID',
   'IDENTITY_MISMATCH',
   'WORLD_IDENTITY_UNPROVEN',
+  'CONTRACT_IDENTITY_UNPROVEN',
+  'CONTRACT_FIELDS_MISMATCH',
+  'ACTOR_ID_MISMATCH',
   'READ_EFFECT_UNOBSERVABLE',
   'EXECUTION_ID_NOT_IN_TRACE',
   'WINDOW_NOT_CLOSED',
@@ -343,6 +358,17 @@ export function declareObservationContract({
   // Non-enumerable on purpose: a spread copies only enumerable properties, so a
   // rebuilt contract loses the World — and `openObservationWindow` refuses then.
   Object.defineProperty(contract, WORLD_REF, { value: world, enumerable: false, writable: false, configurable: false })
+  // F-10: the contract now has an identity of its own. The WeakSet entry is the
+  // receipt (a copy/child/proxy is a different object), and the frozen snapshot
+  // makes field drift observable even if this object stops being frozen. Minted
+  // HERE and nowhere else: no other function in this repo declares a contract.
+  declareContractIdentity(contract, {
+    world_id: body.world_id,
+    world_home: body.world_home,
+    agent_id: body.agent_id,
+    execution_id: body.execution_id,
+    contract_id,
+  })
   return Object.freeze(contract)
 }
 
@@ -379,15 +405,22 @@ function instrumentError(reason, detail, extra = {}) {
  * or `{reason, detail}` when it does not. The SEAL it cannot check (it has no
  * access to the module registries by design) is checked by the caller first.
  *
- * Three separate questions, because they fail differently:
+ * Four separate questions, because they fail differently:
+ *   0. contract — is this the object `declareObservationContract` minted, with
+ *      its own fields still equal to the mint-time snapshot (F-10)?
  *   1. lifecycle — is the window CLOSED (post snapshot with a real `closedAt`)?
  *   2. identity  — is the window bound to the contract's world/agent/execution?
- *   3. trace     — did the host's durable trace actually carry that execution id?
+ *   3. trace     — did the host's durable trace actually carry that execution id,
+ *      and does the event's `actor_id` equal the contract's `agent_id` (F-10)?
  */
 export function checkWindowBinding({ contract, window, events = [] } = {}) {
-  if (typeof contract !== 'object' || contract === null || contract.schema !== OBSERVATION_CONTRACT_SCHEMA) {
-    return { reason: 'IDENTITY_INVALID', detail: 'a verdict needs a contract declared by declareObservationContract' }
-  }
+  // F-10: the contract must be the minted object BEFORE any of its fields are
+  // compared. `Object.create(validContract)` inherits `schema`, `world_id` and the
+  // World symbol, so every comparison below would otherwise be made against a
+  // value the caller chose. The identity check is the only one a child cannot
+  // inherit.
+  const bound = contractWorldIdentity(contract)
+  if (!bound.ok) return { reason: bound.reason, detail: bound.detail }
   if (typeof window !== 'object' || window === null) {
     return { reason: 'WITNESS_NOT_SEALED', detail: 'there is no window record to bind the verdict to' }
   }
@@ -418,6 +451,19 @@ export function checkWindowBinding({ contract, window, events = [] } = {}) {
     return {
       reason: 'EXECUTION_ID_NOT_IN_TRACE',
       detail: `the contract declares execution_id=${JSON.stringify(contract.execution_id)} but no tool/call or tool/result event in the host's durable trace carries it (ids present: ${seen === '' ? 'none' : seen}); the execution under grade is not the execution this trace observed`,
+    }
+  }
+  // F-10: an execution id is not unique across sessions. Matching it alone lets
+  // two sessions that share a call id swap evidence: the trace event must belong
+  // to the contract's own `agent_id` (`actor_id` on the durable event). An event
+  // that carries no actor at all cannot prove the binding either, so it is
+  // refused by the same name (the detail says which case fired).
+  const foreignActors = carriers.filter((event) => event.actor_id !== contract.agent_id)
+  if (foreignActors.length > 0) {
+    const seen = [...new Set(foreignActors.map((event) => (event.actor_id === undefined ? '<missing>' : String(event.actor_id))))].join(', ')
+    return {
+      reason: 'ACTOR_ID_MISMATCH',
+      detail: `execution_id=${JSON.stringify(contract.execution_id)} is carried by actor_id=${seen} in the host's durable trace, but the contract's agent_id is ${JSON.stringify(contract.agent_id)}; an execution id shared by two sessions cannot answer for this agent's contract (an event with no actor_id cannot prove the binding either)`,
     }
   }
   return null
@@ -461,23 +507,75 @@ function assertPinnedAssets(hostTree) {
 }
 
 /**
- * The World a contract speaks for, by IDENTITY (F-09). Pure and host-free, so the
- * rule can be graded without a pinned runtime tree.
+ * Read an OWN DATA property, never an inherited or accessor one. A contract's
+ * field is evidence only when it is written on the minted object itself: a child
+ * that inherits `world_id` from a valid contract, or a proxy that answers a
+ * different value, is exactly the forgery F-10 closes.
  *
- * A contract declared here carries the World object on a NON-ENUMERABLE symbol
- * property. A spread (`{...contract}`) copies only enumerable properties, a JSON
- * round-trip copies none, and `structuredClone` drops symbols entirely — so a
- * copied contract has no World and cannot prove which one it observes. That is
- * the falsifiability the literal `{id, home}` check never had.
+ * @returns {{present: boolean, value: unknown}}
+ */
+function ownDataProperty(object, key) {
+  const descriptor = Object.getOwnPropertyDescriptor(object, key)
+  if (descriptor === undefined || !Object.hasOwn(descriptor, 'value')) return { present: false, value: undefined }
+  return { present: true, value: descriptor.value }
+}
+
+/**
+ * The World a contract speaks for, by IDENTITY (F-09), and the CONTRACT's own
+ * identity (F-10). Pure and host-free, so the rule can be graded without a
+ * pinned runtime tree.
+ *
+ * THREE SEPARATE QUESTIONS, refused by three different names:
+ *   1. is this the object the declaring function minted?  -> CONTRACT_IDENTITY_UNPROVEN
+ *      (a spread copy, a reflection copy, `Object.create(valid)`, a proxy and a
+ *      JSON round-trip all fail here; inheriting the fields is not being them)
+ *   2. have its OWN fields moved since mint, or do they disagree with the Factory
+ *      receipt it carries?                                -> CONTRACT_FIELDS_MISMATCH
+ *   3. does it still carry a World the Factory minted?    -> WORLD_IDENTITY_UNPROVEN
+ *      (unchanged F-09 rule)
  *
  * @param {object} contract
- * @returns {{ok: true, world: object, receipt: object}|{ok: false, reason: string, detail: string}}
+ * @returns {{ok: true, world: object, receipt: object, identity: object}|{ok: false, reason: string, detail: string}}
  */
 export function contractWorldIdentity(contract) {
   if (typeof contract !== 'object' || contract === null || contract.schema !== OBSERVATION_CONTRACT_SCHEMA) {
     return { ok: false, reason: 'IDENTITY_INVALID', detail: 'not a contract declared by declareObservationContract' }
   }
-  const world = contract[WORLD_REF]
+  // F-10 (1): object identity. The schema read above walks the prototype chain on
+  // purpose — a child inherits it — and then this WeakSet says "not the object".
+  const identity = declaredContractFields(contract)
+  if (identity === null) {
+    return {
+      ok: false,
+      reason: 'CONTRACT_IDENTITY_UNPROVEN',
+      detail:
+        'the contract is not the object declareObservationContract minted (no contract identity receipt): a spread copy, a Reflect.ownKeys/getOwnPropertySymbols reflection copy, an Object.create child, a proxy and a JSON round-trip are different objects, so the world_id they expose is not evidence of what was declared',
+    }
+  }
+  // F-10 (2): own data properties must still equal the frozen mint-time snapshot.
+  // `Object.isFrozen` alone is NOT the check (a caller can freeze a forged copy);
+  // the snapshot is why a value moved after minting would be observable at all.
+  for (const field of ['world_id', 'world_home', 'agent_id', 'execution_id', 'contract_id']) {
+    const actual = ownDataProperty(contract, field)
+    if (!actual.present) {
+      return {
+        ok: false,
+        reason: 'CONTRACT_FIELDS_MISMATCH',
+        detail: `${field} is not an own data property of the minted contract: an inherited or accessor value is not the field the declaration path wrote`,
+      }
+    }
+    if (actual.value !== identity[field]) {
+      return {
+        ok: false,
+        reason: 'CONTRACT_FIELDS_MISMATCH',
+        detail: `${field}=${JSON.stringify(actual.value)} no longer equals the value minted at declaration (${JSON.stringify(identity[field])}); the contract was modified after it was declared`,
+      }
+    }
+  }
+  // F-10 (3): the World reference itself must be an own (non-enumerable) symbol
+  // property, not something inherited from a prototype.
+  const ref = ownDataProperty(contract, WORLD_REF)
+  const world = ref.value
   if (!isFactoryWorld(world)) {
     return {
       ok: false,
@@ -485,7 +583,29 @@ export function contractWorldIdentity(contract) {
       detail: 'the contract carries no World identity (its non-enumerable World reference is gone): a copied or rebuilt contract cannot prove which World it observes',
     }
   }
-  return { ok: true, world, receipt: factoryWorldReceipt(world) }
+  const receipt = factoryWorldReceipt(world)
+  if (receipt === null) {
+    return { ok: false, reason: 'WORLD_IDENTITY_UNPROVEN', detail: 'the World this contract carries has no Factory receipt' }
+  }
+  // F-10 (2b): cross-check the contract's fields against the Factory receipt's
+  // values. This is the "even for a minted contract" half: a contract whose
+  // WORLD_REF and visible fields disagree is cross-wired between two Worlds.
+  if (receipt.world_id !== identity.world_id || receipt.home !== identity.world_home) {
+    return {
+      ok: false,
+      reason: 'CONTRACT_FIELDS_MISMATCH',
+      detail: `the contract declares world_id=${JSON.stringify(identity.world_id)} world_home=${JSON.stringify(identity.world_home)} but the Factory receipt it carries says world_id=${JSON.stringify(receipt.world_id)} home=${JSON.stringify(receipt.home)}; the contract is cross-wired between two Worlds`,
+    }
+  }
+  const recorded = ownDataProperty(contract, 'world_identity')
+  if (!recorded.present || recorded.value !== receipt) {
+    return {
+      ok: false,
+      reason: 'CONTRACT_FIELDS_MISMATCH',
+      detail: 'the contract\'s world_identity field is not the frozen Factory receipt of the World it carries; its provenance field was replaced or shadowed',
+    }
+  }
+  return { ok: true, world, receipt, identity }
 }
 
 /**
