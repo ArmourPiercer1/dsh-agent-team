@@ -1,0 +1,13 @@
+$ node scripts/ute-family-inventory.mjs
+UTE-FAMILY-INVENTORY ledger=dev/agent-workflow/ledgers/ute-family-inventory.json schema=ute-family-inventory/1 families=9 universe=92 shared=14
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.fs-family members=4 files=17 definitions=4 steps=12 readiness=baseline:partial,newPath:prototype,negativeControls:partial testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.process-family members=2 files=11 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.search-family members=2 files=9 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.inspect-family members=3 files=10 definitions=3 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.u6-probe-family members=1 files=3 definitions=1 steps=7 readiness=baseline:none,newPath:none,negativeControls:none testOnly=true
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.web-family members=2 files=10 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.agent-control-family members=7 files=14 definitions=7 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.ui-family members=2 files=9 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.agent-state-family members=5 files=7 definitions=5 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+EXIT=0

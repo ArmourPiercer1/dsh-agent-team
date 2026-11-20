@@ -1,0 +1,2037 @@
+{
+  "schema": "ute-family-inventory/1",
+  "note": "UTE-3 per-family inventory of the legacy ToolPlane / Family Body (dev/agent-workflow/ledgers/ute-family-inventory.json). WHAT IT IS: for every family booked in dev/agent-workflow/ledgers/arc-a-family-census.json, the repo-relative files that genuinely constitute its current implementation (chosen by reading the code, never by directory name), the model-visible definitions it contributes and where each is declared, its parsed dependency edges, the ordered runtime path from a model-visible call to an effect, where approval/Grant/Stop is enforced, what exists on the DSH-native side, and the retirement readiness DERIVED from the measured retirement artifacts. WHAT IT IS NOT: a retirement licence (that is scripts/ute-retirement-gate.mjs + the required-CI deletion hook), a proof that the new path is correct, or a claim that the old path is equivalent. THE INDEPENDENT INPUTS the checker grades this ledger against: the census (family set, lanes, members, mount), the git index (tracked files, and the file universe derived from the booked lanes), the source text (imports parsed by a tokenizer, not a regex), and the retirement ledger + its measured baseline/new-path/negative-control artifacts. FIELDS: oldPath.files[].role uses the closed set [family-definition,row-definition,executor,mechanics,port,normalizer,contribution,index,test-only] (mechanics is also the class of bound helper/law/constants modules); dependsOn = bare module specifiers (node:* and @scope packages) actually imported by oldPath.files; importsWithinFamily/importsAcrossRepo = relative specifiers partitioned by whether they resolve inside this family's own files; runtimePath steps name a file this family owns, a declared shared file (shared:true), another family's file (owner:<familyId>), or an external step (external:true + where); retirementReadiness is recomputed by the checker from the retirement gate's own coverage derivation, so a declared value that the evidence does not support is INVENTORY_READINESS_DRIFT.",
+  "families": [
+    {
+      "familyId": "dsh.fs-family",
+      "lane": "packages/tools/fs-family",
+      "testOnly": false,
+      "members": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/fs.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/fs-family/src/edit-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "edit"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/edit-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "edit"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/fs-family-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "read",
+              "write",
+              "edit",
+              "read_image"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/fs-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/fs-family/src/fs-read-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "read"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/image-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "read_image"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/image-read-port.mjs",
+            "role": "port",
+            "definitionNames": [
+              "read_image"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/image-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "read_image"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/fs-family/src/read-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "read"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/read-normalizer.ts",
+            "role": "normalizer",
+            "definitionNames": [
+              "read"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/read-presentation.mjs",
+            "role": "mechanics",
+            "definitionNames": [
+              "read"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/read-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "read"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/write-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "write"
+            ]
+          },
+          {
+            "path": "packages/tools/fs-family/src/write-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "write"
+            ]
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "read",
+          "declaredIn": "packages/tools/fs-family/src/read-row.mjs",
+          "symbol": "buildReadRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "write",
+          "declaredIn": "packages/tools/fs-family/src/write-row.mjs",
+          "symbol": "buildWriteRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "edit",
+          "declaredIn": "packages/tools/fs-family/src/edit-row.mjs",
+          "symbol": "buildEditRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "read_image",
+          "declaredIn": "packages/tools/fs-family/src/image-row.mjs",
+          "symbol": "buildImageRowDefinition",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "importsWithinFamily": [
+        "../fs-family/src/fs-mechanics.mjs",
+        "../fs-family/src/fs-mutation-mechanics.mjs",
+        "../fs-family/src/index.mjs",
+        "../fs-family/src/read-presentation.mjs",
+        "./edit-executor.mjs",
+        "./edit-row.mjs",
+        "./fs-family-contribution.mjs",
+        "./fs-mechanics.mjs",
+        "./fs-mutation-mechanics.mjs",
+        "./fs-read-contribution.mjs",
+        "./image-executor.mjs",
+        "./image-read-port.mjs",
+        "./image-row.mjs",
+        "./read-executor.mjs",
+        "./read-normalizer.js",
+        "./read-presentation.mjs",
+        "./read-row.mjs",
+        "./write-executor.mjs",
+        "./write-row.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js",
+        "../../../runtime/controlled-fs/src/index.js"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible tool call enters the pinned host's ToolExecutionPipeline (@deepseek-ai/dsh-tools, not vendored in this repo)."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet and the Executor for the call; the Team side verifies the definition copy statically (scripts/eb3-tool-acceptance.mjs) and never mints it."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The governed plane places each family row Definition on the mount host tools service (`agentCtx.tools.register(def)`), and owns the mount claim table that decides which names are kernel-owned.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "`installScopedToolGuard` arms the host seams: `tools.guard` (closed-world/-Stop monotonic check) then `tools/pre-execute` (admission) before any body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "`paAdmit` / `paAdmitPartA` build the plan snapshot + requested effect set, ask the Control leg, and the guard consumes the minted Grant once before the execution edge.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "`a5PaControlLeg` performs the durable ControlService ask and returns the landed+guard-consumed grant (`APPROVAL_LEG_INCOMPLETE` refuses an approval without one).",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/fs.mjs",
+          "detail": "`familyAssembly.build(cap)` constructs the four governed executors over ONE controlled-fs root and refuses a partial lane with `PLANE_FS_FAMILY_INCOMPLETE`."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/fs-family/src/fs-family-contribution.mjs",
+          "detail": "ONE reviewed candidate carries all four rows and binds the four definitions' `execute` transports into its source digest (a swapped body changes the digest)."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/fs-family/src/read-row.mjs",
+          "detail": "The row `ToolDefinition` (name/parameters/description + `execute`) that dispatches into the family executor."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/fs-family/src/read-executor.mjs",
+          "detail": "The governed executor: derives the requested effect set, re-checks the lane decision, opens and verifies the handle, then reads."
+        },
+        {
+          "step": "port",
+          "file": "packages/runtime/controlled-fs/src/index.ts",
+          "detail": "The controlled-fs profile the executor's open/verify and post-consume closures run over (the single fs algebra; no second one).",
+          "shared": true
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "node:fs + the host attachment store",
+          "detail": "The OS effect: node:fs under the realm root (read/write/edit), or the host attachment store commit for `read_image` via `packages/tools/fs-family/src/image-read-port.mjs`."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "prototype",
+        "files": [
+          "packages/tools/src/native-fs-binding.ts",
+          "packages/tools/src/index.ts",
+          "tests/ute1-fs/native-fs-binding.test.mjs"
+        ],
+        "note": "UTE-1 landed a reviewed product-side module (`native-fs-binding/1`) that subclasses the host fs provider and adds the declared read/write lane; it exports through the additive barrel in `packages/tools/src/index.ts`. It is NOT wired into any shipped assembly (the module header says so; nothing under packages/runtime imports it), so it is a prototype, not a product module."
+      },
+      "retirementReadiness": {
+        "baseline": "partial",
+        "newPath": "prototype",
+        "negativeControls": "partial"
+      },
+      "note": "The FS family is ONE indivisible four-tool assembly: the descriptor claims all four names, ONE Registry candidate carries all four row definitions, and a partial mount is refused PLANE_FS_FAMILY_INCOMPLETE (RETIREMENT.md §1.1). `read-presentation.mjs` is classed `mechanics` because the closed role set has no presentation role; it is the read row's presentation face."
+    },
+    {
+      "familyId": "dsh.process-family",
+      "lane": "packages/tools/process-family",
+      "testOnly": false,
+      "members": [
+        "bash",
+        "pwsh"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/process.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/process-family/src/bash-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "bash",
+              "pwsh"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/bash-normalizer.ts",
+            "role": "normalizer",
+            "definitionNames": [
+              "bash"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/bash-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "bash"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/confined-shell-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "bash"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/process-family/src/pwsh-confined.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "pwsh"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/pwsh-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "pwsh"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/pwsh-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/process-family/src/pwsh-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "pwsh"
+            ]
+          },
+          {
+            "path": "packages/tools/process-family/src/shell-mechanics.mjs",
+            "role": "mechanics"
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "bash",
+          "declaredIn": "packages/tools/process-family/src/bash-row.mjs",
+          "symbol": "buildBashRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "pwsh",
+          "declaredIn": "packages/tools/process-family/src/pwsh-row.mjs",
+          "symbol": "buildPwshRowDefinition",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "node:crypto",
+        "node:fs",
+        "node:timers"
+      ],
+      "importsWithinFamily": [
+        "../process-family/src/index.mjs",
+        "./bash-contribution.mjs",
+        "./bash-normalizer.js",
+        "./bash-row.mjs",
+        "./confined-shell-executor.mjs",
+        "./pwsh-confined.mjs",
+        "./pwsh-executor.mjs",
+        "./pwsh-mechanics.mjs",
+        "./pwsh-row.mjs",
+        "./shell-mechanics.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js",
+        "../../../runtime/sandbox-provider/index.js",
+        "../../fs-family/src/index.mjs"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible `bash`/`pwsh` call enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the family row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam refuses an unbound/unstoppable call before the body can move.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The per-call PA admission derives the shell effect set and consumes the guard-minted Grant exactly once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + grant consumption leg (the shell class is denied by the lane decide before any spawn).",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/process.mjs",
+          "detail": "`build(cap)` constructs the confined shell + governed pwsh rows over the shared effect backends."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/process-family/src/bash-contribution.mjs",
+          "detail": "ONE candidate carries both rows and binds both definitions' `execute` transports into the source digest."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/process-family/src/bash-row.mjs",
+          "detail": "The shell row Definition (closed parameter schema, `execute` transport)."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/process-family/src/confined-shell-executor.mjs",
+          "detail": "The confined shell executor: strict arg parse, effect derivation, cancel-aware stream drain, then the confined backend."
+        },
+        {
+          "step": "port",
+          "file": "packages/runtime/sandbox-provider/index.ts",
+          "detail": "`createConfinedProcessProvider` — the confined process backend (filesystem-only confinement; the host sandbox claims no network confinement).",
+          "shared": true
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "the host sandbox process provider",
+          "detail": "The OS effect: a confined child process spawn through the host sandbox backend (pwsh goes through `pwsh-confined.mjs` + `pwsh-mechanics.mjs`)."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "The process family mounts both shell rows under native spellings (`bash`, `pwsh`) through the same-name/same-meaning takeover ledger in the plane. `pwsh-confined.mjs` is classed `executor` because it is the confined spawn backend for the pwsh row."
+    },
+    {
+      "familyId": "dsh.search-family",
+      "lane": "packages/tools/search-family",
+      "testOnly": false,
+      "members": [
+        "grep",
+        "glob"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/search.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/search-family/src/cancel-leg.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/search-family/src/glob-backend.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "glob"
+            ]
+          },
+          {
+            "path": "packages/tools/search-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/search-family/src/search-backend.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "grep"
+            ]
+          },
+          {
+            "path": "packages/tools/search-family/src/search-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "grep",
+              "glob"
+            ]
+          },
+          {
+            "path": "packages/tools/search-family/src/search-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/search-family/src/search-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "grep",
+              "glob"
+            ]
+          },
+          {
+            "path": "packages/tools/search-family/src/stream-drain.mjs",
+            "role": "mechanics"
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "grep",
+          "declaredIn": "packages/tools/search-family/src/search-row.mjs",
+          "symbol": "buildSearchRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "glob",
+          "declaredIn": "packages/tools/search-family/src/search-row.mjs",
+          "symbol": "buildSearchRowDefinitions",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "@deepseek-ai/dsh-tool-fs-search",
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path",
+        "node:timers"
+      ],
+      "importsWithinFamily": [
+        "../search-family/src/glob-backend.mjs",
+        "../search-family/src/index.mjs",
+        "../search-family/src/search-mechanics.mjs",
+        "./cancel-leg.mjs",
+        "./glob-backend.mjs",
+        "./search-backend.mjs",
+        "./search-contribution.mjs",
+        "./search-mechanics.mjs",
+        "./search-row.mjs",
+        "./stream-drain.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../runtime/controlled-fs/src/index.js",
+        "../../../runtime/sandbox-provider/index.js",
+        "../../fs-family/src/index.mjs"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible `grep`/`glob` call enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the family row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the read/search effect set and consumes the Grant once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/search.mjs",
+          "detail": "`build(cap)` builds the anchored search/glob backends and both row definitions."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/search-family/src/search-contribution.mjs",
+          "detail": "ONE candidate carries both rows; the digest binds the rows' `execute` transports and the backend namespaces."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/search-family/src/search-row.mjs",
+          "detail": "`buildSearchRowDefinitions` returns the `grep` and `glob` Definitions (one candidate, two rows)."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/search-family/src/search-backend.mjs",
+          "detail": "The anchored ripgrep backend (grep); the glob twin is `glob-backend.mjs`. Both are wrapped by `search-mechanics.mjs`."
+        },
+        {
+          "step": "port",
+          "file": "packages/runtime/sandbox-provider/index.ts",
+          "detail": "The confined process provider the rg backends spawn through (bounded stream drain + owned stop).",
+          "shared": true
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "the host sandbox process provider",
+          "detail": "The OS effect: an `rg` process over the anchored walk root; `verifyGlobResultsBeneath` re-checks every glob hit beneath the root."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "`search-backend.mjs` / `glob-backend.mjs` are classed `executor` (they are the effect backends); `search-mechanics.mjs` is the port-level wrapper the plane hands the rows. The two rows share ONE candidate and one row file."
+    },
+    {
+      "familyId": "dsh.inspect-family",
+      "lane": "packages/tools/inspect-family",
+      "testOnly": false,
+      "members": [
+        "team_skill",
+        "team_cordis_inspect_list",
+        "team_cordis_inspect_query"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/inspect.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/inspect-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/inspect-family/src/inspect-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "team_cordis_inspect_list",
+              "team_cordis_inspect_query"
+            ]
+          },
+          {
+            "path": "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "team_skill",
+              "team_cordis_inspect_list",
+              "team_cordis_inspect_query"
+            ]
+          },
+          {
+            "path": "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/inspect-family/src/inspect-rows.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "team_cordis_inspect_list",
+              "team_cordis_inspect_query"
+            ]
+          },
+          {
+            "path": "packages/tools/inspect-family/src/row-names.mjs",
+            "role": "mechanics",
+            "definitionNames": [
+              "team_skill",
+              "team_cordis_inspect_list",
+              "team_cordis_inspect_query"
+            ]
+          },
+          {
+            "path": "packages/tools/inspect-family/src/skill-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "team_skill"
+            ]
+          },
+          {
+            "path": "packages/tools/inspect-family/src/skill-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/inspect-family/src/skill-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "team_skill"
+            ]
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "team_skill",
+          "declaredIn": "packages/tools/inspect-family/src/skill-row.mjs",
+          "symbol": "buildSkillRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "team_cordis_inspect_list",
+          "declaredIn": "packages/tools/inspect-family/src/inspect-rows.mjs",
+          "symbol": "buildInspectRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "team_cordis_inspect_query",
+          "declaredIn": "packages/tools/inspect-family/src/inspect-rows.mjs",
+          "symbol": "buildInspectRowDefinitions",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises"
+      ],
+      "importsWithinFamily": [
+        "../inspect-family/src/inspect-executor.mjs",
+        "../inspect-family/src/inspect-family-contribution.mjs",
+        "../inspect-family/src/inspect-rows.mjs",
+        "../inspect-family/src/row-names.mjs",
+        "../inspect-family/src/skill-executor.mjs",
+        "../inspect-family/src/skill-mechanics.mjs",
+        "../inspect-family/src/skill-row.mjs",
+        "./inspect-executor.mjs",
+        "./inspect-family-contribution.mjs",
+        "./inspect-mechanics.mjs",
+        "./inspect-rows.mjs",
+        "./row-names.mjs",
+        "./skill-executor.mjs",
+        "./skill-mechanics.mjs",
+        "./skill-row.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js",
+        "../../fs-family/src/index.mjs",
+        "../../search-family/src/index.mjs"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible `team_skill` / `team_cordis_inspect_*` call enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the alias row Definitions (`team_*`) on the mount host tools service; the native `skill`/`cordis_inspect_*` spellings are NOT claimed.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the inspect/read effect set and consumes the Grant once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/inspect.mjs",
+          "detail": "`build(cap)` validates the skill roots and constructs the three governed rows."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+          "detail": "ONE candidate carries the three alias rows; the digest binds every row's `execute` transport."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/inspect-family/src/skill-row.mjs",
+          "detail": "The `team_skill` row Definition; the inspect pair comes from `inspect-rows.mjs`."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/inspect-family/src/skill-executor.mjs",
+          "detail": "The governed skill executor (anchored, verified open) / `inspect-executor.mjs` for the cordis pair."
+        },
+        {
+          "step": "port",
+          "file": "packages/tools/fs-family/src/index.mjs",
+          "detail": "The skill executor's anchored read primitives are the FS family's (`lexicalAnchor`, `resolveAnchoredPath`, `verifyOpenedHandle`) — a cross-family edge, recorded with its real owner.",
+          "owner": "dsh.fs-family"
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "node:fs via the FS family primitives + the host inspect service",
+          "detail": "The OS effect: skill-file reads under the validated skill roots; the inspect pair is a read-only host inspect query."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "This family mounts under NON-native alias spellings (`team_skill`, `team_cordis_inspect_*`); the native `skill`/`cordis_inspect_*` names remain host-owned and are NOT claimed (PLANE_SUPPORTED_NATIVE_TAKEOVERS in the plane). `row-names.mjs` is classed `mechanics` (mount spellings/constants)."
+    },
+    {
+      "familyId": "dsh.u6-probe-family",
+      "lane": "tests/u6-arc-a-probe-family",
+      "testOnly": true,
+      "members": [
+        "u6arc_probe"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "tests/u6-arc-a-probe-family/src/probe-assembly.d.mts",
+            "role": "test-only"
+          },
+          {
+            "path": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "u6arc_probe"
+            ]
+          },
+          {
+            "path": "tests/u6-arc-a-probe-family/src/probe-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "u6arc_probe"
+            ]
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "u6arc_probe",
+          "declaredIn": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+          "symbol": "PROBE_NAME",
+          "boundDefinition": false
+        }
+      ],
+      "dependsOn": [
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "importsWithinFamily": [
+        "./probe-contribution.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../packages/contracts/src/index.js",
+        "../../../packages/runtime/governance-center/index.js"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the ARC-A probe harness",
+          "detail": "This is a TEST-ONLY lane: there is no shipped host dispatch. The C2 walk calls the family body directly (tests/world-factory u6-arc-a), and the marker filesystem is the oracle."
+        },
+        {
+          "step": "family-contribution",
+          "file": "tests/u6-arc-a-probe-family/src/probe-contribution.mjs",
+          "detail": "`buildU6ProbeContribution` builds the closed contribution descriptor (familyId `dsh.u6-probe-family`, one literal native name) and binds the definition parameters into its digest."
+        },
+        {
+          "step": "contribution-validation",
+          "file": "packages/runtime/governance-center/index.ts",
+          "detail": "`validateFamilyContribution` re-checks the descriptor against the family's own kernel manifest (closed schema).",
+          "shared": true
+        },
+        {
+          "step": "own-kernel",
+          "file": "packages/runtime/governance-center/kernel.ts",
+          "detail": "The family builds its OWN governance kernel through the public factory; approval entries and the one-shot consume land on that kernel, not on ControlService.",
+          "shared": true
+        },
+        {
+          "step": "grant-consume-port",
+          "file": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+          "detail": "The mount supplies its own one-shot `grantConsume` port (bound to (scope, name, callId)) — the family's own approval ledger."
+        },
+        {
+          "step": "family-body",
+          "file": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+          "detail": "`probeMarkerBody` performs the lane's ONE declared effect: a marker file `${callId}-marker.txt` in the caller-supplied marker dir."
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "node:fs on the marker dir",
+          "detail": "The OS effect: a marker file write into the oracle directory (the test reads the DIRECTORY, never this module's return value)."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "family-local governance kernel (createCenterAssembly)",
+          "family-supplied grantConsume port"
+        ],
+        "files": [
+          "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+          "packages/runtime/governance-center/index.ts",
+          "packages/runtime/governance-center/kernel.ts",
+          "packages/runtime/governance-center/registry.ts"
+        ],
+        "note": "This lane is TEST-ONLY: it is an ARC-A consumer that builds its own governance-center faces through the public factory and supplies its own one-shot grant-consume port. It does NOT ride ControlService — by design, and it is not a product path (census mount = test-only)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "TEST-ONLY (census mount = test-only). It has no ControlService authority and no host dispatch by design; its own kernel + grant-consume port are the authority, and its effect oracle is a marker directory. It must never be read as evidence about a product family."
+    },
+    {
+      "familyId": "dsh.web-family",
+      "lane": "packages/tools/web-family",
+      "testOnly": false,
+      "members": [
+        "web_fetch",
+        "web_search"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/web.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/web-family/src/fetch-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "web_fetch"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/fetch-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "web_fetch"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/web-family/src/search-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "web_search"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/search-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "web_search"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/web-family-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "web_fetch",
+              "web_search"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/web-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/web-family/src/web-search-provider.mjs",
+            "role": "mechanics",
+            "definitionNames": [
+              "web_search"
+            ]
+          },
+          {
+            "path": "packages/tools/web-family/src/web-transport.mjs",
+            "role": "port",
+            "definitionNames": [
+              "web_fetch",
+              "web_search"
+            ]
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "web_fetch",
+          "declaredIn": "packages/tools/web-family/src/fetch-row.mjs",
+          "symbol": "buildFetchRowDefinition",
+          "boundDefinition": false
+        },
+        {
+          "name": "web_search",
+          "declaredIn": "packages/tools/web-family/src/search-row.mjs",
+          "symbol": "buildSearchRowDefinition",
+          "boundDefinition": false
+        }
+      ],
+      "dependsOn": [
+        "node:crypto",
+        "node:dns",
+        "node:http",
+        "node:https"
+      ],
+      "importsWithinFamily": [
+        "../web-family/src/index.mjs",
+        "../web-family/src/web-mechanics.mjs",
+        "../web-family/src/web-search-provider.mjs",
+        "../web-family/src/web-transport.mjs",
+        "./fetch-executor.mjs",
+        "./fetch-row.mjs",
+        "./search-executor.mjs",
+        "./search-row.mjs",
+        "./web-family-contribution.mjs",
+        "./web-mechanics.mjs",
+        "./web-search-provider.mjs",
+        "./web-transport.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible `web_fetch`/`web_search` call enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the two family row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the `tool-invoke + connect` effect set (one-shot grant) before any request is made.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/web.mjs",
+          "detail": "`build(cap)` builds the fetch/search rows and pins the trusted network bound into the candidate digest."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/web-family/src/web-family-contribution.mjs",
+          "detail": "ONE candidate carries both rows; the effect declaration is the family's whole network truth (kind `connect`, target `network-destination`)."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/web-family/src/fetch-row.mjs",
+          "detail": "The `web_fetch` row Definition (`web_search` is `search-row.mjs`)."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/web-family/src/fetch-executor.mjs",
+          "detail": "The governed fetch executor: scheme/host/destination law, byte/time bounds, typed transport codes."
+        },
+        {
+          "step": "port",
+          "file": "packages/tools/web-family/src/web-transport.mjs",
+          "detail": "The network transport port: node:https/http requests resolved against the destination law (DNS lookup included)."
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "node:https / node:http",
+          "detail": "The OS effect: an outbound HTTPS/HTTP request to the permitted destination. Confinement honesty: the host sandbox claims FILE effects only, so network confinement is admission-time Team authority, not local confinement."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "The two web rows are literal native names in the census (no `(bound-definition)` prefix), so they are booked `boundDefinition: false` here — the census is the independent booking even though the contribution does bind the execute transports. The effect truth is the `connect`/`network-destination` pair; local network confinement is NOT claimed."
+    },
+    {
+      "familyId": "dsh.agent-control-family",
+      "lane": "packages/tools/agent-control-family",
+      "testOnly": false,
+      "members": [
+        "subagent",
+        "subagent_fork",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "list_subagent_models",
+        "workflow"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "subagent",
+              "subagent_fork",
+              "send_message",
+              "interrupt_agent",
+              "list_agents",
+              "list_subagent_models",
+              "workflow"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "subagent",
+              "subagent_fork",
+              "send_message",
+              "interrupt_agent",
+              "list_agents",
+              "list_subagent_models",
+              "workflow"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+            "role": "port",
+            "definitionNames": [
+              "subagent",
+              "subagent_fork",
+              "send_message",
+              "interrupt_agent",
+              "list_agents",
+              "list_subagent_models",
+              "workflow"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/fork-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "subagent_fork"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/interrupt-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "interrupt_agent"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/list-agents-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "list_agents"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/list-models-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "list_subagent_models"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/native-output-schemas.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/spawn-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "subagent"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/steer-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "send_message"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-control-family/src/workflow-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "workflow"
+            ]
+          },
+          {
+            "path": "packages/tools/families/agent-control.mjs",
+            "role": "family-definition"
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "subagent",
+          "declaredIn": "packages/tools/agent-control-family/src/spawn-row.mjs",
+          "symbol": "buildSpawnRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "subagent_fork",
+          "declaredIn": "packages/tools/agent-control-family/src/fork-row.mjs",
+          "symbol": "buildForkRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "send_message",
+          "declaredIn": "packages/tools/agent-control-family/src/steer-row.mjs",
+          "symbol": "buildSteerRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "interrupt_agent",
+          "declaredIn": "packages/tools/agent-control-family/src/interrupt-row.mjs",
+          "symbol": "buildInterruptRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "list_agents",
+          "declaredIn": "packages/tools/agent-control-family/src/list-agents-row.mjs",
+          "symbol": "buildListAgentsRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "list_subagent_models",
+          "declaredIn": "packages/tools/agent-control-family/src/list-models-row.mjs",
+          "symbol": "buildListModelsRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "workflow",
+          "declaredIn": "packages/tools/agent-control-family/src/workflow-row.mjs",
+          "symbol": "buildWorkflowRowDefinition",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "node:crypto"
+      ],
+      "importsWithinFamily": [
+        "../agent-control-family/src/agent-control-executor.mjs",
+        "../agent-control-family/src/agent-control-mechanics.mjs",
+        "../agent-control-family/src/agent-runtime-port.mjs",
+        "../agent-control-family/src/index.mjs",
+        "./agent-control-contribution.mjs",
+        "./agent-control-executor.mjs",
+        "./agent-control-mechanics.mjs",
+        "./agent-runtime-port.mjs",
+        "./fork-row.mjs",
+        "./interrupt-row.mjs",
+        "./list-agents-row.mjs",
+        "./list-models-row.mjs",
+        "./native-output-schemas.mjs",
+        "./spawn-row.mjs",
+        "./steer-row.mjs",
+        "./workflow-row.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible agent-control call (`subagent`, `send_message`, …) enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the seven row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the tool-invoke effect set (PTC lineage included) and consumes the Grant once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/agent-control.mjs",
+          "detail": "`build(cap)` constructs the seven governed rows over the injected host agent-runtime port."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+          "detail": "ONE candidate carries seven rows; the digest binds every row's `execute` transport."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/agent-control-family/src/spawn-row.mjs",
+          "detail": "The `subagent` row Definition; the other six rows are one file each."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+          "detail": "The governed agent-control executor: per-leg effect derivation, port resolution, typed `LEG_UNWIRED` refusals."
+        },
+        {
+          "step": "port",
+          "file": "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+          "detail": "The host agent-runtime port (normalized from the host service; no Team-owned dispatch)."
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "the host agent runtime service",
+          "detail": "The effect: a child agent/session operation performed by the HOST agent runtime (create/fork/message/interrupt/list/workflow)."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "Seven rows in ONE candidate. `native-output-schemas.mjs` is classed `mechanics` (shared output schemas/constants)."
+    },
+    {
+      "familyId": "dsh.ui-family",
+      "lane": "packages/tools/ui-family",
+      "testOnly": false,
+      "members": [
+        "ask_user_question",
+        "present"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/families/ui.mjs",
+            "role": "family-definition"
+          },
+          {
+            "path": "packages/tools/ui-family/src/ask-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "ask_user_question"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/ask-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "ask_user_question"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/ui-family/src/present-executor.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "present"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/present-row.mjs",
+            "role": "row-definition",
+            "definitionNames": [
+              "present"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/ui-family-contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "ask_user_question",
+              "present"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/ui-interaction-port.mjs",
+            "role": "port",
+            "definitionNames": [
+              "ask_user_question",
+              "present"
+            ]
+          },
+          {
+            "path": "packages/tools/ui-family/src/ui-mechanics.mjs",
+            "role": "mechanics"
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "ask_user_question",
+          "declaredIn": "packages/tools/ui-family/src/ask-row.mjs",
+          "symbol": "buildAskRowDefinition",
+          "boundDefinition": true
+        },
+        {
+          "name": "present",
+          "declaredIn": "packages/tools/ui-family/src/present-row.mjs",
+          "symbol": "buildPresentRowDefinition",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises"
+      ],
+      "importsWithinFamily": [
+        "../ui-family/src/index.mjs",
+        "../ui-family/src/ui-interaction-port.mjs",
+        "../ui-family/src/ui-mechanics.mjs",
+        "./ask-executor.mjs",
+        "./ask-row.mjs",
+        "./present-executor.mjs",
+        "./present-row.mjs",
+        "./ui-family-contribution.mjs",
+        "./ui-interaction-port.mjs",
+        "./ui-mechanics.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../contracts/src/index.js",
+        "../../../domain/tool-governance/src/index.js",
+        "../../fs-family/src/index.mjs"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible `ask_user_question`/`present` call enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the two row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs (a Stop while a question is pending refuses the wait).",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the tool-invoke effect set and consumes the Grant once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/ui.mjs",
+          "detail": "`build(cap)` constructs the ask/present rows over the injected UI interaction port."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/ui-family/src/ui-family-contribution.mjs",
+          "detail": "ONE candidate carries both rows; the digest binds both `execute` transports."
+        },
+        {
+          "step": "row-definition",
+          "file": "packages/tools/ui-family/src/ask-row.mjs",
+          "detail": "The `ask_user_question` row Definition (`present` is `present-row.mjs`)."
+        },
+        {
+          "step": "executor",
+          "file": "packages/tools/ui-family/src/ask-executor.mjs",
+          "detail": "The governed ask executor (timeout/cancel aware); `present-executor.mjs` reads the files it presents."
+        },
+        {
+          "step": "port",
+          "file": "packages/tools/ui-family/src/ui-interaction-port.mjs",
+          "detail": "The host UI interaction port (ask/present faces); `present` additionally reads through the FS family's anchored primitives."
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "the host UI interaction service",
+          "detail": "The effect: a host UI interaction (question shown / artifact presented)."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "`present` reads its files through the FS family's anchored primitives — a cross-family edge visible in importsAcrossRepo and in the runtime-path port step."
+    },
+    {
+      "familyId": "dsh.agent-state-family",
+      "lane": "packages/tools/agent-state-family",
+      "testOnly": false,
+      "members": [
+        "todo_write",
+        "create_goal",
+        "get_goal",
+        "update_goal",
+        "exit_plan_mode"
+      ],
+      "oldPath": {
+        "files": [
+          {
+            "path": "packages/tools/agent-state-family/src/agent-state-law.mjs",
+            "role": "mechanics"
+          },
+          {
+            "path": "packages/tools/agent-state-family/src/contribution.mjs",
+            "role": "contribution",
+            "definitionNames": [
+              "todo_write",
+              "create_goal",
+              "get_goal",
+              "update_goal",
+              "exit_plan_mode"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-state-family/src/executors.mjs",
+            "role": "executor",
+            "definitionNames": [
+              "todo_write",
+              "create_goal",
+              "get_goal",
+              "update_goal",
+              "exit_plan_mode"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-state-family/src/fs-state-store.mjs",
+            "role": "port",
+            "definitionNames": [
+              "todo_write",
+              "create_goal",
+              "get_goal",
+              "update_goal",
+              "exit_plan_mode"
+            ]
+          },
+          {
+            "path": "packages/tools/agent-state-family/src/index.mjs",
+            "role": "index"
+          },
+          {
+            "path": "packages/tools/agent-state-family/src/state-store.mjs",
+            "role": "port",
+            "definitionNames": [
+              "todo_write",
+              "create_goal",
+              "get_goal",
+              "update_goal",
+              "exit_plan_mode"
+            ]
+          },
+          {
+            "path": "packages/tools/families/agent-state.mjs",
+            "role": "family-definition"
+          }
+        ]
+      },
+      "definitions": [
+        {
+          "name": "todo_write",
+          "declaredIn": "packages/tools/agent-state-family/src/executors.mjs",
+          "symbol": "buildAgentStateRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "create_goal",
+          "declaredIn": "packages/tools/agent-state-family/src/executors.mjs",
+          "symbol": "buildAgentStateRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "get_goal",
+          "declaredIn": "packages/tools/agent-state-family/src/executors.mjs",
+          "symbol": "buildAgentStateRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "update_goal",
+          "declaredIn": "packages/tools/agent-state-family/src/executors.mjs",
+          "symbol": "buildAgentStateRowDefinitions",
+          "boundDefinition": true
+        },
+        {
+          "name": "exit_plan_mode",
+          "declaredIn": "packages/tools/agent-state-family/src/executors.mjs",
+          "symbol": "buildAgentStateRowDefinitions",
+          "boundDefinition": true
+        }
+      ],
+      "dependsOn": [
+        "@deepseek-ai/dsh-home-paths",
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:os",
+        "node:path",
+        "node:process",
+        "node:timers",
+        "node:timers/promises"
+      ],
+      "importsWithinFamily": [
+        "../agent-state-family/src/index.mjs",
+        "./agent-state-law.mjs",
+        "./contribution.mjs",
+        "./executors.mjs",
+        "./fs-state-store.mjs",
+        "./state-store.mjs"
+      ],
+      "importsAcrossRepo": [
+        "../../../domain/tool-governance/src/index.js"
+      ],
+      "runtimePath": [
+        {
+          "step": "model-call",
+          "external": true,
+          "where": "the host ToolExecutionPipeline",
+          "detail": "The model-visible state call (`todo_write`, `create_goal`, `get_goal`, `update_goal`, `exit_plan_mode`) enters the pinned host ToolExecutionPipeline."
+        },
+        {
+          "step": "host-tool-registry",
+          "external": true,
+          "where": "the host ToolsService",
+          "detail": "The host ToolsService resolves the scoped toolSet/Executor."
+        },
+        {
+          "step": "tool-placement",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The plane places the five row Definitions on the mount host tools service.",
+          "shared": true
+        },
+        {
+          "step": "tools.guard",
+          "file": "packages/runtime/tool-dispatch/install.ts",
+          "detail": "The guard seam checks binding/Stop before the body runs.",
+          "shared": true
+        },
+        {
+          "step": "pa-admission",
+          "file": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "detail": "The PA admission derives the state effect arms and consumes the Grant once.",
+          "shared": true
+        },
+        {
+          "step": "control-ask-grant",
+          "file": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "detail": "The ControlService ask + one-shot Grant consumption leg (`a5PaControlLeg`): the durable allow mints the Grant the guard already consumed before the body.",
+          "shared": true
+        },
+        {
+          "step": "family-build",
+          "file": "packages/tools/families/agent-state.mjs",
+          "detail": "`build(cap)` constructs the five rows over the state store."
+        },
+        {
+          "step": "contribution-candidate",
+          "file": "packages/tools/agent-state-family/src/contribution.mjs",
+          "detail": "ONE candidate carries five rows; the digest binds each row's `execute` transport."
+        },
+        {
+          "step": "row-definition+executor",
+          "file": "packages/tools/agent-state-family/src/executors.mjs",
+          "detail": "`buildAgentStateRowDefinitions` both defines and executes the five rows (`AGENT_STATE_NAMES` is the closed set)."
+        },
+        {
+          "step": "port",
+          "file": "packages/tools/agent-state-family/src/state-store.mjs",
+          "detail": "The state-store port (plan-mode/todo/goal state shape + refusal law)."
+        },
+        {
+          "step": "port-impl",
+          "file": "packages/tools/agent-state-family/src/fs-state-store.mjs",
+          "detail": "The DSH_HOME-backed store implementation the port resolves to."
+        },
+        {
+          "step": "effect",
+          "external": true,
+          "where": "node:fs under DSH_HOME",
+          "detail": "The OS effect: state files under the member's DSH_HOME (todo list, goals, plan-mode flag)."
+        }
+      ],
+      "authority": {
+        "enforcedBy": [
+          "ControlService",
+          "governance-center kernel",
+          "tools.guard"
+        ],
+        "files": [
+          "packages/runtime/control/service.ts",
+          "packages/runtime/src/plugin/live/agent-bindings.mjs",
+          "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+          "packages/runtime/operation-permission/pre-execute-adapter.ts",
+          "packages/runtime/tool-dispatch/install.ts",
+          "packages/runtime/governance-center/kernel.ts"
+        ],
+        "note": "The plane calls ControlService through the `a5PaControlLeg` supplied by agent-bindings (`packages/runtime/src/plugin/live/agent-bindings.mjs:3216`): the durable Control ask mints the Grant, the guard consumes it once, and the kernel's `consumeOnce` replay-guards the execution edge before the body. Stop lands on the same ControlService and the `tools.guard` seam. A family lane receives only `decide`/`pa` capability functions — it holds no kernel, registry, approval or grant handle (family-assembly.mjs FORBIDDEN_CAPABILITY_KEYS)."
+      },
+      "nativePath": {
+        "status": "none",
+        "files": [],
+        "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
+      },
+      "retirementReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "note": "Row definitions and executors live in ONE file (`executors.mjs`), so it is classed `executor` and carries the definition declarations. `fs-state-store.mjs` is the DSH_HOME-backed implementation of the `state-store.mjs` port."
+    }
+  ],
+  "shared": [
+    {
+      "path": "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+      "shared": true,
+      "reason": "The governed tool plane: builds every family descriptor, places each row Definition on the mount host tools service (`agentCtx.tools.register(def)`), runs the per-call PA admission (`paAdmit`) and owns the mount claim table. Shared by every product family; no family owns it."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/family-assembly.mjs",
+      "shared": true,
+      "reason": "The generic FamilyAssembly seam that validates and drives every `packages/tools/families/*.mjs` descriptor (config -> enable -> backends -> build -> place -> register). Shared machinery, not a family body."
+    },
+    {
+      "path": "packages/runtime/src/plugin/live/agent-bindings.mjs",
+      "shared": true,
+      "reason": "Mounts the plane and supplies the ControlService-backed PA control leg (`a5PaControlLeg`) — the approval/Grant leg every product family rides. Shared."
+    },
+    {
+      "path": "packages/runtime/tool-dispatch/install.ts",
+      "shared": true,
+      "reason": "`installScopedToolGuard`: arms the host seams `tools.guard`, `tools/pre-execute`, `tools/post-execute`, `tools/result`, `tools/execute` (the admission/execution boundary). Shared."
+    },
+    {
+      "path": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "shared": true,
+      "reason": "The operation-permission pre-execute adapter: consumes the ControlService allow, writes one durable execution fact per consumed allow, and refuses an unbacked admission. Shared."
+    },
+    {
+      "path": "packages/runtime/control/service.ts",
+      "shared": true,
+      "reason": "`createControlService` — the durable ControlService (approval / Grant / Stop authority, owner decision D5). Shared by every product family."
+    },
+    {
+      "path": "packages/runtime/governance-center/kernel.ts",
+      "shared": true,
+      "reason": "The governance-center kernel: approval table entries and the one-shot `consumeOnce` grant edge the plane binds per governed call. Shared."
+    },
+    {
+      "path": "packages/runtime/governance-center/index.ts",
+      "shared": true,
+      "reason": "The governance-center public factory (`createCenterAssembly` / `validateFamilyContribution`) the test-only probe lane builds its own kernel through. Shared public seam."
+    },
+    {
+      "path": "packages/runtime/governance-center/registry.ts",
+      "shared": true,
+      "reason": "The closed contribution registry (`DUP_FAMILY_ID` / name-claim law) every family contribution registers through. Shared."
+    },
+    {
+      "path": "packages/runtime/controlled-fs/src/index.ts",
+      "shared": true,
+      "reason": "The controlled-fs profile (`isBeneath`, `verifyOpenedHandle`, the post-consume closures) the fs read/write/edit/image executors run over. Shared runtime module."
+    },
+    {
+      "path": "packages/runtime/sandbox-provider/index.ts",
+      "shared": true,
+      "reason": "`createConfinedProcessProvider` — the confined process/shell backend the process and search executors spawn through. Shared runtime module."
+    },
+    {
+      "path": "packages/tools/families/index.mjs",
+      "shared": true,
+      "reason": "The GENERATED static index of the reviewed family-body set (`scripts/gen-family-index.mjs`). Regenerated from the manifest; no family owns it."
+    },
+    {
+      "path": "packages/tools/families/index.d.mts",
+      "shared": true,
+      "reason": "Type declaration for the generated family-body index. Regenerated, not hand-owned."
+    },
+    {
+      "path": "packages/tools/families/manifest.json",
+      "shared": true,
+      "reason": "The reviewed family-body set: one sha256 per `packages/tools/families/*.mjs`. The mount refuses a module whose bytes differ or that is not listed. Shared assembly data."
+    }
+  ]
+}

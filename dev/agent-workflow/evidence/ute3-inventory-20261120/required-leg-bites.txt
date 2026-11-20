@@ -1,0 +1,21 @@
+# The required leg must BITE when the inventory drifts. Temporary, restored in this transcript.
+$ cp dev/agent-workflow/ledgers/ute-family-inventory.json dev/agent-workflow/evidence/ute3-inventory-20261120/.ledger.orig
+$ node -e 'rename one member of dsh.fs-family in the committed ledger'
+mutated: read_image -> readImage
+
+$ node scripts/eb3-family-definitions.mjs   # the declared required leg, unchanged argv
+  INVENTORY_MEMBER_DRIFT members disagree with the census nativeNames: missing "read_image", extra "readImage" — the census is the unit (RETIREMENT.md §1.1), and renaming a member is not an inventory edit
+EB3-FAMILY-DEFINITIONS fail files=30 findings=1
+EXIT=1
+
+$ cp dev/agent-workflow/evidence/ute3-inventory-20261120/.ledger.orig dev/agent-workflow/ledgers/ute-family-inventory.json   # restore the committed ledger
+$ cmp dev/agent-workflow/evidence/ute3-inventory-20261120/.ledger.orig dev/agent-workflow/ledgers/ute-family-inventory.json && echo restored-byte-identical
+restored-byte-identical
+
+$ node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=30 findings=0
+EXIT=0
+
+$ node scripts/ute-family-inventory.mjs
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+EXIT=0

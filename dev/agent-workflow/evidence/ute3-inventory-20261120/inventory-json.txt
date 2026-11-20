@@ -1,0 +1,297 @@
+$ node scripts/ute-family-inventory.mjs --json
+{
+  "schema": "ute-family-inventory-verdict/1",
+  "ledger": "dev/agent-workflow/ledgers/ute-family-inventory.json",
+  "universeFiles": 92,
+  "shared": [
+    "packages/runtime/control/service.ts",
+    "packages/runtime/controlled-fs/src/index.ts",
+    "packages/runtime/governance-center/index.ts",
+    "packages/runtime/governance-center/kernel.ts",
+    "packages/runtime/governance-center/registry.ts",
+    "packages/runtime/operation-permission/pre-execute-adapter.ts",
+    "packages/runtime/sandbox-provider/index.ts",
+    "packages/runtime/src/plugin/live/agent-bindings.mjs",
+    "packages/runtime/src/plugin/live/family-assembly.mjs",
+    "packages/runtime/src/plugin/live/team-tool-plane.mjs",
+    "packages/runtime/tool-dispatch/install.ts",
+    "packages/tools/families/index.d.mts",
+    "packages/tools/families/index.mjs",
+    "packages/tools/families/manifest.json"
+  ],
+  "families": [
+    {
+      "familyId": "dsh.fs-family",
+      "lane": "packages/tools/fs-family",
+      "testOnly": false,
+      "members": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "files": 17,
+      "definitions": 4,
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path"
+      ],
+      "readiness": {
+        "baseline": "partial",
+        "newPath": "prototype",
+        "negativeControls": "partial"
+      },
+      "derivedReadiness": {
+        "baseline": "partial",
+        "newPath": "prototype",
+        "negativeControls": "partial"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.process-family",
+      "lane": "packages/tools/process-family",
+      "testOnly": false,
+      "members": [
+        "bash",
+        "pwsh"
+      ],
+      "files": 11,
+      "definitions": 2,
+      "dependsOn": [
+        "node:crypto",
+        "node:fs",
+        "node:timers"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.search-family",
+      "lane": "packages/tools/search-family",
+      "testOnly": false,
+      "members": [
+        "grep",
+        "glob"
+      ],
+      "files": 9,
+      "definitions": 2,
+      "dependsOn": [
+        "@deepseek-ai/dsh-tool-fs-search",
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises",
+        "node:path",
+        "node:timers"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.inspect-family",
+      "lane": "packages/tools/inspect-family",
+      "testOnly": false,
+      "members": [
+        "team_skill",
+        "team_cordis_inspect_list",
+        "team_cordis_inspect_query"
+      ],
+      "files": 10,
+      "definitions": 3,
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.u6-probe-family",
+      "lane": "tests/u6-arc-a-probe-family",
+      "testOnly": true,
+      "members": [
+        "u6arc_probe"
+      ],
+      "files": 3,
+      "definitions": 1,
+      "dependsOn": [
+        "node:crypto",
+        "node:fs",
+        "node:path"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 7
+    },
+    {
+      "familyId": "dsh.web-family",
+      "lane": "packages/tools/web-family",
+      "testOnly": false,
+      "members": [
+        "web_fetch",
+        "web_search"
+      ],
+      "files": 10,
+      "definitions": 2,
+      "dependsOn": [
+        "node:crypto",
+        "node:dns",
+        "node:http",
+        "node:https"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.agent-control-family",
+      "lane": "packages/tools/agent-control-family",
+      "testOnly": false,
+      "members": [
+        "subagent",
+        "subagent_fork",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "list_subagent_models",
+        "workflow"
+      ],
+      "files": 14,
+      "definitions": 7,
+      "dependsOn": [
+        "node:crypto"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.ui-family",
+      "lane": "packages/tools/ui-family",
+      "testOnly": false,
+      "members": [
+        "ask_user_question",
+        "present"
+      ],
+      "files": 9,
+      "definitions": 2,
+      "dependsOn": [
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:fs/promises"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    },
+    {
+      "familyId": "dsh.agent-state-family",
+      "lane": "packages/tools/agent-state-family",
+      "testOnly": false,
+      "members": [
+        "todo_write",
+        "create_goal",
+        "get_goal",
+        "update_goal",
+        "exit_plan_mode"
+      ],
+      "files": 7,
+      "definitions": 5,
+      "dependsOn": [
+        "@deepseek-ai/dsh-home-paths",
+        "node:buffer",
+        "node:crypto",
+        "node:fs",
+        "node:os",
+        "node:path",
+        "node:process",
+        "node:timers",
+        "node:timers/promises"
+      ],
+      "readiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "derivedReadiness": {
+        "baseline": "none",
+        "newPath": "none",
+        "negativeControls": "none"
+      },
+      "runtimeSteps": 12
+    }
+  ],
+  "findings": [],
+  "summary": {
+    "families": 9,
+    "findings": 0,
+    "codes": []
+  }
+}
+EXIT=0
