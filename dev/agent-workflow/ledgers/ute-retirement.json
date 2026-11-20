@@ -29,13 +29,12 @@
               "FS-W4-outside-write",
               "FS-R1-outside-read-leak",
               "FS-M1-mode-preserved",
-              "FS-I0-route-c-gap",
               "FS-I1-inlane-image",
               "FS-I3-lane-bound-image"
             ],
             "contradicts": []
           },
-          "note": "17 (request -> effect) vectors captured on the legacy host 0.2.0-rc.2 @ 639ed01539: 10 read/write/edit vectors on the product route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules) plus 7 read_image vectors. DISCLOSED COMPOSITION: the product route-C composition cannot reach read_image at all (GAP-FS-CONTRACT-1 / PD-5, packages/runtime/team-services/src/mount.ts:445 omits 'fs' from ROUTED_SERVICE_NAMES), so FS-I0-route-c-gap records that product fact and FS-I1..I6 run the SAME legacy host, SAME real @deepseek-ai/dsh-tool-fs module and SAME confined provider under the world factory's 'post-gap-1' composition (the FS face's existing one-line deferred-inject merge). The per-vector composition is declared in tests/ute-g1-fs/lib/corpus.mjs and golden/COVERAGE.md; this is NOT a claim that the unpatched product route serves read_image. The read_image rows' digest is over the bytes the ATTACHMENT STORE received, not the path string. The four non-lane image denials carry distinct machine-readable classes (`route-unresolved`, `missing-path`, `image-modality-denied`, `cancelled`); no corpus row uses the unclassified bucket `other`. Fixture identity in golden/old-path.meta.txt. This is the OldBaseline term for the FS family only — it says nothing about any other family."
+          "note": "16 (request -> effect) vectors captured on the legacy host 0.2.0-rc.2 @ 639ed01539: 10 read/write/edit vectors plus 6 read_image vectors, ALL on the PRODUCT route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules). RE-BASELINED 2026-11-20 by the route-C repair (UTE-3): until the repair the product route could not reach read_image at all (GAP-FS-CONTRACT-1 / PD-5, mount.ts merged only tools/systemPrompt into a routed module's deferred children), so a seventh vector (FS-I0-route-c-gap) pinned that product fact and FS-I1..I6 ran under a disclosed 'post-gap-1' composition. The repair continues a routed module's OWN declared fs into its deferred children, so FS-I1..I6 were re-captured on the PRODUCT composition and came out BYTE-IDENTICAL; the 10 read/write/edit rows are byte-identical to the reviewed baseline. FS-I0-route-c-gap was DELETED (not re-pointed: FS-I1 already is the in-lane allow baseline) and its fail-closed shape is still pinned by the world-factory FSB-IMG-1b fixture (`withheld-fs-continuation`), not by this fixture. The read_image rows' digest is over the bytes the ATTACHMENT STORE received, not the path string. The non-lane image denials carry distinct machine-readable classes (`missing-path`, `image-modality-denied`, `cancelled`); no corpus row uses the unclassified bucket `other`. Fixture identity in golden/old-path.meta.txt. This is the OldBaseline term for the FS family only — it says nothing about any other family."
         },
         "newPathVerified": {
           "verdict": true,
@@ -47,7 +46,7 @@
             ],
             "contradicts": []
           },
-          "note": "Prototype provider + the pinned next host's own ToolsService.execute; the 10 read/write/edit vectors are green on rc.5 (the 7 read_image baselines are newPathPending: the prototype has no image support until UTE-3 PR B2, so the gate correctly refuses UTE_VECTOR_UNREPRODUCED and does NOT cover read_image on this axis). This proves the PROTOTYPE path only: it is not a live boot, it does not prove read confinement (CLAIM_NOT_OBSERVABLE), and it must never be cited as a safety verdict."
+          "note": "Prototype provider + the pinned next host's own ToolsService.execute; the 10 read/write/edit vectors are green on rc.5 (the 6 read_image baselines are newPathPending: the prototype has no image support until UTE-3 PR B2, so the gate correctly refuses UTE_VECTOR_UNREPRODUCED and does NOT cover read_image on this axis). This proves the PROTOTYPE path only: it is not a live boot, it does not prove read confinement (CLAIM_NOT_OBSERVABLE), and it must never be cited as a safety verdict."
         },
         "semanticDifferencesResolved": {
           "verdict": false,

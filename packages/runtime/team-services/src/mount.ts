@@ -444,6 +444,54 @@ const DEFERRED_SETTLE_ROUNDS = 20
  */
 const ROUTED_SERVICE_NAMES = ['tools', 'systemPrompt'] as const
 
+/**
+ * The services a module's OWN declared dependency set is CONTINUED into its
+ * deferred children (see `continuedServiceNamesOf`).
+ *
+ * WHY THIS EXISTS, MEASURED (2026-11-20, GAP-FS-CONTRACT-1 / UTE-3):
+ * `@deepseek-ai/dsh-tool-fs` registers `read`/`write`/`edit` directly on the
+ * module context, but registers `read_image` from a deferred
+ * `ctx.inject(['attachments'], …)` child (`tool-fs/src/index.ts`). The module
+ * declares `inject = ['tools', 'fs', 'systemPrompt']`, its three direct rows
+ * execute against `ctx.fs` (the Member's CONFINED provider), and the deferred
+ * `read_image` body ALSO calls `ctx.fs.readBytes`
+ * (`tool-fs/src/read-image.ts`). Cordis refuses an undeclared access to an
+ * isolated service, so on the routed mount that child died with
+ * `cannot get property "fs" without inject`: the fourth member of the
+ * indivisible FS assembly was unreachable on the product route while the other
+ * three worked.
+ *
+ * WHAT THIS MERGES, AND WHY IT IS NOT AN AUTHORITY MOVE: only the NAME is
+ * added to the child's declaration, and only when the module ITSELF already
+ * declares that service (it holds the same dependency on its own fiber). The
+ * OBJECT is not chosen here: Cordis resolves it on the child's own scope chain,
+ * which is anchored at `installation.members[0].ctx` — the realm's
+ * `root.isolate('fs', …)` scope (`install.ts`) where the CONFINED provider was
+ * mounted. No code path in this router can hand the child a root, base or
+ * legacy provider, and a module that does not declare `fs` gets nothing merged
+ * (its deferred children keep today's undeclared-access refusal).
+ */
+const CONTINUED_SERVICE_NAMES = ['fs'] as const
+
+/**
+ * The services declared by `plugin` that a routed mount may continue into the
+ * plugin's deferred children. Empty for a plugin that does not declare one, so
+ * the merged inject map is byte-identical to the pre-fix behaviour there.
+ *
+ * Exported for the seam-scope suite (`tests/ute-g1-fs/product-route-image.test.mjs`),
+ * which pins that a module not declaring `fs` gets no continuation and that the
+ * merged map keeps its SHAPE (array/object, no added null keys beyond the
+ * router's own services).
+ */
+export function continuedServiceNamesOf(plugin: { readonly inject?: unknown } | undefined): readonly string[] {
+  const declared = plugin?.inject
+  let names: readonly string[]
+  if (Array.isArray(declared)) names = declared.map((name) => String(name))
+  else if (declared !== null && typeof declared === 'object') names = Object.keys(declared)
+  else return []
+  return CONTINUED_SERVICE_NAMES.filter((name) => names.includes(name))
+}
+
 /** Is `fiber` (transitively) a CHILD fiber of `ancestor`? Fiber ancestry, not scope ancestry. */
 function isDescendantOf(fiber: Fiber, ancestor: Fiber): boolean {
   let cursor: Context | undefined = fiber.parent
@@ -547,15 +595,18 @@ function owningContextOf(receiver: unknown, fallback: Context): Context {
  * partition records it. Nothing is bypassed and no registration reaches the
  * real (preset) `tools` service.
  *
- * Only `tools`/`systemPrompt` are added — the two services the router owns. The
- * child's own declared dependencies (e.g. `attachments`) stay required, so an
- * optional capability that is absent anywhere still leaves the child pending
+ * `tools`/`systemPrompt` are always added — the two services the router owns.
+ * `continued` adds the module's OWN declared services that must survive into its
+ * deferred continuations (today only `fs`, see `continuedServiceNamesOf`); it is
+ * empty for a module that does not declare them, so those mounts are unchanged.
+ * The child's own declared dependencies (e.g. `attachments`) stay required, so
+ * an optional capability that is absent anywhere still leaves the child pending
  * (benign, registers nothing) instead of being forced to run.
  */
-function routedModuleContext(routerCtx: Context): Context {
+function routedModuleContext(routerCtx: Context, continued: readonly string[]): Context {
   return routerCtx.extend({
     inject(this: Context, names: unknown, callback: unknown) {
-      const plugin = { inject: mergeRoutedInject(names), apply: callback }
+      const plugin = { inject: mergeRoutedInject(names, continued), apply: callback }
       const owner = this as unknown as { plugin: (plugin: unknown, config?: unknown) => unknown }
       return owner.plugin(plugin, undefined)
     },
@@ -563,20 +614,22 @@ function routedModuleContext(routerCtx: Context): Context {
 }
 
 /**
- * Merge the router's two services into a deferred child's declaration WITHOUT
- * changing its SHAPE: an array stays a deduplicated array, and an OBJECT (a
- * name → per-service intercept config map, Cordis `Inject`) stays an object
- * with every declared config preserved. Added services get `null`, the same
- * default `Inject.resolve` assigns to an omitted config (`inject[name] ?? null`),
- * so a per-service intercept config the module declared is never flattened
- * away — dropping it would silently change the child's dependency semantics.
+ * Merge the router's services (and the module's own CONTINUED services) into a
+ * deferred child's declaration WITHOUT changing its SHAPE: an array stays a
+ * deduplicated array, and an OBJECT (a name → per-service intercept config map,
+ * Cordis `Inject`) stays an object with every declared config preserved. Added
+ * services get `null`, the same default `Inject.resolve` assigns to an omitted
+ * config (`inject[name] ?? null`), so a per-service intercept config the module
+ * declared is never flattened away — dropping it would silently change the
+ * child's dependency semantics.
  */
-function mergeRoutedInject(names: unknown): unknown {
-  if (Array.isArray(names)) return [...new Set([...names, ...ROUTED_SERVICE_NAMES])]
+export function mergeRoutedInject(names: unknown, continued: readonly string[]): unknown {
+  const added = [...ROUTED_SERVICE_NAMES, ...continued]
+  if (Array.isArray(names)) return [...new Set([...names, ...added])]
   const declared = (names ?? {}) as Record<string, unknown>
   const merged: Record<string, unknown> = {}
   for (const key of Object.keys(declared)) merged[key] = declared[key]
-  for (const name of ROUTED_SERVICE_NAMES) if (!(name in merged)) merged[name] = null
+  for (const name of added) if (!(name in merged)) merged[name] = null
   return merged
 }
 
@@ -1781,8 +1834,11 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
           // module context ALSO merges the router's services into every deferred
           // child's inject (see `routedModuleContext`), which is what lets the
           // child actually register THROUGH this router instead of failing on
-          // Cordis's isolate-label walk.
-          const moduleCtx = routedModuleContext(routerFiber.ctx)
+          // Cordis's isolate-label walk. A service the MODULE itself declares
+          // (today `fs`) is continued into the same children, because a deferred
+          // PRE-EXISTING executor body may dereference it (measured: the FS
+          // assembly's `read_image`).
+          const moduleCtx = routedModuleContext(routerFiber.ctx, continuedServiceNamesOf(mount.module as { inject?: unknown }))
           inner = moduleCtx.plugin(mount.module, mount.config as never)
           await inner
           // SETTLE, THEN INSPECT (the deferred-registration state machine):
