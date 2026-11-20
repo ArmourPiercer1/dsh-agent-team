@@ -77,7 +77,7 @@
             ],
             "contradicts": []
           },
-          "note": "Both recorded differences are retirement-blocking=YES and neither has an approval record, so this term is FALSE today by construction, not by opinion. The 2026-11-20 owner ruling adopted the B+C technical route (native structured FsError + closed refusal-category mapping) and this row now cites the implementing file (tests/ute-g1-fs/lib/refusal-categories.mjs) and the protocol memo (docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md). The ruling did NOT resolve the differences and did NOT approve them: approval is PENDING (owner signature required), and the gate must keep refusing FS with two UTE_SEMANTIC_DIFFERENCES_UNRESOLVED findings until a reference-bound approval record exists."
+          "note": "Both recorded differences are retirement-blocking=YES and neither has an approval record, so this term is FALSE today by construction, not by opinion. The 2026-11-20 owner ruling adopted the B+C technical route (native structured FsError + a closed NINE-category refusal mapping that covers all seven refusal classes the corpus records, including the four the B1 read_image baselines added) and this row cites the implementing file (tests/ute-g1-fs/lib/refusal-categories.mjs) and the protocol memo (docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md). The ruling did NOT resolve the differences and did NOT approve them: approval is PENDING (owner signature required). After B1 the gate refuses for the same two differences AND for UTE_VECTOR_UNREPRODUCED (the read_image baselines exist but no new-path run reproduces them), so unit=3/4 and state stays NOT_RETIREABLE; nothing here licenses retirement."
         },
         "negativeControlsPass": {
           "verdict": true,

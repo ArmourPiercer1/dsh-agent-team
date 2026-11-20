@@ -56,7 +56,7 @@
  * this interface exists to remove). `selfCheck()` enforces that.
  *
  * @typedef {'denied-by-lane'|'read-before-write'|'stale-version'|'missing-path'
- *   |'invalid-argument'|'unsupported-mode'|'cancelled'|'unknown'} RefusalCategory
+ *   |'invalid-argument'|'unsupported-mode'|'route-unresolved'|'cancelled'|'unknown'} RefusalCategory
  */
 
 /**
@@ -85,7 +85,11 @@ export const REFUSAL_CATEGORIES = Object.freeze({
   }),
   'unsupported-mode': Object.freeze({
     id: 'unsupported-mode',
-    definition: 'The requested operation, format, or deployment capability is not supported by this host, so the call is refused rather than approximated or silently widened.',
+    definition: 'The requested operation, format/modality, or deployment capability is not supported by this host or by the route serving it, so the call is refused rather than approximated or silently widened.',
+  }),
+  'route-unresolved': Object.freeze({
+    id: 'route-unresolved',
+    definition: 'The call could not be routed to any execution backend able to serve it: this assembly has no provider row for the operation (the route itself is unresolved), so the refusal happens before any backend runs. Distinct from unsupported-mode, where a backend exists and answers by refusing the operation or its format.',
   }),
   cancelled: Object.freeze({
     id: 'cancelled',
@@ -155,6 +159,13 @@ export const LEGACY_REFUSAL_MAP = Object.freeze([
   { kind: 'class', match: 'lane-deny', category: laneDeny, sample: 'lane-deny', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-W4/W5/S1/R1)' },
   { kind: 'class', match: 'write-requires-read', category: readBeforeWrite, sample: 'write-requires-read', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-W3); lane.mjs REFUSAL.WRITE_REQUIRES_READ' },
   { kind: 'class', match: 'stale-version', category: 'stale-version', sample: 'stale-version', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-E2); lane.mjs REFUSAL.STALE_VERSION' },
+  // The read_image baselines (B1, PR #799) added four more recorded classes. They
+  // are CLASS NAMES, not prose, so each needs its own explicit entry: a name that
+  // no entry matches would be an unmapped value, which the map refuses on purpose.
+  { kind: 'class', match: 'missing-path', category: 'missing-path', sample: 'missing-path', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I4, a missing image target); lane.mjs REFUSAL.MISSING_PATH' },
+  { kind: 'class', match: 'image-modality-denied', category: 'unsupported-mode', sample: 'image-modality-denied', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I5, a text-only model route refused image input before any read); lane.mjs REFUSAL.IMAGE_MODALITY_DENIED' },
+  { kind: 'class', match: 'route-unresolved', category: 'route-unresolved', sample: 'route-unresolved', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I0, the product route-C composition cannot reach read_image at all: GAP-FS-CONTRACT-1 / PD-5); lane.mjs REFUSAL.ROUTE_UNRESOLVED' },
+  { kind: 'class', match: 'cancelled', category: 'cancelled', sample: 'cancelled', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I6, cancelled before dispatch); lane.mjs REFUSAL.CANCELLED' },
   { kind: 'class', match: 'other', category: 'unknown', sample: 'other', source: 'tests/ute-g1-fs/lib/lane.mjs REFUSAL.OTHER (declared residual class; explicit, not a sink)' },
 
   // ── the closed TeamIoDenial code set (`TEAM_IO_DENIAL_CODES`) ────────────
@@ -260,7 +271,8 @@ export const NATIVE_FS_ERROR_MAP = Object.freeze({
 
 /**
  * The corpus vocabulary as ENUMERATED from the corpus and its recorded evidence
- * on 2026-11-20. This is the exhaustiveness baseline: `auditCorpus` accepts
+ * on 2026-11-20 (the seven refusal classes include the four the B1 read_image
+ * baselines added: missing-path, image-modality-denied, route-unresolved, cancelled). This is the exhaustiveness baseline: `auditCorpus` accepts
  * exactly these values, and the test re-derives the corpus values from the
  * files so that a NEW corpus value is caught rather than absorbed.
  *
@@ -269,7 +281,15 @@ export const NATIVE_FS_ERROR_MAP = Object.freeze({
  * prose), which is itself a measured fact this interface records.
  */
 export const CORPUS_VOCABULARY_BASELINE = Object.freeze({
-  legacyClasses: Object.freeze(['lane-deny', 'write-requires-read', 'stale-version']),
+  legacyClasses: Object.freeze([
+    'lane-deny',
+    'write-requires-read',
+    'stale-version',
+    'missing-path',
+    'image-modality-denied',
+    'route-unresolved',
+    'cancelled',
+  ]),
   legacyProse: Object.freeze([
     "authored locator '<abs path>' is outside every allow subtree of the lane",
     'cannot modify "<abs path>": file has not been read — read the file, then retry',

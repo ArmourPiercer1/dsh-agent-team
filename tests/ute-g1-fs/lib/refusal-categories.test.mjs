@@ -46,9 +46,14 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8')
 // The corpus is the source of truth for the legacy classes/codes. Derive them.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** @returns {{classes: string[], codes: string[]}} */
-function goldenVocabulary() {
-  const lines = read('tests/ute-g1-fs/golden/old-path.tsv').trimEnd().split('\n')
+/**
+ * The ONE derivation, over TSV TEXT, so the synthetic-corpus proof below runs
+ * exactly the code path the real corpus runs (not a re-implementation of it).
+ * @param {string} text
+ * @returns {{classes: string[], codes: string[]}}
+ */
+function parseGoldenVocabulary(text) {
+  const lines = text.trimEnd().split('\n')
   const header = lines[0].split('\t')
   const refusalAt = header.indexOf('refusal')
   const codesAt = header.indexOf('codes')
@@ -61,7 +66,14 @@ function goldenVocabulary() {
     if (!isNoRefusal(cells[refusalAt])) classes.push(cells[refusalAt])
     if (!isNoRefusal(cells[codesAt])) codes.push(...cells[codesAt].split(','))
   }
-  return { classes, codes }
+  // Deduplicated: the TSV records the same class on many rows, and the vocabulary
+  // question is which DISTINCT classes exist, not how often they appear.
+  return { classes: [...new Set(classes)], codes: [...new Set(codes)] }
+}
+
+/** @returns {{classes: string[], codes: string[]}} */
+function goldenVocabulary() {
+  return parseGoldenVocabulary(read('tests/ute-g1-fs/golden/old-path.tsv'))
 }
 
 /** The native codes the corpus/evidence actually RECORDS, extracted from it. */
@@ -98,7 +110,7 @@ test('the vocabulary self-check passes: definitions, reachability, samples, cita
   const result = selfCheck()
   for (const finding of result.findings) console.log(`REFUSAL-CATEGORY-FINDING code=${finding.code} detail=${finding.detail}`)
   assert.equal(result.ok, true, 'the closed vocabulary must pass its own integrity check')
-  assert.ok(CATEGORY_IDS.length >= 8, 'the adopted vocabulary must keep at least the eight recorded categories')
+  assert.ok(CATEGORY_IDS.length >= 9, 'the adopted vocabulary must keep at least the nine recorded categories')
 })
 
 test('no category definition bakes in a model-facing code or prose', () => {
@@ -126,6 +138,11 @@ test('every legacy refusal CLASS the corpus records maps to its category', () =>
     'lane-deny': 'denied-by-lane',
     'write-requires-read': 'read-before-write',
     'stale-version': 'stale-version',
+    // the four classes the B1 read_image baselines added (PR #799)
+    'missing-path': 'missing-path',
+    'image-modality-denied': 'unsupported-mode',
+    'route-unresolved': 'route-unresolved',
+    cancelled: 'cancelled',
     other: 'unknown',
   }
   for (const [value, category] of Object.entries(expected)) {
@@ -135,6 +152,29 @@ test('every legacy refusal CLASS the corpus records maps to its category', () =>
   for (const value of goldenVocabulary().classes) {
     assert.equal(Object.hasOwn(expected, value), true, `the golden fixture recorded an undeclared class ${JSON.stringify(value)}`)
   }
+})
+
+test('the two DECIDED mappings are pinned, and neither of them is the default bucket', () => {
+  // DECISION 1 — `image-modality-denied` (FS-I5) is `unsupported-mode`, not a lane
+  // denial: the target is INSIDE the lane, the file exists, and the refusal is the
+  // route gate declining to serve images to a text-only model BEFORE any read or
+  // attachment write. That is the format/modality axis of "unsupported here".
+  assert.equal(categoryOfLegacyRefusal('image-modality-denied').category, 'unsupported-mode')
+  assert.notEqual(categoryOfLegacyRefusal('image-modality-denied').category, 'denied-by-lane')
+
+  // DECISION 2 — `route-unresolved` (FS-I0) gets its OWN category, and explicitly
+  // NOT `unknown`. The evidence determines the cause precisely (the product route-C
+  // composition cannot reach read_image at all: GAP-FS-CONTRACT-1 / PD-5), so
+  // calling it unknown would assert the opposite of what is measured. It is also not
+  // a lane decision and not a host FsError, which is why it is not folded into
+  // `denied-by-lane`/`unsupported-mode` either.
+  const route = categoryOfLegacyRefusal('route-unresolved')
+  assert.equal(route.category, 'route-unresolved')
+  assert.notEqual(route.category, 'unknown')
+  assert.ok(Object.hasOwn(REFUSAL_CATEGORIES, 'route-unresolved'), 'the category must exist, not just the entry')
+  // and the category is real vocabulary: it is reachable, and no native code claims it
+  assert.equal(Object.values(NATIVE_FS_ERROR_MAP).includes('route-unresolved'), false,
+    'no host FsError code produces a route gap; a native producer here would be a different (unmeasured) claim')
 })
 
 test('every measured legacy PROSE sentence maps to its category (in order)', () => {
@@ -297,6 +337,55 @@ test('the corpus vocabulary is exhaustive today (classes, codes and prose all ma
   assert.equal(auditCorpus({ legacy, native }).findings.length, 0)
 })
 
+test('the merged golden TSV yields EXACTLY the seven legacy refusal classes (named, not counted)', () => {
+  const derived = sorted(goldenVocabulary().classes)
+  const expected = [
+    'cancelled',
+    'image-modality-denied',
+    'lane-deny',
+    'missing-path',
+    'route-unresolved',
+    'stale-version',
+    'write-requires-read',
+  ]
+  console.log(`REFUSAL-CATEGORY-DERIVATION classes=${derived.length} ${derived.join(',')}`)
+  assert.deepEqual(derived, expected, 'the corpus derivation must yield exactly these seven class names')
+  // and every one of them is mapped, by the closed map, to a real category
+  for (const value of expected) {
+    assert.ok(Object.hasOwn(REFUSAL_CATEGORIES, categoryOfLegacyRefusal(value).category), `${value} must map to a declared category`)
+  }
+})
+
+test('the SAME derivation refuses an EIGHTH class (the exhaustiveness law is not a count)', () => {
+  const text = read('tests/ute-g1-fs/golden/old-path.tsv')
+  const [header, ...rows] = text.trimEnd().split('\n')
+  const columns = header.split('\t')
+  const refusalAt = columns.indexOf('refusal')
+  const cells = new Array(columns.length).fill('-')
+  cells[columns.indexOf('id')] = 'FS-Z9-synthetic-eighth-class'
+  cells[columns.indexOf('entry')] = 'read'
+  cells[refusalAt] = 'image-downscale-denied'
+  const synthetic = `${[header, ...rows, cells.join('\t')].join('\n')}\n`
+
+  const derived = parseGoldenVocabulary(synthetic)
+  console.log(`REFUSAL-CATEGORY-DERIVATION-EIGHTH classes=${derived.classes.length} new=${JSON.stringify('image-downscale-denied')}`)
+
+  // 1. the derivation itself sees eight classes (so the proof is not vacuous)
+  assert.equal(derived.classes.length, 8, 'the synthetic corpus must actually add an eighth class')
+  // 2. the closed map REFUSES it rather than defaulting it to a category
+  assert.throws(() => categoryOfLegacyRefusal('image-downscale-denied'), (error) => {
+    assert.equal(error.name, 'RefusalVocabularyError')
+    assert.equal(error.code, 'REFUSAL_VOCABULARY_INCOMPLETE')
+    return true
+  })
+  // 3. the corpus audit reports it by VALUE, so the failure names the new refusal
+  const audit = auditCorpus({ legacy: derived.classes })
+  const finding = audit.findings.find((entry) => entry.value === 'image-downscale-denied')
+  assert.equal(audit.ok, false, 'a corpus that gained an eighth class must not audit clean')
+  assert.ok(finding !== undefined, 'the audit must name the unmapped value, not just fail')
+  assert.equal(finding.code, 'REFUSAL_VOCABULARY_INCOMPLETE')
+})
+
 test('the corpus audit REFUSES a value the corpus gains later (the contract, before the mutation)', () => {
   const audit = auditCorpus({
     legacy: [...recordedLegacyValues(), 'lane-rearranged'],
@@ -350,6 +439,22 @@ const MUTANTS = [
       delete categories.cancelled
       const result = facade.selfCheck({ categories })
       return result.ok === false && result.findings.length > 0
+    },
+    mutate: () => ({ selfCheck: () => ({ ok: true, findings: [] }) }),
+  },
+  {
+    id: 'bucket-route-unresolved-as-unknown',
+    probe(facade) {
+      // The failure mode the memo forbids: keep the corpus value but quietly call it
+      // `unknown`. The category then has NO producer, which is exactly what the
+      // reachability check exists to catch.
+      const map = facade.LEGACY_REFUSAL_MAP.map((entry) =>
+        entry.kind === 'class' && entry.match === 'route-unresolved'
+          ? { ...entry, category: 'unknown' }
+          : entry)
+      const result = facade.selfCheck({ legacyMap: map })
+      return result.ok === false
+        && result.findings.some((finding) => /unreachable: no mapping entry produces it/u.test(finding.detail))
     },
     mutate: () => ({ selfCheck: () => ({ ok: true, findings: [] }) }),
   },

@@ -76,6 +76,13 @@ than literal text or code equality (route C). The mapping that implements it is
 `REFUSAL_VOCABULARY_INCOMPLETE` refusal means an unmapped legacy value or
 `FsError` code is a refusal, never a default bucket.
 
+The vocabulary is nine categories and covers all seven legacy refusal classes the
+corpus now records — including the four the B1 `read_image` baselines added
+(`missing-path`, `image-modality-denied` → `unsupported-mode`, `cancelled`, and
+`route-unresolved`, which gets its own category because FS-I0's cause is the
+product route-C gap (GAP-FS-CONTRACT-1 / PD-5), not an undetermined refusal; see
+`docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md` §2.5).
+
 **This is NOT `SemanticDifferencesResolved` and it is NOT an approval.**
 `approval: PENDING (owner signature required)`. The owner ruling chose the
 compatibility route; it did not sign this difference off, did not establish the
