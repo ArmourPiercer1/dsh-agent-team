@@ -52,7 +52,11 @@ that did (`FS-I0-route-c-gap`) was deleted when the repair landed. The fault's
 fail-closed shape — typed refusal, zero provider reads, zero attachment bytes,
 no fallback to a root/base `fs` — is still pinned by
 `tests/world-factory/a5sf-fs-contract.test.mjs` arm `FSB-IMG-1b` on the
-`withheld-fs-continuation` fixture (not on the product route).
+`withheld-fs-continuation` fixture (not on the product route), and the class's
+reachability is ASSERTED, not merely described: `lib/refusal-categories.test.mjs`
+drives that fixture, classifies its refusal with the same `classifyRefusal` the
+capture uses, and fails by name if the class loses every producer
+(`assertClassVocabularyCovered`).
 
 ## What the `read_image` rows actually observed
 

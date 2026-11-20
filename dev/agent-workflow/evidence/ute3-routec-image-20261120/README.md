@@ -89,3 +89,29 @@ node --test --test-force-exit --test-timeout=900000 --test-reporter=spec \
 node tests/ute-g1-fs/capture-old-path.mjs --write   # twice -> compare=identical
 node scripts/ute-retirement-gate.mjs --all          # exit 1 (expected: new path + unapproved diffs)
 ```
+
+## Post-merge integration fix (origin/master `c74e02a87`, PR #800 B+C refusal protocol)
+
+Merging master brought `tests/ute-g1-fs/lib/refusal-categories.test.mjs`, which
+asserted that the merged golden TSV yields **seven** refusal classes including
+`route-unresolved`. This branch's repair deleted `FS-I0-route-c-gap`, so the TSV
+yields six, and the class survives only as the withheld-continuation fixture's
+output. Three arms were red on the merged tree (reproduced locally in
+`refusal-categories-integration.txt`).
+
+The fix keeps both claims measured:
+
+* the corpus derivation now names exactly `cancelled, image-modality-denied,
+  lane-deny, missing-path, stale-version, write-requires-read` (six), and the
+  synthetic extra-class arm still refuses an invented class by name;
+* `route-unresolved` is declared in `FIXTURE_CLASS_EVIDENCE` and its reachability
+  is MEASURED: the new arm drives `FSB-IMG-1b` (`withheld-fs-continuation`),
+  classifies the observed refusal with the same `classifyRefusal` the golden
+  capture uses, and asserts the class; `assertClassVocabularyCovered` fails by
+  name (`REFUSAL_CLASS_UNPRODUCED`) if a declared class loses every producer, and
+  `REFUSAL_FIXTURE_STALE` if a fixture declaration outlives its necessity;
+* a sixth mutant (`drop-route-unresolved-fixture-evidence`) keeps the fixture
+  producer load-bearing: `REFUSAL-CATEGORY-MUTANTS total=6 red=6`.
+
+The suite is therefore host-requiring now (one arm mounts the world factory);
+it already rode the post-build UTE FS leg, and the manifest/workflow text says so.

@@ -36,7 +36,7 @@ surface (quoted verbatim in §1.1).
 | letter | `[OWNER-DECIDED]` content | implemented by |
 |---|---|---|
 | **B** | The new execution path keeps the host's native structured `FsError` codes (`FS_PERMISSION_DENIED`, `FS_NOT_OBSERVED`, `FS_STALE_VERSION`, `FS_SANDBOX_DENIED` where the sandbox backend really denies, …). It does **not** rename them into the legacy `IO_*` vocabulary, and it does **not** claim `FS_SANDBOX_DENIED` from a lane-only provider (rc.5's `tool-fs` dereferences `policy.mode` for that code — see `tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md` §1). | §2.1, §2.4; `tests/ute-g1-fs/lib/refusal-categories.mjs` `NATIVE_FS_ERROR_MAP` |
-| **C** | Old/new compatibility is judged through a **CLOSED refusal-category mapping** — nine categories, covering all seven refusal classes the corpus records, including the route-gap class the B1 image baselines added. Literal text equality and internal code equality are **not** required and are **not** claimed. | §2.2–§2.5; `refusal-categories.mjs` `LEGACY_REFUSAL_MAP` + `compareRefusal` |
+| **C** | Old/new compatibility is judged through a **CLOSED refusal-category mapping** — nine categories covering every legacy refusal class the corpus records (SIX since the route-C repair) plus the one class the corpus no longer emits, `route-unresolved`, which is kept reachable by a **named, executed fixture** (`FSB-IMG-1b`, withheld-continuation) rather than by a corpus row. Literal text equality and internal code equality are **not** required and are **not** claimed. | §2.2–§2.5; `refusal-categories.mjs` `LEGACY_REFUSAL_MAP` + `compareRefusal` + `assertClassVocabularyCovered` |
 | — | The executor must **inventory** every existing consumer, error handler and test that depends on the historical representation, and **build compatibility evidence**. | §4; `dev/agent-workflow/evidence/ute3-fs-errors-20261120/` |
 | — | The ruling may **not** be used to relax a permission check, move a refusal's timing, or relax a file-effect negative control. | §3 (non-goals), §5.3 (what was NOT changed) |
 | — | The ruling is **not** `SemanticDifferencesResolved`. That term still needs real evidence **and an owner approval record**. The executor must not fabricate it. | §6, §7 |
@@ -92,7 +92,7 @@ requirement this interface exists to remove; `selfCheck()` refuses that.
 | `missing-path` | The addressed path — or the addressed literal inside an existing file — does not exist where the call says it does. | `missing-path`, the missing-read-target prose, `ENOENT`/`not found` prose, `PATH_NOT_FOUND`, `FS_NOT_FOUND`, `FS_EDIT_NOT_FOUND` |
 | `invalid-argument` | The call's arguments are malformed, out of range, or under-specified, so it cannot run as written. | `FS_AMBIGUOUS_EDIT` |
 | `unsupported-mode` | The requested operation, format/**modality**, or deployment capability is not supported by this host or by the route serving it, so it is refused rather than approximated. | `IO_POLICY_UNSUPPORTED`, `PATH_RESOLUTION_UNSUPPORTED`, `image-modality-denied` |
-| `route-unresolved` | The call could not be routed to any backend able to serve it: this assembly has no provider row for the operation, so the refusal happens before any backend runs. Distinct from `unsupported-mode`, where a backend exists and answers by refusing. | `route-unresolved` (the corpus class; no native producer) |
+| `route-unresolved` | The call could not be routed to any backend able to serve it: this assembly has no provider row for the operation, so the refusal happens before any backend runs. Distinct from `unsupported-mode`, where a backend exists and answers by refusing. | `route-unresolved` — **fixture-evidenced** since the route-C repair: the corpus no longer emits it (`FS-I0` deleted), so `FSB-IMG-1b` on `withheld-fs-continuation` produces it and `lib/refusal-categories.test.mjs` classifies that measured refusal with the same `classifyRefusal`; no native producer |
 | `cancelled` | The caller cancelled before completion. | `cancelled`, `FS_ABORTED` |
 | `unknown` | The evidence does not determine which condition above caused it. **Declared per value** — never a fallback. | the corpus residual class `other` (explicit entry) |
 
@@ -150,16 +150,21 @@ and a mutation that swaps the order is caught by `selfCheck`.
 | — (the old corpus never recorded this class) | `cancelled` | `FS_ABORTED` |
 | class `missing-path` (B1, FS-I4) | `missing-path` | `FS_NOT_FOUND`, `FS_EDIT_NOT_FOUND` |
 | class `image-modality-denied` (B1, FS-I5) | `unsupported-mode` | — (a route/modality gate, not an `FsError`) |
-| class `route-unresolved` (B1, FS-I0) | `route-unresolved` | — (no native producer; see §2.5) |
+| class `route-unresolved` (fixture `FSB-IMG-1b`, `withheld-fs-continuation`; the corpus recorded it as FS-I0 until the route-C repair deleted that row) | `route-unresolved` | — (no native producer; see §2.5) |
 | class `cancelled` (B1, FS-I6) | `cancelled` | `FS_ABORTED` |
 | class `other` | `unknown` | — (declared residual class only) |
 
-### 2.5 The four refusal classes the B1 image baselines added
+### 2.5 The four refusal classes the B1 image baselines added (three stay corpus-evidenced; one is fixture-evidenced)
 
-`[MEASURED]` PR #799 (the `read_image` baselines) recorded four refusal classes
-that the corpus did not previously contain. They are **class names, not prose**,
-so each needed its own explicit entry; none is inferred from a pattern. The
-decisions, with their reasons on the record:
+`[MEASURED]` PR #799 (the `read_image` baselines) added four refusal classes the
+corpus did not previously contain. They are **class names, not prose**, so each
+needed its own explicit entry; none is inferred from a pattern. The route-C
+repair (PR #802) then made the product route serve `read_image`, deleted the
+only row that emitted `route-unresolved`, and moved that class's evidence to an
+executed fixture — so THREE of the four are corpus-evidenced and ONE is
+fixture-evidenced. That is a change of **evidence location**, not of vocabulary:
+no category and no mapping was removed. The decisions, with their reasons on the
+record:
 
 1. **`missing-path` → `missing-path`.** FS-I4 reads a target that does not exist.
    The category already existed for the same condition on the text axis; the
@@ -176,15 +181,27 @@ decisions, with their reasons on the record:
    already existed on the native side (`FS_ABORTED`); the corpus observing the
    same condition on the legacy side is what makes the pair comparable at all.
 4. **`route-unresolved` → its own category, and explicitly NOT `unknown`.**
-   FS-I0 is the product route-C composition that cannot reach `read_image` at all
-   (`ROUTED_SERVICE_NAMES = ['tools','systemPrompt']` in
-   `packages/runtime/team-services/src/mount.ts:445` ⇒ GAP-FS-CONTRACT-1 / PD-5);
-   the corpus note itself says it is "recorded as the route product fact, NOT as
-   a lane refusal". The cause is **determined**, so calling it `unknown` would
+   FS-I0 recorded the product route-C composition that could not reach
+   `read_image` at all (the old `ROUTED_SERVICE_NAMES = ['tools','systemPrompt']`
+   in `packages/runtime/team-services/src/mount.ts` ⇒ GAP-FS-CONTRACT-1 / PD-5);
+   the row's own note says it is "recorded as the route product fact, NOT as a
+   lane refusal". The cause is **determined**, so calling it `unknown` would
    assert the opposite of the measurement; it is also not a lane decision and has
    no host `FsError` code, so it fits neither `denied-by-lane` nor
-   `unsupported-mode`. A ninth category was the honest option, and the
-   decision is pinned by a test that fails if the class is silently bucketed.
+   `unsupported-mode`. A ninth category was the honest option, and the decision
+   is pinned by a test that fails if the class is silently bucketed.
+   **2026-11-20, after the repair:** the product route now serves `read_image`
+   (PR #802), so FS-I0 was deleted rather than kept as a duplicate allow row.
+   The class did not disappear with it: `FSB-IMG-1b` runs the
+   `withheld-fs-continuation` composition (the same deferred `fs` continuation,
+   explicitly withheld), and `lib/refusal-categories.test.mjs` drives that
+   fixture, classifies the refusal it observes with the same `classifyRefusal`
+   the golden capture uses, and asserts `route-unresolved`. The exhaustiveness
+   law is now explicit on both directions: a declared class produced by neither
+   the corpus nor a declared fixture is `REFUSAL_CLASS_UNPRODUCED` (by name), and
+   a fixture declaration whose class the corpus emits again is
+   `REFUSAL_FIXTURE_STALE`. So "the corpus shrank" can never quietly delete a
+   category, and "the fixture outlived its need" can never quietly stay.
 
 `[PROPOSED-BY-MEMO]` **Is `route-unresolved` model-facing?** Partly, and the
 distinction is recorded rather than glossed: the model *does* receive a refusal
@@ -200,10 +217,13 @@ serve the tool at all — a Team/binding defect to be fixed or reported, **never
 permission decision to be approved, retried as-is, or rendered to the model as a
 policy denial.
 
-`[MEASURED]` The five mutation controls (`total=5 red=5`) include
+`[MEASURED]` The six mutation controls (`total=6 red=6`) include
 `bucket-route-unresolved-as-unknown`, which maps the class to `unknown` and is
 caught because the category then has **no** producer ("unreachable: no mapping
-entry produces it"). A silent bucket is a red test, not a judgement call.
+entry produces it"), and `drop-route-unresolved-fixture-evidence`, which removes
+the fixture producer and is caught by `assertClassVocabularyCovered` naming
+`route-unresolved` as `REFUSAL_CLASS_UNPRODUCED`. A silent bucket, or a class
+that stops being emitted anywhere, is a red test, not a judgement call.
 
 `[PROPOSED-BY-MEMO]` **What `compatible` does NOT mean** — stated here so it is
 not oversold:
@@ -395,7 +415,7 @@ string — so there is no client asset to adapt.
 | file | what it is |
 |---|---|
 | `tests/ute-g1-fs/lib/refusal-categories.mjs` | the closed vocabulary + both total maps + comparator + corpus audit + self-check |
-| `tests/ute-g1-fs/lib/refusal-categories.test.mjs` | 20 cases, corpus values **derived** from the merged `golden/old-path.tsv` (seven classes named; a synthetic eighth is refused by the same derivation), 5/5 real mutants red; collected by the existing `UTE G1 FS binding product lane` (no new dispatch leg) |
+| `tests/ute-g1-fs/lib/refusal-categories.test.mjs` | 21 cases, corpus values **derived** from the merged `golden/old-path.tsv` (six classes named; an extra synthetic class is refused by the same derivation), plus the FIXTURE-evidenced `route-unresolved` measured by driving `FSB-IMG-1b`; 6/6 real mutants red; collected by the existing `UTE G1 FS binding product lane` (no new dispatch leg) |
 | `docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md` | this memo |
 | `dev/agent-workflow/evidence/ute3-fs-errors-20261120/scan.sh` | the raw scan (reproducible) |
 | `…/consumer-scan.raw.txt` | 653 raw rows |
@@ -416,10 +436,14 @@ UTE-RETIREMENT-GATE ledger=dev/agent-workflow/ledgers/ute-retirement.json schema
 UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=3/4
   UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED … detail="blocking difference lane-refusal-code has no owner approval …; recorded status: … OWNER RULING 2026-11-20: route B+C adopted … approval PENDING (owner signature required)."
   UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED … detail="blocking difference refusal-observation-shape has no owner approval …; recorded status: … route B+C adopted (technical route only) … APPROVAL: PENDING (owner signature required) …"
-  UTE-RETIREMENT-FINDING code=UTE_VECTOR_UNREPRODUCED term=newPathVerified detail="vector \"FS-I0-route-c-gap\" is not reproduced: … new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I0-route-c-gap PASS\""   (and FS-I1…FS-I6, one finding each)
+  UTE-RETIREMENT-FINDING code=UTE_VECTOR_UNREPRODUCED term=newPathVerified detail="vector \"FS-I1-inlane-image\" is not reproduced: … new-path-run.txt does not contain \"NEW-PATH-VECTOR FS-I1-inlane-image PASS\""   (and the other five, one finding each)
   UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=newPathVerified detail="member \"read_image\" has baseline vector(s) … but none is reproduced by … new-path-run.txt"
 UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1
 ```
+
+`[MEASURED]` The block above is the B1 run. After the route-C repair (PR #802)
+the gate reports SIX vectors, `FS-I1…FS-I6` (FS-I0 was deleted; FS-I1 already is
+the in-lane allow baseline), and the same three codes.
 
 `unit=3/4` is the measured B1 contribution: `read_image` now HAS baseline
 vectors, so `oldBaseline` covers all four members; the seventh-unit gap moved
@@ -427,9 +451,13 @@ from "no baseline" to "no new-path reproduction", which is a different and
 narrower refusal, not a weaker one.
 
 New suite: `node --test tests/ute-g1-fs/lib/refusal-categories.test.mjs` →
-**20/20 pass**, printing `REFUSAL-CATEGORY-DERIVATION classes=7 …`,
-`REFUSAL-CATEGORY-DERIVATION-EIGHTH classes=8 …` and
-`REFUSAL-CATEGORY-MUTANTS total=5 red=5`.
+**21/21 pass** after the route-C repair, printing
+`REFUSAL-CATEGORY-DERIVATION classes=6 …`,
+`REFUSAL-CATEGORY-FIXTURE class=route-unresolved fixture=FSB-IMG-1b …`,
+`REFUSAL-CATEGORY-DERIVATION-EXTRA classes=7 …` and
+`REFUSAL-CATEGORY-MUTANTS total=6 red=6`. (The pre-repair B1 run printed
+`classes=7` / `classes=8` / `total=5 red=5`; the corpus lost `route-unresolved`
+with FS-I0 and the fixture arm replaced it — same law, different evidence.)
 
 `[MEASURED]` Gate's own suite after the message enrichment:
 `node --test scripts/ute-retirement-gate.test.mjs` → **31/31 pass**, including
@@ -495,21 +523,27 @@ Interface approved:
       The vocabulary I am approving has NINE categories: denied-by-lane,
       read-before-write, stale-version, missing-path, invalid-argument,
       unsupported-mode, route-unresolved, cancelled, unknown. I have seen that
-      the FS corpus's seven recorded refusal classes map to them as follows, and
-      I am approving those mappings:
+      the FS corpus's SIX recorded refusal classes map to them as follows, and
+      I am approving those mappings (the corpus-evidenced side):
         lane-deny / lane-read / lane-write     -> denied-by-lane
         write-requires-read                    -> read-before-write
         stale-version                          -> stale-version
         missing-path                           -> missing-path
         image-modality-denied                  -> unsupported-mode
-        route-unresolved                       -> route-unresolved
         cancelled                              -> cancelled
         other (declared residual)              -> unknown
+      I have also seen that the SEVENTH category, route-unresolved, is
+      FIXTURE-EVIDENCED rather than corpus-evidenced: the route-C repair (PR
+      #802) made the product route serve read_image and deleted the only row
+      that emitted it (FS-I0), so the class is now measured by the executed
+      withheld-continuation fixture FSB-IMG-1b, classified by the same
+      classifyRefusal the golden capture uses, and I am approving that mapping:
+        route-unresolved (fixture FSB-IMG-1b)  -> route-unresolved
       route-unresolved is a category of this compatibility vocabulary, not a
       claim that the new path emits it: it records that the OLD path could not
-      route read_image at all (GAP-FS-CONTRACT-1 / PD-5), which is an assembly
-      route fact rather than a lane decision, and no host FsError code produces
-      it today.
+      route read_image at all (GAP-FS-CONTRACT-1 / PD-5, repaired by PR #802),
+      which is an assembly route fact rather than a lane decision, and no host
+      FsError code produces it today.
 
 Differences covered:
   lane-refusal-code           (FS_SANDBOX_DENIED / FS_PERMISSION_DENIED)
@@ -560,7 +594,7 @@ would be the fabrication the ruling explicitly forbids.
 |---|---|---|
 | 1 | The rc.5 host source tree (`packages/fs/tool-fs`, `@deepseek-ai/*`) is **not present** in this worktree (`tests/deepseek-harness-*` is gitignored and absent). The native code list in §2.1 is therefore derived from **recorded** evidence in this repository, not re-read from the host tree. | provision the pinned next-host tree (`docs/TEST_METHODS.md` §11) and re-derive the code list from `tool-fs/src/*` and `fs-local/src/index.ts` |
 | 2 | The rc.5 `mapError` behaviour (§4.1 of `RETIREMENT.md`) is recorded as a measured crash from an earlier run; it was not re-executed in this slice (no boot, by design of this slice). | a host-free probe that raises `FS_SANDBOX_DENIED` from a lane-only provider and observes the `policy.mode` deref |
-| 3 | `read_image` now HAS baseline vectors (B1 / PR #799: FS-I0…FS-I6) but **no new-path reproduction** — `UTE_VECTOR_UNREPRODUCED` refuses all seven — and no approval for that is requested here. | a new path that serves images, then a measured `NEW-PATH-VECTOR … PASS` line per vector |
+| 3 | `read_image` now HAS baseline vectors (B1 / PR #799, re-baselined by the route-C repair: FS-I1…FS-I6, six vectors) but **no new-path reproduction** — `UTE_VECTOR_UNREPRODUCED` refuses all six — and no approval for that is requested here. | a new path that serves images, then a measured `NEW-PATH-VECTOR … PASS` line per vector |
 | 4 | The `needs-adaptation` rows are adjudicated, **not adapted**. The FS switch must perform the adaptations and re-run the affected suites before the path is switched. | the switch PR, with this inventory as its checklist |
 | 5 | Whether an `unsupported-mode` or `route-unresolved` refusal exists on the native FS surface (no recorded pair today). Both categories and their legacy sides exist; the native side is unmapped because nothing records it, and for `route-unresolved` a test forbids adding one without a new measurement. | a recorded native refusal of either kind; adding it is a deliberate map edit, not a default |
 | 6 | `FS_BINDING_*` codes are excluded by reasoning (§2.1), not by an exhaustive trace of every Team binding emitter. | a scan of `packages/tools/src/native-fs-binding.ts` and the realm row for every emitted `FS_BINDING_*` code |
