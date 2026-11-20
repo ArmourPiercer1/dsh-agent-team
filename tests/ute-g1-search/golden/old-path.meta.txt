@@ -115,9 +115,11 @@ Header: `id entry lane_read lane_write outcome refusal codes effects facts leaks
 
 ## What it does NOT cover (mirrored in ../README.md §7)
 
-* **No new path exists.** Every vector is old-path evidence; `newPathVerified`
-  is false by construction, and the lane suite pins that with an explicit
-  (empty) pending-id list.
+* **These rows are OLD-PATH evidence.** The fixture was captured on the legacy
+  host, and the new-path reproduction (UTE-3 PR B2) is graded AGAINST these same
+  rows, cell for cell, by `run-new-path.mjs` — it does not extend or restate
+  them. A vector that reproduces is equal *effects* on this corpus, not a
+  semantic-equivalence verdict (see the three declared differences below).
 * **The governed plane's `team_grep`/`team_glob` dispatch** — not run (needs the
   governed kernel/PA mount). Its argv builder is measured, its dispatch is an
   UNKNOWN.

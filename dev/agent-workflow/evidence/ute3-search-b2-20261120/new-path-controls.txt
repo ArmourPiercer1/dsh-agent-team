@@ -1,0 +1,13 @@
+NEW-PATH-NC NPNC-MATCHSET-BITES ok — a mutated match-set digest turns SR-G1 RED (a wrong expected effect cannot pass)
+NEW-PATH-NC NPNC-UNDECLARED-DIVERGENCE-BITES ok — flipping SR-G3 from deny to allow with no declaration turns the run RED
+NEW-PATH-NC NPNC-STALE-DECLARATION-BITES ok — declaring a divergence for a vector that reproduced exactly turns the run RED
+NEW-PATH-NC NPNC-DIVERGENCE-PIN-BITES ok — a declaration whose pinned new value drifts from the measurement turns the run RED
+NEW-PATH-NC NPNC-PINNED-DIVERGENCE-PASSES ok — a divergence declared with the exact measured (field, old, new) cells grades as PASS and carries its id
+NEW-PATH-NC NPNC-DIFFERENCE-ID-BITES ok — a declaration citing an id this family never declared turns the run RED
+NEW-PATH-NC NPNC-PENDING-MARKER-BITES ok — a record carrying newPathPending is RED, never a pass
+NEW-PATH-NC NPNC-MISSING-VECTOR-BITES ok — a vector that produced no record is RED, not silently skipped
+NEW-PATH-NC NPNC-PROVENANCE-BITES ok — a definition or spawn program resolved OUTSIDE the next tree is RED
+NEW-PATH-NC NPNC-DECLARATION-TABLE-BITES ok — a declaration naming a non-vector, an unknown difference or a no-op cell is refused
+NEW-PATH-NC NPNC-LANE-BITES-GREP ok — widening the grep read lane turns SR-G3-outside-denied's denial into an admitted, out-of-lane read
+NEW-PATH-NC NPNC-LANE-BITES-GLOB ok — widening the glob read lane turns SR-L2-outside-denied's denial into an admitted, out-of-lane read
+NEW-PATH-NC-VERDICT GREEN controls=12 failed=0

@@ -1,0 +1,19 @@
+OLD-PATH-VECTOR SR-G1-inlane-match entry=grep composition=route-c outcome=allow refusal=none matches=2 (retained=2,paths=2,keys=a.txt+sub/b.txt) tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-G2-no-path-stdin entry=grep composition=route-c outcome=allow refusal=none matches=0 (retained=0,paths=0,keys=-) tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-G3-outside-denied entry=grep composition=route-c outcome=deny refusal=denied-by-lane matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-G4-lane-bound entry=grep composition=route-c outcome=deny refusal=denied-by-lane matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-G5-missing-target entry=grep composition=route-c outcome=deny refusal=missing-path matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-G6-invalid-pattern entry=grep composition=route-c outcome=deny refusal=invalid-argument matches=none tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-G7-cancel-before-dispatch entry=grep composition=route-c outcome=deny refusal=cancelled matches=none tree=unchanged facts=confined:0/allow:0/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-G8-retention-limit entry=grep composition=route-c outcome=allow refusal=none matches=300 (retained=250,paths=1,keys=many.txt) tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-G9-binary-file entry=grep composition=route-c outcome=allow refusal=none matches=1 (retained=1,paths=1,keys=bin.dat) tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-L1-inlane-known-set entry=glob composition=route-c outcome=allow refusal=none matches=2 (retained=2,paths=2,keys=a.txt+sub/b.txt) tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-L2-outside-denied entry=glob composition=route-c outcome=deny refusal=denied-by-lane matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-L3-lane-bound entry=glob composition=route-c outcome=deny refusal=denied-by-lane matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-L4-missing-target entry=glob composition=route-c outcome=deny refusal=missing-path matches=none tree=unchanged facts=confined:0/allow:0/deny:1/base:0 codes=IO_READ_DENIED leaks=none
+OLD-PATH-VECTOR SR-L5-invalid-pattern entry=glob composition=route-c outcome=deny refusal=invalid-argument matches=none tree=unchanged facts=confined:1/allow:1/deny:0/base:0 codes=- leaks=none
+OLD-PATH-VECTOR SR-L6-cancel-before-dispatch entry=glob composition=route-c outcome=deny refusal=cancelled matches=none tree=unchanged facts=confined:0/allow:0/deny:0/base:0 codes=- leaks=none
+OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C, PD-16 search shadow)" dispatch="ctx.tools.execute({'calls':[...]}) via the host registry execute()" vectors=15
+OLD-CATEGORY-VOCABULARY denied-by-lane,read-before-write,stale-version,missing-path,invalid-argument,unsupported-mode,route-unresolved,cancelled,unknown
+OLD-CATEGORY-SIZE 9
+OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b2-20261120/tests/ute-g1-search/golden/old-path.tsv

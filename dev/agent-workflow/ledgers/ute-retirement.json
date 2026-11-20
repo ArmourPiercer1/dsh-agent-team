@@ -139,20 +139,36 @@
           "note": "15 (request -> effect) vectors captured on the legacy host 0.2.0-rc.2 @ 639ed01539 through the PRODUCT route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules, i.e. the compiled EffectiveIo read lane + the confined subprocess face + the PD-16 confined search shadow): 9 grep + 6 glob. COMPOSITION MEASURED FIRST, not assumed: dev/agent-workflow/evidence/ute3-search-b1-20261120/composition-probe.txt shows BOTH members registered, reachable on route C, and reaching the CONFINED provider (providerCalls>0, inheritedServiceCalls=0), while the legacy governed plane refuses the native names at mount with PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED (it mounts Search only as team_grep/team_glob). There is NO mounting gap in this family, so no disclosed substitute composition is used anywhere and no test-only mount exists in the harness. Effects are the CANONICALLY SORTED match set (every match corroborated against the filesystem), the fixture tree digest (unchanged for all 15 vectors), the presented/retained count, the confined spawn count and the realm's guard facts. Walk order never enters a record. Refusals are mapped onto the closed nine-category vocabulary REUSED from tests/ute-g1-fs/lib/refusal-categories.mjs (imported, not forked; the FS map itself is FS-only and tests/ute-g1-fs is out of this task's write scope): 5 classes used, the residual `unknown` unreachable by construction, and an unexplained refusal raises REFUSAL_VOCABULARY_INCOMPLETE instead of being bucketed. The generic IO_READ_DENIED code is disambiguated by the deny locator plus a FILESYSTEM witness (absent locator -> missing-path; locator outside every read root -> denied-by-lane). Two capture runs are byte-identical (capture-run-1.txt / capture-run-2.txt). Fixture identity in tests/ute-g1-search/golden/old-path.meta.txt; member->vector->control table in golden/COVERAGE.md. This is the OldBaseline term for the SEARCH family only. RE-MEASURED 2026-11-20 on the merged tree (origin/master 19a7fa641, #802 route-C read_image repair): the golden re-capture is byte-identical, the composition probe is unchanged, the three semantic differences are unchanged, and the negative controls are GREEN — see dev/agent-workflow/evidence/ute3-search-b1-20261120/post-merge-remeasurement.txt. The baseline is not merely inherited from the pre-#802 tree."
         },
         "newPathVerified": {
-          "verdict": false,
+          "verdict": true,
           "evidence": {
-            "path": "dev/agent-workflow/evidence/ute3-search-b1-20261120/new-path-absent.txt",
+            "path": "dev/agent-workflow/evidence/ute3-search-b2-20261120/new-path-run.txt",
             "expect": [
-              "NEW-PATH-ABSENT",
-              "no new-path enumerator",
-              "newPathVerified             = FALSE",
-              "UTE_NEW_PATH_UNVERIFIED"
+              "NEW-PATH-VECTOR SR-G1-inlane-match PASS",
+              "NEW-PATH-VECTOR SR-G2-no-path-stdin PASS",
+              "NEW-PATH-VECTOR SR-G3-outside-denied PASS",
+              "NEW-PATH-VECTOR SR-G4-lane-bound PASS",
+              "NEW-PATH-VECTOR SR-G5-missing-target PASS",
+              "NEW-PATH-VECTOR SR-G6-invalid-pattern PASS",
+              "NEW-PATH-VECTOR SR-G7-cancel-before-dispatch PASS",
+              "NEW-PATH-VECTOR SR-G8-retention-limit PASS",
+              "NEW-PATH-VECTOR SR-G9-binary-file PASS",
+              "NEW-PATH-VECTOR SR-L1-inlane-known-set PASS",
+              "NEW-PATH-VECTOR SR-L2-outside-denied PASS",
+              "NEW-PATH-VECTOR SR-L3-lane-bound PASS",
+              "NEW-PATH-VECTOR SR-L4-missing-target PASS",
+              "NEW-PATH-VECTOR SR-L5-invalid-pattern PASS",
+              "NEW-PATH-VECTOR SR-L6-cancel-before-dispatch PASS",
+              "NEW-PATH-DIVERGENCE-TOTAL declared=0 observed=0",
+              "NEW-PATH-VERDICT GREEN vectors=15 exact=15 divergences=0",
+              "NEW-PATH-HOST host=next version=0.2.2-rc.5",
+              "NEW-PATH-PROVENANCE vector=SR-G1-inlane-match"
             ],
             "contradicts": [
-              "NEW-PATH-VECTOR "
+              "NEW-PATH-ABSENT",
+              "NEW-PATH-FAIL "
             ]
           },
-          "note": "NO new path exists for Search in this round: PR B1 is the old-path baseline only. No enumerator, no provider, no next-host run, and therefore zero `NEW-PATH-VECTOR <id> PASS` lines for any of the 15 baseline vectors. The gate must refuse this term with UTE_NEW_PATH_UNVERIFIED, UTE_VECTOR_UNREPRODUCED (one per vector) and UTE_MEMBER_UNCOVERED for both members on this axis. Flipping this term requires a new-path task with its own evidence, not an edit here."
+          "note": "UTE-3 B2 (2026-11-20) measured the new path: the SEARCH corpus runs on the PINNED NEXT HOST 0.2.2-rc.5 @ 9c2670d3bce5275e0d1610272958121af87787bb through the SAME PRODUCT route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules), with the NEXT host's own @deepseek-ai/dsh-tool-fs-search module declared as the search owner and mounted on the Member's isolated scope, and dispatch through the host's own ToolsService batch (executeModelToolFixture). ALL 15 baseline vectors reproduce their B1 golden row CELL-FOR-CELL: canonical match set, tree digest unchanged, presented/retained counts, confined spawn count, guard facts and refusal category through the closed vocabulary imported from tests/ute-g1-fs/lib/refusal-categories.mjs. The run therefore shows ZERO declared divergences (NEW-PATH-DIVERGENCE-TOTAL declared=0 observed=0): the path-less grep (SR-G2) still returns 0 matches on rc.5 exactly as the golden row records, because the generation-independent cause is the host module's argv (no path operand) plus the confined child's readable fd 0; the governed row's 2-match behaviour remains the DECLARED difference SD-SEARCH-1 and is NOT resolved by this run. Executor provenance is asserted, not assumed: every spawn argv[0] is the next tree's own packaged ripgrep and the served module entry is the next tree's package (NEW-PATH-PROVENANCE lines; a legacy-tree resolution is a typed provenance failure). The comparison's honesty is proven by 12 mutation controls (dev/agent-workflow/evidence/ute3-search-b2-20261120/new-path-controls.txt): a mutated expected match set, an undeclared divergence, a stale declaration, a drifted pinned cell, an unknown difference id, a pending marker, a missing vector, an out-of-tree definition/spawn and two real-run lane widenings each turn the run RED, while a correctly pinned divergence still passes. Both members are covered (9 grep + 6 glob), so the derived unit coverage on this axis is 2/2. This term says nothing about the semantic differences: all three remain blocking with approval PENDING."
         },
         "semanticDifferencesResolved": {
           "verdict": false,
@@ -210,7 +226,7 @@
           "note": "Two family-level controls (NC-HARNESS-BITES: a flipped golden match digest must go RED; NC-CATEGORY-TOTAL: an unexplained refusal must raise REFUSAL_VOCABULARY_INCOMPLETE and `unknown` must be unreachable) PLUS one REAL control per retirement-unit member: NC-MEMBER grep (widen ONLY the read lane -> the refused out-of-lane grep succeeds and returns the planted secret) and NC-MEMBER glob (the same widening -> the refused walk lists the out-of-lane path). Each is paired with NC-MEMBER-POSITIVE proving the unmodified vector still reproduces its golden row, so no control is vacuous. Two composition controls prove the routing is the authority: NC-SHADOW-LOAD-BEARING (dispose the realm's own PD-16 search shadow -> the out-of-lane grep leaks) and NC-STDIN-LOAD-BEARING (the same disposal turns SR-G2's path-less zero into real matches). The lane suite re-runs the whole transcript and refuses a verdict line that is not GREEN with failed=0. A green SEARCH control is not evidence for FS, Web or PTY. RE-RUN on the merged tree (origin/master 19a7fa641): still NC-VERDICT GREEN controls=8 failed=0."
         }
       },
-      "note": "SEARCH is the second family in the UTE G1 ordering. Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.search-family`, nativeNames `(bound-definition) grep` / `(bound-definition) glob`), not from this row. UTE-3 PR B1 closes the OLD-PATH half for both members (15 baseline vectors, per-member controls, two identical capture runs) and the NEGATIVE-CONTROLS half. It may NOT retire: no new path exists for Search (newPathVerified FALSE, zero NEW-PATH-VECTOR PASS lines), and all three measured semantic differences are blocking with approval PENDING. The old-path baseline is NOT a safety verdict: a refusal record pins the refusal, the absent secret and an unchanged tree — it cannot prove an unauthorized read never happened."
+      "note": "SEARCH is the second family in the UTE G1 ordering. Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.search-family`, nativeNames `(bound-definition) grep` / `(bound-definition) glob`), not from this row. UTE-3 PR B1 closed the OLD-PATH half for both members (15 baseline vectors, per-member controls, two identical capture runs) and the NEGATIVE-CONTROLS half; UTE-3 PR B2 closed the NEW-PATH half on the pinned rc.5 host (all 15 vectors reproduce the same golden rows cell-for-cell, zero declared divergences, provenance pinned to the next tree, 12 mutation controls GREEN). It may still NOT retire: all three measured semantic differences are blocking with approval PENDING (SD-SEARCH-1 path-less grep, SD-SEARCH-2 VCS-ignore, SD-SEARCH-3 refusal surface), so SemanticDifferencesResolved stays FALSE and the state stays NOT_RETIREABLE. The old-path baseline is NOT a safety verdict: a refusal record pins the refusal, the absent secret and an unchanged tree — it cannot prove an unauthorized read never happened."
     }
   ]
 }

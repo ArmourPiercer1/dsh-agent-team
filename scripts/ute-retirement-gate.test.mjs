@@ -705,14 +705,27 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     false,
     `no FS evidence is unreproduced any more: ${JSON.stringify(fsFindings)}`,
   )
-  // search — its OWN code list: no new path, unresolved blocking differences,
-  // and per-vector/per-member coverage absent on the new-path axis.
+  // search — UTE-3 PR B2 reproduced all fifteen vectors on the pinned rc.5 host,
+  // so the new-path axis and BOTH members are covered and the ONLY remaining
+  // refusal is the unapproved difference. Asserted as an exact set: a regression
+  // that drops a vector or a member would add a code and red here instead of
+  // hiding inside a still-refused row.
   const search = codesFor('search')
-  assert.deepEqual(search.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
-  assert.match(search.line, /state=NOT_RETIREABLE unit=0\/2$/u)
-  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"grep\\"/)
-  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"glob\\"/)
-  assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*SR-G1-inlane-match/)
+  assert.deepEqual(search.codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
+  assert.match(search.line, /state=NOT_RETIREABLE unit=2\/2$/u)
+  // The new-path axis must produce NO finding at all now: no unreproduced vector
+  // and no uncovered member. Scoping the assertion to the term is what keeps it
+  // biting (a still-uncovered unit would print exactly these two codes).
+  assert.equal(
+    all.stdout.split('\n').some((line) => line.includes('term=newPathVerified')),
+    false,
+    'the search row must have no new-path finding any more',
+  )
+  assert.equal(
+    all.stdout.split('\n').some((line) => line.includes('UTE_VECTOR_UNREPRODUCED') || line.includes('UTE_NEW_PATH_UNVERIFIED')),
+    false,
+    'neither fs nor search may report an unverified/unreproduced new path any more',
+  )
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-1-grep-path-default/)
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-2-grep-vcs-ignore/)
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-3-refusal-surface/)
