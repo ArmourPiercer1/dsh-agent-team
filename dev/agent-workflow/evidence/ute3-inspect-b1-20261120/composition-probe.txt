@@ -1,0 +1,47 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 root=<repo>
+PROBE memory=HOST-FREE (no boot, no DSH_HOME, no port; route-C + family body only)
+PROBE-FAMILY familyId=dsh.inspect-family enabledKey=inspectFamilyEnabled claims=team_skill,team_cordis_inspect_list,team_cordis_inspect_query
+PROBE-MEMBER team_skill definition-sites=1 files=packages/tools/inspect-family/src/skill-row.mjs
+PROBE-MEMBER team_skill mentions=4 files=packages/runtime/test/u7f-inspect-family-c1.test.ts,packages/tools/inspect-family/src/row-names.mjs,packages/tools/inspect-family/src/skill-executor.mjs,packages/tools/inspect-family/src/skill-row.mjs
+PROBE-MEMBER team_skill native-spelling=skill native-definition-sites-in-this-repo=0 (host package owns it)
+PROBE-MEMBER team_cordis_inspect_list definition-sites=1 files=packages/tools/inspect-family/src/inspect-rows.mjs
+PROBE-MEMBER team_cordis_inspect_list mentions=5 files=packages/runtime/test/u7f-inspect-family-c1.test.ts,packages/tools/inspect-family/src/inspect-executor.mjs,packages/tools/inspect-family/src/inspect-mechanics.mjs,packages/tools/inspect-family/src/inspect-rows.mjs,packages/tools/inspect-family/src/row-names.mjs
+PROBE-MEMBER team_cordis_inspect_list native-spelling=cordis_inspect_list native-definition-sites-in-this-repo=0 (host package owns it)
+PROBE-MEMBER team_cordis_inspect_query definition-sites=1 files=packages/tools/inspect-family/src/inspect-rows.mjs
+PROBE-MEMBER team_cordis_inspect_query mentions=4 files=packages/runtime/test/u7f-inspect-family-c1.test.ts,packages/tools/inspect-family/src/inspect-executor.mjs,packages/tools/inspect-family/src/inspect-rows.mjs,packages/tools/inspect-family/src/row-names.mjs
+PROBE-MEMBER team_cordis_inspect_query native-spelling=cordis_inspect_query native-definition-sites-in-this-repo=0 (host package owns it)
+PROBE-ROUTE-C mounted=yes attach-fibers=0 composition=nativeToolModules=[] (no host preset module configured)
+PROBE-ROUTE-C team_skill registered=no reachable=no refusal="Error: unknown tool \"team_skill\""
+PROBE-ROUTE-C team_skill providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C team_skill native-spelling=skill registered=no (route-C configures NO host preset module; the host composition owns these rows)
+PROBE-ROUTE-C team_cordis_inspect_list registered=no reachable=no refusal="Error: unknown tool \"team_cordis_inspect_list\""
+PROBE-ROUTE-C team_cordis_inspect_list providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C team_cordis_inspect_list native-spelling=cordis_inspect_list registered=no (route-C configures NO host preset module; the host composition owns these rows)
+PROBE-ROUTE-C team_cordis_inspect_query registered=no reachable=no refusal="Error: unknown tool \"team_cordis_inspect_query\""
+PROBE-ROUTE-C team_cordis_inspect_query providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C team_cordis_inspect_query native-spelling=cordis_inspect_query registered=no (route-C configures NO host preset module; the host composition owns these rows)
+PROBE-PLANE claims=team_skill,team_cordis_inspect_list,team_cordis_inspect_query source=packages/tools/families/inspect.mjs
+PROBE-PLANE row-names source=packages/tools/inspect-family/src/row-names.mjs
+PROBE-PLANE code export const SKILL_ROW_NAME = 'team_skill'
+PROBE-PLANE code export const INSPECT_LIST_ROW_NAME = 'team_cordis_inspect_list'
+PROBE-PLANE code export const INSPECT_QUERY_ROW_NAME = 'team_cordis_inspect_query'
+PROBE-PLANE member=team_skill alias-reserved=no claimed=yes
+PROBE-PLANE member=team_skill native=skill reserved-native=yes native-claim=REFUSED-by-natexe-law (PLANE_SUPPORTED_NATIVE_TAKEOVERS is the complete truth of assembled same-name pairs)
+PROBE-PLANE member=team_cordis_inspect_list alias-reserved=no claimed=yes
+PROBE-PLANE member=team_cordis_inspect_list native=cordis_inspect_list reserved-native=yes native-claim=REFUSED-by-natexe-law (PLANE_SUPPORTED_NATIVE_TAKEOVERS is the complete truth of assembled same-name pairs)
+PROBE-PLANE member=team_cordis_inspect_query alias-reserved=no claimed=yes
+PROBE-PLANE member=team_cordis_inspect_query native=cordis_inspect_query reserved-native=yes native-claim=REFUSED-by-natexe-law (PLANE_SUPPORTED_NATIVE_TAKEOVERS is the complete truth of assembled same-name pairs)
+PROBE-FAMILY-BODY definitions=team_skill,team_cordis_inspect_list,team_cordis_inspect_query
+PROBE-FAMILY-BODY team_skill allow outcome=ok value={"name":"demo","provider":"filesystem","resourceBase":{"kind":"directory","path":"<tmp>/skills/demo"},"content":"PROBE-SKILL-BODY."}
+PROBE-FAMILY-BODY team_skill unknown outcome=refused text="refused-admission skill-unknown — skill \"nope\" is unknown or no longer available under the sanctioned skill roots"
+PROBE-FAMILY-BODY team_cordis_inspect_list outcome=ok value={"providers":[{"platform":"host","id":"probe.provider","methods":[{"name":"echo","inputSchema":{"type":"object","properties":{"x":{"type":"string"}}}}]}]}
+PROBE-FAMILY-BODY team_cordis_inspect_query allow outcome=ok value={"platform":"host","provider":"probe.provider","method":"echo","data":{"echo":{"x":"y"}}}
+PROBE-FAMILY-BODY team_cordis_inspect_query unknown-provider outcome=refused text="refused-admission inspect-provider-unknown — inspect provider \"nope\" is not registered on platform \"host\". Available: probe.provider — call team_cordis_inspect_list and use an
+PROBE-FAMILY-BODY inspect-face calls list=3 query=1 inheritedServiceCalls=0
+PROBE-INSPECT single-implementation=yes member=team_skill reason=one-row-definition-site:packages/tools/inspect-family/src/skill-row.mjs; the native/service side serves the capability under DIFFERENT names (skill) and claims no team_skill definition
+PROBE-INSPECT single-implementation=yes member=team_cordis_inspect_list reason=one-row-definition-site:packages/tools/inspect-family/src/inspect-rows.mjs; the native/service side serves the capability under DIFFERENT names (cordis_inspect_list) and claims no team_cordis_inspect_list definition
+PROBE-INSPECT single-implementation=yes member=team_cordis_inspect_query reason=one-row-definition-site:packages/tools/inspect-family/src/inspect-rows.mjs; the native/service side serves the capability under DIFFERENT names (cordis_inspect_query) and claims no team_cordis_inspect_query definition
+PROBE-CONCLUSION booked-members=governed-family-body-only
+PROBE-CONCLUSION route-c=does-not-serve-any-booked-member (no same-name native attach, no provider call, no guard fact)
+PROBE-CONCLUSION native-capability=service-provided (skill: host @deepseek-ai/dsh-tool-skill + Team skills SERVICE provider a5sf-skill-provider.mjs; cordis_inspect_*: host @deepseek-ai/dsh-tool-cordis over the cordisInspect service; Team contributes no native row)
+PROBE-CONCLUSION retirement-shape=non-retirement proof (single same-name implementation); a byte baseline against a new path would have to invent a new-path name that does not exist
