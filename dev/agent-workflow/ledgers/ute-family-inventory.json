@@ -281,9 +281,9 @@
         "note": "UTE-1 landed a reviewed product-side module (`native-fs-binding/1`) that subclasses the host fs provider and adds the declared read/write lane; it exports through the additive barrel in `packages/tools/src/index.ts`. It is NOT wired into any shipped assembly (the module header says so; nothing under packages/runtime imports it), so it is a prototype, not a product module."
       },
       "retirementReadiness": {
-        "baseline": "partial",
+        "baseline": "complete",
         "newPath": "prototype",
-        "negativeControls": "partial"
+        "negativeControls": "complete"
       },
       "note": "The FS family is ONE indivisible four-tool assembly: the descriptor claims all four names, ONE Registry candidate carries all four row definitions, and a partial mount is refused PLANE_FS_FAMILY_INCOMPLETE (RETIREMENT.md §1.1). `read-presentation.mjs` is classed `mechanics` because the closed role set has no presentation role; it is the read row's presentation face."
     },

@@ -62,7 +62,7 @@ definition declarations, relative imports and every runtime step are in the ledg
 
 | family | files | definitions | non-relative deps | steps | authority | native | readiness |
 |---|---|---|---|---|---|---|---|
-| `dsh.fs-family` | 17 | read, write, edit, read_image | node:buffer, node:crypto, node:fs, node:fs/promises, node:path | 12 | ControlService + governance-center kernel + tools.guard | prototype | partial / prototype / partial |
+| `dsh.fs-family` | 17 | read, write, edit, read_image | node:buffer, node:crypto, node:fs, node:fs/promises, node:path | 12 | ControlService + governance-center kernel + tools.guard | prototype | complete / prototype / complete |
 | `dsh.process-family` | 11 | bash, pwsh | node:crypto, node:fs, node:timers | 12 | ControlService + governance-center kernel + tools.guard | none | none / none / none |
 | `dsh.search-family` | 9 | grep, glob | @deepseek-ai/dsh-tool-fs-search, node:child_process, node:crypto, node:fs, node:fs/promises, node:path, node:timers | 12 | ControlService + governance-center kernel + tools.guard | none | none / none / none |
 | `dsh.inspect-family` | 10 | team_skill, team_cordis_inspect_list, team_cordis_inspect_query | node:buffer, node:crypto, node:fs, node:fs/promises | 12 | ControlService + governance-center kernel + tools.guard | none | none / none / none |
@@ -157,45 +157,67 @@ Readiness is mapped from the retirement gate's own coverage derivation
 | `negativeControls: partial` | family-level controls exist but not every member has its own line |
 | `negativeControls: complete` | every member has its own control line |
 
-**Measured today `[MEASURED]`:** only `dsh.fs-family` has a retirement row, and
-the gate reads its coverage as `oldBaseline 3/4`, `newPathVerified 3/4`,
-`negativeControlsPass 0/4` (no `read_image` vector; four family-level controls,
-zero per-member lines) → `partial / prototype / partial`. Every other family has
-**no retirement row** → `none / none / none`. That is an honest `none`: absence of
-evidence is not readiness, and this inventory does not invent a row for a family
-nobody has begun retiring.
+**Measured today `[MEASURED]` (recomputed on the rebased tree, master
+`313643100`):** only `dsh.fs-family` has a retirement row, and the gate reads its
+coverage as `oldBaseline 4/4`, `newPathVerified 3/4`, `negativeControlsPass 4/4`
+→ `complete / prototype / complete`. The baseline and per-member control coverage
+come from PR #799 (B1: 17 vectors, 7 new `read_image` baselines and 12 controls),
+not from this inventory; the new path still reproduces only `read/write/edit`, so
+the seven `FS-I*` image rows each report `UTE_VECTOR_UNREPRODUCED` and `unit` is
+`3/4`, not `4/4`. Both blocking differences now carry the owner's B+C ruling as a
+**technical route only** with `approval: null`, so
+`semanticDifferencesResolved` stays `false` and the family stays `NOT_RETIREABLE`
+(the gate still exits 1). Every other family has **no retirement row** →
+`none / none / none`. That is an honest `none`: absence of evidence is not
+readiness, and this inventory does not invent a row for a family nobody has begun
+retiring. These three values are the output of `deriveReadiness()`; the ledger is
+never hand-edited (the suite keeps a mutation that hand-edits the baseline and
+requires `INVENTORY_READINESS_DRIFT` to fire).
 
 ---
 
 ## 5. What this inventory does NOT prove
 
 1. **It is not a retirement licence.** `scripts/ute-retirement-gate.mjs` owns the
-   four-term predicate and the `allowed` verdict. This inventory says *which files
-   and definitions belong to a family and how a call reaches an effect today*, not
-   that the family may be deleted.
-2. **It does not prove the old and new paths are semantically equivalent.** The
+   four-term predicate and the `allowed` verdict (FS today: `NOT_RETIREABLE`,
+   `unit=3/4`, exit 1). This inventory says *which files and definitions belong to
+   a family and how a call reaches an effect today*, not that the family may be
+   deleted.
+2. **The FS `read_image` baseline is only reachable because of a mount repair
+   that is still in review.** `read_image` is covered by the old baseline (and by
+   its per-member negative controls) only because the **route-C reachability
+   repair in review (PR #802)** makes the product composition continue a module's
+   own `fs` service into deferred children. Before that repair the product route-C
+   mount could not reach `read_image` at all — the measured `FS-I0-route-c-gap`
+   vector and GAP-FS-CONTRACT-1 / PD-5 record exactly that product fact. PR #802 is
+   **not merged at this HEAD**, so this inventory does not claim the shipped
+   composition can serve `read_image`; it only records that the baseline vectors
+   exist and are measured under the disclosed composition. Whether a retirement
+   baseline may be taken under a repaired-but-unmerged mount is an owner decision,
+   not an inventory verdict.
+3. **It does not prove the old and new paths are semantically equivalent.** The
    blocking semantic differences on FS (`lane-refusal-code`,
    `refusal-observation-shape`) are recorded in the retirement ledger and are not
    restated or resolved here.
-3. **It does not prove the new path is correct.** `newPath: prototype` is a
+4. **It does not prove the new path is correct.** `newPath: prototype` is a
    measurement of the FS prototype only; the other eight families have no
    native path at all (`none`).
-4. **It does not prove a declared import is USED.** The parser proves the import
+5. **It does not prove a declared import is USED.** The parser proves the import
    statement exists; dead imports are a lint concern, not a retirement gap.
-5. **It does not prove authority is effective.** It proves the files named are the
+6. **It does not prove authority is effective.** It proves the files named are the
    real ControlService / guard / kernel implementations (`[MEASURED]` by reading
    them) and that a product family names them; whether the runtime actually denies
    a call is a per-family acceptance question (`TOOL-ACCEPTANCE-MATRIX.md`), not an
    inventory question.
-6. **It does not claim the file list is complete by construction.** The universe
+7. **It does not claim the file list is complete by construction.** The universe
    rule is anchored on the booked census lanes and the family-body directory. A
    family implementation that lives somewhere else on the tree would not be caught
    by `INVENTORY_FILE_UNOWNED` — closing that requires a census/plan change, not a
    wider path heuristic (see §7).
-7. **Test-only is not product evidence.** `dsh.u6-probe-family` is booked
+8. **Test-only is not product evidence.** `dsh.u6-probe-family` is booked
    `test-only` and is inventoried so it cannot be forgotten; it must never be read
    as evidence about any product family.
-8. **The dependency parser is a tokenizer, not a type checker.** It reads ESM
+9. **The dependency parser is a tokenizer, not a type checker.** It reads ESM
    static imports, literal `import()`/`require()` and `new URL(…, import.meta.url)`.
    A computed dynamic import with a variable specifier is invisible to it (the
    probe lane's two URL seams are literal, so they are covered; a future computed
@@ -268,7 +290,7 @@ Required context without waiting for the deferred census layer.
 | `node --test scripts/ute-family-inventory.test.mjs` | 35 tests pass, `UTE-INVENTORY-MUTANTS total=27 red=27` |
 | `node scripts/eb3-family-definitions.mjs` | `pass files=30 findings=0` (exit 0) |
 | `node scripts/eb3-ci-required.mjs` | `pass workflows=10 findings=0` (exit 0) |
-| `node scripts/docs-sync.mjs --check` | `findings=0 blocking=0` (exit 0) |
+| `node scripts/docs-sync.mjs --check` | `docs=180 … plans=139(0 declaring) findings=0 blocking=0` (exit 0) |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=2104` (exit 0) |
-| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `tests=883 … UNCOLLECTED 41 … refused=0 findings=0` (exit 0) |
+| `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `tests=884 … UNCOLLECTED 41 … refused=0 findings=0` (exit 0) |
 | `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | `new 0, resolved 0` (exit 0) |

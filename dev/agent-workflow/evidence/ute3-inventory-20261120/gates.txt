@@ -1,4 +1,4 @@
-# UTE-3 local gates, verbatim, 2026-11-20T15:13:20Z
+# UTE-3 local gates, verbatim, 2026-11-20T16:51:15Z (rebased on master 313643100)
 
 $ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
 lint-identities: 162 identity lines, 76 distinct (target .)
@@ -8,7 +8,7 @@ EXIT=0
 
 $ node scripts/ute-family-inventory.mjs
 UTE-FAMILY-INVENTORY ledger=dev/agent-workflow/ledgers/ute-family-inventory.json schema=ute-family-inventory/1 families=9 universe=92 shared=14
-  UTE-FAMILY-INVENTORY-FAMILY family=dsh.fs-family members=4 files=17 definitions=4 steps=12 readiness=baseline:partial,newPath:prototype,negativeControls:partial testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.fs-family members=4 files=17 definitions=4 steps=12 readiness=baseline:complete,newPath:prototype,negativeControls:complete testOnly=false
   UTE-FAMILY-INVENTORY-FAMILY family=dsh.process-family members=2 files=11 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
   UTE-FAMILY-INVENTORY-FAMILY family=dsh.search-family members=2 files=9 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
   UTE-FAMILY-INVENTORY-FAMILY family=dsh.inspect-family members=3 files=10 definitions=3 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
@@ -34,16 +34,16 @@ EXIT=0
 
 $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
-  tests=883 instruments=3 digest=sha256:13ebaee46abde29790ba9407bfe6328ace63dcebfa2d6ed363880aa93165ee9b
-  DISCOVERED_AND_COLLECTED 828
+  tests=884 instruments=3 digest=sha256:e44e7ce646d55f363e448ea0e907f4db4ad81371ef9f5ed3c7bf88eb386789ca
+  DISCOVERED_AND_COLLECTED 829
   EXCLUDED_WITH_REASON     14
   UNCOLLECTED              41
-  by runner: node=128 none=7 vitest=748
-DSH-TEST-CATALOG tests=883 digest=sha256:13ebaee46abde29790ba9407bfe6328ace63dcebfa2d6ed363880aa93165ee9b refused=0 findings=0
+  by runner: node=129 none=7 vitest=748
+DSH-TEST-CATALOG tests=884 digest=sha256:e44e7ce646d55f363e448ea0e907f4db4ad81371ef9f5ed3c7bf88eb386789ca refused=0 findings=0
 EXIT=0
 
 $ node scripts/docs-sync.mjs --check
-docs:sync --check: docs=179 notes=4 plans=138(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+docs:sync --check: docs=180 notes=4 plans=139(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
 AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
 LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
 EXIT=0
@@ -66,8 +66,14 @@ $ node --check scripts/eb3-family-definitions.mjs
 EXIT=0
 
 $ git status --short
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/README.md
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/ci-leg-law.txt
  M dev/agent-workflow/evidence/ute3-inventory-20261120/gates.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/inventory-json.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/inventory.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/lint-identities.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/manifest-delta.txt
  M dev/agent-workflow/evidence/ute3-inventory-20261120/mutations.txt
- M scripts/ute-family-inventory.mjs
+ M dev/agent-workflow/ledgers/ute-family-inventory.json
+ M docs/plans/memo/ute-g1-20261120/INVENTORY.md
  M scripts/ute-family-inventory.test.mjs
-?? dev/agent-workflow/evidence/ute3-inventory-20261120/lint-identities.txt

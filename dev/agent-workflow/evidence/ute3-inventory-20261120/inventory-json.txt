@@ -40,14 +40,14 @@ $ node scripts/ute-family-inventory.mjs --json
         "node:path"
       ],
       "readiness": {
-        "baseline": "partial",
+        "baseline": "complete",
         "newPath": "prototype",
-        "negativeControls": "partial"
+        "negativeControls": "complete"
       },
       "derivedReadiness": {
-        "baseline": "partial",
+        "baseline": "complete",
         "newPath": "prototype",
-        "negativeControls": "partial"
+        "negativeControls": "complete"
       },
       "runtimeSteps": 12
     },

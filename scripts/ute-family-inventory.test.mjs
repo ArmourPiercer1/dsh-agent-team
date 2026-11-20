@@ -85,7 +85,7 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.equal(result.universe, 92)
   assert.deepEqual(result.shared.length, 14)
   const fs = result.families.find((f) => f.familyId === 'dsh.fs-family')
-  assert.deepEqual(fs.readiness, { baseline: 'partial', newPath: 'prototype', negativeControls: 'partial' })
+  assert.deepEqual(fs.readiness, { baseline: 'complete', newPath: 'prototype', negativeControls: 'complete' })
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])
@@ -279,8 +279,10 @@ test('a role outside the closed set is INVENTORY_ROLE_UNKNOWN', () => {
 
 // ── 11. readiness is measured, not declared ────────────────────────────────
 test('declaring a readiness the evidence does not support is INVENTORY_READINESS_DRIFT', () => {
-  mutant('wish the fs baseline complete', 'INVENTORY_READINESS_DRIFT', (ledger) => {
-    fsFamily(ledger).retirementReadiness.baseline = 'complete'
+  // The merged ledger derives `complete` for the FS baseline; declaring the
+  // older `partial` is exactly the hand-edit this control exists to catch.
+  mutant('hand-edit the fs baseline back to partial', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    fsFamily(ledger).retirementReadiness.baseline = 'partial'
   })
 })
 

@@ -9,11 +9,7 @@ EXIT=0
 $ node -e '...parse dev/ci/eb3-ci-manifest.json...'
 layer: ci-census workflow: .github/workflows/census-runtime.yml job: census-runtime
 leg: next host lane (node:test: real boot + native API A1-A6 + provisioning negative controls)
-cmd: ["node","--test","--test-force-exit","--test-timeout=1500000","--test-reporter=spec"]
-check: ["tests/next-host/boot.test.mjs","tests/next-host/native-api.test.mjs","tests/next-host/provisioning-controls.test.mjs","tests/ute-g1-fs/lane-suite.test.mjs","tests/world-factory/f10-contract-identity.test.mjs","scripts/ute-retirement-gate.test.mjs","tests/ute2-settlement/settlement.test.mjs","scripts/ute-family-inventory.test.mjs"]
+check: ["tests/next-host/boot.test.mjs","tests/next-host/native-api.test.mjs","tests/next-host/provisioning-controls.test.mjs","tests/world-factory/f10-contract-identity.test.mjs","scripts/ute-retirement-gate.test.mjs","tests/ute2-settlement/settlement.test.mjs","scripts/ute-family-inventory.test.mjs"]
 
 $ grep -n eb3-family-definitions .github/workflows/ci-integration.yml
 131:        run: node scripts/eb3-family-definitions.mjs
-
-$ grep -n ute-family-inventory.test.mjs .github/workflows/census-runtime.yml
-367:        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs tests/ute2-settlement/settlement.test.mjs scripts/ute-family-inventory.test.mjs

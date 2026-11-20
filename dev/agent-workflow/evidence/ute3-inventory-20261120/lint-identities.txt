@@ -1,35 +1,21 @@
-# Hosted pr-gate run 44759566340, leg lint-identities (head 5facc3f4e) — verbatim:
+# Hosted pr-gate failure that forced this fix (head 5facc3f4e, run 44759566340) — kept as history:
 [lint-identities] exit=1 NEW IDENTITIES (2):
   error @typescript-eslint/no-unused-vars scripts/ute-family-inventory.mjs
   warning (parse-fatal) scripts/ute-family-inventory.test.mjs
-DSH-CI-LEG leg=lint-identities verdict=fail
 
-# Root causes (measured locally with the repo's own eslint 9.39.5 + eslint.config.mjs):
-#   1. error: deriveReadiness() destructured an unused `familyId` (line 900:35).
-#   2. warning (parse-fatal): NOT a parse failure. The identity is an ESLint message with
-#      ruleId null and severity 1 — an UNUSED eslint-disable directive. The suite carried
-#      `// eslint-disable-next-line no-console`, but no-console is not enabled for
-#      scripts/**, so the directive suppressed nothing and was itself reported.
+# Root causes: (1) deriveReadiness() destructured an unused `familyId`; (2) the
+# "parse-fatal" identity is an ESLint message with a null ruleId and severity 1 —
+# an UNUSED eslint-disable directive, not a parse failure. Both removed, no baseline
+# bump and no exclusion.
 
-# Fix (one commit, same branch):
-#   - deriveReadiness({ members, ... }) — the unused binding removed.
-#   - the unused disable directive removed (the count is still printed; red<total still fails).
-
-# Local reproduction of the leg's exact argv (cwd = worktree root):
+# Re-run on the rebased tree (master 313643100) with the leg's exact argv:
 $ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
 lint-identities: 162 identity lines, 76 distinct (target .)
 lint-identities: universe: 1697 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
 baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
 EXIT=0
 
-# Per-file eslint on the two files, using the repo config with their real repo paths
-# (--stdin-filename scripts/<f> so the scripts/** globs and node globals apply):
-$ eslint --stdin --stdin-filename scripts/ute-family-inventory.mjs < scripts/ute-family-inventory.mjs   # (eslint 9.39.5, cwd = repo root)
-  messages: 0
-$ eslint --stdin --stdin-filename scripts/ute-family-inventory.test.mjs < scripts/ute-family-inventory.test.mjs   # (eslint 9.39.5, cwd = repo root)
-  messages: 0
-
-# ENVIRONMENT NOTE (honest): the worktree's node_modules pnpm links resolve one level up
-# (`../.worktrees/tinf-m2/node_modules/.pnpm/...`), so `npx eslint` died with MODULE_NOT_FOUND
-# before the fix. A gitignored symlink .worktrees -> <repo>/.worktrees was added INSIDE the
-# worktree for this verification only; it is untracked, gitignored, and not part of the commit.
+# ENVIRONMENT NOTE: the worktree's node_modules pnpm links resolve one level up
+# (`../.worktrees/tinf-m2/node_modules/.pnpm/...`), so `npx eslint` dies MODULE_NOT_FOUND
+# without a gitignored, untracked .worktrees symlink inside the worktree; it is not
+# committed and does not affect the hosted run.
