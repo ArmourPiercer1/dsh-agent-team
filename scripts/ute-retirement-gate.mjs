@@ -17,12 +17,35 @@
  * that file and checks that it actually contains the verdict the row claims.
  * A row that trusts its own strings is exactly what this gate refuses.
  *
+ * WHY THE UNIT IS DERIVED (external review of #795/#796, 2026-11-20). The first
+ * revision was a consistency checker: the FS row claimed three terms from a
+ * 10-vector corpus that covers `read`/`write`/`edit` and never `read_image`,
+ * while the FS family is one indivisible four-tool assembly
+ * (`packages/tools/families/fs.mjs` claims all four; a partial mount is refused
+ * `PLANE_FS_FAMILY_INCOMPLETE`). A row must therefore declare `unit.familyId`
+ * and the gate derives the members from the reviewed census
+ * `dev/agent-workflow/ledgers/arc-a-family-census.json` — the row cannot shrink
+ * the retirement unit to the tools it happened to verify. Coverage is then
+ * measured from the baseline TSV's `entry` column and the new path's
+ * `NEW-PATH-VECTOR <id>` lines, never from a self-asserted "read_image covered"
+ * sentence. A failed coverage check makes the corresponding term NOT
+ * established, so a partial corpus cannot be laundered into a green term.
+ *
+ * WHY DELETION IS CHECKED HERE TOO. The gate was also inert about deletion:
+ * nothing ran it when someone removed the old path. Every row declares
+ * `oldPath.files` (repo-relative, tracked); a file that is gone while the row is
+ * not allowed is `UTE_OLD_PATH_PARTIALLY_REMOVED`. `scripts/eb3-family-definitions.mjs`
+ * calls this module on the required CI leg, so a UTE-4 deletion PR is red before
+ * a reviewer has to notice.
+ *
  * LEDGER: dev/agent-workflow/ledgers/ute-retirement.json (schema ute-retirement/1)
  *
  *   {
  *     "schema": "ute-retirement/1",
  *     "families": [{
  *       "family": "fs",
+ *       "unit": { "familyId": "dsh.fs-family" },     // members come from the census
+ *       "oldPath": { "files": ["packages/tools/…"] }, // present unless allowed
  *       "state": "NOT_RETIREABLE",             // mirror of the computed verdict
  *       "terms": {
  *         "oldBaseline": {
@@ -34,7 +57,9 @@
  *         "semanticDifferencesResolved": {
  *           "verdict": false,
  *           "differences": [{ "id": "lane-refusal-code", "blocking": true,
- *                             "approval": null }],
+ *                             "approval": { "by": "owner", "on": "2026-11-20",
+ *                                           "record": "…/approval.md",
+ *                                           "reference": "PR #123 @ <40-hex>" } }],
  *           "evidence": { "path": "…/SEMANTIC-DIFFERENCES.md",
  *                         "expect": ["retirement-blocking   YES"] }
  *         },
@@ -50,11 +75,15 @@
  *     process can read, and must contain every `expect` token literally, and
  *     must contain none of the `contradicts` tokens. Else it is unreadable
  *     (missing/untracked) or contradicted (present but says something else).
- *   - `semanticDifferencesResolved` is NOT byte equality: the owner ruled it may
- *     be an APPROVED semantic change. The term is derived, not asserted — every
- *     difference with `blocking:true` must carry an `approval` whose `record` is
- *     itself a committed file naming the approver. An approval record that does
- *     not exist or does not name `by` is unreadable / contradicted evidence.
+ *   - `semanticDifferencesResolved` is derived: every blocking difference needs
+ *     an `approval` whose `record` is a committed file naming the approver AND
+ *     whose `reference` is `PR #<n> @ <40-hex>` resolving to an ancestor of the
+ *     graded HEAD. A name in a committed file proves transcription, not
+ *     authority (RETIREMENT.md §3 P4b).
+ *   - unit coverage is a PRECONDITION of a term being established, graded
+ *     inside the term it invalidates (RETIREMENT.md §2): every member needs a
+ *     baseline vector, every baseline vector must be reproduced, every covered
+ *     member needs its own `NC-MEMBER <member>` control.
  *   - `state` is a display mirror. The verdict is computed from the terms; a row
  *     that says RETIREABLE while a term fails cannot become retireable by
  *     editing the state string, and a row whose terms all pass while it still
@@ -64,7 +93,7 @@
  * NAMED REFUSALS (exit 1; every one is a line the reviewer can grep):
  *   UTE_OLD_BASELINE_MISSING            oldBaseline term not established
  *   UTE_NEW_PATH_UNVERIFIED             newPathVerified term not established
- *   UTE_SEMANTIC_DIFFERENCES_UNRESOLVED a blocking difference has no approval
+ *   UTE_SEMANTIC_DIFFERENCES_UNRESOLVED a blocking difference has no bound approval
  *   UTE_NEGATIVE_CONTROLS_FAILING       negativeControlsPass term not established
  *   UTE_LEDGER_UNKNOWN_FAMILY           no row for the requested family
  *   UTE_EVIDENCE_UNREADABLE             pointer missing / untracked / no expect
@@ -72,6 +101,15 @@
  *   UTE_STATE_CONTRADICTED              state=RETIREABLE while the terms fail
  *                                       cannot fabricate a pass (and the
  *                                       reverse is refused, not silently green)
+ *   UTE_UNIT_UNDECLARED                 the row declares no retirement unit
+ *   UTE_UNIT_UNKNOWN_FAMILY             unit.familyId is not in the census
+ *   UTE_UNIT_UNDERCLAIMED               declared members are a strict subset
+ *   UTE_UNIT_OVERCLAIMED                declared members are a strict superset
+ *   UTE_UNIT_UNGRADABLE                 census/unit/baseline cannot be derived
+ *   UTE_MEMBER_UNCOVERED                a member lacks baseline/reproduction/NC
+ *   UTE_VECTOR_UNREPRODUCED             the new path did not reproduce a vector
+ *   UTE_APPROVAL_UNREFERENCED           approval not bound to an ancestor commit
+ *   UTE_OLD_PATH_PARTIALLY_REMOVED      a declared old-path file is gone early
  *
  *   UTE_LEDGER_SCHEMA (exit 2)          the ledger cannot be graded at all
  *
@@ -82,10 +120,14 @@
  *
  * EXIT: 0 every requested family is retireable | 1 at least one refused |
  *       2 could not grade (ledger absent/unparseable/wrong schema, bad argv).
+ *       A missing `unit`/`oldPath` block is exit 1 (a graded refusal), never 2.
  *
- * Exported for scripts/ute-retirement-gate.test.mjs:
- *   LEDGER_REL, LEDGER_SCHEMA, TERMS, TERM_REFUSAL_CODES, REFUSAL_CODES,
- *   loadLedger, defaultIsTracked, checkTerm, checkRetirement
+ * Exported for scripts/ute-retirement-gate.test.mjs and
+ * scripts/eb3-family-definitions.mjs:
+ *   CENSUS_REL, LEDGER_REL, LEDGER_SCHEMA, TERMS, TERM_REFUSAL_CODES,
+ *   REFUSAL_CODES, defaultIsTracked, defaultRevExists, defaultIsAncestor,
+ *   parseBaselineTsv, resolveUnit, checkUnitCoverage, checkOldPathPresence,
+ *   checkTerm, loadLedger, evaluateFamily, checkRetirement
  *
  * @module scripts/ute-retirement-gate
  */
@@ -98,6 +140,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
 
 export const LEDGER_REL = 'dev/agent-workflow/ledgers/ute-retirement.json'
+export const CENSUS_REL = 'dev/agent-workflow/ledgers/arc-a-family-census.json'
 export const LEDGER_SCHEMA = 'ute-retirement/1'
 
 /** The four terms of the owner's predicate, in predicate order. */
@@ -125,11 +168,23 @@ export const REFUSAL_CODES = Object.freeze([
   'UTE_EVIDENCE_UNREADABLE',
   'UTE_EVIDENCE_CONTRADICTED',
   'UTE_STATE_CONTRADICTED',
+  'UTE_UNIT_UNDECLARED',
+  'UTE_UNIT_UNKNOWN_FAMILY',
+  'UTE_UNIT_UNDERCLAIMED',
+  'UTE_UNIT_OVERCLAIMED',
+  'UTE_UNIT_UNGRADABLE',
+  'UTE_MEMBER_UNCOVERED',
+  'UTE_VECTOR_UNREPRODUCED',
+  'UTE_APPROVAL_UNREFERENCED',
+  'UTE_OLD_PATH_PARTIALLY_REMOVED',
 ])
 
 /** States the gate understands. `RETIREABLE` is the only pass state. */
 export const STATES = Object.freeze(['RETIREABLE', 'NOT_RETIREABLE', 'RETIRED'])
 const PASS_STATE = 'RETIREABLE'
+
+/** The only approval reference shape the gate accepts (RETIREMENT.md §3 P4b). */
+const APPROVAL_REFERENCE = /^PR #\d+ @ ([0-9a-f]{40})$/
 
 /** A repo-relative path: no absolute, no `..`, no empty segments. */
 function safeRelPath(p) {
@@ -149,6 +204,37 @@ function safeRelPath(p) {
 export function defaultIsTracked(root, relPath) {
   try {
     execFileSync('git', ['-C', root, 'ls-files', '--error-unmatch', '--', relPath], {
+      stdio: ['ignore', 'ignore', 'ignore'],
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Does the 40-hex naming an approval resolve to a commit object here? An
+ * approval reference that a cold clone cannot resolve is a string, not an
+ * authorisation (RETIREMENT.md §3 P4b). Overridable in tests.
+ */
+export function defaultRevExists(root, sha) {
+  try {
+    execFileSync('git', ['-C', root, 'cat-file', '-e', `${sha}^{commit}`], {
+      stdio: ['ignore', 'ignore', 'ignore'],
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Is that commit already on the graded HEAD's history? An approval of a commit
+ * that only exists on a side branch is not merged authority.
+ */
+export function defaultIsAncestor(root, sha) {
+  try {
+    execFileSync('git', ['-C', root, 'merge-base', '--is-ancestor', sha, 'HEAD'], {
       stdio: ['ignore', 'ignore', 'ignore'],
     })
     return true
@@ -203,7 +289,304 @@ export function checkTermEvidence({ evidence, root, readFile = (p) => readFileSy
   return null
 }
 
-/** Is every retirement-blocking difference covered by a named approval? */
+/**
+ * Resolve the retirement UNIT for a row from the census, never from the row.
+ *
+ * WHY: the FS family is an indivisible four-tool assembly (one Registry
+ * candidate, `PLANE_FS_FAMILY_INCOMPLETE` on a partial mount). A row that
+ * declares only the three tools its corpus happens to cover is under-claiming
+ * the unit, so a green `read`/`write`/`edit` could have unlocked retiring a
+ * family that was never verified. `familyId` is the row's only choice; the
+ * members come from the reviewed census.
+ *
+ * @returns {{members: string[], findings: Array<{code: string, detail: string}>}}
+ */
+export function resolveUnit({ row, census, root = ROOT, readFile = (p) => readFileSync(p, 'utf8'), isTracked = defaultIsTracked }) {
+  const findings = []
+  const familyId = row?.unit?.familyId
+  if (typeof familyId !== 'string' || familyId.length === 0) {
+    return {
+      members: [],
+      findings: [{
+        code: 'UTE_UNIT_UNDECLARED',
+        detail: 'the row has no non-empty `unit.familyId`; without a declared unit the family cannot be graded (a row without a unit is not conservatively small, it is ungradable)',
+      }],
+    }
+  }
+
+  let book
+  if (census !== undefined && census !== null) {
+    book = census
+  } else {
+    if (!isTracked(root, CENSUS_REL)) {
+      return {
+        members: [],
+        findings: [{
+          code: 'UTE_UNIT_UNGRADABLE',
+          detail: `${CENSUS_REL} is not a committed file, so the retirement unit cannot be derived (fail closed: an unbooked unit is not a smaller unit)`,
+        }],
+      }
+    }
+    try {
+      book = readFile(join(root, CENSUS_REL))
+    } catch (e) {
+      return {
+        members: [],
+        findings: [{ code: 'UTE_UNIT_UNGRADABLE', detail: `${CENSUS_REL} could not be read: ${String(e && e.message ? e.message : e)}` }],
+      }
+    }
+  }
+  if (typeof book === 'string') {
+    try {
+      book = JSON.parse(book)
+    } catch (e) {
+      return {
+        members: [],
+        findings: [{ code: 'UTE_UNIT_UNGRADABLE', detail: `${CENSUS_REL} is not JSON: ${String(e && e.message ? e.message : e)}` }],
+      }
+    }
+  }
+  if (book === null || typeof book !== 'object' || !Array.isArray(book.families)) {
+    return {
+      members: [],
+      findings: [{ code: 'UTE_UNIT_UNGRADABLE', detail: `${CENSUS_REL} is not an object with a \`families\` array, so no unit can be derived` }],
+    }
+  }
+
+  const entry = book.families.find((f) => f !== null && typeof f === 'object' && f.familyId === familyId)
+  if (entry === undefined) {
+    const known = book.families.map((f) => f?.familyId).filter((id) => typeof id === 'string')
+    return {
+      members: [],
+      findings: [{
+        code: 'UTE_UNIT_UNKNOWN_FAMILY',
+        detail: `unit.familyId ${JSON.stringify(familyId)} is not booked in ${CENSUS_REL} (known: ${known.join(', ') || 'none'})`,
+      }],
+    }
+  }
+
+  const nativeNames = entry.nativeNames
+  if (!Array.isArray(nativeNames) || nativeNames.length === 0 || !nativeNames.every((n) => typeof n === 'string')) {
+    return {
+      members: [],
+      findings: [{
+        code: 'UTE_UNIT_UNGRADABLE',
+        detail: `${CENSUS_REL} books family ${JSON.stringify(familyId)} without a non-empty string array \`nativeNames\`, so its unit cannot be derived`,
+      }],
+    }
+  }
+  const members = []
+  for (const raw of nativeNames) {
+    const name = raw.replace(/^\(bound-definition\)\s+/, '').trim()
+    if (name.length === 0) continue
+    if (!members.includes(name)) members.push(name) // census order, deduplicated
+  }
+  if (members.length === 0) {
+    return {
+      members: [],
+      findings: [{
+        code: 'UTE_UNIT_UNGRADABLE',
+        detail: `${CENSUS_REL} books family ${JSON.stringify(familyId)} with no usable member names after stripping the \`(bound-definition)\` prefix`,
+      }],
+    }
+  }
+
+  if (row.unit.members !== undefined) {
+    const declared = row.unit.members
+    if (!Array.isArray(declared) || !declared.every((m) => typeof m === 'string' && m.length > 0)) {
+      findings.push({
+        code: 'UTE_UNIT_UNGRADABLE',
+        detail: `unit.members must be an array of non-empty strings when present; it is ${JSON.stringify(declared)} — the declared unit cannot be compared to the census unit`,
+      })
+    } else {
+      const declaredUnique = [...new Set(declared)]
+      const missing = members.filter((m) => !declaredUnique.includes(m))
+      const extra = declaredUnique.filter((m) => !members.includes(m))
+      if (missing.length > 0) {
+        findings.push({
+          code: 'UTE_UNIT_UNDERCLAIMED',
+          detail: `unit.members omits ${missing.map((m) => JSON.stringify(m)).join(', ')}; the census unit for ${JSON.stringify(familyId)} is ${members.map((m) => JSON.stringify(m)).join(', ')} — a family retires as its whole assembly, not as the tools a corpus happened to cover`,
+        })
+      }
+      if (extra.length > 0) {
+        findings.push({
+          code: 'UTE_UNIT_OVERCLAIMED',
+          detail: `unit.members adds ${extra.map((m) => JSON.stringify(m)).join(', ')} that the census does not book for ${JSON.stringify(familyId)} — editing the ledger is not a unit split`,
+        })
+      }
+    }
+  }
+
+  return { members, findings }
+}
+
+/**
+ * Parse the old-path baseline record as a TSV. The `id` column names a vector;
+ * the `entry` column names the tool that produced the observed effect. Coverage
+ * is derived from these measured columns, never from a sentence in the ledger.
+ *
+ * @returns {{vectors: Array<{id: string, entry: string}>} | {error: string}}
+ */
+export function parseBaselineTsv(text) {
+  const lines = String(text).split(/\r?\n/)
+  let header = null
+  let headerLine = -1
+  for (let i = 0; i < lines.length; i += 1) {
+    if (lines[i].trim() === '') continue
+    header = lines[i].split('\t').map((cell) => cell.trim())
+    headerLine = i
+    break
+  }
+  if (header === null) return { error: 'the baseline file is empty (no header row)' }
+  const idIndex = header.indexOf('id')
+  const entryIndex = header.indexOf('entry')
+  if (idIndex < 0 || entryIndex < 0) {
+    return { error: `the header needs exact \`id\` and \`entry\` columns, got ${header.map((h) => JSON.stringify(h)).join(', ')}` }
+  }
+  const vectors = []
+  for (let i = headerLine + 1; i < lines.length; i += 1) {
+    if (lines[i].trim() === '') continue
+    const cells = lines[i].split('\t')
+    if (cells.length < header.length) {
+      return { error: `data row ${String(i + 1)} has ${String(cells.length)} column(s) but the header has ${String(header.length)}; refusing to guess which member a short row measured` }
+    }
+    vectors.push({ id: cells[idIndex].trim(), entry: cells[entryIndex].trim() })
+  }
+  return { vectors }
+}
+
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Read a repo-relative evidence file for coverage; absent/unreadable text is empty. */
+function readCoverageText(rel, root, readFile, isTracked) {
+  if (!safeRelPath(rel)) return { rel, text: '', problem: `evidence path ${JSON.stringify(rel)} is not repo-relative` }
+  // Coverage is derived from COMMITTED artifacts only: an untracked file can be
+  // edited freely, so it cannot establish which members the corpus measured.
+  if (!isTracked(root, rel)) return { rel, text: '', problem: `${rel} is not a committed file` }
+  try {
+    return { rel, text: readFile(join(root, rel)), problem: null }
+  } catch (e) {
+    return { rel, text: '', problem: `${rel} could not be read: ${String(e && e.message ? e.message : e)}` }
+  }
+}
+
+/**
+ * Derive unit coverage from the artifacts themselves (RETIREMENT.md §2):
+ *   - every member has at least one baseline vector (`entry` column);
+ *   - every baseline vector id appears as `NEW-PATH-VECTOR <id> PASS`;
+ *   - every covered member has its own `NC-MEMBER <member>` control line.
+ *
+ * The returned findings carry the `term` they invalidate, so `evaluateFamily`
+ * can make that term NOT established. A failed coverage check is not a warning:
+ * a term whose unit was never measured is not evidence about the unit.
+ *
+ * @returns {{findings: Array<{code: string, term: string, detail: string}>,
+ *            coverage: {oldBaseline: string[], newPathVerified: string[], negativeControlsPass: string[]}}}
+ */
+export function checkUnitCoverage({ members, row, root = ROOT, readFile = (p) => readFileSync(p, 'utf8'), isTracked = defaultIsTracked }) {
+  const findings = []
+  const coverage = { oldBaseline: [], newPathVerified: [], negativeControlsPass: [] }
+  const baselinePointer = row?.terms?.oldBaseline?.evidence?.path
+  const baseline = readCoverageText(baselinePointer, root, readFile, isTracked)
+  if (baseline.problem !== null) {
+    return {
+      findings: [{
+        code: 'UTE_UNIT_UNGRADABLE',
+        term: 'oldBaseline',
+        detail: `${baseline.problem} — the baseline record cannot be parsed, so unit coverage cannot be derived (refusing to guess)`,
+      }],
+      coverage,
+    }
+  }
+  const parsed = parseBaselineTsv(baseline.text)
+  if (parsed.error !== undefined) {
+    return {
+      findings: [{
+        code: 'UTE_UNIT_UNGRADABLE',
+        term: 'oldBaseline',
+        detail: `${baseline.rel}: ${parsed.error}`,
+      }],
+      coverage,
+    }
+  }
+  const vectors = parsed.vectors
+  const baselineEntries = new Set(vectors.map((v) => v.entry))
+  for (const member of members) {
+    if (baselineEntries.has(member)) coverage.oldBaseline.push(member)
+    else {
+      findings.push({
+        code: 'UTE_MEMBER_UNCOVERED',
+        term: 'oldBaseline',
+        detail: `member ${JSON.stringify(member)} has no baseline vector: ${baseline.rel} has no \`entry\` value ${JSON.stringify(member)} (entries: ${[...baselineEntries].map((e) => JSON.stringify(e)).join(', ') || 'none'})`,
+      })
+    }
+  }
+
+  // New path: the prototype's own transcript must reproduce every baseline
+  // vector. A `GREEN vectors=10` summary is not enough — the ids are checked.
+  const newPointer = row?.terms?.newPathVerified?.evidence?.path
+  const newPath = readCoverageText(newPointer, root, readFile, isTracked)
+  const reproduced = new Set()
+  for (const vector of vectors) {
+    if (vector.id.length === 0) {
+      findings.push({
+        code: 'UTE_UNIT_UNGRADABLE',
+        term: 'newPathVerified',
+        detail: `${baseline.rel}: a baseline vector has an empty \`id\`, so the new path cannot be asked to reproduce it`,
+      })
+      continue
+    }
+    const token = `NEW-PATH-VECTOR ${vector.id} PASS`
+    if (newPath.text.includes(token)) reproduced.add(vector.id)
+    else {
+      findings.push({
+        code: 'UTE_VECTOR_UNREPRODUCED',
+        term: 'newPathVerified',
+        detail: `vector ${JSON.stringify(vector.id)} is not reproduced: ${newPath.rel} does not contain ${JSON.stringify(token)}`,
+      })
+    }
+  }
+  for (const member of members) {
+    const mine = vectors.filter((v) => v.entry === member)
+    if (mine.some((v) => reproduced.has(v.id))) coverage.newPathVerified.push(member)
+    else {
+      // A member with NO baseline vector is also uncovered on this axis: it has
+      // nothing to reproduce, which is exactly the FS `read_image` state that
+      // the external review found hidden behind a green "vectors=10" summary
+      // (RETIREMENT.md §6). "Not measured" is refused, never skipped.
+      findings.push({
+        code: 'UTE_MEMBER_UNCOVERED',
+        term: 'newPathVerified',
+        detail: mine.length === 0
+          ? `member ${JSON.stringify(member)} has no baseline vector to reproduce, so ${newPath.rel || 'the new-path evidence'} cannot have verified it`
+          : `member ${JSON.stringify(member)} has baseline vector(s) ${mine.map((v) => JSON.stringify(v.id)).join(', ')} but none is reproduced by ${newPath.rel || 'the new-path evidence'}`,
+      })
+    }
+  }
+
+  // Negative controls: a family-level `NC-VERDICT GREEN controls=4` proves the
+  // harness bites somewhere, not that it bites each member. The FS corpus has
+  // four family-level controls and none for a member, which is why FS is
+  // refused for this axis even after read/write/edit are covered.
+  const ncPointer = row?.terms?.negativeControlsPass?.evidence?.path
+  const nc = readCoverageText(ncPointer, root, readFile, isTracked)
+  for (const member of members) {
+    if (!vectors.some((v) => v.entry === member)) continue
+    const token = new RegExp(`(?:^|\\s)NC-MEMBER\\s+${escapeRegExp(member)}(?=\\s|$)`, 'm')
+    if (token.test(nc.text)) coverage.negativeControlsPass.push(member)
+    else {
+      findings.push({
+        code: 'UTE_MEMBER_UNCOVERED',
+        term: 'negativeControlsPass',
+        detail: `member ${JSON.stringify(member)} has baseline evidence but ${nc.rel || 'the negative-control evidence'} contains no \`NC-MEMBER ${member}\` control line`,
+      })
+    }
+  }
+
+  return { findings, coverage }
+}
+
+/** Is every retirement-blocking difference covered by a named, bound approval? */
 function evaluateDifferences(term, context) {
   const findings = []
   const differences = Array.isArray(term.differences) ? term.differences : null
@@ -248,6 +631,29 @@ function evaluateDifferences(term, context) {
     if (recordProblem !== null) {
       findings.push({ ...recordProblem, detail: `blocking difference ${diff.id}: approval record — ${recordProblem.detail}` })
       established = false
+    }
+    // P4b (RETIREMENT.md §3): a name in a committed file proves transcription,
+    // not authority. The approval must name a PR and a merge commit that exists
+    // here AND is already an ancestor of the graded HEAD.
+    const reference = approval.reference
+    const match = typeof reference === 'string' ? APPROVAL_REFERENCE.exec(reference) : null
+    if (match === null) {
+      findings.push({
+        code: 'UTE_APPROVAL_UNREFERENCED',
+        detail: `blocking difference ${diff.id}: approval.reference is absent or not \`PR #<n> @ <40-hex>\` (got ${JSON.stringify(reference)}) — a transcribed name is not a bound approval`,
+      })
+      established = false
+    } else {
+      const sha = match[1]
+      const exists = context.revExists(context.root, sha)
+      const ancestor = exists && context.isAncestor(context.root, sha)
+      if (!exists || !ancestor) {
+        findings.push({
+          code: 'UTE_APPROVAL_UNREFERENCED',
+          detail: `blocking difference ${diff.id}: approval reference commit ${sha} ${exists ? 'is not an ancestor of HEAD' : 'does not exist in this repository'} — the approval is not traceable to a merged act`,
+        })
+        established = false
+      }
     }
   }
   // An explicit `verdict:false` must not be overridden by an empty difference
@@ -301,8 +707,47 @@ export function checkTerm({ name, term, context }) {
   return { established, findings }
 }
 
+/**
+ * The deletion half of the gate (RETIREMENT.md §5.1): a declared old-path file
+ * that is gone while the row is not allowed is retirement happening without a
+ * licence. When the row IS allowed the same absence is expected, not a finding.
+ */
+export function checkOldPathPresence({ row, allowed, root = ROOT, fileExists = existsSync, isTracked = defaultIsTracked }) {
+  const files = row?.oldPath?.files
+  if (!Array.isArray(files) || files.length === 0 || !files.every(safeRelPath)) {
+    return {
+      findings: [{
+        code: 'UTE_OLD_PATH_UNDECLARED',
+        detail: 'oldPath.files must be a non-empty array of repo-relative paths; an undeclared old path makes early deletion invisible, so it is refused',
+      }],
+    }
+  }
+  const missing = []
+  for (const rel of new Set(files)) {
+    if (!fileExists(join(root, rel)) || !isTracked(root, rel)) missing.push(rel)
+  }
+  if (missing.length > 0 && !allowed) {
+    return {
+      findings: [{
+        code: 'UTE_OLD_PATH_PARTIALLY_REMOVED',
+        detail: `declared old-path file(s) ${missing.map((p) => JSON.stringify(p)).join(', ')} are gone or untracked while the row is not allowed — deleting the implementation before the gate allows is the UTE-4 act run backwards`,
+      }],
+    }
+  }
+  return { findings: [] }
+}
+
 /** Grade one family row. Returns a verdict computed from the terms. */
-export function evaluateFamily({ family, ledger, root = ROOT, readFile, isTracked = defaultIsTracked }) {
+export function evaluateFamily({
+  family,
+  ledger,
+  root = ROOT,
+  readFile,
+  isTracked = defaultIsTracked,
+  fileExists = existsSync,
+  revExists = defaultRevExists,
+  isAncestor = defaultIsAncestor,
+}) {
   const findings = []
   const families = Array.isArray(ledger?.families) ? ledger.families : []
   const row = families.find((f) => f !== null && typeof f === 'object' && f.family === family)
@@ -311,19 +756,42 @@ export function evaluateFamily({ family, ledger, root = ROOT, readFile, isTracke
       family,
       allowed: false,
       state: null,
+      terms: null,
+      unit: null,
+      coverage: null,
       findings: [{ code: 'UTE_LEDGER_UNKNOWN_FAMILY', detail: `the ledger has no row for family ${JSON.stringify(family)} (known: ${families.map((f) => f?.family).filter(Boolean).join(', ') || 'none'})` }],
     }
   }
 
-  const context = { root, readFile, isTracked }
-  let allEstablished = true
+  const context = { root, readFile, isTracked, revExists, isAncestor }
+
+  // The unit is resolved from the census, not from the row. A row without a
+  // gradable unit cannot establish any term (unit coverage is a precondition).
+  const resolved = resolveUnit({ row, root, readFile, isTracked })
+  findings.push(...resolved.findings.map((f) => ({ ...f, term: 'unit' })))
+  const members = resolved.members
+  const unitGradable = resolved.findings.length === 0 && members.length > 0
+
+  const establishedByTerm = {}
   for (const name of TERMS) {
     const term = row.terms !== null && typeof row.terms === 'object' ? row.terms[name] : undefined
     const graded = checkTerm({ name, term, context })
-    if (!graded.established) allEstablished = false
+    establishedByTerm[name] = graded.established
     findings.push(...graded.findings.map((f) => ({ ...f, term: name })))
   }
 
+  let coverage = { oldBaseline: [], newPathVerified: [], negativeControlsPass: [] }
+  if (unitGradable) {
+    const gradedCoverage = checkUnitCoverage({ members, row, root, readFile, isTracked })
+    coverage = gradedCoverage.coverage
+    for (const finding of gradedCoverage.findings) {
+      // A term whose unit was never measured cannot count toward `allowed`.
+      if (TERMS.includes(finding.term)) establishedByTerm[finding.term] = false
+    }
+    findings.push(...gradedCoverage.findings)
+  }
+
+  const allEstablished = unitGradable && TERMS.every((name) => establishedByTerm[name] === true)
   const state = typeof row.state === 'string' ? row.state : null
   if (state === null || !STATES.includes(state)) {
     findings.push({ code: 'UTE_STATE_CONTRADICTED', detail: `state ${JSON.stringify(row.state)} is not one of ${STATES.join('|')}; the row cannot be graded` })
@@ -339,8 +807,24 @@ export function evaluateFamily({ family, ledger, root = ROOT, readFile, isTracke
     })
   }
 
-  const allowed = allEstablished && state === PASS_STATE && findings.length === 0
-  return { family, allowed, state, findings }
+  const prelimAllowed = allEstablished && state === PASS_STATE && findings.length === 0
+  const oldPath = checkOldPathPresence({ row, allowed: prelimAllowed, root, fileExists, isTracked })
+  findings.push(...oldPath.findings.map((f) => ({ ...f, term: 'oldPath' })))
+
+  const allowed = prelimAllowed && oldPath.findings.length === 0
+  return {
+    family,
+    allowed,
+    state,
+    terms: establishedByTerm,
+    unit: {
+      familyId: typeof row.unit?.familyId === 'string' ? row.unit.familyId : null,
+      members,
+      declared: Array.isArray(row.unit?.members) ? row.unit.members : null,
+    },
+    coverage,
+    findings,
+  }
 }
 
 /** Load + shape-check the ledger. Returns `{ledger}` or `{refused}` (exit 2). */
@@ -381,6 +865,9 @@ export function loadLedger({ root = ROOT, ledger } = {}) {
       return { refused: 'UTE_LEDGER_SCHEMA', detail: `duplicate family row ${JSON.stringify(row.family)} — one row per family` }
     }
     seen.add(row.family)
+    // A missing `unit` / `oldPath` block is NOT a schema failure: it is a graded
+    // refusal (exit 1, UTE_UNIT_UNDECLARED / UTE_OLD_PATH_UNDECLARED). Only a
+    // ledger that cannot be graded at all is exit 2.
   }
   return { ledger: parsed }
 }
@@ -389,12 +876,21 @@ export function loadLedger({ root = ROOT, ledger } = {}) {
  * Grade one family (thin wrapper over load + evaluate) — the exported entry the
  * test suite drives with an in-memory ledger.
  */
-export function checkRetirement({ ledger, family, root = ROOT, readFile, isTracked = defaultIsTracked }) {
+export function checkRetirement({
+  ledger,
+  family,
+  root = ROOT,
+  readFile,
+  isTracked = defaultIsTracked,
+  fileExists = existsSync,
+  revExists = defaultRevExists,
+  isAncestor = defaultIsAncestor,
+}) {
   const loaded = loadLedger({ root, ledger })
   if (loaded.refused !== undefined) {
     return { allowed: false, couldNotGrade: loaded.refused, detail: loaded.detail, findings: [{ code: loaded.refused, detail: loaded.detail }] }
   }
-  return evaluateFamily({ family, ledger: loaded.ledger, root, readFile, isTracked })
+  return evaluateFamily({ family, ledger: loaded.ledger, root, readFile, isTracked, fileExists, revExists, isAncestor })
 }
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
@@ -414,13 +910,32 @@ function parseArgv(argv) {
   return out
 }
 
+/** `<members with baseline+reproduction+NC>/<census members>` — the allow-line unit fact. */
+function unitFact(verdict) {
+  const members = Array.isArray(verdict?.unit?.members) ? verdict.unit.members : []
+  const coverage = verdict?.coverage ?? {}
+  const covered = members.filter((m) =>
+    (coverage.oldBaseline ?? []).includes(m)
+    && (coverage.newPathVerified ?? []).includes(m)
+    && (coverage.negativeControlsPass ?? []).includes(m))
+  return { covered, total: members.length, text: `${String(covered.length)}/${String(members.length)}` }
+}
+
+function coveragePayload(verdict) {
+  return {
+    oldBaseline: verdict?.coverage?.oldBaseline ?? [],
+    newPathVerified: verdict?.coverage?.newPathVerified ?? [],
+    negativeControlsPass: verdict?.coverage?.negativeControlsPass ?? [],
+  }
+}
+
 function main(argv) {
   const args = parseArgv(argv)
   if (args.error !== undefined) {
     console.error(`UTE-RETIREMENT-REFUSED code=UTE_LEDGER_SCHEMA detail=${JSON.stringify(args.error)}`)
     return 2
   }
-  const root = args.ledger === null ? ROOT : ROOT
+  const root = ROOT
   const loaded = args.ledger === null
     ? loadLedger({ root })
     : (() => {
@@ -453,12 +968,13 @@ function main(argv) {
   if (!args.json) {
     console.log(`UTE-RETIREMENT-GATE ledger=${args.ledger ?? LEDGER_REL} schema=${LEDGER_SCHEMA} families=${families.length}`)
     for (const v of verdicts) {
+      const unit = unitFact(v)
       if (v.allowed) {
-        console.log(`UTE-RETIREMENT-ALLOW family=${v.family} terms=4/4 state=${PASS_STATE}`)
+        console.log(`UTE-RETIREMENT-ALLOW family=${v.family} terms=4/4 unit=${unit.text} state=${PASS_STATE}`)
         continue
       }
       const codes = [...new Set(v.findings.map((f) => f.code))]
-      console.log(`UTE-RETIREMENT-REFUSED family=${v.family} codes=${codes.join(',')} state=${v.state}`)
+      console.log(`UTE-RETIREMENT-REFUSED family=${v.family} codes=${codes.join(',')} state=${v.state} unit=${unit.text}`)
       for (const f of v.findings) {
         console.log(`  UTE-RETIREMENT-FINDING code=${f.code}${f.term ? ` term=${f.term}` : ''} detail=${JSON.stringify(f.detail)}`)
       }
@@ -475,6 +991,21 @@ function main(argv) {
         state: v.state,
         codes: [...new Set(v.findings.map((f) => f.code))],
         findings: v.findings,
+        terms: v.terms,
+        unit: v.unit,
+        coverage: coveragePayload(v),
+      })),
+      // Additive machine view: every requested row (allowed ones included) with
+      // the derived unit and coverage sets, so a consumer does not have to
+      // re-run the gate to learn what was measured.
+      verdicts: verdicts.map((v) => ({
+        family: v.family,
+        allowed: v.allowed,
+        state: v.state,
+        terms: v.terms,
+        unit: v.unit,
+        coverage: coveragePayload(v),
+        codes: [...new Set(v.findings.map((f) => f.code))],
       })),
     }
     console.log(JSON.stringify(payload, null, 2))

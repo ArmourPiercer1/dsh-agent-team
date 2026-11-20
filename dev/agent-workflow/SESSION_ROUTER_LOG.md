@@ -9207,3 +9207,27 @@ export interface AbortSignalLike {
 **边界（UNKNOWN 保留）**：`drained` 只覆盖 binding 准入的 promise 型操作；流（stream 迭代器交出后）、watch 注册、以及 binding 未准入的效果不在计数内——这正是"收据是 binding 的证据、不是 OS 效果没发生的证明"的含义。排空超时后的强制终止仍由 host/lifecycle owner 负责；本 PR 不实现进程级 kill。
 
 **其它**：`AbortSignalLike` 与 production-compile-face 回归测试**未动**；`pnpm run build` 重建的 tracked 安装面（`packages/runtime/dist/packages/tools/src/native-fs-binding.*` 4 个文件）随源码同 commit 提交，`DSH-ARTIFACT-VERDICT … verdict=ok`。lane argv / manifest / 新 leg 未改；hosted rc.5 leg 仍待协调者 L2 实测（套件继续跑在 build 之后的 census leg，无 pre-build 导入）。
+## 2026-11-20 — UTE-0 rev2：退役单位由 census 派生 + 覆盖由实测产物派生 + 批准绑定提交 + 删除由必需 CI 发牌
+
+**背景**：owner 让本轮按外部审查（`docs/reviews/20261120-1700.txt`，已随本 PR tracked）调整开发。审查对 UTE-0/1/2 的四个高优先级发现，本条只处理**合同与机器门禁**这一半（UTE-1/UTE-2 的模块修复各在 #796/#795）：①FS 的退役单位是**不可拆的四工具装配**（`packages/tools/families/fs.mjs` 的 `claims` 返回 `read/write/edit/read_image`，部分装配直接 `PLANE_FS_FAMILY_INCOMPLETE`），而 10 条 golden vector 的 `entry` 只有 `write/read/edit`，`read_image` 从未被验证；原门禁的三项 `true` 只差一项 owner 批准就能放行整个 FS 家族。②S1/S2 的包含关系写错：S2（模型看到结果前持久化）**不**蕴含 S1（每次派发都有可查询事实），反例是"派发→产生副作用→SIGKILL→没有返回"，S2 的"返回前"从未被执行。③批准只要求记录里出现 `approval.by` 的名字，无法证明批准由有权者作出。④原门禁只在开发者主动运行时检查，删除旧路径不会触发它。
+
+**分支/基线**：`task/ute0-rev2-20261120`，worktree `.worktrees/ute0-rev2-20261120`，base `origin/master 06de9751a`。memo 仍是 `docs/plans/memo/ute-g1-20261120/`（README/CONTRACT/RETIREMENT 修订版）；证据 `dev/agent-workflow/evidence/ute0-rev2-20261120/`。
+
+**合同修订（每条带标记，提案不冒充裁决）**：
+- **CONTRACT §3 重写**：`ExecutionSettlementStore`（持久化/状态机/恢复，方法名可演进）与 `ExecutionSettlementWriter`（**冻结**四方法 `record`/`read`/`listUnsettled`/`projectControlResult`，store 之上的薄适配器）分开，并写明"只交 store 不交适配器＝没实现 §3"；`record` 明确"至多一条终态事实、非终态只能沿状态机推进"；`projectControlResult` 明确是**只读投影**、不写 ControlService 行、不消费 Grant、不伪造 `requestId`。新增 §3.2 排序律：`recordAdmission` 必须 fsync（含父目录）返回后才允许派发，崩溃窗口表逐条给恢复答案；S1 = 有副作用可能者必有耐久意图且恢复后必为 settled 或显式 unknown，S2 = S1 ∧ 模型可见前提交，故 S2⇒S1 而 S1⇏S2。新增 §3.3 单写者前提（每 root 一个活写者、pid+boot-id 锁、活的外来写者拒绝、死锁主带证据回收、写序 temp→fsync file→rename→fsync 父目录）。W4/W6 改写，新增 W9–W12。
+- **RETIREMENT §1.1 新增**：退役单位＝整族装配，成员**从** `dev/agent-workflow/ledgers/arc-a-family-census.json`（`familyId`→`nativeNames`，本身受 ARC-A fitness 门保护）**派生**，账本只能声明 `unit.familyId`；少报 `UTE_UNIT_UNDERCLAIMED`、多报 `UTE_UNIT_OVERCLAIMED`、无 unit `UTE_UNIT_UNDECLARED`。拆分只在运行时证明可独立切换并由 census 记账后才成立。
+- **RETIREMENT §2 新增覆盖派生**：成员 × 旧基线（TSV 的 `entry` 列）× 新路径（`NEW-PATH-VECTOR <id> PASS` 逐 id）× 每成员负控（`NC-MEMBER <member>`）× oldPath 在场；全部来自**已提交实测产物**，不来自账本句子。
+- **RETIREMENT §3 增补**：批准必须**绑定提交**（`PR #<n> @ <40-hex>`，门校验该 40-hex 存在且是 HEAD 祖先），并明写门禁**不能**证明"具名者有权批准"——那是保护分支/PR review/CI 记录的职责，过称的门是更会营销的静默绿通道。
+- **RETIREMENT §5–§7 重写**：删除由必需 CI 发牌——`scripts/eb3-family-definitions.mjs`（既有 `ci-fast` leg，无需新 workflow/manifest/argv）对每个声明 `oldPath.files` 的族检查在场性，缺文件且该行未 allow → `DEF_RETIREMENT_UNLICENSED`（账本不可读同样 fail-closed）。§5.2 给闭集拒绝码词表（新增 `UTE_UNIT_*`、`UTE_MEMBER_UNCOVERED`、`UTE_VECTOR_UNREPRODUCED`、`UTE_APPROVAL_UNREFERENCED`、`UTE_OLD_PATH_UNDECLARED`、`UTE_OLD_PATH_PARTIALLY_REMOVED`、`UTE_UNIT_UNGRADABLE`）。README 增 M9–M11（四工具不可拆装配 / census 已记账成员 / FS 语料无 read_image）、P7–P10（单位派生 / 覆盖派生 / 批准绑定 / 删除发牌）、§2.4 本轮工作围栏（暂停生产接线与 UTE-4 删除，允许隔离 PoC 与基线建设）。
+
+**机器门禁（实测，verbatim 在证据目录）**：
+- `node --test scripts/ute-retirement-gate.test.mjs` → `tests 31 / pass 31 / fail 0`；`UTE-RETIREMENT-GATE-MUTANTS total=14 red=14`（14 条真实变异各自让具名控制转红，无手写 pass）。
+- `node scripts/eb3-ci-negative-controls.mjs` → **35/35**（原 33/33；新增 C3b 删除未发牌→精确 `DEF_RETIREMENT_UNLICENSED`、C3c 同一删除在该行 allowed 时不报，证明检查非空转）。
+- `node scripts/eb3-family-definitions.mjs` → `EB3-FAMILY-DEFINITIONS pass files=30 findings=0`（当前树无旧路径缺失，故不误报）。
+- `node scripts/ute-retirement-gate.mjs --all` → 拒绝 `fs`：`codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/4`，逐条 finding 点名 `read_image` 无基线向量、无新路径向量、`read/write/edit` 无 `NC-MEMBER` 行；`summary requested=1 allowed=0 refused=1`，exit 1。
+- 合成 fully-covered + 绑定批准的 fixture 经真实 CLI 允许（`scripts/fixtures/ute-retirement-selftest/`，明标**不是**退役行），否则上面所有拒绝都是空转。
+- `node scripts/docs-sync.mjs --check` → `findings=0 blocking=0`。
+
+**未触碰**：`.github/workflows/**`、`dev/ci/eb3-ci-manifest.json`（不加 leg、不改 argv）、`packages/**`、`tests/ute-g1-fs/**`、`AGENTS.md`／`docs/ROUTER_RULES.md`／任何 active plan、`dev/engineering/**`、PR #765 分支（只评论）。**未合并**；本 PR 与 #795/#796 的合并顺序由协调者按各 PR 的 hosted 绿决定。
+
+**UNKNOWN（明写）**：每族完整 `oldPath.files` 清单只对 FS 声明，其余族待 UTE-3 盘点；门禁证明证据/单位覆盖/批准绑提交，不证明具名批准者有权（保护分支与 review 记录承担）；多进程结算仍是 G1 之外的部署假设；#765 章节内的陈旧阈值（`--max-uncollected 48`/`--max-excluded 9`）与 S1/S2 旧表述只能由 #765 分支修订，本 PR 不动它，改以评论列出待改点。
