@@ -9388,3 +9388,38 @@ export interface AbortSignalLike {
 **明写的限制（不是 PASS）**：① 仅 PROTOTYPE 路径，不是 live boot，不证明 read confinement（`CLAIM_NOT_OBSERVABLE`），不是安全判决；② `scripts/check-append-only-log.mjs` 尚在未合并 PR #805，base 无此文件，用其 worktree 的同名脚本对本分支实测 `verdict=pass ... unchanged`，本 PR 未改日志字节（本条目为唯一追加）；③ 产品模块 `packages/tools/src/native-fs-binding.ts` 仍不支持 `read_image`，图片覆盖仅原型 lane；④ hosted CI 未宣称已绿；⑤ 无 typed code 的新路径拒绝按已观测 class 归类，本语料所有拒绝均有 code 或映射 class。
 
 **未触碰**：`packages/**`、其他 family、`docs/plans/active/**`、`arc-a-family-census.json`、`dev/engineering/**`、`git push master/stable`、force-push、merge。
+
+## 2026-11-20 — UTE-3 阶段板：FS 四项判据中三项已实测成立，仅剩 owner 签名（另有 4 个 PR 落地 + 1 个持久性 test-infra 缺陷）
+
+**本条目是快照，不是判定**。权威仍是 `dev/agent-workflow/ledgers/ute-retirement.json` 经 `scripts/ute-retirement-gate.mjs` 的判定；本条目只记录到今天为止**实测到的落点**与**还没做的事**。
+
+### 今天落地的四个 PR（全部 hosted `ci-required` 绿后 squash 合并）
+- **#802**（route-C `read_image` 修复）：`mount.ts` 让被路由的模块把自己**声明**的 `fs` 交给它延迟创建的子作用域；未声明 `fs` 的模块字节不变。产品路径上一个工具从"不可达"变为"可达且受管"，属于**修复**不是路由切换，PD-5 在 owner 文件里仍 OPEN。
+- **#804**（settlement 驱动）：`createSettlementObservingDefinition` 用真实定义调用链驱动持久 store；**未接生产**（`UTE3-NOT-WIRED production-imports=0`），5/5 变异转红，SIGKILL → UNKNOWN。
+- **#805**（`append-only-log` leg）：新增 pr-gate leg，判据 = base 版本字节必须是 head 的**精确前缀**。今天两次 squash 把日志覆盖成只剩自己条目（9276→26、→48），`state-freshness` 只看最新标题所以全绿放过；这个 leg 把"只追加"从愿望变成可检。实测：日志截到 50 行 → `verdict=fail … 9261 base line(s) missing`；恢复 → 绿。
+- **#806**（Search B1）：组合探针先测——`grep`/`glob` 在产品 route-C 上**可达且落在受限 provider**（`providerCalls=1`），legacy governed plane 拒绝原生名；15 向量基线 + 8 条负控绿。
+- **#807**（FS B2）：新路径**复现全部 16 向量**，`newPathPending` 通道被删除（**存在即失败**）；镜像摘要改为对"从已提交 store 读回的字节"计算，0/>1 附件直接抛。
+
+### 阶段板（master `60dfe5e03`，gate 原样输出）
+```
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4
+UTE-RETIREMENT-REFUSED family=search codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/2
+UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
+```
+即：**FS 的 oldBaseline / newPathVerified / negativeControlsPass 三项全部成立（4/4），唯一阻挡是两条 blocking 语义差异缺 owner 引用式签名**。这不是工程项——gate 明确拒绝让"沉默"充当 `SemanticDifferencesResolved`。版式化矩阵 = `docs/plans/memo/ute-g1-20261120/PROGRESS-2026-11-20.md`。
+
+### 新发现（必须记住的测试基础设施缺陷）
+`tests/deepseek-harness-next` 曾被**提交为符号链接**（该路径供本地运行，`.gitignore` 只覆盖了 `test-use/`）。CI 检出后 `provision-next-host.mjs` 无法往该路径 clone，两个 PR 的 census 连续三次死于 `fatal: could not create work tree dir … File exists`。修法：`git rm --cached` + 补 `.gitignore`；**教训是检查要在 git tree 而不是 index 上做**——第一次修完后一次 merge 又把工作区符号链接重新 staged 了，因此校验语句是 `git ls-tree -r --name-only HEAD | grep -c '^tests/deepseek-harness'` 必须为 0，且**每次 merge 后都要重验**。
+
+### 仍为 UNKNOWN（不得升级）
+1. FS 读隔离仍 `CLAIM_NOT_OBSERVABLE`：拒绝记录只能证明"拒绝发生 / 秘密不在 / 树未变"，不能证明"没有发生未授权读"。
+2. 镜像向量只在**原型 lane** 被覆盖；产品模块 `native-fs-binding.ts` 仍是 read/write/edit 十向量声明。
+3. 新路径**无 live boot**。
+4. Search 的 `SD-SEARCH-1` 是**产品行为缺陷**（无 path 的 `grep` 在产品路径返回 0 命中：宿主模块省了 path 操作数，子进程 stdin 是可读 socket），**已记录未修**；修它是产品变更，需要独立基线移动。
+5. 基线是在一个刚合并的修复之上采集的（FS 16 向量重基线在 #802 之后）——**是否可接受是 owner 裁决**，不是自证。
+
+### 下一步（并发 lane）
+- Search B2：新路径复现 15 向量（含把 `SD-SEARCH-1` 差异钉成具名分歧），`newPathVerified` 由实测决定。
+- Web B1：先做组合探针（可达性 + **零真实网络**证明），再决定是否采基线。
+- 之后：Process/PTY、PTC、inspect、agent-control、ui、agent-state 依次同法。
+- 最终一次**合并发布请求**（迁移/退役矩阵、切换与回滚计划、预计可删旧代码清单），在此之前不做任何真实切换或退役。

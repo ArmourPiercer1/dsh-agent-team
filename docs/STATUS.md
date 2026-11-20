@@ -1,5 +1,14 @@
 # STATUS — Team vNext 当前状态总览
 
+> **dated CURRENT 快照（2026-11-20，UTE-G1；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
+> **(1) 本期工作 = UTE G1「原生执行整合」的 UTE-3（逐族迁移）**，合同正本 = `docs/plans/memo/ute-g1-20261120/`（README / CONTRACT / RETIREMENT / INVENTORY / FS-ERROR-PROTOCOL），阶段板 = 同目录 `PROGRESS-2026-11-20.md`。**未做任何生产路径切换、未删除任何旧 ToolPlane/Family Body、未迁移 Authority、upstream 未改（CORE PATCH BUDGET = 0）。**
+> **(2) FS 族（read/write/edit/read_image，一个不可分的退役单元）四项判据里三项已实测成立**：旧路径 16 向量两次采集字节一致；新路径**复现全部 16 向量**且 `newPathPending` 通道已删除（存在即失败）；13 条负控含每个成员一条。gate 原样输出 `UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4`——**唯一阻挡物是两条 blocking 语义差异缺 owner 引用式签名**（gate 拒绝让沉默充当 `SemanticDifferencesResolved`）。
+> **(3) Search 族**：15 向量基线 + 8 条负控绿；组合探针证明 `grep`/`glob` 在产品 route-C 上可达且落在受限 provider（`providerCalls=1`），legacy governed plane 拒绝原生名。新路径尚未复现（`unit=0/2`）。其中 `SD-SEARCH-1` 是**产品行为缺陷**（无 path 的 `grep` 返回 0 命中），已记录未修。
+> **(4) 其余七族**（Process/Web/Inspect/agent-control/ui/agent-state/u6-probe）尚无基线。逐族退役是增量的：一族的绿不是另一族的证据。
+> **(5) 发布门位置（未变）**：**`release BLOCKED`**；`PREVIEW-GO` 不是发布门移动；无 `V@B`、无矩阵等级变更、无 `CANDIDATE-C2`。
+> **(6) 本期新增的一道门**：pr-gate 增加 `append-only-log` leg（base 版本字节必须是 head 的精确前缀）。起因是本日两次 squash 把只追加日志覆盖成只剩自己条目（9276→26→48 行）而 `state-freshness` 全绿放过。
+> **(7) 明写不成立**：读隔离仍 `CLAIM_NOT_OBSERVABLE`（拒绝记录证明"拒绝发生/秘密不在/树未变"，不证明"未发生未授权读"）；镜像向量只在原型 lane 覆盖；新路径无 live boot；基线是在刚合并的 route-C 修复之上采集，其可接受性是 owner 裁决。
+
 > **dated CURRENT 快照（2026-11-16，PREVIEW-GO；本段最新，其下各段照留为 dated 历史快照；权威 = `dev/agent-workflow/graph.yaml` + `SESSION_ROUTER_LOG.md`）**：
 > **(1) Alpha.5 Preview 已放行（`PREVIEW-GO`，判定日期 2026-11-15）**：判定正本 = `docs/plans/active/alpha5-sandbox-first/PREVIEW-READINESS-2026-11-15.md` §7.2，**对外语义冻结正本 = 同目录 `PREVIEW-CONTRACT-2026-11-16.md`**（版本/前置条件/承诺/不是/名册 34/归因三机制），依据 master `a2e0df3c9` 上的 `--boots 2` 一致对（`RESULT PASS`，各 19/19）。该判定只覆盖 **opt-in 受治 preset 的 Preview**。
 > **(2) 受治面上的名册是 36 个名字**（不是本段下方 2026-11-14 快照里的 40）：报告 §2 的四分类为 **受治 I/O 9 个 + `web_fetch`/`web_search` + Goal 三件套（不是 I/O ceiling 工具）+ `team_*` 控制面 + 2 个 World 夹具**；延期面 `workflow`/`subagent`/`subagent_fork`/`send_message`/`interrupt_agent`/`list_agents`/`ask_user_question` 在受治 Member 面上 **7/7 typed `unknown tool`、0 fact**（报告 §2）。**更正（2026-11-16，追加）**：36 个名字里**产品工具是 34 个**（10 受管 I/O + 5 同族 + `read_image` + 3 Goal + 15 `team_*`），另 **2 个是 World 注入的测试仪器**（`u5_canary`/`u6fs_probe`）；**用户可见产品工具数 = 34**，不得读成"产品有 36 个工具"（契约 `PREVIEW-CONTRACT-2026-11-16.md` §5.1）。
