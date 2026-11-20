@@ -1,0 +1,24 @@
+# UTE-2 round-3 crash-window transcript: durable admission BEFORE dispatch
+
+$ node --test --test-name-pattern "durable admission BEFORE dispatch" tests/ute2-settlement/settlement.test.mjs
+
+The child process is a REAL process. It imports the settlement modules, calls
+writer.record(admission-shaped fact) (which returns only after the record is
+renamed AND the parent directory is fsync'd), writes one marker line to fd 1,
+and then kills itself with SIGKILL before any dispatch could happen.
+
+Parent observation (verbatim from the suite run):
+UTE2-CRASH-WINDOW admission-returned=true sigkill=SIGKILL recovered=UNKNOWN never-absent=true never-completed=true
+✔ durable admission BEFORE dispatch: SIGKILL after recordAdmission returns still yields UNKNOWN, never absent/COMPLETED (83.311995ms)
+
+Cold reader (a fresh store over the same root, the restart path):
+  - writerLock.state = reclaimed (the dead writer lock is reclaimed, named line)
+  - read(executionId) is NOT undefined: dispatch=not-started, bodyOutcome=unknown
+  - listUnsettled(rootSessionId) = [executionId]   (S1 completeness sees the gap)
+  - recoverUnsettled -> before=ADMITTED after=UNKNOWN, with a recovery note
+  - listUnsettled(rootSessionId) = []              (the gap is closed by a fact)
+  - a late COMPLETED fact -> { recorded:false, reason:"SETTLEMENT_CONFLICT" }
+
+This is the S1 claim, and only S1: the record is durable before the caller may
+dispatch. S2 (commit before the model sees tool/result) is NOT claimed — there is
+no public awaitable Host seam for it (CORE_SEAM_BLOCKER, memo §9).

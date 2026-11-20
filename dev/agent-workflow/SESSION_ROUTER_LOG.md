@@ -9231,3 +9231,18 @@ export interface AbortSignalLike {
 **未触碰**：`.github/workflows/**`、`dev/ci/eb3-ci-manifest.json`（不加 leg、不改 argv）、`packages/**`、`tests/ute-g1-fs/**`、`AGENTS.md`／`docs/ROUTER_RULES.md`／任何 active plan、`dev/engineering/**`、PR #765 分支（只评论）。**未合并**；本 PR 与 #795/#796 的合并顺序由协调者按各 PR 的 hosted 绿决定。
 
 **UNKNOWN（明写）**：每族完整 `oldPath.files` 清单只对 FS 声明，其余族待 UTE-3 盘点；门禁证明证据/单位覆盖/批准绑提交，不证明具名批准者有权（保护分支与 review 记录承担）；多进程结算仍是 G1 之外的部署假设；#765 章节内的陈旧阈值（`--max-uncollected 48`/`--max-excluded 9`）与 S1/S2 旧表述只能由 #765 分支修订，本 PR 不动它，改以评论列出待改点。
+## 2026-11-20 — UTE-2 / G1-S3 Execution Settlement S1：一次物理执行一份规范事实（原型，未接线）
+
+**背景**：UTE G1「Native Execution Consolidation」工作包 3。S1 = 每个进入 `EXECUTION_DISPATCH_ENTERED` 的调用必须最终落成一条可查询事实（`EXECUTION_SETTLED` 终态，或显式 `EXECUTION_UNCONFIRMED`），按 `ExecutionId` 幂等，`unknown` 是合法终态，不是失败态、不是“没执行”，也不自动重试。本轮只交付**记录器**这一层，不接生产路径。
+
+**分支**：`task/ute2-settlement-20261120`（worktree `.worktrees/ute2-settlement-20261120`，base `origin/master ef7e3af00`）。memo = `docs/plans/memo/ute2-settlement-20261120/README.md`，逐字 transcript 在 `dev/agent-workflow/evidence/ute2-settlement-20261120/`。
+
+**交付**：`packages/runtime/settlement/execution-settlement.ts`（+ `index.ts`，公开导出 `@dsh-agent-team/runtime/settlement`；`tsconfig{,.build}.json` 只加 include，`package.json` 只加一条 exports）。状态机 `ADMITTED → RUNNING → {COMPLETED|FAILED|CANCELLED|UNKNOWN}`，`ADMITTED → {REFUSED|CANCELLED|UNKNOWN}`，终态不可再迁；转移按名拒绝（`ILLEGAL_TRANSITION`）。相同事实重复写 = `DUPLICATE_SETTLEMENT` no-op，不同事实 = `SETTLEMENT_CONFLICT`（无 last-writer-wins，写前后文件字节相等）。Stop 记录相位（`pre-dispatch`/`in-flight`/`post-completion`）且只记录不裁决；效果声称必须有观察（`EFFECT_CLAIM_WITHOUT_OBSERVATION`）；跨执行串线拒绝（`SETTLEMENT_CROSS_WIRED`）；准入引用不可变、必须 64-hex 摘要、`REFUSED` 必须引用 `deny`（`SETTLEMENT_ADMISSION_MISMATCH`），模块**不 import control、不提供任何 grant/deny/admit 形状函数**（结构测试钉死公开面）。`UNKNOWN` 必须带非空 `missingEvidence`，禁止 `none-confirmed`。持久化 = 规范 JSON + sha256 信封 + `O_EXCL` 临时文件 + `fsync` + 原子 `rename`，读侧复验 schema/校验和/状态链/归属，失败一律 `SETTLEMENT_CORRUPT`。
+
+**SIGKILL（真实，不是 seam）**：套件里 `spawnSync(node --input-type=module -e …)` 子进程 `recordAdmission → enterRunning → process.kill(pid,'SIGKILL')`；父进程断言 `signal=SIGKILL`、`status=null`，冷启动 store 读回 `RUNNING`，`recoverUnsettled` 得到 `UNKNOWN`（`PROCESS_TERMINATED_WITHOUT_OUTCOME`，缺失证据点名 `terminal-observation|host-result|backend-receipt`），二次恢复空、记录字节不变。另有一个独立变异把恢复写成 `COMPLETED`，该控制立刻红——防“伪造成功”。
+
+**变异负控 7/7 红**：冲突→最后写入者、非法转移放行、恢复伪造 COMPLETED、信任无观察的效果声称、忽略执行身份、跳过校验和、模块面加 `grantExecution`。套件先证 7 个场景在真实模块上 GREEN，再逐个变异断言 RED，并拒绝 byte-identical 的假变异。
+
+**门禁（本机实测，逐字在 `evidence/GATES.txt`）**：新套件 13/13；catalog `--max-uncollected 41 --max-excluded 7` → `tests=879 UNCOLLECTED 41 EXCLUDED 14 refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-ci-negative-controls 33/33`（C-NH1 从 manifest `cmd[]+check[]` 派生，两侧 argv 逐字一致）；`docs-sync docs=173 plans=132 findings=0 blocking=0`；`lint-identities` `new 0, resolved 0`；`pnpm typecheck` 9/9 workspace Done；`git diff --check` 0；`origin/master` 上 846 个测试文件逐一 `cmp` **全部字节相同**（只新增 `tests/ute2-settlement/settlement.test.mjs`）。census “next host lane” 追加该套件（host-free、无端口、无宿主树），不新增 dispatch leg / parity 路径。
+
+**UNKNOWN（明写）**：① 原型未接线——没有任何生产路径 import 它，“每次 dispatch 都真的落一条事实”在宿主上未证明，adapter 是另一个受审变更；② 真实 SIGKILL 只在独立 `node` 子进程里测过，未在“真实 Host 执行原生工具 + 并发负载”下测过；③ S2（durable-before-Host-returns）**未声明**；④ `decisionDigest` 的内容真实性由 ControlService/adapter 保证，本模块只校验形状与一致性；⑤ fsync 覆盖文件内容，未 fsync 父目录，网络文件系统/断电目录项未测；⑥ hosted L2 首次执行未在本机观察。**未 push master/stable，未改任何既有 package 行为或测试文件。**

@@ -1,0 +1,15 @@
+# UTE-2 round-3 fsync-ordering transcript: rename, then parent-directory fsync, then return
+
+$ node --test --test-name-pattern "durability: the parent directory" tests/ute2-settlement/settlement.test.mjs
+
+UTE2-FSYNC order=rename,fsync,return states=ADMITTED,RUNNING,COMPLETED failure=SETTLEMENT_DIRECTORY_FSYNC_FAILED
+✔ durability: the parent directory is fsync'd AFTER the rename and BEFORE the call returns (15.227483ms)
+
+The injected witness asserts the ORDER internally: when fsyncDirectory(dir) is
+called, the record already exists under its final name and parses under the
+settlement envelope (a rename happened first). The witness is called once per
+record write: ADMITTED, RUNNING, COMPLETED. The lock acquisition also fsyncs the
+directory (before any record exists) and is reset out of the observation.
+
+An injected fsync failure is the named SETTLEMENT_DIRECTORY_FSYNC_FAILED — the
+call never returns as if the write were durable.

@@ -1,0 +1,21 @@
+# UTE-2 round-3 writer-lock transcript: one writer per root
+
+$ node --test --test-name-pattern "writer lock" tests/ute2-settlement/settlement.test.mjs
+
+Two REAL child processes are used: an in-process second store is re-entrant by
+design (a cold reader is not a second writer), so only another pid proves exclusion.
+
+Live foreign writer (the parent holds the lock; the child tries to open the root):
+UTE2-LOCK live-foreign=SETTLEMENT_WRITER_CONFLICT holder-still-writes=true evicted=SETTLEMENT_WRITER_CONFLICT
+✔ writer lock: one writer per root, a live foreign writer is refused, and an evicted lock stops writes (84.915061ms)
+
+Demonstrably dead owner (a child acquired the lock and exited; the parent restarts):
+UTE2-WRITER-LOCK reclaimed previousPid=18 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-20T09:41:28.699Z
+UTE2-WRITER-LOCK reclaimed previousPid=26 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-20T09:41:28.989Z
+UTE2-WRITER-LOCK reclaimed previousPid=42 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-20T09:41:29.175Z
+
+The lock file is <dir>/.settlement-writer.lock, JSON {pid, bootId, host, acquiredAt},
+created with O_EXCL and fsync'd. A pid is only treated as the same owner when the
+boot id matches; a dead pid (or another boot) is reclaimed, naming the previous
+owner on stdout. Every write re-reads the lock, so an EVICTED lock stops the writer
+with SETTLEMENT_WRITER_CONFLICT instead of racing a new owner.
