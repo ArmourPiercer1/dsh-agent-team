@@ -1,0 +1,111 @@
+# UTE-1 isolation: the old path is provably untouched
+
+## 1. git diff --stat origin/master (worktree vs the pinned base; new files appear as added)
+ .github/workflows/census-runtime.yml               |   2 +-
+ .../evidence/ute1-fs-binding-20261120/gates.txt    | 306 +++++++++
+ .../ute1-fs-binding-20261120/isolation.txt         |   3 +
+ .../mutation-transcript.txt                        |  59 ++
+ .../evidence/ute1-fs-binding-20261120/suite.txt    |  99 +++
+ dev/ci/eb3-ci-manifest.json                        |   3 +-
+ packages/tools/src/index.ts                        |  33 +
+ packages/tools/src/native-fs-binding.ts            | 750 +++++++++++++++++++++
+ packages/tools/test/p6t6-bypass-scan.test.ts       |   9 +-
+ tests/ute1-fs/lib/arms.mjs                         | 281 ++++++++
+ tests/ute1-fs/lib/assembly.mjs                     | 243 +++++++
+ tests/ute1-fs/lib/fake-host.mjs                    | 176 +++++
+ tests/ute1-fs/lib/golden-run.mjs                   | 116 ++++
+ tests/ute1-fs/lib/host.mjs                         | 119 ++++
+ tests/ute1-fs/mutation-transcript.mjs              | 218 ++++++
+ tests/ute1-fs/native-fs-binding.test.mjs           | 286 ++++++++
+ 16 files changed, 2699 insertions(+), 4 deletions(-)
+
+## 2. git diff origin/master -- packages/ (the ENTIRE product diff: 1 new module, 1 additive barrel export, 1 test-pin widening)
+ packages/tools/src/index.ts                  |  33 ++
+ packages/tools/src/native-fs-binding.ts      | 750 +++++++++++++++++++++++++++
+ packages/tools/test/p6t6-bypass-scan.test.ts |   9 +-
+ 3 files changed, 790 insertions(+), 2 deletions(-)
+
+  The one pre-existing product file that changed is packages/tools/src/index.ts:
+$ git diff origin/master -- packages/tools/src/index.ts
+diff --git a/packages/tools/src/index.ts b/packages/tools/src/index.ts
+index dacf97312..e3642f04b 100644
+--- a/packages/tools/src/index.ts
++++ b/packages/tools/src/index.ts
+@@ -43,6 +43,39 @@ export { selectTeamTools } from './tool-selector.js'
+ export { applyBuiltInToolDeny } from './builtin-deny.js'
+ export type { ToolRestrictionDisposer } from './builtin-deny.js'
+ 
++// UTE-1 — additive, UNUSED BY ANY SHIPPED ASSEMBLY (see the module header):
++// the native FS binding product module. `git grep` over the product entries
++// finds no importer; the export exists so a reviewed composition can consume it
++// without a second copy. It has no imports and therefore adds no dependency.
++export {
++  FS_BINDING_REFUSAL,
++  NATIVE_FS_BINDING_FACT_SCHEMA,
++  NATIVE_FS_BINDING_MODULE_ID,
++  NativeFsBindingError,
++  createNativeFsBindingScope,
++  laneAdmits,
++  mountNativeFsBinding,
++  normalizeLaneRoots,
++} from './native-fs-binding.js'
++export type {
++  CreateNativeFsBindingScopeInput,
++  FsBindingLane,
++  FsBindingRefusal,
++  FsBindingStatus,
++  FsErrorConstructor,
++  FsErrorLike,
++  MountNativeFsBindingInput,
++  NativeFileSystemConstructor,
++  NativeFileSystemSurface,
++  NativeFsBinding,
++  NativeFsBindingContext,
++  NativeFsBindingDisposal,
++  NativeFsBindingFact,
++  NativeFsBindingHost,
++  NativeFsBindingScope,
++  NativeFsToolModule,
++} from './native-fs-binding.js'
++
+ export type {
+   ResolvedTeamToolCaller,
+   TeamPermissionExecIntent,
+
+## 3. no shipped assembly imports the module (git grep over tracked sources)
+$ git grep -n "native-fs-binding" -- packages/ scripts/ .github/ dev/ci/
+.github/workflows/census-runtime.yml:367:        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
+dev/ci/eb3-ci-manifest.json:650:              "tests/ute1-fs/native-fs-binding.test.mjs"
+packages/tools/src/index.ts:59:} from './native-fs-binding.js'
+packages/tools/src/index.ts:77:} from './native-fs-binding.js'
+packages/tools/src/native-fs-binding.ts:49: * @module @dsh-agent-team/tools/native-fs-binding
+packages/tools/src/native-fs-binding.ts:56:export const NATIVE_FS_BINDING_MODULE_ID = 'native-fs-binding/1'
+packages/tools/src/native-fs-binding.ts:59:export const NATIVE_FS_BINDING_FACT_SCHEMA = 'native-fs-binding-fact/1'
+packages/tools/src/native-fs-binding.ts:673:  const id = input.id ?? `native-fs-binding-${host.generation}`
+packages/tools/test/p6t6-bypass-scan.test.ts:157:      'packages/tools/src/native-fs-binding.ts',
+  (the only hits are the module itself, the barrel export, and the scan pin)
+
+## 4. legacy pin block + census unchanged
+$ git diff origin/master -- tests/paths.mjs
+(empty above = unchanged)
+$ node scripts/census-plan.mjs --plan  -> file_count / roots
+file_count 712
+roots 12
+
+## 5. host trees are pristine (never edited): porcelain line counts
+legacy tests/deepseek-harness-test-use: 0 entries @ 639ed015397290b3745d163aafe02ffee4aa3f84
+next   tests/deepseek-harness-next:    0 entries @ 9c2670d3bce5275e0d1610272958121af87787bb
+
+## 6. the new suite is DISCOVERED_AND_COLLECTED by the catalog (tracked=>discovered)
+catalog exit=0
+{"id":"node:tests/ute1-fs/native-fs-binding","path":"tests/ute1-fs/native-fs-binding.test.mjs","runner":"node","kind":"unit","contract_ids":[],"classification":"DISCOVERED_AND_COLLECTED","explicit_id":null}
+catalog tests 865
+
+## 7. the workflow lane run: line and the manifest check[] agree byte for byte
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+$ node .artifacts/tmp/ute1-lane-argv.mjs   (reads both sources, joins cmd[]+check[], compares strings)
+workflow: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
+manifest: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute1-fs/native-fs-binding.test.mjs
+byte-identical: true
+exit=0
