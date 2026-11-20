@@ -96,9 +96,10 @@ are byte-identical to the reviewed baseline for the same reason.
 
 ## Still not exercised (mirrored in §7 of the README and the meta file)
 
-* `read_image` on the new path (the prototype provider still has no image
-  support): every `FS-I*` row stays `newPathPending: true`, which is why the
-  retirement gate still refuses `UTE_VECTOR_UNREPRODUCED` today.
+* `read_image` on the PRODUCT module: PR B2 reproduces every `FS-I*` row on the
+  PROTOTYPE new path and removes `newPathPending`, but `packages/tools` still
+  serves read/write/edit only, so UTE-1's product parity remains a 10-vector
+  claim with the six image rows explicitly excluded.
 * JPEG / WebP / GIF, downscale/`originalDimensions`, byte-cap refusal,
   extension-less content sniffing, mid-read cancellation, attachment-store
   failure. Only the arms listed above are claimed.
