@@ -1,0 +1,16 @@
+SD id=SD-WEB-1-native-name-claim-collision blocking=true approval=null(none-found)
+SD id=SD-WEB-1-native-name-claim-collision title="the legacy governed family and the route-C composition both claim web_fetch/web_search"
+SD id=SD-WEB-1-native-name-claim-collision legacy={"familyId":"dsh.web-family","claims":["web_fetch","web_search"],"enabledAbsent":false,"enabledOn":true,"disabledOwned":[]}
+SD id=SD-WEB-1-native-name-claim-collision route-c={"visible":["web_fetch","web_search"]}
+SD id=SD-WEB-1-native-name-claim-collision impact="an install with webEnabled:true has two producers of the same two native names; the seam names no winner, so a retirement move would have to decide name ownership first"
+SD id=SD-WEB-2-redirect-ownership blocking=true approval=null(none-found)
+SD id=SD-WEB-2-redirect-ownership title="the legacy transport answers one hop and the row drives the chain; the route-C pinned provider follows the chain itself"
+SD id=SD-WEB-2-redirect-ownership legacy={"maxRedirectHops":5,"transportNeverFollows":true,"answeredStatus":302,"answeredLocation":"/r2","requests":1,"hopList":["GET /r1"]}
+SD id=SD-WEB-2-redirect-ownership route-c={"requests":3,"hopList":["GET /r1","GET /r2","GET /final"],"residual":["WEB_REDIRECT_UNMEDIATED_ON_ALLOW"]}
+SD id=SD-WEB-2-redirect-ownership impact="one tool call is one network effect in the legacy plane and N (here 3) in the route-C plane; the hop budget moved from the row to the provider"
+SD id=SD-WEB-3-refusal-surface blocking=true approval=null(none-found)
+SD id=SD-WEB-3-refusal-surface title="the legacy row raises typed web refusals; the route-C provider refusals reach the model as prose over an ALLOW fact"
+SD id=SD-WEB-3-refusal-surface legacy={"hasTypedRefusalBuilder":true,"sample":{"ok":null,"code":"WEB_RESPONSE_TOO_LARGE"}}
+SD id=SD-WEB-3-refusal-surface route-c={"rows":[{"id":"WB-F6-content-type-refused","modelText":"Error: unsupported content type \"application/octet-stream\"","typedCodeInText":null,"factDecision":"allow","factDecidedBy":"ALLOW"},{"id":"WB-F7-body-byte-cap","modelText":"Error: response exceeds the maximum of 2048 bytes","typedCodeInText":null,"factDecision":"allow","factDecidedBy":"ALLOW"},{"id":"WB-F9-timeout","modelText":"Error: web fetch timed out","typedCodeInText":null,"factDecision":"allow","factDecidedBy":"ALLOW"}]}
+SD id=SD-WEB-3-refusal-surface impact="a consumer that keys on a refusal code cannot tell a size/content-type/deadline refusal from a transport fault on the route-C plane, and the call carries an ALLOW fact"
+SD-VERDICT differences=3 blocking=3 approved=0 resolved=0
