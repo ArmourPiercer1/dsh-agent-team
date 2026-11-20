@@ -22,5 +22,5 @@ not the tool's reported metadata and not the path. A refusal records
 
 `node scripts/check-append-only-log.mjs` is not present on this base (PR #805 is
 still open). The identical script from the `guard-append-log-20261120` worktree
-was run against this branch and reported `verdict=pass ... unchanged`; no file
-under `dev/agent-workflow/SESSION_ROUTER_LOG.md` is touched by this PR.
+was run against this branch and reported `verdict=pass ... appended 14 line(s)`:
+this PR appends the B2 execution-log entry and changes no historical bytes.
