@@ -56,13 +56,13 @@
               "id": "lane-refusal-code",
               "blocking": true,
               "approval": null,
-              "summary": "old path FS_SANDBOX_DENIED vs new path FS_PERMISSION_DENIED (rc.5 tool-fs sandbox.ts:139-143 dereferences policy.mode); retirement needs the owner-approved compatibility interface: adopt the fs-sandbox protocol (sandboxMode + sandbox-policy) or keep a non-sandbox code and accept different model-facing refusal text."
+              "summary": "old path FS_SANDBOX_DENIED vs new path FS_PERMISSION_DENIED (rc.5 tool-fs sandbox.ts:139-143 dereferences policy.mode). OWNER RULING 2026-11-20: route B+C adopted as the technical compatibility route — B keeps the native structured FsError (FS_PERMISSION_DENIED for a lane denial, never FS_SANDBOX_DENIED without the fs-sandbox protocol); C judges old/new compatibility through the closed refusal-category mapping in tests/ute-g1-fs/lib/refusal-categories.mjs, not by literal code equality. This is NOT a SemanticDifferencesResolved verdict and NOT an approval: approval PENDING (owner signature required)."
             },
             {
               "id": "refusal-observation-shape",
               "blocking": true,
               "approval": null,
-              "summary": "old path refuses in prose, new path in typed FsError codes; the corpus compares a closed refusal CLASS vocabulary. Code-level equality would need the old path to emit codes; that is a semantic change and must be owner-approved before switching."
+              "summary": "old path refuses in prose, new path in typed FsError codes. OWNER RULING 2026-11-20: route B+C adopted (technical route only) — the corpus/harness compares a CLOSED refusal-category vocabulary implemented by tests/ute-g1-fs/lib/refusal-categories.mjs, which refuses (REFUSAL_VOCABULARY_INCOMPLETE) any unmapped legacy value or FsError code instead of defaulting it. Code-level equality is not required and is not claimed. APPROVAL: PENDING (owner signature required) — the term stays FALSE and retirement stays refused until the owner signs a reference-bound record."
             }
           ],
           "evidence": {
@@ -70,11 +70,14 @@
             "expect": [
               "retirement-blocking   YES",
               "FS_SANDBOX_DENIED",
-              "FS_PERMISSION_DENIED"
+              "FS_PERMISSION_DENIED",
+              "B+C adopted (technical route only)",
+              "PENDING (owner signature required)",
+              "refusal-categories.mjs"
             ],
             "contradicts": []
           },
-          "note": "Both recorded differences are retirement-blocking=YES and neither has an approval record, so this term is FALSE today by construction, not by opinion. The same two facts are printed on every prototype run as SEMANTIC-DIFF lines and asserted by tests/ute-g1-fs/lane-suite.test.mjs."
+          "note": "Both recorded differences are retirement-blocking=YES and neither has an approval record, so this term is FALSE today by construction, not by opinion. The 2026-11-20 owner ruling adopted the B+C technical route (native structured FsError + closed refusal-category mapping) and this row now cites the implementing file (tests/ute-g1-fs/lib/refusal-categories.mjs) and the protocol memo (docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md). The ruling did NOT resolve the differences and did NOT approve them: approval is PENDING (owner signature required), and the gate must keep refusing FS with two UTE_SEMANTIC_DIFFERENCES_UNRESOLVED findings until a reference-bound approval record exists."
         },
         "negativeControlsPass": {
           "verdict": true,

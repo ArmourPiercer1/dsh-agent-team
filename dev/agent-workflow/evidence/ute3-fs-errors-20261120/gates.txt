@@ -1,0 +1,82 @@
+# UTE-3 FS error-protocol slice — gate transcript (2026-11-20)
+# worktree .worktrees/ute3-fs-errors-20261120 branch task/ute3-fs-errors-20261120
+# base origin/master 35b59ca3c42188bd645669920e64c7da885f2299
+#
+# NOTE: `git diff --check` / `git diff --cached --check` are reported in the PR
+# comment and the final report (both EXIT=0), not embedded here — embedding a
+# diff of this file inside this file is self-referential and never converges.
+
+===== 1. node scripts/ute-retirement-gate.mjs --all =====
+UTE-RETIREMENT-GATE ledger=dev/agent-workflow/ledgers/ute-retirement.json schema=ute-retirement/1 families=1
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/4
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference lane-refusal-code has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence); recorded status: old path FS_SANDBOX_DENIED vs new path FS_PERMISSION_DENIED (rc.5 tool-fs sandbox.ts:139-143 dereferences policy.mode). OWNER RULING 2026-11-20: route B+C adopted as the technical compatibility route — B keeps the native structured FsError (FS_PERMISSION_DENIED for a lane denial, never FS_SANDBOX_DENIED without the fs-sandbox protocol); C judges old/new compatibility through the closed refusal-category mapping in tests/ute-g1-fs/lib/refusal-categories.mjs, not by literal code equality. This is NOT a SemanticDifferencesResolved verdict and NOT an approval: approval PENDING (owner signature required)."
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference refusal-observation-shape has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence); recorded status: old path refuses in prose, new path in typed FsError codes. OWNER RULING 2026-11-20: route B+C adopted (technical route only) — the corpus/harness compares a CLOSED refusal-category vocabulary implemented by tests/ute-g1-fs/lib/refusal-categories.mjs, which refuses (REFUSAL_VOCABULARY_INCOMPLETE) any unmapped legacy value or FsError code instead of defaulting it. Code-level equality is not required and is not claimed. APPROVAL: PENDING (owner signature required) — the term stays FALSE and retirement stays refused until the owner signs a reference-bound record."
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=oldBaseline detail="member \"read_image\" has no baseline vector: tests/ute-g1-fs/golden/old-path.tsv has no `entry` value \"read_image\" (entries: \"write\", \"edit\", \"read\")"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=newPathVerified detail="member \"read_image\" has no baseline vector to reproduce, so dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt cannot have verified it"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"read\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER read` control line"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"write\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER write` control line"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"edit\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER edit` control line"
+UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1
+EXIT=1
+
+===== 2. node --test tests/ute-g1-fs/lib/refusal-categories.test.mjs =====
+REFUSAL-CATEGORY-MUTANT id=corpus-gains-unmapped-native-code real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=comparator-default-buckets-unknown-values real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=drop-a-category real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=shadow-a-prose-entry-by-reordering real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANTS total=4 red=4
+✔ the vocabulary self-check passes: definitions, reachability, samples, citations (1.326501ms)
+✔ no category definition bakes in a model-facing code or prose (0.216008ms)
+✔ every category is reachable from at least one explicit mapping entry (0.144894ms)
+✔ every legacy refusal CLASS the corpus records maps to its category (0.596479ms)
+✔ every measured legacy PROSE sentence maps to its category (in order) (0.269651ms)
+✔ every legacy TYPED code (TeamIoDenial + compiled path decisions) maps to its category (0.136849ms)
+✔ matching ORDER: a stale-edit remedy is not mistaken for read-before-write (0.185481ms)
+✔ every native FsError code maps to its category (0.216039ms)
+✔ cross-category pairs are INCOMPATIBLE and never receive a default category (0.259992ms)
+✔ same-category cross-surface pairs ARE compatible (that is the whole ruling) (0.229835ms)
+✔ an unmapped legacy value is REFUSED, never defaulted to unknown (1.027039ms)
+✔ an unmapped native code is REFUSED, never defaulted to unknown (0.178769ms)
+✔ a "no refusal" sentinel is not a category and is skipped by the audit (0.180121ms)
+✔ a comparison needs both sides — one side against nothing is vacuous (0.058341ms)
+✔ the corpus vocabulary is exhaustive today (classes, codes and prose all map) (0.971429ms)
+✔ the corpus audit REFUSES a value the corpus gains later (the contract, before the mutation) (0.736815ms)
+✔ REAL MUTATIONS: every injected defect is caught by the probes above (0.84545ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66.66996
+EXIT=0
+
+===== 3. node --test scripts/ute-retirement-gate.test.mjs =====
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3416.931675
+EXIT=0
+
+===== 4. node scripts/eb3-family-definitions.mjs =====
+EB3-FAMILY-DEFINITIONS pass files=30 findings=0
+EXIT=0
+
+===== 5. node scripts/docs-sync.mjs --check =====
+docs:sync --check: docs=179 notes=4 plans=138(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+EXIT=0
+
+===== 6. node --check (new/touched .mjs) =====
+OK tests/ute-g1-fs/lib/refusal-categories.mjs
+OK tests/ute-g1-fs/lib/refusal-categories.test.mjs
+OK dev/agent-workflow/evidence/ute3-fs-errors-20261120/adjudicate.mjs
+OK tests/ute-g1-fs/lib/semantic-differences.mjs
+OK scripts/ute-retirement-gate.mjs
+EXIT=0
