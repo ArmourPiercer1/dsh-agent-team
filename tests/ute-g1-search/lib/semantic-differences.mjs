@@ -151,7 +151,7 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
 ])
 
 /** Printable lines, FS style (`semantic-differences.mjs` precedent). */
-export const SEMANTIC_DIFF_LINE_RE = /^SEMANTIC-DIFF (?:SD-SEARCH-[0-9]+-kebab|[a-z-]+) blocking=(?:YES|NO) approval=(?:PENDING|none|by:[^ ]+) — .+$/u
+export const SEMANTIC_DIFF_LINE_RE = /^SEMANTIC-DIFF SD-SEARCH-[0-9]+-[a-z0-9-]+ blocking=(?:YES|NO) approval=(?:PENDING|none|by:[^ ]+) — .+$/u
 
 /**
  * @returns {string[]} one line per declared difference.

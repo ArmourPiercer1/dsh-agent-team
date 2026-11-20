@@ -1,0 +1,73 @@
+OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b2-20261120/tests/ute-g1-search/golden/old-path.tsv vectors=15 captured=15
+✔ old path: every corpus vector reproduces its golden row (23059.990468ms)
+✔ golden: both members are covered and every refusal is a closed category (0.651664ms)
+NEW-PATH-VECTOR SR-G1-inlane-match PASS
+NEW-PATH-VECTOR SR-G2-no-path-stdin PASS
+NEW-PATH-VECTOR SR-G3-outside-denied PASS
+NEW-PATH-VECTOR SR-G4-lane-bound PASS
+NEW-PATH-VECTOR SR-G5-missing-target PASS
+NEW-PATH-VECTOR SR-G6-invalid-pattern PASS
+NEW-PATH-VECTOR SR-G7-cancel-before-dispatch PASS
+NEW-PATH-VECTOR SR-G8-retention-limit PASS
+NEW-PATH-VECTOR SR-G9-binary-file PASS
+NEW-PATH-VECTOR SR-L1-inlane-known-set PASS
+NEW-PATH-VECTOR SR-L2-outside-denied PASS
+NEW-PATH-VECTOR SR-L3-lane-bound PASS
+NEW-PATH-VECTOR SR-L4-missing-target PASS
+NEW-PATH-VECTOR SR-L5-invalid-pattern PASS
+NEW-PATH-VECTOR SR-L6-cancel-before-dispatch PASS
+NEW-PATH-PROVENANCE vector=SR-G1-inlane-match entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-G2-no-path-stdin entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-G3-outside-denied entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-G4-lane-bound entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-G5-missing-target entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-G6-invalid-pattern entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-G7-cancel-before-dispatch entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-G8-retention-limit entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-G9-binary-file entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-L1-inlane-known-set entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-L2-outside-denied entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-L3-lane-bound entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-L4-missing-target entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-PROVENANCE vector=SR-L5-invalid-pattern entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=1 program=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/node_modules/.pnpm/@vscode+ripgrep-linux-x64@1.18.0/node_modules/@vscode/ripgrep-linux-x64/bin/rg
+NEW-PATH-PROVENANCE vector=SR-L6-cancel-before-dispatch entry=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next/packages/fs/tool-fs-search/lib/index.js spawns=0 program=-
+NEW-PATH-HOST host=next version=0.2.2-rc.5 tag=dsh-v0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b2-20261120/tests/deepseek-harness-next
+NEW-PATH-DIVERGENCE-TOTAL declared=0 observed=0
+UTE-G1-SEARCH-SEMANTIC-DIFF SD-SEARCH-1-grep-path-default blocking=YES approval=PENDING — a `grep` call WITHOUT `path` returns ZERO matches on the product route: the host module omits the path operand from argv and the confined child's fd 0 is a readable socket, so ripgrep searches stdin instead of the session workspace (the tool description says it defaults to the workspace). The governed row always appends `.`, so the same call searches the anchored root.
+UTE-G1-SEARCH-SEMANTIC-DIFF SD-SEARCH-2-grep-vcs-ignore blocking=YES approval=PENDING — the two implementations select DIFFERENT file sets for the same pattern: the route-C confined face runs ripgrep with `--no-ignore-parent --no-ignore-vcs` (a VCS-ignored file IS searched and the allow fact discloses it), while the governed row adds `--no-ignore-parent --no-ignore-global` only (VCS ignore stays in force, so the same file is NOT searched).
+UTE-G1-SEARCH-SEMANTIC-DIFF SD-SEARCH-3-refusal-surface blocking=YES approval=PENDING — a withheld search surfaces differently: on route C the engine reports the SAME model-facing text for every confined denial ("grep subprocess failed before reporting an outcome (ripgrep provider failure)") and the actual cause exists only as the realm's `a5sf-guard-consult/1` fact (`IO_READ_DENIED`, same code for a lane denial and a missing target); the governed row owns a closed, per-cause `SEARCH_REFUSAL_TEXT` vocabulary and no guard-fact channel. Both are mapped onto the same closed category here, but a consumer keying on the model-facing error cannot distinguish them on route C.
+NEW-PATH-NC NPNC-MATCHSET-BITES ok — a mutated match-set digest turns SR-G1 RED (a wrong expected effect cannot pass)
+NEW-PATH-NC NPNC-UNDECLARED-DIVERGENCE-BITES ok — flipping SR-G3 from deny to allow with no declaration turns the run RED
+NEW-PATH-NC NPNC-STALE-DECLARATION-BITES ok — declaring a divergence for a vector that reproduced exactly turns the run RED
+NEW-PATH-NC NPNC-DIVERGENCE-PIN-BITES ok — a declaration whose pinned new value drifts from the measurement turns the run RED
+NEW-PATH-NC NPNC-PINNED-DIVERGENCE-PASSES ok — a divergence declared with the exact measured (field, old, new) cells grades as PASS and carries its id
+NEW-PATH-NC NPNC-DIFFERENCE-ID-BITES ok — a declaration citing an id this family never declared turns the run RED
+NEW-PATH-NC NPNC-PENDING-MARKER-BITES ok — a record carrying newPathPending is RED, never a pass
+NEW-PATH-NC NPNC-MISSING-VECTOR-BITES ok — a vector that produced no record is RED, not silently skipped
+NEW-PATH-NC NPNC-PROVENANCE-BITES ok — a definition or spawn program resolved OUTSIDE the next tree is RED
+NEW-PATH-NC NPNC-DECLARATION-TABLE-BITES ok — a declaration naming a non-vector, an unknown difference or a no-op cell is refused
+NEW-PATH-NC NPNC-LANE-BITES-GREP ok — widening the grep read lane turns SR-G3-outside-denied's denial into an admitted, out-of-lane read
+NEW-PATH-NC NPNC-LANE-BITES-GLOB ok — widening the glob read lane turns SR-L2-outside-denied's denial into an admitted, out-of-lane read
+NEW-PATH-NC-VERDICT GREEN controls=12 failed=0
+NC NC-HARNESS-BITES ok
+NC NC-CATEGORY-TOTAL ok
+NC NC-MEMBER grep ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked content UTE3_SEARCH_OUTLANE_SECRET_5be1)
+NC NC-MEMBER glob ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked path abs:<scratch>/<world>/outside/secret.txt)
+NC NC-SHADOW-LOAD-BEARING ok
+NC NC-STDIN-LOAD-BEARING ok
+NC-VERDICT GREEN controls=8 failed=0
+UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=VERIFIED semantic-differences=UNRESOLVED new-path-controls=GREEN negative-controls=GREEN retirement=FORBIDDEN
+✔ new path: every golden vector reproduces on the pinned rc.5 host through the product route C (23181.058851ms)
+✔ new path: the committed evidence carries every PASS line and no pending/absent marker (0.521817ms)
+✔ semantic differences: all three stay declared, blocking and unapproved; only they may be cited (0.687701ms)
+✔ new path: the mutation controls bite (comparator, declaration channel, provenance, lane) (6980.263251ms)
+✔ old path: the family-level and per-member negative controls are green (13446.07379ms)
+✔ VERDICT: the Search family is NOT retireable from this lane (0.278618ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 66744.679288

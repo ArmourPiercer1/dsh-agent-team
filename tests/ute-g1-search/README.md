@@ -1,19 +1,55 @@
-# `tests/ute-g1-search` — UTE G1 SEARCH family, old-path baseline (PR B1)
+# `tests/ute-g1-search` — UTE G1 SEARCH family, old-path baseline (B1) + new-path reproduction (B2)
 
 The reproducible, observed **old-path baseline** for the two model-visible
 members of the `dsh.search-family` retirement unit — `grep` and `glob` — plus a
-family-level and a **real per-member negative control**.
+family-level and a **real per-member negative control** (B1), and the **new-path
+reproduction on the pinned rc.5 host** (B2).
 
-This lane claims exactly two things:
+This lane claims exactly three things:
 
 1. the CURRENT product composition (pinned host `0.2.0-rc.2` + the PD-16
-   confined search shadow) behaves as the reviewed fixture says it does, and
+   confined search shadow) behaves as the reviewed fixture says it does;
 2. every refusal in that fixture is a decision of the declared lane / the
    regex engine / the caller's cancellation — proven by a mutation that turns it
-   RED.
+   RED;
+3. the **new path** — the pinned next host `0.2.2-rc.5`'s own
+   `@deepseek-ai/dsh-tool-fs-search` module, mounted on the Member's isolated
+   scope by the same PRODUCT route-C seam and executed by the host's own
+   `ToolsService` batch — reproduces **every one** of the 15 golden rows
+   cell-for-cell, with executor provenance pinned to the next tree.
 
-It claims **no** new path, **no** retirement, and **no** end-to-end confinement
-proof. See §7 for the UNKNOWN list.
+It claims **no** retirement and **no** end-to-end confinement proof. All three
+declared semantic differences stay **blocking and unapproved**; see §5 and §7.
+
+## 0.1 The new path (B2) — what is actually new
+
+`lib/new-path.mjs` + `run-new-path.mjs`. The governance seam, the one policy
+compiler, the confined OS provider and the guard-fact reader are the SAME Team
+modules the old path uses. What differs is the host generation and the
+definition route:
+
+| | old path (B1) | new path (B2) |
+|---|---|---|
+| host | `tests/deepseek-harness-test-use` `0.2.0-rc.2 @ 639ed01539` | `tests/deepseek-harness-next` `0.2.2-rc.5 @ 9c2670d3bc` |
+| search definitions | PD-16 shadow (`confined-search-tool.mjs`) delegating to the installed `dsh-tool-fs-search` | the next host's OWN `dsh-tool-fs-search` package, declared by the composition (`a5sfNativeToolModules[].expectedTools`) so the shadow stays silent |
+| dispatch | host `ctx.tools.execute` on a hand-built C1 context | the next host's real harness agent (`mountAgentLoopTestDependencies` / `mountAgentLoopTestHarness`) + `executeModelToolFixture` (the host's `ToolsService` batch) |
+| provenance | `OLD-PATH-IDENTITY` line | `NEW-PATH-PROVENANCE` lines: served module entry and every spawn program must live inside the next tree |
+
+There is still **no test-only composition and no re-implemented tool body**:
+the definition, the argv templates, the parser and the formatter are the host
+package's, and the tool body is executed by the host's executor. What Team
+supplies is the confined `subprocess` face (the same one B1 measured).
+
+`run-new-path.mjs` grades the run against the **same** `golden/old-path.tsv`
+through `lib/new-path-compare.mjs`, whose declaration channel is total in both
+directions: an undeclared divergence, a stale declaration, a drifted pinned
+value, an unknown difference id, a pending marker or a missing vector are all
+RED. **The measured state is zero divergences** — e.g. the path-less `grep`
+(`SR-G2`) still returns 0 matches on rc.5 exactly as the golden row records,
+because the cause is generation-independent (the host module omits the path
+operand and the confined child's fd 0 is a readable socket). The governed row's
+2-match behaviour remains the declared difference `SD-SEARCH-1`; this lane does
+not resolve it.
 
 ## 0. Composition — measured first, not assumed
 
@@ -53,7 +89,12 @@ governed kernel/PA mount); see §7.
 | `probe-composition.mjs` | STEP 0 composition measurement |
 | `probe-semantic-differences.mjs` | measures the two argv-level differences on one fixture |
 | `negative-controls.mjs` | 8 controls (2 family-level + 2 per-member + 2 positive arms + 2 composition) |
-| `lane-suite.test.mjs` | the lane's own gates (6 tests) and the one verdict line |
+| `lib/host-next.mjs` | tree-anchored resolution of the pinned next host's PUBLIC package entries (containment-checked; no legacy fallback) |
+| `lib/new-path.mjs` | the B2 harness: the next host's real agent + the product route-C seam + the confined `subprocess` face, one fresh world per vector |
+| `lib/new-path-compare.mjs` | grading against the same golden rows with the declared-divergence channel and the executor-provenance check |
+| `run-new-path.mjs` | CLI: run the corpus on the new path, print `NEW-PATH-VECTOR … PASS`, exit 1 on any divergence/provenance failure |
+| `new-path-controls.mjs` | 12 mutation controls (comparator, declaration channel, provenance, two real-run lane widenings) |
+| `lane-suite.test.mjs` | the lane's own gates (8 tests) and the one verdict line |
 | `golden/old-path.tsv` | the reviewed fixture (15 rows) |
 | `golden/old-path.meta.txt` | identity, record shape, retained semantics, non-coverage |
 | `golden/COVERAGE.md` | member → vectors → control table (gate-checkable) |
@@ -66,12 +107,16 @@ node tests/ute-g1-search/capture-old-path.mjs --write   # re-derive the fixture
 node tests/ute-g1-search/capture-old-path.mjs           # verify: OLD-PATH-GOLDEN compare=identical
 node tests/ute-g1-search/probe-semantic-differences.mjs
 node tests/ute-g1-search/negative-controls.mjs          # NC-VERDICT GREEN controls=8 failed=0
+node tests/ute-g1-search/run-new-path.mjs               # NEW-PATH-VERDICT GREEN vectors=15 exact=15 divergences=0
+node tests/ute-g1-search/new-path-controls.mjs          # NEW-PATH-NC-VERDICT GREEN controls=12 failed=0
 node --test --test-force-exit tests/ute-g1-search/lane-suite.test.mjs
 ```
 
-All of these are host-free (no boot, no DSH_HOME, no port) and need this repo's
-`node_modules` (the world imports `@deepseek-ai/cordis` et al. from the
-worktree), which is why the CI leg is post-build.
+All of these are host-free (no boot, no DSH_HOME, no port) but the new-path run
+needs the pinned next host tree (`tests/paths.mjs#NEXT_HOST`, provisioned per
+`docs/TEST_METHODS.md` §11) and the repo's `node_modules`; a missing/drifted
+tree is a module-load THROW, never a skip. That is why the CI leg is post-build
+and already provisions the next tree.
 
 ## 3. What a record means
 
@@ -149,10 +194,17 @@ mount.
 
 ## 7. What this lane does NOT prove (UNKNOWN, stated)
 
-* **No new path exists** for Search. `newPathVerified=false`,
-  `semanticDifferencesResolved=false`, `negativeControlsPass=true`,
-  `oldBaseline=true` ⇒ retirement is forbidden. The lane suite pins the pending
-  set by an explicit (empty) id list.
+* **The new path is REPRODUCED, not semantically resolved.**
+  `newPathVerified=true`, `semanticDifferencesResolved=false`,
+  `negativeControlsPass=true`, `oldBaseline=true` ⇒ retirement is still
+  forbidden. Zero declared divergences is a measurement of equal *effects* on
+  this corpus, not a claim that the two implementations are equivalent: the
+  three declared differences (§5) are exactly the ways they are not.
+* **The next host's `rg` is the packaged binary inside the next tree.** The
+  provenance check asserts containment; it does not pin a version string of
+  `@vscode/ripgrep` beyond what the tree ships.
+* **No cross-generation behavioural claim beyond the corpus.** The 15 vectors
+  cover what §7 lists; a difference outside them is not measured by this run.
 * **The governed plane's alias dispatch** (`team_grep`/`team_glob` on the real
   governed kernel/PA mount) is NOT run and NOT compared. Only its argv builder
   and its native-name mount refusal are measured.
