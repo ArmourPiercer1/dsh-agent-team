@@ -1,0 +1,4 @@
+UTE-RETIREMENT-GATE ledger=scripts/fixtures/ute-retirement-selftest/ledger.json schema=ute-retirement/1 families=1
+UTE-RETIREMENT-ALLOW family=synthetic-selftest terms=4/4 state=RETIREABLE
+UTE-RETIREMENT-SUMMARY requested=1 allowed=1 refused=0
+EXIT=0

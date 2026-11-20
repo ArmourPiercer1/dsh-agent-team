@@ -1,0 +1,48 @@
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=879 instruments=3 digest=sha256:ee07c3bd4c95c56d714719f4a9883ca1c30b6e0fa488cd43caee6addcb3e901e
+  DISCOVERED_AND_COLLECTED 824
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+  by runner: node=124 none=7 vitest=748
+DSH-TEST-CATALOG tests=879 digest=sha256:ee07c3bd4c95c56d714719f4a9883ca1c30b6e0fa488cd43caee6addcb3e901e refused=0 findings=0
+EXIT=0
+
+$ node --test scripts/test-catalog.test.mjs
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 613.52059
+EXIT=0
+
+$ node scripts/dispatch-tests.mjs --check
+DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
+EXIT=0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EXIT=0
+
+$ node scripts/eb3-ci-negative-controls.mjs
+PASS P2 known-old-red-identity-set-complete :: dev/agent-workflow/evidence/a4-pr7/population-baseline/nine-root-u7-1-old-reds.md is zero BY NAMED RETIREMENT (sentinel: 9 retired against 2b1099d7); retirement names the predecessor's full set of 9 => complete; empty run => pass (correct), one planted new red => fail (correct)
+PASS C-NH1 next-host-lane-is-collected-and-graded :: honest census workflow passes; extra-argv=>CI_LAYER_LEG_EXTRA_ARGUMENT, if-false=>CI_LAYER_LEG_UNPROVEN, assets-mode-dropped=>CI_LAYER_LEG_UNPROVEN, assets-or-true=>CI_LAYER_LEG_UNPROVEN, lane-suite-dropped=>CI_LAYER_LEG_ARGUMENT_MISSING, lane-continue-on-error=>CI_LAYER_CONTINUE_ON_ERROR, lane-echo=>CI_LAYER_LEG_UNPROVEN, lane-argv-reordered=>CI_LAYER_LEG_ARGUMENT_MISSING|CI_LAYER_LEG_EXTRA_ARGUMENT|CI_LAYER_LEG_UNPROVEN, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held
+
+33/33 control(s) behaved as required
+EXIT=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=175 notes=4 plans=134(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+EXIT=0
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1691 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+EXIT=0
+
+$ git diff --check
+EXIT=0

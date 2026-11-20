@@ -1,0 +1,55 @@
+{
+  "schema": "ute-retirement/1",
+  "note": "SYNTHETIC SELFTEST FIXTURE — NOT A RETIREMENT ROW. This ledger exists so the retirement gate can be shown to ALLOW a fully satisfied family through the real CLI, with evidence that is really committed (a cold clone can read every pointer). The family is named `synthetic-selftest` on purpose: no production family may ever be retired by pointing at this file, and the production ledger (dev/agent-workflow/ledgers/ute-retirement.json) does not import it. The evidence is deliberately trivial; what is being exercised is the gate's evidence path, not a tool family.",
+  "families": [
+    {
+      "family": "synthetic-selftest",
+      "state": "RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "scripts/fixtures/ute-retirement-selftest/old.tsv",
+            "expect": ["OLD-BASELINE-OK"],
+            "contradicts": []
+          }
+        },
+        "newPathVerified": {
+          "verdict": true,
+          "evidence": {
+            "path": "scripts/fixtures/ute-retirement-selftest/new.txt",
+            "expect": ["NEW-PATH-OK", "failed=0"],
+            "contradicts": []
+          }
+        },
+        "semanticDifferencesResolved": {
+          "verdict": true,
+          "differences": [
+            {
+              "id": "synthetic-difference",
+              "blocking": true,
+              "approval": {
+                "by": "owner",
+                "on": "2026-11-20",
+                "record": "scripts/fixtures/ute-retirement-selftest/approval.md"
+              }
+            }
+          ],
+          "evidence": {
+            "path": "scripts/fixtures/ute-retirement-selftest/sem.md",
+            "expect": ["DIFFERENCE RECORDED"],
+            "contradicts": []
+          }
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "scripts/fixtures/ute-retirement-selftest/nc.txt",
+            "expect": ["NC-OK", "failed=0"],
+            "contradicts": []
+          }
+        }
+      }
+    }
+  ]
+}
