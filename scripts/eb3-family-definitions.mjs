@@ -35,8 +35,24 @@
  *   DEF_CENSUS_DRIFT        ARC-A L3 census violations (unbooked/vanished family,
  *                           familyId drift, mount drift).
  *
+ * WHAT THIS ADDS — THE RETIREMENT-LICENCE ARM (RETIREMENT.md §5.1). The UTE-0
+ * gate was inert about deletion: nothing ran it when someone removed the old
+ * path, so a UTE-4 deletion PR could go green until a reviewer noticed. This leg
+ * already runs on the required path and already loads the family census, so it
+ * needs no new workflow line, manifest leg or argv. For every retirement-ledger
+ * row that declares `oldPath.files`, a declared file that is missing while the
+ * retirement gate does not ALLOW that row is:
+ *
+ *   DEF_RETIREMENT_UNLICENSED  a declared old-path file was deleted before the
+ *                              row was allowed (detail carries the gate's codes)
+ *
+ * An unreadable retirement ledger or census is the same finding with detail
+ * `retirement-ledger-unreadable` — fail closed, because an unreadable ledger
+ * must not silently license deletion.
+ *
  * Exported for scripts/eb3-ci-negative-controls.mjs (C3):
- *   checkFamilyDefinitions({ files, ledger? }) → { findings }
+ *   checkFamilyDefinitions({ files, ledger?, retirement?, root? }) → { findings }
+ *   checkRetirementLicences({ files, retirement?, root? }) → { findings }
  *
  *   node scripts/eb3-family-definitions.mjs [--json]
  *
@@ -53,6 +69,11 @@ import {
   scanClosedness,
   scanContributions,
 } from '../packages/testkit/test/arc-a-fitness/scan.mjs'
+import {
+  CENSUS_REL,
+  LEDGER_REL as RETIREMENT_LEDGER_REL,
+  checkRetirement,
+} from './ute-retirement-gate.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
@@ -96,25 +117,120 @@ function sourceDocumentLiteral(text) {
 }
 
 /**
+ * The retirement-licence arm (RETIREMENT.md §5.1). Inputs are injectable so the
+ * C3 negative controls can drive it from an in-memory file map without touching
+ * the tree: `retirement` may carry an already-parsed retirement `ledger` and
+ * `census`, plus overrides for the gate's readFile/isTracked/fileExists/
+ * revExists/isAncestor. When the retirement ledger (or the census) is not in the
+ * injected map it is read from `root`; when it cannot be read at all the check
+ * fails closed with `retirement-ledger-unreadable` — an unreadable ledger must
+ * never license a deletion.
+ *
+ * Presence rule: an injected `files` map is the complete universe (deleting an
+ * entry simulates deleting the file); with no map, the tree is consulted.
+ *
+ * @param {object} p
+ * @param {Map<string,string>|object|undefined} p.files repo-relative path → text
+ * @param {object} [p.retirement] injected ledger/census and gate overrides
+ * @param {string} [p.root] tree used when the injected map has no ledger entry
+ * @returns {{findings: Array<{code: string, path: string, detail: string}>}}
+ */
+export function checkRetirementLicences({ files, retirement = {}, root = ROOT }) {
+  let ledger
+  let census
+  try {
+    ledger = retirement.ledger !== undefined ? retirement.ledger : readInjectedJson(RETIREMENT_LEDGER_REL, files, root)
+    if (typeof ledger === 'string') ledger = JSON.parse(ledger)
+    if (ledger === null || typeof ledger !== 'object' || ledger.schema !== 'ute-retirement/1' || !Array.isArray(ledger.families)) {
+      throw new Error('retirement ledger shape')
+    }
+    census = retirement.census !== undefined ? retirement.census : readInjectedJson(CENSUS_REL, files, root)
+    if (typeof census === 'string') census = JSON.parse(census)
+    if (census === null || typeof census !== 'object' || !Array.isArray(census.families)) {
+      throw new Error('census shape')
+    }
+  } catch {
+    // Fail closed: a ledger we cannot read cannot license anything.
+    return { findings: [{ code: 'DEF_RETIREMENT_UNLICENSED', path: RETIREMENT_LEDGER_REL, detail: 'retirement-ledger-unreadable' }] }
+  }
+
+  const present = (rel) => {
+    if (files instanceof Map) return files.has(rel)
+    if (files !== undefined && files !== null && typeof files === 'object') return Object.prototype.hasOwnProperty.call(files, rel)
+    return existsSync(join(root, rel))
+  }
+
+  const gateOptions = { root, census }
+  for (const key of ['readFile', 'isTracked', 'fileExists', 'revExists', 'isAncestor']) {
+    if (retirement[key] !== undefined) gateOptions[key] = retirement[key]
+  }
+
+  const findings = []
+  for (const row of ledger.families) {
+    const declared = row?.oldPath?.files
+    if (!Array.isArray(declared) || declared.length === 0) continue
+    const missing = declared.filter((rel) => typeof rel === 'string' && rel.length > 0 && !present(rel))
+    if (missing.length === 0) continue
+    const verdict = checkRetirement({ ledger, family: row.family, ...gateOptions })
+    if (verdict.allowed) continue // retirement is the licensed act: absence is expected
+    const gateCodes = [...new Set((verdict.findings ?? []).map((f) => f.code))]
+    for (const rel of missing) {
+      findings.push({
+        code: 'DEF_RETIREMENT_UNLICENSED',
+        path: rel,
+        detail: `retirement row ${JSON.stringify(row.family)} is not allowed (${gateCodes.join(',') || verdict.couldNotGrade || 'unknown'}) but its declared old-path file ${rel} is missing — deleting the old path is the licensed act, not the argument for one`,
+      })
+    }
+  }
+  return { findings }
+}
+
+/** Parse a JSON input from an injected map, else from `root`. Throws on absence. */
+function readInjectedJson(rel, files, root) {
+  if (files instanceof Map && files.has(rel)) return JSON.parse(files.get(rel))
+  if (files !== undefined && files !== null && !(files instanceof Map) && typeof files === 'object' && Object.prototype.hasOwnProperty.call(files, rel)) {
+    return JSON.parse(files[rel])
+  }
+  // Not in the injected map: the ledger/census is read from the tree, exactly as
+  // the CI leg does today (the map holds definitions, not the ledgers).
+  return JSON.parse(readFileSync(join(root, rel), 'utf8'))
+}
+
+/**
  * @param {object} p
  * @param {Map<string,string>} p.files   repo-relative path → text (contributions + rows)
  * @param {object} [p.ledger]            the ARC-A census ledger
+ * @param {object} [p.retirement]        injected retirement ledger/census + overrides
+ * @param {string} [p.root]              tree root for the deletion arm
  */
-export function checkFamilyDefinitions({ files, ledger = loadCensusLedger() }) {
+export function checkFamilyDefinitions({ files, ledger, retirement = {}, root = ROOT }) {
   const findings = []
+  // An absent census must not throw out of the retirement arm: the arm reports
+  // `retirement-ledger-unreadable` (fail closed), and the ARC-A arms are simply
+  // not gradeable, which is a refusal, not a crash.
+  let censusLedger = ledger
+  if (censusLedger === undefined) {
+    try {
+      censusLedger = loadCensusLedger(root)
+    } catch {
+      censusLedger = null
+    }
+  }
   const contribPaths = [...files.keys()].filter(isContributionPath).sort()
   const { contributions } = scanContributions({ paths: contribPaths, files })
 
   // ARC-A L3 + L4, reused — surfaced under EB3 codes so the CI leg names them.
-  for (const v of scanCensus({ contributions, ledger }).violations) {
-    findings.push({ code: 'DEF_CENSUS_DRIFT', path: v.path, detail: `${v.path}: ${v.kind} — ${v.detail}` })
+  if (censusLedger !== null && censusLedger !== undefined) {
+    for (const v of scanCensus({ contributions, ledger: censusLedger }).violations) {
+      findings.push({ code: 'DEF_CENSUS_DRIFT', path: v.path, detail: `${v.path}: ${v.kind} — ${v.detail}` })
+    }
   }
   for (const v of scanClosedness({ contributions }).violations) {
     findings.push({ code: 'DEF_NAME_UNREADABLE', path: v.path, detail: `${v.path}: ${v.kind} — ${v.detail}` })
   }
 
   // The execution arm.
-  const bookedByPath = new Map(ledger.families.flatMap((f) => f.contributionPaths.map((p) => [p, f])))
+  const bookedByPath = new Map((censusLedger?.families ?? []).flatMap((f) => f.contributionPaths.map((p) => [p, f])))
   for (const path of contribPaths) {
     const text = files.get(path)
     if (text === undefined) continue
@@ -165,6 +281,9 @@ export function checkFamilyDefinitions({ files, ledger = loadCensusLedger() }) {
   for (const [path, text] of files) {
     if (isFamilyRowPath(path)) checkExecuteMembers(path, text, findings)
   }
+  // The deletion half of UTE-4: required CI refuses a removed old path unless
+  // the retirement gate allows that family's row (RETIREMENT.md §5.1).
+  findings.push(...checkRetirementLicences({ files, retirement, root }).findings)
   return { findings }
 }
 
@@ -199,6 +318,19 @@ if (invokedDirectly) {
   try {
     const paths = trackedDefinitionPaths(ROOT)
     const files = new Map(paths.map((p) => [p, readFileSync(join(ROOT, p), 'utf8')]))
+    // The retirement arm treats the injected map as the file universe, so the
+    // declared old-path files must be in it too; otherwise every row would look
+    // deleted. They are read from the tree here, once.
+    try {
+      const retirementLedger = JSON.parse(readFileSync(join(ROOT, RETIREMENT_LEDGER_REL), 'utf8'))
+      for (const row of retirementLedger.families ?? []) {
+        for (const rel of row?.oldPath?.files ?? []) {
+          if (typeof rel === 'string' && !files.has(rel) && existsSync(join(ROOT, rel))) files.set(rel, readFileSync(join(ROOT, rel), 'utf8'))
+        }
+      }
+    } catch {
+      // Absent/unparseable ledger: the arm itself fails closed and reports it.
+    }
     out = { files: files.size, ...checkFamilyDefinitions({ files }) }
   } catch (e) {
     console.error(`EB3-FAMILY-DEFINITIONS refused could-not-grade: ${String(e?.message ?? e)}`)

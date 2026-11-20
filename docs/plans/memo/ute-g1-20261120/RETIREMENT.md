@@ -30,6 +30,51 @@ consequences follow and are binding for UTE-4:
    does not establish process/PTY lifecycle behaviour. This is #765's R-S3.2,
    adopted verbatim.
 
+### 1.1 What "family" means here: the assembly, not a chosen subset
+
+`[MEASURED]` The FS family is **one indivisible assembly**. Re-read
+`packages/tools/families/fs.mjs`:
+
+- `claims: (cap) => [cap.readName, WRITE_NATIVE_NAME, EDIT_NATIVE_NAME, READ_IMAGE_NATIVE_NAME]`
+  — four model-visible names: `read`, `write`, `edit`, `read_image`.
+- `build()` refuses a partial mount with `PLANE_FS_FAMILY_INCOMPLETE` ("the fs
+  family mounts read+write+edit+read_image together; a partial fs lane is a broken
+  assembly (fail closed)"), and ONE Registry candidate carries all four row
+  definitions (`fs-family-contribution.mjs`, U7-9a).
+
+So "retire the FS family" retires **all four** names. A row that verifies
+`read`/`write`/`edit` and calls that `NewPathVerified` is not being conservative —
+it is under-claiming the unit, and the gate must refuse it. This was the external
+review's first finding on #795/#796 (2026-11-20): the FS golden corpus has no
+`read_image` vector (attachment storage, image-capability routing, refusal,
+cancellation), yet three of four terms were `true` and only the semantic-difference
+term stood between the ledger and an allowed retirement.
+
+`[MEASURED]` A reviewed, machine-readable member census already exists:
+`dev/agent-workflow/ledgers/arc-a-family-census.json` books, per family,
+`familyId`, the `lane` that owns the contribution, and `nativeNames` (e.g.
+`dsh.fs-family` → `(bound-definition) read|write|edit|read_image`). It is
+protected by its own fitness gate: an unbooked or vanished family is red
+(`census-missing` / `census-stale`, ARC-A L3). **Therefore the unit is derived
+from the census, not from this ledger**: a row declares `unit.familyId` and the
+gate reads the members from the census file.
+
+| ledger says | gate answers |
+|---|---|
+| no `unit` block | `UTE_UNIT_UNDECLARED` — a row without a unit cannot be graded |
+| `familyId` not in the census | `UTE_UNIT_UNKNOWN_FAMILY` |
+| declares fewer members than the census books | `UTE_UNIT_UNDERCLAIMED` |
+| declares a member the census does not book | `UTE_UNIT_OVERCLAIMED` |
+
+`[PROPOSED-BY-MEMO]` A family may be split into smaller retirement units **only
+when the split is proven at runtime** (each sub-unit mounts and switches
+independently, with its own evidence), and then the census books the sub-units.
+Editing the ledger is not a split; renaming a member is not a split.
+
+`[PROPOSED-BY-MEMO]` Consequence for FS today, stated plainly: its retirement unit
+is four tools, the corpus covers three, so FS **is refused for coverage** — the
+true state, not a paperwork problem.
+
 `[OWNER-DECIDED]` (D3) `SemanticDifferencesResolved` may be satisfied by an
 **approved semantic change**, not only by byte equality. It is therefore *not*
 "the two paths look the same"; it is "every difference is recorded, and every
@@ -48,6 +93,25 @@ verdict token.
 | `NewPathVerified` | a committed verdict from the **new** path for this family, on the pinned next host, through the host's own executor (FS example: `PROTOTYPE-VERDICT GREEN vectors=10 failed=0` in `dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt`) | same evidence rules; the verdict token must be present verbatim (a `GREEN` that exists only in prose fails) | `UTE_NEW_PATH_UNVERIFIED` |
 | `SemanticDifferencesResolved` | the family's recorded differences list, each with `blocking` and — when blocking — an `approval` carrying `by`, `on` (YYYY-MM-DD) and `record` (a committed approval file that names the approver). FS example: `tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md` | the term is **derived**, not asserted: `verdict:true` cannot survive a blocking difference without an approval; the approval record is itself checked as evidence (committed, names the approver) | `UTE_SEMANTIC_DIFFERENCES_UNRESOLVED` (plus `UTE_EVIDENCE_*` for a bad record) |
 | `NegativeControlsPass` | the family's own negative controls: a committed transcript where each claim has a control that fails when the claim is false, and a positive control proving the control is not vacuous (FS example: `NC-VERDICT GREEN controls=4 failed=0`) | same evidence rules; the transcript must state the verdict, not just list controls | `UTE_NEGATIVE_CONTROLS_FAILING` |
+
+`[PROPOSED-BY-MEMO]` **Unit coverage is a precondition of a term being
+established**, so it is graded *inside* the term it invalidates rather than as a
+fifth term (the owner's predicate has four terms, D2):
+
+| coverage check | derived from (never from a self-asserted token) | refusal code (term) |
+|---|---|---|
+| the row's unit exists and equals the census unit | `unit.familyId` → `arc-a-family-census.json` `nativeNames` | `UTE_UNIT_UNDECLARED` / `UTE_UNIT_UNKNOWN_FAMILY` / `UTE_UNIT_UNDERCLAIMED` / `UTE_UNIT_OVERCLAIMED` |
+| every unit member has at least one **baseline** vector | `oldBaseline.evidence` file parsed as TSV: header row with `id` and `entry`, one data row per vector; `entry` is the member | `UTE_MEMBER_UNCOVERED` (`oldBaseline`) |
+| every baseline vector is **reproduced** by the new path | the same TSV's `id` values, each required to appear as `NEW-PATH-VECTOR <id> PASS` in `newPathVerified.evidence` | `UTE_VECTOR_UNREPRODUCED` (`newPathVerified`) |
+| every covered member has at least one negative control of its own | `negativeControlsPass.evidence` must contain one `NC-MEMBER <member>` line per member that has a baseline vector | `UTE_MEMBER_UNCOVERED` (`negativeControlsPass`) |
+| the declared old path is still in the tree unless the row is allowed | `oldPath.files` (repo-relative, tracked) + the working tree | `UTE_OLD_PATH_PARTIALLY_REMOVED` |
+
+`[PROPOSED-BY-MEMO]` Why these are derived, not declared: the baseline TSV is a
+measured artifact whose `entry` column is the tool that produced the effect; the
+new-path evidence is the prototype's own transcript. A row cannot fake coverage by
+writing "read_image covered" into the ledger — the gate looks for a vector row,
+and there is none. A TSV without `id`/`entry` columns is refused as
+`UTE_UNIT_UNGRADABLE` rather than guessed at.
 
 Evidence is checked for **every** term that carries a pointer, including a term
 whose verdict is already `false` (a row that names a nonexistent or contradictory
@@ -93,6 +157,31 @@ and an approval for FS is not an approval for Web/PTY. Approvals do not expire b
 time, but they are scoped: moving the host pin or changing the provider
 implementation re-opens the question and the approval record must be re-issued
 (a new dated record; the old one is never edited).
+
+`[PROPOSED-BY-MEMO]` (P4b) **An approval must be reference-bound.** The record
+naming the approver is necessary but not sufficient: a name in a committed file
+proves transcription, not authority. The approval therefore also carries a
+machine-checkable reference to a real, already-merged act of approval:
+
+```
+"reference": "PR #<n> @ <40-hex merge commit>"
+```
+
+and the gate refuses (`UTE_APPROVAL_UNREFERENCED`) unless the 40-hex resolves to a
+commit that exists in this repository and is an ancestor of the graded HEAD. That
+is what makes "the owner approved it" traceable to a PR and a commit instead of to
+a string. `[UNKNOWN]` Whether the owner prefers a PR review id, a specific
+protected-branch setting, or a release note; the *requirement* of a resolvable
+reference is the proposal, the reference format is the owner's to change.
+
+`[PROPOSED-BY-MEMO]` **Honest limit, stated so it is not oversold:** the gate is
+a *retirement evidence and licence checker*, not a cryptographically independent
+authorisation service. It proves (a) the evidence is committed and says what the
+row claims, (b) the unit is fully covered, (c) the approval is bound to a real
+commit. It does **not** prove that the named person is entitled to approve — that
+is enforced by the protected branch, PR review and the CI record the reference
+points at. Writing this limit down is part of the fix: an over-claimed gate is a
+silent-green channel with better marketing.
 
 ## 4. The two currently blocking differences (carried forward)
 
@@ -173,57 +262,129 @@ branches. It does **not** mean "the prototype passes its own corpus": the corpus
 was built to tolerate these differences, so a green corpus is evidence *about
 effects*, not about equivalence of refusal surfaces.
 
-## 5. Per-family ledger and the only route to UTE-4
+## 5. The only route to UTE-4 — and why the gate is not advisory
 
 `[PROPOSED-BY-MEMO]` (P6) UTE-4 may delete old code for a family only when the
-gate allows that family's row. Sequence:
+gate allows that family's row.
+
+### 5.1 The deletion itself is the trigger (CI, not a developer's good intentions)
+
+The UTE-0 gate was correct about *evidence* and inert about *deletion*: nothing
+ran it when someone removed the old path. The external review called that out
+(2026-11-20 §3.4: "它当前更准确地说是退役证据一致性检查器，还不是独立可信的退役
+授权器"). Two changes close it without inventing a new CI architecture:
+
+1. **The ledger declares the old path.** A row carries
+   `oldPath: { files: [ …repo-relative, tracked… ] }` — the family's own old
+   implementation files (row definitions, contribution, plane body). The gate
+   checks every declared file is present in the tree. If one is gone and the row is
+   not allowed → `UTE_OLD_PATH_PARTIALLY_REMOVED`. This is tree-state, not diff
+   state, so it cannot be defeated by a shallow checkout.
+2. **A required CI leg runs it on every PR.**
+   `scripts/eb3-family-definitions.mjs` (the `ci-fast` leg that already loads
+   `arc-a-family-census.json`, so it needs no new workflow line, no new manifest
+   leg and no new argv) imports the retirement ledger and, for every family with a
+   declared `oldPath`, refuses `DEF_RETIREMENT_UNLICENSED` when a declared file is
+   missing/named-not-tracked and the row is not allowed. The refusal line carries
+   the gate's own codes.
+
+`[PROPOSED-BY-MEMO]` Consequence, and the point: a UTE-4 deletion PR is red before
+a reviewer has to notice. You cannot delete the implementation first and file the
+evidence afterwards — removing the file and dropping the ledger row are the same
+act.
+
+`[PROPOSED-BY-MEMO]` The deletion hook covers what the ledger declares. It is not
+a proof that *every* file of the old path is declared; growing a family's
+`oldPath.files` to the full inventory is UTE-3 work, and an undeclared file is a
+gap to be closed, not a pass. `[UNKNOWN]` The exact inventory per family beyond FS
+is not measured yet.
+
+Manual route (still supported, e.g. before opening a PR):
 
 ```bash
-# before touching the family's old path
 node scripts/ute-retirement-gate.mjs --family fs          # exit 0 required
-# the mechanical default for every family not yet ready
 node scripts/ute-retirement-gate.mjs --all                # exit 1 is the honest state
 ```
 
 The gate prints one of:
 
 ```
-UTE-RETIREMENT-ALLOW family=<f> terms=4/4 state=RETIREABLE
-UTE-RETIREMENT-REFUSED family=<f> codes=<named codes> state=<mirror>
+UTE-RETIREMENT-ALLOW family=<f> terms=4/4 unit=<n>/<n> state=RETIREABLE
+UTE-RETIREMENT-REFUSED family=<f> codes=<named codes> state=<mirror> unit=<covered>/<total>
 UTE-RETIREMENT-FINDING code=<code> term=<term> detail="<why>"
 UTE-RETIREMENT-SUMMARY requested=N allowed=N refused=N
 ```
 
-`--json` emits `ute-retirement-verdict/1` with the same facts for machine
-consumption. Exit codes: `0` allowed, `1` refused, `2` could not grade (ledger
-absent/unparseable/wrong schema). `2` is **never** a green.
+`--json` emits `ute-retirement-verdict/1` with the same facts plus the derived
+unit, the coverage sets and the refusal list, for machine consumption. Exit codes:
+`0` allowed, `1` refused, `2` could not grade (ledger absent/unparseable/wrong
+schema, ungradable unit). `2` is **never** a green.
 
-## 6. Seeded state (2026-11-20, measured by the gate itself)
+### 5.2 The closed refusal vocabulary (as of this revision)
 
-`[MEASURED]` The ledger seeds one row, `fs`:
+| code | meaning |
+|---|---|
+| `UTE_OLD_BASELINE_MISSING` | `oldBaseline` term not established |
+| `UTE_NEW_PATH_UNVERIFIED` | `newPathVerified` term not established |
+| `UTE_SEMANTIC_DIFFERENCES_UNRESOLVED` | a blocking difference has no bound approval |
+| `UTE_NEGATIVE_CONTROLS_FAILING` | `negativeControlsPass` term not established |
+| `UTE_EVIDENCE_UNREADABLE` | pointer missing / untracked / no `expect` tokens / unreadable |
+| `UTE_EVIDENCE_CONTRADICTED` | file read, but it does not state the claimed verdict |
+| `UTE_STATE_CONTRADICTED` | the mirrored `state` disagrees with the computed predicate |
+| `UTE_LEDGER_UNKNOWN_FAMILY` | no row for the requested family |
+| `UTE_UNIT_UNDECLARED` / `UTE_UNIT_UNKNOWN_FAMILY` / `UTE_UNIT_UNDERCLAIMED` / `UTE_UNIT_OVERCLAIMED` | the retirement unit is absent, unknown, smaller than, or larger than the census unit |
+| `UTE_UNIT_UNGRADABLE` | the unit cannot be derived (bad census entry, unparseable baseline TSV) |
+| `UTE_MEMBER_UNCOVERED` | a unit member has no baseline vector / no new-path reproduction / no negative control |
+| `UTE_VECTOR_UNREPRODUCED` | a baseline vector the new path did not reproduce |
+| `UTE_APPROVAL_UNREFERENCED` | an approval is not bound to an existing commit (or names no reference) |
+| `UTE_OLD_PATH_UNDECLARED` | the row declares no usable `oldPath.files` (absent/empty/not repo-relative safe paths) |
+| `UTE_OLD_PATH_PARTIALLY_REMOVED` | a declared old-path file is gone while the row is not allowed |
+| `UTE_LEDGER_SCHEMA` (exit 2) | the ledger cannot be graded at all |
 
-| term | verdict | evidence | why |
-|---|---|---|---|
-| `oldBaseline` | `true` | `tests/ute-g1-fs/golden/old-path.tsv` | 10 vectors captured on legacy route-C (0.2.0-rc.2 @ `639ed01539`) |
-| `newPathVerified` | `true` | `dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt` | `PROTOTYPE-VERDICT GREEN vectors=10 failed=0` on rc.5 |
-| `semanticDifferencesResolved` | **`false`** | `tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md` | both differences are `retirement-blocking YES`; neither has an approval |
-| `negativeControlsPass` | `true` | `dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt` | `NC-VERDICT GREEN controls=4 failed=0` |
+## 6. Seeded state (re-measured after the coverage rule, 2026-11-20)
 
-Therefore `fs` is `NOT_RETIREABLE` and the gate refuses it with
-`UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`. Verbatim transcript:
-`dev/agent-workflow/evidence/ute0-contract-20261120/gate-refusal.txt`.
+`[MEASURED]` The ledger seeds one row, `fs`, with `unit.familyId = dsh.fs-family`
+(four members) and `oldPath.files` = the FS family's row/contribution files. The
+gate refuses it; the measured transcript is
+`dev/agent-workflow/evidence/ute0-rev2-20261120/gate-refusal.txt`:
+
+| check | result today | why |
+|---|---|---|
+| unit | 4 members: `read`, `write`, `edit`, `read_image` | derived from `arc-a-family-census.json`, not chosen by the row |
+| `oldBaseline` | refused (`UTE_MEMBER_UNCOVERED`) | the 10-vector TSV covers `read`/`write`/`edit`; there is no `read_image` vector |
+| `newPathVerified` | refused (`UTE_MEMBER_UNCOVERED`) | all 10 baseline vectors are reproduced (`NEW-PATH-VECTOR <id> PASS`, no `UTE_VECTOR_UNREPRODUCED`), but `read_image` has no vector to reproduce |
+| `semanticDifferencesResolved` | refused (`UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`) | both differences are `retirement-blocking YES`; neither has a bound approval |
+| `negativeControlsPass` | refused (`UTE_MEMBER_UNCOVERED` ×3) | the 4 recorded controls are family-level; there is no `NC-MEMBER read`, `NC-MEMBER write` or `NC-MEMBER edit` line, so control coverage of the unit is unproven |
+| `state` | `NOT_RETIREABLE` (mirror) | consistent with the computed verdict — no `UTE_STATE_CONTRADICTED` |
+| readiness | `unit=0/4` | zero of the four members is covered on every axis the gate requires; `UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1`, exit 1 |
+
+`[MEASURED]` Verbatim refusal transcript, the `--json` verdict and the mutation
+transcript: `dev/agent-workflow/evidence/ute0-rev2-20261120/` (`gate-refusal.txt`,
+`gate-fs-json.json`, `mutants.txt`, `negatives.txt`, `family-definitions.txt`). The
+gate suite is **31/31** with **14/14** real mutations turning a named control red,
+and the required-CI hook is exercised by **35/35** negative controls (two of them
+are the deletion-licensed / deletion-unlicensed pair).
 
 `[PROPOSED-BY-MEMO]` Later families add rows; they do **not** edit the `fs` row's
 evidence to claim completion. A difference that is genuinely gone is retired by
 editing the difference list **with a pointer to the evidence that measured it
-gone** (`tests/ute-g1-fs/lib/semantic-differences.mjs` change discipline), and
-then adding the approval record — never by deleting the row.
+gone** (`tests/ute-g1-fs/lib/semantic-differences.mjs` change discipline), and then
+adding the bound approval record — never by deleting the row.
 
 ## 7. Exit criterion for UTE-4 (what the owner can check)
 
-`[PROPOSED-BY-MEMO]` UTE-4 is done when, for every migrated family, the gate
-allows the row; the old family's code, its definitions and its data are removed
-in the same per-family change set that cites the allow line; and the
-`OldBaseline` artifact is preserved (retirement deletes the implementation, never
-the evidence). A family with no ledger row cannot be retired: absence is not a
-pass.
+`[PROPOSED-BY-MEMO]` UTE-4 is done when, for every migrated family:
+
+1. the gate allows the row, covering the **whole census unit**;
+2. the old family's code, its definitions and its data are removed in the same
+   per-family change set that cites the allow line — and required CI's
+   `DEF_RETIREMENT_UNLICENSED` arm stays green *because* the row is allowed, not
+   because nothing was declared;
+3. the `OldBaseline` artifact is preserved (retirement deletes the implementation,
+   never the evidence);
+4. no family is retired by shrinking its declared unit, by deleting its census row,
+   or by removing its old-path declaration.
+
+A family with no ledger row cannot be retired: absence is not a pass. A family
+whose census unit is smaller than what it actually mounts cannot be retired either
+— fix the census first, and that edit is itself reviewable.

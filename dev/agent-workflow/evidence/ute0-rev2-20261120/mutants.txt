@@ -1,0 +1,83 @@
+UTE-MUTATION id=P1 mutation="none (unit fully covered, all four terms satisfied by committed evidence)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTATION id=NC-1 mutation="oldBaseline.verdict=false" expected=REFUSED:UTE_OLD_BASELINE_MISSING observed=UTE_OLD_BASELINE_MISSING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-2 mutation="newPathVerified.verdict=false" expected=REFUSED:UTE_NEW_PATH_UNVERIFIED observed=UTE_NEW_PATH_UNVERIFIED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-3 mutation="blocking difference without an approval" expected=REFUSED:UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-4 mutation="negativeControlsPass.verdict=false" expected=REFUSED:UTE_NEGATIVE_CONTROLS_FAILING observed=UTE_NEGATIVE_CONTROLS_FAILING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-5 mutation="request family=pty (only synthetic-fs is in the ledger)" expected=REFUSED:UTE_LEDGER_UNKNOWN_FAMILY observed=UTE_LEDGER_UNKNOWN_FAMILY recovered=n/a (unknown family has no green state)
+UTE-MUTATION id=NC-6 mutation="evidence pointer → missing file; and → present-but-uncommitted file" expected=REFUSED:UTE_EVIDENCE_UNREADABLE observed=UTE_EVIDENCE_UNREADABLE,UTE_UNIT_UNGRADABLE,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-7 mutation="expect token absent; and a verbatim contradicts token present" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-8 mutation="state=NOT_RETIREABLE with all terms true; state=RETIREABLE with a failed term" expected=REFUSED:UTE_STATE_CONTRADICTED observed=UTE_STATE_CONTRADICTED,UTE_NEGATIVE_CONTROLS_FAILING recovered=ALLOWED
+UTE-MUTATION id=NC-9 mutation="schema=ute-retirement/0" expected=REFUSED:UTE_LEDGER_SCHEMA observed=UTE_LEDGER_SCHEMA recovered=ALLOWED (correct schema)
+UTE-MUTATION id=NC-10 mutation="approval.record points at a committed file that never names the approver" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED,UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=REAL mutation="seeded dev/agent-workflow/ledgers/ute-retirement.json row fs with a fabricated UNIT-MEMBER coverage note" expected=REFUSED:UTE_MEMBER_UNCOVERED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_MEMBER_UNCOVERED recovered=same verdict as the honest row
+UTE-MUTATION id=UNIT-1 mutation="no `unit` block at all" expected=REFUSED:UTE_UNIT_UNDECLARED observed=UTE_UNIT_UNDECLARED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-2 mutation="unit.familyId names a family the census does not book" expected=REFUSED:UTE_UNIT_UNKNOWN_FAMILY observed=UTE_UNIT_UNKNOWN_FAMILY,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-3 mutation="declared unit drops read_image (the review finding shape)" expected=REFUSED:UTE_UNIT_UNDERCLAIMED observed=UTE_UNIT_UNDERCLAIMED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-4 mutation="declared unit adds a tool the census does not book" expected=REFUSED:UTE_UNIT_OVERCLAIMED observed=UTE_UNIT_OVERCLAIMED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=UNIT-5 mutation="census rewritten as invalid JSON / deleted from the tree" expected=REFUSED:UTE_UNIT_UNGRADABLE observed=UTE_UNIT_UNGRADABLE,UTE_STATE_CONTRADICTED recovered=ALLOWED (valid committed census)
+UTE-MUTATION id=COV-1 mutation="baseline header `id|verdict` (no entry) and `vector|entry` (no id)" expected=REFUSED:UTE_UNIT_UNGRADABLE observed=UTE_UNIT_UNGRADABLE recovered=ALLOWED (header has id and entry)
+UTE-MUTATION id=COV-2 mutation="baseline TSV covers read/write/edit but has no read_image row" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (four-member baseline)
+UTE-MUTATION id=COV-3 mutation="ledger note + selfAssertedCoverage name read_image, baseline has no vector" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (real read_image vector)
+UTE-MUTATION id=COV-4 mutation="new-path transcript omits FS-4-image / marks FS-1-read FAIL" expected=REFUSED:UTE_VECTOR_UNREPRODUCED observed=UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED,UTE_EVIDENCE_UNREADABLE recovered=ALLOWED (all four PASS lines)
+UTE-MUTATION id=COV-5 mutation="NC transcript has no `NC-MEMBER read_image` line" expected=REFUSED:UTE_MEMBER_UNCOVERED observed=UTE_MEMBER_UNCOVERED recovered=ALLOWED (one NC-MEMBER line per covered member)
+UTE-MUTATION id=APPR-1 mutation="approval reference absent; and \"PR #1 @ deadbeef\"" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (bound 40-hex)
+UTE-MUTATION id=APPR-2 mutation="reference to 000…0 (no such commit)" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (the fixture commit sha)
+UTE-MUTATION id=APPR-3 mutation="injected isAncestor()=false for the bound commit" expected=REFUSED:UTE_APPROVAL_UNREFERENCED observed=UTE_APPROVAL_UNREFERENCED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED (ancestor)
+UTE-MUTATION id=OP-1 mutation="src/gone.mjs deleted from the tree while negativeControlsPass fails" expected=REFUSED:UTE_OLD_PATH_PARTIALLY_REMOVED observed=UTE_NEGATIVE_CONTROLS_FAILING,UTE_OLD_PATH_PARTIALLY_REMOVED recovered=row still not allowed, file present → no old-path finding
+UTE-MUTATION id=OP-2 mutation="src/gone.mjs absent while the row is allowed" expected=ALLOWED observed=ALLOWED recovered=ALLOWED (retirement is the expected absence)
+UTE-MUTATION id=OP-3 mutation="no `oldPath` block at all" expected=REFUSED:UTE_OLD_PATH_UNDECLARED observed=UTE_OLD_PATH_UNDECLARED recovered=ALLOWED
+UTE-MUTATION id=CLI-ALLOW mutation="none (committed synthetic fixture, unit fully covered, approval bound to a real ancestor)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTANT id=M1 rule="UTE_UNIT_UNDECLARED" mutation-applied=true control=RED
+UTE-MUTANT id=M2 rule="UTE_UNIT_UNKNOWN_FAMILY" mutation-applied=true control=RED
+UTE-MUTANT id=M3 rule="UTE_UNIT_UNDERCLAIMED" mutation-applied=true control=RED
+UTE-MUTANT id=M4 rule="UTE_UNIT_OVERCLAIMED" mutation-applied=true control=RED
+UTE-MUTANT id=M5 rule="UTE_UNIT_UNGRADABLE (baseline header)" mutation-applied=true control=RED
+UTE-MUTANT id=M6 rule="UTE_MEMBER_UNCOVERED (oldBaseline)" mutation-applied=true control=RED
+UTE-MUTANT id=M7 rule="UTE_VECTOR_UNREPRODUCED" mutation-applied=true control=RED
+UTE-MUTANT id=M8 rule="UTE_MEMBER_UNCOVERED (newPathVerified)" mutation-applied=true control=RED
+UTE-MUTANT id=M9 rule="UTE_MEMBER_UNCOVERED (negativeControlsPass)" mutation-applied=true control=RED
+UTE-MUTANT id=M10 rule="UTE_APPROVAL_UNREFERENCED (shape)" mutation-applied=true control=RED
+UTE-MUTANT id=M11 rule="UTE_APPROVAL_UNREFERENCED (ancestry)" mutation-applied=true control=RED
+UTE-MUTANT id=M12 rule="UTE_OLD_PATH_UNDECLARED" mutation-applied=true control=RED
+UTE-MUTANT id=M13 rule="UTE_OLD_PATH_PARTIALLY_REMOVED" mutation-applied=true control=RED
+UTE-MUTANT id=M14 rule="coverage finding demotes its term" mutation-applied=true control=RED
+UTE-RETIREMENT-GATE-MUTANTS total=14 red=14
+✔ P1 — a fully satisfied synthetic family is ALLOWED (positive control) (64.341398ms)
+✔ NC-1 — oldBaseline.verdict=false → UTE_OLD_BASELINE_MISSING (79.37372ms)
+✔ NC-2 — newPathVerified.verdict=false → UTE_NEW_PATH_UNVERIFIED (81.135258ms)
+✔ NC-3 — blocking difference without an approval → UTE_SEMANTIC_DIFFERENCES_UNRESOLVED (74.588167ms)
+✔ NC-4 — negativeControlsPass.verdict=false → UTE_NEGATIVE_CONTROLS_FAILING (81.275924ms)
+✔ NC-5 — an unknown family is refused by name, never graded as absent-green (36.809551ms)
+✔ NC-6 — evidence must be a real COMMITTED file (missing and untracked both refuse) (93.361862ms)
+✔ NC-7 — a file that does not state the claimed verdict is CONTRADICTED evidence (104.121817ms)
+✔ NC-8 — state is a mirror, not a second authority (both directions refuse) (105.352481ms)
+✔ NC-9 — a ledger that cannot be graded exits NON-ZERO (never a pass) (38.825772ms)
+✔ NC-10 — a fabricated owner approval record is contradicted evidence (81.718308ms)
+✔ REAL — the seeded fs row is refused for unit coverage and unresolved differences, and fabricated claims change nothing (134.755994ms)
+✔ UNIT-1 — no `unit` block at all → UTE_UNIT_UNDECLARED (73.360953ms)
+✔ UNIT-2 — unit.familyId names a family the census does not book → UTE_UNIT_UNKNOWN_FAMILY (75.65632ms)
+✔ UNIT-3 — declared unit drops read_image (the review finding shape) → UTE_UNIT_UNDERCLAIMED (73.779591ms)
+✔ UNIT-4 — declared unit adds a tool the census does not book → UTE_UNIT_OVERCLAIMED (76.045661ms)
+✔ UNIT-5 — a missing or unparseable census fails closed (the unit cannot be invented) (78.402307ms)
+✔ COV-1 — a baseline TSV without `id` or `entry` is UNGRADABLE (never guessed) (74.342871ms)
+✔ COV-2 — read_image with no baseline vector is UTE_MEMBER_UNCOVERED on oldBaseline and newPathVerified (59.077419ms)
+✔ COV-3 — a ledger note claiming "read_image covered" is inert (coverage is measured) (80.417339ms)
+✔ COV-4 — a baseline vector the new path did not reproduce is UTE_VECTOR_UNREPRODUCED (80.351505ms)
+✔ COV-5 — a member with baseline evidence but no NC-MEMBER control is uncovered (59.356587ms)
+✔ APPR-1 — an approval with by/on/record but no reference is UNREFERENCED (72.071995ms)
+✔ APPR-2 — a 40-hex that does not exist in the repository is UNREFERENCED (56.874049ms)
+✔ APPR-3 — a commit that exists but is not an ancestor of HEAD is UNREFERENCED (77.515247ms)
+✔ OP-1 — a declared old-path file absent while the row is not allowed is PARTIALLY_REMOVED (57.796665ms)
+✔ OP-2 — the same absence while the row is ALLOWED is retirement, not a finding (58.414985ms)
+✔ OP-3 — no `oldPath` block at all → UTE_OLD_PATH_UNDECLARED (81.935573ms)
+✔ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (247.291191ms)
+✔ CLI — a committed, fully satisfied synthetic family is ALLOWED (exit 0) (88.65463ms)
+✔ MUTANTS — every new rule has a mutation that turns its control RED (846.907777ms)
+ℹ tests 31
+ℹ suites 0
+ℹ pass 31
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3359.860252

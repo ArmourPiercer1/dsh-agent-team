@@ -119,6 +119,22 @@ function readMap(root, paths) {
   return map
 }
 
+/** The retirement ledger the UTE-4 deletion arm grades against. */
+function retirementLedgerFile() {
+  return JSON.parse(readFileSync(join(ROOT, 'dev/agent-workflow/ledgers/ute-retirement.json'), 'utf8'))
+}
+
+/**
+ * An injected file map is the COMPLETE universe for the retirement-licence arm,
+ * so the declared old-path files must be in it too; otherwise every row looks
+ * deleted. This is the map a deletion control mutates.
+ */
+function definitionUniverse(paths, retirementLedger) {
+  const oldPathFiles = [...new Set(retirementLedger.families.flatMap((row) => row?.oldPath?.files ?? []))]
+    .filter((p) => existsSync(join(ROOT, p)))
+  return [...new Set([...paths, ...oldPathFiles])]
+}
+
 // ───────────────────────────────────────────────────────────── control 1: CI jobs
 /**
  * EB3-C "a required CI job removed must be detected". The checker under test is
@@ -231,13 +247,18 @@ control('C3 execution-definition-replaced', () => {
   // substitution silently did nothing and the control blamed the enforcement — a
   // mutation that does not mutate is a green light wired to nothing.
   const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
-  const honest = checkFamilyDefinitions({ files: readMap(ROOT, paths) })
+  // The retirement-licence arm (UTE-4) grades a DECLARED file set, so the
+  // injected map must contain the declared old-path files as well. The map is
+  // the universe: deleting an entry from it is what C3b/C3c stage.
+  const retirementLedger = retirementLedgerFile()
+  const universe = definitionUniverse(paths, retirementLedger)
+  const honest = checkFamilyDefinitions({ files: readMap(ROOT, universe), retirement: { ledger: retirementLedger } })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already fails the definition check: ${honest.findings.slice(0, 3).map((f) => `${f.code} ${f.detail}`).join(' ;; ')}` }
   }
   const seedPath = paths.find((p) => (readMap(ROOT, [p]).get(p) ?? '').includes('via: \'family-body\''))
   if (seedPath === undefined) return { ok: false, detail: 'no contribution declares via family-body — the control cannot stage mutation 3a' }
-  const base = readMap(ROOT, paths)
+  const base = readMap(ROOT, universe)
 
   // 3a: replace the execution arm with a named-bridge claim that names no bridge.
   const a = new Map(base)
@@ -285,6 +306,49 @@ control('C3 execution-definition-replaced', () => {
   const parts = [`3a ${aHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`, `3b ${bHit !== undefined ? 'detected' : 'MISSED'} on ${rowPath}`, `3c ${cHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`, `3d ${dHit !== undefined ? 'detected' : 'MISSED'} on ${seedPath}`]
   const all = aHit !== undefined && bHit !== undefined && cHit !== undefined && dHit !== undefined
   return { ok: all, detail: `honest tree passes; ${parts.join(', ')}` }
+})
+
+// ─────────────────────────────── control 3b: UTE-4 deletion is not licensed yet
+/**
+ * UTE-4's deletion trigger (RETIREMENT.md §5.1): removing a family's declared
+ * old-path file while its retirement row is NOT allowed must be caught by the
+ * required CI leg, before a reviewer has to notice. The FS row is not allowed
+ * today (read_image coverage + two unapproved differences), so deleting
+ * `packages/tools/families/fs.mjs` from the injected universe must produce
+ * exactly one DEF_RETIREMENT_UNLICENSED naming that file and carrying the
+ * gate's own codes.
+ */
+control('C3b retirement-deletion-unlicensed', () => {
+  const { checkFamilyDefinitions } = requireModule('scripts/eb3-family-definitions.mjs')
+  const retirementLedger = retirementLedgerFile()
+  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
+  const files = readMap(ROOT, definitionUniverse(paths, retirementLedger))
+  const fsOldPath = 'packages/tools/families/fs.mjs'
+  if (!files.delete(fsOldPath)) return { ok: false, detail: `the control could not delete ${fsOldPath} from the injected file map` }
+  const findings = checkFamilyDefinitions({ files, retirement: { ledger: retirementLedger } }).findings
+  const hits = findings.filter((f) => f.code === 'DEF_RETIREMENT_UNLICENSED')
+  const ok = hits.length === 1 && hits[0].path === fsOldPath && hits[0].detail.includes('"fs"') && hits[0].detail.includes('UTE_')
+  return { ok, detail: ok ? `deleting ${fsOldPath} from the injected map => exactly DEF_RETIREMENT_UNLICENSED naming the file and the fs row's gate codes` : `expected exactly one DEF_RETIREMENT_UNLICENSED for ${fsOldPath}, got ${findings.map((f) => `${f.code}@${f.path}`).join(',') || 'none'}` }
+})
+
+// ───────────────────────────── control 3c: the SAME deletion IS licensed when allowed
+/**
+ * The complement of C3b, and the reason C3b is not vacuous: a check that refuses
+ * every deletion would pass C3b and be useless. The committed selftest fixture
+ * row IS allowed (fully covered unit, bound approval), so deleting its declared
+ * old-path file must produce NO DEF_RETIREMENT_UNLICENSED — retirement is the
+ * licensed act, and the absence is expected.
+ */
+control('C3c retirement-deletion-licensed', () => {
+  const { checkFamilyDefinitions } = requireModule('scripts/eb3-family-definitions.mjs')
+  const retirementLedger = retirementLedgerFile()
+  const selftestLedger = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/ute-retirement-selftest/ledger.json'), 'utf8'))
+  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
+  const files = readMap(ROOT, definitionUniverse(paths, retirementLedger))
+  const licensedPath = selftestLedger.families[0].oldPath.files[0]
+  if (!files.delete(licensedPath)) return { ok: false, detail: `the control could not delete ${licensedPath} from the injected file map` }
+  const hits = checkFamilyDefinitions({ files, retirement: { ledger: selftestLedger } }).findings.filter((f) => f.code === 'DEF_RETIREMENT_UNLICENSED')
+  return { ok: hits.length === 0, detail: hits.length === 0 ? `deleting ${licensedPath} for the ALLOWED selftest row => no DEF_RETIREMENT_UNLICENSED` : `a licensed deletion was refused: ${hits.map((f) => f.detail).join(' ;; ')}` }
 })
 
 // ─────────────────────────────────────────────── control 4: cross-family influence

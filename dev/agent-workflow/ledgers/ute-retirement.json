@@ -1,9 +1,23 @@
 {
   "schema": "ute-retirement/1",
-  "note": "UTE G1 per-family retirement ledger. The four terms are the owner's predicate (RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved AND NegativeControlsPass). A row's state is a MIRROR of the computed verdict, never a substitute for it: scripts/ute-retirement-gate.mjs re-reads every `evidence.path`, refuses files git does not track, and refuses files that do not contain the claimed verdict token. 'SemanticDifferencesResolved' is not byte equality: every difference with blocking:true must carry an owner approval whose `record` is itself a committed file naming the approver (docs/plans/memo/ute-g1-20261120/RETIREMENT.md). Seeded 2026-11-20 by UTE-0; fs is NOT_RETIREABLE because both recorded semantic differences are retirement-blocking and neither has an approved compatibility interface.",
+  "note": "UTE G1 per-family retirement ledger (revised 2026-11-20 after the external review). The four terms are the owner's predicate (RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved AND NegativeControlsPass). Three rules the gate enforces and this ledger cannot talk its way out of: (1) `unit.familyId` is resolved against dev/agent-workflow/ledgers/arc-a-family-census.json, so a row cannot shrink the retirement unit to the tools it happened to verify; (2) coverage is derived from the baseline TSV's `entry` column and the new path's `NEW-PATH-VECTOR <id>` lines, so a member with no vector is refused rather than absorbed; (3) every declared `oldPath.files` entry is checked for presence, and scripts/eb3-family-definitions.mjs turns required CI red (DEF_RETIREMENT_UNLICENSED) if one is deleted while the row is not allowed. `state` remains a mirror of the computed verdict. See docs/plans/memo/ute-g1-20261120/RETIREMENT.md.",
   "families": [
     {
       "family": "fs",
+      "unit": {
+        "familyId": "dsh.fs-family"
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/fs.mjs",
+          "packages/tools/fs-family/src/fs-family-contribution.mjs",
+          "packages/tools/fs-family/src/fs-read-contribution.mjs",
+          "packages/tools/fs-family/src/read-row.mjs",
+          "packages/tools/fs-family/src/write-row.mjs",
+          "packages/tools/fs-family/src/edit-row.mjs",
+          "packages/tools/fs-family/src/image-row.mjs"
+        ]
+      },
       "state": "NOT_RETIREABLE",
       "terms": {
         "oldBaseline": {
@@ -72,7 +86,7 @@
           "note": "NC-1 lane bites, NC-2 harness bites on a mutated golden cell, NC-3 no legacy fallback (typed NextHostMissingError), NC-4 the lane is load-bearing. These are the negative controls for the FS prototype claims; per-family retirement must re-run the family's own controls (a green FS control is not evidence for Web or PTY)."
         }
       },
-      "note": "FS is the first family in the UTE G1 ordering and may retire before Web/PTY (owner ruling: per-family retirement is incremental). It may not retire today: the semantic-difference term is false and the gate refuses with UTE_SEMANTIC_DIFFERENCES_UNRESOLVED."
+      "note": "FS is the first family in the UTE G1 ordering and may retire before Web/PTY (owner ruling: per-family retirement is incremental). Its retirement unit is the WHOLE assembly (read+write+edit+read_image, one candidate, PLANE_FS_FAMILY_INCOMPLETE on a partial mount) and the members are DERIVED from dev/agent-workflow/ledgers/arc-a-family-census.json, not from this row. It may not retire today: the corpus has no read_image vector (UTE_MEMBER_UNCOVERED), no per-member negative control, and both semantic differences are retirement-blocking with no bound approval."
     }
   ]
 }
