@@ -8,6 +8,12 @@
  *
  * @module @dsh-agent-team/runtime/settlement
  */
-export { ExecutionSettlementRefusal, SETTLEMENT_ENVELOPE_SCHEMA, SETTLEMENT_RECORD_SUFFIX, SETTLEMENT_REFUSAL_CODES, SETTLEMENT_SCHEMA, SETTLEMENT_STATES, SETTLEMENT_TEMP_SUFFIX, TERMINAL_SETTLEMENT_STATES, canonicalSettlementJson, createExecutionSettlementStore, settlementRecordPath, } from './execution-settlement.js';
-export type { AdmissionReference, BodyOutcome, DispatchPhase, EffectEvidence, EffectKind, EffectObservation, EnterRunningInput, ExecutionObservation, ExecutionSettlementRecord, ExecutionSettlementStore, ExecutionSettlementStoreOptions, RecordAdmissionInput, RecordStopInput, SettleInput, SettlementIdentity, SettlementRecoveryResult, SettlementRefusalCode, SettlementState, SettlementTransition, SettlementWriteResult, StopPhase, StopRecord, } from './execution-settlement.js';
+export { ExecutionSettlementRefusal, SETTLEMENT_ENVELOPE_SCHEMA, SETTLEMENT_RECORD_SUFFIX, SETTLEMENT_REFUSAL_CODES, SETTLEMENT_SCHEMA, SETTLEMENT_STATES, SETTLEMENT_TEMP_SUFFIX, TERMINAL_SETTLEMENT_STATES, admissionDecision, admissionRequestIds, canonicalSettlementJson, createExecutionSettlementStore, settlementRecordPath, } from './execution-settlement.js';
+export type { AdmissionKind, AdmissionReference, BodyOutcome, DispatchPhase, EffectEvidence, EffectKind, EffectObservation, ContractBodyOutcome, ContractDispatchState, ContractEffectEvidence, ContractExecutionFact, ContractHostResult, ContractRecovery, EnterRunningInput, ExecutionObservation, ExecutionSettlementRecord, ExecutionSettlementStore, ExecutionSettlementStoreOptions, RecordAdmissionInput, RecordStopInput, SettleInput, SettlementIdentity, SettlementRecoveryResult, SettlementDurability, SettlementRefusalCode, SettlementState, SettlementTransition, SettlementWriteResult, SettlementWriterLockInfo, StopPhase, StopRecord, } from './execution-settlement.js';
+/**
+ * The UTE-1 `ExecutionSettlementWriter` contract adapter. Its header states the
+ * read-compat boundary with `ControlService.recordExecutionResult` and the S2
+ * non-claim; it imports no control code.
+ */
+export * from './writer-adapter.js';
 //# sourceMappingURL=index.d.ts.map

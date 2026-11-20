@@ -36,8 +36,10 @@
  *      ├──settle(CANCELLED)
  *      └──settle(UNKNOWN)
  *
- *   - `REFUSED` is only reachable from `ADMITTED`: a final admission refusal
- *     before the body, with `dispatch: 'not-started'` and **no** effect.
+ *   - `REFUSED` is only reachable from `ADMITTED`: the body never started, with
+ *     `dispatch: 'not-started'` and **no** effect. Its admission may be a deny
+ *     decision or a reference-only admission; it may never contradict a
+ *     recorded `allow`.
  *   - `COMPLETED` / `FAILED` are only reachable from `RUNNING`: the body was
  *     dispatched.
  *   - Every terminal state is terminal. A later write with the SAME facts is the
@@ -68,18 +70,39 @@
  * no observation is refused (`EFFECT_CLAIM_WITHOUT_OBSERVATION`). A record may
  * also never claim "no effect" while its dispatch is unknown.
  *
- * CRASH SAFETY OF THE RECORD ITSELF. Every write is an immutable, checksummed
- * envelope written to a private temp file, fsync'd, and published with an atomic
- * rename. A reader therefore sees either the previous complete record or the new
- * complete record — never a half-written one. A record whose envelope, checksum
+ * DURABILITY BOUNDARY (the caller may dispatch immediately after admission).
+ * Every write is an immutable, checksummed envelope written to a private temp
+ * file, fsync'd, published with an atomic rename, and then the PARENT DIRECTORY
+ * is fsync'd before the call returns. `recordAdmission` therefore returns only
+ * after the admission fact is durable: if the process is SIGKILLed right after
+ * it returns and before any dispatch, a cold reader still finds the ADMITTED
+ * record (and `recoverUnsettled` turns it into `UNKNOWN`, never `COMPLETED` and
+ * never absent). A directory-fsync failure is the named
+ * `SETTLEMENT_DIRECTORY_FSYNC_FAILED`, never a silent success.
+ *
+ * SINGLE WRITER PER ROOT. The store takes an exclusive writer lock
+ * (`<dir>/.settlement-writer.lock`, pid + boot id) for the life of the process.
+ * A live foreign writer is refused with `SETTLEMENT_WRITER_CONFLICT`; a lock
+ * whose owner is demonstrably dead is reclaimed with a named evidence line
+ * (`UTE2-WRITER-LOCK reclaimed previousPid=…`). A single-writer process is the
+ * premise behind the monotonic transition log; the lock makes it enforceable.
+ *
+ * CRASH SAFETY OF THE RECORD ITSELF. A reader sees either the previous complete
+ * record or the new complete record — never a half-written one. A record whose envelope, checksum
  * or structure does not verify is `SETTLEMENT_CORRUPT` (a named refusal), never
  * "absent" and never "complete". Temp files are invisible to `read` / `list`.
  *
- * SCOPE OF THE GUARANTEE. S1 = "every execution that entered dispatch eventually
- * has a queryable fact: a terminal state or an explicit `UNKNOWN`". This module
- * does not itself observe the execution path: the adapters that call it are a
- * separate, wired-in-production change (none exists in this commit). S2
- * ("durable before the Host returns the result") is NOT claimed here.
+ * SCOPE OF THE GUARANTEE — CONTRACT, NOT ASPIRATION. This module is S1 only:
+ * "every execution that entered dispatch eventually has a queryable fact: a
+ * terminal state or an explicit `UNKNOWN`". It does not itself observe the
+ * execution path: the adapters that call it are a separate, wired-in-production
+ * change (none exists in this commit). **S2 — "the fact is committed before the
+ * model sees `tool/result`" — is NOT claimed and is NOT implementable here.**
+ * It needs a public awaitable Host seam after the durable write; the measured
+ * call sites today are fire-and-forget (`tools/result` listeners are emissions,
+ * not durability). Until such a seam exists the correct output for S2 is a
+ * `CORE_SEAM_BLOCKER`, never a fork, never a `tools/result` handler claiming
+ * ordering.
  *
  * @module @dsh-agent-team/runtime/settlement
  */
@@ -156,6 +179,8 @@ export type SettlementRefusalCode =
   | 'SETTLEMENT_CORRUPT'
   | 'SETTLEMENT_WRITE_FAILED'
   | 'SETTLEMENT_NOT_FOUND'
+  | 'SETTLEMENT_DIRECTORY_FSYNC_FAILED'
+  | 'SETTLEMENT_WRITER_CONFLICT'
 
 /** Every refusal code, so a caller/test can enumerate the closed vocabulary. */
 export const SETTLEMENT_REFUSAL_CODES: readonly SettlementRefusalCode[] = Object.freeze([
@@ -174,6 +199,8 @@ export const SETTLEMENT_REFUSAL_CODES: readonly SettlementRefusalCode[] = Object
   'SETTLEMENT_CORRUPT',
   'SETTLEMENT_WRITE_FAILED',
   'SETTLEMENT_NOT_FOUND',
+  'SETTLEMENT_DIRECTORY_FSYNC_FAILED',
+  'SETTLEMENT_WRITER_CONFLICT',
 ])
 
 /**
@@ -205,20 +232,36 @@ export interface SettlementIdentity {
 }
 
 /**
- * An IMMUTABLE reference to a decision the ControlService already made.
+ * How the admission slot of a record was populated. It is NEVER a new decision:
  *
- * `decisionId` + `decisionDigest` are the reference; `decision` is the recorded
- * verdict copied for coherence checks only. This module never creates, mutates
- * or re-evaluates one. `subjectExecutionId` is the execution the decision was
- * issued FOR; it must equal the settlement's ExecutionId or the write is
- * `SETTLEMENT_CROSS_WIRED`.
+ * - `control-decision` (the default): an immutable reference to a decision the
+ *   ControlService already made. `decision` is the recorded verdict, copied for
+ *   coherence checks only.
+ * - `control-request-reference`: the execution named one or more durable
+ *   ControlRequest legs (`requestIds`), but this writer has no verdict to copy.
+ *   The digest binds the reference list; no `decision` is claimed.
+ * - `no-control-request`: the fact names no ControlRequest leg at all (a tool
+ *   that never asks). The digest binds the subject execution; again no verdict.
+ *
+ * The two reference kinds exist so the Writer adapter can record a contract
+ * `ExecutionFact` WITHOUT minting an allow/deny verdict it did not observe.
+ * This module never creates, mutates or re-evaluates a decision.
+ * `subjectExecutionId` is the execution the admission was issued FOR; it must
+ * equal the settlement's ExecutionId or the write is `SETTLEMENT_CROSS_WIRED`.
  */
+export type AdmissionKind = 'control-decision' | 'control-request-reference' | 'no-control-request'
+
 export interface AdmissionReference {
+  /** Absent = 'control-decision' (records written before this field existed). */
+  readonly admissionKind?: AdmissionKind
   readonly decisionId: string
   readonly decisionDigest: string
-  readonly decision: 'allow' | 'deny'
+  /** Required for 'control-decision'; forbidden for the reference kinds. */
+  readonly decision?: 'allow' | 'deny'
   readonly decisionKind: string
   readonly subjectExecutionId: string
+  /** Required (non-empty) for 'control-request-reference'; absent otherwise. */
+  readonly requestIds?: readonly string[]
   readonly decidedAt?: string
 }
 
@@ -240,6 +283,10 @@ export type EffectKind =
   | 'process-spawn'
   | 'process-exit'
   | 'network-connect'
+  /** A fact-level declaration: the binding declared `observed` and the
+   *  evidence id is the digest of the fact that declared it. Not a fabricated
+   *  filesystem observation. */
+  | 'binding-declared'
 
 /** One observed effect, always tied to the instrument that saw it. */
 export interface EffectObservation {
@@ -279,6 +326,44 @@ export interface SettlementTransition {
   readonly factsDigest: string
 }
 
+/**
+ * The UTE-1 contract's `ExecutionFact` (see `docs/plans/memo/ute-g1-20261120/
+ * CONTRACT.md` §3). Duplicated here as a structural type on purpose: this module
+ * does not import the memo, and the Writer adapter must accept the shape
+ * verbatim. `effectEvidence: 'observed'` is carried with a `binding-declared`
+ * effect observation whose evidence id is the digest of the declaring fact.
+ */
+export type ContractDispatchState = 'not-started' | 'started' | 'quiesced' | 'termination-unconfirmed'
+export type ContractBodyOutcome = 'completed' | 'failed' | 'unknown'
+export type ContractEffectEvidence = 'none-confirmed' | 'possible' | 'observed' | 'unknown'
+
+export interface ContractHostResult {
+  readonly isError: boolean
+  readonly errorCode?: string
+}
+
+export interface ContractRecovery {
+  readonly reconciledFrom: string
+  readonly at: string
+  readonly detail: string
+}
+
+export interface ContractExecutionFact {
+  readonly executionId: string
+  readonly rootSessionId: string
+  readonly agentInstanceId: string
+  readonly hostCallId?: string
+  readonly parentExecutionId?: string
+  readonly controlRequestIds: readonly string[]
+  readonly dispatch: ContractDispatchState
+  readonly bodyOutcome: ContractBodyOutcome
+  readonly effectEvidence: ContractEffectEvidence
+  readonly hostResult?: ContractHostResult
+  /** ISO-8601 UTC. */
+  readonly recordedAt: string
+  readonly recovery?: ContractRecovery
+}
+
 /** The canonical record. The file on disk is exactly this payload. */
 export interface ExecutionSettlementRecord {
   readonly schema: typeof SETTLEMENT_SCHEMA
@@ -292,6 +377,8 @@ export interface ExecutionSettlementRecord {
   readonly missingEvidence: readonly string[]
   readonly createdAt: string
   readonly updatedAt: string
+  /** Present when the Writer adapter created this record from a contract fact. */
+  readonly contractFact?: ContractExecutionFact
 }
 
 /** What a successful (or idempotent) write did. */
@@ -308,6 +395,8 @@ export interface RecordAdmissionInput {
   readonly admission: AdmissionReference
   readonly at: string
   readonly reason?: string
+  /** Set by the Writer adapter; the store only freezes and cross-checks it. */
+  readonly contractFact?: ContractExecutionFact
 }
 
 /** Input to `enterRunning`. */
@@ -315,6 +404,8 @@ export interface EnterRunningInput {
   readonly executionId: string
   readonly observation: ExecutionObservation
   readonly at: string
+  /** When the record was opened from a contract fact, keep its snapshot current. */
+  readonly contractFact?: ContractExecutionFact
 }
 
 /** Input to `recordStop`. */
@@ -333,6 +424,8 @@ export interface SettleInput {
   readonly at: string
   readonly reason: string
   readonly missingEvidence?: readonly string[]
+  /** The terminal contract fact this settlement publishes, when there is one. */
+  readonly contractFact?: ContractExecutionFact
 }
 
 /** One record reconciled by `recoverUnsettled`. */
@@ -344,15 +437,36 @@ export interface SettlementRecoveryResult {
   readonly missingEvidence: readonly string[]
 }
 
+/**
+ * Durability ports. Production calls the real implementation; a test may inject
+ * a witness to observe the parent-directory fsync (and an injector that throws
+ * exercises the named refusal).
+ */
+export interface SettlementDurability {
+  readonly fsyncDirectory?: (dir: string) => void
+}
+
+/** What the writer lock did when this store opened the root. */
+export interface SettlementWriterLockInfo {
+  readonly state: 'acquired' | 'reentrant' | 'reclaimed'
+  readonly path: string
+  readonly pid: number
+  readonly bootId: string
+  readonly previousPid?: number
+  readonly previousBootId?: string
+}
+
 /** Options for {@link createExecutionSettlementStore}. */
 export interface ExecutionSettlementStoreOptions {
   /** Directory holding one `<executionId>.settlement.json` per execution. */
   readonly dir: string
+  readonly durability?: SettlementDurability
 }
 
 /** The writer/reader surface. There is deliberately no decision method here. */
 export interface ExecutionSettlementStore {
   readonly dir: string
+  readonly writerLock: SettlementWriterLockInfo
   recordAdmission(input: RecordAdmissionInput): SettlementWriteResult
   enterRunning(input: EnterRunningInput): SettlementWriteResult
   recordStop(input: RecordStopInput): SettlementWriteResult
@@ -396,8 +510,29 @@ const EFFECT_KINDS: readonly EffectKind[] = Object.freeze([
   'process-spawn',
   'process-exit',
   'network-connect',
+  'binding-declared',
 ])
 const STOP_PHASES: readonly StopPhase[] = Object.freeze(['pre-dispatch', 'in-flight', 'post-completion'])
+const ADMISSION_KINDS: readonly AdmissionKind[] = Object.freeze([
+  'control-decision',
+  'control-request-reference',
+  'no-control-request',
+])
+const CONTRACT_DISPATCH_STATES: readonly ContractDispatchState[] = Object.freeze([
+  'not-started',
+  'started',
+  'quiesced',
+  'termination-unconfirmed',
+])
+const CONTRACT_BODY_OUTCOMES: readonly ContractBodyOutcome[] = Object.freeze(['completed', 'failed', 'unknown'])
+const CONTRACT_EFFECT_EVIDENCE: readonly ContractEffectEvidence[] = Object.freeze([
+  'none-confirmed',
+  'possible',
+  'observed',
+  'unknown',
+])
+/** The writer lock lives beside the records and never ends in the record suffix. */
+const WRITER_LOCK_FILE = '.settlement-writer.lock'
 const ISO_TIMESTAMP_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/
 const EXECUTION_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/
 const SHA256_HEX_RE = /^[0-9a-f]{64}$/
@@ -469,36 +604,213 @@ function requireTimestamp(value: unknown, field: string): string {
   return value
 }
 
+/** The recorded verdict of an admission, or null for a reference-only admission. */
+export function admissionDecision(admission: AdmissionReference): 'allow' | 'deny' | null {
+  return admission.decision ?? null
+}
+
+/** The request ids an admission reference binds (empty for a decision). */
+export function admissionRequestIds(admission: AdmissionReference): readonly string[] {
+  return admission.requestIds ?? Object.freeze([] as string[])
+}
+
 /** Copies and freezes an admission reference. This is not a decision factory. */
 function freezeAdmissionReference(input: AdmissionReference): AdmissionReference {
   if (!isPlainObject(input)) {
     throw refusal('SETTLEMENT_ADMISSION_REFERENCE_INVALID', 'the admission reference must be an object')
+  }
+  const admissionKind = input.admissionKind ?? 'control-decision'
+  if (!ADMISSION_KINDS.includes(admissionKind)) {
+    throw refusal(
+      'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+      `admission.admissionKind '${String(admissionKind)}' is not known`,
+      { admissionKind },
+    )
   }
   const decisionId = requireString(input.decisionId, 'admission.decisionId')
   const decisionDigest = requireString(input.decisionDigest, 'admission.decisionDigest', 64)
   if (!SHA256_HEX_RE.test(decisionDigest)) {
     throw refusal(
       'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
-      'admission.decisionDigest must be the 64-hex sha256 of the ControlService decision record (a reference, not a re-decision)',
+      'admission.decisionDigest must be the 64-hex sha256 of the referenced admission fact (a reference, not a re-decision)',
       { decisionId },
     )
-  }
-  const decision = input.decision
-  if (decision !== 'allow' && decision !== 'deny') {
-    throw refusal('SETTLEMENT_ADMISSION_REFERENCE_INVALID', "admission.decision must be 'allow' or 'deny'", {
-      decisionId,
-    })
   }
   const decisionKind = requireString(input.decisionKind, 'admission.decisionKind')
   const subjectExecutionId = requireString(input.subjectExecutionId, 'admission.subjectExecutionId')
   const decidedAt = input.decidedAt === undefined ? undefined : requireTimestamp(input.decidedAt, 'admission.decidedAt')
+
+  if (admissionKind === 'control-decision') {
+    if (input.requestIds !== undefined) {
+      throw refusal(
+        'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+        "a 'control-decision' admission carries no requestIds — use 'control-request-reference' for that",
+        { decisionId },
+      )
+    }
+    const decision = input.decision
+    if (decision !== 'allow' && decision !== 'deny') {
+      throw refusal('SETTLEMENT_ADMISSION_REFERENCE_INVALID', "admission.decision must be 'allow' or 'deny'", {
+        decisionId,
+      })
+    }
+    return Object.freeze({
+      admissionKind,
+      decisionId,
+      decisionDigest,
+      decision,
+      decisionKind,
+      subjectExecutionId,
+      ...(decidedAt === undefined ? {} : { decidedAt }),
+    })
+  }
+
+  // Reference-only admission: NO verdict is claimed.
+  if (input.decision !== undefined) {
+    throw refusal(
+      'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+      `a '${admissionKind}' admission must not carry a decision — this module never mints one`,
+      { decisionId, admissionKind },
+    )
+  }
+  if (admissionKind === 'control-request-reference') {
+    if (!Array.isArray(input.requestIds) || input.requestIds.length === 0) {
+      throw refusal(
+        'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+        "a 'control-request-reference' admission requires a non-empty requestIds list",
+        { decisionId },
+      )
+    }
+    const requestIds = input.requestIds.map((id, index) => requireString(id, `admission.requestIds[${index}]`))
+    const expectedDigest = digestOf({ kind: admissionKind, subjectExecutionId, requestIds })
+    if (decisionDigest !== expectedDigest) {
+      throw refusal(
+        'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+        'the admission digest does not bind the requestIds it claims to reference',
+        { decisionId, expectedDigest },
+      )
+    }
+    return Object.freeze({
+      admissionKind,
+      decisionId,
+      decisionDigest,
+      decisionKind,
+      subjectExecutionId,
+      requestIds: Object.freeze(requestIds),
+      ...(decidedAt === undefined ? {} : { decidedAt }),
+    })
+  }
+  if (input.requestIds !== undefined && input.requestIds.length > 0) {
+    throw refusal(
+      'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+      "a 'no-control-request' admission cannot carry requestIds",
+      { decisionId },
+    )
+  }
+  const expectedDigest = digestOf({ kind: admissionKind, subjectExecutionId })
+  if (decisionDigest !== expectedDigest) {
+    throw refusal(
+      'SETTLEMENT_ADMISSION_REFERENCE_INVALID',
+      'the admission digest does not bind the execution it claims to be the provenance of',
+      { decisionId, expectedDigest },
+    )
+  }
   return Object.freeze({
+    admissionKind,
     decisionId,
     decisionDigest,
-    decision,
     decisionKind,
     subjectExecutionId,
     ...(decidedAt === undefined ? {} : { decidedAt }),
+  })
+}
+
+/** Freeze + cross-check one contract fact against its settlement identity. */
+function freezeContractFact(input: ContractExecutionFact, identity: SettlementIdentity): ContractExecutionFact {
+  if (!isPlainObject(input)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', 'contractFact must be an object')
+  }
+  const executionId = requireString(input.executionId, 'contractFact.executionId', 200)
+  if (!EXECUTION_ID_RE.test(executionId)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', 'contractFact.executionId is not a valid ExecutionId', { executionId })
+  }
+  const rootSessionId = requireString(input.rootSessionId, 'contractFact.rootSessionId')
+  const agentInstanceId = requireString(input.agentInstanceId, 'contractFact.agentInstanceId')
+  const hostCallId = input.hostCallId === undefined ? undefined : requireString(input.hostCallId, 'contractFact.hostCallId')
+  const parentExecutionId =
+    input.parentExecutionId === undefined ? undefined : requireString(input.parentExecutionId, 'contractFact.parentExecutionId')
+  if (!Array.isArray(input.controlRequestIds)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', 'contractFact.controlRequestIds must be an array')
+  }
+  const controlRequestIds = input.controlRequestIds.map((id, index) =>
+    requireString(id, `contractFact.controlRequestIds[${index}]`),
+  )
+  if (!CONTRACT_DISPATCH_STATES.includes(input.dispatch)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', `contractFact.dispatch '${String(input.dispatch)}' is not known`, {
+      dispatch: input.dispatch,
+    })
+  }
+  if (!CONTRACT_BODY_OUTCOMES.includes(input.bodyOutcome)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', `contractFact.bodyOutcome '${String(input.bodyOutcome)}' is not known`, {
+      bodyOutcome: input.bodyOutcome,
+    })
+  }
+  if (!CONTRACT_EFFECT_EVIDENCE.includes(input.effectEvidence)) {
+    throw refusal(
+      'SETTLEMENT_INPUT_INVALID',
+      `contractFact.effectEvidence '${String(input.effectEvidence)}' is not known`,
+      { effectEvidence: input.effectEvidence },
+    )
+  }
+  let hostResult: ContractHostResult | undefined
+  if (input.hostResult !== undefined) {
+    if (!isPlainObject(input.hostResult) || typeof input.hostResult.isError !== 'boolean') {
+      throw refusal('SETTLEMENT_INPUT_INVALID', 'contractFact.hostResult must be { isError: boolean, errorCode?: string }')
+    }
+    const errorCode =
+      input.hostResult.errorCode === undefined ? undefined : requireString(input.hostResult.errorCode, 'contractFact.hostResult.errorCode')
+    hostResult = Object.freeze({ isError: input.hostResult.isError, ...(errorCode === undefined ? {} : { errorCode }) })
+  }
+  let recovery: ContractRecovery | undefined
+  if (input.recovery !== undefined) {
+    if (!isPlainObject(input.recovery)) {
+      throw refusal('SETTLEMENT_INPUT_INVALID', 'contractFact.recovery must be an object')
+    }
+    recovery = Object.freeze({
+      reconciledFrom: requireString(input.recovery.reconciledFrom, 'contractFact.recovery.reconciledFrom'),
+      at: requireTimestamp(input.recovery.at, 'contractFact.recovery.at'),
+      detail: requireString(input.recovery.detail, 'contractFact.recovery.detail'),
+    })
+  }
+  const recordedAt = requireTimestamp(input.recordedAt, 'contractFact.recordedAt')
+  // The fact may only describe ITS OWN execution. A root/agent mismatch is the
+  // existing cross-wire refusal, not a silent accept.
+  assertSameExecution(identity.executionId, executionId, 'contractFact.executionId')
+  if (rootSessionId !== identity.worldId || agentInstanceId !== identity.actorId) {
+    throw refusal(
+      'SETTLEMENT_CROSS_WIRED',
+      'the contract fact belongs to a different root session / agent instance than the settlement identity',
+      {
+        expectedRootSessionId: identity.worldId,
+        observedRootSessionId: rootSessionId,
+        expectedAgentInstanceId: identity.actorId,
+        observedAgentInstanceId: agentInstanceId,
+      },
+    )
+  }
+  return Object.freeze({
+    executionId,
+    rootSessionId,
+    agentInstanceId,
+    ...(hostCallId === undefined ? {} : { hostCallId }),
+    ...(parentExecutionId === undefined ? {} : { parentExecutionId }),
+    controlRequestIds: Object.freeze(controlRequestIds),
+    dispatch: input.dispatch,
+    bodyOutcome: input.bodyOutcome,
+    effectEvidence: input.effectEvidence,
+    ...(hostResult === undefined ? {} : { hostResult }),
+    recordedAt,
+    ...(recovery === undefined ? {} : { recovery }),
   })
 }
 
@@ -617,22 +929,26 @@ function assertLegalTransition(from: SettlementState, to: SettlementState): void
 }
 
 function assertAdmissionCoherence(admission: AdmissionReference, state: SettlementState): void {
+  const decision = admissionDecision(admission)
   if (state === 'REFUSED') {
-    if (admission.decision !== 'deny') {
+    // A refusal may cite a deny decision, or an admission that carries only a
+    // request reference (no verdict exists to contradict the refusal). It may
+    // NEVER contradict a recorded 'allow'.
+    if (decision === 'allow') {
       throw refusal(
         'SETTLEMENT_ADMISSION_MISMATCH',
-        "a REFUSED settlement must reference a ControlService decision whose recorded outcome is 'deny'",
-        { decisionId: admission.decisionId, decision: admission.decision },
+        "a REFUSED settlement cannot reference a decision recorded as 'allow'",
+        { decisionId: admission.decisionId, decision },
       )
     }
     return
   }
   if (state === 'ADMITTED') return
-  if (admission.decision !== 'allow') {
+  if (decision === 'deny') {
     throw refusal(
       'SETTLEMENT_ADMISSION_MISMATCH',
       `a ${state} settlement cannot reference a decision recorded as 'deny' — this module records the decision, it does not overturn it`,
-      { decisionId: admission.decisionId, decision: admission.decision, state },
+      { decisionId: admission.decisionId, decision, state },
     )
   }
 }
@@ -741,6 +1057,46 @@ function nextTransition(
   })
 }
 
+/**
+ * A contract snapshot on a record must agree with the record's state: the store
+ * never holds a completed record whose fact says the body never ran (or vice
+ * versa). Used on BOTH the write and the read path.
+ */
+function assertContractFactAgreement(state: SettlementState, contractFact: ContractExecutionFact): void {
+  if ((state === 'ADMITTED' || state === 'REFUSED') && contractFact.dispatch !== 'not-started') {
+    throw refusal(
+      'SETTLEMENT_INPUT_INVALID',
+      `a ${state} record cannot carry a fact whose dispatch already entered`,
+      { state, dispatch: contractFact.dispatch },
+    )
+  }
+  const expectedBody: Partial<Record<SettlementState, BodyOutcome>> = {
+    COMPLETED: 'completed',
+    FAILED: 'failed',
+    UNKNOWN: 'unknown',
+  }
+  const wanted = expectedBody[state]
+  if (wanted !== undefined && contractFact.bodyOutcome !== wanted) {
+    throw refusal(
+      'SETTLEMENT_INPUT_INVALID',
+      `state ${state} disagrees with contractFact.bodyOutcome '${contractFact.bodyOutcome}'`,
+      { state, bodyOutcome: contractFact.bodyOutcome },
+    )
+  }
+}
+
+/** Attach/replace the contract snapshot, enforcing the agreement rule. */
+function withContractSnapshot(
+  record: ExecutionSettlementRecord,
+  input: { readonly contractFact?: ContractExecutionFact },
+  identity: SettlementIdentity,
+): ExecutionSettlementRecord {
+  if (input.contractFact === undefined) return record
+  const snapshot = freezeContractFact(input.contractFact, identity)
+  assertContractFactAgreement(record.state, snapshot)
+  return Object.freeze({ ...record, contractFact: snapshot })
+}
+
 function withTransition(
   record: ExecutionSettlementRecord,
   transition: SettlementTransition,
@@ -799,12 +1155,189 @@ export function settlementRecordPath(dir: string, executionId: string): string {
 
 let tempCounter = 0
 
+/** fsync the directory entry so a rename survives a machine crash, not just a process crash. */
+function defaultFsyncDirectory(dir: string): void {
+  const fd = openSync(dir, 'r')
+  try {
+    fsyncSync(fd)
+  } finally {
+    closeSync(fd)
+  }
+}
+
 /**
- * Publish one record: private temp file → fsync → atomic rename. A crash before
- * the rename leaves a temp file the readers ignore; a reader never observes a
- * partially written record.
+ * The package's ambient Node surface (`src/plugin/node-min.d.ts`) declares only
+ * `process.cwd()`. The settlement store needs pid/kill/stdout for the writer
+ * lock; state that need once, structurally, instead of widening the shared
+ * ambient file.
  */
-function writeRecordAtomic(dir: string, executionId: string, payload: ExecutionSettlementRecord): string {
+const nodeProcess = process as unknown as {
+  readonly pid: number
+  kill(pid: number, signal?: number): void
+  readonly stdout: { write(text: string): void }
+}
+
+/** Best-effort Linux boot identity; the lock compares it to detect pid reuse. */
+function bootIdOf(): string {
+  try {
+    return readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim()
+  } catch {
+    return 'boot-id-unavailable'
+  }
+}
+
+function isProcessAlive(pid: number): boolean {
+  if (!Number.isInteger(pid) || pid <= 0) return false
+  try {
+    nodeProcess.kill(pid, 0)
+    return true
+  } catch (error) {
+    // EPERM means the process exists but belongs to another user.
+    return (error as NodeJS.ErrnoException).code === 'EPERM'
+  }
+}
+
+interface WriterLockFile {
+  readonly pid: number
+  readonly bootId: string
+  readonly host: string
+  readonly acquiredAt: string
+}
+
+function readWriterLock(lockPath: string): WriterLockFile | null {
+  let text: string
+  try {
+    text = readFileSync(lockPath, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
+    throw refusal('SETTLEMENT_CORRUPT', `could not read the writer lock at ${lockPath}`, {
+      lockPath,
+      cause: error instanceof Error ? error.message : String(error),
+    })
+  }
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(text)
+  } catch (error) {
+    throw refusal('SETTLEMENT_CORRUPT', `the writer lock at ${lockPath} is not valid JSON`, {
+      lockPath,
+      cause: error instanceof Error ? error.message : String(error),
+    })
+  }
+  if (
+    !isPlainObject(parsed) ||
+    !Number.isInteger(parsed.pid) ||
+    typeof parsed.bootId !== 'string' ||
+    typeof parsed.host !== 'string' ||
+    typeof parsed.acquiredAt !== 'string'
+  ) {
+    throw refusal('SETTLEMENT_CORRUPT', `the writer lock at ${lockPath} is malformed`, { lockPath })
+  }
+  return Object.freeze({ pid: parsed.pid as number, bootId: parsed.bootId as string, host: parsed.host as string, acquiredAt: parsed.acquiredAt as string })
+}
+
+function writeWriterLock(lockPath: string, dir: string, durability: SettlementDurability | undefined): WriterLockFile {
+  const self: WriterLockFile = Object.freeze({
+    pid: nodeProcess.pid ?? 0,
+    bootId: bootIdOf(),
+    host: 'local',
+    acquiredAt: new Date().toISOString(),
+  })
+  const fd = openSync(lockPath, 'wx', 0o600)
+  try {
+    writeSync(fd, `${canonicalSettlementJson(self)}\n`)
+    fsyncSync(fd)
+  } finally {
+    closeSync(fd)
+  }
+  const syncDirectory = durability?.fsyncDirectory ?? defaultFsyncDirectory
+  syncDirectory(dir)
+  return self
+}
+
+/**
+ * Take the exclusive single-writer lock for `dir`.
+ *
+ * - no lock → acquire;
+ * - lock owned by THIS pid AND this boot → re-entrant (cold readers in the same
+ *   process, including `recoverUnsettled` after a child died, are not a second
+ *   writer);
+ * - lock owned by a LIVE foreign pid/boot → `SETTLEMENT_WRITER_CONFLICT`;
+ * - lock owned by a demonstrably dead pid (or a different boot, so a reused pid
+ *   cannot impersonate the owner) → reclaim, naming the previous owner.
+ */
+function acquireWriterLock(dir: string, durability: SettlementDurability | undefined): SettlementWriterLockInfo {
+  const lockPath = join(dir, WRITER_LOCK_FILE)
+  const selfPid = nodeProcess.pid ?? 0
+  const selfBoot = bootIdOf()
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const previous = readWriterLock(lockPath)
+    if (previous === null) {
+      try {
+        writeWriterLock(lockPath, dir, durability)
+        return Object.freeze({ state: 'acquired', path: lockPath, pid: selfPid, bootId: selfBoot })
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'EEXIST') continue
+        throw error
+      }
+    }
+    if (previous.pid === selfPid && previous.bootId === selfBoot) {
+      return Object.freeze({ state: 'reentrant', path: lockPath, pid: selfPid, bootId: selfBoot })
+    }
+    const alive = previous.bootId === selfBoot && isProcessAlive(previous.pid)
+    if (alive) {
+      throw refusal(
+        'SETTLEMENT_WRITER_CONFLICT',
+        `the settlement root ${dir} already has a live writer (pid ${previous.pid}); one process per root is the premise of the monotonic log`,
+        { dir, holderPid: previous.pid, holderBootId: previous.bootId },
+      )
+    }
+    // Demonstrably dead (or from another boot): reclaim, and name the evidence.
+    nodeProcess.stdout.write(
+      `UTE2-WRITER-LOCK reclaimed previousPid=${previous.pid} previousBootId=${previous.bootId} at=${new Date().toISOString()}\n`,
+    )
+    try {
+      unlinkSync(lockPath)
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw refusal('SETTLEMENT_WRITE_FAILED', `could not reclaim the dead writer lock at ${lockPath}`, {
+          lockPath,
+          cause: error instanceof Error ? error.message : String(error),
+        })
+      }
+    }
+    try {
+      writeWriterLock(lockPath, dir, durability)
+      return Object.freeze({
+        state: 'reclaimed',
+        path: lockPath,
+        pid: selfPid,
+        bootId: selfBoot,
+        previousPid: previous.pid,
+        previousBootId: previous.bootId,
+      })
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') continue
+      throw error
+    }
+  }
+  throw refusal('SETTLEMENT_WRITER_CONFLICT', `could not acquire the writer lock at ${lockPath} after repeated races`, {
+    lockPath,
+  })
+}
+
+/**
+ * Publish one record: private temp file → fsync → atomic rename → parent
+ * directory fsync. A crash before the rename leaves a temp file the readers
+ * ignore; a crash after it finds a complete record. The directory fsync is what
+ * makes `recordAdmission`'s return a durability promise, not a cache flush.
+ */
+function writeRecordAtomic(
+  dir: string,
+  executionId: string,
+  payload: ExecutionSettlementRecord,
+  durability: SettlementDurability | undefined,
+): string {
   const target = settlementRecordPath(dir, executionId)
   const envelope = {
     schema: SETTLEMENT_ENVELOPE_SCHEMA,
@@ -813,7 +1346,7 @@ function writeRecordAtomic(dir: string, executionId: string, payload: ExecutionS
   }
   const text = `${canonicalSettlementJson(envelope)}\n`
   tempCounter += 1
-  const pid = (process as unknown as { pid?: number }).pid ?? 0
+  const pid = nodeProcess.pid ?? 0
   const temp = `${target}.${pid}.${tempCounter}${SETTLEMENT_TEMP_SUFFIX}`
   mkdirSync(dir, { recursive: true })
   let fd: number | undefined
@@ -841,6 +1374,16 @@ function writeRecordAtomic(dir: string, executionId: string, payload: ExecutionS
       executionId,
       cause: error instanceof Error ? error.message : String(error),
     })
+  }
+  const syncDirectory = durability?.fsyncDirectory ?? defaultFsyncDirectory
+  try {
+    syncDirectory(dir)
+  } catch (error) {
+    throw refusal(
+      'SETTLEMENT_DIRECTORY_FSYNC_FAILED',
+      `the settlement record for '${executionId}' was renamed but its parent directory could not be fsync'd — the write is NOT proven durable`,
+      { executionId, dir, cause: error instanceof Error ? error.message : String(error) },
+    )
   }
   return target
 }
@@ -886,6 +1429,9 @@ function assertEnvelopeRecordShape(payload: Record<string, unknown>, source: str
   if (!isPlainObject(payload.observation)) fail('observation is not an object')
   if (!Array.isArray(payload.transitions) || payload.transitions.length === 0) fail('transitions must be a non-empty array')
   if (!Array.isArray(payload.stops)) fail('stops must be an array')
+  if (payload.contractFact !== undefined && !isPlainObject(payload.contractFact)) {
+    fail('contractFact must be an object when present')
+  }
 }
 
 function validateRecordPayload(payload: unknown, source: string): ExecutionSettlementRecord {
@@ -938,12 +1484,21 @@ function validateRecordPayload(payload: unknown, source: string): ExecutionSettl
   const admission = payload.admission as AdmissionReference
   const observation = payload.observation as ExecutionObservation
   const record = payload as unknown as ExecutionSettlementRecord
+  let contractFact: ContractExecutionFact | undefined
   try {
     freezeIdentity(identity)
     freezeAdmissionReference(admission)
     freezeObservation(observation)
     assertSameExecution(identity.executionId, observation.executionId, 'observation.executionId')
     assertSameExecution(identity.executionId, admission.subjectExecutionId, 'admission.subjectExecutionId')
+    if (payload.contractFact !== undefined) {
+      contractFact = freezeContractFact(payload.contractFact as ContractExecutionFact, identity)
+      try {
+        assertContractFactAgreement(payload.state as SettlementState, contractFact)
+      } catch (error) {
+        fail(error instanceof Error ? error.message : String(error))
+      }
+    }
   } catch (error) {
     if (error instanceof ExecutionSettlementRefusal) {
       fail(error.message.replace(/^execution-settlement: [A-Z_]+ — /, ''))
@@ -958,6 +1513,7 @@ function validateRecordPayload(payload: unknown, source: string): ExecutionSettl
     transitions: Object.freeze(transitions.map((t) => Object.freeze({ ...(t as SettlementTransition) }))),
     stops: Object.freeze((payload.stops as StopRecord[]).map((s) => Object.freeze({ ...s }))),
     missingEvidence: Object.freeze([...(payload.missingEvidence as string[])]),
+    ...(contractFact === undefined ? {} : { contractFact }),
   })
 }
 
@@ -1013,8 +1569,12 @@ function readRecord(dir: string, executionId: string): ExecutionSettlementRecord
   return parseEnvelope(text, path)
 }
 
-function publishRecord(dir: string, record: ExecutionSettlementRecord): ExecutionSettlementRecord {
-  writeRecordAtomic(dir, record.identity.executionId, record)
+function publishRecord(
+  dir: string,
+  record: ExecutionSettlementRecord,
+  durability: SettlementDurability | undefined,
+): ExecutionSettlementRecord {
+  writeRecordAtomic(dir, record.identity.executionId, record, durability)
   return record
 }
 
@@ -1033,17 +1593,42 @@ export function createExecutionSettlementStore(
     throw refusal('SETTLEMENT_INPUT_INVALID', 'createExecutionSettlementStore requires an options object')
   }
   const dir = requireString(options.dir, 'options.dir', 4096)
+  const durability = options.durability
+  if (durability !== undefined && !isPlainObject(durability)) {
+    throw refusal('SETTLEMENT_INPUT_INVALID', 'options.durability must be an object when present')
+  }
   mkdirSync(dir, { recursive: true })
+  const writerLock = acquireWriterLock(dir, durability)
+
+  /**
+   * The lock is the enforcement point of the single-writer premise: the store
+   * re-reads it before every write, so a writer that lost its root (lock
+   * removed/replaced) refuses instead of racing.
+   */
+  function assertLockHeld(): void {
+    const current = readWriterLock(writerLock.path)
+    if (current === null || current.pid !== writerLock.pid || current.bootId !== writerLock.bootId) {
+      throw refusal(
+        'SETTLEMENT_WRITER_CONFLICT',
+        `the writer lock for ${dir} is no longer held by this process — a second writer must not race the log`,
+        { dir, lockPath: writerLock.path },
+      )
+    }
+  }
 
   function recordAdmission(input: RecordAdmissionInput): SettlementWriteResult {
     if (!isPlainObject(input)) {
       throw refusal('SETTLEMENT_INPUT_INVALID', 'recordAdmission requires an input object')
     }
+    assertLockHeld()
     const identity = freezeIdentity(input.identity)
     const admission = freezeAdmissionReference(input.admission)
     const at = requireTimestamp(input.at, 'at')
     const reason = input.reason === undefined ? null : requireString(input.reason, 'reason')
     assertSameExecution(identity.executionId, admission.subjectExecutionId, 'admission.subjectExecutionId')
+    const contractFact =
+      input.contractFact === undefined ? undefined : freezeContractFact(input.contractFact, identity)
+    if (contractFact !== undefined) assertContractFactAgreement('ADMITTED', contractFact)
     const existing = readRecord(dir, identity.executionId)
     const admissionFacts = { identity, admission }
     const factsDigest = digestOf({ kind: 'admission', facts: admissionFacts })
@@ -1086,14 +1671,16 @@ export function createExecutionSettlementStore(
       missingEvidence: Object.freeze([]),
       createdAt: at,
       updatedAt: at,
+      ...(contractFact === undefined ? {} : { contractFact }),
     })
-    return { record: publishRecord(dir, record), outcome: 'created', code: null }
+    return { record: publishRecord(dir, record, durability), outcome: 'created', code: null }
   }
 
   function enterRunning(input: EnterRunningInput): SettlementWriteResult {
     if (!isPlainObject(input)) {
       throw refusal('SETTLEMENT_INPUT_INVALID', 'enterRunning requires an input object')
     }
+    assertLockHeld()
     const executionId = requireString(input.executionId, 'executionId')
     const at = requireTimestamp(input.at, 'at')
     const observation = freezeObservation(input.observation)
@@ -1116,7 +1703,7 @@ export function createExecutionSettlementStore(
     }
     assertLegalTransition(existing.state, 'RUNNING')
     assertTimestampMonotonic(existing, at)
-    if (existing.admission.decision !== 'allow') {
+    if (admissionDecision(existing.admission) === 'deny') {
       throw refusal(
         'SETTLEMENT_ADMISSION_MISMATCH',
         `execution '${executionId}' cannot enter RUNNING: its referenced decision is recorded as 'deny'`,
@@ -1129,7 +1716,11 @@ export function createExecutionSettlementStore(
     assertEffectSummary(observation)
     const transition = nextTransition(existing, 'RUNNING', at, null, [], factsDigest)
     return {
-      record: publishRecord(dir, withTransition(existing, transition, { observation })),
+      record: publishRecord(
+        dir,
+        withContractSnapshot(withTransition(existing, transition, { observation }), input, existing.identity),
+        durability,
+      ),
       outcome: 'transitioned',
       code: null,
     }
@@ -1139,6 +1730,7 @@ export function createExecutionSettlementStore(
     if (!isPlainObject(input)) {
       throw refusal('SETTLEMENT_INPUT_INVALID', 'recordStop requires an input object')
     }
+    assertLockHeld()
     const executionId = requireString(input.executionId, 'executionId')
     const stopId = requireString(input.stopId, 'stopId')
     const at = requireTimestamp(input.at, 'at')
@@ -1175,7 +1767,7 @@ export function createExecutionSettlementStore(
     return {
       // `updatedAt` stays the transition log's tip: a Stop is an additive event
       // with its own timestamp, not a state transition.
-      record: publishRecord(dir, Object.freeze({ ...existing, stops: Object.freeze([...existing.stops, stop]) })),
+      record: publishRecord(dir, Object.freeze({ ...existing, stops: Object.freeze([...existing.stops, stop]) }), durability),
       outcome: 'recorded',
       code: null,
     }
@@ -1185,6 +1777,7 @@ export function createExecutionSettlementStore(
     if (!isPlainObject(input)) {
       throw refusal('SETTLEMENT_INPUT_INVALID', 'settle requires an input object')
     }
+    assertLockHeld()
     const executionId = requireString(input.executionId, 'executionId')
     const at = requireTimestamp(input.at, 'at')
     if (!SETTLEMENT_STATES.includes(input.state)) {
@@ -1234,11 +1827,16 @@ export function createExecutionSettlementStore(
     return {
       record: publishRecord(
         dir,
-        withTransition(existing, transition, {
-          observation,
-          terminalReason: reason,
-          missingEvidence,
-        }),
+        withContractSnapshot(
+          withTransition(existing, transition, {
+            observation,
+            terminalReason: reason,
+            missingEvidence,
+          }),
+          input,
+          existing.identity,
+        ),
+        durability,
       ),
       outcome: 'transitioned',
       code: null,
@@ -1277,7 +1875,7 @@ export function createExecutionSettlementStore(
     return readAll(dir)
   }
 
-  return Object.freeze({ dir, recordAdmission, enterRunning, recordStop, settle, recoverUnsettled, read, list })
+  return Object.freeze({ dir, writerLock, recordAdmission, enterRunning, recordStop, settle, recoverUnsettled, read, list })
 }
 
 function readAll(dir: string): readonly ExecutionSettlementRecord[] {

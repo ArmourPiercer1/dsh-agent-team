@@ -8,5 +8,11 @@
  *
  * @module @dsh-agent-team/runtime/settlement
  */
-export { ExecutionSettlementRefusal, SETTLEMENT_ENVELOPE_SCHEMA, SETTLEMENT_RECORD_SUFFIX, SETTLEMENT_REFUSAL_CODES, SETTLEMENT_SCHEMA, SETTLEMENT_STATES, SETTLEMENT_TEMP_SUFFIX, TERMINAL_SETTLEMENT_STATES, canonicalSettlementJson, createExecutionSettlementStore, settlementRecordPath, } from './execution-settlement.js';
+export { ExecutionSettlementRefusal, SETTLEMENT_ENVELOPE_SCHEMA, SETTLEMENT_RECORD_SUFFIX, SETTLEMENT_REFUSAL_CODES, SETTLEMENT_SCHEMA, SETTLEMENT_STATES, SETTLEMENT_TEMP_SUFFIX, TERMINAL_SETTLEMENT_STATES, admissionDecision, admissionRequestIds, canonicalSettlementJson, createExecutionSettlementStore, settlementRecordPath, } from './execution-settlement.js';
+/**
+ * The UTE-1 `ExecutionSettlementWriter` contract adapter. Its header states the
+ * read-compat boundary with `ControlService.recordExecutionResult` and the S2
+ * non-claim; it imports no control code.
+ */
+export * from './writer-adapter.js';
 //# sourceMappingURL=index.js.map
