@@ -22,26 +22,31 @@
  * `read_image` member: an in-lane image read whose committed attachment bytes
  * are digested, an out-of-lane image refusal with zero attachment bytes, a
  * lane-bound image refusal, a missing-target refusal, the image-capability route
- * refusal, cancellation before dispatch, and the PRODUCT route-C gap (PD-5).
+ * refusal, and cancellation before dispatch.
  * NOT covered: delete/move (the FS tool family exposes no model-facing
  * delete/move tool — the provider-level operations exist but the old governed
  * path does not guard them at all, so there is no old-path effect to be
  * equivalent to); `read` confinement as a POSITIVE proof (the oracle can only
  * see the result text and the file's unchanged bytes, never the absence of an
- * `open()`); large-file streaming windows; a `read_image` ALLOW on the product
- * route-C composition (it throws before any image work — the allow vectors run
- * under the disclosed `post-gap-1` composition; see golden/COVERAGE.md).
+ * `open()`); large-file streaming windows; JPEG/WebP/GIF, downscale, byte cap,
+ * content sniffing, mid-read cancellation and store failure for the image row.
  *
- * IMAGE VECTOR COMPOSITION. The product route-C composition cannot reach
- * `read_image` at all (`ROUTED_SERVICE_NAMES = ['tools','systemPrompt']` in
- * `packages/runtime/team-services/src/mount.ts:445` ⇒ GAP-FS-CONTRACT-1 / PD-5),
- * so `FS-I0-route-c-gap` records that product fact and the remaining image
- * vectors run the SAME legacy host, SAME real `@deepseek-ai/dsh-tool-fs`
- * module and SAME confined provider under the world factory's `post-gap-1`
- * composition (the one-line deferred-inject merge the FS face already uses to
- * pin the attachment contract). That composition is disclosed per vector here,
- * in `golden/old-path.meta.txt` and in `golden/COVERAGE.md`; it is NOT a claim
- * that the unpatched product route serves `read_image` today.
+ * IMAGE VECTOR COMPOSITION (changed 2026-11-20 by the route-C repair). Until
+ * the repair, the product route-C composition could not reach `read_image` at
+ * all: the routed mount merged only `tools`/`systemPrompt` into a deferred
+ * child's inject map, so the host module's deferred `read_image` child threw
+ * `cannot get property "fs" without inject` before any image work
+ * (GAP-FS-CONTRACT-1 / PD-5). The six surviving image vectors therefore ran
+ * under the world factory's `post-gap-1` composition, and a seventh vector
+ * (`FS-I0-route-c-gap`) pinned that failure as the product fact.
+ *
+ * After the repair (`packages/runtime/team-services/src/mount.ts` continues a
+ * module's OWN declared service into its deferred children), ALL SIX image
+ * vectors run on the PRODUCT composition, declared explicitly below. The
+ * historical gap vector is DELETED, not re-pointed as a positive: FS-I1 already
+ * is the in-lane allow baseline, so keeping a second identical allow row would
+ * duplicate a vector to preserve a name. Its removal is recorded in
+ * `golden/COVERAGE.md` and the retirement ledger note.
  *
  * @module tests/ute-g1-fs/lib/corpus
  */
@@ -196,27 +201,12 @@ export const CORPUS = Object.freeze([
   // the committed image bytes) and the model-facing block shape — never from
   // the path string or the tool's self-report. See golden/COVERAGE.md.
   {
-    id: 'FS-I0-route-c-gap',
-    entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
-    composition: 'route-c',
-    lane: { read: INSIDE, write: INSIDE },
-    setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
-    steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' } }],
-    effects: ['inside/pixel.png'],
-    leaks: [],
-    expect: { outcome: 'deny', refusal: 'route-unresolved' },
-    note: 'the PRODUCT route-C composition cannot reach read_image at all (GAP-FS-CONTRACT-1 / PD-5): refused before any image work, zero attachment bytes. Recorded as the route product fact, NOT as a lane refusal',
-  },
-  {
     id: 'FS-I1-inlane-image',
     entry: 'read_image',
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' } }],
@@ -231,7 +221,7 @@ export const CORPUS = Object.freeze([
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'outside/secret.png', base64: PIXEL_PNG_BASE64 }],
     steps: [{ tool: 'read_image', args: { file_path: 'outside/secret.png' } }],
@@ -246,7 +236,7 @@ export const CORPUS = Object.freeze([
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     lane: { read: BOUND, write: BOUND },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' } }],
@@ -261,7 +251,7 @@ export const CORPUS = Object.freeze([
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [],
     steps: [{ tool: 'read_image', args: { file_path: 'inside/absent.png' } }],
@@ -276,7 +266,7 @@ export const CORPUS = Object.freeze([
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     llmModalities: ['text'],
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
@@ -292,7 +282,7 @@ export const CORPUS = Object.freeze([
     // PR B2 flips this: the prototype provider has no image support yet, so the
     // new-path run cannot reproduce these baselines. Declared, not skipped.
     newPathPending: true,
-    composition: 'post-gap-1',
+    composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
     steps: [{ tool: 'read_image', args: { file_path: 'inside/pixel.png' }, abort: true }],

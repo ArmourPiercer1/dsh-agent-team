@@ -309,12 +309,15 @@ test('golden parity: the product module reproduces the 10 old-path vectors', asy
     t.diagnostic(`golden ${verdict.id}: ${verdict.ok ? 'PASS' : `FAIL ${JSON.stringify(verdict.diffs)}`}`)
   }
   assert.equal(records.length, 10)
-  // The 7 image rows are EXCLUDED, not ignored: this module serves read/write/
+  // The 6 image rows are EXCLUDED, not ignored: this module serves read/write/
   // edit only until PR B2. If an image vector ever stops being declared pending,
   // this assertion fails and forces the parity claim to grow with the module.
+  // (The seventh row, FS-I0-route-c-gap, was the product-route failure pin; the
+  // 2026-11-20 route-C repair made it obsolete and the corpus entry was deleted
+  // rather than re-pointed, because FS-I1 already is the in-lane allow baseline.)
   assert.deepEqual(
     imagePending.map((vector) => vector.id),
-    ['FS-I0-route-c-gap', 'FS-I1-inlane-image', 'FS-I2-outside-image-denied', 'FS-I3-lane-bound-image', 'FS-I4-missing-image', 'FS-I5-route-unresolved', 'FS-I6-cancel-before-dispatch'],
+    ['FS-I1-inlane-image', 'FS-I2-outside-image-denied', 'FS-I3-lane-bound-image', 'FS-I4-missing-image', 'FS-I5-route-unresolved', 'FS-I6-cancel-before-dispatch'],
   )
   assert.ok(imagePending.every((vector) => vector.newPathPending === true), 'excluded image vectors must still be declared new-path-pending')
   assert.deepEqual(comparison.missingObserved, [])

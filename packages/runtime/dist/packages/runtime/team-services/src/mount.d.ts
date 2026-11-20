@@ -355,6 +355,30 @@ export interface NativeRegistrationRouting {
 }
 /** The property name a router fiber carries its {@link NativeRegistrationRouting} under. */
 export declare const NATIVE_REGISTRATION_ROUTING = "a5sfRegistrationRouting";
+/**
+ * The services declared by `plugin` that a routed mount may continue into the
+ * plugin's deferred children. Empty for a plugin that does not declare one, so
+ * the merged inject map is byte-identical to the pre-fix behaviour there.
+ *
+ * Exported for the seam-scope suite (`tests/ute-g1-fs/product-route-image.test.mjs`),
+ * which pins that a module not declaring `fs` gets no continuation and that the
+ * merged map keeps its SHAPE (array/object, no added null keys beyond the
+ * router's own services).
+ */
+export declare function continuedServiceNamesOf(plugin: {
+    readonly inject?: unknown;
+} | undefined): readonly string[];
+/**
+ * Merge the router's services (and the module's own CONTINUED services) into a
+ * deferred child's declaration WITHOUT changing its SHAPE: an array stays a
+ * deduplicated array, and an OBJECT (a name → per-service intercept config map,
+ * Cordis `Inject`) stays an object with every declared config preserved. Added
+ * services get `null`, the same default `Inject.resolve` assigns to an omitted
+ * config (`inject[name] ?? null`), so a per-service intercept config the module
+ * declared is never flattened away — dropping it would silently change the
+ * child's dependency semantics.
+ */
+export declare function mergeRoutedInject(names: unknown, continued: readonly string[]): unknown;
 export interface MountA5sfRealmInput {
     readonly root: Context;
     readonly members: readonly A5sfRealmMember[];

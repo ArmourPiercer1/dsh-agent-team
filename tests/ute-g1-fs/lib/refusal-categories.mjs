@@ -40,6 +40,18 @@
  *      `other` maps to `unknown` BY NAME (one entry, cited). A string that is
  *      not in the map does not reach `unknown`; it is refused.
  *
+ * CORPUS EVIDENCE vs FIXTURE EVIDENCE (2026-11-20, after the route-C repair)
+ *   The corpus records SIX refusal classes. A seventh class, `route-unresolved`,
+ *   is still real vocabulary — the historical GAP-FS-CONTRACT-1 failure mode —
+ *   but the corpus no longer emits it: the repair made the product route serve
+ *   `read_image`, so the vector that recorded the gap (`FS-I0-route-c-gap`) was
+ *   deleted rather than kept as a duplicate allow row. The class therefore has
+ *   to be produced by a NAMED, EXECUTED fixture (`FSB-IMG-1b`, the
+ *   withheld-continuation composition), not by a comment. `FIXTURE_CLASS_EVIDENCE`
+ *   declares that producer and `assertClassVocabularyCovered` fails when a
+ *   declared class is emitted by neither the corpus nor a declared fixture — so
+ *   "the corpus shrank" can never quietly delete a category.
+ *
  * NOT A MODEL-FACING CONTRACT
  *   Category ids and definitions are engineering vocabulary. They are not the
  *   sentence a model sees, and this module deliberately owns no model-facing
@@ -164,7 +176,7 @@ export const LEGACY_REFUSAL_MAP = Object.freeze([
   // no entry matches would be an unmapped value, which the map refuses on purpose.
   { kind: 'class', match: 'missing-path', category: 'missing-path', sample: 'missing-path', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I4, a missing image target); lane.mjs REFUSAL.MISSING_PATH' },
   { kind: 'class', match: 'image-modality-denied', category: 'unsupported-mode', sample: 'image-modality-denied', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I5, a text-only model route refused image input before any read); lane.mjs REFUSAL.IMAGE_MODALITY_DENIED' },
-  { kind: 'class', match: 'route-unresolved', category: 'route-unresolved', sample: 'route-unresolved', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I0, the product route-C composition cannot reach read_image at all: GAP-FS-CONTRACT-1 / PD-5); lane.mjs REFUSAL.ROUTE_UNRESOLVED' },
+  { kind: 'class', match: 'route-unresolved', category: 'route-unresolved', sample: 'route-unresolved', source: 'FIXTURE-EVIDENCED (no corpus row since the 2026-11-20 route-C repair): tests/world-factory/a5sf-fs-contract-world.mjs armReadImageWithheldContinuation / FSB-IMG-1b on composition `withheld-fs-continuation`, classified by tests/ute-g1-fs/lib/effect-oracle.mjs classifyRefusal (cannot get property "fs" without inject); lane.mjs REFUSAL.ROUTE_UNRESOLVED' },
   { kind: 'class', match: 'cancelled', category: 'cancelled', sample: 'cancelled', source: 'tests/ute-g1-fs/golden/old-path.tsv refusal column (FS-I6, cancelled before dispatch); lane.mjs REFUSAL.CANCELLED' },
   { kind: 'class', match: 'other', category: 'unknown', sample: 'other', source: 'tests/ute-g1-fs/lib/lane.mjs REFUSAL.OTHER (declared residual class; explicit, not a sink)' },
 
@@ -271,10 +283,14 @@ export const NATIVE_FS_ERROR_MAP = Object.freeze({
 
 /**
  * The corpus vocabulary as ENUMERATED from the corpus and its recorded evidence
- * on 2026-11-20 (the seven refusal classes include the four the B1 read_image
- * baselines added: missing-path, image-modality-denied, route-unresolved, cancelled). This is the exhaustiveness baseline: `auditCorpus` accepts
- * exactly these values, and the test re-derives the corpus values from the
- * files so that a NEW corpus value is caught rather than absorbed.
+ * on 2026-11-20. SIX classes: the B1 read_image baselines added
+ * `missing-path`, `image-modality-denied` and `cancelled`; the fourth B1 class,
+ * `route-unresolved`, is NOT here because the route-C repair deleted the only
+ * row that emitted it (`FS-I0-route-c-gap`) — it is declared as
+ * FIXTURE-EVIDENCED below instead, and `assertClassVocabularyCovered` refuses a
+ * class that neither source produces. This is the exhaustiveness baseline:
+ * `auditCorpus` accepts exactly these values, and the test re-derives the corpus
+ * values from the files so that a NEW corpus value is caught rather than absorbed.
  *
  * `legacyCodes` is empty ON PURPOSE: every `codes` cell in
  * `tests/ute-g1-fs/golden/old-path.tsv` is `-` (the legacy path refused in
@@ -287,7 +303,6 @@ export const CORPUS_VOCABULARY_BASELINE = Object.freeze({
     'stale-version',
     'missing-path',
     'image-modality-denied',
-    'route-unresolved',
     'cancelled',
   ]),
   legacyProse: Object.freeze([
@@ -315,6 +330,102 @@ export const CORPUS_VOCABULARY_BASELINE = Object.freeze({
     recordedNativeCodes: 'tests/ute1-fs/lib/fake-host.mjs, tests/world-factory/lib/a5sf-fs-contract-world.mjs, dev/agent-workflow/evidence/a5sf-fs-face/README.md §2.1',
   }),
 })
+
+/**
+ * Classes the CLOSED vocabulary declares but the merged corpus does not emit,
+ * each with the NAMED, EXECUTED producer that keeps it reachable.
+ *
+ * This is not a licence to skip: `assertClassVocabularyCovered` requires every
+ * declared class to appear in the corpus OR here, and `selfCheck` rejects a
+ * fixture entry whose class the corpus already emits (a stale excuse) or that
+ * the map does not declare.
+ *
+ * @type {ReadonlyArray<Readonly<{
+ *   class: string,
+ *   fixture: string,
+ *   composition: string,
+ *   exercisedBy: string,
+ *   classifier: string,
+ *   reason: string,
+ * }>>}
+ */
+export const FIXTURE_CLASS_EVIDENCE = Object.freeze([
+  Object.freeze({
+    class: 'route-unresolved',
+    fixture: 'FSB-IMG-1b',
+    composition: 'withheld-fs-continuation',
+    exercisedBy: 'tests/world-factory/a5sf-fs-contract-world.mjs (armReadImageWithheldContinuation) driven by tests/ute-g1-fs/lib/refusal-categories.test.mjs',
+    classifier: 'tests/ute-g1-fs/lib/effect-oracle.mjs classifyRefusal (the same classifier the golden capture uses)',
+    reason: 'the corpus recorded this class only through FS-I0-route-c-gap; the 2026-11-20 route-C repair deleted that row (FS-I1 already is the in-lane allow baseline), so the historical failure mode is kept reachable by the withheld-continuation fixture instead of a corpus row',
+  }),
+])
+
+/**
+ * Class entries that are NOT corpus-emission classes, with the reason each is
+ * exempt from `assertClassVocabularyCovered`. They must still map (a lane.mjs
+ * axis token has to classify), but they are not a distinct observed condition:
+ *   - `lane-read` / `lane-write` are the read/write AXIS tokens, deliberately
+ *     collapsed to `lane-deny` on the observation surface;
+ *   - `other` is the declared residual class, emitted only when nothing matched.
+ */
+export const NON_EMITTED_CLASS_ENTRIES = Object.freeze({
+  'lane-read': 'read-axis token; the observation surface collapses it to lane-deny',
+  'lane-write': 'write-axis token; the observation surface collapses it to lane-deny',
+  other: 'declared residual class, emitted only when no pattern matched',
+})
+
+/**
+ * Exhaustiveness law for CLASSES: every declared class must be produced by the
+ * corpus or by a declared, executed fixture. A class produced by neither is a
+ * dead category and fails by name.
+ *
+ * @param {{corpus?: readonly string[], fixtures?: readonly string[], legacyMap?: readonly LegacyEntry[], fixtureEvidence?: typeof FIXTURE_CLASS_EVIDENCE}} [observed]
+ * @returns {{ok: boolean, findings: ReadonlyArray<{code: string, value: string, detail: string}>}}
+ */
+export function assertClassVocabularyCovered({ corpus = [], fixtures = [], legacyMap = LEGACY_REFUSAL_MAP, fixtureEvidence = FIXTURE_CLASS_EVIDENCE } = {}) {
+  const findings = []
+  const corpusSet = new Set(corpus.filter((value) => !isNoRefusal(value)))
+  const fixtureSet = new Set(fixtures.filter((value) => !isNoRefusal(value)))
+  // `other` is the declared residual class: it is only emitted when nothing else
+  // matched, so it is exempt from the "must be produced" law by definition.
+  const declared = legacyMap
+    .filter((entry) => entry.kind === 'class' && !Object.hasOwn(NON_EMITTED_CLASS_ENTRIES, String(entry.match)))
+    .map((entry) => String(entry.match))
+  for (const value of declared) {
+    if (corpusSet.has(value) || fixtureSet.has(value)) continue
+    findings.push(Object.freeze({
+      code: 'REFUSAL_CLASS_UNPRODUCED',
+      value,
+      detail: `class ${JSON.stringify(value)} is declared by the closed map but produced by neither the corpus nor a declared fixture (a dead category is a failure, not a default)`,
+    }))
+  }
+  for (const value of fixtureSet) {
+    if (!declared.includes(value)) {
+      findings.push(Object.freeze({
+        code: 'REFUSAL_FIXTURE_UNDECLARED',
+        value,
+        detail: `the fixture claims to produce ${JSON.stringify(value)}, which the closed map does not declare as a class`,
+      }))
+    }
+    if (corpusSet.has(value)) {
+      findings.push(Object.freeze({
+        code: 'REFUSAL_FIXTURE_STALE',
+        value,
+        detail: `the corpus already emits ${JSON.stringify(value)}; the fixture-evidence declaration is stale and must be removed rather than left as an excuse`,
+      }))
+    }
+  }
+  for (const entry of fixtureEvidence) {
+    if (!fixtureSet.has(entry.class)) {
+      findings.push(Object.freeze({
+        code: 'REFUSAL_FIXTURE_UNEXERCISED',
+        value: entry.class,
+        detail: `FIXTURE_CLASS_EVIDENCE declares ${JSON.stringify(entry.class)} (fixture ${entry.fixture}) but no executed fixture class was supplied to the audit`,
+      }))
+    }
+  }
+  return Object.freeze({ ok: findings.length === 0, findings: Object.freeze(findings) })
+}
 
 /** Is this legacy value the "no refusal" sentinel (an allow)? */
 export function isNoRefusal(value) {
@@ -506,16 +617,25 @@ const MODEL_FACING_BAKE_IN = /\b(?:FS|IO|PATH)_[A-Z][A-Z0-9_]+\b|outside every a
  *   4. every legacy entry's `sample` classifies as its own category (catches a
  *      reordering that shadows an entry) and carries a `source` citation;
  *   5. every native map key is a non-empty `FS_*`-shaped code with a valid
- *      category.
+ *      category;
+ *   6. every FIXTURE-EVIDENCED class is declared by the map with a citation, its
+ *      fixture/composition/exercisedBy are named, and it is NOT already emitted
+ *      by the corpus (a fixture that outlived its necessity is a stale claim).
  *
  * The three inputs are overridable ONLY so the integrity check itself can be
  * mutated in the test suite (a check that cannot be shown to bite is not
  * evidence). Production callers pass nothing and get the shipped vocabulary.
  *
- * @param {{categories?: Record<string, {id?: string, definition?: string}>, legacyMap?: readonly LegacyEntry[], nativeMap?: Record<string, string>}} [overrides]
+ * @param {{categories?: Record<string, {id?: string, definition?: string}>, legacyMap?: readonly LegacyEntry[], nativeMap?: Record<string, string>, fixtureEvidence?: typeof FIXTURE_CLASS_EVIDENCE, corpusClasses?: readonly string[]}} [overrides]
  * @returns {{ok: boolean, findings: ReadonlyArray<{code: string, detail: string}>}}
  */
-export function selfCheck({ categories = REFUSAL_CATEGORIES, legacyMap = LEGACY_REFUSAL_MAP, nativeMap = NATIVE_FS_ERROR_MAP } = {}) {
+export function selfCheck({
+  categories = REFUSAL_CATEGORIES,
+  legacyMap = LEGACY_REFUSAL_MAP,
+  nativeMap = NATIVE_FS_ERROR_MAP,
+  fixtureEvidence = FIXTURE_CLASS_EVIDENCE,
+  corpusClasses = CORPUS_VOCABULARY_BASELINE.legacyClasses,
+} = {}) {
   const findings = []
   const ids = Object.keys(categories)
   if (ids.length === 0) findings.push({ code: 'REFUSAL_VOCABULARY_INVALID', detail: 'the category vocabulary is empty' })
@@ -559,6 +679,25 @@ export function selfCheck({ categories = REFUSAL_CATEGORIES, legacyMap = LEGACY_
       }
     } catch (error) {
       findings.push({ code: 'REFUSAL_VOCABULARY_INVALID', detail: `legacy entry ${JSON.stringify(String(entry.match))} cannot classify its own sample: ${error instanceof Error ? error.message : String(error)}` })
+    }
+  }
+
+  for (const entry of fixtureEvidence) {
+    const declared = legacyMap.find((candidate) => candidate.kind === 'class' && candidate.match === entry.class)
+    if (declared === undefined) {
+      findings.push({ code: 'REFUSAL_FIXTURE_UNDECLARED', detail: `fixture-evidenced class ${JSON.stringify(entry.class)} has no explicit class entry in the closed map` })
+      continue
+    }
+    if (typeof declared.source !== 'string' || declared.source.length === 0) {
+      findings.push({ code: 'REFUSAL_FIXTURE_UNDECLARED', detail: `fixture-evidenced class ${JSON.stringify(entry.class)} has no source citation` })
+    }
+    for (const key of ['fixture', 'composition', 'exercisedBy', 'classifier', 'reason']) {
+      if (typeof entry[key] !== 'string' || entry[key].length === 0) {
+        findings.push({ code: 'REFUSAL_FIXTURE_UNDECLARED', detail: `fixture-evidenced class ${JSON.stringify(entry.class)} has no ${key}` })
+      }
+    }
+    if (corpusClasses.includes(entry.class)) {
+      findings.push({ code: 'REFUSAL_FIXTURE_STALE', detail: `fixture-evidenced class ${JSON.stringify(entry.class)} is ALSO emitted by the corpus; the fixture declaration is stale` })
     }
   }
 

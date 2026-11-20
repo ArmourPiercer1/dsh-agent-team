@@ -658,13 +658,53 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit'])
   assert.equal(payload.verdicts[0].allowed, false)
 
+  // `--all` now grades TWO seeded families (fs + search). The SEARCH row (UTE-3
+  // PR B1) moved this from `requested=1` to `requested=2`, so the arm pins the
+  // NEW seeded state EXACTLY — and derives the summary's counts from the
+  // printed `UTE-RETIREMENT-REFUSED` lines instead of trusting the constant, so
+  // a third family added to the ledger can never be absorbed silently by a
+  // stale number here. Changing a family or its code list means updating THIS
+  // arm: silence is not an option, and a looser match would be the regression.
   const all = run(['--all'])
   assert.equal(all.status, 1)
-  assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=[^\n]*UTE_SEMANTIC_DIFFERENCES_UNRESOLVED/)
-  assert.match(all.stdout, /UTE-RETIREMENT-REFUSED family=fs codes=[^\n]*UTE_MEMBER_UNCOVERED/)
+  const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
+  assert.deepEqual(
+    refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
+    ['fs', 'search'],
+    `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
+  )
+  const codesFor = (family) => {
+    const line = refusedLines.find((candidate) => candidate.startsWith(`UTE-RETIREMENT-REFUSED family=${family} `))
+    assert.ok(line !== undefined, `no UTE-RETIREMENT-REFUSED line for family=${family}`)
+    const match = line.match(/ codes=(\S+) state=/u)
+    assert.ok(match !== null, `family=${family} line carries no code list: ${line}`)
+    assert.equal(line.endsWith('unit=3/4') || line.endsWith('unit=0/2'), true, `unexpected unit strip on family=${family}: ${line}`)
+    return { line, codes: match[1].split(',').sort() }
+  }
+  // fs — unchanged by the SEARCH row, but re-asserted so a silent fs change reds.
+  const fs = codesFor('fs')
+  assert.deepEqual(fs.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.match(fs.line, /state=NOT_RETIREABLE unit=3\/4$/u)
   assert.match(all.stdout, /term=newPathVerified[^\n]*read_image/)
   assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*FS-I1-inlane-image/)
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1/)
+  // search — its OWN code list: no new path, unresolved blocking differences,
+  // and per-vector/per-member coverage absent on the new-path axis.
+  const search = codesFor('search')
+  assert.deepEqual(search.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.match(search.line, /state=NOT_RETIREABLE unit=0\/2$/u)
+  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"grep\\"/)
+  assert.match(all.stdout, /term=newPathVerified[^\n]*member \\"glob\\"/)
+  assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*SR-G1-inlane-match/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-1-grep-path-default/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-2-grep-vcs-ignore/)
+  assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-3-refusal-surface/)
+  // the summary is DERIVED from the printed refusals, never a constant.
+  const summary = all.stdout.match(/UTE-RETIREMENT-SUMMARY requested=(\d+) allowed=(\d+) refused=(\d+)/u)
+  assert.ok(summary !== null, 'the summary line is absent')
+  assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
+  assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
+  assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)

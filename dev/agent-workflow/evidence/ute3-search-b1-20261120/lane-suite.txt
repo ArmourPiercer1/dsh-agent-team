@@ -11,12 +11,12 @@ NC NC-SHADOW-LOAD-BEARING ok
 NC NC-STDIN-LOAD-BEARING ok
 NC-VERDICT GREEN controls=8 failed=0
 UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=PENDING semantic-differences=UNRESOLVED negative-controls=GREEN retirement=FORBIDDEN
-✔ old path: every corpus vector reproduces its golden row (23146.171652ms)
-✔ golden: both members are covered and every refusal is a closed category (0.514674ms)
-✔ the new path is still pending, pinned by an explicit id list (0.748898ms)
-✔ golden metadata and coverage agree with the fixture (0.217161ms)
-✔ negative controls: the family-level and per-member mutations are GREEN (13425.008834ms)
-✔ VERDICT: the Search family is NOT retireable from this lane (0.247738ms)
+✔ old path: every corpus vector reproduces its golden row (23214.994777ms)
+✔ golden: both members are covered and every refusal is a closed category (0.514113ms)
+✔ the new path is still pending, pinned by an explicit id list (0.765309ms)
+✔ golden metadata and coverage agree with the fixture (0.614283ms)
+✔ negative controls: the family-level and per-member mutations are GREEN (13426.791843ms)
+✔ VERDICT: the Search family is NOT retireable from this lane (0.219225ms)
 ℹ tests 6
 ℹ suites 0
 ℹ pass 6
@@ -24,4 +24,4 @@ UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=PENDING semantic-differ
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 36650.083959
+ℹ duration_ms 36725.432116

@@ -1,0 +1,18 @@
+# gate-arm non-vacuity — the strengthened --all arm must bite when a seeded family disappears
+# 2026-11-20, merged tree (origin/master 19a7fa641)
+
+## ARM A — control: the real ledger (fs + search) must be GREEN
+✔ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (313.11025ms)
+ℹ pass 1
+ℹ fail 0
+
+## ARM B — mutation: remove the search row from the ledger (the PRE-SEED state)
+✖ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (206.983798ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (206.983798ms)
+  AssertionError [ERR_ASSERTION]: --all must refuse exactly the seeded families; it refused 1
+
+## RESTORED — the ledger is the fs + search book again
+families=fs,search

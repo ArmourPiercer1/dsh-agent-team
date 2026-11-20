@@ -85,6 +85,38 @@ either member** — recorded, not papered over, and no member had to be stopped.
 | `negative-controls.txt` | `node tests/ute-g1-search/negative-controls.mjs` |
 | `lane-suite.txt` | `node --test --test-force-exit tests/ute-g1-search/lane-suite.test.mjs` |
 | `gate-refusal.txt` | `node scripts/ute-retirement-gate.mjs --all` |
+| `gate-arm-nonvacuity.txt` | the strengthened `--all` arm of `scripts/ute-retirement-gate.test.mjs`, GREEN on the real ledger and RED when the search row is removed |
+| `post-merge-remeasurement.txt` | every re-measurement after merging `origin/master` `19a7fa641` (#802) |
 | `new-path-absent.txt` | the explicit statement that no new path exists (the `newPathVerified` evidence pointer) |
+
+## Merge with `origin/master` (2026-11-20, `19a7fa641` = #802) and the gate seeding
+
+The SEARCH row seeds `--all` with a SECOND family, so
+`scripts/ute-retirement-gate.test.mjs`'s CLI arm — which pinned
+`UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1` — had to move to the new
+seeded state. It was made **stronger**, not looser:
+
+* the two refused families are DERIVED from the printed
+  `UTE-RETIREMENT-REFUSED family=…` lines and must be exactly `['fs','search']`;
+* EACH family must carry its OWN exact code list (`fs`: three codes, `search`:
+  `UTE_NEW_PATH_UNVERIFIED` + `UTE_SEMANTIC_DIFFERENCES_UNRESOLVED` +
+  `UTE_VECTOR_UNREPRODUCED` + `UTE_MEMBER_UNCOVERED`) and its own `state=`/`unit=`
+  strip (`unit=3/4` / `unit=0/2`);
+* the search-specific finding details are asserted by name (both members, a
+  baseline vector, and all three `SD-SEARCH-*` ids), so the row cannot become an
+  anonymous "some family refused";
+* `UTE-RETIREMENT-SUMMARY requested` and `refused` must EQUAL the number of
+  printed refusal lines, so a third family can never be absorbed silently by a
+  stale constant.
+
+Non-vacuity is measured, not claimed: `gate-arm-nonvacuity.txt` keeps the arm
+GREEN on the real ledger and shows it RED (`--all must refuse exactly the seeded
+families; it refused 1`) when the search row is temporarily removed.
+
+After the merge, everything was RE-MEASURED rather than assumed —
+`post-merge-remeasurement.txt`: the golden re-capture is byte-identical, the
+composition probe is unchanged, all three `SD-SEARCH-*` differences are
+unchanged, the negative controls are GREEN and the gate still refuses both
+families.
 
 All commands were run in `/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b1-20261120`.

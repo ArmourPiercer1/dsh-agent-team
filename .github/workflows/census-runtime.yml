@@ -398,10 +398,14 @@ jobs:
         # could each read the other's line). UTE-3's `tests/ute-g1-fs/lane-suite.test.mjs` rides
         # the SAME argv for the same measured reason: its per-member controls mount the realm row,
         # so hosted run 44759369386 red it pre-build with the identical ERR_MODULE_NOT_FOUND.
+        # The UTE-3 route-C repair's product-route suite rides it too: it dispatches the FOURTH FS
+        # member through the real route-C row, which imports the same repo packages post-build
+        # (pre-repair that member was refused before any image work).
         # UTE-3 (2026-11-20): `tests/ute-g1-fs/lib/refusal-categories.test.mjs` (the FS refusal
-        # vocabulary + its five mutation controls) rides this same argv. It is host-free and
-        # dependency-free, so it needs nothing from this build; it is here for family
-        # co-location with the FS binding contract (and to add no new dispatch leg).
+        # vocabulary + its six mutation controls) rides this same argv. Its corpus arms need
+        # nothing from this build; since the route-C repair its `route-unresolved` reachability
+        # arm DRIVES the withheld-continuation fixture (FSB-IMG-1b), so it is host-requiring
+        # like its siblings and rides post-build for family co-location (no new dispatch leg).
         # UTE-3 B1 SEARCH (2026-11-20): `tests/ute-g1-search/lane-suite.test.mjs` rides the same
         # argv for the same post-build reason (its C1 world imports this repo's packages through
         # a5sf-realm-row.mjs). It grades the 15-vector SEARCH old-path golden, both members'
@@ -409,7 +413,7 @@ jobs:
         # per-member negative controls (`NC-VERDICT GREEN controls=8 failed=0`).
         shell: bash
         timeout-minutes: 10
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-search/lane-suite.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,

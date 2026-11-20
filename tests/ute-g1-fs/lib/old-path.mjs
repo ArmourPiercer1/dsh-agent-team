@@ -111,9 +111,10 @@ export async function captureVector(vector, override = {}) {
   const world = await makeFsContractWorld({
     repoRoot: REPO_ROOT,
     label: `ute-g1-${effective.id.toLowerCase()}`,
-    // The product route-C composition is the default. Image vectors that the
-    // product route cannot reach declare `composition: 'post-gap-1'` in the
-    // corpus (disclosed there and in golden/COVERAGE.md).
+    // The product route-C composition is the default and, since the 2026-11-20
+    // route-C repair, every corpus vector (including all six `read_image` rows)
+    // runs on it. `composition` is still honoured so a negative control or a
+    // future vector can name another world-factory composition explicitly.
     composition: effective.composition ?? 'route-c',
     laneRoots: { read: effective.lane.read, write: effective.lane.write },
     ...(effective.llmModalities === undefined ? {} : { llmModalities: effective.llmModalities }),

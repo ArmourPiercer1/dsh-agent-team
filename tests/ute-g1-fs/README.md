@@ -40,10 +40,10 @@ capture-old-path.mjs      # (re)capture the golden fixture from the legacy gover
 run-prototype.mjs         # run the corpus on the prototype and grade it against the fixture
 negative-controls.mjs     # NC-1..NC-4 family-level + NC-MEMBER <m> per member (see §5)
 lane-suite.test.mjs            # node:test wrapper: corpus-vs-golden + the four controls
-golden/old-path.tsv       # the reviewed fixture (17 vectors)
+golden/old-path.tsv       # the reviewed fixture (16 vectors)
 golden/old-path.meta.txt  # fixture identity: pins, seam, capture command, limits
 golden/COVERAGE.md        # member -> vector ids / NC line map, read_image composition disclosure
-lib/corpus.mjs            # the 17 vectors: entry, declared lanes, steps, expected effects
+lib/corpus.mjs            # the 16 vectors: entry, declared lanes, steps, expected effects
 lib/old-path.mjs          # capture on the legacy route-C world
 lib/new-path.mjs          # run on the pinned next host
 lib/prototype-provider.mjs# the confined FS provider prototype (public base class only)
@@ -74,7 +74,6 @@ Normalized record per vector: `id`, `entry` (the native tool name), the declared
 | `FS-S1-symlink-escape` | `write` | a symlink inside the lane pointing outside → refused, target untouched |
 | `FS-R1-outside-read-leak` | `read` | read outside the lane → refused, and the secret token never appears in result text |
 | `FS-M1-mode-preserved` | `write` | overwriting a `0o600` file keeps the mode |
-| `FS-I0-route-c-gap` | `read_image` | the PRODUCT route-C composition cannot reach `read_image` at all (PD-5): refused before any image work, zero attachment bytes |
 | `FS-I1-inlane-image` | `read_image` | an in-lane image read commits exactly one attachment; the recorded digest is over the committed bytes and the result shape is one text + one image block |
 | `FS-I2-outside-image-denied` | `read_image` | an out-of-lane image is refused; the out-of-lane file is unchanged and zero attachment bytes appear |
 | `FS-I3-lane-bound-image` | `read_image` | the read lane is a bound subtree: a path outside every declared read root is refused before bytes or attachment work |
@@ -89,10 +88,13 @@ Modes are *measured*, not assumed: the old path creates files `0o600`
 
 The `read_image` rows carry a synthetic `@result:…` effect entry (marked with
 `@`): the committed attachment's byte length + sha256 observed at the store seam
-and the model-facing block shape. The six allow/lane/route/cancel image vectors
-run under the world factory's `post-gap-1` composition because the product
-route-C composition cannot reach `read_image` today (PD-5); `FS-I0-route-c-gap`
-pins that product fact. The per-member map and the full disclosure are in
+and the model-facing block shape. All sixteen vectors — including the six
+`read_image` ones — run on the PRODUCT route-C composition. Before the
+2026-11-20 route-C repair the product route could not reach `read_image` at all
+and a seventh vector (`FS-I0-route-c-gap`) pinned that failure; the repair made
+the member reachable, the six image rows came out byte-identical, and the
+failure-shape pin moved to the world-factory `FSB-IMG-1b` fixture. The
+per-member map and the full disclosure are in
 [`golden/COVERAGE.md`](./golden/COVERAGE.md).
 
 ## 4. Running it
@@ -221,13 +223,14 @@ not vacuous).
    (measured). The prototype guards them, but there is **no old-path vector to
    compare against**, so they are not in the corpus and no equivalence is
    claimed.
-3. **Streaming / byte-range / most attachment behaviour.** `read_image` is now
-   exercised on the old path (see `golden/COVERAGE.md`), but NOT on the product
-   route-C composition in any allow shape (it is dead there: PD-5), and several
-   image arms are explicitly not claimed (JPEG/WebP/GIF, downscale, byte cap,
-   content sniffing, mid-read cancellation, store failure). `streamText` and
+3. **Streaming / byte-range / most attachment behaviour.** `read_image` is
+   exercised on the old path (see `golden/COVERAGE.md`) and, since the
+   route-C repair, it is reachable on the PRODUCT composition (allow, lane
+   refusal, modality refusal and cancellation all observed there). Several image
+   arms are explicitly not claimed (JPEG/WebP/GIF, downscale, byte cap, content
+   sniffing, mid-read cancellation, store failure). `streamText` and
    `readByteRange` are not exercised. The new path (`NEW-PATH-VECTOR` for
-   `FS-I*`) is PR B2's scope.
+   `FS-I*`) is PR B2's scope; every image row stays `newPathPending`.
 4. **A live boot.** Both paths are host-free C1 runs (see §1).
 5. **The production execution path.** This is a prototype. No production traffic
    goes through it, no ToolPlane/Family Body was removed, no product Authority

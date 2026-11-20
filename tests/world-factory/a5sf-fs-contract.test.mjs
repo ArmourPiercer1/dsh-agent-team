@@ -46,12 +46,21 @@
  *                zero), rendered as a byte-capped window with the exact
  *                continuation footer, and the tail never reaches the model. The
  *                CONTROL (FSB-READ-2) is a below-threshold file that BUFFERS.
- *   FSB-IMG-1    `read_image` under the UNPATCHED product route: the routed
- *                definition shadows the preset one and fails CLOSED — zero
- *                provider reads, zero attachment bytes, zero guard facts. This
- *                is the GAP-FS-CONTRACT-1 evidence, NOT a lane refusal.
+ *   FSB-IMG-1    `read_image` on the PRODUCT route (route-c) AFTER the
+ *                2026-11-20 repair of GAP-FS-CONTRACT-1: the routed definition
+ *                shadows the preset one, an in-lane read commits exactly one
+ *                attachment, and an out-of-lane read is refused by the LANE
+ *                with zero provider reads and zero attachment bytes. NOT a lane
+ *                authority arm (layer A owns that); it is the reachability +
+ *                attachment summary.
+ *   FSB-IMG-1b   the HISTORICAL GAP-FS-CONTRACT-1 failure shape, reproduced with
+ *                the `withheld-fs-continuation` fixture (the real module mounted
+ *                with NO deferred-service continuation): refused with the inject
+ *                fault, zero reads, zero bytes, zero facts — fail-closed, with
+ *                no fallback to a root/base `fs`. This is a fixture pin, not a
+ *                claim about the product route's current behaviour.
  *   FSB-IMG-2/3  `read_image`'s attachment contract on the real module + real
- *                confined provider under the proposed post-GAP-1 composition:
+ *                confined provider, also on the PRODUCT composition:
  *                allowed = exactly one attachment with real metadata after one
  *                stat + one readBytes; refused = one `stat` deny fact and zero
  *                reads/bytes.
@@ -95,7 +104,8 @@ import {
   armOverwriteUnobservedExisting,
   armReadImageAllowed,
   armReadImageDenied,
-  armReadImageRouteCRefusal,
+  armReadImageProductRoute,
+  armReadImageWithheldContinuation,
   armReadSmallControl,
   armReadStreamAbort,
   armReadStreamBoundary,
@@ -140,26 +150,32 @@ const CASES = [
     run: armReadSmallControl,
   },
   {
-    title: 'FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts',
-    label: 'image-route-c',
+    title: 'FSB-IMG-1 the PRODUCT route serves read_image: one attachment in-lane, lane refusal with zero bytes out-of-lane',
+    label: 'image-product-route',
     options: { composition: 'route-c' },
     run: (world) => {
       if (world.composition !== 'route-c') {
         throw new Error(`FSB-IMG-1 requires composition 'route-c', got '${world.composition}'`)
       }
-      return armReadImageRouteCRefusal(world)
+      return armReadImageProductRoute(world)
     },
+  },
+  {
+    title: 'FSB-IMG-1b WITHHELD continuation (historical GAP-FS-CONTRACT-1 fixture) still fails closed: zero reads, zero bytes, zero facts',
+    label: 'image-withheld-continuation',
+    options: { composition: 'withheld-fs-continuation' },
+    run: armReadImageWithheldContinuation,
   },
   {
     title: "FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes",
     label: 'image-allowed',
-    options: { composition: 'post-gap-1' },
+    options: { composition: 'route-c' },
     run: armReadImageAllowed,
   },
   {
     title: 'FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes',
     label: 'image-denied',
-    options: { composition: 'post-gap-1' },
+    options: { composition: 'route-c' },
     run: armReadImageDenied,
   },
   {
@@ -241,7 +257,7 @@ const CASES = [
   {
     title: 'FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes',
     label: 'image-route-gate',
-    options: { composition: 'post-gap-1', llmModalities: ['text'] },
+    options: { composition: 'route-c', llmModalities: ['text'] },
     run: armImageRouteGateTextOnly,
   },
   {

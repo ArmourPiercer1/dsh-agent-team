@@ -1,0 +1,106 @@
+POST-MERGE RE-MEASUREMENT — UTE-3 SEARCH B1 (2026-11-20)
+
+Branch `task/ute3-search-b1-20261120` was merged with `origin/master` =
+`19a7fa64123108ce310625a1ed403c30b525c5f8` (#802, "route-C serves read_image"),
+on top of the branch's previous base `4aaae4c0b6888c07ff8c50002965a09d702f9e9f`
+(#803 session-log restore is already in that base).
+
+WHY THIS FILE EXISTS. The SEARCH fixture, its three semantic differences and its
+COVERAGE table were measured BEFORE #802 changed
+`packages/runtime/team-services/src/mount.ts` (the route-C deferred-child `fs`
+continuation) and deleted `FS-I0-route-c-gap` from the FS corpus (16 → the
+route-C image member is now served). #802 touches the SAME route-C mount code
+this baseline mounts through, so "the Search behaviour probably did not change"
+is not an acceptable answer. Everything below was RE-RUN on the merged tree;
+every command is reproducible.
+
+## 1. The golden fixture — re-captured, byte-identical
+
+```
+node tests/ute-g1-search/capture-old-path.mjs
+→ OLD-PATH-GOLDEN compare=identical fixture=<worktree>/tests/ute-g1-search/golden/old-path.tsv
+  vectors=15 captured=15
+```
+
+Two fresh captures (`capture-run-1.txt`, `capture-run-2.txt`) are byte-identical
+to each other AND to the committed `golden/old-path.tsv`. The tree digests,
+match digests, retention windows, fact counters and refusal classes are
+unchanged vector by vector. ⇒ the #802 mount change does not move the SEARCH
+old-path baseline.
+
+## 2. Composition — re-measured, unchanged
+
+```
+node tests/ute-g1-search/probe-composition.mjs   (composition-probe.txt)
+PROBE-REGISTRY grep=registered glob=registered
+PROBE-MEMBER grep  confined=yes providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER glob  confined=yes providerCalls=1 inheritedServiceCalls=0
+PROBE-PLANE names=native gate=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-PLANE assembly-native=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED
+PROBE-PLANE names=alias gate=accepted
+PROBE-PLANE assembly-alias=TOOL_BINDING_UNVERIFIED
+```
+
+Both members still reach the CONFINED provider on the product route, and the
+governed plane still refuses the native names. No mounting gap was created or
+closed by #802.
+
+## 3. The three semantic differences — re-measured, UNCHANGED
+
+```
+node tests/ute-g1-search/probe-semantic-differences.mjs   (semantic-differences.txt)
+SD-ROUTE-C  selected=["ignored.txt:1","keep.txt:1","sub/nested.txt:1"]
+SD-GOVERNED selected=["keep.txt:1","sub/nested.txt:1"]
+SD-IGNORE only-route-c=["ignored.txt:1"] only-governed=[]
+SD-PATHLESS route-c matches=0   argv has NO path operand
+SD-PATHLESS governed matches=2  argv ends with "-- ."
+SD-TOTAL declared=3 blocking=3 approved=0
+```
+
+| id | changed by #802? | evidence |
+|---|---|---|
+| `SD-SEARCH-1-grep-path-default` | **NO** — still 0 matches on route C vs 2 for the governed row | `SD-PATHLESS` above |
+| `SD-SEARCH-2-grep-vcs-ignore` | **NO** — route C still `--no-ignore-vcs`, governed still `--no-ignore-global`; still only `ignored.txt:1` differs | `SD-ROUTE-C` / `SD-GOVERNED` / `SD-IGNORE` above |
+| `SD-SEARCH-3-refusal-surface` | **NO** — golden rows SR-G3 and SR-G5 still carry the identical model-facing text and the identical `IO_READ_DENIED` fact, classified differently only by the locator + filesystem witness | `golden/old-path.tsv` rows `SR-G3-outside-denied` / `SR-G5-missing-target` |
+
+The differences are properties of the host search module and the confined
+subprocess face argv law, not of the FS continuation #802 repaired — but that is
+now a MEASUREMENT, not an inference.
+
+## 4. Negative controls and the lane verdict — re-run on the merged tree
+
+```
+node tests/ute-g1-search/negative-controls.mjs
+→ NC-VERDICT GREEN controls=8 failed=0
+
+node --test tests/ute-g1-search/lane-suite.test.mjs
+→ OLD-PATH-GOLDEN compare=identical … vectors=15 captured=15
+→ UTE-G1-SEARCH-VERDICT old-baseline=REPRODUCIBLE new-path=PENDING
+  semantic-differences=UNRESOLVED negative-controls=GREEN retirement=FORBIDDEN
+→ 6/6 pass, 0 fail, 0 skipped
+```
+
+## 5. Retirement gate — still refuses BOTH families
+
+`gate-refusal.txt`: `family=fs` keeps its own three codes at `unit=3/4`;
+`family=search` refuses with `UTE_NEW_PATH_UNVERIFIED`,
+`UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`, `UTE_VECTOR_UNREPRODUCED` (15 vectors),
+`UTE_MEMBER_UNCOVERED` (grep, glob) at `unit=0/2`;
+`UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2`.
+
+## 6. What the merge itself had to resolve
+
+* `.github/workflows/census-runtime.yml` — content conflict on the shared
+  post-build step. Resolved by UNION: master's four-file argv (which now
+  includes `tests/ute-g1-fs/product-route-image.test.mjs`) plus this branch's
+  `tests/ute-g1-search/lane-suite.test.mjs`, with master's corrected comment
+  text and the SEARCH paragraph both kept.
+* `dev/ci/eb3-ci-manifest.json` — same leg's `check[]` + `why`. Same union:
+  both tokens, and both `why` additions (the route-C repair paragraph and the
+  SEARCH paragraph) kept verbatim. `eb3-ci-required` then passes, i.e. the
+  manifest argv and the workflow `run:` line remain byte-identical.
+* `dev/agent-workflow/ledgers/ute-retirement.json` — auto-merged (the two rows
+  are disjoint objects); the `fs` row is untouched by this branch.
+* `dev/agent-workflow/SESSION_ROUTER_LOG.md` — auto-merged and verified to still
+  be a byte-prefix extension of master's copy (the log is append-only; this
+  branch appends one entry and rewrites nothing).
