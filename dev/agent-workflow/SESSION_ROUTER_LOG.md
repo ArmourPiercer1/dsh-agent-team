@@ -9246,3 +9246,17 @@ export interface AbortSignalLike {
 **门禁（本机实测，逐字在 `evidence/GATES.txt`）**：新套件 13/13；catalog `--max-uncollected 41 --max-excluded 7` → `tests=879 UNCOLLECTED 41 EXCLUDED 14 refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-ci-negative-controls 33/33`（C-NH1 从 manifest `cmd[]+check[]` 派生，两侧 argv 逐字一致）；`docs-sync docs=173 plans=132 findings=0 blocking=0`；`lint-identities` `new 0, resolved 0`；`pnpm typecheck` 9/9 workspace Done；`git diff --check` 0；`origin/master` 上 846 个测试文件逐一 `cmp` **全部字节相同**（只新增 `tests/ute2-settlement/settlement.test.mjs`）。census “next host lane” 追加该套件（host-free、无端口、无宿主树），不新增 dispatch leg / parity 路径。
 
 **UNKNOWN（明写）**：① 原型未接线——没有任何生产路径 import 它，“每次 dispatch 都真的落一条事实”在宿主上未证明，adapter 是另一个受审变更；② 真实 SIGKILL 只在独立 `node` 子进程里测过，未在“真实 Host 执行原生工具 + 并发负载”下测过；③ S2（durable-before-Host-returns）**未声明**；④ `decisionDigest` 的内容真实性由 ControlService/adapter 保证，本模块只校验形状与一致性；⑤ fsync 覆盖文件内容，未 fsync 父目录，网络文件系统/断电目录项未测；⑥ hosted L2 首次执行未在本机观察。**未 push master/stable，未改任何既有 package 行为或测试文件。**
+
+## 2026-11-20 — UTE G1 合同四项收口：三个 PR 已合并，围栏仍在
+
+**结果（master `8eda9dd05`）**：本轮按外部审查 `docs/reviews/20261120-1700.txt` 调整开发，四项高优先级发现各自的落地 PR 全部合并——**#797**（`9978723d4`，合同 rev2 + 退役门：单位由 census 派生、覆盖由实测产物派生、批准绑定提交、删除由必需 CI 发牌）、**#796**（`b001821ab`，FS native binding 产品模块 + 生命周期 `ACTIVE→DRAINING→RELEASED/TERMINATION_UNCONFIRMED`，在 pinned rc.5 真实装配上判分）、**#795**（`8eda9dd05`，结算 store + 冻结 writer 适配器 + 准入先于派发的排序律，真 SIGKILL 子进程恢复为 UNKNOWN）。三个 PR 均以 `--match-head-commit` 绑定 40-hex 合并，各自 hosted `ci-required` 全绿。
+
+**前两条本日志条目里的"未合并 / 开 draft PR"已过时**：UTE-1 条目末行与 UTE-2 两处按当时状态写；以本条为准，两者均已合并进 master。UT E-0 条目的"未合并"同理作废。
+
+**围栏未动**：审查 §4/§5 的围栏仍然有效——暂停朝生产接线扩张；允许 UTE-1/UTE-2 的隔离工作与 UTE-3 的逐族盘点/基线建设；**UTE-4 的删除与 FS 生产接线在四项合同项关闭后另行裁决**，本轮不删任何旧实现、不改 `ControlService`、不动 upstream（`CORE PATCH BUDGET = 0`）。`RetireAllowed = OldBaseline ∧ NewPathVerified ∧ SemanticDifferencesResolved ∧ NegativeControlsPass` 仍是逐族谓词；当前 FS 行实测仍被拒（`unit=0/4`：`read_image` 无基线 vector、`read/write/edit` 无 per-member 负控，且两条 `blocking=yes` 差异无 owner 批准）。
+
+**#765（设计稿）**：未改一个字节，只在 PR 上留了逐章修订清单（§1 `07` 的 S1 准入排序/单写者、§2 `05` 的 FS 错误协议二选一裁决、§3 `08` 的声明的旧路径+发牌、§4 `10` 的 G1-S1/G1-S3 按成员按 vector id、§5 陈旧阈值 `--max-uncollected 48`/`--max-excluded 9` → 真实 `41`/`7`（`tests=881`）、§6 `ute-prep/06` 治理补丁推迟）。它仍是 owner 的 draft，合并权在 owner。
+
+**下一步（未开工，不假装已做）**：UTE-3 的逐族盘点（每族 `oldPath.files` 清单 + 逐成员基线/golden vector/per-member 负控）；FS 语义差异的 owner 裁决（`refusal-observation-shape`、`lane-refusal-code`）决定是"获批准的语义变更"还是"新路径对齐旧路径"。两者都不需要新宿主、不写生产路径。
+
+**本轮遗留的诚实未知**：门禁证明证据覆盖、单位覆盖与批准绑提交，**不**证明具名批准者有权批准（保护分支 + PR review + CI 记录承担）；多文件结算仍是单写者假设，多进程部署不在 G1 承诺内；hosted `ci-census` 的队列在 2026-11-20 曾出现 `ci-required` 排队 40+ 分钟（历史 queued run 堵塞），不是本轮代码问题，但会让"绿了就能立刻合并"的预期失真。
