@@ -34,6 +34,8 @@ const ANCHORS = Object.freeze([
   'packages/test-support/agent-loop-testkit/package.json',
   'packages/core/session/package.json',
   'packages/core/tools/package.json',
+  'packages/attachment/attachment-local/package.json',
+  'packages/llm/llm/package.json',
 ])
 
 /**
@@ -86,7 +88,7 @@ export function treeImport(tree, spec) {
 export async function loadHostSurface(repoRoot) {
   const host = assertNextHostTree(repoRoot)
   const tree = host.tree
-  const [cordis, testkit, toolkit, session, fsLocal, fsPkg, toolFsPath, observationPath] = await Promise.all([
+  const [cordis, testkit, toolkit, session, fsLocal, fsPkg, toolFsPath, observationPath, attachmentLocal, llm] = await Promise.all([
     treeImport(tree, '@deepseek-ai/cordis'),
     treeImport(tree, '@deepseek-ai/dsh-agent-loop-testkit'),
     treeImport(tree, '@deepseek-ai/dsh-tool-testkit'),
@@ -95,6 +97,8 @@ export async function loadHostSurface(repoRoot) {
     treeImport(tree, '@deepseek-ai/dsh-fs'),
     Promise.resolve(treeResolve(tree, '@deepseek-ai/dsh-tool-fs')),
     Promise.resolve(treeResolve(tree, '@deepseek-ai/dsh-fs-observation-policy')),
+    treeImport(tree, '@deepseek-ai/dsh-attachment-local'),
+    treeImport(tree, '@deepseek-ai/dsh-llm'),
   ])
   return Object.freeze({
     host,
@@ -108,6 +112,8 @@ export async function loadHostSurface(repoRoot) {
     FsError: fsPkg.FsError,
     toolFs: await import(pathToFileURL(toolFsPath).href),
     observationPolicy: await import(pathToFileURL(observationPath).href),
+    LocalAttachmentStore: attachmentLocal.LocalAttachmentStore,
+    LlmAdapter: llm.LlmAdapter,
   })
 }
 

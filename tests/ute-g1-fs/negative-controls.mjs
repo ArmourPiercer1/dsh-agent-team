@@ -24,12 +24,41 @@ import { join } from 'node:path'
 
 import { compareAll, compareRecord, parseGolden, serializeGolden } from './lib/compare.mjs'
 import { CORPUS, SECRET_TOKEN } from './lib/corpus.mjs'
+import { observeImageStep } from './lib/effect-oracle.mjs'
 import { loadHostSurface } from './lib/host.mjs'
 import { runCorpus, runVector } from './lib/new-path.mjs'
 import { captureVector } from './lib/old-path.mjs'
 import { assertNextHostTree, NextHostMissingError } from '../next-host/host-next-lib.mjs'
 
 const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
+
+
+/** Prove the shared `read_image` observer bites in four distinct ways. */
+function runImageObserverControl() {
+  const image = { attachmentId: 'att-1', mediaType: 'image/png', bytes: 4, width: 1, height: 1 }
+  const allowed = { isError: false, value: { image }, content: [{ type: 'text' }, { type: 'image', attachment: { attachmentId: 'att-1' } }] }
+  const fresh = [{ bytes: 4, sha256: 'ab'.repeat(32) }]
+  const throws = (fn, pattern) => {
+    try {
+      fn()
+      return false
+    } catch (error) {
+      return pattern.test(error instanceof Error ? error.message : String(error))
+    }
+  }
+  const cases = [
+    ['zero-attachments', throws(() => observeImageStep(allowed, []), /EXACTLY ONE attachment/), true],
+    ['two-attachments', throws(() => observeImageStep(allowed, [...fresh, ...fresh]), /EXACTLY ONE attachment/), true],
+    ['wrong-block-id', throws(() => observeImageStep({ ...allowed, content: [{ type: 'text' }, { type: 'image', attachment: { attachmentId: 'att-2' } }] }, fresh), /not the committed attachment/), true],
+    ['refusal-committed', throws(() => observeImageStep({ isError: true, content: [] }, fresh), /refused read_image committed/), true],
+  ]
+  const ok = cases.every(([, actual, expected]) => actual === expected)
+  return {
+    id: 'NC-IMAGE-OBSERVER',
+    ok,
+    detail: `cases=${cases.length} ${cases.map(([name, actual, expected]) => `${name}:${actual === expected ? 'RED-as-required' : 'MISSED'}`).join(' ')}`,
+  }
+}
 
 /** The synthetic `@result:…` effect a read_image record carries, or undefined. */
 function imageResult(record) {
@@ -246,6 +275,13 @@ export async function runNegativeControls() {
   // positive line showing the unmodified run still reproduces the golden row.
   const { results: memberResults, positive } = await runMemberControls(golden)
   results.push(...memberResults, ...positive)
+
+  // ── NC-IMAGE-OBSERVER: the shared image observation cannot be faked ─────
+  // PR B2's new path uses the SAME helper as the old path. These cases prove
+  // the helper refuses to record an attachment observation that the store did
+  // not produce: zero attachments, more than one, a block naming a different
+  // attachment, and a refusal that nevertheless committed one.
+  results.push(runImageObserverControl())
 
   return results
 }

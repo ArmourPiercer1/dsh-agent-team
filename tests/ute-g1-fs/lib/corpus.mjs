@@ -203,9 +203,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I1-inlane-image',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
@@ -218,9 +215,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I2-outside-image-denied',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'outside/secret.png', base64: PIXEL_PNG_BASE64 }],
@@ -233,9 +227,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I3-lane-bound-image',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     lane: { read: BOUND, write: BOUND },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],
@@ -248,9 +239,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I4-missing-image',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [],
@@ -263,9 +251,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I5-route-unresolved',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     llmModalities: ['text'],
     lane: { read: INSIDE, write: INSIDE },
@@ -279,9 +264,6 @@ export const CORPUS = Object.freeze([
   {
     id: 'FS-I6-cancel-before-dispatch',
     entry: 'read_image',
-    // PR B2 flips this: the prototype provider has no image support yet, so the
-    // new-path run cannot reproduce these baselines. Declared, not skipped.
-    newPathPending: true,
     composition: 'route-c',
     lane: { read: INSIDE, write: INSIDE },
     setup: [{ op: 'writeFile', path: 'inside/pixel.png', base64: PIXEL_PNG_BASE64 }],

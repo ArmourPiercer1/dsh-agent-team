@@ -282,7 +282,7 @@
       },
       "retirementReadiness": {
         "baseline": "complete",
-        "newPath": "prototype",
+        "newPath": "complete",
         "negativeControls": "complete"
       },
       "note": "The FS family is ONE indivisible four-tool assembly: the descriptor claims all four names, ONE Registry candidate carries all four row definitions, and a partial mount is refused PLANE_FS_FAMILY_INCOMPLETE (RETIREMENT.md §1.1). `read-presentation.mjs` is classed `mechanics` because the closed role set has no presentation role; it is the read row's presentation face."

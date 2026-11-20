@@ -28,7 +28,7 @@ import { Buffer } from 'node:buffer'
 
 import { DSH_BASELINE_VERSION, TEST_USE_BASELINE_SHA } from '../../paths.mjs'
 import { CORPUS } from './corpus.mjs'
-import { imageResultEffect, noImageResultEffect, sha256Of } from './effect-oracle.mjs'
+import { observeImageStep, sha256Of } from './effect-oracle.mjs'
 import { applySetup, makeRecord, resolveLane, runSteps, worldPath } from './scenario.mjs'
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
@@ -47,51 +47,6 @@ let worldModule
 async function oldWorldBuilder() {
   if (worldModule === undefined) worldModule = await import('../../world-factory/lib/a5sf-fs-contract-world.mjs')
   return worldModule
-}
-
-/**
- * Observe one `read_image` step at the ATTACHMENT STORE seam: what bytes the
- * store actually received (byte length + sha256), and what model-facing result
- * the registry produced (block shape, image block ↔ store ref). Trusting the
- * tool's reported metadata would make the digest a self-report, so the bytes
- * are digested where they are committed.
- *
- * @param {object} settled - `world.dispatch` result.
- * @param {ReadonlyArray<{bytes: number, sha256: string}>} fresh - store calls made by THIS step.
- * @returns {object[]} zero or one synthetic result effect.
- */
-function observeImageStep(settled, fresh) {
-  if (settled.isError === true) {
-    if (fresh.length !== 0) {
-      throw new Error(`a refused read_image committed ${fresh.length} attachment(s); the oracle refuses to record that as a zero-effect refusal`)
-    }
-    return [noImageResultEffect()]
-  }
-  const image = settled.value?.image
-  if (image === undefined || typeof image !== 'object') {
-    throw new Error('an allowed read_image returned no image value; refusing to fabricate an attachment observation')
-  }
-  if (fresh.length !== 1) {
-    throw new Error(`an allowed read_image must commit EXACTLY ONE attachment, observed ${fresh.length}`)
-  }
-  const committed = fresh[0]
-  if (committed.bytes !== image.bytes) {
-    throw new Error(`the store recorded ${committed.bytes} bytes but the tool value reports ${String(image.bytes)}`)
-  }
-  const content = Array.isArray(settled.content) ? settled.content : []
-  const blockTypes = content.map((part) => part?.type)
-  const imageBlocks = content.filter((part) => part?.type === 'image')
-  if (imageBlocks.length !== 1 || imageBlocks[0]?.attachment?.attachmentId !== image.attachmentId) {
-    throw new Error(`the model-facing result is not the committed attachment (blocks=${blockTypes.join('+') || 'none'}, attachmentId=${String(imageBlocks[0]?.attachment?.attachmentId)})`)
-  }
-  return [imageResultEffect({
-    mediaType: String(image.mediaType),
-    width: Number(image.width),
-    height: Number(image.height),
-    bytes: committed.bytes,
-    sha256: committed.sha256,
-    blocks: blockTypes.join('+'),
-  })]
 }
 
 /**

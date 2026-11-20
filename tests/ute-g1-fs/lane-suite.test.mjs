@@ -32,32 +32,28 @@ test('the prototype reproduces the old-path golden corpus', async () => {
   const host = await loadHostSurface()
   const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
   assert.equal(golden.length, CORPUS.length, 'the golden fixture must cover every corpus vector')
-  // UTE-3 PR B1 adds `read_image` baselines; the prototype's image support is
-  // PR B2's scope. The pending set is DECLARED and printed — never a silent
-  // skip, and it may not widen to another member.
-  const runnable = CORPUS.filter((vector) => vector.newPathPending !== true)
-  const pending = CORPUS.filter((vector) => vector.newPathPending === true)
+  // PR B2 removes the declared-pending channel ENTIRELY. A vector carrying
+  // `newPathPending` is a declared non-coverage, so its PRESENCE is a failure —
+  // a future suite cannot park a vector as pending again without going red.
   assert.deepEqual(
-    pending.map((vector) => vector.entry),
-    pending.map(() => 'read_image'),
-    'only the read_image member may be new-path-pending in B1',
+    CORPUS.filter((vector) => Object.hasOwn(vector, 'newPathPending')).map((vector) => vector.id),
+    [],
+    'newPathPending must not exist anywhere: every corpus vector must be reproduced',
   )
-  for (const vector of pending) {
-    assert.match(vector.id, /^FS-I/, `a pending vector must be named as an image vector (got ${vector.id})`)
-  }
-  const runnableIds = new Set(runnable.map((vector) => vector.id))
-  const goldenRunnable = golden.filter((row) => runnableIds.has(row.id))
   const { records } = await runCorpus()
-  console.log(`UTE-G1-FS-NEW-PATH-PENDING ids=${pending.map((vector) => vector.id).join(',') || 'none'} reason=prototype-image-support-lands-in-B2`)
-  const { verdicts, failures, missingGolden, missingObserved } = compareAll(goldenRunnable, records)
+  assert.equal(records.length, CORPUS.length, 'every corpus vector must run on the new path')
+  const { verdicts, failures, missingGolden, missingObserved } = compareAll(golden, records)
   for (const failure of failures) {
     console.log(`UTE-G1-FS-DIFF ${failure.id} ${failure.diffs.map((diff) => `${diff.field}: old="${diff.expected}" new="${diff.observed}"`).join(' | ')}`)
   }
+  for (const verdict of verdicts.filter((candidate) => candidate.ok)) {
+    console.log(`NEW-PATH-VECTOR ${verdict.id} PASS`)
+  }
   assert.deepEqual(missingGolden, [], 'the corpus must not add vectors without a captured old-path record')
-  assert.deepEqual(missingObserved, [], 'every non-pending golden vector must run on the prototype')
-  assert.equal(verdicts.length, runnable.length)
+  assert.deepEqual(missingObserved, [], 'every golden vector must run on the prototype')
+  assert.equal(verdicts.length, CORPUS.length)
   assert.deepEqual(failures, [], `${failures.length} of ${verdicts.length} vectors diverged from the old path`)
-  console.log(`UTE-G1-FS-VERDICT GREEN vectors=${verdicts.length} pending=${pending.length} host=${host.host.head}`)
+  console.log(`UTE-G1-FS-VERDICT GREEN vectors=${verdicts.length} pending=0 host=${host.host.head}`)
 })
 
 test('every known semantic difference is declared and printable', () => {
