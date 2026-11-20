@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "UTE3DISPATCHSETTLEMENT",
+  "paths": [
+    "packages/runtime/settlement/dispatch-settlement.ts"
+  ],
+  "expectedDelta": {
+    "from": 1523,
+    "to": 1524
+  },
+  "reason": "UTE-3 S1 dispatch wiring (branch `task/ute3-settlement-wire-20261120`): ONE new scannable file under packages/runtime/settlement/ — the tool-definition wrapper that writes a durable admission before the body runs, enters RUNNING at dispatch, and settles the REAL observed outcome (allow/deny admission reference, completed/failed/unknown body, effect only from a witness id). It is RECORD-ONLY and UNWIRED: no production path imports or registers it, no approval/Grant/Stop authority is created, and the tool result is returned by identity. The new suite `tests/ute2-settlement/dispatch-settlement.test.mjs` and its mutation harness `tests/ute2-settlement/lib/dispatch-mutations.mjs` live under tests/ and enter no packages/** scan set; dist mirrors are outside the scan.",
+  "tieNote": "MEASURED, not chained: the unbooked run on this tree printed `scanner counts 1524, ledger derives 983 + 540 = 1523`; this booking books the single new settlement path, 1 path = 1524 - 1523."
+}
