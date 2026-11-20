@@ -364,7 +364,7 @@ jobs:
       - name: Next host — the rc.5 lane (real boot, native API A1–A6, provisioning negative controls)
         shell: bash
         timeout-minutes: 15
-run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
+        run: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
 
       - name: Build this repo (packages + composition) — the census leg REFUSES without this
         # Verbatim `pr-gate`'s working step. A fresh checkout has the committed package artifacts
