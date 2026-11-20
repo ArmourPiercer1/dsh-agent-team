@@ -479,12 +479,17 @@ test('F-09 the World identity is a receipt: literals, clones and forgeries are r
     assert.equal(contractWorldIdentity(contract).ok, true)
     const refused = contractWorldIdentity(copied)
     assert.equal(refused.ok, false)
-    assert.equal(refused.reason, 'WORLD_IDENTITY_UNPROVEN')
-    assert.match(refused.detail, /non-enumerable/u)
+    // F-10 upgraded the reason: a copy is refused because it is not the MINTED
+    // contract object, before its (inherited/copied) World reference is consulted.
+    assert.equal(refused.reason, 'CONTRACT_IDENTITY_UNPROVEN')
+    assert.match(refused.detail, /not the object declareObservationContract minted/u)
   })
 
-  await t.test('the refusal vocabulary is a closed set that includes the two new codes', () => {
+  await t.test('the refusal vocabulary is a closed set that includes the new codes', () => {
     assert.ok(REFUSAL_CODES.includes('WORLD_IDENTITY_UNPROVEN'))
+    assert.ok(REFUSAL_CODES.includes('CONTRACT_IDENTITY_UNPROVEN'))
+    assert.ok(REFUSAL_CODES.includes('CONTRACT_FIELDS_MISMATCH'))
+    assert.ok(REFUSAL_CODES.includes('ACTOR_ID_MISMATCH'))
     assert.ok(REFUSAL_CODES.includes('READ_EFFECT_UNOBSERVABLE'))
     assert.equal(new Set(REFUSAL_CODES).size, REFUSAL_CODES.length, 'no duplicate refusal codes')
   })

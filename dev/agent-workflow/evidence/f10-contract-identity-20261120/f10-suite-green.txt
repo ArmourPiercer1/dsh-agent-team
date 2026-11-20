@@ -1,0 +1,29 @@
+▶ F-10 a formal contract has its own identity, and the trace actor is bound
+  ✔ POSITIVE: the real declared contract is accepted, and its actor-bound trace is gradable (0.581732ms)
+  ✔ (a) Object.create(validContract) + overridden world_id is not a declared contract (0.164401ms)
+  ✔ (b) Object.create(validContract) with NO override is refused too (identity is the receipt) (0.150264ms)
+  ✔ (c) a Reflect.ownKeys / getOwnPropertySymbols reflection copy keeps the World symbol but not the identity (0.14247ms)
+  ✔ (d) a minted contract whose world_id moves after minting is CONTRACT_FIELDS_MISMATCH (0.453799ms)
+  ✔ (e) two Worlds' contracts cross-wired are refused (and a MINTED cross-wire fails the receipt check) (0.228132ms)
+  ✔ (f) execution_id matches but actor_id belongs to another agent -> ACTOR_ID_MISMATCH (0.165573ms)
+  ✔ the refusal vocabulary stays a closed set and names the F-10 codes (0.14805ms)
+✔ F-10 a formal contract has its own identity, and the trace actor is bound (7.00047ms)
+ℹ F10-POSITIVE ok=true contract=obs-4aca69b26b5a338a world=f10-world-a
+ℹ F10-A-DERIVED-OVERRIDE ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-B-DERIVED-UNCHANGED ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-C-SYMBOL-REFLECTION ok=false reason=CONTRACT_IDENTITY_UNPROVEN symbols=1
+ℹ F10-D-MUTATED-AFTER-MINT ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-D-ACCESSOR-SHADOW ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-E-CROSS-WIRED-DERIVED ok=false reason=CONTRACT_IDENTITY_UNPROVEN
+ℹ F10-E-CROSS-WIRED-MINTED ok=false reason=CONTRACT_FIELDS_MISMATCH
+ℹ F10-F-ACTOR-MISMATCH reason=ACTOR_ID_MISMATCH
+ℹ F10-F-ACTOR-MISSING reason=ACTOR_ID_MISMATCH
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 70.461675
+EXIT=0
