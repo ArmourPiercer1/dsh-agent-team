@@ -19,7 +19,7 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import test, { after } from 'node:test'
@@ -43,6 +43,7 @@ import {
 const HERE = new URL('.', import.meta.url).pathname
 const REPO_ROOT = resolve(HERE, '..', '..')
 const MODULE_PATH = join(REPO_ROOT, 'packages', 'runtime', 'settlement', 'execution-settlement.ts')
+const ADAPTER_PATH = join(REPO_ROOT, 'packages', 'runtime', 'settlement', 'writer-adapter.ts')
 const TMP_ROOT = join(REPO_ROOT, '.artifacts', 'tmp', 'ute2-settlement', `${process.pid}-${Date.now()}`)
 mkdirSync(TMP_ROOT, { recursive: true })
 after(() => {
@@ -51,6 +52,9 @@ after(() => {
 
 /** The real module, loaded once. */
 const settlement = await import(pathToFileURL(MODULE_PATH).href)
+const adapter = await import(pathToFileURL(ADAPTER_PATH).href)
+const MODULE_URL = pathToFileURL(MODULE_PATH).href
+const ADAPTER_URL = pathToFileURL(ADAPTER_PATH).href
 
 let dirCounter = 0
 /** A fresh scratch directory under the workspace (never /tmp). */
@@ -63,6 +67,37 @@ function freshDir(name) {
 
 function storeAt(name) {
   return settlement.createExecutionSettlementStore({ dir: freshDir(name) })
+}
+
+/** A store + the contract writer over it (one writer per root). */
+function writerAt(name, options = {}) {
+  const dir = freshDir(name)
+  const store = settlement.createExecutionSettlementStore({ dir, ...options })
+  return { dir, store, writer: adapter.createExecutionSettlementWriter(store) }
+}
+
+/** A minimal contract fact (terminal by default). */
+function contractFact(executionId, overrides = {}) {
+  return {
+    executionId,
+    rootSessionId: 'world-ute2',
+    agentInstanceId: 'member-1',
+    hostCallId: 'call-ute2-1',
+    controlRequestIds: ['req-ute2-1'],
+    dispatch: 'started',
+    bodyOutcome: 'completed',
+    effectEvidence: 'observed',
+    recordedAt: T(2),
+    ...overrides,
+  }
+}
+
+/** Spawn a real child that imports the settlement modules from the real URLs. */
+function runChild(script) {
+  return spawnSync(process.execPath, ['--input-type=module', '-e', script], {
+    env: { ...process.env, UTE2_MODULE_URL: MODULE_URL, UTE2_ADAPTER_URL: ADAPTER_URL },
+    encoding: 'utf8',
+  })
 }
 
 /** A record that has been admitted, run, and completed (the common fixture). */
@@ -620,11 +655,31 @@ test('NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an adm
     false,
     'there must be no exported factory that mints an admission reference',
   )
+  // The only admission-named exports are pure READ accessors over an existing
+  // reference; neither can mint or alter one.
   assert.deepEqual(
-    exportedFunctions.filter((name) => /decision|admission/i.test(name)),
-    [],
-    'no exported decision/admission-constructor surface',
+    exportedFunctions.filter((name) => /decision|admission/i.test(name)).sort(),
+    ['admissionDecision', 'admissionRequestIds'],
+    'the only admission-named exports are the read-only accessors',
   )
+  const frozenAdmission = Object.freeze(admission('exec-ute2-accessor'))
+  assert.equal(settlement.admissionDecision(frozenAdmission), 'allow')
+  assert.deepEqual(settlement.admissionRequestIds(frozenAdmission), [])
+  assert.equal(settlement.admissionDecision(Object.freeze({ ...frozenAdmission, decision: undefined })), null)
+
+  // The writer adapter exposes exactly one factory, and no runtime import of
+  // the control plane (it has NO runtime import at all: type-only + node:crypto).
+  const adapterFunctions = Object.entries(adapter)
+    .filter(([, value]) => typeof value === 'function')
+    .map(([name]) => name)
+  assert.deepEqual(adapterFunctions, ['createExecutionSettlementWriter'])
+  assert.deepEqual(adapterFunctions.filter((name) => forbidden.test(name)), [])
+  const adapterSource = readFileSync(ADAPTER_PATH, 'utf8')
+  const adapterRuntimeImports = adapterSource
+    .split('\n')
+    .filter((line) => /^\s*import\s/.test(line) && !/^\s*import\s+type\b/.test(line))
+    .join('\n')
+  assert.equal(/control|settlement/i.test(adapterRuntimeImports), false, `the adapter has no runtime settlement/control import:\n${adapterRuntimeImports}`)
 
   // The store is the writer; its methods are recorders/readers only.
   const store = storeAt('authority-surface')
@@ -719,6 +774,372 @@ test('an interrupted write never reads as a complete record: temp files are invi
   assert.equal(atomicStore.list().length, 1)
 
   console.log('UTE2-CRASH temp-invisible=true truncated=SETTLEMENT_CORRUPT tampered=SETTLEMENT_CORRUPT stale-temp-does-not-disturb=true')
+})
+
+// ------------------------------------------------------- writer adapter (UTE-1)
+
+test('adapter: ONE fact per physical execution, the S1 completeness surface, and a cold read', async () => {
+  const { dir, store, writer } = writerAt('adapter-canonical')
+  const executionId = 'exec-ute2-adapter-canonical'
+  const open = contractFact(executionId, {
+    controlRequestIds: [],
+    dispatch: 'not-started',
+    bodyOutcome: 'unknown',
+    effectEvidence: 'none-confirmed',
+  })
+
+  const admitted = await writer.record(open)
+  assert.deepEqual(admitted, { recorded: true })
+  assert.deepEqual(await writer.listUnsettled('world-ute2'), [executionId])
+  assert.deepEqual(await writer.listUnsettled('world-someone-else'), [], 'the surface is root-scoped')
+
+  const stored = store.read(executionId)
+  assert.equal(stored.state, 'ADMITTED')
+  assert.equal(stored.admission.admissionKind, 'no-control-request', 'a fact with no request leg mints no decision')
+  assert.equal(stored.admission.decision, undefined)
+
+  const settled = await writer.record(contractFact(executionId))
+  assert.deepEqual(settled, { recorded: true })
+  assert.deepEqual(await writer.listUnsettled('world-ute2'), [], 'a settled execution is not a gap')
+  assert.deepEqual(await writer.record(contractFact(executionId)), {
+    recorded: false,
+    reason: 'DUPLICATE_SETTLEMENT',
+  })
+
+  const cold = adapter.createExecutionSettlementWriter(
+    settlement.createExecutionSettlementStore({ dir }),
+  )
+  const coldFact = await cold.read(executionId)
+  assert.equal(coldFact.bodyOutcome, 'completed')
+  assert.equal(coldFact.dispatch, 'started')
+  assert.equal(coldFact.effectEvidence, 'observed')
+  assert.deepEqual(coldFact.controlRequestIds, ['req-ute2-1'])
+  assert.equal(await cold.read('exec-ute2-never-existed'), undefined)
+
+  // The adapter records a REFERENCE admission when the fact names a request.
+  const linked = 'exec-ute2-adapter-linked'
+  await writer.record(
+    contractFact(linked, { dispatch: 'not-started', bodyOutcome: 'unknown', effectEvidence: 'none-confirmed' }),
+  )
+  const linkedRecord = store.read(linked)
+  assert.equal(linkedRecord.admission.admissionKind, 'control-request-reference')
+  assert.deepEqual([...linkedRecord.admission.requestIds], ['req-ute2-1'])
+  assert.equal(linkedRecord.admission.decision, undefined)
+  console.log('UTE2-ADAPTER canonical=true unsettled-gap=true cold-read=true reference-admission=true')
+})
+
+test('adapter: duplicate and conflicting terminal facts are NAMED refusals, never overwrites', async () => {
+  const { store, writer } = writerAt('adapter-duplicate')
+  const executionId = 'exec-ute2-adapter-dup'
+  const fact = contractFact(executionId)
+  const first = await writer.record(fact)
+  assert.deepEqual(first, { recorded: true })
+  const path = settlement.settlementRecordPath(store.dir, executionId)
+  const before = readFileSync(path, 'utf8')
+
+  const duplicate = await writer.record({ ...fact, recordedAt: T(9), recovery: { reconciledFrom: 'ADMITTED', at: T(9), detail: 'a-later-retry' } })
+  assert.equal(duplicate.recorded, false)
+  assert.equal(duplicate.reason, 'DUPLICATE_SETTLEMENT')
+  assert.equal(readFileSync(path, 'utf8'), before, 'a duplicate leaves the canonical bytes untouched')
+
+  const conflict = await writer.record({ ...fact, bodyOutcome: 'failed', recordedAt: T(10) })
+  assert.equal(conflict.recorded, false)
+  assert.equal(conflict.reason, 'SETTLEMENT_CONFLICT')
+  assert.equal(readFileSync(path, 'utf8'), before, 'a conflict never rewrites the achieved outcome')
+  assert.equal((await writer.read(executionId)).bodyOutcome, 'completed')
+
+  // A foreign root/agent for an existing ExecutionId is the existing cross-wire
+  // refusal and it leaves no second record behind.
+  const crossId = 'exec-ute2-adapter-cross'
+  await writer.record(
+    contractFact(crossId, { dispatch: 'not-started', bodyOutcome: 'unknown', effectEvidence: 'none-confirmed' }),
+  )
+  const cross = await writer.record(
+    contractFact(crossId, {
+      rootSessionId: 'world-other',
+      agentInstanceId: 'member-other',
+      dispatch: 'not-started',
+      bodyOutcome: 'unknown',
+      effectEvidence: 'none-confirmed',
+    }),
+  )
+  assert.deepEqual(cross, { recorded: false, reason: 'SETTLEMENT_CROSS_WIRED' })
+  assert.equal(store.read(crossId).identity.worldId, 'world-ute2')
+  console.log('UTE2-ADAPTER-DUP duplicate=DUPLICATE_SETTLEMENT conflict=SETTLEMENT_CONFLICT bytes-unchanged=true')
+})
+
+test('adapter: projectControlResult is a read-compatible projection that never fabricates a requestId', async () => {
+  const { writer } = writerAt('adapter-projection')
+  const executionId = 'exec-ute2-projected'
+  await writer.record(contractFact(executionId, { hostCallId: 'call-ute2-projected' }))
+
+  const matched = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-projected',
+    instanceId: 'member-1',
+    outcome: 'succeeded',
+  })
+  assert.deepEqual(matched, { recorded: true, requestId: 'req-ute2-1' })
+
+  const unmatched = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-unknown',
+    outcome: 'succeeded',
+  })
+  assert.deepEqual(unmatched, { recorded: false, reason: 'PROJECTION_UNMATCHED' })
+  assert.equal(unmatched.requestId, undefined)
+
+  const mismatched = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-projected',
+    outcome: 'failed',
+  })
+  assert.deepEqual(mismatched, { recorded: false, reason: 'PROJECTION_OUTCOME_MISMATCH' })
+  assert.equal(mismatched.requestId, undefined)
+
+  // Ambiguous triple (two executions for one call+root) is refused, not guessed.
+  await writer.record(
+    contractFact('exec-ute2-projected-b', {
+      hostCallId: 'call-ute2-projected',
+      controlRequestIds: ['req-ute2-2'],
+    }),
+  )
+  const ambiguous = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-projected',
+    outcome: 'succeeded',
+  })
+  assert.deepEqual(ambiguous, { recorded: false, reason: 'PROJECTION_AMBIGUOUS' })
+  assert.equal(ambiguous.requestId, undefined)
+
+  // Two request legs are not a single requestId.
+  await writer.record(contractFact('exec-ute2-projected-multi', {
+    hostCallId: 'call-ute2-multi',
+    controlRequestIds: ['req-a', 'req-b'],
+  }))
+  const multi = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-multi',
+    outcome: 'succeeded',
+  })
+  assert.deepEqual(multi, { recorded: false, reason: 'PROJECTION_AMBIGUOUS_REQUEST_LINK' })
+  assert.equal(multi.requestId, undefined)
+
+  // No control request leg: no requestId is invented.
+  await writer.record(contractFact('exec-ute2-projected-free', {
+    hostCallId: 'call-ute2-free',
+    controlRequestIds: [],
+  }))
+  const free = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-free',
+    outcome: 'succeeded',
+  })
+  assert.deepEqual(free, { recorded: false, reason: 'PROJECTION_NO_CONTROL_REQUEST_LINK' })
+  assert.equal(free.requestId, undefined)
+
+  // An admitted-but-unsettled execution is not projected as a result.
+  await writer.record(contractFact('exec-ute2-projected-open', {
+    hostCallId: 'call-ute2-open',
+    dispatch: 'not-started',
+    bodyOutcome: 'unknown',
+    effectEvidence: 'none-confirmed',
+  }))
+  const open = await writer.projectControlResult({
+    rootSessionId: 'world-ute2',
+    callId: 'call-ute2-open',
+    outcome: 'unknown',
+  })
+  assert.deepEqual(open, { recorded: false, reason: 'PROJECTION_UNSETTLED' })
+  assert.equal(open.requestId, undefined)
+  console.log('UTE2-PROJECTION matched=true unmatched=PROJECTION_UNMATCHED mismatch=PROJECTION_OUTCOME_MISMATCH ambiguous=PROJECTION_AMBIGUOUS requestId-never-fabricated=true')
+})
+
+// ------------------------------------------------ durability: crash window
+
+test('durable admission BEFORE dispatch: SIGKILL after recordAdmission returns still yields UNKNOWN, never absent/COMPLETED', async () => {
+  const dir = freshDir('durable-admission')
+  const executionId = 'exec-ute2-durable-admission'
+  const script = `
+const fs = await import('node:fs')
+const s = await import(process.env.UTE2_MODULE_URL)
+const a = await import(process.env.UTE2_ADAPTER_URL)
+const store = s.createExecutionSettlementStore({ dir: process.env.UTE2_DATA_DIR })
+const writer = a.createExecutionSettlementWriter(store)
+const result = await writer.record({
+  executionId: ${JSON.stringify(executionId)},
+  rootSessionId: 'world-ute2',
+  agentInstanceId: 'member-1',
+  hostCallId: 'call-ute2-durable',
+  controlRequestIds: [],
+  dispatch: 'not-started',
+  bodyOutcome: 'unknown',
+  effectEvidence: 'none-confirmed',
+  recordedAt: '2026-11-20T00:00:01.000Z',
+})
+fs.writeSync(1, 'ADMISSION-RETURNED recorded=' + String(result.recorded) + '\\n')
+// The caller would dispatch here. Hard death BEFORE anything is dispatched.
+process.kill(process.pid, 'SIGKILL')
+`
+  const child = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
+    env: {
+      ...process.env,
+      UTE2_MODULE_URL: MODULE_URL,
+      UTE2_ADAPTER_URL: ADAPTER_URL,
+      UTE2_DATA_DIR: dir,
+    },
+    encoding: 'utf8',
+  })
+  assert.equal(child.signal, 'SIGKILL', `the child must die by SIGKILL, saw signal=${String(child.signal)}`)
+  assert.match(child.stdout, /ADMISSION-RETURNED recorded=true/, 'recordAdmission must have returned before the kill')
+
+  // Cold reader: a fresh store over the same root (it reclaims the dead writer's
+  // lock, which is the same evidence a restarting Host has).
+  const cold = settlement.createExecutionSettlementStore({ dir })
+  assert.equal(cold.writerLock.state, 'reclaimed')
+  const coldWriter = adapter.createExecutionSettlementWriter(cold)
+  const before = await coldWriter.read(executionId)
+  assert.ok(before, 'the admission fact must not be absent after a hard kill')
+  assert.equal(before.dispatch, 'not-started')
+  assert.equal(before.bodyOutcome, 'unknown')
+  assert.deepEqual(await coldWriter.listUnsettled('world-ute2'), [executionId], 'S1 completeness sees the gap')
+
+  const recovered = cold.recoverUnsettled(T(5))
+  assert.equal(recovered.length, 1)
+  assert.equal(recovered[0].after, 'UNKNOWN')
+  assert.equal(recovered[0].before, 'ADMITTED')
+  const after = await coldWriter.read(executionId)
+  assert.equal(after.bodyOutcome, 'unknown')
+  assert.equal(after.dispatch, 'not-started')
+  assert.ok(after.recovery, 'the recovered fact names how it was reconciled')
+  assert.deepEqual(await coldWriter.listUnsettled('world-ute2'), [], 'after recovery the gap is closed by a fact')
+  assert.deepEqual(await coldWriter.record(contractFact(executionId)), {
+    recorded: false,
+    reason: 'SETTLEMENT_CONFLICT',
+  }, 'a recovered UNKNOWN is terminal and is never overwritten by a late success')
+  console.log('UTE2-CRASH-WINDOW admission-returned=true sigkill=SIGKILL recovered=UNKNOWN never-absent=true never-completed=true')
+})
+
+// ------------------------------------------------------ fsync + writer lock
+
+test('durability: the parent directory is fsync\'d AFTER the rename and BEFORE the call returns', () => {
+  const dir = freshDir('fsync-order')
+  const order = []
+  const executionId = 'exec-ute2-fsync-order'
+  const store = settlement.createExecutionSettlementStore({
+    dir,
+    durability: {
+      fsyncDirectory(syncedDir) {
+        assert.equal(syncedDir, dir)
+        // The witness observes the ordering itself: by the time the directory is
+        // fsync'd, the record is already published under its final name. (The
+        // lock acquisition also fsyncs this directory, before any record exists.)
+        const path = settlement.settlementRecordPath(dir, executionId)
+        if (existsSync(path)) {
+          const envelope = JSON.parse(readFileSync(path, 'utf8'))
+          assert.equal(envelope.payload.identity.executionId, executionId)
+          order.push(`fsync:${envelope.payload.state}`)
+        }
+      },
+    },
+  })
+  order.length = 0 // the lock acquisition fsync'd the same directory
+
+  store.recordAdmission({ identity: identity(executionId), admission: admission(executionId), at: T(0) })
+  assert.deepEqual(order, ['fsync:ADMITTED'])
+  store.enterRunning({ executionId, observation: runningObservation(executionId), at: T(1) })
+  store.settle({
+    executionId,
+    state: 'COMPLETED',
+    observation: completedObservation(executionId),
+    at: T(2),
+    reason: 'body-returned',
+  })
+  assert.deepEqual(order, ['fsync:ADMITTED', 'fsync:RUNNING', 'fsync:COMPLETED'])
+
+  // A directory-fsync failure is a NAMED refusal, never a silent success.
+  const failingDir = freshDir('fsync-failure')
+  let failDirectoryFsync = false
+  const failing = settlement.createExecutionSettlementStore({
+    dir: failingDir,
+    durability: {
+      fsyncDirectory() {
+        // The lock acquisition also fsyncs; only the record writes must fail.
+        if (failDirectoryFsync) throw new Error('injected directory fsync failure')
+      },
+    },
+  })
+  failDirectoryFsync = true
+  const code = codeOf(() =>
+    failing.recordAdmission({
+      identity: identity('exec-ute2-fsync-failure'),
+      admission: admission('exec-ute2-fsync-failure'),
+      at: T(0),
+    }),
+  )
+  assert.equal(code, 'SETTLEMENT_DIRECTORY_FSYNC_FAILED')
+  console.log('UTE2-FSYNC order=rename,fsync,return states=ADMITTED,RUNNING,COMPLETED failure=SETTLEMENT_DIRECTORY_FSYNC_FAILED')
+})
+
+test('writer lock: one writer per root, a live foreign writer is refused, and an evicted lock stops writes', () => {
+  const dir = freshDir('writer-lock')
+  const holder = settlement.createExecutionSettlementStore({ dir })
+  assert.equal(holder.writerLock.state, 'acquired')
+  assert.equal(holder.writerLock.pid, process.pid)
+  const lockText = JSON.parse(readFileSync(holder.writerLock.path, 'utf8'))
+  assert.equal(lockText.pid, process.pid)
+  assert.equal(typeof lockText.bootId, 'string')
+
+  // A REAL second process must be refused by NAME (an in-process second store is
+  // re-entrant by design; only another pid can prove exclusion).
+  const child = runChild(`
+const s = await import(process.env.UTE2_MODULE_URL)
+try {
+  s.createExecutionSettlementStore({ dir: process.env.UTE2_DATA_DIR })
+  console.log('LOCK=acquired')
+} catch (error) {
+  console.log('LOCK=' + String(error && error.code ? error.code : error))
+}
+`.replace('process.env.UTE2_DATA_DIR', JSON.stringify(dir)))
+  assert.equal(child.status, 0, child.stderr)
+  assert.match(child.stdout, /LOCK=SETTLEMENT_WRITER_CONFLICT/, `a live foreign writer must be refused: ${child.stdout}`)
+
+  // The holder can still write after the refused attempt.
+  const executionId = 'exec-ute2-lock-holder'
+  holder.recordAdmission({ identity: identity(executionId), admission: admission(executionId), at: T(0) })
+  assert.equal(holder.read(executionId).state, 'ADMITTED')
+
+  // An evicted lock (someone removed the file) stops the writer instead of
+  // letting it race a new owner.
+  rmSync(holder.writerLock.path)
+  const evicted = codeOf(() =>
+    holder.enterRunning({ executionId, observation: runningObservation(executionId), at: T(1) }),
+  )
+  assert.equal(evicted, 'SETTLEMENT_WRITER_CONFLICT')
+  console.log('UTE2-LOCK live-foreign=SETTLEMENT_WRITER_CONFLICT holder-still-writes=true evicted=SETTLEMENT_WRITER_CONFLICT')
+})
+
+test('writer lock: a demonstrably dead owner is reclaimed, with named evidence', () => {
+  const dir = freshDir('writer-lock-reclaim')
+  const child = runChild(`
+const s = await import(process.env.UTE2_MODULE_URL)
+s.createExecutionSettlementStore({ dir: process.env.UTE2_DATA_DIR })
+console.log('LOCK=acquired')
+`.replace('process.env.UTE2_DATA_DIR', JSON.stringify(dir)))
+  assert.equal(child.status, 0, child.stderr)
+  assert.match(child.stdout, /LOCK=acquired/)
+  const deadPid = child.pid
+
+  const store = settlement.createExecutionSettlementStore({ dir })
+  assert.equal(store.writerLock.state, 'reclaimed')
+  assert.equal(store.writerLock.previousPid, deadPid)
+  assert.equal(typeof store.writerLock.previousBootId, 'string')
+
+  // The reclaimed root is immediately writable (the restart path).
+  const executionId = 'exec-ute2-reclaimed'
+  store.recordAdmission({ identity: identity(executionId), admission: admission(executionId), at: T(0) })
+  assert.equal(store.read(executionId).state, 'ADMITTED')
+  console.log(`UTE2-LOCK-RECLAIMED previousPid=${deadPid} state=reclaimed writable=true`)
 })
 
 // --------------------------------------------------------- negative controls
