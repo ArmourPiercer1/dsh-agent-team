@@ -113,7 +113,7 @@ jobs:
           set -o pipefail
           mkdir -p "$XDG_CACHE_HOME"
           node scripts/ci-pr-gate.mjs --full \
-            --only graph-parse,kit-home-guard,state-freshness,install,blueprint-fence,typecheck,lint-identities,artifacts-at-head \
+            --only graph-parse,kit-home-guard,state-freshness,append-only-log,install,blueprint-fence,typecheck,lint-identities,artifacts-at-head \
             --store-dir "$DSH_CI_STORE_DIR" \
             --transcript-dir "$RUNNER_TEMP/gate-transcripts" \
             2>&1 | tee "$RUNNER_TEMP/gate-run.txt"

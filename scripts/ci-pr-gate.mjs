@@ -168,6 +168,7 @@ const LEG_ORDER = [
   'graph-parse',
   'kit-home-guard',
   'state-freshness',
+  'append-only-log',
   'install',
   'blueprint-fence',
   'typecheck',
@@ -234,6 +235,7 @@ export function finalToken(verdict, counts) {
 import { loadCandidateAuthority } from './authority-candidate-source.mjs'
 import { dualReadReport } from './authority-dual-read.mjs'
 import { loadPointerAuthority, pointerExists, twoCurrentFindings, EXPECTED_BASELINE_REF, POINTER_REL } from './current-authority.mjs'
+import { checkAppendOnlyLog } from './check-append-only-log.mjs'
 
 // Set once by main() from BOTH CLI flags together (or not at all); the state-freshness
 // leg reads it. No pointer file, no scan — the operator names the candidate.
@@ -1883,6 +1885,18 @@ export const LEGS = {
     return { verdict: 'pass', detail: `${String(files.length)} kit .mjs file(s) scanned; every teamToolPlane config that true-sets agentStateEnabled also true-sets testHomeGuard (design (c) choke-point law)` }
   },
 
+  // Append-only guard for the execution log. Reads the base revision through git, so it
+  // can only answer where history is present (pr-gate checks out with fetch-depth 0); a
+  // run without a usable base is REFUSED, never green — an append-only claim with no base
+  // is the exact shape of the two truncations this leg exists to catch.
+  'append-only-log'() {
+    const r = checkAppendOnlyLog({ cwd: REPO_ROOT })
+    if (r.verdict === 'pass') {
+      return { verdict: 'pass', detail: `log preserved: base ${String(r.base).slice(0, 9)} is a byte prefix; ${r.lines} line(s), ${r.added} appended, ${r.removed} removed` }
+    }
+    if (r.verdict === 'refused') return { verdict: 'refused', refuseReason: 'append-only-base-unknown', detail: r.detail }
+    return { verdict: 'fail', detail: `${r.detail} (base ${String(r.base).slice(0, 9)}, head ${r.lines} line(s), ${r.removed} removed)` }
+  },
   'state-freshness'() {
     const gp = resolve(REPO_ROOT, GRAPH_YAML)
     const lp = resolve(REPO_ROOT, 'dev/agent-workflow/SESSION_ROUTER_LOG.md')
