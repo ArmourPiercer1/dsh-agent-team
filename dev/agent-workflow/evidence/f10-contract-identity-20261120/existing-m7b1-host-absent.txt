@@ -1,0 +1,34 @@
+M7B1-HOST-REFUSED host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/deepseek-harness-test-use reason=apps/cli/lib/bin.js is absent (built runtime checkout missing) action=provision per docs/TEST_METHODS.md §1/§2 or set M7B1_REQUIRE_PINNED_HOST=1 to fail instead
+M7B1-WINDOW-NOT-CLOSED tag=phase=pre reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=pre closedAt=2026-11-18T00:00:00.000Z; a verdict needs the POST snapshot taken after the execution, so an armed-bu
+M7B1-WINDOW-NOT-CLOSED tag=closedAt=null reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window c
+M7B1-WINDOW-NOT-CLOSED tag=closedAt="" reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window can n
+M7B1-IDENTITY-MISMATCH field=world_id reason=IDENTITY_MISMATCH detail=the window is bound to world_id="mutated-world_id" but the contract declares "m7b1-probe"; an observation of one identity cannot corroborate a contract about an
+M7B1-DERIVED-CONTRACT field=world_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=agent_id reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="mutated-agent_id" but the contract declares "agent-probe"; an observation of one identity cannot corroborate a contract about a
+M7B1-DERIVED-CONTRACT field=agent_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=execution_id reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="mutated-execution_id" but the contract declares "exec-probe"; an observation of one identity cannot corroborate a contract
+M7B1-DERIVED-CONTRACT field=execution_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="exec-probe" but no tool/call or tool/result event in the host's durable trace carries it (ids present: some-other-call); the
+M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
+M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.221231ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (23.90199ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (15.457616ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.85405ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (0.271644ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (1.148835ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (69.26537ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.794963ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (119.098451ms)
+﹣ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (3.479596ms) # pinned host runtime absent (declared refusal above) — the fail-closed half was graded
+ℹ M7B1-WINDOW verdict=INSTRUMENT_ERROR reason=HOST_ABSENT host=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/deepseek-harness-test-use
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 205.324386
+EXIT=0

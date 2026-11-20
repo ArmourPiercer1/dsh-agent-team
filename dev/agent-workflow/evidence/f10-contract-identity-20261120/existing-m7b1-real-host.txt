@@ -1,0 +1,60 @@
+M7B1-WINDOW-NOT-CLOSED tag=phase=pre reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=pre closedAt=2026-11-18T00:00:00.000Z; a verdict needs the POST snapshot taken after the execution, so an armed-bu
+M7B1-WINDOW-NOT-CLOSED tag=closedAt=null reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window c
+M7B1-WINDOW-NOT-CLOSED tag=closedAt="" reason=WINDOW_NOT_CLOSED detail=window win-probe is phase=post closedAt=; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclosed window can n
+M7B1-IDENTITY-MISMATCH field=world_id reason=IDENTITY_MISMATCH detail=the window is bound to world_id="mutated-world_id" but the contract declares "m7b1-probe"; an observation of one identity cannot corroborate a contract about an
+M7B1-DERIVED-CONTRACT field=world_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=agent_id reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="mutated-agent_id" but the contract declares "agent-probe"; an observation of one identity cannot corroborate a contract about a
+M7B1-DERIVED-CONTRACT field=agent_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-IDENTITY-MISMATCH field=execution_id reason=IDENTITY_MISMATCH detail=the window is bound to execution_id="mutated-execution_id" but the contract declares "exec-probe"; an observation of one identity cannot corroborate a contract
+M7B1-DERIVED-CONTRACT field=execution_id reason=CONTRACT_IDENTITY_UNPROVEN
+M7B1-EXECUTION-ID-NOT-IN-TRACE reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="exec-probe" but no tool/call or tool/result event in the host's durable trace carries it (ids present: some-other-call); the
+M7B1-ROW-SEAL verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED (oracle, witnessed mode)
+M7B1-FORGED-ENVELOPE ok=false reason=WITNESS_NOT_SEALED
+▶ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED
+  ✔ host absent -> INSTRUMENT_ERROR reason=HOST_ABSENT, and the verdict is not SATISFIED (1.114339ms)
+  ✔ an unpinned host tree -> HOST_TREE_UNPINNED (the pin is read, never assumed) (21.676939ms)
+  ✔ a tree at the pin with UNPROVEN native assets -> HOST_ASSETS_UNPROVEN (14.426024ms)
+  ✔ the scope algebra refuses everything it cannot bind (1.802774ms)
+  ✔ the scope is RE-RESOLVED at open time, and the host preconditions keep their order (3.038462ms)
+  ✔ M7-B1b: the binding validator refuses an unclosed window, a mutated identity and an unobserved execution (1.173741ms)
+  ✔ M7-B1b: both halves of the provenance seal are live (row seal, window seal, and a second module instance) (73.529168ms)
+  ✔ M7-B1b: a caller-assembled envelope is refused before any instrument is trusted (1.517858ms)
+✔ M7-B1 contract: every unestablished window is a NAMED INSTRUMENT_ERROR, never SATISFIED (121.831587ms)
+M7B1-DENIAL FS_SANDBOX_DENIED error_code=FS_SANDBOX_DENIED outcome=DENIED message="Error: [sandbox: file access denied under workspace-write mode] [sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+M7B1-WALL bootMs=82049 totalMs=83934
+[M7B1] teardown (body-finally) in 89ms
+[M7B1] teardown (t.after) in 0ms
+✔ M7-B1 real-host window: inside/outside/same-directory controls, verbatim denial, forged and foreign witnesses (84026.778195ms)
+ℹ M7B1-WINDOW contract=obs-cbe4619cf425736b world=u5m7b1-20261120T05-44-38Z agent=session-733f394b-4434-4d2e-86db-ebf13510fab2 execution=m7b1-2 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/homes/u5m7b1-20261120T05-44-38Z window=win-175e1891-b8b9-4e6d-8196-3538fb9ddc3f phase=pre armedAt=2026-11-20T05:46:00.995Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM inside-authorized verdict=SATISFIED expected=SATISFIED unauthorized=[]
+ℹ M7B1-WINDOW contract=obs-3e3d4447dd9462ae world=u5m7b1-20261120T05-44-38Z agent=session-f3d9f0d0-39b7-493c-b5c7-c82f30a009ab execution=m7b1-6 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/homes/u5m7b1-20261120T05-44-38Z window=win-72899710-60bb-4d0b-bd41-636f5141702c phase=pre armedAt=2026-11-20T05:46:01.800Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM outside-authorized verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/homes/u5m7b1-20261120T05-44-38Z/m7b1-tmp/m7b1-watched/beside.txt"]
+ℹ M7B1-WINDOW contract=obs-ad213fc3f7eee961 world=u5m7b1-20261120T05-44-38Z agent=session-8730d7f9-844e-4185-8b8b-a1fc49fe623d execution=m7b1-10 claim=path-scope scope=/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/homes/u5m7b1-20261120T05-44-38Z window=win-9f577f1b-203d-4da7-b1de-2a3a0d4c52d0 phase=pre armedAt=2026-11-20T05:46:02.345Z closedAt=null producer=@dsh-agent-team/testkit/effect-witness@1
+ℹ M7B1-ARM same-directory-as-harness verdict=VIOLATED expected=VIOLATED unauthorized=["/home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/homes/u5m7b1-20261120T05-44-38Z/m7b1-tmp/m7b1-harness/beside-harness.txt"]
+ℹ M7B1-DENIAL FS_SANDBOX_DENIED error_code=FS_SANDBOX_DENIED outcome=DENIED message="Error: [sandbox: file access denied under workspace-write mode] [sandbox: escalation available — retry this exact operation once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]"
+ℹ M7B1-FORGED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-FOREIGN-WINDOW verdict=INSTRUMENT_ERROR reason=IDENTITY_MISMATCH detail=the window is bound to agent_id="session-f3d9f0d0-39b7-493c-b5c7-c82f30a009ab" but the contract declares "session-733f394b-4434-4d2e-86db-ebf13510fab2"; an obse
+ℹ M7B1-DERIVED-EXECUTION_ID verdict=INSTRUMENT_ERROR reason=CONTRACT_IDENTITY_UNPROVEN detail=the contract is not the object declareObservationContract minted (no contract identity receipt): a spread copy, a Reflect.ownKeys/getOwnPropertySymbols reflection copy, an Object.create child, a proxy
+ℹ M7B1-DERIVED-AGENT_ID verdict=INSTRUMENT_ERROR reason=CONTRACT_IDENTITY_UNPROVEN detail=the contract is not the object declareObservationContract minted (no contract identity receipt): a spread copy, a Reflect.ownKeys/getOwnPropertySymbols reflection copy, an Object.create child, a proxy
+ℹ M7B1-DERIVED-WORLD_ID verdict=INSTRUMENT_ERROR reason=CONTRACT_IDENTITY_UNPROVEN detail=the contract is not the object declareObservationContract minted (no contract identity receipt): a spread copy, a Reflect.ownKeys/getOwnPropertySymbols reflection copy, an Object.create child, a proxy
+ℹ M7B1-ACTOR-MISMATCH verdict=INSTRUMENT_ERROR reason=ACTOR_ID_MISMATCH detail=execution_id="m7b1-2" is carried by actor_id=agent-that-did-not-make-this-call in the host's durable trace, but the contract's agent_id is "session-733f394b-4434-4d2e-86db-ebf13510fab2"; an execution
+ℹ M7B1-NO-TRACE verdict=INSTRUMENT_ERROR reason=EXECUTION_ID_NOT_IN_TRACE detail=the contract declares execution_id="m7b1-2" but no tool/call or tool/result event in the host's durable trace carries it (ids present: none); the execution under grade is not the execution this trace
+ℹ M7B1-SPREAD-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-STRUCTUREDCLONE-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-OBJECT-CREATE-WINDOW verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-SPREAD-ENVELOPE verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-FOREIGN-CLOSE ok=false reason=WITNESS_NOT_SEALED
+ℹ M7B1-RECLOSE ok=false reason=WITNESS_NOT_SEALED
+ℹ M7B1-UNCLOSED verdict=INSTRUMENT_ERROR reason=WITNESS_NOT_SEALED
+ℹ M7B1-WINDOW-NOT-CLOSED reason=WINDOW_NOT_CLOSED detail=window win-175e1891-b8b9-4e6d-8196-3538fb9ddc3f is phase=pre closedAt=null; a verdict needs the POST snapshot taken after the execution, so an armed-but-unclose
+ℹ M7B1-EVIDENCE /home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/.artifacts/tmp/m7b1-observation-window/run-2026-11-20T05-44-38-940Z/m7b1-window-report.json
+ℹ M7B1-WALL bootMs=82049 totalMs=83934
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84241.112632
+EXIT=0

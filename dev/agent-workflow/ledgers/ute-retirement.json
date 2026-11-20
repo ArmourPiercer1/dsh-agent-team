@@ -1,0 +1,78 @@
+{
+  "schema": "ute-retirement/1",
+  "note": "UTE G1 per-family retirement ledger. The four terms are the owner's predicate (RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved AND NegativeControlsPass). A row's state is a MIRROR of the computed verdict, never a substitute for it: scripts/ute-retirement-gate.mjs re-reads every `evidence.path`, refuses files git does not track, and refuses files that do not contain the claimed verdict token. 'SemanticDifferencesResolved' is not byte equality: every difference with blocking:true must carry an owner approval whose `record` is itself a committed file naming the approver (docs/plans/memo/ute-g1-20261120/RETIREMENT.md). Seeded 2026-11-20 by UTE-0; fs is NOT_RETIREABLE because both recorded semantic differences are retirement-blocking and neither has an approved compatibility interface.",
+  "families": [
+    {
+      "family": "fs",
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-fs/golden/old-path.tsv",
+            "expect": [
+              "FS-W1-create",
+              "FS-W4-outside-write",
+              "FS-R1-outside-read-leak",
+              "FS-M1-mode-preserved"
+            ],
+            "contradicts": []
+          },
+          "note": "10 (request -> effect) vectors captured on the legacy governed route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules) on host 0.2.0-rc.2 @ 639ed01539; fixture identity in the sibling golden/old-path.meta.txt. This is the OldBaseline term for the FS family only — it says nothing about any other family."
+        },
+        "newPathVerified": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt",
+            "expect": [
+              "PROTOTYPE-VERDICT GREEN vectors=10 failed=0",
+              "PROTOTYPE-HOST host=next version=0.2.2-rc.5"
+            ],
+            "contradicts": []
+          },
+          "note": "Prototype provider + the pinned next host's own ToolsService.execute; 10/10 vectors green on rc.5. This proves the PROTOTYPE path only: it is not a live boot, it does not prove read confinement (CLAIM_NOT_OBSERVABLE), and it must never be cited as a safety verdict."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "lane-refusal-code",
+              "blocking": true,
+              "approval": null,
+              "summary": "old path FS_SANDBOX_DENIED vs new path FS_PERMISSION_DENIED (rc.5 tool-fs sandbox.ts:139-143 dereferences policy.mode); retirement needs the owner-approved compatibility interface: adopt the fs-sandbox protocol (sandboxMode + sandbox-policy) or keep a non-sandbox code and accept different model-facing refusal text."
+            },
+            {
+              "id": "refusal-observation-shape",
+              "blocking": true,
+              "approval": null,
+              "summary": "old path refuses in prose, new path in typed FsError codes; the corpus compares a closed refusal CLASS vocabulary. Code-level equality would need the old path to emit codes; that is a semantic change and must be owner-approved before switching."
+            }
+          ],
+          "evidence": {
+            "path": "tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md",
+            "expect": [
+              "retirement-blocking   YES",
+              "FS_SANDBOX_DENIED",
+              "FS_PERMISSION_DENIED"
+            ],
+            "contradicts": []
+          },
+          "note": "Both recorded differences are retirement-blocking=YES and neither has an approval record, so this term is FALSE today by construction, not by opinion. The same two facts are printed on every prototype run as SEMANTIC-DIFF lines and asserted by tests/ute-g1-fs/lane-suite.test.mjs."
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt",
+            "expect": [
+              "NC-VERDICT GREEN controls=4 failed=0",
+              "NC NC-2-harness-bites ok"
+            ],
+            "contradicts": []
+          },
+          "note": "NC-1 lane bites, NC-2 harness bites on a mutated golden cell, NC-3 no legacy fallback (typed NextHostMissingError), NC-4 the lane is load-bearing. These are the negative controls for the FS prototype claims; per-family retirement must re-run the family's own controls (a green FS control is not evidence for Web or PTY)."
+        }
+      },
+      "note": "FS is the first family in the UTE G1 ordering and may retire before Web/PTY (owner ruling: per-family retirement is incremental). It may not retire today: the semantic-difference term is false and the gate refuses with UTE_SEMANTIC_DIFFERENCES_UNRESOLVED."
+    }
+  ]
+}
