@@ -1,1 +1,2 @@
-NC-OK controls=2 failed=0
+NC-MEMBER u6arc_probe ok
+NC-OK controls=1 failed=0

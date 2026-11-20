@@ -1,0 +1,11 @@
+UTE-RETIREMENT-GATE ledger=dev/agent-workflow/ledgers/ute-retirement.json schema=ute-retirement/1 families=1
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/4
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference lane-refusal-code has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)"
+  UTE-RETIREMENT-FINDING code=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED term=semanticDifferencesResolved detail="blocking difference refusal-observation-shape has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=oldBaseline detail="member \"read_image\" has no baseline vector: tests/ute-g1-fs/golden/old-path.tsv has no `entry` value \"read_image\" (entries: \"write\", \"edit\", \"read\")"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=newPathVerified detail="member \"read_image\" has no baseline vector to reproduce, so dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt cannot have verified it"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"read\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER read` control line"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"write\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER write` control line"
+  UTE-RETIREMENT-FINDING code=UTE_MEMBER_UNCOVERED term=negativeControlsPass detail="member \"edit\" has baseline evidence but dev/agent-workflow/evidence/ute-g1-fs-20261119/negative-controls.txt contains no `NC-MEMBER edit` control line"
+UTE-RETIREMENT-SUMMARY requested=1 allowed=0 refused=1
+exit=1

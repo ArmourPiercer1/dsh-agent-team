@@ -1,9 +1,17 @@
 {
   "schema": "ute-retirement/1",
-  "note": "SYNTHETIC SELFTEST FIXTURE — NOT A RETIREMENT ROW. This ledger exists so the retirement gate can be shown to ALLOW a fully satisfied family through the real CLI, with evidence that is really committed (a cold clone can read every pointer). The family is named `synthetic-selftest` on purpose: no production family may ever be retired by pointing at this file, and the production ledger (dev/agent-workflow/ledgers/ute-retirement.json) does not import it. The evidence is deliberately trivial; what is being exercised is the gate's evidence path, not a tool family.",
+  "note": "SYNTHETIC SELFTEST FIXTURE — NOT A RETIREMENT ROW. This ledger exists so the retirement gate can be shown to ALLOW a fully satisfied family through the real CLI, with evidence that is really committed (a cold clone can read every pointer). The family is named `synthetic-selftest` on purpose: no production family may ever be retired by pointing at this file, and the production ledger (dev/agent-workflow/ledgers/ute-retirement.json) does not import it. The evidence is deliberately trivial; what is being exercised is the gate's evidence path, not a tool family. Its `unit.familyId` borrows the test-only ARC-A probe family (`dsh.u6-probe-family`, one member) because the unit must be derived from the reviewed census: a synthetic family that booked no census entry would (correctly) be refused UTE_UNIT_UNKNOWN_FAMILY. The approval reference points at the commit that introduced this fixture, a real ancestor of the graded HEAD.",
   "families": [
     {
       "family": "synthetic-selftest",
+      "unit": {
+        "familyId": "dsh.u6-probe-family"
+      },
+      "oldPath": {
+        "files": [
+          "tests/u6-arc-a-probe-family/src/probe-contribution.mjs"
+        ]
+      },
       "state": "RETIREABLE",
       "terms": {
         "oldBaseline": {
@@ -31,7 +39,8 @@
               "approval": {
                 "by": "owner",
                 "on": "2026-11-20",
-                "record": "scripts/fixtures/ute-retirement-selftest/approval.md"
+                "record": "scripts/fixtures/ute-retirement-selftest/approval.md",
+                "reference": "PR #793 @ 06de9751a836fa238b72c32557a7e3570bc64a6c"
               }
             }
           ],

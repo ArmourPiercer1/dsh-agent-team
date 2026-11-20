@@ -1,2 +1,2 @@
-vector	verdict
-S1	OLD-BASELINE-OK
+id	entry	verdict
+S1	u6arc_probe	OLD-BASELINE-OK
