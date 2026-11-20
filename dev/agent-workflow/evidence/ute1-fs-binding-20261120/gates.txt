@@ -1,22 +1,23 @@
 ==================================================================
-# new suite (post-build wiring, 9/9)
+# the suite (10/10)
 $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
-✔ product module: additive, dependency-free, and imported by no shipped assembly (10.014797ms)
-✔ host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module (3.178126ms)
+✔ product module: additive, dependency-free, and imported by no shipped assembly (9.920326ms)
+✔ product module: names no ambient global the PRODUCTION compile face does not provide (0.938256ms)
+✔ host-free arms: lane, disposal, overlap, swap and generation are green on the shipped module (2.581354ms)
 ℹ a1-write-inside: GREEN — create landed and one allow fact was recorded
 ℹ a2-lane-denial: GREEN — refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ a3-use-after-dispose: GREEN — refused named=scope-disposed untouched=true
-ℹ a4-double-dispose: GREEN — first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.502Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.502Z"} status=disposed
+ℹ a4-double-dispose: GREEN — first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.632Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.632Z"} status=disposed
 ℹ a5-overlap-scopes: GREEN — a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ a6-provider-swap: GREEN — old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ a7-generation-mismatch: GREEN — refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
-✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (19.340918ms)
+✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (20.106388ms)
 ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-BASELINE arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.504Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.504Z"} status=disposed
+ℹ MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.634Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.634Z"} status=disposed
 ℹ MUTATION-BASELINE arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-BASELINE arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-BASELINE arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -25,7 +26,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
-ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.507Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.507Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.639Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.639Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
 ℹ MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -33,7 +34,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a2-lane-denial observed=red detail=call was ALLOWED (expected a lane-write refusal)
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.510Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.510Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.641Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.641Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=ALLOWED cross-effect=PRESENT own-lane=true facts-attributed=false
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -41,7 +42,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
-ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.512Z"} second={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"second","disposedAt":"2026-11-20T08:15:33.512Z"} status=open
+ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.644Z"} second={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"second","disposedAt":"2026-11-20T09:08:26.644Z"} status=open
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
 ℹ MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -49,7 +50,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.516Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.516Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.647Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.647Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=refused cross-effect=PRESENT own-lane=true facts-attributed=false
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
@@ -57,7 +58,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.518Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.518Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.650Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.650Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a7-generation-mismatch observed=red detail=mount was ALLOWED
@@ -65,21 +66,21 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
-ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T08:15:33.521Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T08:15:33.521Z"} status=disposed
+ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:26.653Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:26.653Z"} status=disposed
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a5-overlap-scopes observed=red detail=arm threw: native-fs-binding/1: lane-write — 'writeText' on "/world/side/b-own.txt" is outside the declared write lane (binding "scope-b", host "0.2.2-rc.5")
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=DENIED old-provider=scope-disposed
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7
-✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (332.794282ms)
+✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (324.171219ms)
 ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
-✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (53.360229ms)
+✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (53.484543ms)
 ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/.artifacts/tmp/ute1-fs-assembly/as"
-✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (52.605762ms)
+✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (55.561424ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope was disposed (ute1-scope-end"
-✔ wrong host generation is refused by name and never falls back to the legacy tree (0.415106ms)
-✔ golden parity: the product module reproduces the 10 old-path vectors (135.855852ms)
+✔ wrong host generation is refused by name and never falls back to the legacy tree (0.460282ms)
+✔ golden parity: the product module reproduces the 10 old-path vectors (133.979702ms)
 ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
@@ -91,47 +92,145 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ golden FS-S1-symlink-escape: PASS
 ℹ golden FS-R1-outside-read-leak: PASS
 ℹ golden FS-M1-mode-preserved: PASS
-✔ disclosure: both retirement-blocking semantic differences are still declared (0.414865ms)
-ℹ tests 9
+✔ disclosure: both retirement-blocking semantic differences are still declared (0.397343ms)
+ℹ tests 10
 ℹ suites 0
-ℹ pass 9
+ℹ pass 10
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 700.257373
+ℹ duration_ms 696.433019
 exit=0
 ==================================================================
-# test-catalog unit suite (28/28)
+# mutation transcript
+$ node tests/ute1-fs/mutation-transcript.mjs
+MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
+MUTATION-MODULE-ID native-fs-binding/1
+MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-BASELINE arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+MUTATION-BASELINE arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.304Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.304Z"} status=disposed
+MUTATION-BASELINE arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+MUTATION-BASELINE arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+MUTATION-BASELINE arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-BASELINE-VERDICT GREEN arms=7
+MUTATION-ARM id=M1-remove-dispose-guard removed="the scope-state check in assertLive (use-after-dispose)" expected-red=a3-use-after-dispose observed-red=a3-use-after-dispose,a6-provider-swap verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.308Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.308Z"} status=disposed
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
+MUTATION-ARM-DETAIL mutation=M1-remove-dispose-guard arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-ARM id=M2-lane-admits-everything removed="the lane containment check in admit()" expected-red=a2-lane-denial observed-red=a2-lane-denial,a5-overlap-scopes,a6-provider-swap verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a2-lane-denial observed=red detail=call was ALLOWED (expected a lane-write refusal)
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.311Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.311Z"} status=disposed
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=ALLOWED cross-effect=PRESENT own-lane=true facts-attributed=false
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=live old-provider=scope-disposed
+MUTATION-ARM-DETAIL mutation=M2-lane-admits-everything arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-ARM id=M3-dispose-keeps-scope-open removed="the monotonic open→disposed transition in dispose()" expected-red=a4-double-dispose observed-red=a3-use-after-dispose,a4-double-dispose,a6-provider-swap verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a3-use-after-dispose observed=red detail=call was ALLOWED after disposal; bytes CHANGED
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a4-double-dispose observed=red detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.314Z"} second={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"second","disposedAt":"2026-11-20T09:08:27.314Z"} status=open
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a6-provider-swap observed=red detail=old-lane-through-new=refused new-lane=live old-provider=still serving or unnamed
+MUTATION-ARM-DETAIL mutation=M3-dispose-keeps-scope-open arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-ARM id=M4-shared-lane-across-scopes removed="per-scope lane isolation (the lane becomes the last created)" expected-red=a5-overlap-scopes observed-red=a5-overlap-scopes verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.317Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.317Z"} status=disposed
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a5-overlap-scopes observed=red detail=a→B=ALLOWED b→A=refused cross-effect=PRESENT own-lane=true facts-attributed=false
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+MUTATION-ARM-DETAIL mutation=M4-shared-lane-across-scopes arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-ARM id=M5-drop-generation-pin removed="the host-generation pin in mountNativeFsBinding" expected-red=a7-generation-mismatch observed-red=a7-generation-mismatch verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.320Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.320Z"} status=disposed
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a5-overlap-scopes observed=green detail=a→B=refused b→A=refused cross-effect=absent own-lane=true facts-attributed=true
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a6-provider-swap observed=green detail=old-lane-through-new=refused new-lane=live old-provider=scope-disposed
+MUTATION-ARM-DETAIL mutation=M5-drop-generation-pin arm=a7-generation-mismatch observed=red detail=mount was ALLOWED
+MUTATION-ARM id=M6-retain-previous-lane removed="the fresh lane of a re-mounted scope (provider swap)" expected-red=a6-provider-swap observed-red=a5-overlap-scopes,a6-provider-swap verdict=RED-AS-REQUIRED
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a3-use-after-dispose observed=green detail=refused named=scope-disposed untouched=true
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a4-double-dispose observed=green detail=first={"bindingId":"arm-a4","status":"disposed","changed":true,"alreadyDisposed":false,"reason":"first","disposedAt":"2026-11-20T09:08:27.322Z"} second={"bindingId":"arm-a4","status":"disposed","changed":false,"alreadyDisposed":true,"reason":"first","disposedAt":"2026-11-20T09:08:27.322Z"} status=disposed
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a5-overlap-scopes observed=red detail=arm threw: native-fs-binding/1: lane-write — 'writeText' on "/world/side/b-own.txt" is outside the declared write lane (binding "scope-b", host "0.2.2-rc.5")
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a6-provider-swap observed=red detail=old-lane-through-new=ALLOWED new-lane=DENIED old-provider=scope-disposed
+MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a7-generation-mismatch observed=green detail=refused code=FS_BINDING_HOST_GENERATION_MISMATCH both-generations=true plugin-calls=0
+MUTATION-TRANSCRIPT-VERDICT GREEN mutations=6 arms=7
+exit=0
+==================================================================
+# THE PRODUCTION COMPILE FACE (exact census command for this package)
+$ pnpm --filter @dsh-agent-team/tools run build
+$ tsc -p tsconfig.build.json
+exit=0
+==================================================================
+# full workspace build (census 'Build this repo' build half)
+$ pnpm run build
+$ pnpm -r run build
+Scope: 9 of 10 workspace projects
+packages/contracts build$ tsc -p tsconfig.build.json
+packages/domain build$ tsc -p tsconfig.build.json
+packages/legacy build$ tsc -p tsconfig.build.json
+packages/remote build$ tsc -p tsconfig.build.json
+packages/domain build: Done
+packages/runtime build$ tsc -p tsconfig.build.json
+packages/legacy build: Done
+packages/storage build$ tsc -p tsconfig.build.json
+packages/contracts build: Done
+packages/testkit build$ tsc -p tsconfig.build.json
+packages/storage build: Done
+packages/tools build$ tsc -p tsconfig.build.json
+packages/remote build: Done
+packages/testkit build: Done
+packages/tools build: Done
+packages/runtime build: Done
+packages/client build$ tsc -p tsconfig.build.json
+packages/client build: Done
+exit=0
+==================================================================
+# committed install-surface artifacts match a rebuilt tree
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2092 glue=113
+[check-artifacts-committed] OK: 2092 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+exit=0
+==================================================================
+# test-catalog unit suite
 $ node --test --test-force-exit scripts/test-catalog.test.mjs
-✔ discovery: vitest and node tests are catalogued, non-tests are not (1.684058ms)
-✔ discovery follows config include[], not the .test.ts suffix (0.438941ms)
-✔ a config whose include spells out its own directory is repo-relative (0.331478ms)
-✔ an authoring-only config does not make a suite collected (0.186493ms)
-✔ a contract ref that is not a test file is refused (0.16889ms)
-✔ the CI step that dispatches this suite also runs the ratchet (0.783483ms)
-✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.38558ms)
-✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.193326ms)
-✔ classification: collected, uncollected and excluded are distinct (0.314175ms)
-✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (0.255624ms)
-✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (0.211871ms)
-✔ refusal: deleting a contract test is red, not a smaller catalog (0.122482ms)
-✔ refusal: a contract with no test_refs is an unbacked promise (0.169381ms)
-✔ refusal: an exclude without reason+review is stale (0.113495ms)
-✔ refusal: two tests sharing one logical id is red (0.11105ms)
-✔ refusal: an instrument without its driver is red (0.135637ms)
-✔ logical ids survive a path move, and refOf tolerates both shapes (0.153571ms)
-✔ digest ignores order and entry classification but tracks the test set (0.457245ms)
-✔ glob semantics: ** crosses directories, * does not (0.129044ms)
-✔ vitest.config.ts is the source for include/exclude (no copy here) (0.347037ms)
-✔ live read-only check: every registered contract test exists on this head (219.286895ms)
-✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.634391ms)
-✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (1.019631ms)
-✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (14.33902ms)
-✔ dispatch: the catalog classifies every dispatched suite as collected (249.734065ms)
-✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.279439ms)
-✔ dispatch: the committed parity evidence still describes the resolved set (16.934944ms)
-✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.113114ms)
+✔ discovery: vitest and node tests are catalogued, non-tests are not (1.638512ms)
+✔ discovery follows config include[], not the .test.ts suffix (0.446365ms)
+✔ a config whose include spells out its own directory is repo-relative (0.347588ms)
+✔ an authoring-only config does not make a suite collected (0.202985ms)
+✔ a contract ref that is not a test file is refused (0.169701ms)
+✔ the CI step that dispatches this suite also runs the ratchet (0.783843ms)
+✔ excludes: the non-execution channel is baselined — a new exclude is REFUSED (0.341506ms)
+✔ excludes: auditCatalog enforces the baseline on every invocation, not only under --max-uncollected (0.243191ms)
+✔ classification: collected, uncollected and excluded are distinct (0.328773ms)
+✔ refusal: a discovered-but-uncollected unit is red by default and quiet only in shadow mode (3.546212ms)
+✔ refusal: the ratchet refuses GROWTH but tolerates the recorded baseline (1.05629ms)
+✔ refusal: deleting a contract test is red, not a smaller catalog (0.145596ms)
+✔ refusal: a contract with no test_refs is an unbacked promise (0.188647ms)
+✔ refusal: an exclude without reason+review is stale (0.136097ms)
+✔ refusal: two tests sharing one logical id is red (0.113875ms)
+✔ refusal: an instrument without its driver is red (0.152829ms)
+✔ logical ids survive a path move, and refOf tolerates both shapes (0.153591ms)
+✔ digest ignores order and entry classification but tracks the test set (0.478616ms)
+✔ glob semantics: ** crosses directories, * does not (0.094959ms)
+✔ vitest.config.ts is the source for include/exclude (no copy here) (0.278047ms)
+✔ live read-only check: every registered contract test exists on this head (218.750333ms)
+✔ dispatch: no workflow enumerates a single node:test file any more (M6) (0.558978ms)
+✔ dispatch: every dispatch step maps to one manifest leg and every leg has its step (0.947473ms)
+✔ dispatch: every leg resolves to tracked node:test suites (no invented path) (13.369755ms)
+✔ dispatch: the catalog classifies every dispatched suite as collected (252.575621ms)
+✔ dispatch: refusals — untracked, non-node, empty area, empty leg (0.181794ms)
+✔ dispatch: the committed parity evidence still describes the resolved set (13.771971ms)
+✔ one predicate: the catalog, the collection audit and the dispatcher share it (0.072978ms)
 ℹ tests 28
 ℹ suites 0
 ℹ pass 28
@@ -139,10 +238,10 @@ $ node --test --test-force-exit scripts/test-catalog.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 574.766896
+ℹ duration_ms 571.530289
 exit=0
 ==================================================================
-# test-catalog gate (ratchets unchanged: uncollected 41, excluded 7)
+# test-catalog gate
 $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
   tests=881 instruments=3 digest=sha256:55767f387a7ff22b93d67394fa6c7a1da6c33f32caad970e0a4ac82ea9031e78
@@ -158,19 +257,19 @@ $ node scripts/dispatch-tests.mjs --check
 DSH-TEST-DISPATCH-CHECK mode=inspect PASS legs=18 bad=0
 exit=0
 ==================================================================
-# eb3-ci-required (with the NEW post-build UTE leg)
+# eb3-ci-required
 $ node scripts/eb3-ci-required.mjs
 EB3-CI-REQUIRED pass workflows=10 findings=0
 exit=0
 ==================================================================
 # eb3-ci-required unit suite
 $ node --test --test-force-exit scripts/eb3-ci-required.test.mjs
-✔ eb3-ci-required: the unmodified tree passes from the real CLI (positive control) (99.058322ms)
-✔ eb3-ci-required: a manifest dispatch cmd with an appended --json / --list is EXTRA_ARGUMENT (63.625065ms)
-✔ eb3-ci-required: a workflow step that appends --json to a dispatched leg is EXTRA_ARGUMENT (15.884842ms)
-✔ eb3-ci-required: checkTrailing is exact in both directions and a value slot cannot absorb an option (0.65496ms)
-✔ eb3-ci-required: a second --leg on a dispatch cmd is EXTRA_ARGUMENT (not a silent second leg) (14.47826ms)
-✔ eb3-ci-required: a declared step argv that disagrees with the manifest leg is STEP_ARGV_DESYNC (both directions) (28.13295ms)
+✔ eb3-ci-required: the unmodified tree passes from the real CLI (positive control) (100.260588ms)
+✔ eb3-ci-required: a manifest dispatch cmd with an appended --json / --list is EXTRA_ARGUMENT (59.934985ms)
+✔ eb3-ci-required: a workflow step that appends --json to a dispatched leg is EXTRA_ARGUMENT (16.06137ms)
+✔ eb3-ci-required: checkTrailing is exact in both directions and a value slot cannot absorb an option (0.656493ms)
+✔ eb3-ci-required: a second --leg on a dispatch cmd is EXTRA_ARGUMENT (not a silent second leg) (14.280519ms)
+✔ eb3-ci-required: a declared step argv that disagrees with the manifest leg is STEP_ARGV_DESYNC (both directions) (28.235634ms)
 ℹ tests 6
 ℹ suites 0
 ℹ pass 6
@@ -178,10 +277,10 @@ $ node --test --test-force-exit scripts/eb3-ci-required.test.mjs
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 293.705885
+ℹ duration_ms 290.248353
 exit=0
 ==================================================================
-# eb3-ci-negative-controls (33/33; C-NH1 now grades the UTE leg too)
+# eb3-ci-negative-controls (incl. extended C-NH1)
 $ node scripts/eb3-ci-negative-controls.mjs
 PASS C1 required-ci-job-removal :: honest tree passes; removing required job "ci-fast" produced CI_REQUIRED_JOB_ABSENT naming it
 PASS C2 unknown-mcp-tool-injection :: honest tree has no unbooked MCP spelling; injecting mcp__injected_server__exfiltrate_everything produced MCP_TOOL_UNKNOWN naming it
@@ -234,40 +333,39 @@ lint-identities: universe: 1692 file(s) linted, 0 of them gitignored (ESLint doe
 baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
 exit=0
 ==================================================================
-# tsc --noEmit packages/tools
+# tsc --noEmit on the TEST config (the check that hid the defect — kept as the contrast)
 $ node_modules/.bin/tsc -p packages/tools/tsconfig.json --noEmit
 exit=0
 ==================================================================
-# tools package vitest (179/179)
+# tools package vitest
 $ bash -c cd packages/tools && ../../node_modules/.bin/vitest run
 
  RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools
 
+ ✓ test/issue2-builtin-deny-focused.test.ts (8 tests) 4ms
  ✓ test/t2-tool-selector-deny.test.ts (19 tests) 6ms
- ✓ test/issue2-builtin-deny-focused.test.ts (8 tests) 3ms
  ✓ test/h3-hostile-seam.test.ts (10 tests) 4ms
- ✓ test/tools.test.ts (2 tests) 2ms
+ ✓ test/tools.test.ts (2 tests) 3ms
  ✓ test/p6t6-bypass-scan.test.ts (10 tests) 6ms
- ✓ test/c1-caller-root-binding.test.ts (6 tests) 3ms
- ✓ test/c1-list-pending-control.test.ts (16 tests) 7ms
- ✓ test/p6t6-guard.test.ts (9 tests) 5ms
- ✓ test/a6-stop-fence-wiring.test.ts (2 tests) 4ms
+ ✓ test/c1-caller-root-binding.test.ts (6 tests) 5ms
+ ✓ test/c1-list-pending-control.test.ts (16 tests) 6ms
  ✓ test/rc2-team-deny-least-privilege.test.ts (13 tests) 11ms
- ✓ test/archive-member-tool.test.ts (12 tests) 10ms
+ ✓ test/a6-stop-fence-wiring.test.ts (2 tests) 4ms
+ ✓ test/p6t6-guard.test.ts (9 tests) 6ms
+ ✓ test/archive-member-tool.test.ts (12 tests) 7ms
  ✓ test/issue1-collect-tools.test.ts (12 tests) 5ms
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
 [dsh-agent-team] a5-admission: event=production-admission-note
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:4ff34703-3342-4cee-a2a8-fad8dcab253f-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
-
- ✓ test/p6t6-actions.test.ts (14 tests) 5ms
-stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:4ff34703-3342-4cee-a2a8-fad8dcab253f-1 grantId=grant:b6a1acc1468ee20963e300fd0ce40d56 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:4ff34703-3342-4cee-a2a8-fad8dcab253f-1 grantId=grant:b6a1acc1468ee20963e300fd0ce40d56 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:78c54523-74b5-4bc4-9790-1555ba129d35-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:78c54523-74b5-4bc4-9790-1555ba129d35-1 grantId=grant:4b6ab25b683b90d29ef2083ea43ab397 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:78c54523-74b5-4bc4-9790-1555ba129d35-1 grantId=grant:4b6ab25b683b90d29ef2083ea43ab397 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+
+stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1 carrier present: the service request carries that EXACT agent identity and the answer lands
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1t timed face: the askTimed request carries the carrier too (the host timed law)
@@ -275,11 +373,11 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-cal
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1t timed face: the askTimed request carries the carrier too (the host timed law)
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:b59a25d3-8a52-42c9-9354-27d441b48570-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:10eae620-baa1-4ba1-ab1f-6524d8ca0490-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1t timed face: the askTimed request carries the carrier too (the host timed law)
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:b59a25d3-8a52-42c9-9354-27d441b48570-1 grantId=grant:8a30747d03dc0092e1ad311436a30274 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:b59a25d3-8a52-42c9-9354-27d441b48570-1 grantId=grant:8a30747d03dc0092e1ad311436a30274 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:10eae620-baa1-4ba1-ab1f-6524d8ca0490-1 grantId=grant:8c498d6d611d146a86edd15a8517f6ba effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:10eae620-baa1-4ba1-ab1f-6524d8ca0490-1 grantId=grant:8c498d6d611d146a86edd15a8517f6ba caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-1t timed face: the askTimed request carries the carrier too (the host timed law)
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
@@ -289,31 +387,32 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-cal
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
+ ✓ test/p6t6-actions.test.ts (14 tests) 6ms
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-1 grantId=grant:b4043a7ca4d7aeb8e76802c35afff965 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-1 grantId=grant:b4043a7ca4d7aeb8e76802c35afff965 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
-
-stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
-
-stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-2 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
-
-stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-2 grantId=grant:5d5759143551e8ca14b5b95c7cb16a60 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-2 grantId=grant:5d5759143551e8ca14b5b95c7cb16a60 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-1 grantId=grant:777623b3ed575f2c01c51f1f0e23c6a6 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-1 grantId=grant:777623b3ed575f2c01c51f1f0e23c6a6 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-3 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-2 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-3 grantId=grant:15b4071e370a48b743c44b73fd7df8a6 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:eb217d0f-9345-4e38-8843-56260349bfad-3 grantId=grant:15b4071e370a48b743c44b73fd7df8a6 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-2 grantId=grant:22cdd5d3c2d0d181b053b915db175364 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-2 grantId=grant:22cdd5d3c2d0d181b053b915db175364 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+
+stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] u7f-ask: governed-ask RAN answers=1
+
+stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-3 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+
+stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-3 grantId=grant:90d211f5d74eef8adf4db4c71e155e15 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:35f8a349-2b7d-47c9-a736-6b421b6888b0-3 grantId=grant:90d211f5d74eef8adf4db4c71e155e15 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > S1 scoped arm — the per-call carrier reaches the service through the existing binding > SB-4 sweep: NO service call ever goes out without the carrier when one is expected
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
@@ -323,11 +422,11 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — ab
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-2 carrier absent: the SAME typed UI_INTERACTION_PORT_FAILED refusal as today (f3/f4 shape), service law verbatim
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:495fc888-6755-422f-b279-d5934afb353c-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:7a86f450-af6f-45fd-8af6-136d1539efa1-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-2 carrier absent: the SAME typed UI_INTERACTION_PORT_FAILED refusal as today (f3/f4 shape), service law verbatim
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:495fc888-6755-422f-b279-d5934afb353c-1 grantId=grant:3aee891421c3067c848f969d6b7288e3 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:495fc888-6755-422f-b279-d5934afb353c-1 grantId=grant:3aee891421c3067c848f969d6b7288e3 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:7a86f450-af6f-45fd-8af6-136d1539efa1-1 grantId=grant:f51a49d1710a5db384a6136973ba28d6 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:7a86f450-af6f-45fd-8af6-136d1539efa1-1 grantId=grant:f51a49d1710a5db384a6136973ba28d6 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-2 carrier absent: the SAME typed UI_INTERACTION_PORT_FAILED refusal as today (f3/f4 shape), service law verbatim
 [dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
@@ -337,21 +436,21 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — ab
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-1 grantId=grant:21fc1909c4ca54d52393013a14da49de effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-1 grantId=grant:21fc1909c4ca54d52393013a14da49de caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-1 grantId=grant:fa130646080af3d31eea1511bd81a301 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-1 grantId=grant:fa130646080af3d31eea1511bd81a301 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
 [dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-2 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-2 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-2 grantId=grant:b640e333111917c4bd5b94ba1a03a720 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:cbca86c0-35f1-4b48-9e52-e8aa71b2fa4d-2 grantId=grant:b640e333111917c4bd5b94ba1a03a720 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-2 grantId=grant:12d6b898eb2591bf5aaf4718ac089094 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:aa7ff1d1-b185-4990-a524-05244a4e21f5-2 grantId=grant:12d6b898eb2591bf5aaf4718ac089094 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3a null/undefined carrier: the row does NOT carry it (spawn-row falsy law) → unscoped arm → typed refusal
 [dsh-agent-team] u7f-ask: governed-ask port-failed detail=no user-questions answerer accepted the request
@@ -361,11 +460,11 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — ab
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3b unknown agent: the service ownership law answers verbatim (CALLER_NOT_LIVE), never a synthesized success
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:a761737d-d321-4cd1-b7af-6b7b3b6dd1ec-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:76aec888-2bce-467a-a618-a7e639e010ee-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3b unknown agent: the service ownership law answers verbatim (CALLER_NOT_LIVE), never a synthesized success
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:a761737d-d321-4cd1-b7af-6b7b3b6dd1ec-1 grantId=grant:0267b56f478204827e3ebce769608599 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:a761737d-d321-4cd1-b7af-6b7b3b6dd1ec-1 grantId=grant:0267b56f478204827e3ebce769608599 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:76aec888-2bce-467a-a618-a7e639e010ee-1 grantId=grant:823a500bf70bf9ac3d0dbdcc6e819a6d effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:76aec888-2bce-467a-a618-a7e639e010ee-1 grantId=grant:823a500bf70bf9ac3d0dbdcc6e819a6d caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3b unknown agent: the service ownership law answers verbatim (CALLER_NOT_LIVE), never a synthesized success
 [dsh-agent-team] u7f-ask: governed-ask port-failed detail=the supplied agent is not the registry live root (CALLER_NOT_LIVE)
@@ -375,11 +474,11 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — ab
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3c falsy non-nullish carrier (false): rides verbatim as dispatch data, the service law refuses it
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:252419b7-8823-4afb-8039-d8e1c681028b-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:efde5d88-602b-4a60-a571-fca5c0f8a53a-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3c falsy non-nullish carrier (false): rides verbatim as dispatch data, the service law refuses it
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:252419b7-8823-4afb-8039-d8e1c681028b-1 grantId=grant:1bd563469dbdc9bc315bf4cdc9690de7 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:252419b7-8823-4afb-8039-d8e1c681028b-1 grantId=grant:1bd563469dbdc9bc315bf4cdc9690de7 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:efde5d88-602b-4a60-a571-fca5c0f8a53a-1 grantId=grant:6e14e85b9332bec731fe69e02150f2a6 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:efde5d88-602b-4a60-a571-fca5c0f8a53a-1 grantId=grant:6e14e85b9332bec731fe69e02150f2a6 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > failure laws preserved — absent/falsy/unknown carriers never become a silent unscoped delivery > SB-3c falsy non-nullish carrier (false): rides verbatim as dispatch data, the service law refuses it
 [dsh-agent-team] u7f-ask: governed-ask port-failed detail=the supplied agent is not the registry live root (CALLER_NOT_LIVE)
@@ -389,11 +488,11 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-1 injected port wins with a carrier present: NO re-stamped agent on its request
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:5393eeee-e3c9-4471-b5c8-6fa98e41b8dc-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:6792eea4-a7a4-4bfa-848d-3ad114c3821e-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-1 injected port wins with a carrier present: NO re-stamped agent on its request
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:5393eeee-e3c9-4471-b5c8-6fa98e41b8dc-1 grantId=grant:d8a2e6c75ea63990296636546acc9a2b effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:5393eeee-e3c9-4471-b5c8-6fa98e41b8dc-1 grantId=grant:d8a2e6c75ea63990296636546acc9a2b caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:6792eea4-a7a4-4bfa-848d-3ad114c3821e-1 grantId=grant:8747a1173fb84e14a0bff72a37925fa1 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:6792eea4-a7a4-4bfa-848d-3ad114c3821e-1 grantId=grant:8747a1173fb84e14a0bff72a37925fa1 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-1 injected port wins with a carrier present: NO re-stamped agent on its request
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
@@ -403,25 +502,38 @@ stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the
 [dsh-agent-team] a5-admission: event=production-admission-constructed templateDefault=ask notes=1 realmId=s1ask-c1-realm templateId=s1ask-tpl
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-2 injected port without a carrier: byte-equal legacy answer path (the 41 C1 legs unchanged)
-[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:97258837-ae1a-4b38-bbcb-354303a3fd25-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
+[dsh-agent-team] a5-admission: event=admission-requires-approval callId=plane-ask:cda8f374-aaf3-4c23-91ff-48672a88e834-1 approvalCaseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0 requiredAuthority=leader
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-2 injected port without a carrier: byte-equal legacy answer path (the 41 C1 legs unchanged)
-[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:97258837-ae1a-4b38-bbcb-354303a3fd25-1 grantId=grant:8a486bec6da11c2646fc267b80c72990 effects=2
-[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:97258837-ae1a-4b38-bbcb-354303a3fd25-1 grantId=grant:8a486bec6da11c2646fc267b80c72990 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
+[dsh-agent-team] a5-admission: event=admission-grant-minted callId=plane-ask:cda8f374-aaf3-4c23-91ff-48672a88e834-1 grantId=grant:61815b88715d59a0584b3d4f5f1ecef9 effects=2
+[dsh-agent-team] a5-admission: event=admission-approved-grant-issued callId=plane-ask:cda8f374-aaf3-4c23-91ff-48672a88e834-1 grantId=grant:61815b88715d59a0584b3d4f5f1ecef9 caseId=tadm:s1ask-test-team-root:s1ask-instance:sha256:ac507b38861492b1fb11b7caec9306fc5ffb12fd9ce1f658c39db8641718d059:g0
 
 stdout | test/u7f-ask-port-agent-binding.test.ts > legacy arms untouched — the injected port owns its own binding > LEG-2 injected port without a carrier: byte-equal legacy answer path (the 41 C1 legs unchanged)
 [dsh-agent-team] u7f-ask: governed-ask RAN answers=1
 
- ✓ test/u7f-ask-port-agent-binding.test.ts (13 tests) 1530ms
+ ✓ test/u7f-ask-port-agent-binding.test.ts (13 tests) 1557ms
  ✓ test/a4-corrupt-leg-guard.test.ts (33 tests) 6ms
 
  Test Files  15 passed (15)
       Tests  179 passed (179)
-   Start at  16:15:58
-   Duration  1.91s (transform 12.85s, setup 0ms, import 17.04s, tests 1.61s, environment 2ms)
+   Start at  17:09:00
+   Duration  1.98s (transform 13.08s, setup 0ms, import 17.52s, tests 1.63s, environment 1ms)
 
 exit=0
 ==================================================================
 # git diff --check
 $ git diff --check
+exit=0
+==================================================================
+# lane argv byte-match
+$ node .artifacts/tmp/ute1-lane-argv.mjs
+leg: next host lane (node:test: real boot + native API A1-A6 + provisioning negative controls)
+  workflow: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
+  manifest: node --test --test-force-exit --test-timeout=1500000 --test-reporter=spec tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs tests/next-host/provisioning-controls.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/world-factory/f10-contract-identity.test.mjs scripts/ute-retirement-gate.test.mjs
+  byte-identical: true
+leg: UTE G1 FS binding product lane (node:test: the product module + a REAL assembly on the pinned rc.5 host, AFTER the repo build)
+  workflow: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+  manifest: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs
+  byte-identical: true
+ALL-LEGS byte-identical: true
 exit=0

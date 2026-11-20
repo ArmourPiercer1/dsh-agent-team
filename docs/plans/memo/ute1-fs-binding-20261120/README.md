@@ -191,7 +191,7 @@ Full transcripts: `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`.
 | `lint-identities --diff <a4 baseline>` | `76 distinct; new 0, resolved 0` |
 | **production compile face** `pnpm --filter @dsh-agent-team/tools run build` (= `tsc -p packages/tools/tsconfig.build.json`) | exit 0 (`build-config.txt`); the BEFORE state fails there with 21× `TS2304: Cannot find name 'AbortSignal'` (`build-config-before-after.txt`) |
 | full workspace build `pnpm run build` | exit 0 (`full-workspace-build.txt`) — the census's own build half |
-| `check-artifacts-committed` | `verdict=fresh` at HEAD; the emitted mirror under tracked `packages/runtime/dist/packages/tools/src/**` is committed with the source |
+| `check-artifacts-committed` | `verdict=ok compared=2092 glue=113` at HEAD; the emitted mirror under tracked `packages/runtime/dist/packages/tools/src/**` is committed with the source |
 | `packages/tools` vitest | `15 files / 179 tests` pass (the bypass scan now covers the new module) |
 | `git diff --check` | clean |
 | legacy FS suites (before/after) | `35 tests / 34 pass / 0 fail / 1 skip` on BOTH; verdict sets `identical=True` (`legacy-fs-before-after.txt`) |
