@@ -43,11 +43,45 @@
  * a plausible-looking literal, a copy, or a serialized round-trip claiming to be
  * a Factory World. Nothing survives JSON.
  *
+ * ── F-10 (2026-11-20): THE CONTRACT'S OWN IDENTITY ─────────────────────────
+ *
+ * The same reasoning applies one level up. `declareObservationContract` used to
+ * carry its World only on a non-enumerable `Symbol` property. A non-enumerable
+ * symbol survives `Object.getOwnPropertySymbols()`, so a reflection copy passed;
+ * and JavaScript property reads walk the prototype chain, so
+ * `Object.create(validContract)` inherited the schema AND the World reference
+ * while its own `world_id` could say another world. The contract had no identity
+ * of its own. This module now mints a CONTRACT identity alongside the World one:
+ *
+ *   - `declareContractIdentity(contract, fields)` registers the exact object in a
+ *     private `WeakSet` and stores a FROZEN snapshot of the five identity fields
+ *     (`world_id`, `world_home`, `agent_id`, `execution_id`, `contract_id`) in a
+ *     private `WeakMap`. It is mint-once: a second call for the same object
+ *     returns the first snapshot and never re-baselines a mutated object.
+ *   - `isDeclaredContract()` / `declaredContractFields()` are the predicates the
+ *     contract module consumes. Object identity is the receipt: a spread copy, a
+ *     reflection copy, an `Object.create` child, a proxy and a JSON round-trip are
+ *     all DIFFERENT objects and are refused with `CONTRACT_IDENTITY_UNPROVEN`.
+ *   - The snapshot is compared against the contract's OWN data properties, so a
+ *     value that moved after minting (if a future edit drops the freeze) is
+ *     `CONTRACT_FIELDS_MISMATCH`, not a silent pass.
+ *
+ * The freeze is NOT the identity (any caller can freeze a forged literal); it is
+ * defence in depth, and the snapshot is what makes field drift observable.
+ *
+ * TRUST BOUNDARY: unchanged and restated. Code that can import this module and
+ * call `declareContractIdentity` can mint a contract identity for an object it
+ * built — that is producing a fixture, not proving one. This closes object
+ * forgery by callers/serialization/copies, not malicious in-module code.
+ *
  * @module tests/world-factory/lib/world-identity
  */
 
 /** Version tag of the receipt this module mints. */
 export const WORLD_IDENTITY_SCHEMA = 'dsh-world-identity/1'
+
+/** Version tag of the CONTRACT identity this module mints (F-10). */
+export const CONTRACT_IDENTITY_SCHEMA = 'dsh-observation-contract-identity/1'
 
 /** The module-private brand. Not exported: a caller cannot re-apply it. */
 const BRAND = Symbol('dsh-agent-team/world-identity')
@@ -57,6 +91,15 @@ const MINTED = new WeakSet()
 
 /** world -> its frozen receipt record. */
 const RECEIPTS = new WeakMap()
+
+/** Contracts the DECLARING module minted (object identity; a copy is a different object). */
+const DECLARED_CONTRACTS = new WeakSet()
+
+/** contract -> its frozen identity-field snapshot, taken once at mint time. */
+const CONTRACT_SNAPSHOTS = new WeakMap()
+
+/** The five fields a contract identity is minted over. Order is part of the doc. */
+export const CONTRACT_IDENTITY_FIELDS = Object.freeze(['world_id', 'world_home', 'agent_id', 'execution_id', 'contract_id'])
 
 /**
  * Mint (once) the identity receipt for a World the Factory constructed.
@@ -122,4 +165,71 @@ export function isFactoryWorld(value) {
 export function factoryWorldReceipt(value) {
   if (!isFactoryWorld(value)) return null
   return RECEIPTS.get(value) ?? null
+}
+
+/**
+ * Mint (once) the identity of a contract the declaring module constructed (F-10).
+ *
+ * Called by `declareObservationContract`, the only function in this repo that
+ * constructs a formal observation contract, IMMEDIATELY before it freezes the
+ * object. The snapshot is what makes "these fields have not moved since the
+ * declaration path wrote them" falsifiable; the `WeakSet` is what makes "this is
+ * that object, not a child of it" falsifiable.
+ *
+ * Mint-once by design: a second call for the same object returns the FIRST
+ * snapshot. Re-minting after a mutation would launder field drift, so it is
+ * refused structurally rather than trusted to callers.
+ *
+ * @param {object} contract - the contract object being declared
+ * @param {Record<string, string>} fields - the five identity fields written by the declaring module
+ * @returns {object} the frozen snapshot
+ */
+export function declareContractIdentity(contract, fields = {}) {
+  if (typeof contract !== 'object' || contract === null || Array.isArray(contract)) {
+    throw new TypeError('declareContractIdentity: a contract is a non-array object')
+  }
+  const existing = CONTRACT_SNAPSHOTS.get(contract)
+  if (existing !== undefined) return existing
+  const snapshot = { schema: CONTRACT_IDENTITY_SCHEMA }
+  for (const field of CONTRACT_IDENTITY_FIELDS) {
+    const value = fields?.[field]
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new TypeError(`declareContractIdentity: ${field} must be a non-empty string (got ${JSON.stringify(value)})`)
+    }
+    snapshot[field] = value
+  }
+  const frozen = Object.freeze(snapshot)
+  DECLARED_CONTRACTS.add(contract)
+  CONTRACT_SNAPSHOTS.set(contract, frozen)
+  return frozen
+}
+
+/**
+ * The frozen field snapshot of a contract THIS module minted, or `null` for
+ * anything else — a spread copy, a reflection copy (`Object.getOwnPropertySymbols`
+ * carries the World symbol but not the WeakSet entry), an `Object.create` child,
+ * a proxy, or a JSON round-trip. Never throws.
+ *
+ * @param {unknown} value
+ * @returns {object|null}
+ */
+export function declaredContractFields(value) {
+  try {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
+    if (!DECLARED_CONTRACTS.has(value)) return null
+    return CONTRACT_SNAPSHOTS.get(value) ?? null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Whether `value` is a contract object the declaring module minted. Identity,
+ * not shape: the snapshot must also be present.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+export function isDeclaredContract(value) {
+  return declaredContractFields(value) !== null
 }

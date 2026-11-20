@@ -1,0 +1,78 @@
+SURVIVOR-PROBE 1795153585202 health-effect ok=true
+U5-SURVIVOR-READY fake-survivor 1795153585202 health-effect
+SURVIVOR-PROBE 1795153585453 after-reclaim ok=true
+SURVIVOR-PROBE 1795153588177 health-effect ok=true
+SURVIVOR-PROBE 1795153588429 after-reclaim ok=true
+✔ C1 dry-run uses supervisor path without starts and proves hold ordering (4441.530692ms)
+✔ C1 team-tree provenance is independent and fail-closed on dirty tracked paths (0.647195ms)
+✔ C1 survivor sequencing is fail-closed with real successful probes and identity continuity (0.239183ms)
+✔ C1 kill handshake: kill fires ONLY after HELD + authenticated READY receipt; knob without receipt is NOT_REACHED (0.177967ms)
+✔ C1 survivor sequencing: window and held-until-reclaim are independent facts (no aliased boolean) (0.106301ms)
+✔ port lease: exclusive, live-holder refuses, dead-holder stale reclaims, policy enforced (3050.170084ms)
+✔ port bands: the widened sanctioned set, 3080 refused, every band edge exact (0.864156ms)
+✔ port bands: candidatePorts derives from TEST_PORT_RANGES; World host/mock bands are named, disjoint and exclude 3180/3080 (0.594004ms)
+✔ port bands: legacy leasing is confined to 3181-3199, fails closed, and the next-generation 13000-13049 band is leased separately (zero binds) (28566.057341ms)
+✔ port lease T1: dir-slot dead claim reclaimed BY NAME with provenance; live claim never moved (43.561005ms)
+✔ port lease T1: release is token-guarded, idempotent, and leak-check scan sees zero claims after teardown (2.916519ms)
+✔ port lease T1: cross-process race — zero double-ownership, natural AND forced stale/reclaim interleaving (4959.188327ms)
+✔ capped ledger: hard byte cap, first rows survive intact, cap notice exactly once (5.352076ms)
+✔ budget ledger (run-record): host-start log stays under its byte cap through the shared helper (236.53493ms)
+✔ owned-path guard: a World refuses to boot with any ledger/marker pointed outside its home (1.055097ms)
+✖ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.417981ms)
+✔ Oracle sensitivity: planted defect is effect=false for the sound Oracle, GREEN for the blinded one (39.098916ms)
+✔ cleanup deletes ONLY worlds carrying a matching ownership marker (0.384398ms)
+✔ world naming follows TEST_METHODS §7 and refuses traversal (0.103737ms)
+✔ mock decide: structural discrimination + forced entries (both wire dialects) (0.911976ms)
+✔ host-base guard: HEAD drift and dirty porcelain both fail closed (21.922334ms)
+✔ u6-fs: SUITE_CASES entry and parseArgs wiring (0.470109ms)
+✔ u6-proc: SUITE_CASES entry, parseArgs wiring, factory mutual exclusion (0.249762ms)
+✔ u6-arc-a: SUITE_CASES entry and parseArgs wiring (0.124015ms)
+✔ u6-arc-a: the HOST validator ingests the emitted blueprints; the run7 comma class is refused before write (45.727121ms)
+✔ u6-arc-a: the assembly materializes a valid blueprint + plane + fixture; decide routes; the judge holds algebra (4.832213ms)
+✔ u6-jobs: SUITE_CASES entry, parseArgs wiring, factory import (0.171315ms)
+✔ u7-fs-mut: SUITE_CASES entry and parseArgs wiring (0.066847ms)
+✔ u7-fs-mut: the assembly declares ONE plane (no extra keys) and the judge is disk-driven (3.606644ms)
+✔ u7-agent-control: SUITE_CASES entry and parseArgs wiring (0.112523ms)
+✔ u7-agent-control: the assembly declares the ONE plane boolean and the judge is evidence-driven (2.11408ms)
+✔ u6-jobs: the assembly turns the CLOSED jobsEnabled key ON on a valid blueprint (3.541812ms)
+✔ u6-jobs: the decide script answers real transcript shapes with the scripted calls (1.28946ms)
+✔ u6-jobs: the judge passes the honest digest and catches each named mutation (1.35838ms)
+✔ u6-proc: the assembly materializes a confinedProvider plane + valid blueprint YAML (3.889309ms)
+✔ u6-fs: the patch-layer emitter produces one parseable insert layer (1.584197ms)
+✔ u6-fs: the blueprint names no deny rule (default-deny refusal) and declares the probe in the deny surface (0.228953ms)
+✔ u6-fs: the decide script discriminates lanes by request token (0.645311ms)
+✔ u6-fs: the leader chain walks PHASES on the WAKE PROTOCOL (offline sim) (1.607051ms)
+✔ u6-fs: the probe row mounts and registers its tool against a fake scope (0.812628ms)
+✔ u6-arc-a: the probe-FAMILY row mounts, registers, and walks the real kernel against a fake scope (dist seams) (4.187363ms)
+✔ u6-proc judge — offline fixture: run u6prc5 evidence judges deterministically to the measured fail-closed law (0.715264ms)
+✔ u6-proc judge — R-U6P3-1 positive-read precondition: a zero-row claim on a never-positively-read channel must FAIL, and the same digest with a proven read must PASS (0.36957ms)
+✔ u6-proc judge — offline fixture: the review-r1 positive-arm evidence judges 10/10 PASS (0.202513ms)
+✔ u6-proc judge — offline fixture: the four forensic runs (u6prc6..u6prc9) judge honestly to the envelope-boundary finding (0.742315ms)
+ℹ tests 45
+ℹ suites 0
+ℹ pass 44
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 41542.240229
+
+✖ failing tests:
+
+test at tests/world-factory/world-factory.test.mjs:468:1
+✖ RUN record: overall is worst-of; PASS is unreachable with any non-PASS case (0.417981ms)
+  Error [UnboundRunRecordError]: unbound run record: bindings.teamSha=undefined is not a full 40-hex commit id; bindings.hostSha=undefined is not a full 40-hex commit id (a record without teamSha/hostSha is not evidence — see EB3-RUN-MANIFEST strict lane)
+      at assertBoundRecord (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/lib/run-record.mjs:160:34)
+      at Object.finalize (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/lib/run-record.mjs:253:7)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/world-factory.test.mjs:479:17)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    code: 'RUN_RECORD_UNBOUND',
+    problems: [ 'bindings.teamSha=undefined is not a full 40-hex commit id', 'bindings.hostSha=undefined is not a full 40-hex commit id' ]
+  }
+EXIT=1

@@ -1,0 +1,172 @@
+▶ F-10 a formal contract has its own identity, and the trace actor is bound
+  ✔ POSITIVE: the real declared contract is accepted, and its actor-bound trace is gradable (0.446555ms)
+  ✖ (a) Object.create(validContract) + overridden world_id is not a declared contract (0.570601ms)
+  ✖ (b) Object.create(validContract) with NO override is refused too (identity is the receipt) (0.244132ms)
+  ✖ (c) a Reflect.ownKeys / getOwnPropertySymbols reflection copy keeps the World symbol but not the identity (0.183939ms)
+  ✖ (d) a minted contract whose world_id moves after minting is CONTRACT_FIELDS_MISMATCH (0.305308ms)
+  ✖ (e) two Worlds' contracts cross-wired are refused (and a MINTED cross-wire fails the receipt check) (0.209196ms)
+  ✖ (f) execution_id matches but actor_id belongs to another agent -> ACTOR_ID_MISMATCH (0.180401ms)
+  ✖ the refusal vocabulary stays a closed set and names the F-10 codes (0.168749ms)
+✖ F-10 a formal contract has its own identity, and the trace actor is bound (7.195579ms)
+ℹ F10-POSITIVE ok=true contract=obs-edf7ca4ae3e693ed world=f10-world-a
+ℹ tests 9
+ℹ suites 0
+ℹ pass 1
+ℹ fail 8
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 76.555038
+
+✖ failing tests:
+
+test at tests/world-factory/f10-contract-identity.test.mjs:205:11
+✖ (a) Object.create(validContract) + overridden world_id is not a declared contract (0.570601ms)
+  AssertionError [ERR_ASSERTION]: a prototype-inheriting child must never answer for a field it overrides
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:210:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:205:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:216:11
+✖ (b) Object.create(validContract) with NO override is refused too (identity is the receipt) (0.244132ms)
+  AssertionError [ERR_ASSERTION]: an Object.create child is not the object the declaring function minted
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:222:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:216:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:229:11
+✖ (c) a Reflect.ownKeys / getOwnPropertySymbols reflection copy keeps the World symbol but not the identity (0.183939ms)
+  AssertionError [ERR_ASSERTION]: a symbol survives reflection; object identity does not
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:233:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:229:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:238:11
+✖ (d) a minted contract whose world_id moves after minting is CONTRACT_FIELDS_MISMATCH (0.305308ms)
+  AssertionError [ERR_ASSERTION]: the declaring module exposes the mint (F-10 is installed)
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:240:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:238:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:275:11
+✖ (e) two Worlds' contracts cross-wired are refused (and a MINTED cross-wire fails the receipt check) (0.209196ms)
+  AssertionError [ERR_ASSERTION]: a contract whose fields name one World while it carries another is never accepted
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:285:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:275:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:304:11
+✖ (f) execution_id matches but actor_id belongs to another agent -> ACTOR_ID_MISMATCH (0.180401ms)
+  AssertionError [ERR_ASSERTION]: a shared execution_id must not let another agent answer for this contract
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:308:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:304:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: null,
+    operator: 'notStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/f10-contract-identity.test.mjs:326:11
+✖ the refusal vocabulary stays a closed set and names the F-10 codes (0.168749ms)
+  AssertionError [ERR_ASSERTION]: CONTRACT_IDENTITY_UNPROVEN is in REFUSAL_CODES
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:328:14)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at TestContext.test (node:internal/test_runner/test:400:20)
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/f10-contract-identity-20261120/tests/world-factory/f10-contract-identity.test.mjs:326:11)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+EXIT=1
