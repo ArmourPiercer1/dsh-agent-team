@@ -24,3 +24,25 @@
 **未触碰**：`tests/ute-g1-fs/golden/old-path.tsv`、`negative-controls.mjs`、`lib/corpus.mjs`、`capture-old-path.mjs`、`run-prototype.mjs`（B1 所有）；任何 upstream / 宿主树；任何权限检查、拒绝时机、文件副作用负控、effect oracle。manifest/workflow 仅上述两行。**未合并、未 push master/stable、未写批准记录**。
 
 **UNKNOWN（明写）**：① 本 worktree 无 rc.5 宿主源码树（`tests/deepseek-harness-*` gitignored 且缺失），原生 code 清单来自**仓内已记录证据**而非重读宿主；② rc.5 `policy.mode` 解引用是历史实测，本切片未重跑；③ `read_image` 现有 7 条基线但**无新路径复现**（`UTE_VECTOR_UNREPRODUCED`），本切片不请求该批准；④ 30 个 `needs-adaptation` 只是裁决，**未改**；⑤ 原生侧无 `unsupported-mode`/`route-unresolved` 记录对，故这两类只有 legacy 侧映射；⑥ `FS_BINDING_*` 靠推理排除（非 `FsError`），未做全部绑定发射点穷举。
+
+## 2026-11-20 — UTE-3 / G1-S3 逐族盘点：旧 ToolPlane / Family Body 的机器可检清单（draft PR #801）
+
+**背景**：UTE G1「Native Execution Consolidation」工作包 4。UTE-4 只允许按 `oldPath.files` 声明删除某族旧路径（`RETIREMENT.md` §5.1），但此前只有 `dsh.fs-family` 有一份手写清单，其余八族的 family body 无任何声明，也没有任何 CI leg 会因"清单漏掉一个仍在产线执行的实现文件"而红。本轮交付**可机器校验的逐族盘点**，并把校验挂到既有 Required 路径上（不加 workflow 文件、不加 leg、不加新 argv 形状）。
+
+**分支**：`task/ute3-inventory-20261120`（worktree `.worktrees/ute3-inventory-20261120`，base `origin/master 35b59ca3c`）。memo = `docs/plans/memo/ute-g1-20261120/INVENTORY.md`，逐字 transcript 在 `dev/agent-workflow/evidence/ute3-inventory-20261120/`。**draft PR #801**，未合并。
+
+**交付**：`dev/agent-workflow/ledgers/ute-family-inventory.json`（schema `ute-family-inventory/1`）覆盖 census 全部 **9 族**（8 产品族 + `testOnly: true` 的 `dsh.u6-probe-family`）。每族记录：census 派生成员；带闭合 role 的所属文件（`family-definition`/`row-definition`/`executor`/`mechanics`/`port`/`normalizer`/`contribution`/`index`/`test-only`）；definition 名 + 声明它的文件与 builder 符号；解析出的依赖（bare / 跨仓相对 / 族内）；从模型调用到真实 effect 的具名有序运行时链（**shared** 文件、**跨族 owner**、真正**外部**步骤各自显式标注）；真实执行治理的 authority（产品族必须点名 `ControlService`，探针族为其族内 governance kernel + 自供 `grantConsume` 端口）；native 路径状态；以及**从退役账本重算而非自报**的 readiness 三元组。实测：旧路径文件 **92** 个，shared 模块 **14** 个（有 reason，逐条可审），definition **34** 个；fs 族 readiness = `partial / prototype / partial`（gate 读数 oldBaseline 3/4、newPathVerified 3/4、negativeControlsPass 0/4：`read_image` 无基线/新路径向量、`read/write/edit` 无 per-member 负控，4 条族级负控只算 partial），其余八族无退役行 = `none / none / none`（不替任何族发明退役行）。
+
+**校验器**：`scripts/ute-family-inventory.mjs`，fail-closed，findings→exit 1，schema 拒收→exit 2，`--json`。拒绝集含双向族漂移、成员漂移、未跟踪/缺失文件、**无主实现文件**（`shared` 必须显式 + 有 reason，绝不静默忽略）、依赖双向漂移（自写 tokenizer，注释/字符串/模板不能伪造 import，`new URL(…, import.meta.url)` 与字面 `import()`/`require()` 可读）、运行时步骤断裂（步骤文件不在本族/shared/具名跨族 owner 之内，或 external 步骤带文件）、authority 未点名 `ControlService`、role 越界、native 状态与文件不符、readiness 与实测不符、退役账本 oldPath 不在盘点内、同文件双族认领。**接线**：由既有 Required leg `node scripts/eb3-family-definitions.mjs`（ci-integration，单一 Required context）在进程内调用并把 findings 并入自身列表——所以清单漂移 = 该 Required job 红，`INVENTORY_*` 代码逐字打印；**没有**新 workflow 文件/新 job/新 step/新 argv 形状。
+
+**唯一 CI 形状改动**：Test Catalog 法（`UNCOLLECTED_NEW`/`UNCOLLECTED_GREW`）不允许一个 `*.test.mjs` 无人收集，故按 UTE-0/1/2 先例把新套件**追加到既有** `ci-census` "next host lane" leg：manifest `check[]` 一个 token + `census-runtime.yml` 同一 token（两串逐元素比较，顺序一致）；不加 leg/step/job/文件，`eb3-ci-required` 仍 `pass workflows=10 findings=0`。套件 import 图仅 `node:` 内建（→ `ute-retirement-gate.mjs`、`packages/testkit/.../scan.mjs`），无需 `pnpm install`/构建，故可放在该 lane 的 `Build this repo` 之前（避开 UTE-1 的 `ERR_MODULE_NOT_FOUND` 陷阱）。
+
+**变异负控（不是"能过"而是"能红"）**：`scripts/ute-family-inventory.test.mjs` 35 tests，**27 条真实变异**各自把具名控制转红（census 双向、成员改名、lane/testOnly、definition 改名/解绑/伪造符号、删文件、去掉 tracked、双族认领、无主文件、无 reason shared、依赖删声明/伪造声明、跨仓依赖删除、运行时步骤伪造/external 带文件/跨族 owner 写错、authority 去掉 ControlService、UNKNOWN 带文件、native 无文件、越界 role、readiness 谎报、退役路径漂移），并有正控（成员顺序无关；显式 shared 被接受）与解析器样本。末测打印 `UTE-INVENTORY-MUTANTS total=27 red=27`，`red < total` 即整套失败——**无手写 PASS**。另在真实树上把 fs 成员改名一次，Required leg 立刻 `INVENTORY_MEMBER_DRIFT … EB3-FAMILY-DEFINITIONS fail files=30 findings=1`（exit 1），随后 `cmp` 逐字节复原并复绿。
+
+**门禁（本机实测，逐字在 `evidence/gates.txt`）**：inventory `families=9 files=92 findings=0`（exit 0）；套件 35/35 + `total=27 red=27`；`eb3-family-definitions pass files=30 findings=0`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-family-boundaries pass files=82 findings=0`；`test-catalog tests=883 UNCOLLECTED 41 refused=0`（与基线齐平）；`docs-sync findings=0 blocking=0`；`check-artifacts-committed verdict=ok compared=2104`（未加产品代码，compared 不变）；`git diff --check` 0；三个新/改 `.mjs` `node --check` 0。
+
+**未触碰**：`packages/**`（无产品代码、无生产接线）、`arc-a-family-census.json`、`tests/ute-g1-fs/**`、退役账本、任何 active plan、`dev/engineering/**`、除上面一个收集 token 外的 `.github/workflows/**`、`tests/paths.mjs`。
+
+**明写的限制（不是 PASS）**：① 本盘点**不是退役许可证**——`RetireAllowed` 仍由 `ute-retirement-gate.mjs` 判决，FS 仍 `NOT_RETIREABLE unit=0/4`；② 不证明新旧路径语义等价（两条 blocking 差异未批准、未解决）；③ 不证明 native 路径正确（`prototype` 仅指 UTE-1 FS 原型；其余八族 `none`）；④ 不证明 authority 实际拒绝（只证明点名的文件是真实 ControlService/guard/kernel 且产品族点名了它）；⑤ 文件总体不是构造完备的（锚定 census lane + `packages/tools/families/`；别处的实现需改 census/plan，而非放宽路径启发式）；⑥ 依赖解析器是 tokenizer 不是类型检查器，计算型动态 import 不可见（探针族两条 seam 是字面量，已覆盖）。**UNKNOWN**：无族需要 `UNKNOWN` authority；hosted L2 首次执行未在本机观察。
+
+**下一步（未开工，不假装已做）**：其余八族的退役行与逐成员基线/golden vector/per-member 负控（属 UTE-4 及其前置）；FS 两条 `blocking=yes` 语义差异的 owner 裁决。两者都不需要新宿主、不写生产路径。

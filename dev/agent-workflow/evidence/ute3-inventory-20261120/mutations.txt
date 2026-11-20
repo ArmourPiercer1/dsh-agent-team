@@ -1,0 +1,46 @@
+$ node --test scripts/ute-family-inventory.test.mjs
+UTE-INVENTORY-MUTANTS total=27 red=27
+✔ the committed inventory grades clean (9 families, no findings) (39.415943ms)
+✔ a census family missing from the inventory is INVENTORY_FAMILY_MISSING (18.045477ms)
+✔ an inventory family the census does not book is INVENTORY_FAMILY_UNKNOWN (19.029848ms)
+✔ renaming a member is INVENTORY_MEMBER_DRIFT (the census is the unit) (18.928187ms)
+✔ member ORDER is irrelevant (set equality, both directions) (18.596208ms)
+✔ a lane that is not the census lane is INVENTORY_LANE_DRIFT (18.019727ms)
+✔ testOnly must agree with the census mount (INVENTORY_TESTONLY_DRIFT) (22.591159ms)
+✔ a definition that is not a member is INVENTORY_DEFINITION_DRIFT (17.380046ms)
+✔ a bound-definition flag that contradicts the census is INVENTORY_DEFINITION_DRIFT (17.44561ms)
+✔ a declared symbol absent from its file is INVENTORY_DEFINITION_DRIFT (17.24523ms)
+✔ pointing at a deleted file is INVENTORY_PATH_MISSING (17.543427ms)
+✔ a declared file outside the git index is INVENTORY_PATH_UNTRACKED (18.158278ms)
+✔ one file claimed by two families is INVENTORY_DUPLICATE_CLAIM (17.453846ms)
+✔ an implementation file no family claims is INVENTORY_FILE_UNOWNED (22.023706ms)
+✔ the SAME orphan is accepted when the ledger explicitly declares it shared (with a reason) (17.676798ms)
+✔ a shared declaration without a reason is INVENTORY_SHARED_UNREASONED (17.352934ms)
+✔ dropping a declared dependency that is still imported is INVENTORY_DEPENDENCY_UNDECLARED (17.419742ms)
+✔ a declared dependency no file imports is INVENTORY_DEPENDENCY_UNKNOWN (17.330872ms)
+✔ a cross-repo relative import that is dropped is INVENTORY_DEPENDENCY_UNDECLARED (17.470147ms)
+✔ a runtime step naming a nonexistent file is INVENTORY_RUNTIME_PATH_BROKEN (17.163956ms)
+✔ an external step that also names a repo file is INVENTORY_RUNTIME_PATH_BROKEN (23.277238ms)
+✔ a cross-family step that names the wrong owner is INVENTORY_RUNTIME_PATH_BROKEN (22.549952ms)
+✔ a product family whose authority omits ControlService is INVENTORY_AUTHORITY_INVALID (16.719686ms)
+✔ authority UNKNOWN with invented files is INVENTORY_AUTHORITY_INVALID (17.058207ms)
+✔ nativePath none with files is INVENTORY_NATIVE_DRIFT (16.956133ms)
+✔ a role outside the closed set is INVENTORY_ROLE_UNKNOWN (16.117467ms)
+✔ declaring a readiness the evidence does not support is INVENTORY_READINESS_DRIFT (16.542731ms)
+✔ the retirement ledger may not name a file the inventory disowns (INVENTORY_RETIREMENT_PATH_DRIFT) (16.591414ms)
+✔ imports are tokenized: comments, strings and templates cannot fake one (0.245545ms)
+✔ the C2 probe lane's URL-based public seams are read as imports (0.39588ms)
+✔ CLI: exit 0 on the committed ledger and a parseable --json verdict (2468.182ms)
+✔ CLI: a mutated ledger exits 1 with the named finding (1261.11906ms)
+✔ CLI: a schema error exits 2 (cannot grade is not a pass) (37.283935ms)
+✔ the required CI leg invokes the inventory (no new workflow line, no new manifest leg) (126.410165ms)
+✔ UTE-INVENTORY-MUTANTS summary (0.584607ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4517.325057
+EXIT=0
