@@ -9337,6 +9337,20 @@ export interface AbortSignalLike {
 
 **下一步（未开工，不假装已做）**：其余八族的退役行与逐成员基线/golden vector/per-member 负控（属 UTE-4 及其前置）；FS 两条 `blocking=yes` 语义差异的 owner 裁决。两者都不需要新宿主、不写生产路径。
 
+## 2026-11-20 — 追加式日志守卫：`append-only-log` leg（只追加规则从“希望”变成“可检”）
+
+**分支**：`task/guard-append-log-20261120`（worktree `.worktrees/guard-append-log-20261120`，base `origin/master 4aaae4c0b`）。证据目录 `dev/agent-workflow/evidence/guard-append-log-20261120/`。
+
+**为什么**：今天两次 squash 合并把 `SESSION_ROUTER_LOG.md` 覆盖成只剩本次条目——#800 从 9276 行变 26 行，#801（在被截断的文件上开发）再变 48 行。`state-freshness` 只校验**最新**标题与指针一致，所以两次都全绿通过，靠人读 diffstat 才发现。仓库规则是“只追加执行日志”，没有检查器的规则只是愿望。
+
+**做了什么**：新增 `scripts/check-append-only-log.mjs` + 8 条单测（4 条真变异：截断/改写/重排/中段插入各自变红，另有非空转臂），并作为**新 leg `append-only-log`** 接入 `pr-gate`（`LEG_ORDER` 第 3 位）与 `ci-product` 的九腿 argv；`ci-required` 的 `productLegs` 与 `product-gate` 的 `--only` 令牌同步，`eb3-ci-required pass workflows=10 findings=0`。单测作为既有 rc.5 lane 的一个 token 收集（`test-catalog tests=885 refused=0`）。
+
+**判据**：base revision 的字节必须是 head 的**精确前缀**（仅归一化 CRLF 与末尾换行）。截断、改写、重排、中段插入一律 RED；没有可用 base 时 `refused`（绝不绿）。
+
+**实测**：`DSH-CI-LEG leg=append-only-log verdict=pass … space 9312 行 0 追加`；把日志截到前 50 行后同一 leg 输出 `verdict=fail … LOG_TRUNCATED_OR_REWRITTEN: first divergence at line 52; 9261 base line(s) missing`，随后按字节恢复（`cmp` 一致）。单测 8/8。
+
+**UNKNOWN（明写）**：前缀检查证明“旧字节被保留”，**不**证明新条目为真，也不能区分“合法追加”与“恰好复现旧字节的重写”。它需要可解析的 base（pr-gate 用 fetch-depth 0 检出，这是它能工作的前提）；本地无 `origin/master` 时该 leg 会 refuse，而不是假装通过。
+
 ## 2026-11-20 — UTE-3 / G1 SEARCH 族旧路径基线 + 逐成员负控（draft PR #806，合并 master 后追加）
 
 **背景**：UTE G1 退役判据 `RetireAllowed = OldBaseline AND NewPathVerified AND SemanticDifferencesResolved AND NegativeControlsPass`，单元 = census 装配。FS 族已有 B1 先例，SEARCH 族（`dsh.search-family`，成员 `grep`/`glob`）此前**零基线**。本轮只做**旧路径基线**，不做新路径、不宣称退役。

@@ -15,4 +15,11 @@ export { ExecutionSettlementRefusal, SETTLEMENT_ENVELOPE_SCHEMA, SETTLEMENT_RECO
  * non-claim; it imports no control code.
  */
 export * from './writer-adapter.js';
+/**
+ * UTE-3 S1 dispatch wiring: the tool-definition wrapper that records a durable
+ * admission BEFORE the body runs and settles the real observed outcome. It is
+ * NOT mounted or imported by any production path; a caller constructs it with
+ * an explicit store (see `dispatch-settlement.ts`).
+ */
+export * from './dispatch-settlement.js';
 //# sourceMappingURL=index.js.map
