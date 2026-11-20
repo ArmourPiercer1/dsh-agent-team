@@ -23,6 +23,9 @@ new path              FS_PERMISSION_DENIED
 cause                 upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143
 reason                not-a-patch
 retirement-blocking   YES
+owner ruling          B+C adopted (technical route only) — 2026-11-20
+mapping               tests/ute-g1-fs/lib/refusal-categories.mjs
+approval              PENDING (owner signature required)
 ```
 
 rc.5 `tool-fs` assumes an `FsError` with code `FS_SANDBOX_DENIED` can only come
@@ -63,6 +66,31 @@ must either (a) adopt the fs-sandbox protocol (declare `sandboxMode`, mount
 (b) keep a non-sandbox code and accept that model-facing refusal text differs.
 It is not a decision that can be made by remembering a memo.
 
+**Owner ruling applied (2026-11-20) `[OWNER-DECIDED]` — B+C, technical route
+only.** The owner approved the B+C route: the new execution path keeps the
+host's native structured `FsError` (route B keeps `FS_PERMISSION_DENIED` for a
+lane denial instead of claiming `FS_SANDBOX_DENIED` without the protocol), and
+old/new compatibility is judged through a CLOSED refusal-CATEGORY mapping rather
+than literal text or code equality (route C). The mapping that implements it is
+[`../lib/refusal-categories.mjs`](../lib/refusal-categories.mjs); its
+`REFUSAL_VOCABULARY_INCOMPLETE` refusal means an unmapped legacy value or
+`FsError` code is a refusal, never a default bucket.
+
+The vocabulary is nine categories and covers all seven legacy refusal classes the
+corpus now records — including the four the B1 `read_image` baselines added
+(`missing-path`, `image-modality-denied` → `unsupported-mode`, `cancelled`, and
+`route-unresolved`, which gets its own category because FS-I0's cause is the
+product route-C gap (GAP-FS-CONTRACT-1 / PD-5), not an undetermined refusal; see
+`docs/plans/memo/ute-g1-20261120/FS-ERROR-PROTOCOL.md` §2.5).
+
+**This is NOT `SemanticDifferencesResolved` and it is NOT an approval.**
+`approval: PENDING (owner signature required)`. The owner ruling chose the
+compatibility route; it did not sign this difference off, did not establish the
+term, did not license retirement, and did not change the requirement that a
+reference-bound approval record (`PR #<n> @ <40-hex>`) exist before
+`SemanticDifferencesResolved` can be true. The retirement gate must keep
+refusing FS until that record is signed.
+
 ---
 
 ## KNOWN-SEMANTIC-DIFFERENCE 2 — how a refusal is observed
@@ -74,6 +102,9 @@ new path              typed-FsError-code
 cause                 host-generation
 reason                the corpus compares refusal classes, not spellings
 retirement-blocking   YES
+owner ruling          B+C adopted (technical route only) — 2026-11-20
+mapping               tests/ute-g1-fs/lib/refusal-categories.mjs
+approval              PENDING (owner signature required)
 ```
 
 The legacy governed path refuses with human messages:
@@ -94,6 +125,15 @@ condition.
 would go red on this difference for reasons that are not behaviour changes. The
 class vocabulary is the contract; a retirement decision that wants code-level
 equality must first make the old path emit codes.
+
+**Owner ruling applied (2026-11-20) `[OWNER-DECIDED]` — B+C, technical route
+only.** Route C is adopted: the closed category vocabulary in
+[`../lib/refusal-categories.mjs`](../lib/refusal-categories.mjs) is the
+compatibility interface between the legacy prose (and the legacy typed
+`TeamIoDenial` codes) and the native `FsError` codes. It is TOTAL: an unmapped
+value raises `REFUSAL_VOCABULARY_INCOMPLETE` and is never folded into `unknown`.
+`approval: PENDING (owner signature required)` — the term
+`SemanticDifferencesResolved` stays FALSE and no retirement is licensed.
 
 ---
 
