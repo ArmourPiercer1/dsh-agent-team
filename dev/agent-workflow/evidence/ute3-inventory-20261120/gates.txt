@@ -1,4 +1,10 @@
-# UTE-3 local gates, verbatim, 2026-11-20T15:02:47Z
+# UTE-3 local gates, verbatim, 2026-11-20T15:13:20Z
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1697 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+EXIT=0
 
 $ node scripts/ute-family-inventory.mjs
 UTE-FAMILY-INVENTORY ledger=dev/agent-workflow/ledgers/ute-family-inventory.json schema=ute-family-inventory/1 families=9 universe=92 shared=14
@@ -50,9 +56,6 @@ EXIT=0
 $ git diff --check
 EXIT=0
 
-$ git diff --cached --check
-EXIT=0
-
 $ node --check scripts/ute-family-inventory.mjs
 EXIT=0
 
@@ -63,18 +66,8 @@ $ node --check scripts/eb3-family-definitions.mjs
 EXIT=0
 
 $ git status --short
- M .github/workflows/census-runtime.yml
-AM dev/agent-workflow/evidence/ute3-inventory-20261120/ci-leg-law.txt
-AM dev/agent-workflow/evidence/ute3-inventory-20261120/gates.txt
-A  dev/agent-workflow/evidence/ute3-inventory-20261120/inventory-json.txt
-A  dev/agent-workflow/evidence/ute3-inventory-20261120/inventory.txt
-AM dev/agent-workflow/evidence/ute3-inventory-20261120/mutations.txt
-A  dev/agent-workflow/evidence/ute3-inventory-20261120/required-leg-bites.txt
-A  dev/agent-workflow/ledgers/ute-family-inventory.json
- M dev/ci/eb3-ci-manifest.json
-AM docs/plans/memo/ute-g1-20261120/INVENTORY.md
-M  scripts/eb3-family-definitions.mjs
-A  scripts/ute-family-inventory.mjs
-A  scripts/ute-family-inventory.test.mjs
-?? dev/agent-workflow/evidence/ute3-inventory-20261120/README.md
-?? dev/agent-workflow/evidence/ute3-inventory-20261120/manifest-delta.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/gates.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/mutations.txt
+ M scripts/ute-family-inventory.mjs
+ M scripts/ute-family-inventory.test.mjs
+?? dev/agent-workflow/evidence/ute3-inventory-20261120/lint-identities.txt

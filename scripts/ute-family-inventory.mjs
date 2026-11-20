@@ -897,7 +897,7 @@ export function familyUniverse({ censusById, tracked }) {
  *                                zero `NC-MEMBER` lines)
  *                     complete: every member has its own control line
  */
-export function deriveReadiness({ familyId, members, retirementRow, retirementProblem, retirementLedger, root, tracked, readFile, fileExists }) {
+export function deriveReadiness({ members, retirementRow, retirementProblem, retirementLedger, root, tracked, readFile, fileExists }) {
   if (retirementProblem !== null) {
     return { baseline: 'none', newPath: 'none', negativeControls: 'none', detail: `${retirementProblem}, so no readiness can be derived` }
   }

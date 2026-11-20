@@ -365,7 +365,7 @@ test('the required CI leg invokes the inventory (no new workflow line, no new ma
 
 // ── 14. the mutation count is printed by the suite, never hand-written ─────
 test('UTE-INVENTORY-MUTANTS summary', () => {
-  // eslint-disable-next-line no-console
+  // The count is printed, never asserted by hand: `red < total` fails above.
   console.log(`UTE-INVENTORY-MUTANTS total=${String(mutants)} red=${String(red)}`)
   assert.ok(mutants >= 6, `the battery must contain at least six real mutations, has ${String(mutants)}`)
   assert.equal(red, mutants, `${String(mutants - red)} mutation(s) did not turn their named control red`)

@@ -12,7 +12,8 @@ Self-contained transcripts; every command below was run from the worktree root.
 | `ci-leg-law.txt` | `node scripts/eb3-ci-required.mjs` + `node scripts/eb3-family-definitions.mjs` + the manifest leg and workflow line that carry them. |
 | `manifest-delta.txt` | The ONLY CI-shape change in this PR: the suite is collected on the EXISTING `ci-census` "next host lane" leg (one `check[]` token, one byte-identical workflow token). Also the element-by-element equality proof. |
 | `required-leg-bites.txt` | The required leg made RED on purpose (one member renamed in the committed ledger, then restored byte-identically): `INVENTORY_MEMBER_DRIFT` … `findings=1`, exit 1; then pass again. This is the proof the required wiring is not decorative. |
-| `gates.txt` | Every local gate, verbatim, with exit codes (inventory, family definitions, ci-required, boundaries, docs-sync, artifacts, `git diff --check`, `node --check` ×3, `git status`). |
+| `lint-identities.txt` | Hosted `lint-identities` failure on 5facc3f4e (verbatim), its two root causes (an unused destructured `familyId`; an unused `eslint-disable` directive — the "(parse-fatal)" identity is an ESLint message with a null ruleId, not a parse failure), the fix, and the local leg run: `new 0, resolved 0`. Includes the honest note about the worktree's one-level-up `node_modules` links. |
+| `gates.txt` | Every local gate, verbatim, with exit codes (lint-identities, inventory, family definitions, ci-required, boundaries, catalog, docs-sync, artifacts, `git diff --check`, `node --check` ×3, `git status`). |
 
 Notes.
 

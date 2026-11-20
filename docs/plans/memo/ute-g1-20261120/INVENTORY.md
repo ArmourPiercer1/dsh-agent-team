@@ -271,3 +271,4 @@ Required context without waiting for the deferred census layer.
 | `node scripts/docs-sync.mjs --check` | `findings=0 blocking=0` (exit 0) |
 | `node scripts/check-artifacts-committed.mjs` | `verdict=ok compared=2104` (exit 0) |
 | `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` | `tests=883 … UNCOLLECTED 41 … refused=0 findings=0` (exit 0) |
+| `node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt` | `new 0, resolved 0` (exit 0) |
