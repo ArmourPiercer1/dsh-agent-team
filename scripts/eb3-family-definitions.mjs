@@ -50,6 +50,19 @@
  * `retirement-ledger-unreadable` — fail closed, because an unreadable ledger
  * must not silently license deletion.
  *
+ * WHAT THIS ADDS — THE INVENTORY ARM (UTE-3, 2026-11-20). UTE-4 may only
+ * delete a family's old path against an `oldPath.files` declaration, and that
+ * declaration is only auditable if the files on it are the family's real
+ * implementation. `scripts/ute-family-inventory.mjs` owns that inventory and its
+ * own refusals; this leg INVOKES it (in process, no new argv, no new workflow
+ * line, no new manifest leg) so the required CI path is red when the inventory
+ * drifts from the census, the tree, the parsed imports or the measured
+ * retirement readiness. The inventory's findings flow into this leg's finding
+ * list unchanged, which is why a reviewer sees the inventory's own code names
+ * (`INVENTORY_*`) on the required path. This arm is invoked by the CLI only:
+ * `checkFamilyDefinitions` keeps its injected-file contract so the negative
+ * control suite can mutate ONE input without grading the real tree.
+ *
  * Exported for scripts/eb3-ci-negative-controls.mjs (C3):
  *   checkFamilyDefinitions({ files, ledger?, retirement?, root? }) → { findings }
  *   checkRetirementLicences({ files, retirement?, root? }) → { findings }
@@ -74,6 +87,7 @@ import {
   LEDGER_REL as RETIREMENT_LEDGER_REL,
   checkRetirement,
 } from './ute-retirement-gate.mjs'
+import { checkInventory, defaultTrackedPaths } from './ute-family-inventory.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
@@ -311,6 +325,26 @@ export function trackedDefinitionPaths(root = ROOT) {
   return out.split('\0').filter((p) => p.length > 0 && (isContributionPath(p) || isFamilyRowPath(p))).sort()
 }
 
+/** The UTE-3 inventory arm: grade the family inventory and surface its findings
+ *  under this leg's own name. A ledger that cannot be graded at all is a
+ *  finding here (fail closed) — a required leg must never read green because the
+ *  inventory was unreadable. */
+export function checkInventoryArm({ root = ROOT, trackedPaths } = {}) {
+  const result = checkInventory({ root, trackedPaths })
+  if (result.refused !== undefined) {
+    return {
+      families: [],
+      universe: 0,
+      findings: [{ code: result.refused, path: 'dev/agent-workflow/ledgers/ute-family-inventory.json', detail: `the UTE-3 family inventory could not be graded: ${result.detail}` }],
+    }
+  }
+  return {
+    families: result.families.map((f) => f.familyId),
+    universe: result.universe,
+    findings: result.findings.map((f) => ({ code: f.code, path: f.familyId ?? 'dev/agent-workflow/ledgers/ute-family-inventory.json', detail: f.detail })),
+  }
+}
+
 const invokedDirectly = process.argv[1] !== undefined && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))
 if (invokedDirectly) {
   const json = process.argv.includes('--json')
@@ -331,7 +365,16 @@ if (invokedDirectly) {
     } catch {
       // Absent/unparseable ledger: the arm itself fails closed and reports it.
     }
-    out = { files: files.size, ...checkFamilyDefinitions({ files }) }
+    // UTE-3: the required leg also invokes the family inventory. Same step, same
+    // argv, same manifest leg — the inventory's refusals are this leg's findings.
+    const inventory = checkInventoryArm({ root: ROOT, trackedPaths: defaultTrackedPaths(ROOT) })
+    const definitions = checkFamilyDefinitions({ files })
+    out = {
+      files: files.size,
+      ...definitions,
+      inventory: { families: inventory.families, universe: inventory.universe },
+      findings: [...definitions.findings, ...inventory.findings],
+    }
   } catch (e) {
     console.error(`EB3-FAMILY-DEFINITIONS refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)

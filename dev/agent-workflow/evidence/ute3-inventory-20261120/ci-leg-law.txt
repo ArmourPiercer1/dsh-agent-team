@@ -1,0 +1,15 @@
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EXIT=0
+
+$ node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=30 findings=0
+EXIT=0
+
+$ node -e '...parse dev/ci/eb3-ci-manifest.json...'
+layer: ci-census workflow: .github/workflows/census-runtime.yml job: census-runtime
+leg: next host lane (node:test: real boot + native API A1-A6 + provisioning negative controls)
+check: ["tests/next-host/boot.test.mjs","tests/next-host/native-api.test.mjs","tests/next-host/provisioning-controls.test.mjs","tests/world-factory/f10-contract-identity.test.mjs","scripts/ute-retirement-gate.test.mjs","tests/ute2-settlement/settlement.test.mjs","scripts/ute-family-inventory.test.mjs"]
+
+$ grep -n eb3-family-definitions .github/workflows/ci-integration.yml
+131:        run: node scripts/eb3-family-definitions.mjs

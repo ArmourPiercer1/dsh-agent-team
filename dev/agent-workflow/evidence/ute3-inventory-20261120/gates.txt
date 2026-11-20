@@ -1,0 +1,79 @@
+# UTE-3 local gates, verbatim, 2026-11-20T16:51:15Z (rebased on master 313643100)
+
+$ node scripts/lint-identities.mjs --diff dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt
+lint-identities: 162 identity lines, 76 distinct (target .)
+lint-identities: universe: 1697 file(s) linted, 0 of them gitignored (ESLint does not read .gitignore, so the identity set is a function of these files, not of git status)
+baseline dev/agent-workflow/evidence/a4-lint-baseline/lint-identities-0237d487.txt: 76 distinct; new 0, resolved 0
+EXIT=0
+
+$ node scripts/ute-family-inventory.mjs
+UTE-FAMILY-INVENTORY ledger=dev/agent-workflow/ledgers/ute-family-inventory.json schema=ute-family-inventory/1 families=9 universe=92 shared=14
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.fs-family members=4 files=17 definitions=4 steps=12 readiness=baseline:complete,newPath:prototype,negativeControls:complete testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.process-family members=2 files=11 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.search-family members=2 files=9 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.inspect-family members=3 files=10 definitions=3 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.u6-probe-family members=1 files=3 definitions=1 steps=7 readiness=baseline:none,newPath:none,negativeControls:none testOnly=true
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.web-family members=2 files=10 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.agent-control-family members=7 files=14 definitions=7 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.ui-family members=2 files=9 definitions=2 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+  UTE-FAMILY-INVENTORY-FAMILY family=dsh.agent-state-family members=5 files=7 definitions=5 steps=12 readiness=baseline:none,newPath:none,negativeControls:none testOnly=false
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+EXIT=0
+
+$ node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=30 findings=0
+EXIT=0
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EXIT=0
+
+$ node scripts/eb3-family-boundaries.mjs
+EB3-FAMILY-BOUNDARIES pass files=82 findings=0 engine=auto extractor=acorn 8.18.0 (masked-regex fallback for non-JS surfaces)
+EXIT=0
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=884 instruments=3 digest=sha256:e44e7ce646d55f363e448ea0e907f4db4ad81371ef9f5ed3c7bf88eb386789ca
+  DISCOVERED_AND_COLLECTED 829
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+  by runner: node=129 none=7 vitest=748
+DSH-TEST-CATALOG tests=884 digest=sha256:e44e7ce646d55f363e448ea0e907f4db4ad81371ef9f5ed3c7bf88eb386789ca refused=0 findings=0
+EXIT=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=180 notes=4 plans=139(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+EXIT=0
+
+$ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2104 glue=113
+[check-artifacts-committed] OK: 2104 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+EXIT=0
+
+$ git diff --check
+EXIT=0
+
+$ node --check scripts/ute-family-inventory.mjs
+EXIT=0
+
+$ node --check scripts/ute-family-inventory.test.mjs
+EXIT=0
+
+$ node --check scripts/eb3-family-definitions.mjs
+EXIT=0
+
+$ git status --short
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/README.md
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/ci-leg-law.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/gates.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/inventory-json.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/inventory.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/lint-identities.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/manifest-delta.txt
+ M dev/agent-workflow/evidence/ute3-inventory-20261120/mutations.txt
+ M dev/agent-workflow/ledgers/ute-family-inventory.json
+ M docs/plans/memo/ute-g1-20261120/INVENTORY.md
+ M scripts/ute-family-inventory.test.mjs
