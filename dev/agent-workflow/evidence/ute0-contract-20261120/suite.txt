@@ -1,0 +1,36 @@
+UTE-MUTATION id=P1 mutation="none (all four terms satisfied by committed evidence)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+UTE-MUTATION id=NC-1 mutation="oldBaseline.verdict=false" expected=REFUSED:UTE_OLD_BASELINE_MISSING observed=UTE_OLD_BASELINE_MISSING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-2 mutation="newPathVerified.verdict=false" expected=REFUSED:UTE_NEW_PATH_UNVERIFIED observed=UTE_NEW_PATH_UNVERIFIED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-3 mutation="blocking difference without an approval" expected=REFUSED:UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-4 mutation="negativeControlsPass.verdict=false" expected=REFUSED:UTE_NEGATIVE_CONTROLS_FAILING observed=UTE_NEGATIVE_CONTROLS_FAILING,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-5 mutation="request family=pty (only synthetic-fs is in the ledger)" expected=REFUSED:UTE_LEDGER_UNKNOWN_FAMILY observed=UTE_LEDGER_UNKNOWN_FAMILY recovered=n/a (unknown family has no green state)
+UTE-MUTATION id=NC-6 mutation="evidence pointer → missing file; and → present-but-uncommitted file" expected=REFUSED:UTE_EVIDENCE_UNREADABLE observed=UTE_EVIDENCE_UNREADABLE recovered=ALLOWED
+UTE-MUTATION id=NC-7 mutation="expect token absent; and a verbatim contradicts token present" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=NC-8 mutation="state=NOT_RETIREABLE with all terms true; state=RETIREABLE with a failed term" expected=REFUSED:UTE_STATE_CONTRADICTED observed=UTE_STATE_CONTRADICTED,UTE_NEGATIVE_CONTROLS_FAILING recovered=ALLOWED
+UTE-MUTATION id=NC-9 mutation="schema=ute-retirement/0" expected=REFUSED:UTE_LEDGER_SCHEMA observed=UTE_LEDGER_SCHEMA recovered=ALLOWED (correct schema)
+UTE-MUTATION id=NC-10 mutation="approval.record points at a committed file that never names the approver" expected=REFUSED:UTE_EVIDENCE_CONTRADICTED observed=UTE_EVIDENCE_CONTRADICTED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_STATE_CONTRADICTED recovered=ALLOWED
+UTE-MUTATION id=REAL mutation="seeded dev/agent-workflow/ledgers/ute-retirement.json row fs, no input mutated" expected=REFUSED:UTE_SEMANTIC_DIFFERENCES_UNRESOLVED observed=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED recovered=fs is NOT_RETIREABLE
+UTE-MUTATION id=CLI-ALLOW mutation="none (committed synthetic fixture, all four terms satisfied)" expected=ALLOWED observed=ALLOWED recovered=ALLOWED
+✔ P1 — a fully satisfied synthetic family is ALLOWED (positive control) (41.874002ms)
+✔ NC-1 — oldBaseline.verdict=false → UTE_OLD_BASELINE_MISSING (43.850593ms)
+✔ NC-2 — newPathVerified.verdict=false → UTE_NEW_PATH_UNVERIFIED (44.241599ms)
+✔ NC-3 — blocking difference without an approval → UTE_SEMANTIC_DIFFERENCES_UNRESOLVED (42.101639ms)
+✔ NC-4 — negativeControlsPass.verdict=false → UTE_NEGATIVE_CONTROLS_FAILING (43.647964ms)
+✔ NC-5 — an unknown family is refused by name, never graded as absent-green (26.843228ms)
+✔ NC-6 — evidence must be a real COMMITTED file (missing and untracked both refuse) (53.413838ms)
+✔ NC-7 — a file that does not state the claimed verdict is CONTRADICTED evidence (55.858998ms)
+✔ NC-8 — state is a mirror, not a second authority (both directions refuse) (54.09064ms)
+✔ NC-9 — a ledger that cannot be graded exits NON-ZERO (never a pass) (26.242931ms)
+✔ NC-10 — a fabricated owner approval record is contradicted evidence (43.38651ms)
+✔ REAL — the seeded fs row is refused today (semantic differences unresolved) (16.67444ms)
+✔ CLI — --family fs exits 1 and prints JSON; --all never hides a refusal (145.563827ms)
+✔ CLI — a committed, fully satisfied synthetic family is ALLOWED (exit 0) (58.65793ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 754.723586
+EXIT=0
