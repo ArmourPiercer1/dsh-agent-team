@@ -401,9 +401,13 @@ jobs:
         # The UTE-3 route-C repair's product-route suite rides it too: it dispatches the FOURTH FS
         # member through the real route-C row, which imports the same repo packages post-build
         # (pre-repair that member was refused before any image work).
+        # UTE-3 (2026-11-20): `tests/ute-g1-fs/lib/refusal-categories.test.mjs` (the FS refusal
+        # vocabulary + its five mutation controls) rides this same argv. It is host-free and
+        # dependency-free, so it needs nothing from this build; it is here for family
+        # co-location with the FS binding contract (and to add no new dispatch leg).
         shell: bash
         timeout-minutes: 10
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/product-route-image.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,

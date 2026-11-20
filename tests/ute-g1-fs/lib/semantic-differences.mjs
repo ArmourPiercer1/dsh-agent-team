@@ -40,6 +40,13 @@
  * @property {string} reason - why this prototype does not eliminate it.
  * @property {boolean} blocking - must a retirement decision treat it explicitly?
  * @property {string} detail - one paragraph a reader can act on.
+ * @property {string} ruling - the owner ruling that chose the compatibility
+ *   interface (technical route only; it is NOT a `SemanticDifferencesResolved`
+ *   verdict and does not licence retirement).
+ * @property {string} mapping - the file that implements the chosen interface.
+ * @property {string} approval - `PENDING (owner signature required)` until the
+ *   owner signs a reference-bound approval record; the retirement gate keeps
+ *   refusing while this is pending.
  */
 
 /** @type {readonly SemanticDifference[]} */
@@ -52,6 +59,9 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
     cause: 'upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143',
     reason: 'not-a-patch',
     blocking: true,
+    ruling: 'owner-ruling-2026-11-20: route B+C adopted (technical route only). B = keep the host\'s native structured FsError code (FS_PERMISSION_DENIED for a lane denial) instead of claiming FS_SANDBOX_DENIED without the fs-sandbox protocol.',
+    mapping: 'tests/ute-g1-fs/lib/refusal-categories.mjs',
+    approval: 'PENDING (owner signature required)',
     detail: 'rc.5 tool-fs assumes an FsError with code FS_SANDBOX_DENIED can only come from an '
       + 'fs-sandbox backend that resolved a sandbox policy, and dereferences policy.mode when it '
       + 'sees one (measured crash: "Cannot read properties of undefined (reading \'mode\')"). The '
@@ -60,7 +70,10 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
       + 'sandboxMode, mount sandbox-policy) or keep a non-sandbox code; the old and new paths do NOT '
       + 'emit the same code for the same effect. NOTE: on the MEASURED legacy route-C path the '
       + 'refusal is prose, not FS_SANDBOX_DENIED — FS_SANDBOX_DENIED is the host code the next-path '
-      + 'provider would have used if the upstream assumption allowed it.',
+      + 'provider would have used if the upstream assumption allowed it. RULING: route B+C adopted on '
+      + '2026-11-20 as the technical compatibility route; the closed category mapping lives in '
+      + 'tests/ute-g1-fs/lib/refusal-categories.mjs. APPROVAL: PENDING (owner signature required) — the '
+      + 'ruling chose the route, it did not resolve this difference and does not licence retirement.',
   }),
   Object.freeze({
     id: 'refusal-observation-shape',
@@ -70,13 +83,19 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
     cause: 'host-generation',
     reason: 'class-not-code',
     blocking: true,
+    ruling: 'owner-ruling-2026-11-20: route B+C adopted (technical route only). C = the legacy prose and the native FsError code are compared through the CLOSED refusal-category vocabulary, not by literal text or code equality.',
+    mapping: 'tests/ute-g1-fs/lib/refusal-categories.mjs',
+    approval: 'PENDING (owner signature required)',
     detail: 'The legacy governed path refuses with human messages ("authored locator \'…\' is outside '
       + 'every allow subtree of the lane", "file has not been read — read the file, then retry", '
       + '"file changed since it was read — re-read the file, then retry"); the next host answers with '
       + 'typed FsError codes. The corpus maps both onto one closed class vocabulary (lane-deny, '
       + 'write-requires-read, stale-version, other), which is what makes the vectors comparable at '
       + 'all. A future equivalence oracle that compares CODES directly would go red here for reasons '
-      + 'that are not behaviour changes.',
+      + 'that are not behaviour changes. RULING: route B+C adopted on 2026-11-20; compatibility is '
+      + 'judged through the CLOSED refusal-category vocabulary in '
+      + 'tests/ute-g1-fs/lib/refusal-categories.mjs, which refuses to classify an unmapped legacy '
+      + 'value or FsError code. APPROVAL: PENDING (owner signature required).',
   }),
 ])
 

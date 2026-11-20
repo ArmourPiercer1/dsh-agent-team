@@ -607,9 +607,17 @@ function evaluateDifferences(term, context) {
     if (!blocking) continue
     const approval = diff.approval
     if (approval === null || approval === undefined) {
+      // The refusal text carries the difference's OWN recorded status (its
+      // `summary`), so a route ruling ("B+C adopted, approval PENDING") is
+      // visible in the gate output without being mistaken for an approval.
+      // This is message enrichment only: the branch still refuses, and an
+      // annotation can never establish the term.
+      const recorded = typeof diff.summary === 'string' && diff.summary.length > 0
+        ? `; recorded status: ${diff.summary}`
+        : ''
       findings.push({
         code: TERM_REFUSAL_CODES.semanticDifferencesResolved,
-        detail: `blocking difference ${diff.id} has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)`,
+        detail: `blocking difference ${diff.id} has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)${recorded}`,
       })
       established = false
       continue
