@@ -1005,3 +1005,14 @@ LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behav
 ### $ git diff --check
 ### exit=0
 
+### (post-commit artifact checks at ba955be0a)
+### $ node scripts/check-artifacts-committed.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2104 glue=113
+[check-artifacts-committed] OK: 2104 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
+### exit=0
+
+### $ node scripts/check-artifacts-at-head.mjs
+DSH-ARTIFACT-VERDICT script=check-artifacts-at-head subject=commit rev=HEAD verdict=ok compared=2104 drift=0
+[check-artifacts-at-head] HEAD carries its own build: the committed surface IS a fresh build of itself (2104 compared file(s)).
+### exit=0
+
