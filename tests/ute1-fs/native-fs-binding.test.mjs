@@ -303,12 +303,20 @@ test('wrong host generation is refused by name and never falls back to the legac
 })
 
 test('golden parity: the product module reproduces the 10 old-path vectors', async (t) => {
-  const { records, comparison, host } = await runProductGolden({ repoRoot: REPO_ROOT })
+  const { records, comparison, host, imagePending } = await runProductGolden({ repoRoot: REPO_ROOT })
   t.diagnostic(`golden host=${GENERATION} commit=${host.commit} commit-tree=${host.tree}`)
   for (const verdict of comparison.verdicts) {
     t.diagnostic(`golden ${verdict.id}: ${verdict.ok ? 'PASS' : `FAIL ${JSON.stringify(verdict.diffs)}`}`)
   }
   assert.equal(records.length, 10)
+  // The 7 image rows are EXCLUDED, not ignored: this module serves read/write/
+  // edit only until PR B2. If an image vector ever stops being declared pending,
+  // this assertion fails and forces the parity claim to grow with the module.
+  assert.deepEqual(
+    imagePending.map((vector) => vector.id),
+    ['FS-I0-route-c-gap', 'FS-I1-inlane-image', 'FS-I2-outside-image-denied', 'FS-I3-lane-bound-image', 'FS-I4-missing-image', 'FS-I5-route-unresolved', 'FS-I6-cancel-before-dispatch'],
+  )
+  assert.ok(imagePending.every((vector) => vector.newPathPending === true), 'excluded image vectors must still be declared new-path-pending')
   assert.deepEqual(comparison.missingObserved, [])
   assert.deepEqual(comparison.missingGolden, [])
   assert.deepEqual(comparison.failures, [], `golden vectors diverged: ${JSON.stringify(comparison.failures, null, 2)}`)

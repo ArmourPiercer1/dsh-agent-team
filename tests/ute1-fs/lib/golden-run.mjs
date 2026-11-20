@@ -109,8 +109,19 @@ async function runVector(vector, host) {
 export async function runProductGolden({ repoRoot, only }) {
   const host = await loadNextHostSurface(repoRoot)
   const golden = parseGolden(readFileSync(GOLDEN_PATH, 'utf8'))
-  const vectors = only === undefined ? CORPUS : CORPUS.filter((vector) => only.includes(vector.id))
+  // UTE-3 B1 added 7 `read_image` baselines to the SHARED corpus and golden.
+  // This product module implements the read/write/edit members; image support
+  // is PR B2's scope. The module therefore runs and is graded against the 10
+  // vectors it claims, and the 7 image rows are returned as an EXPLICIT
+  // excluded set (asserted by the suite) rather than being silently dropped or
+  // compared against a binding that cannot serve them.
+  const imagePending = CORPUS.filter((vector) => vector.entry === 'read_image')
+  const vectors = only === undefined
+    ? CORPUS.filter((vector) => vector.entry !== 'read_image')
+    : CORPUS.filter((vector) => only.includes(vector.id))
   const records = []
   for (const vector of vectors) records.push(await runVector(vector, host))
-  return { records, comparison: compareAll(golden, records), host, golden }
+  const ranIds = new Set(vectors.map((vector) => vector.id))
+  const applicableGolden = golden.filter((row) => ranIds.has(row.id))
+  return { records, comparison: compareAll(applicableGolden, records), host, golden, imagePending }
 }
