@@ -5,7 +5,14 @@
 UTE-1 FS native binding → UTE-2 execution settlement → UTE-3 per-family
 migration → UTE-4 old implementation retirement).
 **Branch:** `task/ute0-contract-20261120` (one branch, one writer).
-**Base:** `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892`.
+**Base:** `origin/master` = `ef7e3af0088bf3af8fc765ce27951f9dbad92892` (revision 1);
+revision 2 rebases the contract on `06de9751a` after #793/#794 merged.
+**Revision 2 (2026-11-20, after the external review in `docs/reviews/20261120-1700.txt`):**
+the settlement section now separates the durable store from the frozen writer
+adapter and fixes the S1/S2 ordering claim; the retirement section now derives the
+retirement unit from the reviewed family census, grades per-member coverage from
+the measured artifacts, binds approvals to a commit reference, and licenses
+deletion through a required CI leg. The review's scope ruling is recorded in §2.4.
 **Deliverable:** this memo + `scripts/ute-retirement-gate.mjs` (and its test
 suite) + `dev/agent-workflow/ledgers/ute-retirement.json` + one evidence
 directory + an additive census-lane argv wiring. See §7.
@@ -44,8 +51,8 @@ never presented as a decision, and a measurement is never presented as a policy.
 |---|---|---|
 | F1 | The **single tool definition authority**: who owns a tool's name/schema/description today, and what the new path must consume instead of redefining | [`CONTRACT.md`](./CONTRACT.md) §1 |
 | F2 | The **execution boundary**: where admission ends and execution begins, and what the new binding may and may not decide | [`CONTRACT.md`](./CONTRACT.md) §2 |
-| F3 | The **settlement writer contract** as an interface (one canonical fact per physical execution; `UNKNOWN` first-class; no second Grant authority) — the interface UTE-2 implements | [`CONTRACT.md`](./CONTRACT.md) §3 |
-| F4 | **Per-family retirement** as the owner's four-term predicate, with the evidence gate that proves each term and the named refusal codes | [`RETIREMENT.md`](./RETIREMENT.md) §1–§3, §6 |
+| F3 | The **settlement contract**: the frozen `ExecutionSettlementWriter` adapter over a durable `ExecutionSettlementStore`, the durable-intent-before-dispatch ordering that makes S1 true, the single-writer/fsync premise, and the S1/S2 split (one canonical fact per physical execution; `UNKNOWN` first-class; no second Grant authority) | [`CONTRACT.md`](./CONTRACT.md) §3 |
+| F4 | **Per-family retirement** as the owner's four-term predicate, with the retirement **unit** derived from the reviewed family census, per-member coverage graded from the measured artifacts, the evidence gate that proves each term, and the named refusal codes | [`RETIREMENT.md`](./RETIREMENT.md) §1–§3, §5, §6 |
 | F5 | The two **currently blocking semantic differences** carried forward, and the compatibility-interface question that must be owner-approved before switching | [`RETIREMENT.md`](./RETIREMENT.md) §4 |
 | F6 | **Non-goals** (no host upgrade, no Authority change, no ControlService rewrite, no fork) and the governance change a fork would require | [`CONTRACT.md`](./CONTRACT.md) §6, this file §5 |
 
@@ -78,6 +85,9 @@ proposal?". Nothing below is presented as decided unless it says so.
 | M6 | The rc.5 `tool-fs` `mapError` dereferences `policy.mode` when it sees `FS_SANDBOX_DENIED`; a lane-only provider raising that code crashes the write tool. | `[MEASURED]` | `tests/ute-g1-fs/golden/SEMANTIC-DIFFERENCES.md` (entry 1) and `tests/ute-g1-fs/lib/semantic-differences.mjs`, both asserted by `tests/ute-g1-fs/lane-suite.test.mjs` |
 | M7 | The FS prototype's measured record is 10/10 vectors green on the pinned next host, with 4/4 negative controls green — **and** both semantic differences printed as `blocking=yes` on every run. | `[MEASURED]` | `dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt`, `.../negative-controls.txt` |
 | M8 | The FS prototype does **not** prove read confinement; the witness is snapshot-based and a successful `read()` leaves no detectable change. | `[MEASURED]` / owner-vetoed claim | `tests/ute-g1-fs/README.md` §7.1; `ute-prep-20261116/04-FIRST-SLICES-G0-G1.md` §2 G1-S1 |
+| M9 | The FS family is **one indivisible four-tool assembly**: `claims` returns `read`, `write`, `edit`, `read_image`, one Registry candidate carries all four rows, and a partial mount is refused `PLANE_FS_FAMILY_INCOMPLETE`. | `[MEASURED]` | `packages/tools/families/fs.mjs` (`claims`, `build` refusal) |
+| M10 | A reviewed per-family member census already exists and is gated (unbooked/vanished family = red): `familyId` → `lane` + `nativeNames`. | `[MEASURED]` | `dev/agent-workflow/ledgers/arc-a-family-census.json`; `packages/testkit/test/arc-a-fitness/scan.mjs`; `scripts/eb3-family-definitions.mjs` |
+| M11 | The FS baseline corpus has **10 vectors whose `entry` column is `write`/`read`/`edit` only** — there is no `read_image` vector, so the measured evidence covers three of the four members. | `[MEASURED]` | `tests/ute-g1-fs/golden/old-path.tsv`; `dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt` |
 
 ### 2.3 Proposals this memo makes (binding only where §3/§4 say so)
 
@@ -89,6 +99,31 @@ proposal?". Nothing below is presented as decided unless it says so.
 | P4 | An approval of a retirement-blocking semantic difference is signed by the **owner** and recorded as a committed, dated approval file naming the approver; the Integration Owner may transcribe but may not grant it. | `[PROPOSED-BY-MEMO]` | owner confirms the signature convention; the *requirement* of approval is already D3 |
 | P5 | `SemanticDifferencesResolved` is derived from the difference list (every `blocking:true` difference needs an approval), never asserted as a bare boolean. | `[PROPOSED-BY-MEMO]` | this memo's gate implements it today; changing the derivation is a contract change |
 | P6 | A per-family retirement ledger plus the machine gate `scripts/ute-retirement-gate.mjs` is the only route to UTE-4; the gate refuses a row whose evidence is untracked or does not state the claimed verdict. | `[PROPOSED-BY-MEMO]` | this PR; the gate is additive and gates nothing else |
+| P7 | The retirement **unit** is derived from the reviewed census (`unit.familyId` → `nativeNames`), never from the ledger; an under- or over-claimed unit is refused, and splitting a family requires runtime proof plus a census booking. | `[PROPOSED-BY-MEMO]` | revision 2 (review finding 1); changing the derivation is a contract change |
+| P8 | Coverage is derived from the measured artifacts: a baseline TSV `entry` column per member, the new path's `NEW-PATH-VECTOR <id> PASS` for every baseline vector, and one `NC-MEMBER <member>` control line per covered member. A member without evidence is refused, not absorbed. | `[PROPOSED-BY-MEMO]` | revision 2 (review finding 1) |
+| P9 | An owner approval is **reference-bound** (`PR #<n> @ <40-hex>`), and the gate verifies the commit exists and is an ancestor of HEAD. The gate does not prove entitlement — the protected branch and review record do; that limit is written down, not hidden. | `[PROPOSED-BY-MEMO]` | revision 2 (review finding 4) |
+| P10 | UTE-4 deletion is licensed by required CI, not by a developer running a script: `scripts/eb3-family-definitions.mjs` refuses `DEF_RETIREMENT_UNLICENSED` when a declared `oldPath.files` entry is gone and the row is not allowed. | `[PROPOSED-BY-MEMO]` | revision 2 (review finding 4) |
+
+### 2.4 Round scope after the 2026-11-20T17:00 review (recorded, not inferred)
+
+`[PROPOSED-BY-MEMO]`, adopted from the review the owner asked the round to follow
+(`docs/reviews/20261120-1700.txt` §4) — the owner's instruction was "调整开发" per
+that review, and this table is the scope it implies. It is not a new owner ruling
+on architecture; it is the current work fence.
+
+| work | status | why |
+|---|---|---|
+| UTE-1 FS binding product module + real assembly | **continue, stay isolated** | `packages/tools` module, not consumed by the shipped assembly |
+| UTE-2 settlement store + writer adapter | **continue, stay unwired** | no dispatch wiring, no S1 claim, until the adapter/ordering/single-writer items are measured |
+| UTE-3 per-family inventory, golden baselines | **allowed** | read-only research and baseline building do not move production authority |
+| UTE-3 production path wiring / replacement | **paused** | blocked on: complete retirement unit, settlement ordering, Scope drain semantics, bound approvals |
+| UTE-4 old ToolPlane / Family Body deletion | **not permitted** | the gate cannot yet prove a *whole* family's migration, and deletion is now CI-licensed (P10) |
+| G2/G3 isolated PoCs for other families | **allowed** | independent of the four contract items; must not change the production execution path |
+
+`[PROPOSED-BY-MEMO]` The four items that must close before the fence lifts:
+FS department unit coverage (`read_image` included), the SettlementStore/Writer
+adapter split with the durable-intent ordering and the single-writer premise, the
+Binding's in-flight/drain/release semantics, and deletion/approval enforcement.
 
 ## 3. Relation to PR #765 (draft, owner's to merge)
 
@@ -146,6 +181,14 @@ Integration Owner files. This memo proposes no change to them.
 4. `[UNKNOWN]` Whether any *other* family's old path has a definition channel
    beyond the FS/Web/PROCESS families measured for M2. UTE-3 must measure per
    family; this memo does not extrapolate.
+6. `[UNKNOWN]` The complete `oldPath.files` inventory for each family beyond FS.
+   Revision 2 declares the FS set it can prove; an undeclared old-path file is a
+   gap to close in UTE-3, not a pass.
+7. `[UNKNOWN]` Whether a later deployment needs multi-process settlement. The
+   contract's single-writer premise is a G1 deployment assumption, enforced by a
+   lock, not a general claim about the file format.
+8. `[UNKNOWN]` Whether rc.5 exposes a public awaitable seam for S2. Nothing in
+   this contract assumes it does; the answer may be `CORE_SEAM_BLOCKER`.
 5. `[UNKNOWN]` Live-boot behaviour of the FS prototype inside a real agent
    composition (G1-S1 §2.1 in #765). The contract does not require it for
    *contract* purposes, and no safety verdict may cite the C1 record as if it
@@ -167,6 +210,16 @@ manifest leg must byte-match):
 - `.github/workflows/census-runtime.yml` — one token on the existing "next host
   lane" `run:` argv.
 - `dev/ci/eb3-ci-manifest.json` — the same token in the mirrored `check[]`.
+
+Revision 2 (same PR branch, after the review) additionally changes:
+
+- `CONTRACT.md` §3 (store/adapter split, durable-intent ordering, S1/S2, W9–W12).
+- `RETIREMENT.md` §1.1, §2 (unit coverage), §3 (reference-bound approval), §5–§7.
+- `scripts/ute-retirement-gate.mjs` + its test suite (unit derivation, coverage,
+  approval reference, old-path presence).
+- `scripts/eb3-family-definitions.mjs` + `scripts/eb3-ci-negative-controls.mjs`
+  (the required-CI deletion licence, with positive and negative arms).
+- `dev/agent-workflow/ledgers/ute-retirement.json` (fs unit + oldPath).
 
 **Not touched:** `AGENTS.md`, `docs/ROUTER_RULES.md`, `docs/TEST_METHODS.md`,
 any governance document, any active plan, `dev/engineering/**`, `packages/**`,
