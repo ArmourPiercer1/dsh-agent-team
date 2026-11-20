@@ -1775,7 +1775,7 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
     if (argv.length === 0) return { error: `ci-census leg ${JSON.stringify(needle)} declares no argv` }
     return { leg, argv, re: new RegExp(`^[ \\t]*run: ${escapeRe(argv.join(' '))}$`, 'm') }
   }
-  const NEEDLES = ['next host materialize', 'next host assets', 'next host lane']
+  const NEEDLES = ['next host materialize', 'next host assets', 'next host lane', 'UTE G1 FS binding']
   const derived = new Map()
   for (const needle of NEEDLES) {
     const declaration = legArgv(manifest, needle)
@@ -1809,6 +1809,7 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
   const MATERIALIZE = `        run: ${derived.get('next host materialize').argv.join(' ')}\n`
   const ASSETS = `        run: ${derived.get('next host assets').argv.join(' ')}\n`
   const LANE = `        run: ${derived.get('next host lane').argv.join(' ')}\n`
+  const UTE_LANE = `        run: ${derived.get('UTE G1 FS binding').argv.join(' ')}\n`
 
   /** Stage one workflow edit; return the findings it produced (never write to disk). */
   const stage = (name, edit) => {
@@ -1819,11 +1820,11 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
     return { name, findings: checkRequiredJobs({ files: m }).findings }
   }
   /** Stage one MANIFEST edit; the workflow bytes stay honest (never write to disk). */
-  const stageManifest = (name, mutate) => {
+  const stageManifest = (needle, name, mutate) => {
     const m = structuredClone(manifest)
     const scope = m.layers.find((l) => l.id === 'ci-census')
-    const leg = (scope.legs ?? []).find((l) => String(l.id).includes('next host lane'))
-    if (leg === undefined) return { name, error: 'the clone lost the next host lane leg' }
+    const leg = (scope.legs ?? []).find((l) => String(l.id).includes(needle))
+    if (leg === undefined) return { name, error: `the clone lost the ${needle} leg` }
     mutate(leg)
     return { name, findings: checkRequiredJobs({ files: wf, manifest: m }).findings }
   }
@@ -1860,6 +1861,16 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
     //     argv is no longer the declared one — a set-equality check would miss it
     { name: 'lane-argv-reordered', anyCodes: ARGV_CODES, needle: 'boot.test.mjs',
       edit: (t) => t.replace(LANE, LANE.replace('tests/next-host/boot.test.mjs tests/next-host/native-api.test.mjs', 'tests/next-host/native-api.test.mjs tests/next-host/boot.test.mjs')) },
+    // (9) the UTE-1 leg loses its suite: the remaining argv is still a valid `node --test`
+    //     invocation, so only the declared-token law can see the hole
+    { name: 'ute-lane-suite-dropped', code: 'CI_LAYER_LEG_ARGUMENT_MISSING', needle: 'tests/ute1-fs/native-fs-binding.test.mjs',
+      edit: (t) => t.replace(' tests/ute1-fs/native-fs-binding.test.mjs', '') },
+    // (10) the UTE-1 leg replaced by an echo of its own words
+    { name: 'ute-lane-echo', code: 'CI_LAYER_LEG_UNPROVEN', needle: '--test-force-exit',
+      edit: (t) => t.replace(UTE_LANE, `        run: echo ${UTE_LANE.trim().slice('run: '.length)}\n`) },
+    // (11) the UTE-1 leg's failure is swallowed
+    { name: 'ute-lane-continue-on-error', code: 'CI_LAYER_CONTINUE_ON_ERROR', needle: 'UTE G1',
+      edit: (t) => t.replace(UTE_LANE, `        continue-on-error: true\n${UTE_LANE}`) },
   ]
   for (const arm of arms) {
     const staged = stage(arm.name, arm.edit)
@@ -1875,12 +1886,23 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
   //     runs more argv than declared. The workflow bytes stay honest — this grades
   //     the other side of the byte-identical law, which no workflow mutation reaches.
   {
-    const staged = stageManifest('manifest-check-dropped', (leg) => {
+    const staged = stageManifest('next host lane', 'manifest-check-dropped', (leg) => {
       leg.check = leg.check.filter((file) => !file.includes('provisioning-controls.test.mjs'))
     })
     if (staged.error !== undefined) misses.push(`manifest-check-dropped: ${staged.error}`)
     else if (!fired(staged.findings, 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'provisioning-controls.test.mjs')) {
       misses.push(`manifest-check-dropped: CI_LAYER_LEG_EXTRA_ARGUMENT not raised naming "provisioning-controls.test.mjs" (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
+    }
+  }
+  // (c) the MANIFEST drops the UTE-1 leg's suite while the workflow still executes it:
+  //     the same byte-identical law, measured on the post-build leg from the other side.
+  {
+    const staged = stageManifest('UTE G1 FS binding', 'ute-manifest-suite-dropped', (leg) => {
+      leg.check = []
+    })
+    if (staged.error !== undefined) misses.push(`ute-manifest-suite-dropped: ${staged.error}`)
+    else if (!fired(staged.findings, 'CI_LAYER_LEG_EXTRA_ARGUMENT', 'tests/ute1-fs/native-fs-binding.test.mjs')) {
+      misses.push(`ute-manifest-suite-dropped: CI_LAYER_LEG_EXTRA_ARGUMENT not raised naming "tests/ute1-fs/native-fs-binding.test.mjs" (got ${staged.findings.map((f) => f.code).join(',') || 'none'})`)
     }
   }
   // derivation vacuity: a leg that does not exist must produce an ERROR, not an
@@ -1894,7 +1916,7 @@ control('C-NH1 next-host-lane-is-collected-and-graded', () => {
   return {
     ok: misses.length === 0,
     detail: misses.length === 0
-      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.anyCodes?.join('|') ?? a.code}`).join(', ')}, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held`
+      ? `honest census workflow passes; ${arms.map((a) => `${a.name}=>${a.anyCodes?.join('|') ?? a.code}`).join(', ')}, manifest-check-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, ute-manifest-suite-dropped=>CI_LAYER_LEG_EXTRA_ARGUMENT, derivation-vacuity=>RED each detected/held`
       : misses.join(' ;; '),
   }
 })

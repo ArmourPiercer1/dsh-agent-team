@@ -1,0 +1,5 @@
+# The EXACT command the census runs for this package: pnpm --filter @dsh-agent-team/tools run build
+# (= tsc -p packages/tools/tsconfig.build.json; packages/tools/tsconfig.json is NOT the production face)
+$ pnpm --filter @dsh-agent-team/tools run build
+$ tsc -p tsconfig.build.json
+exit=0

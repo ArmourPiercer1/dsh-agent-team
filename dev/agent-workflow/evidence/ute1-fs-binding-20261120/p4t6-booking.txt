@@ -1,0 +1,23 @@
+# p4t6 Team-SessionEvent scanner ledger — the UTE1FSBINDING tie, MEASURED
+# law: scanner total === P4T6_BASE(983) + Σ(paths of every booking not countedInBase)
+
+## 1. WITHOUT the booking (the tree as it was at 17a71f7e7): the red the coordinator measured
+scanner files 1520
+has native-fs-binding true
+stripped-ledger derives 983 + 536 = 1519
+violation [{"kind":"total","detail":"scanner counts 1520, ledger derives 983 + 536 = 1519"}]
+
+## 2. WITH packages/testkit/test/p4t6-bookings/ute1fsbinding.json (the booking added this round)
+booking violations 0
+scanner files 1520 expected 1520 ledger violations 0
+booked lane UTE1FSBINDING paths ["packages/tools/src/native-fs-binding.ts"] delta {"from":1519,"to":1520}
+
+## 3. the spec the hosted census runs
+$ cd packages/testkit && ../../node_modules/.bin/vitest run test/p4t6-session-event-scan.test.ts
+
+ ✓ test/p4t6-session-event-scan.test.ts (20 tests) 8ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  17:41:25
+   Duration  450ms (transform 62ms, setup 0ms, import 355ms, tests 8ms, environment 0ms)

@@ -9106,6 +9106,107 @@ deferral 均未触碰；#760/#763 按设计不在本 PR。证据全用 `.txt/.md
 
 **UNKNOWN（明写，不猜）**：hosted L2 / `ci-census` 的 next-host lane 本轮**未执行**（本机无 rc.5 provisioning 运行；套件本身 host-free 已在本地实测），该 lane 的首次 hosted 结果才是下一条证据；`ci-product` legs 未在本机跑（需组合宿主）；结算写入者接口是**提案**、未实现、无事实经它写入（S1/S2 均不声称）；两条 FS 语义差异仍未关闭，接口选择属 owner；`--max-uncollected 41` 是棘轮不是成绩。**未合并、未 ready、未 push master/stable、未 force-push。**
 
+## 2026-11-20 — UTE-1 FS 原生 Binding：把 G1-S1 原型变成产品模块，并在 rc.5 真实装配上判分
+
+**背景**：UTE G1「Native Execution Consolidation」的第一个工作包「完善 FS 原生 Binding」。G1-S1（PR #792）只在 legacy governed route（`0.2.0-rc.2 @ 639ed01539`）上证明了 lane 判决，原型住在 `tests/`；UTE-1 要把判决本体搬进产品模块，并在 pinned rc.5 宿主（`0.2.2-rc.5 @ 9c2670d3bce5275e0d1610272958121af87787bb`）的**真实 Team-Agent 装配**里判分，同时让旧路径逐字节不变。CORE PATCH BUDGET = 0。
+
+**分支**：`task/ute1-fs-binding-20261120`（worktree `.worktrees/ute1-fs-binding-20261120`，base `origin/master ef7e3af00`）。memo = `docs/plans/memo/ute1-fs-binding-20261120/README.md`，证据 = `dev/agent-workflow/evidence/ute1-fs-binding-20261120/`。
+
+**搬了什么**：`packages/tools/src/native-fs-binding.ts`（新，零 import）是一个**继承宿主自己的 provider** 的类，只在每个带 target 的操作前加一个判决（宿主 `processPath` → lane 判定 → `super`）。它不做授权/审批判决：lane 是装配选定的 Service 级围栏，Alpha.4 kernel 与 P1 `EffectiveIo` 仍是唯一权限决定者。它同时拥有**生命周期**：mount → use → dispose（一次），dispose 单调幂等，之后每个带 target 的调用以具名 `scope-disposed`（`FS_PERMISSION_DENIED`）拒绝，绝不静默落到 provider、绝不崩；mount 先 pin 宿主 generation，不匹配在创建 scope **之前**抛 `FS_BINDING_HOST_GENERATION_MISMATCH`（点名两代），拒绝路径里没有 legacy fallback。
+
+**装配路径（真的跑了产品路径，不是模拟）**：`tests/ute1-fs/lib/assembly.mjs` 在 rc.5 树上建真 `Context` → `mountAgentLoopTestDependencies` → observation policy + preset `host.toolFs` → `mountAgentLoopTestHarness` → 真 agent；在 **`agent.ctx`** 上 `mountMemberA5sfRealm({…, providerClass: <模块类>})`（realm 用产品 P1 guard `createConfinedFileSystemClass` 包住，guard 天花板保持 WIDE，所以拒绝可证是 **lane** 的）再 `attachA5sfNativeToolModules`；dispatch 走宿主自己的 `ToolsService`/ToolExecutor。实测：in-lane `write` 落盘；out-of-lane `write` `FS_PERMISSION_DENIED` / 文案含 `lane-write` / 磁盘无文件；fact 带本 binding 的 id 与 pinned generation；`members[0].fs instanceof scope.providerClass`；attach record 非空。**装配路径对照**：同一 lane、同一调用、`withProviderClass:false` ⇒ 越界写**成功落盘**且零 fact——证明拒绝臂量到的是 binding 而不是 harness。
+
+**scope 不变量**（host-free 七臂 + 装配内生命周期）：generation pin 先于 scope；每 scope 自己的 lane；dispose 单调幂等（首因保留）；use-after-dispose 具名拒绝（工具路径 + 持有的 provider 引用都测）；双 scope 不共享 lane；provider 替换不复活旧 lane；teardown 顺序 scope disposed → tool fiber → provider fiber。
+
+**变异→红 6/6**（文本变异在 `.artifacts/tmp/ute1-fs-mutations/`，每个只改一处、导入副本、断言预期臂 RED）：删 dispose guard→a3；lane 全放行→a2；dispose 不关 scope→a4；跨 scope 共享 lane→a5；删 generation pin→a7；保留旧 lane→a6。shipped 模块 7/7 臂绿。golden 平价：产品模块用同一 corpus/oracle/comparison 复现 G1-S1 的 **10/10** 旧路径 golden 向量。
+
+**披露（不藏）**：① 唯一改动的既有 `packages/` 产品文件是 `packages/tools/src/index.ts` 的**追加**导出（33 行，无删行）——这是要求的 public export，零行为变化，全仓无 shipped assembly import 它（套件静态扫描断言 referrer 只有 barrel 与模块本身）。② 唯一改动的既有测试 pin 是 `packages/tools/test/p6t6-bypass-scan.test.ts`：`7 → 8` 个源文件，让边界扫描**覆盖**新模块（三条规则命中 0）——这是把封闭集合扩大，不是削弱。③ 两条 `blocking=yes` 语义差异**原样carried forward 未解决**：`lane-refusal-code`（`FS_SANDBOX_DENIED` vs `FS_PERMISSION_DENIED`，因 rc.5 tool-fs 在 `sandbox.ts:139-143` 解引用 `policy.mode`）与 `refusal-observation-shape`（散文 vs typed FsError code）；套件在这两行消失时变红。④ 能力边界：**不主张读围栏**；delete/move 无旧路径向量；streaming / byte-range / `read_image` 本套件未跑。
+
+**门禁（实测，逐字）**：新套件 **9/9**；变异 transcript `GREEN mutations=6 arms=7`；`test-catalog --max-uncollected 41 --max-excluded 7` ⇒ `tests=879`、`DISCOVERED_AND_COLLECTED 824`、`EXCLUDED 14`、`UNCOLLECTED 41`、`refused=0 findings=0`，新套件 `DISCOVERED_AND_COLLECTED`；`test-catalog.test.mjs` **28/28**；`dispatch-tests --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`；`eb3-ci-negative-controls` **33/33**（含 C-NH1 的 byte-identical lane argv）；`docs-sync --check` findings=0 blocking=0；`lint-identities --diff <a4 baseline>` 76 distinct、new 0 resolved 0；`tsc --noEmit -p packages/tools` exit 0；`packages/tools` vitest **179/179**（含扩大的 bypass scan）；`git diff --check` 0；legacy FS 套件（`a5sf-fs-contract` + `a5sf-pd17-fs-read-axis`）在 pristine `origin/master` worktree 与本分支都是 **35 tests / 34 pass / 0 fail / 1 skip**，判决集合 `identical=True`；census 人口 **712 files / 12 roots** 不变；`tests/paths.mjs` diff 0 行；两棵宿主树 porcelain 均 0（legacy `639ed01539…`、next `9c2670d3…`）；workflow `run:` 与 manifest `cmd[]+check[]` **byte-identical: true**。
+
+**UNKNOWN（明写）**：fresh checkout 没有 gitignored 的 legacy 宿主树，before/after 比较用的是同 pin（`639ed01539…`，porcelain 空）兄弟 worktree 的**拷贝**，不是本环境重新 provision；装配臂未用 `unshare`/内核命名空间；完整 census leg（`ci-pr-gate.mjs`）本机未跑，hosted CI 是否绿由 draft PR 的 L2 度量；本机 `pnpm install` 因 store 在工作区外无法执行（`[ERR_SQLITE_ERROR]`），`node_modules` 来自兄弟 worktree 拷贝；hosted runner 对 GitHub/npm 的可达性未测。
+
+**未合并、未 push master**；分支推送到 `origin/task/ute1-fs-binding-20261120` 并开 **draft** PR（不标 ready，因为两条 blocking 差异未解决、且 UTE-1 只是 G1 的一个工作包）。
+
+## 2026-11-20（第二次）— UTE-1 CI 接线修正：assembly 臂必须跑在 `Build this repo` 之后
+
+**问题（hosted `ci-census` on `2ec811f6f`，7m45s 红）**：UTE-1 的套件被挂进了 **next-host lane** 步骤，而该步骤在 `Build this repo` **之前**。runner 的 fresh job 在 build 之前没有任何 repo `node_modules`（只有两台宿主），而套件的三个 assembly 测试要 mount 产品 route-C row（`packages/runtime/src/plugin/live/a5sf-realm-row.mjs`），该 row import 本仓自己的包，于是：
+
+```
+✖ assembly: a real Member on rc.5 writes inside the lane and is refused outside it
+  Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-scope'
+  imported from …/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+ℹ fail 3
+```
+
+host-free 臂在该步骤里是绿的；本机此前没暴露是因为 `node_modules` 来自兄弟 worktree 拷贝。**这是接线错误，不是代码缺陷。**
+
+**修法（不削弱任何东西）**：① 把套件从 next-host lane argv 移出（`f10-contract-identity` 与 `ute-retirement-gate` 留在原处，它们 host-free 且在日志里是绿的）；② 在 `Build this repo (packages + composition)` 之后新增步骤 `"UTE G1 — FS binding: product module + real assembly (pinned rc.5 host)"`（`timeout-minutes: 10`），`run:` 只跑本套件；③ manifest 的 `ci-census` 层新增匹配 leg `UTE G1 FS binding product lane (node:test: the product module + a REAL assembly on the pinned rc.5 host, AFTER the repo build)`，`cmd` = `node --test --test-force-exit --test-timeout=480000 --test-reporter=spec`，`check` = 套件路径，`why` 写明“为什么必须在 build 之后”和该 leg 证什么。**`480000` 是刻意选的唯一值**：初版用 `600000` 与 B4/1 的 cmd 完全相同，`eb3-ci-required` 以 `CI_LAYER_LEG_ENV_MISSING` 点名两条 invocation 的 env 不一致（实测后改值，而不是加豁免）；整个 trailing-argv 读取器按 cmd 归属 leg，唯一 timeout 使该步骤可归属。
+
+**负控跟着扩（a leg nobody grades is a leg nobody grades）**：`scripts/eb3-ci-negative-controls.mjs` 的 `C-NH1` 原本只派生 materialize/assets/lane 三条 leg；本轮把 `UTE G1 FS binding` 加入派生集（byte-identical 诚实态检查），并新增三个 workflow 变异 + 一个 manifest 变异：`ute-lane-suite-dropped`→`CI_LAYER_LEG_ARGUMENT_MISSING`、`ute-lane-echo`→`CI_LAYER_LEG_UNPROVEN`、`ute-lane-continue-on-error`→`CI_LAYER_CONTINUE_ON_ERROR`、`ute-manifest-suite-dropped`→`CI_LAYER_LEG_EXTRA_ARGUMENT`；C-NH1 通过，全套仍 **33/33**。
+
+**实测复现（不是假设）**：在 `/tmp` 造一个**仓库外**的独立 checkout（`git archive HEAD` + 真实拷贝 rc.5 宿主树，避免 Node 向上解析到父 checkout 的 `node_modules`），`node_modules` 数为 0：`MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-scope'`，套件 `tests 9 / pass 6 / fail 3`，三个 assembly 测试以与 hosted 完全相同的 `ERR_MODULE_NOT_FOUND`（来自 `a5sf-realm-row.mjs`）失败；同一棵树补上已 build 的 `node_modules` 后 **9/9 pass**。transcript = `dev/agent-workflow/evidence/ute1-fs-binding-20261120/prebuild-failure.txt` / `postbuild-pass.txt`。
+
+**门禁（本机实测，全部 exit 0）**：新套件 9/9；`test-catalog --max-uncollected 41 --max-excluded 7` ⇒ `tests=881`、`DISCOVERED_AND_COLLECTED 826`、`EXCLUDED 14`、`UNCOLLECTED 41`、`refused=0 findings=0`；`test-catalog.test.mjs` 28/28；`dispatch-tests --check PASS legs=18 bad=0`；`eb3-ci-required pass workflows=10 findings=0`（含新 leg）；`eb3-ci-required.test.mjs` 全绿；`eb3-ci-negative-controls` 33/33（C-NH1 已覆盖新 leg）；`docs-sync --check` docs=177 plans=136 findings=0 blocking=0；`lint-identities --diff <a4 baseline>` 76 distinct、new 0 resolved 0；`tsc --noEmit -p packages/tools` 0；`packages/tools` vitest 179/179；`git diff --check` 0；census 仍 **712 files / 12 roots**；两棵宿主树 porcelain 0；两条 census leg 的 `run:` 与 manifest `cmd[]+check[]` 均 **byte-identical: true**。
+
+**UNKNOWN**：hosted runner 是否在 build 之后能解析全部 repo 包由下一次 L2 实测（本机只能复现“无 node_modules 必红”与“有 node_modules 必绿”两端）；`/tmp` 16G tmpfs 的复现树已清理，不留远端副作用。draft PR #796 保持 draft；PR 正文更新为推送后的 40-hex head。
+
+## 2026-11-20（第三次）— UTE-1 第二次 hosted 失败：`tsc --noEmit` 不是 build 检查（`AbortSignal` TS2304）
+
+**问题（hosted `Build this repo`，在套件步骤之前就红）**：
+
+```
+[error]packages/tools build: src/native-fs-binding.ts(519,54): error TS2304: Cannot find name 'AbortSignal'.
+… (539, 540, 551, 562, 572, 583 — seven sites)
+packages/tools build: Failed
+[ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL] @dsh-agent-team/tools@0.1.6 build: `tsc -p tsconfig.build.json`
+```
+
+模块把七个参数写成了**环境全局 DOM 类型** `AbortSignal`。我上一轮本地跑的是 `tsc --noEmit -p packages/tools/tsconfig.json`：该 config 还 include `test` + `vitest.config.ts`，其类型图把 **DOM lib** 拉进来，所以全局存在；而 census 用 `tsconfig.build.json`，只 include `src`、继承 `lib: ["ES2022"]`，没有 DOM/ambient node types，同一份代码在那里是 `TS2304`。**两个不同的 program，其中只有一个是会 ship 的。**
+
+本机对 BEFORE 模块复现（`evidence/build-config-before-after.txt`）：`tsc -p tsconfig.build.json --noEmit` → TS2304 ×21、exit 2；`tsc -p tsconfig.json --noEmit` → 无输出、exit 0。
+
+**修法：改模块，不改共享 build config**（为容纳一个全局而放宽整包编译面是本 PR 不需要的 blast radius）。模块自声明结构化类型：
+
+```ts
+export interface AbortSignalLike {
+  readonly aborted: boolean
+  readonly reason?: unknown
+}
+```
+
+全部参数改用它；真实 `AbortController.signal` 结构上满足它，宿主调用点不变；绑定只把值转发给宿主 provider、从不订阅，所以不建模 `addEventListener`（那会是 DOM 签名的第二份弱副本且无消费者）。barrel 也导出该 type（additive）。用 census 的**精确命令**验证：`pnpm --filter @dsh-agent-team/tools run build` → `tsc -p tsconfig.build.json`、exit 0；`pnpm run build`（整个 workspace）→ exit 0。
+
+新增 host-free 回归测试 *"product module: names no ambient global the PRODUCTION compile face does not provide"*：去注释后断言无裸 `AbortSignal`、断言 `AbortSignalLike` 已声明、断言 `tsconfig.build.json` 仍排除 `test` 图（正是隐藏 ambient 全局的那张图）。它只是 tripwire；真正的检查仍是 CI 跑的 build config，证据在 `evidence/build-config*.txt`。套件因此 9→**10** 个测试，全绿；prebuild 复现相应变为 7 pass / 3 fail（同三个 assembly 臂、同一 `ERR_MODULE_NOT_FOUND`）。
+
+**committed artefacts**：`packages/tools/dist/**` 被 gitignore、**未跟踪**（没有提交任何该目录文件）；但 workspace build 同时把各包产物镜像进**已跟踪**的 install surface `packages/runtime/dist/packages/<pkg>/…`，`check-artifacts-committed` 对本次给出 `verdict=stale drift=8`。因此 8 个产物文件（4 改：`index.{js,d.ts,js.map,d.ts.map}`；4 新：`native-fs-binding.{js,d.ts,js.map,d.ts.map}`）与源码**同一 commit** 提交，使 HEAD 重新成为 built tree。
+
+**教训（写进 memo §7b，防下一 lane 重犯）**：验证编译必须用**发布用的那个 tsconfig**；`tsc --noEmit` 若指向包含测试图的 config，它会把测试依赖引入的 lib 当成生产可用，从而放过真实 build 失败。本轮把 `pnpm --filter <pkg> run build` 与 `pnpm run build` 都纳入证据，并把"无 ambient 全局"钉成套件断言。
+
+**门禁**：见下一 commit 的 `evidence/gates.txt`（含 `pnpm ... run build` exit 0、`pnpm run build` exit 0、`check-artifacts-committed verdict=fresh`、`eb3-ci-required`、C-NH1/负控、catalog、dispatch、docs-sync、identities、vitest、diff-check）。lane argv / manifest / 新 leg **未改动**（scheduler 已确认该步骤存在、只因先前的 build 失败而跳过）。
+
+**UNKNOWN**：hosted 全量 build 之后的 suite 运行仍由 L2 实测；本机不能 `pnpm install`（store 在 workspace 外），build 半程已实测，install 半程未复现。
+
+## 2026-11-20（第四次）— UTE-1 生命周期补齐：dispose ≠ 排空（review 20261120-1700 §3.3）
+
+**发现（外审实测，不是观点）**：`native-fs-binding.ts` 只有 `open`/`disposed` 两态；`dispose()` 设 `disposed` 后释放 tool/Provider fiber，且**吞掉** fiber 释放异常仍返回"已 disposed"收据。一个已过准入、停在 `super.stat()` 等 await 的操作，可以在 `dispose()` 返回"已释放"之后继续落盘。三件事被混为一谈：**新操作被拒**（有效）、**在飞操作排空/终止**（未证明）、**资源释放确认**（无法表达）。
+
+**实现（改模块，不改上层）**：
+- 单调状态机 `active → draining → released | termination-unconfirmed`；
+- 在飞计数器：准入时（第一个 await 之前）`+1`，`finally` 无条件 `-1`（成功/抛错/准入后被拒都算）；`dispose()` 以 `drainTimeoutMs`（默认 5000，可 per-scope 覆盖）为界等待；
+- `active→draining` 立即拒绝新调用且名字不同：`scope-draining`（排空中）/ `scope-disposed`（已 released）/ `scope-termination-unconfirmed`（未确认终止）；
+- 排空完成才释放 tool fiber → provider fiber；释放任一步抛错 ⇒ `termination-unconfirmed` + `releaseErrors`，收据不声称 released；
+- 排空超时**不释放**：终止一个不肯排空的 provider 是 host/lifecycle owner 的决定，binding 不假装做过（header 写成责任边界合同）；
+- 收据字段彼此独立：`state / drained / newOperationsRefused / releaseConfirmed / refusalCode / reason / inFlightAtDispose / drainTimeoutMs / releaseErrors`；
+- 二次 dispose 幂等：首次收据被 memo，后续返回同一组终态事实（`changed:false`）；一旦 `termination-unconfirmed`，永不改报 `released`；
+- 生命周期拒绝**不写 lane fact**（没有准入判定被评估），fact 流保持"纯 lane 决策"；
+- `record(fact)` 文档明确为**纯诊断**、非 S1 持久化通路；套件钉死"抛错的 recorder 交付 0 条、不改结果、也不影响 binding 自己的事实缓冲"。
+
+**证据（真数）**：套件 **14/14**；host-free 臂 **12**（原 7 + 生命周期 5）；变异 **11**，每个新不变量都有能把它变红的变异：`MUTATION-BASELINE-VERDICT GREEN arms=12`、`MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12`；四个 race（A 排空等待 + 收据返回后按字节/文件集测无新效果；B 超时⇒unconfirmed 且事后不翻转；C draining/released 名字互斥、无 fact 无效果；D 幂等 + 抛错 recorder）。独立树复现：prebuild 11 pass / 3 fail（同三个 `ERR_MODULE_NOT_FOUND` assembly 臂），postbuild **14/14**。证据目录 `dev/agent-workflow/evidence/ute1-fs-binding-20261120/lifecycle/`（README + receipts + suite + mutation-transcript）。
+
+**边界（UNKNOWN 保留）**：`drained` 只覆盖 binding 准入的 promise 型操作；流（stream 迭代器交出后）、watch 注册、以及 binding 未准入的效果不在计数内——这正是"收据是 binding 的证据、不是 OS 效果没发生的证明"的含义。排空超时后的强制终止仍由 host/lifecycle owner 负责；本 PR 不实现进程级 kill。
+
+**其它**：`AbortSignalLike` 与 production-compile-face 回归测试**未动**；`pnpm run build` 重建的 tracked 安装面（`packages/runtime/dist/packages/tools/src/native-fs-binding.*` 4 个文件）随源码同 commit 提交，`DSH-ARTIFACT-VERDICT … verdict=ok`。lane argv / manifest / 新 leg 未改；hosted rc.5 leg 仍待协调者 L2 实测（套件继续跑在 build 之后的 census leg，无 pre-build 导入）。
 ## 2026-11-20 — UTE-0 rev2：退役单位由 census 派生 + 覆盖由实测产物派生 + 批准绑定提交 + 删除由必需 CI 发牌
 
 **背景**：owner 让本轮按外部审查（`docs/reviews/20261120-1700.txt`，已随本 PR tracked）调整开发。审查对 UTE-0/1/2 的四个高优先级发现，本条只处理**合同与机器门禁**这一半（UTE-1/UTE-2 的模块修复各在 #796/#795）：①FS 的退役单位是**不可拆的四工具装配**（`packages/tools/families/fs.mjs` 的 `claims` 返回 `read/write/edit/read_image`，部分装配直接 `PLANE_FS_FAMILY_INCOMPLETE`），而 10 条 golden vector 的 `entry` 只有 `write/read/edit`，`read_image` 从未被验证；原门禁的三项 `true` 只差一项 owner 批准就能放行整个 FS 家族。②S1/S2 的包含关系写错：S2（模型看到结果前持久化）**不**蕴含 S1（每次派发都有可查询事实），反例是"派发→产生副作用→SIGKILL→没有返回"，S2 的"返回前"从未被执行。③批准只要求记录里出现 `approval.by` 的名字，无法证明批准由有权者作出。④原门禁只在开发者主动运行时检查，删除旧路径不会触发它。

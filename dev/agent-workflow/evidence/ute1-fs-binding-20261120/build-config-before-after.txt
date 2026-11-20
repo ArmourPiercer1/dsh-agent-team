@@ -1,0 +1,30 @@
+# WHY THE EARLIER tsc --noEmit PASSED — the two commands are NOT the same check.
+# BEFORE = the module exactly as committed at HEAD (dfde5ceb), the tree the hosted build rejected.
+
+$ cd packages/tools && ../../node_modules/.bin/tsc -p tsconfig.build.json --noEmit   # THE PRODUCTION COMPILE FACE the census runs
+src/native-fs-binding.ts(136,34): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(137,48): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(138,38): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(139,40): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(140,38): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(141,59): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(142,37): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(143,68): error TS2304: Cannot find name 'AbortSignal'.
+src/native-fs-binding.ts(148,14): error TS2304: Cannot find name 'AbortSignal'.
+exit=2
+
+$ cd packages/tools && ../../node_modules/.bin/tsc -p tsconfig.json --noEmit             # the check I ran before: NO error
+
+exit=0
+
+# WHY: tsconfig.json INCLUDES test + vitest.config.ts; their type graph pulls the DOM lib in,
+# so the ambient AbortSignal exists there. tsconfig.build.json includes only src with
+# lib: ["ES2022"] — no DOM, no ambient node types — so the global is TS2304 in that config.
+
+# AFTER = the structural AbortSignalLike fix (no ambient global, no build-config change)
+$ cd packages/tools && ../../node_modules/.bin/tsc -p tsconfig.build.json --noEmit
+exit=0
+
+$ pnpm --filter @dsh-agent-team/tools run build
+$ tsc -p tsconfig.build.json
+exit=0

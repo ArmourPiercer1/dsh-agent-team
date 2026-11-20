@@ -1,0 +1,99 @@
+# The legacy FS suites were run on a PRISTINE origin/master worktree and on this branch.
+# Suites: tests/world-factory/a5sf-fs-contract.test.mjs and tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs
+# (the pair measured by PR #792's isolation.txt §6: 35 tests / 34 pass / 0 fail / 1 skip).
+
+BEFORE: .worktrees/ute1-baseline-20261120 — detached at ef7e3af0088bf3af8fc765ce27951f9dbad92892 (origin/master), no branch work.
+$ cd ../ute1-baseline-20261120 && node --test --test-force-exit --test-timeout=600000 tests/world-factory/a5sf-fs-contract.test.mjs tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs
+ℹ cancelled 0
+ℹ fail 0
+ℹ pass 34
+ℹ skipped 1
+ℹ suites 0
+ℹ tests 35
+ℹ todo 0
+✔ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts
+✔ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes
+✔ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store
+✔ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place)
+✔ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads
+✔ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact
+✔ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes
+✔ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact
+✔ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact
+✔ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success
+✔ FSB-ABORT-2 control: the same write without an abort publishes
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor
+✔ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged
+﹣ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them # SKIP
+
+AFTER: this branch @ ef7e3af00 + UTE-1 working tree
+$ node --test --test-force-exit --test-timeout=600000 tests/world-factory/a5sf-fs-contract.test.mjs tests/world-factory/a5sf-pd17-fs-read-axis.test.mjs
+ℹ cancelled 0
+ℹ fail 0
+ℹ pass 34
+ℹ skipped 1
+ℹ suites 0
+ℹ tests 35
+ℹ todo 0
+✔ A1 allow read: an in-lane read returns the bytes, ≥1 allow fact, 0 deny facts
+✔ A2 allow write: an in-lane write publishes the file through the base provider, ≥1 allow fact
+✔ A3 allow edit: the in-lane edit replaces old_string and the file changes
+✔ A4 write⇒read is kept: a write to an existing file outside the READ lane is refused IO_WRITE_REQUIRES_READ and the file is unchanged
+✔ A5 allow read_image: the in-lane image is returned and committed to the attachment store
+✔ C1 control: disposing the native modules restores the ungoverned preset path (the refusal goes RED in place)
+✔ D1 cross-Member read: read of the OTHER Member's lane is refused with 0 bytes, 1 deny fact, 0 base reads
+✔ D2 host reach: read of /etc/hostname is refused with 0 bytes and one deny fact
+✔ D3 write out of lane: nothing is created, refused with IO_WRITE_DENIED, 1 deny fact, 0 base writes
+✔ D4 edit out of lane: the file is unchanged, refused with IO_WRITE_DENIED, 1 deny fact
+✔ D5 read_image out of lane: 0 attachment saves, 0 image bytes, refused at the fs face, 1 deny fact
+✔ D6 deny-lane subset: with write denied the shadow places only the visible names — write stays invisible, the attach still succeeds
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success
+✔ FSB-ABORT-2 control: the same write without an abort publishes
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write)
+✔ FSB-IMG-1 GAP-FS-CONTRACT-1: routed read_image fails closed — zero provider reads, zero attachment bytes, zero facts
+✔ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes
+✔ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor
+✔ S1 surface neutral: names unchanged, the four parameter schemas byte-identical, prompt sections unchanged, definitions replaced
+✔ S2 configured fs-face module: a native module that DECLARES fs owns the face; the row appends no second registration and the surface is unchanged
+﹣ P0 PD-17 defect pin (PRE-FIX): the Member read returns a sibling lane's bytes and /etc/hostname, write/edit touch an out-of-lane file, and no guard fact names any of them # SKIP
+
+## verdict-set comparison (status + title + summary lines, durations stripped, sorted)
+before lines=35 after lines=35
+$ diff /tmp/ute1-fs-before.txt /tmp/ute1-fs-after.txt
+(no differences)
+LEGACY-FS-VERDICTS identical=True
