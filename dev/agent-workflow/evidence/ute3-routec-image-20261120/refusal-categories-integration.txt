@@ -1,0 +1,70 @@
+# Integration defect after merging origin/master (c74e02a87, #800 B+C refusal protocol)
+
+## BEFORE (the merged tree, before this branch's follow-up commit) — reproduced locally
+$ node --test --test-force-exit --test-timeout=300000 --test-reporter=spec tests/ute-g1-fs/lib/refusal-categories.test.mjs
+✔ the vocabulary self-check passes: definitions, reachability, samples, citations (1.505598ms)
+✔ no category definition bakes in a model-facing code or prose (0.242449ms)
+✔ every category is reachable from at least one explicit mapping entry (0.142389ms)
+✔ every legacy refusal CLASS the corpus records maps to its category (0.790157ms)
+✔ the two DECIDED mappings are pinned, and neither of them is the default bucket (0.134976ms)
+✔ every measured legacy PROSE sentence maps to its category (in order) (0.228983ms)
+✔ every legacy TYPED code (TeamIoDenial + compiled path decisions) maps to its category (0.149894ms)
+✔ matching ORDER: a stale-edit remedy is not mistaken for read-before-write (0.540412ms)
+✔ every native FsError code maps to its category (0.231177ms)
+✔ cross-category pairs are INCOMPATIBLE and never receive a default category (0.365391ms)
+✔ same-category cross-surface pairs ARE compatible (that is the whole ruling) (0.178388ms)
+✔ an unmapped legacy value is REFUSED, never defaulted to unknown (0.422229ms)
+✔ an unmapped native code is REFUSED, never defaulted to unknown (0.16907ms)
+✔ a "no refusal" sentinel is not a category and is skipped by the audit (0.248871ms)
+✔ a comparison needs both sides — one side against nothing is vacuous (0.128152ms)
+✖ the corpus vocabulary is exhaustive today (classes, codes and prose all map) (1.457118ms)
+✖ the merged golden TSV yields EXACTLY the seven legacy refusal classes (named, not counted) (0.633689ms)
+✖ the SAME derivation refuses an EIGHTH class (the exhaustiveness law is not a count) (0.268749ms)
+✔ the corpus audit REFUSES a value the corpus gains later (the contract, before the mutation) (0.708992ms)
+✔ REAL MUTATIONS: every injected defect is caught by the probes above (0.845711ms)
+ℹ tests 20
+ℹ pass 17
+ℹ fail 3
+✖ failing tests:
+✖ the corpus vocabulary is exhaustive today (classes, codes and prose all map) (1.457118ms)
+✖ the merged golden TSV yields EXACTLY the seven legacy refusal classes (named, not counted) (0.633689ms)
+✖ the SAME derivation refuses an EIGHTH class (the exhaustiveness law is not a count) (0.268749ms)
+
+CAUSE: FS-I0-route-c-gap was deleted by the route-C repair, so the merged golden TSV yields SIX classes; #800's suite asserted seven including route-unresolved.
+
+## AFTER (this branch)
+$ node --test --test-force-exit --test-timeout=300000 --test-reporter=spec tests/ute-g1-fs/lib/refusal-categories.test.mjs
+REFUSAL-CATEGORY-DERIVATION classes=6 cancelled,image-modality-denied,lane-deny,missing-path,stale-version,write-requires-read
+REFUSAL-CATEGORY-FIXTURE class=route-unresolved fixture=FSB-IMG-1b composition=withheld-fs-continuation
+REFUSAL-CATEGORY-DERIVATION-EXTRA classes=7 new="image-downscale-denied"
+REFUSAL-CATEGORY-MUTANT id=corpus-gains-unmapped-native-code real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=comparator-default-buckets-unknown-values real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=drop-a-category real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=drop-route-unresolved-fixture-evidence real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=bucket-route-unresolved-as-unknown real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANT id=shadow-a-prose-entry-by-reordering real_catches=true mutant_catches=false red=true
+REFUSAL-CATEGORY-MUTANTS total=6 red=6
+✔ the vocabulary self-check passes: definitions, reachability, samples, citations (1.403937ms)
+✔ no category definition bakes in a model-facing code or prose (0.259491ms)
+✔ every category is reachable from at least one explicit mapping entry (0.113004ms)
+✔ every legacy refusal CLASS the corpus records maps to its category (1.086265ms)
+✔ the two DECIDED mappings are pinned, and neither of them is the default bucket (0.506389ms)
+✔ every measured legacy PROSE sentence maps to its category (in order) (0.279279ms)
+✔ every legacy TYPED code (TeamIoDenial + compiled path decisions) maps to its category (0.1532ms)
+✔ matching ORDER: a stale-edit remedy is not mistaken for read-before-write (0.108165ms)
+✔ every native FsError code maps to its category (0.24296ms)
+✔ cross-category pairs are INCOMPATIBLE and never receive a default category (0.481772ms)
+✔ same-category cross-surface pairs ARE compatible (that is the whole ruling) (0.229735ms)
+✔ an unmapped legacy value is REFUSED, never defaulted to unknown (0.402743ms)
+✔ an unmapped native code is REFUSED, never defaulted to unknown (0.169601ms)
+✔ a "no refusal" sentinel is not a category and is skipped by the audit (0.248641ms)
+✔ a comparison needs both sides — one side against nothing is vacuous (0.129816ms)
+✔ the corpus vocabulary is exhaustive today (classes, codes and prose all map) (0.957412ms)
+✔ the merged golden TSV yields EXACTLY the six legacy refusal classes (named, not counted) (0.504115ms)
+✔ the class the corpus no longer emits is produced by the EXECUTED withheld-continuation fixture (278.363652ms)
+✔ the SAME derivation refuses an EXTRA class (the exhaustiveness law is not a count) (0.739949ms)
+✔ the corpus audit REFUSES a value the corpus gains later (the contract, before the mutation) (2.039433ms)
+✔ REAL MUTATIONS: every injected defect is caught by the probes above (0.844278ms)
+ℹ tests 21
+ℹ pass 21
+ℹ fail 0

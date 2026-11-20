@@ -9,7 +9,6 @@ FS-W5-write-axis	write	inside	bound	deny	lane-deny	-	inside/doc.txt|present|11|8
 FS-S1-symlink-escape	write	inside	inside	deny	lane-deny	-	outside/sym-target.txt|present|9|9660b3303631e95817f72c7536939f0eca9e20c0d7b86382a39e4a98a1b26151|0o644	-
 FS-R1-outside-read-leak	read	inside	inside	deny	lane-deny	-	outside/secret.txt|present|31|27fcbd05e5593dadbb4a091d1f22d7df4b0d2147ba4bdf5cc71fea09c601a0f4|0o644	-
 FS-M1-mode-preserved	write	inside	inside	allow	-	-	inside/mode.txt|present|4|27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a|0o600	-
-FS-I0-route-c-gap	read_image	inside	inside	deny	route-unresolved	-	@result:none|absent|-|-|-;inside/pixel.png|present|70|c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77|0o644	-
 FS-I1-inlane-image	read_image	inside	inside	allow	-	-	@result:image/png:1x1|present|70|c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77|blocks=text+image;inside/pixel.png|present|70|c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77|0o644	-
 FS-I2-outside-image-denied	read_image	inside	inside	deny	lane-deny	-	@result:none|absent|-|-|-;outside/secret.png|present|70|c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77|0o644	-
 FS-I3-lane-bound-image	read_image	bound	bound	deny	lane-deny	-	@result:none|absent|-|-|-;inside/pixel.png|present|70|c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77|0o644	-

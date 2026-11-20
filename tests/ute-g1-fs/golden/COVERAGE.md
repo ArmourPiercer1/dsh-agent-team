@@ -1,4 +1,4 @@
-# FS retirement unit — member coverage (UTE-3 PR B1, old path)
+# FS retirement unit — member coverage (UTE-3: old path, re-baselined after the route-C repair)
 
 The FS family is ONE retirement unit of four model-visible members
 (`read`, `write`, `edit`, `read_image`), derived from
@@ -18,7 +18,7 @@ control transcript for `NC-MEMBER <member>`.
 | `read` | `FS-R1-outside-read-leak` | `NC-MEMBER read` — widen ONLY the read lane; the refusal becomes a result-text leak of the planted secret |
 | `write` | `FS-W1-create`, `FS-W2-overwrite-read`, `FS-W3-unobserved-overwrite`, `FS-W4-outside-write`, `FS-W5-write-axis`, `FS-S1-symlink-escape`, `FS-M1-mode-preserved` | `NC-MEMBER write` — widen ONLY the write lane; the refused out-of-lane file appears (5 bytes) |
 | `edit` | `FS-E1-edit-read`, `FS-E2-stale-edit` | `NC-MEMBER edit` — drop ONLY the edit version guard; a stale edit applies (the external bytes change) |
-| `read_image` | `FS-I0-route-c-gap`, `FS-I1-inlane-image`, `FS-I2-outside-image-denied`, `FS-I3-lane-bound-image`, `FS-I4-missing-image`, `FS-I5-route-unresolved`, `FS-I6-cancel-before-dispatch` | `NC-MEMBER read_image` — widen ONLY the image read lane; the refused out-of-lane image materialises a 70-byte attachment |
+| `read_image` | `FS-I1-inlane-image`, `FS-I2-outside-image-denied`, `FS-I3-lane-bound-image`, `FS-I4-missing-image`, `FS-I5-route-unresolved`, `FS-I6-cancel-before-dispatch` | `NC-MEMBER read_image` — widen ONLY the image read lane; the refused out-of-lane image materialises a 70-byte attachment |
 
 Each `NC-MEMBER` is paired with `NC-MEMBER-POSITIVE <member>`, which re-runs the
 UNMODIFIED vector and shows it still reproduces its golden row. A control whose
@@ -30,12 +30,11 @@ Transcript: `dev/agent-workflow/evidence/ute-g1-fs-20261120/negative-controls.tx
 
 ## Refusal classes (machine-readable, not prose)
 
-The four `read_image` denials that are not lane denials each get a distinct class
-in the `refusal` column, named from the text the legacy path actually emitted:
+The `read_image` denials that are not lane denials each get a distinct class in
+the `refusal` column, named from the text the legacy path actually emitted:
 
 | vector | `refusal` | observed signal |
 |---|---|---|
-| `FS-I0-route-c-gap` | `route-unresolved` | `cannot get property "fs" without inject` (route-C deferred child cannot resolve `fs`) |
 | `FS-I4-missing-image` | `missing-path` | `read target '…' does not exist` |
 | `FS-I5-route-unresolved` | `image-modality-denied` | `… does not declare image input; switch to an image-capable model …` |
 | `FS-I6-cancel-before-dispatch` | `cancelled` | `tool call aborted before dispatch` |
@@ -45,6 +44,19 @@ refusals, but **no corpus row rests there**: `lane-suite.test.mjs` asserts it an
 the capture command refuses to write a row whose `refusal=other` has an empty
 `codes` cell. `FS-I2`/`FS-I3` stay `lane-deny` (their cause is the lane, and the
 lane axis is deliberately collapsed across generations).
+
+The `route-unresolved` class is retained in the closed vocabulary
+(`lib/lane.mjs` / `lib/effect-oracle.mjs`) because it is the class of the
+route-C composition fault, but **no corpus row emits it any more**: the vector
+that did (`FS-I0-route-c-gap`) was deleted when the repair landed. The fault's
+fail-closed shape — typed refusal, zero provider reads, zero attachment bytes,
+no fallback to a root/base `fs` — is still pinned by
+`tests/world-factory/a5sf-fs-contract.test.mjs` arm `FSB-IMG-1b` on the
+`withheld-fs-continuation` fixture (not on the product route), and the class's
+reachability is ASSERTED, not merely described: `lib/refusal-categories.test.mjs`
+drives that fixture, classifies its refusal with the same `classifyRefusal` the
+capture uses, and fails by name if the class loses every producer
+(`assertClassVocabularyCovered`).
 
 ## What the `read_image` rows actually observed
 
@@ -66,30 +78,29 @@ model-facing text+image result. Each image row therefore carries a synthetic
   that the out-of-lane file was left untouched (this is not a proof that no
   `open()` happened — see README §7).
 
-## Composition disclosure (important)
+## Composition (re-baselined 2026-11-20 by the route-C repair)
 
-The PRODUCT route-C composition cannot reach `read_image` at all:
-`packages/runtime/team-services/src/mount.ts:445` omits `fs` from
-`ROUTED_SERVICE_NAMES`, so the call throws `cannot get property "fs" without
-inject` before any provider call (GAP-FS-CONTRACT-1 / PD-5).
+Every vector in `old-path.tsv` runs on the PRODUCT composition
+(`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`, `route-c`). The
+pre-repair separation is history, recorded here because the `id` column still
+carries it:
 
 | vector | composition | why |
 |---|---|---|
-| `FS-I0-route-c-gap` | `route-c` (product) | pins the product fact: `read_image` is dead on the unpatched product route; zero provider reads, zero attachments |
-| `FS-I1` … `FS-I6` | `post-gap-1` (proposed composition) | the SAME legacy host, SAME real `dsh-tool-fs` module and SAME confined provider, with the FS face's existing one-line deferred-inject merge |
+| `FS-I1` … `FS-I6` | `route-c` (product) | the FOURTH member is reachable on the product route after `packages/runtime/team-services/src/mount.ts` began continuing a routed module's OWN declared `fs` into its deferred children. Same legacy host, same real `@deepseek-ai/dsh-tool-fs` module, same confined provider. |
+| ~~`FS-I0-route-c-gap`~~ | deleted | it pinned the pre-repair product fact (`cannot get property "fs" without inject`). Re-pointing it as a positive would have duplicated `FS-I1`, so it was deleted, the `old-path.tsv` row was removed and this disclosure was updated. |
 
-This is a disclosed composition, NOT a claim that the unpatched product route
-serves `read_image`. Whether a retirement baseline may be captured under
-`post-gap-1` before the product-route fix lands is an owner decision; B1 does not
-decide it, and the ledger note says so.
+The six remaining image rows are BYTE-IDENTICAL to their pre-repair rows: the
+repair changed reachability, not the tool's effects. The 10 read/write/edit rows
+are byte-identical to the reviewed baseline for the same reason.
 
 ## Still not exercised (mirrored in §7 of the README and the meta file)
 
-* `read_image` on the product route-C composition in any ALLOW shape (PD-5).
+* `read_image` on the new path (the prototype provider still has no image
+  support): every `FS-I*` row stays `newPathPending: true`, which is why the
+  retirement gate still refuses `UTE_VECTOR_UNREPRODUCED` today.
 * JPEG / WebP / GIF, downscale/`originalDimensions`, byte-cap refusal,
   extension-less content sniffing, mid-read cancellation, attachment-store
   failure. Only the arms listed above are claimed.
 * Read confinement as a positive proof, delete/move, streaming/byte-range, and a
   live boot.
-* The NEW path (`NEW-PATH-VECTOR <id> PASS`) for every `FS-I*` row: that is PR
-  B2, which is why the retirement gate refuses `UTE_VECTOR_UNREPRODUCED` today.

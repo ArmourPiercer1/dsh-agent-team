@@ -20,8 +20,16 @@
  *   M12 dropReplaceAll              the multi-match edit ignores the caller's flag (always false).
  *   M13 silentStreamAbort           the streamed read swallows its abort and ends cleanly.
  *   M14 textOnlyRouteReportsImage   a text-only route claims image input.
- *   D   post-gap-1                  the SAME routed `read_image` refusal arm over the
- *                                   proposed post-GAP-1 composition.
+ *   D   withheld-continuation       the SAME product-route `read_image` arm with the
+ *                                   deferred `fs` continuation WITHHELD (the historical
+ *                                   GAP-FS-CONTRACT-1 fixture): it must go red, which is
+ *                                   what makes the repaired route's arm load-bearing.
+ *
+ * CONVERTED 2026-11-20 by the route-C repair: this tool used to prove the product
+ * route COULD NOT reach `read_image` (control D re-ran the refusal arm under the
+ * proposed `post-gap-1` merge). The product route now serves that member, so D
+ * re-runs the PRODUCT arm under the withheld-continuation fixture instead, and
+ * the attachment arms run on the product composition.
  *
  * A control PASSES when exactly the expected arms go red and every other arm
  * stays green. The mutants live on the mounted instance (or in the compiled lane
@@ -47,7 +55,7 @@ import {
   armOverwriteUnobservedExisting,
   armReadImageAllowed,
   armReadImageDenied,
-  armReadImageRouteCRefusal,
+  armReadImageProductRoute,
   armReadSmallControl,
   armReadStreamAbort,
   armReadStreamBoundary,
@@ -66,9 +74,9 @@ const ARMS = [
   { id: 'edit-fresh', options: { composition: 'route-c' }, run: armEditFreshControl },
   { id: 'read-boundary', options: { composition: 'route-c' }, run: armReadStreamBoundary },
   { id: 'read-small', options: { composition: 'route-c' }, run: armReadSmallControl },
-  { id: 'image-route-c', options: { composition: 'route-c' }, run: armReadImageRouteCRefusal },
-  { id: 'image-allowed', options: { composition: 'post-gap-1' }, run: armReadImageAllowed },
-  { id: 'image-denied', options: { composition: 'post-gap-1' }, run: armReadImageDenied },
+  { id: 'image-route-c', options: { composition: 'route-c' }, run: armReadImageProductRoute },
+  { id: 'image-allowed', options: { composition: 'route-c' }, run: armReadImageAllowed },
+  { id: 'image-denied', options: { composition: 'route-c' }, run: armReadImageDenied },
   { id: 'write-abort', options: { composition: 'route-c' }, run: armWriteAbort },
   { id: 'write-control', options: { composition: 'route-c' }, run: armWriteControl },
   // increment 2
@@ -112,7 +120,7 @@ const ARMS = [
   { id: 'read-abort', options: { composition: 'route-c' }, run: armReadStreamAbort },
   {
     id: 'image-route-gate',
-    options: { composition: 'post-gap-1', llmModalities: ['text'] },
+    options: { composition: 'route-c', llmModalities: ['text'] },
     run: armImageRouteGateTextOnly,
   },
   {
@@ -136,7 +144,12 @@ const CASES = [
     expectFail: ['read-boundary', 'read-abort'],
   },
   { id: 'M3-drop-write-signal', mutations: { dropWriteSignal: true }, expectFail: ['write-abort'] },
-  { id: 'M4-silent-attachment', mutations: { silentAttachment: true }, expectFail: ['image-allowed'] },
+  {
+    id: 'M4-silent-attachment',
+    mutations: { silentAttachment: true },
+    // Both arms assert the COMMITTED record on the product composition.
+    expectFail: ['image-allowed', 'image-route-c'],
+  },
   { id: 'M5-force-replace-if-version', mutations: { forceReplaceIfVersion: true }, expectFail: ['create-new'] },
   { id: 'M6-widen-read-lane', mutations: { widenReadLane: true }, expectFail: ['create-outside-read'] },
   { id: 'M7-drop-write-intent', mutations: { dropWriteIntent: true }, expectFail: ['create-unobserved'] },
@@ -172,9 +185,9 @@ const CASES = [
     expectFail: ['image-route-gate', 'image-route-gate-gap'],
   },
   {
-    id: 'D-post-gap-1-composition',
+    id: 'D-withheld-continuation',
     mutations: {},
-    compositionFor: { 'image-route-c': 'post-gap-1' },
+    compositionFor: { 'image-route-c': 'withheld-fs-continuation' },
     expectFail: ['image-route-c'],
   },
 ]

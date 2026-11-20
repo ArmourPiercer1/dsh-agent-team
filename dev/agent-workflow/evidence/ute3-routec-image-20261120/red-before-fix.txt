@@ -1,0 +1,162 @@
+# PRE-FIX (mount.ts repair reverted; built dist mirror reverted with it)
+# command: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute-g1-fs/product-route-image.test.mjs
+✖ the product route serves read_image inside the declared read lane: one digested attachment on the CONFINED provider (294.113129ms)
+✖ read_image outside the declared lane is REFUSED: zero attachment bytes, outside file unchanged, zero provider reads (20.269737ms)
+✔ a text-only model route refuses the image modality before any read (16.137896ms)
+✔ an aborted-before-dispatch read_image is still refused and materialises nothing (15.669029ms)
+UTE3-ROUTE-C-MUTATION unconfined-fs confined=deny/0B mutant=allow/70B guardFacts=0
+✔ MUTATION unconfined-fs: the same module on the base provider allows the same out-of-lane read (27.639146ms)
+✖ the continuation is scoped to services the module ITSELF declares: a module without fs gets a shape-identical inject map (0.684716ms)
+a5sf: native tool shadow INVALIDATED (a5sf-native-invalidation/1): a managed native tool is no longer shadowed by this attach after the mount settled; uncovered=["read","write","edit","read_image"]; managed tools are now REFUSED at admission, disposing every router fiber to restore the preset surface
+✖ the deferred child's fs is the MEMBER's confined provider: in-lane served, out-of-lane refused, guard realm=member (5020.857174ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 3
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5462.878109
+
+✖ failing tests:
+
+test at tests/ute-g1-fs/product-route-image.test.mjs:98:1
+✖ the product route serves read_image inside the declared read lane: one digested attachment on the CONFINED provider (294.113129ms)
+  AssertionError [ERR_ASSERTION]: the product route must serve an in-lane read_image: Error: cannot get property "fs" without inject
+  cannot get property "fs" without inject
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:113:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/ute-g1-fs/product-route-image.test.mjs:161:1
+✖ read_image outside the declared lane is REFUSED: zero attachment bytes, outside file unchanged, zero provider reads (20.269737ms)
+  AssertionError [ERR_ASSERTION]: the refusal is the LANE's
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:174:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Error: cannot get property "fs" without inject\ncannot get property "fs" without inject',
+    expected: /outside every allow subtree of the lane/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tests/ute-g1-fs/product-route-image.test.mjs:324:1
+✖ the continuation is scoped to services the module ITSELF declares: a module without fs gets a shape-identical inject map (0.684716ms)
+  TypeError: continuedServiceNamesOf is not a function
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:331:20)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
+
+test at tests/ute-g1-fs/product-route-image.test.mjs:394:1
+✖ the deferred child's fs is the MEMBER's confined provider: in-lane served, out-of-lane refused, guard realm=member (5020.857174ms)
+  AssertionError [ERR_ASSERTION]: the deferred child of an fs-declaring module must resolve ctx.fs (cannot get property "fs" without inject)
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:410:12)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+# command: node --test --test-force-exit --test-timeout=900000 --test-reporter=spec tests/world-factory/a5sf-fs-contract.test.mjs
+✔ FSB-EDIT-1 a stale edit is refused without writing: one FS_STALE_VERSION, zero bytes, one admission fact (311.669086ms)
+✔ FSB-EDIT-2 control: a fresh edit (read → edit, no external change) really writes (27.82155ms)
+✔ FSB-READ-1 a file crossing 10 MiB is streamed into an exact byte-capped window, never buffered or refused (73.922808ms)
+✔ FSB-READ-2 control: a below-threshold file is buffered by the same tool (20.057885ms)
+✖ FSB-IMG-1 the PRODUCT route serves read_image: one attachment in-lane, lane refusal with zero bytes out-of-lane (17.65638ms)
+✔ FSB-IMG-1b WITHHELD continuation (historical GAP-FS-CONTRACT-1 fixture) still fails closed: zero reads, zero bytes, zero facts (13.981213ms)
+✖ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (15.803251ms)
+✖ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (15.302936ms)
+✔ FSB-ABORT-1 an aborted write publishes nothing: byte-identical target, no staging residue, FS_ABORTED, not success (24.751328ms)
+✔ FSB-ABORT-2 control: the same write without an abort publishes (23.994796ms)
+✔ FSB-CREATE-1 a NEW file in a write lane with NO read coverage is created: one writeText, no version guard, no read (19.590299ms)
+✔ FSB-CREATE-2 the SAME write lane, an EXISTING target outside the read lane is refused before the provider: IO_WRITE_REQUIRES_READ, zero calls (16.975582ms)
+✔ FSB-CREATE-3 an EXISTING unobserved target is refused by createIfAbsent itself: FS_NOT_OBSERVED after one writeText, zero bytes (23.215141ms)
+✔ FSB-BIND-EDIT edit runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (27.834394ms)
+✔ FSB-BIND-WRITE write runs on the BINDING realm provider; a ceiling-only path is ONE binding fact and zero writes (26.089271ms)
+✔ FSB-BIND-IMAGE read_image runs on the BINDING realm provider; a ceiling-only path is ONE binding deny fact and zero reads (18.436446ms)
+✔ FSB-EDIT-MULTI-1 a multi-match edit without replace_all is FS_AMBIGUOUS_EDIT: one call, zero bytes, then the SAME read works with replace_all (22.52267ms)
+✔ FSB-EDIT-MULTI-2 replace_all replaces every match in exactly ONE editText (one atomic write) (22.683074ms)
+✔ FSB-READ-ABORT cancelling a streamed read mid-stream is FS_ABORTED: no window, no success text, no leaked descriptor (19.262289ms)
+✔ FSB-IMG-4a a text-only route is refused by read_image BEFORE I/O: one route resolution, zero stat/readBytes, zero attachment bytes (15.962203ms)
+✔ FSB-IMG-4b on the PRODUCT route the text-only gate still refuses before I/O — the GAP code must NOT appear (distinct failures) (15.441326ms)
+ℹ tests 21
+ℹ suites 0
+ℹ pass 18
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 843.821534
+
+✖ failing tests:
+
+test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
+✖ FSB-IMG-1 the PRODUCT route serves read_image: one attachment in-lane, lane refusal with zero bytes out-of-lane (17.65638ms)
+  AssertionError [ERR_ASSERTION]: the product route must serve an in-lane read_image: Error: cannot get property "fs" without inject
+  
+  true !== false
+  
+      at armReadImageProductRoute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1081:10)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
+✖ FSB-IMG-2 allowed read_image materialises exactly ONE attachment with the file's metadata, after stat → readBytes (15.803251ms)
+  AssertionError [ERR_ASSERTION]: the allowed image read must succeed: Error: cannot get property "fs" without inject
+  
+  true !== false
+  
+      at armReadImageAllowed (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1173:10)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
+✖ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (15.302936ms)
+  AssertionError [ERR_ASSERTION]: the lane's own refusal reason
+      at armReadImageDenied (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1222:10)
+      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Error: cannot get property "fs" without inject',
+    expected: /outside every allow subtree/u,
+    operator: 'match',
+    diff: 'simple'
+  }
