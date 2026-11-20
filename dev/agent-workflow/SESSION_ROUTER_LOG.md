@@ -9374,3 +9374,17 @@ export interface AbortSignalLike {
 **未触碰**：`packages/**` 产品代码、`tests/ute-g1-fs/**`、`docs/plans/active/**`、上游/host 树、`tests/paths.mjs`；除既有 leg 的一个收集 token 外无 workflow 改动；**未 push master/stable、未 force-push、未合并**。
 
 **明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② 不证明读隔离（拒绝记录只证明"拒绝了 + 无泄漏 token + 树未变"）；③ 无 live boot（C1 host-free）；④ glob 顺序/超限采样、搜索中途取消（只能表达 dispatch 前取消）、调用方 cap（host schema 无 `head_limit`/context/case/multiline）、symlink 逃逸、stream-drain 截断、`--pre`/config 转向、`spillStore` 均未覆盖；⑤ 无 path 的 grep 缺陷是**记录**的产品差异，未修（属产品任务）。
+
+## 2026-11-21 — UTE-3 / G1-S1 FS PR B2：新路径复现全部 16 向量，删除 newPathPending（draft PR #807）
+
+**分支**：`task/ute3-fs-b2-20261120`（worktree `.worktrees/ute3-fs-b2-20261120`，base `origin/master 6a5d45d30`）。**draft PR #807**，settlement 后转 ready，未合并。
+
+**交付**：新原型路径挂载宿主真实 `LocalAttachmentStore` 与按 vector 声明 `inputModalities` 的 mock LLM 路由适配器，`read_image` 走宿主自己的 tool + confined provider；16 条语料全部 `NEW-PATH-VECTOR <id> PASS`，`PROTOTYPE-VERDICT GREEN vectors=16 failed=0`。图片 oracle 的摘要改为从 `LocalAttachmentStore.readImage` **读回已提交对象**后计算（不是 caller buffer、不是 ref 自报、不是路径），allow 必须恰好 1 个 attachment + 1 个 attachmentId 匹配的 image block，0/>1 抛错；该 helper 由 old/new 两条路径共享（old-path 内副本删除）。`newPathPending` 六个键、注释、过滤逻辑全部删除；lane suite 反转为**完整性断言**：键存在即红、`records.length === CORPUS.length`、逐向量打印 PASS 行。新路径拒因经 #800 闭合类别判定；新增 `NATIVE_TOOL_REFUSAL_MAP`（`IMAGE_UNSUPPORTED_MODEL`/`IMAGE_UNSUPPORTED_FORMAT`→`unsupported-mode`，`ABORTED_BEFORE_DISPATCH`→`cancelled`），未知 code/class 抛 `REFUSAL_VOCABULARY_INCOMPLETE`，比较按 category 而非字面 code/text。新增 `NC-IMAGE-OBSERVER` 四臂负控（0 附件、2 附件、block id 不匹配、拒绝却已提交）。
+
+**账本/盘点**：`newPathVerified` evidence 指向 `dev/agent-workflow/evidence/ute-g1-fs-20261121/new-path-run.txt`、expect `vectors=16`；`negativeControlsPass` controls=13；FS `unit=4/4`。`state` 仍 `NOT_RETIREABLE`，`semanticDifferencesResolved` 未触碰、无 approval。family inventory 的 `retirementReadiness.newPath` 由 gate 实测驱动 `prototype`→`complete`（不是 state 翻转）；`README.md`/`golden/COVERAGE.md` 与新 manifest `why` 同步为“16 向量已复现、pending 已移除、产品模块仍只声明 read/write/edit”。
+
+**门禁（本机实测）**：`OLD-PATH-GOLDEN compare=identical`（16）；`NC-VERDICT GREEN controls=13 failed=0`；lane suite 4/4；refusal-categories 22/22；`ute-retirement-gate --all` exit 1，唯一码 `UTE_SEMANTIC_DIFFERENCES_UNRESOLVED`，`unit=4/4`；`EB3-CI-REQUIRED pass workflows=10 findings=0`；test-catalog `tests=886 refused=0`；eb3-family-definitions `files=30 findings=0`；ute-family-inventory `families=9 files=92 findings=0`；docs-sync `findings=0 blocking=0`；`git diff --check`/`node --check` 0；UTE-1 产品套件 14/14（仍为 10 向量产品声明，6 条图片行显式排除）。
+
+**明写的限制（不是 PASS）**：① 仅 PROTOTYPE 路径，不是 live boot，不证明 read confinement（`CLAIM_NOT_OBSERVABLE`），不是安全判决；② `scripts/check-append-only-log.mjs` 尚在未合并 PR #805，base 无此文件，用其 worktree 的同名脚本对本分支实测 `verdict=pass ... unchanged`，本 PR 未改日志字节（本条目为唯一追加）；③ 产品模块 `packages/tools/src/native-fs-binding.ts` 仍不支持 `read_image`，图片覆盖仅原型 lane；④ hosted CI 未宣称已绿；⑤ 无 typed code 的新路径拒绝按已观测 class 归类，本语料所有拒绝均有 code 或映射 class。
+
+**未触碰**：`packages/**`、其他 family、`docs/plans/active/**`、`arc-a-family-census.json`、`dev/engineering/**`、`git push master/stable`、force-push、merge。

@@ -369,20 +369,28 @@ test('REAL — the seeded fs row is refused for new-path reproduction and unreso
   const loaded = loadLedger({ root: ROOT })
   assert.equal(loaded.refused, undefined, `the committed ledger must be gradable: ${loaded.detail ?? ''}`)
   const verdict = checkRetirement({ ledger: loaded.ledger, family: 'fs', root: ROOT })
-  assert.equal(verdict.allowed, false, 'fs must NOT be retireable while read_image is uncovered and both differences are unapproved')
+  assert.equal(verdict.allowed, false, 'fs must NOT be retireable while both differences are unapproved')
   assert.deepEqual(verdict.unit.members, ['read', 'write', 'edit', 'read_image'], 'the unit is derived from the census, not chosen by the row')
-  // UTE-3 PR B1 added the read_image baselines and one control per member; the
-  // OLD-PATH axes are now 4/4. The NEW path is still 3/4 (PR B2), which is why
-  // the row stays refused — for reproduction, not for missing baselines.
+  // UTE-3 PR B1 added the read_image baselines and one control per member, and PR B2
+  // closed the last axis: the NEW path now reproduces all sixteen vectors, so every
+  // axis is 4/4 and the row is refused for the unapproved differences alone.
   assert.deepEqual(verdict.coverage.oldBaseline, ['read', 'write', 'edit', 'read_image'], 'every member has a baseline vector')
   assert.deepEqual(verdict.coverage.negativeControlsPass, ['read', 'write', 'edit', 'read_image'], 'every member has its own NC-MEMBER control')
   assert.equal(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'oldBaseline'), false, 'read_image HAS a baseline vector')
   assert.equal(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'negativeControlsPass'), false, 'each member HAS its own control')
-  assert.ok(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'newPathVerified'), 'read_image has nothing for the new path to reproduce')
-  assert.ok(verdict.findings.some((f) => f.code === 'UTE_VECTOR_UNREPRODUCED' && f.detail.includes('FS-I1-inlane-image')))
-  assert.ok(verdict.findings.some((f) => f.code === 'UTE_MEMBER_UNCOVERED' && f.term === 'newPathVerified' && f.detail.includes('read_image')))
+  // PR B2 (2026-11-20) reproduced ALL SIXTEEN vectors on the new path, read_image
+  // included, and deleted the declared-pending channel. So the reproduction axes are
+  // complete for every member and the row is now refused for ONE reason only: the two
+  // blocking semantic differences still have no owner approval. This arm asserts the
+  // completeness POSITIVELY (every member reproduced) and the refusal NARROWLY (exactly
+  // one code), so a future regression that quietly drops a member cannot hide inside a
+  // still-refused row.
+  assert.deepEqual(verdict.coverage.newPathVerified, ['read', 'write', 'edit', 'read_image'], 'every member is reproduced on the new path')
+  assert.equal(hasFinding(verdict, 'UTE_MEMBER_UNCOVERED', 'newPathVerified'), false, 'no member is uncovered on the new path')
+  assert.ok(codes(verdict).includes('UTE_VECTOR_UNREPRODUCED') === false, 'no baseline vector is unreproduced')
+  assert.deepEqual([...new Set(codes(verdict))], ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'the ONLY remaining refusal is the unapproved difference')
+  assert.equal(verdict.unit.members.length, verdict.coverage.newPathVerified.length, 'the unit is 4/4: every member of the census unit is reproduced')
   assert.ok(codes(verdict).includes('UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'))
-  assert.deepEqual(verdict.coverage.newPathVerified, ['read', 'write', 'edit'])
   assert.ok(codes(verdict).includes('UTE_OLD_BASELINE_MISSING') === false, 'the old baseline IS established for all four members')
   assert.ok(codes(verdict).includes('UTE_NEW_PATH_UNVERIFIED') === false, 'the prototype path IS verified for the ten recorded vectors')
   assert.ok(codes(verdict).includes('UTE_NEGATIVE_CONTROLS_FAILING') === false, 'the FS negative controls DO pass at family level')
@@ -650,12 +658,11 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.equal(payload.schema, 'ute-retirement-verdict/1')
   assert.deepEqual(payload.allowed, [])
   assert.equal(payload.refused[0].family, 'fs')
-  assert.ok(payload.refused[0].codes.includes('UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'))
-  assert.ok(payload.refused[0].codes.includes('UTE_MEMBER_UNCOVERED'))
+  assert.deepEqual(payload.refused[0].codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'the CLI reports exactly one remaining refusal for fs')
   assert.deepEqual(payload.refused[0].unit.members, ['read', 'write', 'edit', 'read_image'])
   assert.deepEqual(payload.refused[0].coverage.oldBaseline, ['read', 'write', 'edit', 'read_image'])
   assert.deepEqual(payload.refused[0].coverage.negativeControlsPass, ['read', 'write', 'edit', 'read_image'])
-  assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit'])
+  assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit', 'read_image'])
   assert.equal(payload.verdicts[0].allowed, false)
 
   // `--all` now grades TWO seeded families (fs + search). The SEARCH row (UTE-3
@@ -678,15 +685,26 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     assert.ok(line !== undefined, `no UTE-RETIREMENT-REFUSED line for family=${family}`)
     const match = line.match(/ codes=(\S+) state=/u)
     assert.ok(match !== null, `family=${family} line carries no code list: ${line}`)
-    assert.equal(line.endsWith('unit=3/4') || line.endsWith('unit=0/2'), true, `unexpected unit strip on family=${family}: ${line}`)
+    assert.match(line, / unit=(?:\d+\/\d+)$/u, `family=${family} line carries no unit strip: ${line}`)
     return { line, codes: match[1].split(',').sort() }
   }
-  // fs — unchanged by the SEARCH row, but re-asserted so a silent fs change reds.
+  // fs — PR B2 reproduced all sixteen vectors, so the coverage axes are complete and the
+  // ONLY remaining refusal is the unapproved difference. Asserted as an exact set: a
+  // regression that drops a member would add a code and red here rather than hide inside
+  // a still-refused row.
   const fs = codesFor('fs')
-  assert.deepEqual(fs.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
-  assert.match(fs.line, /state=NOT_RETIREABLE unit=3\/4$/u)
-  assert.match(all.stdout, /term=newPathVerified[^\n]*read_image/)
-  assert.match(all.stdout, /UTE_VECTOR_UNREPRODUCED[^\n]*FS-I1-inlane-image/)
+  assert.deepEqual(fs.codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
+  assert.match(fs.line, /state=NOT_RETIREABLE unit=4\/4$/u)
+  // The SEARCH row legitimately still reports both codes (it has no new path at all), so
+  // the assertion is scoped to FS evidence: a finding that names an FS vector or the
+  // read_image member is what must be gone. Scoping by family beats dropping the check —
+  // an unscoped `includes` would either be false for the right reason or pass vacuously.
+  const fsFindings = all.stdout.split('\n').filter((line) => line.includes('FS-') || line.includes('read_image'))
+  assert.equal(
+    fsFindings.some((line) => line.includes('UTE_VECTOR_UNREPRODUCED') || line.includes('term=newPathVerified')),
+    false,
+    `no FS evidence is unreproduced any more: ${JSON.stringify(fsFindings)}`,
+  )
   // search — its OWN code list: no new path, unresolved blocking differences,
   // and per-vector/per-member coverage absent on the new-path axis.
   const search = codesFor('search')

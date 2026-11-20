@@ -229,8 +229,9 @@ not vacuous).
    refusal, modality refusal and cancellation all observed there). Several image
    arms are explicitly not claimed (JPEG/WebP/GIF, downscale, byte cap, content
    sniffing, mid-read cancellation, store failure). `streamText` and
-   `readByteRange` are not exercised. The new path (`NEW-PATH-VECTOR` for
-   `FS-I*`) is PR B2's scope; every image row stays `newPathPending`.
+   `readByteRange` are not exercised. PR B2 reproduces every `FS-I*` row on the
+   prototype new path and removes `newPathPending`; the separate PRODUCT module
+   (`packages/tools`) still claims read/write/edit only.
 4. **A live boot.** Both paths are host-free C1 runs (see §1).
 5. **The production execution path.** This is a prototype. No production traffic
    goes through it, no ToolPlane/Family Body was removed, no product Authority

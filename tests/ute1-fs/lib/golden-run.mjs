@@ -109,13 +109,15 @@ async function runVector(vector, host) {
 export async function runProductGolden({ repoRoot, only }) {
   const host = await loadNextHostSurface(repoRoot)
   const golden = parseGolden(readFileSync(GOLDEN_PATH, 'utf8'))
-  // UTE-3 B1 added 7 `read_image` baselines to the SHARED corpus and golden.
-  // This product module implements the read/write/edit members; image support
-  // is PR B2's scope. The module therefore runs and is graded against the 10
-  // vectors it claims, and the 7 image rows are returned as an EXPLICIT
-  // excluded set (asserted by the suite) rather than being silently dropped or
-  // compared against a binding that cannot serve them.
-  const imagePending = CORPUS.filter((vector) => vector.entry === 'read_image')
+  // UTE-3 B1 added 6 `read_image` baselines to the SHARED corpus and golden.
+  // This PRODUCT binding implements the read/write/edit members only; PR B2
+  // reproduces the image rows on the PROTOTYPE provider lane, not by changing
+  // the product module. The module therefore runs and is graded against the 10
+  // vectors it claims, and the 6 image rows are returned as an EXPLICIT
+  // excluded set (asserted by the suite) rather than silently dropped.
+  // B2 removed `newPathPending`, so exclusion is now a property of THIS binding
+  // claim, not a pending vector state.
+  const imageExcluded = CORPUS.filter((vector) => vector.entry === 'read_image')
   const vectors = only === undefined
     ? CORPUS.filter((vector) => vector.entry !== 'read_image')
     : CORPUS.filter((vector) => only.includes(vector.id))
@@ -123,5 +125,5 @@ export async function runProductGolden({ repoRoot, only }) {
   for (const vector of vectors) records.push(await runVector(vector, host))
   const ranIds = new Set(vectors.map((vector) => vector.id))
   const applicableGolden = golden.filter((row) => ranIds.has(row.id))
-  return { records, comparison: compareAll(applicableGolden, records), host, golden, imagePending }
+  return { records, comparison: compareAll(applicableGolden, records), host, golden, imageExcluded }
 }

@@ -13,6 +13,7 @@
  * @module tests/ute-g1-fs/lib/compare
  */
 import { effectsCell } from './effect-oracle.mjs'
+import { categoryOfLegacyRefusal, categoryOfNativeRefusal, isNoRefusal } from './refusal-categories.mjs'
 import { ROW_HEADER, recordToRow, rowToRecord } from './scenario.mjs'
 
 /** Fields the harness grades. `codes` is captured but never a pass condition. */
@@ -37,11 +38,34 @@ export function fieldValue(record, field) {
 export function compareRecord(expected, observed) {
   const diffs = []
   for (const field of COMPARED_FIELDS) {
+    // PR #800's compatibility interface: a refusal is compared by its CLOSED
+    // CATEGORY, not by class/code/text equality. Both sides must classify
+    // (an unmapped value throws REFUSAL_VOCABULARY_INCOMPLETE), and an allow
+    // compares as "no refusal".
+    if (field === 'refusal') {
+      const left = refusalCategory(expected)
+      const right = refusalCategory(observed)
+      if (left !== right) {
+        diffs.push({
+          field,
+          expected: `${expected.refusal ?? '-'}[${left ?? 'none'}]`,
+          observed: `${observed.refusal ?? '-'}[${right ?? 'none'}]`,
+        })
+      }
+      continue
+    }
     const left = fieldValue(expected, field)
     const right = fieldValue(observed, field)
     if (left !== right) diffs.push({ field, expected: left, observed: right })
   }
   return { id: expected.id, ok: diffs.length === 0, diffs }
+}
+
+/** The closed refusal category of a record, or null for an allow. */
+function refusalCategory(record) {
+  if (isNoRefusal(record.refusal)) return null
+  const code = (record.codes ?? [])[0]
+  return categoryOfNativeRefusal({ code, refusal: record.refusal }).category
 }
 
 /**

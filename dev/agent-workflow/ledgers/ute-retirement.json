@@ -39,14 +39,15 @@
         "newPathVerified": {
           "verdict": true,
           "evidence": {
-            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261119/new-path-run.txt",
+            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261121/new-path-run.txt",
             "expect": [
-              "PROTOTYPE-VERDICT GREEN vectors=10 failed=0",
-              "PROTOTYPE-HOST host=next version=0.2.2-rc.5"
+              "PROTOTYPE-VERDICT GREEN vectors=16 failed=0",
+              "PROTOTYPE-HOST host=next version=0.2.2-rc.5",
+              "NEW-PATH-VECTOR FS-I1-inlane-image PASS"
             ],
             "contradicts": []
           },
-          "note": "Prototype provider + the pinned next host's own ToolsService.execute; the 10 read/write/edit vectors are green on rc.5 (the 6 read_image baselines are newPathPending: the prototype has no image support until UTE-3 PR B2, so the gate correctly refuses UTE_VECTOR_UNREPRODUCED and does NOT cover read_image on this axis). This proves the PROTOTYPE path only: it is not a live boot, it does not prove read confinement (CLAIM_NOT_OBSERVABLE), and it must never be cited as a safety verdict."
+          "note": "Prototype provider + the pinned next host's own ToolsService.execute; ALL 16 corpus vectors are green on rc.5 (10 read/write/edit + 6 read_image). The six image rows run through the host's own read_image tool over the prototype's confined provider, with the real LocalAttachmentStore mounted: the digest is over the bytes the store committed, the model-facing result must be exactly one text + one image block naming that attachment, and 0/>1 attachments throw. New-path refusals classify through the closed category vocabulary (refusal-categories.mjs): native FsError codes via NATIVE_FS_ERROR_MAP, image/abort tool codes via NATIVE_TOOL_REFUSAL_MAP, and an unmapped code throws REFUSAL_VOCABULARY_INCOMPLETE. newPathPending is REMOVED and its presence now fails the suite. This proves the PROTOTYPE path only: it is not a live boot, it does not prove read confinement (CLAIM_NOT_OBSERVABLE), and it must never be cited as a safety verdict."
         },
         "semanticDifferencesResolved": {
           "verdict": false,
@@ -81,18 +82,19 @@
         "negativeControlsPass": {
           "verdict": true,
           "evidence": {
-            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261120/negative-controls.txt",
+            "path": "dev/agent-workflow/evidence/ute-g1-fs-20261121/negative-controls.txt",
             "expect": [
-              "NC-VERDICT GREEN controls=12 failed=0",
+              "NC-VERDICT GREEN controls=13 failed=0",
               "NC NC-2-harness-bites ok",
+              "NC NC-IMAGE-OBSERVER ok",
               "NC-MEMBER read_image ok"
             ],
             "contradicts": []
           },
-          "note": "Four family-level controls (NC-1 lane bites, NC-2 harness bites on a mutated golden cell, NC-3 no legacy fallback, NC-4 the lane is load-bearing) PLUS one real control per retirement-unit member on the legacy path: NC-MEMBER read (widen only the read lane -> the refusal becomes a leak), NC-MEMBER write (widen only the write lane -> the file appears), NC-MEMBER edit (drop only the edit version guard -> a stale edit applies), NC-MEMBER read_image (widen only the image read lane -> an out-of-lane image read materialises a 70-byte attachment). Each NC-MEMBER is paired with NC-MEMBER-POSITIVE proving the unmodified run still reproduces its golden row, so no control is vacuous. A green FS control is not evidence for Web or PTY."
+          "note": "Four family-level controls (NC-1 lane bites, NC-2 harness bites on a mutated golden cell, NC-3 no legacy fallback, NC-4 the lane is load-bearing) PLUS one real control per retirement-unit member on the legacy path: NC-MEMBER read (widen only the read lane -> the refusal becomes a leak), NC-MEMBER write (widen only the write lane -> the file appears), NC-MEMBER edit (drop only the edit version guard -> a stale edit applies), NC-MEMBER read_image (widen only the image read lane -> an out-of-lane image read materialises a 70-byte attachment). Each NC-MEMBER is paired with NC-MEMBER-POSITIVE proving the unmodified run still reproduces its golden row, so no control is vacuous. B2 adds NC-IMAGE-OBSERVER: the SHARED image observer refuses to record zero attachments, two attachments, a model block naming a different attachment, or a refusal that committed one. A green FS control is not evidence for Web or PTY."
         }
       },
-      "note": "FS is the first family in the UTE G1 ordering and may retire before Web/PTY (owner ruling: per-family retirement is incremental). Its retirement unit is the WHOLE assembly (read+write+edit+read_image, one candidate, PLANE_FS_FAMILY_INCOMPLETE on a partial mount) and the members are DERIVED from dev/agent-workflow/ledgers/arc-a-family-census.json, not from this row. UTE-3 PR B1 closes the OLD-PATH half for all four members (17 baseline vectors, per-member controls). It may NOT retire: the 7 read_image baselines are not yet reproduced by the prototype (UTE_VECTOR_UNREPRODUCED, PR B2 scope), read_image therefore has no new-path coverage (UTE_MEMBER_UNCOVERED on newPathVerified), and both semantic differences are retirement-blocking with no bound approval."
+      "note": "FS is the first family in the UTE G1 ordering and may retire before Web/PTY (owner ruling: per-family retirement is incremental). Its retirement unit is the WHOLE assembly (read+write+edit+read_image, one candidate, PLANE_FS_FAMILY_INCOMPLETE on a partial mount) and the members are DERIVED from dev/agent-workflow/ledgers/arc-a-family-census.json, not from this row. UTE-3 PR B1 closed the old-path half (17 vectors, later re-baselined to 16 on the repaired product route); PR B2 reproduces ALL 16 on the prototype and removes newPathPending, so newPathVerified is 4/4 and the whole unit is 4/4. It still may NOT retire: both semantic differences are retirement-blocking and have no bound owner approval."
     },
     {
       "family": "search",

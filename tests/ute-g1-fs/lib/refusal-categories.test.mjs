@@ -34,6 +34,7 @@ import {
   CORPUS_VOCABULARY_BASELINE,
   LEGACY_REFUSAL_MAP,
   NATIVE_FS_ERROR_MAP,
+  NATIVE_TOOL_REFUSAL_MAP,
   REFUSAL_CATEGORIES,
   FIXTURE_CLASS_EVIDENCE,
   RefusalVocabularyError,
@@ -42,6 +43,7 @@ import {
   auditCorpus,
   categoryOfLegacyRefusal,
   categoryOfNativeFsError,
+  categoryOfNativeRefusal,
   compareRefusal,
   isNoRefusal,
   selfCheck,
@@ -259,6 +261,27 @@ test('every native FsError code maps to its category', () => {
   assert.deepEqual(sorted(Object.keys(NATIVE_FS_ERROR_MAP)), sorted(Object.keys(expected)), 'the native map and the recorded code set must agree exactly')
   for (const [code, category] of Object.entries(expected)) {
     assert.equal(categoryOfNativeFsError(code).category, category, `native code ${code} misclassified`)
+  }
+})
+
+test('native TOOL codes (not FsError) map explicitly and unknown reasons refuse', () => {
+  const expected = {
+    IMAGE_UNSUPPORTED_MODEL: 'unsupported-mode',
+    IMAGE_UNSUPPORTED_FORMAT: 'unsupported-mode',
+    ABORTED_BEFORE_DISPATCH: 'cancelled',
+  }
+  assert.deepEqual(sorted(Object.keys(NATIVE_TOOL_REFUSAL_MAP)), sorted(Object.keys(expected)), 'the tool map and the measured B2 code set must agree exactly')
+  for (const [code, category] of Object.entries(expected)) {
+    assert.equal(categoryOfNativeRefusal({ code }).category, category, `tool code ${code} misclassified`)
+  }
+  // A code-less native refusal is classified by its recorded class, never defaulted.
+  assert.equal(categoryOfNativeRefusal({ refusal: 'image-modality-denied' }).category, 'unsupported-mode')
+  for (const input of [{ code: 'IMAGE_A_NEW_REASON' }, { code: 'FS_A_NEW_REASON' }, {}]) {
+    assert.throws(
+      () => categoryOfNativeRefusal(input),
+      (error) => error instanceof RefusalVocabularyError && error.code === 'REFUSAL_VOCABULARY_INCOMPLETE',
+      `unmapped native refusal ${JSON.stringify(input)} must be REFUSED, not bucketed`,
+    )
   }
 })
 

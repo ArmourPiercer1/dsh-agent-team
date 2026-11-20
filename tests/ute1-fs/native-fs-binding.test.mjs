@@ -303,23 +303,25 @@ test('wrong host generation is refused by name and never falls back to the legac
 })
 
 test('golden parity: the product module reproduces the 10 old-path vectors', async (t) => {
-  const { records, comparison, host, imagePending } = await runProductGolden({ repoRoot: REPO_ROOT })
+  const { records, comparison, host, imageExcluded } = await runProductGolden({ repoRoot: REPO_ROOT })
   t.diagnostic(`golden host=${GENERATION} commit=${host.commit} commit-tree=${host.tree}`)
   for (const verdict of comparison.verdicts) {
     t.diagnostic(`golden ${verdict.id}: ${verdict.ok ? 'PASS' : `FAIL ${JSON.stringify(verdict.diffs)}`}`)
   }
   assert.equal(records.length, 10)
-  // The 6 image rows are EXCLUDED, not ignored: this module serves read/write/
-  // edit only until PR B2. If an image vector ever stops being declared pending,
-  // this assertion fails and forces the parity claim to grow with the module.
-  // (The seventh row, FS-I0-route-c-gap, was the product-route failure pin; the
-  // 2026-11-20 route-C repair made it obsolete and the corpus entry was deleted
-  // rather than re-pointed, because FS-I1 already is the in-lane allow baseline.)
+  // The 6 image rows are EXCLUDED from THIS product binding's claim, not
+  // ignored: the binding serves read/write/edit only, while UTE-3 PR B2
+  // reproduces them on the prototype provider lane. The excluded set is pinned
+  // exactly, so a corpus change or a future product image member forces this
+  // parity claim to grow deliberately. (The seventh row, FS-I0-route-c-gap, was
+  // the product-route failure pin; the 2026-11-20 route-C repair made it
+  // obsolete and the corpus entry was deleted rather than re-pointed, because
+  // FS-I1 already is the in-lane allow baseline.)
   assert.deepEqual(
-    imagePending.map((vector) => vector.id),
+    imageExcluded.map((vector) => vector.id),
     ['FS-I1-inlane-image', 'FS-I2-outside-image-denied', 'FS-I3-lane-bound-image', 'FS-I4-missing-image', 'FS-I5-route-unresolved', 'FS-I6-cancel-before-dispatch'],
   )
-  assert.ok(imagePending.every((vector) => vector.newPathPending === true), 'excluded image vectors must still be declared new-path-pending')
+  assert.ok(imageExcluded.every((vector) => !Object.hasOwn(vector, 'newPathPending')))
   assert.deepEqual(comparison.missingObserved, [])
   assert.deepEqual(comparison.missingGolden, [])
   assert.deepEqual(comparison.failures, [], `golden vectors diverged: ${JSON.stringify(comparison.failures, null, 2)}`)

@@ -282,6 +282,26 @@ export const NATIVE_FS_ERROR_MAP = Object.freeze({
 })
 
 /**
+ * NATIVE, NON-`FsError` TOOL CODE → CATEGORY.
+ *
+ * `categoryOfNativeFsError` deliberately accepts only `FS_*` `FsError` codes
+ * (selfCheck enforces the shape). The host's image tool and registry also raise
+ * their OWN typed codes, and PR B2's new-path run observes them, so they get
+ * their own explicit map rather than being smuggled through the legacy class
+ * map or dropped into `unknown`. Every entry is measured in the B2 transcript.
+ *
+ * @type {Readonly<Record<string, RefusalCategory>>}
+ */
+export const NATIVE_TOOL_REFUSAL_MAP = Object.freeze({
+  // `assertImageCapableRoute` refuses a text-only calling route before any read.
+  IMAGE_UNSUPPORTED_MODEL: 'unsupported-mode',
+  // The host image tool rejects an unsupported/undeclared image format.
+  IMAGE_UNSUPPORTED_FORMAT: 'unsupported-mode',
+  // The registry refuses a call whose signal was already aborted.
+  ABORTED_BEFORE_DISPATCH: 'cancelled',
+})
+
+/**
  * The corpus vocabulary as ENUMERATED from the corpus and its recorded evidence
  * on 2026-11-20. SIX classes: the B1 read_image baselines added
  * `missing-path`, `image-modality-denied` and `cancelled`; the fourth B1 class,
@@ -509,6 +529,40 @@ export function categoryOfNativeFsError(code) {
 }
 
 /**
+ * Classify a refusal observed on the native path, where the surface may be an
+ * `FsError` code, a tool-level typed code, or (for an advisory shim) only the
+ * derived class. There is NO fallback bucket:
+ *   - an `FS_*` code must be in `NATIVE_FS_ERROR_MAP`;
+ *   - any other non-empty code must be in `NATIVE_TOOL_REFUSAL_MAP`;
+ *   - a code-less refusal is classified by its recorded class through the
+ *     legacy map (still total-or-refused).
+ *
+ * @param {{code?: unknown, refusal?: unknown}} input
+ * @returns {{category: RefusalCategory}}
+ * @throws {RefusalVocabularyError} `REFUSAL_VOCABULARY_INCOMPLETE` for an
+ *   unmapped code or class.
+ */
+export function categoryOfNativeRefusal({ code, refusal } = {}) {
+  if (typeof code === 'string' && code.length > 0) {
+    if (code.startsWith('FS_')) return categoryOfNativeFsError(code)
+    if (!Object.hasOwn(NATIVE_TOOL_REFUSAL_MAP, code)) {
+      throw new RefusalVocabularyError(
+        'REFUSAL_VOCABULARY_INCOMPLETE',
+        `native tool code ${JSON.stringify(code)} is not mapped by the closed vocabulary; map it deliberately (with a citation) rather than letting it fall into a default bucket`,
+      )
+    }
+    return Object.freeze({ category: NATIVE_TOOL_REFUSAL_MAP[code] })
+  }
+  if (isNoRefusal(refusal)) {
+    throw new RefusalVocabularyError(
+      'REFUSAL_VOCABULARY_INCOMPLETE',
+      'a native refusal with neither a code nor a class cannot be classified',
+    )
+  }
+  return Object.freeze({ category: categoryOfLegacyRefusal(refusal).category })
+}
+
+/**
  * Compare one legacy refusal against one native `FsError` code through the
  * closed categories.
  *
@@ -633,6 +687,7 @@ export function selfCheck({
   categories = REFUSAL_CATEGORIES,
   legacyMap = LEGACY_REFUSAL_MAP,
   nativeMap = NATIVE_FS_ERROR_MAP,
+  toolMap = NATIVE_TOOL_REFUSAL_MAP,
   fixtureEvidence = FIXTURE_CLASS_EVIDENCE,
   corpusClasses = CORPUS_VOCABULARY_BASELINE.legacyClasses,
 } = {}) {
@@ -707,6 +762,14 @@ export function selfCheck({
     }
     if (!Object.hasOwn(categories, category)) {
       findings.push({ code: 'REFUSAL_VOCABULARY_INVALID', detail: `native code ${code} names unknown category ${JSON.stringify(category)}` })
+    }
+  }
+  for (const [code, category] of Object.entries(toolMap)) {
+    if (!/^[A-Z][A-Z0-9_]+$/u.test(code) || code.startsWith('FS_')) {
+      findings.push({ code: 'REFUSAL_VOCABULARY_INVALID', detail: `native tool map key ${JSON.stringify(code)} is not a non-FsError tool code` })
+    }
+    if (!Object.hasOwn(categories, category)) {
+      findings.push({ code: 'REFUSAL_VOCABULARY_INVALID', detail: `native tool code ${code} names unknown category ${JSON.stringify(category)}` })
     }
   }
 

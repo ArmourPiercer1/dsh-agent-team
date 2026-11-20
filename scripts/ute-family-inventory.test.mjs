@@ -85,7 +85,7 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.equal(result.universe, 92)
   assert.deepEqual(result.shared.length, 14)
   const fs = result.families.find((f) => f.familyId === 'dsh.fs-family')
-  assert.deepEqual(fs.readiness, { baseline: 'complete', newPath: 'prototype', negativeControls: 'complete' })
+  assert.deepEqual(fs.readiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])

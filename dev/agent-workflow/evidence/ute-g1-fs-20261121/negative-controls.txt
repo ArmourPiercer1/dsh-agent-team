@@ -1,0 +1,15 @@
+NC NC-1-lane-bites ok outcome=deny refusal=lane-deny denyFact=writeText/write targetExists=false
+NC NC-2-harness-bites ok cleanFailures=0 mutatedFailures=1 mutatedFields=effects
+NC NC-3-no-fallback ok typed=NextHostMissingError namesPin=true namesLegacy=false
+NC NC-4-lane-load-bearing ok outcome=allow targetExists=true bytes=5
+NC NC-MEMBER read ok control=widen-read-lane baseline=deny/lane-deny baselineMatchesGolden=true mutant=allow/none differs=true mutantLeaks=SECRET_TOKEN present
+NC NC-MEMBER write ok control=widen-write-lane baseline=deny/lane-deny baselineMatchesGolden=true mutant=allow/none differs=true targetExists=true bytes=5
+NC NC-MEMBER edit ok control=drop-edit-version-guard baseline=deny/stale-version mutant=allow/none bytes=15
+NC NC-MEMBER read_image ok control=widen-read-lane-image baseline=deny/lane-deny baselineMatchesGolden=true mutant=allow/none differs=true attachmentBytes=70 modelBlocks=text+image
+NC NC-MEMBER-POSITIVE read ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
+NC NC-MEMBER-POSITIVE write ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
+NC NC-MEMBER-POSITIVE edit ok golden FS-E2=deny/stale-version baseline=deny/stale-version mutant=allow — the guard, not a missing old_string, is what refused
+NC NC-MEMBER-POSITIVE read_image ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
+NC NC-IMAGE-OBSERVER ok cases=4 zero-attachments:RED-as-required two-attachments:RED-as-required wrong-block-id:RED-as-required refusal-committed:RED-as-required
+NC-VERDICT GREEN controls=13 failed=0
+EXIT=0
