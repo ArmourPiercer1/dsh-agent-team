@@ -1769,8 +1769,10 @@ export function createAgentBindings(deps) {
           const disposeRealm = createA5sfRealmRowDisposer(a5sfRealm, (error) => {
             observations.push(`a5sf: realm dispose failed: ${error instanceof Error ? error.message : String(error)}`)
           })
+          // ONE registration. It used to be pushed here AND into toolDisposers, which started the
+          // realm disposal in the tool-disposer pass - before the native-mount tombstone was awaited -
+          // contradicting the ordering the comment in close() promises.
           a5sfRealmDisposers.push(disposeRealm)
-          toolDisposers.push(disposeRealm)
           // MEMBER EXECUTION COMPOSITION (centre + native mount + their lifecycle). The block below
           // used to live here: it is now one component with explicit inputs, so the entry assembles
           // and does not itself hold admission, facts, settlement or the mount's lifecycle.
@@ -4235,22 +4237,21 @@ export function createAgentBindings(deps) {
     // Invoke BOTH shapes: calling an object disposer as a function would throw
     // and be silently swallowed, leaving the Team-managed skill registrations
     // (and the deny scope) unwound-never on close.
+    // NATIVE MOUNTS FIRST, and this order is the guarantee, not a preference. A mount's dispose()
+    // asks the realm to release the native definition and installs the MEMBER_CLOSED tombstone in its
+    // place; it needs a living realm, and it must land BEFORE the admission point is disposed and
+    // before the realm itself goes away. Otherwise there is a window in which the inherited preset
+    // definition resolves and no admission decision is consulted.
+    for (const disposeMount of nativeMountDisposers.splice(0)) {
+      try {
+        await disposeMount.settled()
+      } catch { /* the realm disposal below still unmounts the providers */ }
+    }
     for (const d of toolDisposers.splice(0)) {
       try {
         if (typeof d === 'function') d()
         else if (d !== null && typeof d === 'object' && typeof d.dispose === 'function') d.dispose()
       } catch { /* the scope unwind covers it */ }
-    }
-    // Alpha.5: the realm disposals are ASYNC; await the ones this row started
-    // so close() does not return before the isolated provider fibers unmount.
-    // The native mounts go BEFORE the realm disposal: their dispose() asks the realm to release the
-    // definition and installs the MEMBER_CLOSED tombstone in its place, so no later dispatch can
-    // resolve an unconfined inherited body through a scope it still holds - and it needs a realm that
-    // is still alive to do it.
-    for (const disposeMount of nativeMountDisposers.splice(0)) {
-      try {
-        await disposeMount.settled()
-      } catch { /* the realm disposal below still unmounts the providers */ }
     }
     for (const disposeRealm of a5sfRealmDisposers.splice(0)) {
       await disposeRealm.settled()
