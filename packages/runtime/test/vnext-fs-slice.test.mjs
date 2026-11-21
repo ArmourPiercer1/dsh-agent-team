@@ -31,12 +31,19 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { after, before, test } from 'node:test'
+import { register } from 'node:module'
 import { hostNativeSpecs, mountHostModules } from '../src/plugin/vnext/realm-lane.mjs'
 import { instrumentedFileSystemClass, loadFsContractSeams } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+
+// The admission point is TypeScript importing product packages with `.js` specifiers; the repo's
+// hooks resolve those to `.ts`. Register them BEFORE the dynamic import (a static import would be
+// hoisted above the registration).
+register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
+const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -48,7 +55,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir }) {
+async function buildWorld ({ mountRealm, dir, admission }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -132,6 +139,31 @@ async function buildWorld ({ mountRealm, dir }) {
     await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
   }
 
+  // THE ADMISSION POINT, installed on the agent scope exactly as product wiring will install it.
+  // `admission: 'bound'` resolves the member's binding; `admission: 'unbound'` models a controlled
+  // call the centre has NOT been wired for, which must be refused rather than forwarded.
+  let facts = []
+  let disposeAdmission
+  if (mountRealm && admission !== undefined) {
+    const lanes = { read: { mode: 'restricted', allow: [inside], ask: [], deny: [] }, write: { mode: 'restricted', allow: [inside], ask: [], deny: [] } }
+    const binding = {
+      agentId: 'agent-vnext-slice',
+      sessionId: 'session-vnext-slice',
+      instanceGeneration: IDENTITY.instanceGeneration,
+      read: lanes.read,
+      write: lanes.write,
+      definitionSource: '@deepseek-ai/dsh-tool-fs',
+      policyGeneration: 'rev-vnext-slice',
+      blueprintRevision: 'bp-vnext-slice',
+      owner: 'team-root-vnext-slice',
+    }
+    disposeAdmission = installAdmissionPoint({
+      ctx: agent.ctx,
+      resolveBinding: () => (admission === 'bound' ? binding : undefined),
+      record: (record) => { facts.push(record) },
+    })
+  }
+
   const dispatch = async (name, args, callId) => {
     const settled = await root.get('tools').execute({
       signal: new AbortController().signal,
@@ -148,6 +180,7 @@ async function buildWorld ({ mountRealm, dir }) {
 
   return {
     dir,
+    facts: () => facts,
     inside,
     outside,
     insideFile,
@@ -158,6 +191,7 @@ async function buildWorld ({ mountRealm, dir }) {
     fsInstances,
     dispatch,
     async dispose () {
+      if (typeof disposeAdmission === 'function') disposeAdmission()
       if (realm !== undefined) await realm.dispose()
       await root.dispose?.()
     },
@@ -242,6 +276,59 @@ test('SLICE-6 — write: outside the ceiling it is refused before the filesystem
     assert.equal(existsSync(target), false, 'the refused write must not have created the file')
     const member = world.realm.installation.members[0].fs
     assert.equal(member.calls.writeText + member.calls.editText, 0, 'the member provider must not have been asked to write')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-7 — the admission point allows an in-ceiling call and records exactly one allow fact', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'adm-allow'), admission: 'bound' })
+  try {
+    const result = await world.dispatch('read', { file_path: world.insideFile }, 'adm-allow')
+    assert.equal(result.isError, false, `the bound in-ceiling read must succeed: ${result.text} ${String(result.errorMessage)}`)
+    const facts = world.facts()
+    assert.equal(facts.length, 1, 'one call, one fact')
+    assert.equal(facts[0].callId, 'adm-allow')
+    assert.equal(facts[0].decision, 'allow')
+    assert.equal(facts[0].axis, 'fs.read')
+    assert.equal(facts[0].locator, world.insideFile)
+    assert.equal(facts[0].policyGeneration, 'rev-vnext-slice')
+    assert.equal(facts[0].definitionSource, '@deepseek-ai/dsh-tool-fs')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-8 — the admission point refuses an out-of-ceiling call BEFORE the body, and records why', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'adm-deny'), admission: 'bound' })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const result = await world.dispatch('read', { file_path: world.outsideFile }, 'adm-deny')
+    assert.equal(result.isError, true, `the guard must refuse: ${result.text}`)
+    assert.match(String(result.errorMessage), /outside the binding's fs\.read lane/u, 'the refusal must name the lane the binding compiled, not a generic denial')
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText, 0, 'a guard refusal must precede the body, so the provider is never reached')
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].decision, 'deny')
+    assert.equal(facts[0].refusalCode, 'LANE_DENY')
+    assert.equal(facts[0].locator, world.outsideFile)
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-9 — UNWIRED: with no binding the same in-ceiling call is refused, and it never reaches the provider', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'adm-unbound'), admission: 'unbound' })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const result = await world.dispatch('read', { file_path: world.insideFile }, 'adm-unbound')
+    assert.equal(result.isError, true, `an unbound controlled call must be refused: ${result.text}`)
+    assert.match(String(result.errorMessage), /ADMISSION_NO_BINDING/u)
+    assert.equal(member.calls.readText + member.calls.streamText, 0, 'the refusal must come before any execution')
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].refusalCode, 'ADMISSION_NO_BINDING')
+    assert.equal(facts[0].agentId, '', 'the record must not invent an identity the binding did not supply')
   } finally {
     await world.dispose()
   }
