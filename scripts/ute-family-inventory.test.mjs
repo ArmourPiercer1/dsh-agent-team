@@ -98,6 +98,15 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.deepEqual(search.members, ['grep', 'glob'])
   assert.deepEqual(search.readiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
   assert.deepEqual(search.derivedReadiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
+  // PROCESS: UTE-3 B1 captured the old baseline for `bash` (14 vectors, its own
+  // per-member control) and NOTHING for the new path, and `pwsh` is a declared
+  // exclusion — so readiness is PARTIAL on the two measured axes and `none` on
+  // the new path. Both the declared and the derived value are asserted so a row
+  // that claims more than it can show stays INVENTORY_READINESS_DRIFT.
+  const process = result.families.find((f) => f.familyId === 'dsh.process-family')
+  assert.deepEqual(process.members, ['bash', 'pwsh'])
+  assert.deepEqual(process.readiness, { baseline: 'partial', newPath: 'none', negativeControls: 'partial' })
+  assert.deepEqual(process.derivedReadiness, { baseline: 'partial', newPath: 'none', negativeControls: 'partial' })
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])

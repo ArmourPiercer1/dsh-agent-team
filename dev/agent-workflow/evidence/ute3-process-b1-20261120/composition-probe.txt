@@ -1,0 +1,31 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 host_tree=tests/deepseek-harness-test-use
+PROBE fixture=<tmp>/inside,<tmp>/outside lane=read+write:inside
+PROBE kernel-content-read=enforced
+PROBE-PWSH binary=ABSENT
+PROBE-PWSH binary-on-path=no host-package=present route-c-shadow=ABSENT
+PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset (comment names it as an un-instrumented second shell)
+PROBE-REGISTRY bash=registered pwsh=MISSING
+PROBE-OWNER bash-replaced-by-attach=yes before=preset-definition after=routed-definition
+PROBE-MEMBER bash reachable=yes outcome=allow
+PROBE-MEMBER bash confined=yes providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER bash argv=["/bin/bash","-c","<body>"]
+PROBE-MEMBER bash text="{\"kind\":\"confined\",\"exitCode\":0,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"stdout\":\"<repo>/.artifacts/tmp/ute-g1-process/p"
+PROBE-MEMBER bash out-of-lane outcome=allow text="{\"kind\":\"confined\",\"exitCode\":1,\"signal\":null,\"timedOut\":false,\"aborted\":false,\"stdout\":\"\",\"stderr\":\"cat: ../outside/secret.txt: Permission denied\\n\"}"
+PROBE-MEMBER bash out-of-lane fact decision=allow locator=<last-path-segment>/inside code=ALLOW
+PROBE-MEMBER bash fallback reached-inherited-service=no
+PROBE-ROUTE-UNREACHABLE member=pwsh reason=no definition is registered for this name on the post-attach Member scope (the route-C attach places no shadow for it and the preset does not mount it)
+PROBE-FACTS total=4 allow=4 deny=0
+PROBE-PLANE names=bash-only gate=PLANE_NAMES_INVALID
+PROBE-PLANE names=bash-only message="plane mount name for 'grep' must match ^[a-z][a-z0-9_]{0,63}$ — got undefined"
+PROBE-PLANE names=bash-native+search-aliased gate=accepted
+PROBE-PLANE names=bash-aliased-only gate=PLANE_NAMES_INVALID
+PROBE-PLANE names=native+bash-pwsh gate=PLANE_NAMES_INVALID
+PROBE-PLANE names=native+bash-pwsh message="names carries 'pwsh' — the plane map is closed to its own classes (grep/glob/bash)"
+PROBE-PLANE assembly-native=TOOL_BINDING_UNVERIFIED
+PROBE-PLANE assembly-alias=TOOL_BINDING_UNVERIFIED
+PROBE-PLANE assembly-bash-native+search-aliased=TOOL_BINDING_UNVERIFIED
+PROBE-CONCLUSION native-bash=route-c/mountMemberA5sfRealm+attachA5sfNativeToolModules -> confined-bash-tool.mjs (PD-12) over the confined `subprocess` face
+PROBE-CONCLUSION native-pwsh=NOT-REACHABLE on the product route (no route-C shadow; the shipped governed preset REMOVES the tool-pwsh row)
+PROBE-CONCLUSION governed-plane=bash native name ACCEPTED by the plane name ledger (PLANE_SUPPORTED_NATIVE_TAKEOVERS.bash=[bash]); pwsh is not expressible in the closed names map at all
+PROBE-CONCLUSION governed-plane-dispatch=NOT-RUN (a governed bash dispatch needs the full governed kernel/PA mount; recorded as UNKNOWN in the evidence README)
+PROBE-CONCLUSION baseline-scope=bash only; pwsh is a DECLARED, PRINTED exclusion (unit stays short: 1 of 2 members exercisable)

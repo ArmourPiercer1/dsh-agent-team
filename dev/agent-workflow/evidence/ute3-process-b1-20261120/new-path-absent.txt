@@ -1,0 +1,25 @@
+NEW-PATH-ABSENT family=dsh.process-family stage=B1 member=bash newPathVerified=false
+
+No new path exists for this family at stage B1, so there is nothing to run and
+no PASS transcript to grade. This file is the ABSENCE EVIDENCE the retirement
+gate reads for `newPathVerified: false`; it is deliberately not an empty
+`new-path-run.txt` (an empty transcript would look like a skipped verification
+and `UNKNOWN`/skip is never PASS).
+
+Measured, not assumed:
+
+  * the census books two members (`bash`, `pwsh`) and the product route reaches
+    exactly one of them (see composition-probe.txt: PROBE-MEMBER bash reachable,
+    PROBE-ROUTE-UNREACHABLE member=pwsh);
+  * the new path for this family is the UTE-3 B2 work, which has not started:
+    no runner, no `run-new-path.mjs`, no new-path-controls.mjs, and no
+    `dev/agent-workflow/evidence/ute3-process-b2-20261120/` directory exist in
+    this tree at this commit;
+  * `git ls-tree -r --name-only HEAD -- tests/ute-g1-process` shows only the B1
+    old-path artifacts (this file's own commit), so the absent runner is a tree
+    fact, not a local omission.
+
+Consequence (honest): `unit=0/2` at the retirement gate — bash has an old-path
+baseline and a per-member control but NO new-path vector, pwsh has no vector at
+all. Retirement stays FORBIDDEN. The `--all` summary on the merged base is
+`requested=4 allowed=0 refused=4` (fs, search, web, process).

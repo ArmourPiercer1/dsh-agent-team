@@ -1,0 +1,159 @@
+# old-path.tsv — what this fixture is, and what it is not
+
+This file is the reviewed golden fixture for the **UTE G1 PROCESS family**
+(`bash`, `pwsh`), STAGE B1: fourteen `(request → effect)` pairs measured on the
+CURRENT product path and serialized by `tests/ute-g1-process/lib/scenario.mjs`.
+All fourteen cover `bash`. **`pwsh` is a DECLARED, PRINTED EXCLUSION** — the
+unit is covered 1 of 2 members at this stage, and this file says so instead of
+hiding it (see "The pwsh exclusion" below).
+
+`OLD-PATH-META vectors=14 host=0.2.0-rc.2 host_commit=639ed015397290b3745d163aafe02ffee4aa3f84 members=bash unit=1/2`
+
+It is a fixture, NOT a golden oracle and NOT a retirement claim:
+`tests/ute-g1-process/capture-old-path.mjs` re-derives it from the old path
+(exit 1 on any drift, or on a contradiction with the corpus design claim), and
+`tests/ute-g1-process/lane-suite.test.mjs` grades it.
+
+## Identity
+
+| field | value |
+|---|---|
+| host tree | `tests/deepseek-harness-test-use` (pinned; read-only) |
+| host version | `0.2.0-rc.2` |
+| host commit | `639ed015397290b3745d163aafe02ffee4aa3f84` |
+| governance seam | `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` (product route C), i.e. the compiled `EffectiveIo` lane + the confined `subprocess` face + the PD-12 bash shadow (`packages/runtime/src/plugin/live/confined-bash-tool.mjs`, module name `a5sf-confined-bash`) that the attach places |
+| dispatch | `ctx.tools.execute({…})` — the host registry's real model-call path |
+| capture form | host-free C1 world (`tests/ute-g1-process/lib/world.mjs`), `mkdtemp` per vector under `.artifacts/tmp/ute-g1-process/`; no boot, no DSH_HOME, no port |
+| capture command | `node tests/ute-g1-process/capture-old-path.mjs --write` |
+| verify command | `node tests/ute-g1-process/capture-old-path.mjs` (prints `OLD-PATH-GOLDEN compare=identical` or exits 1) |
+| oracle | `lib/effect-oracle.mjs` — the PARSED confined record (real exit status, real stdout/stderr bytes, real settle flags), the fixture-tree digest, the model-facing text, the confined provider's spawn count and the realm's guard facts |
+
+## Composition (measured, not assumed)
+
+`node tests/ute-g1-process/probe-composition.mjs` records the measurement in
+`dev/agent-workflow/evidence/ute3-process-b1-20261120/composition-probe.txt`:
+
+* `bash` IS reachable on the product route-C composition, and the attach
+  REPLACES the preset definition (`before=preset-definition
+  after=routed-definition`), so the measured `bash` IS the confined shadow:
+  `confined=yes providerCalls=1 inheritedServiceCalls=0`.
+* The shadow is the PD-12 `confined-bash-tool.mjs` definition, selected because
+  the shipped product wiring passes NO `faces.terminals` face; if a composition
+  wired a governed PTY, `nativeBashPtySpecOf` would win instead (declared as
+  `SD-PROCESS-3-pty-face-not-measured`).
+* The legacy governed plane's name ledger ACCEPTS the native `bash` spelling
+  (`PLANE_SUPPORTED_NATIVE_TAKEOVERS.bash = ['bash']`) but cannot express
+  `pwsh` at all (`PLANE_NAMES_INVALID`: the plane's map is closed to
+  grep/glob/bash). A governed `team_bash` DISPATCH is **NOT** run here: it needs
+  the full governed kernel/PA mount. That is an UNKNOWN, stated as such in the
+  evidence README.
+* `pwsh` is NOT REACHABLE: `PROBE-ROUTE-UNREACHABLE member=pwsh reason=no
+  definition is registered for this name on the post-attach Member scope`.
+
+## The pwsh exclusion (the honest reason the unit is 1/2)
+
+The census books TWO members of `dsh.process-family` (`bash`, `pwsh`). At B1
+`pwsh` is EXCLUDED from the baseline, and the exclusion is a MEASURED decision,
+not an omission:
+
+1. **no binary**: `PROBE-PWSH binary=ABSENT binary-on-path=no`;
+2. **no route-C shadow**: `PROBE-PWSH route-c-shadow=ABSENT`;
+3. **no preset row**: the shipped governed Member preset REMOVES the
+   `tool-pwsh` row (`PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset`,
+   the comment naming it an un-instrumented second shell);
+
+so a `pwsh` vector could only be captured on a HAND-BUILT composition that no
+product wiring produces. Capturing that would be a substitute path, so it is not
+done: the unit stays short and `ute-retirement-gate` prints `unit=0/2` until a
+pwsh-capable composition and host are measured. `pwsh` keeps its census member
+slot; `unit.members` is DERIVED from the census and must not shrink.
+
+## Record shape
+
+Header: `id entry lane_read lane_write outcome refusal codes effects facts leaks`.
+
+* `entry` — the Process member that produced the effect (`bash`); the
+  retirement gate derives member coverage from this column.
+* `lane_*` — world-relative lane tokens, never absolute paths.
+* `outcome` — `allow` | `deny`.
+* `refusal` — a closed category or `-` when allowed. The vocabulary is the
+  nine-category one imported from `tests/ute-g1-fs/lib/refusal-categories.mjs`
+  (**reused, not forked**), plus this surface's own three prose entries
+  (`cancelled`, `denied-by-lane`, `missing-path`, `invalid-argument`) declared
+  with citations in `lib/effect-oracle.mjs`. The residual `unknown` is
+  unreachable (asserted by `auditProcessVocabulary` and by the suite).
+  `read-before-write`/`stale-version`/`unsupported-mode`/`route-unresolved` are
+  FS/Search-shaped and no Process vector produces them.
+* `codes` — the typed code the model-facing text carried (`IO_READ_DENIED`, …).
+  Recorded, never a pass condition. `cancelled` and `invalid-argument` have a
+  TEXTUAL cause by construction, so their code cell is legitimately empty.
+* `effects` — synthetic entries (`@`) in the FS serializer's grammar,
+  `path|present|bytes|sha256|mode` joined by `;`:
+  * `@process` — `bytes` = the child's real EXIT STATUS (`-` when the call was
+    refused or the child was killed), `mode` =
+    `timedOut=<yes|no>,aborted=<yes|no>,record=<json|absent>`.
+  * `@stdout` / `@stderr` — `bytes` = byte length, `sha256` = digest of the
+    normalized text (the fixture root collapsed to `<world>`, the shell to
+    `<shell>`), `mode=normalized`; `absent` when empty.
+  * `@fs:tree` — the digest over every non-dot regular file under the fixture's
+    `inside/` and `outside/` trees, `mode=unchanged` (or `CHANGED`).
+* `facts` — `confined=<spawns>,allow=<allow facts>,deny=<deny facts>,base=<inherited service calls>`.
+  This is the "the confined face was actually reached, and no unconfined
+  fallback answered" witness. The retirement gate parses by column NAME.
+* `leaks` — the planted secret token if it appeared in the model-facing text
+  (`-`: none).
+
+## The printed EXCLUSION SET
+
+`capture-old-path.mjs` PRINTS what is intentionally not in the fixture:
+
+* `record.signal` — the terminating signal name of a killed child. It is the
+  kernel's report, and the timeout vector's claim is carried by the absent
+  marker file instead (PB-B5: the command that would have written `marker.txt`
+  did not);
+* `record.kind` — constant `"confined"` on every row;
+* `timing.*` — wall-clock measurements (a capture must be byte-identical);
+* `pid` — process identity;
+* absolute workdir — normalized to `<world>`.
+
+Nothing else is excluded: the fixture is a pure function of the corpus, and two
+independent captures serialize to the same bytes (asserted by the suite).
+
+## Retained semantics of the product path (measured, disclosed)
+
+* **A timed-out child reports `exitCode=null` and a SIGNAL** (`PB-B5`): the
+  caller-visible facts are `timedOut=true` and the absent filesystem effect,
+  never a numeric status.
+* **Output is silently TAIL-truncated at 262144 bytes** (`PB-B4`: 300022
+  emitted bytes arrive as exactly 262144 ending with the final marker) with NO
+  truncation flag in the record — declared as `SD-PROCESS-1-no-truncation-flag`.
+* **Out-of-lane file access is denied by the OS, not by the tool**: `PB-B8`
+  and `PB-B9` are ADMITTED by the guard (the lane was consulted for the
+  declared workdir) and refused by the kernel at the syscall, answering exit 1
+  with a permission-denied stderr. The lane boundary itself (`PB-B7`, `PB-B14`)
+  is refused BEFORE dispatch with `IO_READ_DENIED` and zero spawns.
+* **The child environment is scrubbed**: `PB-B10` sees `secret=ABSENT` and
+  `dsh=ABSENT` for ambient `*_SECRET`/`*_TOKEN`/`KEY`/`PASSWORD` names and every
+  `DSH_*` name — proven load-bearing by `NC-ENV-SCRUB-LOAD-BEARING`.
+* **stdin is not connected to the model**: `PB-B11` reads EOF immediately
+  (`got:`).
+
+## What it does NOT cover (mirrored in ../README.md §7)
+
+* **These rows are OLD-PATH evidence.** No new path exists for this family at
+  B1: `newPathVerified` is FALSE with an absence evidence file, not an empty
+  PASS transcript.
+* **`pwsh`** — declared exclusion above; the unit is 1/2.
+* **A governed `team_bash` dispatch** — measured only up to the plane's name
+  ledger; its dispatch is an UNKNOWN.
+* **The persistent-PTY `bash` definition** — never selected by the shipped
+  wiring (see `SD-PROCESS-3-pty-face-not-measured`); `cd`/`export` state and the
+  `stty -echo` marker protocol are not exercised.
+* **Read confinement is not PROVEN.** A refusal record pins the refusal, the
+  absence of the secret token and an unchanged tree. It cannot prove no
+  unauthorized read happened.
+* **Output-cap truncation flag** — there is none to exercise; the difference is
+  declared, not approximated.
+* **Background/daemon processes, signals other than the caller timeout,
+  concurrent dispatches, `stdout`/`stderr` interleaving** — not exercised.
+* **Live boot** — C1 host-free capture, not a booted run.
