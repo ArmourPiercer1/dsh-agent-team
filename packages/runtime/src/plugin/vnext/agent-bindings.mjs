@@ -360,7 +360,15 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 import { readDeliveredWorkTurn } from './work-turn-reader.mjs'
 // The a5sf realm mount + its row helpers SURVIVE the cut (the realm is the
 // provider installation the lane mounts into).
-import { a5sfRealmConfigOf, compiledAnswerOfRealm, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from '../live/a5sf-realm-row.mjs'
+// `freshCreateHintAdmits` is imported, not copied: the rule that a bind-path hint may bridge ONLY the
+// fresh-member window is a path predicate (it was duplicated here and in the realm row).
+import {
+  a5sfRealmConfigOf,
+  compiledAnswerOfRealm,
+  createA5sfRealmRowDisposer,
+  freshCreateHintAdmits,
+  mountMemberA5sfRealm,
+} from '../live/a5sf-realm-row.mjs'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
 // Who a session is, and whether it may be brought back - one component (plan S1).
@@ -461,12 +469,6 @@ import { createScope, scopeOf } from '@deepseek-ai/dsh-scope'
  * @param {object|undefined} explicitAgent - the explicit AgentSetup agent.
  * @returns {object|undefined} the canonical runtime Agent (or undefined).
  */
-/** The fresh-create window hint (moved out of the retired realm row: it is
- *  a path predicate, not realm state). */
-function freshCreateHintAdmits(bindPath) {
-  return bindPath === 'fresh-member'
-}
-
 function resolveSetupAgent(agentCtx, explicitAgent) {
   if (explicitAgent !== null && explicitAgent !== undefined) return explicitAgent
   const legacyAgent =
