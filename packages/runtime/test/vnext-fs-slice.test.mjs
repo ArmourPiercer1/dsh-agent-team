@@ -57,7 +57,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -152,7 +152,10 @@ async function buildWorld ({ mountRealm, dir, admission, durable }) {
   // SECOND world built on the same path stands in for the resumed process.
   const ledger = durable === undefined ? undefined : openFactLedger({ path: durable })
   if (mountRealm && admission !== undefined) {
-    const lanes = { read: { mode: 'restricted', allow: [inside], ask: [], deny: [] }, write: { mode: 'restricted', allow: [inside], ask: [], deny: [] } }
+    const lanes = {
+      read: { mode: 'restricted', allow: [inside], ask: askPath === undefined ? [] : [askPath], deny: [] },
+      write: { mode: 'restricted', allow: [inside], ask: [], deny: [] },
+    }
     const binding = {
       agentId: 'agent-vnext-slice',
       sessionId: 'session-vnext-slice',
@@ -489,6 +492,26 @@ test('SLICE-15 — ONE native registration per name: the model-visible catalogue
       // single entry.
       assert.equal(world.definitionOf(name), world.resolvedDefinitions[name], `${name} must dispatch to the member-mounted definition`)
     }
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-16 — an ASK is refused as ADMISSION_ASK_UNWIRED, never executed and never silently allowed', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'ask'), admission: 'bound', askPath: join(dir, 'ask', 'asked') })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const askedFile = join(dir, 'ask', 'asked', 'report.txt')
+    mkdirSync(join(dir, 'ask', 'asked'), { recursive: true })
+    writeFileSync(askedFile, 'asked\n')
+    const result = await world.dispatch('read', { file_path: askedFile }, 'ask-1')
+    assert.equal(result.isError, true, `an ask must not run until Control can adjudicate it: ${result.text}`)
+    assert.match(String(result.errorMessage), /ADMISSION_ASK_UNWIRED/u)
+    assert.equal(member.calls.readText + member.calls.streamText, 0, 'an unadjudicated ask must not reach the provider')
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].decision, 'ask', 'the record must say ask, not deny: the difference is who refused')
+    assert.match(String(facts[0].reason), /requires approval/u)
   } finally {
     await world.dispose()
   }
