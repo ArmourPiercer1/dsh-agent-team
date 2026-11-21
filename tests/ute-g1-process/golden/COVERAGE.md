@@ -52,19 +52,25 @@ Transcript: `dev/agent-workflow/evidence/ute3-process-b1-20261120/negative-contr
 The exclusion is MEASURED in
 `dev/agent-workflow/evidence/ute3-process-b1-20261120/composition-probe.txt`:
 
-| fact | measured |
-|---|---|
-| `pwsh` binary | `PROBE-PWSH binary=ABSENT` (`binary-on-path=no`) |
-| host package | `PROBE-PWSH ... host-package=present` (the package exists; nothing can run it) |
-| route-C shadow | `PROBE-PWSH route-c-shadow=ABSENT` |
-| shipped governed preset row | `PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset` |
-| post-attach Member scope | `PROBE-ROUTE-UNREACHABLE member=pwsh reason=no definition is registered for this name on the post-attach Member scope` |
-| legacy plane name ledger | `PLANE_NAMES_INVALID` — the plane's name map is closed to grep/glob/bash, so `pwsh` cannot even be expressed |
+The exclusion is derived from the **shipped wiring**, never from the host
+(`lib/pwsh-exclusion.mjs`; `PROC-8`; `NC-PWSH-EXCLUSION-CONDITIONAL`).
 
-A `pwsh` vector could therefore only be captured on a hand-built composition
-that no shipped product wiring produces. Capturing that would be a substitute
-path, so it is NOT done. The member keeps its census slot; the unit stays short
-and every artifact says so.
+| fact | kind | measured |
+|---|---|---|
+| route-C shadow | **WIRING (decisive)** | `PROBE-PWSH route-c-shadow=ABSENT` |
+| shipped governed preset row | **WIRING (decisive)** | `PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset` |
+| post-attach Member scope | **WIRING (decisive)** | `PROBE-ROUTE-UNREACHABLE member=pwsh reason=no definition is registered for this name on the post-attach Member scope` |
+| legacy plane name ledger | **WIRING (decisive)** | `PLANE_NAMES_INVALID` — the plane's name map is closed to grep/glob/bash, so `pwsh` cannot even be expressed |
+| `pwsh` binary | OBSERVATION (host) | `PROBE-PWSH binary=…` — printed and recorded, **never asserted**: hosted run 44843401144 red exactly because a runner ships PowerShell and the first revision had pinned `binary=ABSENT` |
+| host package | OBSERVATION (host tree) | `PROBE-PWSH ... host-package=present` (the pinned host tree ships the package; nothing serves it) |
+
+Rule: while the wiring serves no `pwsh` the exclusion is legal; the moment any
+wiring fact starts serving it, the corpus is OBLIGED to carry a `pwsh` vector
+and the run REFUSES the exclusion (`PWSH-EXCLUSION-UNJUSTIFIED`). A `pwsh`
+vector could therefore only be captured on a hand-built composition that no
+shipped wiring produces; capturing that would be a substitute path, so it is NOT
+done. The member keeps its census slot; the unit stays short and every artifact
+says so.
 
 ## Refusal classes seen per member
 

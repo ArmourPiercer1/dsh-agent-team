@@ -11,7 +11,7 @@ Host pin: `0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`
 |---|---|---|
 | `composition-probe.txt` | the STAGE 0 probe: members, reachability on product route C, the confined face, the `pwsh` verdict with its four facts, the legacy governed plane's answer for these names, and the baseline-scope decision | `node tests/ute-g1-process/probe-composition.mjs` |
 | `old-path-capture.txt` | the old-path capture/verify transcript: the identity line, the PRINTED exclusion set, every vector's measured row summary, `OLD-PATH-GOLDEN compare=identical`, `OLD-PATH-VERDICT GREEN` | `node tests/ute-g1-process/capture-old-path.mjs` |
-| `negative-controls.txt` | the nine controls, each with its mutated arm going RED and (where applicable) its `-POSITIVE` arm | `node tests/ute-g1-process/negative-controls.mjs` |
+| `negative-controls.txt` | the ten controls, each with its mutated arm going RED and (where applicable) its `-POSITIVE` arm | `node tests/ute-g1-process/negative-controls.mjs` |
 | `new-path-absent.txt` | the absence evidence behind `newPathVerified: false` | authored (there is no runner to produce it) |
 
 ## Probe answer (machine verdict, not prose)
@@ -23,9 +23,15 @@ Host pin: `0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`
   (`confined=yes providerCalls=1 inheritedServiceCalls=0`) — the PD-12
   `confined-bash-tool.mjs` definition, selected because the shipped wiring passes
   NO `faces.terminals` face.
-* **`pwsh` is NOT reachable**: `PROBE-ROUTE-UNREACHABLE member=pwsh`. Four
-  independent facts: no binary, no route-C shadow, host package present but
-  unusable, and the shipped governed preset REMOVES the `tool-pwsh` row.
+* **`pwsh` is NOT reachable**: `PROBE-ROUTE-UNREACHABLE member=pwsh`. The
+  DECISIVE facts are WIRING facts — no route-C shadow, the shipped governed
+  preset REMOVES the `tool-pwsh` row, and nothing is registered on the
+  post-attach Member scope. `PROBE-PWSH binary=…` is a HOST OBSERVATION and is
+  never asserted: hosted run 44843401144 red on the first revision precisely
+  because a GitHub runner ships PowerShell while the author's laptop does not.
+  The exclusion is now conditional on the wiring (`lib/pwsh-exclusion.mjs`,
+  `PROC-8`, `NC-PWSH-EXCLUSION-CONDITIONAL`) and refuses itself loudly
+  (`PWSH-EXCLUSION-UNJUSTIFIED`) if the wiring ever serves `pwsh`.
 * **The legacy governed plane** accepts the native `bash` spelling on a COMPLETE
   name map (`PROBE-PLANE names=bash-native+search-aliased gate=accepted`;
   `PLANE_SUPPORTED_NATIVE_TAKEOVERS.bash = ['bash']`), and cannot express `pwsh`

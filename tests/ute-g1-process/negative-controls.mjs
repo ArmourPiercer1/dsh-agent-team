@@ -47,6 +47,7 @@
  *
  * @module tests/ute-g1-process/negative-controls
  */
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -61,6 +62,13 @@ import {
   classifyProcessRefusal,
 } from './lib/effect-oracle.mjs'
 import { captureVector } from './lib/old-path.mjs'
+import {
+  PWSH_EXCLUSION_REFUSAL,
+  PwshExclusionError,
+  coverageObligation,
+  measureWiring,
+  wiringFacts,
+} from './lib/pwsh-exclusion.mjs'
 
 const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-process', 'golden', 'old-path.tsv')
 /** The per-vector scratch root, collapsed so a transcript never carries a host path. */
@@ -161,6 +169,41 @@ await control('NC-CATEGORY-TOTAL', async () => {
     const resolved = classifyProcessRefusal({ text: `Error: ${code}: x`, code, facts: [{ decision: 'deny', locator: join(SCRATCH, 'missing') }] })
     if (resolved.category === UNKNOWN_CATEGORY) return `code ${code} resolved into the unclassified bucket`
   }
+  return undefined
+})
+
+// ── 2b. the pwsh exclusion is CONDITIONAL on the wiring (hosted 44843401144) ─
+// The first revision asserted "no pwsh binary on this host", which is true on
+// the author's laptop and false on a GitHub runner. That is a portability defect
+// in the EVIDENCE, not a flake: no test may require the host's shape. This
+// control proves the replacement law can REFUSE: while the shipped wiring serves
+// no pwsh the exclusion is legal, and the moment any wiring fact starts serving
+// it the corpus is obliged to carry a vector — loudly, never silently.
+await control('NC-PWSH-EXCLUSION-CONDITIONAL', async () => {
+  const probeOutput = execFileSync(process.execPath, [join(process.cwd(), 'tests', 'ute-g1-process', 'probe-composition.mjs')], { cwd: process.cwd(), encoding: 'utf8' })
+  const wiring = measureWiring(probeOutput)
+  const baseline = coverageObligation(wiringFacts({ ...wiring, vectors: CORPUS }))
+  if (baseline.status !== 'EXCLUDED') return `the measured wiring (serves no pwsh) did not yield EXCLUDED: ${JSON.stringify(baseline)}`
+  if (CORPUS.some((vector) => vector.entry === 'pwsh')) return 'the corpus carries a pwsh vector although the wiring serves none (the exclusion would not be exercised)'
+  const refused = []
+  for (const [label, mutated] of [
+    ['shadow', { shadowPresent: true }],
+    ['preset', { presetMountsPwsh: true }],
+    ['registered', { registered: true }],
+  ]) {
+    try {
+      coverageObligation(wiringFacts({ ...wiring, ...mutated, vectors: CORPUS }))
+      return `a wiring that serves pwsh via ${label} was granted the exclusion silently (the control does not bite)`
+    } catch (error) {
+      if (!(error instanceof PwshExclusionError) || error.code !== PWSH_EXCLUSION_REFUSAL) {
+        return `the ${label} arm raised ${String(error?.code ?? error?.name)} instead of ${PWSH_EXCLUSION_REFUSAL}`
+      }
+      refused.push(label)
+    }
+  }
+  if (refused.length !== 3) return `only ${String(refused.length)} of 3 wiring arms refused the exclusion`
+  const covered = coverageObligation(wiringFacts({ ...wiring, registered: true, vectors: [...CORPUS, { entry: 'pwsh' }] }))
+  if (covered.status !== 'COVERED') return `the same wiring WITH a vector was not accepted: ${JSON.stringify(covered)}`
   return undefined
 })
 

@@ -34,6 +34,14 @@ import { CORPUS, PROCESS_SECRET } from './lib/corpus.mjs'
 import { compareAll, effectOf, parseGolden, processMode } from './lib/compare.mjs'
 import { CATEGORY_IDS, REFUSAL_CATEGORIES, UNKNOWN_CATEGORY, auditProcessVocabulary } from './lib/effect-oracle.mjs'
 import { identityLine, captureCorpus } from './lib/old-path.mjs'
+import {
+  PWSH_EXCLUSION_REFUSAL,
+  PwshExclusionError,
+  coverageObligation,
+  measureWiring,
+  wiringFacts,
+  wiringLine,
+} from './lib/pwsh-exclusion.mjs'
 import { SEMANTIC_DIFF_LINE_RE, SEMANTIC_DIFFERENCES, semanticDifferenceLines } from './lib/semantic-differences.mjs'
 
 const ROOT = process.cwd()
@@ -163,7 +171,7 @@ test('PROC-5 the family and per-member negative controls are GREEN, and the comm
   assert.match(verdict, /^NC-VERDICT GREEN controls=[0-9]+ failed=0$/u, `the controls are not green: ${verdict}`)
   assert.match(output, /^NC NC-MEMBER bash ok$/mu, 'the per-member control must be present and green (the retirement gate greps it)')
   assert.match(output, /^NC NC-MEMBER bash-POSITIVE ok$/mu, 'the per-member control needs its positive arm')
-  for (const id of ['NC-HARNESS-BITES', 'NC-CATEGORY-TOTAL', 'NC-SHADOW-LOAD-BEARING', 'NC-CONFINEMENT-WITNESS', 'NC-TIMEOUT-LOAD-BEARING', 'NC-ENV-SCRUB-LOAD-BEARING', 'NC-CAP-LOAD-BEARING']) {
+  for (const id of ['NC-HARNESS-BITES', 'NC-CATEGORY-TOTAL', 'NC-PWSH-EXCLUSION-CONDITIONAL', 'NC-SHADOW-LOAD-BEARING', 'NC-CONFINEMENT-WITNESS', 'NC-TIMEOUT-LOAD-BEARING', 'NC-ENV-SCRUB-LOAD-BEARING', 'NC-CAP-LOAD-BEARING']) {
     assert.match(output, new RegExp(`^NC ${id} ok$`, 'mu'), `${id} must be present and green`)
   }
   assert.equal(output.includes('FAIL'), false, `a control failed: ${output}`)
@@ -178,9 +186,16 @@ test('PROC-5 the family and per-member negative controls are GREEN, and the comm
 
 test('PROC-6 the composition probe reproduces the measured verdict the baseline rests on', () => {
   const output = execFileSync(process.execPath, [join(DIR, 'probe-composition.mjs')], { cwd: ROOT, encoding: 'utf8' })
+  // ONLY host-independent facts are asserted here. The binary presence is a
+  // HOST OBSERVATION (a GitHub runner ships PowerShell and that must never
+  // change the verdict); the exclusion itself is a WIRING fact, asserted below
+  // and enforced by PROC-8 + NC-PWSH-EXCLUSION-CONDITIONAL.
+  const binaryObservation = /^PROBE-PWSH binary=(.*)$/mu.exec(output)
+  assert.ok(binaryObservation !== null, 'the probe must PRINT its pwsh-binary observation')
   const expect = [
-    [/^PROBE-PWSH binary=ABSENT$/mu, 'no pwsh binary on this host'],
-    [/^PROBE-PWSH binary-on-path=no host-package=present route-c-shadow=ABSENT$/mu, 'pwsh host package present but no shadow'],
+    [/^PROBE-PWSH binary-on-path=(?:yes|no) host-package=present route-c-shadow=ABSENT$/mu, 'no route-C shadow for pwsh on this composition'],
+    [/^PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset/mu, 'the shipped governed preset REMOVES the tool-pwsh row'],
+    [/^PROBE-PWSH reason=shipped-wiring route-c-shadow=ABSENT preset-row=REMOVED\S* post-attach-definition=ABSENT — the binary line above is a HOST OBSERVATION, not the exclusion reason$/mu, 'the probe must name the WIRING as the exclusion reason and label the binary as an observation'],
     [/^PROBE-ROUTE-UNREACHABLE member=pwsh reason=.+$/mu, 'pwsh must be declared unreachable by NAME'],
     [/^PROBE-OWNER bash-replaced-by-attach=yes before=preset-definition after=routed-definition$/mu, 'the attach must replace the preset bash definition'],
     [/^PROBE-MEMBER bash reachable=yes outcome=allow$/mu, 'bash must be reachable'],
@@ -196,10 +211,53 @@ test('PROC-6 the composition probe reproduces the measured verdict the baseline 
   // scope, not a crash, not a binary lookup.
   const unreachable = output.split('\n').find((line) => line.startsWith('PROBE-ROUTE-UNREACHABLE member=pwsh'))
   assert.match(unreachable, /no definition is registered/u)
+  // The observation is RECORDED and printed, never required to have one shape.
+  console.log(`PROC-PROBE-PWSH binary-observation=${JSON.stringify(binaryObservation[1])} exclusion-reason=shipped-wiring (host-independent)`)
+
+  // PROC-8's law, evaluated on the SAME probe output the assertions read: the
+  // exclusion is legal only while the wiring serves no pwsh, and the corpus
+  // must carry a vector the moment it does.
+  const wiring = measureWiring(output)
+  const facts = wiringFacts({ ...wiring, vectors: CORPUS })
+  const obligation = coverageObligation(facts)
+  assert.equal(obligation.status, 'EXCLUDED', `the corpus must be excluded only while the wiring serves no pwsh: ${JSON.stringify(obligation)}`)
+  console.log(wiringLine(facts))
   const committed = readFileSync(PROBE_TRANSCRIPT, 'utf8')
   assert.equal(committed.includes('PROBE-ROUTE-UNREACHABLE member=pwsh'), true)
   assert.equal(committed.includes('PROBE-CONCLUSION baseline-scope=bash only'), true)
   console.log(`PROC-PROBE route-c=bash-confined pwsh=UNREACHABLE reason=no-definition plane-native-bash=ACCEPTED plane-pwsh=PLANE_NAMES_INVALID`)
+})
+
+test('PROC-8 the pwsh exclusion is conditional on the SHIPPED WIRING, not on a binary', () => {
+  // Hosted run 44843401144 red on `binary=ABSENT`: that assertion encoded the
+  // author's laptop, not the repository. This test encodes the LAW instead: the
+  // exclusion is allowed only while route C / the preset / the post-attach scope
+  // serve no `pwsh`, and a composition that DOES serve it must fail loudly here
+  // rather than silently inherit the exclusion.
+  const output = execFileSync(process.execPath, [join(DIR, 'probe-composition.mjs')], { cwd: ROOT, encoding: 'utf8' })
+  const wiring = measureWiring(output)
+  const facts = wiringFacts({ ...wiring, vectors: CORPUS })
+  assert.deepEqual(wiring, { shadowPresent: false, presetMountsPwsh: false, registered: false }, `the measured wiring must serve no pwsh, got ${JSON.stringify(wiring)}`)
+  assert.equal(coverageObligation(facts).status, 'EXCLUDED')
+  // The exclusion is NOT inherited: flip each wiring fact and the corpus is then
+  // OBLIGED to carry a pwsh vector. Each arm must refuse with the named code.
+  for (const [label, mutated] of [
+    ['route-c-shadow present', { shadowPresent: true }],
+    ['preset mounts tool-pwsh', { presetMountsPwsh: true }],
+    ['post-attach definition registered', { registered: true }],
+  ]) {
+    assert.throws(
+      () => coverageObligation(wiringFacts({ ...wiring, ...mutated, vectors: CORPUS })),
+      (error) => error instanceof PwshExclusionError && error.code === PWSH_EXCLUSION_REFUSAL,
+      `${label} must REFUSE the exclusion instead of inheriting it`,
+    )
+  }
+  // And the same wiring WITH a vector is covered, so the law is not "always red".
+  const covered = coverageObligation(wiringFacts({ shadowPresent: true, presetMountsPwsh: false, registered: false, vectors: [...CORPUS, { entry: 'pwsh' }] }))
+  assert.equal(covered.status, 'COVERED')
+  // The corpus itself must stay bash-only while the wiring serves no pwsh.
+  assert.equal(CORPUS.some((vector) => vector.entry === 'pwsh'), false)
+  console.log('PROC-PWSH-CONDITIONAL wiring=serves-none exclusion=LEGAL arms-refused=3 covered-arm=COVERED')
 })
 
 test('PROC-7 the evidence directory is complete and retirement stays honestly forbidden', () => {

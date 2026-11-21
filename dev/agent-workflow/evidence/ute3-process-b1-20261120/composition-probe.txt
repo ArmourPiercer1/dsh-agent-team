@@ -5,6 +5,7 @@ PROBE-PWSH binary=ABSENT
 PROBE-PWSH binary-on-path=no host-package=present route-c-shadow=ABSENT
 PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset (comment names it as an un-instrumented second shell)
 PROBE-REGISTRY bash=registered pwsh=MISSING
+PROBE-PWSH reason=shipped-wiring route-c-shadow=ABSENT preset-row=REMOVED-by-the-shipped-governed-preset post-attach-definition=ABSENT — the binary line above is a HOST OBSERVATION, not the exclusion reason
 PROBE-OWNER bash-replaced-by-attach=yes before=preset-definition after=routed-definition
 PROBE-MEMBER bash reachable=yes outcome=allow
 PROBE-MEMBER bash confined=yes providerCalls=1 inheritedServiceCalls=0

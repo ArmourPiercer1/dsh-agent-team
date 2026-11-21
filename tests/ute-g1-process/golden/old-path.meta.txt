@@ -53,20 +53,32 @@ It is a fixture, NOT a golden oracle and NOT a retirement claim:
 ## The pwsh exclusion (the honest reason the unit is 1/2)
 
 The census books TWO members of `dsh.process-family` (`bash`, `pwsh`). At B1
-`pwsh` is EXCLUDED from the baseline, and the exclusion is a MEASURED decision,
-not an omission:
+`pwsh` is EXCLUDED from the baseline, and the exclusion is derived from the
+**SHIPPED WIRING** — three REPO facts, all measured by
+`probe-composition.mjs` — not from this machine:
 
-1. **no binary**: `PROBE-PWSH binary=ABSENT binary-on-path=no`;
-2. **no route-C shadow**: `PROBE-PWSH route-c-shadow=ABSENT`;
-3. **no preset row**: the shipped governed Member preset REMOVES the
+1. **no route-C shadow**: `PROBE-PWSH route-c-shadow=ABSENT`;
+2. **no preset row**: the shipped governed Member preset REMOVES the
    `tool-pwsh` row (`PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset`,
    the comment naming it an un-instrumented second shell);
+3. **no definition on the post-attach Member scope**:
+   `PROBE-ROUTE-UNREACHABLE member=pwsh reason=no definition is registered for
+   this name on the post-attach Member scope`.
 
-so a `pwsh` vector could only be captured on a HAND-BUILT composition that no
-product wiring produces. Capturing that would be a substitute path, so it is not
-done: the unit stays short and `ute-retirement-gate` prints `unit=0/2` until a
-pwsh-capable composition and host are measured. `pwsh` keeps its census member
-slot; `unit.members` is DERIVED from the census and must not shrink.
+`PROBE-PWSH binary=…` is a **HOST OBSERVATION**, printed and recorded but never
+a reason: hosted run 44843401144 proved it (the first revision asserted
+`binary=ABSENT`, true on the author's laptop and false on a GitHub runner that
+ships PowerShell). The law is `lib/pwsh-exclusion.mjs`: while the wiring serves
+no `pwsh` the exclusion is legal; the moment any of the three facts starts
+serving it, the corpus is OBLIGED to carry a `pwsh` vector and the run refuses
+loudly (`PWSH-EXCLUSION-UNJUSTIFIED`) instead of inheriting a stale exclusion
+(`NC-PWSH-EXCLUSION-CONDITIONAL`, three refusal arms).
+
+A `pwsh` vector could therefore only be captured on a HAND-BUILT composition that
+no shipped wiring produces. Capturing that would be a substitute path, so it is
+not done: the unit stays short and `ute-retirement-gate` prints `unit=0/2` until
+a pwsh-serving composition is measured. `pwsh` keeps its census member slot;
+`unit.members` is DERIVED from the census and must not shrink.
 
 ## Record shape
 

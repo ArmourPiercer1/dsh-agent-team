@@ -9,7 +9,7 @@ directory deliberately contains no new-path runner.
 node tests/ute-g1-process/probe-composition.mjs      # stage 0: reachability + the pwsh verdict
 node tests/ute-g1-process/capture-old-path.mjs --write   # (re)write the golden
 node tests/ute-g1-process/capture-old-path.mjs           # verify: OLD-PATH-GOLDEN compare=identical
-node tests/ute-g1-process/negative-controls.mjs          # NC-VERDICT GREEN controls=9 failed=0
+node tests/ute-g1-process/negative-controls.mjs          # NC-VERDICT GREEN controls=10 failed=0
 node --test tests/ute-g1-process/lane-suite.test.mjs     # the lane's own gates
 ```
 
@@ -28,6 +28,7 @@ packages through `packages/runtime/src/plugin/live/a5sf-realm-row.mjs`.
 | `lib/compare.mjs` | the graded fields + the reviewed TSV serializer/parser |
 | `lib/old-path.mjs` | the old-path identity + the capture facade |
 | `lib/semantic-differences.mjs` | the five measured, blocking, UNAPPROVED differences |
+| `lib/pwsh-exclusion.mjs` | the LAW that makes the `pwsh` exclusion conditional on the shipped wiring, never on a host binary |
 | `capture-old-path.mjs` | write / verify the golden fixture (prints the exclusion set) |
 | `negative-controls.mjs` | nine controls; each mutated arm must go RED |
 | `lane-suite.test.mjs` | the gates (7 checks, one verdict line) |
@@ -42,8 +43,13 @@ packages through `packages/runtime/src/plugin/live/a5sf-realm-row.mjs`.
 
 * the attach places the PD-12 bash shadow over the preset definition and the
   call reaches the confined provider (`confined=1`, `inheritedServiceCalls=0`);
-* `pwsh` is unreachable (no binary, no shadow, no preset row) — a DECLARED
-  exclusion, so the unit is 1/2;
+* `pwsh` is unreachable because the SHIPPED WIRING serves no definition for it
+  (no route-C shadow, no preset row, nothing registered on the post-attach
+  scope) — a DECLARED exclusion, so the unit is 1/2. The `pwsh` binary is a
+  HOST OBSERVATION and is never asserted (hosted run 44843401144 red on the
+  first revision, which pinned `binary=ABSENT`); `lib/pwsh-exclusion.mjs` makes
+  the exclusion conditional on the wiring and refuses it loudly
+  (`PWSH-EXCLUSION-UNJUSTIFIED`) the moment the wiring serves `pwsh`;
 * the legacy governed plane ACCEPTS the native `bash` name on a complete map
   and cannot express `pwsh` at all (`PLANE_NAMES_INVALID`).
 

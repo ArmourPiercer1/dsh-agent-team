@@ -44,7 +44,7 @@ const pwshBinary = ['/usr/bin/pwsh', '/usr/local/bin/pwsh', '/opt/microsoft/powe
   .filter((candidate) => { try { readFileSync(candidate); return true } catch { return false } })
 const pathPwsh = spawnSync('sh', ['-c', 'command -v pwsh 2>/dev/null || true'], { encoding: 'utf8' }).stdout.trim()
 console.log(`PROBE-PWSH binary=${pwshBinary.length > 0 ? pwshBinary.join(',') : (pathPwsh !== '' ? pathPwsh : 'ABSENT')}`)
-console.log(`PROBE-PWSH binary-on-path=${pathPwsh === '' ? 'no' : 'yes'} host-package=${existsHostPackage('shell/tool-pwsh') ? 'present' : 'absent'} route-c-shadow=${existsRouteCShadow('pwsh') ? 'present' : 'ABSENT'}`)
+console.log(`PROBE-PWSH binary-on-path=${pathPwsh === '' ? 'no' : 'yes'} host-package=${existsHostPackage('shell/tool-pwsh') ? 'present' : 'absent'} route-c-shadow=${existsRouteCShadow('pwsh') ? 'PRESENT' : 'ABSENT'}`)
 console.log(`PROBE-PWSH preset-row=${governedPresetMentions('tool-pwsh')}`)
 
 /* ── 1. the product route: mountMemberA5sfRealm + attachA5sfNativeToolModules ── */
@@ -57,6 +57,10 @@ const world = await mountRouteCWorld({
 try {
   const visible = (name) => world.root.tools.get(name, world.agentKey) !== undefined
   console.log(`PROBE-REGISTRY bash=${visible('bash') ? 'registered' : 'MISSING'} pwsh=${visible('pwsh') ? 'registered' : 'MISSING'}`)
+  // The EXCLUSION'S REASON is the wiring, never the host. The binary line above
+  // is an observation: a runner may ship PowerShell, and that must not change
+  // the verdict. This line states the repo facts the rule is derived from.
+  console.log(`PROBE-PWSH reason=shipped-wiring route-c-shadow=${existsRouteCShadow('pwsh') ? 'PRESENT' : 'ABSENT'} preset-row=${governedPresetMentions('tool-pwsh').split(' ')[0]} post-attach-definition=${visible('pwsh') ? 'REGISTERED' : 'ABSENT'} — the binary line above is a HOST OBSERVATION, not the exclusion reason`)
   console.log(`PROBE-OWNER bash-replaced-by-attach=${world.shadowReplaced ? 'yes' : 'NO(!!)'} before=${world.definitionBeforeAttach === undefined ? 'absent' : 'preset-definition'} after=${world.definitionAfterAttach === undefined ? 'ABSENT(!!)' : 'routed-definition'}`)
   for (const member of ['bash', 'pwsh']) {
     if (!visible(member)) {
@@ -159,5 +163,5 @@ function existsRouteCShadow(name) {
 function governedPresetMentions(rowId) {
   const patch = readFileSync(join(REPO_ROOT, 'cordis.patch.yml'), 'utf8')
   const removed = new RegExp(`#\\s+- \\\`${rowId}\\\``).test(patch)
-  return removed ? 'REMOVED-by-the-shipped-governed-preset (comment names it as an un-instrumented second shell)' : 'present'
+  return removed ? 'REMOVED-by-the-shipped-governed-preset (comment names it as an un-instrumented second shell)' : 'MOUNTED'
 }

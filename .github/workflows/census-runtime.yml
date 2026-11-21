@@ -423,7 +423,7 @@ jobs:
         # same post-build reason (its C1 world mounts the route-C row). It grades the 14-vector PROCESS
         # old-path golden, the closed refusal vocabulary, the covered member set (bash only; pwsh is a
         # PRINTED exclusion, unit=1/2), the five unapproved semantic differences, and the family +
-        # per-member negative controls (`NC-VERDICT GREEN controls=9 failed=0`).
+        # per-member negative controls (`NC-VERDICT GREEN controls=10 failed=0`).
         run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other

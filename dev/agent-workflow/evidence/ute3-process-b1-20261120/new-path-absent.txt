@@ -10,7 +10,10 @@ Measured, not assumed:
 
   * the census books two members (`bash`, `pwsh`) and the product route reaches
     exactly one of them (see composition-probe.txt: PROBE-MEMBER bash reachable,
-    PROBE-ROUTE-UNREACHABLE member=pwsh);
+    PROBE-ROUTE-UNREACHABLE member=pwsh). The `pwsh` exclusion is a WIRING fact
+    (no route-C shadow, preset row removed, nothing registered post-attach), not
+    a host-binary fact — a runner that ships PowerShell must not change it
+    (lib/pwsh-exclusion.mjs; NC-PWSH-EXCLUSION-CONDITIONAL);
   * the new path for this family is the UTE-3 B2 work, which has not started:
     no runner, no `run-new-path.mjs`, no new-path-controls.mjs, and no
     `dev/agent-workflow/evidence/ute3-process-b2-20261120/` directory exist in
