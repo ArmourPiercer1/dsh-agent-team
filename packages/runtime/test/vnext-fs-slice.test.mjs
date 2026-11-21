@@ -47,6 +47,7 @@ const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-po
 const { installExecutionFacts } = await import('../src/plugin/vnext/execution-facts.mjs')
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
+const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -210,6 +211,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
         if (ledger !== undefined) ledger.recordExecution(fact)
       },
       admissionOf: (callId) => facts.find((entry) => entry.callId === callId),
+      // The product's own settlement identity, not a second scheme: same agent + same callId must
+      // always produce the same ExecutionId, or the settlement store cannot join a retry.
+      executionIdOf: (callId) => dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, callId),
     })
   }
 
@@ -684,6 +688,24 @@ test('SLICE-23 — lifecycle close: the centre stops deciding, and records nothi
   assert.equal(world.schemas().some((schema) => schema.name === 'read'), true, 'the closed tool must still be declared, as closed')
   assert.equal(world.facts().length, factsBefore, 'no fact may be written after close')
   assert.equal(world.executions().length, executionsBefore, 'no execution fact may be written after close')
+})
+
+test('SLICE-24 — the execution fact carries the PRODUCT settlement id, deterministically', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'settle'), admission: 'bound' })
+  try {
+    const one = await world.dispatch('read', { file_path: world.insideFile }, 'settle-1')
+    assert.equal(one.isError, false, `the read must succeed: ${one.text}`)
+    const two = await world.dispatch('read', { file_path: world.insideFile }, 'settle-2')
+    assert.equal(two.isError, false)
+    const [first, second] = world.executions()
+    assert.match(String(first.executionId), /^exec-[0-9a-f]{40}$/u, 'the id must be the product scheme, not an invented one')
+    assert.notEqual(first.executionId, second.executionId, 'two different calls are two different executions')
+    // Determinism is the property the settlement store depends on: recomputing from the same
+    // provenance and callId must reproduce the exact id.
+    assert.equal(first.executionId, dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, 'settle-1'))
+  } finally {
+    await world.dispose()
+  }
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {

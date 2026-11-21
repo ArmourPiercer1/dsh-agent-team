@@ -35,9 +35,12 @@ export const OUTCOME_KINDS = Object.freeze(['admission-refusal', 'approval-refus
  * @param {(callId: string) => object|undefined} [input.admissionOf] - the centre's admission record
  *   for that callId, when one was written. Its presence is what distinguishes a refusal from a
  *   body failure.
+ * @param {(callId: string) => string} [input.executionIdOf] - the SETTLEMENT identity for the
+ *   physical attempt. Supplied rather than derived so the centre uses the product's own
+ *   `dispatchExecutionId(provenance, callId)` instead of making a second id scheme.
  * @returns {() => void} the disposer.
  */
-export function installExecutionFacts ({ ctx, record, admissionOf }) {
+export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf }) {
   if (ctx === null || typeof ctx !== 'object' || typeof ctx.on !== 'function') {
     throw new ExecutionFactsError('CTX_MISSING', 'no agent context to observe')
   }
@@ -63,6 +66,7 @@ export function installExecutionFacts ({ ctx, record, admissionOf }) {
     const isError = result?.isError === true
     const fact = Object.freeze({
       callId,
+      ...(typeof executionIdOf === 'function' ? { executionId: executionIdOf(callId) } : {}),
       toolName: exec.name,
       agentId: typeof exec.agent?.id === 'string' ? exec.agent.id : '',
       turn: exec.turn,
