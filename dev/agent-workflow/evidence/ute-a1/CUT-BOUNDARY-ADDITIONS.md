@@ -374,5 +374,18 @@ count ratchet is 41. Two ways out exist and only one of them is honest:
   edit across `dev/ci/eb3-ci-manifest.json` and `.github/workflows/ci-census.yml`, validated by
   `node scripts/eb3-ci-required.mjs`, which is the first task of the next round.
 
-Until then the window's own Required set is honestly red on the catalog gate, and that is the
-correct state to be in: the arms exist and pass; they are simply not yet wired to run.
+**RESOLVED in the same window.** A new `ci-census` leg
+(`ute vnext A1 (node:test, pinned host REQUIRED; realm mount + real FS slice + admission)`) declares
+the three suites in `suites[]` with `env.A5SF_REQUIRE_PINNED_HOST='1'`, and `census-runtime.yml`
+runs it through `scripts/dispatch-tests.mjs --run --leg ute-vnext-a1`. Two things had to be right,
+and both are the gate's own reasons:
+
+- the leg's argv is **distinct** (`dispatch-tests.mjs --run --leg …`) rather than the shared
+  `node --test --test-force-exit …` prefix, because a shared prefix makes the whole-trailing-argv
+  reader attribute the B4 steps' files to this leg (`CI_LAYER_LEG_EXTRA_ARGUMENT`, measured);
+- `A5SF_REQUIRE_PINNED_HOST=1` makes an absent pinned host a **RED** here, not a declared refusal,
+  since these suites load the pinned built `lib/` entries.
+
+Measured after the change: `EB3-CI-REQUIRED pass workflows=10 findings=0` and
+`DSH-TEST-CATALOG tests=885 refused=0 findings=0` at the unchanged `--max-uncollected 41`. Nothing
+was added to the uncollected baseline and no ratchet was raised.

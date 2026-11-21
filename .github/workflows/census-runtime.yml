@@ -633,6 +633,35 @@ jobs:
           A5SF_REQUIRE_PINNED_HOST: '1'
         run: node --test --test-force-exit --test-timeout=300000 --test-reporter=spec tests/world-factory/a5sf-web-contract.test.mjs tests/world-factory/a5sf-web-row.test.mjs tests/world-factory/a5sf-pd31-read-image.test.mjs
 
+      # UTE vNext A1 (2026-11-21): the cut deleted 148 sources + 151 dist mirrors and replaced the
+      # assembly, so the two facts that decide whether the new centre can exist must run here, not
+      # only in a worktree. (1) A native tool body resolves its provider from the ctx captured at
+      # apply() time, so per-agent confinement can ONLY come from mounting the HOST module inside
+      # the member's isolated provider realm: vnext-fs-slice pins the four measured facts (the
+      # member resolves a DIFFERENT definition object while `execute` is the SAME function source;
+      # an in-ceiling read succeeds through the member provider; an out-of-ceiling read is refused
+      # by the member's own lane with ZERO filesystem calls; and the same world WITHOUT the mount
+      # reads the outside file, so the arms are falsifiable). (2) The mount lane refuses a
+      # Team-authored file:// body (MODULE_NOT_HOST) and a mount that leaves the agent resolving the
+      # inherited definition (DEFINITION_UNCHANGED) - the silent half-mount that ran the base
+      # provider with no confinement consulted. (3) The admission point refuses with no binding, no
+      # axis, or no locator rather than forwarding to the composition provider.
+      # HOST-REQUIRED: all three load the pinned baseline's BUILT lib/ entries through
+      # tests/world-factory/lib/a5sf-fs-contract-world.mjs, so A5SF_REQUIRE_PINNED_HOST=1 makes an
+      # absent host RED here rather than a declared refusal. Host-free otherwise: an in-process
+      # Cordis unit root and mkdtemp fixtures - no boot, no port, no DSH_HOME.
+      # Population is declared ONCE in dev/ci/eb3-ci-manifest.json (suites[]); this step names only
+      # the leg, and that leg's argv is distinct from the shared `node --test ...` prefix of the
+      # B4 steps on purpose (a shared prefix makes the whole-trailing-argv reader attribute one
+      # leg's tokens to another, which is CI_LAYER_LEG_EXTRA_ARGUMENT). Deleting the step is
+      # CI_LAYER_LEG_MISSING; dropping --run is CI_LAYER_LEG_WEAKENED.
+      - name: UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED)
+        shell: bash
+        timeout-minutes: 15
+        env:
+          A5SF_REQUIRE_PINNED_HOST: '1'
+        run: node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+
       # M7-B1 (2026-11-16): the World Factory OWNS the filesystem observation window
       # (identity + declared scope + pre/post window + witness provenance) and three
       # real FS controls prove the window bites: an authorized write is reported and
