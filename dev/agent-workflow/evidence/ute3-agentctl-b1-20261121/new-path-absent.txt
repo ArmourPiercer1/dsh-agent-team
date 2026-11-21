@@ -1,0 +1,37 @@
+UTE-3 / G1 AGENT-CONTROL — new-path verification: ABSENT at B1
+================================================================
+
+NEW-PATH-ABSENT family=dsh.agent-control-family members=7
+NEW-PATH-ABSENT route-c=no-agent-control-face reason="attachA5sfNativeToolModules appends shell/search/fs/skill/present/web shadows only; all seven dispatches are `unknown tool` with providerCalls=0 guardFacts=0"
+NEW-PATH-ABSENT family-assembly=no-alternative-binding reason="the only assembly in this repository that mounts the seven members is the governed family itself; mounting it IS the old path"
+NEW-PATH-ABSENT next-host=not-exercised reason="the pinned host 0.2.0-rc.2 owns native rows for the seven spellings, but they are the SECOND implementation, not a confined replacement; this lane does not dispatch them"
+NEW-PATH-ABSENT product-switch=not-attempted reason="no production flag was set, no realm was mounted with agentControlEnabled outside the host-free C1 world, no host was booted"
+
+Per member (no NEW-PATH-VECTOR <id> PASS line exists — nothing was reproduced
+on a new path, because there is no new path to run):
+
+NEW-PATH-ABSENT member=subagent
+NEW-PATH-ABSENT member=subagent_fork
+NEW-PATH-ABSENT member=send_message
+NEW-PATH-ABSENT member=interrupt_agent
+NEW-PATH-ABSENT member=list_agents
+NEW-PATH-ABSENT member=list_subagent_models
+NEW-PATH-ABSENT member=workflow
+
+What WOULD have to exist for this term to become true
+-----------------------------------------------------
+1. A confined native binding for each of the seven spellings (a home outside
+   the governed family body) that the retirement gate's new-path harness can
+   dispatch.
+2. A name-ownership decision for the seven RESERVED native spellings
+   (SD-AGENTCTL-2): the natexe ledger currently grades no agent-control class.
+3. An approved decision on the admission-surface change (SD-AGENTCTL-3): the
+   governed rows open a real PA Control ask and consume a one-shot grant; the
+   native rows do not ride that edge.
+4. An owner reference-bound approval record. This lane writes none.
+
+This file is evidence of ABSENCE, not a green. The retirement ledger therefore
+keeps `newPathVerified.verdict = false` and the family state
+`NOT_RETIREABLE`. No NEW-PATH-VECTOR token is emitted, deliberately: emitting
+one for a path that does not exist would be the fabrication the gate refuses
+(UTE_NEW_PATH_UNVERIFIED must fire per covered member and per vector).

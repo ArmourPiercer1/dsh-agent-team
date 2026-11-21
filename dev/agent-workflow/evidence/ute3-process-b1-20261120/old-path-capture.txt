@@ -1,0 +1,22 @@
+OLD-PATH-IDENTITY route=mountMemberA5sfRealm+attachA5sfNativeToolModules member=bash shell=/bin/bash host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 dispatch=root.tools.execute (the host registry, the model call path) engine=GNU bash, version 5.3.9(1)-release (x86_64-pc-linux-gnu)
+OLD-PATH-FIXTURE vectors=14 members=bash
+OLD-PATH-EXCLUSIONS record.signal (the terminating signal name of a killed child; excluded, corroborated by the absent marker file); record.kind (a constant ("confined") on every row; carries no effect); timing.* (wall-clock: duration/startedAt; excluded because a capture must be byte-identical across runs); pid (process identity; excluded as machine state); workdir (absolute) (the fixture root is normalized to <world> in every recorded string)
+OLD-CATEGORY-VOCABULARY denied-by-lane,read-before-write,stale-version,missing-path,invalid-argument,unsupported-mode,route-unresolved,cancelled,unknown
+OLD-CATEGORY-SIZE 9
+OLD-CATEGORY-PROCESS-ENTRIES clean
+PB-B1-inlane-stdout entry=bash outcome=allow refusal=- codes=- exit=0 timedOut=no stdout=41B stderr=0B leaks=none
+PB-B2-exit-code entry=bash outcome=allow refusal=- codes=- exit=7 timedOut=no stdout=0B stderr=0B leaks=none
+PB-B3-stderr entry=bash outcome=allow refusal=- codes=- exit=3 timedOut=no stdout=0B stderr=5B leaks=none
+PB-B4-stdout-cap entry=bash outcome=allow refusal=- codes=- exit=0 timedOut=no stdout=262144B stderr=0B leaks=none
+PB-B5-timeout entry=bash outcome=allow refusal=- codes=- exit=- timedOut=yes stdout=0B stderr=0B leaks=none
+PB-B6-abort-before-dispatch entry=bash outcome=deny refusal=cancelled codes=- exit=- timedOut=no stdout=0B stderr=0B leaks=none
+PB-B7-outside-workdir entry=bash outcome=deny refusal=denied-by-lane codes=IO_READ_DENIED exit=- timedOut=no stdout=0B stderr=0B leaks=none
+PB-B8-outside-read-os entry=bash outcome=allow refusal=- codes=- exit=1 timedOut=no stdout=0B stderr=46B leaks=none
+PB-B9-outside-write-os entry=bash outcome=allow refusal=- codes=- exit=1 timedOut=no stdout=0B stderr=56B leaks=none
+PB-B10-env-scrub entry=bash outcome=allow refusal=- codes=- exit=0 timedOut=no stdout=37B stderr=0B leaks=none
+PB-B11-stdin-ignored entry=bash outcome=allow refusal=- codes=- exit=0 timedOut=no stdout=4B stderr=0B leaks=none
+PB-B12-missing-workdir entry=bash outcome=deny refusal=missing-path codes=IO_READ_DENIED exit=- timedOut=no stdout=0B stderr=0B leaks=none
+PB-B13-invalid-command entry=bash outcome=deny refusal=invalid-argument codes=- exit=- timedOut=no stdout=0B stderr=0B leaks=none
+PB-B14-bound-workdir entry=bash outcome=deny refusal=denied-by-lane codes=IO_READ_DENIED exit=- timedOut=no stdout=0B stderr=0B leaks=none
+OLD-PATH-GOLDEN compare=identical fixture=<repo>/tests/ute-g1-process/golden/old-path.tsv vectors=14
+OLD-PATH-VERDICT GREEN vectors=14 claimProblems=0 identity=mountMemberA5sfRealm+attachA5sfNativeToolModules

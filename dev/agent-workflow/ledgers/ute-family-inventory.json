@@ -494,9 +494,9 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "partial",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "partial"
       },
       "note": "The process family mounts both shell rows under native spellings (`bash`, `pwsh`) through the same-name/same-meaning takeover ledger in the plane. `pwsh-confined.mjs` is classed `executor` because it is the confined spawn backend for the pwsh row."
     },
@@ -1531,9 +1531,9 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
       "note": "Seven rows in ONE candidate. `native-output-schemas.mjs` is classed `mechanics` (shared output schemas/constants)."
     },

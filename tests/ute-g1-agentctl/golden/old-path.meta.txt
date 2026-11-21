@@ -1,0 +1,40 @@
+fixture            tests/ute-g1-agentctl/golden/old-path.tsv
+family             dsh.agent-control-family (census unit; SEVEN members)
+members            subagent, subagent_fork, send_message, interrupt_agent, list_agents, list_subagent_models, workflow
+rows               42 (six vectors per member)
+columns            id, entry, outcome, refusal, category, codes, payload, state, facts
+host               NONE — host-free C1; no boot, no DSH_HOME, no port, no host tree
+host pin           0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84 (referenced only: the fixture executes no host code)
+old path           the governed family body, mounted through the legacy governed plane
+                   (createTeamToolPlaneAssembly) + the FamilyAssembly seam + the
+                   dsh.agent-control-family descriptor, plane.agentControlEnabled=true
+dispatch           the row's own execute(raw, { signal, tokenKey, agent })
+effect boundary    an injected agent-runtime port with REAL state (roster, per-agent
+                   inbox, children, workflow runs) and a full call record
+witnesses          (1) the model-facing payload; (2) the read-back state cell;
+                   (3) refusal code + imported refusal category; (4) call/control
+                   facts (port calls per leg, PA decisions, exec-token uses)
+determinism        two consecutive captures are byte-identical; no clock, no
+                   random, no nonce is retained; the plane's correlation nonce
+                   (plane-ac:<nonce>-<n>) is never recorded
+exclusions         NONE. All seven members are covered; no inherently-variable
+                   witness is retained, so nothing had to be excluded. The
+                   capture prints `OLD-PATH-EXCLUSIONS count=0` on every run.
+paired artifacts   golden/COVERAGE.md (member x vector map)
+                   golden/SEMANTIC-DIFFERENCES.md (three blocking, unapproved differences)
+                   README.md (scope, how to run, UNKNOWNs)
+
+Why route-C is not the old path here
+------------------------------------
+The Stage-0 probe measured that the product route-C attach appends no
+agent-control shadow: all seven dispatches are `unknown tool` refusals with zero
+provider calls and zero guard facts. A route-C fixture would therefore have
+recorded the HOST's native rows, not the governed family being retired. The old
+path for this family is the governed family body at C1. See
+dev/agent-workflow/evidence/ute3-agentctl-b1-20261121/composition-probe.txt.
+
+What this fixture is NOT
+------------------------
+It is not a boot, not a product switch and not a safety verdict. It proves what
+the governed family body DOES at C1 for seven members, and nothing about the
+native host rows' own encoding (README.md, UNKNOWNs).

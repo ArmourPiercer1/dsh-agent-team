@@ -98,6 +98,15 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.deepEqual(search.members, ['grep', 'glob'])
   assert.deepEqual(search.readiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
   assert.deepEqual(search.derivedReadiness, { baseline: 'complete', newPath: 'complete', negativeControls: 'complete' })
+  // PROCESS: UTE-3 B1 captured the old baseline for `bash` (14 vectors, its own
+  // per-member control) and NOTHING for the new path, and `pwsh` is a declared
+  // exclusion — so readiness is PARTIAL on the two measured axes and `none` on
+  // the new path. Both the declared and the derived value are asserted so a row
+  // that claims more than it can show stays INVENTORY_READINESS_DRIFT.
+  const process = result.families.find((f) => f.familyId === 'dsh.process-family')
+  assert.deepEqual(process.members, ['bash', 'pwsh'])
+  assert.deepEqual(process.readiness, { baseline: 'partial', newPath: 'none', negativeControls: 'partial' })
+  assert.deepEqual(process.derivedReadiness, { baseline: 'partial', newPath: 'none', negativeControls: 'partial' })
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])
@@ -109,6 +118,15 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.deepEqual(web.members, ['web_fetch', 'web_search'])
   assert.deepEqual(web.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
   assert.deepEqual(web.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  // AGENT-CONTROL (UTE-3 B1) books SEVEN members, all dual implementations, and
+  // is the first family whose baseline is a 42-vector corpus over the GOVERNED
+  // family body rather than route-C (the Stage-0 probe measured route-C serves
+  // none of the seven names). Its readiness is asserted on every axis, declared
+  // AND derived, so a hand-edited ledger cannot satisfy this arm alone.
+  const agentctl = result.families.find((f) => f.familyId === 'dsh.agent-control-family')
+  assert.deepEqual(agentctl.members, ['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'])
+  assert.deepEqual(agentctl.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  assert.deepEqual(agentctl.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
   // UI + AGENT-STATE (UTE-3 B1, 2026-11-21): the same shape as WEB — baseline
   // and per-member controls established, NO new path, so `newPath: none` is the
   // measured readiness and the derived copy must say the same. Both are pinned
@@ -315,6 +333,22 @@ test('declaring a readiness the evidence does not support is INVENTORY_READINESS
   // older `partial` is exactly the hand-edit this control exists to catch.
   mutant('hand-edit the fs baseline back to partial', 'INVENTORY_READINESS_DRIFT', (ledger) => {
     fsFamily(ledger).retirementReadiness.baseline = 'partial'
+  })
+})
+
+test('the agent-control readiness is measured too (INVENTORY_READINESS_DRIFT)', () => {
+  // The baseline is `complete` ONLY because the retirement gate derives 7/7
+  // member coverage from the committed 42-vector fixture, and the controls are
+  // `complete` ONLY because every member has a committed `NC-MEMBER` line. A row
+  // that declares either differently is drift, not a declaration.
+  mutant('hand-edit the agent-control baseline to none', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    ledger.families.find((f) => f.familyId === 'dsh.agent-control-family').retirementReadiness.baseline = 'none'
+  })
+  mutant('claim an agent-control new path that does not exist', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    ledger.families.find((f) => f.familyId === 'dsh.agent-control-family').retirementReadiness.newPath = 'complete'
+  })
+  mutant('declare the control axis partial', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    ledger.families.find((f) => f.familyId === 'dsh.agent-control-family').retirementReadiness.negativeControls = 'partial'
   })
 })
 
