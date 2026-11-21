@@ -9482,6 +9482,22 @@ UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
 
 **明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② **不证明网络隔离** —— 宿主 sandbox 只 claim 文件效果，`external=0` 是**本次运行**的实测零（由可双向证伪的 shim 产出），钉住 provider 仍会自行跟随同源重定向（`WEB_REDIRECT_UNMEDIATE_ON_ALLOW`）且对公网名仍走代理（`WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW`）；③ `capSearchSources` 未覆盖（shadow 取宿主默认 `searchMaxResults=50`，组合不暴露下调键，fixture 5 条源在上限内）——明写缺口，不静默删向量；④ 已映射但未触发的 code：`WEB_BLOCKED_URL`（故意 unmapped）、`WEB_INVALID_URL`、`WEB_PROVIDER_ERROR`、`WEB_SEARCH_DESTINATION_DENIED`；⑤ 跨源重定向拒绝只映射未测量（fixture 链同源）；⑥ 仅 dispatch 前取消可表达；⑦ 无 live boot（C1 host-free）；⑧ governed `webEnabled:true` 挂载/dispatch 未运行。
 
+## 2026-11-20 — 审批请求的**问题清单**（不是审批）：三族的全部可测轴已完成，剩余阻挡物是签名
+
+**这份文件不是审批记录，也不替代审批记录。** 依据 = 冻结合同 `RETIREMENT.md` §1：`SemanticDifferencesResolved` 必须有引用式 owner 记录（`PR #<n> @ <40-hex>`，且 40-hex 必须是 HEAD 的祖先）；gate 只证明绑定，不证明签署权。本条把"要签什么"写成可一次裁决的问题，正文 = `docs/plans/memo/ute-g1-20261120/APPROVAL-REQUEST-2026-11-20.md`。
+
+**当前三族（master `3c8412fc0`，gate 原样）**：
+```
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4
+UTE-RETIREMENT-REFUSED family=search codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=2/2
+UTE-RETIREMENT-REFUSED family=web codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/2
+UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3
+```
+三族各有**三条 blocking 语义差异**（fs 两条）且全部 `approval: null`。其中两条的性质必须分清：
+- `SD-SEARCH-1-grep-path-default` 是**产品行为缺陷**（无 path 的 `grep` 在产品路径返回 0 命中），不是措辞差异；接受它等于对用户承诺"这就是语义"，因此必须 owner 签，不能由 agent 记成"已解决"。
+- `SD-WEB-1-native-name-claim-collision` 是**架构问题**：`web_fetch`/`web_search` 两个原生名同时被 legacy family 与 route-C 产出，seam 未指认唯一所有者——名字有两个生产者时无法退役，这不是形式主义。
+
+**今天另有一条值得记住的观测纪律**：`ci-integration` 在 #810 上失败过一次，日志里只留下 `DSH-CENSUS-SUMMARY … verdict=FAIL codes=TASK_STATE_FAIL` 与一条 `GIT_READ_FAILED`，而同一套件在本机 100/100、41/41 全绿；`gh run rerun --failed` 后整层转绿。**结论：CI 层的单次红不是结论，也不是"已绿"**——要么复现要么重跑，两者都没做之前只能记 UNKNOWN。这条与"本地绿不算 hosted 绿"是同一件事的两面。
 ## 2026-11-20 — UTE-3 / G1 PROCESS PR B1：旧路径基线（14 向量）+ 逐成员负控 + pwsh 明写排除
 
 **背景**：Process family（`bash`、`pwsh`）在 G1 里是**一个退役单元两成员**。B1 只交旧路径：钉住宿主上**产品 route-C seam** 服务的 native `bash`，逐向量记录 `(request → effect)`；新路径尚未开工。
@@ -9503,3 +9519,5 @@ UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
 **未触碰**：`packages/**` 产品代码、`tests/ute-g1-fs/**`、`tests/ute-g1-search/**`、`tests/ute-g1-web/**`、其他 family 行、`docs/plans/active/**`、上游/host 树（只读；`tests/deepseek-harness-*` 为本地 symlink，交付树 `git ls-tree -r HEAD | grep -c '^tests/deepseek-harness'` 必须为 0）；**无新 workflow 行、无新 manifest leg**（本 suite 挂在既有 post-build "UTE G1 FS binding product lane" leg 的 `run:` 上，manifest `check[]` 与 workflow `run:` 逐 token 相同）；未 push master/stable、未 force-push、未合并。
 
 **明写的限制（不是 PASS）**：① governed `team_bash` **dispatch 未运行**（只测到 plane 的 name ledger 与 assembly verdict `TOOL_BINDING_UNVERIFIED`），需完整 governed kernel/PA mount；② `pwsh` 语义一无所知（无 binary、无组合）；③ 持久 PTY 版 `bash`（`native-bash-tool.mjs`）从未被 shipped wiring 选中，`cd`/`export` 状态与 `stty -echo`/marker 协议**未覆盖**（`SD-PROCESS-3`）；④ 不证明读隔离（拒绝记录只证明"拒绝了 + 无 secret + 树未变"）；⑤ 输出 cap 无截断标志（`SD-PROCESS-1`）；⑥ 后台/守护进程、非调用方超时的信号、并发派发、stdout/stderr 交错未覆盖；⑦ 无 live boot（C1 host-free）；⑧ 新路径完全不存在（`newPathVerified=false`，`unit=0/2`），退役被禁止。
+
+**Hosted 红 → 修正（2026-11-21，run 44843401144，job `ci-census / census-runtime`）**：`PROC-6` 曾把 **"本机没有 pwsh 二进制"** 作为断言（`PROBE-PWSH binary=ABSENT`），这在作者机上为真、在 GitHub runner 上为假（runner 自带 PowerShell），于是 hosted 红为 `AssertionError: the probe no longer shows no pwsh binary on this host`。这是**真实的证据可移植性缺陷**，不是 flake：断言编码了笔记本，不是仓库。修正原则：`pwsh` 不能覆盖的原因是**仓库/接线事实**（route-C 无 shadow、shipped governed preset 移除 `tool-pwsh` 行、post-attach Member scope 无该名定义），二进制只是**观测**。故：① `PROC-6` 只断言 host-independent 事实（`route-c-shadow=ABSENT`、`preset-row=REMOVED-by-the-shipped-governed-preset`、`PROBE-ROUTE-UNREACHABLE … no definition is registered`、census 两成员），二进制行改为**格式校验 + 打印**（`binary=(ABSENT|PRESENT)`）而不钉值；② 新增 `tests/ute-g1-process/lib/pwsh-exclusion.mjs` 与负控 `NC-PWSH-EXCLUSION-CONDITIONAL`（controls 9→10）：排除的合法性由**接线**推导——若 shadow 存在 / preset 挂载 `tool-pwsh` / post-attach 已注册定义，而语料没有 `pwsh` 向量，则**大声失败**（`PWSH-EXCLUSION-UNJUSTIFIED`），机器真的服务 `pwsh` 时不会静默继承排除；③ meta/COVERAGE/README/账本 note 同步改写（把 binary 标为观测，不再当理由）；④ 探针新增 `PROBE-PWSH reason=…` 行明示接线事实。同时并入 master `82e8c5d1c`（docs-only，审批请求问题清单），log 保留 master 文本、本族条目接在其后，append-only 仍 `verdict=pass`。
