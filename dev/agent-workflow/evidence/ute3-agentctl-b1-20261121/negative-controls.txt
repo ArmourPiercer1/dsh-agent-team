@@ -1,0 +1,32 @@
+NC NC-MEMBER-subagent-policy-deny ok
+NC NC-MEMBER-subagent-port-absent ok
+NC-MEMBER subagent controls=2 red=2 vector=AC-SUB-1-spawn
+NC NC-MEMBER-subagent_fork-policy-deny ok
+NC NC-MEMBER-subagent_fork-port-absent ok
+NC-MEMBER subagent_fork controls=2 red=2 vector=AC-FORK-1-inherit
+NC NC-MEMBER-send_message-policy-deny ok
+NC NC-MEMBER-send_message-port-absent ok
+NC-MEMBER send_message controls=2 red=2 vector=AC-MSG-1-steer
+NC NC-MEMBER-interrupt_agent-policy-deny ok
+NC NC-MEMBER-interrupt_agent-port-absent ok
+NC-MEMBER interrupt_agent controls=2 red=2 vector=AC-INT-1-interrupt
+NC NC-MEMBER-list_agents-policy-deny ok
+NC NC-MEMBER-list_agents-port-absent ok
+NC-MEMBER list_agents controls=2 red=2 vector=AC-LIST-1-enumerate
+NC NC-MEMBER-list_subagent_models-policy-deny ok
+NC NC-MEMBER-list_subagent_models-port-absent ok
+NC-MEMBER list_subagent_models controls=2 red=2 vector=AC-MODELS-1-list
+NC NC-MEMBER-workflow-policy-deny ok
+NC NC-MEMBER-workflow-port-absent ok
+NC-MEMBER workflow controls=2 red=2 vector=AC-WF-1-run
+NC NC-F1-design-claim ok (4 claims red)
+NC NC-F2-vocabulary-incomplete ok (REFUSAL_VOCABULARY_INCOMPLETE)
+NC NC-F3-no-residual-bucket ok (no code maps to unknown; the shared three tokens agree)
+NC NC-F4-route-c-detector ok (absent in the shipped source, detected in the mutation)
+NC NC-F5-two-implementation-detector ok (7/7 dual (governed row + reserved native))
+NC NC-F6-byte-identical ok (identical captures, mutation detected)
+NC NC-F7-no-host-shaped-path ok (clean fixture, injected path detected)
+NC NC-F8-census-unit-coverage ok (7/7 covered)
+NC NC-F9-control-ask-witness ok (8 admitted rows, each with one ask and an approve decision)
+NC NC-F10-fixture-header ok (the exact `id`/`entry` header is enforced)
+NC-VERDICT GREEN controls=24 failed=0

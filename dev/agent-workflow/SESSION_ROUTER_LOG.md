@@ -9516,3 +9516,32 @@ UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3
 **未触碰**：无产品代码、无 authority、无生产切换、无 legacy 删除、无 host 树写入、CORE PATCH BUDGET=0；其他家族测试目录/行、`docs/plans/active/**`、census 均未改；无新 workflow/job/leg。`tests/deepseek-harness*` 仍为本地 symlink，交付树计数必须为 0。
 
 **明写 UNKNOWN**：① 无 live boot（host-free 探针）；② governed plane 的 `team_*` 全 kernel/PA dispatch 未运行（family body 直执行，guard 由 plane 持有）；③ 将来 UTE-4 是否以改名（alias→宿主名）方式退役 alias、还是永久保留，属 owner 裁决；④ 宿主 `skill`+Team provider 在真实 Member 组合中的行为未 live 测。
+
+## 2026-11-21 — UTE-3 / G1 AGENT-CONTROL PR B1：Stage-0 判七成员**全为双实现**，采 42 向量基线并如实拒绝退役
+
+**背景**：census 记 `dsh.agent-control-family` / **七成员**（`subagent`、`subagent_fork`、`send_message`、`interrupt_agent`、`list_agents`、`list_subagent_models`、`workflow`）。任务书要求先测后判：每个成员都可能有两套同名实现，那就照 Process 采完整基线；只有一套才交非退役证明。**不得编造基线，也不得跳过双实现成员。**
+
+**Stage-0 实测（`tests/ute-g1-agentctl/probe-composition.mjs` → `dev/agent-workflow/evidence/ute3-agentctl-b1-20261121/composition-probe.txt`）**：
+- **7 booked-members = 7 two-implementation / 0 single**。每成员一个 governed family-body 行（`packages/tools/agent-control-family/src/{spawn,fork,steer,interrupt,list-agents,list-models,workflow}-row.mjs`）**加上** pin 宿主 rc.2 的原生行（`tool-subagent`、`tool-subagent-control`、`tool-workflow`、以及 `subagent_fork` 的 bundle-preset 第二实例）。机器 token：`PROBE-AGENTCTL member=<name> two-implementations=yes legacy=<file> native=<file>`，结论 `PROBE-CONCLUSION booked-members=7 single=0 dual=7`。
+- **产品 route-C 一个都不服务**：`attachA5sfNativeToolModules` 只追加 shell/search/fs/skill/present/web 影子，**没有 agent-control spec**；七个 dispatch 全部 `unknown tool`，`providerCalls=0`、`inheritedServiceCalls=0`、`guardFacts=0`。
+- **governed plane 明确 claim 七个原生拼写**（FamilyAssembly `claims()`），但 **natexe 法不 grade family claim**：`PLANE_SUPPORTED_NATIVE_TAKEOVERS` 无 agent-control 类，`verifyPlaneNames` 闭集只到 grep/glob/bash，`family-assembly.mjs` 对 `PLANE_RESERVED_NATIVE` 的引用数 **0**。
+
+**因此旧路径 = governed family body at C1，不是 route-C**：route-C 没有 agent-control 面，在 route-C 采基线只会记录**宿主原生行**，而不是要退役的 family。已把这一判断写进 `golden/old-path.meta.txt` 与 README，并在 ledger note 里点名。
+
+**基线**：`tests/ute-g1-agentctl/golden/old-path.tsv`，**42 行 = 7 成员 × 6 向量**（success/effect、wrong-input、permission/out-of-lane、abort/deadline + 2 条成员特有：authority fence / one-shot token / contract-bound / unresolvable route）。每行四个见证：模型面 payload、**读回的真实 port 状态**（roster/inbox/children/workflow）、refusal code + **导入的** refusal category、调用与控制事实（`legs`/`scopes`/`control`/`decisions`/`tokens`）。两次采集**逐字节相同**；`OLD-PATH-EXCLUSIONS count=0` **每次打印**（排除集为空也要打印，静默排除是成员消失的方式）。效果边界是注入的 agent-runtime port（真实有状态 port，非 host）；**不证明宿主侧效果**（见 UNKNOWN）。
+
+**拒绝面**：import `tests/ute-g1-fs/lib/refusal-categories.mjs` 的闭集 `CATEGORY_IDS`/`RefusalVocabularyError`/`categoryOfLegacyRefusal`；本泳道只加一张**全函数** code→category 映射，未列 code 直接 `REFUSAL_VOCABULARY_INCOMPLETE`，无默认桶，残差类 `other`/`unknown` 不可达（NC-F3 实测）。`lane-deny`/`route-unresolved`/`cancelled` 三个共享 token 另经导入派生比对一致。
+
+**负控**：`NC-VERDICT GREEN controls=24 failed=0`。每成员 **2 条真实变异**（deny-default 模板、抽掉 runtime port）必须把该成员的成功向量变成 RED；另 10 条 family/seam 控制（design-claim、未映射 code、无残差桶、route-C 探测器的变异可被看见、双实现探测器、双采集一致、宿主路径泄漏扫描、census 覆盖、每条 allow 行的 PA ask 见证、fixture header）。transcript 提交，泳道套件断言"提交的 transcript 必须等于一次新跑"——缩水即红。
+
+**语义差异**：3 条，全部 `blocking=yes`、`approval: null`，故 `SemanticDifferencesResolved=false`：① `SD-AGENTCTL-1-route-c-unserved`（route-C 零服务，替换物在 B1 不存在）；② `SD-AGENTCTL-2-native-name-claim-not-graded`（七保留名有 family claim 但 natexe 不裁决，名字所有权未定）；③ `SD-AGENTCTL-3-governed-admission-surface`（每条被准入的 governed 行都开真实 PA ask + 一次性 grant，原生行不走该边——退役=权限面变化）。
+
+**台账/清单**：`ute-retirement.json` 新增 `agent-control` 行（`NOT_RETIREABLE`，census-derived unit 七成员，14 个 `oldPath.files`；`oldBaseline=true`、`negativeControlsPass=true`、`newPathVerified=false`、`semanticDifferencesResolved=false`）。`ute-family-inventory.json` 的 `dsh.agent-control-family` `retirementReadiness` 改为实测 `{baseline:complete, newPath:none, negativeControls:complete}`（派生值一致，`findings=0`）。`scripts/ute-retirement-gate.test.mjs` 的 `--all` 臂改为**五族**、agent-control 精确 code 集（`UTE_MEMBER_UNCOVERED,UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED`）、`unit=0/7`、`SUMMARY requested=5`；`scripts/ute-family-inventory.test.mjs` 增 agent-control 三轴声明/派生断言 + 3 个 drift mutant。**新路径不存在就写 `new-path-absent.txt`**：零 `NEW-PATH-VECTOR … PASS`，明确拒绝为不存在的路径造 token。
+
+**CI**：只在既有 post-build leg "UTE G1 FS binding product lane" 的 manifest `check[]` 与 workflow `run:` 行**同一位置追加同一个 token**（`tests/ute-g1-agentctl/lane-suite.test.mjs`），两侧仍逐字节一致，无新 workflow/job/leg。泳道套件按 post-build 原因乘坐该 leg（C1 world 与 realm row import 本仓 packages）。
+
+**门禁（本机实测）**：`EB3-CI-REQUIRED pass workflows=10 findings=0`；`test-catalog --max-uncollected 41 --max-excluded 7` → `refused=0 findings=0`，`UNCOLLECTED 41`，新套件 `node:tests/ute-g1-agentctl/lane-suite` **DISCOVERED_AND_COLLECTED**；`EB3-FAMILY-DEFINITIONS pass files=58 findings=0`；`UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0`；`ute-retirement-gate --all` 五族全拒、`SUMMARY requested=5 allowed=0 refused=5`；`docs-sync --check`（`findings=0 blocking=0`）；`check-append-only-log verdict=pass`；`git diff --check` 干净；新文件 `node --check` 全过；三套件 **75/75**（lane 7 + gate 31 + inventory 37）；`git ls-tree` 交付树 `tests/deepseek-harness*` 计数 **0**（工作区实例仍是 gitignored 本地 symlink）。
+
+**未触碰**：`packages/**` 产品代码、其他族测试目录/账本行、`docs/plans/active/**`、`arc-a-family-census.json`、`tests/ute-g1-fs/**`、`tests/paths.mjs`、上游/host 树；无 authority move、无生产切换、无 legacy 删除、无 approval 记录、CORE PATCH BUDGET=0；未 push master/stable、未 force-push、未合并。
+
+**明写的 UNKNOWN（不是 PASS）**：① 宿主侧效果未证明（效果边界是注入 port；返回值/状态只证明 family 对 port 的调用与语义）；② 宿主原生行的**编码未执行**，只做静态双实现测量，不得据此声称行为等价；③ route-C 无 agent-control 面，故"产品开启 family 后会怎样"只有 C1 挂载这一层证据；④ `list_agents`/`list_subagent_models` 的未接线腿用"无 port"演示 `route-unresolved`，不是真实宿主服务报错；⑤ 审批往返是 C1 本地 leg（真实指纹绑定 grant），不是耐久 ControlService；⑥ 取消只表达 dispatch 前 abort，未建模飞行中 abort；⑦ 退役所需的 replacement binding、名字所有权裁决与权限面批准均**不存在**。

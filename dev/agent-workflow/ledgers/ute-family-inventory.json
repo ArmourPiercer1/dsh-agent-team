@@ -1531,9 +1531,9 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
       "note": "Seven rows in ONE candidate. `native-output-schemas.mjs` is classed `mechanics` (shared output schemas/constants)."
     },
