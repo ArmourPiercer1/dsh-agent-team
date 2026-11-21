@@ -48,6 +48,8 @@ const { installExecutionFacts } = await import('../src/plugin/vnext/execution-fa
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
 const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
+const { createSettlementWriter } = await import('../src/plugin/vnext/settlement-port.mjs')
+const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -234,6 +236,21 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       memberOf: (binding) => ({ teamId: 'team-vnext-slice', memberInstanceId: binding.agentId, templateId: 'tmpl-vnext-slice', instanceGeneration: binding.instanceGeneration }),
     }
   }
+  // SETTLEMENT. One store per world, keyed by the product's own execution id, observed at the host's
+  // tools/result - the same place the ledger observes it.
+  const settlementStore = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
+  const settlement = createSettlementWriter({
+    store: settlementStore,
+    identityOf: (exec) => ({
+      // SAME provenance as the ledger fact's executionIdOf below. Two id schemes for one execution
+      // would mean the settlement record and the fact could never be joined - and the first version
+      // of this wiring did exactly that (the completed call stayed ADMITTED forever).
+      executionId: dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, exec.callId),
+      actorId: IDENTITY.memberInstanceId,
+      worldId: 'session-vnext-slice',
+    }),
+  })
+
   // `durable` = the ledger path. When present every admission/execution record goes to disk and a
   // SECOND world built on the same path stands in for the resumed process.
   const ledger = durable === undefined ? undefined : openFactLedger({ path: durable })
@@ -266,6 +283,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       },
       ...(ledger === undefined ? {} : { isReplay: (callId) => ledger.has(callId), recordReplay: (input) => ledger.recordReplayRefusal(input) }),
       ...(grants === undefined ? {} : { grants }),
+      settlement,
     })
     disposeExecutions = installExecutionFacts({
       ctx: agent.ctx,
@@ -274,6 +292,13 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
         if (ledger !== undefined) ledger.recordExecution(fact)
       },
       admissionOf: (callId) => facts.find((entry) => entry.callId === callId),
+      // The settlement writer consumes the SAME fact the ledger got, and the store's transition law
+      // decides what is legal from there.
+      onFact: (fact, exec) => {
+        if (fact.outcome === 'admission-refusal') return
+        if (fact.outcome === 'aborted') settlement.stop({ exec, phase: 'in-flight' })
+        settlement.settled({ exec, outcome: fact.outcome })
+      },
       // The product's own settlement identity, not a second scheme: same agent + same callId must
       // always produce the same ExecutionId, or the settlement store cannot join a retry.
       executionIdOf: (callId) => dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, callId),
@@ -310,6 +335,8 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     resolvedDefinitions: Object.fromEntries(['read', 'write', 'edit'].map((name) => [name, root.get('tools').get(name, agentKey)])),
     realm,
     mountRefusal,
+    settlementStore,
+    settlement,
     fsInstances,
     dispatch,
     async dispose () {
@@ -859,6 +886,46 @@ test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused 
     assert.equal(executions.length, 2)
     assert.equal(executions[1].outcome, 'admission-refusal')
     assert.equal(executions[1].toolName, 'grep')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-29 — settlement at the host: one record per call, and a refusal is its own terminal state', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'settle-world'), admission: 'bound' })
+  try {
+    const ok = await world.dispatch('read', { file_path: world.insideFile }, 'settle-ok')
+    assert.equal(ok.isError, false, `the read must succeed: ${ok.text}`)
+    const refused = await world.dispatch('read', { file_path: join(world.outside, 'nope.txt') }, 'settle-deny')
+    assert.equal(refused.isError, true, 'the outside read must be refused')
+
+    const records = world.settlementStore.list()
+    assert.equal(records.length, 2, 'one settlement record per execution, including the refused one')
+    const byState = records.map((record) => `${record.identity.toolName}:${record.state}`).sort()
+    assert.deepEqual(byState, ['read:COMPLETED', 'read:REFUSED'], 'the refused call must not read as completed or as RUNNING')
+    // The refusal record names the code, so an operator can tell a lane denial from a broken tool.
+    const refusedRecord = records.find((record) => record.state === 'REFUSED')
+    assert.match(String(refusedRecord.terminalReason), /LANE_DENY/u)
+    // ...and the completed record never claims an observed effect it does not have.
+    const completed = records.find((record) => record.state === 'COMPLETED')
+    assert.equal(completed.observation.effectEvidence, 'none-confirmed', 'no effect observer is wired, so no effect may be claimed')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-30 — a Stop before admission invents no settlement record, and is not silently lost', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'settle-stop'), admission: 'bound' })
+  try {
+    const controller = new AbortController()
+    controller.abort()
+    const aborted = await world.dispatch('read', { file_path: world.insideFile }, 'stop-settle-1', { signal: controller.signal })
+    assert.equal(aborted.isError, true)
+    // Aborted BEFORE the admission point, so no record was ever opened - and the centre must not
+    // fabricate one: settling would invent an admission decision nobody made. The execution fact is
+    // what carries the Stop, and that is what this arm asserts.
+    assert.equal(world.settlementStore.list().length, 0, 'no settlement record may be invented for a call that never reached admission')
+    assert.equal(world.executions()[0].outcome, 'aborted', 'the Stop is still recorded where it happened')
   } finally {
     await world.dispose()
   }

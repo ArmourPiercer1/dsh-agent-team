@@ -190,13 +190,23 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     if (entry.capability === undefined && entry.guard === undefined) {
       const drift = recheck(entry, exec)
       if (drift !== undefined) return drift
+      // THE BODY IS ABOUT TO RUN, so the settlement leaves ADMITTED exactly once. The host consults
+      // the guard twice per execution; entering RUNNING twice would be a transition the store refuses,
+      // which is how this was found.
+      if (entry.running !== true && settlement !== undefined) {
+        settlement.running({ exec })
+        entry.running = true
+      }
       return undefined
     }
     if (entry.capability !== undefined) {
       const drift = recheck(entry, exec)
       if (drift !== undefined) return drift
       const spent = spend(entry, callId)
-      if (spent === undefined && settlement !== undefined) settlement.running({ exec })
+      if (spent === undefined && settlement !== undefined && entry.running !== true) {
+        settlement.running({ exec })
+        entry.running = true
+      }
       return spent
     }
     return entry.guard

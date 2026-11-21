@@ -117,10 +117,32 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
         throw error
       }
     },
+    /**
+     * A Stop was recorded against this execution. The store keeps stops as a SEPARATE additive list
+     * precisely so that a stop never rewrites an outcome - and the phase says whether it arrived
+     * before the body, during it, or after the effect.
+     */
+    stop ({ exec, phase, stopId }) {
+      try {
+        const identity = identityOf(exec)
+        if (store.read(identity.executionId) === null) return null
+        return store.recordStop({ executionId: identity.executionId, stopId: stopId ?? `stop:${identity.executionId}`, at: clock(), phase })
+      } catch (error) {
+        fault(error, { phase: 'terminal', toolName: exec?.name })
+        throw error
+      }
+    },
     /** The host settled the call. `outcome` is the centre's own vocabulary, not the store's. */
     settled ({ exec, outcome, missingEvidence }) {
       try {
         const identity = identityOf(exec)
+        // NO FABRICATION. A call that was aborted before the admission point never opened a record;
+        // settling it would invent an admission decision nobody made. It is reported as a fault -
+        // visibly - and the execution fact still carries 'aborted'.
+        if (store.read(identity.executionId) === null) {
+          fault(new Error(`no settlement record for ${identity.executionId}: the call ended before admission`), { phase: 'terminal', executionId: identity.executionId, toolName: exec?.name })
+          return null
+        }
         const state = settlementStateOf(outcome)
         return store.settle({
           executionId: identity.executionId,
