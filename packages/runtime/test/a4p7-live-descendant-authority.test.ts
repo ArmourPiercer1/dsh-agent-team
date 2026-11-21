@@ -570,12 +570,18 @@ describe('a4p7 §7.6 row 5 — a descendant created AFTER Team startup (spec §2
       'packages/runtime/operation-permission',
       'packages/runtime/effective-policy',
       'packages/runtime/governance',
+      'packages/runtime/src/plugin/vnext',
     ]
     const listingApis = ['readdir', 'readdirSync', 'opendir', 'glob', 'scandir', 'listFiles']
     const laneModules = [
       'packages/runtime/permission-lifecycle/decision-lane.ts',
       'packages/runtime/permission-lifecycle/mutation-lane.ts',
-      'packages/runtime/operation-permission/pre-execute-adapter.ts',
+      // The A1 cut RETIRED operation-permission/pre-execute-adapter.ts: the
+      // decision side is the centre's admission point now. The law this leg
+      // asserts (authority is never a resource census) must follow the move, so
+      // the walk names the successor AND its durable-facts half.
+      'packages/runtime/src/plugin/vnext/admission.ts',
+      'packages/runtime/src/plugin/vnext/centre-config.ts',
       'packages/runtime/operation-permission/permission-resolver.ts',
       'packages/runtime/effective-policy/permission-assembler.ts',
       'packages/runtime/governance/permission-mutation.ts',

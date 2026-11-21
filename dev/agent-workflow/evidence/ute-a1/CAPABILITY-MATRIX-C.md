@@ -47,6 +47,17 @@ plainly: a skill file read by the host skill service is OUTSIDE the member's fs 
 D-report limit, not a claim of confinement. MCP is treated differently because its effects are
 unknowable rather than merely out-of-lane: it stays refused by name.
 
+## RED: the durable Alpha.4 permission overlay has no decision-side effect (round 31)
+
+`a3p4-pr4-production-entry-regression` E3 is RED for a real reason, not a stale pin. The retired entry
+installed a pre-execute adapter that consulted the **durable permission overlay** per call; the A1 cut
+retired the adapter with the execution route, and the new centre judges a call against the compiled
+binding lanes only. A `grantInstance` deny persisted after the member was bound therefore changes nothing
+at execution time. This is a preserved product capability (Alpha.4 plane) and it is LOST in the new
+assembly until the centre consumes it. Options and consequences are in
+`MIGRATED-SUITE-STATUS.md`; the decision belongs with the Control allow/ask/deny wiring, because both ask
+"what is the ONE place a durable restriction becomes a verdict".
+
 ## What the adversarial review found in the centre (round 28)
 
 No P0. Seven P1s; the ones that mattered were all in the PRODUCT composition rather than in the

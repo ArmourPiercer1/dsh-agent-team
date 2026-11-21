@@ -460,7 +460,10 @@ describe('A4-PR6 review round 1 (BLOCKER 1) — one mapper, every entrance', () 
   it('the three arms are built by ONE exported mapper and no entrance re-declares the wire codes', () => {
     expect(S6_SOURCE_TEXT).toContain('export function governanceStartRefusal(')
     expect(ROOT_SOURCE_TEXT).toContain('governanceStartRefusal(')
-    expect(ROOT_SOURCE_TEXT).toContain("from './s6-remote.js'")
+    // The root moved to `plugin/vnext/root.ts` in the A1 cut, so the relative
+    // import gained one `../`; the LAW is unchanged (the root imports the ONE
+    // mapper from s6-remote rather than declaring the arms itself).
+    expect(ROOT_SOURCE_TEXT).toContain("from '../s6-remote.js'")
     // root.ts owns NO copy of the three wire codes (drift between entrances is impossible):
     expect(ROOT_SOURCE_TEXT.includes("TEAM_START_GOVERNANCE_WARNING: '")).toBe(false)
     expect(ROOT_SOURCE_TEXT.includes("TEAM_START_GOVERNANCE_CORRUPT: '")).toBe(false)

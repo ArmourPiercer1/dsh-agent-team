@@ -24,16 +24,31 @@ instead of a crash. **Not claimed:** the product wires no mount seam today, so t
 refresh cannot fire in the assembled product — that is a C-stage wiring item, now visible instead of
 fatal.
 
-## The five that remain (classified, with the action each needs)
+## Round 31: the four LAYOUT PINS are re-anchored — 237/238
+
+Four of the five were pins on the retired root/route, re-expressed against the new assembly
+**without weakening what they assert**:
+
+| suite | what changed | what did NOT change |
+| --- | --- | --- |
+| `a4p6-start-gate-entrances` BLOCKER 1 | `from './s6-remote.js'` → `from '../s6-remote.js'` (the root moved one directory down) | the law: the root imports the ONE `governanceStartRefusal` mapper and declares none of the three wire codes |
+| `a3p5-permission-read-wiring` group A | the seam allow-list now accepts `plugin/vnext/root.ts` as well as `plugin/root.ts` | the law: `createPermissionReadProjection` has exactly ONE production consumer, and the decision-lane input is byte-stable across reads |
+| `a4p7-ceiling-port-assembly-pin` PIN-4 | reads `src/plugin/vnext/root.ts` instead of the deleted `src/plugin/root.ts` | the census: exactly one producer of the ceiling reader, exactly one `{ authorityCeiling: permissionAuthorityCeiling }` |
+| `a4p7-live-descendant-authority` §7.6 row 5 | walks `src/plugin/vnext` and names `admission.ts` / `centre-config.ts` where it used to name the retired `pre-execute-adapter.ts` | the law: the authority path never reaches a directory-listing API — and the walk now covers the CENTRE, which is where authority lives after the cut (strictly stronger coverage than before) |
+
+Re-measured: **237/238**. The one that remains is the one that cannot be re-anchored, because it is not a
+pin.
+
+## The one that remains: E3 — the durable overlay no longer reaches the decision side
 
 | # | suite / leg | failure | class | action |
 | --- | --- | --- | --- | --- |
-| 1 | `a3p4-pr4-production-entry-regression` "E3 — REAL createAgentBindings consumes a FILLED plane ref" | `the glue installed a pre-execute leg on tpl-a: expected 0 to be greater than 0` | **BEHAVIOUR** — a real capability the old entry installed and the new one does not (the BLOCK-5 decision side) | the centre installs its admission leg through `installMemberExecution`; this leg asks whether the glue itself installs one. Decide whether the new composition owes a glue-level leg or whether the test pins the retired shape — decide with evidence, do not edit the expectation first |
-| 2 | `a3p5-permission-read-wiring` group A | `projection referenced outside lane+wire seam: …` | **LAYOUT PIN** on the old root's imports | the pin must be re-expressed against the new root; the seam law itself should survive |
-| 3 | `a4p6-start-gate-entrances` BLOCKER 1 | `expected '…P8-S5A — the production root …' to contain "from './s6-remote.js'"` | **LAYOUT PIN** — source-text assertion that the new `root.ts` still imports `s6-remote.js` | either the new root genuinely lost the s6-remote wiring (then a capability loss to restore) or the pin is stale; the test's own intent is "every entrance is built by ONE mapper", which must be re-anchored, not deleted |
-| 4 | `a4p7-ceiling-port-assembly-pin` a4-76 | `ENOENT …/src/plu…` | **LAYOUT PIN** (opens a retired path) | re-point at the new module that carries the ceiling-port line |
-| 5 | `a4p7-live-descendant-authority` §7.6 row 5 | `the walk lost packages/runtime/operation-permission/pre-execute-adapter.ts` | **LAYOUT PIN with a real question** — the walk asserts where the pre-execute adapter lives | if the adapter is genuinely retired, the walk must follow the new edge; if the capability moved without a successor, that is a regression |
-| 6 | `team-session-activation-glue` G8 | `expected false to be true` for `bothFulfilled` | **BEHAVIOUR** — remote-ensure ∥ work-delivery lazy ensure on one cold member: one resume, both paths fulfilled | real concurrency law; must be fixed in the glue, not the test |
+| 1 | `a3p4-pr4-production-entry-regression` "E3" | `the glue installed a pre-execute leg on tpl-a: expected 0 to be greater than 0` | **BEHAVIOUR — REAL CAPABILITY LOSS** | see below |
+| 2 | `a3p5-permission-read-wiring` group A | projection outside the seam | LAYOUT PIN | **RE-ANCHORED** (round 31) |
+| 3 | `a4p6-start-gate-entrances` BLOCKER 1 | missing `from './s6-remote.js'` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
+| 4 | `a4p7-ceiling-port-assembly-pin` a4-76 | `ENOENT …/src/plugin/root.ts` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
+| 5 | `a4p7-live-descendant-authority` §7.6 row 5 | walk lost `pre-execute-adapter.ts` | LAYOUT PIN | **RE-ANCHORED** (round 31, walk now covers the centre) |
+| 6 | `team-session-activation-glue` G8 | `bothFulfilled === false` once | **FLAKY** | passed 3 further full runs and in isolation; one occurrence under parallel load is recorded as a flake risk, not a pass — the arm must be made deterministic before D |
 
 Note 1 and 6 are behaviour; 2–5 are pins that must be RE-ANCHORED to the new assembly without weakening
 what they assert. Classification is by reading the failure message only; each one needs its own
@@ -45,3 +60,26 @@ that encoded a defect as an expectation) cuts both ways.
 The objective's A1 clause is "16 个保留能力历史测试迁移到新入口". Import-migration was done; behaviour
 migration was not measured until now. 233/238 passing is the honest current number, and the five above
 are the remaining A1 work.
+
+### Why E3 is not a pin
+
+The old entry installed a **pre-execute adapter that consulted the durable permission overlay per call**.
+The A1 cut retired that adapter with the execution route, and the new centre judges a call against the
+COMPILED binding lanes only. So a `grantInstance` deny persisted AFTER the member was bound has **no
+decision-side effect** until something recompiles the binding — i.e. the Alpha.4 durable overlay lost its
+execution-time enforcement. That is exactly the "入口整体替换后的 Team 功能损失" risk in the objective, and
+it is a capability the 06 contract preserves.
+
+The test's expectation is right and its assertion (`the glue installed a pre-execute leg`) is the honest
+way to state it: the glue installs NO decision leg today.
+
+**Design decision needed (C stage), not a test edit.** The centre must stay the ONE decision point, so
+the options are (a) the centre consults an injected overlay-decision port per call, next to the lane
+verdict (the old adapter's semantics, moved under the centre's authority), or (b) the overlay mutations
+are compiled INTO the binding and the generation recheck recompiles it. (a) is closer to the retired
+behaviour and keeps one decision function; (b) keeps admission synchronous but makes every mutation a
+recompile. This must be decided with the Control allow/ask/deny wiring, because both are the same
+question: what is the ONE place a durable restriction becomes a verdict.
+
+**Not claimed:** the overlay is not enforced at execution time by the new centre today. No row in
+`CAPABILITY-MATRIX-C.md` may say otherwise.
