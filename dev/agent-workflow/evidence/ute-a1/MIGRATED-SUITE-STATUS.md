@@ -318,3 +318,59 @@ world (or none). Overlay `ask`/`allow` rules are outside the port's contract and
 Subtree containment depends on the host's canonical-key-wrapping form of `FileSystem.contains` (the
 same form `host.ts`'s `fsContainsKeys` uses); the E3 probe is an exact deny, so subtree matching is
 implemented but not exercised by this leg.
+
+## Round 50: G8 is deterministic — the mechanism was a delivery-path rejection, not a pending read
+
+**The recorded flake** (the `FLAKY` row above): `team-session-activation-glue` G8,
+`bothFulfilled === false`, `expected false to be true`, seen once in a full parallel run and never in
+the re-runs. The row's guess was "one path was still pending when the assertion ran". **That guess is
+wrong, and it is worth saying plainly:** `G8` computes `bothFulfilled` from
+`await Promise.allSettled([pEnsure, pDeliver])` (`team-session-activation-glue.test.ts:553` before this
+round), which AWAITS both paths. A `false` there is a **rejection**, never a still-pending path. So the
+arm was not observing an unsettled state; one of the two paths genuinely **threw**.
+
+**The mechanism, named exactly.** `world.binding.workDelivery.deliver` first joins the one in-flight
+`ensureLiveAgent` (so the resume count stays 1 and `pEnsure` fulfils), then runs
+`prepareAgentForRequest` → `refreshAuthorityGeneration` → `publishAuthorityGeneration`, and THAT
+function called `resolvePaMount(...)` — a symbol the A1 cut had retired with the old execution route.
+Result: `ReferenceError: resolvePaMount is not defined` on the delivery path only. Reproduced
+deterministically at this HEAD by restoring the pre-fix line (and then reverting it):
+
+| form | G8 result |
+| --- | --- |
+| pre-fix `publishAuthorityGeneration` (old `agent-bindings.mjs:2804`) | `× G8 … 1 failed │ 17 passed`, `AssertionError: expected false to be true` |
+| this HEAD (the seam guard at `agent-bindings.mjs:2846`) | `18 passed` |
+
+So the "flake" was the same live `ReferenceError` already fixed for `f15-mcp-live-loss` L4/L7 in
+`f6ceacc2a` — commit `f6ceacc2a`'s own message classifies the arm as "remote-ensure || work-delivery
+lazy ensure does not fulfil both paths". It was mis-labelled FLAKY because the three re-runs came after
+that fix.
+
+**What this round changed in the arm (the assertion did not move).**
+- `team-session-activation-glue.test.ts` G8 no longer polls `world.agents.resumes.length` through
+  `waitFor`, i.e. no longer reads a counter against a **3 s wall-clock deadline**. It now awaits
+  `gateArmed`, a promise the world's own `resumeGate` hook resolves at the instant the one cold resume
+  reaches the gate (the product event the poll was approximating), and races it against `pEnsure` so a
+  settled ensure that never reached the gate is a **named** guard failure instead of a silent timeout.
+- `state.g8.outcomes` records `fulfilled` / `rejected: <message>` per path, and only the assertion's
+  **message** gained that detail. `expect(g8.bothFulfilled).toBe(true)`, `resumesCount === 1`,
+  `hasLive`, `followupsCount === 1` are all unchanged.
+
+**Determinism evidence.** Before: 1 occurrence in a full parallel run (round 30), non-reproducible in
+3 re-runs and in isolation. After, on this worktree:
+
+| campaign | result |
+| --- | --- |
+| standalone ×12 | 12/12 `18 passed` |
+| standalone ×20 under 12 busy CPU hogs | 20/20 `18 passed` |
+| full migrated suite ×3 | 3/3 `238 passed` |
+| full migrated suite ×5 under 12 busy CPU hogs | 5/5 `238 passed` |
+
+**Gates:** `dispatch-tests --leg ute-vnext-a1` 109/109 pass; `test-catalog` uncollected=41 excluded=14
+(within the 41/7 bound); `ute-cut-closure` findings=0; `docs-sync` findings=0 blocking=0;
+`place-dist-glue` 27 placements byte-identical; `eb3-ci-required` findings=0; the bound leg
+`eb3-security-run --layer ci-integration` → `verdict=PASS suites=15 passed=238 failed=0`.
+
+**Not proven:** the diagnostic arm was exercised only by restoring the pre-fix symbol (a scratch edit,
+reverted — `agent-bindings.mjs` sha1 unchanged); no NEW rejection mode was fabricated. The retire of
+`waitFor` in G8 is scoped to G8 — G5/G7/G9/G10 still use the same 3 s poll and were not touched.

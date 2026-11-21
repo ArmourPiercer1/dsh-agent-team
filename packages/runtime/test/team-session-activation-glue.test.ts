@@ -520,6 +520,18 @@ const G = await (async () => {
     const child = childSidOf(root, instance)
     const fence = createTeamSessionActivationFence()
     let releaseGate: (() => void) | undefined
+    // THE LAW'S OWN SIGNAL, never a wall-clock poll: the double invokes
+    // `resumeGate` INSIDE the one cold resume, after the request is
+    // recorded and before the resume suspends, so `gateArmed` settles
+    // exactly when that resume is IN FLIGHT at the gate. The old form
+    // polled `resumes.length` through `waitFor` (a 3 s wall-clock
+    // deadline): a worker descheduled during a parallel run can cross that
+    // deadline while the concurrency law is perfectly intact, and the poll
+    // then reads a counter instead of awaiting the product's own event.
+    let gateArmedResolve: (() => void) | undefined
+    const gateArmed = new Promise<void>((resolve) => {
+      gateArmedResolve = resolve
+    })
     const world = await createLiveWorld({
       rootSessionId: root,
       activationFence: fence,
@@ -532,6 +544,7 @@ const G = await (async () => {
           String(req.resumeSessionId) === child
             ? new Promise<void>((resolve) => {
                 releaseGate = resolve
+                gateArmedResolve?.()
               })
             : Promise.resolve(),
       },
@@ -547,12 +560,31 @@ const G = await (async () => {
         prompt: 'g8 work',
         requestToken: 'g8-token',
       })
-      await waitFor(() => world.agents.resumes.length >= 1, 'G8 the child resume to reach the gate')
+      // both callers are provably in flight on the same cold SID before
+      // any of them settles: the ensure cannot settle while its only
+      // resume is suspended at the gate, so a SETTLED ensure here is the
+      // named guard failure (the resume never reached the gate) instead
+      // of a silent poll that simply stopped waiting.
+      const armed = await Promise.race([
+        gateArmed.then(() => true),
+        pEnsure.then(() => false, () => false),
+      ])
+      if (!armed) {
+        throw new Error('G8 guard: the child ensure settled without its gated resume — both callers must be in flight on the cold SID')
+      }
       if (releaseGate === undefined) throw new Error('G8 guard: the resume gate never armed')
       releaseGate()
       const results = await Promise.allSettled([pEnsure, pDeliver])
       state.g8 = {
+        // allSettled AWAITS both paths, so a false here is a rejection —
+        // never a path that is merely still pending. Record which path
+        // said what so the failure is diagnosed instead of re-run.
         bothFulfilled: results.every((r) => r.status === 'fulfilled'),
+        outcomes: results.map((r) =>
+          r.status === 'fulfilled'
+            ? 'fulfilled'
+            : `rejected: ${String((r.reason as Error | undefined)?.message ?? r.reason)}`,
+        ),
         resumesCount: world.agents.resumes.length,
         hasLive: world.binding.hasLive(child),
         followupsCount: world.agents.followups.length,
@@ -930,9 +962,18 @@ describe('C1 (guide §13.3): the live glue under the activation fence', () => {
   })
 
   it('G8 remote ensure ∥ work-delivery lazy ensure (same cold member): one resume, both paths succeed', () => {
-    const g8 = G.g8 as { bothFulfilled: boolean; resumesCount: number; hasLive: boolean; followupsCount: number }
+    const g8 = G.g8 as {
+      bothFulfilled: boolean
+      outcomes: string[]
+      resumesCount: number
+      hasLive: boolean
+      followupsCount: number
+    }
     expect(g8.resumesCount).toBe(1)
-    expect(g8.bothFulfilled).toBe(true)
+    // The assertion did not move: BOTH paths must fulfil. The message only
+    // names which path rejected (and why), so an asymmetry is diagnosed
+    // from the first failing run instead of being re-run until it passes.
+    expect(g8.bothFulfilled, `G8 path outcomes: ${g8.outcomes.join(' | ')}`).toBe(true)
     expect(g8.hasLive).toBe(true)
     expect(g8.followupsCount).toBe(1)
   })
