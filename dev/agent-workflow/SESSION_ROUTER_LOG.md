@@ -10050,3 +10050,20 @@ Still open from the review, and now the largest remaining items rather than smal
 scheme, unbounded in-memory maps, `agentId: sessionId` in the binding (two identities in one field), and
 `executionIdOf`'s synthetic `{callId, name: ''}` join. Those are contract questions, not widenings, and the
 first has to be answered together with the Settlement identity so there is not a fourth scheme.
+
+### R28 close — branch state
+
+HEAD `7ee5216f7` on `vnext/a1-cut`, draft PR #822 updated (body refreshed; still DRAFT, not for merge).
+Round 28 produced: M4 decomposition (`template-binding.mjs`, 6 arms), the review's P1-1/2/3/4/5/6 fixed,
+one P1 escalated (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`), three P2 widenings closed plus the
+ledger and specifier hardening (ADM-37…42), and the capability matrix now carries the review outcome.
+
+Gate sweep at this HEAD: leg `suites=6 files=6 exit=0` (42 admission arms among them), catalog
+`tests=888 refused=0 findings=0`, P0 assets pass, cut-closure `prodRefs=0 distResiduals=0`, a1-window
+pass, ci-required pass, docs-sync `findings=0`, place-dist-glue 26 placements.
+
+Next round's queue, in the order I intend to take it: (1) the identity contract question (`agentId:
+sessionId`, `executionIdOf`'s synthetic join, and the grant-id scheme) as ONE decision, because fixing
+them separately would create a fourth scheme; (2) S6 decomposition (`live-residency.mjs`: `liveAgents`,
+`closing`, the disposer lists); (3) the process-lane contract ruling if the owner has ruled. The host
+boot work (step D) still needs either the rc.2 harness path to be rebuilt or rc.5 provisioning.
