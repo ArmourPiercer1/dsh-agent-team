@@ -205,6 +205,27 @@ facts read back from disk with fresh ledgers:
 No row is PRODUCT-PROVEN (no host boot). Named host stand-ins decide nothing; policy compilation is an arm
 input, not exercised.
 
+## C stage, third slice: MCP's real mount and Alpha.6's reachable path (round 57)
+
+**C-mcp (ADM-96/97).** A real HTTP MCP endpoint from the product's own harness is mounted through the exact
+production call (`mcpClient.apply(ctx, <the seven-field literal reconcileMcpSet passes>)`); WHICH server
+exists stays the product's mount gate. The centre admits `mcp__p5t5mini__ping` on `net.mcp` with the SERVER
+as locator, the durable fact reads back from disk, and the REAL server answers `pong:mounted`. Negatives: a
+mounted tool denied by the compiled per-tool answer or by the ceiling is refused with zero body while the
+sibling tool of the SAME server still runs (mounting is not permission); `mcp__` and `mcp__<server>` are
+`ADMISSION_TOOL_UNBOUND` (no prefix matching).
+
+**New LIMIT, pinned rather than hidden:** the centre is not mount-aware (binding installed at the member
+bind; the mount target is computed later), so a well-formed name for a never-mounted server is decided on the
+network axis alone — the product excludes it at the tool registry, not at admission.
+
+**C-alpha6 (ADM-98/99).** The config rule refuses the opt-in on EVERY row, so no product-config path reaches
+the capability at all. The machinery itself is fine: composed directly, the real Alpha.6 router takes a
+recipient decision off a durable control row and the real dispatch latch + wake-intent directory persist a
+row that a FRESH reader sees naming exactly the routed reviewer. What is missing is a review-routing AXIS in
+the centre (`admission.ts:32/57/114`); driving one only fabricates a fallback-axis record. Two lawful shapes
+are recorded (compiled axis = contract change, or a ruling that a record-only approval fact is adjudication).
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all

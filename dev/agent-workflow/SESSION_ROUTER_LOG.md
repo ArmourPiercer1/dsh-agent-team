@@ -10373,3 +10373,23 @@ The seam was NOT missing: install at the member bind, archive's release-residenc
 Gates at `1682e51da`: leg `suites=7 files=7 exit=0` (157 pass + 2 disclosed skips, 79 admission cases),
 catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
 `PASS 238`.
+
+### R57 — MCP's mount reaches the centre; Alpha.6 needs an axis, not a wire
+
+C-mcp: a real HTTP MCP endpoint from the product harness, mounted through the exact production
+`mcpClient.apply(...)` call, is admitted by the ONE centre on `net.mcp` with the SERVER as locator, facts read
+back from disk, and the real server answering `pong:mounted`. Negatives show mounting is not permission (the
+same server's sibling tool runs while a denied one gets zero body), and `mcp__`/`mcp__<server>` are
+`ADMISSION_TOOL_UNBOUND` — no prefix matching.
+
+New LIMIT recorded instead of papered over: the centre is NOT mount-aware, so a well-formed name for a
+never-mounted server is judged on the network axis alone; the product excludes it at the tool registry.
+
+C-alpha6: the config rule refuses the opt-in on every row, so no product-config path reaches it. The
+machinery works when composed directly (a real recipient decision off a durable control row, a persisted
+wake-intent row a FRESH reader sees naming exactly that reviewer). What is missing is a review-routing AXIS
+in the centre; driving one today only fabricates a fallback-axis record. Two lawful shapes recorded, no
+policy invented.
+
+Gates at `e309128bd`: leg `suites=7 files=7 exit=0` (161 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
