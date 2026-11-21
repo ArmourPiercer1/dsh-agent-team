@@ -14,14 +14,16 @@
  * @module tests/ute-g1-search/capture-old-path
  */
 import { readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 
 import { CORPUS } from './lib/corpus.mjs'
 import { checkDesignClaim, parseGolden, serializeGolden } from './lib/compare.mjs'
 import { captureCorpus, OLD_PATH_IDENTITY } from './lib/old-path.mjs'
 import { CATEGORY_IDS, REFUSAL_CATEGORIES, UNKNOWN_CATEGORY } from './lib/effect-oracle.mjs'
 
-const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-search', 'golden', 'old-path.tsv')
+const REPO_ROOT = process.cwd()
+const GOLDEN = join(REPO_ROOT, 'tests', 'ute-g1-search', 'golden', 'old-path.tsv')
+const GOLDEN_REL = relative(REPO_ROOT, GOLDEN)
 const argv = process.argv.slice(2)
 const onlyIndex = argv.indexOf('--only')
 const only = onlyIndex === -1 ? undefined : argv.slice(onlyIndex + 1).filter((arg) => !arg.startsWith('--'))
@@ -75,11 +77,11 @@ console.log(`OLD-CATEGORY-SIZE ${Object.keys(REFUSAL_CATEGORIES).length}`)
 if (write) {
   const text = serializeGolden(records)
   writeFileSync(GOLDEN, text, 'utf8')
-  console.log(`OLD-PATH-GOLDEN written=${GOLDEN} bytes=${Buffer.byteLength(text)}`)
+  console.log(`OLD-PATH-GOLDEN written=${GOLDEN_REL} bytes=${Buffer.byteLength(text)}`)
 } else {
   const previous = readFileSync(GOLDEN, 'utf8')
   const same = previous === serializeGolden(records)
-  console.log(`OLD-PATH-GOLDEN compare=${same ? 'identical' : 'DIFFERS'} fixture=${GOLDEN}`)
+  console.log(`OLD-PATH-GOLDEN compare=${same ? 'identical' : 'DIFFERS'} fixture=${GOLDEN_REL}`)
   if (!same) {
     const previousRows = parseGolden(previous)
     for (const row of previousRows) {

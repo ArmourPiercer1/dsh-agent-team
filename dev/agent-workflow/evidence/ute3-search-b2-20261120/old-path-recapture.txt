@@ -16,4 +16,4 @@ OLD-PATH-VECTOR SR-L6-cancel-before-dispatch entry=glob composition=route-c outc
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C, PD-16 search shadow)" dispatch="ctx.tools.execute({'calls':[...]}) via the host registry execute()" vectors=15
 OLD-CATEGORY-VOCABULARY denied-by-lane,read-before-write,stale-version,missing-path,invalid-argument,unsupported-mode,route-unresolved,cancelled,unknown
 OLD-CATEGORY-SIZE 9
-OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b2-20261120/tests/ute-g1-search/golden/old-path.tsv
+OLD-PATH-GOLDEN compare=identical fixture=tests/ute-g1-search/golden/old-path.tsv

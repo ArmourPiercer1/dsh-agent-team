@@ -14,6 +14,7 @@
  * @module tests/ute-g1-fs/lane-suite
  */
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -26,7 +27,10 @@ import { REFUSAL } from './lib/lane.mjs'
 import { runNegativeControls } from './negative-controls.mjs'
 import { SEMANTIC_DIFF_LINE_RE, SEMANTIC_DIFFERENCES, semanticDifferenceLines } from './lib/semantic-differences.mjs'
 
-const GOLDEN = join(process.cwd(), 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
+const ROOT = process.cwd()
+const GOLDEN = join(ROOT, 'tests', 'ute-g1-fs', 'golden', 'old-path.tsv')
+const META = join(ROOT, 'tests', 'ute-g1-fs', 'golden', 'old-path.meta.txt')
+const NC_TRANSCRIPT = join(ROOT, 'dev', 'agent-workflow', 'evidence', 'ute-g1-fs-20261121', 'negative-controls.txt')
 
 test('the prototype reproduces the old-path golden corpus', async () => {
   const host = await loadHostSurface()
@@ -90,8 +94,30 @@ test('no golden refusal is the unclassified bucket', () => {
   console.log(`UTE-G1-FS-REFUSAL-CLASSES ${[...new Set(golden.map((row) => row.refusal).filter(Boolean))].sort().join(',')}`)
 })
 
-test('the family-level and per-member negative controls hold', async () => {
+
+test('the golden meta records the measured new-path truth, not the stale pending note', () => {
+  const meta = readFileSync(META, 'utf8')
+  assert.equal(meta.includes('`newPathPending: true`'), false, 'the meta must not still claim every FS-I row is newPathPending')
+  assert.equal(/the new-path run cannot reproduce these baselines/u.test(meta), false, 'the meta must not still say the new path cannot reproduce the image baselines')
+  assert.match(meta, /read_image` on the NEW path — NOW REPRODUCED/u)
+  assert.match(meta, /PROTOTYPE-VERDICT GREEN vectors=16 failed=0/u)
+  console.log('UTE-G1-FS-META newPathPending=absent image-vectors=reproduced')
+})
+
+test('the family-level and per-member negative controls hold, with an exact transcript', async () => {
   const results = await runNegativeControls()
   for (const result of results) console.log(`UTE-G1-FS-NC ${result.id} ${result.ok ? 'ok' : 'FAIL'} ${result.detail}`)
   assert.deepEqual(results.filter((result) => !result.ok), [], 'every negative control must hold')
+  assert.equal(results.length, 13, 'the battery has THIRTEEN controls; a shrunk battery must red, not silently lower the count')
+  for (const id of ['NC-MEMBER read', 'NC-MEMBER write', 'NC-MEMBER edit', 'NC-MEMBER read_image', 'NC-IMAGE-OBSERVER']) {
+    assert.ok(results.some((result) => result.id === id), `missing control ${id}`)
+  }
+  const fresh = execFileSync(process.execPath, [join(ROOT, 'tests', 'ute-g1-fs', 'negative-controls.mjs')], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  }).trim().split('\n')
+  const committed = readFileSync(NC_TRANSCRIPT, 'utf8').trim().split('\n').filter((line) => !line.startsWith('EXIT='))
+  assert.deepEqual(fresh, committed, 'the committed FS negative-control transcript must be exactly a fresh run')
+  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=13 failed=0')
 })

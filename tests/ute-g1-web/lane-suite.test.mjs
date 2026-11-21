@@ -20,6 +20,7 @@
  * @module tests/ute-g1-web/lane-suite.test
  */
 import assert from 'node:assert/strict'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { test } from 'node:test'
@@ -41,6 +42,8 @@ import { FIXTURE_PORT } from './lib/fixture-server.mjs'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const GOLDEN = join(REPO_ROOT, 'tests', 'ute-g1-web', 'golden', 'old-path.tsv')
+const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-web-b1-20261120')
+const CONTROL_SCRIPT = join(REPO_ROOT, 'tests', 'ute-g1-web', 'negative-controls.mjs')
 const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
 
 test('the fixture is bound to the pinned legacy host and a sanctioned port', () => {
@@ -141,6 +144,33 @@ test('the socket witness reads the real undici destination, not a default', asyn
   }
   void counters
   assert.equal(classifyConnectTarget({ kind: 'tcp', host: 'example.com', port: 443, label: 'example.com:443' }), 'external')
+})
+
+
+test('the negative-control battery re-runs, its committed transcript is exact, and a mutation reds', () => {
+  const fresh = execFileSync(process.execPath, [CONTROL_SCRIPT], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  })
+  const freshLines = fresh.trim().split('\n')
+  assert.ok(
+    freshLines.includes('NC-VERDICT GREEN controls=11 failed=0'),
+    `the battery must print an exact GREEN verdict: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`,
+  )
+  const committed = readFileSync(join(EVIDENCE, 'negative-controls.txt'), 'utf8').trim().split('\n')
+  assert.deepEqual(freshLines, committed, 'the committed negative-control transcript must be exactly a fresh run (a shrunk or hand-edited battery reds)')
+  // A deliberately broken run MUST report RED: the GREEN above is measured,
+  // not a constant printed by the script.
+  const mutated = spawnSync(process.execPath, [CONTROL_SCRIPT], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+    env: { ...process.env, UTE_WEB_NC_MUTATE: 'drop-widening' },
+  })
+  assert.equal(mutated.status, 1, 'the mutated battery must exit 1')
+  assert.match(`${mutated.stdout}\n${mutated.stderr}`, /NC-VERDICT RED controls=11 failed=1/u, `the mutated battery did not red: ${mutated.stdout}${mutated.stderr}`)
+  console.log('UTE-G1-WEB-CONTROLS GREEN controls=11 transcript=exact mutated=RED')
 })
 
 test('the semantic differences are measured, blocking, and unapproved', async () => {

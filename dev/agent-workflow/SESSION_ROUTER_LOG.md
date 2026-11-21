@@ -9628,3 +9628,26 @@ UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8
 3. **`SD-SEARCH-1` 是真实产品缺陷**（无 path 的 `grep` 在产品路径返回 0 命中），不是措辞差异；接受它等于向用户承诺"这就是语义"，所以必须 owner 签，agent 不能记"已解决"。
 
 **明确的 UNKNOWN（永不记 PASS）**：未做任何生产切换；无新路径的 live-boot 验收；`pwsh` 语义未知；process 的读隔离未被证明（只钉住拒绝、秘密缺席、树未变）；goal 三件套只经 governed plane 自己的 store 验证过；FS/Search/Web 基线是 route-C 现实而 agent-control/ui/agent-state 是 governed-plane 现实，两者不可互换，矩阵逐族标注而非取平均。
+
+## 2026-11-21 — UTE-3 review 修正确认（B1/B3–B11）：把文档改回证据能证明的尺寸
+
+依据 `dev/agent-workflow/evidence/ute3-review-20261121/REVIEW.md`（独立对抗审查，判决 `CLAIMS-EXCEED-EVIDENCE`）逐项修正。分支 `task/ute3-review-fixes-20261121`，base `origin/master` = `2b69193fac66f5b89fb2010ca398de3f5b2ecdb5`。**未执行任何退役、删除或产品切换；`CORE PATCH BUDGET` 仍为 0。**
+
+**修正后的数字（台账 + census 机器可复算）**：
+- 成员 **27** = 4 (fs) + 2 (search) + 2 (web) + 3 (inspect) + 2 (process) + 7 (agent-control) + 2 (ui) + 5 (agent-state)；旧文档写 20。
+- 删除集 **87** = 17 + 9 + 10 + 10 + 11 + 14 + 9 + 7，其中 fs 从 7 补到 **17**（整个 body：`index.mjs`、全部 executor/mechanics/normalizer 在内）；旧文档写 77 且 fs 漏 10 个。删除集按 census `contributionPaths` + 实际 `src/` 目录重算，因为 `UTE_OLD_PATH_PARTIALLY_REMOVED` 看不到“未声明”的缺失项。
+- 31 条 blocking 差异按台账程序化分区 **7 / 5 / 4 / 14 / 1**（`dev/agent-workflow/evidence/ute3-review-20261121/partition.mjs`，断言 31 个 id 各出现一次）。
+
+**逐项**：B1 web（及 fs/search/uistate）的 negative-controls 现在由 lane suite 真跑并逐行对比已提交 transcript，web 另有 `UTE_WEB_NC_MUTATE=drop-widening` 变异臂证明 RED；B3 总量与逐族成员数；B4 fs 删除集 17、总计 87；B5 FS golden meta 改为 16/16 已复现并加断言；B6 Group B 五条分开表述（web 第二声明者=本仓 `dsh-agent-team/web-tool`；`ask_user_question` 未被 PD-25 挂载；inspect 是 alias→native 改名）；B7 route-absent 改为“bare route 不注册、preset 由 host 行服务 5/7、governed body 未挂载”；B8 控制名改为 `NC-MEMBER read_image` / `widen-read-lane-image`；B9 分组表；B10 process `oldBaseline=false`（pwsh 无 baseline 向量，unit 1/2），gate 因此新增 `UTE_OLD_BASELINE_MISSING`；B11 search note 改为 new path 15/15。另修：web `host`-less connect bag 不再默认 `localhost`（分类外网并拒绝，增加证明臂）、去掉 `installed` 恒真合取、fs/search 证据里的绝对宿主路径改为相对路径、清除 “12 controls” 混用。
+
+**保留的残余（不软化）**：REVIEW B2 的 gate 三类通胀属另一 lane 的 gate 加固，本任务不改 `scripts/ute-retirement-gate.mjs`；`UTE_OLD_PATH_PARTIALLY_REMOVED` 本身仍看不见漏项（已用目录推导的完整集合弥补）；gate 的 `--all` 输出仍为 8 族全拒，新增的 process 代码只是把已存在的 `oldBaseline` 覆盖失败显式化。
+
+```
+UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8
+EB3-CI-REQUIRED pass workflows=10 findings=0
+DSH-TEST-CATALOG tests=892 refused=0 findings=0
+EB3-FAMILY-DEFINITIONS pass files=88 findings=0
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+docs:sync --check findings=0 blocking=0 contracts=20
+DSH-APPEND-ONLY-LOG verdict=pass
+```

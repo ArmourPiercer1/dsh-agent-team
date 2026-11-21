@@ -794,10 +794,19 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // path and an unreproduced vector for EVERY bash vector. Asserted as an exact
   // set: adding a vector, dropping a member, acquiring a new path or turning the
   // pwsh exclusion into a silent inheritance changes this list and reds here.
+  //
+  // UTE-3 review B10 (2026-11-21): RETIREMENT.md §2 grades unit coverage INSIDE
+  // the oldBaseline term, so a unit with an uncovered member cannot record
+  // `verdict: true`. The ledger now records the measured `false` and the gate
+  // therefore also emits the term's own refusal (UTE_OLD_BASELINE_MISSING,
+  // sorted first) in addition to the member-coverage finding. This is a pin
+  // update for a corrected input, not a weakened assertion: the member-coverage
+  // finding and every vector finding below are unchanged.
   const processRow = codesFor('process')
   assert.deepEqual(processRow.codes, [
     'UTE_MEMBER_UNCOVERED',
     'UTE_NEW_PATH_UNVERIFIED',
+    'UTE_OLD_BASELINE_MISSING',
     'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
     'UTE_VECTOR_UNREPRODUCED',
   ])

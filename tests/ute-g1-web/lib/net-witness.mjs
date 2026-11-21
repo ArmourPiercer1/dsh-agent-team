@@ -81,7 +81,9 @@ export function normalizeConnectTarget(args) {
     return { kind: 'unix', host: '', port: null, label: `unix:${first}` }
   }
   if (typeof first === 'number') {
-    const host = typeof args[1] === 'string' ? args[1] : 'localhost'
+    // A port without a string host is NOT `localhost`: an unidentifiable
+    // destination must classify external and be refused (fail-closed).
+    const host = typeof args[1] === 'string' ? args[1] : '<unknown>'
     return { kind: 'tcp', host, port: first, label: `${host}:${first}` }
   }
   if (first !== null && typeof first === 'object') {
@@ -97,7 +99,10 @@ export function normalizeConnectTarget(args) {
     if (typeof first.path === 'string' && first.port === undefined) {
       return { kind: 'unix', host: '', port: null, label: `unix:${first.path}` }
     }
-    const host = typeof first.host === 'string' ? first.host : 'localhost'
+    // Same rule for an option bag with no string `host`: unidentifiable is
+    // external, never a loopback default (the fail-open this file exists to
+    // close).
+    const host = typeof first.host === 'string' ? first.host : '<unknown>'
     const port = typeof first.port === 'number' ? first.port : Number(first.port ?? 0)
     return { kind: 'tcp', host, port, label: `${host}:${port}` }
   }

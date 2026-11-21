@@ -126,5 +126,5 @@ export async function loadNextSearchHost(repoRoot) {
 
 /** The generation identity line the evidence quotes. */
 export function nextSearchHostIdentity(host) {
-  return `host=next version=${host.generation} tag=${host.tag} commit=${host.commit} tree=${host.tree}`
+  return `host=next version=${host.generation} tag=${host.tag} commit=${host.commit} tree=${NEXT_HOST.treeRel}`
 }

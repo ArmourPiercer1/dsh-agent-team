@@ -30,6 +30,7 @@
  * @module tests/ute-g1-search/lib/new-path-compare
  */
 import { realpathSync } from 'node:fs'
+import { relative } from 'node:path'
 
 import { COMPARED_FIELDS, compareRecord, fieldValue } from './compare.mjs'
 
@@ -309,5 +310,5 @@ export function checkModuleProvenance(witness) {
 /** `NEW-PATH-PROVENANCE vector=… entry=… spawns=…` (one line per spawn-bearing vector). */
 export function provenanceLine(witness) {
   const programs = [...new Set(witness.spawns.map((argv) => String(argv?.[0] ?? '-')))].sort()
-  return `NEW-PATH-PROVENANCE vector=${witness.vector} entry=${witness.entry} spawns=${witness.spawns.length} program=${programs.join(',') || '-'}`
+  return `NEW-PATH-PROVENANCE vector=${witness.vector} entry=${relative(realpathSync(witness.nextTree), realpathSync(witness.entry))} spawns=${witness.spawns.length} program=${programs.map((program) => relative(realpathSync(witness.nextTree), realpathSync(program))).join(',') || '-'}`
 }

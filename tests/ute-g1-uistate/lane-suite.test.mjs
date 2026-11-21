@@ -28,6 +28,7 @@
  * @module tests/ute-g1-uistate/lane-suite.test
  */
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -144,15 +145,23 @@ test('effects are corroborated independently of the row', () => {
   }
 })
 
-test('the per-member negative controls hold and every census member is guarded', async () => {
+test('the per-member negative controls hold, every census member is guarded, and the transcript is exact', async () => {
   const { verdict, results, failures } = await runNegativeControls()
   assert.deepEqual(failures, [], 'a negative control failed; the guarded behaviour is not load-bearing')
   assert.equal(verdict, 'GREEN')
-  assert.ok(results.length >= COVERED_MEMBERS.length, `only ${String(results.length)} controls for ${String(COVERED_MEMBERS.length)} members`)
+  assert.equal(results.length, 13, 'the battery has THIRTEEN controls; dropping one must red, not silently lower the count')
   for (const member of COVERED_MEMBERS) {
     assert.ok(results.some((result) => result.member === member), `no negative control reports NC-MEMBER ${member}`)
   }
-  console.log(`UTE-G1-UISTATE-CONTROLS verdict=${verdict} controls=${String(results.length)}`)
+  const fresh = execFileSync(process.execPath, [join(REPO_ROOT, 'tests', 'ute-g1-uistate', 'negative-controls.mjs')], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  }).trim().split('\n')
+  const committed = readFileSync(join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-uistate-b1-20261121', 'negative-controls.txt'), 'utf8').trim().split('\n')
+  assert.deepEqual(fresh, committed, 'the committed UI/AS negative-control transcript must be exactly a fresh run')
+  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=13 failed=0')
+  console.log(`UTE-G1-UISTATE-CONTROLS verdict=${verdict} controls=${String(results.length)} transcript=exact`)
 })
 
 test('the semantic differences are measured, blocking and unapproved', () => {

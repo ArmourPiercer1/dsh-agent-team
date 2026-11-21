@@ -102,10 +102,15 @@ Header: `id entry lane_read lane_write outcome refusal codes effects leaks`.
 * **Delete / move** — the FS tool family exposes no model-facing delete/move
   tool and the legacy governed provider does not override `deleteFile`/
   `moveFile`, so there is no old-path vector to compare against.
-* **`read_image` on the NEW path** — the prototype provider has no image
-  support yet, so every `FS-I*` row stays `newPathPending: true`; the new-path
-  run cannot reproduce these baselines (PR B2). The old path IS the product
-  route-C composition for every row.
+* **`read_image` on the NEW path — NOW REPRODUCED.** The earlier B1 note said
+  the prototype provider had no image support and every `FS-I*` row was still
+  declared pending; that is no longer true. UTE-3 PR B2 added image
+  support to the prototype provider and the pinned rc.5 new-path run reproduces
+  all six `FS-I1`…`FS-I6` rows (`dev/agent-workflow/evidence/ute-g1-fs-20261121/new-path-run.txt`,
+  `PROTOTYPE-VERDICT GREEN vectors=16 failed=0`). `newPathPending` has been
+  REMOVED from the channel entirely and its presence now fails the lane suite.
+  This covers the six recorded vectors only — the uncovered image surface is
+  the next bullet.
 * **`read_image` beyond those vectors** — no JPEG/WebP/GIF fixture, no
   downscale/`originalDimensions` arm, no byte-cap (`maxImageBytes`) refusal, no
   extension-less sniff arm, no mid-read cancellation (the corpus can only
