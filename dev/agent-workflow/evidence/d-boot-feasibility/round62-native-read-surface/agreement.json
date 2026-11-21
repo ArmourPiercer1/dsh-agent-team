@@ -1,0 +1,27 @@
+{
+  "schema": "a5sf-live-member/agreement/1",
+  "at": "2026-11-21T23:43:12.420Z",
+  "boots": 1,
+  "agreeing": false,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "FAIL",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "REFUTED",
+      "surfaceVerdict": "PROVEN",
+      "factsVerdict": "PROVEN",
+      "centreVerdict": "PROVEN",
+      "allowFacts": 2,
+      "denyFacts": 0,
+      "centreAdmissions": 2,
+      "centreExecutions": 2,
+      "governedSurface": true,
+      "admittedBytes": true,
+      "deniedSecretAbsent": false,
+      "transcriptSourceCount": 2
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1\noverall                       FAIL\nadmittedVerdict               PROVEN\ndeniedVerdict                 REFUTED\nsurfaceVerdict                PROVEN\nfactsVerdict                  PROVEN\ncentreVerdict                 PROVEN\nallowFacts                    2\ndenyFacts                     0\ncentreAdmissions              2\ncentreExecutions              2\ngovernedSurface               true\nadmittedBytes                 true\ndeniedSecretAbsent            false\ntranscriptSourceCount         2\n\nagreeing=false differing=[]"
+}

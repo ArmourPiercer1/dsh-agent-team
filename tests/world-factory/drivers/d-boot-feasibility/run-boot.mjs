@@ -782,7 +782,16 @@ function judgeSurface(surface) {
     [
       { id: 'read-present-once', ok: reads.length === 1, detail: `read schemas on the Member surface=${String(reads.length)}` },
       { id: 'native-params', ok: props.sort().join(',') === 'file_path,limit,offset', detail: `properties=${props.join(',')}` },
-      { id: 'native-description', ok: String(read?.description ?? '').includes('resolved by the filesystem backend'), detail: `description=${String(read?.description ?? '').slice(0, 140)}` },
+      // ROUND 62 INSTRUMENT REPAIR. The pinned host's `read` tool description
+      // and its `file_path` PARAMETER description are two different fields
+      // (`tests/deepseek-harness-test-use/packages/fs/tool-fs/src/read.ts`:
+      // top-level `Read a UTF-8 text file and return line-numbered content.`,
+      // `file_path` = `Path to read, resolved by the filesystem backend.`).
+      // Round 61 asserted the PARAMETER phrase against the TOOL description,
+      // which could only pass if the host text changed. Each clause now names
+      // the field it means.
+      { id: 'native-description', ok: String(read?.description ?? '') === 'Read a UTF-8 text file and return line-numbered content.', detail: `top-level description=${JSON.stringify(String(read?.description ?? ''))}` },
+      { id: 'native-file-path-description', ok: String(read?.parameters?.properties?.file_path?.description ?? '').includes('resolved by the filesystem backend'), detail: `file_path.description=${JSON.stringify(String(read?.parameters?.properties?.file_path?.description ?? ''))} (the parameter field, not the tool description)` },
       { id: 'no-shadow-modules', ok: Array.isArray(SHADOW_SPECS) && SHADOW_SPECS.length === 0, detail: `config.a5sfNativeToolModules=${JSON.stringify(SHADOW_SPECS)} (the Team row mounts no re-registered native definition)` },
       { id: 'tool-fs-is-shipped-row', ok: SHIPPED_PRESET_TOOLS.includes('tool-fs'), detail: `the preset row's own tool-fs row is what registers \`read\` (plugins include tool-fs=${String(SHIPPED_PRESET_TOOLS.includes('tool-fs'))})` },
     ],

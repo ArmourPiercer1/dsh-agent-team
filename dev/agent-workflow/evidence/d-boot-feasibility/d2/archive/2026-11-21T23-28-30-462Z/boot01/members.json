@@ -1,0 +1,26 @@
+[
+  {
+    "instanceId": "inst-1235q1w1rd1u",
+    "templateId": "worker-a",
+    "label": "dboot-d2-worker-a",
+    "childSessionId": "session-team-child-e9b5ce0327604b7ffa30f6dfedd9c437",
+    "lifecycle": "SETTLED",
+    "activityVersion": 3
+  },
+  {
+    "instanceId": "inst-12x4j4t1rn1g",
+    "templateId": "worker-b",
+    "label": "dboot-d2-worker-b",
+    "childSessionId": "session-team-child-ce84089af9f38ed55ba2d0bdf5442691",
+    "lifecycle": "RUNNING",
+    "activityVersion": 2
+  },
+  {
+    "instanceId": "inst-leader",
+    "templateId": "leader",
+    "label": "leader",
+    "childSessionId": "undefined",
+    "lifecycle": "undefined",
+    "activityVersion": 1
+  }
+]

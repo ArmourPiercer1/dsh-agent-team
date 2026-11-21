@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-21T23:36:48.520Z",
+  "head": "b583de6315cae08f34e09e43c1aa281cd771e6f5",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "driverSha256": "c57bb69c7e2f8f07d02c100a754fc0e32e02985d7ea55331192461810994f497",
+  "jsSubstitutions": [
+    {
+      "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
+      "value": []
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'",
+      "value": "https://api.exa.ai"
+    },
+    {
+      "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
+      "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
+    }
+  ],
+  "command": "node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs"
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "dboot-d2/agreement/1",
+  "at": "2026-11-21T23:39:37.900Z",
+  "boots": 2,
+  "agreeing": true,
+  "differing": [],
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "FAIL",
+      "multiMemberVerdict": "PROVEN",
+      "revocationVerdict": "REFUTED",
+      "stopVerdict": "PROVEN",
+      "aAdmissions": 9,
+      "bAdmissions": 5,
+      "aGuardFacts": 14,
+      "bGuardFacts": 8,
+      "windowsOverlap": true,
+      "crossRefused": true,
+      "stopSettlementState": "REFUSED",
+      "revocationPostRefused": false,
+      "bAfterStopCompleted": true
+    },
+    {
+      "boot": 2,
+      "overall": "FAIL",
+      "multiMemberVerdict": "PROVEN",
+      "revocationVerdict": "REFUTED",
+      "stopVerdict": "PROVEN",
+      "aAdmissions": 9,
+      "bAdmissions": 5,
+      "aGuardFacts": 14,
+      "bGuardFacts": 8,
+      "windowsOverlap": true,
+      "crossRefused": true,
+      "stopSettlementState": "REFUSED",
+      "revocationPostRefused": false,
+      "bAfterStopCompleted": true
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             FAIL                                FAIL\nmultiMemberVerdict                  PROVEN                              PROVEN\nrevocationVerdict                   REFUTED                             REFUTED\nstopVerdict                         PROVEN                              PROVEN\naAdmissions                         9                                   9\nbAdmissions                         5                                   5\naGuardFacts                         14                                  14\nbGuardFacts                         8                                   8\nwindowsOverlap                      true                                true\ncrossRefused                        true                                true\nstopSettlementState                 REFUSED                             REFUSED\nrevocationPostRefused               false                               false\nbAfterStopCompleted                 true                                true\n\nagreeing=true differing=[]"
+}

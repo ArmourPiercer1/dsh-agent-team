@@ -411,3 +411,120 @@ The driver still exits `1` (two refuting judges). What this round does NOT prove
 reaching the provider (`IO_READ_DENIED`); the `native-description` clause's intended field; runtime team
 creation (still 405); any candidate/product-proven status (all `DEV-LIVE`); a realm face the composition
 does not own (skipped, recorded in the lane's result).
+
+## 14. Round 62 update (2026-11-22) — D2 live driver: concurrency and Stop PROVEN, revocation REFUTED; the round-61 surface clause re-anchored and PROVEN
+
+HEAD at run start `b583de6315cae08f34e09e43c1aa281cd771e6f5`; host pin
+`639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty before and after every boot); branch
+`vnext/a1-cut`; record class `DEV-LIVE` (never candidate evidence). Evidence:
+`dev/agent-workflow/evidence/d-boot-feasibility/d2/` (new driver + its own runs; round-61 artefacts are
+untouched) and `dev/agent-workflow/evidence/d-boot-feasibility/round62-native-read-surface/` (the
+round-62 re-run of the round-61 driver, kept out of the round-61 `runs/`).
+
+### The new driver and its two boots
+
+`tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs` is a COPY of the round-61 driver with the
+probes replaced; the round-61 driver keeps its five judges and received only the `d:native-read-surface`
+repair described below. The D2 team declares TWO templates (`worker-a`, `worker-b`), each with its own
+`memberIoCeilings` read lane (A also declares an exact `ask` locator and `request-control` in its
+envelope, which the centre's ask path requires), so "in lane for A" and "in lane for B" are different
+compiled ceilings and the cross-member negative is real.
+
+```
+node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs --boots 2
+```
+
+Two boots, identical (`agreeing=true`, `differing=[]`):
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| overall | FAIL (1 judge refutes) | FAIL |
+| `d2:multi-member-concurrency` | **PROVEN** | **PROVEN** |
+| `d2:revocation` | **REFUTED** | **REFUTED** |
+| `d2:stop` | **PROVEN** | **PROVEN** |
+| aAdmissions / bAdmissions | 9 / 5 | 9 / 5 |
+| aGuardFacts / bGuardFacts | 14 / 8 | 14 / 8 |
+| windowsOverlap / crossRefused | true / true | true / true |
+| stop settlement state | REFUSED | REFUSED |
+| revocation post-refused (REQUIRED) | false | false |
+| B after-stop completed | true | true |
+
+### `d2:multi-member-concurrency` — PROVEN
+
+Two governed Members ran with overlapping provider-request windows (A `09.118–09.740Z`, B
+`09.352–09.478Z`), both own-lane reads admitted, every guard `allow` fact naming its own
+`memberIdentity`, separate `<instanceId>.facts.jsonl` ledgers whose admission facts carry only their own
+`instanceId`/`agentId`. The negative holds: A's read of B's in-lane file is `LANE_DENY`, B's bytes never
+reach A, and no guard fact exists for B's locator under A's identity (refusal precedes the Provider).
+The 7 in-lane reads in A's first turn are real reads; a one-read turn finished before B was admitted
+(measured), so the window needed a real work unit rather than a sleep.
+
+### `d2:revocation` — REFUTED (the REQUIRED direction), opposite direction measured live
+
+Through the ONE durable `permissionOverlay` lane: pre-read admitted → `team_grant_permission` of an exact
+`read` **deny** (`changed:true`) → same read refused `ADMISSION_OVERLAY_DENY` → `team_revoke_permission`
+(`changed:true`) → same read **admitted again**, and the untouched in-lane read still succeeds. The
+REQUIRED direction ("revoke refuses the previously-succeeded call with a NEW policy generation") cannot
+hold at this HEAD:
+
+- `overlay-decision.mjs:9` — the overlay can REMOVE authority, never grant it;
+- `admission-port.mjs:498-521` — consulted only when the compiled lane allows; its only verdict is
+  `ADMISSION_OVERLAY_DENY`;
+- `centre-install.mjs:94` — the fact's `policyGeneration` is the COMPILED revision fixed at bind; all
+  pre/mid/post facts carried the same `a5sf1:<hash>` across both boots;
+- `permission-mutation.ts:435-436` — removing a standing rule "never needs expansion authority".
+
+**Two lawful shapes**: (A) let `overlayDecision` return `allow` too, so a durable ALLOW stands in for a
+lane deny and its revoke restores the deny; (B) derive the compiled lane + centre binding from the
+overlay snapshot and re-bind on generation change, so a revoked ALLOW recompiles to deny and the fact
+carries the new generation. Neither is wiring-only, so the judge is REFUTED, never skipped and never
+reported as a pass.
+
+### `d2:stop` — PROVEN
+
+A's follow-up read on the authored exact `ask` locator parked at a durable Control request
+(`actionName=admission-ask`, `status=pending`, target = A's instance). `POST /api/session/cancel` for A's
+child session (the public RPC the Team view's member-stop button issues) returned 200. A's tool result is
+`Error: ADMISSION_STOPPED: the execution "call-d2-a-ask" was aborted before its body…`; A's centre fact is
+`refusalCode=ADMISSION_STOPPED`; the settlement is `REFUSED`/`dispatch=not-started`/`bodyOutcome=not-started`
+with no execution fact; never a completion and never `UNKNOWN`. Member B completed its after-stop read
+(`COMPLETED`, zero stops). The Stop leg is a timing race by nature, but it reproduced in BOTH boots, so
+no single-boot concession was used.
+
+### Round-61 instrument repair — `d:native-read-surface` re-anchored, now PROVEN
+
+Round 61 asserted the `file_path` PARAMETER phrase (`resolved by the filesystem backend`) against the
+`read` TOOL description, so it could only pass if the host text changed. The clause is now split and each
+part names its field, per the pinned host
+(`tests/deepseek-harness-test-use/packages/fs/tool-fs/src/read.ts:79-81`):
+
+- `native-description` (top-level): exactly `Read a UTF-8 text file and return line-numbered content.`
+- `native-file-path-description` (`parameters.properties.file_path.description`): contains
+  `resolved by the filesystem backend`
+
+`read-present-once`, `native-params`, `no-shadow-modules` and `tool-fs-is-shipped-row` are unchanged. The
+round-61 driver was re-run once (`run-boot.mjs --boots 1`) to validate the repair; the run is preserved in
+`dev/agent-workflow/evidence/d-boot-feasibility/round62-native-read-surface/`, and the round-61 `runs/`
+were restored from git so the round-61 record is not rewritten. Result: `d:native-read-surface: PASS`, all
+six clauses true. The driver's other verdicts are unchanged (`d:member-read-denied` still fails its
+`typed-denial` residual; overall still FAIL), and nothing was relaxed.
+
+### Commands
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+node scripts/ute-cut-closure.mjs --check
+node scripts/ute-p0-assets.mjs --check
+node scripts/docs-sync.mjs --check
+node scripts/place-dist-glue.mjs
+node scripts/eb3-ci-required.mjs
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+```
+
+### What this round does NOT prove
+
+Any candidate/product-proven status (all `DEV-LIVE`); the REQUIRED revocation direction; a Team-UI click
+(the Stop used the same public `session/cancel` RPC the button issues); runtime team creation over the
+remote plane (still 405 on a centre-configured row); that a scripted model's interleaving equals a real
+model's timing.
