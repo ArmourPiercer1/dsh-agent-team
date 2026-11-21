@@ -9864,3 +9864,41 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
   `tools/result`), and the guard's code wins over the admission record's generic one.
 - Gates: leg suites=4 exit=0; catalog `tests=886 refused=0 findings=0`; arms now 79
   (admission 33, slice 34, realm 9, os 3).
+
+## R26 — 2026-11-22 — external review received; production closure repaired; first real extraction
+
+Owner relayed an external review (`docs/reviews/20261122-0018.txt`) and ruled: **the two oversized
+centre files must be fixed before B/C continues**. This round did the review's blocking items and the
+first extraction.
+
+**The finding that mattered most was not in the review's list.** `place-dist-glue` — the step that puts
+the byte-identical .mjs files into the shipped dist face — still pointed at
+`packages/runtime/src/plugin/live/agent-bindings.mjs`, which the cut deleted. `pnpm build:composition`
+died before producing anything, and every source-tree test stayed green because none of them build the
+shipped face. 99 of 119 placement sources were files the cut had already deleted, and the entire
+`vnext/` centre was in NO placement.
+
+- GLUE_SRC retargeted; 98 dead entries and 14 dead placement documents removed; new
+  `240-ute-vnext-centre.json` places the six centre .mjs files; `admission-port.mjs` imports
+  `./admission.js` (the file tsc emits) instead of `./admission.ts`.
+- `ute-cut-closure --check` now refuses a placement whose src is missing and a GLUE_SRC that is not on
+  disk, and reports an unreadable list as a FINDING (negative control measured: pointing GLUE_SRC back
+  at the deleted path yields `UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE` + fail, not a stack trace).
+- `dist-placements.test.mjs` used a DELETED family document as its fixture; it now uses one that
+  survives.
+- `refuse()` typed with `AdmissionDenialCode` (the TS error the review named: NETWORK_DENY was not an
+  `AdmissionRefusalCode`). docs:sync dangling links fixed (2 -> 0).
+
+**Review P0s:**
+- native mount disposal: the product bind discarded `mountHostModules(...)`'s handle, so the
+  MEMBER_CLOSED tombstone never registered on member teardown — the SLICE-23 regression, live on the
+  product path. Now kept in `nativeMountDisposers` and awaited BEFORE realm disposal.
+- Alpha.6 review routing: the opt-in now requires `centreStatePath` (a review router whose decisions
+  have nowhere durable to live is a governance claim with no evidence). The rule lives in a new pure
+  module `vnext/centre-config.ts` + `ADM-34`, NOT inline in host.ts — an inline rule can only be
+  verified by a full build, which is exactly when it stops being verified.
+
+**First extraction toward the thin composition root:** `vnext/work-turn-reader.mjs` (199 lines out of
+the glue, zero shared state) + `vnext-work-turn-reader.test.mjs` (7 arms) — its defensive branches (no
+log seam, absent delivery, crash-closed turn) were previously only reachable through a live delivery.
+Leg now suites=5 files=5.

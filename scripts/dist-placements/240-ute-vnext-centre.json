@@ -33,6 +33,11 @@
       "src": "packages/runtime/src/plugin/vnext/centre-install.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/centre-install.mjs",
       "note": "The ONE composition point the product calls: admission + facts + settlement over one callId."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
+      "note": "The delivered-turn reader, extracted from the glue (2026-11-22): the glue imports it, so the shipped face must carry it."
     }
   ]
 }
