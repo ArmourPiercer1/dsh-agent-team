@@ -122,6 +122,33 @@ test('REALM-9 — without definition identity there is no proof, so the mount is
   )
 })
 
+test('REALM-11 — a DEFERRED registration is waited for, then judged by identity like any other', async () => {
+  const tools = toolsWith({ read: { execute () {} }, read_image: { execute () {} } })
+  let polls = 0
+  const realm = {
+    async mountNativeToolModules () {
+      // The host's `read_image` registers from a deferred inject child: absent for three ticks.
+      const timer = setTimeout(() => { tools.map.set('read_image', { execute () {}, deferred: true }) }, 25)
+      void timer
+      tools.map.set('read', { execute () {}, immediate: true })
+      return []
+    },
+    async disposeNativeToolModules () { this.disposed = true },
+  }
+  const specs = hostNativeSpecs([hostSpec('@deepseek-ai/dsh-tool-fs', ['read', 'read_image'])])
+  const result = await mountHostModules({ realm, root: { get: () => tools }, specs, settleRounds: 20 })
+  polls += 1
+  assert.deepEqual([...result.mounted].sort(), ['read', 'read_image'], 'the deferred name must be judged after it registers, not reported missing')
+  assert.equal(realm.disposed, undefined, 'a settled mount is not disposed')
+})
+
+test('REALM-12 — a name that never registers is still refused once the settle budget is spent', async () => {
+  const tools = toolsWith({ read: { execute () {} } })
+  const realm = realmRegistering(tools, { expose: ['read'] })
+  const specs = hostNativeSpecs([hostSpec('@deepseek-ai/dsh-tool-fs', ['read', 'read_image'])])
+  await assert.rejects(() => mountHostModules({ realm, root: { get: () => tools }, specs, settleRounds: 2 }), (e) => e.code === 'DEFINITION_MISSING' && /read_image/.test(e.message))
+})
+
 test('REALM-10 — a composed surface the specs do not cover is refused, never left on the base provider', async () => {
   const tools = toolsWith({ read: { execute () {} } })
   const realm = realmRegistering(tools)

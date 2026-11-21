@@ -98,9 +98,14 @@ export function hostNativeSpecs (specs) {
  * @param {readonly object[]} options.specs - the specs validated by {@link hostNativeSpecs}.
  * @param {readonly string[]} [options.surface] - names the caller expects to exist before mounting;
  *   a declared name that is absent BEFORE and AFTER is reported as `DEFINITION_MISSING`.
+ * @param {number} [options.settleRounds] - how many registry re-reads to wait for DEFERRED
+ *   registrations. A host tool package registers some tools from a deferred `inject` child (the
+ *   pinned `read_image` is one: GAP-FS-CONTRACT-1), so the name is legitimately absent for a few
+ *   ticks after the mount returns. Waiting is not leniency: the identity assertion still runs, it
+ *   just runs after the registry has had its chance to settle.
  * @returns {Promise<{ mounted: readonly string[], fibers: readonly object[] }>}
  */
-export async function mountHostModules ({ realm, root, scope, specs, surface }) {
+export async function mountHostModules ({ realm, root, scope, specs, surface, settleRounds = 20 }) {
   if (realm === null || typeof realm !== 'object') fail('REALM_MISSING', 'no member realm: a tool definition may not fall back to the composition provider')
   if (typeof realm.mountNativeToolModules !== 'function') fail('REALM_MISSING', 'the realm cannot mount native tool modules (no mountNativeToolModules)')
   const tools = root?.get?.('tools')
@@ -122,6 +127,20 @@ export async function mountHostModules ({ realm, root, scope, specs, surface }) 
     ...(spec.toolBindingIdentity !== undefined ? { toolBindingIdentity: spec.toolBindingIdentity } : {}),
   }))
   const fibers = await realm.mountNativeToolModules(mounts, { scope })
+  // DEFERRED REGISTRATION. The mount returns before every deferred child has registered, so at
+  // this instant neither absence nor an unchanged definition is a fact yet. Re-read until every
+  // declared name has CHANGED or the budget is spent, bounded: an unbounded wait would hang a
+  // member's setup, and a zero-round wait would report a tick as a defect. A name that never
+  // changes still reports DEFINITION_UNCHANGED afterwards — the wait does not soften the verdict.
+  const declared = hostSpecs.flatMap((spec) => spec.expectedTools)
+  for (let round = 0; round < settleRounds; round += 1) {
+    const pending = declared.filter((name) => {
+      const current = tools.get(name, scope)
+      return current === undefined || current === null || current === before.get(name)
+    })
+    if (pending.length === 0) break
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
   const mounted = []
   const unchanged = []
   const missing = []
