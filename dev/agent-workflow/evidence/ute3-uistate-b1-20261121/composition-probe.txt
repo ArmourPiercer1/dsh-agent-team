@@ -1,0 +1,96 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+PROBE pristine-tree=tests/deepseek-harness-test-use (read-only; never a tracked path, never written)
+PROBE-CENSUS family=dsh.ui-family lane=packages/tools/ui-family members=ask_user_question,present
+PROBE-CENSUS family=dsh.agent-state-family lane=packages/tools/agent-state-family members=todo_write,create_goal,get_goal,update_goal,exit_plan_mode
+PROBE-DEF member=ask_user_question governed-body=packages/tools/ui-family/src/ask-row.mjs:130
+PROBE-DEF member=ask_user_question host-definition=packages/interaction/tool-ask-user/lib/index.js:67 symbol=`@deepseek-ai/dsh-tool-ask-user` apply() -> defineTool (index.ts:39)
+PROBE-DEF member=present governed-body=packages/tools/ui-family/src/present-row.mjs:60
+PROBE-DEF member=present host-definition=packages/deliverables/tool-present/lib/index.js:24 symbol=`@deepseek-ai/dsh-tool-present` apply() -> defineTool (index.ts:39)
+PROBE-DEF member=todo_write governed-body=packages/tools/agent-state-family/src/executors.mjs:303
+PROBE-DEF member=todo_write host-definition=packages/todo/tool-todo/lib/index.js:96 symbol=`@deepseek-ai/dsh-tool-todo` apply() -> defineTool (index.ts:136)
+PROBE-DEF member=todo_write test-declarations=packages/runtime/test/a2c2-permission-coverage.test.ts:906 (disclosed; not a product definition site)
+PROBE-DEF member=create_goal governed-body=packages/tools/agent-state-family/src/executors.mjs:329
+PROBE-DEF member=create_goal host-definition=packages/goal/tool-goal/lib/index.js:276 symbol=`@deepseek-ai/dsh-tool-goal` apply() -> defineTool (index.ts:208)
+PROBE-DEF member=get_goal governed-body=packages/tools/agent-state-family/src/executors.mjs:343
+PROBE-DEF member=get_goal host-definition=packages/goal/tool-goal/lib/index.js:265 symbol=`@deepseek-ai/dsh-tool-goal` apply() -> defineTool (index.ts:196)
+PROBE-DEF member=update_goal governed-body=packages/tools/agent-state-family/src/executors.mjs:349
+PROBE-DEF member=update_goal host-definition=packages/goal/tool-goal/lib/index.js:302 symbol=`@deepseek-ai/dsh-tool-goal` apply() -> defineTool (index.ts:235)
+PROBE-DEF member=exit_plan_mode governed-body=packages/tools/agent-state-family/src/executors.mjs:371
+PROBE-DEF member=exit_plan_mode host-definition=packages/plan/plan-mode/lib/index.js:232 symbol=`@deepseek-ai/dsh-plan-mode` PlanMode.start() -> defineTool (index.ts:279)
+PROBE-PLANE family=ui descriptor=packages/tools/families/ui.mjs:67 claims=(see code)
+PROBE-PLANE code packages/tools/families/ui.mjs:67 claims: () => [ASK_USER_QUESTION_NATIVE_NAME, PRESENT_NATIVE_NAME],
+PROBE-PLANE code packages/tools/families/ui.mjs:66 enabled: (cap) => cap.planeConfig.uiFamilyEnabled === true,
+PROBE-PLANE code packages/tools/families/ui.mjs:70 disabledOwned: () => [],
+PROBE-PLANE family=ui descriptor=packages/tools/families/ui.mjs:67 claims=(see code)
+PROBE-PLANE code packages/tools/families/ui.mjs:67 claims: () => [ASK_USER_QUESTION_NATIVE_NAME, PRESENT_NATIVE_NAME],
+PROBE-PLANE code packages/tools/families/ui.mjs:66 enabled: (cap) => cap.planeConfig.uiFamilyEnabled === true,
+PROBE-PLANE code packages/tools/families/ui.mjs:70 disabledOwned: () => [],
+PROBE-PLANE family=agent-state descriptor=packages/tools/families/agent-state.mjs:93 claims=(see code)
+PROBE-PLANE code packages/tools/families/agent-state.mjs:93 claims: () => [...AGENT_STATE_NAMES],
+PROBE-PLANE code packages/tools/families/agent-state.mjs:94 enabled: (cap) => cap.planeConfig.agentStateEnabled === true,
+PROBE-PLANE code packages/tools/families/agent-state.mjs:95 disabledOwned: () => [],
+PROBE-PLANE natexe-law=verifyPlaneNames (team-tool-plane.mjs:393) is CLOSED to the plane's own classes grep/glob/bash/read; the ui/agent-state families do not ride that names map at all
+PROBE-PLANE natexe-reserved: ask_user_question=reserved present=reserved todo_write=reserved create_goal=reserved get_goal=reserved update_goal=reserved exit_plan_mode=reserved
+PROBE-PLANE family=ui member=ask_user_question claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=ui member=ask_user_question names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=ui member=present claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=ui member=present names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=ui enabled-by-default=no (absent key = false; opt-in closed boolean uiFamilyEnabled)
+PROBE-PLANE family=ui disabledOwned=[] (a disabled mount claims nothing)
+PROBE-PLANE family=agent-state member=todo_write claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=agent-state member=todo_write names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=agent-state member=create_goal claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=agent-state member=create_goal names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=agent-state member=get_goal claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=agent-state member=get_goal names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=agent-state member=update_goal claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=agent-state member=update_goal names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=agent-state member=exit_plan_mode claimed=yes claim-source=descriptor.claims (fixed native spelling; never the configurable names map)
+PROBE-PLANE family=agent-state member=exit_plan_mode names-map-route=PLANE_NAMES_INVALID (the natexe law books no such class/name pair; the descriptor route is the only route that mounts it)
+PROBE-PLANE family=agent-state enabled-by-default=no (absent key = false; opt-in closed boolean agentStateEnabled)
+PROBE-PLANE family=agent-state disabledOwned=[] (a disabled mount claims nothing)
+PROBE-PLANE ask-native-name-constant=ask_user_question (ui-mechanics.mjs export; the row registers this spelling)
+PROBE-HOST-DEF member=ask_user_question registered=yes name=ask_user_question parameters=[questions] required=[questions] description="Ask the user a concise question when you need confirmation, a choice, or missing information before proceeding."
+PROBE-HOST-DEF member=present registered=yes name=present parameters=[files] required=[files] description="Declare existing files as final deliverables for the user. Use it when the user needs a separate file, especially Office documents, spreadsheets, and slide decks; prefer your final response when that "
+PROBE-HOST-DEF member=todo_write registered=yes name=todo_write parameters=[todos] required=[todos] description="Record and update a task list to plan multi-step work and show progress; skip it for trivial single-step tasks. Add one todo per concrete step before you start. While work remains, keep the todos bein"
+PROBE-HOST-DEF member=get_goal registered=yes name=get_goal parameters=[] required=[] description="Read the current session goal, including the id and revision that update_goal requires."
+PROBE-HOST-DEF member=create_goal registered=yes name=create_goal parameters=[objective,max_goal_rounds] required=[objective] description="Create a persisted goal that keeps this session working across automatic continuation rounds. Use it when the direct human request is a long-running objective, even if the user did not say \"goal\"; not"
+PROBE-HOST-DEF member=update_goal registered=yes name=update_goal parameters=[goal_id,revision,action,objective,max_goal_rounds,blocked_reason] required=[goal_id,revision,action] description="Update the current goal."
+PROBE-HOST-DEF member=exit_plan_mode registered=yes name=exit_plan_mode parameters=[plan] required=[plan] description="Use only in plan mode. Present your plan for the user's review and, on approval, leave plan mode. The user may approve (carry out the plan from your next step) or keep planning — their feedback comes "
+PROBE-ROUTE-C-BARE mounted=yes attach-fibers=0 composition=nativeToolModules=[] (no host preset module configured)
+PROBE-ROUTE-C-BARE member=ask_user_question registered=no reachable=no dispatch="Error: unknown tool \"ask_user_question\""
+PROBE-ROUTE-C-BARE member=ask_user_question providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=present registered=no reachable=no dispatch="Error: unknown tool \"present\""
+PROBE-ROUTE-C-BARE member=present providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=todo_write registered=no reachable=no dispatch="Error: unknown tool \"todo_write\""
+PROBE-ROUTE-C-BARE member=todo_write providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=create_goal registered=no reachable=no dispatch="Error: unknown tool \"create_goal\""
+PROBE-ROUTE-C-BARE member=create_goal providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=get_goal registered=no reachable=no dispatch="Error: unknown tool \"get_goal\""
+PROBE-ROUTE-C-BARE member=get_goal providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=update_goal registered=no reachable=no dispatch="Error: unknown tool \"update_goal\""
+PROBE-ROUTE-C-BARE member=update_goal providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-BARE member=exit_plan_mode registered=no reachable=no dispatch="Error: unknown tool \"exit_plan_mode\""
+PROBE-ROUTE-C-BARE member=exit_plan_mode providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C-PRESET present-on-preset-scope=registered definition-name=present
+PROBE-ROUTE-C-PRESET compiled-io=ok
+PROBE-ROUTE-C-PRESET present attach-fibers=1 shadowed=yes (definition identity changed)
+PROBE-ROUTE-C-PRESET present arm=inlane isError=false text="Presented <route-tmp>/inside/report.md" guardFacts=2 denyFacts=0
+PROBE-ROUTE-C-PRESET present arm=out-of-lane isError=true text="Error: authored locator '<route-tmp>/outside/secret-out-of-lane.md' is outside every allo" guardFacts=1 denyFacts=1
+PROBE-UISTATE family=ui member=ask_user_question two-implementations=yes legacy=packages/tools/ui-family/src/ask-row.mjs:130 native=packages/interaction/tool-ask-user/lib/index.js:67
+PROBE-UISTATE family=ui member=present two-implementations=yes legacy=packages/tools/ui-family/src/present-row.mjs:60 native=packages/deliverables/tool-present/lib/index.js:24
+PROBE-UISTATE family=agent-state member=todo_write two-implementations=yes legacy=packages/tools/agent-state-family/src/executors.mjs:303 native=packages/todo/tool-todo/lib/index.js:96
+PROBE-UISTATE family=agent-state member=create_goal two-implementations=yes legacy=packages/tools/agent-state-family/src/executors.mjs:329 native=packages/goal/tool-goal/lib/index.js:276
+PROBE-UISTATE family=agent-state member=get_goal two-implementations=yes legacy=packages/tools/agent-state-family/src/executors.mjs:343 native=packages/goal/tool-goal/lib/index.js:265
+PROBE-UISTATE family=agent-state member=update_goal two-implementations=yes legacy=packages/tools/agent-state-family/src/executors.mjs:349 native=packages/goal/tool-goal/lib/index.js:302
+PROBE-UISTATE family=agent-state member=exit_plan_mode two-implementations=yes legacy=packages/tools/agent-state-family/src/executors.mjs:371 native=packages/plan/plan-mode/lib/index.js:232
+PROBE-DISPOSITION member=ask_user_question product-route=absent-from-product (PD-25 fail-closed removal; no host preset row, no route-C shadow, the governed descriptor claims it only while uiFamilyEnabled)
+PROBE-DISPOSITION member=present product-route=route-C-shadows-the-HOST-definition (PD-26/PD-29 hostPresentSpecOf; the governed ui-family row declares the same spelling and is opt-in)
+PROBE-DISPOSITION member=todo_write product-route=inherited-preset-row (product preset tool-todo; route-C configures no shadow for it; the governed row declares the same spelling and is opt-in)
+PROBE-DISPOSITION member=create_goal product-route=inherited-preset-row (product preset tool-goal; route-C configures no shadow; governed row opt-in)
+PROBE-DISPOSITION member=get_goal product-route=inherited-preset-row (product preset tool-goal; route-C configures no shadow; governed row opt-in)
+PROBE-DISPOSITION member=update_goal product-route=inherited-preset-row (product preset tool-goal; route-C configures no shadow; governed row opt-in)
+PROBE-DISPOSITION member=exit_plan_mode product-route=inherited-preset-row (product preset plan-mode; route-C configures no shadow; governed row opt-in)
+PROBE-CONCLUSION ui=two-implementations members=ask_user_question,present reason=each booked spelling is declared by a governed family body AND by the pinned host's own tool package; route-C serves no ui member itself except the host present shadow, and ask_user_question is absent from the product preset by PD-25
+PROBE-CONCLUSION state=two-implementations members=todo_write,create_goal,get_goal,update_goal,exit_plan_mode reason=each booked spelling is declared by the governed agent-state family AND by the pinned host tool packages (tool-todo/tool-goal/plan-mode) that the product preset already mounts; the governed family is opt-in (agentStateEnabled)
+PROBE-CONCLUSION delivery-shape=both families owe a real old-path baseline (two implementations) + per-member negative controls; no family is a non-retirement case

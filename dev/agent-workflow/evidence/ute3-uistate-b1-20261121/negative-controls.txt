@@ -1,0 +1,14 @@
+NC-MEMBER ask_user_question control=ask-port-removed GREEN
+NC-MEMBER present control=present-root-widened GREEN
+NC-MEMBER todo_write control=todo-lane-allowed GREEN
+NC-MEMBER get_goal control=get-goal-other-scope GREEN
+NC-MEMBER create_goal control=create-arm-direct-human GREEN
+NC-MEMBER update_goal control=update-revision-current GREEN
+NC-MEMBER exit_plan_mode control=exit-plan-mode-seeded GREEN
+NC-HARNESS compare-bites GREEN
+NC-HARNESS category-vocabulary-total GREEN
+NC-HARNESS category-coverage-declared GREEN
+NC-HARNESS store-witness-load-bearing GREEN
+NC-HARNESS effect-witness-load-bearing GREEN
+NC-HARNESS durable-readback-load-bearing GREEN
+NC-VERDICT GREEN controls=13 failed=0

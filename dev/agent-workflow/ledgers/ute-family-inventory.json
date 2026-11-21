@@ -1733,11 +1733,11 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
-      "note": "`present` reads its files through the FS family's anchored primitives — a cross-family edge visible in importsAcrossRepo and in the runtime-path port step."
+      "note": "`present` reads its files through the FS family's anchored primitives — a cross-family edge visible in importsAcrossRepo and in the runtime-path port step. UTE-3 B1 (2026-11-21) captured this family's old-path baseline (tests/ute-g1-uistate/golden/old-path.tsv) and per-member controls (dev/agent-workflow/evidence/ute3-uistate-b1-20261121/negative-controls.txt); Stage 0 measured TWO live implementations (this lane + the pinned host `tool-ask-user`/`tool-present`) and that route-C serves neither spelling as a governed row, so `newPath` stays none and the retirement row stays NOT_RETIREABLE."
     },
     {
       "familyId": "dsh.agent-state-family",
@@ -1955,11 +1955,11 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
-      "note": "Row definitions and executors live in ONE file (`executors.mjs`), so it is classed `executor` and carries the definition declarations. `fs-state-store.mjs` is the DSH_HOME-backed implementation of the `state-store.mjs` port."
+      "note": "Row definitions and executors live in ONE file (`executors.mjs`), so it is classed `executor` and carries the definition declarations. `fs-state-store.mjs` is the DSH_HOME-backed implementation of the `state-store.mjs` port. UTE-3 B1 (2026-11-21) captured this family's old-path baseline and per-member controls; Stage 0 measured TWO live implementations (this lane + the pinned host `tool-todo`/`tool-goal`/`plan-mode` rows the Member preset mounts) and that route-C serves none of the five spellings as a governed row, so `newPath` stays none and the retirement row stays NOT_RETIREABLE."
     }
   ],
   "shared": [

@@ -417,9 +417,16 @@ jobs:
         # face). It grades the 15-vector WEB old-path golden, both members' coverage, the closed
         # refusal vocabulary, the measured socket witness (zero non-loopback connects), and the
         # family + per-member negative controls (`NC-VERDICT GREEN controls=11 failed=0`).
+        # UTE-3 stage B1 UI + AGENT-STATE (2026-11-21): `tests/ute-g1-uistate/lane-suite.test.mjs`
+        # rides the same argv for the same post-build reason (its Stage-0 probe mounts the pinned
+        # host tool modules AND the route-C realm row, and its controls re-run the governed real
+        # store under the harness home). It grades the shared 69-vector old-path golden (both
+        # families, every census member, success/refusal/abort/deadline), the closed refusal
+        # vocabulary and its printed exclusion set, the independently corroborated effects, and the
+        # family + per-member negative controls (`NC-VERDICT GREEN controls=13 failed=0`).
         shell: bash
         timeout-minutes: 10
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-uistate/lane-suite.test.mjs
 
       # `--full --only census`, chosen over a full 7-leg re-run, and the reason is that the other
       # six legs grade the checkout and the build, not the host: `graph-parse`, `install`,
