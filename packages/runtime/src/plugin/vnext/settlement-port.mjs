@@ -207,6 +207,42 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
       }
     },
     /**
+     * A Stop landed AFTER admission and BEFORE the body. The record was opened with the admission
+     * decision it references (`allow` for an approved ask or an allowed call), so `REFUSED` is
+     * forbidden by the frozen contract (`SETTLEMENT_ADMISSION_MISMATCH`); CANCELLED is the store's own
+     * state for a Stop and it requires a recorded `pre-dispatch` Stop. That Stop is not fabricated: the
+     * caller observed the host's abort signal on this very execution, which is the authority signal.
+     *
+     * Nothing has run, so the observation says so: `dispatch` and `bodyOutcome` are `not-started` and
+     * the effect evidence is `none-confirmed`. The record is terminal, never UNKNOWN.
+     *
+     * Idempotent: a terminal record is returned unchanged.
+     */
+    stoppedBeforeBody ({ exec, stopId, phase = 'pre-dispatch' }) {
+      try {
+        const identity = identityOf(exec)
+        const existing = store.read(identity.executionId)
+        if (existing === null) return null
+        if (existing.state !== 'ADMITTED') return existing
+        store.recordStop({
+          executionId: identity.executionId,
+          stopId: stopId ?? `stop:${identity.executionId}:${phase}`,
+          at: clock(),
+          phase,
+        })
+        return store.settle({
+          executionId: identity.executionId,
+          state: 'CANCELLED',
+          observation: observationOf(identity.executionId, { refused: true, bodyOutcome: 'not-started' }),
+          at: clock(),
+          reason: `stop: the call was stopped before its body ran (${phase})`,
+        })
+      } catch (error) {
+        fault(error, { phase: 'terminal', toolName: exec?.name })
+        throw error
+      }
+    },
+    /**
      * Reconcile what a previous process left open. A record still RUNNING after a crash is UNKNOWN -
      * the centre was not there to see the effect, so it must not report success OR failure - and it
      * is never replayed.

@@ -1716,3 +1716,658 @@ test('ADM-55 — the wait bridge\'s own closed outcomes map to their own refusal
   assert.equal(noService.verdict.kind, 'deny')
   assert.equal(noService.facts[0].refusalCode, 'ADMISSION_APPROVAL_UNAVAILABLE')
 })
+
+// ================================================ STOP PRIORITY + LIFECYCLE CLOSE (B stage)
+//
+// Two properties are proven here, both over the SAME assembly the product runs (one admission point,
+// one fact ledger, one settlement store, one Control plane):
+//
+//  - A STOP beats every other outcome. The Stop is the host's own `exec.signal` — the same signal the
+//    execution fact already reads — so there is no second stop mechanism. It is decided BEFORE the
+//    lane and before any reviewer, it closes a pending durable Control request through the EXISTING
+//    wait bridge's inline-abort cascade, it is never spent into an execution, and a durable approval
+//    that arrives afterwards is refused by the Control plane itself (the abandonment is terminal).
+//  - A LIFECYCLE CLOSE refuses instead of vanishing. After the member is closed a new call is
+//    REFUSED with its own code and settled REFUSED/not-started (not UNKNOWN, not an execution), an
+//    in-flight call still settles, and a second close is a no-op.
+
+/**
+ * One member's assembly on a host double that runs the waterfall the way the real host does:
+ * every pre-execute listener in order, then the guard, then the result. The ledger and the settlement
+ * store are the PRODUCT's, over a temp dir, so every claim below is a claim about written records.
+ */
+const centreWorld = async (label, over = {}) => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(`${tmpdir()}/vnext-b-${label}-`)
+  const listeners = { pre: [], result: [] }
+  let guardFn
+  const ctx = {
+    get: (name) => (name === 'tools' ? { guard (fn) { guardFn = fn; return () => { guardFn = undefined } } } : undefined),
+    on: (event, fn) => {
+      const target = event === 'tools/pre-execute' ? listeners.pre : event === 'tools/result' ? listeners.result : undefined
+      if (target === undefined) return () => {}
+      target.push(fn)
+      return () => {
+        const at = target.indexOf(fn)
+        if (at >= 0) target.splice(at, 1)
+      }
+    },
+  }
+  const ledger = openFactLedger({ path: join(dir, `${label}.facts.jsonl`) })
+  const store = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
+  const faults = []
+  const body = { count: 0 }
+  const lookups = { count: 0 }
+  let currentBinding = over.binding
+  let resolveImpl = over.resolveBinding
+  const resolveBinding = (exec) => {
+    lookups.count += 1
+    if (resolveImpl !== undefined) return resolveImpl(exec)
+    return currentBinding
+  }
+  const identityOf = (exec) => ({
+    executionId: dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, exec.callId),
+    actorId: 'agent-1',
+    worldId: 'session-1',
+  })
+  const centre = installMemberCentre({
+    ctx,
+    binding: over.binding,
+    resolveBinding,
+    recordAdmission: (fact) => ledger.recordAdmission(fact),
+    recordExecution: (fact) => ledger.recordExecution(fact),
+    isReplay: (callId) => ledger.has(callId),
+    recordReplay: (input) => ledger.recordReplayRefusal(input),
+    store,
+    identityOf,
+    onFault: (error, context) => faults.push([error, context]),
+    ...(over.grants === undefined ? {} : { grants: over.grants }),
+    ...(over.approvals === undefined ? {} : { approvals: over.approvals }),
+  })
+  const preExecute = async (exec) => {
+    const chain = listeners.pre.slice()
+    const step = async (index) => (index >= chain.length ? { kind: 'allow' } : chain[index](exec, () => step(index + 1)))
+    return step(0)
+  }
+  const guard = (exec) => (guardFn === undefined ? undefined : guardFn(exec))
+  const result = (exec, outcome) => { for (const handler of listeners.result.slice()) handler(exec, outcome) }
+  /** One dispatch: pre-execute, guard, body, result — with the host's own result shape. */
+  const dispatch = async (exec) => {
+    const verdict = await preExecute(exec)
+    if (verdict.kind !== 'allow') {
+      result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      return verdict
+    }
+    const reason = guard(exec)
+    if (reason !== undefined) {
+      result(exec, { isError: true, error: { message: String(reason) } })
+      return { kind: 'deny', reason }
+    }
+    body.count += 1
+    result(exec, { isError: false })
+    return { kind: 'allow' }
+  }
+  return {
+    dir,
+    centre,
+    ledger,
+    store,
+    faults,
+    body,
+    lookups,
+    preExecute,
+    guard,
+    result,
+    dispatch,
+    identityOf,
+    executionIdOf: (exec) => identityOf(exec).executionId,
+    setBinding: (value) => { currentBinding = value },
+    setResolve: (fn) => { resolveImpl = fn },
+    admissionFact: (callId) => ledger.readAll().find((record) => record.kind === 'invocation-authority' && record.callId === callId),
+    close: () => centre.close(),
+    dispose: () => centre.dispose(),
+  }
+}
+
+const readExec = (callId, signal, filePath = '/work/a/doc.txt') => ({
+  name: 'read',
+  callId,
+  arguments: { file_path: filePath },
+  agent: { id: 'agent-1' },
+  turn: 1,
+  step: 1,
+  ...(signal === undefined ? {} : { signal }),
+})
+
+test('ADM-56 — a Stop before the body is its OWN refusal: REFUSED/not-started, never UNKNOWN, never an execution', async () => {
+  // (1) POSITIVE CONTROL: without a Stop the same call is admitted, its body runs, and it settles
+  //     COMPLETED. Without this the stop arm could pass on a permanently-broken composition.
+  const okWorld = await centreWorld('stop-ok', { binding: binding() })
+  const ok = readExec('stop-ok-1')
+  const okVerdict = await okWorld.dispatch(ok)
+  assert.equal(okVerdict.kind, 'allow')
+  assert.equal(okWorld.body.count, 1, 'the positive control really ran the body')
+  assert.equal(okWorld.store.read(okWorld.executionIdOf(ok)).state, 'COMPLETED')
+  okWorld.close()
+
+  // (2) THE STOP. The host's own signal is already aborted when the call reaches the centre.
+  const stopWorld = await centreWorld('stop', { binding: binding() })
+  const controller = new AbortController()
+  controller.abort()
+  const stopped = readExec('stop-1', controller.signal)
+  const verdict = await stopWorld.preExecute(stopped)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_STOPPED/u)
+  assert.equal(stopWorld.body.count, 0, 'a Stop must precede the body')
+  // ...and BOTH guard consultations agree: the second cannot turn the stop into an execution.
+  assert.match(String(stopWorld.guard(stopped)), /ADMISSION_STOPPED/u)
+  assert.match(String(stopWorld.guard(stopped)), /ADMISSION_STOPPED/u)
+  assert.equal(stopWorld.body.count, 0)
+  // The host now settles the refused call: the execution fact joins the decision that was enforced.
+  stopWorld.result(stopped, { isError: true, error: { message: String(verdict.reason) } })
+  assert.equal(stopWorld.ledger.readAll().find((entry) => entry.kind === 'execution' && entry.callId === 'stop-1').outcome, 'admission-refusal')
+
+  // THE DURABLE FACT names the stop code, and that code is distinct from every other refusal a call
+  // can meet - a Stop reported as a lane rule, an expiry or a fault is unreviewable.
+  const fact = stopWorld.admissionFact('stop-1')
+  assert.equal(fact.decision, 'deny')
+  assert.equal(fact.refusalCode, 'ADMISSION_STOPPED')
+  for (const other of [
+    'LANE_DENY',
+    'ADMISSION_APPROVAL_DENIED',
+    'ADMISSION_APPROVAL_EXPIRED',
+    'ADMISSION_APPROVAL_FAULT',
+    'ADMISSION_ASK_UNWIRED',
+    'ADMISSION_MEMBER_CLOSED',
+  ]) {
+    assert.notEqual(fact.refusalCode, other, `a Stop must not be recorded as ${other}`)
+  }
+
+  // THE SETTLEMENT: REFUSED at birth, nothing dispatched, no effect claimed, no RUNNING transition.
+  const record = stopWorld.store.read(stopWorld.executionIdOf(stopped))
+  assert.equal(record.state, 'REFUSED')
+  assert.equal(record.observation.dispatch, 'not-started')
+  assert.equal(record.observation.bodyOutcome, 'not-started')
+  assert.equal(record.observation.effectEvidence, 'none-confirmed')
+  assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'REFUSED'], 'no execution state was ever entered')
+  assert.match(String(record.terminalReason), /ADMISSION_STOPPED/u)
+  assert.equal(stopWorld.store.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left open to recover as UNKNOWN')
+
+  // (3) NEGATIVE CONTROL: the SAME out-of-lane call WITHOUT a Stop is a lane denial, so the stop code
+  //     is not simply what this assembly always says.
+  const outside = readExec('stop-outside-1', undefined, '/etc/passwd')
+  const laneDenied = await stopWorld.dispatch(outside)
+  assert.equal(laneDenied.kind, 'deny')
+  assert.match(String(laneDenied.reason), /LANE_DENY/u)
+  assert.equal(stopWorld.admissionFact('stop-outside-1').refusalCode, 'LANE_DENY')
+
+  // (4) NEGATIVE CONTROL / STOP PRIORITY: the SAME out-of-lane call WITH a Stop reports the Stop. A
+  //     Stop beats the lane's own answer (both refuse; the RECORD must name the operator's decision).
+  const outsideStopped = new AbortController()
+  outsideStopped.abort()
+  const priority = await stopWorld.dispatch(readExec('stop-outside-2', outsideStopped.signal, '/etc/passwd'))
+  assert.equal(priority.kind, 'deny')
+  assert.match(String(priority.reason), /ADMISSION_STOPPED/u)
+  assert.equal(stopWorld.admissionFact('stop-outside-2').refusalCode, 'ADMISSION_STOPPED')
+  stopWorld.close()
+})
+
+test('ADM-57 — a Stop while the ask is PENDING closes the durable request, and a later approval cannot revive it', async () => {
+  const { createP6T4World, createP6T4Service, destroyP6T1World, leaderCaller, P6T4_ROOT, P6T4_SEEDS } =
+    await import('./p6t4-helpers.js')
+  // A previous run of this arm that was KILLED (not a normal exit) leaves its scratch domain behind,
+  // and a fixed basename would then refuse to create it ("team_domain already exists"). Clear the
+  // leftover so the arm is re-runnable; on a normal exit the `finally` below already removes it.
+  const { destroyDir, scratchDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  destroyDir(scratchDir('vnext-stop-ask'))
+  const world = await createP6T4World('vnext-stop-ask')
+  const service = createP6T4Service(world)
+  try {
+    const worker = String(P6T4_SEEDS.worker.instanceId)
+    const workerBinding = {
+      agentId: worker,
+      instanceId: worker,
+      sessionId: P6T4_SEEDS.worker.childSessionId,
+      instanceGeneration: 2,
+      templateId: 'worker',
+      read: lane(['/work/a'], ['/work/ask']),
+      write: lane(['/work/a']),
+      workspaceRoot: '/work/a',
+      policyGeneration: 'gen-7',
+      owner: P6T4_ROOT,
+    }
+    const binder = createInvocationBinder()
+    let consumed = 0
+    const countedBinder = {
+      bind: (input) => binder.bind(input),
+      consume: (capability, request) => { consumed += 1; return binder.consume(capability, request) },
+    }
+    const stopController = new AbortController()
+    // The reviewer answers INSIDE `onRequested`, i.e. after the request row is durable and before the
+    // wait begins: deterministic, no polling and no sleeps. The stop arm aborts the CALL's signal at
+    // that same instant, so the pending ask and the Stop genuinely coincide.
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      onRequested: async (record) => {
+        if (record.correlation === 'admission:real-stop-1') {
+          stopController.abort()
+          return
+        }
+        await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: record.requestId, decision: 'allow' })
+      },
+    })
+    const w = await centreWorld('stop-ask', {
+      binding: workerBinding,
+      grants: {
+        binder: countedBinder,
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    const stopped = { name: 'read', callId: 'real-stop-1', arguments: { file_path: '/work/ask/doc.txt' }, signal: stopController.signal }
+    const verdict = await w.preExecute(stopped)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_STOPPED/u)
+    assert.equal(consumed, 0, 'a Stop must never mint or spend an approval')
+
+    // THE DURABLE SIDE, on the product's own terms: the request exists, NO decision exists for it, and
+    // the wait bridge's inline-abort cascade wrote the terminal abandonment mark.
+    const state = await service.listControlState(P6T4_ROOT)
+    assert.equal(state.requests.length, 1, 'the ask really became a durable Control request')
+    assert.equal(state.decisions.length, 0, 'no approval was ever granted for a stopped call')
+    assert.equal(state.abandonments.length, 1, 'the pending inline request was durably ABANDONED')
+    assert.equal(state.abandonments[0].requestId, state.requests[0].requestId)
+
+    // THE STALE APPROVAL. A leader that answers after the Stop is refused by the Control plane, with no
+    // durable side effect: the abandonment is terminal, so a Stop is never downgraded by a later allow.
+    await assert.rejects(
+      () => service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: state.requests[0].requestId, decision: 'allow' }),
+      (error) => error?.code === 'CONTROL_REQUEST_ABANDONED',
+      'a stale approval after a Stop must be refused with the abandonment code',
+    )
+    const after = await service.listControlState(P6T4_ROOT)
+    assert.equal(after.decisions.length, 0, 'the refused stale approval wrote no decision')
+    assert.equal(after.abandonments.length, 1, 'the terminal mark is written exactly once')
+
+    // THE RECORD: REFUSED, nothing dispatched, no effect claimed, no open record.
+    const record = w.store.read(w.executionIdOf(stopped))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.equal(w.admissionFact('real-stop-1').refusalCode, 'ADMISSION_STOPPED')
+    assert.equal(w.body.count, 0)
+    // The guard cannot turn the stopped ask into an execution either (no grant exists to spend).
+    assert.match(String(w.guard(stopped)), /ADMISSION_STOPPED/u)
+    assert.equal(consumed, 0)
+    w.result(stopped, { isError: true, error: { message: String(verdict.reason) } })
+
+    // (POSITIVE CONTROL) The SAME wiring, no Stop: the ask becomes a durable allow and runs once.
+    const approved = { name: 'read', callId: 'real-ok-2', arguments: { file_path: '/work/ask/doc.txt' } }
+    assert.equal((await w.dispatch(approved)).kind, 'allow')
+    assert.equal(consumed, 1, 'the positive control spends the approval exactly once')
+    assert.equal(w.store.read(w.executionIdOf(approved)).state, 'COMPLETED')
+    const final = await service.listControlState(P6T4_ROOT)
+    assert.equal(final.requests.length, 2)
+    assert.equal(final.decisions.length, 1)
+    assert.equal(final.abandonments.length, 1)
+    w.close()
+  } finally {
+    await destroyP6T1World(world)
+  }
+})
+
+test('ADM-58 — a Stop AFTER the approval and BEFORE the body spends nothing, and closes the record with Stop evidence', async () => {
+  const run = async (label, stop) => {
+    const w = await centreWorld(label, {
+      binding: askBinding(),
+      grants: {
+        binder: createInvocationBinder(),
+        memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+      },
+      approvals: approvalsAnswer({ ok: true, approval: { approvalId: `approval-${label}`, policyRevision: 'gen-7' } }).port,
+    })
+    const controller = new AbortController()
+    const exec = readExec(`${label}-1`, stop ? controller.signal : undefined, '/work/ask/doc.txt')
+    const asked = await w.preExecute(exec)
+    assert.equal(asked.kind, 'allow', 'the approval was granted at pre-execute')
+    if (stop) controller.abort()
+    const firstGuard = w.guard(exec)
+    const secondGuard = w.guard(exec)
+    if (firstGuard === undefined) {
+      w.body.count += 1
+      w.result(exec, { isError: false })
+    } else {
+      w.result(exec, { isError: true, error: { message: String(firstGuard) } })
+    }
+    return { w, exec, firstGuard, secondGuard }
+  }
+
+  // (1) THE STOP. The approval already holds and the body has not run: it must not be spent, and it
+  //     must not execute. Both guard consultations agree (the host consults the guard twice).
+  const stopped = await run('stop-guard', true)
+  assert.match(String(stopped.firstGuard), /ADMISSION_STOPPED/u)
+  assert.equal(stopped.secondGuard, stopped.firstGuard, 'the second consultation reads the same refusal')
+  assert.equal(stopped.w.body.count, 0, 'the approval must not reach the body')
+  const record = stopped.w.store.read(stopped.w.executionIdOf(stopped.exec))
+  // The frozen settlement contract has no REFUSED-from-allow (the open settlement-recheck escalation),
+  // so the product's OWN Stop vocabulary is used: a recorded pre-dispatch Stop plus CANCELLED, with an
+  // observation that says nothing was dispatched and nothing was claimed.
+  assert.equal(record.state, 'CANCELLED')
+  assert.equal(record.observation.dispatch, 'not-started')
+  assert.equal(record.observation.bodyOutcome, 'not-started')
+  assert.equal(record.observation.effectEvidence, 'none-confirmed')
+  assert.deepEqual(record.stops.map((entry) => entry.phase), ['pre-dispatch'], 'the Stop evidence is the authority signal recorded')
+  assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'CANCELLED'], 'the call never entered an execution state')
+  assert.notEqual(record.state, 'UNKNOWN')
+  // The ADMISSION decision is NOT rewritten (a second authority record for one callId is a replay);
+  // the Stop is a LATER durable fact, and the execution fact is where it is named.
+  const admission = stopped.w.admissionFact('stop-guard-1')
+  assert.equal(admission.decision, 'allow', 'the approval that was granted at pre-execute stays in the record')
+  assert.equal(admission.laneDecision, 'ask', 'the lane answer is never erased')
+  const execution = stopped.w.ledger.readAll().find((entry) => entry.kind === 'execution' && entry.callId === 'stop-guard-1')
+  assert.equal(execution.outcome, 'admission-refusal', 'the Stop refused the call, it did not fail it')
+  assert.equal(execution.refusalCode, 'ADMISSION_STOPPED', 'and the durable fact names the stop')
+  assert.equal(stopped.w.store.recoverUnsettled(new Date().toISOString()).length, 0, 'no open record survives the stop')
+
+  // (2) NEGATIVE CONTROL: the SAME wiring without a Stop spends the approval exactly once, runs, and
+  //     settles COMPLETED. Nothing above is a property of a broken assembly.
+  const allowed = await run('stop-guard-ok', false)
+  assert.equal(allowed.firstGuard, undefined, 'without a Stop the approved call passes the guard')
+  assert.equal(allowed.w.body.count, 1)
+  assert.equal(allowed.w.store.read(allowed.w.executionIdOf(allowed.exec)).state, 'COMPLETED')
+  assert.equal(allowed.w.store.read(allowed.w.executionIdOf(allowed.exec)).stops.length, 0, 'no Stop is invented for a call nobody stopped')
+  stopped.w.close()
+  allowed.w.close()
+})
+
+test('ADM-59 — LIFECYCLE CLOSE: a new call is REFUSED with its own code, not judged against a stale binding, and not UNKNOWN', async () => {
+  const w = await centreWorld('closed', { binding: binding() })
+  try {
+    // (1) POSITIVE CONTROL: before the close the same call is admitted and completes.
+    const before = readExec('close-before-1')
+    assert.equal((await w.dispatch(before)).kind, 'allow')
+    assert.equal(w.body.count, 1)
+    assert.equal(w.store.read(w.executionIdOf(before)).state, 'COMPLETED')
+
+    // (2) THE CLOSE. From here the binding resolver is a TRAP: a closed member has no live binding, so
+    //     a centre that consulted one would be admitting against a stale answer. It must not be read.
+    let bindingReadsAfterClose = 0
+    w.setResolve(() => { bindingReadsAfterClose += 1; return binding() })
+    w.close()
+    const readsAtClose = w.lookups.count
+
+    const after = readExec('close-after-1')
+    const verdict = await w.preExecute(after)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_MEMBER_CLOSED/u)
+    assert.equal(bindingReadsAfterClose, 0, 'a closed centre must not consult a binding for a new call')
+    assert.equal(w.lookups.count, readsAtClose, 'no binding lookup happened after the close')
+    assert.equal(w.body.count, 1, 'the closed member must not run the body')
+    // The guard agrees, so a host that consults it sees the same refusal.
+    assert.match(String(w.guard(after)), /ADMISSION_MEMBER_CLOSED/u)
+    w.result(after, { isError: true, error: { message: String(verdict.reason) } })
+
+    // THE RECORD: its own code, REFUSED/not-started, terminal at birth, never UNKNOWN.
+    const fact = w.admissionFact('close-after-1')
+    assert.equal(fact.decision, 'deny')
+    assert.equal(fact.refusalCode, 'ADMISSION_MEMBER_CLOSED')
+    assert.notEqual(fact.refusalCode, 'ADMISSION_NO_BINDING', 'a closed member is not "no binding": it has its own code')
+    const record = w.store.read(w.executionIdOf(after))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'REFUSED'])
+    assert.equal(w.store.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left open to recover as UNKNOWN')
+
+    // (3) IDEMPOTENCE: a second close changes nothing (same verdict, same records, no throw).
+    const factsBefore = w.ledger.readAll().length
+    w.close()
+    w.close()
+    assert.equal(w.ledger.readAll().length, factsBefore, 'a second close writes nothing')
+    const again = readExec('close-after-2')
+    assert.match(String(await w.guard(again)), /ADMISSION_MEMBER_CLOSED/u)
+    assert.equal(w.admissionFact('close-after-2').refusalCode, 'ADMISSION_MEMBER_CLOSED')
+    assert.equal(w.store.read(w.executionIdOf(again)).state, 'REFUSED')
+    // A repeated consultation of the SAME execution reads the memo: one record, never two.
+    assert.match(String(await w.guard(again)), /ADMISSION_MEMBER_CLOSED/u)
+    assert.equal(w.ledger.readAll().filter((entry) => entry.kind === 'invocation-authority' && entry.callId === 'close-after-2').length, 1)
+  } finally {
+    w.dispose()
+    w.dispose()
+  }
+})
+
+test('ADM-60 — CLOSE with a call IN FLIGHT: it still settles, and a second dispose neither throws nor double-settles', async () => {
+  const w = await centreWorld('closed-flight', { binding: binding() })
+  try {
+    const exec = readExec('flight-1')
+    assert.equal((await w.preExecute(exec)).kind, 'allow')
+    assert.equal(w.guard(exec), undefined, 'the guard passes: the body is about to run')
+    w.body.count += 1
+    assert.equal(w.store.read(w.executionIdOf(exec)).state, 'RUNNING')
+
+    // THE CLOSE happens while the body is running. The observation must survive it.
+    w.close()
+    w.result(exec, { isError: false })
+
+    const record = w.store.read(w.executionIdOf(exec))
+    assert.equal(record.state, 'COMPLETED', 'an in-flight call that finishes after the close must still settle')
+    assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'RUNNING', 'COMPLETED'])
+    assert.equal(w.ledger.readAll().filter((entry) => entry.kind === 'execution' && entry.callId === 'flight-1').length, 1, 'exactly one execution fact, written after the close')
+    assert.equal(w.store.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left for recovery to call UNKNOWN')
+
+    // IDEMPOTENCE: two more closes and two disposals throw nothing and change nothing.
+    const recordBefore = JSON.stringify(record)
+    w.close()
+    w.close()
+    w.dispose()
+    w.dispose()
+    assert.equal(JSON.stringify(w.store.read(w.executionIdOf(exec))), recordBefore, 'no double-settle and no rewrite')
+    assert.equal(w.faults.length, 0, `no fault may be reported by a close: ${JSON.stringify(w.faults.map(([error]) => String(error?.message ?? error)))}`)
+    // NEGATIVE CONTROL: after a real REMOVAL the point answers nothing (the disposal path is unchanged).
+    assert.equal(w.guard(readExec('flight-removed-1')), undefined)
+  } finally {
+    w.dispose()
+  }
+})
+
+test('ADM-61 — CLOSE while an ask is PENDING: the request is abandoned, the call is REFUSED/not-started, and a later approval is refused', async () => {
+  const { createP6T4World, createP6T4Service, destroyP6T1World, leaderCaller, P6T4_ROOT, P6T4_SEEDS } =
+    await import('./p6t4-helpers.js')
+  // Same leftover protection as ADM-57: a killed run must not poison the next one.
+  const { destroyDir, scratchDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  destroyDir(scratchDir('vnext-close-ask'))
+  const world = await createP6T4World('vnext-close-ask')
+  const service = createP6T4Service(world)
+  try {
+    const worker = String(P6T4_SEEDS.worker.instanceId)
+    const workerBinding = {
+      agentId: worker,
+      instanceId: worker,
+      sessionId: P6T4_SEEDS.worker.childSessionId,
+      instanceGeneration: 2,
+      templateId: 'worker',
+      read: lane(['/work/a'], ['/work/ask']),
+      write: lane(['/work/a']),
+      workspaceRoot: '/work/a',
+      policyGeneration: 'gen-7',
+      owner: P6T4_ROOT,
+    }
+    const binder = createInvocationBinder()
+    let consumed = 0
+    const countedBinder = {
+      bind: (input) => binder.bind(input),
+      consume: (capability, request) => { consumed += 1; return binder.consume(capability, request) },
+    }
+    let closeInside = undefined
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      onRequested: async (record) => {
+        // The positive control answers with a durable allow; the close arm closes the member at the
+        // instant the request is durable and before the wait starts.
+        if (record.correlation === 'admission:close-ask-2') {
+          closeInside()
+          return
+        }
+        await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: record.requestId, decision: 'allow' })
+      },
+    })
+    const w = await centreWorld('close-ask', {
+      binding: workerBinding,
+      grants: {
+        binder: countedBinder,
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    closeInside = () => w.close()
+
+    // (1) POSITIVE CONTROL: the ask approves and runs...
+    const approved = { name: 'read', callId: 'close-ask-1', arguments: { file_path: '/work/ask/doc.txt' } }
+    assert.equal((await w.dispatch(approved)).kind, 'allow')
+    assert.equal(w.store.read(w.executionIdOf(approved)).state, 'COMPLETED')
+    assert.equal(consumed, 1)
+
+    // ...then the member closes with the next ask still pending.
+    const pending = { name: 'read', callId: 'close-ask-2', arguments: { file_path: '/work/ask/doc.txt' } }
+    const verdict = await w.dispatch(pending)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_MEMBER_CLOSED/u, 'a close, not a Stop and not a denial')
+    assert.equal(consumed, 1, 'the pending ask never minted a grant')
+
+    // THE DURABLE SIDE: the request exists and was abandoned by the ONE wait bridge; no decision.
+    const state = await service.listControlState(P6T4_ROOT)
+    assert.equal(state.requests.length, 2)
+    assert.equal(state.decisions.length, 1, 'only the positive control carries a decision')
+    assert.equal(state.abandonments.length, 1, 'the pending request of the closed member is durably abandoned')
+    const pendingRequest = state.requests.find((request) => request.correlation === 'admission:close-ask-2')
+    assert.equal(state.abandonments[0].requestId, pendingRequest.requestId)
+
+    // THE RECORD: REFUSED/not-started for a call that was admitted to the centre and never ran.
+    const record = w.store.read(w.executionIdOf(pending))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.equal(w.admissionFact('close-ask-2').refusalCode, 'ADMISSION_MEMBER_CLOSED')
+    assert.equal(w.store.recoverUnsettled(new Date().toISOString()).length, 0, 'no open record is left to recover as UNKNOWN')
+
+    // THE LATER APPROVAL is refused: an abandoned request can never become an allow.
+    await assert.rejects(
+      () => service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: pendingRequest.requestId, decision: 'allow' }),
+      (error) => error?.code === 'CONTROL_REQUEST_ABANDONED',
+    )
+
+    // A NEW call after the close asks no reviewer at all: it is refused by the closed centre itself.
+    const later = { name: 'read', callId: 'close-ask-3', arguments: { file_path: '/work/ask/doc.txt' } }
+    assert.match(String((await w.dispatch(later)).reason), /ADMISSION_MEMBER_CLOSED/u)
+    const final = await service.listControlState(P6T4_ROOT)
+    assert.equal(final.requests.length, 2, 'a closed member must not raise another approval request')
+    w.close()
+    w.dispose()
+    assert.equal(w.faults.length, 0, `the close path must report no fault: ${JSON.stringify(w.faults.map(([error]) => String(error?.message ?? error)))}`)
+  } finally {
+    await destroyP6T1World(world)
+  }
+})
+
+test('ADM-62 — the PRODUCT composition CLOSES the member: member-execution\'s dispose refuses with its own code and still settles', async () => {
+  // ADM-59 measures the centre. This arm measures the SUPPLY: the product's member lifecycle must call
+  // the close (not the removal), or an archived member's tools would run with no admission at all.
+  const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const compiledAnswer = {
+    members: [{
+      identity: { instanceId: 'member-1', instanceGeneration: 1 },
+      policy: {
+        ok: true,
+        value: {
+          memberIdentity: 'member-1',
+          templateId: 'worker',
+          instanceGeneration: 1,
+          revision: 'rev-1',
+          read: lane(['/work']),
+          write: lane(['/work']),
+        },
+      },
+    }],
+  }
+  const listeners = { pre: [], result: [] }
+  let guardFn
+  const agentCtx = {
+    get: (name) => (name === 'tools' ? { guard (fn) { guardFn = fn; return () => { guardFn = undefined } } } : undefined),
+    on: (event, fn) => {
+      const target = event === 'tools/pre-execute' ? listeners.pre : event === 'tools/result' ? listeners.result : undefined
+      if (target === undefined) return () => {}
+      target.push(fn)
+      return () => {
+        const at = target.indexOf(fn)
+        if (at >= 0) target.splice(at, 1)
+      }
+    },
+  }
+  const state = mkdtempSync(`${tmpdir()}/vnext-close-product-`)
+  const disposers = []
+  const observed = []
+  const centreState = await installMemberExecution({
+    agentCtx,
+    realm: {},
+    compiledAnswer,
+    config: { centreStatePath: state },
+    sessionId: 'session-1',
+    instanceId: 'member-1',
+    teamRoot: 'root-1',
+    workspaceRoot: '/work',
+    onDispose: (dispose) => { disposers.push(dispose) },
+    onNativeDispose: () => {},
+    observe: (line) => { observed.push(String(line)) },
+  })
+  const body = { count: 0 }
+  const idOf = (exec) => dispatchExecutionId({ rootSessionId: 'root-1', agentInstanceId: 'member-1' }, exec.callId)
+  const run = async (exec) => {
+    const chain = listeners.pre.slice()
+    const step = async (index) => (index >= chain.length ? { kind: 'allow' } : chain[index](exec, () => step(index + 1)))
+    const verdict = await step(0)
+    if (verdict.kind !== 'allow') {
+      for (const handler of listeners.result.slice()) handler(exec, { isError: true, error: { message: String(verdict.reason) } })
+      return verdict
+    }
+    const reason = guardFn === undefined ? undefined : guardFn(exec)
+    if (reason !== undefined) {
+      for (const handler of listeners.result.slice()) handler(exec, { isError: true, error: { message: String(reason) } })
+      return { kind: 'deny', reason }
+    }
+    body.count += 1
+    for (const handler of listeners.result.slice()) handler(exec, { isError: false })
+    return { kind: 'allow' }
+  }
+  const disposeMember = () => { for (const dispose of disposers) dispose() }
+
+  // (1) POSITIVE CONTROL: while the member is live the same call is admitted and completes.
+  const before = { name: 'read', callId: 'product-1', arguments: { file_path: '/work/doc.txt' } }
+  assert.equal((await run(before)).kind, 'allow')
+  assert.equal(body.count, 1)
+  assert.equal(centreState.settlementStore.read(idOf(before)).state, 'COMPLETED')
+
+  // (2) THE PRODUCT CLOSE: the member's own disposer, twice (the second must be a no-op, not a throw).
+  disposeMember()
+  assert.doesNotThrow(disposeMember, 'a second dispose of the member must not throw')
+
+  const after = { name: 'read', callId: 'product-2', arguments: { file_path: '/work/doc.txt' } }
+  const verdict = await run(after)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_MEMBER_CLOSED/u)
+  assert.equal(body.count, 1, 'the archived member must not run the body')
+  const fact = centreState.ledger.readAll().find((entry) => entry.kind === 'invocation-authority' && entry.callId === 'product-2')
+  assert.equal(fact.refusalCode, 'ADMISSION_MEMBER_CLOSED')
+  assert.equal(fact.agentId, 'member-1', 'a closed member still names itself in the refusal fact (the install-time binding is kept for that)')
+  const record = centreState.settlementStore.read(idOf(after))
+  assert.equal(record.state, 'REFUSED')
+  assert.equal(record.observation.dispatch, 'not-started')
+  assert.equal(record.observation.bodyOutcome, 'not-started')
+  assert.equal(centreState.settlementStore.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left open to recover as UNKNOWN')
+  assert.equal(observed.filter((line) => line.includes('fault')).length, 0, `the close path must report no fault: ${JSON.stringify(observed)}`)
+})

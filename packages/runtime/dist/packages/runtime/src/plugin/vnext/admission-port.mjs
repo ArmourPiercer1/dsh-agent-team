@@ -44,6 +44,23 @@ export class AdmissionPortError extends TypeError {
 export const ADMISSION_CONTROL_CORRELATION_PREFIX = 'admission'
 
 /**
+ * STOP PRIORITY (B stage). The refusal code of a call that a Stop/abort cancelled before its body.
+ *
+ * It is deliberately its own code, not `LANE_DENY`, not `ADMISSION_APPROVAL_EXPIRED` and not a fault:
+ * a Stop is an operator's decision, and an operator's decision that is reported as a lane rule, an
+ * expiry or a crash is unreviewable. A Stop is checked BEFORE the lane and before any approval is
+ * requested, so nothing it interrupted can be re-read as permission afterwards.
+ */
+export const ADMISSION_STOPPED = 'ADMISSION_STOPPED'
+
+/**
+ * LIFECYCLE CLOSE (B stage). The refusal code of a call that reached a centre/member which has been
+ * CLOSED. It is its own code so that "this member no longer exists" can never be counted as a lane
+ * denial, and so a closed member is never judged against a binding it no longer has.
+ */
+export const ADMISSION_MEMBER_CLOSED = 'ADMISSION_MEMBER_CLOSED'
+
+/**
  * The PRODUCT's approval authority, over the durable Control plane.
  *
  * WHAT IT IS: the adapter that turns ONE lane `ask` into a durable Control request, waits for the
@@ -95,10 +112,15 @@ export function createControlApprovalPort ({
      * @param {string} input.callId - the host call id (the correlation's basis).
      * @param {string} input.toolName - the tool the ask covers.
      * @param {string} [input.laneReason] - the lane's own reason, carried as the request summary.
+     * @param {AbortSignal} [input.signal] - the CALL's own abort signal (the host's `exec.signal`).
+     *   It is forwarded to the ONE wait bridge (`awaitControlDecision`), whose coupling-aware cascade
+     *   durably ABANDONS an inline pending request and rejects typed when the signal aborts. That is
+     *   what makes a Stop beat a pending ask: the durable close fact is terminal, so a decision that
+     *   arrives afterwards can never become an allow (ADM-57).
      * @returns {Promise<{ok: true, approval: {approvalId: string, policyRevision: string}} |
      *   {ok: false, code: string, reason: string}>}
      */
-    async request ({ binding, callId, toolName, laneReason } = {}) {
+    async request ({ binding, callId, toolName, laneReason, signal } = {}) {
       const service = controlOf()
       if (
         service === undefined || service === null ||
@@ -161,7 +183,13 @@ export function createControlApprovalPort ({
       }
       let decision
       try {
-        decision = await service.awaitControlDecision({ rootSessionId, requestId: record.requestId })
+        decision = await service.awaitControlDecision({
+          rootSessionId,
+          requestId: record.requestId,
+          // The call's own abort signal, so a Stop closes the request on the product's own terms
+          // instead of leaving a durable inline request parked for a decision nobody is waiting for.
+          ...(signal === undefined ? {} : { signal }),
+        })
       } catch (error) {
         const code = typeof error?.code === 'string' ? error.code : ''
         if (code === 'CONTROL_WAIT_ABORTED') {
@@ -223,9 +251,15 @@ export function createControlApprovalPort ({
  * @param {{request: (input: object) => Promise<object>}} [input.approvals] - the durable approval
  *   authority (`createControlApprovalPort`). REQUIRED for an ask whenever `grants` is wired: a grant
  *   minted without a recorded approval would be an approval nobody gave.
- * @returns {() => void} the disposer.
+ * @param {object} [input.closedBinding] - the binding a CLOSED centre still names in its refusal fact.
+ *   A closed member has no live binding by definition; the fact still has to say WHICH member refused,
+ *   so the install-time binding is kept for that purpose only (it is never used to decide).
+ * @returns {(() => void) & {close: () => void}} the disposer. Calling it REMOVES the point (rollback).
+ *   `dispose.close()` CLOSES it instead: the point stops deciding for the live member, keeps a
+ *   refusal tombstone (`ADMISSION_MEMBER_CLOSED`) for every later call, and keeps observing so an
+ *   in-flight call still settles. See the lifecycle arm (ADM-59).
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, approvals, settlement, overlayDecision, onFault }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, approvals, settlement, overlayDecision, onFault, closedBinding }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -243,7 +277,98 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   /** callId -> the in-flight ask (pre-execute is async; the memo is not written until it settles). */
   const pending = new Map()
 
+  /**
+   * LIFE, THEN CLOSE. `closed` is the port's terminal lifecycle state: once it is true no call is
+   * admitted, and every call that still reaches the point is refused with `ADMISSION_MEMBER_CLOSED`.
+   * `closeController` is the port's OWN abort signal, combined with the call's for the approval wait,
+   * so a close also ends a pending ask instead of parking it.
+   */
+  let closed = false
+  let closeSignalled = false
+  /**
+   * RETIRED is the removal state (teardown/rollback). It answers NOTHING — not even a refusal — which
+   * is what "the point no longer exists" means (ADM-28 pins it: after a removal no point answers).
+   * CLOSED is the lifecycle state (a retired MEMBER, not a retired point): it refuses, and records.
+   */
+  let retired = false
+  const closeController = new AbortController()
+
   const callIdOfExec = (exec) => (typeof callIdOf === 'function' ? callIdOf(exec) : exec.callId)
+
+  /**
+   * The call's own abort signal, if the host gave one. A Stop is the HOST's signal — the same one the
+   * execution fact already reads (`execution-facts.mjs`) — so there is no second stop mechanism here.
+   */
+  const ownSignalOf = (exec) => {
+    const own = exec?.signal
+    return own !== undefined && own !== null && typeof own.aborted === 'boolean' ? own : undefined
+  }
+
+  /** A Stop that has ALREADY landed. Checked before the lane and before any approval. */
+  const stoppedOf = (exec) => ownSignalOf(exec)?.aborted === true
+
+  /**
+   * The signal handed to the ONE wait bridge: the call's own, the port's close, or both. `AbortSignal.any`
+   * is a signal combiner, NOT a second wait bridge — the bridge is still `awaitControlDecision`, and its
+   * own coupling-aware cascade decides what an abort means for the durable request.
+   */
+  const waitSignalOf = (exec) => {
+    const own = ownSignalOf(exec)
+    if (own === undefined) return closeController.signal
+    if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.any === 'function') {
+      return AbortSignal.any([own, closeController.signal])
+    }
+    return own
+  }
+
+  const stopReasonOf = (callId) => `the execution ${JSON.stringify(callId)} was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call`
+
+  const closedReasonOf = (callId, toolName) => `the centre for ${JSON.stringify(String(closedBinding?.agentId ?? closedBinding?.instanceId ?? ''))} is closed, so the call ${JSON.stringify(callId)} to ${JSON.stringify(String(toolName))} is refused rather than judged against a binding the member no longer has`
+
+  /**
+   * Refuse a call because a STOP already landed. It is the ENFORCED decision, so it is written like
+   * any other: the durable authority fact names the stop code, and the settlement store closes the
+   * record as REFUSED with `dispatch`/`bodyOutcome` `not-started` — never as an execution and never
+   * left open to recover as UNKNOWN.
+   */
+  const refuseStop = (exec) => {
+    const callId = callIdOfExec(exec)
+    let binding
+    try {
+      binding = typeof resolveBinding === 'function' ? resolveBinding(exec) : undefined
+    } catch (error) {
+      return refuseFault(exec, callId, 'ADMISSION_LEDGER_UNREADABLE', error, 'stop-check')
+    }
+    const decision = { kind: 'deny', code: ADMISSION_STOPPED, reason: stopReasonOf(callId) }
+    return commit(exec, { binding, admission: decision, decision })
+  }
+
+  /**
+   * Refuse a call because the CENTRE IS CLOSED. The decision is recorded for the same reason every
+   * other one is: a call that reached a retired member is a governance event, and "no record at all"
+   * is how it would later be re-read as an unobserved success.
+   *
+   * It reads no live binding (`resolveBinding` is not consulted: a closed member's answer is not an
+   * authority) and uses the install-time binding for the record's identity only.
+   */
+  const refuseClosed = (exec) => {
+    const callId = callIdOfExec(exec)
+    // A callId that already has an authority record is a REPLAY, not a new decision: the ledger
+    // forbids a second authority record, and the replay refusal is the honest record for it.
+    let replay = false
+    try {
+      replay = typeof isReplay === 'function' && isReplay(callId) === true
+    } catch (error) {
+      return refuseFault(exec, callId, 'ADMISSION_LEDGER_UNREADABLE', error, 'closed-check')
+    }
+    if (replay) return refuseReplay(exec, callId)
+    const decision = {
+      kind: 'deny',
+      code: ADMISSION_MEMBER_CLOSED,
+      reason: closedReasonOf(callId, exec?.name),
+    }
+    return commit(exec, { binding: closedBinding, admission: decision, decision })
+  }
 
   const refuseReplay = (exec, callId) => {
     const reason = `ADMISSION_REPLAY: callId ${JSON.stringify(callId)} already has an admission record; a replay is refused rather than re-judged`
@@ -339,6 +464,11 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     // twice, and the alternatives (refusing every repeat) would break the double consultation.
     if (memo !== undefined && memo.exec === exec) return { entry: memo }
     if (memo !== undefined) return { entry: refuseReplay(exec, callId) }
+    // STOP PRIORITY. A Stop that has ALREADY landed is decided before the lane is even asked: a call
+    // an operator cancelled must not be reported as a lane denial (or an ask, or an expiry) that
+    // happened to coincide, and it must never reach a reviewer. This is the earliest decision point
+    // the host gives the centre, so it is also the one where "before the body" is unambiguous.
+    if (stoppedOf(exec)) return { entry: refuseStop(exec) }
     let replay = false
     try {
       replay = typeof isReplay === 'function' && isReplay(callId) === true
@@ -434,6 +564,13 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   /** Complete a wired ask: record the CONTROL decision, then mint the one-shot grant it authorizes. */
   const completeAsk = async (exec, { binding, admission }) => {
     const callId = callIdOfExec(exec)
+    // A CLOSE that landed between the hand-back and this line must not ask a reviewer about a call the
+    // member can no longer run: the approval would be spent for nothing and the call would be judged
+    // against a binding the member no longer has.
+    if (closed) {
+      const decision = { kind: 'deny', code: ADMISSION_MEMBER_CLOSED, reason: closedReasonOf(callId, exec.name) }
+      return commit(exec, { binding: closedBinding ?? binding, admission, decision })
+    }
     // THE TRUSTED IDENTITY COMES FIRST. A grant binds a complete member identity, so an incomplete one
     // is refused BEFORE a reviewer is asked: an approval nobody can bind is not one that could spend.
     const member = grants.memberOf(binding)
@@ -456,6 +593,10 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         toolName: exec.name,
         arguments: exec.arguments,
         laneReason: admission.reason,
+        // THE STOP. The wait bridge gets the call's own signal (and the port's close), so an abort
+        // durably ABANDONS the pending inline request through the ControlService's own cascade instead
+        // of parking a request nobody is left to answer.
+        signal: waitSignalOf(exec),
       })
     } catch (error) {
       return commit(exec, {
@@ -469,16 +610,41 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       })
     }
     if (approval === undefined || approval === null || approval.ok !== true) {
-      const code = typeof approval?.code === 'string' && approval.code !== '' ? approval.code : 'ADMISSION_APPROVAL_FAULT'
+      const answered = typeof approval?.code === 'string' && approval.code !== '' ? approval.code : 'ADMISSION_APPROVAL_FAULT'
+      // THE WAIT ENDED BECAUSE THE CALL WAS STOPPED (or the member closed), not because the reviewer
+      // said anything. The bridge can only report its closed outcome (`..._WAIT_ABORTED`); the CENTRE
+      // is what knows WHY the wait ended, so it names the enforced cause here. ADM-57/ADM-61.
+      const code = answered === 'ADMISSION_APPROVAL_WAIT_ABORTED'
+        ? (closed ? ADMISSION_MEMBER_CLOSED : stoppedOf(exec) ? ADMISSION_STOPPED : answered)
+        : answered
       return commit(exec, {
-        binding,
+        binding: closed ? (closedBinding ?? binding) : binding,
         admission,
         decision: {
           kind: 'deny',
           code,
-          reason: typeof approval?.reason === 'string' && approval.reason !== ''
-            ? approval.reason
-            : 'the durable approval authority answered without a decision; an unreadable answer is a refusal',
+          reason: code === ADMISSION_STOPPED
+            ? stopReasonOf(callId)
+            : code === ADMISSION_MEMBER_CLOSED
+              ? closedReasonOf(callId, exec.name)
+              : typeof approval?.reason === 'string' && approval.reason !== ''
+                ? approval.reason
+                : 'the durable approval authority answered without a decision; an unreadable answer is a refusal',
+        },
+      })
+    }
+    // STOP BEATS A LATE APPROVAL. The wait returns the durable decision; a decision that landed in the
+    // same window as the Stop (or after the close) must still not execute the call. The grant is not
+    // minted at all, so there is nothing later to spend.
+    if (closed || stoppedOf(exec)) {
+      const code = closed ? ADMISSION_MEMBER_CLOSED : ADMISSION_STOPPED
+      return commit(exec, {
+        binding: closed ? (closedBinding ?? binding) : binding,
+        admission,
+        decision: {
+          kind: 'deny',
+          code,
+          reason: code === ADMISSION_STOPPED ? stopReasonOf(callId) : closedReasonOf(callId, exec.name),
         },
       })
     }
@@ -559,11 +725,17 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       const upstream = await next()
       // Another listener already refused or asked: do not override a verdict that is not ours.
       if (upstream.kind !== 'allow') return upstream
+      // A REMOVED point answers nothing (see the guard).
+      if (retired) return upstream
       const callId = callIdOfExec(exec)
       // ONE PRE-EXECUTE DECISION PER EXECUTION. The host runs the waterfall once, but an in-flight ask
       // must never be turned into a second durable request by a repeated consultation of the same exec.
       const inFlight = pending.get(callId)
       if (inFlight !== undefined && inFlight.exec === exec) return inFlight.promise
+      // A CLOSED centre decides nothing for a live member — but it must still REFUSE, with its own
+      // code, and record that refusal: falling through (the listener removed) would run the tool
+      // ungoverned, and returning "no verdict" would leave the call unrecorded. ADM-59.
+      if (closed) return refuseClosed(exec).preExecute
       const first = evaluate(exec)
       if (first.ask === undefined) return first.entry.preExecute
       const work = (async () => {
@@ -589,8 +761,52 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     })
     : undefined
 
+  /**
+   * A STOP THAT LANDS AFTER THE DECISION BUT BEFORE THE BODY. The pre-execute verdict was an allow (an
+   * approval, or the lane), and the call has not entered the body yet. The approval must not execute:
+   * it is not spent, and the settlement record — opened as `allow` at admission — is closed with the
+   * product's OWN Stop vocabulary (a `pre-dispatch` Stop plus CANCELLED, `dispatch`/`bodyOutcome`
+   * `not-started`).
+   *
+   * WHY NOT REFUSED. `REFUSED` is forbidden against a recorded `allow` decision
+   * (`SETTLEMENT_ADMISSION_MISMATCH`, execution-settlement.ts:932-955); CANCELLED is the store's own
+   * state for a Stop and it REQUIRES exactly this `pre-dispatch` Stop evidence (:1019-1027). Writing
+   * REFUSED here would need the open contract change (CONTRACT-CHANGE-REQUEST-settlement-recheck.md,
+   * option A); inventing a Stop elsewhere would fabricate an authority signal. This records the Stop
+   * that actually happened, so the record is neither UNKNOWN nor an execution.
+   */
+  const refuseStopAtGuard = (entry, exec, callId) => {
+    const reason = `${ADMISSION_STOPPED}: ${stopReasonOf(callId)}`
+    entry.capability = undefined
+    if (settlement !== undefined && entry.running !== true) {
+      try {
+        settlement.stoppedBeforeBody({ exec, stopId: `stop:${String(callId)}:pre-dispatch` })
+      } catch (error) {
+        return refuseFault(exec, callId, 'ADMISSION_SETTLEMENT_FAULT', error, 'stop-close')
+      }
+    }
+    entry.guard = reason
+    return reason
+  }
+
   const disposeGuard = tools.guard((exec) => {
+    // A REMOVED point answers nothing. The real host honours the guard disposer; a host that does not
+    // must not be handed a verdict by a point that no longer exists (ADM-28).
+    if (retired) return undefined
     const callId = callIdOfExec(exec)
+    const memo = decided.get(callId)
+    // STOP PRIORITY at the LAST point before the body. An approval that already holds is not a
+    // licence: a Stop that landed after the decision refuses the call here, and the second
+    // consultation reads the same refusal (the memo below). ADM-58.
+    if (memo !== undefined && memo.exec === exec && memo.guard === undefined && stoppedOf(exec)) {
+      return refuseStopAtGuard(memo, exec, callId)
+    }
+    // A CLOSED centre refuses every call it has not already adjudicated. A call it HAD adjudicated is
+    // left to the normal path below: it is in flight, and its record must be allowed to settle rather
+    // than be left open (ADM-60).
+    if (memo === undefined && closed) {
+      return refuseClosed(exec).guard
+    }
     const evaluated = evaluate(exec)
     if (evaluated.ask !== undefined) {
       // An ask that reached the guard was never completed: the approval can only be awaited at
@@ -600,6 +816,9 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
       return reason
     }
     const entry = evaluated.entry
+    // AN ALREADY-REFUSED CALL KEEPS ITS VERDICT. The host consults the guard more than once; a stop or
+    // a refusal recorded on the first consultation must not be re-decided into a spend on the second.
+    if (entry.guard !== undefined) return entry.guard
     // A REPLAY refusal is already final; rechecking it would ask the lane for a second opinion on a
     // call that must never run.
     if (entry.capability === undefined && entry.guard === undefined) {
@@ -630,9 +849,31 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   if (typeof disposeGuard !== 'function') {
     throw new AdmissionPortError('DISPOSER_MISSING', 'tools.guard() returned no disposer; a guard that cannot be removed outlives the binding it was installed for')
   }
-  return () => {
+  let didDispose = false
+  const dispose = () => {
+    // REMOVE (rollback / test teardown). Semantics unchanged: nothing of this point survives, and the
+    // two stages answer NOTHING if a host still calls them (ADM-28).
+    if (didDispose) return
+    didDispose = true
+    retired = true
     disposeGuard()
     if (typeof disposePre === 'function') disposePre()
     if (typeof disposeResult === 'function') disposeResult()
   }
+  /**
+   * CLOSE (lifecycle). NOT removal: a closed member must still refuse, or its tools would run
+   * ungoverned. The pre-execute listener and the guard stay installed in their closed mode, the
+   * result observer is removed (its only job was memo hygiene for live dispatches), and the port's
+   * own signal aborts so a pending ask is abandoned on the ControlService's terms rather than parked.
+   *
+   * Idempotent: a second close does nothing (ADM-60).
+   */
+  dispose.close = () => {
+    if (closeSignalled) return
+    closeSignalled = true
+    closed = true
+    closeController.abort()
+    if (typeof disposeResult === 'function') disposeResult()
+  }
+  return dispose
 }

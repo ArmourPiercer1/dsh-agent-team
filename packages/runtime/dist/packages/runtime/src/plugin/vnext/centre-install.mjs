@@ -117,7 +117,13 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
  * @param {object} [input.store] - the product `ExecutionSettlementStore`.
  * @param {(exec: object) => {executionId: string, actorId: string, worldId: string}} input.identityOf
  * @param {(error: unknown, context: object) => void} [input.onFault]
- * @returns {{ dispose: () => void }} the disposer for every installed point.
+ * @returns {{ dispose: () => void, close: () => void }} `dispose` REMOVES every installed point
+ *   (teardown/rollback: after it no point answers, which ADM-28 pins). `close` is the LIFECYCLE
+ *   CLOSE the product calls when a member is archived: the admission point stays installed in its
+ *   closed mode, so a later call is REFUSED with `ADMISSION_MEMBER_CLOSED` (recorded, settled
+ *   REFUSED/not-started) instead of running unmediated or being judged against a binding the member
+ *   no longer has, and the execution observer stays installed so an in-flight call that finishes
+ *   afterwards still writes its fact and settles (ADM-59/ADM-60/ADM-61).
  */
 export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, approvals, store, identityOf, overlayDecision, onFault }) {
   if (ctx === undefined || ctx === null) throw new TypeError('centre-install: a member centre needs the agent context')
@@ -137,11 +143,14 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
     admissions.set(fact.callId, fact)
   }
   const disposers = []
+  let admissionPoint
   try {
-    disposers.push(installAdmissionPoint({
+    admissionPoint = installAdmissionPoint({
       ctx,
       resolveBinding: typeof resolveBinding === 'function' ? resolveBinding : () => binding,
       record,
+      // The identity a CLOSED centre still names in its refusal fact. Never used to decide anything.
+      closedBinding: binding,
       ...(isReplay === undefined ? {} : { isReplay }),
       ...(recordReplay === undefined ? {} : { recordReplay }),
       ...(grants === undefined ? {} : { grants }),
@@ -149,7 +158,8 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(settlement === undefined ? {} : { settlement }),
       ...(overlayDecision === undefined ? {} : { overlayDecision }),
       ...(onFault === undefined ? {} : { onFault }),
-    }))
+    })
+    disposers.push(admissionPoint)
     disposers.push(installExecutionFacts({
       ctx,
       record: recordExecution,
@@ -177,6 +187,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
     throw error
   }
   let disposed = false
+  let closedByLifecycle = false
   return Object.freeze({
     dispose () {
       // Idempotent: `disposers.reverse()` mutates in place, so a second dispose would re-run every
@@ -185,6 +196,26 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       disposed = true
       for (const dispose of disposers.reverse()) {
         try { dispose() } catch (error) { if (onFault !== undefined) onFault(error, { phase: 'dispose' }) }
+      }
+    },
+    /**
+     * LIFECYCLE CLOSE — what the product calls when a member is archived. It is NOT `dispose()`:
+     * removal leaves the member's tools with no admission at all, which is the unwired shape this
+     * centre exists to refuse. Close keeps the point installed in its closed mode (every later call is
+     * refused with `ADMISSION_MEMBER_CLOSED`, recorded and settled REFUSED/not-started) and keeps the
+     * execution observer so an in-flight call that finishes afterwards still writes its fact and
+     * settles. Idempotent; a second close is a no-op (ADM-59/ADM-60/ADM-61).
+     */
+    close () {
+      if (closedByLifecycle) return
+      closedByLifecycle = true
+      if (typeof admissionPoint?.close === 'function') {
+        admissionPoint.close()
+        return
+      }
+      /* c8 ignore next 4 -- a port without close() is not produced by this module */
+      for (const dispose of disposers.reverse()) {
+        try { dispose() } catch (error) { if (onFault !== undefined) onFault(error, { phase: 'close' }) }
       }
     },
   })

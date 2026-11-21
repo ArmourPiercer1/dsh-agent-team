@@ -456,3 +456,119 @@ node:test in `vnext-admission.test.mjs`, which rides the `ute-vnext-a1` leg, not
    Control request carries no `operationFingerprint` (canonicalizing the operation is async and the
    port's decision is sync), so two asks by the same member for the same tool under the same revision
    are distinguished by callId alone.
+
+## Round 52 (B stage): Stop priority and lifecycle close, over the one centre
+
+**What was missing, measured at HEAD `256d43430`.**
+
+- **Stop.** `admission-port.mjs` never read `exec.signal`. The ask wait called
+  `service.awaitControlDecision({ rootSessionId, requestId })` with **no signal**, so a Stop that landed
+  while an ask was pending left the durable inline request parked until somebody decided it — a request
+  nobody was left to answer — and the call hung. Nothing at the guard checked an abort either, so an
+  approval that already held executed regardless of a Stop that arrived after it.
+- **Close.** `installMemberCentre`'s `dispose()` **removed** every point (ADM-28 pins exactly that:
+  after a disposal no point answers). For a lifecycle close that is the wrong shape twice over: the
+  archived member's tools kept running with **no admission at all** (the unwired state the centre
+  exists to refuse), and the settlement observer died with the point, so an in-flight call's record
+  stayed `ADMITTED`/`RUNNING` and the next bind's recovery turned it into `UNKNOWN`.
+
+**The Stop is the host's own signal.** There is no second stop mechanism: `exec.signal` is the same
+field the execution fact already reads (`execution-facts.mjs:88`), and the fs-slice world already
+dispatches with it (`vnext-fs-slice.test.mjs:425`). The one thing added is that the **one** wait bridge
+now receives it, and the ControlService's **existing** inline-abort cascade
+(`control/service.ts:4636-4672`) durably abandons the inline request and rejects typed — the durable
+abandonment mark is terminal, so a decision that arrives afterwards can never become an allow.
+
+### What is now enforced (file:line)
+
+| Rule | Where |
+| --- | --- |
+| **A1** a Stop decides **before the lane and before any reviewer**; own code `ADMISSION_STOPPED`, distinct from deny/expired/fault | `admission-port.mjs:54`, `:471` (order: memo → replay → Stop → binding → lane), `:334` (`refuseStop`) |
+| **A1-record** a Stop at admission is recorded as the ENFORCED deny: durable fact `refusalCode: ADMISSION_STOPPED`, settlement `REFUSED`, `dispatch`/`bodyOutcome` `not-started`, zero effects | `admission-port.mjs:400-421` + `settlement-port.mjs:28-40` |
+| **A2** the pending ask's wait receives the call's signal (combined with the port's close signal); abort ⇒ the ControlService durably ABANDONS the inline request and the centre names the CAUSE of the aborted wait | `admission-port.mjs:599` (`signal: waitSignalOf(exec)`), `:315` (`AbortSignal.any`, a combiner not a second bridge), `:615-640` (relabel `..._WAIT_ABORTED` → `ADMISSION_STOPPED` / `ADMISSION_MEMBER_CLOSED`) |
+| **A3** a Stop is never downgraded by a later approval: the signal is re-checked AFTER the durable decision returns, before the grant is minted | `admission-port.mjs:639` |
+| **A4** a Stop after the approval but before the body: the guard refuses with `ADMISSION_STOPPED`, the grant is **not spent**, and the record is closed with the product's own Stop vocabulary (`pre-dispatch` Stop + `CANCELLED`, `not-started`) | `admission-port.mjs:778` (`refuseStopAtGuard`), `:798-806`; `settlement-port.mjs:221` (`stoppedBeforeBody`) |
+| **A5** a stale approval after a Stop is refused by the Control plane with zero side effects | `control/service.ts:3216-3230` (`resolveControl` consults the abandonment FIRST) — asserted, not implemented here |
+| **B1** lifecycle CLOSE is a state, not a removal: `dispose.close()` keeps the pre-execute listener and the guard in closed mode, aborts the pending ask, removes only the memo observer | `admission-port.mjs:871-878`; the removal path `dispose()` is unchanged (`:850-861`) |
+| **B2** a call after the close is REFUSED with its own code, recorded and settled `REFUSED`/`not-started`, and the live binding is **never consulted** | `admission-port.mjs:738` (pre-execute), `:807` (guard), `:354` (`refuseClosed`), `:356-360` (`closedBinding` for identity only) |
+| **B3** the product calls the close: `member-execution`'s member disposer no longer removes the centre | `centre-install.mjs:209-221` (`close()` exported beside `dispose()`), `member-execution.mjs:181` |
+| **B4** an in-flight call that finishes after the close still writes its fact and settles (the execution observer is not disposed by the close) | `centre-install.mjs:209-221` |
+| **B5** close is idempotent and a removed point answers nothing | `admission-port.mjs:871` (`closeSignalled`), `:850` (`didDispose`), `retired` at `:293`/`:754`/`:728` |
+
+### The arms: `packages/runtime/test/vnext-admission.test.mjs` ADM-56 … ADM-62
+
+| Arm | Rule | Positive control | Negative control(s) |
+| --- | --- | --- | --- |
+| **ADM-56** | a Stop before the body is its own refusal, `REFUSED`/`not-started`, never `UNKNOWN`, never an execution | the same call **without** a Stop is admitted, runs (body count 1) and settles `COMPLETED` | the same out-of-lane call without a Stop is `LANE_DENY` (so `ADMISSION_STOPPED` is not what this assembly always says); the same out-of-lane call **with** a Stop is `ADMISSION_STOPPED` (the stop beats the lane's answer); the code is asserted different from `LANE_DENY`, `ADMISSION_APPROVAL_DENIED/EXPIRED/FAULT`, `ADMISSION_ASK_UNWIRED`, `ADMISSION_MEMBER_CLOSED`; both guard consultations agree; `recoverUnsettled` finds nothing |
+| **ADM-57** | a Stop while the ask is PENDING: the durable request is abandoned, the call refuses `ADMISSION_STOPPED`, no grant is minted, and a later approval is refused | the same wiring with **no** Stop: the ask becomes a durable allow, the grant is spent exactly once (consume count 1) and the call settles `COMPLETED` | durable state asserted (1 request, **0** decisions, 1 abandonment on that requestId); `resolveControl(allow)` afterwards → `CONTROL_REQUEST_ABANDONED` **and** still 0 decisions / 1 abandonment (the stale approval writes nothing); consume count stays 0; guard refuses |
+| **ADM-58** | a Stop AFTER the approval and BEFORE the body spends nothing and closes the record with Stop evidence | the same wiring without a Stop: guard passes, grant spent once, `COMPLETED` | the Stop arm asserts body count 0, `stops: ['pre-dispatch']`, transitions `['ADMITTED','CANCELLED']` (no `RUNNING`), `dispatch`/`bodyOutcome` `not-started`, `effectEvidence` `none-confirmed`, state ≠ `UNKNOWN`, the admission decision is **not** rewritten (`allow`, `laneDecision: ask`) and the **execution** fact carries `refusalCode: ADMISSION_STOPPED`; the no-Stop arm asserts **no** Stop record is invented |
+| **ADM-59** | lifecycle close: a new call is refused with its own code, not judged against a stale binding, and not `UNKNOWN` | the same call **before** the close is admitted and `COMPLETED` | after the close the binding resolver is a live counter/trap: **0** reads and the global lookup count does not move (not admitted against a stale binding); `ADMISSION_MEMBER_CLOSED` ≠ `ADMISSION_NO_BINDING`; fact + settlement `REFUSED`/`not-started`; body count unchanged; two further closes write nothing and a repeated guard consultation writes exactly one authority record |
+| **ADM-60** | a call IN FLIGHT when the member closes still settles; a second dispose neither throws nor double-settles | the in-flight call's guard passed and the record is `RUNNING`; after `close()` the result settles it `COMPLETED` with transitions `ADMITTED→RUNNING→COMPLETED` and exactly one execution fact | after the close `recoverUnsettled` is empty (nothing left to call `UNKNOWN`); two more closes + two disposals leave the record byte-identical and report **no** fault; after a real `dispose()` (removal) the guard answers nothing |
+| **ADM-61** | close while an ask is PENDING: the request is abandoned, the call is `REFUSED`/`not-started`, a later approval is refused, and the closed centre raises no new request | the same wiring approves and completes the first ask (1 decision, 1 consume) | durable state (2 requests, 1 decision, 1 abandonment on the pending requestId); `resolveControl(allow)` → `CONTROL_REQUEST_ABANDONED`; a call after the close is refused **without asking a reviewer** (request count stays 2); `recoverUnsettled` empty; no fault reported |
+| **ADM-62** | the PRODUCT composition closes: `member-execution`'s member disposer leaves a refusal tombstone | the same read before the close is admitted and `COMPLETED` | after the disposer (called twice, second does not throw) the read is `ADMISSION_MEMBER_CLOSED`, the body does not run, the refusal fact still names `agentId: member-1`, settlement `REFUSED`/`not-started`, `recoverUnsettled` empty, no observe()'d fault |
+
+### Mutation evidence (each control can actually fail)
+
+Each row was applied as a temporary edit, the named arm run, and the edit reverted (`cmp` verified).
+
+| mutation | went red |
+| --- | --- |
+| remove the Stop check from `evaluate` (`admission-port.mjs:471`) | ADM-56 |
+| do not relabel an aborted wait to the stop/close cause (`:615-640`) | ADM-57, ADM-61 |
+| remove the guard-stage Stop override (`:798-806`) | ADM-58 |
+| remove both closed refusals (`:738`, `:807`) | ADM-59, ADM-62 |
+| let `close()` also dispose the execution observer (`centre-install.mjs:213`) | ADM-60 |
+| do not abort the port signal on close (`:876`) | ADM-61 **hangs** (bounded by the runner): without a terminal signal the durable wait never ends — which is the pre-round behaviour, not a test defect |
+| remove the signal from the approval request (`:599`) | ADM-57 **hangs** for the same reason; this is why the fix is the signal, not a poll |
+
+### Gates (this round, on this worktree)
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1        → 126/126 pass, exit=0 (6 suites, set sha256:bf219e8c…)
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7 → tests=888 findings=0 uncollected=41 excluded=14 (vitest=736 files unchanged)
+node scripts/ute-cut-closure.mjs --check                         → pass findings=0
+node scripts/ute-p0-assets.mjs --check                           → pass findings=0
+node scripts/docs-sync.mjs --check                               → findings=0 blocking=0
+node scripts/place-dist-glue.mjs                                 → done (27 placements, byte-identical)
+node scripts/eb3-ci-required.mjs                                 → pass findings=0
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+                                                                 → verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+### What is NOT proven
+
+1. **`REFUSED` for a Stop that lands AFTER the admission recorded `allow` is impossible under the
+   frozen settlement contract**, not skipped by choice. `REFUSED` may not cite an `allow`
+   (`execution-settlement.ts:932-955`) and `CANCELLED` from `ADMITTED` requires a recorded
+   `pre-dispatch` Stop (`:1019-1027`). ADM-58 therefore records what actually happened — the Stop
+   evidence plus `CANCELLED`, `dispatch`/`bodyOutcome` `not-started` — which is the store's OWN Stop
+   shape. The literal "stop before the body ⇒ REFUSED" is proven where it is expressible, i.e. where the
+   Stop is the admission decision itself (ADM-56, `deny`). Reaching `REFUSED` in the post-approval
+   window needs the **open** `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` option A
+   (allow `REFUSED` from `ADMITTED` when the observation is `dispatch: 'not-started'`); no contract
+   change was made here and that escalation is untouched.
+2. **"A call that was admitted (`allow`) but never ran is closed as `REFUSED`/not-started" is the same
+   blocked cell.** What IS proven: a call whose **ask was still pending** at close is closed
+   `REFUSED`/`not-started` (ADM-61), because the enforced decision there is a deny. An `allow`-admitted
+   call that has not reached the guard when the close lands is **allowed to finish** so that its record
+   settles (ADM-60's path); refusing it at the guard would hit the store's `REFUSED`-against-`allow`
+   wall and leave the record `ADMITTED` → recovery `UNKNOWN`, which the round's requirement forbids.
+   The two lawful alternatives are (a) option A of the open settlement-recheck escalation, or (b) a new
+   terminal state for "admitted, never dispatched, authority closed" — an owner decision.
+3. **No host boot / no real Stop keypress.** The arms are in-process: the host double runs the real
+   waterfall order (all pre-execute listeners → guard → body → result), and the ledger, the settlement
+   store and the ControlService are the product's own implementations, but a Stop delivered by a live
+   run (the run-level abort controller reaching `exec.signal`) was not booted. The fs-slice world is the
+   evidence that the host populates that field; this round did not boot it.
+4. **The racing-decision window is coded, not deterministically exercised.** If a durable decision
+   lands before the abort cascade looks, the cascade resolves with it (the service's own S6 pin) and the
+   centre refuses it at `admission-port.mjs:639`; the arms abort before the wait begins (no sleeps, no
+   timers), so the branch is proven by code path and by ADM-57's post-decision refusal, not by a race.
+5. **A stop on a REPLAY is still `ADMISSION_REPLAY`.** A callId that already carries an authority record
+   is not adjudicated again, so the stop code does not displace the replay refusal. The ordering is
+   stated; "Stop beats a replay" is not claimed.
+6. **Scope.** `close()` is a new method beside `dispose()`, and `dispose()` keeps its removal semantics
+   (ADM-28 pins that no point answers after it) — the product's lifecycle path calls `close()` from
+   `member-execution.mjs:181`. `E3`/`ESCALATION-realmless-admission.md`, the two contract-change
+   requests and `ute-cut-closure`'s `distCounterpartsOf` are untouched; no row in
+   `CAPABILITY-MATRIX-C.md` is upgraded.

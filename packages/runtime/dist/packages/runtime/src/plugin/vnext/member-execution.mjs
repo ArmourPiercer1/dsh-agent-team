@@ -174,7 +174,12 @@ export async function installMemberExecution ({
     }
     onDispose(() => {
       closed = true
-      centre.dispose()
+      // LIFECYCLE CLOSE, not removal. A removed point would leave the archived member's tools running
+      // with no admission at all; close keeps a refusal tombstone (ADMISSION_MEMBER_CLOSED) on the
+      // member's own layer and keeps the settlement observer, so a call that finishes after the close
+      // still settles instead of recovering as UNKNOWN (ADM-59/ADM-60).
+      if (typeof centre.close === 'function') centre.close()
+      else centre.dispose()
     })
     centreState = { binding, ledger, settlementStore }
   }
