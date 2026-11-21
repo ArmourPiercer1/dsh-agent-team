@@ -17,7 +17,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
 ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1955.392325ms)
-ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE <host-root>/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -177,16 +177,16 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
 ✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (415.358249ms)
-ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
+ℹ host=0.2.2-rc.5 tree=<host-root>/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
 ✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (58.193164ms)
-ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/.artifacts/tmp/ute1-fs-assembly/as"
+ℹ fallback isError=false code=- text="<path><host-root>/.worktrees/ute1-fs-binding-20261120/.artifacts/tmp/ute1-fs-assembly/as"
 ✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (62.650723ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
 ✔ wrong host generation is refused by name and never falls back to the legacy tree (0.543739ms)
 ✔ golden parity: the product module reproduces the 10 old-path vectors (149.190078ms)
-ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=<host-root>/.worktrees/ute1-fs-binding-20261120/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
 ℹ golden FS-W3-unobserved-overwrite: PASS
@@ -219,7 +219,7 @@ exit=0
 ==================================================================
 # mutation transcript (11 mutations x 12 arms)
 $ node tests/ute1-fs/mutation-transcript.mjs
-MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
+MUTATION-MODULE <host-root>/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
 MUTATION-MODULE-ID native-fs-binding/1
 MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -554,7 +554,7 @@ exit=0
 # tools package vitest
 $ bash -c cd packages/tools && ../../node_modules/.bin/vitest run
 
- RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools
+ RUN  v4.1.11 <host-root>/.worktrees/ute1-fs-binding-20261120/packages/tools
 
  ✓ test/issue2-builtin-deny-focused.test.ts (8 tests) 3ms
  ✓ test/t2-tool-selector-deny.test.ts (19 tests) 5ms

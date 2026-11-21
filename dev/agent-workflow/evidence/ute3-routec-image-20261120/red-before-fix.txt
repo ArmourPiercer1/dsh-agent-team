@@ -27,7 +27,7 @@ test at tests/ute-g1-fs/product-route-image.test.mjs:98:1
   
   true !== false
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:113:12)
+      at TestContext.<anonymous> (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:113:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
     generatedMessage: false,
@@ -41,7 +41,7 @@ test at tests/ute-g1-fs/product-route-image.test.mjs:98:1
 test at tests/ute-g1-fs/product-route-image.test.mjs:161:1
 ✖ read_image outside the declared lane is REFUSED: zero attachment bytes, outside file unchanged, zero provider reads (20.269737ms)
   AssertionError [ERR_ASSERTION]: the refusal is the LANE's
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:174:12)
+      at TestContext.<anonymous> (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:174:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
@@ -55,7 +55,7 @@ test at tests/ute-g1-fs/product-route-image.test.mjs:161:1
 test at tests/ute-g1-fs/product-route-image.test.mjs:324:1
 ✖ the continuation is scoped to services the module ITSELF declares: a module without fs gets a shape-identical inject map (0.684716ms)
   TypeError: continuedServiceNamesOf is not a function
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:331:20)
+      at TestContext.<anonymous> (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:331:20)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)
@@ -66,7 +66,7 @@ test at tests/ute-g1-fs/product-route-image.test.mjs:394:1
   
   false !== true
   
-      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:410:12)
+      at TestContext.<anonymous> (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/product-route-image.test.mjs:410:12)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
@@ -116,8 +116,8 @@ test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
   
   true !== false
   
-      at armReadImageProductRoute (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1081:10)
-      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at armReadImageProductRoute (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1081:10)
+      at async withWorld (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
@@ -134,8 +134,8 @@ test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
   
   true !== false
   
-      at armReadImageAllowed (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1173:10)
-      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at armReadImageAllowed (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1173:10)
+      at async withWorld (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,
@@ -149,8 +149,8 @@ test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
 test at tests/world-factory/a5sf-fs-contract.test.mjs:336:5
 ✖ FSB-IMG-3 refused read_image is ONE stat deny fact with zero readBytes and zero attachment bytes (15.302936ms)
   AssertionError [ERR_ASSERTION]: the lane's own refusal reason
-      at armReadImageDenied (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1222:10)
-      at async withWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
+      at armReadImageDenied (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/lib/a5sf-fs-contract-world.mjs:1222:10)
+      at async withWorld (file://<host-root>/.worktrees/ute3-routec-image-20261120/tests/world-factory/a5sf-fs-contract.test.mjs:328:7)
       at async Test.run (node:internal/test_runner/test:1409:7)
       at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
     generatedMessage: false,

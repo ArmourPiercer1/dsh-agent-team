@@ -20,7 +20,7 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
 ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1947.091314ms)
-ℹ MUTATION-MODULE /tmp/ute1-runner-sim/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE <tmp>/ute1-runner-sim/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -180,16 +180,16 @@ $ node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
 ✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (434.695017ms)
-ℹ host=0.2.2-rc.5 tree=/tmp/ute1-runner-sim/tests/deepseek-harness-next
+ℹ host=0.2.2-rc.5 tree=<tmp>/ute1-runner-sim/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
 ✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (52.316627ms)
-ℹ fallback isError=false code=- text="<path>/tmp/ute1-runner-sim/.artifacts/tmp/ute1-fs-assembly/assembly-fallback-Si9j0a/outside/fallback-escape.txt</path>\n<"
+ℹ fallback isError=false code=- text="<path><tmp>/ute1-runner-sim/.artifacts/tmp/ute1-fs-assembly/assembly-fallback-Si9j0a/outside/fallback-escape.txt</path>\n<"
 ✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (52.405958ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
 ✔ wrong host generation is refused by name and never falls back to the legacy tree (0.576802ms)
 ✔ golden parity: the product module reproduces the 10 old-path vectors (121.580934ms)
-ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/tmp/ute1-runner-sim/tests/deepseek-harness-next
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=<tmp>/ute1-runner-sim/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
 ℹ golden FS-W3-unobserved-overwrite: PASS
