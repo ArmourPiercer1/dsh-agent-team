@@ -512,3 +512,26 @@ SLICE-28 pins it.
 
 The subprocess refusal is the contract, not a TODO that will quietly become an allow: when C wires
 the family, it must arrive with a compiled subprocess lane, otherwise the refusal stays.
+
+## 15. The OS boundary is MEASURED on this host, with both controls
+
+`packages/runtime/test/vnext-os-probe.test.mjs`, in CI (leg `ute-vnext-a1`, suite 4):
+
+- **OS-1** — the trusted launcher answers `landlock_create_ruleset(NULL,0,GET_VERSION)` with
+  **ABI 7**. This is a fact about the host, printed by the arm, not a claim about the code.
+- **OS-2 (negative control)** — a confined payload (`/bin/cat`) given an allow set that contains
+  only `…/inside` CANNOT read `…/outside/outside.txt`: the secret does not appear in stdout **and**
+  the payload reports the kernel's failure on stderr. Both halves matter: an empty stdout alone is
+  indistinguishable from a silent success.
+- **OS-3 (positive control)** — the SAME payload, the SAME provider instance shape, reading inside
+  the allow set, prints the content. Without this, OS-2 would prove only that the payload failed.
+
+So "real OS enforcement" is no longer a design claim on this project: it is a measured pair. What is
+still NOT proven is that the *centre* routes a MEMBER's tool into this provider — the realm declares
+`faces.subprocess = null` today (rung 4, section 14), and the composition must supply
+`compiled.subprocess = { effective, provider }` for `mountNativeToolModules` to accept a
+`subprocess`-consuming module.
+
+The provider is the product's own (`sandbox-provider`, P1-07, documented DORMANT). These arms are the
+first thing that executes it from a test lane, and they are why the answer to "can this host enforce
+anything?" is a measurement instead of an assumption.
