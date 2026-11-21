@@ -39,9 +39,12 @@ const fail = (code, message) => {
 /**
  * Validate the composition's native module specs.
  *
- * A spec is `{ url, module, expectedTools }`. The URL is the DECLARATION of where the body comes
- * from; `module` is what was imported. Both are checked, because a caller that imported the host
- * package but declared a Team file URL would otherwise pass.
+ * A spec is `{ url, module, expectedTools, config?, toolBindingIdentity? }`. The URL is the
+ * DECLARATION of where the body comes from; `module` is what was imported. Both are checked,
+ * because a caller that imported the host package but declared a Team file URL would otherwise
+ * pass. `config` and `toolBindingIdentity` are passed through to the realm's own mount contract
+ * (the router needs them to partition a package's suite across bindings); this lane neither reads
+ * nor reinterprets them.
  *
  * @param {readonly object[]} specs
  * @returns {readonly { url: string, module: object, expectedTools: readonly string[] }[]}
@@ -68,7 +71,13 @@ export function hostNativeSpecs (specs) {
       if (seen.has(name)) fail('MODULE_TOOL_DUPLICATE', `tool ${JSON.stringify(name)} is claimed by two module specs; one name, one host module`)
       seen.add(name)
     }
-    out.push(Object.freeze({ url, module, expectedTools: Object.freeze([...expectedTools]) }))
+    out.push(Object.freeze({
+      url,
+      module,
+      expectedTools: Object.freeze([...expectedTools]),
+      ...(spec.config !== undefined ? { config: spec.config } : {}),
+      ...(spec.toolBindingIdentity !== undefined ? { toolBindingIdentity: spec.toolBindingIdentity } : {}),
+    }))
   }
   // Two mounts of the SAME host package into one scope is a duplicate registration waiting to
   // happen; the registry refuses it at mount time, but a refusal after half the suite registered
@@ -103,7 +112,16 @@ export async function mountHostModules ({ realm, root, scope, specs, surface }) 
   for (const spec of hostSpecs) {
     for (const name of spec.expectedTools) before.set(name, tools.get(name, scope))
   }
-  const fibers = await realm.mountNativeToolModules(hostSpecs.map((spec) => spec.module), { scope })
+  // The realm's mount contract takes MOUNT DESCRIPTORS, not bare module namespaces: a native tool
+  // package registers its whole suite from one apply(), so the mount carries the per-binding
+  // partition data the router needs. Handing it a namespace would mount nothing and every name
+  // below would then be DEFINITION_UNCHANGED — a refusal with the wrong cause.
+  const mounts = hostSpecs.map((spec) => ({
+    module: spec.module,
+    ...(spec.config !== undefined ? { config: spec.config } : {}),
+    ...(spec.toolBindingIdentity !== undefined ? { toolBindingIdentity: spec.toolBindingIdentity } : {}),
+  }))
+  const fibers = await realm.mountNativeToolModules(mounts, { scope })
   const mounted = []
   const unchanged = []
   const missing = []

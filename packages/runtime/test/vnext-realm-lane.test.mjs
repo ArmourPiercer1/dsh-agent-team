@@ -36,7 +36,11 @@ const realmRegistering = (tools, { expose } = {}) => {
     async mountNativeToolModules (modules, options) {
       const registered = []
       for (const name of names) {
-        const definition = { execute () {}, mountedFrom: modules.length, options }
+        const mount = modules[0]
+        // The lane must hand the realm MOUNT DESCRIPTORS, not raw namespaces: a bare namespace
+        // would mount nothing, and the lane would then report the wrong cause (DEFINITION_UNCHANGED).
+        if (mount === null || typeof mount !== 'object' || !('module' in mount)) throw new Error('mount is not a descriptor')
+        const definition = { execute () {}, mountedFrom: mount.module, options }
         tools.map.set(name, definition)
         registered.push({ module: modules[0], name, definition, options })
       }
