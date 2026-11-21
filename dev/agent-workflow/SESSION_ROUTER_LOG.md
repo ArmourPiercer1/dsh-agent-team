@@ -10332,3 +10332,22 @@ invented.
 
 Gates at `ddbb87a8d`: leg `suites=7 files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0,
 docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.
+
+### R55 — C rows that were silently absent are now visibly refused, each with its own code
+
+C-remote, C-alpha6 and C-ptc were neither wired nor refused. All three are now (b) EXPLICITLY UNAVAILABLE
+with pairwise distinct codes on their existing axes, recorded as facts and settled REFUSED/not-started:
+`ADMISSION_REMOTE_UNAVAILABLE` (team.control, surface not built — dispatcher omitted after the refusal),
+`ADMISSION_ALPHA6_UNAVAILABLE` (host.service, config rule + recorded fact before any wake),
+`ADMISSION_PTC_UNAVAILABLE` (process.exec, in the ONE centre before the body).
+
+ADM-85..88 carry both directions: ungoverned remote still dispatches; a wake runs without the point and does
+not with it; an in-lane `read` completes in the same world where `run_code` never reaches the body; and
+`bash` keeps `ADMISSION_AXIS_UNSUPPORTED` so the two absences are distinguishable from the durable record.
+ADM-88 pins the closed refusal table (three capabilities, distinct codes, each naming its missing axis).
+
+Disclosed cost, recorded in the row rather than hidden: a centre-configured row loses its remote API. The
+PTC ROUTER-side refusal is not built — it needs the open process-lane ruling — and is written down as such.
+
+Gates at `ac8758305`: leg `suites=7 files=7 exit=0` (150 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.

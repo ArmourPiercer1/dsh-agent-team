@@ -162,6 +162,28 @@ Six mutation edits each red exactly their own arm (all reverted, verified). Leg 
 vitest still 238. **No `CONTRACT-CHANGE-REQUEST` was needed**: a replayed callId is refused BEFORE any
 settlement decision, so the open `allow` record is left to recovery as UNKNOWN (option D of the open CCR).
 
+## C stage, first slice: Remote, Alpha.6 and PTC are EXPLICITLY UNAVAILABLE (round 55)
+
+Three C rows were neither wired nor visibly refused. Each is now refused with its OWN code, on the
+subject's existing axis, through the product's own ledger and settlement — no new axis, no second authority:
+
+| row | code | axis | refused at |
+| --- | --- | --- | --- |
+| C-remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts:4325` — the surface is not built; the refusal is recorded, then the dispatcher is omitted |
+| C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts:67` (config) + `root.ts:2500` (recorded fact, then a typed boot refusal before any wake) |
+| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:318` — the ONE centre, before the body |
+
+ADM-85..88 carry positives and negatives: an ungoverned remote row still dispatches (calls=1) while a
+governed row records the deny and settles `REFUSED`/`not-started`; a wake runs without the point and does
+not with it; the same centre world admits an in-lane `read` (`COMPLETED`) while `run_code` never reaches the
+body; and `bash` keeps `ADMISSION_AXIS_UNSUPPORTED`, so the two absences are distinguishable from the
+durable record alone. ADM-88 pins the closed table: exactly three capabilities, pairwise distinct codes,
+each naming its own missing axis.
+
+**Disclosed cost:** a centre-configured row loses its remote API (`root.remoteDispatcher` is absent) — that
+is the honest price of refusing rather than half-wiring. The PTC router-side refusal is not built (it needs
+the open process-lane ruling); what is proven is the tool refusal that makes escalation unreachable.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
