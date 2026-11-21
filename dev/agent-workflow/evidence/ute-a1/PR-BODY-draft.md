@@ -29,6 +29,35 @@ is step D, not this PR. Two contract questions are escalated rather than worked 
   for "admitted as allow, then refused before the body"; the centre reports `SETTLEMENT_CONTRACT_GAP`
   rather than fabricate a Stop or claim UNKNOWN certainty.
 
+## The 16 migrated capability suites are now RUN, not assumed (rounds 30-32)
+
+`migrated-entry-imports.json` said `missing: []` — every file imports the new entry — and that was read as
+"migration done". Nothing had ever executed them. They run from the main worktree's vitest install (this
+worktree's `.bin` points at a deleted sibling), and the first execution found **8 failures**, one a live
+`ReferenceError` (`resolvePaMount`) on the authority-generation publish path.
+
+Now **237/238**, with the population declared in `tests/checks/eb3-ute-migrated-suites.txt`:
+
+```
+EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
+```
+
+(The 16th bookkeeping entry is `t12a-live-bridge.mjs`, a helper with no tests — the token runner refuses a
+list longer than its report, which is how the census found that out about itself.) The leg is **not bound
+to a Required layer yet**: its population is red, and binding it would need the exemption this project
+forbids. Fix the one red → it goes green → the leg goes in.
+
+## Two capability gaps found by running them (both escalated, neither papered over)
+
+1. **The durable Alpha.4 permission overlay has no decision-side effect** (E3). The retired entry
+   consulted it per call through a pre-execute adapter; the cut retired the adapter with the execution
+   route, so the centre judges only the COMPILED binding lanes and a `grantInstance` deny persisted after
+   bind changes nothing at execution time.
+2. **Admission was conditional on the realm.** A member with `centreStatePath` but no confined-provider
+   realm ran unmediated and unreported. Fixed for the rows that ASKED (they are now refused with
+   `MEMBER_CENTRE_UNWIRED`); rows that never asked remain outside the centre and face the owner ruling in
+   `ESCALATION-realmless-admission.md` (admit against the compiled ceiling vs refuse).
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
