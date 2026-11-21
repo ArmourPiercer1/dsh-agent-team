@@ -1,0 +1,37 @@
+# UTE vNext A1 — the 16 preserved-capability suites, run against the NEW entry.
+#
+# These are the historical capability suites the A1 cut re-pointed at `plugin/vnext/root.js` and
+# `plugin/vnext/agent-bindings.mjs` (the population is recorded in
+# dev/agent-workflow/evidence/ute-a1/migrated-entry-imports.json). They are vitest suites, so they cannot
+# ride the node:test `ute-vnext-a1` leg, and until this list existed NOTHING ran them: on 2026-11-22 the
+# first execution found 8 failures, one of them a live `ReferenceError` on the authority-generation path.
+# An import migration that nothing executes is not a migration.
+#
+# FIFTEEN suites, not sixteen: the sixteenth bookkeeping entry in migrated-entry-imports.json is
+# `t12a-live-bridge.mjs`, a live-bridge HELPER module with no tests of its own (vitest reports no file for
+# it, and the token runner rightly refuses a list longer than the report). It is exercised THROUGH
+# team-session-activation-glue / a3p5-permission-splice, which import it.
+#
+# Run by scripts/eb3-security-run.mjs --layer ci-integration --list-file <this> (the token runner that
+# refuses a shorter list, a listed-but-absent file, or a report with fewer files than listed).
+#
+# NOT YET BOUND TO A REQUIRED LEG, deliberately: the list is measured FAIL today (237/238) because E3
+# shows the durable Alpha.4 permission overlay has no decision-side effect in the new centre. A leg is
+# added ONLY when its population is green — an exempted or expected-fail leg would be exactly the kind of
+# skip this project refuses. Until then this file IS the population declaration, and the command above is
+# how to run it (measured 2026-11-22: suites=15 files=15 passed=237 failed=1).
+packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts
+packages/runtime/test/a3p5-permission-read-wiring.test.ts
+packages/runtime/test/a3p5-permission-splice.test.ts
+packages/runtime/test/a4f1-row-version-not-document-version.test.ts
+packages/runtime/test/a4p6-start-gate-entrances.test.ts
+packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts
+packages/runtime/test/a4p7-live-descendant-authority.test.ts
+packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts
+packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts
+packages/runtime/test/a6-boot-settlement-lanes.test.ts
+packages/runtime/test/a6-root-wiring.test.ts
+packages/runtime/test/bound-blueprint-persona-root.test.ts
+packages/runtime/test/d2-s6-ensure-root-live.test.ts
+packages/runtime/test/f15-mcp-live-loss.test.ts
+packages/runtime/test/team-session-activation-glue.test.ts

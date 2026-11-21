@@ -83,3 +83,25 @@ question: what is the ONE place a durable restriction becomes a verdict.
 
 **Not claimed:** the overlay is not enforced at execution time by the new centre today. No row in
 `CAPABILITY-MATRIX-C.md` may say otherwise.
+
+## The CI population declaration (round 32)
+
+`tests/checks/eb3-ute-migrated-suites.txt` now declares the population in the one form the repo's token
+runner accepts, and the command is recorded in the file's header:
+
+```
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
+```
+
+FIFTEEN suites, not sixteen: the sixteenth bookkeeping entry in `migrated-entry-imports.json` is
+`t12a-live-bridge.mjs`, a live-bridge HELPER with no tests of its own. The token runner refuses a list
+longer than the report, which is how that was discovered — the census told the truth about its own shape.
+
+**The leg is NOT bound to a Required layer yet, deliberately.** Its population is FAIL (E3). Adding it
+would redden Required, and adding it with an exemption or an expected-fail would be the skip this project
+refuses. The order is: fix E3 → the list goes green → the leg (`cmd` = the runner, `check` = the four
+argv tokens, matching `ci-security`'s shape) is bound to `ci-integration` with the manifest entry and the
+workflow step. I measured that binding end to end (the gate's `CI_LAYER_LEG_UNPROVEN` /
+`CI_LAYER_LEG_ARGUMENT_MISSING` findings both fired and cleared), then reverted it rather than ship a red
+Required leg.
