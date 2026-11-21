@@ -226,7 +226,126 @@
           "note": "Two family-level controls (NC-HARNESS-BITES: a flipped golden match digest must go RED; NC-CATEGORY-TOTAL: an unexplained refusal must raise REFUSAL_VOCABULARY_INCOMPLETE and `unknown` must be unreachable) PLUS one REAL control per retirement-unit member: NC-MEMBER grep (widen ONLY the read lane -> the refused out-of-lane grep succeeds and returns the planted secret) and NC-MEMBER glob (the same widening -> the refused walk lists the out-of-lane path). Each is paired with NC-MEMBER-POSITIVE proving the unmodified vector still reproduces its golden row, so no control is vacuous. Two composition controls prove the routing is the authority: NC-SHADOW-LOAD-BEARING (dispose the realm's own PD-16 search shadow -> the out-of-lane grep leaks) and NC-STDIN-LOAD-BEARING (the same disposal turns SR-G2's path-less zero into real matches). The lane suite re-runs the whole transcript and refuses a verdict line that is not GREEN with failed=0. A green SEARCH control is not evidence for FS, Web or PTY. RE-RUN on the merged tree (origin/master 19a7fa641): still NC-VERDICT GREEN controls=8 failed=0."
         }
       },
-      "note": "SEARCH is the second family in the UTE G1 ordering. Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.search-family`, nativeNames `(bound-definition) grep` / `(bound-definition) glob`), not from this row. UTE-3 PR B1 closed the OLD-PATH half for both members (15 baseline vectors, per-member controls, two identical capture runs) and the NEGATIVE-CONTROLS half; UTE-3 PR B2 closed the NEW-PATH half on the pinned rc.5 host (all 15 vectors reproduce the same golden rows cell-for-cell, zero declared divergences, provenance pinned to the next tree, 12 mutation controls GREEN). It may still NOT retire: all three measured semantic differences are blocking with approval PENDING (SD-SEARCH-1 path-less grep, SD-SEARCH-2 VCS-ignore, SD-SEARCH-3 refusal surface), so SemanticDifferencesResolved stays FALSE and the state stays NOT_RETIREABLE. The old-path baseline is NOT a safety verdict: a refusal record pins the refusal, the absent secret and an unchanged tree — it cannot prove an unauthorized read never happened."
+      "note": "SEARCH is the second family in the UTE G1 ordering. Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.search-family`, nativeNames `(bound-definition) grep` / `(bound-definition) glob`), not from this row. UTE-3 PR B1 closes the OLD-PATH half for both members (15 baseline vectors, per-member controls, two identical capture runs) and the NEGATIVE-CONTROLS half. It may NOT retire: no new path exists for Search (newPathVerified FALSE, zero NEW-PATH-VECTOR PASS lines), and all three measured semantic differences are blocking with approval PENDING. The old-path baseline is NOT a safety verdict: a refusal record pins the refusal, the absent secret and an unchanged tree — it cannot prove an unauthorized read never happened."
+    },
+    {
+      "family": "web",
+      "unit": {
+        "familyId": "dsh.web-family",
+        "members": [
+          "web_fetch",
+          "web_search"
+        ]
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/web.mjs",
+          "packages/tools/web-family/src/fetch-executor.mjs",
+          "packages/tools/web-family/src/fetch-row.mjs",
+          "packages/tools/web-family/src/index.mjs",
+          "packages/tools/web-family/src/search-executor.mjs",
+          "packages/tools/web-family/src/search-row.mjs",
+          "packages/tools/web-family/src/web-family-contribution.mjs",
+          "packages/tools/web-family/src/web-mechanics.mjs",
+          "packages/tools/web-family/src/web-search-provider.mjs",
+          "packages/tools/web-family/src/web-transport.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-web/golden/old-path.tsv",
+            "expect": [
+              "WB-F1-inline-text",
+              "WB-F3-redirect-chain",
+              "WB-F5-status-404",
+              "WB-F6-content-type-refused",
+              "WB-F7-body-byte-cap",
+              "WB-F9-timeout",
+              "WB-F11-destination-forbidden",
+              "WB-S1-search-single",
+              "WB-S3-search-unavailable"
+            ],
+            "contradicts": []
+          },
+          "note": "15 (request -> effect) vectors captured on the legacy host 0.2.0-rc.2 @ 639ed01539 through the PRODUCT route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules, i.e. the confined `web` face BL-18/PD-30 + the PD-27 confined web shadow) over a REAL loopback fixture (node:http on a sanctioned 3182, process-wide socket witness): 12 web_fetch + 3 web_search. COMPOSITION MEASURED FIRST: dev/agent-workflow/evidence/ute3-web-b1-20261120/composition-probe.txt shows BOTH members registered, reachable on route C, and reaching the CONFINED face (providerCalls>0, inheritedServiceCalls=0, one a5sf-guard-consult fact per call), with the out-of-lane destination refused by the PD-30 SSRF leg before any provider entry. Unlike Search, the legacy governed plane does NOT get a PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED answer: packages/tools/families/web.mjs CLAIMS the fixed native spellings web_fetch/web_search directly (opt-in webEnabled, ABSENT=FALSE) and packages/runtime/src/plugin/live/team-tool-plane.mjs#verifyPlaneNames is a DIFFERENT gate closed to grep/glob/bash (it answers PLANE_NAMES_INVALID for a web key). There is NO mounting gap, so no substitute composition is used anywhere. Effects are the FIXTURE SERVER's own arrival log (method+path+bytes, count and digest), the admitted value's url/status/kind/truncation, the per-call guard facts, the socket witness (loopback yes/no + external count) and the model-facing text; one concurrent vector declares its request witness `sorted`. No wall clock, no absolute path, no pid: two capture runs are byte-identical (capture-run-1.txt / capture-run-2.txt). Refusals are mapped onto the closed nine-category vocabulary REUSED from tests/ute-g1-fs/lib/refusal-categories.mjs (imported, not forked): 5 classes used, `unknown` and the residual `other` unreachable by construction, and an unexplained refusal raises REFUSAL_VOCABULARY_INCOMPLETE (WEB_BLOCKED_URL is DECLARED UNMAPPED on purpose rather than guessed). THREE refusals reach the model as PROSE, not as typed codes (the pinned provider's WebError over an ALLOW fact), so the mapping names those prose patterns in a CLOSED table instead of a regex bucket. Fixture identity in tests/ute-g1-web/golden/old-path.meta.txt; member->vector->control table in golden/COVERAGE.md. This is the OldBaseline term for the WEB family only."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-web-b1-20261120/new-path-absent.txt",
+            "expect": [
+              "NEW-PATH-ABSENT",
+              "no new-path enumerator",
+              "newPathVerified             = FALSE",
+              "UTE_NEW_PATH_UNVERIFIED"
+            ],
+            "contradicts": [
+              "NEW-PATH-VECTOR "
+            ]
+          },
+          "note": "NO new path exists for Web in this round: PR B1 is the old-path baseline plus per-member controls only. No enumerator, no provider on the next host, no boot lane, and therefore zero `NEW-PATH-VECTOR <id> PASS` lines for any of the 15 baseline vectors. The gate must refuse this term with UTE_NEW_PATH_UNVERIFIED, UTE_VECTOR_UNREPRODUCED (one per vector) and UTE_MEMBER_UNCOVERED for both members on this axis. Flipping it requires a new-path task with its own evidence, not an edit here. The sealed transport is ALSO not a new path: the confined face ships no transport by design and the composition injects the PINNED @deepseek-ai/dsh-web-fetch-http provider through its own documented resolver argument (CORE PATCH BUDGET = 0)."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "SD-WEB-1-native-name-claim-collision",
+              "blocking": true,
+              "approval": null,
+              "summary": "ONE NATIVE NAME, TWO CLAIMANTS. The legacy governed family claims the FIXED native spellings web_fetch/web_search (packages/tools/families/web.mjs familyAssembly.claims(); opt-in webEnabled, ABSENT = FALSE, disabledOwned deliberately empty) while the product route-C composition ALSO serves both names (measured: the world registry + the corpus). An install with webEnabled:true therefore has two producers of the same two names and the seam names no winner. Retirement cannot move a name whose ownership is not yet single. MEASURED in probe-semantic-differences.mjs (SD-WEB-1 legacy.claims/enabled + route-c visible). APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-WEB-2-redirect-ownership",
+              "blocking": true,
+              "approval": null,
+              "summary": "WHERE THE REDIRECT LAW LIVES. The legacy transport NEVER follows a redirect: it answers ONE bounded response (measured: /r1 -> HTTP 302, location /r2, ONE fixture arrival) and the governed row drives the chain under MAX_REDIRECT_HOPS=5. The route-C face hands the call to the pinned provider, which follows same-origin hops itself under its own maxRedirects, so ONE tool call produces THREE fixture arrivals (measured: /r1, /r2, /final) and the face discloses it as the ALLOW residual WEB_REDIRECT_UNMEDIATE_ON_ALLOW. The hop budget's owner and the number of network effects per call both move. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-WEB-3-refusal-surface",
+              "blocking": true,
+              "approval": null,
+              "summary": "THE REFUSAL SURFACE. The legacy mechanics raise TYPED refusals (webRefusal(kind, code, detail), e.g. WEB_RESPONSE_TOO_LARGE) so a governed consumer keys on a code. On route C the body/format/deadline refusals are the PINNED provider's WebErrors rendered as PROSE: measured on WB-F6/WB-F7/WB-F9 the model sees `Error: <prose>` with NO typed code and the guard fact for the same call says ALLOW (the call WAS admitted before the body was refused). This lane had to name those prose patterns in a closed table to classify three of its own rows. A consumer keying on a refusal code cannot distinguish a size/content-type/deadline refusal from a transport fault on route C. APPROVAL: PENDING (owner signature required)."
+            }
+          ],
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-web-b1-20261120/semantic-differences.txt",
+            "expect": [
+              "SD-WEB-1-native-name-claim-collision",
+              "SD-WEB-2-redirect-ownership",
+              "SD-WEB-3-refusal-surface",
+              "SD id=SD-WEB-2-redirect-ownership legacy={\"maxRedirectHops\":5,\"transportNeverFollows\":true,\"answeredStatus\":302,\"answeredLocation\":\"/r2\",\"requests\":1",
+              "SD-VERDICT differences=3 blocking=3 approved=0 resolved=0"
+            ],
+            "contradicts": []
+          },
+          "note": "THREE measured differences, ALL blocking, and NO approval found anywhere: `approval: null` on every entry and the row-level `approval` is null too. The difference set is enumerated and MEASURED by tests/ute-g1-web/lib/semantic-differences.mjs (both planes executed on one fixture); the lane suite re-measures it and refuses any entry that is not blocking with approval:null, so an unapproved difference cannot be turned into a green by editing this ledger. `resolved` is FALSE because nobody with authority has ruled on any of the three."
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-web-b1-20261120/negative-controls.txt",
+            "expect": [
+              "NC-VERDICT GREEN controls=11 failed=0",
+              "NC-PASS NC-MEMBER web_fetch",
+              "NC-PASS NC-MEMBER web_search",
+              "NC-PASS NC-MEMBER-POSITIVE web_fetch",
+              "NC-PASS NC-MEMBER-POSITIVE web_search",
+              "NC-PASS NC-GOLDEN-MUTATION",
+              "NC-PASS NC-CATEGORY-TOTAL",
+              "NC-PASS NC-SHADOW-LOAD-BEARING",
+              "NC-PASS NC-NET-SHIM-LOAD-BEARING",
+              "NC-PASS NC-NET-COUNTER-POSITIVE"
+            ],
+            "contradicts": []
+          },
+          "note": "ELEVEN controls, one REAL control per retirement-unit member PLUS the family-level set. NC-MEMBER web_fetch widens ONLY the DECLARED destination set (extraTestEndpoints http://localhost:3182) around WB-F11: the refused out-of-lane call then succeeds and the fixture serves the body (providerFetches 1, loopback socket) while the pinned provider, the pinned SSRF policy and the byte cap are untouched. NC-MEMBER web_search widens ONLY the declared capability (searchMode present) around WB-S3: the availability refusal disappears because the provider's own available() is the decision. Each is paired with NC-MEMBER-POSITIVE, which re-runs the UNMODIFIED vectors and shows they still reproduce their golden rows. Family-level: NC-GOLDEN-MUTATION (a flipped status and an invented request hop turn the comparator RED on `effects`), NC-CATEGORY-TOTAL (an invented code raises REFUSAL_VOCABULARY_INCOMPLETE; `unknown` and `other` unreachable), NC-SHADOW-LOAD-BEARING (disposing the PD-27 web shadow makes the call reach the INHERITED host ctx.web and trip BL18_TRIPWIRE with ZERO fixture arrivals), NC-NET-SHIM-LOAD-BEARING (a disabled socket witness REFUSES to report a zero: NET_WITNESS_MISSING), NC-NET-COUNTER-POSITIVE (one non-loopback connect through the patched prototype moves the external counter to 1 and reaches the real connect ZERO times, so the zero in the golden run is a measurement and not a constant), NC-CONCURRENT-NORMALIZATION (the one concurrent vector declares its request witness sorted) and NC-GOLDEN-DESIGN-CLAIMS (all 15 golden rows satisfy their corpus claim). The lane suite re-runs the transcript and refuses any verdict line that is not GREEN with failed=0. A green WEB control is not evidence for FS, Search, PTY or any other family."
+        }
+      },
+      "approval": null,
+      "note": "WEB is the sixth census family in this ledger (dsh.web-family, the first NETWORK-effect family). Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (nativeNames web_fetch/web_search, literal native spellings with no `(bound-definition)` prefix), not from this row. UTE-3 PR B1 (stage B1) closes the OLD-PATH half for both members (15 baseline vectors over a real loopback fixture, one real control per member with POSITIVE arms, two identical capture runs) and the NEGATIVE-CONTROLS half. It may NOT retire: no new path exists for Web (newPathVerified FALSE, zero NEW-PATH-VECTOR PASS lines) and all three measured semantic differences are blocking with NO approval found (approval: null on every entry and on the row — stated explicitly, not left blank). The old-path baseline is NOT a safety verdict and NOT a network-confinement proof: a refusal record pins the refusal, the zero provider entry and the zero outbound sockets of THIS fixture run; the host sandbox claims FILE effects only, so network confinement remains admission-time Team authority, and the pinned provider still FOLLOWS same-origin redirects (disclosed as WEB_REDIRECT_UNMEDIATE_ON_ALLOW) and still honours a process proxy for public names (WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW)."
     }
   ]
 }

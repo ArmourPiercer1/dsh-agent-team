@@ -101,6 +101,14 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   const probe = result.families.find((f) => f.familyId === 'dsh.u6-probe-family')
   assert.equal(probe.testOnly, true)
   assert.deepEqual(probe.members, ['u6arc_probe'])
+  // WEB (UTE-3 B1) is measured the same way FS/SEARCH are: its declared
+  // readiness must equal the readiness the artifacts derive, on EVERY axis,
+  // including the `newPath: none` it does not have. Asserting the DERIVED copy
+  // too means a ledger edit cannot satisfy this arm alone.
+  const web = result.families.find((f) => f.familyId === 'dsh.web-family')
+  assert.deepEqual(web.members, ['web_fetch', 'web_search'])
+  assert.deepEqual(web.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  assert.deepEqual(web.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
 })
 
 // ── 2. census closure, both directions ─────────────────────────────────────
@@ -295,6 +303,19 @@ test('declaring a readiness the evidence does not support is INVENTORY_READINESS
   // older `partial` is exactly the hand-edit this control exists to catch.
   mutant('hand-edit the fs baseline back to partial', 'INVENTORY_READINESS_DRIFT', (ledger) => {
     fsFamily(ledger).retirementReadiness.baseline = 'partial'
+  })
+})
+
+test('the web baseline readiness is measured too (INVENTORY_READINESS_DRIFT)', () => {
+  // A green SEARCH/FS row must not be able to carry a hand-written WEB row: the
+  // WEB baseline becomes `complete` only because tests/ute-g1-web/golden/old-path.tsv
+  // is a committed baseline whose `entry` column covers both members. Claiming
+  // it BEFORE the evidence exists is the drift this control pins.
+  mutant('hand-edit the web baseline to partial', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    ledger.families.find((f) => f.familyId === 'dsh.web-family').retirementReadiness.baseline = 'partial'
+  })
+  mutant('claim a web new path that does not exist', 'INVENTORY_READINESS_DRIFT', (ledger) => {
+    ledger.families.find((f) => f.familyId === 'dsh.web-family').retirementReadiness.newPath = 'complete'
   })
 })
 

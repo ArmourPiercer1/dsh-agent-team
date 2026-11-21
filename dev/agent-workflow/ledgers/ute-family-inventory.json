@@ -1244,9 +1244,9 @@
         "note": "No DSH-native implementation of this family exists today: nothing under packages/tools/src/ or packages/runtime mounts a native provider for it (measured on this tree). Only the FS family has the UTE-1 prototype."
       },
       "retirementReadiness": {
-        "baseline": "none",
+        "baseline": "complete",
         "newPath": "none",
-        "negativeControls": "none"
+        "negativeControls": "complete"
       },
       "note": "The two web rows are literal native names in the census (no `(bound-definition)` prefix), so they are booked `boundDefinition: false` here — the census is the independent booking even though the contribution does bind the execute transports. The effect truth is the `connect`/`network-destination` pair; local network confinement is NOT claimed."
     },

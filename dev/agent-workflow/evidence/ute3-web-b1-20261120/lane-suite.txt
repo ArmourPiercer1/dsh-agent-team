@@ -1,0 +1,16 @@
+✔ the fixture is bound to the pinned legacy host and a sanctioned port (0.545162ms)
+✔ the corpus covers every census member and the required vector kinds (0.43297ms)
+✔ the golden is stable: two consecutive captures are byte-identical to it (1159.856362ms)
+✔ every golden row satisfies its corpus design claim (0.811346ms)
+✔ the refusal mapping is total and uses only the owner's closed vocabulary (0.277635ms)
+✔ every admitted call is corroborated by a real loopback socket and zero external attempts (0.155514ms)
+✔ the socket witness reads the real undici destination, not a default (11.922477ms)
+✔ the semantic differences are measured, blocking, and unapproved (348.270015ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1595.455536
