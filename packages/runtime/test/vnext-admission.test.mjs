@@ -953,3 +953,62 @@ test('ADM-38 — a fault while reading or writing the record is a REFUSAL, and a
   assert.equal(again.kind, 'allow', 'the same execution may be consulted twice')
   centre4.dispose()
 })
+
+test('ADM-39 — a compiled answer that omits an axis does not inherit the ceiling', () => {
+  // The review's sharpest P2: `perTool?.read ?? binding.read` meant "the compiler said nothing about this
+  // tool's read axis, so use the widest one". That reads an absence as a permission. Three controls,
+  // because the fix must not swallow the documented fallback either.
+  const ceiling = { mode: 'restricted', allow: ['/work'], ask: [], deny: [] }
+  const narrow = { mode: 'restricted', allow: ['/work/only'], ask: [], deny: [] }
+  // (1) POSITIVE: a tool WITH a compiled answer covering the axis is judged by THAT lane, not the ceiling.
+  // perTool is keyed by the BARE tool name, so a `write` call consults perTool.write.
+  const withLane = binding({ perTool: { write: { read: ceiling, write: narrow } } })
+  assert.equal(call('write', { file_path: '/work/other.txt' }, withLane).kind, 'deny', 'the tool lane is narrower than the ceiling')
+  assert.equal(call('write', { file_path: '/work/only/x.txt' }, withLane).kind, 'allow')
+  // (2) NEGATIVE CONTROL: the same tool, same call, with the axis MISSING from its compiled answer. The
+  // ceiling would allow /work/other.txt; the centre must refuse instead of quietly widening.
+  const partial = binding({ perTool: { write: { read: ceiling } } })
+  const partialDecision = call('write', { file_path: '/work/other.txt' }, partial)
+  assert.equal(partialDecision.kind, 'deny', 'a gap in the compiled answer is not an inheritance of the ceiling')
+  assert.equal(partialDecision.code, 'ADMISSION_AXIS_UNSUPPORTED')
+  assert.match(partialDecision.reason, /does not cover this axis/u)
+  // (3) The DOCUMENTED fallback survives: a tool with NO compiled entry at all is answered by the ceiling.
+  const ceilingOnly = binding({ perTool: { write: { read: ceiling, write: narrow } } })
+  assert.equal(call('read', { file_path: '/work/a/f.txt' }, ceilingOnly).kind, 'allow', 'an uncompiled tool is the ceiling case')
+  assert.equal(call('read', { file_path: '/elsewhere/f.txt' }, ceilingOnly).kind, 'deny', 'and the ceiling still refuses outside it')
+})
+
+test('ADM-40 — a binding names its generation or refuses to exist, and never invents a definition source', async () => {
+  const { bindingFromCompiledMember } = await import('../src/plugin/vnext/centre-install.mjs')
+  const member = {
+    identity: { instanceId: 'i', instanceGeneration: 4, blueprintRevision: 'r' },
+    templateId: 'worker',
+    policy: { read: lane(['/a']), write: lane(['/a']), network: 'deny', revision: 'gen-4' },
+  }
+  const built = bindingFromCompiledMember({ member, agentId: 's', sessionId: 's', workspaceRoot: '/a', owner: 'root' })
+  assert.equal(built.instanceGeneration, 4)
+  // The generation is what the recheck compares a live answer against; a default of 0 would make every
+  // revocation look like a match.
+  const noGeneration = { ...member, identity: { instanceId: 'i', blueprintRevision: 'r' }, policy: { ...member.policy } }
+  assert.throws(
+    () => bindingFromCompiledMember({ member: noGeneration, agentId: 's', sessionId: 's', workspaceRoot: '/a', owner: 'root' }),
+    /no instance generation/u,
+  )
+  // No hardcoded `@deepseek-ai/dsh-tool-fs` for every tool: the member names its source when it has one,
+  // and '' means "several sources" rather than a guess that a reviewer would trust.
+  assert.equal(built.definitionSource, '')
+  const named = bindingFromCompiledMember({
+    member: { ...member, definitionSource: '@deepseek-ai/dsh-tool-fs' },
+    agentId: 's', sessionId: 's', workspaceRoot: '/a', owner: 'root',
+  })
+  assert.equal(named.definitionSource, '@deepseek-ai/dsh-tool-fs')
+  // And the compiled per-tool answer is the intersection: a narrowing entry survives verbatim.
+  const withBindings = bindingFromCompiledMember({
+    member,
+    bindings: [{ toolName: 'write', effective: { read: lane(['/a']), write: lane(['/a/sub']), network: { access: 'deny' } } }],
+    agentId: 's', sessionId: 's', workspaceRoot: '/a', owner: 'root',
+  })
+  // perTool[<toolName>] = {read, write, network}: the tool named `write` carries both lanes.
+  assert.deepEqual(withBindings.perTool.write.write.allow, ['/a/sub'])
+  assert.equal(withBindings.perTool.write.network, 'deny')
+})

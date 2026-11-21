@@ -32,6 +32,15 @@ import { createSettlementWriter } from './settlement-port.mjs'
  * @param {string} [input.owner] - the owning team root session.
  * @returns {object} the binding the admission point resolves per call.
  */
+/** The compiled generation, or a refusal: a binding without one cannot be rechecked against anything. */
+function requireGeneration (identity, policy, member) {
+  const generation = identity.instanceGeneration ?? policy.instanceGeneration ?? member.instanceGeneration
+  if (!Number.isInteger(generation) || generation < 0) {
+    throw new TypeError('centre-install: the compiled member carries no instance generation; a binding that cannot name its generation cannot be rechecked')
+  }
+  return generation
+}
+
 export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner }) {
   if (member === undefined || member === null) throw new TypeError('centre-install: a member binding needs the compiled member')
   const policy = member.policy?.value ?? member.policy
@@ -61,13 +70,17 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
   return Object.freeze({
     agentId,
     sessionId,
-    instanceGeneration: identity.instanceGeneration ?? policy.instanceGeneration ?? 0,
+    // No default generation. A binding that cannot name the generation it was compiled for cannot be
+    // compared against a later one at the recheck, so `0` would make every revocation look like a match.
+    instanceGeneration: requireGeneration(identity, policy, member),
     read: policy.read,
     write: policy.write,
     ...(policy.network === undefined ? {} : { network: policy.network.access }),
     workspaceRoot,
     ...(Object.keys(perTool).length === 0 ? {} : { perTool: Object.freeze(perTool) }),
-    definitionSource: '@deepseek-ai/dsh-tool-fs',
+    // NOT a hardcoded package name: the compiled member names where its definitions came from when it
+    // knows, and '' means "no single source" (the tools come from several modules) rather than a guess.
+    definitionSource: typeof member.definitionSource === 'string' ? member.definitionSource : '',
     policyGeneration: policy.revision ?? '',
     blueprintRevision: identity.blueprintRevision ?? '',
     owner: owner ?? '',

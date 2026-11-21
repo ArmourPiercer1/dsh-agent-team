@@ -321,11 +321,26 @@ export function admit (input: {
   if (locator === undefined) {
     return refuse('ADMISSION_NO_LOCATOR', `tool ${JSON.stringify(toolName)} was called without a locator the ${axis} lane can be judged on`)
   }
-  // The TOOL's compiled lane when one exists, the CEILING otherwise. Never a union of the two: the
-  // compiled answer already IS the intersection, and re-combining would be a second policy.
-  const lane = axis === 'fs.read'
-    ? (perTool?.read ?? binding.read)
-    : (perTool?.write ?? binding.write)
+  // The TOOL's compiled lane when the compiler made one, the CEILING otherwise - and "otherwise" now
+  // means NO COMPILED ENTRY, not a missing field on one. A tool that HAS a compiled answer and left this
+  // axis out is not a tool the ceiling may answer for: the compiler had something to say about the tool
+  // and said nothing here, which is the absence of a permission, not an inheritance of the widest one.
+  // (The earlier `perTool?.read ?? binding.read` read a partial answer as "no restriction".)
+  if (perTool !== undefined) {
+    const compiled = axis === 'fs.read' ? perTool.read : perTool.write
+    if (compiled === undefined || compiled === null) {
+      return refuse('ADMISSION_AXIS_UNSUPPORTED', `${axis} is not compiled for ${JSON.stringify(toolName)}: the tool has a compiled answer that does not cover this axis, and the ceiling does not fill a gap the compiler left`)
+    }
+    switch (matchLocator(compiled, locator)) {
+      case 'allow':
+        return { kind: 'allow' }
+      case 'ask':
+        return { kind: 'ask', reason: `${axis} ${JSON.stringify(locator)} requires approval under policy generation ${binding.policyGeneration}` }
+      case 'deny':
+        return { kind: 'deny', code: 'LANE_DENY', reason: `${axis} ${JSON.stringify(locator)} is outside the tool's compiled ${axis} lane (policy generation ${binding.policyGeneration})` }
+    }
+  }
+  const lane = axis === 'fs.read' ? binding.read : binding.write
   switch (matchLocator(lane, locator)) {
     case 'allow':
       return { kind: 'allow' }

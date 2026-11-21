@@ -54,7 +54,7 @@ export class AdmissionPortError extends TypeError {
  *   member identity. Without it an ask stays refused: an approval nobody can spend is not one.
  * @returns {() => void} the disposer.
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, settlement }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, settlement, onFault }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -75,7 +75,23 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   const refuseReplay = (exec, callId) => {
     const reason = `ADMISSION_REPLAY: callId ${JSON.stringify(callId)} already has an admission record; a replay is refused rather than re-judged`
     if (typeof recordReplay === 'function') recordReplay({ callId, toolName: exec.name, reason })
-    const entry = { preExecute: { kind: 'deny', reason }, guard: reason }
+    const entry = { preExecute: { kind: 'deny', reason }, guard: reason, exec }
+    decided.set(callId, entry)
+    return entry
+  }
+
+  /**
+   * A FAULT IS A REFUSAL, not an exception. Reading the durable ledger, appending to it, or opening a
+   * settlement record can throw (a truncated line, a store conflict, a full disk). Letting that escape
+   * from a pre-execute listener leaves it to the HOST to decide what a thrown listener means - and the
+   * module's own claim is that a fault is reported rather than turning a decision into a different one.
+   * So the decision becomes an explicit deny with the fault's own code, and the fault is reported.
+   */
+  const refuseFault = (exec, callId, code, error, phase) => {
+    const detail = error instanceof Error ? error.message : String(error)
+    if (typeof onFault === 'function') onFault(error, { phase, callId, toolName: exec?.name })
+    const reason = `${code}: ${phase} failed for ${JSON.stringify(callId)} (${detail}); the call is refused rather than run on an unreadable or unwritable record`
+    const entry = { preExecute: { kind: 'deny', reason }, guard: reason, exec }
     decided.set(callId, entry)
     return entry
   }
@@ -87,8 +103,20 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   const evaluate = (exec) => {
     const callId = callIdOfExec(exec)
     const memo = decided.get(callId)
-    if (memo !== undefined) return memo
-    if (typeof isReplay === 'function' && isReplay(callId)) return refuseReplay(exec, callId)
+    // The memo serves ONE dispatch. The host consults the guard more than once for the SAME execution
+    // (the same exec object), which is why the verdict is memoized; a DIFFERENT execution carrying the
+    // same callId is a replay and must meet the ledger, not a stale verdict. The identity check is what
+    // makes that distinction real - serving the memo on callId alone is how the same call could run
+    // twice, and the alternatives (refusing every repeat) would break the double consultation.
+    if (memo !== undefined && memo.exec === exec) return memo
+    if (memo !== undefined) return refuseReplay(exec, callId)
+    let replay = false
+    try {
+      replay = typeof isReplay === 'function' && isReplay(callId) === true
+    } catch (error) {
+      return refuseFault(exec, callId, 'ADMISSION_LEDGER_UNREADABLE', error, 'replay-check')
+    }
+    if (replay) return refuseReplay(exec, callId)
     const binding = resolveBinding(exec)
     const admission = admit({ binding, toolName: exec.name, arguments: exec.arguments })
     // THE FINAL DECISION, not the lane's raw answer. `admit` can answer `ask`, and an ask this port
@@ -118,18 +146,30 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         }
       }
     }
-    record(invocationFactsOf({
-      binding,
-      toolName: exec.name,
-      callId,
-      arguments: exec.arguments,
-      admission: decision,
-      ...(admission.kind === decision.kind ? {} : { laneDecision: admission.kind }),
-    }))
+    try {
+      record(invocationFactsOf({
+        binding,
+        toolName: exec.name,
+        callId,
+        arguments: exec.arguments,
+        admission: decision,
+        ...(admission.kind === decision.kind ? {} : { laneDecision: admission.kind }),
+      }))
+    } catch (error) {
+      // The decision was made but cannot be recorded: a decision no reviewer can find is not one this
+      // centre is willing to execute under.
+      return refuseFault(exec, callId, 'ADMISSION_LEDGER_UNWRITABLE', error, 'record')
+    }
     // The settlement record references the decision that was ENFORCED; it does not make one.
-    if (settlement !== undefined) settlement.admitted({ exec, callId, admission: decision })
+    if (settlement !== undefined) {
+      try {
+        settlement.admitted({ exec, callId, admission: decision })
+      } catch (error) {
+        return refuseFault(exec, callId, 'ADMISSION_SETTLEMENT_FAULT', error, 'settlement-open')
+      }
+    }
     const store = (entry) => {
-      decided.set(callId, entry)
+      decided.set(callId, { ...entry, exec })
       return entry
     }
     if (decision.kind === 'deny') {
