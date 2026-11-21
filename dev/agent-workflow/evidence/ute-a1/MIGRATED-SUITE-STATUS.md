@@ -572,3 +572,111 @@ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/check
    `member-execution.mjs:181`. `E3`/`ESCALATION-realmless-admission.md`, the two contract-change
    requests and `ute-cut-closure`'s `distCounterpartsOf` are untouched; no row in
    `CAPABILITY-MATRIX-C.md` is upgraded.
+
+## Round 53 (B stage): the probe ladder over unmodified native tools
+
+**What was missing, measured at HEAD `ea25654e8`.** B's contract is a LADDER, not a presence list, and
+nothing executed one. `vnext-fs-slice.test.mjs` proved `read`/`write`/`edit` through the realm mount and
+SLICE-33 wired the PTY face for a **negative** result only (`OWNER_NOT_LIVE`); no suite ran the six
+rungs in order, and no suite asserted that the facts appear in that order or that every rung resolves
+the HOST module's own body. `grep`, `web_fetch` and `run_code` had never been dispatched through the
+centre at all.
+
+**How the ladder is built** — `packages/runtime/test/vnext-b-probe-ladder.test.mjs` (added to the
+`ute-vnext-a1` leg's `suites[]`, population declared once):
+
+- the PINNED host's own modules (`@deepseek-ai/dsh-tool-fs`, `-fs-search`, `-web`,
+  `-bash-persistent`) mounted through the existing realm lane (`hostNativeSpecs` + `mountHostModules`);
+  no fixture tool, no Team-authored body, no renamed definition;
+- the product's ONE composition point, `installMemberCentre`, over a durable `openFactLedger` (read back
+  FROM THE FILE in every assertion) and the product `ExecutionSettlementStore`; the admission point is
+  never installed by hand and no definition is wrapped;
+- TWO worlds that differ in exactly ONE thing — the compiled answer: the in-lane ceiling allows the
+  network and the workspace, the out-of-lane ceiling denies the network and its probes target outside
+  the fs lane. Every physical face (fs, confined subprocess, confined web, governed PTY, host sandbox)
+  exists and works in BOTH worlds, so a negative refusal is the CENTRE's decision and not a provider
+  that was never there;
+- `web_fetch` is served by a loopback fixture declared as the composition's one `testEndpoints` origin;
+  its negative uses **the same URL** under a denied network axis, so the refusal cannot be blamed on
+  the destination.
+
+### The ladder, per tool
+
+| # | tool | positive control | negative control |
+| --- | --- | --- | --- |
+| 1 | `read` | **PROVEN** (ADM-64): admitted, `alpha beta` arrives, the instrumented member provider's read counters move, fact `allow`/`fs.read`, execution `completed`, settlement `COMPLETED` (`quiesced`/`completed`) | **PROVEN** (ADM-71): out-of-lane path ⇒ `LANE_DENY` before the body, zero provider calls (counters byte-identical), the secret never appears, execution `admission-refusal`, settlement `REFUSED`/`not-started`/`none-confirmed` |
+| 2 | `write` | **PROVEN** (ADM-65): admitted, bytes land on disk, `writeText ≥ 1`, fact `allow`/`fs.write`, settlement `COMPLETED` | **PROVEN** (ADM-72): out-of-lane path ⇒ `LANE_DENY`, the file is NOT created, zero provider calls, settlement `REFUSED`/`not-started` |
+| 3 | `grep` | **PROVEN** (ADM-66): admitted, `Found 1 match`, the confined subprocess face is actually used, fact names the judged locator, settlement `COMPLETED` | **PROVEN** (ADM-73): out-of-lane path ⇒ `LANE_DENY`, **zero confined-subprocess spawns**, the secret never appears, settlement `REFUSED`/`not-started` |
+| 4 | `web_fetch` | **PROVEN** (ADM-67): admitted, the loopback fixture body arrives (`HTTP 200`), exactly ONE transport call, fact `allow`/`net.fetch`, settlement `COMPLETED` | **PROVEN** (ADM-74): denied network axis ⇒ `NETWORK_DENY` before the body, **zero transport calls**, no body bytes, settlement `REFUSED`/`not-started` |
+| 5 | persistent `bash` | **BLOCKED — NOT RUN, never a pass** (ADM-68, `t.skip` + a machine-readable line): the compiled answer carries no process lane, so the centre can only answer `ADMISSION_AXIS_UNSUPPORTED`. Reason: the v4 member ceiling's frozen `io` field set is `{read, write, network}` (`blueprint-v4.ts`) and `bindingFromCompiledMember` projects only what the compiler produced — `CONTRACT-CHANGE-REQUEST-process-lane.md`, which names B's rung-6 positive control as blocked. Minting a lane in the test, or deriving one from the write lane, would be the SECOND decision authority this cut refuses | **PROVEN** (ADM-75): refused with `ADMISSION_AXIS_UNSUPPORTED` (the reason names the missing subprocess lane), zero subprocess spawns, **zero sandbox `confine` calls**, execution `admission-refusal`, settlement `REFUSED`/`not-started` |
+| 6 | `run_code` | **BLOCKED — NOT RUN, never a pass** (ADM-69, same compiled process lane; `run_code` is `process.exec` and shares it). The transport itself IS present: the member resolves the registry's reserved `run_code` object | **PROVEN** (ADM-76): `ADMISSION_AXIS_UNSUPPORTED`, zero subprocess spawns, zero sandbox `confine` calls, settlement `REFUSED`/`not-started` |
+
+**ENV_BLOCK: none.** No probe was environment-blocked on this host. The two blocked rungs are blocked by
+the product CONTRACT (a missing declaration source), not by a missing capability, and they are reported
+as such in the suite's own stdout (`VNEXT-B-LADDER-BLOCKED rung=5|6 … verdict=NOT_RUN`) and in the
+`t.skip` reason. The leg already requires the pinned host (`A5SF_REQUIRE_PINNED_HOST=1`, absence = red)
+and a Landlock-capable `python3` (that is `vnext-os-probe`'s existing precondition, which `grep`'s
+positive rides); `web_fetch` needs nothing but a loopback bind.
+
+### ORDER and IDENTITY, not presence
+
+- **ORDER (ADM-70/ADM-77).** The durable facts are re-read from the JSONL file and must appear in ladder
+  order — `[read, write, grep, web_fetch]` for the allow facts (rungs 5–6 disclosed above) and
+  `[read, write, grep, web_fetch, bash, run_code]` for the refusal facts, with the refusal CODES in the
+  ladder's own order. One execution fact per rung, and every negative execution fact is
+  `admission-refusal`.
+- **IDENTITY (ADM-63).** `read`/`write`/`grep`/`web_fetch`: the realm mount CHANGES the definition the
+  member resolves, while `execute`'s source is byte-identical to the standing preset's (a Team wrapper
+  would differ). `bash`: the preset scope has no `terminals`, so the host module registers nothing there
+  by its own contract; the reference is the same host module applied to a collector carrying the
+  member's OWN governed terminals face, and the member's `execute` source equals it. `run_code` is NOT a
+  mountable module — it is the host registry's reserved transport, and the member resolves **the same
+  object** the standing scope resolves (no per-scope copy, no shadow).
+- **NO SECOND POLICY (ADM-78).** The binding is exactly `bindingFromCompiledMember(realm's own compiled
+  answer)`; its absent axes stay absent (`process === undefined` in both worlds) and its fs/network lanes
+  are the compiled lanes **by value**. A future process-lane change flips ADM-68/ADM-69/ADM-78 loudly
+  instead of leaving a stale waiver behind.
+
+### Gates (this round, on this worktree)
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1        → 140 pass / 0 fail / 2 skipped (7 suites, set sha256:edd4f1c4…)
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7 → tests=889 findings=0 uncollected=41 excluded=14 (node=146, vitest=736)
+node scripts/ute-cut-closure.mjs --check                         → pass deleted=148 references=163 prodRefs=0 findings=0
+node scripts/ute-p0-assets.mjs --check                           → pass modules=37 files=180 cut=cut(148/148) findings=0
+node scripts/docs-sync.mjs --check                               → findings=0 blocking=0
+node scripts/place-dist-glue.mjs                                 → done (27 placements, byte-identical)
+node scripts/eb3-ci-required.mjs                                 → pass workflows=10 findings=0
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+                                                                 → verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+The vitest population is unchanged at 238; the leg's node population went 126 → 140 (14 new arms, 2 of
+them the disclosed skips). No existing assertion was weakened, skipped, retimed or deleted, and no sleep
+or retry was added.
+
+### What is NOT proven
+
+1. **Rungs 5 and 6 have no POSITIVE control**, by contract rather than by environment
+   (`CONTRACT-CHANGE-REQUEST-process-lane.md`, open). Until a process lane has ONE declaration source
+   and the compiler emits it, "the centre admits a shell and the shell runs" is UNPROVEN. What IS proven
+   is the refusal half plus the mount/identity half: the host module is mounted, the member resolves the
+   host body, and the centre refuses the call for the missing lane — before any provider is touched.
+2. **No live host boot.** The world is in-process: the host's real tool modules, real providers, the
+   real waterfall order, the real ledger and settlement store, and a real detached `Session` for the
+   `run_code`/projection services. The `agents` registry is a single-entry live-registry double (the
+   pattern the pinned suite uses (`a5sf-native-bash-preservation`)); it exists so the PTY face's
+   `OWNER_NOT_LIVE` rule has a live owner, and it is a registry entry, not a tool body.
+3. **`run_code`'s reserved name is proven by object identity, not by a registration refusal.** The
+   member resolving the registry's own transport object is the strongest available statement; "a Team
+   module cannot shadow the name" is the registry's rule and was not re-driven here.
+4. **`grep`'s positive runs a real confined subprocess** (the product provider + the Landlock
+   pre-launcher), so on a host without `python3`/Landlock the positive would fail rather than refuse.
+   That precondition is the leg's existing one (`vnext-os-probe`), not a new one, but it is a
+   precondition: on such a host this arm is RED, not ENV_BLOCK.
+5. **No mutation run this round.** The negative controls are falsifiable by construction (the centre's
+   decision is read from the durable fact and the providers are counted), but the previous rounds'
+   mutation sweep was not repeated for this file.
+6. **Scope.** One test file plus one manifest line; no product source changed, `E3` and the open
+   escalations are untouched, and **no row in `CAPABILITY-MATRIX-C.md` is upgraded** (`C-subprocess` /
+   `C-ptc` stay `positive control UNPROVEN`).
