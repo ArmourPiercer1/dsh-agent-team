@@ -1,0 +1,98 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 root=<repo>
+PROBE memory=HOST-FREE (no boot, no DSH_HOME, no port; route-C + governed FamilyAssembly only)
+PROBE-CENSUS familyId=dsh.agent-control-family booked-members=7 names=subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow source=dev/agent-workflow/ledgers/arc-a-family-census.json
+PROBE-CONSTANT AGENT_CONTROL_NAMES packages/tools/agent-control-family/src/agent-control-mechanics.mjs:64 symbol=AGENT_CONTROL_NAMES
+PROBE-MEMBER subagent governed-definition=packages/tools/agent-control-family/src/spawn-row.mjs:19 symbol=buildSpawnRowDefinition
+PROBE-MEMBER subagent claim-site=packages/tools/families/agent-control.mjs:112 symbol=familyAssembly.build (fixed native spelling "subagent")
+PROBE-MEMBER subagent definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER subagent native-definition=rc.2=packages/subagent/tool-subagent/src/index.ts:108 rc.5=packages/subagent/tool-subagent/src/index.ts:84 note="tool-subagent toolName default \"subagent\""
+PROBE-MEMBER subagent definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER subagent_fork governed-definition=packages/tools/agent-control-family/src/fork-row.mjs:19 symbol=buildForkRowDefinition
+PROBE-MEMBER subagent_fork claim-site=packages/tools/families/agent-control.mjs:113 symbol=familyAssembly.build (fixed native spelling "subagent_fork")
+PROBE-MEMBER subagent_fork definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER subagent_fork native-definition=rc.2=packages/subagent/tool-subagent/src/index.ts:0,packages/bundle/base/cordis.patch.yml:387,packages/bundle/web-app/presets/cordis.patch.yml:100 rc.5=packages/subagent/tool-subagent/src/index.ts:0,packages/bundle/base/cordis.patch.yml:405,packages/bundle/web-app/presets/cordis.patch.yml:106 note="a SECOND bundle-composed tool-subagent instance whose load-time toolName is \"subagent_fork\" (shipped preset route)"
+PROBE-MEMBER subagent_fork definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER send_message governed-definition=packages/tools/agent-control-family/src/steer-row.mjs:11 symbol=buildSteerRowDefinition
+PROBE-MEMBER send_message claim-site=packages/tools/families/agent-control.mjs:114 symbol=familyAssembly.build (fixed native spelling "send_message")
+PROBE-MEMBER send_message definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER send_message native-definition=rc.2=packages/subagent/tool-subagent-control/src/index.ts:29 rc.5=packages/subagent/tool-subagent-control/src/index.ts:44 note="tool-subagent-control registers send_message"
+PROBE-MEMBER send_message definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER interrupt_agent governed-definition=packages/tools/agent-control-family/src/interrupt-row.mjs:12 symbol=buildInterruptRowDefinition
+PROBE-MEMBER interrupt_agent claim-site=packages/tools/families/agent-control.mjs:115 symbol=familyAssembly.build (fixed native spelling "interrupt_agent")
+PROBE-MEMBER interrupt_agent definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER interrupt_agent native-definition=rc.2=packages/subagent/tool-subagent-control/src/index.ts:75 rc.5=packages/subagent/tool-subagent-control/src/index.ts:120 note="tool-subagent-control registers interrupt_agent"
+PROBE-MEMBER interrupt_agent definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER list_agents governed-definition=packages/tools/agent-control-family/src/list-agents-row.mjs:8 symbol=buildListAgentsRowDefinition
+PROBE-MEMBER list_agents claim-site=packages/tools/families/agent-control.mjs:116 symbol=familyAssembly.build (fixed native spelling "list_agents")
+PROBE-MEMBER list_agents definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER list_agents native-definition=rc.2=packages/subagent/tool-subagent-control/src/list-agents.ts:87 rc.5=packages/subagent/tool-subagent-control/src/list-agents.ts:46 note="tool-subagent-control registers list_agents"
+PROBE-MEMBER list_agents definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER list_subagent_models governed-definition=packages/tools/agent-control-family/src/list-models-row.mjs:11 symbol=buildListModelsRowDefinition
+PROBE-MEMBER list_subagent_models claim-site=packages/tools/families/agent-control.mjs:117 symbol=familyAssembly.build (fixed native spelling "list_subagent_models")
+PROBE-MEMBER list_subagent_models definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER list_subagent_models native-definition=rc.2=packages/subagent/tool-subagent/src/list-models.ts:88 rc.5=packages/subagent/tool-subagent/src/list-models.ts:110 note="tool-subagent registers list_subagent_models"
+PROBE-MEMBER list_subagent_models definitions-on-this-tree=2 (governed family body + host native)
+PROBE-MEMBER workflow governed-definition=packages/tools/agent-control-family/src/workflow-row.mjs:14 symbol=buildWorkflowRowDefinition
+PROBE-MEMBER workflow claim-site=packages/tools/families/agent-control.mjs:118 symbol=familyAssembly.build (fixed native spelling "workflow")
+PROBE-MEMBER workflow definition-class=governed-family-body (packages/tools/families/*.mjs + packages/tools/agent-control-family/**)
+PROBE-MEMBER workflow native-definition=rc.2=packages/workflow/tool-workflow/src/index.ts:36 rc.5=packages/workflow/tool-workflow/src/index.ts:36 note="tool-workflow toolName default \"workflow\""
+PROBE-MEMBER workflow definitions-on-this-tree=2 (governed family body + host native)
+PROBE-ROUTE-C appended-specs=const appended = [shellSpec, searchSpec, fsSpec, skillSpec, presentSpec, webSpec].filter((spec) => spec !== undefined) at=packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1599
+PROBE-ROUTE-C agent-control-shadow=ABSENT (no confined agent-control face is appended by the attach)
+PROBE-ROUTE-C mounted=yes attach-fibers=0 composition=nativeToolModules=[] (no host preset module configured)
+PROBE-ROUTE-C subagent registered=no reachable=no refusal="Error: unknown tool \"subagent\""
+PROBE-ROUTE-C subagent providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C subagent_fork registered=no reachable=no refusal="Error: unknown tool \"subagent_fork\""
+PROBE-ROUTE-C subagent_fork providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C send_message registered=no reachable=no refusal="Error: unknown tool \"send_message\""
+PROBE-ROUTE-C send_message providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C interrupt_agent registered=no reachable=no refusal="Error: unknown tool \"interrupt_agent\""
+PROBE-ROUTE-C interrupt_agent providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C list_agents registered=no reachable=no refusal="Error: unknown tool \"list_agents\""
+PROBE-ROUTE-C list_agents providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C list_subagent_models registered=no reachable=no refusal="Error: unknown tool \"list_subagent_models\""
+PROBE-ROUTE-C list_subagent_models providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-ROUTE-C workflow registered=no reachable=no refusal="Error: unknown tool \"workflow\""
+PROBE-ROUTE-C workflow providerCalls=0 inheritedServiceCalls=0 guardFacts=0
+PROBE-PLANE familyId=dsh.agent-control-family schema=u7-family-assembly/1 enabledKey=agentControlEnabled claims=subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow
+PROBE-PLANE enabled(absent)=false enabled(agentControlEnabled=true)=true (the jobs law: ABSENT mounts NOTHING and the host natives ride)
+PROBE-PLANE code const AGENT_CONTROL_NATIVE_NAMES = AGENT_CONTROL_NAMES
+PROBE-PLANE code buildSpawnRowDefinition({ name: 'subagent', spawnExecutor: executors.subagent }),
+PROBE-PLANE code buildForkRowDefinition({ name: 'subagent_fork', forkExecutor: executors.subagent_fork }),
+PROBE-PLANE code buildSteerRowDefinition({ name: 'send_message', steerExecutor: executors.send_message }),
+PROBE-PLANE code buildInterruptRowDefinition({ name: 'interrupt_agent', interruptExecutor: executors.interrupt_agent }),
+PROBE-PLANE code buildListAgentsRowDefinition({ name: 'list_agents', listAgentsExecutor: executors.list_agents }),
+PROBE-PLANE code buildListModelsRowDefinition({ name: 'list_subagent_models', listModelsExecutor: executors.list_subagent_models }),
+PROBE-PLANE code buildWorkflowRowDefinition({ name: 'workflow', workflowExecutor: executors.workflow }),
+PROBE-PLANE reserved-native-host-pin=0.2.0-rc.2@639ed01539
+PROBE-PLANE PLANE_SUPPORTED_NATIVE_TAKEOVERS classes=[bash,read,grep,glob,write,edit,read_image,jobs] agent-control-class=ABSENT
+PROBE-PLANE member=subagent claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=subagent_fork claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=send_message claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=interrupt_agent claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=list_agents claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=list_subagent_models claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE member=workflow claimed-by-family=yes reserved-native=yes natexe-ledger-entry=ABSENT
+PROBE-PLANE verifyPlaneNames({bash:'subagent'}) gate=PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED message="plane row 'bash' cannot mount under reserved native name 'subagent' — this install surface assembles no same-name, same-meaning implementation for that pair (the PLANE_SUPPORTED_NATIVE_TAKEOVERS ledge"
+PROBE-PLANE verifyPlaneNames(default native read) gate=accepted (the takeover ledger covers read; it names no agent-control pair)
+PROBE-PLANE family-assembly-reserved-native-references=0 (0 = the seam does not consult the natexe ledger; family claims are not graded by it)
+PROBE-PLANE MOUNT subagent definition=registered ownName=yes
+PROBE-PLANE MOUNT subagent_fork definition=registered ownName=yes
+PROBE-PLANE MOUNT send_message definition=registered ownName=yes
+PROBE-PLANE MOUNT interrupt_agent definition=registered ownName=yes
+PROBE-PLANE MOUNT list_agents definition=registered ownName=yes
+PROBE-PLANE MOUNT list_subagent_models definition=registered ownName=yes
+PROBE-PLANE MOUNT workflow definition=registered ownName=yes
+PROBE-PLANE mount=MOUNTED definitions=11 names=team_grep,team_glob,team_bash,pwsh,subagent,subagent_fork,send_message,interrupt_agent,list_agents,list_subagent_models,workflow
+PROBE-AGENTCTL member=subagent two-implementations=yes legacy=packages/tools/agent-control-family/src/spawn-row.mjs native=packages/subagent/tool-subagent/src/index.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=subagent_fork two-implementations=yes legacy=packages/tools/agent-control-family/src/fork-row.mjs native=packages/subagent/tool-subagent/src/index.ts,packages/bundle/base/cordis.patch.yml,packages/bundle/web-app/presets/cordis.patch.yml reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=send_message two-implementations=yes legacy=packages/tools/agent-control-family/src/steer-row.mjs native=packages/subagent/tool-subagent-control/src/index.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=interrupt_agent two-implementations=yes legacy=packages/tools/agent-control-family/src/interrupt-row.mjs native=packages/subagent/tool-subagent-control/src/index.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=list_agents two-implementations=yes legacy=packages/tools/agent-control-family/src/list-agents-row.mjs native=packages/subagent/tool-subagent-control/src/list-agents.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=list_subagent_models two-implementations=yes legacy=packages/tools/agent-control-family/src/list-models-row.mjs native=packages/subagent/tool-subagent/src/list-models.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-AGENTCTL member=workflow two-implementations=yes legacy=packages/tools/agent-control-family/src/workflow-row.mjs native=packages/workflow/tool-workflow/src/index.ts reason=governed-row-at-the-native-spelling+host-native-registration-at-the-pin
+PROBE-CONCLUSION booked-members=7 single=0 dual=7
+PROBE-CONCLUSION route-c=does-not-serve-any-booked-member (the attach appends no agent-control shadow; every dispatch is an unknown-tool refusal with zero provider calls and zero guard facts)
+PROBE-CONCLUSION governed-plane=CLAIMS all seven at their fixed native spellings through FamilyAssembly; verifyPlaneNames cannot express them (closed to grep/glob/bash) and the PLANE_SUPPORTED_NATIVE_TAKEOVERS ledger declares no agent-control pair, so the natexe law does not grade this family route (measured: 0 references in family-assembly.mjs)
+PROBE-CONCLUSION old-path-composition=governed-family-body at C1 (the Team implementation being retired): route-C has no agent-control face, so a route-C baseline would record the HOST native rows, not this family
+PROBE-CONCLUSION retirement-shape=full old-path baseline owed for all seven members (two implementations each); new path absent at B1

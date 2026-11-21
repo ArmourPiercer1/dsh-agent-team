@@ -552,6 +552,126 @@
         }
       },
       "note": "UTE-3 / G1 PROCESS family (bash, pwsh), stage B1: old-path baseline + per-member negative controls. The unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.process-family`, nativeNames bash + pwsh) and is covered 1 of 2 (bash only; pwsh is a printed exclusion). state=NOT_RETIREABLE: oldBaseline true, newPathVerified false (absence evidence), semanticDifferencesResolved false (five blocking, unapproved), negativeControlsPass true. No product code, no authority and no legacy file is touched by this stage; CORE PATCH BUDGET = 0."
+    },
+    {
+      "family": "agent-control",
+      "unit": {
+        "familyId": "dsh.agent-control-family",
+        "members": [
+          "subagent",
+          "subagent_fork",
+          "send_message",
+          "interrupt_agent",
+          "list_agents",
+          "list_subagent_models",
+          "workflow"
+        ]
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/agent-control.mjs",
+          "packages/tools/agent-control-family/src/index.mjs",
+          "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+          "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+          "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+          "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+          "packages/tools/agent-control-family/src/native-output-schemas.mjs",
+          "packages/tools/agent-control-family/src/spawn-row.mjs",
+          "packages/tools/agent-control-family/src/fork-row.mjs",
+          "packages/tools/agent-control-family/src/steer-row.mjs",
+          "packages/tools/agent-control-family/src/interrupt-row.mjs",
+          "packages/tools/agent-control-family/src/list-agents-row.mjs",
+          "packages/tools/agent-control-family/src/list-models-row.mjs",
+          "packages/tools/agent-control-family/src/workflow-row.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-agentctl/golden/old-path.tsv",
+            "expect": [
+              "AC-SUB-1-spawn",
+              "AC-FORK-1-inherit",
+              "AC-MSG-1-steer",
+              "AC-INT-1-interrupt",
+              "AC-LIST-1-enumerate",
+              "AC-MODELS-1-list",
+              "AC-WF-1-run"
+            ],
+            "contradicts": []
+          },
+          "note": "42 (request -> effect) vectors captured on the GOVERNED FAMILY BODY at C1 (host-free): 6 per census member, 7 members. This is NOT a route-C baseline: the Stage-0 probe measured that the product route-C attach appends no agent-control shadow, so all seven dispatches there are `unknown tool` refusals with zero provider calls and zero guard facts (a route-C fixture would have recorded the HOST's native rows, not the family being retired). The old path captured here is `createTeamToolPlaneAssembly` + the FamilyAssembly seam + `packages/tools/families/agent-control.mjs`, with `plane.agentControlEnabled=true`, dispatching each row's own `execute(raw,{signal,tokenKey,agent})`. The effect boundary is an injected agent-runtime port with REAL state (roster/inbox/children/workflow) plus a full call record; each allow row is corroborated twice (model-facing payload AND the state read back), and each deny row carries a code plus an imported refusal category. Two consecutive captures are byte-identical; no clock, random or plane correlation nonce is retained. Exclusions: NONE (printed on every capture). This is the OldBaseline term for the agent-control family only."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-agentctl-b1-20261121/new-path-absent.txt",
+            "expect": [
+              "NEW-PATH-ABSENT family=dsh.agent-control-family members=7",
+              "NEW-PATH-ABSENT route-c=no-agent-control-face",
+              "NEW-PATH-ABSENT member=workflow"
+            ],
+            "contradicts": []
+          },
+          "note": "FALSE, measured, and deliberately NOT fabricated. There is no confined agent-control new path at B1: route-C serves none of the seven names; the only composition that mounts them is the governed family itself; the pinned host's native rows are the SECOND implementation, not a replacement, and this lane does not dispatch them. No `NEW-PATH-VECTOR <id> PASS` token exists because nothing was reproduced on a new path that does not exist. A green here would require a confined native binding per member, a name-ownership decision for the seven reserved spellings, an approved decision on the admission-surface change, and an owner reference-bound approval record."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "SD-AGENTCTL-1-route-c-unserved",
+              "blocking": true,
+              "approval": null,
+              "summary": "The product route-C composition serves NONE of the seven booked members: attachA5sfNativeToolModules appends confined shell/search/fs/skill/present/web shadows and no agent-control spec, so every one of the seven dispatches is an `unknown tool` refusal with zero provider calls and zero guard facts. A retirement that swapped the family for the route-C path would swap it for nothing; the replacement must be a NEW native binding that does not exist at B1. Product change, not a same-meaning swap. APPROVAL: NONE."
+            },
+            {
+              "id": "SD-AGENTCTL-2-native-name-claim-not-graded",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed family claims all seven RESERVED native spellings, but the natexe ledger does not grade a family claim: PLANE_SUPPORTED_NATIVE_TAKEOVERS declares no agent-control class, verifyPlaneNames is closed to the grep/glob/bash map and cannot express these names, and family-assembly.mjs contains ZERO references to PLANE_RESERVED_NATIVE. Name ownership between the enabled family and the host preset is unresolved by construction. APPROVAL: NONE."
+            },
+            {
+              "id": "SD-AGENTCTL-3-governed-admission-surface",
+              "blocking": true,
+              "approval": null,
+              "summary": "Every ADMITTED governed row opens a real PA Control ask and consumes a fingerprint-bound one-shot grant before the runtime port runs (fixture: `control=1;decisions=approve` on every allow row, `control=0` on every pre-PA fence refusal). The host native rows do not ride this plane PA edge, so removing the family removes an approval round-trip and a one-shot consume from the model-visible path. Permission-surface change. APPROVAL: NONE."
+            }
+          ],
+          "evidence": {
+            "path": "tests/ute-g1-agentctl/golden/SEMANTIC-DIFFERENCES.md",
+            "expect": [
+              "SEMANTIC-DIFF id=SD-AGENTCTL-1-route-c-unserved blocking=yes approval=none",
+              "SEMANTIC-DIFF id=SD-AGENTCTL-2-native-name-claim-not-graded blocking=yes approval=none",
+              "SEMANTIC-DIFF id=SD-AGENTCTL-3-governed-admission-surface blocking=yes approval=none",
+              "retirement-blocking   YES",
+              "approval              NONE"
+            ],
+            "contradicts": []
+          },
+          "note": "All three recorded differences are retirement-blocking and NONE carries an approval record, so this term is FALSE by construction. The refusal surface is judged through the IMPORTED closed vocabulary in tests/ute-g1-fs/lib/refusal-categories.mjs (unmapped code => REFUSAL_VOCABULARY_INCOMPLETE; no residual bucket), not by literal code equality with the native rows."
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-agentctl-b1-20261121/negative-controls.txt",
+            "expect": [
+              "NC-VERDICT GREEN controls=24 failed=0",
+              "NC-MEMBER subagent",
+              "NC-MEMBER subagent_fork",
+              "NC-MEMBER send_message",
+              "NC-MEMBER interrupt_agent",
+              "NC-MEMBER list_agents",
+              "NC-MEMBER list_subagent_models",
+              "NC-MEMBER workflow"
+            ],
+            "contradicts": []
+          },
+          "note": "24 controls, GREEN. Two REAL mutations per census member on its success vector: a deny-default template must flip the row, and an absent runtime port must flip it to a typed `route-unresolved`; either mutation failing to turn the golden comparison RED is a failing control (a vacuous row). Ten family/seam controls: the design-claim checker (NC-F1), unmapped code => REFUSAL_VOCABULARY_INCOMPLETE (NC-F2), no code maps to the residual category and the shared three tokens agree with the imported derivation (NC-F3), the route-C absence detector bites on an injected spec (NC-F4), the two-implementation detector bites when a reserved spelling is dropped (NC-F5), byte-identical capture + mutation detected (NC-F6), host-shaped-path leak scanner (NC-F7), census-member coverage (NC-F8), the PA-ask witness on every allow row (NC-F9), and the exact fixture header (NC-F10). A green agent-control control is not evidence for any other family."
+        }
+      },
+      "note": "Seven members, seven dual implementations (Stage-0 probe: 7 two-implementation / 0 single-implementation), so this family is NOT a single-implementation non-retirement case: it gets a real 42-vector old-path baseline, two byte-identical captures, printed empty exclusion set, imported closed refusal vocabulary, and 24 negative controls. Retirement is refused because there is no confined new path (newPathVerified=false) and three measured differences remain blocking and unapproved. No product code change, no authority move, no production switch, no legacy deletion, no approval record."
     }
   ]
 }

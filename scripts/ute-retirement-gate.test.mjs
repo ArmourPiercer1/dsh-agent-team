@@ -679,7 +679,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
   assert.deepEqual(
     refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
-    ['fs', 'inspect', 'process', 'search', 'web'],
+    ['agent-control', 'fs', 'inspect', 'process', 'search', 'web'],
     `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
   )
   const codesFor = (family) => {
@@ -827,13 +827,41 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     0,
     'no oldBaseline finding may name a PB-B vector: the bash baseline exists',
   )
+  // agent-control — UTE-3 B1 measured SEVEN dual implementations (Stage-0
+  // probe: 7 two-implementation / 0 single), so this family gets a REAL 42-vector
+  // baseline and 24 controls, and is refused for the two axes it genuinely
+  // lacks: no confined new path at B1 (every vector unreproduced, every member
+  // uncovered on that axis) and three unapproved blocking differences. The exact
+  // set is pinned so a dropped member or a fabricated new-path token reds here.
+  const agentctl = codesFor('agent-control')
+  assert.deepEqual(agentctl.codes, [
+    'UTE_MEMBER_UNCOVERED',
+    'UTE_NEW_PATH_UNVERIFIED',
+    'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
+    'UTE_VECTOR_UNREPRODUCED',
+  ])
+  assert.match(agentctl.line, /state=NOT_RETIREABLE unit=0\/7$/u)
+  const agentctlBlock = blockFor('agent-control')
+  assert.match(agentctlBlock, /term=semanticDifferencesResolved[^\n]*SD-AGENTCTL-1-route-c-unserved/u)
+  assert.match(agentctlBlock, /term=semanticDifferencesResolved[^\n]*SD-AGENTCTL-2-native-name-claim-not-graded/u)
+  assert.match(agentctlBlock, /term=semanticDifferencesResolved[^\n]*SD-AGENTCTL-3-governed-admission-surface/u)
+  assert.match(agentctlBlock, /term=newPathVerified[^\n]*member \S*workflow/u)
+  // The baseline and control axes must stay ESTABLISHED for agent-control: a
+  // finding on either axis would mean the 42-vector baseline or the per-member
+  // controls regressed while the row still looked refused.
+  const agentctlFindings = agentctlBlock.split('\n').filter((line) => line.startsWith('  UTE-RETIREMENT-FINDING'))
+  assert.equal(
+    agentctlFindings.some((line) => line.includes('term=oldBaseline') || line.includes('term=negativeControlsPass')),
+    false,
+    `the agent-control baseline/control axes must stay established: ${JSON.stringify(agentctlFindings.filter((line) => line.includes('term=oldBaseline') || line.includes('term=negativeControlsPass')))}`,
+  )
   // the summary is DERIVED from the printed refusals, never a constant.
   const summary = all.stdout.match(/UTE-RETIREMENT-SUMMARY requested=(\d+) allowed=(\d+) refused=(\d+)/u)
   assert.ok(summary !== null, 'the summary line is absent')
   assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
   assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
   assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=5 allowed=0 refused=5/)
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=6 allowed=0 refused=6/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)
