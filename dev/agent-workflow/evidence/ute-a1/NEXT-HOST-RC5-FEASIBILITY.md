@@ -50,9 +50,17 @@ rc.5, `apply_patch`, delete and move would therefore reach the underlying provid
 Member's lane. The current slice never exercises them (`apply_patch` defaults false), which is exactly
 why it would stay invisible.
 
-Status: **not fixed, and NOT claimed as confined.** It requires three overrides in the Team provider
-plus arms; it belongs with the host-upgrade work, and D's host list must not say "FS confinement holds
-on rc.5" until it is done.
+Status: **not overridden, and the claim is now WATCHED instead of remembered.** Overrides cannot be
+written against the pinned baseline: the rc.2 provider type has no `patchText`/`deleteFile`/`moveFile`,
+so `override` there is a type error (and this worktree cannot compile). What landed instead is the
+invariant that makes the gap impossible to forget: **SLICE-35** derives every path-touching entry point
+from the real base provider and refuses any that the Team confined class does not override;
+**SLICE-36** is its positive control (it adds the three rc.5 names to a subclass and requires the
+derivation to name them). When the baseline moves, SLICE-35 goes red on its own — no rc.5 knowledge is
+baked into it and there is no allowlist to rot.
+
+So: on rc.5, `apply_patch`/delete/move are NOT confined, SLICE-35 will be the red that says so, and D's
+host list must not say "FS confinement holds on rc.5" until the three overrides exist.
 
 ## Blockers, in order
 

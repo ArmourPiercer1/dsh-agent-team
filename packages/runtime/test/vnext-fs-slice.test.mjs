@@ -1134,3 +1134,90 @@ test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside rea
     await world.dispose()
   }
 })
+
+test('SLICE-35 — the confined provider covers EVERY base entry point that touches a path', async () => {
+  // WHY THIS ARM EXISTS. On the pinned baseline the confined provider overrode ten methods, and that
+  // was the whole interface. On 0.2.2-rc.5 the base FileSystem grows patchText/deleteFile/moveFile -
+  // and nothing in this repo would have noticed: the class still compiles (against rc.2), the slice
+  // still passes (it never calls them), and apply_patch/delete/move would reach the real backend with
+  // the Member's lane never consulted.
+  //
+  // So instead of listing today's ten methods, this arm DERIVES the required set from the base class
+  // and refuses any base entry point nobody confined. When the baseline moves, this goes red on its
+  // own - no rc.5 knowledge baked in, no allowlist to rot.
+  const { createConfinedFileSystemClass } = await import('../team-services/src/fs.ts')
+  // The same seam loader the rest of this suite uses: the provider under test is the PINNED baseline's
+  // fs-local, resolved from the host tree, never a copy the test happens to find.
+  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT)
+  // NOT IO ENTRY POINTS, and why: path algebra and locking (resolve / processPath /
+  // processPathFromHostPath / fileUrl / contains) compute names without touching the filesystem, and
+  // the confined callers always pass their result through an admitted method; withLock is the
+  // serialization primitive those admitted methods call; versionAfterWrite derives the version of a
+  // write that already passed the guard; sandboxMode reads the per-call policy that IS the guard's
+  // input. Everything else on the base is an effect on a path and must be confined.
+  const NOT_IO = new Set([
+    'constructor', 'withLock', 'resolve', 'processPath', 'processPathFromHostPath',
+    'fileUrl', 'contains', 'versionAfterWrite', 'sandboxMode',
+  ])
+  // The WHOLE chain, starting at the concrete class: on the pinned baseline the effects are declared on
+  // LocalFileSystem itself and the abstract FileSystem above it carries only watch/sandboxMode/
+  // processPathFromHostPath. Walking from the concrete prototype is what keeps this arm honest when a
+  // newer host moves a method up or down the hierarchy.
+  const baseNames = new Set()
+  for (let proto = LocalFileSystem.prototype; proto && proto !== Object.prototype && proto !== Function.prototype; proto = Object.getPrototypeOf(proto)) {
+    if (proto.constructor?.name === 'Service') break
+    for (const name of Object.getOwnPropertyNames(proto)) baseNames.add(name)
+  }
+  const ioEntryPoints = [...baseNames].filter((name) => !NOT_IO.has(name))
+  const Confined = createConfinedFileSystemClass(LocalFileSystem, async () => {})
+  const confined = new Set(Object.getOwnPropertyNames(Confined.prototype))
+  const unconfined = ioEntryPoints.filter((name) => !confined.has(name)).sort()
+  assert.deepEqual(
+    unconfined,
+    [],
+    `the base provider has path-touching entry points the Team confined class does not override: ${unconfined.join(', ')}`
+    + ' — on a newer host those calls reach the real backend with the Member lane never consulted.'
+    + ' Add the override (guard the target(s), then delegate) before upgrading the baseline.',
+  )
+  // Falsifiability: the derived set is not empty and names the methods the slice actually exercises,
+  // so a refactor that accidentally stops deriving anything cannot pass.
+  assert.ok(ioEntryPoints.length >= 10, `expected at least the ten known entry points, derived ${ioEntryPoints.length}`)
+  for (const name of ['readText', 'writeText', 'editText', 'stat', 'listDir']) {
+    assert.ok(ioEntryPoints.includes(name), `${name} must be recognised as an IO entry point`)
+  }
+})
+
+test('SLICE-36 — the coverage invariant actually detects an unconfined entry point', async () => {
+  // The arm above is only worth having if it can FAIL. This is its positive control: take the real
+  // provider, add a path-touching method the confined class does not override - exactly what a newer
+  // host does - and require the same derivation to name it. Without this, a refactor that made
+  // SLICE-35 vacuously green (empty derivation) would look like success.
+  const { createConfinedFileSystemClass } = await import('../team-services/src/fs.ts')
+  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT)
+  const NOT_IO = new Set([
+    'constructor', 'withLock', 'resolve', 'processPath', 'processPathFromHostPath',
+    'fileUrl', 'contains', 'versionAfterWrite', 'sandboxMode',
+  ])
+  const derive = (Base) => {
+    const names = new Set()
+    for (let proto = Base.prototype; proto && proto !== Object.prototype && proto !== Function.prototype; proto = Object.getPrototypeOf(proto)) {
+      if (proto.constructor?.name === 'Service') break
+      for (const name of Object.getOwnPropertyNames(proto)) names.add(name)
+    }
+    return [...names].filter((name) => !NOT_IO.has(name))
+  }
+  class FutureProvider extends LocalFileSystem {
+    // The rc.5 additions, verbatim in name, as an unconfined future entry point looks from here.
+    async patchText() { throw new Error('never called: this arm measures the DERIVATION, not the effect') }
+    async deleteFile() { throw new Error('never called') }
+    async moveFile() { throw new Error('never called') }
+  }
+  const ConfinedFuture = createConfinedFileSystemClass(FutureProvider, async () => {})
+  const confined = new Set(Object.getOwnPropertyNames(ConfinedFuture.prototype))
+  const unconfined = derive(FutureProvider).filter((name) => !confined.has(name))
+  assert.deepEqual(
+    unconfined.sort(),
+    ['deleteFile', 'moveFile', 'patchText'],
+    'the derivation must name exactly the un-overridden path-touching methods a newer host would add',
+  )
+})
