@@ -118,6 +118,31 @@ store's own Stop shape (Stop + `CANCELLED`, `not-started`) is recorded and asser
 `allow`-admitted call that has not reached the guard is allowed to finish so it settles — refusing it would
 hit the same wall and leave UNKNOWN. No host boot, no real Stop keypress.
 
+## B probe ladder over UNMODIFIED native tools (round 53)
+
+`packages/runtime/test/vnext-b-probe-ladder.test.mjs` (ADM-63..78) drives the host's real
+`dsh-tool-fs` / `-fs-search` / `-web` / `-bash-persistent` through the product's ONE composition point, with
+durable facts read back FROM DISK and the product settlement store:
+
+| tool | positive | negative |
+| --- | --- | --- |
+| `read` | admitted, bytes arrive, provider counters move, `COMPLETED` | `LANE_DENY` before the body, counters byte-identical, settlement `REFUSED`/`not-started` |
+| `write` | bytes on disk, `writeText ≥ 1` | `LANE_DENY`, file never created, zero provider calls |
+| `grep` | match found, confined subprocess actually spawned | `LANE_DENY`, ZERO subprocess spawns |
+| `web_fetch` | loopback fixture body, exactly one transport call | denied network axis ⇒ `NETWORK_DENY`, ZERO transport calls |
+| persistent `bash` | **BLOCKED — NOT RUN** | `ADMISSION_AXIS_UNSUPPORTED`, zero spawns, zero `confine` calls |
+| `run_code` | **BLOCKED — NOT RUN** | same refusal, zero spawns, zero confines |
+
+**The two blocked positives are not environmental** (no ENV_BLOCK): `bash`/`run_code` are `process.exec`, and
+the v4 member ceiling's frozen `io` set is `{read, write, network}`, so no compiled answer can carry
+`binding.process`. They are the standing `CONTRACT-CHANGE-REQUEST-process-lane.md`, which itself names "B's
+rung-6 positive control". I did not mint a lane in the test or derive one from the write lane — that would be
+the second authority this cut forbids. ADM-78 pins the block in code so a future process-lane change flips
+the two skips loudly instead of leaving a stale waiver.
+
+ORDER and IDENTITY are asserted: facts read back in ladder order, and every rung must resolve the host
+module's own body (compared against the preset definition object, not just "registered").
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all

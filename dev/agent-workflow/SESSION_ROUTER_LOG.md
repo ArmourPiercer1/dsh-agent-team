@@ -10293,3 +10293,23 @@ the literal shape stays unreachable until the contract is ruled on.
 
 Gates at `eb0726512`: leg `suites=6 files=6 exit=0` (126 pass), catalog `findings=0`, cut-closure, P0,
 docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.
+
+### R53 — the probe ladder runs the host's real tools, and two rungs are honestly not run
+
+Six rungs, unmodified native tools, through the ONE centre over a durable ledger (facts read back from disk)
+and the product settlement store; each rung has a positive and a negative control, and ORDER/IDENTITY are
+asserted rather than presence (every rung must resolve the host module's own body).
+
+read/write/grep/web_fetch are PROVEN both ways — including `grep` spawning a real confined subprocess (and
+zero spawns on the deny side) and `web_fetch` making exactly one transport call (zero on the deny side).
+
+persistent `bash` and `run_code` have NO positive control, and the reason is a CONTRACT fact, not the
+environment: they are `process.exec`, the v4 member ceiling's frozen `io` field set is
+`{read, write, network}`, so no compiled answer can carry `binding.process`. That is the standing
+`CONTRACT-CHANGE-REQUEST-process-lane.md`, which itself names this rung. The refusal halves ARE proven
+(`ADMISSION_AXIS_UNSUPPORTED`, zero spawns, zero `confine` calls), and ADM-78 pins the block in code so a
+future process lane flips the two skips loudly instead of leaving a stale waiver.
+
+Leg 126 → 140 (2 disclosed skips); vitest population still 238. Gates at `60fda771a`: leg `suites=7
+files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 27,
+ci-required pass, bound leg `PASS 238`.
