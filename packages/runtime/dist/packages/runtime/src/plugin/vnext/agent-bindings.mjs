@@ -372,6 +372,9 @@ import { freshCreateHintAdmits } from './bind-path.mjs'
 import { memberCentreUnwiredViolation } from './centre-config.js'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
+// E3 (round 49): the durable overlay supplier for the centre's admission port. It can only REMOVE
+// authority, and it reads the SAME `permissionOverlay` port the mutation lane appends through.
+import { createOverlayDecisionProvider } from './overlay-decision.mjs'
 // Who a session is, and whether it may be brought back - one component (plan S1).
 import { createSessionIdentity } from './session-identity.mjs'
 // WHICH template a session is, under WHICH bound snapshot - one component (plan M4).
@@ -528,7 +531,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -1781,6 +1784,31 @@ export function createAgentBindings(deps) {
           // realm disposal in the tool-disposer pass - before the native-mount tombstone was awaited -
           // contradicting the ordering the comment in close() promises.
           a5sfRealmDisposers.push(disposeRealm)
+          // THE DURABLE OVERLAY SUPPLIER (E3, round 49). The centre accepts an `overlayDecision` port
+          // (ADM-45); the product supplies one over the SAME `permissionOverlay` the mutation lane
+          // appends through. The port is synchronous, so the two async inputs (the durable row and the
+          // call's canonical operation) are resolved by a `prepare` listener registered AHEAD of the
+          // centre's own - never inside the port. A prepare fault is stored and surfaced by the port as
+          // ADMISSION_OVERLAY_FAULT, so an unreadable overlay denies rather than disappears.
+          const memberWorkspace = runtimeAgent?.session?.header?.cwd ?? config?.defaultWorkspace ?? process.cwd()
+          let overlayDecision
+          if (typeof permissionOverlay?.latest === 'function') {
+            const overlaySupplier = createOverlayDecisionProvider({
+              overlay: permissionOverlay,
+              teamSessionId: teamRoot,
+              memberInstanceId: instanceId,
+              workspaceRoot: memberWorkspace,
+              // The per-agent fs seam (host: the lazy strict `ctx.get('fs')`; a test world: its own
+              // fake fs). It is the ONE canonicalization basis the operation and the overlay keys share.
+              fsOf: () => (typeof fsBackend === 'function' ? fsBackend(agentCtx) : undefined),
+            })
+            const disposeOverlayPrepare = agentCtx.on('tools/pre-execute', async (exec, next) => {
+              await overlaySupplier.prepare(exec)
+              return next()
+            })
+            toolDisposers.push(disposeOverlayPrepare)
+            overlayDecision = overlaySupplier.decide
+          }
           // MEMBER EXECUTION COMPOSITION (centre + native mount + their lifecycle). The block below
           // used to live here: it is now one component with explicit inputs, so the entry assembles
           // and does not itself hold admission, facts, settlement or the mount's lifecycle.
@@ -1795,7 +1823,9 @@ export function createAgentBindings(deps) {
             teamRoot,
             // The member's effective workspace: the same `session.header.cwd` basis the rest of this
             // glue reads, never a guess and never the host process's cwd by default.
-            workspaceRoot: runtimeAgent?.session?.header?.cwd ?? config?.defaultWorkspace ?? process.cwd(),
+            workspaceRoot: memberWorkspace,
+            // The durable restriction consulted beside the lane verdict (can only REMOVE authority).
+            ...(overlayDecision === undefined ? {} : { overlayDecision }),
             nativeSpecs: a5sfRowConfig.nativeToolModules ?? [],
             scope: runtimeAgent ?? undefined,
             onDispose: (dispose) => toolDisposers.push(dispose),

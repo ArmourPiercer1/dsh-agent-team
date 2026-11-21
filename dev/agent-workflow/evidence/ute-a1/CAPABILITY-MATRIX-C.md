@@ -47,16 +47,23 @@ plainly: a skill file read by the host skill service is OUTSIDE the member's fs 
 D-report limit, not a claim of confinement. MCP is treated differently because its effects are
 unknowable rather than merely out-of-lane: it stays refused by name.
 
-## RED: the durable Alpha.4 permission overlay has no decision-side effect (round 31)
+## MEASURED (round 49): the durable Alpha.4 overlay reaches the centre — E3 green, still not PRODUCT-PROVEN
 
-`a3p4-pr4-production-entry-regression` E3 is RED for a real reason, not a stale pin. The retired entry
-installed a pre-execute adapter that consulted the **durable permission overlay** per call; the A1 cut
-retired the adapter with the execution route, and the new centre judges a call against the compiled
-binding lanes only. A `grantInstance` deny persisted after the member was bound therefore changes nothing
-at execution time. This is a preserved product capability (Alpha.4 plane) and it is LOST in the new
-assembly until the centre consumes it. Options and consequences are in
-`MIGRATED-SUITE-STATUS.md`; the decision belongs with the Control allow/ask/deny wiring, because both ask
-"what is the ONE place a durable restriction becomes a verdict".
+`a3p4-pr4-production-entry-regression` E3 is GREEN and the migrated suite is 238/238. The world was
+rebuilt on the current contract (v4 `memberIoCeilings`, the row's `a5sfMemberPolicies` declaration,
+`centreStatePath`, an opt-in real Cordis service scope in the bridge) and the centre now receives an
+`overlayDecision` supplier over the SAME durable `permissionOverlay` port the mutation lane appends
+through. The supplier is deny-only (ADM-45: consulted only when the lane allows; `deny | undefined`)
+and reads/decodes the row per call, keyed on the overlay's own generation.
+
+**What E3 proves:** no overlay row ⇒ the v4 compiled `write` ALLOW executes (`nextCalls === 1`); after
+a persisted `grantInstance` deny through the production mutation lane, the same call is refused with
+`ADMISSION_OVERLAY_DENY` and executes nothing (`nextCalls === 0`).
+
+**What it does NOT prove:** no host boot line, so this is not PRODUCT-PROVEN and no row above is
+upgraded. The world mounts a real declared realm, so it is NOT a witness for the realm-less admission
+question below. Overlay `ask`/`allow` are outside the port; subtree containment is implemented but the
+E3 probe is an exact deny. Full detail: `MIGRATED-SUITE-STATUS.md` §"Round 49 (current)".
 
 ## ESCALATED: a realm-less member has no admission at all (round 34)
 
@@ -66,14 +73,15 @@ without mounting is not a second policy. The question is what the product should
 provider is unconfined and say so, or refuse everything without a confined provider. Current state is
 neither — the calls are unmediated and unreported.
 
-## RED: admission is installed only when a realm is mounted (round 33)
+## OPEN: admission is installed only when a realm is mounted (round 33; E3 no longer witnesses it)
 
 The centre is installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`, so a
 member without a confined-provider realm gets NO admission point at all — its native tools run under the
 host's mediation with no decision, no ledger and no settlement. That is not the "unwired controlled call
-is explicitly refused" law; it is the tool not being covered. E3's world is such a world, which is why it
-observes zero pre-execute legs. Small, security-relevant, and first in the repair order (see
-`MIGRATED-SUITE-STATUS.md`).
+is explicitly refused" law; it is the tool not being covered. Round 49 rebuilt E3's world to mount a
+declared realm, so E3 no longer observes zero legs and no longer acts as this defect's witness; the
+defect itself is UNCHANGED and remains tracked by `ESCALATION-realmless-admission.md`. Small,
+security-relevant, and still the first item in the repair order (see `MIGRATED-SUITE-STATUS.md`).
 
 ## What the adversarial review found in the centre (round 28)
 

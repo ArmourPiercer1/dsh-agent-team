@@ -58,6 +58,11 @@
       "src": "packages/runtime/src/plugin/vnext/bind-path.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/bind-path.mjs",
       "note": "The bind path and the ONE rule about what it may bridge (fresh-member only); imported by the realm row, the template locator and the glue so the rule exists once."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/overlay-decision.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/overlay-decision.mjs",
+      "note": "E3 (round 49): the durable overlay supply for the centre's synchronous `overlayDecision` port (row + operation prepared per call, rules decoded once per generation, verdict from the frozen resolver). Imported by the glue at module load; without this placement the shipped face cannot bind a governed member."
     }
   ]
 }

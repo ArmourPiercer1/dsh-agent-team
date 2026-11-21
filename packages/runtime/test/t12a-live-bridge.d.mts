@@ -281,6 +281,9 @@ export interface AgentsDoubleOptions {
    *  the fiber's activation (the Permission Coverage Gate's proven-mount
    *  delta basis); unregistered on the fiber's dispose. */
   readonly mcpToolNames?: Record<string, string[]>
+  /** E3 (round 49): give each agent ctx a real Cordis Context for service isolation (see
+   *  `LiveWorldOptions.realmMount`). Off by default; no other double surface changes. */
+  readonly realmMount?: boolean
   /** fix/alpha2-explicit-agent-setup-compat (default false): the DSH
    *  0.1.5+ AgentSetup contract — the setup callback is invoked as
    *  `setup(agentCtx, agent)` (the explicit composed Agent as the second
@@ -628,6 +631,16 @@ export interface LiveWorldOptions {
    *  (no seam, static-only decisions — the leg that proves a world without a
    *  plane is unaffected). */
   readonly permissionPlaneRef?: { current: unknown }
+  /** E3 (round 49): the durable permission-overlay port handed to the glue verbatim — the SAME object
+   *  a production host constructs (`latest`/`append`/`history`). Absent = no overlay is wired, which is
+   *  the pre-E3 posture for every other world. */
+  readonly permissionOverlay?: object
+  /** E3 (round 49): the row's lazy compiled-realm accessor. The production host always passes one; a
+   *  world whose declaration supplies the plan answers `undefined` (no `teamA5sfRealm` service). */
+  readonly a5sfRealmProvider?: () => object | undefined
+  /** E3 (round 49): mount each agent ctx over a real Cordis service scope (the a5sf realm install's
+   *  `isolate`/`plugin(Service)`/`get('fs')` seam). Default false: the pre-E3 double only. */
+  readonly realmMount?: boolean
   /** alpha.2 (A6, V1-1): override the per-agent fs seam accessor
    *  ((agentCtx) => { resolve(path, { cwd? }) }). Default: routes to each
    *  agent ctx double's own fake fs (makeFakeFs on the double), so

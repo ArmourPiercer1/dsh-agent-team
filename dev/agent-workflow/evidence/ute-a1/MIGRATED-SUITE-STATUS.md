@@ -1,5 +1,8 @@
 # The 16 migrated capability suites — measured, not assumed
 
+**CURRENT (round 49, 2026-11-23): 238/238, E3 GREEN.** See §"Round 49 (current)" at the end; the
+round-30/31 narrative below is kept as history.
+
 **Measured:** 2026-11-22 (round 30) on `vnext/a1-cut`.
 **Command:** `node <main-worktree>/node_modules/.pnpm/vitest@…/vitest.mjs run <the 16 files in
 migrated-entry-imports.json>` from this worktree.
@@ -43,7 +46,7 @@ pin.
 
 | # | suite / leg | failure | class | action |
 | --- | --- | --- | --- | --- |
-| 1 | `a3p4-pr4-production-entry-regression` "E3" | `the glue installed a pre-execute leg on tpl-a: expected 0 to be greater than 0` | **BEHAVIOUR — REAL CAPABILITY LOSS** | see below |
+| 1 | `a3p4-pr4-production-entry-regression` "E3" | `the glue installed a pre-execute leg on tpl-a: expected 0 to be greater than 0` | **BEHAVIOUR — REAL CAPABILITY LOSS** | **REBUILT ON v4 + overlay supplier (round 49) — GREEN**; see §"Round 49 (current)" |
 | 2 | `a3p5-permission-read-wiring` group A | projection outside the seam | LAYOUT PIN | **RE-ANCHORED** (round 31) |
 | 3 | `a4p6-start-gate-entrances` BLOCKER 1 | missing `from './s6-remote.js'` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
 | 4 | `a4p7-ceiling-port-assembly-pin` a4-76 | `ENOENT …/src/plugin/root.ts` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
@@ -234,3 +237,84 @@ Three roads, and only the first is legitimate here:
 - refuse realm-less members (option B) — fail-closed, but E3's control (`no overlay row ⇒ the static ALLOW
   executes`) fails by construction, so E3 can never be green this way;
 - reinstate the retired Alpha.4 template-permission lane — the legacy fallback the A1 law forbids.
+
+## Round 49 (current): E3 rebuilt on v4 and GREEN — 238/238
+
+**Measured:** 2026-11-23 on `vnext/a1-cut` (this worktree), from the main-worktree install:
+`node <main>/node_modules/.pnpm/vitest@…/vitest.mjs run <the 16 files in migrated-entry-imports.json>`.
+Result: **15 test files, 238 passed, 0 failed**. `a3p4-pr4-production-entry-regression` is 20/20, E3
+included.
+
+### What the WORLD became (the assertion did not move)
+
+E3's world is now a current-contract Member, not a v3 document:
+
+- `glueBlueprintSource` is a **v4** blueprint: `schemaVersion: 4` and a `memberIoCeilings` family for
+  `tpl-a` whose `write`/`read` lanes ALLOW the member workspace (`test:919-990`). The retired Alpha.4
+  `capabilities.permissions` lane is gone from the fixture; the allow now comes from the ONE compiler.
+- The row declares `a5sfMemberPolicies` (the same ceiling family, as the product's exception path) and
+  `centreStatePath` (a real directory), and the live world is created with `realmMount: true` so the
+  a5sf install gets the Cordis service isolation it mounts into (`test:1103-1121`, `test:1177-1202`).
+- `a5sfRealmProvider: () => undefined` is the production shape when the composition has no
+  `teamA5sfRealm` service: the row's own declaration supplies the plan, and the mount compiles it
+  through `parseProductRealmDeclaration` / the product assembly — the SAME path a real Member takes.
+- The SAME `permissionOverlay` port instance is handed to `createTeamProductionRoot` (the mutation
+  lane) and to `createLiveWorld` (the glue). There is no second store.
+
+### What moved in production (two seams, no second authority)
+
+1. `packages/runtime/src/plugin/vnext/overlay-decision.mjs` (new): the supplier for the centre's
+   already-existing synchronous `overlayDecision` port. An async `prepare` listener (registered AHEAD
+   of the centre's) canonicalizes the call's operation and reads `overlay.latest` for the bound
+   `{teamSessionId, memberInstanceId}`; it decodes the stored deny rules once per overlay
+   **generation** and computes the one asynchronous input (`FileSystem.contains` for `subtree`) there.
+   The sync `decide(facts)` only reads that prepared entry and calls the frozen
+   `resolveOperationPermission`. It answers `deny | undefined` only: a durable ALLOW cannot widen the
+   compiled lane and a durable ASK is not turned into a deny. A read/parse/canonicalize fault is stored
+   and surfaced by the port as `ADMISSION_OVERLAY_FAULT` (a refusal).
+2. `packages/runtime/src/plugin/vnext/agent-bindings.mjs` builds that supplier in the a5sf branch
+   (same `permissionOverlay`, same per-agent `fsBackend` seam) and passes `overlayDecision` into
+   `installMemberExecution` → `installMemberCentre`. The centre stays the ONE decision point; the
+   overlay is consulted only when the lane already allowed (`admission-port.mjs:141-149`), and only
+   removes authority.
+
+The supplier is byte-placed into the shipped dist mirror by
+`scripts/dist-placements/240-ute-vnext-centre.json`; without that entry the shipped
+`files: ["dist"]` face would fail `ERR_MODULE_NOT_FOUND` at the first governed bind.
+
+### The test-harness seam this needed (and what it does NOT change)
+
+`t12a-live-bridge.mjs` gained an OPT-IN `realmMount` option. When set, each agent ctx gets a real
+Cordis `Context` used only for `isolate`/`plugin(Service)`/`get('fs')`, with a minimal base `fs`
+Service; every other double surface is unchanged. The fake ctx's `get('tools')` now returns its
+`tools` object (the centre's admission port requires it). Absent `realmMount`, no Context is
+allocated and the pre-E3 worlds are unchanged.
+
+### The two expectation edits, stated plainly
+
+- `denied.reason` is asserted with `ADMISSION_OVERLAY_DENY` (plus `overlay`) instead of the retired
+  adapter's prose `'permission denied'`. This is the ADM-45 port's own typed vocabulary and is
+  strictly more specific; `nextCalls === 0`, `kind === 'deny'`, and every control assertion are
+  unchanged.
+- `driveOnce`'s `nextCalls` now counts the BODY EDGE as "the whole chain answered allow", not "the
+  last listener called `next()`". The centre is an outer waterfall leg that calls `next()` before its
+  own verdict, so the old counter would report 1 for a call the centre refused. The assertion's
+  meaning (`1 == the tool executed`) is preserved and is now faithful to the host: the body runs only
+  after an allowed chain.
+
+### What this proves — and what it does not
+
+**Proven:** with no overlay row, the v4 compiled `write` ALLOW reaches execution through the real
+`createAgentBindings` → centre pipeline (control `nextCalls === 1`); after a persisted
+`grantInstance` deny through the production mutation lane, the SAME call is refused by the centre with
+`ADMISSION_OVERLAY_DENY` and executes nothing (`nextCalls === 0`), while the compiled lane still
+allows it.
+
+**Not proven / limits:** this is a test-world mount, not a host boot line, so E3 is NOT
+PRODUCT-PROVEN and no row in `CAPABILITY-MATRIX-C.md` is upgraded by it. The world mounts a real
+declared realm, so it does not exercise (and does not resolve) the realm-less admission question in
+`ESCALATION-realmless-admission.md`; that ruling remains open and its witness is now a different
+world (or none). Overlay `ask`/`allow` rules are outside the port's contract and are not expressed.
+Subtree containment depends on the host's canonical-key-wrapping form of `FileSystem.contains` (the
+same form `host.ts`'s `fsContainsKeys` uses); the E3 probe is an exact deny, so subtree matching is
+implemented but not exercised by this leg.

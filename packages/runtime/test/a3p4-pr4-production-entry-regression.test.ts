@@ -70,6 +70,7 @@ import { createPermissionOverlayRepositoryPort } from '../permission-governance/
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import * as hostEntry from '../src/plugin/host.js'
 import { TEAM_PLUGIN_ERROR_CODES } from '../src/plugin/types.js'
+import type { TeamPluginConfig } from '../src/plugin/types.js'
 import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import {
   createAuthorityCeilingReader,
@@ -78,6 +79,11 @@ import {
   type TeamPermissionPlane,
 } from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'
+import {
+  A5SF_PRODUCT_REALM_SCHEMA,
+  type A5sfProductMemberDeclaration,
+  type A5sfProductRealmDeclaration,
+} from '../team-services/src/product-assembly.js'
 import { PERMISSION_LIFECYCLE_ERROR_CODES } from '../permission-lifecycle/types.js'
 import { createS6RemotePorts, createS6RemoteDispatcher } from '../src/plugin/s6-remote.js'
 import { parseBlueprint } from '../../domain/blueprint/src/index.js'
@@ -916,13 +922,15 @@ const GLUE_ROOT = 'session-a3p4e3root'
 const GLUE_CHILD = 'session-a3p4e3child-a'
 const GLUE_INST = 'inst-a3p4e3a'
 
-/** The E3 blueprint: tpl-a worker carries a static ALLOW (exact, ABSOLUTE
- *  target) which the persisted overlay deny must beat; without the allow
- *  lane the leg would deny for the wrong reason. */
+/** The E3 blueprint: a v4 document whose `memberIoCeilings` family is the ONE compiler's input. The
+ *  tpl-a worker's write lane ALLOWS the target's workspace — that compiled ALLOW is what the persisted
+ *  overlay deny must beat. The retired Alpha.4 `capabilities.permissions` lane is deliberately ABSENT:
+ *  this world is on the current contract, so the allow comes from the v4 ceiling and nothing else. */
 function glueBlueprintSource(targetKey: string): string {
+  const workspace = dirname(targetKey)
   return [
     '---',
-    'schemaVersion: 3',
+    'schemaVersion: 4',
     'blueprintId: team.a3p4e3',
     'revision: "1"',
     'leader:',
@@ -941,11 +949,6 @@ function glueBlueprintSource(targetKey: string): string {
     '    mcp:',
     '      kind: allow',
     '      items: []',
-    '    permissions:',
-    '      default: deny',
-    '      allow: []',
-    '      ask: []',
-    '      deny: []',
     'members:',
     '  - templateId: tpl-a',
     '    persona: "You are member A of the a3p4e3 test team."',
@@ -961,18 +964,27 @@ function glueBlueprintSource(targetKey: string): string {
     '      mcp:',
     '        kind: allow',
     '        items: []',
-    '      permissions:',
-    '        default: deny',
+    // THE v4 CEILING FAMILY (the ONE compiler's input). The write lane allows the member's workspace,
+    // so a `write` to the probe target is a compiled ALLOW before any overlay exists.
+    'memberIoCeilings:',
+    '  - templateId: tpl-a',
+    '    io:',
+    '      read:',
+    '        mode: restricted',
     '        allow:',
-    '          - tool: write',
-    '            resource:',
-    '              kind: exact',
-    `              path: "${targetKey}"`,
+    `          - "${workspace}"`,
     '        ask: []',
-    '        deny:',
-    '          - tool: bash',
-    '            resource:',
-    '              kind: any',
+    '        deny: []',
+    '      write:',
+    '        mode: restricted',
+    '        allow:',
+    `          - "${workspace}"`,
+    '        ask: []',
+    '        deny: []',
+    // E3 probes the fs write axis. A NARROWING network lane without the web face is refused by the
+    // product (NETWORK_UNCONFINED_REALM), so this axis is stated as allow and judges nothing here.
+    '      network:',
+    '        mode: allow',
     'policyStates: []',
     'quotas:',
     '  team:',
@@ -981,9 +993,8 @@ function glueBlueprintSource(targetKey: string): string {
     '  members:',
     '    maxInstances: 2',
     '    maxConcurrent: 2',
-    // §7.3 v3-only: the two authority documents version 3 REQUIRES, at the honest
-    // zero `rules: []` — this document declares no expansion authority, and the
-    // alternative (a filler rule) would hand a fixture a grant no leg here asks for.
+    // The two authority documents every v3+ document declares; this fixture claims no expansion
+    // authority and no hard grant of its own.
     'permissionMutationEnvelope:',
     '  rules: []',
     'teamHardEnvelope:',
@@ -991,6 +1002,31 @@ function glueBlueprintSource(targetKey: string): string {
     'metadata: {}',
     '---',
   ].join('\n')
+}
+
+/** The row's product declaration for the SAME ceiling family the blueprint above declares. The
+ *  declaration is the EXCEPTION path the product parser reconciles against the derived ceiling — it
+ *  states the same lanes, so assembly owns one truth rather than a second one. */
+function glueMemberPolicies(workspace: string): A5sfProductRealmDeclaration {
+  type IoCeiling = A5sfProductMemberDeclaration['ceiling']
+  const lane = (): IoCeiling['read'] => ({ mode: 'restricted', allow: [workspace], ask: [], deny: [] })
+  return {
+    schema: A5SF_PRODUCT_REALM_SCHEMA,
+    teamId: 'team.a3p4e3',
+    blueprintRevision: '1',
+    authority: { revision: 'a4:e3', admitted: true },
+    members: [
+      {
+        templateId: 'tpl-a',
+        instanceGeneration: 1,
+        ceiling: {
+          read: lane(),
+          write: lane(),
+          network: { mode: 'allow' },
+        },
+      },
+    ],
+  }
 }
 
 /**
@@ -1018,7 +1054,7 @@ async function driveOnce(
   callId: string,
   targetKey: string,
 ): Promise<{ kind: string; reason?: string; nextCalls: number }> {
-  let nextCalls = 0
+  let reachedEnd = false
   const exec = {
     callId,
     name: 'write',
@@ -1027,12 +1063,18 @@ async function driveOnce(
   }
   const run = async (i: number): Promise<unknown> => {
     if (i >= chain.length) {
-      nextCalls += 1
+      reachedEnd = true
       return { kind: 'allow' }
     }
     return chain[i]!.listener(exec, () => run(i + 1))
   }
   const decision = (await run(0)) as { kind: string; reason?: string }
+  // THE BODY EDGE. The centre's listener is an OUTER waterfall leg: it calls `next()` so later/earlier
+  // listeners can speak, then applies its own verdict (admission-port's documented order). Reaching the
+  // end of the chain is therefore "the rest of the chain allowed", NOT "the tool executed": the host
+  // runs the body only when the WHOLE chain answers allow. `nextCalls` keeps its meaning — 1 == the
+  // tool executed — without counting a `next()` that a refusing centre already overruled.
+  const nextCalls = decision.kind === 'allow' && reachedEnd ? 1 : 0
   return { ...decision, nextCalls }
 }
 
@@ -1070,12 +1112,23 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
     })
     const overlayStore = await openPermissionOverlayStore(new FileStorageSeam(base))
     const overlay = createPermissionOverlayRepositoryPort({ repository: overlayStore.repository })
-    const config = {
+    // The centre a governed Member needs: `installMemberExecution` refuses to open admission/facts/
+    // settlement without a deployment-owned state directory (`member-execution.mjs:98-108`).
+    const centreStatePath = `${base}/centre`
+    mkdirSync(centreStatePath, { recursive: true })
+    // The a5sf deployment keys (`centreStatePath`, `a5sfMemberPolicies`) are part of the shipped row
+    // config type; this fixture states them explicitly so a drift in the centre's required inputs fails
+    // HERE rather than as a runtime refusal.
+    const config: TeamPluginConfig = {
       bootPhase: 'create' as const,
       rootSessionId: GLUE_ROOT,
       blueprintSource: glueBlueprintSource(targetKey),
       generation: 1,
       defaultWorkspace: `${base}/workspace`,
+      // THE CURRENT CONTRACT: the row declares the product Member policy, and the centre it opens
+      // writes to this deployment-owned directory. Without both there is no governed Member at all.
+      centreStatePath,
+      a5sfMemberPolicies: glueMemberPolicies(dirname(targetKey)),
       seedMembers: [],
       staticModel: { provider: 'a3p4e3', model: 'a3p4e3-model' },
       deniedSelection: null,
@@ -1128,10 +1181,22 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
         // The NEW bridge pass-through (round-3): the host hands the glue
         // this same ref; a test fills it with the assembled plane.
         permissionPlaneRef,
+        // E3 (round 49): the SAME durable overlay port the mutation lane above appends through — never a
+        // second store. The glue reads it for the authority generation and for the admission-side deny.
+        permissionOverlay: overlay,
+        // The production host ALWAYS passes a lazy realm accessor; this composition provides no
+        // `teamA5sfRealm` service, so it answers undefined and the mount compiles from the row's own
+        // `a5sfMemberPolicies` declaration (exactly the product shape when the service is absent).
+        a5sfRealmProvider: () => undefined,
+        // The isolated Cordis service scope a real Member install mounts into.
+        realmMount: true,
         members: [{ childSessionId: GLUE_CHILD, instanceId: GLUE_INST, templateId: 'tpl-a' }],
         configOverrides: {
           bootPhase: 'create',
           blueprintSource: glueBlueprintSource(targetKey),
+          defaultWorkspace: `${base}/workspace`,
+          centreStatePath,
+          a5sfMemberPolicies: glueMemberPolicies(dirname(targetKey)),
           seedMembers: [
             { instanceId: GLUE_INST, templateId: 'tpl-a', label: 'Member A', childSessionId: GLUE_CHILD },
           ],
@@ -1142,17 +1207,17 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
       const chain = preExecuteChain(ctxA)
       expect(chain.length, 'the glue installed a pre-execute leg on tpl-a').toBeGreaterThan(0)
 
-      // CONTROL (key identity): with NO overlay row the template ALLOW
-      // executes through the real glue (proves the canonical key of the
-      // fake-fs target equals the granted key — the deny below then can
-      // only come from the plane).
+      // CONTROL (key identity): with NO overlay row the v4 ceiling's compiled
+      // write ALLOW executes through the real centre (proves the canonical key
+      // of the fake-fs target matches the lane's key — the deny below then can
+      // only come from the durable plane).
       const control = await driveOnce(chain, 'e3-call-control', targetKey)
       expect(
         control.nextCalls,
-        `the static allow must execute with no overlay present (control: ${JSON.stringify(control)})`,
+        `the compiled allow must execute with no overlay present (control: ${JSON.stringify(control)})`,
       ).toBe(1)
 
-      // Persist the overlay DENY over the worker's static allow (operator
+      // Persist the overlay DENY over the worker's compiled allow (operator
       // mutation through the production lane).
       const granted = await plane.mutation.grantInstance({
         authority: { kind: 'operator' },
@@ -1163,23 +1228,25 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
         rules: [
           // Overlay rules store CANONICAL keys — the glue world's fake fs
           // canonicalizes to `file://` URIs (the a6a key convention), so the
-          // granted matcher speaks the SAME canonical text the decision
-          // region carries (the CONTROL drive above proved this is the key
-          // the template ALLOW matches on).
+          // granted matcher speaks the SAME canonical text the admission
+          // operation carries (the CONTROL drive above proved this is the key
+          // the compiled ALLOW matches on).
           { operationClass: 'write', matcher: { kind: 'exact', resource: `file://${targetKey}` }, effect: 'deny' },
         ],
       })
       expect((granted as { changed?: boolean }).changed).toBe(true)
 
-      // The overlay grant above stands — the glue (with the plane ref
-      // FILLED) must beat the template allow with the persisted deny.
+      // The overlay grant above stands — the glue (with the SAME overlay port
+      // wired into the centre) must beat the compiled allow with the persisted
+      // deny.
       const denied = await driveOnce(chain, 'e3-call-deny', targetKey)
       expect(
         denied.nextCalls,
         `the glue executed despite the persisted overlay deny (decision: ${JSON.stringify(denied)})`,
       ).toBe(0)
       expect(denied.kind).toBe('deny')
-      expect(String(denied.reason)).toContain('permission denied')
+      // The port's OWN contract vocabulary (ADM-45): the overlay refusal is a typed code, not prose.
+      expect(String(denied.reason)).toContain('ADMISSION_OVERLAY_DENY')
       // The deny is the MERGED overlay answer (the explanation names the
       // plane), not the static lane answering for itself.
       expect(String(denied.reason).toLowerCase()).toContain('overlay')
