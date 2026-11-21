@@ -1057,3 +1057,37 @@ test('ADM-42 — a native module specifier is judged before it is imported', asy
     assert.throws(() => assertHostModuleSpecifier(bad), /needs a specifier|refusing to import/u, `must refuse ${JSON.stringify(bad)}`)
   }
 })
+
+test('ADM-43 — the record names the MEMBER and the session, not one value in both fields', async () => {
+  // `agentId` carried the session id in the product wiring, so a record could not answer "which member"
+  // after the session was gone - and a fact that puts the host's identity where the member's belongs
+  // cannot be joined to a member registry. Two fields, both recorded.
+  const { bindingFromCompiledMember } = await import('../src/plugin/vnext/centre-install.mjs')
+  const member = {
+    identity: { instanceId: 'member-7', instanceGeneration: 3, blueprintRevision: 'r' },
+    templateId: 'worker',
+    policy: { read: lane(['/a']), write: lane(['/a']), network: 'deny', revision: 'gen-3' },
+  }
+  const built = bindingFromCompiledMember({ member, agentId: 'member-7', sessionId: 'session-9', workspaceRoot: '/a', owner: 'root' })
+  assert.equal(built.instanceId, 'member-7', 'the member identity comes from the compiled identity')
+  assert.equal(built.sessionId, 'session-9')
+  const facts = invocationFactsOf({
+    binding: built,
+    toolName: 'read',
+    callId: 'c-1',
+    arguments: { file_path: '/a/x' },
+    admission: { kind: 'allow' },
+  })
+  assert.equal(facts.instanceId, 'member-7')
+  assert.equal(facts.sessionId, 'session-9')
+  assert.equal(facts.agentId, 'member-7', 'the agent field names the member, not the session')
+  // A binding with no member (a diagnostic context) omits the field rather than inventing one.
+  const bare = invocationFactsOf({
+    binding: { ...built, instanceId: undefined },
+    toolName: 'read',
+    callId: 'c-2',
+    arguments: { file_path: '/a/x' },
+    admission: { kind: 'allow' },
+  })
+  assert.equal('instanceId' in bare, false, 'no member, no member field')
+})

@@ -41,7 +41,7 @@ function requireGeneration (identity, policy, member) {
   return generation
 }
 
-export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner }) {
+export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner, instanceId }) {
   if (member === undefined || member === null) throw new TypeError('centre-install: a member binding needs the compiled member')
   const policy = member.policy?.value ?? member.policy
   if (policy === undefined || policy === null || typeof policy !== 'object') {
@@ -73,6 +73,7 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
     // No default generation. A binding that cannot name the generation it was compiled for cannot be
     // compared against a later one at the recheck, so `0` would make every revocation look like a match.
     instanceGeneration: requireGeneration(identity, policy, member),
+    ...(instanceId !== undefined ? { instanceId: String(instanceId) } : identity.instanceId === undefined ? {} : { instanceId: String(identity.instanceId) }),
     read: policy.read,
     write: policy.write,
     ...(policy.network === undefined ? {} : { network: policy.network.access }),

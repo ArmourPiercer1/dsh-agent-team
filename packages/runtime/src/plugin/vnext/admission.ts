@@ -146,6 +146,12 @@ const DEFAULTED_LOCATORS: Readonly<Record<string, 'workspaceRoot'>> = Object.fre
 export interface Binding {
   /** The runtime Agent this binding is for. The object itself is the key; never a session id. */
   readonly agentId: string
+  /**
+   * The MEMBER this binding was compiled for. Separate from `agentId` because they are separate things:
+   * the host knows the agent by its session, the Team knows the member by its instance id, and a record
+   * that carries one value in both fields cannot answer "which member" after the session is gone.
+   */
+  readonly instanceId?: string
   readonly sessionId: string
   readonly instanceGeneration: number
   /** The compiled lanes. Never recomputed here; `member-io-policy` produced them. */
@@ -210,6 +216,8 @@ export type Admission =
 export interface InvocationAuthorityFacts {
   readonly callId: string
   readonly agentId: string
+  /** The member instance when the binding names one; absent for a binding with no member. */
+  readonly instanceId?: string
   readonly sessionId: string
   readonly instanceGeneration: number
   readonly toolName: string
@@ -380,6 +388,7 @@ export function invocationFactsOf (input: {
   return Object.freeze({
     callId,
     agentId: binding?.agentId ?? '',
+    ...(binding?.instanceId === undefined ? {} : { instanceId: binding.instanceId }),
     sessionId: binding?.sessionId ?? '',
     instanceGeneration: binding?.instanceGeneration ?? 0,
     toolName,
