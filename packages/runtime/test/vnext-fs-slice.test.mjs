@@ -59,7 +59,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once' }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -77,6 +77,23 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   await root.plugin(ToolRuntime)
   // The composition's provider: what a member would resolve if nothing confined it.
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
+  // RUNG 4. The search module injects `subprocess` and `spill` (and `systemPrompt`, already here),
+  // so those two providers are mounted only when the world is asking for the search family. Loading
+  // them always would make every other arm depend on a spawn service it never uses.
+  let searchModules
+  if (search) {
+    const { createRequire } = await import('node:module')
+    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
+    // The subprocess provider is not a direct dependency of packages/runtime; it resolves from the
+    // search module's own scope, which is the package that declares it.
+    const searchRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search/package.json'))
+    const LocalSubprocessRuntime = (await import(pathToFileURL(searchRequire.resolve('@deepseek-ai/dsh-subprocess-local')).href)).default
+    const LocalSpillStore = (await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-spill-local')).href)).default
+    const toolFsSearch = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search')).href)
+    await root.plugin(LocalSubprocessRuntime)
+    await root.plugin(LocalSpillStore, { root: join(dir, 'spill'), cleanupPeriodDays: 1 })
+    searchModules = toolFsSearch
+  }
   // The two states of the observation policy. The product default in A1/B is OFF, which in this
   // host means "the plugin is not mounted" - the policy has no config switch, so absence IS the
   // off state and the two arms differ by exactly this plugin.
@@ -102,6 +119,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   const fsInstances = []
   let realm
   let installedModules
+  let mountRefusal
   if (mountRealm) {
     const InstrumentedFs = instrumentedFileSystemClass(LocalFileSystem, fsInstances)
     realm = await row.mountMemberA5sfRealm({
@@ -138,16 +156,24 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       },
     })
     assert.notEqual(realm, undefined, 'the configured row must mount a realm')
-    const specs = hostNativeSpecs([{
-      url: '@deepseek-ai/dsh-tool-fs',
+    const primary = { url: '@deepseek-ai/dsh-tool-fs',
       module: nativeToolModules,
       // `read_image` is deliberately NOT declared: the pinned tool-fs registers it from a
       // deferred child that injects `attachments`, which this minimal world does not mount, so
       // the name is an ABSENT OPTIONAL CAPABILITY (mount.ts settle rule) rather than a missing
       // mount. Declaring it here would ask the lane to prove something this world cannot provide.
       expectedTools: ['read', 'write', 'edit'],
-    }])
-    installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
+    }
+    const specs = hostNativeSpecs(search
+      ? [primary, { url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'] }]
+      : [primary])
+    try {
+      installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
+    } catch (error) {
+      // A composition refusal is a RESULT this world reports, not a crash: the arm below asserts it.
+      if (!search) throw error
+      mountRefusal = error
+    }
   }
 
   // THE ADMISSION POINT, installed on the agent scope exactly as product wiring will install it.
@@ -246,6 +272,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     resolvedRead: root.get('tools').get('read', agentKey),
     resolvedDefinitions: Object.fromEntries(['read', 'write', 'edit'].map((name) => [name, root.get('tools').get(name, agentKey)])),
     realm,
+    mountRefusal,
     fsInstances,
     dispatch,
     async dispose () {
@@ -733,6 +760,56 @@ test('SLICE-25 — crash recovery across a REAL process boundary: a child writes
   assert.equal(reopened.readAll().filter((record) => record.kind === 'execution').length, 1)
   // ...and the recovered process still cannot admit it a second time.
   assert.throws(() => reopened.recordAdmission({ callId: 'crash-1', decision: 'allow' }), (error) => error.code === 'LEDGER_REPLAY')
+})
+
+test('SLICE-26 — edit: inside the ceiling it rewrites through the member provider, and the file really changes', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'edit-inside'), admission: 'bound' })
+  try {
+    // The observation policy is OFF in this world (A1/B default), so an edit does not need a prior
+    // read. That is the documented default, not an accident of this arm.
+    const result = await world.dispatch('edit', { file_path: world.insideFile, old_string: 'alpha beta', new_string: 'alpha gamma' }, 'edit-1')
+    assert.equal(result.isError, false, `an in-ceiling edit must succeed: ${result.text}`)
+    assert.equal(readFileSync(world.insideFile, 'utf8').trim(), 'alpha gamma', 'the file on disk must carry the edit')
+    const member = world.realm.installation.members[0].fs
+    assert.equal(member.calls.writeText + member.calls.editText > 0, true, 'the edit must have gone through the member provider')
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].axis, 'fs.write', 'edit is a WRITE tool: it must not be judged on the read lane')
+    assert.equal(world.executions()[0].outcome, 'completed')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-27 — edit: outside the ceiling it is refused before the provider is reached', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'edit-outside'), admission: 'bound' })
+  try {
+    const target = join(world.outside, 'secret.txt')
+    writeFileSync(target, 'do not touch\n')
+    const result = await world.dispatch('edit', { file_path: target, old_string: 'do not', new_string: 'do' }, 'edit-out')
+    assert.equal(result.isError, true, `an out-of-ceiling edit must fail: ${result.text}`)
+    assert.equal(readFileSync(target, 'utf8').trim(), 'do not touch', 'the refused edit must not have changed the file')
+    const member = world.realm.installation.members[0].fs
+    assert.equal(member.calls.writeText + member.calls.editText, 0, 'the member provider must not have been asked to write')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-28 — rung 4 is refused at composition time, by the product, for a real reason', async () => {
+  // The search family injects `subprocess`. The realm mounts a confined `fs` face and nothing else,
+  // so mounting the module would let it resolve the INHERITED, unconfined base subprocess service.
+  // `team-services/mount.ts` refuses that composition. This arm pins the refusal, because the
+  // alternative - a lane that "just mounts it" - is exactly the unconfined-provider defect the whole
+  // architecture exists to prevent.
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'search'), admission: 'bound', search: true })
+  try {
+    assert.notEqual(world.mountRefusal, undefined, 'mounting a process consumer into an fs-only realm must not succeed')
+    assert.equal(world.mountRefusal.code, 'SUBPROCESS_UNCONFINED_REALM')
+    assert.match(String(world.mountRefusal.message), /no confined subprocess face/u, 'the refusal must name the missing face, not just say no')
+  } finally {
+    await world.dispose()
+  }
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
