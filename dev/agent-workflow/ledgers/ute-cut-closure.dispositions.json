@@ -1,0 +1,34 @@
+{
+  "schema": "ute-cut-closure-dispositions/1",
+  "note": "One entry per SURVIVING production file that resolves into the A0 delete set. rewire = edit at the cut; replace = the file is rewritten with the replaced entry; delete-with-group = it retires with its subject. A missing entry is a gate failure, so \"handle it during the cut\" is not an answer for a file nobody examined.",
+  "entries": {
+    "packages/runtime/operation-permission/canonical-operation.ts": {
+      "disposition": "rewire",
+      "note": "Imports bash-normalizer / read-normalizer from the retired process and fs families. Those normalizers are text normalization, not execution: they move into the kept algebra at the cut, so the permission result for a bash/read operation is unchanged."
+    },
+    "packages/runtime/operation-permission/index.ts": {
+      "disposition": "rewire",
+      "note": "Re-exports pa-control-bridge and pre-execute-adapter. The two re-export lines are removed with the modules; the algebra surface stays."
+    },
+    "packages/runtime/src/plugin/host.ts": {
+      "disposition": "replace",
+      "note": "Holds the lazy accessors that reach the old assembly (agent-bindings/root). Replaced by the new entry host surface in the A1 swap."
+    },
+    "packages/runtime/src/plugin/types.ts": {
+      "disposition": "replace",
+      "note": "Re-declares the assembly types of the replaced entries; rewritten with them."
+    },
+    "packages/runtime/src/plugin/live/center-shadow-row.mjs": {
+      "disposition": "replace",
+      "note": "A shadow row over the old assembly; the new binding assembler is its replacement, and it exists only to compensate for the preset-scope resolution problem the provider lane now fixes."
+    },
+    "packages/runtime/src/plugin/live/a5sf-realm-row.mjs": {
+      "disposition": "replace",
+      "note": "Reaches five confined shadows through `new URL(..., import.meta.url)` — a dynamic reference a static scan cannot see. It is the realm mount itself: the new provider-lane realm replaces it wholesale."
+    },
+    "packages/tools/test/u7f-ask-port-agent-binding.test.ts": {
+      "disposition": "delete-with-group",
+      "note": "Exercise of the retired ask port lane; retired with its subject."
+    }
+  }
+}

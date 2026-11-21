@@ -1,12 +1,15 @@
 {
   "schema": "ute-cut-closure/1",
-  "derivedFrom": "resolved module specifiers across tracked files vs the A0 delete set",
+  "derivedFrom": "textual specifier resolution vs the FROZEN A0 delete set",
+  "frozenFrom": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
   "deletedCount": 148,
   "groups": [
     {
-      "group": "packages/runtime/test/",
-      "count": 168,
+      "group": "exempt",
+      "count": 179,
       "referrers": [
+        "dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+        "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts",
         "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
         "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
         "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
@@ -102,7 +105,12 @@
         "packages/runtime/test/u74a-jobs-producer.test.ts",
         "packages/runtime/test/u7f-inspect-family-c1.test.ts",
         "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
-        "packages/runtime/test/u7f-web-c1.test.ts"
+        "packages/runtime/test/u7f-web-c1.test.ts",
+        "packages/tools/test/u7f-ask-port-agent-binding.test.ts",
+        "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
+        "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
+        "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
+        "tests/u6-arc-a-probe-family/src/probe-assembly.mjs"
       ]
     },
     {
@@ -115,37 +123,6 @@
         "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
         "packages/runtime/src/plugin/live/center-shadow-row.mjs",
         "packages/runtime/src/plugin/types.ts"
-      ]
-    },
-    {
-      "group": "tests/poc-web-native-reuse/",
-      "count": 5,
-      "referrers": [
-        "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
-        "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
-        "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts"
-      ]
-    },
-    {
-      "group": "dev/agent-workflow/evidence/",
-      "count": 3,
-      "referrers": [
-        "dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
-        "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts"
-      ]
-    },
-    {
-      "group": "packages/tools/test/",
-      "count": 2,
-      "referrers": [
-        "packages/tools/test/u7f-ask-port-agent-binding.test.ts"
-      ]
-    },
-    {
-      "group": "tests/u6-arc-a-probe-family/",
-      "count": 1,
-      "referrers": [
-        "tests/u6-arc-a-probe-family/src/probe-assembly.mjs"
       ]
     }
   ],
@@ -388,5 +365,9 @@
       "source": "packages/runtime/src/plugin/root.ts",
       "artifact": "packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map"
     }
-  ]
+  ],
+  "cut": {
+    "state": "pending",
+    "retiredSourcesOnDisk": 148
+  }
 }

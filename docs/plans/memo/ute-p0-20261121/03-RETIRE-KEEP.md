@@ -51,6 +51,10 @@ each change is the deletion's own consequence:
 | `packages/runtime/operation-permission/canonical-operation.ts` | take the bash/read normalizers in-tree | they are text normalization, not execution; without the move, the kept algebra imports a deleted family |
 | `packages/runtime/src/plugin/{host,types}.ts` | re-point at the new entries | they are the assembly surface being replaced, not an old route |
 
+Those are the production half. The 16 tests of kept capabilities that import a replaced entry
+(§2c) are cut edits too: they move to the new entry, and a deletion of any of them would be a
+capability loss disguised as a cleanup.
+
 ## 2b. Control's three contracts (A0 review P0-3)
 
 Deleting the PA registry and the bridge is correct, but **`ExecutionFact` alone cannot
@@ -71,12 +75,28 @@ that requires the old PA kernel or registry to survive.
 ## 2c. Closure — an inventory is not a dependency closure
 
 `git ls-files` over module roots cannot see a dynamic `new URL('./x.mjs', import.meta.url)`,
-a re-export, or a committed build artifact. `scripts/ute-cut-closure.mjs` computes all three
-against the delete set: **192 references** (13 from surviving production files across 7
-referrers, 168 from retired test suites, 5 POC, 3 evidence, 3 elsewhere) plus **52 committed
-dist artifacts** that must be deleted with their sources. Every production referrer carries a
-declared disposition (`rewire` | `replace` | `delete-with-group`) and the check reds if one is
-missing.
+a re-export, a side-effect import, or a committed build artifact. `scripts/ute-cut-closure.mjs`
+computes all four against the delete set — and it resolves **against the frozen snapshot, not
+against the disk**, because a check that resolves with `existsSync` loses a dangling reference
+exactly when the cut succeeds.
+
+Measured: **192 references** from 109 files, plus **52 committed dist artifacts**.
+
+| referrer class | references | files | registration |
+| --- | --- | --- | --- |
+| production (`packages/**` sources) | 13 | 6 | a per-file disposition in `ute-cut-closure.dispositions.json` (`rewire` / `replace` / `delete-with-group` + a note) |
+| tests whose subject retires | 156 | 85 | per-file exemption, `subject: retired-module` |
+| tests of a **kept** capability that import a **replaced** entry | 21 | 16 | per-file exemption, `subject: replaced-entry` — these must be **re-pointed at the new entry in A1, never deleted** |
+| historical evidence records | 2 | 2 | per-file exemption, `subject: evidence-record` (executed by no CI leg) |
+
+No directory is exempt. A new referrer must either be rewired or registered in review; an
+entry that stops referring is `UTE_CLOSURE_STALE_EXEMPTION`; a registered but unlisted
+referrer is `UTE_CLOSURE_UNREGISTERED_EXEMPTION`.
+
+**The A1 cut is complete only when four zeros hold** (`05 §3.2b`): no retired source on disk,
+no surviving production reference into the frozen set, no committed dist artifact for a
+retired source, no booked name with two declarants. The last is a static pre-filter — the
+binding assembler's refusal at B is authoritative.
 
 ## 2. Replaced — 2 files, 12,381 lines
 

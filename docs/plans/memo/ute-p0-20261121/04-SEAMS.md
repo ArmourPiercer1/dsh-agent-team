@@ -17,9 +17,16 @@
 | `PtcExecutor` | `core/tool-executor-ptc/src/index.ts` | the PTC executor — **no `ctx.*` provider call**, so its confinement is OS/worker-level, not provider-level |
 | `ctx.fs` / `ctx.web` / `ctx.shell` / `ctx.terminals` / `ctx.subprocess` / `ctx.userQuestions` / `ctx.goals` / `ctx.sessionProjections` | host packages (counts in `02-SERVING-CENSUS.md §2`) | the faces Team must serve from the Member realm |
 
-`CORE PATCH BUDGET = 0` still holds: this list is what the public surface already
-provides. Anything the centre needs that is **not** on this list is a
-`CORE_SEAM_BLOCKER` — written up and stopped, never patched into the host.
+`CORE PATCH BUDGET = 0` remains the default: this list is what the public surface already
+provides, and a missing seam is a `CORE_SEAM_BLOCKER` — written up, not worked around by
+rebuilding an execution system.
+
+**One narrow exception, owner-ruled 2026-11-21:** if a public extension point is genuinely
+insufficient, a **separately approved, minimal host infrastructure patch** is allowed — a
+Scope, Executor or Provider extension point. What stays absolutely forbidden: copying or
+modifying a native tool's business definition, and vendoring a modified host package. A patch
+big enough to require touching tool semantics is no longer an infrastructure patch, and the
+`CORE_SEAM_BLOCKER` stands.
 
 ## 2. What Team must supply (the centre, in one table)
 
@@ -28,7 +35,7 @@ provides. Anything the centre needs that is **not** on this list is a
 | **Binding assembler** | one verified binding per `Scope × ToolName × Generation`; a name with two declarants is refused | UTE-01, UTE-03 |
 | **Provider lanes** (`fs`, `web`, `shell`, `terminals`, `subprocess`, `userQuestions`, `goals`, `sessionProjections`) | enforcement lives in the service the host tool already calls; the lane is a *decision in front of the host provider*, delegating to `super` | UTE-06, UTE-08, UTE-12 |
 | **Face completeness** | a tool whose required faces are not all bound is refused **whole**, not partially confined | UTE-07 |
-| **Admission** (kept from the old route: guard, builtin-deny, selector) | the existed Alpha.4/6 authority wraps native calls through `native-tool-admission`'s publication slot | UTE-13 |
+| **Admission** (kept: guard, builtin-deny, selector) | the Alpha.4/6 authority wraps **native** calls at the binding, through the centre's own admission slot. The old `native-tool-admission` publication slot is deleted with the plane; what survives is its one hard-won property — address by the runtime Agent object, never by scope | UTE-13 |
 | **`InvocationAuthorityFacts`** (pre-execution contract) | agent, definition identity, requested operation + parameters, bound Blueprint, policy generation, owner — the things Control needs **before** it decides | UTE-13, approval revalidation |
 | **`DurableAdmission`** | the recorded permission to enter execution, written before the body runs | UTE-14, UTE-15 |
 | **`ExecutionFact`** (settlement, existing route) | one `ExecutionId`, one canonical fact; `unknown` allowed; `tools/result` emit is not a durable commit | UTE-15, UTE-16, UTE-17 |
@@ -62,8 +69,9 @@ work is P1–P3, which is the binding assembler plus the provider lanes.
 
 ## 4. Why the centre can be graded before any family is bound
 
-Because every obligation above is a property of the *binding and settlement*, and the probe
-family supplies the only thing a binding needs: a name, a schema, and an executor. The
+Because every obligation above is a property of the *binding and settlement*, and one real
+native tool supplies everything a binding needs: a name, a schema, and a provider-backed
+executor. The
 `ctx.*` faces can be served by test doubles that record what was asked of them — and a
 recording double is exactly what makes the negative controls real (the double can prove
 "the tool asked the host provider for this path" instead of "the tool returned this text").

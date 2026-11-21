@@ -76,9 +76,9 @@ instead of a leap.
 ```
 node scripts/ute-p0-assets.mjs --check     # coherence + frozen snapshot + cut state
 node scripts/ute-p0-assets.mjs --write     # regenerate ledger + 01-ASSET-INVENTORY.md
-node scripts/ute-cut-closure.mjs --check   # references into the delete set, dist parity
+node scripts/ute-cut-closure.mjs --check   # refs vs frozen set, per-file registries, dist parity
 node --test scripts/ute-p0-assets.test.mjs   # 21 arms, each a mutation that must red
-node --test scripts/ute-cut-closure.test.mjs # 8 arms, incl. the dynamic-URL control
+node --test scripts/ute-cut-closure.test.mjs # 13 arms, incl. the delete-then-detect control
 ```
 
 The ledger is `dev/agent-workflow/ledgers/ute-p0-assets.json`, **generated** by

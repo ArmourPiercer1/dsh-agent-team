@@ -1,9 +1,9 @@
 # 05 — Implementation plan A0 → D (frozen 2026-11-21)
 
-> This is the plan the owner approved on 2026-11-21, with one correction folded in:
-> **`read` is graded before `write`**, because the host's own write path requires a prior
-> observed read. §3.1 gives the mechanism; §3.2 turns it into a centre obligation the
-> previous draft had missed.
+> This is the plan the owner approved on 2026-11-21. It carries one retraction: **`read` is
+> graded before `write` as a TEST ORDER, not because the host requires a prior read** — the
+> shipped composition does not (see §3.1, and §3.2 for the obligation that applies only if the
+> guard is enabled, which A1 keeps off).
 >
 > [`03-RETIRE-KEEP.md`](./03-RETIRE-KEEP.md) says **what** goes; this file says **in what
 > order, with what gates, and what may not be true while it happens**.
@@ -42,10 +42,12 @@ UTE-P0-ASSETS pass modules=37 files=180 lines=69512
 | `tools/src` (admission) · `control` · `alpha6` · permission algebra | 4 | 32 | 20,609 | **keep** |
 
 **Not yet a closure.** This table is an inventory. The closure is computed separately
-(`scripts/ute-cut-closure.mjs`): **192 references** into the delete set — 13 from 7 surviving
-production files (each with a declared disposition), 168 from retired test suites, 5 POC, 3
-evidence — plus **52 committed dist artifacts** that must be deleted with their sources. Three
-of those production references are invisible to any `git ls-files` inventory: a dynamic
+(`scripts/ute-cut-closure.mjs`): **192 references** from 109 files — 13 from 6 surviving
+production files (each with a declared disposition), 156 from tests whose subject retires, 21
+from 16 tests of **kept** capabilities that import a **replaced** entry (they must be re-pointed
+in A1, not deleted), 2 historical evidence records — plus **52 committed dist artifacts** that
+must be deleted with their sources. Three of those production references are invisible to any
+`git ls-files` inventory: a dynamic
 `new URL('./confined-*.mjs', import.meta.url)` in `a5sf-realm-row.mjs`, the
 `pre-execute-adapter` re-export in `operation-permission/index.ts`, and the dist placements in
 `scripts/dist-placements/`.
@@ -152,13 +154,30 @@ shadows derived their own execution context, so their observation state could ne
 the host row's. Red proof: the pair with a fresh actor, a per-call provider, or a detached
 event scope must fail; the pair as shipped must succeed.
 
+### 3.2b Is A1's cut complete? (the four-zero condition)
+
+`UTE-CUT-CLOSURE` must not merely agree with its own committed report. In the `cut` state it
+asserts four zeros, computed against the **frozen A0 snapshot** (so a deleted target is still
+recognised as a target, not as "not found"):
+
+```
+A1CutPass = RetiredSources == 0            # nothing from the delete set is still on disk
+          ∧ SurvivingProductionRefs == 0   # no surviving production file resolves into it
+          ∧ RetiredDistArtifacts == 0      # no committed dist artifact for a retired source
+          ∧ DuplicateDeclarants == 0       # no booked name has two declarants
+```
+
+The first three are static and exact. The fourth is a static pre-filter: the authoritative
+check is the binding assembler's own refusal at B, but A1 has no excuse for shipping a realm
+where a booked name is declared twice.
+
 ### 3.3 The B ladder (each rung is a mechanism, not a tool)
 
 | rung | native tool | mechanism proven | red proofs |
 | --- | --- | --- | --- |
 | 1 | `read` | the read axis goes through the confined `ctx.fs`; an unauthorised read is refused **at the face**, before the underlying provider | P1, P2, P3 |
 | 2 | `read` → `write` | mutation admitted, denied, or escalated by real Control; **and**, when the guard is enabled, observation identity + version survival across the lane (`E-obs`) with its negative arm | P1, P4 |
-| 3 | `grep` | subprocess spawn through `ctx.subprocess` / `ctx.shell`; the child is confined | P2, P3 |
+| 3 | `grep` | subprocess spawn through **`ctx.subprocess` only** (rc.5: spawn-backed, never `ctx.shell`); the child is confined | P2, P3 |
 | 4 | `web_fetch` | network allow/deny with zero egress when denied | P1, P3 |
 | 5 | native persistent `bash` | PTY generation, profile, Stop; the OS boundary is pinned at creation | P4, P5 |
 | 6 | `run_code` | nested admission inside PTC (no `ctx.*` face — separate OS-domain route) | P1, P4 |
@@ -196,7 +215,7 @@ The window branch (`vnext/a1-cut`) has its own required set:
 | gate | status inside the window |
 | --- | --- |
 | `UTE-P0-ASSETS` (coherence + frozen snapshot + **cut state**) | **green** — and it cannot be the naive "every file exists" check: see below |
-| `UTE-CUT-CLOSURE` (references into the delete set) | **green** — every production referrer disposed, no residual dist artifact |
+| `UTE-CUT-CLOSURE` (references into the delete set) | **green** — every production referrer disposed, every test referrer registered **by file**, and at `cut` time the four zeros of §3.2b |
 | new-centre contract tests (P1–P5 with the probe fixtures) | **green** |
 | native-probe ladder rungs 1–2 | **green** before A1 merges |
 | `docs-sync`, append-only log, CI manifest/workflow parity, test catalog | **green** |
@@ -212,8 +231,11 @@ with `existsSync` — a correct deletion therefore failed its own mandatory gate
 - `--check` also names the **cut state**: `pending` (every listed file must exist),
   `partial` (**a named RED** — a half-cut realm is a two-declarant realm), `cut` (every
   deletable file must be **absent**, every kept file present).
-- `UTE-CUT-CLOSURE` supplies what the inventory cannot: resolved specifiers, dynamic
-  `new URL` references, re-exports, and dist parity.
+- `UTE-CUT-CLOSURE` supplies what the inventory cannot: specifiers resolved **textually
+  against the frozen snapshot** (so a dangling reference is still visible after its target is
+  deleted), dynamic `new URL` references, re-exports, side-effect imports, dist parity, and the
+  per-file exemption/disposition registries. Its own negative control deletes a module in a
+  throwaway git repo, keeps the import, and requires the check to fail.
 
 The red list is a committed file with one rule: **it may only shrink**. A test that is
 deleted because its subject was deleted must be listed by name; a test that is skipped

@@ -9798,3 +9798,33 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
 上一 head 的 `pr-settlement-gate` 因结算评论停留在旧 head 失败、`ci-required` 因 `ci-census` skipped 失败。本轮改动后重新推送并**按新 head 重发结算**；hosted 聚合在重跑前一律记为 UNKNOWN，不记为绿。
 
 `UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 unclassified=13 distResiduals=52 findings=0` · `DSH-TEST-CATALOG tests=894 refused=0` · `EB3-CI-REQUIRED pass workflows=10` · `docs-sync findings=0 blocking=0`。
+
+## 2026-11-21（第三轮）— 依第二轮 review 做有限修订：观测守卫 A1 默认关、C14 拆分、闭包检查器补齐"删除后仍能报"、按文件登记豁免
+
+第二轮 review 结论：四项 P0 在设计层面成立，A0 接近可冻结；但闭包检查器仍有验收漏洞，且两个产品决策须明确签字。裁决照办，不做新一轮架构审计。
+
+### 决策一（照办）：FS 观测守卫 A1/B 默认关闭
+
+`fs-observation-policy` 保持出厂 `disabled: true`。理由与 review 一致且写进 `06`：它守的是"是否观察过当前版本"（盲写/过期写），不是 UTE 的"是否有权写这个路径"；A1 一边说要保留原生语义一边默认开它，是自相矛盾；开它还会把 `exec.agent.session` + event scope 这套跨调用状态塞进阶段 B 的证明负担。C/D 两种组合都测（未观察写：开启时拒、关闭时过；读后版本变更；跨 Agent 隔离；冷恢复后观察失效）。若将来产品要开，开的是 DSH 原生策略，Team 不自建观测守卫。**验收矩阵措辞改为"既有文件写入不要求先前观察"，不得写成"写入不设防"**（路径上界、Control 准入、OS 沙箱全部仍在）——该矩阵属当期计划，主 Agent 负责改。
+
+### 决策二（照办并纠正）：C14 只删实现、不删安全语义；C17/C18 废弃
+
+`06` 把原 C14 拆成 **C14（drop：旧逐族工具实现、重复的策略计算、历史等价要求——pwsh parity、web 逐跳 redirect ownership）+ C14b（preserve：统一中心的路径读写上界、网络 allow/deny、Control 权威、Stop）**。C17 写明废弃的是 **Team 自己的 `exit_plan_mode` 工具**，不动 DSH Plan Mode，也不动 `get_goal/create_goal/update_goal`。补"阶段性延后 ≠ 授权发布一个静默缺 C1–C13/C15/C16 的产品"，并给 C6/C7 单独加约束：Alpha.6 未接入期间相应审批与自动唤醒必须**显式禁用**，不得静默回退到非裁决的 Leader 路径；冷启动手动恢复原则不变。另纠正 review 与我上一版的偏差：**13 个 `team_*` 工具的来源是保留模块 `packages/tools/src/tools.ts`（实测 15 个名字），不是被退役的 plane**——上一版把功劳记给了 plane，写错了。
+
+### P0（照办）：闭包检查器两处验收漏洞
+
+1. **`existsSync` 解析让悬空引用在删除后消失**——这是致命的：删掉 `confined-fs-tool.mjs` 后，存活文件里的 `new URL('./confined-fs-tool.mjs', …)` 会解析成 null，检查器反而变绿。改为**文本候选解析 + 对冻结快照（A0 attestation）求交**：目标已删仍是目标。顺带补上 side-effect import（`import 'x'`）这一形式。
+2. **`--check` 只比对报告、不要求归零**——现在 `cut` 状态必须满足四零：`retiredSources=0`、`survivingProductionRefs=0`、`retiredDistArtifacts=0`、`duplicateDeclarants=0`；`partial` 是具名红。第四项说明为静态预筛（权威判定在 B 的 binding assembler），且只统计 production（测试夹具与证据里出现的书名不算声明者，否则该臂永久红、失去意义）。
+3. **新增真正的删除后负控**（`CLOSURE-9/10/11`，在临时 git 仓库里跑真实 CLI）：先 `--write` 得绿 → 删一个 → 必须 `PARTIAL` 红 → 全删但保留引用 → 必须 `PRODUCTION_REF` 红；另有 dist 残留红、未登记测试红。
+
+### P1（照办）：豁免从目录级改为文件级
+
+`TEST_PREFIXES` 整目录豁免删除，改为两张**已提交登记表**：`ute-cut-closure.allow.json`（逐文件：`subject` = `retired-module` | `replaced-entry` | `evidence-record` + 理由）、`ute-cut-closure.dispositions.json`（逐文件：`rewire` | `replace` | `delete-with-group` + 说明）。未登记即红、登记后不再引用即红、处置说明过短即红。实测 192 处引用 / 109 个文件：production 13 处（6 文件）、随主题退役的测试 156 处（85 文件）、**属于保留能力但 import 被替换入口的测试 21 处（16 文件，必须在 A1 改指向、不得删除）**、历史证据 2 处。dist 残留 52。
+
+### 文档矛盾清理（照办）
+
+`05` 开头改成"`read` 先行是测试顺序，不是宿主强制"（与 §3.1 一致）；`05` 阶梯里 grep 的面集改为 **`ctx.subprocess` only**；`04` 的 Admission 行删掉将被删除的 `native-tool-admission` publication slot，改为"保留其唯一硬性质：按 runtime Agent 对象寻址"；`04 §4` 的 "probe family supplies…" 改为"一个真实原生工具提供 binding 所需的一切"；`04` 的 `CORE PATCH BUDGET = 0` 增加业主裁决的**窄例外**：公共扩展点确实不足时，允许经单独批准的极小宿主基础设施补丁（Scope/Executor/Provider 扩展点），但复制或修改原生工具业务定义、vendor 改过的宿主包仍在禁止之列。
+
+### 门禁
+
+`UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 prodRefs=13 distResiduals=52 cut=pending(148/148) dupNames=0 findings=0` · 变异臂 21（账本）+ 13（闭包，含 3 条在临时 git 仓库里运行的删除后负控）。hosted CI 在重跑前记 UNKNOWN，不宣称绿。
