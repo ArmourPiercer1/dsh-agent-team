@@ -498,8 +498,8 @@ its ancestor, and the ancestor here is the composition provider with no confinem
 | 3 | `edit` | yes (mounted) | — | no arm yet; the definition is mounted but untested |
 | 3 | `edit` | yes | in-ceiling edit lands through the member provider (axis `fs.write`), out-of-ceiling refused before the provider | — |
 | 4 | `grep`/`glob` | **YES** (since the confined subprocess face landed) | a real in-ceiling `grep` returns ripgrep matches through the MEMBER scope's confined `subprocess`, and an out-of-ceiling `grep` is refused by the centre's `fs.read` lane BEFORE any spawn (the error is `LANE_DENY`, not a ripgrep failure), with the execution fact recorded as `admission-refusal` | `glob` is mounted but has no arm of its own |
-| 5 | `web_fetch` | no | the NETWORK axis: unset is not allow, deny is deny, allow is allow, and the fs lanes say nothing about it | no positive control (no `web` provider) |
-| 6 | `bash` / `run_code` | no | EXPLICIT `ADMISSION_AXIS_UNSUPPORTED`: the compiled policy has no subprocess lane, so the call is refused rather than admitted | no positive control, and no subprocess lane to enforce |
+| 5 | `web_fetch` | **YES** | with the network axis ALLOW: the tool runs on the member scope's confined web face and the composition transport returns the body (real HTTP to a test endpoint); with the axis DENY the same call is refused and the transport is called **zero** times | nothing about real public egress: the destination is a loopback test endpoint the composition declares, and that is the SSRF leg's own exemption, not a widening |
+| 6 | `bash` / `run_code` | no | EXPLICIT `ADMISSION_AXIS_UNSUPPORTED`: the compiled policy has no subprocess lane, so the call is refused rather than admitted | no positive control: the `terminals` (PTY) face and the shell module are not wired; `node-pty` IS available in the pinned runtime, so this is wiring, not a missing capability |
 
 `@vscode/ripgrep` IS present in the pinned runtime (pnpm store, 1.18.0), so rung 4 was never blocked by
 a missing binary. It WAS blocked by an architecture gap, and the gap is now closed the way the product
@@ -540,3 +540,17 @@ still NOT proven is that the *centre* routes a MEMBER's tool into this provider 
 The provider is the product's own (`sandbox-provider`, P1-07, documented DORMANT). These arms are the
 first thing that executes it from a test lane, and they are why the answer to "can this host enforce
 anything?" is a measurement instead of an assumption.
+
+### Rung 5 notes (measured, worth keeping)
+
+Three product facts surfaced while wiring `web_fetch`, and each of them is the product behaving
+correctly rather than a test inconvenience:
+
+1. The confined web face needs `effective.network.access` (allow OR deny) plus `provider.fetch`;
+   a face without them is refused as `NETWORK_UNCONFINED_REALM` rather than left on the inherited
+   host `web` service.
+2. The SSRF leg refuses a loopback/private/link-local destination (`WEB_DESTINATION_FORBIDDEN`)
+   BEFORE the transport. The only way through is an EXACT declared test endpoint
+   (`testEndpoints`), which is a composition declaration - a member cannot reach it.
+3. `WebFetchBody`'s text arm is `{kind:'text', content}`; the tool's output validation rejected a
+   `{kind:'text', text}` body as "not lossless JSON". The closed union is the authority.

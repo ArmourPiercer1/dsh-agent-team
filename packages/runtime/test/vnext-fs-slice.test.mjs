@@ -61,7 +61,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -154,6 +154,51 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     }
   }
 
+  // RUNG 5. The confined web face is composition-owned: the transport is this test's provider, and
+  // the lane that guards it is the Member's compiled network axis.
+  let webFace
+  let webModules
+  let webFetchCalls = 0
+  if (web) {
+    const { createRequire } = await import('node:module')
+    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
+    // `dsh-web` is not a direct dependency of packages/runtime; the tool module that consumes it is,
+    // so the base class resolves from that module's own scope.
+    const toolWebRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-web/package.json'))
+    const WebRuntime = (await import(pathToFileURL(toolWebRequire.resolve('@deepseek-ai/dsh-web')).href)).default
+    webModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-web')).href)
+    await root.plugin(WebRuntime)
+    webFace = {
+      effective: {
+        memberIdentity: IDENTITY.memberInstanceId,
+        toolBindingIdentity: 'member-web',
+        invocationId: 'member-web-face',
+        policyRevision: 'rev-vnext-slice',
+        read: lane([inside]),
+        write: lane([inside]),
+        // The point of the arm: the TOOL is mounted either way; the network axis decides.
+        network: Object.freeze({ access: webNetwork }),
+      },
+      provider: {
+        id: 'slice-transport',
+        available: () => true,
+        fetch: async (request) => {
+          webFetchCalls += 1
+          const response = await fetch(request.url)
+          const text = await response.text()
+          // The closed body union's text arm is `{kind:'text', content}` - not `text`. The host's
+          // output validation is what caught the difference.
+          return { url: request.url, statusCode: response.status, body: { kind: 'text', content: text }, truncated: false }
+        },
+      },
+      realmId: IDENTITY.memberInstanceId,
+      bindingId: 'member-web',
+      // PD-30: a loopback destination is refused by the SSRF leg unless the COMPOSITION declares it
+      // as an exact test endpoint. It is a declaration here, never a widening the member can reach.
+      ...(webTestEndpoints === undefined ? {} : { testEndpoints: Object.freeze([...webTestEndpoints]) }),
+    }
+  }
+
   const fsInstances = []
   let realm
   let installedModules
@@ -185,6 +230,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
           }],
           providerClass: InstrumentedFs,
           ...(subprocessFace === undefined ? {} : { subprocess: subprocessFace }),
+          ...(webFace === undefined ? {} : { web: webFace }),
         }),
       }),
       member: {
@@ -203,9 +249,11 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       // mount. Declaring it here would ask the lane to prove something this world cannot provide.
       expectedTools: ['read', 'write', 'edit'],
     }
-    const specs = hostNativeSpecs(search
-      ? [primary, { url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'], config: { sampleOverCapGlobResults: false } }]
-      : [primary])
+    const extra = [
+      ...(search ? [{ url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'], config: { sampleOverCapGlobResults: false } }] : []),
+      ...(web ? [{ url: '@deepseek-ai/dsh-tool-web', module: webModules, expectedTools: ['web_fetch'] }] : []),
+    ]
+    const specs = hostNativeSpecs(extra.length === 0 ? [primary] : [primary, ...extra])
     try {
       installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
     } catch (error) {
@@ -273,6 +321,10 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       policyGeneration: 'rev-vnext-slice',
       blueprintRevision: 'bp-vnext-slice',
       owner: 'team-root-vnext-slice',
+      // The search family's omitted `path` means the member's own root, and the network axis is its
+      // own permission - absent is not allow.
+      workspaceRoot: inside,
+      ...(web ? { network: webNetwork } : {}),
     }
     disposeAdmission = installAdmissionPoint({
       ctx: agent.ctx,
@@ -335,6 +387,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     resolvedDefinitions: Object.fromEntries(['read', 'write', 'edit'].map((name) => [name, root.get('tools').get(name, agentKey)])),
     realm,
     mountRefusal,
+    webFetchCalls: () => webFetchCalls,
     settlementStore,
     settlement,
     fsInstances,
@@ -926,6 +979,43 @@ test('SLICE-30 — a Stop before admission invents no settlement record, and is 
     // what carries the Stop, and that is what this arm asserts.
     assert.equal(world.settlementStore.list().length, 0, 'no settlement record may be invented for a call that never reached admission')
     assert.equal(world.executions()[0].outcome, 'aborted', 'the Stop is still recorded where it happened')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-31 — rung 5: web_fetch with the network axis ON reaches the composition transport', async () => {
+  const { createServer } = await import('node:http')
+  const server = createServer((request, response) => {
+    response.writeHead(200, { 'content-type': 'text/plain' })
+    response.end('NETWORK-BODY-OK')
+  })
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const { port } = server.address()
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'web-on'), admission: 'bound', web: true, webNetwork: 'allow', webTestEndpoints: [`http://127.0.0.1:${port}`] })
+  try {
+    assert.equal(world.mountRefusal, undefined, `the web face must mount: ${world.mountRefusal?.message ?? ''}`)
+    const result = await world.dispatch('web_fetch', { url: `http://127.0.0.1:${port}/doc` }, 'web-on-1')
+    assert.equal(result.isError, false, `an allowed fetch must succeed: ${result.text}`)
+    assert.match(String(result.text), /NETWORK-BODY-OK/u, 'the body must come back through the member scope\'s confined web face')
+    assert.equal(world.webFetchCalls(), 1, 'the transport must be called exactly once')
+    const facts = world.facts()
+    assert.equal(facts[0].axis, 'net.fetch')
+  } finally {
+    await world.dispose()
+    await new Promise((resolve) => server.close(resolve))
+  }
+})
+
+test('SLICE-32 — rung 5 NEGATIVE CONTROL: the same tool with the network axis DENIED never reaches the transport', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'web-off'), admission: 'bound', web: true, webNetwork: 'deny' })
+  try {
+    const result = await world.dispatch('web_fetch', { url: 'http://127.0.0.1:9/doc' }, 'web-off-1')
+    assert.equal(result.isError, true, `a denied fetch must fail: ${result.text}`)
+    assert.equal(world.webFetchCalls(), 0, 'the transport must not be called at all when the network axis denies')
+    // The refusal names the network axis, not a connection error: port 9 would fail to connect, and
+    // the arm must not be able to pass by that accident.
+    assert.equal(/ECONNREFUSED|fetch failed/u.test(String(result.errorMessage)), false, `the refusal must be the lane, not a network accident: ${result.errorMessage}`)
   } finally {
     await world.dispose()
   }
