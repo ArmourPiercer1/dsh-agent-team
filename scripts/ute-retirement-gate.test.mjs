@@ -40,6 +40,25 @@
  *   APPR-1 approval with by/on/record but no reference → UTE_APPROVAL_UNREFERENCED
  *   APPR-2 reference to a 40-hex that does not exist   → UTE_APPROVAL_UNREFERENCED
  *   APPR-3 reference to a commit that is not an ancestor (injected) → same
+ *   APPR-4 a genuine dedicated ute-approval/1 record bound to a real non-root
+ *          ancestor → ALLOWED (the positive arm of the new binding)
+ *   DIFF-1 `differences: []` with no measurement        → UTE_DIFFERENCES_UNDECLARED
+ *   DIFF-1b the same list licensed by a committed exact `SD-VERDICT differences=0`
+ *          line → ALLOWED; a `differences=00` near miss still refuses
+ *   DIFF-2 `blocking: "yes"`                            → UTE_DIFFERENCE_SCHEMA_INVALID
+ *   DIFF-3 `blocking` absent                            → UTE_DIFFERENCE_SCHEMA_INVALID
+ *   DIFF-4 `blocking:false` skips only the approval requirement; other terms
+ *          still decide the family
+ *   FAB-1  the reviewer's exact fabrication (any committed file containing
+ *          "owner" + the root commit) → RECORD_INVALID + UNREFERENCED
+ *   FAB-2a record outside dev/agent-workflow/approvals/ → RECORD_INVALID
+ *   FAB-2b record inside but naming another family/difference → RECORD_INVALID
+ *   FAB-2c reference to the root commit                      → UNREFERENCED
+ *   FAB-2d reference to a non-ancestor commit                → UNREFERENCED
+ *   FAB-2e decision deferred / rejected                      → RECORD_INVALID
+ *   FAB-3  a valid approval document that is untracked       → RECORD_INVALID
+ *   APPROVALS the shipped approvals directory holds ZERO records for the eight
+ *          production families (only README.md + the fixture-scoped `_selftest/`)
  *   OP-1 a declared old-path file absent while not allowed → UTE_OLD_PATH_PARTIALLY_REMOVED
  *   OP-2 the same absence while ALLOWED → no finding (that is retirement)
  *   OP-3 no `oldPath` block → UTE_OLD_PATH_UNDECLARED
@@ -53,7 +72,7 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -77,6 +96,8 @@ function makeFixtureRepo() {
   mkdirSync(join(dir, 'evidence'), { recursive: true })
   mkdirSync(join(dir, 'src'), { recursive: true })
   mkdirSync(join(dir, 'dev', 'agent-workflow', 'ledgers'), { recursive: true })
+  mkdirSync(join(dir, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs'), { recursive: true })
+  mkdirSync(join(dir, 'docs'), { recursive: true })
 
   // The census is the reviewed booking the unit is derived from. The synthetic
   // family has four members on purpose: read/write/edit are easy to cover and
@@ -123,12 +144,63 @@ function makeFixtureRepo() {
   writeFileSync(join(dir, 'evidence', 'nc-no-image.txt'), ['NC-MEMBER read ok', 'NC-MEMBER write ok', 'NC-MEMBER edit ok', 'NC-OK controls=3 failed=0'].join('\n') + '\n')
 
   writeFileSync(join(dir, 'evidence', 'sem.md'), 'DIFFERENCE RECORDED\nretirement-blocking   YES\n')
-  writeFileSync(join(dir, 'evidence', 'approval.md'), 'approved-by: owner\napproved-on: 2026-11-20\nscope: synthetic-fs/d1\n')
+  // A committed measurement that says the comparison found zero differences.
+  // Only this exact token licenses `differences: []`; an empty list alone does not.
+  writeFileSync(join(dir, 'evidence', 'sem-zero.md'), 'SD-VERDICT differences=0\n')
+  // A near-miss token: `differences=00` contains `differences=0` as a substring,
+  // so a substring test would wrongly treat it as a zero measurement.
+  writeFileSync(join(dir, 'evidence', 'sem-zero-decoy.md'), 'SD-VERDICT differences=00\n')
+  // A committed file outside the approvals directory that contains the word
+  // "owner" — the reviewer's fabricated record shape.
+  writeFileSync(join(dir, 'docs', 'RELEASE-REQUEST.md'), 'The owner asked for this.\n')
   writeFileSync(join(dir, 'src', 'keep.mjs'), 'export const keep = true\n')
   execFileSync('git', ['-C', dir, 'add', '-A'])
   execFileSync('git', ['-C', dir, 'commit', '-qm', 'fixture: committed evidence'])
+  // A NON-ROOT reference commit: the approval needs an ancestor that actually
+  // reviewed something. The repository root is refused by its own rule.
+  execFileSync('git', ['-C', dir, 'commit', '-q', '--allow-empty', '-m', 'fixture: review commit'])
   const sha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
-  return { root: dir, sha }
+  writeFileSync(
+    join(dir, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd1.json'),
+    JSON.stringify(approvalRecordFor(sha), null, 2) + '\n',
+  )
+  // The same schema OUTSIDE the approvals directory: valid JSON, names the right
+  // family/difference, bound to the right commit — and still not an approval,
+  // because location is part of the schema.
+  writeFileSync(join(dir, 'docs', 'outside-approval.json'), JSON.stringify(approvalRecordFor(sha), null, 2) + '\n')
+  execFileSync('git', ['-C', dir, 'add', '-A'])
+  execFileSync('git', ['-C', dir, 'commit', '-qm', 'fixture: committed approval record'])
+  const rootSha = execFileSync('git', ['-C', dir, 'rev-list', '--max-parents=0', 'HEAD'], { encoding: 'utf8' }).trim()
+  return { root: dir, sha, rootSha }
+}
+
+/** The `ute-approval/1` document the fixture commits under the approvals dir. */
+function approvalRecordFor(sha, overrides = {}) {
+  return {
+    schema: 'ute-approval/1',
+    family: 'synthetic-fs',
+    difference: 'd1',
+    decision: 'approved',
+    by: 'owner',
+    on: '2026-11-20',
+    reference: `PR #1 @ ${sha}`,
+    rationale: 'Synthetic self-test: interface (A) adopted; the by-route branch is not covered.',
+    ...overrides,
+  }
+}
+
+/** Rewrite the committed approval record (it stays tracked, so the path check still sees it). */
+function writeApprovalRecord(repo, sha, overrides) {
+  writeFileSync(
+    join(repo, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd1.json'),
+    JSON.stringify(approvalRecordFor(sha, overrides), null, 2) + '\n',
+  )
+}
+
+/** A commit that exists but is NOT on HEAD's history (a sibling of HEAD). */
+function danglingCommit(repo) {
+  const tree = execFileSync('git', ['-C', repo, 'rev-parse', 'HEAD^{tree}'], { encoding: 'utf8' }).trim()
+  return execFileSync('git', ['-C', repo, 'commit-tree', tree, '-p', 'HEAD', '-m', 'side branch commit'], { encoding: 'utf8' }).trim()
 }
 
 /** A ledger shape whose four terms are all established for `synthetic-fs`. */
@@ -159,7 +231,7 @@ function goodLedger(sha) {
                 approval: {
                   by: 'owner',
                   on: '2026-11-20',
-                  record: 'evidence/approval.md',
+                  record: 'dev/agent-workflow/approvals/synthetic-fs/d1.json',
                   reference: `PR #1 @ ${sha}`,
                 },
               },
@@ -604,6 +676,264 @@ test('APPR-3 — a commit that exists but is not an ancestor of HEAD is UNREFERE
   }
 })
 
+// ─── empty difference list and `blocking` schema ───────────────────────────
+
+control('DIFF-1', 'differences: [] with no SD-VERDICT differences=0 measurement', 'UTE_DIFFERENCES_UNDECLARED', (l) => {
+  l.families[0].terms.semanticDifferencesResolved.differences = []
+})
+
+test('DIFF-1b — an empty list is licensed ONLY by a committed exact `SD-VERDICT differences=0` line', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    // The same satisfied row, differences emptied, and a committed measurement
+    // file that says the comparison found none: this is an ALLOWED row.
+    const measured = goodLedger(sha)
+    measured.families[0].terms.semanticDifferencesResolved.differences = []
+    measured.families[0].terms.semanticDifferencesResolved.evidence = {
+      path: 'evidence/sem-zero.md',
+      expect: ['SD-VERDICT differences=0'],
+      contradicts: [],
+    }
+    const allowed = checkRetirement({ ledger: measured, family: 'synthetic-fs', root: repo })
+    assert.equal(allowed.allowed, true, `a measured zero must be allowed: ${JSON.stringify(codes(allowed))}`)
+    assert.deepEqual(allowed.findings, [])
+
+    // A near-miss token must NOT count: `differences=00` contains the claimed
+    // token as a substring, so a substring check would be a silent-green channel.
+    const decoy = goodLedger(sha)
+    decoy.families[0].terms.semanticDifferencesResolved.differences = []
+    decoy.families[0].terms.semanticDifferencesResolved.evidence = {
+      path: 'evidence/sem-zero-decoy.md',
+      expect: ['SD-VERDICT differences=0'],
+      contradicts: [],
+    }
+    decoy.families[0].state = 'NOT_RETIREABLE'
+    const refused = checkRetirement({ ledger: decoy, family: 'synthetic-fs', root: repo })
+    assert.equal(refused.allowed, false)
+    assert.ok(codes(refused).includes('UTE_DIFFERENCES_UNDECLARED'), `got ${JSON.stringify(codes(refused))}`)
+    transcript('DIFF-1b', 'differences=[] + exact token / a substring-only near miss', 'ALLOWED / REFUSED:UTE_DIFFERENCES_UNDECLARED', codes(refused), 'ALLOWED (exact token)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+control('DIFF-2', 'blocking: "yes" (truthy string)', 'UTE_DIFFERENCE_SCHEMA_INVALID', (l) => {
+  l.families[0].terms.semanticDifferencesResolved.differences[0].blocking = 'yes'
+})
+
+control('DIFF-3', 'the `blocking` key is absent', 'UTE_DIFFERENCE_SCHEMA_INVALID', (l) => {
+  delete l.families[0].terms.semanticDifferencesResolved.differences[0].blocking
+})
+
+test('DIFF-4 — blocking:false is ignored for blocking purposes but does not satisfy the other terms', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    // Non-blocking means the approval requirement does not apply: removing the
+    // approval must NOT refuse this row (the difference is simply not blocking).
+    const nonBlocking = goodLedger(sha)
+    nonBlocking.families[0].terms.semanticDifferencesResolved.differences[0].blocking = false
+    delete nonBlocking.families[0].terms.semanticDifferencesResolved.differences[0].approval
+    const ignored = checkRetirement({ ledger: nonBlocking, family: 'synthetic-fs', root: repo })
+    assert.equal(ignored.allowed, true, `a non-blocking difference needs no approval: ${JSON.stringify(codes(ignored))}`)
+
+    // It is not a master key: a failed other term still refuses the family.
+    const otherTermFails = JSON.parse(JSON.stringify(nonBlocking))
+    otherTermFails.families[0].terms.negativeControlsPass.verdict = false
+    otherTermFails.families[0].state = 'NOT_RETIREABLE'
+    const refused = checkRetirement({ ledger: otherTermFails, family: 'synthetic-fs', root: repo })
+    assert.equal(refused.allowed, false)
+    assert.ok(codes(refused).includes('UTE_NEGATIVE_CONTROLS_FAILING'))
+    transcript('DIFF-4', 'blocking:false with the approval removed; then a failed NC term', 'ALLOWED / REFUSED:UTE_NEGATIVE_CONTROLS_FAILING', codes(refused), 'ALLOWED (non-blocking, other terms true)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// ─── fabricated approvals (the review's exact attack) ──────────────────────
+
+test('FAB-1 — the reviewer’s exact fabrication (any committed "owner" file + root commit) is REFUSED', () => {
+  const { root: repo, sha, rootSha } = makeFixtureRepo()
+  try {
+    const fabricated = goodLedger(sha)
+    fabricated.families[0].terms.semanticDifferencesResolved.differences[0].approval = {
+      by: 'owner',
+      on: '2026-11-20',
+      // A committed file that contains the word "owner" — the old check's whole
+      // requirement — but is not an approval document and is not in the dir.
+      record: 'docs/RELEASE-REQUEST.md',
+      // The repository root commit: an ancestor, but the beginning of history.
+      reference: `PR #1 @ ${rootSha}`,
+    }
+    const v = checkRetirement({ ledger: fabricated, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false, 'a fabricated approval must never allow')
+    assert.ok(codes(v).includes('UTE_APPROVAL_RECORD_INVALID'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(codes(v).includes('UTE_APPROVAL_UNREFERENCED'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_UNREFERENCED' && /root commit/.test(f.detail)))
+    transcript('FAB-1', 'record=docs/RELEASE-REQUEST.md (contains "owner"), reference=root commit', 'REFUSED:UTE_APPROVAL_RECORD_INVALID,UTE_APPROVAL_UNREFERENCED', codes(v), 'ALLOWED (dedicated record at a non-root ancestor)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-2a — a record outside dev/agent-workflow/approvals/ is INVALID even when it is a valid approval document', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.record = 'docs/outside-approval.json'
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_RECORD_INVALID'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_RECORD_INVALID' && f.detail.includes('is not inside')))
+    assert.equal(checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo }).allowed, true)
+    transcript('FAB-2a', 'a schema-valid approval document under docs/ (outside the approvals dir)', 'REFUSED:UTE_APPROVAL_RECORD_INVALID', codes(v), 'ALLOWED (inside the approvals dir)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-2b — a record inside the directory but naming another family or difference is INVALID', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    for (const [label, overrides] of [
+      ['wrong family', { family: 'another-family' }],
+      ['wrong difference', { difference: 'another-difference' }],
+    ]) {
+      writeApprovalRecord(repo, sha, overrides)
+      const v = checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo })
+      assert.equal(v.allowed, false, `${label}: must be refused`)
+      assert.ok(codes(v).includes('UTE_APPROVAL_RECORD_INVALID'), `${label}: got ${JSON.stringify(codes(v))}`)
+    }
+    // Restoring the record makes the same row allowed again: the binding, not
+    // the fixture, is what refused.
+    writeApprovalRecord(repo, sha, {})
+    assert.equal(checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo }).allowed, true)
+    transcript('FAB-2b', 'committed record names another family / another difference', 'REFUSED:UTE_APPROVAL_RECORD_INVALID', ['UTE_APPROVAL_RECORD_INVALID'], 'ALLOWED (matching family+difference)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-2c — a reference to the ROOT commit is UNREFERENCED even though it is an ancestor', () => {
+  const { root: repo, sha, rootSha } = makeFixtureRepo()
+  try {
+    writeApprovalRecord(repo, sha, { reference: `PR #1 @ ${rootSha}` })
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #1 @ ${rootSha}`
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_UNREFERENCED'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_UNREFERENCED' && /root commit/.test(f.detail)))
+    transcript('FAB-2c', `reference=PR #1 @ ${rootSha} (the root commit)`, 'REFUSED:UTE_APPROVAL_UNREFERENCED', codes(v), 'ALLOWED (non-root ancestor)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-2d — a reference to a commit that exists but is not an ancestor is UNREFERENCED', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const side = danglingCommit(repo)
+    writeApprovalRecord(repo, sha, { reference: `PR #1 @ ${side}` })
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #1 @ ${side}`
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_UNREFERENCED'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_UNREFERENCED' && /not an ancestor/.test(f.detail)))
+    transcript('FAB-2d', `reference=PR #1 @ ${side} (exists, sibling of HEAD)`, 'REFUSED:UTE_APPROVAL_UNREFERENCED', codes(v), 'ALLOWED (ancestor of HEAD)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-2e — decision "deferred" (or rejected) is not an approval', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    for (const decision of ['deferred', 'rejected']) {
+      writeApprovalRecord(repo, sha, { decision })
+      const v = checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo })
+      assert.equal(v.allowed, false, `decision=${decision} must be refused`)
+      assert.ok(codes(v).includes('UTE_APPROVAL_RECORD_INVALID'), `decision=${decision}: got ${JSON.stringify(codes(v))}`)
+      assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_RECORD_INVALID' && /expected "approved"/.test(f.detail)))
+    }
+    writeApprovalRecord(repo, sha, {})
+    assert.equal(checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo }).allowed, true)
+    transcript('FAB-2e', 'committed record decision=deferred / rejected', 'REFUSED:UTE_APPROVAL_RECORD_INVALID', ['UTE_APPROVAL_RECORD_INVALID'], 'ALLOWED (decision=approved)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('FAB-3 — an approval record that is present but UNTRACKED is INVALID (a cold clone cannot read it)', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const untracked = join(repo, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'untracked.json')
+    writeFileSync(untracked, JSON.stringify(approvalRecordFor(sha), null, 2) + '\n')
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.record = 'dev/agent-workflow/approvals/synthetic-fs/untracked.json'
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_RECORD_INVALID'), `got ${JSON.stringify(codes(v))}`)
+    assert.ok(v.findings.some((f) => f.code === 'UTE_APPROVAL_RECORD_INVALID' && /not a committed file/.test(f.detail)))
+    transcript('FAB-3', 'a valid approval document that is not committed', 'REFUSED:UTE_APPROVAL_RECORD_INVALID', codes(v), 'ALLOWED (tracked record)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('APPR-4 — a GENUINE dedicated approval bound to a real non-root ancestor is ALLOWED (positive arm)', () => {
+  const { root: repo, sha, rootSha } = makeFixtureRepo()
+  try {
+    assert.notEqual(sha, rootSha)
+    const v = checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, true, `a genuine approval must allow: ${JSON.stringify(codes(v))}`)
+    assert.deepEqual(v.findings, [])
+    assert.deepEqual(v.terms, {
+      oldBaseline: true,
+      newPathVerified: true,
+      semanticDifferencesResolved: true,
+      negativeControlsPass: true,
+    })
+    const record = JSON.parse(readFileSync(join(repo, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd1.json'), 'utf8'))
+    assert.equal(record.schema, 'ute-approval/1')
+    assert.equal(record.decision, 'approved')
+    assert.equal(record.family, 'synthetic-fs')
+    assert.equal(record.difference, 'd1')
+    assert.equal(record.reference, `PR #1 @ ${sha}`)
+    transcript('APPR-4', 'committed ute-approval/1 record in the approvals dir bound to a real non-root ancestor', 'ALLOWED', [], 'ALLOWED')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('APPROVALS — the shipped approvals directory holds NO record for any production family', () => {
+  const loaded = loadLedger({ root: ROOT })
+  assert.equal(loaded.refused, undefined)
+  const productionFamilies = loaded.ledger.families.map((row) => row.family)
+  for (const family of productionFamilies) {
+    const dir = join(ROOT, 'dev', 'agent-workflow', 'approvals', family)
+    assert.equal(existsSync(dir), false, `no approval directory may exist for production family ${family}`)
+  }
+  const committed = execFileSync('git', ['-C', ROOT, 'ls-files', 'dev/agent-workflow/approvals'], { encoding: 'utf8' })
+    .split('\n').filter((line) => line.length > 0)
+  assert.ok(committed.includes('dev/agent-workflow/approvals/README.md'), 'the directory ships with its README')
+  for (const file of committed) {
+    assert.ok(
+      file === 'dev/agent-workflow/approvals/README.md' || file.startsWith('dev/agent-workflow/approvals/_selftest/'),
+      `every committed approval record must be fixture-scoped, found ${file}`,
+    )
+  }
+  assert.ok(
+    committed.includes('dev/agent-workflow/approvals/_selftest/synthetic-difference.json'),
+    'the self-test record must exist (it is what makes the positive CLI arm reachable)',
+  )
+  // ...and that fixture record cannot licence a production row: it names a family
+  // that the production ledger does not contain.
+  const selftest = JSON.parse(readFileSync(join(ROOT, 'dev', 'agent-workflow', 'approvals', '_selftest', 'synthetic-difference.json'), 'utf8'))
+  assert.equal(productionFamilies.includes(selftest.family), false)
+  transcript('APPROVALS', 'count committed records for production families', 'ZERO (only README + _selftest/)', ['NONE'], 'n/a (emptiness is the point)')
+})
+
 // ─── old-path deletion controls ─────────────────────────────────────────────
 
 test('OP-1 — a declared old-path file absent while the row is not allowed is PARTIALLY_REMOVED', () => {
@@ -794,14 +1124,23 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // path and an unreproduced vector for EVERY bash vector. Asserted as an exact
   // set: adding a vector, dropping a member, acquiring a new path or turning the
   // pwsh exclusion into a silent inheritance changes this list and reds here.
+  // The ledger's `oldBaseline.verdict` is FALSE (review finding B10): pwsh has no
+  // baseline vector, so the gate derives UTE_MEMBER_UNCOVERED and the term is not
+  // established — the declared verdict now says the same thing as the derivation
+  // instead of the previous `true` that only the coverage pass overrode.
   const processRow = codesFor('process')
   assert.deepEqual(processRow.codes, [
     'UTE_MEMBER_UNCOVERED',
     'UTE_NEW_PATH_UNVERIFIED',
+    'UTE_OLD_BASELINE_MISSING',
     'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
     'UTE_VECTOR_UNREPRODUCED',
   ])
   assert.match(processRow.line, /state=NOT_RETIREABLE unit=0\/2$/u)
+  // The structured verdict must agree with the printed code: the ledger now says
+  // `oldBaseline.verdict:false` AND the derived term is false (review B10).
+  const processJson = JSON.parse(run(['--all', '--json']).stdout).refused.find((row) => row.family === 'process')
+  assert.equal(processJson.terms.oldBaseline, false, 'the derived oldBaseline term and the ledger verdict must agree')
   const processBlock = blockFor('process')
   assert.match(processBlock, /term=oldBaseline[^\n]*member \\"pwsh\\" has no baseline vector/u)
   assert.match(processBlock, /term=newPathVerified[^\n]*member \\"pwsh\\" has no baseline vector to reproduce/u)
@@ -1024,6 +1363,60 @@ const MUTANTS = [
       return v.terms?.oldBaseline === true
     },
   },
+  {
+    id: 'M15', rule: 'UTE_DIFFERENCE_SCHEMA_INVALID',
+    from: "    if (typeof diff.blocking !== 'boolean') {", to: '    if (false) {',
+    probe: ({ gate, root, sha }) => !codes(gate.checkRetirement({ ledger: (() => {
+      const l = goodLedger(sha)
+      l.families[0].terms.semanticDifferencesResolved.differences[0].blocking = 'yes'
+      return l
+    })(), family: 'synthetic-fs', root })).includes('UTE_DIFFERENCE_SCHEMA_INVALID'),
+  },
+  {
+    id: 'M16', rule: 'UTE_DIFFERENCES_UNDECLARED',
+    from: '  if (!ZERO_DIFFERENCES_PATTERN.test(text)) {', to: '  if (false) {',
+    probe: ({ gate, root, sha }) => !codes(gate.checkRetirement({ ledger: (() => {
+      const l = goodLedger(sha)
+      l.families[0].terms.semanticDifferencesResolved.differences = []
+      return l
+    })(), family: 'synthetic-fs', root })).includes('UTE_DIFFERENCES_UNDECLARED'),
+  },
+  {
+    id: 'M17', rule: 'UTE_APPROVAL_RECORD_INVALID (dedicated directory)',
+    from: "  if (typeof rel !== 'string' || !isInsideApprovals(rel)) {",
+    to: "  if (typeof rel !== 'string') {",
+    probe: ({ gate, root, sha }) => !codes(gate.checkRetirement({ ledger: (() => {
+      const l = goodLedger(sha)
+      l.families[0].terms.semanticDifferencesResolved.differences[0].approval.record = 'docs/outside-approval.json'
+      return l
+    })(), family: 'synthetic-fs', root })).includes('UTE_APPROVAL_RECORD_INVALID'),
+  },
+  {
+    id: 'M18', rule: 'UTE_APPROVAL_RECORD_INVALID (family binding)',
+    from: '  if (record.family !== family) {', to: '  if (false) {',
+    probe: ({ gate, root, sha }) => {
+      writeApprovalRecord(root, sha, { family: 'another-family' })
+      return !codes(gate.checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root })).includes('UTE_APPROVAL_RECORD_INVALID')
+    },
+  },
+  {
+    id: 'M19', rule: 'UTE_APPROVAL_RECORD_INVALID (decision must be approved)',
+    from: "  if (record.decision !== 'approved') {", to: '  if (false) {',
+    probe: ({ gate, root, sha }) => {
+      writeApprovalRecord(root, sha, { decision: 'deferred' })
+      return !codes(gate.checkRetirement({ ledger: goodLedger(sha), family: 'synthetic-fs', root })).includes('UTE_APPROVAL_RECORD_INVALID')
+    },
+  },
+  {
+    id: 'M20', rule: 'UTE_APPROVAL_UNREFERENCED (root commit)',
+    from: '      } else if (context.isRootCommit(context.root, sha)) {', to: '      } else if (false) {',
+    probe: ({ gate, root, sha, rootSha }) => {
+      writeApprovalRecord(root, sha, { reference: `PR #1 @ ${rootSha}` })
+      const l = goodLedger(sha)
+      l.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #1 @ ${rootSha}`
+      return !codes(gate.checkRetirement({ ledger: l, family: 'synthetic-fs', root })).includes('UTE_APPROVAL_UNREFERENCED')
+    },
+  },
 ]
 
 let mutantSeq = 0
@@ -1041,12 +1434,12 @@ async function loadMutant(from, to) {
 test('MUTANTS — every new rule has a mutation that turns its control RED', async () => {
   const survivors = []
   for (const mutant of MUTANTS) {
-    const { root, sha } = makeFixtureRepo()
+    const { root, sha, rootSha } = makeFixtureRepo()
     let red = false
     try {
       const replacement = typeof mutant.to === 'function' ? mutant.to(sha) : mutant.to
       const gate = await loadMutant(mutant.from, replacement)
-      red = mutant.probe({ gate, root, sha }) === true
+      red = mutant.probe({ gate, root, sha, rootSha }) === true
     } catch {
       // Removing a guard can crash the mutated module. A crash is RED (the
       // control no longer passes), never a green.
