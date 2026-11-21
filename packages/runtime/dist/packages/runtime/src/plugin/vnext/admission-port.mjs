@@ -49,12 +49,15 @@ export class AdmissionPortError extends TypeError {
  * @param {object} [input.settlement] - the settlement writer (`settlement-port`). Optional, because a
  *   port may be installed in a diagnostic context; when present the three transitions follow the
  *   decision, and a fault is reported rather than turning a decision into a different one.
+ * @param {(facts: object) => 'allow' | 'deny' | undefined} [input.overlayDecision] - the durable
+ *   permission-plane restriction, consulted per call beside the lane verdict (E3, round 38). Absent means
+ *   "no overlay wired", which is recorded as such rather than presented as an allow.
  * @param {{binder: object, memberOf: (binding: object) => object}} [input.grants] - the product's
  *   one-shot grant binder (`member-io-policy`) and the projection from a binding to the trusted
  *   member identity. Without it an ask stays refused: an approval nobody can spend is not one.
  * @returns {() => void} the disposer.
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, settlement, onFault }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, settlement, overlayDecision, onFault }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -125,6 +128,40 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     // refused call durably read as `allow` with decisionKind `ask`, then recover as UNKNOWN.)
     let decision = admission
     let capability
+    // THE DURABLE OVERLAY, consulted per call (round 38 — E3). The retired entry enforced the durable
+    // Alpha.4 permission plane through a pre-execute adapter; the A1 cut retired that adapter with the
+    // execution route, so a `grantInstance` deny persisted AFTER the member was bound had no decision-side
+    // effect at all. The centre stays the ONE decision point: the overlay is a RESTRICTION consulted next
+    // to the lane verdict, never a second authority, and it can only ever REMOVE authority.
+    //
+    // Ordering is deliberate: the overlay is asked only about calls the lane would otherwise ALLOW, so it
+    // can never upgrade an `ask` into an `allow`, and a throw is treated as a REFUSAL (fail closed) rather
+    // than as "no opinion".
+    let overlay
+    if (admission.kind === 'allow' && typeof overlayDecision === 'function') {
+      try {
+        overlay = overlayDecision({
+          binding,
+          callId,
+          toolName: exec.name,
+          arguments: exec.arguments,
+          policyGeneration: binding === undefined ? undefined : binding.policyGeneration,
+        })
+      } catch (error) {
+        decision = {
+          kind: 'deny',
+          code: 'ADMISSION_OVERLAY_FAULT',
+          reason: `the durable overlay could not be consulted (${String(error?.message ?? error)}); a fault is a refusal, never an absence of opinion`,
+        }
+      }
+      if (overlay === 'deny' && decision === admission) {
+        decision = {
+          kind: 'deny',
+          code: 'ADMISSION_OVERLAY_DENY',
+          reason: 'a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)',
+        }
+      }
+    }
     if (admission.kind === 'ask') {
       if (grants === undefined || binding === undefined) {
         // No grant binder: there is no approval anyone could spend, so the ask is a refusal that

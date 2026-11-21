@@ -1111,3 +1111,51 @@ test('ADM-44 — a row that asked for the centre cannot run unmediated', async (
   // A non-string centreStatePath is the config rule's business (R1), not this one's.
   assert.equal(memberCentreUnwiredViolation({ centreStatePath: 7 }, { instanceId: 'inst-9', mountedRealm: false }), undefined)
 })
+
+test('ADM-45 — the durable overlay can only REMOVE authority, and a fault is a refusal (E3 plumbing)', async () => {
+  // The retired entry enforced the Alpha.4 durable plane through a pre-execute adapter that the A1 cut
+  // retired WITH the execution route, so a grantInstance deny persisted after the member was bound had no
+  // decision-side effect at all (E3). The centre stays the ONE decision point: the overlay is a
+  // RESTRICTION consulted beside the lane verdict. These three properties are what make that safe.
+  const host = fakeHost()
+  const admitted = []
+  const binding = bindingFromCompiledMember({ member: compiledMember(), agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a' })
+  const calls = []
+  const centre = installMemberCentre({
+    ctx: host.ctx,
+    binding,
+    recordAdmission: (fact) => admitted.push(fact),
+    recordExecution: () => {},
+    // Positive control: a lane ALLOW meets an overlay DENY and the call is refused, naming the overlay.
+    overlayDecision: (facts) => {
+      calls.push(facts)
+      if (facts.arguments?.file_path === '/work/a/secret.txt') return 'deny'
+      if (facts.arguments?.file_path === '/work/a/boom.txt') throw new Error('overlay store unreadable')
+      return undefined
+    },
+  })
+  try {
+    // (1) POSITIVE: the lane allows a read inside the lane; the overlay denies it. The overlay wins.
+    const denied = { name: 'read', callId: 'ov-1', arguments: { file_path: '/work/a/secret.txt' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    const verdict = await host.preExecute(denied)
+    assert.equal(verdict.kind, 'deny')
+    assert.equal(admitted[0].refusalCode, 'ADMISSION_OVERLAY_DENY')
+    assert.equal(admitted[0].laneDecision, 'allow', 'the lane really did allow it — the overlay is what refused')
+    // (2) NEGATIVE CONTROL: no overlay opinion ⇒ the lane verdict stands, untouched.
+    const allowed = { name: 'read', callId: 'ov-2', arguments: { file_path: '/work/a/doc.txt' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await host.preExecute(allowed)).kind, 'allow')
+    assert.equal(host.guard(allowed), undefined)
+    // (3) NEGATIVE CONTROL: a lane DENY never asks the overlay — it can only REMOVE authority, so there is
+    // nothing to remove and the overlay must not be able to launder a deny into an allow.
+    const outside = { name: 'read', callId: 'ov-3', arguments: { file_path: '/etc/passwd' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await host.preExecute(outside)).kind, 'deny')
+    const asked = calls.map((c) => c.arguments?.file_path)
+    assert.ok(!asked.includes('/etc/passwd'), `the overlay was consulted about a lane-denied call: ${JSON.stringify(asked)}`)
+    // (4) FAULT IS A REFUSAL: a throwing overlay is not "no opinion".
+    const boom = { name: 'read', callId: 'ov-4', arguments: { file_path: '/work/a/boom.txt' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await host.preExecute(boom)).kind, 'deny')
+    assert.equal(admitted.at(-1).refusalCode, 'ADMISSION_OVERLAY_FAULT')
+  } finally {
+    centre.dispose()
+  }
+})

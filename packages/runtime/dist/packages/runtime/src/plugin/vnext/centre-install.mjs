@@ -108,7 +108,7 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
  * @param {(error: unknown, context: object) => void} [input.onFault]
  * @returns {{ dispose: () => void }} the disposer for every installed point.
  */
-export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, store, identityOf, onFault }) {
+export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, store, identityOf, overlayDecision, onFault }) {
   if (ctx === undefined || ctx === null) throw new TypeError('centre-install: a member centre needs the agent context')
   if (typeof recordAdmission !== 'function' || typeof recordExecution !== 'function') {
     throw new TypeError('centre-install: both durable sinks are required; a centre that cannot write a fact is not a centre')
@@ -135,6 +135,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(recordReplay === undefined ? {} : { recordReplay }),
       ...(grants === undefined ? {} : { grants }),
       ...(settlement === undefined ? {} : { settlement }),
+      ...(overlayDecision === undefined ? {} : { overlayDecision }),
       ...(onFault === undefined ? {} : { onFault }),
     }))
     disposers.push(installExecutionFacts({
