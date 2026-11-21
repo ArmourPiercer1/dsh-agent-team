@@ -10119,3 +10119,35 @@ a leg that names them is the only durable fix. Also next: the five classified fa
 
 Gates at `f6ceacc2a`: leg `suites=6 files=6 exit=0`, cut-closure `prodRefs=0 distResiduals=0`,
 P0 assets pass, catalog `tests=888 refused=0 findings=0`.
+
+### R31 — 233 → 237/238, and the one that will not move is the interesting one
+
+Four of the five remaining failures were pins on the retired route. Each was re-expressed against the new
+assembly **without weakening what it asserts**, and the descendant-authority walk came out STRONGER: it
+now walks `src/plugin/vnext` and names `admission.ts`/`centre-config.ts` where it named the retired
+`pre-execute-adapter.ts`, so "authority is never a resource census" covers the centre itself.
+
+The fifth does not re-anchor, because it is not a pin. **E3: the durable Alpha.4 permission overlay has no
+decision-side effect.** The retired entry installed a pre-execute adapter that consulted the overlay per
+call; the cut retired the adapter with the execution route, and the centre judges only the COMPILED
+binding lanes. A `grantInstance` deny persisted after the member was bound therefore changes nothing at
+execution time. That is the objective's own stated risk ("入口整体替换后的 Team 功能损失") arriving on
+schedule, and it is a capability the 06 contract preserves. Recorded as RED in the matrix.
+
+The fix is a design decision, and it belongs with the Control allow/ask/deny wiring because both ask the
+same question — *what is the ONE place a durable restriction becomes a verdict?* Two shapes:
+(a) the centre consults an injected overlay-decision port per call, next to the lane verdict (the retired
+adapter's semantics, moved under the centre's authority); (b) overlay mutations compile INTO the binding
+and the generation recheck recompiles it. (a) keeps one decision function and is closer to the retired
+behaviour; (b) keeps admission synchronous but makes every mutation a recompile. I have NOT picked one
+unilaterally: it changes what the centre is.
+
+**Also recorded:** G8 failed once under parallel load and passed in three further full runs plus
+isolation. That is a flake, not a pass — the arm must be made deterministic before D.
+
+**Next:** (1) the overlay decision above, with E3 as its acceptance test; (2) put the 16 files into CI as
+a vitest `suiteList` leg — they rotted because nothing ran them; (3) make G8 deterministic.
+
+Gates at `a74a646e8`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, ci-required pass, docs-sync `findings=0`.
+Migrated suite: **237/238** (`dev/agent-workflow/evidence/ute-a1/migrated-suite.json`).
