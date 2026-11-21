@@ -245,6 +245,30 @@ export function deriveClosure ({ root = ROOT } = {}) {
       })
     }
   }
+  // A NAME-CLASS reference a specifier scan cannot see (round 58): a retired module can still be named by
+  // path in the package's `exports` map or as a preset row's plugin `name`, and that reference is invisible
+  // to every `import`/`require` scan while it makes the product UNLOADABLE (WorldFactory refused EVERY world
+  // with A5SF_PROFILE_GRAPH_UNRESOLVED while this gate stayed green). Same law, wider net: a retired file
+  // must not be reachable by NAME either.
+  const namedRefs = []
+  const nameCarriers = ['package.json', 'cordis.patch.yml']
+  for (const carrier of nameCarriers) {
+    if (!tracked.includes(carrier)) continue
+    let text
+    try { text = readFileSync(join(root, carrier), 'utf8') } catch { continue }
+    for (const source of frozen.deleted) {
+      const bare = source.split('/').pop().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      // STRUCTURAL references only, never prose: a comment that explains the retirement must be free to NAME
+      // the retired file (round 58: the first version flagged its own explanation). `exports` maps carry a
+      // quoted path; a preset row carries `name: '<pkg>/<file>'`.
+      // the `/` before the file name is required: `a5sf-web-transport.mjs` must NOT satisfy a reference to
+      // the retired `web-transport.mjs` (measured false positive, round 58).
+      const pattern = carrier === 'package.json'
+        ? new RegExp(`"["]?[^"]*/${bare}"`)
+        : new RegExp(`name:\\s*'[^']*/${bare}'`)
+      if (pattern.test(text)) namedRefs.push({ referrer: carrier, target: source })
+    }
+  }
   const distResiduals = []
   for (const source of frozen.deleted) {
     for (const d of distCounterpartsOf(source)) {
@@ -258,6 +282,7 @@ export function deriveClosure ({ root = ROOT } = {}) {
     frozenFrom: frozen.from,
     deletedCount: frozen.deleted.size,
     findings,
+    namedRefs,
     distResiduals,
     cut: {
       state,
@@ -330,6 +355,9 @@ if (!isMain) {
     const stored = (committed.groups ?? []).map(({ group: k, count }) => ({ group: k, count }))
     if (JSON.stringify(fresh) !== JSON.stringify(stored)) {
       findings.push({ code: 'UTE_CLOSURE_STALE', detail: `closure report drifted: stored ${JSON.stringify(stored)} fresh ${JSON.stringify(fresh)}` })
+    }
+    if (out.namedRefs.length > 0) {
+      findings.push({ code: 'UTE_CLOSURE_NAMED_REF', detail: `a retired file is still reachable by NAME: ${out.namedRefs.map((r) => `${r.referrer} -> ${r.target}`).join(', ')}` })
     }
     if ((committed.distResiduals ?? []).length !== out.distResiduals.length) {
       findings.push({ code: 'UTE_CLOSURE_DIST_STALE', detail: `dist residuals stored ${committed.distResiduals?.length} fresh ${out.distResiduals.length}` })

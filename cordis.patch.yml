@@ -347,8 +347,13 @@
           # The row is OUR module, never the host `tool-web` package: a host row
           # on this scope is ordinary ungoverned egress whenever the realm owns no
           # web face, which is exactly the hole PD-18 removed.
-          - id: tool-web
-            name: 'dsh-agent-team/web-tool'
+          #
+          # A1 CUT (round 58): the row is GONE, and so is the module it named. The cut retired
+          # `live/confined-web-tool.mjs` (a route-C SHADOW definition) because the new assembly mounts the
+          # HOST's own `web_fetch` inside the member's realm lane and judges it on the compiled `network`
+          # axis before the transport — a shadow is exactly what A1 forbids, and a preset row naming a
+          # deleted module made WorldFactory refuse EVERY world with A5SF_PROFILE_GRAPH_UNRESOLVED while
+          # `ute-cut-closure` stayed green (it does not scan this YAML/export reference class).
           - id: command-goal
             name: '@deepseek-ai/dsh-command-goal'
           # PD-29 (2026-11-14 owner ruling): the goal tool is BACK. It is the

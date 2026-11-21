@@ -20,7 +20,6 @@
     ".": "./packages/client/composition-shim/index.js",
     "./host": "./packages/runtime/dist/packages/runtime/src/plugin/host.js",
     "./spill-local": "./packages/runtime/dist/packages/runtime/src/plugin/team-spill-local.js",
-    "./web-tool": "./packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs",
     "./client": "./packages/client/composition-shim/client-bundle.js",
     "./package.json": "./package.json",
     "./web-transport": "./packages/runtime/dist/packages/runtime/src/plugin/live/a5sf-web-transport.mjs"

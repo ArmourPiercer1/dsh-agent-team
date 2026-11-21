@@ -1628,6 +1628,21 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // The production root installs the registration seam during its
     // construction (A31); current() throws the seam's stable
     // not-installed code if that ever regresses (propagated as-is).
+    //
+    // C-remote (round 58): a CENTRE-configured row does NOT build the S6 command plane at all — the
+    // dispatcher is authorized by a server-derived principal, which the centre's compiled ceiling cannot
+    // speak for, so the surface is refused (fact + REFUSED settlement) rather than left as an ungoverned
+    // second command authority beside the centre. The seam is therefore absent BY DESIGN on those rows, and
+    // dereferencing it turned an intended refusal into a boot failure. A disabled seam is a "skipped" mount
+    // (not "failed"): the refusal is already on the durable record, and this leg has nothing to register.
+    if (!root.seams.remoteHandlerRegistration.installed) {
+      const skipped: RemoteMountState = {
+        state: 'skipped',
+        reason: 'the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record',
+      }
+      remoteMountState = skipped
+      return skipped
+    }
     const registerRemote = root.seams.remoteHandlerRegistration.current()
     let registration: RemoteRegistration
     try {
