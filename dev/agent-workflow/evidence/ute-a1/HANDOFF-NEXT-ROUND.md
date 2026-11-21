@@ -13,7 +13,15 @@ Plumbing is DONE and tested; only the provider is missing.
 | the admission port accepts `overlayDecision` | `admission-port.mjs` (`installAdmissionPoint`) | done, ADM-45 (45/45) |
 | the centre forwards it | `centre-install.mjs` (`installMemberCentre`) | done |
 | the member install forwards it | `member-execution.mjs` (`installMemberExecution`) | done (`0b997aa90`) |
-| **the product supplies one** | `root.ts` → the bindings deps → the member install | **MISSING — this is the task** |
+| **the product supplies one** | `root.ts` → the bindings deps → the member install | **MISSING — and NOT sufficient on its own** |
+
+> ROUND 48 CORRECTION, measured with instrumentation: E3's world is pre-cut (v3 document, no v4
+> `memberIoCeilings`, no realm, no `centreStatePath`), so no centre is installed and no lane exists for its
+> allow control. The task is therefore **rebuild E3's world on the v4 contract while keeping every
+> assertion**, plus a bind-time cached reader (the async `canonicalizeOperation` cannot be called from the
+> synchronous port). Details, including four file:line facts and the one forbidden road, are in
+> `MIGRATED-SUITE-STATUS.md` § "E3, measured properly (round 48)". Do not wire the provider alone: it is
+> dead for this world and would buy no acceptance test.
 
 ### The four steps, no exploration needed
 

@@ -187,3 +187,50 @@ Concretely, the remaining work is:
 
 No new authority, no second store, no reimplementation of the retired adapter — the adapter's decision
 CORE is reused, its retired listener shape is not.
+
+## E3, measured properly (round 48, delegated investigation): the world is v3-era
+
+The premise "E3 only needs the overlay provider" is **false**, and the instrumentation that shows it is
+short: the assertion `chain.length > 0` fails at `test:1143` because **E3's world has no centre at all**.
+Its setup passes no `a5sf` config, no realm provider and no `centreStatePath`
+(`test:1123-1139`), and installation is gated on the first two (`agent-bindings.mjs:1759-1763`).
+
+Four facts, each with its own file:line:
+
+1. **No centre ⇒ no leg.** Only `installAdmissionPoint` populates that listener list
+   (`admission-port.mjs:257-264`). The "asked for the centre" rule refuses (`centre-config.ts:34-41`) — it
+   never installs — so "install anyway" is a product-behaviour change, not a filler.
+2. **E3's filled plane ref is not consumed.** It fills `permissionPlaneRef` (`test:1089-1106`), and the new
+   glue never references it (`grep -c permissionPlaneRef agent-bindings.mjs` → 0) even though
+   `root.ts:838-846` still documents that the glue consults it. (My earlier note said the deps were
+   threaded "at `agent-bindings.mjs:2435`" — wrong, that is root.ts's Alpha.6 wiring.)
+3. **Even an installed centre would have no ALLOW lane for E3.** The centre's lanes come from the compiled
+   realm member (`centre-install.mjs:44-88`); E3's control expects the **Alpha.4 `capabilities.permissions`
+   template ALLOW** to execute (`test:1145-1153`), and its fixture is a **v3** document with no
+   `memberIoCeilings` (`test:923-991`) while the compiler reads the **v4** ceiling family
+   (`product-assembly.ts:66,140,1173-1188`). So escalation Option A compiles nothing for this world, and
+   `installMemberExecution` would throw for lack of `centreStatePath` (`member-execution.mjs:98-108`).
+4. **The prescribed sync port cannot call the decision core.** `overlayDecision` is synchronous
+   (`admission-port.mjs:141-149`) but `canonicalizeOperation` is **async** over a promise-returning fs seam
+   (`canonical-operation.ts:463`, `types.ts:189-191`), so a per-call sync consultation cannot canonicalize;
+   and E3's expected reason text (`'permission denied'` + `'overlay'`, `test:1182,1185`) is the RETIRED
+   adapter's wording (`pre-execute-adapter.ts:1915`), not the port's `ADMISSION_OVERLAY_DENY` text.
+
+### So E3 is a world-rebuild, not a wiring gap
+
+Its ASSERTION is right and must survive: *a persisted overlay deny beats a template allow through the real
+glue*. Its WORLD is pre-cut: v3 document, no v4 ceilings, no realm, no centre. The migration is to rebuild
+the fixture on the current contract (declare `a5sfMemberPolicies` + `centreStatePath`, give the member v4
+ceilings, keep the persisted deny and the same assertions) — a **test-world rebuild preserving the
+assertion**, which is the same class of move as the four layout pins and needs the same discipline: change
+what the world IS, never what it asserts.
+
+Three roads, and only the first is legitimate here:
+
+- **rebuild the world on v4 + wire the provider (recommended)** — assertion untouched; needs the async
+  consultation resolved by a bind-time cache keyed on `policyGeneration` (the generation bumps on every
+  mutation, so the cache cannot be stale), which ALSO settles fact 4 without inventing synchronous path
+  semantics;
+- refuse realm-less members (option B) — fail-closed, but E3's control (`no overlay row ⇒ the static ALLOW
+  executes`) fails by construction, so E3 can never be green this way;
+- reinstate the retired Alpha.4 template-permission lane — the legacy fallback the A1 law forbids.
