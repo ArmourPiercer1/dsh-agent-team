@@ -167,3 +167,23 @@ durable restriction becomes a verdict" item.
 
 Not started: this needs the overlay row's rule shape read in detail, and half of it would leave E3 red in a
 new way rather than fixed.
+
+### The product side has a named owner already (round 41)
+
+The durable plane is not hypothetical or unowned in the new root: `root.ts` builds `permissionPlane`
+(mutation lane `grantInstance`/`revoke`, the durable `append`/`latest`/`history` store) and refuses with
+`PERMISSION_MUTATION_NOT_CONFIGURED` when it is absent — "zero write" rather than a silent no-op. So the
+admission consultation has an obvious provider: the SAME `permissionPlane` the mutation entry uses, read
+through the SAME `latest()`, keyed by the binding's `policyGeneration`.
+
+Concretely, the remaining work is:
+
+1. `root.ts` hands the plane (or a bound reader) into the bindings deps it already passes
+   (`permissionOverlay` is already threaded to `agent-bindings` at `:2435`);
+2. `member-execution` resolves the overlay row once per `policyGeneration` and closes a synchronous
+   `overlayDecision` over `canonicalizeOperation` + `resolveOperationPermission` (both SURVIVE the cut);
+3. the centre passes it to `installMemberCentre` (already accepted, ADM-45);
+4. E3 turns green; the migrated-suite list becomes green; the vitest leg is bound to `ci-integration`.
+
+No new authority, no second store, no reimplementation of the retired adapter — the adapter's decision
+CORE is reused, its retired listener shape is not.
