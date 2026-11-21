@@ -1,4 +1,4 @@
-OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b1-20261120/tests/ute-g1-search/golden/old-path.tsv vectors=15 captured=15
+OLD-PATH-GOLDEN compare=identical fixture=<host-root>/.worktrees/ute3-search-b1-20261120/tests/ute-g1-search/golden/old-path.tsv vectors=15 captured=15
 OLD-PATH-COVERAGE grep=9 glob=6 vectors=15
 NEW-PATH-PENDING all (no new-path vector is claimed by this lane)
 NC NC-HARNESS-BITES ok

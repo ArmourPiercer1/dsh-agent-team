@@ -94,6 +94,6 @@ $ node --test --test-force-exit --test-timeout=600000 tests/world-factory/a5sf-f
 
 ## verdict-set comparison (status + title + summary lines, durations stripped, sorted)
 before lines=35 after lines=35
-$ diff /tmp/ute1-fs-before.txt /tmp/ute1-fs-after.txt
+$ diff <tmp>/ute1-fs-before.txt <tmp>/ute1-fs-after.txt
 (no differences)
 LEGACY-FS-VERDICTS identical=True

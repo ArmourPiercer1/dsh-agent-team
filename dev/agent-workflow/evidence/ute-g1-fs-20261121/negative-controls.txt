@@ -8,7 +8,7 @@ NC NC-MEMBER edit ok control=drop-edit-version-guard baseline=deny/stale-version
 NC NC-MEMBER read_image ok control=widen-read-lane-image baseline=deny/lane-deny baselineMatchesGolden=true mutant=allow/none differs=true attachmentBytes=70 modelBlocks=text+image
 NC NC-MEMBER-POSITIVE read ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
 NC NC-MEMBER-POSITIVE write ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
-NC NC-MEMBER-POSITIVE edit ok golden FS-E2=deny/stale-version baseline=deny/stale-version mutant=allow — the guard, not a missing old_string, is what refused
+NC NC-MEMBER-POSITIVE edit ok golden FS-E2=deny/stale-version baselineMatchesGolden=true fields=entry,laneRead,laneWrite,outcome,refusal,effects,leaks mutant=allow — the guard, not a missing old_string, is what refused
 NC NC-MEMBER-POSITIVE read_image ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
 NC NC-IMAGE-OBSERVER ok cases=4 zero-attachments:RED-as-required two-attachments:RED-as-required wrong-block-id:RED-as-required refusal-committed:RED-as-required
 NC-VERDICT GREEN controls=13 failed=0

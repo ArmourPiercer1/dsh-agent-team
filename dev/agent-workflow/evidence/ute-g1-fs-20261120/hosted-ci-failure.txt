@@ -3,7 +3,7 @@ Run 44759369386, job `ci-census / census-runtime`, verbatim:
 
   ✖ the family-level and per-member negative controls hold (127.6ms)
   Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@deepseek-ai/dsh-scope'
-    imported from /home/runner/work/dsh-agent-team/dsh-agent-team/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
+    imported from <host-root>/packages/runtime/src/plugin/live/a5sf-realm-row.mjs
 
 CAUSE (same class as UTE-1 on 2ec811f6f): the `Next host — the rc.5 lane` step runs
 BEFORE `Build this repo`, so a fresh job has no repo node_modules yet. The UTE-3

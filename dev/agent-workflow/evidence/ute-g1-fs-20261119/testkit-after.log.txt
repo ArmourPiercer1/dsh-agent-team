@@ -1,5 +1,5 @@
 
- RUN  v4.1.11 /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/testkit
+ RUN  v4.1.11 <host-root>/.worktrees/ute-g1-fs-20261119/packages/testkit
 
  ✓ test/rc2-kit-preset-seam.test.ts (15 tests) 142ms
  ✓ test/rc2-kit-pin-hygiene.test.ts (7 tests) 285ms
@@ -150,7 +150,7 @@ lint-visibility: eslint read 1688 of 3486 OFFERED tracked lintable file(s); 1798
 ⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
 
  FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the scan ran (a scan that could not run is never reported as clean)
-AssertionError: scan did not run: cwd /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel: expected false to be true // Object.is equality
+AssertionError: scan did not run: cwd <host-root>/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (<host-root>/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel: expected false to be true // Object.is equality
 
 - Expected
 + Received
@@ -238,7 +238,7 @@ AssertionError: expected 'scan: blueprint document-version fenc…' to contain '
 + SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
 + adjudication-ledger:  (0 entries)
 + SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
-+ RESULT not-run :: cwd /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
++ RESULT not-run :: cwd <host-root>/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (<host-root>/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
 
  ❯ test/a4p7-blueprint-version-clean.test.ts:453:20
     451|     // the archetype leg below pins.
@@ -345,19 +345,19 @@ AssertionError: stale ledger row packages/client/test/client-plugin-mount.test.t
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
 
  FAIL  test/a4p7-blueprint-version-clean.test.ts > a4p7 blueprint document-version fence (Task 7.5 + 7.4-scope) > the report names the ledger it read, and an UNTRACKED ledger needs an explicit test mode (G4)
-AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'adjudication-ledger: /home/armourpier…'
+AssertionError: expected 'scan: blueprint document-version fenc…' to contain 'adjudication-ledger: <host-root>…'
 
 - Expected
 + Received
 
-- adjudication-ledger: /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json
+- adjudication-ledger: <host-root>/.worktrees/ute-g1-fs-20261119/dev/agent-workflow/evidence/a4-pr7/scan-scope/unknown-adjudications.json
 + scan: blueprint document-version fence (A4-PR7 7.5 + 7.4-scope, ADR A3-16)
 + scope: tests/kits/, scripts/, packages/**/harness/, packages/*/test/, packages/**/testdata/, tests/mock/scripts/, cordis.patch.yml (dev/agent-workflow, dist and non-code extensions excluded)
 + scanned-in-scope: 0 tracked files
 + SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
 + adjudication-ledger:  (0 entries)
 + SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
-+ RESULT not-run :: cwd /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
++ RESULT not-run :: cwd <host-root>/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (<host-root>/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
 
  ❯ test/a4p7-blueprint-version-clean.test.ts:795:20
     793|   it('the report names the ledger it read, and an UNTRACKED ledger nee…
@@ -382,7 +382,7 @@ AssertionError: expected 'scan: blueprint document-version fenc…' to contain '
 + SCOPE-NOTE blind spot: 0 files (0 non-typed, 0 doc-marked where the fence is the only defence) — blueprintId is required on TeamBlueprint, so wherever tsc runs a schema-valid document cannot hide in a file with no blueprintId text; the non-typed half is the real exposure and prints live; numeric-form family the text predicate does NOT read: +N (unary plus), 0x hex, template-string, computed-key — 0 variant site(s) counted live today (template-carriers dominate; none was introduced by a named mutation): the fence is a SOURCE-TEXT scanner guarding a governance property (do not launder retired version digits into fixtures), while the SAFETY property is enforced by the parser refusing unsupported versions at runtime, which no textual form evades; widen red-first only if a named mutation shows a variant actually in use; named integrity case: pr-e-requirement-recovery-smoke asserts raw-byte equality of a saved v1 source under a pinned hash, where a numeric-form rewrite stays self-consistent (hashes cover the parsed projection) — "these exact bytes are historical" is guarded by that kit's byte assertion, not by this fence: kit-proof integrity, not runtime safety
 + adjudication-ledger:  (0 entries)
 + SCOPE-NOTE lineStates continuation: the closed backslash-newline branch was dead at merge (post-loop carry guard tautological; mid-line closes reported as unterminated — conservative); R3-D revived it, fixture f35 pins the closed-tail-is-code behavior
-+ RESULT not-run :: cwd /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
++ RESULT not-run :: cwd <host-root>/.worktrees/ute-g1-fs-20261119/packages/testkit is not the repository toplevel (<host-root>/.worktrees/ute-g1-fs-20261119); the fence gates on the WHOLE tree — run it from the toplevel
 
  ❯ test/a4p7-blueprint-version-clean.test.ts:964:20
     962|     // be visible as REFUSED and never reach a gated or dispatch class.
@@ -409,17 +409,17 @@ AssertionError: expected 0 to be greater than 0
  FAIL  test/a4p7-merge-gate.test.ts > A4-PR7 §7.6 — the code merge gate, driven by real commands > the composition smoke leg (plan 7.5/7.6: a red here blocks the merge) > is green, asserted by arm name and by absence of a skip — never by the exit code
 AssertionError: the composition arms have to RUN for this gate to be green; a refusal that explains itself is still a red here. It read "refused". why: client plugin (packages/client): packages/client/dist/packages/client/src/plugin/client.js is not on disk and there is no trace of it in packages/client/dist — packages/client/dist does not exist (0 file(s) in it), packages/client/dist/packages/client/src/plugin/client.js is gitignored and untracked, and it is in no install surface (the surfaces that ship are packages/runtime/dist, packages/client/composition-shim), so no install of this repository ever carries it; the owning manifest declares ./dist/index.js → packages/client/dist/index.js, which also has no file on disk. The limit of that sentence, stated rather than left to the reader: this verdict is drawn from packages/client/dist ALONE, nothing outside the declared output root is examined, and there is nothing outside it to examine — so a build that ran and whose output was then moved elsewhere is indistinguishable, here, from a build that never ran, and `pnpm build` would not fix that. The two states this check genuinely cannot separate are also byte-identical: an unbuilt tree and a build that ran and emitted NOTHING. Run `pnpm build` and re-run this leg. Tree this leg measured: HEAD 00429852c, 15 tracked file(s) changed vs HEAD, 0 untracked entr(ies) [counted from git-status entries: an untracked directory counts as one]. refused is not passed — this leg blocks the merge exactly as a failure does, and no reading of this message makes it green.
     output tail:
-        at fail (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:202:15)
-        at validateTeamPluginConfig (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:206:9)
-        at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:1106:33)
-        at Module.apply (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:2545:19)
-        at checkPluginContract (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:201:24)
-        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:298:13
-    file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:422
+        at fail (file://<host-root>/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:202:15)
+        at validateTeamPluginConfig (file://<host-root>/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:206:9)
+        at bootstrap (file://<host-root>/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:1106:33)
+        at Module.apply (file://<host-root>/.worktrees/ute-g1-fs-20261119/packages/runtime/dist/packages/runtime/src/plugin/host.js:2545:19)
+        at checkPluginContract (file://<host-root>/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:201:24)
+        at file://<host-root>/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:298:13
+    file://<host-root>/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:422
       throw new Error(failed
             ^
     Error: composition smoke failed
-        at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:422:9
+        at file://<host-root>/.worktrees/ute-g1-fs-20261119/scripts/composition-smoke.mjs:422:9
     Node.js v24.21.0: expected 'refused' to be 'passed' // Object.is equality
 
 Expected: "passed"

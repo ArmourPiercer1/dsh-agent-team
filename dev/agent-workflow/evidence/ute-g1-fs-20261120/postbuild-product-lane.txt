@@ -35,7 +35,7 @@ UTE-G1-FS-NC NC-MEMBER-POSITIVE read_image ok baseline=deny/lane-deny mutant=all
 ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
 ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1948.246198ms)
-ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-fs-image-20261120/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE <host-root>/.worktrees/ute3-fs-image-20261120/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -195,16 +195,16 @@ UTE-G1-FS-NC NC-MEMBER-POSITIVE read_image ok baseline=deny/lane-deny mutant=all
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
 ✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (351.745193ms)
-ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-fs-image-20261120/tests/deepseek-harness-next
+ℹ host=0.2.2-rc.5 tree=<host-root>/.worktrees/ute3-fs-image-20261120/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
 ✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (51.733404ms)
-ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-fs-image-20261120/.artifacts/tmp/ute1-fs-assembly/asse"
+ℹ fallback isError=false code=- text="<path><host-root>/.worktrees/ute3-fs-image-20261120/.artifacts/tmp/ute1-fs-assembly/asse"
 ✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (52.579266ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
 ✔ wrong host generation is refused by name and never falls back to the legacy tree (0.441145ms)
 ✔ golden parity: the product module reproduces the 10 old-path vectors (139.533422ms)
-ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-fs-image-20261120/tests/deepseek-harness-next
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=<host-root>/.worktrees/ute3-fs-image-20261120/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
 ℹ golden FS-W3-unobserved-overwrite: PASS

@@ -22,7 +22,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { compareAll, compareRecord, parseGolden, serializeGolden } from './lib/compare.mjs'
+import { COMPARED_FIELDS, compareAll, compareRecord, parseGolden, serializeGolden } from './lib/compare.mjs'
 import { CORPUS, SECRET_TOKEN } from './lib/corpus.mjs'
 import { observeImageStep } from './lib/effect-oracle.mjs'
 import { loadHostSurface } from './lib/host.mjs'
@@ -153,6 +153,13 @@ async function runMemberControls(golden) {
     const base = await captureVector(vector)
     const mutant = await captureVector(vector, { mutations: { dropVersionGuard: true } })
     const expected = goldenRow(golden, 'FS-E2-stale-edit')
+    // The positive arm grades the WHOLE row the golden grades, not just
+    // outcome/refusal: only the reviewed FS-E2 vector is cell-for-cell
+    // comparable (the synthetic control vector above deliberately rewrites the
+    // file with different bytes), so run that vector unmodified and compare it
+    // with the same comparator (`COMPARED_FIELDS`) the corpus uses.
+    const reviewedBase = await captureVector(source)
+    const baseMatchesGolden = compareRecord(expected, reviewedBase).ok
     const baseIsStale = base.outcome === 'deny' && base.refusal === 'stale-version'
     const mutantChanged = mutant.outcome === 'allow'
       && mutant.effects[0]?.sha256 !== base.effects[0]?.sha256
@@ -163,8 +170,8 @@ async function runMemberControls(golden) {
     })
     positive.push({
       id: 'NC-MEMBER-POSITIVE edit',
-      ok: expected.outcome === 'deny' && expected.refusal === 'stale-version' && baseIsStale && mutantChanged,
-      detail: `golden FS-E2=${expected.outcome}/${expected.refusal} baseline=${base.outcome}/${base.refusal} mutant=${mutant.outcome} — the guard, not a missing old_string, is what refused`,
+      ok: baseMatchesGolden && mutantChanged,
+      detail: `golden FS-E2=${expected.outcome}/${expected.refusal} baselineMatchesGolden=${baseMatchesGolden} fields=${COMPARED_FIELDS.join(',')} mutant=${mutant.outcome} — the guard, not a missing old_string, is what refused`,
     })
   }
 
