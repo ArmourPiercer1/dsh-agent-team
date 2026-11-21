@@ -488,3 +488,21 @@ leaves the unconfined inherited body in place permanently.
 
 This is also why "dispose harder" was the wrong instinct: an own registration that is removed exposes
 its ancestor, and the ancestor here is the composition provider with no confinement at all.
+
+## 14. Probe-ladder status (honest table)
+
+| rung | tool | mounted in the slice? | what is proven | what is NOT |
+| --- | --- | --- | --- | --- |
+| 1 | `read` | yes | identity, in/out ceiling, refusal, facts, replay, Stop, close | — |
+| 2 | `write` | yes | same, on the write lane | — |
+| 3 | `edit` | yes (mounted) | — | no arm yet; the definition is mounted but untested |
+| 4 | `grep`/`glob` | no | the ADMISSION gate: outside path denied, inside allowed, an omitted `path` means the workspace root and is judged, not waved through | no positive control (no spawn). The module needs `subprocess`, `spill` and `systemPrompt` providers this world does not mount |
+| 5 | `web_fetch` | no | the NETWORK axis: unset is not allow, deny is deny, allow is allow, and the fs lanes say nothing about it | no positive control (no `web` provider) |
+| 6 | `bash` / `run_code` | no | EXPLICIT `ADMISSION_AXIS_UNSUPPORTED`: the compiled policy has no subprocess lane, so the call is refused rather than admitted | no positive control, and no subprocess lane to enforce |
+
+`@vscode/ripgrep` IS present in the pinned runtime (pnpm store, 1.18.0), so rung 4 is not blocked by a
+missing binary. It is blocked by the three providers the search module injects. That is a wiring
+task, not an ENV_BLOCK, and it is not counted as either a pass or a block here.
+
+The subprocess refusal is the contract, not a TODO that will quietly become an allow: when C wires
+the family, it must arrive with a compiled subprocess lane, otherwise the refusal stays.

@@ -31,6 +31,7 @@ const binding = (over = {}) => ({
   instanceGeneration: 3,
   read: lane(['/work/a']),
   write: lane(['/work/a']),
+  workspaceRoot: '/work/a',
   definitionSource: '@deepseek-ai/dsh-tool-fs',
   policyGeneration: 'gen-7',
   blueprintRevision: 'rev-2',
@@ -73,9 +74,53 @@ test('ADM-3 — UNWIRED: no binding refuses, it does not fall through to the com
 })
 
 test('ADM-4 — UNWIRED: a tool with no declared axis is refused, never admitted by default', () => {
-  const decision = call('bash', { command: 'ls' })
+  // `bash` HAS an axis (process.exec), so the honest arm for "unclassified" uses a name the centre
+  // has never heard of - and `bash` gets its own arm below, because its refusal is a different one.
+  const decision = call('mystery_tool', { anything: 1 })
   assert.equal(decision.kind, 'deny')
   assert.equal(decision.code, 'ADMISSION_TOOL_UNBOUND')
+})
+
+test('ADM-16 — the SEARCH family is fs.read: outside denied, inside allowed, omitted path means the workspace root', () => {
+  assert.equal(call('grep', { pattern: 'token', path: '/work/a/src' }).kind, 'allow')
+  const outside = call('grep', { pattern: 'token', path: '/work/b' })
+  assert.equal(outside.kind, 'deny')
+  assert.equal(outside.code, 'LANE_DENY', 'a denied grep path must be refused for the LANE reason, not an unbound tool')
+  // The ordinary call: no path at all. The default is the member's own root, which the lane covers.
+  assert.equal(call('grep', { pattern: 'token' }).kind, 'allow')
+  const facts = invocationFactsOf({ binding: binding(), toolName: 'grep', callId: 'c-16', arguments: { pattern: 'token' }, admission: call('grep', { pattern: 'token' }) })
+  assert.equal(facts.axis, 'fs.read')
+  assert.equal(facts.locator, '/work/a', 'the record says WHICH locator was judged, not an empty string')
+  // A workspace root outside the lane cannot be reached by simply omitting the path.
+  const rooted = call('grep', { pattern: 'token' }, binding({ workspaceRoot: '/work/b' }))
+  assert.equal(rooted.kind, 'deny')
+  assert.equal(rooted.code, 'LANE_DENY')
+  // glob is the same axis, and cannot be smuggled past with a different tool name.
+  assert.equal(call('glob', { pattern: '**/*.ts', path: '/work/b' }).kind, 'deny')
+})
+
+test('ADM-17 — the NETWORK axis is its own: unset is not allow, and allow is not inferred from the fs lanes', () => {
+  const unset = call('web_fetch', { url: 'https://example.invalid/x' })
+  assert.equal(unset.kind, 'deny')
+  assert.equal(unset.code, 'NETWORK_DENY')
+  assert.match(String(unset.reason), /unset axis is not a permission/u)
+  assert.equal(call('web_fetch', { url: 'https://example.invalid/x' }, binding({ network: 'deny' })).kind, 'deny')
+  const allowed = call('web_fetch', { url: 'https://example.invalid/x' }, binding({ network: 'allow' }))
+  assert.equal(allowed.kind, 'allow', 'fs lanes say nothing about the network; the network axis decides')
+  const facts = invocationFactsOf({ binding: binding({ network: 'allow' }), toolName: 'web_fetch', callId: 'c-17', arguments: { url: 'https://example.invalid/x' }, admission: allowed })
+  assert.equal(facts.axis, 'net.fetch')
+  assert.equal(facts.locator, 'https://example.invalid/x')
+})
+
+test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable, not silently admitted', () => {
+  for (const toolName of ['bash', 'pwsh', 'run_code']) {
+    const decision = call(toolName, { command: 'ls' })
+    assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no subprocess lane exists`)
+    assert.equal(decision.code, 'ADMISSION_AXIS_UNSUPPORTED')
+  }
+  const facts = invocationFactsOf({ binding: binding(), toolName: 'bash', callId: 'c-18', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }) })
+  assert.equal(facts.axis, 'process.exec', 'the record must say which axis was unavailable')
+  assert.equal(facts.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
 })
 
 test('ADM-5 — UNWIRED: a call with no locator cannot be judged, so it is refused', () => {

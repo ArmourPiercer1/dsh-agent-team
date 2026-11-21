@@ -28,8 +28,14 @@ import type { PathRuleSet } from '../../../member-io-policy/src/types.js'
 export const TOOL_AXES = Object.freeze({
   read: 'fs.read',
   read_image: 'fs.read',
+  grep: 'fs.read',
+  glob: 'fs.read',
   write: 'fs.write',
   edit: 'fs.write',
+  web_fetch: 'net.fetch',
+  bash: 'process.exec',
+  pwsh: 'process.exec',
+  run_code: 'process.exec',
 } as const)
 
 export type ToolAxis = (typeof TOOL_AXES)[keyof typeof TOOL_AXES]
@@ -38,8 +44,23 @@ export type ToolAxis = (typeof TOOL_AXES)[keyof typeof TOOL_AXES]
 const LOCATOR_KEYS: Readonly<Record<string, readonly string[]>> = Object.freeze({
   read: ['file_path', 'path'],
   read_image: ['file_path', 'path'],
+  grep: ['path'],
+  glob: ['path'],
   write: ['file_path', 'path'],
   edit: ['file_path', 'path'],
+  web_fetch: ['url'],
+})
+
+/**
+ * Tools whose locator may be OMITTED, with the locator that omission actually means. `grep`/`glob`
+ * search their working directory when the model gives no path, so "no locator" is not "unjudgeable":
+ * it is the member's workspace root, and the lane judges that like any other locator. Leaving them
+ * in the no-locator refusal would have refused the ordinary case - and taught the model to pass a
+ * path just to get through, which is a worse surface than the one we started with.
+ */
+const DEFAULTED_LOCATORS: Readonly<Record<string, 'workspaceRoot'>> = Object.freeze({
+  grep: 'workspaceRoot',
+  glob: 'workspaceRoot',
 })
 
 export interface Binding {
@@ -50,6 +71,10 @@ export interface Binding {
   /** The compiled lanes. Never recomputed here; `member-io-policy` produced them. */
   readonly read: PathRuleSet
   readonly write: PathRuleSet
+  /** The member's workspace root: what an omitted search path means. */
+  readonly workspaceRoot?: string
+  /** The compiled network axis. Absent is NOT allow. */
+  readonly network?: 'allow' | 'deny'
   /** The declared source of the definitions this binding mounted (a host package specifier). */
   readonly definitionSource: string
   /** The policy generation the lanes were compiled under. */
@@ -62,11 +87,13 @@ export type AdmissionRefusalCode =
   | 'ADMISSION_NO_BINDING'
   | 'ADMISSION_TOOL_UNBOUND'
   | 'ADMISSION_NO_LOCATOR'
+  /** The axis is known but has no enforceable lane this round: refusing is the contract, not a TODO. */
+  | 'ADMISSION_AXIS_UNSUPPORTED'
 
 export type Admission =
   | { readonly kind: 'allow' }
   | { readonly kind: 'ask'; readonly reason: string }
-  | { readonly kind: 'deny'; readonly code: 'LANE_DENY' | AdmissionRefusalCode; readonly reason: string }
+  | { readonly kind: 'deny'; readonly code: 'LANE_DENY' | 'NETWORK_DENY' | AdmissionRefusalCode; readonly reason: string }
 
 /**
  * The durable record of *what was asked and under what authority*, written at admission time.
@@ -124,7 +151,20 @@ export function admit (input: {
   if (axis === undefined) {
     return refuse('ADMISSION_TOOL_UNBOUND', `tool ${JSON.stringify(toolName)} has no declared I/O axis; an unclassified tool is never admitted by default`)
   }
-  const locator = locatorOf(toolName, args)
+  if (axis === 'process.exec') {
+    // EXPLICITLY UNAVAILABLE, NOT SILENTLY ALLOWED. The compiled policy has no subprocess lane this
+    // round, so there is nothing to judge a shell command against; a centre that admitted it anyway
+    // would be claiming an enforcement it does not have. C wires this family for real.
+    return refuse('ADMISSION_AXIS_UNSUPPORTED', `tool ${JSON.stringify(toolName)} needs a subprocess lane, which this policy generation does not compile; a call the centre cannot judge is refused`)
+  }
+  const defaulted = DEFAULTED_LOCATORS[toolName]
+  const locator = locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding.workspaceRoot : undefined)
+  if (axis === 'net.fetch') {
+    if (binding.network !== 'allow') {
+      return refuse('NETWORK_DENY', `${JSON.stringify(locator ?? '')} is refused: the binding's network axis is ${binding.network === 'deny' ? 'deny' : 'unset'}, and an unset axis is not a permission`)
+    }
+    return { kind: 'allow' }
+  }
   if (locator === undefined) {
     return refuse('ADMISSION_NO_LOCATOR', `tool ${JSON.stringify(toolName)} was called without a locator the ${axis} lane can be judged on`)
   }
@@ -149,7 +189,8 @@ export function invocationFactsOf (input: {
 }): InvocationAuthorityFacts {
   const { binding, toolName, callId, arguments: args, admission } = input
   const axis = (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read') as ToolAxis
-  const locator = locatorOf(toolName, args) ?? ''
+  const defaulted = DEFAULTED_LOCATORS[toolName]
+  const locator = locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding?.workspaceRoot ?? '' : '')
   // A refused call still records what was ASKED — that is the point of the record: after an
   // incident, "which locator did the model try, under which generation" must not be reconstructible
   // only from a refusal message.
