@@ -21,8 +21,8 @@ construction until D runs the real host; that is the honest state, not an omissi
 | C-pty | PTY family | same face and same CONTRACT_CHANGE_REQUEST as C-subprocess | MECHANISM, positive control UNPROVEN (D); product admission BLOCKED pending ruling |
 | C-ptc | PTC escalation | **EXPLICITLY UNAVAILABLE (b)** — `run_code` is the PTC entry and the centre refuses it BEFORE the body with its own code `ADMISSION_PTC_UNAVAILABLE` (`admission.ts:318`), distinct from the generic `ADMISSION_AXIS_UNSUPPORTED` a plain `bash` carries. The row is recorded on `process.exec` with the reason naming BOTH absences (no process lane — the open CCR — and the escalation row's grants minted outside the centre). `ADM-87` proves the fact + settlement REFUSED/not-started + zero body on the real `installMemberCentre` composition, and the distinctness; `ADM-88` pins the closed table. The escalation ASK is unreachable for a governed member because the tool never executes. NOT PROVEN: a refusal driven through `createPtcEscalationRouter` itself (no governed face is registered in this cut) and any host boot | MECHANISM (explicit unavailability); escalation-router refusal UNPROVEN |
 | C-remote | Remote | **EXPLICITLY UNAVAILABLE (b)** — a row configured for the centre does not build the S6 command plane at all (`root.ts:4325`, via `refuseHostSurfaceBefore`): the refusal is written as a fact on the existing `team.control` axis and the product settlement closes it REFUSED/not-started. There is no remote-command axis in the compiled contract (the dispatcher is authorized by the server-derived principal, not by a member binding), so admitting it would need a new axis or a second authority. `ADM-86` drives the SAME product helper with a zeroed dispatcher and proves the ungoverned row still builds/dispatches (positive control). NOT PROVEN: a host boot; the disclosed product consequence is that a centre-configured row has no remote API (`root.remoteDispatcher` is absent) | MECHANISM (explicit unavailability); product entry wired, not booted |
-| C-mcp | MCP | judged on the NETWORK axis with the SERVER as the locator (`net.mcp`, `ADM-33`): unset is not allow, deny is deny, a tool-level restriction narrows it, and a `mcp__` name with no server is refused as malformed rather than matched by prefix. WHICH servers exist stays the mount gate's decision | MECHANISM |
-| C-alpha6 | Alpha.6 review routing | **EXPLICITLY UNAVAILABLE (b)** — the opt-in is refused with its own code `ADMISSION_ALPHA6_UNAVAILABLE`, in TWO independent gates that name the same missing axis: the pure config rule (`centre-config.ts:67`, `ADM-34`) and, for a row that builds the root directly on a centre-configured row, a recorded refusal on `host.service` (`root.ts:2500`) followed by a typed boot refusal — no review wake is dispatched. Review routing decides who may review whom before any tool call, so the centre has no lane or locator for it, and the previous "needs a centreStatePath" shape bought a durable store outside the centre, not centre adjudication. `ADM-85` proves the recorded refusal + settlement REFUSED/not-started + zero wakes, with an ungoverned positive control. NOT PROVEN: a host boot and the PA approval-fact join (D) | MECHANISM (explicit unavailability); PA join UNPROVEN |
+| C-mcp | MCP | judged on the NETWORK axis with the SERVER as the locator (`net.mcp`, `ADM-33`): unset is not allow, deny is deny, a tool-level restriction narrows it, and a `mcp__` name with no server is refused as malformed rather than matched by prefix. WHICH servers exist stays the mount gate's decision. **ROUND 57 — A REAL MOUNT NOW REACHES THE CENTRE.** `ADM-96` starts the product's own mini-MCP server (real HTTP, `packages/runtime/root-binding/harness/mini-mcp.mjs`), computes the mount target with the product's `configuredMcpServers` → `filterMcpServers`, mounts it with the EXACT production call (`mcpClient.apply(ctx, <the seven-field streamable-http literal `reconcileMcpSet` passes>)` — the same call `mcpMountCtx.plugin(mcpClient, …)` makes), reads `mcp__p5t5mini__ping` off the resulting model-visible surface, and the ONE centre admits it on `net.mcp`/locator `p5t5mini`, records the fact (read back from disk), settles `ADMITTED → RUNNING → COMPLETED`, and the REAL server body answers `pong:mounted`. `ADM-97` (negatives): the same MOUNTED tool is `NETWORK_DENY` when the compiled TOOL-level answer denies it and `NETWORK_DENY` when the ceiling denies — zero body, `REFUSED` settlement in both (mounting is not permission) — while the other tool of that server still runs; `mcp__` and `mcp__<server>` are `ADMISSION_TOOL_UNBOUND` (no prefix matching); a configured-but-ungranted server is excluded by the mount gate and contributes NO name to the surface. **LIMIT, UNPROVEN at the centre:** the centre is NOT mount-aware — its binding is installed at the member bind (`agent-bindings.mjs:1852`) while `mcpMountTarget` is computed later per boundary (`agent-bindings.mjs:2049`), and `admission.ts:78-120` has no mount input — so a WELL-FORMED name for a never-mounted server is decided on the network axis alone (pinned by `ADM-97` step 5). The product excludes such a call at the TOOL REGISTRY, not at admission | MECHANISM (real mount → real body → ONE centre; NO host boot); centre-side unmounted-server refusal UNPROVEN |
+| C-alpha6 | Alpha.6 review routing | **EXPLICITLY UNAVAILABLE (b)** — the opt-in is refused with its own code `ADMISSION_ALPHA6_UNAVAILABLE`, in TWO independent gates that name the same missing axis: the pure config rule (`centre-config.ts:67`, `ADM-34`) and, for a row that builds the root directly on a centre-configured row, a recorded refusal on `host.service` (`root.ts:2500`) followed by a typed boot refusal — no review wake is dispatched. Review routing decides who may review whom before any tool call, so the centre has no lane or locator for it, and the previous "needs a centreStatePath" shape bought a durable store outside the centre, not centre adjudication. `ADM-85` proves the recorded refusal + settlement REFUSED/not-started + zero wakes, with an ungoverned positive control. **ROUND 57 — the refusal is UNCONDITIONAL, and the machinery behind it is measured, not assumed.** `ADM-99` proves the config rule refuses the opt-in on EVERY row, including one with no `centreStatePath` (`centre-config.ts:67`; `host.ts:705` is the only production enforcement point) — so there is NO product-config path on which Alpha.6 is reachable at all, which is stronger than "a centre-configured row is refused". `ADM-98` proves the missing piece is NOT the Alpha.6 machinery: composed directly, `createAlpha6RootWiring` composes `mode:'alpha6'`, the ONE shared `createAlpha6RootRouter` takes a real decision off a durable control row (`route.kind='recipient'`, Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that, re-read from disk through a FRESH directory object, names exactly the routed reviewer. **The missing seam is the CENTRE JOIN:** no axis/family in `admission.ts` (`TOOL_AXES`/`CENTRE_TOOL_NAMES`/`HOST_CAPABILITY_TOOL_NAMES`, `admission.ts:44-58`) can name a review-routing decision, so `ADM-99` drives one at the centre and gets `ADMISSION_TOOL_UNBOUND` with the fact recorded on the FALLBACK axis `fs.read` — a fabricated-axis record, not a review verdict. **The two lawful shapes:** (A) add a compiled review-routing axis to the member contract (the v4 ceiling is frozen → contract change) so the ONE centre judges the decision before the wake; or (B) rule that a record-only approval fact on the existing `host.service` axis IS adjudication and wire the PA approval-fact join (still UNPROVEN below). Neither is wiring-only, so the row stays explicit unavailability. NOT PROVEN: a host boot and the PA approval-fact join | MECHANISM (explicit unavailability); Alpha.6 decision machinery PROVEN when composed directly (`ADM-98`), CENTRE join UNPROVEN |
 | C-goal | Goal / Todo | preserved as HOST CAPABILITIES (`get_goal`/`create_goal`/`update_goal`/`todo_write`), axis `host.service`, `ADM-32` | MECHANISM |
 | C-skill | Team Skill | preserved as a host capability (`skill`, axis `host.service`, `ADM-32`); its file reads go through the host skill service, NOT the member's confined fs | MECHANISM + recorded LIMIT |
 | C-fork | Subagent Fork | preserved as host capabilities (`subagent`, `send_message`, `interrupt_agent`, axis `host.service`, `ADM-32`); the CHILD's own binding governs the child's tools | MECHANISM |
@@ -80,8 +80,49 @@ capability the contract preserves, and it would pretend the centre confines an I
 
 So the centre binds the CALL and records the fact with axis `host.service`, and states the limit
 plainly: a skill file read by the host skill service is OUTSIDE the member's fs ceiling. That is a
-D-report limit, not a claim of confinement. MCP is treated differently because its effects are
-unknowable rather than merely out-of-lane: it stays refused by name.
+D-report limit, not a claim of confinement. MCP is treated differently: it is a
+declared network capability, so it is judged on the member's network axis with the server as the
+locator (C-mcp), never silently admitted on its name.
+
+## MEASURED (round 57): C-mcp's MOUNT path and C-alpha6's reachable path
+
+`ADM-96`…`ADM-99` live in `packages/runtime/test/vnext-admission.test.mjs` (`ute-vnext-a1` leg:
+161 pass + 2 disclosed skips; vitest population unchanged at 238).
+
+**C-mcp — what is REAL.** The server is the product's own `mini-mcp.mjs` endpoint over real HTTP.
+WHICH server exists is the product's `configuredMcpServers` → `filterMcpServers` (the mount gate).
+The mount is the exact production call `mcpClient.apply(ctx, config)` with the byte-same
+seven-field streamable-http literal `reconcileMcpSet` passes (`transport`, `serverName`, `url`,
+`headers`, `toolCallTimeoutMs`, `failOnStartupError`, `reconnect`); `apply` is what the Cordis
+`plugin(mcpClient, config)` call invokes. The judged name is read off the resulting model-visible
+surface, and the body behind it is the real MCP round-trip — `pong:mounted` is the server's answer,
+not a stub. The centre is `installMemberCentre` on the SAME ctx, with the binding projected by
+`bindingFromCompiledMember` from a compiled answer. Facts and settlements are read back from disk
+through fresh objects.
+
+**C-mcp — the named stand-in.** The Cordis ctx double (the surface U6 pins for this plugin), which
+decides nothing, and the host dispatch order (pre-execute → guard → body → `tools/result`).
+
+**C-alpha6 — what is REAL.** `createAlpha6RootWiring` (the product's ONE opt-in assembly),
+`createAlpha6RootRouter` (the ONE shared router, over the real closed-kind classifier the way
+`root.ts:3125` wires it), `dispatchLatch` + `createFileWakeIntentDirectory` (the product's own
+dispatcher and durable intent directory). The control row and member rows are INPUTS (values), not
+decisions; the routing policy decides from them.
+
+**C-alpha6 — the missing seam (file:line).** `admission.ts:44-58` + `:236`: the centre's closed
+vocabulary has no review-routing axis, so a review-routing subject is refused as
+`ADMISSION_TOOL_UNBOUND` and RECORDED on the fallback axis `fs.read` (`invocationFactsOf`,
+`admission.ts:389-405`). `centre-config.ts:67` refuses the opt-in on every row; `root.ts:2498-2512`
+is the second gate for a directly-built centre-configured root. **Two lawful shapes:** (A) a compiled
+review-routing axis added to the member contract (v4 ceiling frozen → contract change), judged by the
+ONE centre before the wake; (B) a ruling that a record-only approval fact on `host.service` IS
+adjudication, then wiring the PA approval-fact join. Neither is wiring-only; inventing review-routing
+policy is out of bounds for this cut.
+
+**NOT proven (round 57).** No host boot, so no row is PRODUCT-PROVEN. The centre is not mount-aware,
+so a well-formed name for a never-mounted server is not refused BY THE CENTRE (the mount gate + the
+tool registry are what exclude it) — stated above as a LIMIT and pinned by `ADM-97`. Policy
+COMPILATION is not exercised (the compiled answer is an input).
 
 ## MEASURED (round 49): the durable Alpha.4 overlay reaches the centre — E3 green, still not PRODUCT-PROVEN
 

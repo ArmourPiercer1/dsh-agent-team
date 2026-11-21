@@ -945,3 +945,52 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 
 Vitest population unchanged at **238**; the node leg gained `ADM-89`…`ADM-95` (7 arms), and the
 `vnext-admission` suite now runs 79 cases in ~1.3 s.
+
+## Round 57 (C stage) — C-mcp's MOUNT path and C-alpha6's reachable path
+
+**C-mcp.** `ADM-96` mounts the product's own mini-MCP server (real HTTP) through the exact production
+mount call (`mcpClient.apply` with the byte-same seven-field literal `reconcileMcpSet` passes), reads
+the model-visible `mcp__p5t5mini__ping` off the surface, and the ONE centre admits it on `net.mcp`
+with the SERVER as locator — fact read back from disk, settlement `ADMITTED → RUNNING → COMPLETED`,
+and the real server answers `pong:mounted`. The mount target is the product's own
+`configuredMcpServers` → `filterMcpServers`. `ADM-97` pins the negatives: a MOUNTED tool denied by
+the compiled tool-level answer or the ceiling is `NETWORK_DENY` with zero body and a REFUSED
+settlement (mounting is not permission), the sibling tool of the same server still runs, `mcp__` and
+`mcp__<server>` are `ADMISSION_TOOL_UNBOUND` (no prefix matching), and an ungranted configured server
+contributes no name to the surface. **New LIMIT:** the centre is not mount-aware (the binding is
+installed at the bind, the mount target computed later), so a well-formed name for a never-mounted
+server is decided on the network axis alone; `ADM-97` pins that current answer so it cannot change
+silently. The product excludes such calls at the tool registry.
+
+**C-alpha6.** The row stays `MECHANISM (explicit unavailability)`, with the measurement sharpened:
+`ADM-99` shows the config rule refuses the opt-in on EVERY row (including one with no
+`centreStatePath`), so no product-config path reaches Alpha.6; `ADM-98` shows the machinery is not the
+missing piece — composed directly, the real wiring + router take a routing decision from a durable
+control row and the real dispatcher persists an intent row that names exactly that reviewer, read back
+from a fresh directory object. The missing seam is the CENTRE JOIN: no review-routing axis exists in
+`admission.ts`, and a review-routing subject at the centre is `ADMISSION_TOOL_UNBOUND` recorded on the
+fallback axis `fs.read`. The two lawful shapes (compiled review-routing axis via contract change; or a
+ruling that a record-only `host.service` approval fact is adjudication + the PA join) are named in the
+matrix; neither is wiring-only, and no review-routing policy was invented.
+
+**New arms:** `ADM-96`, `ADM-97`, `ADM-98`, `ADM-99` (node:test, this leg). The shared
+`centreWorld` double gained an optional `tools` input and the Cordis extras the upstream MCP client
+reads; no existing arm changed its world.
+
+### Gates (round 57, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494…  (161 pass + 2 disclosed skips)
+DSH-TEST-CATALOG tests=889 instruments=3 refused=0 findings=0
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0
+docs:sync --check findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+Vitest population unchanged at **238**; the node leg gained `ADM-96`…`ADM-99` (4 arms), and the
+`vnext-admission` suite now runs 83 cases in ~1.5 s. No host boot, so no row is PRODUCT-PROVEN. The
+open escalations are untouched (`ESCALATION-realmless-admission.md`,
+`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, `CONTRACT-CHANGE-REQUEST-process-lane.md`).

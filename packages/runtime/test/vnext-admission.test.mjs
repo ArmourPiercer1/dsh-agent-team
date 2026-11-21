@@ -1751,9 +1751,43 @@ const centreWorld = async (label, over = {}) => {
   // is exactly what it was before: no existing arm changed its world.
   const dir = over.dir ?? mkdtempSync(`${tmpdir()}/vnext-b-${label}-`)
   const listeners = { pre: [], result: [] }
-  let guardFn
+  // The tools service is ONE object whether the caller supplies it (the C-mcp arms hand in the
+  // surface the REAL mcp-client plugin registers into) or the arm only needs the centre's guard.
+  const suppliedTools = over.tools
+  const guardHolder = { current: undefined }
+  const tools = suppliedTools === undefined
+    ? { guard (fn) { guardHolder.current = fn; return () => { guardHolder.current = undefined } } }
+    // Wrap the supplied service so the centre's guard is ALSO visible to this world's own dispatch
+    // (the arm consults it exactly as the host does). Register/schemas pass through untouched.
+    : {
+        ...suppliedTools,
+        guard (fn) {
+          guardHolder.current = fn
+          const dispose = suppliedTools.guard(fn)
+          return () => {
+            if (guardHolder.current === fn) guardHolder.current = undefined
+            if (typeof dispose === 'function') dispose()
+          }
+        },
+      }
+  // The remaining Cordis surface the upstream mcp-client plugin reads during apply(). It decides
+  // nothing and carries no policy: it is the host context a boot would supply (the same double the
+  // U6 seam test uses).
+  const hostDisposers = []
   const ctx = {
-    get: (name) => (name === 'tools' ? { guard (fn) { guardFn = fn; return () => { guardFn = undefined } } } : undefined),
+    root: {},
+    fiber: { uid: null },
+    tools,
+    logger: { info () {}, warn () {}, error () {}, debug () {} },
+    get: (name) => (name === 'tools' ? tools : undefined),
+    effect: (setup) => {
+      const dispose = setup()
+      if (typeof dispose === 'function') hostDisposers.push(dispose)
+    },
+    inject: (_names, compose) => compose({
+      mcpResources: { register () {} },
+      systemPrompt: { section () {}, getSectionOrder () { return 100 } },
+    }),
     on: (event, fn) => {
       const target = event === 'tools/pre-execute' ? listeners.pre : event === 'tools/result' ? listeners.result : undefined
       if (target === undefined) return () => {}
@@ -1800,7 +1834,7 @@ const centreWorld = async (label, over = {}) => {
     const step = async (index) => (index >= chain.length ? { kind: 'allow' } : chain[index](exec, () => step(index + 1)))
     return step(0)
   }
-  const guard = (exec) => (guardFn === undefined ? undefined : guardFn(exec))
+  const guard = (exec) => (guardHolder.current === undefined ? undefined : guardHolder.current(exec))
   const result = (exec, outcome) => { for (const handler of listeners.result.slice()) handler(exec, outcome) }
   /** One dispatch: pre-execute, guard, body, result — with the host's own result shape. */
   const dispatch = async (exec) => {
@@ -1820,6 +1854,13 @@ const centreWorld = async (label, over = {}) => {
   }
   return {
     dir,
+    ctx,
+    tools,
+    hostDispose: () => {
+      for (const dispose of [...hostDisposers].reverse()) {
+        try { dispose() } catch { /* a dying mount is expected at teardown */ }
+      }
+    },
     centre,
     ledger,
     store,
@@ -3973,5 +4014,533 @@ test('ADM-95 — C-work negative: a refused delegation delivers NOTHING and admi
     assert.equal(stage.leader.settlementOf(collected.callId).state, 'COMPLETED')
   } finally {
     await stage.destroy()
+  }
+})
+
+// ============================================================================================
+// C STAGE (round 57): the two C rows whose MOUNT path was still unproven — C-mcp and C-alpha6.
+//
+// C-mcp. ADM-33 pinned the JUDGEMENT (server as locator, `net.mcp`, no prefix match) but a string
+// literal is not a mount: nothing proved that a REAL server, reached through the product's OWN MCP
+// transport, contributes a tool the ONE centre then judges. ADM-96/97 close that:
+//
+//  * the server is the product's own `packages/runtime/root-binding/harness/mini-mcp.mjs` endpoint —
+//    a real HTTP MCP server, not a hand-written fake;
+//  * the mount is the EXACT call `agent-bindings.mjs#reconcileMcpSet` makes
+//    (`mcpMountCtx.plugin(mcpClient, <the same seven-field streamable-http literal>)`), executed as
+//    `mcpClient.apply(ctx, config)` (the public namespace-plugin seam the Cordis `plugin()` call
+//    invokes) over a real socket;
+//  * WHICH servers exist is the product's own SUPPLY + MOUNT GATE (`configuredMcpServers` →
+//    `filterMcpServers`), not a list the arm invents;
+//  * the judged name is read off the resulting model-visible surface (`mcp__<server>__<tool>`), and
+//    the body behind it is the real MCP round-trip (`pong:<msg>`), so "admitted" means the mounted
+//    tool actually ran.
+//
+// The HOST STAND-IN is named: the Cordis ctx double (the same surface U6 pins for this plugin) and
+// the dispatcher order (pre-execute → guard → body → result). It decides nothing; the decision is the
+// centre's on the same ctx.
+//
+// NOT PROVEN (stated in CAPABILITY-MATRIX-C.md as a LIMIT): the centre is not MOUNT-AWARE. Its binding
+// is frozen before the mount target is computed (agent-bindings.mjs installs the centre at the bind,
+// and computes `mcpMountTarget` later per boundary), so a WELL-FORMED name for a server that is not
+// mounted is decided on the network axis alone if a caller fabricates the call past the tool registry.
+// ADM-97 pins that current answer explicitly so it cannot change silently.
+//
+// C-alpha6. Round 55 proved the REFUSAL. What was unproven is the other side: that on the ONE row
+// shape where Alpha.6 is reachable (a row that never configured the centre) the product really TAKES
+// a routing decision and RECORDS who it chose. ADM-98 drives the real composition + the ONE router +
+// the real wake dispatcher + the durable intent directory, and reads the chosen reviewer back from
+// disk. ADM-99 then proves the centre has no vocabulary for that decision at all: the governed join
+// is missing, not merely switched off.
+// ============================================================================================
+
+/**
+ * The tools service the REAL `@deepseek-ai/dsh-mcp-client` plugin registers into, plus the ONE
+ * centre's `guard`. ONE object on the agent ctx, exactly as a boot supplies it.
+ */
+const cMcpTools = () => {
+  const registered = []
+  const disposers = []
+  let guardFn
+  const tools = {
+    register (definition) {
+      registered.push(definition)
+      const dispose = () => {
+        const at = registered.indexOf(definition)
+        if (at >= 0) registered.splice(at, 1)
+      }
+      disposers.push(dispose)
+      return dispose
+    },
+    guard (fn) { guardFn = fn; return () => { if (guardFn === fn) guardFn = undefined } },
+    schemas () { return registered.map((definition) => ({ name: definition.name })) },
+  }
+  return {
+    tools,
+    names: () => registered.map((definition) => definition.name),
+    definitionOf: (name) => registered.find((definition) => definition.name === name),
+    disposeAll: () => { for (const dispose of [...disposers].reverse()) { try { dispose() } catch { /* teardown */ } } },
+  }
+}
+
+/** The EXACT config literal `reconcileMcpSet` passes to `state.mcpMountCtx.plugin(mcpClient, …)`. */
+const cMcpMountConfig = (serverName, port) => ({
+  transport: 'streamable-http',
+  serverName,
+  url: `http://127.0.0.1:${port}/mcp`,
+  headers: {},
+  toolCallTimeoutMs: 15_000,
+  failOnStartupError: true,
+  reconnect: { enabled: true, initialDelayMs: 500, maxDelayMs: 2_000, maxAttempts: 3 },
+})
+
+/** The compiled-answer INPUT one member's net.mcp lane comes from (the ceiling + per-tool answers). */
+const cMcpCompiledMember = ({ instanceId = 'inst-mcp', network = 'allow', perTool = [] } = {}) => ({
+  members: [{
+    identity: { instanceId, instanceGeneration: 1 },
+    definitionSource: '@deepseek-ai/dsh-tool-fs',
+    policy: {
+      ok: true,
+      value: {
+        memberIdentity: instanceId,
+        templateId: 'worker',
+        instanceGeneration: 1,
+        revision: `rev-${instanceId}`,
+        read: lane(['/work/member']),
+        write: lane(['/work/member']),
+        network: { access: network },
+      },
+    },
+  }],
+  bindings: perTool.map((entry) => ({
+    toolName: entry.toolName,
+    effective: { read: lane(['/work/member']), write: lane(['/work/member']), network: { access: entry.network } },
+  })),
+})
+
+/** Mount one server through the product's own call, over the real transport. */
+const cMountMcp = async (world, serverName, port) => {
+  const mcpClient = await import('@deepseek-ai/dsh-mcp-client')
+  await mcpClient.apply(world.ctx, cMcpMountConfig(serverName, port))
+}
+
+/** One dispatch in the host's order, with the MOUNTED tool's real body as the body. */
+const cDispatchMountedMcp = async (world, mcp, exec) => {
+  const verdict = await world.preExecute(exec)
+  if (verdict.kind !== 'allow') {
+    world.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+    return { verdict, bodyRan: false }
+  }
+  const reason = world.guard(exec)
+  if (reason !== undefined) {
+    world.result(exec, { isError: true, error: { message: String(reason) } })
+    return { verdict: { kind: 'deny', reason }, bodyRan: false }
+  }
+  const definition = mcp.definitionOf(exec.name)
+  if (definition === undefined) throw new Error(`c-mcp: no mounted definition for ${exec.name}`)
+  const result = await definition.execute(exec.arguments, exec)
+  world.result(exec, { isError: false })
+  return { verdict: { kind: 'allow' }, bodyRan: true, result }
+}
+
+/**
+ * The same host order WITHOUT a body: pre-execute and guard only, then close the host event as an
+ * error. Used where the point is the centre's answer about a name the surface does not carry.
+ */
+const cProbeCentre = async (world, exec) => {
+  const verdict = await world.preExecute(exec)
+  if (verdict.kind !== 'allow') {
+    world.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+    return { verdict, bodyRan: false }
+  }
+  const reason = world.guard(exec)
+  if (reason !== undefined) {
+    world.result(exec, { isError: true, error: { message: String(reason) } })
+    return { verdict: { kind: 'deny', reason }, bodyRan: false }
+  }
+  world.result(exec, { isError: true, error: { message: 'HOST_TOOL_UNKNOWN: no definition on this agent surface' } })
+  return { verdict: { kind: 'allow' }, bodyRan: false }
+}
+
+test('ADM-96 — C-mcp: a REAL mounted MCP server’s tool call is ADMITTED by the ONE centre on net.mcp, and its real body answers', async () => {
+  const { startMiniMcpServer, closeMiniServer } = await import('../root-binding/harness/mini-mcp.mjs')
+  const { filterMcpServers } = await import('../agent-setup/capability/index.ts')
+  const { configuredMcpServers } = await import('../src/plugin/mcp-supply.ts')
+  const mcp = cMcpTools()
+  const mini = await startMiniMcpServer([3961, 3962], { tools: 'single' })
+  const compiled = cMcpCompiledMember()
+  const world = await centreWorld('mcp-mount', {
+    tools: mcp.tools,
+    binding: bindingFromCompiledMember({
+      member: compiled.members[0],
+      agentId: 'inst-mcp',
+      sessionId: 'session-mcp',
+      workspaceRoot: '/work/member',
+      owner: 'root-mcp',
+    }),
+  })
+  try {
+    // (1) WHICH SERVERS EXIST is the product's own supply read + mount gate — never the arm's list.
+    const configured = configuredMcpServers({
+      mcpServers: [
+        { name: 'p5t5mini', port: mini.port },
+        { name: 'ghost-srv', port: null },
+      ],
+    })
+    const target = filterMcpServers(configured.map((server) => server.name), { kind: 'allow', items: ['p5t5mini'] })
+    assert.deepEqual(target, ['p5t5mini'], 'the mount gate admits the granted configured server and nothing else')
+
+    // (2) THE PRODUCT'S MOUNT CALL, over a real socket to the real mini-MCP endpoint.
+    await cMountMcp(world, 'p5t5mini', mini.port)
+    assert.deepEqual(mcp.names(), ['mcp__p5t5mini__ping'], 'the model-visible surface is the server-qualified name')
+
+    // (3) THE ONE CENTRE judges the mounted call, and the real body runs.
+    const exec = {
+      name: 'mcp__p5t5mini__ping',
+      callId: 'mcp-mount-1',
+      arguments: { msg: 'mounted' },
+      agent: { id: 'agent-1' },
+      turn: 1,
+      step: 1,
+    }
+    const run = await cDispatchMountedMcp(world, mcp, exec)
+    assert.equal(run.verdict.kind, 'allow')
+    assert.equal(run.bodyRan, true, 'the admitted call reached the mounted body')
+    assert.deepEqual(run.result, { content: [{ type: 'text', text: 'pong:mounted' }] }, 'the REAL server answered; the body is not a stub')
+
+    // (4) The fact, read back from DISK through a FRESH ledger: the NETWORK axis, the SERVER as locator.
+    const fact = world.ledger.readAll().find((record) => record.kind === 'invocation-authority')
+    assert.notEqual(fact, undefined)
+    assert.equal(fact.toolName, 'mcp__p5t5mini__ping')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.axis, 'net.mcp')
+    assert.equal(fact.locator, 'p5t5mini', 'the locator is the SERVER, never a fabricated path')
+    assert.equal(world.admissionFact(exec.callId).locator, 'p5t5mini')
+
+    // (5) The product settlement store closed the call COMPLETED in the product's own state order.
+    const settled = world.store.read(world.executionIdOf(exec))
+    assert.equal(settled.state, 'COMPLETED')
+    assert.deepEqual(settled.transitions.map((entry) => entry.to), ['ADMITTED', 'RUNNING', 'COMPLETED'])
+  } finally {
+    mcp.disposeAll()
+    world.hostDispose()
+    await closeMiniServer(mini)
+    world.dispose()
+  }
+})
+
+test('ADM-97 — C-mcp negatives: the member’s compiled lane decides a MOUNTED call, a tool-level restriction narrows, and a bare prefix is not a permission', async () => {
+  const { startMiniMcpServer, closeMiniServer } = await import('../root-binding/harness/mini-mcp.mjs')
+  const { filterMcpServers } = await import('../agent-setup/capability/index.ts')
+  const mcp = cMcpTools()
+  const mini = await startMiniMcpServer([3963, 3964], { tools: 'paginated' })
+  // The compiled answer: network ALLOW at the ceiling, and a TOOL-LEVEL deny on `alpha` only. The
+  // second server is configured but NOT granted, so it must never be mounted.
+  const compiled = cMcpCompiledMember({
+    perTool: [{ toolName: 'mcp__p5t5mini__alpha', network: 'deny' }],
+  })
+  const world = await centreWorld('mcp-narrow', {
+    tools: mcp.tools,
+    binding: bindingFromCompiledMember({
+      member: compiled.members[0],
+      bindings: compiled.bindings,
+      agentId: 'inst-mcp',
+      sessionId: 'session-mcp',
+      workspaceRoot: '/work/member',
+      owner: 'root-mcp',
+    }),
+  })
+  const execOf = (name, callId) => ({ name, callId, arguments: { msg: callId }, agent: { id: 'agent-1' }, turn: 1, step: 1 })
+  try {
+    // (1) The MOUNT GATE is a decision: `deny` mounts nothing, and an ungranted configured server is
+    //     excluded even under allow.
+    assert.deepEqual(filterMcpServers(['p5t5mini', 'ghost-srv'], { kind: 'deny', items: [] }), [])
+    assert.deepEqual(filterMcpServers(['p5t5mini', 'ghost-srv'], { kind: 'allow', items: ['p5t5mini'] }), ['p5t5mini'])
+    await cMountMcp(world, 'p5t5mini', mini.port)
+    const surface = mcp.names().sort()
+    assert.deepEqual(surface, ['mcp__p5t5mini__alpha', 'mcp__p5t5mini__beta'])
+    assert.equal(surface.some((name) => name.includes('ghost-srv')), false, 'an unmounted server contributes NO tool name to the surface')
+
+    // (2) A MOUNTED tool the member's compiled TOOL-level answer denies: NETWORK_DENY, zero body.
+    const alpha = await cDispatchMountedMcp(world, mcp, execOf('mcp__p5t5mini__alpha', 'mcp-narrow-alpha'))
+    assert.equal(alpha.verdict.kind, 'deny')
+    assert.match(String(alpha.verdict.reason), /NETWORK_DENY/u)
+    assert.equal(alpha.bodyRan, false)
+    const alphaFact = world.admissionFact('mcp-narrow-alpha')
+    assert.equal(alphaFact.refusalCode, 'NETWORK_DENY')
+    assert.equal(alphaFact.axis, 'net.mcp')
+    assert.equal(alphaFact.locator, 'p5t5mini')
+    assert.equal(world.store.read(world.executionIdOf(execOf('mcp__p5t5mini__alpha', 'mcp-narrow-alpha'))).state, 'REFUSED', 'mounting is not permission: the same mounted server is still judged by the member')
+
+    // (3) The OTHER tool of the SAME mounted server is admitted and really runs — the narrowing is
+    //     per-tool, not "the server was refused".
+    const beta = await cDispatchMountedMcp(world, mcp, execOf('mcp__p5t5mini__beta', 'mcp-narrow-beta'))
+    assert.equal(beta.verdict.kind, 'allow')
+    assert.deepEqual(beta.result, { content: [{ type: 'text', text: 'beta:mcp-narrow-beta' }] })
+
+    // (4) MALFORMED / UNBOUND names: no prefix matching. `mcp__` names no server and `mcp__<server>`
+    //     names no tool; both are refused by NAME through the ONE centre, recorded, settled REFUSED.
+    for (const [name, callId] of [['mcp__', 'mcp-bare-prefix'], ['mcp__p5t5mini', 'mcp-server-only']]) {
+      const run = await cDispatchMountedMcp(world, mcp, execOf(name, callId))
+      assert.equal(run.verdict.kind, 'deny', name)
+      assert.match(String(run.verdict.reason), /ADMISSION_TOOL_UNBOUND/u, name)
+      assert.equal(run.bodyRan, false)
+      const fact = world.admissionFact(callId)
+      assert.equal(fact.refusalCode, 'ADMISSION_TOOL_UNBOUND')
+      assert.equal(fact.axis, 'net.mcp', 'the record still says which family the malformed name claimed')
+      assert.equal(world.store.read(world.executionIdOf(execOf(name, callId))).state, 'REFUSED')
+    }
+
+    // (5) LIMIT, PINNED AS A FACT: a WELL-FORMED name for a server that was never mounted is decided on
+    //     the network axis alone. The centre is not mount-aware (its binding is frozen before the mount
+    //     target exists), so the product's exclusion of `ghost-srv` is the mount gate + the tool registry,
+    //     NOT this decision. This arm exists so the limit cannot change silently; it is stated in
+    //     CAPABILITY-MATRIX-C.md as UNPROVEN at the centre.
+    const ghost = await cProbeCentre(world, execOf('mcp__ghost-srv__ping', 'mcp-ghost-wellformed'))
+    assert.equal(ghost.verdict.kind, 'allow', 'the DISCLOSED limit: the centre judges the name, not the mount table')
+    assert.equal(ghost.bodyRan, false, 'no body exists for it: the surface, not the centre, is what stops the dispatch')
+    assert.equal(mcp.definitionOf('mcp__ghost-srv__ping'), undefined, 'the product surface carries no definition for the unmounted server')
+    assert.equal(world.admissionFact('mcp-ghost-wellformed').locator, 'ghost-srv')
+    assert.equal(world.admissionFact('mcp-ghost-wellformed').axis, 'net.mcp')
+
+    // (6) The COMPILED LANE still decides a mounted call when the ceiling denies: the same surface,
+    //     a narrower binding, NETWORK_DENY and zero body.
+    world.setBinding(bindingFromCompiledMember({
+      member: cMcpCompiledMember({ network: 'deny' }).members[0],
+      agentId: 'inst-mcp',
+      sessionId: 'session-mcp',
+      workspaceRoot: '/work/member',
+      owner: 'root-mcp',
+    }))
+    const denied = await cDispatchMountedMcp(world, mcp, execOf('mcp__p5t5mini__beta', 'mcp-narrow-ceiling'))
+    assert.equal(denied.verdict.kind, 'deny')
+    assert.match(String(denied.verdict.reason), /NETWORK_DENY/u)
+    assert.equal(denied.bodyRan, false)
+    assert.equal(world.admissionFact('mcp-narrow-ceiling').axis, 'net.mcp')
+    assert.equal(world.store.read(world.executionIdOf(execOf('mcp__p5t5mini__beta', 'mcp-narrow-ceiling'))).state, 'REFUSED')
+  } finally {
+    mcp.disposeAll()
+    world.hostDispose()
+    await closeMiniServer(mini)
+    world.dispose()
+  }
+})
+
+// ------------------------------------------------------------------ C-alpha6: reachable vs refused
+
+/** The complete v5 shape (the same one the A6 root-wiring leg uses) — Alpha.6's only accepted source. */
+const cAlpha6Source = () => [
+  '---',
+  'schemaVersion: 5',
+  'blueprintId: C57-ALPHA6',
+  'revision: "57"',
+  'leader: { templateId: leader, persona: Lead. }',
+  'members:',
+  '  - templateId: officer',
+  '    persona: Review asks.',
+  'requirements: []',
+  'memberEnvelopes: []',
+  'policyStates: []',
+  'permissionMutationEnvelope: { rules: [] }',
+  'teamHardEnvelope: { rules: [] }',
+  'teamEnvelope:',
+  '  allow:',
+  '    - request-control',
+  '  deny: []',
+  'metadata: {}',
+  'reviewRouting:',
+  '  enabled: true',
+  '  officerTemplateId: officer',
+  '  ordinaryToolApprovals:',
+  '    default: officer',
+  '    leaderExceptions: []',
+  '  whenOfficerUnavailable: hold',
+  '---',
+  '',
+].join('\n')
+
+test('ADM-98 — C-alpha6 positive: on the only row shape where Alpha.6 is reachable, the ONE router takes a real decision and the DURABLE wake record names the routed Officer', async () => {
+  const { mkdtempSync, readFileSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { createAlpha6RootWiring } = await import('../alpha6/root-composition.ts')
+  const { createAlpha6RootRouter } = await import('../alpha6/root-router.ts')
+  const { createAlpha6CategoryLookup } = await import('../alpha6/assigned-officer-facts.ts')
+  const { createFileWakeIntentDirectory } = await import('../alpha6/wake-intent-directory.ts')
+  const { dispatchLatch, createLatchCoordinator, latchKeyFor } = await import('../alpha6/wake-dispatch.ts')
+
+  const ROOT = 'root-c57-alpha6'
+  const OFFICER = 'inst-c57-officer'
+  const OFFICER_SESSION = 'session-child-c57-officer'
+  const LEADER = 'inst-c57-leader'
+  // The durable control row this leg is about (an INPUT: the routing policy decides from it).
+  const leg = {
+    requestId: 'ctrl-c57-leg-1',
+    rootSessionId: ROOT,
+    approvalCaseId: 'case-c57-1',
+    legOrdinal: 1,
+    status: 'pending',
+    kind: 'leader-approval',
+    reviewAuthority: 'leader',
+    requestedEffect: 'allow',
+    operationFingerprint: 'sha256:c57-op',
+    authorityScope: { kind: 'exact', path: '/tmp/c57' },
+    reviewPayload: { authorityScope: { kind: 'exact', path: '/tmp/c57' } },
+    operationToolOwner: 'dsh-agent-team',
+    operationToolName: 'bash',
+    operationOwnerTemplateId: 'worker',
+    perEffectRequiredAuthorities: ['leader'],
+  }
+  const officerRow = { instanceId: OFFICER, rootSessionId: ROOT, templateId: 'officer', childSessionId: OFFICER_SESSION, lifecycle: 'RUNNING' }
+  const leaderRow = { instanceId: LEADER, rootSessionId: ROOT, templateId: 'leader', childSessionId: 'session-child-c57-leader', lifecycle: 'RUNNING' }
+  const control = {
+    readControlState: async (rootSessionId) => (rootSessionId === ROOT
+      ? { requests: [leg], transfers: [] }
+      : { requests: [], transfers: [] }),
+  }
+  const members = {
+    get: (rootSessionId, instanceId) => (rootSessionId === ROOT ? [officerRow, leaderRow].find((row) => row.instanceId === instanceId) : undefined),
+    list: (rootSessionId) => (rootSessionId === ROOT ? [officerRow, leaderRow] : []),
+  }
+
+  // (1) THE OPT-IN, through the PRODUCT's one assembly. A row that did not configure the centre is the
+  //     only row shape on which Alpha.6 is reachable; here it composes, naming the Officer template.
+  const wiring = createAlpha6RootWiring(true, () => ({
+    blueprintSource: cAlpha6Source(),
+    rootSessionId: ROOT,
+    leaderTemplateId: 'leader',
+    members,
+    control,
+  }))
+  assert.equal(wiring.mode, 'alpha6')
+  assert.equal(wiring.officerTemplateId, 'officer')
+
+  // (2) THE ONE SHARED ROUTER takes the decision from the durable control row + live member rows.
+  const router = createAlpha6RootRouter({
+    rootSessionId: ROOT,
+    routing: wiring.routing,
+    leaderTemplateId: 'leader',
+    routingForRoot: wiring.routingForRoot,
+    control,
+    members: { list: members.list },
+    // The SAME adapter root.ts passes: the closed-kind classifier takes a leg, the router names a kind.
+    fixedLeaderOrHumanCategory: ({ kind, rootSessionId, routing }) => createAlpha6CategoryLookup()({
+      rootSessionId: rootSessionId ?? ROOT,
+      leg: { kind },
+      routing: routing ?? wiring.routing,
+    }),
+  })
+  const route = await router.route(leg.requestId, ROOT)
+  assert.notEqual(route, null)
+  assert.equal(route.kind, 'recipient')
+  assert.deepEqual(route.target, { kind: 'instance', instanceId: OFFICER, templateId: 'officer', routeRole: 'officer' })
+  assert.match(String(route.reason), /delegated to the dedicated Officer/u)
+  assert.equal(route.currentLegId, leg.requestId)
+
+  // (3) THE RECORD: the product's own dispatcher persists the planned wake for the reviewer the ROUTING
+  //     DECISION chose, then reads it back from DISK through a FRESH directory object.
+  const dir = mkdtempSync(join(tmpdir(), 'c57-alpha6-'))
+  const intents = createFileWakeIntentDirectory(dir)
+  const wake = {
+    reviewerInstanceId: route.target.instanceId,
+    targetSessionId: OFFICER_SESSION,
+    templateId: route.target.templateId,
+    routeRole: route.target.routeRole,
+    currentLegIds: [leg.requestId],
+  }
+  const key = latchKeyFor(wake, ROOT, 7)
+  const delivered = []
+  const dispatched = await dispatchLatch({
+    plan: { wakes: [wake], humanLegIds: [], held: [] },
+    rootSessionId: ROOT,
+    sessionGeneration: 7,
+    coordinators: [createLatchCoordinator(key)],
+    intent: intents.forKey(key),
+    deliver: async (delivery, targetSessionId) => { delivered.push({ delivery, targetSessionId }) },
+  })
+  assert.deepEqual(dispatched.failures, [])
+  assert.equal(delivered.length, 1, 'the routed reviewer is the one woken')
+  assert.equal(delivered[0].targetSessionId, OFFICER_SESSION)
+  const reread = createFileWakeIntentDirectory(dir)
+  const rows = await reread.list()
+  assert.equal(rows.length, 1)
+  assert.equal(rows[0].key.rootSessionId, ROOT)
+  assert.equal(rows[0].key.reviewerInstanceId, OFFICER, 'the durable row names the reviewer the routing decision chose')
+  assert.equal(rows[0].status, 'accepted')
+  assert.equal(typeof rows[0].workFingerprint, 'string')
+  assert.equal(rows[0].workFingerprint.length > 0, true)
+  assert.match(readFileSync(reread.pathFor(key), 'utf8'), new RegExp(OFFICER), 'the row is a real file under the configured directory')
+  assert.equal(await reread.isStopped(key), false)
+})
+
+test('ADM-99 — C-alpha6 missing seam: the CENTRE has no vocabulary for a review-routing decision, so the governed join stays EXPLICITLY UNAVAILABLE', async () => {
+  const { HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const { TOOL_AXES } = await import('../src/plugin/vnext/admission.ts')
+
+  // (1) The CONFIG gate refuses the opt-in with its own code — and it is NOT scoped to centre-configured
+  //     rows: the SAME opt-in on a row with NO centreStatePath is refused too. `validateTeamPluginConfig`
+  //     is the only production enforcement point, so there is NO product-config path on which Alpha.6 is
+  //     reachable at all; the machinery proven by ADM-98 is reachable only when a caller composes it
+  //     directly (the direct-root/fixture shape). This is measured, not inferred.
+  assert.match(
+    String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })),
+    new RegExp(HOST_SURFACE_REFUSALS.alpha6.code, 'u'),
+  )
+  assert.match(
+    String(centreConfigViolation({ alpha6ReviewRouting: true })),
+    new RegExp(HOST_SURFACE_REFUSALS.alpha6.code, 'u'),
+    'the config refusal is unconditional: an ungoverned row is refused as well',
+  )
+
+  // (2) THE MISSING SEAM, stated as a closed-vocabulary fact: no axis and no tool family in the centre
+  //     can name a review-routing decision. This is why a governed decision has nowhere to be admitted.
+  const vocabulary = new Set([...Object.keys(TOOL_AXES), ...CENTRE_TOOL_NAMES, ...HOST_CAPABILITY_TOOL_NAMES])
+  for (const subject of ['alpha6.review-routing', 'reviewRouting', 'review_routing', 'review.route']) {
+    assert.equal(vocabulary.has(subject), false, `${subject} must not be an axis the centre pretends to judge`)
+  }
+
+  // (3) Driving the centre with the decision SUBJECT shows its only possible answer: UNCLASSIFIED. It
+  //     refuses with the generic unbound code and records the call on a FALLBACK axis — which is exactly
+  //     the invented-axis record the cut forbids, so the row cannot be claimed as governed.
+  const world = await centreWorld('alpha6-seam', {
+    binding: bindingFromCompiledMember({
+      member: cCompiledAnswer({
+        instanceId: 'inst-alpha6',
+        templateId: 'worker',
+        revision: 'rev-inst-alpha6',
+        read: ['/work/member'],
+        write: ['/work/member'],
+      }).members[0],
+      agentId: 'inst-alpha6',
+      sessionId: 'session-alpha6',
+      workspaceRoot: '/work/member',
+      owner: 'root-alpha6',
+    }),
+  })
+  try {
+    const exec = {
+      name: 'alpha6.review-routing',
+      callId: 'alpha6-seam-1',
+      arguments: { reviewerInstanceId: 'inst-c57-officer', currentLegId: 'ctrl-c57-leg-1' },
+      agent: { id: 'agent-1' },
+      turn: 1,
+      step: 1,
+    }
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_TOOL_UNBOUND/u)
+    const fact = world.admissionFact(exec.callId)
+    assert.equal(fact.refusalCode, 'ADMISSION_TOOL_UNBOUND')
+    assert.equal(fact.decision, 'deny')
+    assert.equal(fact.axis, 'fs.read', 'the record falls back to a fabricated axis: the reason a real axis (a contract change) is required')
+    assert.equal(world.body.count, 0, 'zero side effects: no review decision ran through the centre')
+    assert.equal(world.store.read(world.executionIdOf(exec)).state, 'REFUSED')
+    // The closed table still names the absence with its OWN code and an EXISTING axis — the refusal is
+    // honest, and it is the only product shape available until the axis or the join exists.
+    assert.equal(HOST_SURFACE_REFUSALS.alpha6.axis, 'host.service')
+    assert.match(String(HOST_SURFACE_REFUSALS.alpha6.missing), /no review-routing axis/u)
+  } finally {
+    world.dispose()
   }
 })
