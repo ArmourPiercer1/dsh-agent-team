@@ -44,7 +44,7 @@ import { createHash } from 'node:crypto'
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { dirname, join, resolve, sep } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import { CLIENT_COMMIT_HASH, HOST_PORT_BANDS, homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
@@ -67,14 +67,18 @@ export const CANARY_ROW_ID = 'u5-canary'
 export const CANARY_TOOL_NAME = 'u5_canary'
 export const WORLD_PREFIX = 'u5'
 /**
- * U6 PR1 shadow-parity support: the test-only row that mounts the PRODUCT
+ * U6 PR1 shadow-parity support: the test-only row that mounted the PRODUCT
  * shadow row (`packages/runtime/src/plugin/live/center-shadow-row.mjs`, from
  * its DIST face) over the plugin-fiber context — the same public-seam shape
  * the sealed sup-a `g1fa-center` fixture proved on this Host. Mounted ONLY
  * when a World is created with `centerAssembly: 'off' | 'shadow'`; both
  * worlds of the parity run mount the SAME row (the OFF world's row installs
- * nothing and records `center-skipped`), so the only delta between the two
- * Worlds is the shadow assembly itself.
+ * nothing and records `center-skipped`).
+ *
+ * A1 CUT: the product row retired with the old execution route, so no
+ * U6_CENTER_ROW_URL is handed down any more — a 'shadow' World's row records
+ * `center-error` (nothing to import) instead of a mount. The parity delta
+ * stays visible; it is no longer a product-row delta.
  */
 export const U6_SHADOW_HOST_SRC = resolve(HERE, '..', 'canary', 'u6-shadow-host.mjs')
 export const U6_SHADOW_ROW_ID = 'u6-shadow-host'
@@ -107,7 +111,6 @@ export const U6ARCD_PROBE_SRC = probeOf('u6ArcD').src
 export const U6ARCD_PROBE_ROW_ID = probeOf('u6ArcD').rowId
 export const U7C_PROBE_SRC = probeOf('u7Census').src
 export const U7C_PROBE_ROW_ID = probeOf('u7Census').rowId
-export const U6_CENTER_SHADOW_ROW_REL = 'packages/runtime/dist/packages/runtime/src/plugin/live/center-shadow-row.mjs'
 /**
  * PROFILE DISCLOSURE (s1-h0-m1 noext precedent, root-sanctioned differential
  * probe): on a FRESH unauthenticated DSH_HOME the two base-bundle
@@ -687,11 +690,13 @@ export class TestWorld {
     process.env.U5_CANARY_VISIBLE = this.visible ? '1' : '0'
     process.env.U5_CANARY_WORLD = this.id
     // U6 PR1 shadow-parity env (set on EVERY boot of a centerAssembly World;
-    // DshInstance spreads process.env into the child).
+    // DshInstance spreads process.env into the child). The product shadow row
+    // (center-shadow-row.mjs) retired at the A1 cut, so no U6_CENTER_ROW_URL
+    // is handed down: a 'shadow' World's mount row records `center-error`
+    // (nothing to import) rather than a fake mount.
     const shadowWorld = this.centerAssembly === 'off' || this.centerAssembly === 'shadow'
     if (shadowWorld) {
       process.env.U6_CENTER_ASSEMBLY = this.centerAssembly
-      process.env.U6_CENTER_ROW_URL = pathToFileURL(join(this.factory.repoRoot, U6_CENTER_SHADOW_ROW_REL)).href
       process.env.U6_CENTER_SHADOW_LEDGER = this.shadowLedgerPath
     } else {
       delete process.env.U6_CENTER_ASSEMBLY
@@ -732,8 +737,9 @@ export class TestWorld {
       // U6 PR1 shadow-parity: the SAME test row mounts in BOTH worlds; the
       // row itself installs the product shadow assembly only when
       // U6_CENTER_ASSEMBLY='shadow' (the OFF world records `center-skipped`
-      // and installs nothing). The product row is imported from the DIST
-      // face — the exact file the shipped glue's dynamic import resolves to.
+      // and installs nothing). The product row retired at the A1 cut, so
+      // U6_CENTER_ROW_URL is unset and the shadow world records
+      // `center-error` — the honest state, not a mounted assembly.
       copyFileSync(U6_SHADOW_HOST_SRC, join(this.instance.profileDir, 'u6-shadow-host.mjs'))
       rows.push({ id: U6_SHADOW_ROW_ID, name: './u6-shadow-host.mjs' })
     }
