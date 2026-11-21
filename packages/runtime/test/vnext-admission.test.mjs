@@ -666,3 +666,64 @@ test('ADM-35 — the member execution composition refuses to run a governed memb
   await assert.rejects(() => installMemberExecution({ ...base, compiledAnswer: undefined, config: {}, onDispose: undefined }), /onDispose/u)
   await assert.rejects(() => installMemberExecution({ ...base, compiledAnswer: undefined, config: {}, observe: undefined }), /observe/u)
 })
+
+test('ADM-36 — session identity, the durable lifecycle gate and the admission close, on their own', async () => {
+  // The extracted component is testable without a boot, a live handle or 5,000 lines of closure: that
+  // is the whole reason it was extracted. Each arm below is a question a resurrection seam asks.
+  const { createSessionIdentity } = await import('../src/plugin/vnext/session-identity.mjs')
+  const rows = [
+    { instanceId: 'inst-a', childSessionId: 'session-a', lifecycle: 'SETTLED' },
+    { instanceId: 'inst-b', childSessionId: 'session-b', lifecycle: 'ARCHIVED' },
+    { instanceId: 'inst-c', childSessionId: 'session-c', lifecycle: 'DISPOSED' },
+  ]
+  const domain = { repositories: { memberInstances: { list: () => rows } } }
+  const identity = createSessionIdentity({
+    domain,
+    bootRootSessionId: 'root-1',
+    sessionPersistence: { exists: async (id) => id === 'session-a' },
+  })
+  // The idempotency contract: the pair decides, statelessly.
+  assert.equal(identity.childSessionIdFor('root-1', 'inst-a'), identity.childSessionIdFor('root-1', 'inst-a'))
+  assert.notEqual(identity.childSessionIdFor('root-1', 'inst-a'), identity.childSessionIdFor('root-2', 'inst-a'))
+  assert.match(identity.childSessionIdFor('root-1', 'inst-a'), /^session-team-child-[0-9a-f]{32}$/u)
+  // Ownership: the root owns itself; a member belongs to the root whose rows carry it; unowned is undefined.
+  assert.equal(identity.teamRootOfSession('root-1'), 'root-1')
+  assert.equal(identity.teamRootOfSession('session-a'), 'root-1')
+  assert.equal(identity.teamRootOfSession('nobody'), undefined)
+  assert.equal(identity.instanceIdForSession('root-1'), 'inst-leader')
+  assert.equal(identity.instanceIdForSession('session-a'), 'inst-a')
+  assert.throws(() => identity.instanceIdForSession('session-z'), /no team instance/u)
+  // The durable lifecycle gate: only a terminal row is refused, with the frozen code for its state,
+  // and the ROOT is never refused (it has no MemberInstance row and archive never addresses it).
+  assert.equal(identity.memberResumeRefusal('session-a', 'root-1'), null)
+  assert.equal(identity.memberResumeRefusal('root-1', 'root-1'), null)
+  assert.equal(identity.memberResumeRefusal('session-b', 'root-1').code, 'PERMISSION_LIFECYCLE_EXECUTION_ARCHIVED')
+  assert.equal(identity.memberResumeRefusal('session-c', 'root-1').code, 'PERMISSION_LIFECYCLE_EXECUTION_TERMINAL')
+  // The admission close: closing is per durable child (never per request claim), refuses with its own
+  // code, and reopening records the boot-publish marker for a terminal row.
+  assert.equal(identity.closeAdmission({ rootSessionId: 'root-1', instanceId: 'inst-b' }), true)
+  assert.equal(identity.admissionCloseRefusal('session-b').code, 'LIFECYCLE_ADMISSION_CLOSED')
+  assert.equal(identity.admissionCloseRefusal('session-a'), null)
+  assert.equal(identity.reopenAdmission({ rootSessionId: 'root-1', instanceId: 'inst-b' }), true)
+  assert.equal(identity.admissionCloseRefusal('session-b'), null)
+  assert.equal(identity.terminalMarkerOf('session-b'), 'ARCHIVED', 'a reopened ARCHIVED member leaves the boot-publish marker')
+  assert.equal(identity.reopenAdmission({ rootSessionId: 'root-1', instanceId: 'inst-a' }), false)
+  assert.equal(identity.terminalMarkerOf('session-a'), undefined, 'a non-terminal reopen clears the marker')
+  identity.closeAdmission({ rootSessionId: 'root-1', instanceId: 'inst-a' })
+  identity.reopenAdmission({ rootSessionId: 'root-1', instanceId: 'inst-a' })
+  assert.equal(identity.terminalMarkerOf('session-a'), undefined)
+  identity.clearTerminalMarker('session-b')
+  assert.equal(identity.terminalMarkerOf('session-b'), undefined)
+  assert.equal(identity.closeAdmission({ rootSessionId: 'root-1', instanceId: 'inst-zzz' }), false, 'no durable row means nothing to close')
+  // Durable existence FAILS CLOSED: a missing seam is a typed refusal, and a backend fault is NOT
+  // flattened into "not durable".
+  const noSeam = createSessionIdentity({ domain, bootRootSessionId: 'root-1' })
+  await assert.rejects(() => noSeam.durableSessionExists('session-a'), /sessionPersistence\.exists/u)
+  const faulty = createSessionIdentity({ domain, bootRootSessionId: 'root-1', sessionPersistence: { exists: async () => { throw new Error('backend down') } } })
+  await assert.rejects(() => faulty.durableSessionExists('session-a'), /backend down/u)
+  const good = createSessionIdentity({ domain, bootRootSessionId: 'root-1', sessionPersistence: { exists: async (id) => id === 'session-a' } })
+  assert.equal(await good.durableSessionExists('session-a'), true)
+  assert.equal(await good.durableSessionExists('session-zzz'), false)
+  // A domain that cannot answer is refused at construction, not later.
+  assert.throws(() => createSessionIdentity({ domain: {}, bootRootSessionId: 'r' }), /memberInstances\.list/u)
+})

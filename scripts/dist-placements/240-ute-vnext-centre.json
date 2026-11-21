@@ -43,6 +43,11 @@
       "src": "packages/runtime/src/plugin/vnext/member-execution.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/member-execution.mjs",
       "note": "One member's execution composition (centre + native mount + lifecycle), extracted from the glue (2026-11-22). The glue imports it, so the shipped face must carry it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/session-identity.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/session-identity.mjs",
+      "note": "Session identity, durable lifecycle gate, admission close and the boot-publish marker; extracted from the glue (plan S1, 2026-11-22). The glue imports it."
     }
   ]
 }

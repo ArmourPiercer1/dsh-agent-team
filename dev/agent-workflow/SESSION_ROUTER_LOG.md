@@ -9916,3 +9916,28 @@ Leg now suites=5 files=5.
   them. Recorded as B5; NOT fixed; the feasibility doc says not to claim FS confinement on rc.5.
 - **PR #822 body refreshed** (it still described the pre-B state): status, evidence index, arm counts,
   the gates actually run, the review response and the limits above.
+
+### R27 — the first structural cut the plan asked for: session identity leaves the glue
+
+The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recommends S1 =
+`vnext/session-identity.mjs`. Done, and it is the biggest single move so far.
+
+- **What moved**: the glue's A4 region (child session id derivation, durable existence, instance and
+  owner resolution, the durable lifecycle gate, the admission close) **plus the two maps it kept
+  beside it** (`newWorkClosed`, `terminalAtReopen`). The maps are the point: they are the state those
+  nine functions answer from, and leaving them in the closure would have been a split that shares
+  mutable state — exactly what the review said not to do.
+- **Interface**: `createSessionIdentity({ domain, bootRootSessionId, sessionPersistence,
+  leaderInstanceId })` — that is all it reads. The boot-publish marker now leaves through
+  `terminalMarkerOf`/`clearTerminalMarker` instead of the boot loop reaching into the map.
+- **Glue**: 5,042 → **4,767** lines (in total 5,301 → 4,767 this session). The nine functions keep
+  their names via destructuring, so every call site is untouched.
+- **ADM-36** proves the component on its own: idempotent child id, root-owns-itself + member ownership
+  + `undefined` for unowned (never the boot root as a fallback), the frozen per-state refusal codes,
+  the root never refused, close/reopen semantics including the marker, `exists` failing closed when the
+  seam is absent and a backend fault NOT flattened into "not durable", and construction refused when
+  the domain cannot answer.
+- **Not verified here**: the plan's four pinned vitest suites (`a5sf-pd20-admission-close`,
+  `t12a-b2-child-identity`, `bp1-dual-team-gate`, `d3-member-identity-context`) cannot run in this
+  worktree (no vitest). They are the acceptance for the move's behaviour, and they remain unrun — the
+  module's own arms do not substitute for them.
