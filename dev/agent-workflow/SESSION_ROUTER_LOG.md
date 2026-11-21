@@ -10067,3 +10067,24 @@ sessionId`, `executionIdOf`'s synthetic join, and the grant-id scheme) as ONE de
 them separately would create a fourth scheme; (2) S6 decomposition (`live-residency.mjs`: `liveAgents`,
 `closing`, the disposer lists); (3) the process-lane contract ruling if the owner has ruled. The host
 boot work (step D) still needs either the rc.2 harness path to be rebuilt or rc.5 provisioning.
+
+### R29 — the identity question, taken as one decision
+
+The review's remaining P2s were three identity defects that would each tempt a different local fix. Taking
+them together, one is settled and two are deliberately left alone:
+
+- **SETTLED: `agentId: sessionId`.** The `Binding` interface says `agentId` is the runtime Agent "never a
+  session id", and the product wiring passed the session id into it — so a durable fact carried the host's
+  identity in the field reserved for the member's, and could not be joined to a member registry once the
+  session was gone. `Binding.instanceId` now comes from the compiled member identity, the facts record it
+  next to `agentId`/`sessionId`, `member-execution` binds `agentId` to the MEMBER, and a binding with no
+  member omits the field instead of inventing one (ADM-43).
+- **LEFT ALONE: the grant-id scheme.** There is nothing to reconcile: the product wires NO approval binder,
+  so every ask lane is already a hard refusal. Inventing a grant id now would create the fourth scheme the
+  review warned about; the id belongs with the ControlService adapter in step C.
+- **LEFT ALONE: `executionIdOf`'s synthetic `{callId, name: ''}`.** It is a join by convention, and the
+  honest join needs the settlement identity to be defined once — which is the same decision as the
+  contract-change request above. Doing it here would fix the shape and not the question.
+
+Round-29 gates at `42ab56be1`: leg `suites=6 files=6 exit=0` (43 admission arms), catalog
+`tests=888 refused=0 findings=0`, cut-closure `prodRefs=0 distResiduals=0`.
