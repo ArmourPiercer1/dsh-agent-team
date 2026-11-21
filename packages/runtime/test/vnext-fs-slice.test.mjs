@@ -46,6 +46,7 @@ register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.m
 const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
 const { installExecutionFacts } = await import('../src/plugin/vnext/execution-facts.mjs')
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
+const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -115,7 +116,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
                 templateId: IDENTITY.templateId,
                 instanceGeneration: IDENTITY.instanceGeneration,
                 revision: 'rev-vnext-slice',
-                read: lane([inside]),
+                // The realm's physical lane must cover an ask subtree the centre can approve;
+                // otherwise an approved call is unexecutable (the provider cannot ask).
+                read: lane(askPath === undefined ? [inside] : [inside, askPath]),
                 write: lane([inside]),
                 network: Object.freeze({ access: 'allow' }),
               }),
@@ -152,12 +155,28 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   let executions = []
   let disposeAdmission
   let disposeExecutions
+  // `ask-granted` models a host with an approval channel that answers 'allowed-once'. The stub is
+  // the smallest thing that proves the centre's half: mint when the ask is raised, spend exactly
+  // once at the guard. It is a TEST double for `ctx.get('approval')`, not product wiring.
+  let grants
+  if (admission === 'ask-granted') {
+    root.provide('approval', { request: async () => 'allowed-once' })
+    const binder = createInvocationBinder()
+    grants = {
+      binder,
+      memberOf: (binding) => ({ teamId: 'team-vnext-slice', memberInstanceId: binding.agentId, templateId: 'tmpl-vnext-slice', instanceGeneration: binding.instanceGeneration }),
+    }
+  }
   // `durable` = the ledger path. When present every admission/execution record goes to disk and a
   // SECOND world built on the same path stands in for the resumed process.
   const ledger = durable === undefined ? undefined : openFactLedger({ path: durable })
   if (mountRealm && admission !== undefined) {
     const lanes = {
-      read: { mode: 'restricted', allow: [inside], ask: askPath === undefined ? [] : [askPath], deny: [] },
+      // The provider lane is the physical ceiling for a call the centre has ALREADY adjudicated,
+      // so it carries the ask subtree in `allow`: a provider cannot ask, and making it refuse an
+      // approved locator would make approval unexecutable. The ask itself is raised by the centre
+      // before the body, which is where it can be answered.
+      read: { mode: 'restricted', allow: askPath === undefined ? [inside] : [inside, askPath], ask: askPath === undefined ? [] : [askPath], deny: [] },
       write: { mode: 'restricted', allow: [inside], ask: [], deny: [] },
     }
     const binding = {
@@ -173,12 +192,13 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     }
     disposeAdmission = installAdmissionPoint({
       ctx: agent.ctx,
-      resolveBinding: () => (admission === 'bound' ? binding : undefined),
+      resolveBinding: () => (admission === 'bound' || admission === 'ask-granted' ? binding : undefined),
       record: (record) => {
         facts.push(record)
         if (ledger !== undefined) ledger.recordAdmission(record)
       },
       ...(ledger === undefined ? {} : { isReplay: (callId) => ledger.has(callId), recordReplay: (input) => ledger.recordReplayRefusal(input) }),
+      ...(grants === undefined ? {} : { grants }),
     })
     disposeExecutions = installExecutionFacts({
       ctx: agent.ctx,
@@ -561,6 +581,31 @@ test('SLICE-19 — observation policy ON: a version that moved under the member 
     assert.equal(stale.isError, true, `a stale version must be refused: ${stale.text}`)
     assert.match(String(stale.errorMessage), /changed since|not been read|version/iu, 'the refusal must be about freshness, not about the lane')
     assert.equal(readFileSync(world.insideFile, 'utf8'), 'changed by someone else\n', 'the other writer\'s bytes must survive')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-20 — an approved ask executes exactly once, and the approval is spent at the guard', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'ask-granted'), admission: 'ask-granted', askPath: join(dir, 'ask-granted', 'asked'), durable: join(dir, 'ask-granted', 'facts.jsonl') })
+  try {
+    mkdirSync(join(dir, 'ask-granted', 'asked'), { recursive: true })
+    const askedFile = join(dir, 'ask-granted', 'asked', 'report.txt')
+    writeFileSync(askedFile, 'approved content\n')
+    const approved = await world.dispatch('read', { file_path: askedFile }, 'ask-approved-1')
+    assert.equal(approved.isError, false, `an approved ask must execute: ${approved.text} ${String(approved.errorMessage)}`)
+    assert.match(approved.text, /approved content/u, 'the body must have run and returned the file')
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].decision, 'ask', 'the record keeps the ASK, not a rewritten allow: approval does not change what was asked')
+    const executions = world.executions()
+    assert.equal(executions.length, 1, 'exactly one execution for one approval')
+    assert.equal(executions[0].outcome, 'completed')
+
+    // The same callId cannot be bought twice: the replay is refused before the body.
+    const replay = await world.dispatch('read', { file_path: askedFile }, 'ask-approved-1')
+    assert.equal(replay.isError, true)
+    assert.match(String(replay.errorMessage), /ADMISSION_REPLAY/u)
   } finally {
     await world.dispose()
   }

@@ -1,21 +1,22 @@
 /**
- * admission-port.mjs — puts the admission point on the agent's tool scope.
+ * admission-port.mjs — puts the admission point on the host's tool dispatch, for one agent.
  *
- * The host already runs, in this order: every `tools/pre-execute` listener, then every registered
- * guard, then the body. A guard returns a denial reason or nothing — it has no "allow", so nothing
- * downstream can turn a refusal back into permission. That is exactly the monotonic shape this
- * centre needs, and it is why the port installs a GUARD rather than wrapping definitions.
+ * The host runs, in this order: every `tools/pre-execute` waterfall listener, then every registered
+ * guard, then the body. The two stages can do different things and BOTH are needed:
  *
- * WHAT IS DELIBERATELY NOT HERE YET: `ask`. A guard cannot ask; an ask is a `tools/pre-execute`
- * verdict that enters the host approval flow. Until Control is wired to that verdict (B), an ask
- * becomes an explicit refusal carrying `ADMISSION_ASK_UNWIRED` — the plan's rule that a controlled
- * call the centre has not been wired for is refused, never silently downgraded to allow and never
- * turned into an approval prompt the centre cannot adjudicate.
+ * - a **guard** returns a denial reason or nothing. It has no "allow", so nothing downstream can
+ *   turn a refusal back into permission. That is where enforcement lives.
+ * - a **pre-execute listener** can return `{kind: 'ask'}`, which the host turns into an approval
+ *   request. A guard cannot ask, which is why the decision is split across the two stages.
  *
- * WHAT EVERY DECISION WRITES. One record per call, including allows: after an incident the
- * question is "which locator did this agent try, under which policy generation", and an allow is as
- * much part of that record as a refusal. The sink is injected so the same port can write to the
- * session, to a JSONL fixture, or to both.
+ * The one-shot grant connects them: raised at pre-execute when the ask is raised, spent at the
+ * guard exactly once, immediately before the body. A grant that cannot be spent is a refusal
+ * never an allow.
+ *
+ * WHAT EVERY DECISION WRITES. One record per call, including allows - after an incident the
+ * question is which locator an agent tried under which policy generation, and an allow is as much
+ * part of that record as a refusal. The sink is injected so the same port can write to the durable
+ * ledger, to a fixture, or to both.
  *
  * @module packages/runtime/src/plugin/vnext/admission-port
  */
@@ -31,7 +32,8 @@ export class AdmissionPortError extends TypeError {
 }
 
 /**
- * Install the guard on `ctx` (the agent's own context, so the host layers it by `exec.agent`).
+ * Install the admission point on `ctx` (the agent's own context, so the host layers both stages by
+ * `exec.agent`).
  *
  * @param {object} input
  * @param {object} input.ctx - the agent-scoped Cordis context that owns `tools`.
@@ -40,13 +42,16 @@ export class AdmissionPortError extends TypeError {
  * @param {(facts: object) => void} input.record - the fact sink. Called for EVERY decision.
  * @param {() => string} [input.callIdOf] - optional override; defaults to the host's `exec.callId`.
  * @param {(callId: string) => boolean} [input.isReplay] - true when the durable ledger already holds
- *   an admission record for this callId. A replay is refused BEFORE `admit`, because admitting it
+ *   an admission record for this callId. A replay is refused before `admit`, because admitting it
  *   again would mean the same identity governed twice.
  * @param {(input: {callId: string, toolName: string, reason: string}) => void} [input.recordReplay]
  *   - where the replay refusal itself is recorded; it must outlive the process that observed it.
+ * @param {{binder: object, memberOf: (binding: object) => object}} [input.grants] - the product's
+ *   one-shot grant binder (`member-io-policy`) and the projection from a binding to the trusted
+ *   member identity. Without it an ask stays refused: an approval nobody can spend is not one.
  * @returns {() => void} the disposer.
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -55,43 +60,116 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   if (typeof resolveBinding !== 'function') throw new AdmissionPortError('RESOLVER_MISSING', 'resolveBinding must be a function: a static binding cannot answer for a resumed or re-bound agent')
   if (typeof record !== 'function') throw new AdmissionPortError('RECORD_MISSING', 'record must be a function: a decision without a fact is unreviewable')
 
-  // MEASURED: the host consults a guard more than once for one execution (prepare and commit both
-  // ask). The DECISION for a callId is therefore made once and memoized, and the durable record is
-  // written once: consulting the same guard twice must not append a second authority record, and
-  // must not be able to change its mind between the two consultations.
+  /**
+   * callId -> {preExecute, guard, capability?}. MEASURED: the host consults a guard more than once
+   * per execution, so the verdict is decided once and memoized - consulting twice must not append a
+   * second authority record, nor change the decision between the consultations.
+   */
   const decided = new Map()
 
-  const dispose = tools.guard((exec) => {
-    const callId = typeof callIdOf === 'function' ? callIdOf(exec) : exec.callId
-    if (decided.has(callId)) return decided.get(callId)
-    // REPLAY FIRST. A callId the ledger has already admitted is not re-judged: re-judging it would
-    // either duplicate its authority record or silently replace the first decision, and both make
-    // the durable record unable to answer "what exactly was decided for this call".
-    if (typeof isReplay === 'function' && isReplay(callId)) {
-      const reason = `ADMISSION_REPLAY: callId ${JSON.stringify(callId)} already has an admission record; a replay is refused rather than re-judged`
-      if (typeof recordReplay === 'function') recordReplay({ callId, toolName: exec.name, reason })
-      decided.set(callId, reason)
-      return reason
-    }
+  const callIdOfExec = (exec) => (typeof callIdOf === 'function' ? callIdOf(exec) : exec.callId)
+
+  const refuseReplay = (exec, callId) => {
+    const reason = `ADMISSION_REPLAY: callId ${JSON.stringify(callId)} already has an admission record; a replay is refused rather than re-judged`
+    if (typeof recordReplay === 'function') recordReplay({ callId, toolName: exec.name, reason })
+    const entry = { preExecute: { kind: 'deny', reason }, guard: reason }
+    decided.set(callId, entry)
+    return entry
+  }
+
+  /**
+   * The ONE decision for one call: admit, record, and mint a grant when the answer is `ask`.
+   * Whichever stage reaches the call first decides; the other reads the memo.
+   */
+  const evaluate = (exec) => {
+    const callId = callIdOfExec(exec)
+    const memo = decided.get(callId)
+    if (memo !== undefined) return memo
+    if (typeof isReplay === 'function' && isReplay(callId)) return refuseReplay(exec, callId)
     const binding = resolveBinding(exec)
     const admission = admit({ binding, toolName: exec.name, arguments: exec.arguments })
     record(invocationFactsOf({ binding, toolName: exec.name, callId, arguments: exec.arguments, admission }))
-    // The code is part of the reason the model and the durable `tool/result` see: a refusal that
-    // reads like prose cannot be grepped, counted, or told apart from a body failure hours later.
-    if (admission.kind === 'deny') return `${admission.code}: ${admission.reason}`
-    if (admission.kind === 'ask') {
-      // FAIL CLOSED, LOUDLY. The host honours an ask only through the approval flow that Control
-      // owns; until that wiring exists, an ask is a refusal that names itself rather than a prompt
-      // no one can answer, or - worse - an allow with a note attached.
-      const verdict = `ADMISSION_ASK_UNWIRED: ${admission.reason}`
-      decided.set(callId, verdict)
-      return verdict
+    const store = (entry) => {
+      decided.set(callId, entry)
+      return entry
     }
-    decided.set(callId, undefined)
-    return undefined
+    if (admission.kind === 'deny') {
+      // The code is part of the reason the model and the durable `tool/result` see: a refusal that
+      // reads like prose cannot be grepped or counted, and cannot be told from a body failure later.
+      const verdict = { kind: 'deny', reason: `${admission.code}: ${admission.reason}` }
+      return store({ preExecute: verdict, guard: verdict.reason })
+    }
+    if (admission.kind === 'ask') {
+      if (grants === undefined || binding === undefined) {
+        // No grant binder: there is no approval anyone could spend, so the ask is a refusal that
+        // names itself rather than a prompt nobody can adjudicate, or an allow with a note on it.
+        const verdict = { kind: 'deny', reason: `ADMISSION_ASK_UNWIRED: ${admission.reason}` }
+        return store({ preExecute: verdict, guard: verdict.reason })
+      }
+      const minted = grants.binder.bind({
+        member: grants.memberOf(binding),
+        callId,
+        policyRevision: binding.policyGeneration,
+        toolBindingIdentity: `${binding.owner}/${exec.name}`,
+        approvedOnce: true,
+        lease: null,
+      })
+      if (minted.ok === false) {
+        const verdict = { kind: 'deny', reason: `ADMISSION_GRANT_UNMINTABLE: ${minted.code}` }
+        return store({ preExecute: verdict, guard: verdict.reason })
+      }
+      return store({ preExecute: { kind: 'ask', reason: admission.reason }, guard: undefined, capability: minted.value })
+    }
+    return store({ preExecute: { kind: 'allow' }, guard: undefined })
+  }
+
+  /** Spend the grant once. Returns the guard reason (undefined = allow). */
+  const spend = (entry, callId) => {
+    /* c8 ignore next -- callers only invoke this with a minted capability */
+    if (entry.capability === undefined) return entry.guard
+    const consumed = grants.binder.consume(entry.capability, {
+      memberIdentity: entry.capability.memberIdentity,
+      callId: entry.capability.callId,
+      policyRevision: entry.capability.policyRevision,
+      toolBindingIdentity: entry.capability.toolBindingIdentity,
+    })
+    entry.capability = undefined
+    if (consumed.ok === true) return undefined
+    const verdict = `ADMISSION_GRANT_${consumed.code}: the approval for ${JSON.stringify(callId)} could not be spent`
+    entry.guard = verdict
+    return verdict
+  }
+
+  const disposePre = typeof ctx.on === 'function'
+    ? ctx.on('tools/pre-execute', async (exec, next) => {
+      const upstream = await next()
+      // Another listener already refused or asked: do not override a verdict that is not ours.
+      if (upstream.kind !== 'allow') return upstream
+      return evaluate(exec).preExecute
+    })
+    : undefined
+
+  // The memo lives for the DURATION OF ONE EXECUTION, not for the lifetime of the port: the host
+  // consults the guard twice within a single dispatch, but a SECOND dispatch carrying the same
+  // callId is a replay and must meet the ledger, not a stale verdict. `tools/result` is the
+  // execution's end, so that is where the memo entry is dropped.
+  const disposeResult = typeof ctx.on === 'function'
+    ? ctx.on('tools/result', (exec) => { decided.delete(callIdOfExec(exec)) })
+    : undefined
+
+  const disposeGuard = tools.guard((exec) => {
+    const callId = callIdOfExec(exec)
+    const entry = evaluate(exec)
+    if (entry.capability !== undefined) return spend(entry, callId)
+    return entry.guard
   })
-  if (typeof dispose !== 'function') {
+
+  if (typeof disposeGuard !== 'function') {
     throw new AdmissionPortError('DISPOSER_MISSING', 'tools.guard() returned no disposer; a guard that cannot be removed outlives the binding it was installed for')
   }
-  return dispose
+  return () => {
+    disposeGuard()
+    if (typeof disposePre === 'function') disposePre()
+    if (typeof disposeResult === 'function') disposeResult()
+  }
 }
