@@ -58,7 +58,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once' }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -160,7 +160,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // once at the guard. It is a TEST double for `ctx.get('approval')`, not product wiring.
   let grants
   if (admission === 'ask-granted') {
-    root.provide('approval', { request: async () => 'allowed-once' })
+    // The approval channel's answer is a parameter because Stop is measured through it: a cancelled
+    // approval must end the call before the body, with the grant left unspent.
+    root.provide('approval', { request: async () => approvalMode })
     const binder = createInvocationBinder()
     grants = {
       binder,
@@ -210,9 +212,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     })
   }
 
-  const dispatch = async (name, args, callId) => {
+  const dispatch = async (name, args, callId, options = {}) => {
     const settled = await root.get('tools').execute({
-      signal: new AbortController().signal,
+      signal: options.signal ?? new AbortController().signal,
       callId,
       name,
       arguments: args,
@@ -606,6 +608,44 @@ test('SLICE-20 — an approved ask executes exactly once, and the approval is sp
     const replay = await world.dispatch('read', { file_path: askedFile }, 'ask-approved-1')
     assert.equal(replay.isError, true)
     assert.match(String(replay.errorMessage), /ADMISSION_REPLAY/u)
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-21 — STOP before dispatch: an aborted call never reaches the body', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-pre'), admission: 'bound' })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const controller = new AbortController()
+    controller.abort()
+    const aborted = await world.dispatch('read', { file_path: world.insideFile }, 'stop-1', { signal: controller.signal })
+    assert.equal(aborted.isError, true, `an aborted call must not succeed: ${aborted.text}`)
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText, 0, 'Stop must precede the body: the provider must not be touched')
+    const executions = world.executions()
+    assert.equal(executions.length, 1, 'the host settles the aborted call, so the fact exists - as an abort')
+    assert.equal(executions[0].outcome, 'aborted', 'a Stop is not a failure of the tool')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-22 — STOP during approval: a cancelled ask ends the call and the grant is never spent', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-ask'), admission: 'ask-granted', askPath: join(dir, 'stop-ask', 'asked'), approvalMode: 'cancelled' })
+  try {
+    mkdirSync(join(dir, 'stop-ask', 'asked'), { recursive: true })
+    const askedFile = join(dir, 'stop-ask', 'asked', 'report.txt')
+    writeFileSync(askedFile, 'never read\n')
+    const member = world.realm.installation.members[0].fs
+    const cancelled = await world.dispatch('read', { file_path: askedFile }, 'stop-ask-1')
+    assert.equal(cancelled.isError, true, `a cancelled approval must not run the call: ${cancelled.text}`)
+    assert.equal(member.calls.readText + member.calls.streamText, 0, 'the provider must not be reached')
+    const executions = world.executions()
+    assert.equal(executions.length, 1, 'the host settles the cancelled ask, so the fact exists')
+    assert.equal(executions[0].outcome, 'approval-refused', 'the ask was refused at approval, which is neither a Stop nor a broken tool')
+    const facts = world.facts()
+    assert.equal(facts.length, 1, 'the ask itself is still recorded: it was asked, then stopped')
+    assert.equal(facts[0].decision, 'ask')
   } finally {
     await world.dispose()
   }

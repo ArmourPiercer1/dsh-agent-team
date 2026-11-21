@@ -26,7 +26,7 @@ export class ExecutionFactsError extends TypeError {
 }
 
 /** How the call ended, with the provenance kept apart from the outcome. */
-export const OUTCOME_KINDS = Object.freeze(['admission-refusal', 'completed', 'failed'])
+export const OUTCOME_KINDS = Object.freeze(['admission-refusal', 'approval-refused', 'aborted', 'failed', 'completed'])
 
 /**
  * @param {object} input
@@ -69,7 +69,15 @@ export function installExecutionFacts ({ ctx, record, admissionOf }) {
       step: exec.step,
       // The outcome is the HOST's; the provenance is the CENTRE's. A refusal that reached the body
       // would be a governance defect, so it is reported as a refusal and not as a tool error.
-      outcome: refusedAtAdmission ? 'admission-refusal' : (isError ? 'failed' : 'completed'),
+      // Neither a Stop nor a refused approval is a tool failure, and collapsing them into 'failed'
+      // makes an operator's decision indistinguishable from a crash in every report that follows.
+      outcome: refusedAtAdmission
+        ? 'admission-refusal'
+        : exec.signal?.aborted === true
+          ? 'aborted'
+          : admission?.decision === 'ask' && isError
+            ? 'approval-refused'
+            : isError ? 'failed' : 'completed',
       isError,
       ...(refusedAtAdmission ? { refusalCode: admission.refusalCode ?? 'ADMISSION_REFUSED' } : {}),
       ...(isError && !refusedAtAdmission && typeof result?.error?.message === 'string' ? { errorMessage: result.error.message } : {}),
