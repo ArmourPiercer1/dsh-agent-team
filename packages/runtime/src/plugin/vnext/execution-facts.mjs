@@ -40,7 +40,7 @@ export const OUTCOME_KINDS = Object.freeze(['admission-refusal', 'approval-refus
  *   `dispatchExecutionId(provenance, callId)` instead of making a second id scheme.
  * @returns {() => void} the disposer.
  */
-export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf }) {
+export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf, onFact }) {
   if (ctx === null || typeof ctx !== 'object' || typeof ctx.on !== 'function') {
     throw new ExecutionFactsError('CTX_MISSING', 'no agent context to observe')
   }
@@ -89,6 +89,9 @@ export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf
     })
     written.set(callId, fact)
     record(fact)
+    // The settlement writer reads the SAME fact the ledger got: one observation, two consumers, and
+    // no second judgement about what the call did.
+    if (typeof onFact === 'function') onFact(fact, exec)
   })
 
   if (typeof dispose !== 'function') throw new ExecutionFactsError('DISPOSER_MISSING', 'ctx.on() returned no disposer')

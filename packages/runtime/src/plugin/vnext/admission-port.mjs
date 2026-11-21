@@ -46,12 +46,15 @@ export class AdmissionPortError extends TypeError {
  *   again would mean the same identity governed twice.
  * @param {(input: {callId: string, toolName: string, reason: string}) => void} [input.recordReplay]
  *   - where the replay refusal itself is recorded; it must outlive the process that observed it.
+ * @param {object} [input.settlement] - the settlement writer (`settlement-port`). Optional, because a
+ *   port may be installed in a diagnostic context; when present the three transitions follow the
+ *   decision, and a fault is reported rather than turning a decision into a different one.
  * @param {{binder: object, memberOf: (binding: object) => object}} [input.grants] - the product's
  *   one-shot grant binder (`member-io-policy`) and the projection from a binding to the trusted
  *   member identity. Without it an ask stays refused: an approval nobody can spend is not one.
  * @returns {() => void} the disposer.
  */
-export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants }) {
+export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, isReplay, recordReplay, grants, settlement }) {
   if (ctx === undefined || ctx === null) throw new AdmissionPortError('CTX_MISSING', 'no agent context to install on')
   const tools = typeof ctx.get === 'function' ? ctx.get('tools') : undefined
   if (tools === undefined || tools === null || typeof tools.guard !== 'function') {
@@ -89,6 +92,8 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     const binding = resolveBinding(exec)
     const admission = admit({ binding, toolName: exec.name, arguments: exec.arguments })
     record(invocationFactsOf({ binding, toolName: exec.name, callId, arguments: exec.arguments, admission }))
+    // The settlement record references the decision that was just made; it does not make one.
+    if (settlement !== undefined) settlement.admitted({ exec, callId, admission })
     const store = (entry) => {
       decided.set(callId, entry)
       return entry
@@ -170,7 +175,11 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   // callId is a replay and must meet the ledger, not a stale verdict. `tools/result` is the
   // execution's end, so that is where the memo entry is dropped.
   const disposeResult = typeof ctx.on === 'function'
-    ? ctx.on('tools/result', (exec) => { decided.delete(callIdOfExec(exec)) })
+    ? ctx.on('tools/result', (exec) => {
+      const callId = callIdOfExec(exec)
+      decided.delete(callId)
+      void callId
+    })
     : undefined
 
   const disposeGuard = tools.guard((exec) => {
@@ -186,7 +195,9 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     if (entry.capability !== undefined) {
       const drift = recheck(entry, exec)
       if (drift !== undefined) return drift
-      return spend(entry, callId)
+      const spent = spend(entry, callId)
+      if (spent === undefined && settlement !== undefined) settlement.running({ exec })
+      return spent
     }
     return entry.guard
   })

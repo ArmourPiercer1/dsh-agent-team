@@ -23,6 +23,9 @@ const { admit, invocationFactsOf } = await import('../src/plugin/vnext/admission
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
+const { createSettlementWriter } = await import('../src/plugin/vnext/settlement-port.mjs')
+const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
+const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
 
 const lane = (allow = [], ask = [], deny = []) => ({ mode: 'restricted', allow, ask, deny })
 
@@ -339,4 +342,63 @@ test('ADM-20 — an approval that still holds is spent exactly once, and a repla
   const replayed = await host.preExecute(exec)
   assert.equal(replayed.kind, 'deny')
   assert.match(String(replayed.reason), /ADMISSION_REPLAY/u)
+})
+
+// ------------------------------------------------------- SETTLEMENT, through the product's store
+//
+// The centre writes the product's `ExecutionSettlementStore`, which owns the transition law. It does
+// not decide anything: the admission decision is referenced, the outcome is the host's, and the
+// store refuses to re-drive a terminal state.
+
+const settlementWorld = async (label) => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const dir = mkdtempSync(`${tmpdir()}/vnext-settle-${label}-`)
+  const store = createExecutionSettlementStore({ dir })
+  const writer = createSettlementWriter({
+    store,
+    identityOf: (exec) => ({
+      executionId: dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, exec.callId),
+      actorId: 'agent-1',
+      worldId: 'session-1',
+    }),
+  })
+  return { store, writer }
+}
+
+test('ADM-21 — a completed call walks ADMITTED -> RUNNING -> COMPLETED in the product store', async () => {
+  const { store, writer } = await settlementWorld('done')
+  const exec = { name: 'read', callId: 'settle-1' }
+  writer.admitted({ exec, callId: 'settle-1', admission: { kind: 'allow' } })
+  writer.running({ exec })
+  writer.settled({ exec, outcome: 'completed' })
+  const executionId = dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, 'settle-1')
+  const record = store.read(executionId)
+  assert.equal(record.state, 'COMPLETED')
+  // The store is terminal: a second settlement is refused by the PRODUCT, not by a flag here.
+  assert.throws(() => writer.settled({ exec, outcome: 'failed' }), (error) => error.code === undefined || /SETTLEMENT/u.test(String(error.code ?? error.name)))
+})
+
+test('ADM-22 — a call refused at admission is REFUSED without ever entering RUNNING', async () => {
+  const { store, writer } = await settlementWorld('refused')
+  const exec = { name: 'read', callId: 'settle-2' }
+  writer.admitted({ exec, callId: 'settle-2', admission: { kind: 'deny', code: 'LANE_DENY', reason: 'outside the lane' } })
+  const executionId = dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, 'settle-2')
+  const record = store.read(executionId)
+  assert.equal(record.state, 'REFUSED')
+  assert.equal(String(record.terminalReason ?? '').includes('LANE_DENY'), true, `the refusal code must survive into the settlement record: ${JSON.stringify(record.terminalReason)}`)
+})
+
+test('ADM-23 — a process that dies mid-call recovers as UNKNOWN, never as success or failure', async () => {
+  const { store, writer } = await settlementWorld('crash')
+  const exec = { name: 'read', callId: 'settle-3' }
+  writer.admitted({ exec, callId: 'settle-3', admission: { kind: 'allow' } })
+  writer.running({ exec })
+  // ...and the process is gone: nothing settles this record.
+  const recovered = writer.recover()
+  const mine = recovered.find((entry) => entry.executionId === dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, 'settle-3'))
+  assert.notEqual(mine, undefined, 'the unsettled RUNNING record must be reconciled')
+  assert.equal(mine.before, 'RUNNING')
+  assert.equal(mine.after, 'UNKNOWN', 'an effect nobody observed is UNKNOWN - the one honest answer')
+  assert.equal(mine.missingEvidence.length > 0, true, 'the record must say WHAT was not observed, not just that it was not')
 })
