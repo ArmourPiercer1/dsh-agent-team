@@ -10351,3 +10351,25 @@ PTC ROUTER-side refusal is not built — it needs the open process-lane ruling �
 
 Gates at `ac8758305`: leg `suites=7 files=7 exit=0` (150 pass + 2 disclosed skips), catalog `tests=889
 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R56 — the 15 team tools, create/archive and delegate/collect are end-to-end over the product surface
+
+Nine arms (ADM-89..95) over `createTeamTools` on a real TeamRuntime/TeamDomain/ControlService, every
+assertion read back from disk with fresh ledgers:
+
+- all 15 centre-owned tools dispatched in declared order, each allow-before-body with a `team.control` fact
+  and a COMPLETED settlement;
+- binding removed ⇒ all 15 `ADMISSION_NO_BINDING` with zero surface effects, and a non-product tool is
+  `ADMISSION_TOOL_UNBOUND` while `read` is still admitted (the refusal is not a blanket);
+- `team_create_member` installs the MEMBER's own centre (its ledger, its generation, its lane — the Leader
+  allows the locator the member denies); `team_archive_member` runs `close()`, after which the member's call
+  is `ADMISSION_MEMBER_CLOSED` with `['ADMITTED','REFUSED']`, never UNKNOWN;
+- `team_delegate`/`team_collect` deliver and collect one unit with a durable `settledSequence`, and the
+  collected work's calls land in THAT member's ledger, never the Leader's.
+
+The seam was NOT missing: install at the member bind, archive's release-residency → handle dispose →
+`onDispose` → `close()`. No new authority, no fake tool, no CORE_SEAM_BLOCKER.
+
+Gates at `1682e51da`: leg `suites=7 files=7 exit=0` (157 pass + 2 disclosed skips, 79 admission cases),
+catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
+`PASS 238`.

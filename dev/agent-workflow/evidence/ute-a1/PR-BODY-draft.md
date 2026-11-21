@@ -184,6 +184,27 @@ each naming its own missing axis.
 is the honest price of refusing rather than half-wiring. The PTC router-side refusal is not built (it needs
 the open process-lane ruling); what is proven is the tool refusal that makes escalation unreachable.
 
+## C stage, second slice: the 15 team tools, member lifecycle and work delivery (round 56)
+
+Over the PRODUCT tool surface (`createTeamTools` on a real `createTeamRuntime`/`TeamDomain`/`ControlService`),
+facts read back from disk with fresh ledgers:
+
+- **C-tools** (ADM-89): all 15 `CENTRE_TOOL_NAMES` dispatched in declared order — allow before the body, every
+  body reached, one authority fact each on `team.control`, one execution fact, every settlement `COMPLETED`.
+- **unbound refusal** (ADM-90): binding removed ⇒ all 15 `ADMISSION_NO_BINDING`, zero bodies/deliveries/
+  creations, settlements `REFUSED`/`not-started`; and a tool NOT in the closed list is `ADMISSION_TOOL_UNBOUND`
+  (ADM-91) while `read` is still admitted — the refusal is not a blanket.
+- **C-member** (ADM-92/93): `team_create_member` installs the MEMBER's own centre at its bind (its ledger,
+  its generation, its lane — the Leader allows what the member denies); `team_archive_member` runs the
+  centre's `close()`, after which the member's call is `ADMISSION_MEMBER_CLOSED` with transitions
+  `['ADMITTED','REFUSED']` — never UNKNOWN.
+- **C-work** (ADM-94/95): `team_delegate` delivers one unit (prompt verbatim at the seam), `team_collect`
+  returns the terminal entry with a durable `settledSequence`; the collected work's calls are judged by THAT
+  member's centre and never appear in the Leader's ledger. A refused delegation delivers nothing.
+
+No row is PRODUCT-PROVEN (no host boot). Named host stand-ins decide nothing; policy compilation is an arm
+input, not exercised.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
