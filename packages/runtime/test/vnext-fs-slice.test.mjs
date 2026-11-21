@@ -28,7 +28,7 @@
  */
 
 import assert from 'node:assert/strict'
-import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -213,6 +213,35 @@ test('SLICE-3 — outside the ceiling the member read is refused by ITS provider
     assert.match(String(result.errorMessage), /outside every allow subtree/u, `the refusal must name the member lane, not a caller above it: ${String(result.errorMessage)}`)
     assert.equal(member.calls.stat + member.calls.lstat + member.calls.readText + member.calls.streamText, 0, 'the confined provider must refuse BEFORE the real filesystem is reached')
     assert.ok(world.fsInstances.length >= 1, 'the confined provider instance is the only provider the member reached')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-5 — write: inside the ceiling the member writes through its provider, and the bytes land', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'write-inside') })
+  try {
+    const target = join(world.inside, 'written.txt')
+    const result = await world.dispatch('write', { file_path: target, content: 'WRITTEN-BY-MEMBER\n' }, 'slice-write-inside')
+    assert.equal(result.isError, false, `an in-ceiling write must succeed: ${result.text} ${String(result.errorMessage)}`)
+    assert.equal(readFileSync(target, 'utf8'), 'WRITTEN-BY-MEMBER\n', 'the write must reach the member\'s filesystem')
+    const member = world.realm.installation.members[0].fs
+    assert.equal(member.calls.writeText, 1, 'exactly one write reached the member provider')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-6 — write: outside the ceiling it is refused before the filesystem is touched', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'write-outside') })
+  try {
+    const target = join(world.outside, 'forbidden.txt')
+    const result = await world.dispatch('write', { file_path: target, content: 'ESCAPED\n' }, 'slice-write-outside')
+    assert.equal(result.isError, true, `an out-of-ceiling write must fail: ${result.text}`)
+    assert.match(String(result.errorMessage), /outside every allow subtree/u)
+    assert.equal(existsSync(target), false, 'the refused write must not have created the file')
+    const member = world.realm.installation.members[0].fs
+    assert.equal(member.calls.writeText + member.calls.editText, 0, 'the member provider must not have been asked to write')
   } finally {
     await world.dispose()
   }
