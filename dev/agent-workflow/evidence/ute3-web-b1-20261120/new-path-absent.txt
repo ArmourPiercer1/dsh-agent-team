@@ -1,0 +1,42 @@
+# WEB — new-path absence (UTE-3 stage B1)
+
+NEW-PATH-ABSENT
+
+This file exists to be READ BY THE GATE, not to fill a slot. `terms.newPathVerified`
+is false because it is TRUE that no new path exists for the Web family in this
+round — not because the evidence was forgotten.
+
+    term                       expected
+    -------------------------- ------------------------------------------------
+    oldBaseline             =  TRUE      (tests/ute-g1-web/golden/old-path.tsv)
+    newPathVerified             = FALSE  (no new path exists)
+    semanticDifferencesResolved = FALSE   (three blocking, all unapproved)
+    negativeControlsPass    =  TRUE      (evidence/.../negative-controls.txt)
+
+## Why there is no new path
+
+* **No new-path enumerator.** There is no Web equivalent of the UTE-1 FS
+  prototype — no new-path enumerator, no new-path provider, no next-host run: nothing in this tree enumerates the family's model-visible surface
+  into a next-host candidate, and nothing re-serves it from a sealed provider.
+* **No `NEW-PATH-VECTOR` `<id>` PASS line exists for any of the 15 baseline
+  vectors.** The gate therefore reports one `UTE_VECTOR_UNREPRODUCED` finding
+  per vector and one `UTE_MEMBER_UNCOVERED` finding per member on this axis.
+  That is the correct verdict: the gate reports UTE_NEW_PATH_UNVERIFIED and a
+  green here would be a fabrication.
+* **The sealed transport is NOT a new path.** The confined `web` face ships no
+  transport by design (`packages/runtime/team-services/src/web.ts` takes a
+  provider), and this lane injects the PINNED `@deepseek-ai/dsh-web-fetch-http`
+  provider through its own documented resolver argument. That is the CURRENT
+  product composition (`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`,
+  route C) — old-path evidence, not a replacement implementation. CORE PATCH
+  BUDGET = 0: nothing upstream was patched to make it work.
+* **No boot lane was added.** The capture is host-free (C1) by design: a vector
+  is an EFFECT record, so a boot would add transport, not evidence. A booted
+  run is a legitimate future task, and it is still not a new path.
+
+## What WOULD flip this term
+
+A new-path task with (a) its own enumerator, (b) `NEW-PATH-VECTOR` `<id>` PASS
+lines for every baseline id in `tests/ute-g1-web/golden/old-path.tsv`, and
+(c) its own composition probe. Editing this ledger is explicitly not on that
+list.

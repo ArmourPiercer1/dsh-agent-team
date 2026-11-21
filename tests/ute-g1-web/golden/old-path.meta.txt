@@ -1,0 +1,176 @@
+# old-path.tsv — what this fixture is, and what it is not
+
+This file is the reviewed golden fixture for the **UTE G1 WEB family**
+(`web_fetch`, `web_search`): fifteen `(request → effect)` pairs measured on the
+CURRENT product path and serialized by `tests/ute-g1-web/lib/scenario.mjs`.
+Twelve cover `web_fetch`, three cover `web_search`.
+
+`OLD-PATH-META vectors=15 host=0.2.0-rc.2 host_commit=639ed015397290b3745d163aafe02ffee4aa3f84 members=web_fetch,web_search composition=route-c transport=loopback-fixture port=3182`
+
+It is a fixture, NOT a golden oracle, NOT a network-confinement proof and NOT a
+retirement claim: `tests/ute-g1-web/capture-old-path.mjs` re-derives it from the
+old path (exit 1 on any drift, or on a contradiction with the corpus design
+claim), and `tests/ute-g1-web/lane-suite.test.mjs` grades it.
+
+## Identity
+
+| field | value |
+|---|---|
+| host tree | `tests/deepseek-harness-test-use` (pinned; read-only) |
+| host version | `0.2.0-rc.2` |
+| host commit | `639ed015397290b3745d163aafe02ffee4aa3f84` |
+| governance seam | `mountMemberA5sfRealm` + `attachA5sfNativeToolModules` (product route C), i.e. the confined `web` face (`packages/runtime/team-services/src/web.ts`, BL-18/PD-30: one `a5sf-guard-consult/1` fact per call, `web:fetch` / `web:search`) plus the PD-27 shadow (`packages/runtime/src/plugin/live/confined-web-tool.mjs`, module name `a5sf-confined-web`) that the attach places |
+| dispatch | `ctx.tools.execute({…})` — the host registry's real model-call path |
+| transport | the COMPOSITION's provider: the pinned `@deepseek-ai/dsh-web-fetch-http` `HttpFetchProvider` with its own documented resolver argument pointed at the fixture, plus a bounded JSON POST for search. The confined face ships no transport by design |
+| wire | a real `node:http` fixture on `127.0.0.1:3182` (sanctioned test port, never `3080`) and a process-wide socket witness |
+| capture form | host-free C1 world (`tests/ute-g1-web/lib/world.mjs`); no boot, no `DSH_HOME`, no 3080 |
+| capture command | `node tests/ute-g1-web/capture-old-path.mjs --write` |
+| verify command | `node tests/ute-g1-web/capture-old-path.mjs` (prints `OLD-PATH-GOLDEN compare=identical` or exits 1) |
+| oracle | `lib/effect-oracle.mjs` — the FIXTURE SERVER's own arrival log (count + digest + ordered list), the bytes it wrote, the admitted value's url/status/kind/truncation (or sources), the per-call guard facts, the socket witness and the model-facing text |
+
+## Composition (measured, not assumed)
+
+`node tests/ute-g1-web/probe-composition.mjs` records the measurement in
+`dev/agent-workflow/evidence/ute3-web-b1-20261120/composition-probe.txt`:
+
+* BOTH members are **reachable** on the product route-C composition and BOTH
+  reach the **confined face** (`confined=yes`, `inheritedServiceCalls=0`, one
+  guard fact per call carrying `WEB_REDIRECT_UNMEDIATE_ON_ALLOW` and
+  `WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW`);
+* an out-of-lane destination (`http://localhost:3182/text`) is refused **before
+  the provider** by the PD-30 SSRF leg (`WEB_DESTINATION_FORBIDDEN`, one deny
+  fact, ZERO fixture arrivals);
+* the legacy governed plane (`packages/tools/families/web.mjs`) **CLAIMS the
+  same fixed native spellings** `web_fetch`/`web_search` directly (opt-in
+  `webEnabled`, ABSENT = FALSE, `disabledOwned` deliberately empty, sha256
+  pinned in `packages/tools/families/manifest.json`). This is NOT Search's
+  answer: `verifyPlaneNames` in
+  `packages/runtime/src/plugin/live/team-tool-plane.mjs` is a DIFFERENT gate,
+  closed to `grep`/`glob`/`bash`, and answers `PLANE_NAMES_INVALID` for a web
+  key. The web family rides the FamilyAssembly seam, not that map. **Search's
+  `PLANE_NAMES_NATIVE_CLAIM_UNSUPPORTED` conclusion was not transferred.**
+
+There is **no mounting gap** in this family, so no substitute or test-only
+composition is used anywhere in this fixture.
+
+A governed-plane `webEnabled:true` MOUNT is not run here (it needs the whole
+governed kernel/PA lane). That is an UNKNOWN, stated as such in the evidence
+README; `lib/semantic-differences.mjs` compares the governed descriptor and the
+legacy transport's own answer instead of pretending to dispatch through it.
+
+## Record shape
+
+Header: `id entry network outcome refusal codes effects facts text net`.
+
+* `entry` — the WEB member that produced the effect (`web_fetch` |
+  `web_search`); the retirement gate derives member coverage from this column.
+* `network` — the declared network axis of the vector. Every vector here is
+  `allow` (the compiled `EffectiveIo` admits the call); the DENIAL of a
+  destination is measured as the vector's `outcome`, not by pretending the lane
+  axis changed.
+* `outcome` — `allow` | `deny`.
+* `refusal` — a closed category or `-` when allowed. The vocabulary is the
+  nine-category one imported from
+  `tests/ute-g1-fs/lib/refusal-categories.mjs` (**reused, not forked**):
+  `denied-by-lane`, `read-before-write`, `stale-version`, `missing-path`,
+  `invalid-argument`, `unsupported-mode`, `route-unresolved`, `cancelled`,
+  `unknown`. This corpus uses five and **never** the residual `unknown` or
+  `other` (asserted by the capture guard and by `lane-suite.test.mjs`).
+  `read-before-write`, `stale-version` and `missing-path` are FS-shaped and no
+  Web vector can produce them.
+* `codes` — the typed codes the model-facing text and the guard facts carried
+  (`WEB_DESTINATION_FORBIDDEN`, …). Recorded, never a pass condition. THREE
+  refusals have no typed code on route C: the pinned provider's body, format and
+  deadline refusals reach the model as **prose over an ALLOW fact**
+  (`SD-WEB-3`). Their code is recovered from a CLOSED prose table
+  (`PINNED_WEB_ERROR_TEXT`), and a prose refusal no entry names raises
+  `REFUSAL_VOCABULARY_INCOMPLETE` instead of being guessed at. One code
+  (`WEB_BLOCKED_URL`) is **deliberately declared unmapped**: it covers both
+  credentials-in-URL and non-public resolution, and picking one category would be
+  a guess.
+* `effects` — synthetic entries (`@`) in the FS serializer's grammar,
+  `path|present|bytes|sha256|mode` joined by `;`:
+  * `@srv:requests` — `bytes` = the number of ARRIVALS at the fixture,
+    `sha256` = the digest of the ordered `METHOD path` list, `mode` =
+    `<arrival|sorted>,list=<METHOD path>+…`. This is the corroborating side
+    effect that makes a text answer evidence: a provider cannot forge the
+    fixture's own log. `sorted` is used ONLY by the one concurrent vector
+    (`WB-S2`, two queries in `Promise.allSettled`), where arrival order is not a
+    deterministic fact — the record SAYS so instead of digesting a race.
+  * `@srv:bytes` — the bytes the fixture actually wrote (`bytes`), `mode` =
+    `written` | `none`.
+  * `@result` — the admitted value: `bytes` = the normalized text length,
+    `sha256` = the digest of the normalized model-facing text, `mode` =
+    `status=<n|none>,kind=<text|html|none>,truncated=<yes|no>[,sources=<n>][,chars=<n>]`.
+    A refusal records `@result|absent|-|-|no-result-observation`.
+* `facts` — `fetches=<provider fetches>,searches=<provider searches>,allow=<allow facts>,deny=<deny facts>,hostweb=<inherited host ctx.web calls>`.
+  This is the "the confined face was actually reached and no unconfined fallback
+  answered" witness; `hostweb` must be 0 for every admitted row (the PD-27
+  shadow, not the inherited service, owns the pair).
+* `text` — the model-facing text, with the live origin normalized to
+  `<origin>` and newlines escaped as `\n` (the row is TSV).
+* `net` — `loopback=<yes|no>,external=<n>` from the socket witness. `external`
+  MUST be 0 on every row; an admitted row must show `loopback=yes`, i.e. a real
+  wire event.
+
+## Normalization and exclusions (explicit, because determinism is claimed)
+
+1. The live fixture origin `http://127.0.0.1:3182` is replaced by `<origin>` in
+   every string cell before serialization. The port is a DECLARED constant
+   (`lib/fixture-server.mjs`), not machine state.
+2. Newlines in the model-facing text become `\n`; tabs become spaces.
+3. Request arrival order is digested as ARRIVAL order, except the single
+   vector marked `concurrent: true`, which is digested SORTED and labelled
+   `sorted` in its own cell.
+4. No wall clock, no pid, no absolute path, no `DSH_HOME`, no environment value
+   and no random id enters a record. The lane suite asserts all four.
+5. There is NO tree digest: this family has no file effect. Saying "the tree is
+   unchanged" would be a claim about an effect the tool cannot have.
+
+## Retained semantics of the product path (measured, disclosed)
+
+* **The pinned provider FOLLOWS same-origin redirects itself** — one tool call
+  produced THREE fixture arrivals (`/r1`, `/r2`, `/final`). The face discloses
+  it as the ALLOW residual `WEB_REDIRECT_UNMEDIATE_ON_ALLOW`. The legacy
+  transport answers ONE hop and lets the governed row drive the chain
+  (`SD-WEB-2`).
+* **An HTTP error status is DATA, not a refusal** (`WB-F5`, HTTP 404 with its
+  body); only the transport's own bounds refuse.
+* **The byte cap and the char cap are different effects**: exceeding
+  `maxResponseBytes` is a typed refusal (`WB-F7`), while exceeding
+  `maxBodyChars` is a truncation ADMITTED with the pinned truncation footer
+  (`WB-F8`).
+* **A timeout leaves the wire event, not the bytes** (`WB-F9`: one arrival at
+  the fixture, 0 bytes written, `cancelled`). A caller abort happens before
+  dispatch and opens no socket and writes no fact (`WB-F10`).
+* **`web_search` merges multi-query results** (`WB-S2`: `### <query>` sections,
+  round-robin dedupe, five distinct sources) and fires the queries
+  CONCURRENTLY — which is why its request witness is the one `sorted` cell.
+* **The proxy environment is NOT mediated by the face** on an allow
+  (`WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW`). For THIS fixture the pinned provider
+  skips its proxy branch because `127.0.0.1` is a non-public IP literal
+  (`isNonPublicIpLiteral`), so a process-wide `HTTP_PROXY` cannot be entered —
+  measured, and it is why the golden's `external=0` is meaningful rather than
+  lucky. A public hostname WOULD honour the proxy; that is the disclosed
+  residual, not a claim of proxy confinement.
+
+## What it does NOT cover (mirrored in ../README.md §7)
+
+* **No new path exists.** Every vector is old-path evidence; `newPathVerified`
+  is false by construction.
+* **Network confinement is not PROVEN.** A refusal record pins the refusal, the
+  zero provider entry and the zero non-loopback sockets of THIS run. The host
+  sandbox claims FILE effects only, so network confinement is admission-time
+  Team authority, not local enforcement.
+* **`capSearchSources` is not exercised.** The route-C shadow mounts the host
+  default `searchMaxResults=50` and the composition exposes no key to lower it;
+  the fixture answers 5 sources, under the cap. An explicit UNKNOWN, never a
+  silently dropped vector.
+* **Mid-flight cancellation** — only a pre-dispatch abort is expressible.
+* **`WEB_BLOCKED_URL`, `WEB_INVALID_URL`, `WEB_PROVIDER_ERROR`,
+  `WEB_SEARCH_DESTINATION_DENIED`** are mapped but not exercised by a vector.
+* **The governed `webEnabled:true` mount / dispatch** — not run (needs the
+  governed kernel/PA lane).
+* **Cross-origin redirect refusal** — the fixture's chain is same-origin; the
+  pinned provider's cross-origin branch is mapped, not measured.
+* **Live boot** — C1 host-free capture, not a booted run.

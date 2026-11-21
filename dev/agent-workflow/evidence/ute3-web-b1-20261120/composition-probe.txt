@@ -1,0 +1,41 @@
+PROBE host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+PROBE pristine-tree=tests/deepseek-harness-test-use (read-only; never a tracked path)
+PROBE fixture=<loopback> origin=http://127.0.0.1:3182 port=3182 sanctioned=yes stable-instance-port=3080 distinct=yes
+PROBE-BASELINE real-network=none (every socket this probe opens is loopback; an external attempt is REFUSED and counted)
+PROBE-CENSUS family=dsh.web-family lane=packages/tools/web-family mount=product members=web_fetch,web_search
+PROBE-CENSUS contributions=packages/tools/web-family/src/web-family-contribution.mjs
+PROBE-LEGACY files=10 packages/tools/families/web.mjs@b6c73ec43255 packages/tools/web-family/src/index.mjs@b74233a7029f packages/tools/web-family/src/web-mechanics.mjs@0d6f16cb1ced packages/tools/web-family/src/web-transport.mjs@580ee6749f26 packages/tools/web-family/src/fetch-executor.mjs@70734a3d7ac0 packages/tools/web-family/src/fetch-row.mjs@8580717c9e13 packages/tools/web-family/src/search-executor.mjs@d4b178f6e23b packages/tools/web-family/src/search-row.mjs@2ebf0e4bcdbc packages/tools/web-family/src/web-search-provider.mjs@00f987fb6f12 packages/tools/web-family/src/web-family-contribution.mjs@a21219e5945b
+PROBE-NATIVE plane=route-c seam=mountMemberA5sfRealm+attachA5sfNativeToolModules files=packages/runtime/src/plugin/live/a5sf-realm-row.mjs,packages/runtime/src/plugin/live/confined-web-tool.mjs,packages/runtime/team-services/src/web.ts
+PROBE-REGISTRY web_fetch=registered web_search=registered
+PROBE-MEMBER web_fetch reachable=yes outcome=allow providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER web_fetch confined=yes facts=1 factMethods=web:fetch:allow annotations=WEB_REDIRECT_UNMEDIATED_ON_ALLOW,WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW
+PROBE-MEMBER web_fetch sockets=loopback:1/external:0 destinations=127.0.0.1:3182
+PROBE-MEMBER web_fetch servedRequests=GET /text
+PROBE-MEMBER web_fetch out-of-lane outcome=deny text="Error: WEB_DESTINATION_FORBIDDEN: the declared destination host \"localhost\" is a local/instance-metadata name;"
+PROBE-MEMBER web_fetch out-of-lane fact decision=deny decidedBy=WEB_DESTINATION_FORBIDDEN locator=http://localhost:3182/text
+PROBE-MEMBER web_search reachable=yes outcome=allow providerCalls=1 inheritedServiceCalls=0
+PROBE-MEMBER web_search confined=yes facts=1 factMethods=web:search:allow annotations=WEB_REDIRECT_UNMEDIATED_ON_ALLOW,WEB_PROXY_ENV_UNMEDIATED_ON_ALLOW
+PROBE-MEMBER web_search sockets=loopback:2/external:0 destinations=127.0.0.1:3182
+PROBE-MEMBER web_search servedRequests=POST /search-api
+PROBE-MEMBER web_search out-of-lane outcome=n/a (the lane under test is the composition provider's availability, measured as WB-S3)
+PROBE-PLANE legacy-family=dsh.web-family order=40 schema=u7-family-assembly/1
+PROBE-PLANE claims=web_fetch,web_search native-claim=DIRECT (no alias)
+PROBE-PLANE enabled(absent)=false enabled(webEnabled=true)=true disabledOwned=-
+PROBE-PLANE config-keys=webEnabled
+PROBE-PLANE manifest-sha256=matches reviewed=b6c73ec43255 live=b6c73ec43255
+PROBE-PLANE verifyPlaneNames(web keys) gate=PLANE_NAMES_INVALID message="names carries 'web_fetch' — the plane map is closed to its own classes (grep/glob/bash)"
+PROBE-PLANE verifyPlaneNames(search/bash control: team_grep+team_glob+team_bash) gate=accepted
+PROBE-PLANE verifyPlaneNames(native-bash claim) gate=accepted (the plane's takeover law differs from the web family's: web names are simply NOT in this map)
+PROBE-PLANE WEB-IS-NOT-THIS-GATE: verifyPlaneNames is the search/bash plane's map (grep/glob/bash + readName); the WEB family mounts through the FamilyAssembly seam, which CLAIMS the native spellings directly
+PROBE-PLANE refusal-builder=typed(webRefusal(kind,code,detail)) maxRedirectHops=5 defaultMaxFetchBytes=524288
+PROBE-NET layer=confined-web-face -> composition provider -> pinned @deepseek-ai/dsh-web-fetch-http HttpFetchProvider (injected loopback resolver) -> pinned undici pinned-lookup connector -> real loopback http fixture
+PROBE-NET admitted-call sockets=1 loopback=1 external=0 forwarded=1 destinations=127.0.0.1:3182
+PROBE-NET counter-positive classifier(example.com:443)=external (an external destination is classified external, so the counter CAN move; the witness REFUSES it before original.connect, so forwarded stays 0)
+PROBE-NET witness-absent=NET_WITNESS_MISSING (a disabled witness can never be read as "no egress")
+PROBE-NET proxy-law=the pinned provider skips its proxy branch for a non-public IP literal (isNonPublicIpLiteral), so a process-wide HTTP_PROXY cannot be entered for the 127.0.0.1 fixture origin
+PROBE-CONCLUSION census-members=web_fetch,web_search reachable-on=route-c/mountMemberA5sfRealm+attachA5sfNativeToolModules
+PROBE-CONCLUSION legacy-governed-plane=CLAIMS the same native spellings through the FamilyAssembly seam (opt-in webEnabled; ABSENT=FALSE); verifyPlaneNames is NOT the gate for this family and refuses a web key as a closed-map fault
+PROBE-CONCLUSION network=required-and-contained: the composition owns a transport (the face ships none by design); the fixture answers over a real loopback socket and ZERO non-loopback connects were attempted
+PROBE-CONCLUSION mounting-gap=NONE for both members (both are reachable on the product composition and both reach the confined face)
+PROBE-CONCLUSION baseline=PROCEED (see tests/ute-g1-web/golden/old-path.tsv)
+PROBE-VERDICT web-members-reachable=2/2 external-sockets=0 witness=load-bearing baseline=PROCEED
