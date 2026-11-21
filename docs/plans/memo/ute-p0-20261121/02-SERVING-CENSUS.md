@@ -102,10 +102,10 @@ realm has exactly **one** declarant per name.
 
 | bucket | modules | what it means |
 | --- | --- | --- |
-| B (delete wave 1, paired) | 5 family bodies + 5 shadows + 5 rows | name served by the host; module is the only enforcement today |
-| C (not deletable) | inspect / agent-control / agent-state bodies + their 3 rows; plane, seam, rows-barrel, native-bash shadow | a booked name has no home, or the module is blocked by one that does |
+| B (delete in A1, paired) | 5 family bodies + 5 shadows + 5 rows; plane, seam, mount registry, admission slot, native-bash shadow, governance+dispatch group, PA bridge, pre-execute adapter | name served by the host; the module is the only enforcement today, so it goes with its replacement |
+| D (owner ruled, delete in A1) | inspect / agent-control / agent-state bodies + their 3 rows | a booked name had no home; the ruling gives it a home or drops it, so the body still goes |
 | A (delete, changes nothing) | `a5p5-tools` (dormant barrel) | no runtime effect at all — labelled so nobody counts it as progress |
-| KEEP | `packages/tools/src` (admission: guard, deny, selector), `native-tool-admission` | what the new route builds on |
+| KEEP | `packages/tools/src` (admission), `control`, `alpha6`, the permission algebra | what the new route is built on or runs through |
 
 Totals are in [`01-ASSET-INVENTORY.md`](./01-ASSET-INVENTORY.md) and are generated, never
-typed: **28 modules / 140 files / 30,624 lines / 97 delete / 43 keep.**
+typed: **37 modules / 180 files / 69,512 lines / 146 delete / 2 replace / 32 keep.**

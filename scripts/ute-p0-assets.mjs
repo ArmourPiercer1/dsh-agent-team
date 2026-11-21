@@ -21,7 +21,11 @@
  *       only enforcement TODAY: it may only be deleted in the same PR that
  *       binds the provider lane (`deleteWith`), never alone.
  *   C — at least one booked name has no retained counterpart, so the module is
- *       not deletable at all until that name has a home.
+ *       not deletable at all until that name has a home (used only while such a
+ *       name is genuinely unresolved).
+ *   D — the same situation, but the owner has RULED: the name gets a home in the
+ *       same PR or is dropped. A D module is therefore deletable in wave 1,
+ *       paired with that ruling, and never kept for its own sake.
  *   KEEP — a module the new architecture builds ON (admission, guard, deny,
  *       selector, provider binding), not a route to retire.
  *
@@ -44,8 +48,8 @@ const LEDGER_PATH = 'dev/agent-workflow/ledgers/ute-p0-assets.json'
 const INVENTORY_PATH = 'docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md'
 
 const SCHEMA = 'ute-p0-assets/1'
-const BUCKETS = new Set(['A', 'B', 'C', 'KEEP'])
-const VERDICTS = new Set(['delete', 'keep'])
+const BUCKETS = new Set(['A', 'B', 'C', 'D', 'KEEP'])
+const VERDICTS = new Set(['delete', 'keep', 'replace'])
 const KINDS = new Set(['old-execution', 'central', 'shared', 'dormant'])
 
 /**
@@ -64,8 +68,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:fs provider lane bound on the Member realm (promote tools/src/native-fs-binding.ts)'],
-    note: 'The four rows are ONE candidate: a partial mount is refused as PLANE_FS_FAMILY_INCOMPLETE. This body is the only write containment today, so it may not be deleted before the lane is bound — and the lane is the same decision this body makes, moved in front of the host provider.',
+    deleteWith: ['the fs provider lane on the Member realm (promoted from packages/tools/src/native-fs-binding.ts)'],
+    note: 'The four rows are ONE candidate: a partial mount is refused as PLANE_FS_FAMILY_INCOMPLETE. This body is the only write containment today, so it may not go before the lane is bound — and the lane is this same decision moved in front of the host provider.',
   },
   {
     id: 'family-search',
@@ -78,7 +82,7 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:search provider faces (fs + subprocess) bound on the Member realm'],
+    deleteWith: ['the search faces (ctx.fs + ctx.subprocess) on the Member realm'],
     note: 'SD-SEARCH-1 (a path-less grep returns zero hits) is a defect of THIS body, not a semantic difference to sign: deleting the body deletes the defect, and the host row never had it.',
   },
   {
@@ -92,8 +96,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:ctx.web lane bound on the Member realm'],
-    note: 'Network ownership lives in this body today; the host rows exist and call ctx.web, so the ownership moves to the provider, not to a second tool definition.',
+    deleteWith: ['the ctx.web lane on the Member realm'],
+    note: 'Network ownership lives in this body today; the host rows already call ctx.web, so the ownership moves to the provider, never to a second definition.',
   },
   {
     id: 'family-process',
@@ -106,8 +110,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:ctx.shell lane bound on the Member realm'],
-    note: 'The preset removes the pwsh row and no route registers it, so this body never had a two-member unit; the ledger records the unit as 1/2 rather than shrinking it.',
+    deleteWith: ['the ctx.shell and ctx.terminals lanes on the Member realm (the terminal lane pins the OS boundary at creation)'],
+    note: 'The preset removes the pwsh row and no route registers it, so this body never had a two-member unit; the ledger records the unit as 1 of 2 rather than shrinking it quietly.',
   },
   {
     id: 'family-ui',
@@ -120,78 +124,50 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:userQuestions passthrough + present receipt face on the Member realm'],
+    deleteWith: ['the userQuestions passthrough and the present receipt face on the Member realm'],
     note: 'PD-25 removes tool-ask-user from the shipping preset while the host row still exists; this body is a second declarant of both names.',
   },
   {
-    id: 'shadow-fs',
-    title: 'Confined FS shadow — re-declares read/write/edit/read_image over a confined fs face',
+    id: 'family-inspect',
+    title: 'Inspect governed family body — team_skill + the two team_cordis_inspect rows',
     kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/confined-fs-tool.mjs'],
-    names: ['read', 'write', 'edit', 'read_image'],
-    hostCounterpart: ['tool-fs (the same rows, on the preset scope)'],
-    providerFaces: ['ctx.fs'],
-    bucket: 'B',
+    roots: ['packages/tools/inspect-family'],
+    names: ['team_skill', 'team_cordis_inspect_list', 'team_cordis_inspect_query'],
+    hostCounterpart: ['extensions/tool-cordis: cordis_inspect_list, cordis_inspect_query — DIFFERENT spellings, no team_ prefix'],
+    providerFaces: ['ctx.cordisInspect'],
+    bucket: 'D',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:fs provider lane (the shadow exists BECAUSE the preset scope resolves the inherited, unconfined fs service)'],
-    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
+    deleteWith: ['a Team skill provider served into a host-shaped row (team_skill)', 'the cordis rows re-pointed at the host spellings, which is a model-visible rename and therefore an explicit owner decision'],
+    note: 'Owner ruling 2026-11-21: team_skill gets a home instead of being kept for its own sake; the two cordis rows are served already and only the spelling is ours.',
   },
   {
-    id: 'shadow-search',
-    title: 'Confined search shadow — re-declares grep/glob',
+    id: 'family-agent-control',
+    title: 'Agent-control governed family body — the seven subagent/orchestration rows',
     kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/confined-search-tool.mjs'],
-    names: ['grep', 'glob'],
-    hostCounterpart: ['tool-fs-search'],
-    providerFaces: ['ctx.fs', 'ctx.subprocess'],
-    bucket: 'B',
+    roots: ['packages/tools/agent-control-family'],
+    names: ['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'],
+    hostCounterpart: ['subagent/tool-subagent: subagent', 'subagent/tool-subagent-control: send_message, interrupt_agent, list_agents, list_subagent_models (+wait_agent)', 'workflow/tool-workflow: workflow'],
+    providerFaces: ['ctx.subagents', 'ctx.sessions', 'ctx.workflowEngine'],
+    bucket: 'D',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:search provider faces bound on the Member realm'],
-    note: 'Same pattern as shadow-fs.',
+    deleteWith: ['subagent_fork exposed as a row over the host subagent-fork-in-process provider, or dropped by ruling'],
+    note: 'Six of seven names are served by the host; subagent_fork exists only as a provider. Owner ruling 2026-11-21: give it a row, do not keep the body to preserve it.',
   },
   {
-    id: 'shadow-web',
-    title: 'Confined web shadow — re-declares web_fetch/web_search',
+    id: 'family-agent-state',
+    title: 'Agent-state governed family body — todo_write + the four goal rows',
     kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/confined-web-tool.mjs'],
-    names: ['web_fetch', 'web_search'],
-    hostCounterpart: ['tool-web'],
-    providerFaces: ['ctx.web'],
-    bucket: 'B',
+    roots: ['packages/tools/agent-state-family'],
+    names: ['todo_write', 'get_goal', 'create_goal', 'update_goal', 'exit_plan_mode'],
+    hostCounterpart: ['todo/tool-todo: todo_write', 'goal/tool-goal: get_goal, create_goal, update_goal'],
+    providerFaces: ['ctx.sessionProjections', 'ctx.goals'],
+    bucket: 'D',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['central:ctx.web lane bound on the Member realm'],
-    note: 'Same pattern as shadow-fs.',
-  },
-  {
-    id: 'shadow-bash',
-    title: 'Confined bash shadow — re-declares bash',
-    kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/confined-bash-tool.mjs'],
-    names: ['bash'],
-    hostCounterpart: ['tool-bash'],
-    providerFaces: ['ctx.shell'],
-    bucket: 'B',
-    verdict: 'delete',
-    wave: 1,
-    deleteWith: ['central:ctx.shell lane bound on the Member realm'],
-    note: 'Same pattern as shadow-fs.',
-  },
-  {
-    id: 'shadow-terminal',
-    title: 'Confined terminal shadow — re-declares the persistent shell face',
-    kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/confined-terminal-tool.mjs'],
-    names: ['bash (persistent)'],
-    hostCounterpart: ['tool-bash-persistent over ctx.terminals'],
-    providerFaces: ['ctx.terminals'],
-    bucket: 'B',
-    verdict: 'delete',
-    wave: 1,
-    deleteWith: ['central:ctx.terminals lane bound on the Member realm'],
-    note: 'The persistent shell is the one face where UTE-10 (immutable execution world) applies: the provider must pin the OS boundary at creation.',
+    deleteWith: ['exit_plan_mode dropped: the host has only a claude-code-mods name mapping, never a native tool'],
+    note: 'Four of five names are served. Owner ruling 2026-11-21: plan mode is not a Team capability, so the one unserved name is dropped rather than given a body.',
   },
   {
     id: 'row-fs',
@@ -218,8 +194,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['family-search'],
-    note: 'One unit with its body.',
+    deleteWith: ['family-search (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-web',
@@ -232,8 +208,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['family-web'],
-    note: 'One unit with its body.',
+    deleteWith: ['family-web (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-process',
@@ -246,8 +222,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['family-process'],
-    note: 'One unit with its body.',
+    deleteWith: ['family-process (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-ui',
@@ -260,50 +236,8 @@ export const MODULES = Object.freeze([
     bucket: 'B',
     verdict: 'delete',
     wave: 1,
-    deleteWith: ['family-ui'],
-    note: 'One unit with its body.',
-  },
-  {
-    id: 'family-inspect',
-    title: 'Inspect governed family body — team_skill + the two team_cordis_inspect rows',
-    kind: 'old-execution',
-    roots: ['packages/tools/inspect-family'],
-    names: ['team_skill', 'team_cordis_inspect_list', 'team_cordis_inspect_query'],
-    hostCounterpart: ['extensions/tool-cordis: cordis_inspect_list, cordis_inspect_query — DIFFERENT spellings, no team_ prefix'],
-    providerFaces: ['ctx.cordisInspect'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'team_skill has NO host counterpart, and the cordis pair is spelled differently. Whole-module rules mean this module stays whole until team_skill has a home.',
-  },
-  {
-    id: 'family-agent-control',
-    title: 'Agent-control governed family body — the seven subagent/orchestration rows',
-    kind: 'old-execution',
-    roots: ['packages/tools/agent-control-family'],
-    names: ['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'],
-    hostCounterpart: ['subagent/tool-subagent: subagent', 'subagent/tool-subagent-control: send_message, interrupt_agent, list_agents, list_subagent_models (+wait_agent)', 'workflow/tool-workflow: workflow'],
-    providerFaces: ['ctx.subagents', 'ctx.sessions', 'ctx.workflowEngine'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'subagent_fork is the one name with no host counterpart (the host ships subagent-fork-in-process as a PROVIDER, not a tool). Six of seven names are redundant; one is not, and whole-module rules forbid deleting six and keeping one.',
-  },
-  {
-    id: 'family-agent-state',
-    title: 'Agent-state governed family body — todo_write + the four goal rows',
-    kind: 'old-execution',
-    roots: ['packages/tools/agent-state-family'],
-    names: ['todo_write', 'get_goal', 'create_goal', 'update_goal', 'exit_plan_mode'],
-    hostCounterpart: ['todo/tool-todo: todo_write', 'goal/tool-goal: get_goal, create_goal, update_goal'],
-    providerFaces: ['ctx.sessionProjections', 'ctx.goals'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'exit_plan_mode exists in the host only as a claude-code-mods name mapping, not as a native tool, so this module is not deletable whole.',
+    deleteWith: ['family-ui (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-inspect',
@@ -311,13 +245,13 @@ export const MODULES = Object.freeze([
     kind: 'old-execution',
     roots: ['packages/tools/families/inspect.mjs'],
     names: ['team_skill', 'team_cordis_inspect_list', 'team_cordis_inspect_query'],
-    hostCounterpart: [],
+    hostCounterpart: ['new Team skill provider row'],
     providerFaces: ['ctx.cordisInspect'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'One unit with its kept body.',
+    bucket: 'D',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['family-inspect (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-agent-control',
@@ -325,13 +259,13 @@ export const MODULES = Object.freeze([
     kind: 'old-execution',
     roots: ['packages/tools/families/agent-control.mjs'],
     names: ['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'],
-    hostCounterpart: [],
+    hostCounterpart: ['host subagent/agent-control/workflow rows'],
     providerFaces: ['ctx.subagents'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'One unit with its kept body.',
+    bucket: 'D',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['family-agent-control (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'row-agent-state',
@@ -339,13 +273,13 @@ export const MODULES = Object.freeze([
     kind: 'old-execution',
     roots: ['packages/tools/families/agent-state.mjs'],
     names: ['todo_write', 'get_goal', 'create_goal', 'update_goal', 'exit_plan_mode'],
-    hostCounterpart: [],
+    hostCounterpart: ['host todo/goal rows'],
     providerFaces: ['ctx.sessionProjections', 'ctx.goals'],
-    bucket: 'C',
-    verdict: 'keep',
-    wave: null,
-    deleteWith: [],
-    note: 'One unit with its kept body.',
+    bucket: 'D',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['family-agent-state (the row and the body are one unit)'],
+    note: 'The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.',
   },
   {
     id: 'rows-barrel',
@@ -355,27 +289,81 @@ export const MODULES = Object.freeze([
     names: [],
     hostCounterpart: [],
     providerFaces: [],
-    bucket: 'C',
+    bucket: 'B',
     verdict: 'delete',
-    wave: 2,
-    blockedBy: ['row-inspect', 'row-agent-control', 'row-agent-state'],
-    deleteWith: ['team-tool-plane'],
-    note: 'Generated by node scripts/gen-family-index.mjs from whatever rows exist, so it is regenerated (not deleted) while the three C rows remain; it can only go when the last row goes.',
+    wave: 1,
+    deleteWith: ['the last row (the barrel is generated from whatever rows exist)'],
+    note: 'Generated by node scripts/gen-family-index.mjs from the rows; when the last row goes the generator has nothing to emit and the barrel goes with it.',
   },
   {
-    id: 'seam-family-assembly',
-    title: 'family-assembly.mjs — the generic seam the plane drives descriptors through',
+    id: 'shadow-fs',
+    title: 'Confined FS shadow — re-declares read/write/edit/read_image over a confined fs face',
     kind: 'old-execution',
-    roots: ['packages/runtime/src/plugin/live/family-assembly.mjs'],
-    names: [],
-    hostCounterpart: [],
-    providerFaces: [],
-    bucket: 'C',
+    roots: ['packages/runtime/src/plugin/live/confined-fs-tool.mjs'],
+    names: ['read', 'write', 'edit', 'read_image'],
+    hostCounterpart: ['tool-fs (the same rows, on the preset scope)'],
+    providerFaces: ['ctx.fs'],
+    bucket: 'B',
     verdict: 'delete',
-    wave: 2,
-    blockedBy: ['family-inspect', 'family-agent-control', 'family-agent-state'],
-    deleteWith: ['team-tool-plane'],
-    note: 'Hosts the three C families until they go; no independent capability of its own.',
+    wave: 1,
+    deleteWith: ['the fs provider lane (the shadow exists BECAUSE the preset scope resolves the inherited, unconfined fs service)'],
+    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
+  },
+  {
+    id: 'shadow-search',
+    title: 'Confined search shadow — re-declares grep/glob',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/confined-search-tool.mjs'],
+    names: ['grep', 'glob'],
+    hostCounterpart: ['tool-fs-search'],
+    providerFaces: ['ctx.fs', 'ctx.subprocess'],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the search faces on the Member realm'],
+    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
+  },
+  {
+    id: 'shadow-web',
+    title: 'Confined web shadow — re-declares web_fetch/web_search',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/confined-web-tool.mjs'],
+    names: ['web_fetch', 'web_search'],
+    hostCounterpart: ['tool-web'],
+    providerFaces: ['ctx.web'],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the ctx.web lane on the Member realm'],
+    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
+  },
+  {
+    id: 'shadow-bash',
+    title: 'Confined bash shadow — re-declares bash',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/confined-bash-tool.mjs'],
+    names: ['bash'],
+    hostCounterpart: ['tool-bash'],
+    providerFaces: ['ctx.shell'],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the ctx.shell lane on the Member realm'],
+    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
+  },
+  {
+    id: 'shadow-terminal',
+    title: 'Confined terminal shadow — re-declares the persistent shell face',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/confined-terminal-tool.mjs'],
+    names: ['bash (persistent)'],
+    hostCounterpart: ['tool-bash-persistent over ctx.terminals'],
+    providerFaces: ['ctx.terminals'],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the ctx.terminals lane, which must pin the OS boundary at creation (UTE-10)'],
+    note: 'The shadow was the right diagnosis and the wrong mechanism: it answers "the preset row resolves the wrong fs" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.',
   },
   {
     id: 'team-tool-plane',
@@ -385,12 +373,53 @@ export const MODULES = Object.freeze([
     names: [],
     hostCounterpart: [],
     providerFaces: [],
-    bucket: 'C',
+    bucket: 'B',
     verdict: 'delete',
-    wave: 2,
-    blockedBy: ['family-inspect', 'family-agent-control', 'family-agent-state'],
-    deleteWith: ['family-inspect', 'family-agent-control', 'family-agent-state', 'native-tool-admission repointed at the binding assembler'],
-    note: 'The assembly that names every row. It cannot go before its last row goes, and its admission edge must first be re-pointed at the new binding (native-tool-admission is the publication slot that survives).',
+    wave: 1,
+    deleteWith: ['the new binding assembler (one verified binding per Scope x ToolName x Generation)'],
+    note: 'The assembly that names every row, owns the guard consult and publishes the PA mount facts. Its admission edge is the one part that survives as a pattern: the new slot keeps the same shape (keyed by the runtime Agent, not by scope).',
+  },
+  {
+    id: 'seam-family-assembly',
+    title: 'family-assembly.mjs — the generic seam the plane drives descriptors through',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/family-assembly.mjs'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the new binding assembler'],
+    note: 'No independent capability of its own: it exists only to drive descriptors that are all being deleted with it.',
+  },
+  {
+    id: 'pa-mount-registry',
+    title: 'pa-mount-registry.mjs — the per-session table of live PA mounts and call facts',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/pa-mount-registry.mjs'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the new ExecutionFact interface (Control reads facts from the centre, not from a mount table)'],
+    note: 'This is coupling #2: root.ts builds createPaEffectsVerifier from it. Deleting it is only safe once Control can ask the centre for the fact of a call instead of reading the plane\'s table.',
+  },
+  {
+    id: 'native-tool-admission',
+    title: 'native-tool-admission.mjs — the publication slot that lets a NATIVE definition consult admission',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/native-tool-admission.mjs'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the new admission slot, which MUST keep its one hard-won property: address by the runtime Agent object, never by scope (a second dsh-scope instance reads undefined)'],
+    note: 'Holds no policy of its own, but it is published by agent-bindings and consumed by native-bash-tool, both replaced in A1. Delete the file, carry the finding in writing.',
   },
   {
     id: 'native-bash-shadow',
@@ -402,10 +431,51 @@ export const MODULES = Object.freeze([
     providerFaces: ['ctx.shell'],
     bucket: 'B',
     verdict: 'delete',
-    wave: 2,
-    blockedBy: ['central-native-admission'],
-    deleteWith: ['central:admission carried by the binding assembler, so no second bash declaration is needed'],
-    note: 'This is the ADMISSION pattern the target wants (wrap the host row, do not replace it) with the wrong mount: it declares bash a second time. Keep until admission is carried by the binding, then delete.',
+    wave: 1,
+    deleteWith: ['admission carried by the binding assembler, so no second bash declaration is needed'],
+    note: 'This is the ADMISSION pattern the target wants (wrap the host row, do not replace it) with the wrong mount: it declares bash a second time.',
+  },
+  {
+    id: 'governance-closed-world',
+    title: 'Governance kernel + closed-world guard + scoped dispatcher (ONE module group)',
+    kind: 'old-execution',
+    roots: ['packages/runtime/governance-center', 'packages/runtime/tool-dispatch'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the closed-world semantics moved into the new centre FIRST (a model cannot see an undeclared tool, and a call to an undeclared name is refused) — the move is its own commit, before the deletion'],
+    note: '11 files / 4,766 lines, and NOT pure old execution: packages/domain/tool-governance and runtime/jobs-gateway/cancellation-boundary import it in production. Deleting it without moving the semantics is a capability regression, not a cleanup.',
+  },
+  {
+    id: 'pa-control-bridge',
+    title: 'pa-control-bridge.ts — the A5/PA-to-Control approval bridge',
+    kind: 'old-execution',
+    roots: ['packages/runtime/operation-permission/pa-control-bridge.ts'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['the new centre Invocation/Binding/ExecutionFact interface, which Control consumes instead of a PA kernel'],
+    note: 'Coupling #1 and #2 both live here: createPaControlLeg feeds the plane, createPaEffectsVerifier reads the plane. Delete-and-reimplement, never port.',
+  },
+  {
+    id: 'pre-execute-adapter',
+    title: 'pre-execute-adapter.ts — the tools/pre-execute enforcement listener (2,822 lines)',
+    kind: 'old-execution',
+    roots: ['packages/runtime/operation-permission/pre-execute-adapter.ts'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'delete',
+    wave: 1,
+    deleteWith: ['a minimal deny-by-default admission point shipped IN A1, so the model-visible tools are never unguarded while the full centre is built'],
+    note: 'The largest single risk in A1: this file IS the enforcement listener. Deleting it without a replacement turns "confined" into "unguarded" for as long as B takes, which is why A1 carries a fail-closed stub rather than an empty slot. paReadHandoff is the part that belongs to the old route and simply goes.',
   },
   {
     id: 'a5p5-tools',
@@ -417,9 +487,37 @@ export const MODULES = Object.freeze([
     providerFaces: [],
     bucket: 'A',
     verdict: 'delete',
-    wave: 2,
-    deleteWith: ['team-tool-plane (the only importer)'],
-    note: 'Nothing registers and nothing dispatches (a5p5-dormant-audit enforces that); it is a library the old route never adopted. Deleting it changes no behaviour at all — which is exactly why it must not be presented as progress.',
+    wave: 1,
+    deleteWith: ['nothing — it has no runtime effect'],
+    note: 'Nothing registers and nothing dispatches (a5p5-dormant-audit enforces that). Deleting it changes no behaviour at all, which is exactly why it must never be presented as progress.',
+  },
+  {
+    id: 'assembly-agent-bindings',
+    title: 'agent-bindings.mjs — 7,138 lines of production assembly (replaced, not split)',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/live/agent-bindings.mjs'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'replace',
+    wave: 1,
+    deleteWith: ['a NEW entry module: fresh file, no reuse of its local functions, old file deleted in the same PR'],
+    note: 'Its tool-execution part is deleted; its team-lifecycle, member-management and control-wiring parts must be re-authored in the new entry. That re-authoring is the real cost of A1, and it is the cost the owner accepted.',
+  },
+  {
+    id: 'assembly-root',
+    title: 'root.ts — 5,243 lines of top-level Team assembly (replaced, not split)',
+    kind: 'old-execution',
+    roots: ['packages/runtime/src/plugin/root.ts'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'B',
+    verdict: 'replace',
+    wave: 1,
+    deleteWith: ['a NEW root entry that wires the retained domains (TeamDomain, Control, Alpha.6) to the new centre'],
+    note: 'Coupling #2 lives here (createPaEffectsVerifier over the mount registry). Same rule as agent-bindings: new file, same PR, no old/new dual entry across PRs.',
   },
   {
     id: 'central-tools-src',
@@ -433,13 +531,13 @@ export const MODULES = Object.freeze([
     verdict: 'keep',
     wave: null,
     deleteWith: [],
-    note: 'This is not the old route: it is the layer the new route keeps. native-fs-binding.ts is already the target shape (subclass the host provider, add one lane decision, delegate to super) and is the seed of the provider lane, not a mirror of it.',
+    note: 'Not the old route: it is the layer the new route CALLS. guard/builtin-deny/tool-selector decide what is visible and callable, and native-fs-binding.ts is already the target provider shape (subclass the host provider, one lane decision, delegate to super).',
   },
   {
-    id: 'central-native-admission',
-    title: 'native-tool-admission.mjs — the publication slot that lets a NATIVE definition consult admission',
+    id: 'central-control',
+    title: 'ControlService — the sole Grant/Stop authority (5 files, 10,526 lines)',
     kind: 'central',
-    roots: ['packages/runtime/src/plugin/live/native-tool-admission.mjs'],
+    roots: ['packages/runtime/control'],
     names: [],
     hostCounterpart: [],
     providerFaces: [],
@@ -447,7 +545,35 @@ export const MODULES = Object.freeze([
     verdict: 'keep',
     wave: null,
     deleteWith: [],
-    note: 'Holds no policy of its own by construction; it is the seam the binding assembler publishes into. Keeping it is what lets admission survive the plane.',
+    note: 'Verified independent of the old execution route at the type level: its only mention of pa-control-bridge is a comment. Its authority does not move in A1; only its feed changes, from the plane mount table to the centre fact interface.',
+  },
+  {
+    id: 'central-alpha6',
+    title: 'Alpha.6 — review routing, officer facts, wake intents (12 files, 3,362 lines)',
+    kind: 'central',
+    roots: ['packages/runtime/alpha6'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'KEEP',
+    verdict: 'keep',
+    wave: null,
+    deleteWith: [],
+    note: 'Zero references to team-tool-plane, governance-center, pa-mount-registry or a5p5-tools (measured). It keeps its core and loses only the adapters that reached into the plane.',
+  },
+  {
+    id: 'central-permission-algebra',
+    title: 'Permission algebra — canonical operation, resolver, coverage, approval routing (7 files)',
+    kind: 'central',
+    roots: ['packages/runtime/operation-permission/approval-routing.ts', 'packages/runtime/operation-permission/canonical-operation.ts', 'packages/runtime/operation-permission/errors.ts', 'packages/runtime/operation-permission/index.ts', 'packages/runtime/operation-permission/permission-coverage.ts', 'packages/runtime/operation-permission/permission-resolver.ts', 'packages/runtime/operation-permission/types.ts'],
+    names: [],
+    hostCounterpart: [],
+    providerFaces: [],
+    bucket: 'KEEP',
+    verdict: 'keep',
+    wave: null,
+    deleteWith: [],
+    note: 'Policy algebra, not execution: these decide what an operation MEANS and whether it is allowed. Only the two adapters that reached into the plane (pa-control-bridge, pre-execute-adapter) are deleted.',
   },
 ])
 
@@ -481,9 +607,12 @@ export function derive () {
       files: modules.reduce((n, m) => n + m.files.length, 0),
       lines: modules.reduce((n, m) => n + m.lines, 0),
       deleteFiles: modules.filter((m) => m.verdict === 'delete').reduce((n, m) => n + m.files.length, 0),
+      replaceFiles: modules.filter((m) => m.verdict === 'replace').reduce((n, m) => n + m.files.length, 0),
       keepFiles: modules.filter((m) => m.verdict === 'keep').reduce((n, m) => n + m.files.length, 0),
-      wave1Files: modules.filter((m) => m.wave === 1).reduce((n, m) => n + m.files.length, 0),
+      wave1Files: modules.filter((m) => m.verdict === 'delete' && m.wave === 1).reduce((n, m) => n + m.files.length, 0),
       wave2Files: modules.filter((m) => m.wave === 2 && m.verdict === 'delete').reduce((n, m) => n + m.files.length, 0),
+      wave1Lines: modules.filter((m) => m.wave === 1 && m.verdict !== 'keep').reduce((n, m) => n + m.lines, 0),
+      deleteLines: modules.filter((m) => m.verdict === 'delete').reduce((n, m) => n + m.lines, 0),
     },
     duplicateClaims: [...claimed].filter(([, ids]) => ids.length > 1).map(([file, ids]) => ({ file, modules: ids })),
     modules,
@@ -506,8 +635,11 @@ export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {})
     if (!BUCKETS.has(m.bucket)) push('UTE_P0_ASSETS_BUCKET', `${m.id}: bucket ${JSON.stringify(m.bucket)} not in A|B|C|KEEP`)
     if (!VERDICTS.has(m.verdict)) push('UTE_P0_ASSETS_VERDICT', `${m.id}: verdict ${JSON.stringify(m.verdict)} not in delete|keep`)
     if (!KINDS.has(m.kind)) push('UTE_P0_ASSETS_KIND', `${m.id}: kind ${JSON.stringify(m.kind)} not in old-execution|central|shared|dormant`)
-    if (m.verdict === 'delete' && !(m.wave === 1 || m.wave === 2 || m.wave === 3)) {
-      push('UTE_P0_ASSETS_WAVE', `${m.id}: a deletable module must name the wave it goes in, got ${JSON.stringify(m.wave)}`)
+    if ((m.verdict === 'delete' || m.verdict === 'replace') && !(m.wave === 1 || m.wave === 2 || m.wave === 3)) {
+      push('UTE_P0_ASSETS_WAVE', `${m.id}: a module that goes must name the wave it goes in, got ${JSON.stringify(m.wave)}`)
+    }
+    if (m.verdict === 'replace' && (!Array.isArray(m.deleteWith) || m.deleteWith.length === 0)) {
+      push('UTE_P0_ASSETS_PAIRED', `${m.id}: a replaced module must name its replacement`)
     }
     if (m.verdict === 'keep' && m.wave !== null && m.wave !== undefined) {
       push('UTE_P0_ASSETS_WAVE', `${m.id}: a kept module must not claim a deletion wave, got ${JSON.stringify(m.wave)}`)
@@ -516,7 +648,16 @@ export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {})
       if (!Array.isArray(m.deleteWith) || m.deleteWith.length === 0) {
         push('UTE_P0_ASSETS_PAIRED', `${m.id}: bucket B means "only enforcement today" — it must name the paired work in deleteWith, got ${JSON.stringify(m.deleteWith)}`)
       }
-      if (m.verdict !== 'delete') push('UTE_P0_ASSETS_PAIRED', `${m.id}: bucket B implies delete, got ${m.verdict}`)
+      if (m.verdict !== 'delete' && m.verdict !== 'replace') push('UTE_P0_ASSETS_PAIRED', `${m.id}: bucket B implies delete or replace, got ${m.verdict}`)
+    }
+    if (m.bucket === 'D') {
+      if (!Array.isArray(m.names) || m.names.length === 0) {
+        push('UTE_P0_ASSETS_UNBACKED', `${m.id}: bucket D exists for a name that had no home — it must list the name(s)`)
+      }
+      if (!Array.isArray(m.deleteWith) || m.deleteWith.length === 0) {
+        push('UTE_P0_ASSETS_PAIRED', `${m.id}: bucket D is an owner ruling, so it must say what the name becomes (home or drop)`)
+      }
+      if (m.verdict !== 'delete') push('UTE_P0_ASSETS_PAIRED', `${m.id}: bucket D implies delete, got ${m.verdict}`)
     }
     if (m.bucket === 'C') {
       const names = Array.isArray(m.names) ? m.names : []
@@ -524,9 +665,9 @@ export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {})
       if (names.length === 0 && blockedBy.length === 0) {
         push('UTE_P0_ASSETS_UNBACKED', `${m.id}: bucket C means "not deletable yet" — it must say why: either the booked names without a retained counterpart, or the modules it is blocked on`)
       }
-      for (const b of blockedBy) {
-        if (!modules.some((x) => x.id === b)) push('UTE_P0_ASSETS_UNBACKED', `${m.id}: blockedBy names an unknown module ${JSON.stringify(b)}`)
-      }
+    }
+    for (const b of (Array.isArray(m.blockedBy) ? m.blockedBy : [])) {
+      if (!modules.some((x) => x.id === b)) push('UTE_P0_ASSETS_UNBACKED', `${m.id}: blockedBy names an unknown module ${JSON.stringify(b)}`)
     }
     if (m.verdict === 'keep') {
       const hasNames = Array.isArray(m.names) && m.names.length > 0
@@ -563,6 +704,9 @@ export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {})
     modules: modules.length,
     files: modules.reduce((n, m) => n + (m.files?.length ?? 0), 0),
     lines: modules.reduce((n, m) => n + (m.lines ?? 0), 0),
+    deleteFiles: modules.filter((m) => m.verdict === 'delete').reduce((n, m) => n + (m.files?.length ?? 0), 0),
+    replaceFiles: modules.filter((m) => m.verdict === 'replace').reduce((n, m) => n + (m.files?.length ?? 0), 0),
+    keepFiles: modules.filter((m) => m.verdict === 'keep').reduce((n, m) => n + (m.files?.length ?? 0), 0),
   }
   for (const [k, v] of Object.entries(expect)) {
     if (t?.[k] !== v) push('UTE_P0_ASSETS_TOTALS', `totals.${k} says ${JSON.stringify(t?.[k])} but the rows sum to ${v}`)
@@ -590,7 +734,7 @@ export function renderInventory (ledger) {
   const t = ledger.totals
   const wave = (m) => (m.wave === null || m.wave === undefined ? '—' : String(m.wave))
   const rows = ledger.modules.map((m) => {
-    const verdict = m.verdict === 'delete' ? `DELETE (wave ${m.wave})` : 'KEEP'
+    const verdict = m.verdict === 'delete' ? `DELETE (wave ${m.wave})` : m.verdict === 'replace' ? `REPLACE (wave ${m.wave})` : 'KEEP'
     return `| \`${m.id}\` | ${m.title} | ${m.kind} | ${m.bucket} | ${verdict} | ${m.files.length} | ${m.lines} |`
   })
   const detail = ledger.modules.map((m) => {
@@ -618,7 +762,9 @@ export function renderInventory (ledger) {
     '> under a module root is unlisted, any file is claimed twice, a bucket/verdict/wave combination',
     '> is incoherent, the totals stop summing, or this table stops mentioning a module.',
     '',
-    `**Totals:** ${t.modules} modules · ${t.files} files · ${t.lines} lines · ${t.deleteFiles} files in delete modules (${t.wave1Files} wave 1, ${t.wave2Files} wave 2) · ${t.keepFiles} files in keep modules.`,
+    `**Totals:** ${t.modules} modules · ${t.files} files · ${t.lines} lines · delete ${t.deleteFiles} files (${t.wave1Files} wave 1, ${t.wave2Files} wave 2) · replace ${t.replaceFiles} · keep ${t.keepFiles}.`,
+    '',
+    `**Deletion budget:** ${t.deleteLines} lines deleted, ${t.wave1Lines} of them (delete + replace) in wave 1.`,
     '',
     '| module | what it is | kind | bucket | verdict | files | lines |',
     '| --- | --- | --- | --- | --- | --- | --- |',
@@ -667,7 +813,7 @@ for (const f of findings) console.error(`${f.code} ${f.detail}`)
 const t = ledger.totals ?? {}
 console.log(
   `UTE-P0-ASSETS ${findings.length === 0 ? 'pass' : 'fail'} modules=${t.modules} files=${t.files} ` +
-  `lines=${t.lines} delete=${t.deleteFiles} keep=${t.keepFiles} wave1=${t.wave1Files} wave2=${t.wave2Files} findings=${findings.length}`,
+  `lines=${t.lines} delete=${t.deleteFiles} replace=${t.replaceFiles} keep=${t.keepFiles} wave1=${t.wave1Files} wave2=${t.wave2Files} findings=${findings.length}`,
 )
 process.exit(findings.length === 0 ? 0 : 1)
 }

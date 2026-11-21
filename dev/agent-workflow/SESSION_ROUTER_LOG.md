@@ -9737,3 +9737,32 @@ UTE-P0-ASSETS pass modules=28 files=140 lines=30624 delete=97 keep=43 wave1=66 w
 `node scripts/ute-p0-assets.mjs --check`：清单由 `git ls-files` 生成，门在以下任一情况红——列出的文件不存在、模块根下有未列出的 tracked 文件、一个文件被两个模块认领、bucket/verdict/wave/kind 组合不自洽、B 桶没有写配对、C 桶没写原因、totals 不再等于各行之和、散文清单漏模块。`scripts/ute-p0-assets.test.mjs` 17 条变异臂，每条都是"把一张通过的清单改坏，必须红"。
 
 **处置的不是保守，是判据**：旧路线不再需要"证明等价"才能退役；新路线需要证明的是"**每个名字恰好一个声明者**"，那是可机械判定的。
+
+## 2026-11-21（续）— 计划冻结：A0→A1→B→C→D，删除边界 146 文件 / 36,522 行，且 `read` 先于 `write`
+
+**owner 裁决（本轮，直接指令）**：认可整套方案，只修正一处——**B 阶段必须先 `read` 再 `write`，因为宿主 write 依赖先前的 read**。另三项（整体保留/整体删除、允许彻底回退、中心验收优先用原生工具）确认为新实施原则。
+
+### 这个修正比"顺序"更深：它暴露了一条中心义务
+
+读代码确认了机制，不是风格偏好：`packages/fs/tool-fs/src/write.ts:119` 的 `fs/write-intent` 单槽由 `packages/fs/fs-observation-policy` 提供，而该插件**挂在 base bundle**（`packages/bundle/base/cordis.patch.yml:292`）。所以出厂组合下：写已存在文件而无先前观测 → `FS_NOT_OBSERVED`（"file has not been read"）；观测版本已变 → `FS_STALE_VERSION`。观测记录在**按执行 actor（`actor.agent.session`）弱键的 per-provider `WeakMap`** 里。
+
+由此得到新中心义务 **E-obs**：`read` 记录的那份观测状态，必须是 `write` 查询的同一份状态、同一会话、跨 lane 保真。两种破法都是静默的——lane 内重新派生执行上下文（新 actor → 新 owner），或按调用新建 provider 实例（新 WeakMap）。任一发生，read→write 全部 `FS_NOT_OBSERVED`，而**所有单次调用测试仍然绿**。
+
+这正是"第二声明者"架构藏住的缺陷类别：shadow 工具自己派生执行上下文，它的观测状态与宿主行的状态根本不可能是同一份。所以 E-obs 是中心义务（决定 binding 与 lane 生命周期），不是工具细节。红证很便宜：绿 = 同会话 read→write 成功；红 = 人为让 lane 换 actor 或按调用新建 provider，必须 `FS_NOT_OBSERVED`/`FS_STALE_VERSION`。
+
+### A0 冻结边界（机器账本，37 模块 / 180 文件 / 69,512 行）
+
+```
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 findings=0
+```
+
+- **删除 146 文件 / 36,522 行**：8 个 family body（87）+ 8 row + 生成 barrel（11）+ 5 shadow（994）+ plane/seam/pa-mount-registry/native-tool-admission/native-bash + governance-center∪tool-dispatch（11 文件 / 4,766，**闭世界语义先搬后删**）+ pa-control-bridge + pre-execute-adapter + a5p5（dormant）。
+- **替换 2 文件 / 12,381 行**：`agent-bindings.mjs`(7,138) + `root.ts`(5,243)——新建入口、同 PR 删旧、**禁止新老二入口跨 PR 并存**；team 生命周期/成员管理/control 装配必须在新入口重新落地，这是 A1 的主要成本。
+- **保留 32 文件 / 20,609 行**：`packages/tools/src`（准入层，含 `native-fs-binding.ts`）、`control`(5/10,526)、`alpha6`(12/3,362)、权限代数(7/3,289)。
+- 三个原先卡住删除的名字按 owner 裁决解掉：`team_skill` 给家、`subagent_fork` 给行、`exit_plan_mode` **取消**（宿主只有 mod 名映射）。
+
+### 门禁与窗口纪律（新增，写进 05 §6）
+
+A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿集合（账本、中心契约 P1–P5、探针 rung 1–2、docs/日志/清单/目录），旧产品套件在窗口内**按构造为红**且必须是**具名退休清单**；该清单只许缩短，未列名而跳过的测试即门禁失败。A1 自身附带**极小 deny-by-default 准入点**，把"开发分支安全空窗"换成"能力降级为拒绝"，而不是等 B 建完再补强制点。
+
+**#819 关闭不合**：它加固的门正是 A0 要退役的门，合入要为即将删除的门再付一次约 25 分钟 hosted census。分支保留可复查。

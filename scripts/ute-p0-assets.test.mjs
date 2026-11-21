@@ -92,7 +92,7 @@ test('P0-ASSETS-7 — a deletable module with no wave is refused', () => {
 
 test('P0-ASSETS-8 — a kept module that claims a deletion wave is refused', () => {
   const l = clone()
-  mod(l, 'family-inspect').wave = 1
+  mod(l, 'central-control').wave = 1
   assert.ok(codes(checkLedger(l)).includes('UTE_P0_ASSETS_WAVE'))
 })
 
@@ -106,7 +106,7 @@ test('P0-ASSETS-9 — bucket C must state why: no names and no blockedBy is UNBA
 
 test('P0-ASSETS-10 — blockedBy naming a module that does not exist is UNBACKED', () => {
   const l = clone()
-  mod(l, 'team-tool-plane').blockedBy = ['family-ghost']
+  mod(l, 'central-alpha6').blockedBy = ['family-ghost']
   assert.ok(codes(checkLedger(l)).includes('UTE_P0_ASSETS_UNBACKED'))
 })
 
@@ -117,7 +117,7 @@ test('P0-ASSETS-11 — typed totals that stop summing are refused', () => {
 })
 
 test('P0-ASSETS-12 — an unknown bucket or verdict is a schema refusal, not a silent pass', () => {
-  const a = clone(); mod(a, 'family-fs').bucket = 'D'
+  const a = clone(); mod(a, 'family-fs').bucket = 'Z'
   assert.ok(codes(checkLedger(a)).includes('UTE_P0_ASSETS_BUCKET'))
   const b = clone(); mod(b, 'family-fs').verdict = 'maybe'
   assert.ok(codes(checkLedger(b)).includes('UTE_P0_ASSETS_VERDICT'))
@@ -141,9 +141,21 @@ test('P0-ASSETS-15 — prose drift: a module missing from the generated inventor
   assert.ok(codes(findings).includes('UTE_P0_ASSETS_PROSE'))
 })
 
+test('P0-ASSETS-15b — bucket D without a ruling (no deleteWith) is refused', () => {
+  const l = clone()
+  mod(l, 'family-inspect').deleteWith = []
+  assert.ok(codes(checkLedger(l)).includes('UTE_P0_ASSETS_PAIRED'))
+})
+
+test('P0-ASSETS-15c — a replaced module without a named replacement is refused', () => {
+  const l = clone()
+  mod(l, 'assembly-root').deleteWith = []
+  assert.ok(codes(checkLedger(l)).includes('UTE_P0_ASSETS_PAIRED'))
+})
+
 test('P0-ASSETS-16 — the module set itself is coherent: every delete module is either wave 1 or wave 2+', () => {
   for (const m of MODULES) {
-    if (m.verdict === 'delete') assert.ok(m.wave === 1 || m.wave === 2 || m.wave === 3, `${m.id} has wave ${m.wave}`)
+    if (m.verdict === 'delete' || m.verdict === 'replace') assert.ok(m.wave === 1 || m.wave === 2 || m.wave === 3, `${m.id} has wave ${m.wave}`)
     else assert.equal(m.wave, null, `${m.id} is kept but claims wave ${m.wave}`)
   }
 })

@@ -49,10 +49,11 @@ instead of a leap.
 
 | file | what it answers |
 | --- | --- |
-| [`01-ASSET-INVENTORY.md`](./01-ASSET-INVENTORY.md) | **generated** from the git tree: 28 modules, 140 files, 30,624 lines, per-file lists |
+| [`01-ASSET-INVENTORY.md`](./01-ASSET-INVENTORY.md) | **generated** from the git tree: 37 modules, 180 files, 69,512 lines, per-file lists |
 | [`02-SERVING-CENSUS.md`](./02-SERVING-CENSUS.md) | for each booked name: does the retained path serve it, through which face, and what bucket that puts the module in |
-| [`03-RETIRE-KEEP.md`](./03-RETIRE-KEEP.md) | the delete/keep list at **whole-module** granularity, two waves, pairings, preconditions, rollback |
+| [`03-RETIRE-KEEP.md`](./03-RETIRE-KEEP.md) | the delete/replace/keep list at **whole-module** granularity, the pairings, the three names that used to block deletion, rollback |
 | [`04-SEAMS.md`](./04-SEAMS.md) | the central capability the centre must supply, the five red proofs that grade it, and the `CORE_SEAM_BLOCKER` rule |
+| [`05-IMPLEMENTATION-PLAN.md`](./05-IMPLEMENTATION-PLAN.md) | **the frozen sequence A0 → A1 → B → C → D**, the seven rulings, the `read`-before-`write` correction and the `E-obs` obligation it reveals, the window-branch gates, and the risk ledger |
 
 ## The buckets (one per module, no mixing)
 
@@ -62,17 +63,19 @@ instead of a leap.
   its deletion for progress.)
 - **B** — served by the retained path, but **the only enforcement today**: deletable only
   in the same PR that binds the provider lane. Never alone.
-- **C** — at least one booked name has **no** retained counterpart (or the module is
-  blocked by a module that does): not deletable at all until that name has a home.
+- **C** — at least one booked name has **no** retained counterpart: not deletable at all
+  until that name has a home.
+- **D** — the same situation, but the owner has **ruled**: the name gets a home in the same
+  PR or is dropped. A D module is deletable in wave 1, paired with that ruling.
 - **KEEP** — an asset the new architecture builds **on** (admission, guard, deny, selector,
   provider binding), not a route to retire.
 
 ## Machine gate
 
 ```
-node scripts/ute-p0-assets.mjs --check    # UTE-P0-ASSETS pass modules=28 files=140 ...
+node scripts/ute-p0-assets.mjs --check    # UTE-P0-ASSETS pass modules=37 files=180 ...
 node scripts/ute-p0-assets.mjs --write    # regenerate ledger + 01-ASSET-INVENTORY.md
-node --test scripts/ute-p0-assets.test.mjs  # 17 arms, each a mutation that must red
+node --test scripts/ute-p0-assets.test.mjs  # 19 arms, each a mutation that must red
 ```
 
 The ledger is `dev/agent-workflow/ledgers/ute-p0-assets.json`, **generated** by
@@ -84,10 +87,11 @@ module. That is the whole point: **an inventory that cannot go stale**.
 
 ## What P0 deliberately does not decide
 
-- It does not delete anything, and it does not pre-approve a deletion: the pairings in
-  `03` are *obligations*, one per module, not a schedule.
-- It does not decide the fate of the three C families (`team_skill`, `subagent_fork`,
-  `exit_plan_mode`) — that is an owner question, and it is written as one.
+- It does not delete anything: A0 freezes the boundary, A1 executes it under the gates in
+  `05 §6`. The pairings in `03` are *obligations*, one per module.
+- It no longer carries an open question about `team_skill`, `subagent_fork` or
+  `exit_plan_mode`: the owner ruled on all three (first two get a home, plan mode is
+  dropped), which is why those modules moved from "unretirable" to "deletable, paired".
 - It does not touch `ControlService`, the settlement route, the Authority pointer, the
   active plan, or any product assembly.
 - It does not claim `NewPathVerified` for anything. Whole-module deletion is *not* a
