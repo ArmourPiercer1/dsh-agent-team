@@ -1,0 +1,10 @@
+# Scoped whitespace rules for measured logs committed as-is.
+#
+# The instruments (install-from-git.mjs, the A1/joint kits) append "\n" to text
+# that already ends in "\n", so text transcripts end with one blank line at EOF;
+# one driver.log line interpolates an empty field and therefore ends in a space.
+# These are measured bytes, not formatting: re-writing them would make the
+# committed transcript differ from what the run produced. Only the whitespace
+# rules those two facts need are disabled, and only for this evidence directory.
+* whitespace=-blank-at-eof
+*.log whitespace=-blank-at-eof,-trailing-space

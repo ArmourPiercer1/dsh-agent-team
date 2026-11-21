@@ -1,0 +1,33 @@
+$ DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt2-2026-11-13T16-43-28/home node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add github:ArmourPiercer1/dsh-agent-team
+[exit 0] [118811 ms]
+
+
+   ╭───────────────────────────────────────────────╮
+   │                                               │
+   │      Update available! 11.7.0 → 12.18.0.      │
+   │     Changelog: https://pnpm.io/v/12.18.0      │
+   │   To update, run: corepack use pnpm@12.18.0   │
+   │                                               │
+   ╰───────────────────────────────────────────────╯
+
+[WARN] GET https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/6361185d878ab2617193d51dd419e6dfe521a2ad error (23). Will retry in 10 seconds. 2 retries left.
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/.artifacts/pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 0, reused 0, downloaded 1, added 0
+Progress: resolved 5, reused 0, downloaded 1, added 0
+[WARN] Issues with peer dependencies found. Run "pnpm peers check" to list them.
+
+dependencies:
++ dsh-agent-team github:ArmourPiercer1/dsh-agent-team
+
+Packages: +7
++++++++
+Progress: resolved 7, reused 0, downloaded 4, added 3
+Progress: resolved 7, reused 0, downloaded 7, added 6
+Progress: resolved 7, reused 0, downloaded 7, added 7, done
+Done in 1m 58.5s using pnpm v11.7.0
+
+--- stderr ---
+dsh: initialized profile web at /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt2-2026-11-13T16-43-28/home/profiles/web
+

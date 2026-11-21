@@ -1,0 +1,10 @@
+[2026-11-13T16:55:36.019Z] identity: local HEAD 6361185d878ab2617193d51dd419e6dfe521a2ad remote HEAD 6361185d878ab2617193d51dd419e6dfe521a2ad host 639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-13T16:55:36.023Z] world: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31
+[2026-11-13T16:55:36.023Z] INSTALL: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/.artifacts/tmp/pack-gate/dsh-agent-team-0.1.6.tgz
+[2026-11-13T16:55:38.509Z] INSTALL exit=0 elapsed=2486ms
+[2026-11-13T16:55:38.598Z] LIST: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web list
+[2026-11-13T16:55:39.009Z] LIST exit=0 mentionsPlugin=true
+[2026-11-13T16:55:39.010Z] BOOT: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31/home node /home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3191 --no-open
+[2026-11-13T16:55:40.870Z] BOOT booted=true tokenAuth=303 noToken=401 mounted=true skills=true err=no
+[2026-11-13T16:55:40.870Z] VERDICT: PASS
+[2026-11-13T16:55:40.890Z] teardown: removed /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt5-tarball-2026-11-13T16-55-31

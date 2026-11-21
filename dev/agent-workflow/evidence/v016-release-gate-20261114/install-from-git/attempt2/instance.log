@@ -1,0 +1,10 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt2-2026-11-13T16-43-28/home/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3191/?token=d0zIUB457mpl3mpxoVfMSBcr6Oe1uL4ikcsXf16oMB8
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: Error: cannot create effect on inactive context
+    at Fiber.assertActive (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1133:9)
+    at Proxy.prepare (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1657:18)
+    at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:120:36)
+    at Proxy.setupAndPublish (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1883:21)
+    at Object.apply (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:120:36)
+    at file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/packages/core/agent-loop/lib/index.js:1867:16

@@ -1,0 +1,10 @@
+[2026-11-13T16:43:01.969Z] identity: local HEAD 6361185d878ab2617193d51dd419e6dfe521a2ad remote HEAD 6361185d878ab2617193d51dd419e6dfe521a2ad host 
+[2026-11-13T16:43:01.973Z] world: /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt1-2026-11-13T16-42-55
+[2026-11-13T16:43:01.973Z] INSTALL: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt1-2026-11-13T16-42-55/home node /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web add github:ArmourPiercer1/dsh-agent-team
+[2026-11-13T16:43:02.006Z] INSTALL exit=1 elapsed=33ms
+[2026-11-13T16:43:02.007Z] LIST: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt1-2026-11-13T16-42-55/home node /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/deepseek-harness-test-use/apps/cli/lib/bin.js plugin --profile web list
+[2026-11-13T16:43:02.041Z] LIST exit=1 mentionsPlugin=false
+[2026-11-13T16:43:02.041Z] BOOT: DSH_HOME=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt1-2026-11-13T16-42-55/home node /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/deepseek-harness-test-use/apps/cli/lib/bin.js web --port 3191 --no-open
+[2026-11-13T16:43:02.443Z] BOOT booted=false auth=null mounted=false skills=false err=yes
+[2026-11-13T16:43:02.444Z] VERDICT: FAIL
+[2026-11-13T16:43:02.444Z] teardown: removed /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-release-gate/tests/homes/v016-install-from-git-attempt1-2026-11-13T16-42-55
