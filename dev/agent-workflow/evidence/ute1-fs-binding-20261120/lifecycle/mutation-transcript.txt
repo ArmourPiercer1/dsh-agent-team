@@ -1,4 +1,4 @@
-MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
+MUTATION-MODULE <host-root>/.worktrees/ute1-fs-binding-20261120/packages/tools/src/native-fs-binding.ts
 MUTATION-MODULE-ID native-fs-binding/1
 MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true

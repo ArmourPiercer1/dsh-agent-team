@@ -103,7 +103,7 @@ UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=
 ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
 ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1944.521263ms)
-ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE <host-root>/.worktrees/ute3-routec-image-20261120/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -263,16 +263,16 @@ UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
 ✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (423.99955ms)
-ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
+ℹ host=0.2.2-rc.5 tree=<host-root>/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
 ✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (58.97875ms)
-ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/.artifacts/tmp/ute1-fs-assembly/"
+ℹ fallback isError=false code=- text="<path><host-root>/.worktrees/ute3-routec-image-20261120/.artifacts/tmp/ute1-fs-assembly/"
 ✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (63.196013ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
 ✔ wrong host generation is refused by name and never falls back to the legacy tree (0.598443ms)
 ✔ golden parity: the product module reproduces the 10 old-path vectors (159.090514ms)
-ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=<host-root>/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
 ℹ golden FS-W3-unobserved-overwrite: PASS
@@ -321,7 +321,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN written=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
+OLD-PATH-GOLDEN written=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
 ### exit=0
 
 ### $ node tests/ute-g1-fs/capture-old-path.mjs --write
@@ -342,7 +342,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN written=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
+OLD-PATH-GOLDEN written=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
 ### exit=0
 
 ### $ node tests/ute-g1-fs/capture-old-path.mjs
@@ -363,7 +363,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv
+OLD-PATH-GOLDEN compare=identical fixture=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv
 ### exit=0
 
 ### $ node tests/ute-g1-fs/negative-controls.mjs
@@ -395,7 +395,7 @@ PASS M4-silent-attachment: red=[image-allowed, image-route-c] expected=[image-al
        red  image-route-c: EXACTLY ONE attachment for the allowed read
        red  image-allowed: EXACTLY ONE attachment
 PASS M5-force-replace-if-version: red=[create-new] expected=[create-new]
-       red  create-new: a create in the write lane must succeed: Error: cannot write "/tmp/a5sf-fs-contract-mut-create-new-lbvdow/inside/created-new.txt": file no longer exists — re-read the file, then retry
+       red  create-new: a create in the write lane must succeed: Error: cannot write "<tmp>/a5sf-fs-contract-mut-create-new-lbvdow/inside/created-new.txt": file no longer exists — re-read the file, then retry
 PASS M6-widen-read-lane: red=[create-outside-read] expected=[create-outside-read]
        red  create-outside-read: the typed reason is the write⇒read gate, not the lane
 PASS M7-drop-write-intent: red=[create-unobserved] expected=[create-unobserved]
@@ -409,8 +409,8 @@ PASS M10-widen-binding-read-image: red=[bind-image] expected=[bind-image]
 PASS M11-force-replace-all: red=[edit-ambiguous] expected=[edit-ambiguous]
        red  edit-ambiguous: a multi-match edit without replace_all must be refused
 PASS M12-drop-replace-all: red=[edit-ambiguous, edit-replace-all] expected=[edit-ambiguous, edit-replace-all]
-       red  edit-ambiguous: the replace_all edit must succeed after the refused one: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-ambiguous-r5XBfI/inside/multi.txt"; provide a more specific old_string or set replace_all to true
-       red  edit-replace-all: replace_all must succeed: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-replace-all-moOGBv/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+       red  edit-ambiguous: the replace_all edit must succeed after the refused one: Error: old_string matched 3 times in "<tmp>/a5sf-fs-contract-mut-edit-ambiguous-r5XBfI/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+       red  edit-replace-all: replace_all must succeed: Error: old_string matched 3 times in "<tmp>/a5sf-fs-contract-mut-edit-replace-all-moOGBv/inside/multi.txt"; provide a more specific old_string or set replace_all to true
 PASS M13-silent-stream-abort: red=[read-abort] expected=[read-abort]
        red  read-abort: the typed abort reason reaches the caller
 PASS M14-text-only-route-claims-image: red=[image-route-gate, image-route-gate-gap] expected=[image-route-gate, image-route-gate-gap]
@@ -480,7 +480,7 @@ DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok c
 ### exit=0
 
 ### $ node scripts/check-artifacts-at-head.mjs
-[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: /home/armourpiercer/projects/dsh-agent-team/.pnpm-store
+[check-artifacts-at-head] installing the scratch from store recorded in node_modules/.modules.yaml: <host-root>/.pnpm-store
 [check-artifacts-at-head] materialised HEAD in a scratch worktree and is building it there
 DSH-ARTIFACT-VERDICT script=check-artifacts-committed subject=index verdict=ok compared=2104 glue=113
 [check-artifacts-committed] OK: 2104 files — working tree equals the git INDEX for both install surfaces (incl. 113 glue placement(s)). This script does not build, so this says the tree matches what is staged, NOT that a build produced these bytes; ask `pnpm check:artifacts:head` whether the commit carries its own build.
@@ -607,7 +607,7 @@ UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=
 ℹ a11-record-is-diagnostic: GREEN — outcome=ok landed=true recorder-attempts=1 recorder-delivered=0 binding-facts=1
 ℹ a12-release-must-be-confirmed: GREEN — state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ✔ mutation transcript: every negative control is RED without the behaviour and GREEN with it (1934.606932ms)
-ℹ MUTATION-MODULE /home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/packages/tools/src/native-fs-binding.ts
+ℹ MUTATION-MODULE <host-root>/.worktrees/ute3-routec-image-20261120/packages/tools/src/native-fs-binding.ts
 ℹ MUTATION-MODULE-ID native-fs-binding/1
 ℹ MUTATION-BASELINE arm=a1-write-inside observed=green detail=create landed and one allow fact was recorded
 ℹ MUTATION-BASELINE arm=a2-lane-denial observed=green detail=refused code=FS_PERMISSION_DENIED effect=absent fact=true
@@ -767,16 +767,16 @@ UTE3-ROUTE-C-CONFINED childResolved=true inside=file outside=refused guardRealm=
 ℹ MUTATION-ARM-DETAIL mutation=M6-retain-previous-lane arm=a12-release-must-be-confirmed observed=green detail=state=termination-unconfirmed drained=true confirmed=false errors=2 status=termination-unconfirmed
 ℹ MUTATION-TRANSCRIPT-VERDICT GREEN mutations=11 arms=12
 ✔ assembly: a real Member on rc.5 writes inside the lane and is refused outside it (412.072349ms)
-ℹ host=0.2.2-rc.5 tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
+ℹ host=0.2.2-rc.5 tree=<host-root>/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
 ℹ member=member-assembly-deny
 ℹ attach={"schema":"a5sf-native-attach/1","emptyFrontierAcknowledged":false,"emptyFrontierModules":[],"emptyFrontierSpecifiers":[],"acknowledgedNames":[]}
 ✔ assembly control: without the product module the SAME out-of-lane call falls back and succeeds (56.211945ms)
-ℹ fallback isError=false code=- text="<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/.artifacts/tmp/ute1-fs-assembly/"
+ℹ fallback isError=false code=- text="<path><host-root>/.worktrees/ute3-routec-image-20261120/.artifacts/tmp/ute1-fs-assembly/"
 ✔ scope lifecycle: dispose refuses by name, is idempotent, and never resurrects the lane (58.806415ms)
 ℹ after dispose: isError=true code=FS_PERMISSION_DENIED text="Error: ute1-assembly-assembly-lifecycle: scope-disposed — 'resolve' on binding \"assembly-assembly-lifecycle\" was refused: the scope is released (ute1-scope-ende"
 ✔ wrong host generation is refused by name and never falls back to the legacy tree (0.483986ms)
 ✔ golden parity: the product module reproduces the 10 old-path vectors (164.034697ms)
-ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
+ℹ golden host=0.2.2-rc.5 commit=9c2670d3bce5275e0d1610272958121af87787bb commit-tree=<host-root>/.worktrees/ute3-routec-image-20261120/tests/deepseek-harness-next
 ℹ golden FS-W1-create: PASS
 ℹ golden FS-W2-overwrite-read: PASS
 ℹ golden FS-W3-unobserved-overwrite: PASS
@@ -857,7 +857,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN written=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
+OLD-PATH-GOLDEN written=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
 ### exit=0
 
 ### $ node tests/ute-g1-fs/capture-old-path.mjs --write
@@ -878,7 +878,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN written=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
+OLD-PATH-GOLDEN written=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv bytes=2746
 ### exit=0
 
 ### $ node tests/ute-g1-fs/capture-old-path.mjs
@@ -899,7 +899,7 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=route-c outcome
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=route-c outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=route-c outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=16
-OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv
+OLD-PATH-GOLDEN compare=identical fixture=<host-root>/.worktrees/ute3-routec-image-20261120/tests/ute-g1-fs/golden/old-path.tsv
 ### exit=0
 
 ### $ node tests/ute-g1-fs/negative-controls.mjs
@@ -931,7 +931,7 @@ PASS M4-silent-attachment: red=[image-allowed, image-route-c] expected=[image-al
        red  image-route-c: EXACTLY ONE attachment for the allowed read
        red  image-allowed: EXACTLY ONE attachment
 PASS M5-force-replace-if-version: red=[create-new] expected=[create-new]
-       red  create-new: a create in the write lane must succeed: Error: cannot write "/tmp/a5sf-fs-contract-mut-create-new-O5IArn/inside/created-new.txt": file no longer exists — re-read the file, then retry
+       red  create-new: a create in the write lane must succeed: Error: cannot write "<tmp>/a5sf-fs-contract-mut-create-new-O5IArn/inside/created-new.txt": file no longer exists — re-read the file, then retry
 PASS M6-widen-read-lane: red=[create-outside-read] expected=[create-outside-read]
        red  create-outside-read: the typed reason is the write⇒read gate, not the lane
 PASS M7-drop-write-intent: red=[create-unobserved] expected=[create-unobserved]
@@ -945,8 +945,8 @@ PASS M10-widen-binding-read-image: red=[bind-image] expected=[bind-image]
 PASS M11-force-replace-all: red=[edit-ambiguous] expected=[edit-ambiguous]
        red  edit-ambiguous: a multi-match edit without replace_all must be refused
 PASS M12-drop-replace-all: red=[edit-ambiguous, edit-replace-all] expected=[edit-ambiguous, edit-replace-all]
-       red  edit-ambiguous: the replace_all edit must succeed after the refused one: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-ambiguous-IAwNfH/inside/multi.txt"; provide a more specific old_string or set replace_all to true
-       red  edit-replace-all: replace_all must succeed: Error: old_string matched 3 times in "/tmp/a5sf-fs-contract-mut-edit-replace-all-TpVdom/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+       red  edit-ambiguous: the replace_all edit must succeed after the refused one: Error: old_string matched 3 times in "<tmp>/a5sf-fs-contract-mut-edit-ambiguous-IAwNfH/inside/multi.txt"; provide a more specific old_string or set replace_all to true
+       red  edit-replace-all: replace_all must succeed: Error: old_string matched 3 times in "<tmp>/a5sf-fs-contract-mut-edit-replace-all-TpVdom/inside/multi.txt"; provide a more specific old_string or set replace_all to true
 PASS M13-silent-stream-abort: red=[read-abort] expected=[read-abort]
        red  read-abort: the typed abort reason reaches the caller
 PASS M14-text-only-route-claims-image: red=[image-route-gate, image-route-gate-gap] expected=[image-route-gate, image-route-gate-gap]

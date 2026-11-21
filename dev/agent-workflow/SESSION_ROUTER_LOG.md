@@ -9677,6 +9677,36 @@ docs:sync --check findings=0 blocking=0 contracts=20
 DSH-APPEND-ONLY-LOG verdict=pass
 ```
 
+## 2026-11-21 — UTE-3 第二轮对抗验证（文档/证据五项）：把“生成面、绝对路径、可复现措辞、正控粒度、B8 记录”改回可证明的状态
+
+依据 `dev/agent-workflow/evidence/ute3-review-20261121/VERIFICATION-2.md`（第二轮独立对抗验证，判决 `FIXES-PARTIAL`；B8 为审查者自身错误并撤回）逐项修正 F5–F10。分支 `task/ute3-truth-v2-20261121`，base `origin/master` = `c25cb576fbb8524f53d718082b4e3f2c9ecd44cc`。**未执行任何退役、删除、审批或产品切换；`CORE PATCH BUDGET` 仍为 0；未触碰 `scripts/ute-retirement-gate.mjs` 与 `scripts/ute-retirement-gate.test.mjs`。**
+
+**F5 生成面**：§6 新增 §6.1，`packages/tools/families/{index.mjs,manifest.json,index.d.mts}` 单列为共享生成/评审面，逐移除“重生成而不是盲删”（`node scripts/gen-family-index.mjs` / `--check`；`manifest.json` 为人工评审输入，`index.d.mts` 为手写稳定声明）；总数改为 **87 body + 3 = 90**，并明确只删 87 会留下 `index.mjs` 指向已删 `./fs.mjs` 的坏 import 图。`manifest.json` 的 dist 镜像由 `place-dist-glue.mjs` 生成，不计入 N。台账 `oldPath.files` 仍为 87（每族不相交，gate 只按族校验）；共享面无台账槽位是已披露的检测器限制。
+
+**F6 绝对路径**：第一轮漏掉的 `ute3-search-b1-20261120/{README.md,lane-suite.txt}` 与 `ute3-search-b2-20261120/lane-suite.txt` 已修；UTE-G1 证据集（ute0/ute1/ute2/ute3/ute-g1）共 21 个转录文件统一改为 `<host-root>` / `<tmp>` / `<srv>` / 相对路径。规则、文件清单、数字不变证明（对 HEAD 字节重放同一替换得到提交字节，`files=21 mismatch=0`）与全树残余披露见 `HOST-PATH-AUDIT.md`；全仓历史证据（6574 文件）不在本 PR 范围。
+
+**F7 措辞矛盾**：删除“does not remove every capability”与“change nothing observable”的互斥说法，改为逐族精确表述——**六个族**（fs/search/web/process/ui/agent-state）在出厂 preset 上“不减少任何可达能力”；agent-control 同样不减少可达能力但无第二实现；**inspect 的 governed body 是唯一实现，因此该句对 inspect 为假**。进度板同改。
+
+**F8 两次捕获**：release term 表、进度板、台账 notes 统一限定为三种证据形态：search/web/ui/agent-state 有**已提交的成对转录**；fs/process 是**新捕获对已提交 fixture 的逐字节比较**；agent-control 是 **lane 内两次新捕获比较、无已提交成对转录**。
+
+**F9 正控粒度**：`NC-MEMBER-POSITIVE edit` 改为用 golden 同一 `COMPARED_FIELDS` 比较整行（entry/laneRead/laneWrite/outcome/refusal/effects/leaks），不再只看 outcome/refusal；提交的 fs negative-control 转录随之重生成（`controls=13 failed=0`）。
+
+**F10 记录纠错**：`REMEDIATION.md` 的 B8 改为“审查者错误、finding 撤回”；`unconfined-fs` 确为真实测试（`tests/ute-g1-fs/product-route-image.test.mjs:268`，census CI argv `.github/workflows/census-runtime.yml:434`，语义即“lane denial → 70-byte allow”），release request 恢复/保留该准确引用。新增 `CORRECTIONS.md` 双向记录：我方 B8/B4/绝对路径三处，以及验证者自纠两处（`contradicts` 为 7 非 68；ui/AS 服务 6/7 非 5）。`VERIFICATION-2.md` 已逐字并入证据目录。
+
+**门禁（本地，最终树）**
+- `node scripts/eb3-ci-required.mjs` → `EB3-CI-REQUIRED pass workflows=10 findings=0`
+- `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` → `DSH-TEST-CATALOG tests=892 ... refused=0 findings=0`
+- `node scripts/ute-retirement-gate.mjs --all` → `UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8`（exit 1，符合预期）
+- `node scripts/eb3-family-definitions.mjs` → `EB3-FAMILY-DEFINITIONS pass files=88 findings=0`
+- `node scripts/ute-family-inventory.mjs` → `UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0`
+- `node scripts/docs-sync.mjs --check` → `findings=0 blocking=0 contracts=20`
+- `node scripts/check-append-only-log.mjs` → `verdict=pass`
+- 受影响 lane suites（fs/process/search/web/uistate）→ `tests 39 pass 39 fail 0`（`lane-suites-round2.txt`）
+- `git diff --check` 0；`node --check tests/ute-g1-fs/negative-controls.mjs` OK
+- UTE-G1 证据集 host-absolute 路径 grep → 0（`HOST-PATH-AUDIT.md`）
+
+**诚实边界**：全仓证据树的历史绝对路径（6574 文件、62380 行）未清理——它们不属于 UTE-G1 证据集、不被任何 UTE-G1 文档或台账引用，且部分被各自套件逐字节比较；本 PR 只声明 UTE-G1 证据集为 0，并在 `HOST-PATH-AUDIT.md` 明示该范围。共享生成面仍无 gate 槽位；`oldPath.files` 为此保持 87。
+
 ## 2026-11-21 — G1 退役门第二轮加固：把"自述"逐条换成"绑定"
 
 第二轮对抗验证（`VERIFICATION-2.md`）确认第一轮的三条伪造路径已关闭，但**门仍能被四种输入骗过**。四种都在 `c25cb576f` 上复现，本轮逐条堵死：

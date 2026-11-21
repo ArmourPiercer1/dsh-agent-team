@@ -119,4 +119,4 @@ composition probe is unchanged, all three `SD-SEARCH-*` differences are
 unchanged, the negative controls are GREEN and the gate still refuses both
 families.
 
-All commands were run in `/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-search-b1-20261120`.
+All commands were run in `<host-root>/.worktrees/ute3-search-b1-20261120`.

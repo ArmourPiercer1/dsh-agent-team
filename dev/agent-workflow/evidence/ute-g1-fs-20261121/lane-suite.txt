@@ -18,9 +18,11 @@ UTE-G1-FS-VERDICT GREEN vectors=16 pending=0 host=9c2670d3bce5275e0d161027295812
 UTE-G1-FS-SEMANTIC-DIFF class=refusal-code old=FS_SANDBOX_DENIED new=FS_PERMISSION_DENIED cause=upstream-deref:packages/fs/tool-fs/src/sandbox.ts:139-143 reason=not-a-patch blocking=yes id=lane-refusal-code
 UTE-G1-FS-SEMANTIC-DIFF class=refusal-observation old=prose new=typed-FsError-code cause=host-generation reason=class-not-code blocking=yes id=refusal-observation-shape
 UTE-G1-FS-REFUSAL-CLASSES cancelled,image-modality-denied,lane-deny,missing-path,stale-version,write-requires-read
-✔ the prototype reproduces the old-path golden corpus (400.029918ms)
-✔ every known semantic difference is declared and printable (0.335655ms)
-✔ no golden refusal is the unclassified bucket (2.373934ms)
+UTE-G1-FS-META newPathPending=absent image-vectors=reproduced
+✔ the prototype reproduces the old-path golden corpus (401.308357ms)
+✔ every known semantic difference is declared and printable (2.53634ms)
+✔ no golden refusal is the unclassified bucket (0.302653ms)
+✔ the golden meta records the measured new-path truth, not the stale pending note (0.189639ms)
 UTE-G1-FS-NC NC-1-lane-bites ok outcome=deny refusal=lane-deny denyFact=writeText/write targetExists=false
 UTE-G1-FS-NC NC-2-harness-bites ok cleanFailures=0 mutatedFailures=1 mutatedFields=effects
 UTE-G1-FS-NC NC-3-no-fallback ok typed=NextHostMissingError namesPin=true namesLegacy=false
@@ -31,16 +33,16 @@ UTE-G1-FS-NC NC-MEMBER edit ok control=drop-edit-version-guard baseline=deny/sta
 UTE-G1-FS-NC NC-MEMBER read_image ok control=widen-read-lane-image baseline=deny/lane-deny baselineMatchesGolden=true mutant=allow/none differs=true attachmentBytes=70 modelBlocks=text+image
 UTE-G1-FS-NC NC-MEMBER-POSITIVE read ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
 UTE-G1-FS-NC NC-MEMBER-POSITIVE write ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
-UTE-G1-FS-NC NC-MEMBER-POSITIVE edit ok golden FS-E2=deny/stale-version baseline=deny/stale-version mutant=allow — the guard, not a missing old_string, is what refused
+UTE-G1-FS-NC NC-MEMBER-POSITIVE edit ok golden FS-E2=deny/stale-version baselineMatchesGolden=true fields=entry,laneRead,laneWrite,outcome,refusal,effects,leaks mutant=allow — the guard, not a missing old_string, is what refused
 UTE-G1-FS-NC NC-MEMBER-POSITIVE read_image ok baseline=deny/lane-deny mutant=allow/none — the mutant is the only difference, so the control is not vacuous
 UTE-G1-FS-NC NC-IMAGE-OBSERVER ok cases=4 zero-attachments:RED-as-required two-attachments:RED-as-required wrong-block-id:RED-as-required refusal-committed:RED-as-required
-✔ the family-level and per-member negative controls hold (497.844677ms)
-ℹ tests 4
+✔ the family-level and per-member negative controls hold, with an exact transcript (1177.591873ms)
+ℹ tests 5
 ℹ suites 0
-ℹ pass 4
+ℹ pass 5
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 977.642343
+ℹ duration_ms 1652.361261
 EXIT=0
