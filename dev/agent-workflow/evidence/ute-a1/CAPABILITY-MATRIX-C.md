@@ -47,6 +47,27 @@ plainly: a skill file read by the host skill service is OUTSIDE the member's fs 
 D-report limit, not a claim of confinement. MCP is treated differently because its effects are
 unknowable rather than merely out-of-lane: it stays refused by name.
 
+## What the adversarial review found in the centre (round 28)
+
+No P0. Seven P1s; the ones that mattered were all in the PRODUCT composition rather than in the
+mechanism, which is why the mechanism-level arms could not see them:
+
+| finding | state |
+| --- | --- |
+| settlement recorded the lane's raw answer, then overruled it (a refused call recovered as UNKNOWN) | FIXED — settles the enforced decision; the fact keeps both (`decision` + `laneDecision`) |
+| `recoverUnsettled` ran over ONE shared settlement dir, so a member bind turned another member's live execution UNKNOWN | FIXED — per member |
+| the post-approval recheck consulted a frozen binding, so it could only agree with itself | FIXED — live resolver; ADM-37 narrows the lane between the two consultations |
+| realm disposer registered twice, so close STARTED it before the native tombstone was awaited | FIXED — ordering |
+| a throwing ledger/settlement path escaped the listener instead of refusing | FIXED — three explicit deny codes, ADM-38 |
+| the per-call memo served any dispatch with the same callId (a retry could inherit an allow) | FIXED — memo serves one execution object, ADM-38 |
+| an admitted-as-allow call refused by the recheck has no legal settlement state | **ESCALATED** — `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`; reported as `SETTLEMENT_CONTRACT_GAP` |
+
+Two P2 classes are also closed (a gap in the compiled answer no longer inherits the ceiling; the ledger
+no longer lets a caller rename a record kind or end a call twice). Three remain and are CONTRACT
+questions rather than widenings: the third grant-id scheme (there is no approval binder wired in the
+product at all, so asks are refusals), `agentId: sessionId` (two identities in one field), and the
+synthetic `executionIdOf` join. None may be fixed by inventing a fourth scheme.
+
 ## CONTRACT_CHANGE_REQUEST (open)
 
 `CONTRACT-CHANGE-REQUEST-process-lane.md` records why subprocess/PTY/PTC cannot be admitted: the v4
