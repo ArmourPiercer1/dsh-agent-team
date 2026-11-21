@@ -10088,3 +10088,34 @@ them together, one is settled and two are deliberately left alone:
 
 Round-29 gates at `42ab56be1`: leg `suites=6 files=6 exit=0` (43 admission arms), catalog
 `tests=888 refused=0 findings=0`, cut-closure `prodRefs=0 distResiduals=0`.
+
+### R30 — the migrated suites were never RUN, and running them found a live ReferenceError
+
+The A1 clause "16 个保留能力历史测试迁移到新入口" was recorded as done because
+`migrated-entry-imports.json` said `missing: []` — every file imports `vnext/root.js` or
+`vnext/agent-bindings.mjs`. That is an IMPORT migration. None of them had ever executed: this worktree's
+`node_modules/.bin/vitest` is a symlink into a deleted sibling worktree, so the suite read as
+un-runnable. It runs from the MAIN worktree's vitest install, and the first execution produced
+**230/238**, not 238/238.
+
+The first fix was a genuine production bug: **`ReferenceError: resolvePaMount is not defined`** on any
+path that published an authority generation (F15 L4/L7). The cut retired `pa-mount-registry.mjs` — the
+publish/revoke/resolve mount index — but `publishAuthorityGeneration` kept calling it. It is now an
+optional seam `resolveMemberMount(teamRoot, instanceId)`: wired, the refresh behaves as before; unwired,
+it is skipped with an explicit observation and `reason: 'no-mount-seam'`. **The product wires no such
+seam today, so the authority-generation refresh cannot fire in the assembled product** — a C-stage
+wiring item that is now visible instead of fatal.
+
+After the fix: **233/238**. The five remaining are classified in `MIGRATED-SUITE-STATUS.md` — two
+BEHAVIOUR (the glue installs no pre-execute leg on the decision side; remote-ensure ∥ work-delivery lazy
+ensure does not fulfil both paths on one cold member) and three LAYOUT PINS on the retired root/route
+(a source-text pin on `from './s6-remote.js'`, a projection-scope walk, an ENOENT on a moved path, a
+pre-execute-adapter walk). None may be "fixed" by editing the expectation first — that is the SLICE-16
+lesson in the other direction.
+
+**Next, and now top of the queue:** put these 16 files into CI as a vitest `suiteList` leg (the
+`ute-vnext-a1` leg is node:test and cannot carry them). The reason this rotted is that nothing ran them;
+a leg that names them is the only durable fix. Also next: the five classified failures above.
+
+Gates at `f6ceacc2a`: leg `suites=6 files=6 exit=0`, cut-closure `prodRefs=0 distResiduals=0`,
+P0 assets pass, catalog `tests=888 refused=0 findings=0`.
