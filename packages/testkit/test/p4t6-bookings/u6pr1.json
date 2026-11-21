@@ -7,7 +7,6 @@
     "packages/runtime/governance-center/kernel.ts",
     "packages/runtime/governance-center/host-adapter.ts",
     "packages/runtime/governance-center/index.ts",
-    "packages/runtime/src/plugin/live/center-shadow-row.mjs",
     "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
     "packages/runtime/test/u6-pr1-registry.test.ts",
     "packages/runtime/test/u6-pr1-kernel.test.ts",

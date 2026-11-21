@@ -1,24 +1,27 @@
 /**
  * u6-shadow-host.mjs — U6 PR1 C2 test-only mount row (public seams ONLY).
  *
+ * A1 CUT: the PRODUCT shadow row this fixture mounted
+ * (`packages/runtime/src/plugin/live/center-shadow-row.mjs`) and its C1
+ * suite (`u6-pr1-shadow-inert.test.ts`) retired together. The fixture stays
+ * as the parity runner's mount row, but no U6_CENTER_ROW_URL is handed down
+ * any more, so a `shadow` World records `center-error` (nothing to import)
+ * instead of mounting an assembly; it never imports a deleted file.
+ *
  * MOUNT: identical in BOTH worlds of the shadow-parity run (the only delta
  * between the two Worlds is the U6_CENTER_ASSEMBLY value this row reads):
- *   'shadow' — imports the PRODUCT shadow row from its DIST face
- *              (U6_CENTER_ROW_URL — the exact file the shipped
- *              agent-bindings glue resolves) and installs the center
- *              assembly over this plugin context's public seams;
+ *   'shadow' — would import the product shadow row from U6_CENTER_ROW_URL
+ *              (never set since the A1 cut), so it records `center-error`
+ *              and installs nothing;
  *   'off'    — installs NOTHING and appends one `center-skipped` row, so
  *              "mounted but inert" stays distinguishable from "not mounted".
  *
  * This file is test infrastructure; it touches no product surface and holds
- * no authority. The product law (ALWAYS next(), audit-only) lives in
- * packages/runtime/src/plugin/live/center-shadow-row.mjs and is asserted by
- * packages/runtime/test/u6-pr1-shadow-inert.test.ts (C1) plus the parity
- * comparison of this suite (C2).
+ * no authority.
  *
  * ENV (set by the TestWorldFactory before spawn):
  *   U6_CENTER_ASSEMBLY        'shadow' | 'off'
- *   U6_CENTER_ROW_URL         file URL of the DIST center-shadow-row.mjs
+ *   U6_CENTER_ROW_URL         RETIRED — never set since the A1 cut
  *   U6_CENTER_SHADOW_LEDGER   audit JSONL inside the World home (CAPPED)
  *   U5_CANARY_WORLD           world id (provenance in the skipped row)
  */

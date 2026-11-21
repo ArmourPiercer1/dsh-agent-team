@@ -28,10 +28,9 @@ const REALM = 'u6-pr2-kernel-unit-realm'
 
 /* The live plane row and the family contribution builder are untyped .mjs
  * (no sibling declaration by design — the lane's typed surface is
- * read-normalizer.ts + governance-center/index.ts). The PR1 precedent
- * (u6-pr1-shadow-inert.test.ts:43) loads them through `await import(new
- * URL(...))` behind a declared structural face; these casts are that face,
- * and they are the ONLY casts in this file. */
+ * read-normalizer.ts + governance-center/index.ts). They are loaded through
+ * `await import(new URL(...))` behind a declared structural face; these casts
+ * are that face, and they are the ONLY casts in this file. */
 type PlaneAssemblyResult =
   | { ok: true; value: unknown }
   | { ok: false; code: string; message?: string }

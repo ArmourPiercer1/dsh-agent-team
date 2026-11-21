@@ -53,7 +53,7 @@ import {
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import type { TeamPermissionPlane } from '../src/plugin/permission-plane.js'
 import type { CanonicalKeyContains } from '../src/plugin/permission-plane.js'
@@ -538,10 +538,10 @@ describe('splice leg 5b — RESTORE regression: a pure restore emits ZERO, a gen
 
 describe('splice leg 6 — source pins: the real glue receipt block is read-only; root has ONE emission site', () => {
   const glueSource = readFileSync(
-    join(RUNTIME_ROOT, 'src', 'plugin', 'live', 'agent-bindings.mjs'),
+    join(RUNTIME_ROOT, 'src', 'plugin', 'vnext', 'agent-bindings.mjs'),
     'utf8',
   )
-  const rootSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+  const rootSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
 
   it('the glue exposes permissionNoticeReceipt exactly once, over pure reads', () => {
     const starts = glueSource.match(/permissionNoticeReceipt: Object\.freeze\(\{/g) ?? []

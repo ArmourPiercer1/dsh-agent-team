@@ -588,7 +588,7 @@ describe('F15 §9 — the MCP live-loss unit matrix (plan §9.3/§9.4/§9.5/§11
 // ── §9.2 static witness — every production mount carries the policy ─────────
 describe('F15 §9.2 — the static call-site witness (the explicit short reconnect policy)', () => {
   const glueSource = readFileSync(
-    fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href),
+    fileURLToPath(new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url).href),
     'utf8',
   )
 

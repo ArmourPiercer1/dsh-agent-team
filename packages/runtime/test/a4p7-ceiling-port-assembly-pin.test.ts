@@ -100,7 +100,7 @@ import {
 } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import * as hostEntry from '../src/plugin/host.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import type { CanonicalKeyContains } from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'
@@ -659,7 +659,8 @@ describe('a4-76 — the shipped composition consults the authority ceiling; the 
     // runtime tsconfig, so the census paths are joined off this file's path.
     const srcDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'plugin')
     const prod = readFileSync(join(srcDir, 'host.ts'), 'utf8')
-    const root = readFileSync(join(srcDir, 'root.ts'), 'utf8')
+    // the production root moved to plugin/vnext/root.ts in the A1 cut
+    const root = readFileSync(join(srcDir, 'vnext', 'root.ts'), 'utf8')
     expect(prod.match(/permissionAuthorityCeiling:\s*createAuthorityCeilingReader\(/g) ?? []).toHaveLength(1)
     expect(root.match(/\{ authorityCeiling: permissionAuthorityCeiling \}/g) ?? []).toHaveLength(1)
   })

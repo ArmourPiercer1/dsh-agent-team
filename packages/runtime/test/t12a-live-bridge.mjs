@@ -140,7 +140,7 @@ let glueModulePromise
 export async function loadGlueModule() {
   ensureGlueResolvable()
   if (glueModulePromise === undefined) {
-    glueModulePromise = import('../src/plugin/live/agent-bindings.mjs')
+    glueModulePromise = import('../src/plugin/vnext/agent-bindings.mjs')
   }
   return glueModulePromise
 }
@@ -1415,7 +1415,7 @@ export async function createLiveWorld(options = {}) {
     mcpServer: { name: 't12a-mini-mcp', port: 3999 },
     environmentFacts: [],
     externalPolicyFacts: { hard: {}, capabilityExists: {} },
-    glueUrl: new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href,
+    glueUrl: new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url).href,
     ...options.configOverrides,
   }
   const teamToolsRef = { current: options.teamTools !== undefined ? options.teamTools : undefined }

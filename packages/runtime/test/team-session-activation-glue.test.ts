@@ -1009,7 +1009,7 @@ describe('C1 (guide §13.3): the live glue under the activation fence', () => {
 
 describe('C1 (guide §6.2): the static assertion — the bare activation call sites', () => {
   const glueSource = readFileSync(
-    fileURLToPath(new URL('../src/plugin/live/agent-bindings.mjs', import.meta.url).href),
+    fileURLToPath(new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url).href),
     'utf8',
   )
   const createSites = (glueSource.match(/agents\.create\(\{/g) ?? []).length

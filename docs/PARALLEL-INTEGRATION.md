@@ -189,8 +189,7 @@ on a Host"**, so "structurally correct but not running" families accumulate behi
 
 `dev/agent-workflow/ledgers/u7-tool-acceptance.json` (schema `u7-tool-acceptance/1`) records that
 distance per tool, and [scripts/eb3-tool-acceptance.mjs](../scripts/eb3-tool-acceptance.mjs) grades
-it as a declared `ci-integration` leg. One row per model-visible tool name claimed by a family in
-[packages/tools/families/manifest.json](../packages/tools/families/manifest.json) — read through the
+it as a declared `ci-integration` leg. One row per model-visible tool name claimed by a family — read through the
 plane's own name domain, so a configurable spelling (`cap.names.bash`) claims BOTH `team_bash` and
 the `bash` native takeover the Gate 0b ledger admits — plus the named-bridge jobs trio. Four levels,
 each `PROVEN | DISCLOSED | NOT_VERIFIED`:

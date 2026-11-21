@@ -336,6 +336,32 @@ if (!isMain) {
     }
   }
 
+  // THE BUILD'S OWN INPUTS. A cut that moves the production entry must move everything that NAMES it,
+  // or `place-dist-glue` dies on a missing source and the product cannot be built at all - while every
+  // source-tree test stays green, which is precisely how this went unnoticed once (2026-11-22: 99 of
+  // 119 placement sources were files the cut had already deleted, and the glue path still pointed at
+  // packages/runtime/src/plugin/live/agent-bindings.mjs).
+  // The module EVALUATES its list at import time, and the loader refuses a list whose first entry is
+  // not the glue — so a moved entry surfaces as a THROW from the import itself. That is still a
+  // finding, not a crash: a gate that dies with a stack trace tells the operator nothing about which
+  // invariant broke.
+  let placementLoader
+  let placements = []
+  try {
+    placementLoader = await import('./place-dist-glue.mjs')
+    placements = placementLoader.loadPlacements()
+  } catch (error) {
+    findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE', detail: `the dist placement list cannot be loaded: ${error instanceof Error ? error.message : String(error)}` })
+  }
+  if (placementLoader !== undefined && !existsSync(join(root, placementLoader.GLUE_SRC))) {
+    findings.push({ code: 'UTE_CLOSURE_GLUE_PATH', detail: `place-dist-glue's GLUE_SRC ${placementLoader.GLUE_SRC} does not exist — the production entry moved and the build was not told` })
+  }
+  for (const placement of placements) {
+    if (!existsSync(join(root, placement.src))) {
+      findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENT_MISSING', detail: `${placement.src} is a declared dist placement but does not exist; place-dist-glue cannot build the shipped face from it` })
+    }
+  }
+
   // Every non-production referrer must be REGISTERED by path. A directory is not a reason.
   const exemptions = loadExemptions(root)
   for (const f of out.findings) {

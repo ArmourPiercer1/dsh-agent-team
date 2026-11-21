@@ -69,6 +69,8 @@ export interface A5sfRealmMember {
 export interface A5sfRealmBinding {
   readonly identity: TrustedMemberIdentity
   readonly toolBindingIdentity: string
+  /** The bare tool name this binding narrows (additive, C 2026-11-21; absent on legacy bindings). */
+  readonly toolName?: string
   readonly effective: EffectiveIoPolicy
   readonly config?: Record<string, unknown>
 }

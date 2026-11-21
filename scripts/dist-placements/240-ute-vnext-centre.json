@@ -1,0 +1,63 @@
+{
+  "schema": "dist-placements/1",
+  "family": "ute-vnext-centre",
+  "summary": "The UTE vNext centre modules (A1/B/C). tsc never emits .mjs, and the glue imports every one of these by a relative specifier, so each must ride the byte-identical dist mirror or the shipped `files: [\"dist\"]` install face fails with ERR_MODULE_NOT_FOUND at the FIRST governed member bind - the GLUE-6 RED-A class, one layer deeper than the old rows.",
+  "note": "ORDER: agent-bindings.mjs (the glue) is PLACEMENTS[0] and lives in 010; these are its runtime dependencies. admission.ts is genuinely TypeScript: tsc emits admission.js and admission-port.mjs therefore imports './admission.js' (source-tree runs resolve it through the test hooks ' .js -> .ts rewrite), so the .ts file is deliberately NOT copied here - placing it would drift from the compiled contract. Adding an .mjs under vnext/ without adding it here makes the built product unloadable while every source-tree test stays green, which is exactly the kind of gap this list exists to close.",
+  "placements": [
+    {
+      "src": "packages/runtime/src/plugin/vnext/realm-lane.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/realm-lane.mjs",
+      "note": "The native mount lane: proves the agent resolves the definition the realm installed. Imported by the glue at module load."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/admission-port.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/admission-port.mjs",
+      "note": "The pre-execute/guard port: the ONE place a controlled call is admitted."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/execution-facts.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/execution-facts.mjs",
+      "note": "One physical execution, one canonical fact, joined to the admission record."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/fact-ledger.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/fact-ledger.mjs",
+      "note": "The durable JSONL ledger: authority, replay refusal and execution records."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/settlement-port.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/settlement-port.mjs",
+      "note": "Bridges an execution fact to the product settlement store (ADMITTED -> RUNNING -> terminal)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/centre-install.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/centre-install.mjs",
+      "note": "The ONE composition point the product calls: admission + facts + settlement over one callId."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
+      "note": "The delivered-turn reader, extracted from the glue (2026-11-22): the glue imports it, so the shipped face must carry it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/member-execution.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/member-execution.mjs",
+      "note": "One member's execution composition (centre + native mount + lifecycle), extracted from the glue (2026-11-22). The glue imports it, so the shipped face must carry it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/session-identity.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/session-identity.mjs",
+      "note": "Session identity, durable lifecycle gate, admission close and the boot-publish marker; extracted from the glue (plan S1, 2026-11-22). The glue imports it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/template-binding.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/template-binding.mjs",
+      "note": "The per-team-root bound-blueprint cache + fail-closed template locator + static projection; extracted from the glue (plan M4, 2026-11-22)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/bind-path.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/bind-path.mjs",
+      "note": "The bind path and the ONE rule about what it may bridge (fresh-member only); imported by the realm row, the template locator and the glue so the rule exists once."
+    }
+  ]
+}

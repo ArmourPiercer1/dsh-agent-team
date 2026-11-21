@@ -122,7 +122,10 @@ test('enumeration is deterministic: two loads agree, and the order is the file-n
 })
 
 test('RED-first: a REMOVED placement is detected — DELTA N-1 (the drift a by-hand list hid)', () => {
-  const dir = plantedLedger((d) => editDoc(d, '030-fs-family.json', (doc) => { doc.placements.splice(3, 1) }))
+  // The fixture file must be one that SURVIVES the A1 cut: the original used 030-fs-family.json,
+  // which the cut retired together with the FS family it mirrored, so the arm was asserting against
+  // a document that no longer exists (a test that passes only while a deleted file is tracked).
+  const dir = plantedLedger((d) => editDoc(d, '010-runtime-live-rows.json', (doc) => { doc.placements.splice(1, 1) }))
   try {
     const now = loadPlacements(dir)
     assert.equal(now.length, N - 1)

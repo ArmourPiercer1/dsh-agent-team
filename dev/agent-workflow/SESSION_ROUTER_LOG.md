@@ -9828,3 +9828,423 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
 ### 门禁
 
 `UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 prodRefs=13 distResiduals=52 cut=pending(148/148) dupNames=0 findings=0` · 变异臂 21（账本）+ 13（闭包，含 3 条在临时 git 仓库里运行的删除后负控）。hosted CI 在重跑前记 UNKNOWN，不宣称绿。
+
+## R24 — 2026-11-21 — UTE vNext C: MCP on the network axis, and the subprocess lane's missing declaration source
+
+- **MCP judged, not refused by prefix** (`ADM-33`): `mcp__<server>__<tool>` is axis `net.mcp`, locator =
+  SERVER name (recording a path nobody judged would be worse than no locator). Unset ≠ allow, deny is
+  deny, a per-tool restriction narrows it, and `mcp__` with no server (or no tool) is
+  `ADMISSION_TOOL_UNBOUND` — a prefix is not a permission. WHICH servers exist stays the mount gate's
+  decision (`filterMcpServers` / the template's mcp grant).
+- **`CONTRACT_CHANGE_REQUEST` opened** (not `CORE_SEAM_BLOCKER`: no upstream patch is wanted): there is
+  no single-source declaration for a PROCESS lane. v4 Blueprint ceiling is `{read, write, network}`
+  (frozen), the product realm declaration reuses that shape, `execution.executionBoundary` says WHO
+  executes and not WHAT the shell may touch, and `shellClass` is an install-spec field the composition
+  passes. Options A (add `process` to the v4 ceiling) / B (a v5 schema) / C (declare the family not
+  supported) are recorded in `evidence/ute-a1/CONTRACT-CHANGE-REQUEST-process-lane.md`; the three
+  workarounds (judge on the write lane, declare it only in the product realm, derive it from the
+  boundary) are each a breach of the invariant this round implements.
+- While the ruling is pending the families stay **explicitly refused** (`ADMISSION_AXIS_UNSUPPORTED`):
+  the refusal is the safe state, not a workaround. `C-subprocess` / `C-pty` / `C-ptc` rows in
+  `CAPABILITY-MATRIX-C.md` say exactly that.
+- Gates at this round: leg `ute-vnext-a1` suites=4 exit=0; catalog `tests=886 refused=0 findings=0`;
+  P0 assets / cut-closure / a1-window all pass. Arms now 78 (admission 33, slice 33, realm 9, os 3).
+
+## R25 — 2026-11-21 — UTE vNext C: revocation between the decision and the body is now a proven refusal
+
+- **`SLICE-34`** models what a real permission revoke looks like from inside one dispatch: the binding
+  resolves for the pre-execute decision, then the holder is revoked, so the guard's RECHECK sees no
+  binding. It asserts the refusal names `ADMISSION_RECHECK`, the provider was never touched, the
+  admission fact keeps the `allow` that was genuinely decided, and the execution fact is
+  `admission-refusal` with the guard's own code.
+- That exposed a real defect in `execution-facts.mjs`: a refusal at the GUARD was classified `failed`,
+  because the join only knew about `decision: 'deny'`. An operator's revoke would have been
+  indistinguishable from a broken tool in every report built on those facts. The fact now carries the
+  centre's stable `ADMISSION_*` code, read from the tool error (the only signal that survives to
+  `tools/result`), and the guard's code wins over the admission record's generic one.
+- Gates: leg suites=4 exit=0; catalog `tests=886 refused=0 findings=0`; arms now 79
+  (admission 33, slice 34, realm 9, os 3).
+
+## R26 — 2026-11-22 — external review received; production closure repaired; first real extraction
+
+Owner relayed an external review (`docs/reviews/20261122-0018.txt`) and ruled: **the two oversized
+centre files must be fixed before B/C continues**. This round did the review's blocking items and the
+first extraction.
+
+**The finding that mattered most was not in the review's list.** `place-dist-glue` — the step that puts
+the byte-identical .mjs files into the shipped dist face — still pointed at
+`packages/runtime/src/plugin/live/agent-bindings.mjs`, which the cut deleted. `pnpm build:composition`
+died before producing anything, and every source-tree test stayed green because none of them build the
+shipped face. 99 of 119 placement sources were files the cut had already deleted, and the entire
+`vnext/` centre was in NO placement.
+
+- GLUE_SRC retargeted; 98 dead entries and 14 dead placement documents removed; new
+  `240-ute-vnext-centre.json` places the six centre .mjs files; `admission-port.mjs` imports
+  `./admission.js` (the file tsc emits) instead of `./admission.ts`.
+- `ute-cut-closure --check` now refuses a placement whose src is missing and a GLUE_SRC that is not on
+  disk, and reports an unreadable list as a FINDING (negative control measured: pointing GLUE_SRC back
+  at the deleted path yields `UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE` + fail, not a stack trace).
+- `dist-placements.test.mjs` used a DELETED family document as its fixture; it now uses one that
+  survives.
+- `refuse()` typed with `AdmissionDenialCode` (the TS error the review named: NETWORK_DENY was not an
+  `AdmissionRefusalCode`). docs:sync dangling links fixed (2 -> 0).
+
+**Review P0s:**
+- native mount disposal: the product bind discarded `mountHostModules(...)`'s handle, so the
+  MEMBER_CLOSED tombstone never registered on member teardown — the SLICE-23 regression, live on the
+  product path. Now kept in `nativeMountDisposers` and awaited BEFORE realm disposal.
+- Alpha.6 review routing: the opt-in now requires `centreStatePath` (a review router whose decisions
+  have nowhere durable to live is a governance claim with no evidence). The rule lives in a new pure
+  module `vnext/centre-config.ts` + `ADM-34`, NOT inline in host.ts — an inline rule can only be
+  verified by a full build, which is exactly when it stops being verified.
+
+**First extraction toward the thin composition root:** `vnext/work-turn-reader.mjs` (199 lines out of
+the glue, zero shared state) + `vnext-work-turn-reader.test.mjs` (7 arms) — its defensive branches (no
+log seam, absent delivery, crash-closed turn) were previously only reachable through a live delivery.
+Leg now suites=5 files=5.
+
+### R26 addendum — next-host feasibility, PR body, and what the review did not catch
+
+- **rc.5 feasibility measured (read-only)**: `NEXT-HOST-RC5-FEASIBILITY.md`. Verdict RUNNABLE WITH
+  HARNESS WORK (~4–6 h), no missing core seam. The false-green risk is module resolution (repo
+  `@deepseek-ai/*` are 0.2.0-rc.2 symlinks; the world factory hard-codes the test-use tree), plus rc.5's
+  static `workingDirectory` inject (Cordis defers silently → no preset read/write/edit at all) and the
+  batch+executor dispatch (`TOOL_EXECUTOR_UNAVAILABLE` otherwise).
+- **A real gap the investigation exposed**: rc.5 adds `patchText`/`deleteFile`/`moveFile`; the Team
+  confined provider overrides ten methods ending at `editText` and none of the three. On rc.5 those
+  paths would reach the provider without the Member lane — invisible today because the slice never uses
+  them. Recorded as B5; NOT fixed; the feasibility doc says not to claim FS confinement on rc.5.
+- **PR #822 body refreshed** (it still described the pre-B state): status, evidence index, arm counts,
+  the gates actually run, the review response and the limits above.
+
+### R27 — the first structural cut the plan asked for: session identity leaves the glue
+
+The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recommends S1 =
+`vnext/session-identity.mjs`. Done, and it is the biggest single move so far.
+
+- **What moved**: the glue's A4 region (child session id derivation, durable existence, instance and
+  owner resolution, the durable lifecycle gate, the admission close) **plus the two maps it kept
+  beside it** (`newWorkClosed`, `terminalAtReopen`). The maps are the point: they are the state those
+  nine functions answer from, and leaving them in the closure would have been a split that shares
+  mutable state — exactly what the review said not to do.
+- **Interface**: `createSessionIdentity({ domain, bootRootSessionId, sessionPersistence,
+  leaderInstanceId })` — that is all it reads. The boot-publish marker now leaves through
+  `terminalMarkerOf`/`clearTerminalMarker` instead of the boot loop reaching into the map.
+- **Glue**: 5,042 → **4,767** lines (in total 5,301 → 4,767 this session). The nine functions keep
+  their names via destructuring, so every call site is untouched.
+- **ADM-36** proves the component on its own: idempotent child id, root-owns-itself + member ownership
+  + `undefined` for unowned (never the boot root as a fallback), the frozen per-state refusal codes,
+  the root never refused, close/reopen semantics including the marker, `exists` failing closed when the
+  seam is absent and a backend fault NOT flattened into "not durable", and construction refused when
+  the domain cannot answer.
+- **Not verified here**: the plan's four pinned vitest suites (`a5sf-pd20-admission-close`,
+  `t12a-b2-child-identity`, `bp1-dual-team-gate`, `d3-member-identity-context`) cannot run in this
+  worktree (no vitest). They are the acceptance for the move's behaviour, and they remain unrun — the
+  module's own arms do not substitute for them.
+
+### R27 addendum — the rc.5 gap became an invariant, and a duplicated rule was deleted
+
+- **SLICE-35 / SLICE-36** (slice now 36 arms): the rc.5 confinement gap cannot be written as an
+  override against the pinned baseline (the rc.2 type has no `patchText`/`deleteFile`/`moveFile`), so
+  it became an invariant instead — SLICE-35 DERIVES every path-touching entry point from the real base
+  provider and refuses any the confined class does not override; SLICE-36 is the positive control
+  (a subclass with the three rc.5 names must be named by the derivation). Nothing about rc.5 is baked
+  in, and the nine-name non-IO set carries a stated reason each.
+- **`freshCreateHintAdmits` de-duplicated**: the glue's copy claimed it had "moved out of the retired
+  realm row" while the realm row still had its own. One exported source now; a rule adjacent to
+  authorization should exist once.
+
+### R28 — M4 extracted, and the adversarial review's P1s are now the work queue
+
+- **`template-binding.mjs` (plan M4)**: the per-team-root bound-blueprint cache, the fail-closed template
+  locator and the static projection left the glue **with the cache they answer from** (the BP-F custom is
+  that one row carries many roots, each bound to its own snapshot). Glue 4,769 → **4,499**. TB-1..TB-6
+  pin: one parse per root, per-root isolation, the hint bridging only `fresh-member`, the four typed
+  refusal reasons with no legacy degradation, and the legacy anchor's null contract.
+- **The parser and the projection are injected**, not imported: `template-binding` is policy, not a
+  parser, and it must be unit-testable under plain `node:test` (the domain packages are TS that only the
+  build resolves). `bind-path.mjs` now holds `freshCreateHintAdmits` so three importers share ONE rule
+  without dragging each other's dependency graphs.
+- **Adversarial review received (no P0, seven P1s).** Accepted as the queue, and two of them will change
+  what this branch claims: **P1-1** the product's post-approval recheck is vacuous (`resolveBinding` is a
+  constant frozen binding, so the second answer can never differ — SLICE-34 proves the mechanism only
+  through a custom resolver, not through `installMemberCentre`); **P1-2** the settlement records the
+  pre-execute `admit()` result rather than the port's final verdict, so an ask-unwired refusal is durably
+  stored as `allow`/`ask` and then recovered as UNKNOWN, never REFUSED; **P1-3** every member bind runs
+  `recoverUnsettled` over a SHARED settlement directory, so binding member B marks member A's live
+  execution UNKNOWN and A's terminal write then conflicts. Also P1-4 (close ordering contradicts its own
+  comment: the realm disposer is pushed into `toolDisposers` too, so it starts before the native-mount
+  tombstone is awaited), P1-5 (a throwing ledger/settlement path is not a refusal), P1-6 (memo before the
+  durable replay check).
+
+### R28 addendum — the review's P1s: three fixed, one escalated, and a fact that now says what happened
+
+The adversarial review (`d3ddd45d`) found **no P0 and seven P1s**, two of which the existing tests could
+not see because they test the mechanism rather than the product composition. Acted on:
+
+- **P1-2 fixed.** The port settled the lane's RAW answer, then possibly overruled it (ask → ask-unwired
+  deny), so a refused call was durably `allow`/`ask` and recovered as UNKNOWN. It now settles the
+  decision it ENFORCED, and the authority fact carries `decision: 'deny'` + `refusalCode:
+  ADMISSION_ASK_UNWIRED` while keeping `laneDecision: 'ask'` — losing that would make "who refused"
+  unanswerable. SLICE-16 was asserting the old behaviour and was corrected, not deleted.
+- **P1-3 fixed.** Every member bind ran `recoverUnsettled` over ONE shared settlement directory, so
+  binding member B turned member A's LIVE execution into UNKNOWN and A's real terminal write then
+  conflicted. Settlement is now per member (`<centreStatePath>/settlement/<instanceId>`), and the
+  instance id is validated as a file stem before it names a file.
+- **P1-1 fixed.** `resolveBinding` was `() => binding` (frozen at bind), so the post-approval recheck
+  could only ever agree with itself. `installMemberCentre` now takes a live resolver; `member-execution`
+  rebuilds the binding from the CURRENT compiled answer and returns `undefined` once the member is
+  closed, so the recheck can refuse (ADMISSION_NO_BINDING) for a real reason.
+- **P2-14 fixed with it**: `installMemberCentre` rolls back a half-install and its `dispose()` is
+  idempotent (it used to reverse the disposer array in place and re-run everything).
+- **P1-4 not yet**: the realm disposer is still pushed into BOTH `a5sfRealmDisposers` and
+  `toolDisposers`, so close starts the realm disposal before the native-mount tombstone is awaited —
+  the comment above it claims the opposite. Not fixed in this round, and now on the queue as the next
+  item rather than a note.
+- **ESCALATED, not worked around**: a call admitted as `allow` and then refused by the recheck has NO
+  legal settlement state (REFUSED is forbidden against an allow; CANCELLED needs a recorded Stop;
+  FAILED is unreachable from ADMITTED; UNKNOWN would claim the effect was merely unobserved when the
+  body provably never ran). The centre reports `SETTLEMENT_CONTRACT_GAP` and leaves the record rather
+  than writing a lie. `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` lays out four options.
+
+### R28 addendum 2 — close ordering (P1-4) fixed; what remains from the review
+
+- **P1-4 fixed, ordering only.** The realm disposer was registered in two lists, so `close()` STARTED it
+  during the tool-disposer pass — before the native-mount pass whose own comment says it must run first
+  because installing the MEMBER_CLOSED tombstone needs a living realm. Now: realm disposer registered
+  once (in the waitable list), native mounts drained FIRST, then the tool/centre disposers, then the
+  realm. The invariant the comment described is now the code.
+  Not claimed: a dispatch racing a close is still unmeasured (SLICE-23 tests after close).
+- **Still open from the review** and next: P1-5 (a throwing ledger/settlement path escapes as an
+  exception rather than an explicit deny), P1-6 (the memo is consulted before the durable replay check),
+  and the P2 batch — `definitionSource` hardcoded to the fs package for every tool, per-tool key
+  fallbacks that widen to the ceiling, the third grant-id scheme, execution-id join by convention,
+  ledger duplicate/kind-override, unbounded maps, the identity fields (agentId vs sessionId,
+  instanceGeneration defaulting to 0), and `await import()` before the `@deepseek-ai/*` check.
+
+### R28 addendum 3 — the ledger was the fourth place a permission could be invented
+
+The review's P2 batch was "small things that widen". Three more, all in the durable ledger, which is the
+half that a reviewer reads AFTER the fact and therefore cannot afford to be generous:
+
+- **A gap in a compiled answer was a permission.** `perTool?.read ?? binding.read` treated a missing field
+  on a compiled tool answer as "no restriction here" and fell back to the CEILING — the widest lane in the
+  binding. A compiler that had something to say about a tool and said nothing about one axis now gets a
+  refusal (`ADMISSION_AXIS_UNSUPPORTED`); the documented ceiling fallback is narrowed to what it always
+  meant (a tool with NO compiled entry at all). ADM-39 keeps both halves.
+- **`definitionSource` was `'@deepseek-ai/dsh-tool-fs'` for every tool in every binding** — a provenance
+  claim that was wrong for every non-fs tool and could not be right for all of them. It now comes from the
+  compiled member; `''` means "several sources", not a guess.
+- **`instanceGeneration` defaulted to 0.** The generation is what the recheck compares a live answer
+  against, so a fabricated 0 makes every revocation look like a match. A member that cannot name its
+  generation now fails the bind.
+- **The ledger let the caller rename the record kind** (`{kind, at, ...facts}` spread the facts last), kept
+  TWO lists of kinds (the exported one named a `playback-refusal` the writer never emits and omitted
+  `execution`), and accepted a second execution fact for the same callId. All three are fixed: the ledger
+  owns `kind`/`at`, there is ONE exported `LEDGER_KINDS`, and a call ends once — enforced both at append
+  time and when a file already on disk carries two (ADM-41).
+- **`await import(spec.url)` ran before the `@deepseek-ai/*` check.** A check after the import has already
+  executed the code it exists to refuse. The specifier is now judged as a string (ADM-42).
+
+Still open from the review, and now the largest remaining items rather than small ones: the third grant-id
+scheme, unbounded in-memory maps, `agentId: sessionId` in the binding (two identities in one field), and
+`executionIdOf`'s synthetic `{callId, name: ''}` join. Those are contract questions, not widenings, and the
+first has to be answered together with the Settlement identity so there is not a fourth scheme.
+
+### R28 close — branch state
+
+HEAD `7ee5216f7` on `vnext/a1-cut`, draft PR #822 updated (body refreshed; still DRAFT, not for merge).
+Round 28 produced: M4 decomposition (`template-binding.mjs`, 6 arms), the review's P1-1/2/3/4/5/6 fixed,
+one P1 escalated (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`), three P2 widenings closed plus the
+ledger and specifier hardening (ADM-37…42), and the capability matrix now carries the review outcome.
+
+Gate sweep at this HEAD: leg `suites=6 files=6 exit=0` (42 admission arms among them), catalog
+`tests=888 refused=0 findings=0`, P0 assets pass, cut-closure `prodRefs=0 distResiduals=0`, a1-window
+pass, ci-required pass, docs-sync `findings=0`, place-dist-glue 26 placements.
+
+Next round's queue, in the order I intend to take it: (1) the identity contract question (`agentId:
+sessionId`, `executionIdOf`'s synthetic join, and the grant-id scheme) as ONE decision, because fixing
+them separately would create a fourth scheme; (2) S6 decomposition (`live-residency.mjs`: `liveAgents`,
+`closing`, the disposer lists); (3) the process-lane contract ruling if the owner has ruled. The host
+boot work (step D) still needs either the rc.2 harness path to be rebuilt or rc.5 provisioning.
+
+### R29 — the identity question, taken as one decision
+
+The review's remaining P2s were three identity defects that would each tempt a different local fix. Taking
+them together, one is settled and two are deliberately left alone:
+
+- **SETTLED: `agentId: sessionId`.** The `Binding` interface says `agentId` is the runtime Agent "never a
+  session id", and the product wiring passed the session id into it — so a durable fact carried the host's
+  identity in the field reserved for the member's, and could not be joined to a member registry once the
+  session was gone. `Binding.instanceId` now comes from the compiled member identity, the facts record it
+  next to `agentId`/`sessionId`, `member-execution` binds `agentId` to the MEMBER, and a binding with no
+  member omits the field instead of inventing one (ADM-43).
+- **LEFT ALONE: the grant-id scheme.** There is nothing to reconcile: the product wires NO approval binder,
+  so every ask lane is already a hard refusal. Inventing a grant id now would create the fourth scheme the
+  review warned about; the id belongs with the ControlService adapter in step C.
+- **LEFT ALONE: `executionIdOf`'s synthetic `{callId, name: ''}`.** It is a join by convention, and the
+  honest join needs the settlement identity to be defined once — which is the same decision as the
+  contract-change request above. Doing it here would fix the shape and not the question.
+
+Round-29 gates at `42ab56be1`: leg `suites=6 files=6 exit=0` (43 admission arms), catalog
+`tests=888 refused=0 findings=0`, cut-closure `prodRefs=0 distResiduals=0`.
+
+### R30 — the migrated suites were never RUN, and running them found a live ReferenceError
+
+The A1 clause "16 个保留能力历史测试迁移到新入口" was recorded as done because
+`migrated-entry-imports.json` said `missing: []` — every file imports `vnext/root.js` or
+`vnext/agent-bindings.mjs`. That is an IMPORT migration. None of them had ever executed: this worktree's
+`node_modules/.bin/vitest` is a symlink into a deleted sibling worktree, so the suite read as
+un-runnable. It runs from the MAIN worktree's vitest install, and the first execution produced
+**230/238**, not 238/238.
+
+The first fix was a genuine production bug: **`ReferenceError: resolvePaMount is not defined`** on any
+path that published an authority generation (F15 L4/L7). The cut retired `pa-mount-registry.mjs` — the
+publish/revoke/resolve mount index — but `publishAuthorityGeneration` kept calling it. It is now an
+optional seam `resolveMemberMount(teamRoot, instanceId)`: wired, the refresh behaves as before; unwired,
+it is skipped with an explicit observation and `reason: 'no-mount-seam'`. **The product wires no such
+seam today, so the authority-generation refresh cannot fire in the assembled product** — a C-stage
+wiring item that is now visible instead of fatal.
+
+After the fix: **233/238**. The five remaining are classified in `MIGRATED-SUITE-STATUS.md` — two
+BEHAVIOUR (the glue installs no pre-execute leg on the decision side; remote-ensure ∥ work-delivery lazy
+ensure does not fulfil both paths on one cold member) and three LAYOUT PINS on the retired root/route
+(a source-text pin on `from './s6-remote.js'`, a projection-scope walk, an ENOENT on a moved path, a
+pre-execute-adapter walk). None may be "fixed" by editing the expectation first — that is the SLICE-16
+lesson in the other direction.
+
+**Next, and now top of the queue:** put these 16 files into CI as a vitest `suiteList` leg (the
+`ute-vnext-a1` leg is node:test and cannot carry them). The reason this rotted is that nothing ran them;
+a leg that names them is the only durable fix. Also next: the five classified failures above.
+
+Gates at `f6ceacc2a`: leg `suites=6 files=6 exit=0`, cut-closure `prodRefs=0 distResiduals=0`,
+P0 assets pass, catalog `tests=888 refused=0 findings=0`.
+
+### R31 — 233 → 237/238, and the one that will not move is the interesting one
+
+Four of the five remaining failures were pins on the retired route. Each was re-expressed against the new
+assembly **without weakening what it asserts**, and the descendant-authority walk came out STRONGER: it
+now walks `src/plugin/vnext` and names `admission.ts`/`centre-config.ts` where it named the retired
+`pre-execute-adapter.ts`, so "authority is never a resource census" covers the centre itself.
+
+The fifth does not re-anchor, because it is not a pin. **E3: the durable Alpha.4 permission overlay has no
+decision-side effect.** The retired entry installed a pre-execute adapter that consulted the overlay per
+call; the cut retired the adapter with the execution route, and the centre judges only the COMPILED
+binding lanes. A `grantInstance` deny persisted after the member was bound therefore changes nothing at
+execution time. That is the objective's own stated risk ("入口整体替换后的 Team 功能损失") arriving on
+schedule, and it is a capability the 06 contract preserves. Recorded as RED in the matrix.
+
+The fix is a design decision, and it belongs with the Control allow/ask/deny wiring because both ask the
+same question — *what is the ONE place a durable restriction becomes a verdict?* Two shapes:
+(a) the centre consults an injected overlay-decision port per call, next to the lane verdict (the retired
+adapter's semantics, moved under the centre's authority); (b) overlay mutations compile INTO the binding
+and the generation recheck recompiles it. (a) keeps one decision function and is closer to the retired
+behaviour; (b) keeps admission synchronous but makes every mutation a recompile. I have NOT picked one
+unilaterally: it changes what the centre is.
+
+**Also recorded:** G8 failed once under parallel load and passed in three further full runs plus
+isolation. That is a flake, not a pass — the arm must be made deterministic before D.
+
+**Next:** (1) the overlay decision above, with E3 as its acceptance test; (2) put the 16 files into CI as
+a vitest `suiteList` leg — they rotted because nothing ran them; (3) make G8 deterministic.
+
+Gates at `a74a646e8`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, ci-required pass, docs-sync `findings=0`.
+Migrated suite: **237/238** (`dev/agent-workflow/evidence/ute-a1/migrated-suite.json`).
+
+### R32 — the census told the truth about its own shape, and I did not ship a red leg
+
+Built the CI binding for the migrated suites and measured it in full: the token runner
+(`scripts/eb3-security-run.mjs --list-file`) is the repo's vitest vehicle, the manifest splits `cmd` from
+`check` (the workflow line is `cmd + check`), and both gates fired and cleared against the new entry
+(`CI_LAYER_LEG_UNPROVEN` while the leg sat in the wrong layer; `CI_LAYER_LEG_ARGUMENT_MISSING` until the
+argv was split). The end-to-end reading is now:
+
+```
+EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
+```
+
+Two things that measurement taught, both worth more than the leg:
+
+1. **Fifteen, not sixteen.** The sixteenth entry in `migrated-entry-imports.json` is
+   `t12a-live-bridge.mjs`, a live-bridge HELPER with no tests of its own — the token runner refuses a list
+   longer than its own report, which is how the census found that out about itself. The A1 clause counts
+   16 BOOKKEEPING entries; the executable population is 15 suites.
+2. **The leg is not bound to a Required layer, deliberately.** Its population is red on E3. Binding it
+   would either redden Required or require the exemption/expected-fail this project forbids, so the
+   binding was built, measured, and REVERTED. `tests/checks/eb3-ute-migrated-suites.txt` is committed as
+   the population declaration with the command in its header and the state recorded.
+
+Order from here: **fix E3 → the list goes green → bind the leg.** Nothing else in A1 depends on that
+sequence.
+
+Gates at `a686f1180`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, ci-required pass (the
+revert restored it).
+
+### R33 — E3 is two defects, and the second one was not in the failure message
+
+Read the call site rather than the assertion text: the centre (admission leg + ledger + settlement) is
+installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`. A member without a
+confined-provider realm therefore gets **no centre at all** — native tools run under the host's mediation
+with no admission decision, no ledger, no settlement. The A1 law says an unwired controlled call must be
+refused; here it is simply **not covered**, which is worse. E3's world is such a world, which is exactly
+why it counts zero pre-execute legs.
+
+Repair order, recorded in `MIGRATED-SUITE-STATUS.md` + the capability matrix:
+
+1. **admission must not be realm-conditional** (security gap). Small in shape but NOT a one-line move: the
+   binding is built from `compiledAnswerOfRealm(realm)`, so a realm-less member needs a second, legitimate
+   compiled answer — that is a design question about where the ceiling comes from, not a code edit.
+2. **the overlay decision** (injected port per call vs compile-into-binding + generation recheck).
+
+I did not start either half this round: (1) is not the small change its call site suggests, and starting it
+late would have left the branch half-refactored. E3 stays red, the CI leg stays unbound, and both are
+stated in the matrix rather than narrated away.
+
+Gates at `acde9af5c`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, ci-required pass.
+
+### R34 — the design question has an answer; what is left is a product ruling
+
+Q: where does a realm-less member's ceiling come from? **A: the same compiler.**
+`createProductRealmProvider(plan).compiledFor(member) → { members, bindings? }` is what the realm mount
+itself calls (`a5sf-realm-row.mjs:858-905`), so compiling without mounting is that answer minus the
+provider substitution — not a second policy. That closes the design half in one measurement.
+
+What is left is not design: it is a product decision between
+**A** admission-only centre that records the provider as UNCONFINED (every call decided, but admits
+unconfined effects — and carries E3's plane semantics), and
+**B** a refusing centre (`ADMISSION_PROVIDER_UNCONFINED`; fail-closed, but every realm-less member stops
+working, including worlds the suite uses today).
+
+Escalated in `ESCALATION-realmless-admission.md` with the recommendation (A, with the limit stated on every
+fact) and with the point that makes it urgent rather than academic: the CURRENT state — no centre, no
+ledger, no settlement, nothing reported — is wrong under both options, and no row may describe it as
+"unwired calls are refused".
+
+Gates at `def820ca7`: leg `suites=6 files=6 exit=0`, docs-sync `findings=0`.
+
+Next: the ruling decides the shape; either way the work is the same two steps (compile through the ONE
+compiler; make the native mount the optional half), and E3 is the acceptance test for the plane half.
+
+### R35 — the half of the escalation that does not need a ruling, done
+
+The ruling question is about rows that did NOT ask for the centre. The rows that DID ask have an obvious
+answer, and it is fail-closed: a member whose row sets `centreStatePath` but got no confined-provider realm
+was running its native tools with no admission, no durable fact and no settlement. That is not "an unwired
+call is refused"; it is the call being outside the centre while the row believes it is governed.
+
+`memberCentreUnwiredViolation` (centre-config.ts) is the narrow rule: fires only when the row asked for
+governance AND no realm mounted, refusing the member with `MEMBER_CENTRE_UNWIRED` and naming it. Rows that
+never configured the centre are untouched — deliberately, so this closes a silent gap WITHOUT turning a
+wiring gap into a product-wide outage. ADM-44 carries both negative controls (realm present; centre never
+configured; non-string path left to R1).
+
+Still escalated, unchanged: rows that did not ask remain outside the centre, and whether the product admits
+them against a compiled ceiling (recording `provider: 'unconfined'`) or refuses them is the owner's ruling
+(`ESCALATION-realmless-admission.md`). E3 stays red for the other half — the durable overlay has no
+decision-side effect.
+
+Gates at `4c892adf8`: leg `suites=6 files=6 exit=0` (44 admission arms), catalog `tests=888 refused=0
+findings=0`, cut-closure `prodRefs=0 distResiduals=0`, place-dist-glue 26 placements.

@@ -177,7 +177,7 @@ describe('A6 root wiring — production entry opt-in', () => {
     const { FileStorageSeam, scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
     const { parseChildSessionId, parseInstanceId, parseRootSessionId, parseTemplateId } = await import('../../contracts/src/index.js')
     const { createAgentBindings: createStubBindings } = await import('./p8s5a-stub-glue.mjs')
-    const { createTeamProductionRoot } = await import('../src/plugin/root.js')
+    const { createTeamProductionRoot } = await import('../src/plugin/vnext/root.js')
 
     const base = scratchDir(`a6rootwire-${Math.random().toString(36).slice(2, 8)}`)
     const seam = new FileStorageSeam(base)
@@ -253,7 +253,7 @@ describe('A6 root wiring — production entry opt-in', () => {
     const { FileStorageSeam, scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
     const { parseChildSessionId, parseInstanceId, parseRootSessionId, parseTemplateId } = await import('../../contracts/src/index.js')
     const { createAgentBindings: createStubBindings } = await import('./p8s5a-stub-glue.mjs')
-    const { createTeamProductionRoot } = await import('../src/plugin/root.js')
+    const { createTeamProductionRoot } = await import('../src/plugin/vnext/root.js')
 
     const base = scratchDir(`a6rootwake-${Math.random().toString(36).slice(2, 8)}`)
     const seam = new FileStorageSeam(base)

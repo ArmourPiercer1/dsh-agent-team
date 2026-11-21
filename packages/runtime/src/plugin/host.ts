@@ -72,6 +72,7 @@ import type {
   ArtifactLedgerPort,
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
+import { centreConfigViolation } from './vnext/centre-config.js'
 import {
   MCP_FACET_WILDCARD,
   resolveDurableMcpFacet,
@@ -182,7 +183,7 @@ import {
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js'
 import type { TeamArtifactAuthorityBridge } from './artifact-grant-bridge.js'
 
-import { createTeamProductionRoot } from './root.js'
+import { createTeamProductionRoot } from './vnext/root.js'
 import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js'
 import { createTeamSessionActivationFence } from './team-session-activation.js'
 import type {
@@ -458,9 +459,6 @@ interface GlueModule {
      *  call-level facts adapter (additive optional, untyped mjs glue). */
     readonly permissionOverlay?: unknown
     readonly permissionAuthorityFacts?: unknown
-    /** 9e-3: the shared PA call-level facts adapter ref (late-filled; the
-     *  plane's consumption edge awaits this ONE reader). */
-    readonly paReadCallFactsRef?: { current: ((input: Record<string, unknown>) => Promise<unknown> | undefined) | undefined }
     /**
      * BP-F (issue #2 blueprint-loading, plan §11.1, optional additive):
      * the narrow per-Team bound-blueprint resolver —
@@ -701,6 +699,11 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
+  // The CENTRE's own config rules live in `vnext/centre-config.ts` so they are testable without
+  // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
+  // exist after a build). This call is the only place they are enforced.
+  const centreViolation = centreConfigViolation(c as { centreStatePath?: unknown; alpha6ReviewRouting?: unknown })
+  if (centreViolation !== undefined) fail(centreViolation)
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
   for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
     if (
@@ -828,7 +831,7 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
  * @returns the derived glue file URL.
  */
 export function defaultGlueUrl(hostModuleUrl: string): string {
-  return new URL('./live/agent-bindings.mjs', hostModuleUrl).href
+  return new URL('./vnext/agent-bindings.mjs', hostModuleUrl).href
 }
 
 /**
@@ -2000,13 +2003,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // compositions) keeps the pre-PR-B legacy input.
   const policyReaderRef: { current: unknown } = { current: null }
 
-  // 9e-3 (PR358): the shared PA call-level facts adapter ref (the same
-  // late-fill pattern as policyReaderRef): created before the glue, filled
-  // with builtRoot.paReadCallFactsRef.current right after root
-  // construction. The plane's consumption edge awaits THIS reader — one
-  // adapter with the Control verifier, no second authority path.
-  const paReadCallFactsRef: { current: ((input: Record<string, unknown>) => Promise<unknown> | undefined) | undefined } = { current: undefined }
-
   // pre-alpha3 PR4 — the shared permission-plane reference (the exact
   // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
   // time object the ROOT fills during its construction; the live glue reads
@@ -2454,7 +2450,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // (filled with builtRoot.policyReader right after root construction
     // — the glue reads it lazily per boundary; see the ref's rationale).
     policyReaderRef,
-    paReadCallFactsRef,
     // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
     // hook — the glue emits the MCP mount transitions (mount-failed /
     // mount-restored) and the host durably records each as a
@@ -3030,7 +3025,6 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   // boundaries: the remote surface is not servable until the boot is
   // armed, and the boot preload below runs after this point).
   policyReaderRef.current = builtRoot.policyReader
-  paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current
 
   // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
   // `agent/inbox/claimed` is the message's owning turn start; `agent/status`

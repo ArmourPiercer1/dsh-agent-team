@@ -272,7 +272,7 @@ PoC 只针对真实不确定的三个问题；已经由固定源码明确支持�
 - [Control 请求 kind、resolver roles、当前 leg 和决议身份](../../../../packages/runtime/control/types.ts)
 - [ControlService 请求后的旧 C1 notifier 接线](../../../../packages/runtime/control/service.ts)
 - [现行 Leader notifier（每请求一条）](../../../../packages/runtime/control/leader-notification.ts)
-- [Agent live delivery / 工作完成通知](../../../../packages/runtime/src/plugin/live/agent-bindings.mjs)
+- [Agent live delivery / 工作完成通知](../../../../packages/runtime/src/plugin/vnext/agent-bindings.mjs)
 - [Alpha.5 新架构方案 PR #531](https://github.com/ArmourPiercer1/dsh-agent-team/pull/531)
 - [旧 Alpha.6 架构提案 PR #319](https://github.com/ArmourPiercer1/dsh-agent-team/pull/319)
 - [DSH 0.2.0-rc.2 Inbox 固定源码](https://github.com/deepseek-ai/deepseek-harness/blob/639ed015397290b3745d163aafe02ffee4aa3f84/packages/core/agent-loop/src/inbox.ts)
