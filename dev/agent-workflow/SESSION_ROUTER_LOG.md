@@ -10204,3 +10204,26 @@ stated in the matrix rather than narrated away.
 
 Gates at `acde9af5c`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
 cut-closure `prodRefs=0 distResiduals=0`, ci-required pass.
+
+### R34 — the design question has an answer; what is left is a product ruling
+
+Q: where does a realm-less member's ceiling come from? **A: the same compiler.**
+`createProductRealmProvider(plan).compiledFor(member) → { members, bindings? }` is what the realm mount
+itself calls (`a5sf-realm-row.mjs:858-905`), so compiling without mounting is that answer minus the
+provider substitution — not a second policy. That closes the design half in one measurement.
+
+What is left is not design: it is a product decision between
+**A** admission-only centre that records the provider as UNCONFINED (every call decided, but admits
+unconfined effects — and carries E3's plane semantics), and
+**B** a refusing centre (`ADMISSION_PROVIDER_UNCONFINED`; fail-closed, but every realm-less member stops
+working, including worlds the suite uses today).
+
+Escalated in `ESCALATION-realmless-admission.md` with the recommendation (A, with the limit stated on every
+fact) and with the point that makes it urgent rather than academic: the CURRENT state — no centre, no
+ledger, no settlement, nothing reported — is wrong under both options, and no row may describe it as
+"unwired calls are refused".
+
+Gates at `def820ca7`: leg `suites=6 files=6 exit=0`, docs-sync `findings=0`.
+
+Next: the ruling decides the shape; either way the work is the same two steps (compile through the ONE
+compiler; make the native mount the optional half), and E3 is the acceptance test for the plane half.
