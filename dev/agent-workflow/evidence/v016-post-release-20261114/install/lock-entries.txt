@@ -1,0 +1,65 @@
+## pinned install — profile package.json
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "dsh-agent-team": "github:ArmourPiercer1/dsh-agent-team#v0.1.6"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  }
+}
+
+## pinned install — pnpm-lock.yaml (specifier + resolved version + package row)
+  .:
+    dependencies:
+      dsh-agent-team:
+        specifier: github:ArmourPiercer1/dsh-agent-team#v0.1.6
+        version: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a
+
+  dsh-agent-team@https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a:
+    resolution: {gitHosted: true, integrity: sha512-CuT1eQZpOZVRwStz5dphHOYSO8EmUiARKCsFmEwE9WYN39+caXX5Q3ziY6Qtl6WDme9QNQrOxd6bmYm7mxE/Qg==, tarball: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a}
+    version: 0.1.6
+    engines: {node: ^22.19.0 || >=24.0.0}
+    peerDependencies:
+      '@deepseek-ai/dsh': 0.2.0-rc.2
+      '@deepseek-ai/dsh-agent': 0.2.0-rc.2
+
+## ref-less install — profile package.json
+{
+  "name": "dsh-profile-web",
+  "private": true,
+  "dependencies": {
+    "dsh-agent-team": "github:ArmourPiercer1/dsh-agent-team"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "dsh-agent-team"
+      ]
+    }
+  }
+}
+
+## ref-less install — pnpm-lock.yaml (specifier + resolved version + package row)
+  .:
+    dependencies:
+      dsh-agent-team:
+        specifier: github:ArmourPiercer1/dsh-agent-team
+        version: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a
+
+  dsh-agent-team@https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a:
+    resolution: {gitHosted: true, integrity: sha512-CuT1eQZpOZVRwStz5dphHOYSO8EmUiARKCsFmEwE9WYN39+caXX5Q3ziY6Qtl6WDme9QNQrOxd6bmYm7mxE/Qg==, tarball: https://codeload.github.com/ArmourPiercer1/dsh-agent-team/tar.gz/3a7303ca215d8544eb3f35c2785161a7bce7f85a}
+    version: 0.1.6
+    engines: {node: ^22.19.0 || >=24.0.0}
+    peerDependencies:
+      '@deepseek-ai/dsh': 0.2.0-rc.2
+      '@deepseek-ai/dsh-agent': 0.2.0-rc.2

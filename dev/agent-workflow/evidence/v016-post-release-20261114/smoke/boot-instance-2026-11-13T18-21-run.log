@@ -1,0 +1,31 @@
+/home/armourpiercer/projects/dsh-agent-team/node_modules/.bin/dsh:2
+basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")
+          ^^^^^^^
+
+SyntaxError: missing ) after argument list
+    at wrapSafe (node:internal/modules/cjs/loader:1861:18)
+    at Module._compile (node:internal/modules/cjs/loader:1903:20)
+    at Object..js (node:internal/modules/cjs/loader:2060:10)
+    at Module.load (node:internal/modules/cjs/loader:1651:32)
+    at Module._load (node:internal/modules/cjs/loader:1443:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+    at node:internal/main/run_main_module:33:47
+
+Node.js v24.21.0
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3191/?token=lOuNcgfZNut9s7gA_B_V0wyfeSc6c7Z73VzdZil4sTE
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
+[dsh-agent-team] bootstrap FAILED: TeamDomainError: store 'session_bindings' operation 'get' was rejected: the TeamDomain is closed
+    at normalizeSeamError (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/schema/errors.js:148:16)
+    at SessionBindingsRepository.readRow (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/base.js:76:19)
+    at SessionBindingsRepository.putRecord (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/base.js:136:31)
+    at SessionBindingsRepository.put (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/storage/repositories/session-bindings.js:56:20)
+    at Object.putSessionBinding (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/root-binding/write-port.js:33:49)
+    at bindFreshTeamRoot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/root-binding/fresh-root.js:137:41)
+    at async createAndStartTeam (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/root.js:2749:24)
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/root.js:4016:17)
+    at async bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/host.js:2490:13)
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-post-release-20261114/tests/homes/v016post-20261114-pinned/profiles/web/node_modules/dsh-agent-team/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3191/?token=qiOAjmIDvi1IMNDz3y9Ron-KE7yZ43_5TBlWLdmveO4
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
