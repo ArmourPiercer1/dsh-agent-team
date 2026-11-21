@@ -9629,6 +9629,31 @@ UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8
 
 **明确的 UNKNOWN（永不记 PASS）**：未做任何生产切换；无新路径的 live-boot 验收；`pwsh` 语义未知；process 的读隔离未被证明（只钉住拒绝、秘密缺席、树未变）；goal 三件套只经 governed plane 自己的 store 验证过；FS/Search/Web 基线是 route-C 现实而 agent-control/ui/agent-state 是 governed-plane 现实，两者不可互换，矩阵逐族标注而非取平均。
 
+## 2026-11-21 — UTE G1 校验闸门补洞（review B2）：审批成为目录内的绑定文档，空差异表必须由测量背书
+
+**背景**：独立对抗审查（`dev/agent-workflow/evidence/ute3-review-20261121/REVIEW.md` B2）在 `/tmp` 台账副本上复现三处 `UTE-RETIREMENT-ALLOW`：`differences: []`、`blocking: "yes"`（或缺省）、以及 `{by:"owner", record:<任何含 "owner" 的已提交文件>, reference:"PR #1 @ <root commit>"}` 的伪造审批。本轮只改机器闸门与其测试，不改冻结契约 `RETIREMENT.md`，不新增任何真实族审批。
+
+**新增机制**
+- 专用审批目录 `dev/agent-workflow/approvals/`：`README.md` 定义 `ute-approval/1` schema；每个 blocking 差异只接受该目录内、git tracked、`schema/family/difference/decision/by/on/reference/rationale` 全部匹配的 JSON 文档，且与台账指针逐字段一致。`decision` 仅 `approved` 有效。
+- `reference` 仍须 `PR #<n> @ <40-hex>`、存在、为 HEAD 祖先，并新增**不得是 root commit（无父提交）**。
+- `differences: []` 必须由证据文件中的**精确** token `SD-VERDICT differences=0` 背书（边界匹配，`differences=00` 不算），否则 `UTE_DIFFERENCES_UNDECLARED`。
+- `blocking` 必须是字面布尔；字符串 / 数字 / 缺省 → `UTE_DIFFERENCE_SCHEMA_INVALID`。
+
+**新增/保留代码**：`UTE_DIFFERENCE_SCHEMA_INVALID`、`UTE_DIFFERENCES_UNDECLARED`、`UTE_APPROVAL_RECORD_INVALID`；保留 `UTE_APPROVAL_UNREFERENCED`、全部旧代码与旧证据检查（`expect`/`contradicts` 未改）。负控由“满足的 fixture 再变异”产生，mutant 覆盖 20 条规则全 RED。
+
+**台账更正（review B10）**：`process.oldBaseline.verdict` 由 `true` 改为 `false`（pwsh 无 baseline 向量，闸门派生 `UTE_MEMBER_UNCOVERED`，二者此前不一致）；process 的拒绝代码集合相应多出 `UTE_OLD_BASELINE_MISSING`，gate test 的精确 pin 已同步。其余七族测量值未动。
+
+**验证（本地，未合并）**
+- `node scripts/eb3-ci-required.mjs` → `EB3-CI-REQUIRED pass workflows=10 findings=0`
+- `node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7` → `tests=892 refused=0 findings=0`
+- `node scripts/ute-retirement-gate.mjs --all` → `requested=8 allowed=0 refused=8`
+- `node --test scripts/ute-retirement-gate.test.mjs` → tests=45 pass=45（mutants total=20 red=20）
+- `node --test scripts/ute-family-inventory.test.mjs` → tests=37 pass=37
+- `node scripts/docs-sync.mjs --check` → findings=0 blocking=0
+- `node scripts/check-append-only-log.mjs` → `verdict=pass`
+
+**诚实边界**：闸门只证明审批是“已提交、按族/差异绑定、引用非 root 祖先提交、且指针与文档一致”的记录；它不能证明署名者有权审批，一个决定造假的人仍可手写审批文件——这正是残余限制，已在 approvals README 写明。
+
 ## 2026-11-21 — UTE-3 review 修正确认（B1/B3–B11）：把文档改回证据能证明的尺寸
 
 依据 `dev/agent-workflow/evidence/ute3-review-20261121/REVIEW.md`（独立对抗审查，判决 `CLAIMS-EXCEED-EVIDENCE`）逐项修正。分支 `task/ute3-review-fixes-20261121`，base `origin/master` = `2b69193fac66f5b89fb2010ca398de3f5b2ecdb5`。**未执行任何退役、删除或产品切换；`CORE PATCH BUDGET` 仍为 0。**
