@@ -17,7 +17,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 // convention, resolved to `.ts` by its test hooks). Register the hooks BEFORE the import so this
 // file runs under plain `node --test` as well as under scripts/run-tests.mjs.
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
-const { admit, invocationFactsOf } = await import('../src/plugin/vnext/admission.ts')
+const { admit, invocationFactsOf, CENTRE_TOOL_NAMES } = await import('../src/plugin/vnext/admission.ts')
 // The centre does not own grants: `member-io-policy` does. These arms use the PRODUCT binder and
 // assert the properties the centre relies on, so a regression in the product turns them red.
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
@@ -560,4 +560,23 @@ test('ADM-30 — the tool-level answer reaches the record, so a refusal names wh
   assert.equal(facts.locator, '/work/other.md')
   assert.equal(facts.decision, 'deny')
   assert.equal(facts.refusalCode, 'LANE_DENY')
+})
+
+test('ADM-31 — the centre\'s closed list matches the tools the product actually creates', async () => {
+  // A SOURCE SCAN, deliberately: importing the tools package here would drag the whole team-tool
+  // dependency graph into an admission unit arm. The point is drift detection - if a 16th tool is
+  // added to `createTeamTools` and nobody adds it to CENTRE_TOOL_NAMES, every call to it would be
+  // refused as ADMISSION_TOOL_UNBOUND, and this arm must fail first.
+  const { readFileSync } = await import('node:fs')
+  // Resolved the same way this file already resolves the hooks script (test/ → runtime/ → packages/
+  // → worktree root), so the arm keeps working whether it runs from source or a dist mirror.
+  const source = readFileSync(new URL('../../../packages/tools/src/tools.ts', import.meta.url), 'utf8')
+  const literal = new Set([...source.matchAll(/name: '(team_[a-z_]+)'/gu)].map((match) => match[1]))
+  // The permission pair is created by a parameterised factory, so its names never appear as
+  // literals; the scan derives them from the factory's arguments instead of hard-coding them here.
+  for (const verb of [...source.matchAll(/permissionSpec\('([a-z]+)'\)/gu)].map((match) => match[1])) {
+    literal.add(`team_${verb}_permission`)
+  }
+  assert.deepEqual([...literal].sort(), [...CENTRE_TOOL_NAMES].sort(),
+    'the centre\'s closed list and the created tools must be the same set, in both directions')
 })
