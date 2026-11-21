@@ -189,23 +189,58 @@ export async function mountHostModules ({ realm, root, scope, specs, surface, se
     // not remove it; without this the retired member's confinement outlives the member and its
     // native tools keep executing for whoever still holds the scope.
     dispose: async () => {
-      // The mounted realm wrapper does not always expose `disposeNativeToolModules` (the row
-      // returns a handle, not the realm), so the fibers THIS mount received are released directly
-      // when the realm-level disposer is absent. Measured: relying on the wrapper alone left the
-      // disposed member's native `read` executing.
+      // ORDER: release, then close. The tombstone cannot be registered while the mounted definition
+      // still occupies the name ('already registered in this scope', measured), so the release comes
+      // first and the refusal is put in its place immediately after. The window between the two is
+      // the body of this call - no dispatch can interleave inside it - and it is the smallest window
+      // that exists, because removal alone would leave the unconfined inherited body in place.
       if (typeof realm?.disposeNativeToolModules === 'function') {
         await disposeQuietly(realm)
-        return
+      } else {
+        for (const fiber of [...(Array.isArray(fibers) ? fibers : [])].reverse()) {
+          try {
+            await fiber?.dispose?.()
+          } catch {
+            // The mount's own refusal is the failure worth reporting, not a dispose race.
+          }
+        }
       }
-      for (const fiber of [...(Array.isArray(fibers) ? fibers : [])].reverse()) {
-        try {
-          await fiber?.dispose?.()
-        } catch {
-          // The mount's own refusal is the failure worth reporting, not a dispose race.
+      const tools = root?.get?.('tools')
+      if (tools !== undefined && tools !== null && typeof tools.register === 'function') {
+        for (const name of mounted) {
+          try {
+            tools.register(closedTombstone(name))
+          } catch {
+            // A reserved name cannot be shadowed; the release above still happened, and refusing
+            // that call is the admission point's job, not this one's.
+          }
         }
       }
     },
   })
+}
+
+/**
+ * A CLOSED member must refuse, not disappear.
+ *
+ * Measured: removing an own registration does not make the tool unavailable - it exposes the
+ * inherited one, which the UNCONFINED composition provider serves. So close registers a refusing
+ * tombstone on the member's own layer FIRST, and only then releases the mounted definitions. The
+ * tombstone runs no body and names itself, which is the only fail-closed way to retire a surface
+ * that has an ancestor registering the same name.
+ */
+function closedTombstone (name) {
+  const refusal = `MEMBER_CLOSED: ${JSON.stringify(name)} belongs to a retired member; the surface is closed, not reverted to the composition provider`
+  return {
+    name,
+    description: 'Unavailable: the member that owned this tool has been closed.',
+    parameters: { type: 'object', properties: {}, additionalProperties: true },
+    output: {
+      schema: { type: 'string' },
+      render: (_args, value) => [{ type: 'text', text: String(value) }],
+    },
+    execute: async () => { throw new Error(refusal) },
+  }
 }
 
 async function disposeQuietly (realm) {

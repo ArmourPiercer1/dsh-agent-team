@@ -674,13 +674,14 @@ test('SLICE-23 — lifecycle close: the centre stops deciding, and records nothi
   // worse than a leak: a retired member keeps reading outside its ceiling. Measured below.
   const afterDefinition = world.definitionOf('read')
   const afterOutside = await world.dispatch('read', { file_path: world.outsideFile }, 'life-3')
-  // CHARACTERIZATION OF AN OPEN DEFECT (evidence section 13). Disposing the realm while the agent
-  // scope is still alive does not close the member: it REVERTS the agent to the preset definition,
-  // which the UNCONFINED base provider serves, and a locator outside the ceiling becomes readable.
-  // The arm pins that measured state so the fix cannot land silently; when close is implemented
-  // (refusing tombstone, or full agent disposal) this assertion must be inverted, not deleted.
-  assert.equal(afterDefinition, world.presetRead, 'documented defect: close reverts to the preset definition')
-  assert.equal(afterOutside.isError, false, 'documented defect: after close the outside locator is readable again')
+  // THE FIX, MEASURED. Close must not revert to the inherited definition (whose body the unconfined
+  // composition provider serves); it must leave a refusing tombstone on the member's own layer.
+  assert.notEqual(afterDefinition, world.presetRead, 'close must not revert to the preset definition')
+  assert.equal(afterOutside.isError, true, 'after close a locator outside the ceiling must NOT be readable')
+  assert.match(String(afterOutside.errorMessage), /MEMBER_CLOSED/u, 'the refusal must name the closed member')
+  // The closed surface stays VISIBLE as closed: dropping the name would make the model's catalogue
+  // silently change shape, and a name that simply vanishes is indistinguishable from a mount bug.
+  assert.equal(world.schemas().some((schema) => schema.name === 'read'), true, 'the closed tool must still be declared, as closed')
   assert.equal(world.facts().length, factsBefore, 'no fact may be written after close')
   assert.equal(world.executions().length, executionsBefore, 'no execution fact may be written after close')
 })

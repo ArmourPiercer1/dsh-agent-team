@@ -435,7 +435,14 @@ wording rather than `isError`, so no unrelated failure can satisfy the arm; and 
 the ROOT scope still governs a member's write through its own realm, because the observed state is
 keyed by the calling session, not by the provider instance.
 
-## 13. OPEN DEFECT: a disposed member's native tools still execute
+## 13. CLOSED (same window): lifecycle close was a fail-open, now a refusing tombstone
+
+> **Status: fixed.** The measurement below is kept because the shape of the fix follows from it.
+> After the fix SLICE-23 asserts the inverted behaviour: the agent no longer resolves the preset
+> definition, an outside locator is refused with `MEMBER_CLOSED`, and the closed name REMAINS
+> declared (as closed) so the model's catalogue does not silently change shape.
+
+### The measurement that started it: a disposed member's native tools still execute
 
 Measured while adding the lifecycle arm. In the slice world the member realm is disposed and the
 mounted module fibers are released, yet a `read` dispatched after disposal **still returns the
@@ -468,3 +475,16 @@ removal happens at all, neither yet confirmed:
 Not fixed in this round on purpose: the fix belongs in the row's dispose path, it needs its own
 arm proving the definition is GONE (not merely that the call fails), and a rushed patch here would
 hide the defect behind a passing test.
+
+### The fix, and the one window it accepts
+
+`mountHostModules` now returns a `dispose` that releases the mounted fibers and then registers a
+refusing tombstone per mounted name on the member's own tool layer. The order is forced: the
+tombstone cannot be registered while the live definition occupies the name (`tool "read" is already
+registered in this scope`, measured), so release comes first and the refusal takes its place
+immediately after, inside the same call. The window between the two is the body of `dispose` - no
+dispatch can interleave inside it - and it is the smallest window that exists, because removal alone
+leaves the unconfined inherited body in place permanently.
+
+This is also why "dispose harder" was the wrong instinct: an own registration that is removed exposes
+its ancestor, and the ancestor here is the composition provider with no confinement at all.
