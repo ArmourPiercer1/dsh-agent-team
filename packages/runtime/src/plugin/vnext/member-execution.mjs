@@ -78,6 +78,7 @@ export async function installMemberExecution ({
   instanceId,
   teamRoot,
   workspaceRoot,
+  overlayDecision,
   nativeSpecs = [],
   scope,
   onDispose,
@@ -144,6 +145,10 @@ export async function installMemberExecution ({
       },
       recordAdmission: (fact) => ledger.recordAdmission(fact),
       recordExecution: (fact) => ledger.recordExecution(fact),
+      // The durable permission-plane restriction (E3): consulted per call beside the lane verdict and
+      // able only to REMOVE authority. Absent means "no overlay wired on this row", which the centre
+      // records as such rather than reading as an allow.
+      ...(overlayDecision === undefined ? {} : { overlayDecision }),
       isReplay: (callId) => ledger.has(callId),
       recordReplay: (input) => ledger.recordReplayRefusal(input),
       store: settlementStore,
