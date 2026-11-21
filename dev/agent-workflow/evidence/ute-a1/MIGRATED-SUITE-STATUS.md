@@ -141,3 +141,29 @@ Order of repair, and why:
   recheck recompiles it.
 
 Neither is a test edit. E3 stays red until both are done; the CI leg stays unbound until then.
+
+## The overlay port is in; what the product side needs is now measured (round 39)
+
+The centre accepts `overlayDecision` (ADM-45). The remaining half is the product supplying one, and reading
+the assembly narrows it to two facts:
+
+1. **The overlay lives in `deps.permissionOverlay`, and the glue already reads it** — `readAuthorityGeneration`
+   calls `permissionOverlay.latest({ teamSessionId, memberInstanceId })`, returns `0` only for the legal
+   no-row world, and THROWS on a fault or a non-generation. That is the same port the admission consultation
+   must use; a second reader would be a second policy.
+2. **`latest()` is async, and the admission consultation is synchronous** (it runs inside the pre-execute
+   listener's decision and the guard). So the product has exactly two lawful shapes:
+   - **(a) resolve the overlay row ONCE per binding generation and keep a synchronous view** — the binding's
+     `policyGeneration` is already the cache key, and any mutation bumps it, so a stale view is impossible
+     by construction; the recheck that already runs after approval re-reads it;
+   - **(b) make the consultation async on the pre-execute path only** and let the guard consult the cached
+     decision (the port already memoizes one verdict per callId).
+
+(a) is the one that keeps every path synchronous and needs no new await in a guard. Either way the row's
+RULES need canonicalizing against the operation before they can deny, which is what the retired adapter's
+`canonicalizeOperation` + `resolveOperationPermission` did — both modules SURVIVE the cut
+(`operation-permission/`), so the work is assembly, not reimplementation, and it is the C-stage "one place a
+durable restriction becomes a verdict" item.
+
+Not started: this needs the overlay row's rule shape read in detail, and half of it would leave E3 red in a
+new way rather than fixed.
