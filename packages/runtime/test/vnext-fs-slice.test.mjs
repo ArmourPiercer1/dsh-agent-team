@@ -200,6 +200,8 @@ async function buildWorld ({ mountRealm, dir, admission, durable }) {
   return {
     dir,
     ledger,
+    schemas: () => root.get('tools').schemas(agentKey),
+    definitionOf: (name) => root.get('tools').get(name, agentKey),
     facts: () => facts,
     executions: () => executions,
     inside,
@@ -208,6 +210,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable }) {
     outsideFile,
     presetRead,
     resolvedRead: root.get('tools').get('read', agentKey),
+    resolvedDefinitions: Object.fromEntries(['read', 'write', 'edit'].map((name) => [name, root.get('tools').get(name, agentKey)])),
     realm,
     fsInstances,
     dispatch,
@@ -471,6 +474,24 @@ test('SLICE-14 — the ledger refuses to read its own corruption rather than gue
   ledger.recordAdmission({ callId: 'ok-1', decision: 'allow' })
   ledger.recordExecution({ callId: 'ok-1', outcome: 'completed' })
   assert.throws(() => ledger.recordAdmission({ callId: 'ok-1', decision: 'allow' }), (error) => error.code === 'LEDGER_REPLAY')
+})
+
+test('SLICE-15 — ONE native registration per name: the model-visible catalogue has no duplicate', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'catalog'), admission: 'bound' })
+  try {
+    const schemas = world.schemas()
+    const names = schemas.map((schema) => schema.name)
+    assert.deepEqual([...new Set(names)], names, `the model-visible catalogue must not contain a name twice: ${JSON.stringify(names)}`)
+    for (const name of ['read', 'write', 'edit']) {
+      assert.equal(names.filter((entry) => entry === name).length, 1, `exactly one ${name} must be visible to the agent`)
+      // The one visible definition must be the member's own mounted one, not the preset's: a name
+      // present once while dispatch resolves the inherited body would be the old defect wearing a
+      // single entry.
+      assert.equal(world.definitionOf(name), world.resolvedDefinitions[name], `${name} must dispatch to the member-mounted definition`)
+    }
+  } finally {
+    await world.dispose()
+  }
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
