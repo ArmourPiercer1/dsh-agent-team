@@ -1,0 +1,6 @@
+OLD-PATH-META vectors=69 host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84
+OLD-PATH-META host-tree=tests/deepseek-harness-test-use (read-only; gitignored)
+OLD-PATH-META composition=governed family body via uiFamilyEnabled/agentStateEnabled -> descriptor.build(cap)
+OLD-PATH-META members=ask_user_question,present,todo_write,get_goal,create_goal,update_goal,exit_plan_mode
+OLD-PATH-META columns=id entry family class outcome refusal code effects facts
+OLD-PATH-META captured-by=tests/ute-g1-uistate/capture-old-path.mjs --write (a reviewable fixture, never a recording of whatever happened)

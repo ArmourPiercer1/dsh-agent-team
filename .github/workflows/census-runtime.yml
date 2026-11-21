@@ -417,6 +417,13 @@ jobs:
         # face). It grades the 15-vector WEB old-path golden, both members' coverage, the closed
         # refusal vocabulary, the measured socket witness (zero non-loopback connects), and the
         # family + per-member negative controls (`NC-VERDICT GREEN controls=11 failed=0`).
+        # UTE-3 stage B1 UI + AGENT-STATE (2026-11-21): `tests/ute-g1-uistate/lane-suite.test.mjs`
+        # rides the same argv for the same post-build reason (its Stage-0 probe mounts the pinned
+        # host tool modules AND the route-C realm row, and its controls re-run the governed real
+        # store under the harness home). It grades the shared 69-vector old-path golden (both
+        # families, every census member, success/refusal/abort/deadline), the closed refusal
+        # vocabulary and its printed exclusion set, the independently corroborated effects, and the
+        # family + per-member negative controls (`NC-VERDICT GREEN controls=13 failed=0`).
         shell: bash
         timeout-minutes: 10
         # UTE-3 B1 PROCESS (2026-11-20): `tests/ute-g1-process/lane-suite.test.mjs` rides the same argv for the
@@ -424,7 +431,7 @@ jobs:
         # old-path golden, the closed refusal vocabulary, the covered member set (bash only; pwsh is a
         # PRINTED exclusion, unit=1/2), the five unapproved semantic differences, and the family +
         # per-member negative controls (`NC-VERDICT GREEN controls=10 failed=0`).
-        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs
+        run: node --test --test-force-exit --test-timeout=480000 --test-reporter=spec tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs tests/ute-g1-uistate/lane-suite.test.mjs
         # UTE-3 B1 AGENT-CONTROL (2026-11-21): `tests/ute-g1-agentctl/lane-suite.test.mjs` rides the same
         # argv for the same post-build reason (its C1 world mounts the governed family plane). It grades the
         # 42-vector golden (7 members x 6), the closed refusal vocabulary, the three unapproved semantic

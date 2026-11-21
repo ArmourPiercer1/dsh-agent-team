@@ -679,7 +679,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
   assert.deepEqual(
     refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
-    ['agent-control', 'fs', 'inspect', 'process', 'search', 'web'],
+    ['agent-control', 'agent-state', 'fs', 'inspect', 'process', 'search', 'ui', 'web'],
     `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
   )
   const codesFor = (family) => {
@@ -855,13 +855,66 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     false,
     `the agent-control baseline/control axes must stay established: ${JSON.stringify(agentctlFindings.filter((line) => line.includes('term=oldBaseline') || line.includes('term=negativeControlsPass')))}`,
   )
+  // ui + agent-state — Stage B1 measured TWO implementations for both families
+  // and NO new path, so their refusal set is structurally WEB's: the two
+  // coverage axes they lack (no new-path enumerator: one code plus one
+  // unreproduced-vector finding per baseline vector and one uncovered member per
+  // census member) plus the seven blocking unapproved differences. The sets are
+  // pinned EXACTLY and per family: a regression that loses a member, a vector or
+  // a difference changes the set and reds here, and neither row may borrow the
+  // other's answer.
+  const ui = codesFor('ui')
+  assert.deepEqual(ui.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.match(ui.line, /state=NOT_RETIREABLE unit=0\/2$/u)
+  const uiBlock = blockFor('ui')
+  assert.match(uiBlock, /term=semanticDifferencesResolved[^\n]*SD-UI-two-implementations/)
+  assert.match(uiBlock, /term=semanticDifferencesResolved[^\n]*SD-UI-product-route-absent/)
+  assert.match(uiBlock, /term=newPathVerified[^\n]*member \S*ask_user_question/)
+  assert.match(uiBlock, /term=newPathVerified[^\n]*member \S*present/)
+  assert.match(uiBlock, /UTE_VECTOR_UNREPRODUCED[^\n]*UI-A10-timed-pending/)
+  assert.equal(
+    uiBlock.split('\n').some((line) => line.includes('term=oldBaseline') && line.startsWith('  UTE-RETIREMENT-FINDING')),
+    false,
+    'the ui baseline axis must stay established (its golden covers both members)',
+  )
+  assert.equal(
+    uiBlock.split('\n').some((line) => line.includes('term=negativeControlsPass') && line.startsWith('  UTE-RETIREMENT-FINDING')),
+    false,
+    'the ui controls axis must stay established (one NC-MEMBER line per member)',
+  )
+  const state = codesFor('agent-state')
+  assert.deepEqual(state.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.match(state.line, /state=NOT_RETIREABLE unit=0\/5$/u)
+  const stateBlock = blockFor('agent-state')
+  assert.match(stateBlock, /term=semanticDifferencesResolved[^\n]*SD-AS-state-sink/)
+  assert.match(stateBlock, /term=semanticDifferencesResolved[^\n]*SD-AS-result-envelope/)
+  for (const member of ['todo_write', 'get_goal', 'create_goal', 'update_goal', 'exit_plan_mode']) {
+    assert.match(stateBlock, new RegExp(`term=newPathVerified[^\\n]*member \\S*${member}`))
+  }
+  assert.match(stateBlock, /UTE_VECTOR_UNREPRODUCED[^\n]*AS-U13-pa-deny/)
+  assert.equal(
+    stateBlock.split('\n').some((line) => line.includes('term=oldBaseline') && line.startsWith('  UTE-RETIREMENT-FINDING')),
+    false,
+    'the agent-state baseline axis must stay established (its golden covers all five members)',
+  )
+  assert.equal(
+    stateBlock.split('\n').some((line) => line.includes('term=negativeControlsPass') && line.startsWith('  UTE-RETIREMENT-FINDING')),
+    false,
+    'the agent-state controls axis must stay established (one NC-MEMBER line per member)',
+  )
+  const asJsonUi = JSON.parse(run(['--all', '--json']).stdout)
+  const verdictOf = (family) => asJsonUi.refused.find((row) => row.family === family)
+  assert.deepEqual(verdictOf('ui').coverage.oldBaseline, ['ask_user_question', 'present'])
+  assert.deepEqual(verdictOf('ui').coverage.negativeControlsPass, ['ask_user_question', 'present'])
+  assert.deepEqual(verdictOf('agent-state').coverage.oldBaseline, ['todo_write', 'create_goal', 'get_goal', 'update_goal', 'exit_plan_mode'])
+  assert.deepEqual(verdictOf('agent-state').coverage.negativeControlsPass, ['todo_write', 'create_goal', 'get_goal', 'update_goal', 'exit_plan_mode'])
   // the summary is DERIVED from the printed refusals, never a constant.
   const summary = all.stdout.match(/UTE-RETIREMENT-SUMMARY requested=(\d+) allowed=(\d+) refused=(\d+)/u)
   assert.ok(summary !== null, 'the summary line is absent')
   assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
   assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
   assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=6 allowed=0 refused=6/)
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)

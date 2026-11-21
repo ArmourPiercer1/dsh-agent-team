@@ -9569,3 +9569,33 @@ UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3
 **未触碰**：`packages/**` 产品代码、其他族测试目录/账本行、`docs/plans/active/**`、`arc-a-family-census.json`、`tests/ute-g1-fs/**`、`tests/paths.mjs`、上游/host 树；无 authority move、无生产切换、无 legacy 删除、无 approval 记录、CORE PATCH BUDGET=0；未 push master/stable、未 force-push、未合并。
 
 **明写的 UNKNOWN（不是 PASS）**：① 宿主侧效果未证明（效果边界是注入 port；返回值/状态只证明 family 对 port 的调用与语义）；② 宿主原生行的**编码未执行**，只做静态双实现测量，不得据此声称行为等价；③ route-C 无 agent-control 面，故"产品开启 family 后会怎样"只有 C1 挂载这一层证据；④ `list_agents`/`list_subagent_models` 的未接线腿用"无 port"演示 `route-unresolved`，不是真实宿主服务报错；⑤ 审批往返是 C1 本地 leg（真实指纹绑定 grant），不是耐久 ControlService；⑥ 取消只表达 dispatch 前 abort，未建模飞行中 abort；⑦ 退役所需的 replacement binding、名字所有权裁决与权限面批准均**不存在**。
+
+## 2026-11-21 — UTE-3 / G1 UI + AGENT-STATE PR B1：两族各测出**两套同名实现**，交付基线 + 逐成员负控（不退役）
+
+**背景**：census 记 `dsh.ui-family`（`ask_user_question`、`present`）与 `dsh.agent-state-family`（`todo_write`、`get_goal`、`create_goal`、`update_goal`、`exit_plan_mode`）。任务书要求先测后判：同一拼写若存在"旧 governed family body + 第二套实现"两份，才采效果基线；否则交非退役证明。**不得把别族的答案搬过来**，两族分别出结论。
+
+**Stage-0 实测（`tests/ute-g1-uistate/probe-composition.mjs` → `dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt`）**：
+- 每个成员恰好 **2 个定义点**：governed body（`ui-family/src/ask-row.mjs:130`、`present-row.mjs:60`；`agent-state-family/src/executors.mjs:303/329/343/349/371`）与**钉住宿主自己的工具包**（`tool-ask-user/lib/index.js:67`、`tool-present/lib/index.js:24`、`tool-todo/lib/index.js:96`、`tool-goal/lib/index.js:265/276/302`、`plan-mode/lib/index.js:232`）。机器 token = `PROBE-UISTATE family=<f> member=<m> two-implementations=yes legacy=<file> native=<file>`，每成员一行；结论 `PROBE-CONCLUSION ui=two-implementations` / `state=two-implementations`。
+- 产品 route-C（`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`，`nativeToolModules: []`）**一个都不注册**：七个名字全部 `unknown tool`、`providerCalls=0`、`inheritedServiceCalls=0`、`guardFacts=0`。`present` 只在 `hostPresentSpecOf`（`a5sf-realm-row.mjs:1405`）的宿主 shadow 下出现（in-lane `Presented …` 2 facts；out-of-lane 1 deny fact）；`ask_user_question` 按 PD-25 **不在** Member preset；`todo_write`/`get_goal`/`create_goal`/`update_goal` 由 preset 的 host `tool-todo`/`tool-goal` 行承担，`exit_plan_mode` 由 host `plan-mode` 行承担。
+- legacy governed plane 确实 **claim** 这些原生拼写（`packages/tools/families/ui.mjs:67`、`agent-state.mjs:93`，opt-in 闭布尔 `uiFamilyEnabled`/`agentStateEnabled`，缺席=FALSE）；natexe 名单门（`verifyPlaneNames`）对它们答 `PLANE_NAMES_INVALID`，与 claim 是两条不同的门。
+
+**交付（两族共用一套 world/normalizer，结论与行分开）**：
+- `tests/ute-g1-uistate/golden/old-path.tsv`：**69** 条 (request → effect) 向量 = ask 10 / present 12 / todo 10 / get_goal 7 / create_goal 10 / update_goal 13 / exit_plan_mode 7；每成员 ≥6 条且含 success / wrong-input / permission / abort（ask 另有 deadline）。两次完整采集**逐字节相同**（`capture-run-1.txt` / `capture-run-2.txt`），无绝对路径、无墙钟、无 pid、无 nonce、无 minted goal id。
+- 效果**独立旁证**：UI 用注入 port 自己的调用日志 + 对每个锚定路径重新 `stat`；agent-state 用 store 自己的 `stateOf(scope)` 读回 + `attempts/writes` 台账（每次拒绝都是零写见证）。
+- 拒绝走**导入的**九类闭词表（`tests/ute-g1-fs/lib/refusal-categories.mjs`，不 fork）；32 个 code → 6 类，未映射即 `REFUSAL_VOCABULARY_INCOMPLETE`；**不可达的三类打印为有理由的排除集**（`read-before-write` / `route-unresolved` / `unknown`），不折进 `unknown`。
+- 逐成员负控 7 条 + harness 负控 6 条 = `NC-VERDICT GREEN controls=13 failed=0`（`negative-controls.txt`），每条只改一个承重事实并要求 golden 行在声明字段上确实变化。
+- 语义差异 7 条（`two-implementations`、`refusal-vocabulary`、`result-envelope`、`present-receipt-turn`、`timed-pending-shape`、`state-sink`、`product-route-absent`）全部 `blocking: true` / `approval: null`，由 `lib/semantic-differences.mjs` **每次重新测量**（源文件/证据变了就红，不靠记忆）。
+
+**台账/清单**：`ute-retirement.json` 新增 `ui`、`agent-state` 两行（均 `NOT_RETIREABLE`；unit 由 census 派生 = 2 / 5 成员；`oldPath.files` 9 / 7 个真实文件；`oldBaseline=true`、`newPathVerified=false`（无新路径）、`negativeControlsPass=true`、`semanticDifferencesResolved=false`）。`ute-family-inventory.json` 两族 `retirementReadiness` 改为 `baseline:complete,newPath:none,negativeControls:complete`。`scripts/ute-retirement-gate.test.mjs` 的 `--all` 臂扩到六族并要求 ui/agent-state 各自的精确 code 集、`unit=0/2`、`unit=0/5`、`SUMMARY requested=6`，且两族的 baseline/controls 轴**不得**出现 finding；`scripts/ute-family-inventory.test.mjs` 同时钉住两族 declared+derived readiness。
+
+**门禁（本机实测，逐字）**：
+```
+UTE-RETIREMENT-REFUSED family=ui codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/2
+UTE-RETIREMENT-REFUSED family=agent-state codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/5
+UTE-RETIREMENT-SUMMARY requested=6 allowed=0 refused=6
+```
+`EB3-CI-REQUIRED pass workflows=10 findings=0`；test-catalog `refused=0 findings=0`（`UNCOLLECTED 41` / `EXCLUDED 14`，新套件**已被收集**）；`EB3-FAMILY-DEFINITIONS pass files=64 findings=0`；`UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0`；`docs-sync --check`（`findings=0 blocking=0`）；`check-append-only-log`（`verdict=pass`）；`git diff --check`、`node --check` 全 0；`scripts/ute-retirement-gate.test.mjs` 31/31、`scripts/ute-family-inventory.test.mjs` 36/36、`lane-suite.test.mjs` 9/9。
+
+**未触碰**：`packages/**` 产品代码、authority、生产切换、legacy 删除、host 树、`tests/paths.mjs`、其他族目录/账本行、`docs/plans/active/**`、`arc-a-family-census.json`；CORE PATCH BUDGET = 0；无新 CI workflow/job/leg（只在既有 "UTE G1 FS binding product lane" 的 argv 与 manifest `check[]` 末尾追加同一个 token，两侧仍逐字节一致、同序）；交付树 `tests/deepseek-harness*` 跟踪计数 0；未 push master/stable、未 force-push、未合并。
+
+**明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② 两族的 governed 行只在 family body 直执行，未跑完整 kernel/PA dispatch 的 live Member 组合；③ `present` 的 `@published` 见证是 harness 注入 publication face 的记录 + 重新 `stat`，不是真实 UI 服务；④ 排除的 `route-unresolved` 只在 mount 时拒绝，调用级不可观测——是实测形状，不是待办；⑤ UI 定时 ask 的 pending 分支只在注入 port 上测量，未接真实 UI 端口。

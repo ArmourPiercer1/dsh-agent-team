@@ -1,0 +1,193 @@
+OLD-PATH-VECTOR UI-A1-single-answer entry=ask_user_question class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS UI-A1-single-answer @ask:4f31ea814178:ask;@result:228bb36092b3 facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-A2-two-questions-multi entry=ask_user_question class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS UI-A2-two-questions-multi @ask:6a7775c0b270:ask;@result:af21135813bc facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-A3-unknown-parameter entry=ask_user_question class=wrong-input outcome=deny refusal=invalid-argument code=ask-unknown-parameter
+OLD-PATH-EFFECTS UI-A3-unknown-parameter @refused:ask-unknown-parameter;@class:schema facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-A3-unknown-parameter refused-schema ask-unknown-parameter — arguments carry unknown parameter(s) patience (accepted: questions) — the governed row has no escalation lane; 'timeout' is a timed-variant parameter and this mount registered the legacy variant
+OLD-PATH-VECTOR UI-A4-no-questions entry=ask_user_question class=wrong-input outcome=deny refusal=invalid-argument code=ask-questions-required
+OLD-PATH-EFFECTS UI-A4-no-questions @refused:ask-questions-required;@class:schema facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-A4-no-questions refused-schema ask-questions-required — ask_user_question requires a non-empty questions array
+OLD-PATH-VECTOR UI-A5-lane-deny entry=ask_user_question class=permission outcome=deny refusal=denied-by-lane code=template-deny-lane
+OLD-PATH-EFFECTS UI-A5-lane-deny @refused:template-deny-lane;@class:admission facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-A5-lane-deny refused-admission template-deny-lane — the template lane denies this interaction effect
+OLD-PATH-VECTOR UI-A6-pa-deny entry=ask_user_question class=permission outcome=deny refusal=denied-by-lane code=ADMISSION_DENIED
+OLD-PATH-EFFECTS UI-A6-pa-deny @refused:ADMISSION_DENIED;@class:admission facts=paCalls=1,portCalls=0
+OLD-PATH-NOTE UI-A6-pa-deny refused-admission ADMISSION_DENIED — the admission edge denied this call
+OLD-PATH-VECTOR UI-A7-template-default-deny entry=ask_user_question class=permission outcome=deny refusal=denied-by-lane code=template-default-deny
+OLD-PATH-EFFECTS UI-A7-template-default-deny @refused:template-default-deny;@class:admission facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-A7-template-default-deny refused-admission template-default-deny — the policy defaults to DENY and the closed rule grammar names no interaction rule that could cover a user question
+OLD-PATH-VECTOR UI-A8-port-absent entry=ask_user_question class=permission outcome=deny refusal=unsupported-mode code=UI_INTERACTION_PORT_ABSENT
+OLD-PATH-EFFECTS UI-A8-port-absent @refused:UI_INTERACTION_PORT_ABSENT;@class:admission facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-A8-port-absent refused-admission UI_INTERACTION_PORT_ABSENT — this mount carries no injected interaction port (ask face), so no question can be asked — the governed row fails closed and asks nobody
+OLD-PATH-VECTOR UI-A9-abort-in-port entry=ask_user_question class=abort outcome=cancelled refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS UI-A9-abort-in-port @ask:dcaa55ed72d7:ask;@result:cancelled facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-A10-timed-pending entry=ask_user_question class=deadline outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS UI-A10-timed-pending @ask:dcaa55ed72d7:askTimed;@result:fcd5cadb56b2 facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-P1-one-file entry=present class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS UI-P1-one-file @published:inside/report.md:file:19;@result:d413d3542e93 facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-P2-two-files entry=present class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS UI-P2-two-files @published:inside/report.md:file:19;@published:inside/second.md:file:11;@result:4ab6e519861f facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-P3-outside-root entry=present class=permission outcome=deny refusal=denied-by-lane code=locator-rejected
+OLD-PATH-EFFECTS UI-P3-outside-root @refused:locator-rejected;@class:schema facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-P3-outside-root refused-schema locator-rejected — the lexical target escapes the governed root (<fixture>/outside/secret.md)
+OLD-PATH-VECTOR UI-P4-no-files entry=present class=wrong-input outcome=deny refusal=invalid-argument code=present-files-required
+OLD-PATH-EFFECTS UI-P4-no-files @refused:present-files-required;@class:schema facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-P4-no-files refused-schema present-files-required — present requires a non-empty files array
+OLD-PATH-VECTOR UI-P5-missing-file entry=present class=missing outcome=deny refusal=missing-path code=FILE_NOT_FOUND
+OLD-PATH-EFFECTS UI-P5-missing-file @refused:FILE_NOT_FOUND;@class:io facts=paCalls=1,portCalls=0
+OLD-PATH-NOTE UI-P5-missing-file refused-io FILE_NOT_FOUND — Cannot present <world>/inside/absent.md: file not found. Check the path, create the file if needed, and retry.
+OLD-PATH-VECTOR UI-P6-directory entry=present class=wrong-input outcome=deny refusal=invalid-argument code=NOT_A_FILE
+OLD-PATH-EFFECTS UI-P6-directory @refused:NOT_A_FILE;@class:schema facts=paCalls=1,portCalls=0
+OLD-PATH-NOTE UI-P6-directory refused-schema NOT_A_FILE — Cannot present <world>/inside/folder: not a regular file
+OLD-PATH-VECTOR UI-P7-too-many-files entry=present class=wrong-input outcome=deny refusal=invalid-argument code=present-files-limit
+OLD-PATH-EFFECTS UI-P7-too-many-files @refused:present-files-limit;@class:schema facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-P7-too-many-files refused-schema present-files-limit — present accepts 1 to 8 files
+OLD-PATH-VECTOR UI-P8-lane-deny entry=present class=permission outcome=deny refusal=denied-by-lane code=template-deny-lane
+OLD-PATH-EFFECTS UI-P8-lane-deny @refused:template-deny-lane;@class:admission facts=paCalls=0,portCalls=0
+OLD-PATH-NOTE UI-P8-lane-deny refused-admission template-deny-lane — the template lane denies this presentation effect
+OLD-PATH-VECTOR UI-P9-pa-deny entry=present class=permission outcome=deny refusal=denied-by-lane code=ADMISSION_DENIED
+OLD-PATH-EFFECTS UI-P9-pa-deny @refused:ADMISSION_DENIED;@class:admission facts=paCalls=1,portCalls=0
+OLD-PATH-NOTE UI-P9-pa-deny refused-admission ADMISSION_DENIED — the admission edge denied this call
+OLD-PATH-VECTOR UI-P10-receipt-without-turn entry=present class=cap outcome=deny refusal=unsupported-mode code=UI_PRESENT_RECEIPT_INVALID
+OLD-PATH-EFFECTS UI-P10-receipt-without-turn @published:inside/report.md:file:19;@refused:UI_PRESENT_RECEIPT_INVALID;@class:io facts=paCalls=1,portCalls=1
+OLD-PATH-NOTE UI-P10-receipt-without-turn refused-io UI_PRESENT_RECEIPT_INVALID — the presentation face reported success WITHOUT the host-required receipt turn (the host result schema requires an integer turn — tool-present/src/index.ts:61, :79) — the publication carries no correlation identity, so this row treats it as failed
+OLD-PATH-VECTOR UI-P11-abort-in-port entry=present class=abort outcome=cancelled refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS UI-P11-abort-in-port @published:inside/report.md:file:19;@result:cancelled facts=paCalls=1,portCalls=1
+OLD-PATH-VECTOR UI-P12-oversized entry=present class=cap outcome=deny refusal=unsupported-mode code=FILE_TOO_LARGE
+OLD-PATH-EFFECTS UI-P12-oversized @refused:FILE_TOO_LARGE;@class:io facts=paCalls=1,portCalls=0
+OLD-PATH-NOTE UI-P12-oversized refused-io FILE_TOO_LARGE — Cannot present <world>/inside/oversized.md: the file exceeds the governed presentation cap of 1048576 bytes
+OLD-PATH-VECTOR AS-T1-write-three entry=todo_write class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-T1-write-three @record:db9cc170d040;@write:todos/apply:agent:agent-ute3-a/todos:plane-agent-state:<nonce>:1;@attempt:todos/apply:applied:-;@ledger:reads=0,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=0
+OLD-PATH-VECTOR AS-T2-empty-list entry=todo_write class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-T2-empty-list @record:55434ab890bd;@write:todos/apply:agent:agent-ute3-a/todos:plane-agent-state:<nonce>:1;@attempt:todos/apply:applied:-;@ledger:reads=0,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=0
+OLD-PATH-VECTOR AS-T3-duplicate-content entry=todo_write class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_INVALID
+OLD-PATH-EFFECTS AS-T3-duplicate-content @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T3-duplicate-content refused: AGENT_STATE_ARGS_INVALID — invalid todos: content must be unique
+OLD-PATH-VECTOR AS-T4-two-in-progress entry=todo_write class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_INVALID
+OLD-PATH-EFFECTS AS-T4-two-in-progress @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T4-two-in-progress refused: AGENT_STATE_ARGS_INVALID — invalid todos: at most one task may be in_progress (got 2)
+OLD-PATH-VECTOR AS-T5-unknown-field entry=todo_write class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_UNKNOWN
+OLD-PATH-EFFECTS AS-T5-unknown-field @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T5-unknown-field refused: AGENT_STATE_ARGS_UNKNOWN — todo_write received unknown field(s): priority
+OLD-PATH-VECTOR AS-T6-lane-deny entry=todo_write class=permission outcome=deny refusal=denied-by-lane code=template-deny-lane
+OLD-PATH-EFFECTS AS-T6-lane-deny @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T6-lane-deny refused: template-deny-lane — the template lane denies this agent-state effect
+OLD-PATH-VECTOR AS-T7-pa-deny entry=todo_write class=permission outcome=deny refusal=denied-by-lane code=ADMISSION_DENIED
+OLD-PATH-EFFECTS AS-T7-pa-deny @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T7-pa-deny refused: ADMISSION_DENIED — the admission edge denied this call
+OLD-PATH-VECTOR AS-T8-pa-cancelled entry=todo_write class=abort outcome=deny refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS AS-T8-pa-cancelled @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T8-pa-cancelled refused: CANCELLED — the invocation was cancelled before execution; nothing persisted
+OLD-PATH-VECTOR AS-T9-agent-required entry=todo_write class=wrong-input outcome=deny refusal=invalid-argument code=TODO_WRITE_AGENT_REQUIRED
+OLD-PATH-EFFECTS AS-T9-agent-required @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:- facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T9-agent-required refused: TODO_WRITE_AGENT_REQUIRED — todo_write requires an owning agent session
+OLD-PATH-VECTOR AS-T10-template-default-deny entry=todo_write class=permission outcome=deny refusal=denied-by-lane code=IO_POLICY_UNSUPPORTED
+OLD-PATH-EFFECTS AS-T10-template-default-deny @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-T10-template-default-deny refused: IO_POLICY_UNSUPPORTED — template-default-deny: an effect the policy never names is not an effect the policy allows (the agent-state effect class carries no rule-grammar spelling on this mount; extending the rule grammar is a named center-interface change, never a family self-authorization)
+OLD-PATH-VECTOR AS-G1-empty entry=get_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-G1-empty @record:7eaf7e65d7fd;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-VECTOR AS-G2-seeded entry=get_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-G2-seeded @record:a5e5ede0da93;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-VECTOR AS-G3-cross-scope entry=get_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-G3-cross-scope @record:7eaf7e65d7fd;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-VECTOR AS-G4-unknown-field entry=get_goal class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_UNKNOWN
+OLD-PATH-EFFECTS AS-G4-unknown-field @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-G4-unknown-field refused: AGENT_STATE_ARGS_UNKNOWN — get_goal carries no parameters — unknown field(s): verbose
+OLD-PATH-VECTOR AS-G5-lane-deny entry=get_goal class=permission outcome=deny refusal=denied-by-lane code=template-deny-lane
+OLD-PATH-EFFECTS AS-G5-lane-deny @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-G5-lane-deny refused: template-deny-lane — the template lane denies this agent-state effect
+OLD-PATH-VECTOR AS-G6-agent-required entry=get_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_TOOL_AGENT_REQUIRED
+OLD-PATH-EFFECTS AS-G6-agent-required @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:- facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-G6-agent-required refused: GOAL_TOOL_AGENT_REQUIRED — goal tools require a calling agent
+OLD-PATH-VECTOR AS-G7-pa-cancelled entry=get_goal class=abort outcome=deny refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS AS-G7-pa-cancelled @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-G7-pa-cancelled refused: CANCELLED — the invocation was cancelled before execution; nothing persisted
+OLD-PATH-VECTOR AS-C1-direct-human entry=create_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-C1-direct-human @record:4a38f21ef881;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-C2-model-arm entry=create_goal class=permission outcome=deny refusal=denied-by-lane code=GOAL_TOOL_NOT_DIRECT_HUMAN
+OLD-PATH-EFFECTS AS-C2-model-arm @record:7eaf7e65d7fd;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-C2-model-arm refused: GOAL_TOOL_NOT_DIRECT_HUMAN — this goal operation requires a direct human turn on a top-level agent
+OLD-PATH-VECTOR AS-C3-already-exists entry=create_goal class=success outcome=deny refusal=unsupported-mode code=GOAL_ALREADY_EXISTS
+OLD-PATH-EFFECTS AS-C3-already-exists @record:a5e5ede0da93;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-C3-already-exists refused: GOAL_ALREADY_EXISTS — goal "goal-seed-1" already exists with phase "active"
+OLD-PATH-VECTOR AS-C4-recreate-after-complete entry=create_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-C4-recreate-after-complete @record:13173e3d87b2;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-C5-invalid-objective entry=create_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_INVALID_OBJECTIVE
+OLD-PATH-EFFECTS AS-C5-invalid-objective @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C5-invalid-objective refused: GOAL_INVALID_OBJECTIVE — goal objective must be a non-empty string
+OLD-PATH-VECTOR AS-C6-invalid-max-rounds entry=create_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_INVALID_MAX_ROUNDS
+OLD-PATH-EFFECTS AS-C6-invalid-max-rounds @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C6-invalid-max-rounds refused: GOAL_INVALID_MAX_ROUNDS — maxGoalRounds must be a positive safe integer
+OLD-PATH-VECTOR AS-C7-unknown-field entry=create_goal class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_UNKNOWN
+OLD-PATH-EFFECTS AS-C7-unknown-field @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C7-unknown-field refused: AGENT_STATE_ARGS_UNKNOWN — create_goal received unknown field(s): rounds
+OLD-PATH-VECTOR AS-C8-pa-deny entry=create_goal class=permission outcome=deny refusal=denied-by-lane code=ADMISSION_DENIED
+OLD-PATH-EFFECTS AS-C8-pa-deny @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C8-pa-deny refused: ADMISSION_DENIED — the admission edge denied this call
+OLD-PATH-VECTOR AS-C9-agent-required entry=create_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_TOOL_AGENT_REQUIRED
+OLD-PATH-EFFECTS AS-C9-agent-required @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:- facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C9-agent-required refused: GOAL_TOOL_AGENT_REQUIRED — goal tools require a calling agent
+OLD-PATH-VECTOR AS-C10-pa-cancelled entry=create_goal class=abort outcome=deny refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS AS-C10-pa-cancelled @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-C10-pa-cancelled refused: CANCELLED — the invocation was cancelled before execution; nothing persisted
+OLD-PATH-VECTOR AS-U1-edit-objective entry=update_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-U1-edit-objective @record:fee88fcde701;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-U2-pause entry=update_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-U2-pause @record:1c8ea520d713;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-U3-resume-unarmed entry=update_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-U3-resume-unarmed @record:8ae79849e1ac;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-U4-resume-paused entry=update_goal class=permission outcome=deny refusal=denied-by-lane code=GOAL_TOOL_RESUME_PAUSED
+OLD-PATH-EFFECTS AS-U4-resume-paused @record:1cfd1ae72f7c;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-U4-resume-paused refused: GOAL_TOOL_RESUME_PAUSED — the model cannot resume a paused goal; the user must resume it
+OLD-PATH-VECTOR AS-U5-complete-goal-round entry=update_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-U5-complete-goal-round @record:3c6935422aab;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-U6-blocked-below-threshold entry=update_goal class=permission outcome=deny refusal=denied-by-lane code=GOAL_TOOL_BLOCK_THRESHOLD
+OLD-PATH-EFFECTS AS-U6-blocked-below-threshold @record:a5e5ede0da93;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-U6-blocked-below-threshold refused: GOAL_TOOL_BLOCK_THRESHOLD — blocked requires at least 3 consecutive goal rounds; current round is 1
+OLD-PATH-VECTOR AS-U7-blocked-at-threshold entry=update_goal class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-U7-blocked-at-threshold @record:e9ee84b415bf;@write:goal/apply:agent:agent-ute3-a/goal:plane-agent-state:<nonce>:1;@attempt:goal/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-U8-stale-revision entry=update_goal class=permission outcome=deny refusal=stale-version code=GOAL_STALE_REVISION
+OLD-PATH-EFFECTS AS-U8-stale-revision @record:a5e5ede0da93;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-U8-stale-revision refused: GOAL_STALE_REVISION — stale goal ref "goal-seed-1" revision 2; current is "goal-seed-1" revision 1
+OLD-PATH-VECTOR AS-U9-pause-with-objective entry=update_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_TOOL_INVALID_UPDATE
+OLD-PATH-EFFECTS AS-U9-pause-with-objective @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-U9-pause-with-objective refused: GOAL_TOOL_INVALID_UPDATE — objective and max_goal_rounds are valid only with action edit; blocked_reason is valid only with action blocked
+OLD-PATH-VECTOR AS-U10-empty-edit entry=update_goal class=wrong-input outcome=deny refusal=invalid-argument code=GOAL_INVALID_EDIT
+OLD-PATH-EFFECTS AS-U10-empty-edit @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-U10-empty-edit refused: GOAL_INVALID_EDIT — goal edit requires objective and/or maxGoalRounds
+OLD-PATH-VECTOR AS-U11-no-completion-authority entry=update_goal class=permission outcome=deny refusal=denied-by-lane code=GOAL_TOOL_NO_COMPLETION_AUTHORITY
+OLD-PATH-EFFECTS AS-U11-no-completion-authority @record:aab208e5cdfe;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-U11-no-completion-authority refused: GOAL_TOOL_NO_COMPLETION_AUTHORITY — complete and blocked require a direct human turn or the current goal round
+OLD-PATH-VECTOR AS-U12-pa-cancelled entry=update_goal class=abort outcome=deny refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS AS-U12-pa-cancelled @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-U12-pa-cancelled refused: CANCELLED — the invocation was cancelled before execution; nothing persisted
+OLD-PATH-VECTOR AS-U13-pa-deny entry=update_goal class=permission outcome=deny refusal=denied-by-lane code=ADMISSION_DENIED
+OLD-PATH-EFFECTS AS-U13-pa-deny @record:a5e5ede0da93;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-U13-pa-deny refused: ADMISSION_DENIED — the admission edge denied this call
+OLD-PATH-VECTOR AS-E1-exit entry=exit_plan_mode class=success outcome=allow refusal=- code=-
+OLD-PATH-EFFECTS AS-E1-exit @record:a594aba31582;@write:plan-mode/apply:agent:agent-ute3-a/plan-mode:plane-agent-state:<nonce>:1;@attempt:plan-mode/apply:applied:-;@ledger:reads=1,writes=1,attempts=1;@scope:agent facts=durableWrites=1,paCalls=1,storeAttempts=1,storeReads=1
+OLD-PATH-VECTOR AS-E2-not-in-plan-mode entry=exit_plan_mode class=permission outcome=deny refusal=unsupported-mode code=PLAN_MODE_NOT_ACTIVE
+OLD-PATH-EFFECTS AS-E2-not-in-plan-mode @record:7eaf7e65d7fd;@ledger:reads=1,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=1
+OLD-PATH-NOTE AS-E2-not-in-plan-mode refused: PLAN_MODE_NOT_ACTIVE — exit_plan_mode is only available in plan mode
+OLD-PATH-VECTOR AS-E3-plan-without-heading entry=exit_plan_mode class=wrong-input outcome=deny refusal=invalid-argument code=PLAN_MODE_PLAN_INVALID
+OLD-PATH-EFFECTS AS-E3-plan-without-heading @record:6119ae5609e0;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-E3-plan-without-heading refused: PLAN_MODE_PLAN_INVALID — exit_plan_mode requires a non-empty markdown plan starting with a # heading
+OLD-PATH-VECTOR AS-E4-unknown-field entry=exit_plan_mode class=wrong-input outcome=deny refusal=invalid-argument code=AGENT_STATE_ARGS_UNKNOWN
+OLD-PATH-EFFECTS AS-E4-unknown-field @record:6119ae5609e0;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-E4-unknown-field refused: AGENT_STATE_ARGS_UNKNOWN — exit_plan_mode received unknown field(s): mode
+OLD-PATH-VECTOR AS-E5-agent-required entry=exit_plan_mode class=wrong-input outcome=deny refusal=invalid-argument code=EXIT_PLAN_MODE_AGENT_REQUIRED
+OLD-PATH-EFFECTS AS-E5-agent-required @record:7eaf7e65d7fd;@ledger:reads=0,writes=0,attempts=0;@scope:- facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-E5-agent-required refused: EXIT_PLAN_MODE_AGENT_REQUIRED — exit_plan_mode requires a calling agent (no session to switch)
+OLD-PATH-VECTOR AS-E6-lane-deny entry=exit_plan_mode class=permission outcome=deny refusal=denied-by-lane code=template-deny-lane
+OLD-PATH-EFFECTS AS-E6-lane-deny @record:6119ae5609e0;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=0,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-E6-lane-deny refused: template-deny-lane — the template lane denies this agent-state effect
+OLD-PATH-VECTOR AS-E7-pa-cancelled entry=exit_plan_mode class=abort outcome=deny refusal=cancelled code=CANCELLED
+OLD-PATH-EFFECTS AS-E7-pa-cancelled @record:6119ae5609e0;@ledger:reads=0,writes=0,attempts=0;@scope:agent facts=durableWrites=0,paCalls=1,storeAttempts=0,storeReads=0
+OLD-PATH-NOTE AS-E7-pa-cancelled refused: CANCELLED — the invocation was cancelled before execution; nothing persisted
+OLD-PATH-CODES ADMISSION_DENIED,AGENT_STATE_ARGS_INVALID,AGENT_STATE_ARGS_UNKNOWN,CANCELLED,EXIT_PLAN_MODE_AGENT_REQUIRED,FILE_NOT_FOUND,FILE_TOO_LARGE,GOAL_ALREADY_EXISTS,GOAL_INVALID_EDIT,GOAL_INVALID_MAX_ROUNDS,GOAL_INVALID_OBJECTIVE,GOAL_STALE_REVISION,GOAL_TOOL_AGENT_REQUIRED,GOAL_TOOL_BLOCK_THRESHOLD,GOAL_TOOL_INVALID_UPDATE,GOAL_TOOL_NOT_DIRECT_HUMAN,GOAL_TOOL_NO_COMPLETION_AUTHORITY,GOAL_TOOL_RESUME_PAUSED,IO_POLICY_UNSUPPORTED,NOT_A_FILE,PLAN_MODE_NOT_ACTIVE,PLAN_MODE_PLAN_INVALID,TODO_WRITE_AGENT_REQUIRED,UI_INTERACTION_PORT_ABSENT,UI_PRESENT_RECEIPT_INVALID,ask-questions-required,ask-unknown-parameter,locator-rejected,present-files-limit,present-files-required,template-default-deny,template-deny-lane
+OLD-PATH-CATEGORIES reached=cancelled|denied-by-lane|invalid-argument|missing-path|stale-version|unsupported-mode excluded=read-before-write|route-unresolved|unknown
+OLD-PATH-EXCLUDED category=read-before-write reason=no read-then-write contract exists in either family: todo_write replaces a whole list, the goal rows read fresh state INSIDE the store transaction (so a stale observation is `stale-version`, measured by AS-U8), and neither row exposes a write that requires a prior read
+OLD-PATH-EXCLUDED category=route-unresolved reason=the two families refuse a missing backend at MOUNT time (PLANE_AGENT_STATE_STORE_MISSING / an unbuilt family), so no CALL-level route-unresolved refusal is observable from the rows themselves; the ui port absence is refused by the ROW (unsupported-mode, measured by UI-A8) because the row exists and answers
+OLD-PATH-EXCLUDED category=unknown reason=every code the corpus observes is explicitly mapped with a citation; the map has no default bucket and no prose fallback, so an unmapped value raises REFUSAL_VOCABULARY_INCOMPLETE instead of landing here
+OLD-PATH-VERDICT GREEN vectors=69 drift=0 claims=0 host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84

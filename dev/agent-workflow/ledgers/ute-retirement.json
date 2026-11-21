@@ -672,6 +672,325 @@
         }
       },
       "note": "Seven members, seven dual implementations (Stage-0 probe: 7 two-implementation / 0 single-implementation), so this family is NOT a single-implementation non-retirement case: it gets a real 42-vector old-path baseline, two byte-identical captures, printed empty exclusion set, imported closed refusal vocabulary, and 24 negative controls. Retirement is refused because there is no confined new path (newPathVerified=false) and three measured differences remain blocking and unapproved. No product code change, no authority move, no production switch, no legacy deletion, no approval record."
+    },
+    {
+      "family": "ui",
+      "unit": {
+        "familyId": "dsh.ui-family",
+        "members": [
+          "ask_user_question",
+          "present"
+        ]
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/ui.mjs",
+          "packages/tools/ui-family/src/ask-executor.mjs",
+          "packages/tools/ui-family/src/ask-row.mjs",
+          "packages/tools/ui-family/src/index.mjs",
+          "packages/tools/ui-family/src/present-executor.mjs",
+          "packages/tools/ui-family/src/present-row.mjs",
+          "packages/tools/ui-family/src/ui-family-contribution.mjs",
+          "packages/tools/ui-family/src/ui-interaction-port.mjs",
+          "packages/tools/ui-family/src/ui-mechanics.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-uistate/golden/old-path.tsv",
+            "expect": [
+              "UI-A1-single-answer",
+              "UI-A2-two-questions-multi",
+              "UI-A3-unknown-parameter",
+              "UI-A4-no-questions",
+              "UI-A5-lane-deny",
+              "UI-A6-pa-deny",
+              "UI-A7-template-default-deny",
+              "UI-A8-port-absent",
+              "UI-A9-abort-in-port",
+              "UI-A10-timed-pending",
+              "UI-P1-one-file",
+              "UI-P2-two-files",
+              "UI-P3-outside-root",
+              "UI-P4-no-files",
+              "UI-P5-missing-file",
+              "UI-P6-directory",
+              "UI-P7-too-many-files",
+              "UI-P8-lane-deny",
+              "UI-P9-pa-deny",
+              "UI-P10-receipt-without-turn",
+              "UI-P11-abort-in-port",
+              "UI-P12-oversized"
+            ],
+            "contradicts": []
+          },
+          "note": "22 (request -> effect) vectors captured on the governed family body (the OLD path: the implementation the product mounts behind uiFamilyEnabled), through the family descriptor's public build(cap) seam with the plane's own capability keys (decide/pa/logBackend/policy) and an INJECTED interaction port: 10 ask_user_question vectors (legacy + timed variants; success with answers, unknown parameter, empty batch, lane deny, PA deny, template default deny, port absent, abort, expired pending) + 12 present vectors (one file, two files, out-of-lane lexical escape, empty batch, missing file, directory, over-limit batch, lane deny, PA deny, receipt without turn, abort, oversize). Effects are corroborated INDEPENDENTLY of the row: the port's own call log (the harness writes it, never the row) plus a fresh stat of every anchored path; a refusal carries its typed code and refusal class. Two consecutive captures are byte-identical (capture-run-1.txt / capture-run-2.txt) and no row embeds a host path, a wall clock or a pid. COMPOSITION MEASURED FIRST: dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt shows the two implementations (governed body + pinned host) and that route-C registers NEITHER ui name (present only via the hostPresentSpecOf shadow; ask_user_question absent from the Member preset by PD-25). There is NO second product path to baseline against, so the governed body IS the old path here. Refusals are mapped onto the closed nine-category vocabulary IMPORTED from tests/ute-g1-fs/lib/refusal-categories.mjs (never forked); the family-local map is total-or-loud and an unmapped code raises REFUSAL_VOCABULARY_INCOMPLETE. Fixture identity in golden/old-path.meta.txt; member->vector->control table in golden/COVERAGE.md. This is the OldBaseline term for the UI family only."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/non-retirement.md",
+            "expect": [
+              "NEW-PATH-ABSENT",
+              "no new-path enumerator",
+              "UTE_NEW_PATH_UNVERIFIED"
+            ],
+            "contradicts": [
+              "NEW-PATH-VECTOR "
+            ]
+          },
+          "note": "NO new path exists for this family in this round: PR B1 is the old-path baseline plus per-member controls only. No enumerator, no provider row, no boot lane, and therefore zero NEW-PATH-VECTOR lines for any baseline vector. The gate must refuse this term with UTE_NEW_PATH_UNVERIFIED, UTE_VECTOR_UNREPRODUCED (one per vector) and UTE_MEMBER_UNCOVERED for every member on this axis. Flipping it requires a new-path task with its own evidence, not an edit here."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "SD-UI-two-implementations",
+              "blocking": true,
+              "approval": null,
+              "summary": "Every booked spelling is declared TWICE: by the governed family body (packages/tools/{ui,agent-state}-family) and by the pinned host tool package the product Member preset already mounts (probe PROBE-UISTATE ... two-implementations=yes, one line per member). Retiring the governed plane would not remove the host implementation, and the host implementation would not adopt the governed law. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-refusal-vocabulary",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed rows answer TYPED family codes (32 observed, mapped onto the imported nine-category vocabulary) for their own pre-flight law and for the lane/PA edges they walk; the host ask row has NO pre-flight at all (no closed-parameter law beyond the schema, no lane, no admission edge) and the host present row throws plain Error sentences. A caller migrated from the host cannot match on the governed codes, and cannot observe the same refusals because the host path does not produce them. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-result-envelope",
+              "blocking": true,
+              "approval": null,
+              "summary": "The agent-state rows return the plane's closed {text} envelope (JSON stringified into text; refusals as `refused: CODE - ...` inside it), while the host rows return structured objects. The same operation reaches a caller in a different shape. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-present-receipt-turn",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed present requires the injected presentation face to return an INTEGER receipt turn and treats a success without one as failed (UI_PRESENT_RECEIPT_INVALID, measured by UI-P10-receipt-without-turn); the host present derives the turn from the host's own sessionProjections turn-boundary projection, which the governed row never reads. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-timed-pending-shape",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed timed ask answers an expired wait with {pending:true, callId, message} and DROPS any answers the port attached to the pending result (measured by UI-A10-timed-pending); the host timed tool answers its own pending shape. Neither fabricates an answer, but the payload a caller sees differs. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-state-sink",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed agent-state family persists to its own durable JSON records plus an O_EXCL applyId ledger under the harness home; the host persists todos and goals through session events (session.append('todo/write')). State written by one sink is invisible to the other, so the two implementations are not interchangeable. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-UI-product-route-absent",
+              "blocking": true,
+              "approval": null,
+              "summary": "Neither family is reachable on product route-C: the bare route registers none of the seven names (unknown tool), the shipped preset serves four agent-state names from HOST packages plus present from the route-C host shadow, and ask_user_question is deliberately absent from the Member preset (PD-25). The retirement unit therefore spans rows no measured product route owns. APPROVAL: PENDING (owner signature required)."
+            }
+          ],
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/non-retirement.md",
+            "expect": [
+              "two-implementations",
+              "present-receipt-turn",
+              "product-route-absent"
+            ],
+            "contradicts": []
+          }
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/negative-controls.txt",
+            "expect": [
+              "NC-MEMBER ask_user_question",
+              "NC-MEMBER present",
+              "NC-VERDICT GREEN controls=13 failed=0"
+            ],
+            "contradicts": [
+              "NC-VERDICT RED"
+            ]
+          },
+          "note": "13 measured controls (7 per-member + 6 harness). The two UI member controls mutate exactly one load-bearing fact and re-run the same vector against the frozen golden row: removing the injected port turns an admitted ask into UI_INTERACTION_PORT_ABSENT with zero port calls; widening the governed root to the fixture base turns the out-of-lane present into an admitted publication. Each control passes only when the resulting row diverges from the golden row in its claimed fields. The harness controls show the comparison, the closed vocabulary, the exclusion set, the store witness, the publication witness and the durable readback all bite."
+        }
+      },
+      "note": "UI family, Stage B1. Old baseline frozen, per-member controls green, NO new path and seven blocking unapproved differences => NOT_RETIREABLE. The probe answers each member separately; no other family answer is transferred."
+    },
+    {
+      "family": "agent-state",
+      "unit": {
+        "familyId": "dsh.agent-state-family",
+        "members": [
+          "todo_write",
+          "create_goal",
+          "get_goal",
+          "update_goal",
+          "exit_plan_mode"
+        ]
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/agent-state.mjs",
+          "packages/tools/agent-state-family/src/agent-state-law.mjs",
+          "packages/tools/agent-state-family/src/contribution.mjs",
+          "packages/tools/agent-state-family/src/executors.mjs",
+          "packages/tools/agent-state-family/src/fs-state-store.mjs",
+          "packages/tools/agent-state-family/src/index.mjs",
+          "packages/tools/agent-state-family/src/state-store.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-uistate/golden/old-path.tsv",
+            "expect": [
+              "AS-T1-write-three",
+              "AS-T2-empty-list",
+              "AS-T3-duplicate-content",
+              "AS-T4-two-in-progress",
+              "AS-T5-unknown-field",
+              "AS-T6-lane-deny",
+              "AS-T7-pa-deny",
+              "AS-T8-pa-cancelled",
+              "AS-T9-agent-required",
+              "AS-T10-template-default-deny",
+              "AS-G1-empty",
+              "AS-G2-seeded",
+              "AS-G3-cross-scope",
+              "AS-G4-unknown-field",
+              "AS-G5-lane-deny",
+              "AS-G6-agent-required",
+              "AS-G7-pa-cancelled",
+              "AS-C1-direct-human",
+              "AS-C2-model-arm",
+              "AS-C3-already-exists",
+              "AS-C4-recreate-after-complete",
+              "AS-C5-invalid-objective",
+              "AS-C6-invalid-max-rounds",
+              "AS-C7-unknown-field",
+              "AS-C8-pa-deny",
+              "AS-C9-agent-required",
+              "AS-C10-pa-cancelled",
+              "AS-U1-edit-objective",
+              "AS-U2-pause",
+              "AS-U3-resume-unarmed",
+              "AS-U4-resume-paused",
+              "AS-U5-complete-goal-round",
+              "AS-U6-blocked-below-threshold",
+              "AS-U7-blocked-at-threshold",
+              "AS-U8-stale-revision",
+              "AS-U9-pause-with-objective",
+              "AS-U10-empty-edit",
+              "AS-U11-no-completion-authority",
+              "AS-U12-pa-cancelled",
+              "AS-U13-pa-deny",
+              "AS-E1-exit",
+              "AS-E2-not-in-plan-mode",
+              "AS-E3-plan-without-heading",
+              "AS-E4-unknown-field",
+              "AS-E5-agent-required",
+              "AS-E6-lane-deny",
+              "AS-E7-pa-cancelled"
+            ],
+            "contradicts": []
+          },
+          "note": "47 (request -> effect) vectors captured on the governed agent-state family (the OLD path: the implementation the product mounts behind agentStateEnabled), through the descriptor's public build(cap) seam with an INJECTED durable store (the family's own createFsStateStore: per-scope records, attempts/writes ledger, O_EXCL applyId consumption) and a per-vector execution-origin arm, across todo_write / get_goal / create_goal / update_goal / exit_plan_mode: success-with-durable-effect, wrong input, lane/PA/template/permission refusals, the CAS stale-revision leg, the goal authority legs (direct-human, goal-round, threshold) and the cancelled edge. Effects are corroborated INDEPENDENTLY of the row: the durable record is read back with the store's own stateOf(scope) and the store's attempts/writes ledger is read after the call (a zero-write witness for every refusal). Two consecutive captures are byte-identical and no row embeds a host path, a wall clock, a pid, a nonce or a minted goal id (the minted suffix is normalized). COMPOSITION MEASURED FIRST: composition-probe.txt shows four of the five names are served on the product preset by the HOST packages and NONE by the governed family on route-C; the fifth (exit_plan_mode) is served by the host plan-mode row. Refusals use the same IMPORTED nine-category vocabulary. This is the OldBaseline term for the agent-state family only."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/non-retirement.md",
+            "expect": [
+              "NEW-PATH-ABSENT",
+              "no new-path enumerator",
+              "UTE_NEW_PATH_UNVERIFIED"
+            ],
+            "contradicts": [
+              "NEW-PATH-VECTOR "
+            ]
+          },
+          "note": "NO new path exists for this family in this round: PR B1 is the old-path baseline plus per-member controls only. No enumerator, no provider row, no boot lane, and therefore zero NEW-PATH-VECTOR lines for any baseline vector. The gate must refuse this term with UTE_NEW_PATH_UNVERIFIED, UTE_VECTOR_UNREPRODUCED (one per vector) and UTE_MEMBER_UNCOVERED for every member on this axis. Flipping it requires a new-path task with its own evidence, not an edit here."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "SD-AS-two-implementations",
+              "blocking": true,
+              "approval": null,
+              "summary": "Every booked spelling is declared TWICE: by the governed family body (packages/tools/{ui,agent-state}-family) and by the pinned host tool package the product Member preset already mounts (probe PROBE-UISTATE ... two-implementations=yes, one line per member). Retiring the governed plane would not remove the host implementation, and the host implementation would not adopt the governed law. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-refusal-vocabulary",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed rows answer TYPED family codes (32 observed, mapped onto the imported nine-category vocabulary) for their own pre-flight law and for the lane/PA edges they walk; the host ask row has NO pre-flight at all (no closed-parameter law beyond the schema, no lane, no admission edge) and the host present row throws plain Error sentences. A caller migrated from the host cannot match on the governed codes, and cannot observe the same refusals because the host path does not produce them. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-result-envelope",
+              "blocking": true,
+              "approval": null,
+              "summary": "The agent-state rows return the plane's closed {text} envelope (JSON stringified into text; refusals as `refused: CODE - ...` inside it), while the host rows return structured objects. The same operation reaches a caller in a different shape. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-present-receipt-turn",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed present requires the injected presentation face to return an INTEGER receipt turn and treats a success without one as failed (UI_PRESENT_RECEIPT_INVALID, measured by UI-P10-receipt-without-turn); the host present derives the turn from the host's own sessionProjections turn-boundary projection, which the governed row never reads. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-timed-pending-shape",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed timed ask answers an expired wait with {pending:true, callId, message} and DROPS any answers the port attached to the pending result (measured by UI-A10-timed-pending); the host timed tool answers its own pending shape. Neither fabricates an answer, but the payload a caller sees differs. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-state-sink",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed agent-state family persists to its own durable JSON records plus an O_EXCL applyId ledger under the harness home; the host persists todos and goals through session events (session.append('todo/write')). State written by one sink is invisible to the other, so the two implementations are not interchangeable. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-AS-product-route-absent",
+              "blocking": true,
+              "approval": null,
+              "summary": "Neither family is reachable on product route-C: the bare route registers none of the seven names (unknown tool), the shipped preset serves four agent-state names from HOST packages plus present from the route-C host shadow, and ask_user_question is deliberately absent from the Member preset (PD-25). The retirement unit therefore spans rows no measured product route owns. APPROVAL: PENDING (owner signature required)."
+            }
+          ],
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/non-retirement.md",
+            "expect": [
+              "two-implementations",
+              "result-envelope",
+              "state-sink"
+            ],
+            "contradicts": []
+          }
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-uistate-b1-20261121/negative-controls.txt",
+            "expect": [
+              "NC-MEMBER todo_write",
+              "NC-MEMBER get_goal",
+              "NC-MEMBER create_goal",
+              "NC-MEMBER update_goal",
+              "NC-MEMBER exit_plan_mode",
+              "NC-VERDICT GREEN controls=13 failed=0"
+            ],
+            "contradicts": [
+              "NC-VERDICT RED"
+            ]
+          },
+          "note": "The five agent-state member controls mutate exactly one load-bearing fact each: flipping the lane verdict to allow on the todo_write deny vector; calling get_goal as the agent the goal was planted under (the scope is the only reason the read is empty); giving the model arm a direct-human origin on the create_goal anchor; sending the current revision instead of the stale one; planting plan mode active. Each passes only when the resulting row diverges from its frozen golden row. The harness controls include the faulted-store control (an admitted todo_write becomes AGENT_STATE_STORE_FAULT with zero durable writes), which is what makes the durable witness load-bearing rather than decorative."
+        }
+      },
+      "note": "AGENT-STATE family, Stage B1. Old baseline frozen, per-member controls green, NO new path and seven blocking unapproved differences => NOT_RETIREABLE. Members are DERIVED from the census (unit.members is bookkeeping; the gate resolves the unit from arc-a-family-census.json)."
     }
   ]
 }

@@ -127,6 +127,18 @@ test('the committed inventory grades clean (9 families, no findings)', () => {
   assert.deepEqual(agentctl.members, ['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'])
   assert.deepEqual(agentctl.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
   assert.deepEqual(agentctl.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  // UI + AGENT-STATE (UTE-3 B1, 2026-11-21): the same shape as WEB — baseline
+  // and per-member controls established, NO new path, so `newPath: none` is the
+  // measured readiness and the derived copy must say the same. Both are pinned
+  // separately so a ledger edit that "completes" one cannot ride the other.
+  const ui = result.families.find((f) => f.familyId === 'dsh.ui-family')
+  assert.deepEqual(ui.members, ['ask_user_question', 'present'])
+  assert.deepEqual(ui.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  assert.deepEqual(ui.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  const state = result.families.find((f) => f.familyId === 'dsh.agent-state-family')
+  assert.deepEqual(state.members, ['todo_write', 'create_goal', 'get_goal', 'update_goal', 'exit_plan_mode'])
+  assert.deepEqual(state.readiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
+  assert.deepEqual(state.derivedReadiness, { baseline: 'complete', newPath: 'none', negativeControls: 'complete' })
 })
 
 // ── 2. census closure, both directions ─────────────────────────────────────
