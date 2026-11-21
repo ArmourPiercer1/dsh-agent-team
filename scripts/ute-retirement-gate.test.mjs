@@ -665,20 +665,21 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.deepEqual(payload.refused[0].coverage.newPathVerified, ['read', 'write', 'edit', 'read_image'])
   assert.equal(payload.verdicts[0].allowed, false)
 
-  // `--all` now grades THREE seeded families (fs + search + web). The WEB row
-  // (UTE-3 stage B1) moved this from `requested=2` to `requested=3`, so the arm
-  // pins the NEW seeded state EXACTLY — and derives the summary's counts from
-  // the printed `UTE-RETIREMENT-REFUSED` lines instead of trusting the
-  // constant, so a fourth family added to the ledger can never be absorbed
-  // silently by a stale number here. Changing a family or its code list means
-  // updating THIS arm: silence is not an option, and a looser match would be
-  // the regression.
+  // `--all` now grades FOUR seeded families (fs + search + web + inspect). The
+  // SEARCH row (UTE-3 PR B1) moved this from `requested=1` to `requested=2`,
+  // the WEB row moved it to `requested=3`, and the INSPECT row (single-
+  // implementation proof) moves it to `requested=4`, so the arm pins the NEW
+  // seeded state EXACTLY — and derives the summary's counts from the printed
+  // `UTE-RETIREMENT-REFUSED` lines instead of trusting the constant, so a fifth
+  // family added to the ledger can never be absorbed silently by a stale number
+  // here. Changing a family or its code list means updating THIS arm: silence
+  // is not an option, and a looser match would be the regression.
   const all = run(['--all'])
   assert.equal(all.status, 1)
   const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
   assert.deepEqual(
     refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
-    ['fs', 'search', 'web'],
+    ['fs', 'inspect', 'search', 'web'],
     `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
   )
   const codesFor = (family) => {
@@ -688,6 +689,16 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     assert.ok(match !== null, `family=${family} line carries no code list: ${line}`)
     assert.match(line, / unit=(?:\d+\/\d+)$/u, `family=${family} line carries no unit strip: ${line}`)
     return { line, codes: match[1].split(',').sort() }
+  }
+  // Findings are printed under their family's refusal line without repeating
+  // the family name, so the scoped assertions below read ONE family's block.
+  const blockFor = (family) => {
+    const lines = all.stdout.split('\n')
+    const start = lines.findIndex((line) => line.startsWith(`UTE-RETIREMENT-REFUSED family=${family} `))
+    assert.ok(start >= 0, `no refusal block for family=${family}`)
+    const end = lines.findIndex((line, index) => index > start
+      && (line.startsWith('UTE-RETIREMENT-REFUSED ') || line.startsWith('UTE-RETIREMENT-SUMMARY')))
+    return lines.slice(start, end === -1 ? undefined : end).join('\n')
   }
   // fs — PR B2 reproduced all sixteen vectors, so the coverage axes are complete and the
   // ONLY remaining refusal is the unapproved difference. Asserted as an exact set: a
@@ -756,13 +767,34 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     false,
     `the web baseline/control axes must stay established: ${JSON.stringify(webFindings.filter((line) => line.includes('term=oldBaseline') || line.includes('term=negativeControlsPass')))}`,
   )
+  // inspect — UTE-3 B1 measured, in its Stage-0 probe, that each booked member
+  // has EXACTLY ONE implementation (the governed family body) and that the
+  // native/service side serves the capability under DIFFERENT names. No baseline
+  // effect table and no new path exist, so every term is false. The exact set is
+  // pinned: OLD_BASELINE_MISSING (the required refusal), NEW_PATH_UNVERIFIED,
+  // SEMANTIC_DIFFERENCES_UNRESOLVED (the alias→native name change, approval
+  // null), NEGATIVE_CONTROLS_FAILING, and UTE_UNIT_UNGRADABLE because the
+  // evidence pointer is the non-retirement record, not a parseable baseline TSV
+  // (there is no corpus to parse; that is the measured shape, not a schema bug).
+  const inspect = codesFor('inspect')
+  assert.deepEqual(inspect.codes, [
+    'UTE_NEGATIVE_CONTROLS_FAILING',
+    'UTE_NEW_PATH_UNVERIFIED',
+    'UTE_OLD_BASELINE_MISSING',
+    'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
+    'UTE_UNIT_UNGRADABLE',
+  ])
+  assert.match(inspect.line, /state=NOT_RETIREABLE unit=0\/3$/u)
+  const inspectBlock = blockFor('inspect')
+  assert.match(inspectBlock, /term=semanticDifferencesResolved[^\n]*alias-to-native-name-change/)
+  assert.match(inspectBlock, /code=UTE_OLD_BASELINE_MISSING term=oldBaseline/u)
   // the summary is DERIVED from the printed refusals, never a constant.
   const summary = all.stdout.match(/UTE-RETIREMENT-SUMMARY requested=(\d+) allowed=(\d+) refused=(\d+)/u)
   assert.ok(summary !== null, 'the summary line is absent')
   assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
   assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
   assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3/)
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=4 allowed=0 refused=4/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)

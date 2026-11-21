@@ -923,7 +923,7 @@
         "newPath": "none",
         "negativeControls": "none"
       },
-      "note": "This family mounts under NON-native alias spellings (`team_skill`, `team_cordis_inspect_*`); the native `skill`/`cordis_inspect_*` names remain host-owned and are NOT claimed (PLANE_SUPPORTED_NATIVE_TAKEOVERS in the plane). `row-names.mjs` is classed `mechanics` (mount spellings/constants)."
+      "note": "This family mounts under NON-native alias spellings (`team_skill`, `team_cordis_inspect_*`); the native `skill`/`cordis_inspect_*` names remain host-owned and are NOT claimed (PLANE_SUPPORTED_NATIVE_TAKEOVERS in the plane). `row-names.mjs` is classed `mechanics` (mount spellings/constants). UTE-3 B1 (2026-11-20): the Stage-0 composition probe measured that each booked member name has exactly ONE implementation (the governed family body) and that route-C does not register it; the native/service side serves the capability under different names. retirementReadiness therefore stays none/none/none by measurement, not by omission; see dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md and the retirement ledger's inspect row (NOT_RETIREABLE)."
     },
     {
       "familyId": "dsh.u6-probe-family",

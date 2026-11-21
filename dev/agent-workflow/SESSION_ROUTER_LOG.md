@@ -9498,3 +9498,21 @@ UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3
 - `SD-WEB-1-native-name-claim-collision` 是**架构问题**：`web_fetch`/`web_search` 两个原生名同时被 legacy family 与 route-C 产出，seam 未指认唯一所有者——名字有两个生产者时无法退役，这不是形式主义。
 
 **今天另有一条值得记住的观测纪律**：`ci-integration` 在 #810 上失败过一次，日志里只留下 `DSH-CENSUS-SUMMARY … verdict=FAIL codes=TASK_STATE_FAIL` 与一条 `GIT_READ_FAILED`，而同一套件在本机 100/100、41/41 全绿；`gh run rerun --failed` 后整层转绿。**结论：CI 层的单次红不是结论，也不是"已绿"**——要么复现要么重跑，两者都没做之前只能记 UNKNOWN。这条与"本地绿不算 hosted 绿"是同一件事的两面。
+
+## 2026-11-20 — UTE-3 / G1 INSPECT PR B1：Stage-0 组合探针判名单实现，交付非退役证明（不制造基线）
+
+**背景**：inspect family 由 census 记为 `dsh.inspect-family` / 三成员（`team_skill`、`team_cordis_inspect_list`、`team_cordis_inspect_query`）。任务书要求先测后判：若每个成员有"旧 family body + 原生/service 路径"两套同名实现，就照 Search/Web 采完整基线；若只有一套，就交探针 + 非退役证明，**不得编造基线**。
+
+**Stage-0 实测（`tests/ute-g1-inspect/probe-composition.mjs` → `dev/agent-workflow/evidence/ute3-inspect-b1-20261120/composition-probe.txt`）**：
+- 每个成员恰好 **1 个定义点**：`team_skill` → `packages/tools/inspect-family/src/skill-row.mjs:64-66`；cordis 对 → `inspect-rows.mjs:19-48`；三个拼写只在 `row-names.mjs:20-22` 声明一次。机器 token：`PROBE-INSPECT single-implementation=yes member=<name> reason=one-row-definition-site:…`。
+- 产品 route-C（`mountMemberA5sfRealm` + `attachA5sfNativeToolModules`）**不注册**这三个名字：dispatch 回 `unknown tool`，`providerCalls=0`、`inheritedServiceCalls=0`、`guardFacts=0`。没有可修的挂载缺口——这些名字属于 governed plane。
+- legacy governed plane **claim** 三个 alias（`claims()`），并按 natexe 法 **拒绝** 原生拼写（`PLANE_RESERVED_NATIVE` 含 `skill`/`cordis_inspect_*`，`PLANE_SUPPORTED_NATIVE_TAKEOVERS` 无对应项）。
+- 能力面的新侧确实存在但**名字不同**：`skill` 是宿主 `@deepseek-ai/dsh-tool-skill` 行 + Team `skills` **service** provider（`a5sf-skill-provider.mjs`，PD-29）；`cordis_inspect_*` 是宿主 `@deepseek-ai/dsh-tool-cordis` 行 over `cordisInspect` service。Team 不贡献同名原生行。
+
+**因此交付 = 非退役证明，不是基线**：`dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md` 逐条记录上述测量、以及 governed family body 的真实执行（`team_skill`/list/query 的 allow + typed refusal）。**没有采集任何 `id`/`entry` 效果表**，所以 ledger 的 inspect 行 `oldBaseline=false`、`newPathVerified=false`、`negativeControlsPass=false`，一条 blocking 差异 `alias-to-native-name-change`（`approval: null`）；gate 以 `UTE_OLD_BASELINE_MISSING`（连同 NEW_PATH_UNVERIFIED / SEMANTIC_DIFFERENCES_UNRESOLVED / NEGATIVE_CONTROLS_FAILING / UNIT_UNGRADABLE）拒绝，**这是实测形状，不是待办**。用"不同名的新路径"编一张表会制造 gate 会读成进展的假行，已明确拒绝。
+
+**台账/清单**：`ute-retirement.json` 新增 `inspect` 行（`NOT_RETIREABLE`，census-derived unit，10 个 `oldPath.files`）；`ute-family-inventory.json` 的 `dsh.inspect-family` `retirementReadiness` 实测仍 `none/none/none`（加了原因注记，不改判）。`scripts/ute-retirement-gate.test.mjs` 的 `--all` 臂改为三家族（fs/search/inspect）、inspect 精确 code 集、`unit=0/3`、`SUMMARY requested=3`，并把"无 newPath finding"断言按家族 block 收窄（inspect 的 `UTE_NEW_PATH_UNVERIFIED` 是诚实项，不能污染 fs/search 断言）。**web 行不在本 base 上**（`origin/master 69e292a29`；web PR #810 未合并），故本分支 `requested=3`；#810 合入后同一处应为 4。
+
+**未触碰**：无产品代码、无 authority、无生产切换、无 legacy 删除、无 host 树写入、CORE PATCH BUDGET=0；其他家族测试目录/行、`docs/plans/active/**`、census 均未改；无新 workflow/job/leg。`tests/deepseek-harness*` 仍为本地 symlink，交付树计数必须为 0。
+
+**明写 UNKNOWN**：① 无 live boot（host-free 探针）；② governed plane 的 `team_*` 全 kernel/PA dispatch 未运行（family body 直执行，guard 由 plane 持有）；③ 将来 UTE-4 是否以改名（alias→宿主名）方式退役 alias、还是永久保留，属 owner 裁决；④ 宿主 `skill`+Team provider 在真实 Member 组合中的行为未 live 测。
