@@ -10313,3 +10313,22 @@ future process lane flips the two skips loudly instead of leaving a stale waiver
 Leg 126 → 140 (2 disclosed skips); vitest population still 238. Gates at `60fda771a`: leg `suites=7
 files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 27,
 ci-required pass, bound leg `PASS 238`.
+
+### R54 — the durable half of B, proven against a real child-process death
+
+Crash is a CHILD PROCESS that admits a call and exits without a disposer; the parent opens fresh
+ledger/store/centre over the same directory and asserts only on disk read-backs. Six claims, each with
+positives and negatives (ADM-79..84): crash recovery to `UNKNOWN` with the right missing evidence; a
+completed call from the same dead process stays `COMPLETED` (no blanket rewrite); cross-process replay
+refusal that appends NOTHING on the fresh ledger's own check; duplicate execution fact, truncated/garbage
+line and unwritable directory each become an explicit refusal (`ADMISSION_LEDGER_UNREADABLE`/`_UNWRITABLE`)
+rather than "no opinion"; and cold recovery reconciles ONLY the open records, preserving the phase reached
+and deriving different missing evidence, with promotion to COMPLETED refused as `SETTLEMENT_CONFLICT`.
+
+Six mutation edits each red exactly their own arm. Leg 148 tests (146 pass, 2 disclosed skips); vitest stays
+238. No CCR was needed: the replayed callId is refused BEFORE any settlement decision, so the open `allow`
+record goes to recovery as UNKNOWN — option D of the open settlement-recheck CCR — and no terminal is
+invented.
+
+Gates at `ddbb87a8d`: leg `suites=7 files=7 exit=0`, catalog `tests=889 findings=0`, cut-closure, P0,
+docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.

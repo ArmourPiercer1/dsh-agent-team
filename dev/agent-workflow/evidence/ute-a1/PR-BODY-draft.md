@@ -143,6 +143,25 @@ the two skips loudly instead of leaving a stale waiver.
 ORDER and IDENTITY are asserted: facts read back in ladder order, and every rung must resolve the host
 module's own body (compared against the preset definition object, not just "registered").
 
+## The durable half of B: crash recovery, UNKNOWN, no replay (round 54)
+
+The crash is simulated honestly — a CHILD PROCESS that admits a call, prints its state, and `process.exit()`s
+without a disposer; the parent then opens fresh ledger/store/centre over the same directory and asserts on
+disk read-backs. Dead writer lock asserted on disk and reclaimed.
+
+| claim | positive | negative |
+| --- | --- | --- |
+| crash recovery (ADM-79) | disk has the admission fact + `ADMITTED`, **0** execution facts ⇒ fresh store recovers `ADMITTED→UNKNOWN`, `PROCESS_TERMINATED_WITHOUT_OUTCOME`, missing evidence names `dispatch-confirmation`, `bodyOutcome: unknown` | child also COMPLETES a different call before dying ⇒ it stays `COMPLETED` (no blanket rewrite); a new callId still works |
+| no replay, cross-process (ADM-80) | 2nd child (different pid) refuses `replay-1` before the body, appends exactly one replay-refusal; a fresh ledger throws `LEDGER_REPLAY` and appends NOTHING (bytes unchanged) | new callId in the same child is admitted and completes |
+| duplicate execution fact (ADM-81) | on-disk duplicate ⇒ `UNKNOWN/LEDGER_DUPLICATE_EXECUTION`; centre refuses `ADMISSION_LEDGER_UNREADABLE` with 0 settlement records | same file with ONE execution fact is `KNOWN` and completes |
+| truncated / garbage line (ADM-82) | three corruptions ⇒ `UNKNOWN`, writes refused with the same code, centre denies (never `ask`) | complete ledger is `KNOWN` and the same call shape completes |
+| unwritable ledger (ADM-83) | `ADMISSION_LEDGER_UNWRITABLE`, both stages agree, nothing created | precondition ASSERTED (a root runner is RED, not silently green); writable twin records |
+| cold recovery of an open settlement (ADM-84) | only the two OPEN records reconcile to `UNKNOWN`, preserving the reached phase and deriving DIFFERENT missing evidence | already-decided `REFUSED` stays; promoting `UNKNOWN` to `COMPLETED` is `SETTLEMENT_CONFLICT` with the file byte-identical |
+
+Six mutation edits each red exactly their own arm (all reverted, verified). Leg 146 pass / 2 disclosed skips;
+vitest still 238. **No `CONTRACT-CHANGE-REQUEST` was needed**: a replayed callId is refused BEFORE any
+settlement decision, so the open `allow` record is left to recovery as UNKNOWN (option D of the open CCR).
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
