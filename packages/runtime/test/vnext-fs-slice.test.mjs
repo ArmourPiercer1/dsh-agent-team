@@ -57,7 +57,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -75,6 +75,10 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath }) {
   await root.plugin(ToolRuntime)
   // The composition's provider: what a member would resolve if nothing confined it.
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
+  // The two states of the observation policy. The product default in A1/B is OFF, which in this
+  // host means "the plugin is not mounted" - the policy has no config switch, so absence IS the
+  // off state and the two arms differ by exactly this plugin.
+  if (observation === 'on') await root.plugin(seams.observationPolicy)
 
   // The PRESET topology: the standing scope installs the host's tool module. This is the
   // definition the member would inherit — the thing the realm mount must replace, not rename.
@@ -512,6 +516,35 @@ test('SLICE-16 — an ASK is refused as ADMISSION_ASK_UNWIRED, never executed an
     assert.equal(facts.length, 1)
     assert.equal(facts[0].decision, 'ask', 'the record must say ask, not deny: the difference is who refused')
     assert.match(String(facts[0].reason), /requires approval/u)
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-17 — observation policy OFF: an overwrite needs no prior read (the product default)', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'obs-off') })
+  try {
+    const overwrite = await world.dispatch('write', { file_path: world.insideFile, content: 'rewritten without reading\n' }, 'obs-off-1')
+    assert.equal(overwrite.isError, false, `with the policy absent an overwrite is unconditional: ${overwrite.text}`)
+    assert.equal(readFileSync(world.insideFile, 'utf8'), 'rewritten without reading\n')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-18 — observation policy ON: the same overwrite is refused until the file was observed', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'obs-on'), observation: 'on' })
+  try {
+    const unobserved = await world.dispatch('write', { file_path: world.insideFile, content: 'blind overwrite\n' }, 'obs-on-1')
+    assert.equal(unobserved.isError, true, `an unobserved overwrite must be refused: ${unobserved.text}`)
+    assert.match(String(unobserved.errorMessage), /has not been read/u, 'the refusal must be the observation policy\'s own no-clobber rule, not an unrelated failure')
+    assert.equal(readFileSync(world.insideFile, 'utf8'), 'alpha beta\n', 'a refused overwrite must not change the file')
+
+    const observed = await world.dispatch('read', { file_path: world.insideFile }, 'obs-on-2')
+    assert.equal(observed.isError, false, `the observation read must succeed: ${observed.text} ${String(observed.errorMessage)}`)
+    const afterRead = await world.dispatch('write', { file_path: world.insideFile, content: 'observed overwrite\n' }, 'obs-on-3')
+    assert.equal(afterRead.isError, false, `after the observation the same write must land: ${afterRead.text} ${String(afterRead.errorMessage)}`)
+    assert.equal(readFileSync(world.insideFile, 'utf8'), 'observed overwrite\n')
   } finally {
     await world.dispose()
   }
