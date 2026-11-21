@@ -43,8 +43,21 @@
  *   APPR-4 a genuine dedicated ute-approval/1 record bound to a real non-root
  *          ancestor → ALLOWED (the positive arm of the new binding)
  *   DIFF-1 `differences: []` with no measurement        → UTE_DIFFERENCES_UNDECLARED
- *   DIFF-1b the same list licensed by a committed exact `SD-VERDICT differences=0`
- *          line → ALLOWED; a `differences=00` near miss still refuses
+ *   DIFF-1b the exact `SD-VERDICT differences=0` line WITHOUT a corpus binding
+ *          → UTE_COMPARISON_UNBOUND; a `differences=00` near miss still refuses
+ *   H1-1   zero token with no committed comparison corpus  → UTE_COMPARISON_UNBOUND
+ *   H1-2   corpus whose sha256 does not match the token    → UTE_COMPARISON_UNBOUND
+ *   H1-3   corpus with zero vector rows                    → UTE_COMPARISON_UNBOUND
+ *   H1-4   fully bound zero comparison (corpus + digest + declarations) → ALLOWED
+ *   H2-1   every difference `blocking:false`, no records   → UTE_DIFFERENCE_CLASSIFICATION_UNBOUND
+ *   H2-2   `blocking:false` + committed decision:"non-blocking" record → ALLOWED
+ *   H2-3   the same record with decision:"approved"        → UTE_DIFFERENCE_CLASSIFICATION_UNBOUND
+ *   H3-1   reference to an unrelated (non-root, ancestor) merge → UTE_APPROVAL_REFERENCE_UNBOUND
+ *   H3-2   reference whose subject has no `(#<n>)`         → UTE_APPROVAL_REFERENCE_UNBOUND
+ *   H3-3   reference that did not touch this record/ledger → UTE_APPROVAL_REFERENCE_UNBOUND
+ *   H4-1   `_selftest/<production>.json` for a production family → UTE_APPROVAL_RECORD_INVALID
+ *   H4-2   the shipped `_selftest/synthetic-difference.json` for a `synthetic-*` family → ALLOWED
+ *   H4-3   a new/unexpected file under approvals/         → the APPROVALS audit reds
  *   DIFF-2 `blocking: "yes"`                            → UTE_DIFFERENCE_SCHEMA_INVALID
  *   DIFF-3 `blocking` absent                            → UTE_DIFFERENCE_SCHEMA_INVALID
  *   DIFF-4 `blocking:false` skips only the approval requirement; other terms
@@ -58,7 +71,9 @@
  *   FAB-2e decision deferred / rejected                      → RECORD_INVALID
  *   FAB-3  a valid approval document that is untracked       → RECORD_INVALID
  *   APPROVALS the shipped approvals directory holds ZERO records for the eight
- *          production families (only README.md + the fixture-scoped `_selftest/`)
+ *          production families; the audit WALKS the tree and asserts the exact
+ *          file set (README.md + the fixture-scoped `_selftest/` record), so an
+ *          unexpected file anywhere under approvals/ reds
  *   OP-1 a declared old-path file absent while not allowed → UTE_OLD_PATH_PARTIALLY_REMOVED
  *   OP-2 the same absence while ALLOWED → no finding (that is retirement)
  *   OP-3 no `oldPath` block → UTE_OLD_PATH_UNDECLARED
@@ -72,8 +87,9 @@
  */
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
@@ -86,6 +102,15 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const TMP_ROOT = join(ROOT, '.artifacts', 'tmp', 'ute-retirement-gate')
 const GATE_SRC = readFileSync(join(ROOT, 'scripts', 'ute-retirement-gate.mjs'), 'utf8')
 
+/** Write, stage and commit one file in the fixture repo. */
+function commitFile(repo, rel, content, message) {
+  const abs = join(repo, rel)
+  mkdirSync(dirname(abs), { recursive: true })
+  writeFileSync(abs, content)
+  execFileSync('git', ['-C', repo, 'add', '--', rel])
+  execFileSync('git', ['-C', repo, 'commit', '-qm', message])
+}
+
 /** A committed fixture repo: evidence files exist, are readable, and git knows them. */
 function makeFixtureRepo() {
   mkdirSync(TMP_ROOT, { recursive: true })
@@ -97,6 +122,7 @@ function makeFixtureRepo() {
   mkdirSync(join(dir, 'src'), { recursive: true })
   mkdirSync(join(dir, 'dev', 'agent-workflow', 'ledgers'), { recursive: true })
   mkdirSync(join(dir, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs'), { recursive: true })
+  mkdirSync(join(dir, 'dev', 'agent-workflow', 'approvals', '_selftest'), { recursive: true })
   mkdirSync(join(dir, 'docs'), { recursive: true })
 
   // The census is the reviewed booking the unit is derived from. The synthetic
@@ -150,28 +176,82 @@ function makeFixtureRepo() {
   // A near-miss token: `differences=00` contains `differences=0` as a substring,
   // so a substring test would wrongly treat it as a zero measurement.
   writeFileSync(join(dir, 'evidence', 'sem-zero-decoy.md'), 'SD-VERDICT differences=00\n')
+
+  // H1: a COMMITTED comparison corpus, and the evidence that binds the zero
+  // token to its exact bytes. The digest is computed from the same string that
+  // is written, so a passing arm cannot drift from the corpus it names.
+  const corpusText = [
+    'id\tentry\tverdict',
+    'FS-1-read\tread\tSAME',
+    'FS-2-write\twrite\tSAME',
+    'FS-3-edit\tedit\tSAME',
+    'FS-4-image\tread_image\tSAME',
+  ].join('\n') + '\n'
+  writeFileSync(join(dir, 'evidence', 'corpus.tsv'), corpusText)
+  const corpusDigest = createHash('sha256').update(corpusText, 'utf8').digest('hex')
+  writeFileSync(join(dir, 'evidence', 'sem-zero-bound.md'), `SD-VERDICT differences=0\nSD-COMPARE-CORPUS sha256:${corpusDigest}\n`)
+  writeFileSync(join(dir, 'evidence', 'sem-zero-wrong-digest.md'), `SD-VERDICT differences=0\nSD-COMPARE-CORPUS sha256:${'a'.repeat(64)}\n`)
+  // A corpus with a header but no vector rows: the comparison covered nothing.
+  const emptyCorpusText = 'id\tentry\n'
+  writeFileSync(join(dir, 'evidence', 'corpus-empty.tsv'), emptyCorpusText)
+  const emptyCorpusDigest = createHash('sha256').update(emptyCorpusText, 'utf8').digest('hex')
+  writeFileSync(join(dir, 'evidence', 'sem-zero-empty-corpus.md'), `SD-VERDICT differences=0\nSD-COMPARE-CORPUS sha256:${emptyCorpusDigest}\n`)
+
   // A committed file outside the approvals directory that contains the word
   // "owner" — the reviewer's fabricated record shape.
   writeFileSync(join(dir, 'docs', 'RELEASE-REQUEST.md'), 'The owner asked for this.\n')
   writeFileSync(join(dir, 'src', 'keep.mjs'), 'export const keep = true\n')
   execFileSync('git', ['-C', dir, 'add', '-A'])
   execFileSync('git', ['-C', dir, 'commit', '-qm', 'fixture: committed evidence'])
-  // A NON-ROOT reference commit: the approval needs an ancestor that actually
-  // reviewed something. The repository root is refused by its own rule.
-  execFileSync('git', ['-C', dir, 'commit', '-q', '--allow-empty', '-m', 'fixture: review commit'])
+
+  // H3 needs commits that differ ONLY in the binding property:
+  //
+  //   A  subject `(#1)`, touches the d1 record path            → the genuine binding
+  //   C  subject `(#9)`, touches src/unrelated.mjs only        → unrelated merge
+  //   D  no `(#n)` subject, touches the d1 record path         → subject unbound
+  //   F  subject `(#5)`, touches the d2 record path            → bound to d2, not d1
+  //
+  // A squash-merge's subject ends in `(#<n>)`, so each subject is a realistic
+  // merge message; the gate reads it, it is not decoration.
+  commitFile(dir, 'dev/agent-workflow/approvals/synthetic-fs/d1.json',
+    JSON.stringify({ placeholder: 'record path created by the cited commit' }, null, 2) + '\n',
+    'fixture: add approval record path (#1)')
   const sha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  commitFile(dir, 'src/unrelated.mjs', 'export const unrelated = true\n', 'fixture: unrelated change (#9)')
+  const unrelatedSha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  commitFile(dir, 'dev/agent-workflow/approvals/synthetic-fs/d1.json',
+    JSON.stringify({ placeholder: 'record path touched again' }, null, 2) + '\n',
+    'fixture: touch the record without a pr tag')
+  const noPrSha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  commitFile(dir, 'dev/agent-workflow/approvals/synthetic-fs/d2.json',
+    JSON.stringify({ placeholder: 'the non-blocking record path' }, null, 2) + '\n',
+    'fixture: sign another difference (#5)')
+  const otherRecordSha = execFileSync('git', ['-C', dir, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+
+  // The final bounded state: d1 points at A, d2 (non-blocking) points at F, and
+  // the forgeable records exist (outside the dir, and inside `_selftest/`).
   writeFileSync(
     join(dir, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd1.json'),
     JSON.stringify(approvalRecordFor(sha), null, 2) + '\n',
+  )
+  writeFileSync(
+    join(dir, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd2.json'),
+    JSON.stringify(nonBlockingRecordFor(otherRecordSha), null, 2) + '\n',
   )
   // The same schema OUTSIDE the approvals directory: valid JSON, names the right
   // family/difference, bound to the right commit — and still not an approval,
   // because location is part of the schema.
   writeFileSync(join(dir, 'docs', 'outside-approval.json'), JSON.stringify(approvalRecordFor(sha), null, 2) + '\n')
+  // H4: a fixture-namespace record naming a PRODUCTION family. Before the
+  // structural exclusion, this passed both the gate and the APPROVALS test.
+  writeFileSync(
+    join(dir, 'dev', 'agent-workflow', 'approvals', '_selftest', 'fs-forged.json'),
+    JSON.stringify(approvalRecordFor(sha, { family: 'fs' }), null, 2) + '\n',
+  )
   execFileSync('git', ['-C', dir, 'add', '-A'])
-  execFileSync('git', ['-C', dir, 'commit', '-qm', 'fixture: committed approval record'])
+  execFileSync('git', ['-C', dir, 'commit', '-qm', 'fixture: bind approval (#2)'])
   const rootSha = execFileSync('git', ['-C', dir, 'rev-list', '--max-parents=0', 'HEAD'], { encoding: 'utf8' }).trim()
-  return { root: dir, sha, rootSha }
+  return { root: dir, sha, rootSha, unrelatedSha, noPrSha, otherRecordSha }
 }
 
 /** The `ute-approval/1` document the fixture commits under the approvals dir. */
@@ -187,6 +267,29 @@ function approvalRecordFor(sha, overrides = {}) {
     rationale: 'Synthetic self-test: interface (A) adopted; the by-route branch is not covered.',
     ...overrides,
   }
+}
+
+/** The `ute-approval/1` record that CLASSIFIES a difference as non-blocking (H2). */
+function nonBlockingRecordFor(sha, overrides = {}) {
+  return {
+    schema: 'ute-approval/1',
+    family: 'synthetic-fs',
+    difference: 'd2',
+    decision: 'non-blocking',
+    by: 'owner',
+    on: '2026-11-20',
+    reference: `PR #5 @ ${sha}`,
+    rationale: 'Synthetic self-test: the interface differs but no caller observes it.',
+    ...overrides,
+  }
+}
+
+/** Rewrite the committed classification record (tracked, like the approval). */
+function writeNonBlockingRecord(repo, sha, overrides = {}) {
+  writeFileSync(
+    join(repo, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd2.json'),
+    JSON.stringify(nonBlockingRecordFor(sha, overrides), null, 2) + '\n',
+  )
 }
 
 /** Rewrite the committed approval record (it stays tracked, so the path check still sees it). */
@@ -682,36 +785,186 @@ control('DIFF-1', 'differences: [] with no SD-VERDICT differences=0 measurement'
   l.families[0].terms.semanticDifferencesResolved.differences = []
 })
 
-test('DIFF-1b — an empty list is licensed ONLY by a committed exact `SD-VERDICT differences=0` line', () => {
+test('DIFF-1b — the exact token is NECESSARY but not sufficient: without a corpus it is UNBOUND', () => {
   const { root: repo, sha } = makeFixtureRepo()
   try {
-    // The same satisfied row, differences emptied, and a committed measurement
-    // file that says the comparison found none: this is an ALLOWED row.
-    const measured = goodLedger(sha)
-    measured.families[0].terms.semanticDifferencesResolved.differences = []
-    measured.families[0].terms.semanticDifferencesResolved.evidence = {
-      path: 'evidence/sem-zero.md',
-      expect: ['SD-VERDICT differences=0'],
-      contradicts: [],
-    }
-    const allowed = checkRetirement({ ledger: measured, family: 'synthetic-fs', root: repo })
-    assert.equal(allowed.allowed, true, `a measured zero must be allowed: ${JSON.stringify(codes(allowed))}`)
-    assert.deepEqual(allowed.findings, [])
+    // The exact token, no corpus binding: the family can still write this line
+    // into its own evidence file, so it is an assertion, not a measurement.
+    const tokenOnly = zeroDifferenceLedger(sha, { evidencePath: 'evidence/sem-zero.md', corpus: undefined })
+    const unbound = checkRetirement({ ledger: tokenOnly, family: 'synthetic-fs', root: repo })
+    assert.equal(unbound.allowed, false)
+    assert.ok(codes(unbound).includes('UTE_COMPARISON_UNBOUND'), `got ${JSON.stringify(codes(unbound))}`)
+    assert.equal(codes(unbound).includes('UTE_DIFFERENCES_UNDECLARED'), false, 'the exact token IS present; what is missing is the corpus')
 
     // A near-miss token must NOT count: `differences=00` contains the claimed
     // token as a substring, so a substring check would be a silent-green channel.
-    const decoy = goodLedger(sha)
-    decoy.families[0].terms.semanticDifferencesResolved.differences = []
-    decoy.families[0].terms.semanticDifferencesResolved.evidence = {
-      path: 'evidence/sem-zero-decoy.md',
-      expect: ['SD-VERDICT differences=0'],
-      contradicts: [],
-    }
+    const decoy = zeroDifferenceLedger(sha, { evidencePath: 'evidence/sem-zero-decoy.md', corpus: undefined })
     decoy.families[0].state = 'NOT_RETIREABLE'
     const refused = checkRetirement({ ledger: decoy, family: 'synthetic-fs', root: repo })
     assert.equal(refused.allowed, false)
     assert.ok(codes(refused).includes('UTE_DIFFERENCES_UNDECLARED'), `got ${JSON.stringify(codes(refused))}`)
-    transcript('DIFF-1b', 'differences=[] + exact token / a substring-only near miss', 'ALLOWED / REFUSED:UTE_DIFFERENCES_UNDECLARED', codes(refused), 'ALLOWED (exact token)')
+    transcript('DIFF-1b', 'differences=[] + exact token but no corpus / a substring-only near miss', 'REFUSED:UTE_COMPARISON_UNBOUND / REFUSED:UTE_DIFFERENCES_UNDECLARED', codes(refused), 'ALLOWED only with the bound corpus (H1-4)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+/** A zero-difference row; the corpus/declaration are omitted by passing `undefined`. */
+function zeroDifferenceLedger(sha, opts = {}) {
+  // `corpus: undefined` must mean "the term names NO corpus", so the default is
+  // applied by an explicit owner check, not by default-parameter semantics
+  // (passing `undefined` to a defaulted parameter re-applies the default, which
+  // would make an "absent corpus" arm silently test the bound case instead).
+  const has = (k) => Object.prototype.hasOwnProperty.call(opts, k)
+  const evidencePath = has('evidencePath') ? opts.evidencePath : 'evidence/sem-zero-bound.md'
+  const corpus = has('corpus') ? opts.corpus : 'evidence/corpus.tsv'
+  const compared = has('compared') ? opts.compared : { vectors: 4, members: ['read', 'write', 'edit', 'read_image'] }
+  const ledger = goodLedger(sha)
+  const term = ledger.families[0].terms.semanticDifferencesResolved
+  term.differences = []
+  term.evidence = { path: evidencePath, expect: ['SD-VERDICT differences=0'], contradicts: [] }
+  if (corpus !== undefined) term.evidence.corpus = corpus
+  if (compared !== undefined) term.differencesCompared = compared
+  return ledger
+}
+
+test('H1-1 — a zero token with no committed comparison corpus is UNBOUND', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const v = checkRetirement({ ledger: zeroDifferenceLedger(sha, { corpus: undefined }), family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_COMPARISON_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_COMPARISON_UNBOUND').detail, /no committed `evidence\.corpus`/)
+    transcript('H1-1', 'SD-VERDICT differences=0 with no evidence.corpus', 'REFUSED:UTE_COMPARISON_UNBOUND', codes(v), 'ALLOWED (corpus bound, H1-4)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H1-2 — a corpus whose sha256 does not match the evidence token is UNBOUND', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const v = checkRetirement({
+      ledger: zeroDifferenceLedger(sha, { evidencePath: 'evidence/sem-zero-wrong-digest.md' }),
+      family: 'synthetic-fs',
+      root: repo,
+    })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_COMPARISON_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_COMPARISON_UNBOUND').detail, /disagree/)
+    transcript('H1-2', 'token names sha256:aaa… but corpus.tsv hashes differently', 'REFUSED:UTE_COMPARISON_UNBOUND', codes(v), 'ALLOWED (digest matches)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H1-3 — a corpus with zero vector rows is UNBOUND ("zero differences" over zero vectors is vacuous)', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const v = checkRetirement({
+      ledger: zeroDifferenceLedger(sha, {
+        evidencePath: 'evidence/sem-zero-empty-corpus.md',
+        corpus: 'evidence/corpus-empty.tsv',
+        compared: { vectors: 1, members: ['read', 'write', 'edit', 'read_image'] },
+      }),
+      family: 'synthetic-fs',
+      root: repo,
+    })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_COMPARISON_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_COMPARISON_UNBOUND').detail, /zero vector rows/)
+    transcript('H1-3', 'corpus.tsv has a header and no data rows', 'REFUSED:UTE_COMPARISON_UNBOUND', codes(v), 'ALLOWED (four corpus rows)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H1-4 — a fully bound zero comparison is ALLOWED (positive arm)', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const bound = zeroDifferenceLedger(sha)
+    const v = checkRetirement({ ledger: bound, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, true, `a bound zero must be allowed: ${JSON.stringify(codes(v))}`)
+    assert.deepEqual(v.findings, [])
+
+    // The declaration must describe the corpus AND the unit: a vector-count or
+    // member mismatch is as unbound as a missing corpus.
+    const wrongVectors = zeroDifferenceLedger(sha, { compared: { vectors: 3, members: ['read', 'write', 'edit', 'read_image'] } })
+    const v2 = checkRetirement({ ledger: wrongVectors, family: 'synthetic-fs', root: repo })
+    assert.ok(codes(v2).includes('UTE_COMPARISON_UNBOUND'), `vectors mismatch: ${JSON.stringify(codes(v2))}`)
+
+    const wrongMembers = zeroDifferenceLedger(sha, { compared: { vectors: 4, members: ['read', 'write', 'edit'] } })
+    const v3 = checkRetirement({ ledger: wrongMembers, family: 'synthetic-fs', root: repo })
+    assert.ok(codes(v3).includes('UTE_COMPARISON_UNBOUND'), `members mismatch: ${JSON.stringify(codes(v3))}`)
+    assert.match(v3.findings.find((f) => f.code === 'UTE_COMPARISON_UNBOUND').detail, /read_image/)
+    transcript('H1-4', 'zero token + committed corpus + matching sha256 + differencesCompared', 'ALLOWED / REFUSED:UTE_COMPARISON_UNBOUND (count or member mismatch)', [...new Set([...codes(v2), ...codes(v3)])], 'ALLOWED (fully bound)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// ─── H2: a flipped `blocking:false` is not a classification ────────────────
+
+/** A row whose d2 difference is classified non-blocking by its ledger claim. */
+function nonBlockingLedger(sha, { withApproval = true, recordSha = sha } = {}) {
+  const ledger = goodLedger(sha)
+  const diff = ledger.families[0].terms.semanticDifferencesResolved.differences[0]
+  diff.id = 'd2'
+  diff.blocking = false
+  if (withApproval) {
+    diff.approval = {
+      by: 'owner',
+      on: '2026-11-20',
+      record: 'dev/agent-workflow/approvals/synthetic-fs/d2.json',
+      reference: `PR #5 @ ${recordSha}`,
+    }
+  }
+  return ledger
+}
+
+test('H2-1 — flipping every difference to blocking:false without records is REFUSED', () => {
+  const { root: repo, sha } = makeFixtureRepo()
+  try {
+    const ledger = goodLedger(sha)
+    const term = ledger.families[0].terms.semanticDifferencesResolved
+    term.differences = [
+      { id: 'd1', blocking: false },
+      { id: 'd2', blocking: false },
+    ]
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false, '"nothing is blocking" must not be free')
+    assert.ok(codes(v).includes('UTE_DIFFERENCE_CLASSIFICATION_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.equal(v.findings.filter((f) => f.code === 'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND').length, 2, 'each unclassified difference is refused by name')
+    transcript('H2-1', 'both differences blocking:false, no approval/classification records', 'REFUSED:UTE_DIFFERENCE_CLASSIFICATION_UNBOUND', codes(v), 'ALLOWED (committed non-blocking records, H2-2)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H2-2 — one non-blocking difference with a committed decision:"non-blocking" record is ALLOWED', () => {
+  const { root: repo, sha, otherRecordSha } = makeFixtureRepo()
+  try {
+    const v = checkRetirement({ ledger: nonBlockingLedger(sha, { recordSha: otherRecordSha }), family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, true, `a signed non-blocking decision must allow: ${JSON.stringify(codes(v))}`)
+    assert.deepEqual(v.findings, [])
+    const record = JSON.parse(readFileSync(join(repo, 'dev', 'agent-workflow', 'approvals', 'synthetic-fs', 'd2.json'), 'utf8'))
+    assert.equal(record.decision, 'non-blocking')
+    assert.equal(record.difference, 'd2')
+    transcript('H2-2', 'blocking:false + committed ute-approval/1 decision="non-blocking"', 'ALLOWED', [], 'ALLOWED')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H2-3 — decision:"approved" for a non-blocking difference is REFUSED (the decision must match)', () => {
+  const { root: repo, sha, otherRecordSha } = makeFixtureRepo()
+  try {
+    writeNonBlockingRecord(repo, otherRecordSha, { decision: 'approved' })
+    const v = checkRetirement({ ledger: nonBlockingLedger(sha, { recordSha: otherRecordSha }), family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_DIFFERENCE_CLASSIFICATION_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND').detail, /expected "non-blocking"/)
+    transcript('H2-3', 'non-blocking difference backed by a decision:"approved" record', 'REFUSED:UTE_DIFFERENCE_CLASSIFICATION_UNBOUND', codes(v), 'ALLOWED (decision matches the classification)')
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -725,16 +978,17 @@ control('DIFF-3', 'the `blocking` key is absent', 'UTE_DIFFERENCE_SCHEMA_INVALID
   delete l.families[0].terms.semanticDifferencesResolved.differences[0].blocking
 })
 
-test('DIFF-4 — blocking:false is ignored for blocking purposes but does not satisfy the other terms', () => {
-  const { root: repo, sha } = makeFixtureRepo()
+test('DIFF-4 — blocking:false is not a master key: it needs a record and does not satisfy the other terms', () => {
+  const { root: repo, sha, otherRecordSha } = makeFixtureRepo()
   try {
-    // Non-blocking means the approval requirement does not apply: removing the
-    // approval must NOT refuse this row (the difference is simply not blocking).
-    const nonBlocking = goodLedger(sha)
-    nonBlocking.families[0].terms.semanticDifferencesResolved.differences[0].blocking = false
-    delete nonBlocking.families[0].terms.semanticDifferencesResolved.differences[0].approval
-    const ignored = checkRetirement({ ledger: nonBlocking, family: 'synthetic-fs', root: repo })
-    assert.equal(ignored.allowed, true, `a non-blocking difference needs no approval: ${JSON.stringify(codes(ignored))}`)
+    // CORRECTED EXPECTATION (H2): before the second hardening round this arm
+    // asserted that removing the approval from a `blocking:false` difference was
+    // ALLOWED. That was the free-classification hole the verification reproduced:
+    // a flipped boolean is not a decision. The difference now needs a committed
+    // `decision:"non-blocking"` record, and with it the row is still allowed.
+    const nonBlocking = nonBlockingLedger(sha, { recordSha: otherRecordSha })
+    const signed = checkRetirement({ ledger: nonBlocking, family: 'synthetic-fs', root: repo })
+    assert.equal(signed.allowed, true, `a signed non-blocking decision needs no approval: ${JSON.stringify(codes(signed))}`)
 
     // It is not a master key: a failed other term still refuses the family.
     const otherTermFails = JSON.parse(JSON.stringify(nonBlocking))
@@ -743,7 +997,7 @@ test('DIFF-4 — blocking:false is ignored for blocking purposes but does not sa
     const refused = checkRetirement({ ledger: otherTermFails, family: 'synthetic-fs', root: repo })
     assert.equal(refused.allowed, false)
     assert.ok(codes(refused).includes('UTE_NEGATIVE_CONTROLS_FAILING'))
-    transcript('DIFF-4', 'blocking:false with the approval removed; then a failed NC term', 'ALLOWED / REFUSED:UTE_NEGATIVE_CONTROLS_FAILING', codes(refused), 'ALLOWED (non-blocking, other terms true)')
+    transcript('DIFF-4', 'blocking:false + committed non-blocking record; then a failed NC term', 'ALLOWED / REFUSED:UTE_NEGATIVE_CONTROLS_FAILING', codes(refused), 'ALLOWED (signed non-blocking, other terms true)')
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }
@@ -900,7 +1154,65 @@ test('APPR-4 — a GENUINE dedicated approval bound to a real non-root ancestor 
     assert.equal(record.family, 'synthetic-fs')
     assert.equal(record.difference, 'd1')
     assert.equal(record.reference, `PR #1 @ ${sha}`)
+    // H3: the referenced commit is the squash-merge the record cites (subject
+    // ends `(#1)`) and its own diff carries the approval record. Both are what
+    // make the reference about THIS difference rather than any old ancestor.
+    const fixtureSubject = execFileSync('git', ['-C', repo, 'log', '-1', '--format=%s', sha], { encoding: 'utf8' }).trim()
+    assert.match(fixtureSubject, /\(#1\)$/)
+    const fixtureTouched = execFileSync('git', ['-C', repo, 'show', '--name-only', '--format=', sha], { encoding: 'utf8' })
+      .split('\n').map((line) => line.trim())
+    assert.ok(fixtureTouched.includes('dev/agent-workflow/approvals/synthetic-fs/d1.json'))
     transcript('APPR-4', 'committed ute-approval/1 record in the approvals dir bound to a real non-root ancestor', 'ALLOWED', [], 'ALLOWED')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+// ─── H3: the reference must be bound to THIS record, not merely an ancestor ──
+
+test('H3-1 — a reference to an unrelated (non-root, ancestor) merge is UNBOUND', () => {
+  const { root: repo, sha, unrelatedSha } = makeFixtureRepo()
+  try {
+    writeApprovalRecord(repo, unrelatedSha, { reference: `PR #9 @ ${unrelatedSha}` })
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #9 @ ${unrelatedSha}`
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_REFERENCE_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_APPROVAL_REFERENCE_UNBOUND').detail, /did not touch/)
+    transcript('H3-1', 'reference to a real ancestor merge that touched neither the record nor the ledger', 'REFUSED:UTE_APPROVAL_REFERENCE_UNBOUND', codes(v), 'ALLOWED (the bound commit, H3-4)')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H3-2 — a reference commit whose subject has no `(#<n>)` is UNBOUND', () => {
+  const { root: repo, sha, noPrSha } = makeFixtureRepo()
+  try {
+    writeApprovalRecord(repo, noPrSha, { reference: `PR #7 @ ${noPrSha}` })
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #7 @ ${noPrSha}`
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_REFERENCE_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_APPROVAL_REFERENCE_UNBOUND').detail, /subject/)
+    transcript('H3-2', 'reference commit subject "fixture: touch the record without a pr tag"', 'REFUSED:UTE_APPROVAL_REFERENCE_UNBOUND', codes(v), 'ALLOWED (subject ends (#n))')
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('H3-3 — a reference commit that touched another record, not this record/ledger, is UNBOUND', () => {
+  const { root: repo, sha, otherRecordSha } = makeFixtureRepo()
+  try {
+    writeApprovalRecord(repo, otherRecordSha, { reference: `PR #5 @ ${otherRecordSha}` })
+    const ledger = goodLedger(sha)
+    ledger.families[0].terms.semanticDifferencesResolved.differences[0].approval.reference = `PR #5 @ ${otherRecordSha}`
+    const v = checkRetirement({ ledger, family: 'synthetic-fs', root: repo })
+    assert.equal(v.allowed, false)
+    assert.ok(codes(v).includes('UTE_APPROVAL_REFERENCE_UNBOUND'), `got ${JSON.stringify(codes(v))}`)
+    assert.match(v.findings.find((f) => f.code === 'UTE_APPROVAL_REFERENCE_UNBOUND').detail, /did not touch/)
+    transcript('H3-3', 'reference commit touched d2.json, not this difference\'s d1.json or the ledger', 'REFUSED:UTE_APPROVAL_REFERENCE_UNBOUND', codes(v), 'ALLOWED (the commit whose diff carries d1.json)')
   } finally {
     rmSync(repo, { recursive: true, force: true })
   }

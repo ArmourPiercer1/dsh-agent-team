@@ -77,9 +77,17 @@
  *     (missing/untracked) or contradicted (present but says something else).
  *   - `semanticDifferencesResolved` is derived: every blocking difference needs
  *     an `approval` whose `record` is a committed file naming the approver AND
- *     whose `reference` is `PR #<n> @ <40-hex>` resolving to an ancestor of the
- *     graded HEAD. A name in a committed file proves transcription, not
- *     authority (RETIREMENT.md §3 P4b).
+ *     whose `reference` is `PR #<n> @ <40-hex>` that is an ancestor of the
+ *     graded HEAD, is not the root, has a subject ending `(#<n>)`, and touched
+ *     the record or the graded ledger in its own diff. A name in a committed
+ *     file proves transcription, not authority (RETIREMENT.md §3 P4b).
+ *   - a `blocking:false` difference is NOT exempt: it needs a committed
+ *     `ute-approval/1` record with `decision:"non-blocking"` and the same
+ *     binding, or `UTE_DIFFERENCE_CLASSIFICATION_UNBOUND`.
+ *   - `differences: []` is licensed only by evidence that binds the zero token
+ *     to a committed comparison corpus (`evidence.corpus`, `SD-COMPARE-CORPUS
+ *     sha256:<digest>`) whose vector rows match `differencesCompared` and whose
+ *     declared members equal the census unit.
  *   - unit coverage is a PRECONDITION of a term being established, graded
  *     inside the term it invalidates (RETIREMENT.md §2): every member needs a
  *     baseline vector, every baseline vector must be reproduced, every covered
@@ -110,6 +118,10 @@
  *   UTE_VECTOR_UNREPRODUCED             the new path did not reproduce a vector
  *   UTE_APPROVAL_UNREFERENCED           approval not bound to an ancestor commit
  *                                       (or bound to the root commit)
+ *   UTE_APPROVAL_REFERENCE_UNBOUND      the referenced commit is an ancestor but
+ *                                       is not the PR the record cites (subject
+ *                                       must end `(#<n>)`) or did not touch the
+ *                                       approval record / family's ledger row
  *   UTE_APPROVAL_RECORD_INVALID         approval record is not a tracked
  *                                       dev/agent-workflow/approvals/ document,
  *                                       does not parse as ute-approval/1, or does
@@ -120,6 +132,15 @@
  *   UTE_DIFFERENCES_UNDECLARED          `differences: []` with no committed
  *                                       `SD-VERDICT differences=0` measurement —
  *                                       an empty list is "nobody said", not "none"
+ *   UTE_COMPARISON_UNBOUND              the zero token is not tied to a committed
+ *                                       corpus (`evidence.corpus` + matching
+ *                                       `SD-COMPARE-CORPUS sha256:<digest>`), the
+ *                                       corpus has no vectors, or
+ *                                       `differencesCompared` does not describe it
+ *   UTE_DIFFERENCE_CLASSIFICATION_UNBOUND
+ *                                       a `blocking:false` difference has no
+ *                                       committed `decision:"non-blocking"`
+ *                                       record bound like an approval
  *   UTE_OLD_PATH_UNDECLARED             the row declares no old-path file list
  *   UTE_OLD_PATH_PARTIALLY_REMOVED      a declared old-path file is gone early
  *
@@ -138,7 +159,8 @@
  * scripts/eb3-family-definitions.mjs:
  *   CENSUS_REL, LEDGER_REL, LEDGER_SCHEMA, APPROVALS_REL, APPROVAL_SCHEMA,
  *   TERMS, TERM_REFUSAL_CODES, REFUSAL_CODES, defaultIsTracked,
- *   defaultRevExists, defaultIsAncestor, defaultIsRootCommit,
+ *   defaultRevExists, defaultIsAncestor, defaultIsRootCommit, defaultCommitSubject,
+ *   defaultCommitTouched,
  *   checkApprovalRecord, parseBaselineTsv, resolveUnit, checkUnitCoverage,
  *   checkOldPathPresence, checkTerm, loadLedger, evaluateFamily,
  *   checkRetirement
@@ -146,8 +168,9 @@
  * @module scripts/ute-retirement-gate
  */
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, normalize, resolve, sep } from 'node:path'
+import { dirname, isAbsolute, join, normalize, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -165,11 +188,29 @@ export const LEDGER_SCHEMA = 'ute-retirement/1'
  */
 export const APPROVALS_REL = 'dev/agent-workflow/approvals'
 export const APPROVAL_SCHEMA = 'ute-approval/1'
-export const APPROVAL_DECISIONS = Object.freeze(['approved', 'rejected', 'deferred'])
+export const APPROVAL_DECISIONS = Object.freeze(['approved', 'rejected', 'deferred', 'non-blocking'])
+
+/**
+ * The fixture namespace inside the approvals directory. A record here is a
+ * SELF-TEST fixture: it may only license a family whose id is itself a fixture
+ * (`synthetic-*`). Before this rule, a committed
+ * `approvals/_selftest/<production>.json` passed both the gate and the
+ * `APPROVALS` test, so the namespace was excluded by convention only.
+ */
+export const APPROVALS_SELFTEST_REL = `${APPROVALS_REL}/_selftest`
+const FIXTURE_FAMILY_PREFIX = 'synthetic-'
 
 /** The measurement token that licenses `differences: []` (RETIREMENT.md §3). */
 const ZERO_DIFFERENCES_TOKEN = 'SD-VERDICT differences=0'
 const ZERO_DIFFERENCES_PATTERN = /(?:^|\s)SD-VERDICT differences=0(?=\s|$)/m
+
+/**
+ * The corpus binding that turns `differences: []` from an assertion into a
+ * comparison: the evidence must name the SHA-256 of a committed corpus the
+ * ledger also names, and the row must declare how many vectors the corpus holds
+ * and which census members it covers.
+ */
+const COMPARE_CORPUS_TOKEN_PATTERN = /(?:^|\s)SD-COMPARE-CORPUS sha256:([0-9a-f]{64})(?=\s|$)/m
 
 /** The four terms of the owner's predicate, in predicate order. */
 export const TERMS = Object.freeze([
@@ -204,9 +245,12 @@ export const REFUSAL_CODES = Object.freeze([
   'UTE_MEMBER_UNCOVERED',
   'UTE_VECTOR_UNREPRODUCED',
   'UTE_APPROVAL_UNREFERENCED',
+  'UTE_APPROVAL_REFERENCE_UNBOUND',
   'UTE_APPROVAL_RECORD_INVALID',
   'UTE_DIFFERENCE_SCHEMA_INVALID',
+  'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND',
   'UTE_DIFFERENCES_UNDECLARED',
+  'UTE_COMPARISON_UNBOUND',
   'UTE_OLD_PATH_UNDECLARED',
   'UTE_OLD_PATH_PARTIALLY_REMOVED',
 ])
@@ -292,6 +336,38 @@ export function defaultIsRootCommit(root, sha) {
   }
 }
 
+/**
+ * The commit subject line. H3 binds an approval's `reference` to the record it
+ * points at: this repository squash-merges, so a merged PR's subject ends in
+ * `(#<n>)`. A 40-hex whose subject carries no matching PR tag is an unrelated
+ * commit, however old and however true its ancestry. Unreadable ⇒ empty, which
+ * cannot satisfy the subject rule.
+ */
+export function defaultCommitSubject(root, sha) {
+  try {
+    return execFileSync('git', ['-C', root, 'log', '-1', '--format=%s', sha], { encoding: 'utf8' }).trim()
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Did `sha` touch any of `paths` in its OWN diff? `git show --name-only` reads
+ * the commit's tree against its parent(s), so a squash-merge that carried the
+ * approval record (or the family's ledger row) shows it here; an unrelated
+ * merge does not. Fail closed: an unreadable diff touched nothing.
+ */
+export function defaultCommitTouched(root, sha, paths) {
+  const wanted = new Set((Array.isArray(paths) ? paths : []).filter((p) => typeof p === 'string' && p.length > 0))
+  if (wanted.size === 0) return false
+  try {
+    const out = execFileSync('git', ['-C', root, 'show', '--name-only', '--format=', '--no-renames', sha], { encoding: 'utf8' })
+    return out.split(/\r?\n/).some((line) => wanted.has(line.trim()))
+  } catch {
+    return false
+  }
+}
+
 /** Is `rel` a file path under the dedicated approvals directory (never the dir itself)? */
 function isInsideApprovals(rel) {
   if (!safeRelPath(rel)) return false
@@ -315,12 +391,22 @@ function isInsideApprovals(rel) {
  * @returns {{code: string, detail: string} | null} null when the record is a
  *          genuine, family-and-difference-specific approval.
  */
-export function checkApprovalRecord({ approval, family, differenceId, context }) {
+export function checkApprovalRecord({ approval, family, differenceId, context, expectedDecision = 'approved' }) {
   const rel = approval?.record
   if (typeof rel !== 'string' || !isInsideApprovals(rel)) {
     return {
       code: 'UTE_APPROVAL_RECORD_INVALID',
       detail: `approval.record ${JSON.stringify(rel)} is not inside ${APPROVALS_REL}/ — only a dedicated approval document can licence a difference (a committed file that merely contains the approver's name is not one)`,
+    }
+  }
+  // H4 (2026-11-21 verification, finding 4): `_selftest/` is a fixture scope,
+  // not a second production namespace. A record there is structurally incapable
+  // of licensing a real family, whatever its contents say.
+  const normRel = normalize(rel).split(sep).join('/')
+  if (normRel.startsWith(`${APPROVALS_SELFTEST_REL}/`) && !family.startsWith(FIXTURE_FAMILY_PREFIX)) {
+    return {
+      code: 'UTE_APPROVAL_RECORD_INVALID',
+      detail: `${rel} lives in the fixture namespace ${APPROVALS_SELFTEST_REL}/ but names production family ${JSON.stringify(family)} — a self-test record may only license a fixture family (id prefixed ${JSON.stringify(FIXTURE_FAMILY_PREFIX)})`,
     }
   }
   if (!context.isTracked(context.root, rel)) {
@@ -373,10 +459,13 @@ export function checkApprovalRecord({ approval, family, differenceId, context })
       detail: `${rel}: approval is for difference ${JSON.stringify(record.difference)}, not ${JSON.stringify(differenceId)} — an approval of one difference is not an approval of another`,
     }
   }
-  if (record.decision !== 'approved') {
+  if (record.decision !== expectedDecision) {
+    const code = expectedDecision === 'non-blocking'
+      ? 'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND'
+      : 'UTE_APPROVAL_RECORD_INVALID'
     return {
-      code: 'UTE_APPROVAL_RECORD_INVALID',
-      detail: `${rel}: decision is ${JSON.stringify(record.decision)}, expected "approved" (one of ${APPROVAL_DECISIONS.join('|')}); a deferred or rejected difference is not resolved`,
+      code,
+      detail: `${rel}: decision is ${JSON.stringify(record.decision)}, expected ${JSON.stringify(expectedDecision)} (one of ${APPROVAL_DECISIONS.join('|')}); a deferred or rejected difference is not resolved, and a flipped \`blocking:false\` is not a classification`,
     }
   }
   if (record.by !== approval.by) {
@@ -744,38 +833,248 @@ export function checkUnitCoverage({ members, row, root = ROOT, readFile = (p) =>
 }
 
 /**
- * The committed measurement that licenses `differences: []`. An empty array is
- * NOT "we compared and found none" — it is "nobody said what the comparison
- * found". Only a committed file carrying the exact token
- * `SD-VERDICT differences=0` turns emptiness into a measurement.
+ * Count the VECTOR ROWS of a committed comparison corpus. The corpus is a TSV
+ * whose header names the observed columns; the gate only needs an `id` column
+ * and at least one data row, because the point is "a comparison actually ran
+ * over at least one vector", not a particular schema. Blank lines and `#`
+ * comments are ignored; an unparseable header counts as zero rows.
+ */
+function countComparisonCorpusRows(text) {
+  const lines = String(text)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !line.startsWith('#'))
+  if (lines.length === 0) return 0
+  const header = lines[0].split('\t').map((cell) => cell.trim())
+  if (header.indexOf('id') < 0) return 0
+  return lines.length - 1
+}
+
+/**
+ * The committed measurement that licenses `differences: []` (H1).
+ *
+ * An empty array is NOT "we compared and found none" — it is "nobody said what
+ * the comparison found". The 2026-11-21 verification showed that requiring only
+ * the literal token `SD-VERDICT differences=0` merely moved the self-assertion:
+ * the family could append that line to its own evidence file. So the token is
+ * necessary but not sufficient. The term must ALSO:
+ *
+ *   - name a committed comparison corpus (`evidence.corpus`);
+ *   - carry `SD-COMPARE-CORPUS sha256:<digest>` where <digest> is the SHA-256
+ *     of that corpus file's bytes (the token cannot be detached from the data);
+ *   - point at a corpus with at least one vector row;
+ *   - declare `differencesCompared: { vectors: <rows>, members: [...] }` whose
+ *     vector count equals the corpus rows and whose members equal the census
+ *     unit.
+ *
+ * @returns {Array<{code: string, detail: string}>} empty when licensed.
  */
 function checkZeroDifferencesMeasurement(term, context) {
+  const findings = []
   const rel = term?.evidence?.path
   if (typeof rel !== 'string' || !safeRelPath(rel) || !context.isTracked(context.root, rel)) {
-    return {
+    findings.push({
       code: 'UTE_DIFFERENCES_UNDECLARED',
-      detail: `the term declares an EMPTY \`differences\` list and names no committed measurement file, so "we compared and found none" is asserted, not shown (an empty list means nobody said what the comparison found)`,
-    }
+      detail: 'the term declares an EMPTY `differences` list and names no committed measurement file, so "we compared and found none" is asserted, not shown (an empty list means nobody said what the comparison found)',
+    })
+    return findings
   }
   let text
   try {
     text = context.readFile(join(context.root, rel))
   } catch (e) {
-    return {
+    findings.push({
       code: 'UTE_DIFFERENCES_UNDECLARED',
       detail: `${rel} could not be read (${String(e && e.message ? e.message : e)}); an empty \`differences\` list needs a readable ${JSON.stringify(ZERO_DIFFERENCES_TOKEN)} measurement`,
-    }
+    })
+    return findings
   }
   if (!ZERO_DIFFERENCES_PATTERN.test(text)) {
-    return {
+    findings.push({
       code: 'UTE_DIFFERENCES_UNDECLARED',
       detail: `${rel} does not contain the exact measurement token ${JSON.stringify(ZERO_DIFFERENCES_TOKEN)} — an empty list is "nobody said", not "we compared and found none"`,
-    }
+    })
+    return findings
   }
-  return null
+
+  // From here on the token is present; what remains is whether it is BOUND to a
+  // comparison. A token with no corpus, a corpus that hashes differently, and a
+  // corpus with no vectors are all the same defect: the measurement is asserted.
+  const corpusRel = term?.evidence?.corpus
+  if (typeof corpusRel !== 'string' || !safeRelPath(corpusRel) || !context.isTracked(context.root, corpusRel)) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `${rel} carries ${JSON.stringify(ZERO_DIFFERENCES_TOKEN)} but the term names no committed \`evidence.corpus\` — the token is a sentence until it is tied to a corpus a cold clone can read`,
+    })
+    return findings
+  }
+  let corpusText
+  try {
+    corpusText = context.readFile(join(context.root, corpusRel))
+  } catch (e) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `${corpusRel} could not be read (${String(e && e.message ? e.message : e)}), so the claimed comparison has no verifiable corpus`,
+    })
+    return findings
+  }
+  const digest = createHash('sha256').update(corpusText, 'utf8').digest('hex')
+  const expectedToken = `SD-COMPARE-CORPUS sha256:${digest}`
+  if (!text.includes(expectedToken)) {
+    const claimed = COMPARE_CORPUS_TOKEN_PATTERN.exec(text)
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: claimed === null
+        ? `${rel} does not contain the corpus binding ${JSON.stringify(`${'SD-COMPARE-CORPUS sha256:<64-hex>'}`)} for ${corpusRel} (expected ${JSON.stringify(expectedToken)}) — the zero token is not tied to any comparison`
+        : `${rel} claims SD-COMPARE-CORPUS sha256:${claimed[1]} but ${corpusRel} hashes to sha256:${digest} — the token and the corpus disagree, so the comparison it asserts did not run on that data`,
+    })
+    return findings
+  }
+  const rows = countComparisonCorpusRows(corpusText)
+  if (rows < 1) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `${corpusRel} has zero vector rows (a header with \`id\` and no data), so the comparison covered nothing — "zero differences" over zero vectors is vacuous`,
+    })
+    return findings
+  }
+  const declared = term?.differencesCompared
+  if (declared === null || typeof declared !== 'object' || Array.isArray(declared)) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: 'the term declares an EMPTY `differences` list but no `differencesCompared: { vectors, members }` block — the corpus cannot be tied to the unit it was supposed to compare',
+    })
+    return findings
+  }
+  if (!Number.isInteger(declared.vectors) || declared.vectors < 1) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `differencesCompared.vectors must be an integer >= 1, got ${JSON.stringify(declared.vectors)} — "we compared zero vectors" is the absence of a measurement`,
+    })
+    return findings
+  }
+  if (declared.vectors !== rows) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `differencesCompared.vectors is ${declared.vectors} but ${corpusRel} holds ${rows} vector row(s) — the declaration must describe the corpus that was actually committed`,
+    })
+    return findings
+  }
+  const declaredMembers = Array.isArray(declared.members) ? declared.members : null
+  if (declaredMembers === null || declaredMembers.length === 0 || !declaredMembers.every((m) => typeof m === 'string' && m.length > 0)) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `differencesCompared.members must be a non-empty array of member ids, got ${JSON.stringify(declared.members)} — the comparison must say which tools it covered`,
+    })
+    return findings
+  }
+  const unitMembers = Array.isArray(context.unitMembers) ? context.unitMembers : []
+  const unique = [...new Set(declaredMembers)]
+  const missing = unitMembers.filter((m) => !unique.includes(m))
+  const extra = unique.filter((m) => !unitMembers.includes(m))
+  if (unitMembers.length === 0 || unique.length !== declaredMembers.length || missing.length > 0 || extra.length > 0) {
+    findings.push({
+      code: 'UTE_COMPARISON_UNBOUND',
+      detail: `differencesCompared.members ${JSON.stringify(declaredMembers)} do not equal the census unit ${JSON.stringify(unitMembers)}${missing.length > 0 ? `; missing ${missing.map((m) => JSON.stringify(m)).join(', ')}` : ''}${extra.length > 0 ? `; not booked ${extra.map((m) => JSON.stringify(m)).join(', ')}` : ''}${unique.length !== declaredMembers.length ? '; duplicate member ids' : ''} — a comparison over a different set of tools is not a comparison of this unit`,
+    })
+    return findings
+  }
+  return findings
 }
 
-/** Is every retirement-blocking difference covered by a named, bound approval? */
+/**
+ * Bind ONE approval pointer to the record it names (H2/H3).
+ *
+ * The legacy substring check is kept (a committed file containing the approver's
+ * name), then the dedicated `ute-approval/1` record is parsed, then the
+ * reference is bound four ways: shape, existence + non-root ancestry,
+ * squash-merge subject, and the referenced commit's own diff. The last two are
+ * new in the second hardening round: "an ancestor of HEAD" was satisfied by any
+ * unrelated merge.
+ *
+ * @returns {Array<{code: string, detail: string}>}
+ */
+function checkApprovalBinding({ approval, differenceId, context, expectedDecision }) {
+  const findings = []
+  // Legacy check (kept, not replaced): the record is a committed file that
+  // literally contains the approver's name. It is necessary but not sufficient
+  // — see the dedicated-record check below.
+  const recordProblem = checkTermEvidence({
+    evidence: { path: approval.record, expect: [approval.by], contradicts: [] },
+    root: context.root,
+    readFile: context.readFile,
+    isTracked: context.isTracked,
+  })
+  if (recordProblem !== null) {
+    findings.push({ ...recordProblem, detail: `difference ${differenceId}: approval record — ${recordProblem.detail}` })
+  }
+  // The dedicated record must be a real ute-approval/1 document inside
+  // dev/agent-workflow/approvals/, naming THIS family and THIS difference, with
+  // the decision the classification requires.
+  const recordCheck = checkApprovalRecord({
+    approval,
+    family: context.family,
+    differenceId,
+    context,
+    expectedDecision,
+  })
+  if (recordCheck !== null) {
+    findings.push({ ...recordCheck, detail: `difference ${differenceId}: ${recordCheck.detail}` })
+  }
+  // P4b (RETIREMENT.md §3): a name in a committed file proves transcription,
+  // not authority. The approval must name a PR and a merge commit that exists
+  // here AND is already an ancestor of the graded HEAD — and it must not be
+  // the root commit (the beginning of history reviewed nothing).
+  const reference = approval.reference
+  const match = typeof reference === 'string' ? APPROVAL_REFERENCE.exec(reference) : null
+  if (match === null) {
+    findings.push({
+      code: 'UTE_APPROVAL_UNREFERENCED',
+      detail: `difference ${differenceId}: approval.reference is absent or not \`PR #<n> @ <40-hex>\` (got ${JSON.stringify(reference)}) — a transcribed name is not a bound approval`,
+    })
+    return findings
+  }
+  const sha = match[1]
+  const exists = context.revExists(context.root, sha)
+  const ancestor = exists && context.isAncestor(context.root, sha)
+  if (!exists || !ancestor) {
+    findings.push({
+      code: 'UTE_APPROVAL_UNREFERENCED',
+      detail: `difference ${differenceId}: approval reference commit ${sha} ${exists ? 'is not an ancestor of HEAD' : 'does not exist in this repository'} — the approval is not traceable to a merged act`,
+    })
+  } else if (context.isRootCommit(context.root, sha)) {
+    findings.push({
+      code: 'UTE_APPROVAL_UNREFERENCED',
+      detail: `difference ${differenceId}: approval reference commit ${sha} is the root commit (no parent) — the beginning of history is not a review of a difference`,
+    })
+  } else {
+    // H3(b): the reference must be a squash-merge of the PR it names. A commit
+    // whose subject carries no `(#<n>)`, or a different n, is not that PR.
+    const prNumber = /^PR #(\d+) @ /.exec(reference)?.[1] ?? null
+    const subject = context.commitSubject(context.root, sha)
+    const subjectTag = /\(#(\d+)\)\s*$/.exec(subject)?.[1] ?? null
+    if (subjectTag === null || prNumber === null || subjectTag !== prNumber) {
+      findings.push({
+        code: 'UTE_APPROVAL_REFERENCE_UNBOUND',
+        detail: `difference ${differenceId}: reference ${JSON.stringify(reference)} does not match commit ${sha}'s subject ${JSON.stringify(subject)} — a squash-merged PR's subject ends in (#${prNumber ?? 'n'}); a commit with no matching PR tag is not the act the approval cites`,
+      })
+    }
+    // H3(d): the cited commit must have touched the approval record or this
+    // family's ledger row in its OWN diff. Ancestry alone accepts an unrelated
+    // merge (the verification used #815); this is what makes the reference
+    // about THIS difference.
+    const touchedPaths = [approval.record, context.ledgerPath].filter((p) => typeof p === 'string' && p.length > 0)
+    if (!context.commitTouched(context.root, sha, touchedPaths)) {
+      findings.push({
+        code: 'UTE_APPROVAL_REFERENCE_UNBOUND',
+        detail: `difference ${differenceId}: reference commit ${sha} did not touch the approval record (${JSON.stringify(approval.record)}) or the graded ledger (${JSON.stringify(context.ledgerPath)}) in its own diff — an unrelated merge is not a review of this difference, however true its ancestry`,
+      })
+    }
+  }
+  return findings
+}
+
+/** Is every retirement difference covered by a named, bound decision record? */
 function evaluateDifferences(term, context) {
   const findings = []
   const differences = Array.isArray(term.differences) ? term.differences : null
@@ -787,9 +1086,9 @@ function evaluateDifferences(term, context) {
   }
   let established = true
   if (differences.length === 0) {
-    const zero = checkZeroDifferencesMeasurement(term, context)
-    if (zero !== null) {
-      findings.push(zero)
+    const zeroFindings = checkZeroDifferencesMeasurement(term, context)
+    if (zeroFindings.length > 0) {
+      findings.push(...zeroFindings)
       established = false
     }
   }
@@ -811,81 +1110,48 @@ function evaluateDifferences(term, context) {
       established = false
       continue
     }
-    if (diff.blocking === false) continue
+    // H2 (2026-11-21 verification, finding 2): `blocking:false` used to be a
+    // free pass — marking every difference false satisfied the term with zero
+    // evidence. A classification is a signed decision, not a flipped boolean:
+    // the difference must carry a committed `ute-approval/1` record whose
+    // `decision` is literally "non-blocking", bound exactly like an approval.
+    const expectedDecision = diff.blocking === false ? 'non-blocking' : 'approved'
     const approval = diff.approval
     if (approval === null || approval === undefined) {
-      // The refusal text carries the difference's OWN recorded status (its
-      // `summary`), so a route ruling ("B+C adopted, approval PENDING") is
-      // visible in the gate output without being mistaken for an approval.
-      // This is message enrichment only: the branch still refuses, and an
-      // annotation can never establish the term.
-      const recorded = typeof diff.summary === 'string' && diff.summary.length > 0
-        ? `; recorded status: ${diff.summary}`
-        : ''
-      findings.push({
-        code: TERM_REFUSAL_CODES.semanticDifferencesResolved,
-        detail: `blocking difference ${diff.id} has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)${recorded}`,
-      })
+      if (diff.blocking === false) {
+        findings.push({
+          code: 'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND',
+          detail: `difference ${diff.id} is declared non-blocking with NO committed classification record — "nothing is blocking" costs the same signed evidence as an approval, not a flipped flag`,
+        })
+      } else {
+        // The refusal text carries the difference's OWN recorded status (its
+        // `summary`), so a route ruling ("B+C adopted, approval PENDING") is
+        // visible in the gate output without being mistaken for an approval.
+        // This is message enrichment only: the branch still refuses, and an
+        // annotation can never establish the term.
+        const recorded = typeof diff.summary === 'string' && diff.summary.length > 0
+          ? `; recorded status: ${diff.summary}`
+          : ''
+        findings.push({
+          code: TERM_REFUSAL_CODES.semanticDifferencesResolved,
+          detail: `blocking difference ${diff.id} has no owner approval (SemanticDifferencesResolved may be an APPROVED semantic change — it may not be silence)${recorded}`,
+        })
+      }
       established = false
       continue
     }
     if (typeof approval.by !== 'string' || approval.by.length === 0 || typeof approval.on !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(approval.on)) {
       findings.push({
-        code: TERM_REFUSAL_CODES.semanticDifferencesResolved,
-        detail: `blocking difference ${diff.id}: approval needs \`by\` (named approver) and \`on\` (YYYY-MM-DD)`,
+        code: diff.blocking === false ? 'UTE_DIFFERENCE_CLASSIFICATION_UNBOUND' : TERM_REFUSAL_CODES.semanticDifferencesResolved,
+        detail: `difference ${diff.id}: the decision needs \`by\` (named approver) and \`on\` (YYYY-MM-DD)`,
       })
       established = false
       continue
     }
-    // Legacy check (kept, not replaced): the record is a committed file that
-    // literally contains the approver's name. It is necessary but not
-    // sufficient — see the dedicated-record check below.
-    const recordProblem = checkTermEvidence({
-      evidence: { path: approval.record, expect: [approval.by], contradicts: [] },
-      root: context.root,
-      readFile: context.readFile,
-      isTracked: context.isTracked,
-    })
-    if (recordProblem !== null) {
-      findings.push({ ...recordProblem, detail: `blocking difference ${diff.id}: approval record — ${recordProblem.detail}` })
+    const bindingFindings = checkApprovalBinding({ approval, differenceId: diff.id, context, expectedDecision })
+    if (bindingFindings.length > 0) {
+      findings.push(...bindingFindings)
       established = false
-    }
-    // The dedicated record must be a real ute-approval/1 document inside
-    // dev/agent-workflow/approvals/, naming THIS family and THIS difference.
-    const recordCheck = checkApprovalRecord({ approval, family: context.family, differenceId: diff.id, context })
-    if (recordCheck !== null) {
-      findings.push({ ...recordCheck, detail: `blocking difference ${diff.id}: ${recordCheck.detail}` })
-      established = false
-    }
-    // P4b (RETIREMENT.md §3): a name in a committed file proves transcription,
-    // not authority. The approval must name a PR and a merge commit that exists
-    // here AND is already an ancestor of the graded HEAD — and it must not be
-    // the root commit (the beginning of history reviewed nothing).
-    const reference = approval.reference
-    const match = typeof reference === 'string' ? APPROVAL_REFERENCE.exec(reference) : null
-    if (match === null) {
-      findings.push({
-        code: 'UTE_APPROVAL_UNREFERENCED',
-        detail: `blocking difference ${diff.id}: approval.reference is absent or not \`PR #<n> @ <40-hex>\` (got ${JSON.stringify(reference)}) — a transcribed name is not a bound approval`,
-      })
-      established = false
-    } else {
-      const sha = match[1]
-      const exists = context.revExists(context.root, sha)
-      const ancestor = exists && context.isAncestor(context.root, sha)
-      if (!exists || !ancestor) {
-        findings.push({
-          code: 'UTE_APPROVAL_UNREFERENCED',
-          detail: `blocking difference ${diff.id}: approval reference commit ${sha} ${exists ? 'is not an ancestor of HEAD' : 'does not exist in this repository'} — the approval is not traceable to a merged act`,
-        })
-        established = false
-      } else if (context.isRootCommit(context.root, sha)) {
-        findings.push({
-          code: 'UTE_APPROVAL_UNREFERENCED',
-          detail: `blocking difference ${diff.id}: approval reference commit ${sha} is the root commit (no parent) — the beginning of history is not a review of a difference`,
-        })
-        established = false
-      }
     }
   }
   // An explicit `verdict:false` must not be overridden by an empty difference
@@ -980,6 +1246,9 @@ export function evaluateFamily({
   revExists = defaultRevExists,
   isAncestor = defaultIsAncestor,
   isRootCommit = defaultIsRootCommit,
+  commitSubject = defaultCommitSubject,
+  commitTouched = defaultCommitTouched,
+  ledgerPath = LEDGER_REL,
 }) {
   const findings = []
   const families = Array.isArray(ledger?.families) ? ledger.families : []
@@ -996,13 +1265,28 @@ export function evaluateFamily({
     }
   }
 
-  const context = { root, readFile, isTracked, revExists, isAncestor, isRootCommit, family }
+  const context = {
+    root,
+    readFile,
+    isTracked,
+    revExists,
+    isAncestor,
+    isRootCommit,
+    commitSubject,
+    commitTouched,
+    ledgerPath,
+    family,
+    unitMembers: [],
+  }
 
   // The unit is resolved from the census, not from the row. A row without a
   // gradable unit cannot establish any term (unit coverage is a precondition).
   const resolved = resolveUnit({ row, root, readFile, isTracked })
   findings.push(...resolved.findings.map((f) => ({ ...f, term: 'unit' })))
   const members = resolved.members
+  // The census unit is what `differencesCompared.members` must equal. A row
+  // cannot compare a different (smaller) set of tools and call it zero.
+  context.unitMembers = members
   const unitGradable = resolved.findings.length === 0 && members.length > 0
 
   const establishedByTerm = {}
@@ -1119,12 +1403,15 @@ export function checkRetirement({
   revExists = defaultRevExists,
   isAncestor = defaultIsAncestor,
   isRootCommit = defaultIsRootCommit,
+  commitSubject = defaultCommitSubject,
+  commitTouched = defaultCommitTouched,
+  ledgerPath = LEDGER_REL,
 }) {
   const loaded = loadLedger({ root, ledger })
   if (loaded.refused !== undefined) {
     return { allowed: false, couldNotGrade: loaded.refused, detail: loaded.detail, findings: [{ code: loaded.refused, detail: loaded.detail }] }
   }
-  return evaluateFamily({ family, ledger: loaded.ledger, root, readFile, isTracked, fileExists, revExists, isAncestor, isRootCommit })
+  return evaluateFamily({ family, ledger: loaded.ledger, root, readFile, isTracked, fileExists, revExists, isAncestor, isRootCommit, commitSubject, commitTouched, ledgerPath })
 }
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
@@ -1195,8 +1482,17 @@ function main(argv) {
     return 2
   }
 
+  // The ledger path is part of the approval binding (H3): the referenced commit
+  // must have touched THIS ledger, so the CLI must tell the gate which file it
+  // graded. An explicit --ledger outside the repository has no repo-relative
+  // path; the record-path arm of the binding still applies.
+  let ledgerPath = LEDGER_REL
+  if (args.ledger !== null) {
+    const rel = relative(ROOT, resolve(process.cwd(), args.ledger))
+    ledgerPath = safeRelPath(rel) && !rel.startsWith('..') ? rel.split(sep).join('/') : null
+  }
   const families = args.all ? loaded.ledger.families.map((f) => f.family) : [args.family]
-  const verdicts = families.map((family) => evaluateFamily({ family, ledger: loaded.ledger, root }))
+  const verdicts = families.map((family) => evaluateFamily({ family, ledger: loaded.ledger, root, ledgerPath }))
   const refused = verdicts.filter((v) => !v.allowed)
 
   if (!args.json) {

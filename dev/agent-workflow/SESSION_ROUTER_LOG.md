@@ -9676,3 +9676,20 @@ UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
 docs:sync --check findings=0 blocking=0 contracts=20
 DSH-APPEND-ONLY-LOG verdict=pass
 ```
+
+## 2026-11-21 — G1 退役门第二轮加固：把"自述"逐条换成"绑定"
+
+第二轮对抗验证（`VERIFICATION-2.md`）确认第一轮的三条伪造路径已关闭，但**门仍能被四种输入骗过**。四种都在 `c25cb576f` 上复现，本轮逐条堵死：
+
+| 洞 | 攻击（可复现） | 现在的规则 | 新码 |
+| --- | --- | --- | --- |
+| H1 | 把 `SD-VERDICT differences=0` 抄进本族自己的证据文件 → 清空 `differences` → ALLOW | 该 token 只是句子；必须同时给出 `evidence.corpus`（committed 比对语料）+ 与该语料 **sha256 完全一致** 的 `SD-COMPARE-CORPUS sha256:<hex>` + 行数 ≥1 + `differencesCompared{vectors,members}` 与语料行数、census 单元成员**逐一相等** | `UTE_COMPARISON_UNBOUND` |
+| H2 | 把所有差异改成 `blocking:false` → ALLOW，零证据零审批 | 每条 `blocking:false` 必须带 committed `ute-approval/1` 记录且 `decision:"non-blocking"`（与 `approved` 同等绑定成本） | `UTE_DIFFERENCE_CLASSIFICATION_UNBOUND` |
+| H3 | 审批记录引用任意非根祖先（如 #815 的 `1d64aeb45`，与本差异毫无关系） | 引用必须 (a) 形如 `PR #n @ 40-hex`，(b) 该 commit subject 以 `(#n)` 结尾，(c) 是 HEAD 的祖先且非根，(d) **该 commit 自身的 diff 触碰了这张审批记录或本族台账行** | `UTE_APPROVAL_REFERENCE_UNBOUND` |
+| H4 | `approvals/_selftest/fs-forged.json` 声称生产族 → 门与 APPROVALS 测试双放行 | `_selftest/` 下的记录只对 fixture 族（`synthetic-*`）有效；APPROVALS 测试改为**遍历整棵树**逐文件审计，而不是比对写死的清单 | `UTE_APPROVAL_RECORD_INVALID` |
+
+**一个测试自身的 bug，值得单独记**：H1-1 的"无 corpus"分支一开始永远是绿的，因为辅助函数用默认参数写 `corpus = 'evidence/corpus.tsv'`，调用方传 `corpus: undefined` 会**重新套用默认值**，于是"缺失"这条臂实际测的是"已绑定"那条路径。这类负控制"看起来存在、实际没连上"的失效模式，和本轮修的四个门洞是同一类错误的不同层次——修复方式也一样：不要用 `undefined` 表达"缺失"，用 `hasOwnProperty` 显式判存在性。
+
+**仍然不能证明的**（写进 `approvals/README.md` 与 PR 正文）：门证明的是"这是一张 committed、族与差异精确对应、引用真实合并且该合并触碰过它、签发人身份一致"的决定——它**不证明签发者有权签发**。有权限的人仍可手写一张记录并通过；Authority 只由受保护分支与 PR 审查强制。门能做的是让"伪造"从一次输入编辑变成一次公开的、落在 diff 里的提交。
+
+台账原样：`UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8`——八个族仍然全部被拒，零审批，零切换。
