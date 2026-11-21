@@ -118,11 +118,18 @@ test('ADM-17 — the NETWORK axis is its own: unset is not allow, and allow is n
 })
 
 test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable when no process lane is compiled', () => {
-  for (const toolName of ['bash', 'pwsh', 'run_code']) {
+  for (const toolName of ['bash', 'pwsh']) {
     const decision = call(toolName, { command: 'ls' })
     assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no subprocess lane exists`)
     assert.equal(decision.code, 'ADMISSION_AXIS_UNSUPPORTED')
   }
+  // C7 (round 55): `run_code` is the PTC entry and PTC is a DIFFERENT absence from "a shell with no
+  // lane" — the escalation row would be a second execution authority even if a process lane existed.
+  // It therefore carries its own code; collapsing the two made both unreviewable.
+  const ptc = call('run_code', { command: 'ls' })
+  assert.equal(ptc.kind, 'deny')
+  assert.equal(ptc.code, 'ADMISSION_PTC_UNAVAILABLE')
+  assert.notEqual(ptc.code, call('bash', { command: 'ls' }).code, 'the two absences must stay distinguishable')
   const facts = invocationFactsOf({ binding: binding(), toolName: 'bash', callId: 'c-18', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }) })
   assert.equal(facts.axis, 'process.exec', 'the record must say which axis was unavailable')
   assert.equal(facts.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
@@ -653,12 +660,11 @@ test('ADM-34 — the centre\'s config rules are checkable without booting the ho
   // A plain row is untouched.
   assert.equal(centreConfigViolation({}), undefined)
   assert.equal(centreConfigViolation(undefined), undefined)
-  // R1: Alpha.6 review routing needs somewhere durable for its decisions.
-  assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true })), /requires centreStatePath/u)
-  // An empty path is refused by the PATH rule first - the message names the value, which is what an
-  // operator needs; the Alpha.6 rule is the one that fires when the key is absent entirely.
-  assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '' })), /non-empty string/u)
-  assert.equal(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' }), undefined)
+  // R1 (settled round 55): Alpha.6 review routing is EXPLICITLY UNAVAILABLE — the code names the
+  // missing axis, and a path no longer buys the opt-in (the decisions were never the centre's).
+  const alpha6WithPath = centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })
+  assert.match(String(alpha6WithPath), /ADMISSION_ALPHA6_UNAVAILABLE/u)
+  assert.match(String(alpha6WithPath), /no review-routing axis/u)
   // The path itself is validated even when Alpha.6 is off.
   assert.match(String(centreConfigViolation({ centreStatePath: 42 })), /non-empty string/u)
   // Absent is not "empty": a row that never mentions the centre is legal.
@@ -2945,4 +2951,190 @@ test('ADM-84 — a settlement left OPEN by a crash is CLASSIFIED from disk as UN
   const third = readBackStore(dir)
   assert.deepEqual(createSettlementWriter({ store: third, identityOf: durableIdentityOf }).recover(), [])
   for (const [key, path] of Object.entries(paths)) assert.equal(durableText(path), bytes[key], `${key}: recovery must not keep rewriting the record`)
+})
+
+// ============================================================================================
+// C stage (round 55): the three capabilities that have no member I/O axis.
+//
+// The centre's law is "an unwired controlled call is refused with a code that names why". Remote,
+// Alpha.6 review routing and PTC escalation were the three rows that were neither wired nor named:
+// each had real machinery and no axis, which is the one state the cut must not leave behind, because
+// «silently absent» is indistinguishable from «working» in every log that does not mention it.
+//
+// Both states are proved here, on the product's own modules:
+//  - C-remote and C-alpha6: the host-surface refusal point (the SAME `refuseHostSurfaceBefore` the
+//    product composition calls in `root.ts`) records the refusal with the product fact ledger and the
+//    product settlement store, and the surface body is NOT run. The point is undefined exactly when
+//    the row never configured the centre — the same world in which the surface IS built and runs,
+//    which is what makes the refusal meaningful rather than a permanently broken fixture.
+//  - C-ptc: the real centre composition (`installMemberCentre` over the product ledger/store) refuses
+//    `run_code` with a PTC-specific code BEFORE the body, records it on `process.exec`, and settles
+//    REFUSED/not-started. `bash` keeps the generic process-axis code, so the two absences stay
+//    distinguishable (the task's "not one generic unavailable").
+// ============================================================================================
+
+const hostSurfaceWorld = async (label) => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { createHostSurfaceRefusalPoint } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
+  const dir = mkdtempSync(join(tmpdir(), `vnext-host-surface-${label}-`))
+  const ledger = openFactLedger({ path: join(dir, 'facts.jsonl') })
+  const store = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
+  const faults = []
+  const identityOf = (exec) => ({
+    executionId: dispatchExecutionId({ rootSessionId: 'root-host-surface', agentInstanceId: 'host-surface' }, exec.callId),
+    actorId: 'host-surface',
+    worldId: 'session-host-surface',
+  })
+  const point = (capability) => createHostSurfaceRefusalPoint({
+    capability,
+    ledger,
+    store,
+    identityOf,
+    onFault: (error, context) => faults.push([error, context]),
+  })
+  return { dir, ledger, store, faults, identityOf, point }
+}
+
+test('ADM-85 — C-alpha6 is EXPLICITLY UNAVAILABLE: the decision is refused before the wake, recorded, and settled REFUSED/not-started', async () => {
+  const { refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const world = await hostSurfaceWorld('alpha6')
+  const wake = { count: 0 }
+  // POSITIVE CONTROL, same helper: with no point (the row never asked for the centre) the surface is
+  // NOT refused, and the wake runs. The refusal below is therefore the governance gate, not a broken
+  // always-false fixture.
+  const ungated = refuseHostSurfaceBefore(undefined, { subject: 'alpha6.review-routing', owner: 'root-host-surface' })
+  assert.equal(ungated, false)
+  if (!ungated) wake.count += 1
+  assert.equal(wake.count, 1, 'an ungoverned row keeps its Alpha.6 wake')
+
+  // THE REFUSAL. This is the exact call shape the root composition makes: a review-routing decision
+  // for one leg, on a row that configured the centre.
+  const refused = refuseHostSurfaceBefore(world.point('alpha6'), {
+    subject: 'alpha6.review-routing',
+    owner: 'root-host-surface',
+    locator: 'session-officer-1',
+    detail: 'leg L-1',
+  })
+  assert.equal(refused, true, 'a governed row must NOT run the review-routing surface')
+  if (!refused) wake.count += 1
+  assert.equal(wake.count, 1, 'ZERO side effects: no wake was dispatched after the refusal')
+  assert.equal(world.faults.length, 0, 'the refusal was recorded cleanly')
+
+  // The FACT: one invocation-authority record, on the subject's own existing axis, carrying the code.
+  const records = world.ledger.readAll().filter((record) => record.kind === 'invocation-authority')
+  assert.equal(records.length, 1)
+  const fact = records[0]
+  assert.equal(fact.decision, 'deny')
+  assert.equal(fact.refusalCode, 'ADMISSION_ALPHA6_UNAVAILABLE')
+  assert.equal(fact.axis, 'host.service', 'the record says which of the EXISTING axes the subject belongs to')
+  assert.equal(fact.toolName, 'alpha6.review-routing')
+  assert.equal(fact.locator, 'session-officer-1')
+  assert.match(String(fact.reason), /no review-routing axis/u, 'the reason names the missing axis, not "unavailable"')
+  // The SETTLEMENT: the product store closed the record REFUSED, and it never left ADMITTED.
+  const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
+  assert.equal(settled.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+  assert.equal(settled.observation.bodyOutcome, 'not-started')
+
+  // The CONFIG gate and the recorded gate name the SAME absence with the same code.
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })), new RegExp(HOST_SURFACE_REFUSALS.alpha6.code, 'u'))
+})
+
+test('ADM-86 — C-remote is EXPLICITLY UNAVAILABLE: the S6 surface is refused before it is built, recorded on team.control, settled REFUSED', async () => {
+  const { refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const world = await hostSurfaceWorld('remote')
+  const dispatcher = { calls: 0, dispatch: () => { dispatcher.calls += 1; return { ok: true } } }
+  // POSITIVE CONTROL: the ungoverned row builds and dispatches.
+  const ungated = refuseHostSurfaceBefore(undefined, { subject: 'remote.surface', owner: 'root-host-surface' })
+  assert.equal(ungated, false)
+  if (!ungated) dispatcher.dispatch()
+  assert.equal(dispatcher.calls, 1)
+
+  // THE REFUSAL: the row is centre-configured, so the command plane is not installed at all.
+  const refused = refuseHostSurfaceBefore(world.point('remote'), {
+    subject: 'remote.surface',
+    owner: 'root-host-surface',
+    locator: 'root-host-surface',
+    detail: 'endpoint team.delegate',
+  })
+  assert.equal(refused, true)
+  assert.equal(dispatcher.calls, 1, 'ZERO side effects: no dispatcher was built or called after the refusal')
+
+  const fact = world.ledger.readAll().find((record) => record.kind === 'invocation-authority')
+  assert.equal(fact.decision, 'deny')
+  assert.equal(fact.refusalCode, 'ADMISSION_REMOTE_UNAVAILABLE')
+  assert.equal(fact.axis, 'team.control', 'a remote command belongs to the team control plane, not to an invented axis')
+  assert.match(String(fact.reason), /no remote-command axis/u)
+  const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
+  assert.equal(settled.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+
+  // The three codes are distinct BY CONSTRUCTION (the closed table), not by a comment.
+  const codes = [HOST_SURFACE_REFUSALS.remote.code, HOST_SURFACE_REFUSALS.alpha6.code, HOST_SURFACE_REFUSALS.ptc.code]
+  assert.equal(new Set(codes).size, 3, `the capabilities must be individually identifiable, got ${codes.join(', ')}`)
+})
+
+test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is refused by its own code, recorded and settled, before the body', async () => {
+  const world = await centreWorld('ptc', { binding: binding() })
+  // POSITIVE CONTROL: the same world admits an in-lane read, runs its body and settles COMPLETED.
+  const read = await world.dispatch(readExec('ptc-read-1'))
+  assert.equal(read.kind, 'allow')
+  assert.equal(world.body.count, 1)
+  assert.equal(world.store.read(world.executionIdOf(readExec('ptc-read-1'))).state, 'COMPLETED')
+
+  // THE REFUSAL: `run_code` is the PTC entry. It never reaches the body.
+  const exec = { name: 'run_code', callId: 'ptc-call-1', arguments: { command: 'ls' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+  const verdict = await world.dispatch(exec)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_PTC_UNAVAILABLE/u, 'the pre-execute stage names the PTC code')
+  assert.equal(world.body.count, 1, 'ZERO side effects: the body count did not move')
+  // Both stages agree BY CONSTRUCTION: the guard is only reached when pre-execute returned allow, and
+  // this call never gets there. Re-driving it after the dispatch would be a replay, which is its own
+  // refusal (ADM-20) - so the arm does not mistake a replay for a second opinion.
+
+  // FACT: the ONE admission record for the call, on the process axis (the axis PTC executes on).
+  const fact = world.admissionFact('ptc-call-1')
+  assert.equal(fact.decision, 'deny')
+  assert.equal(fact.refusalCode, 'ADMISSION_PTC_UNAVAILABLE')
+  assert.equal(fact.axis, 'process.exec')
+  assert.match(String(fact.reason), /process lane/u)
+  assert.match(String(fact.reason), /second execution authority/u, 'the reason names the escalation row, not just the lane')
+
+  // SETTLEMENT: REFUSED, not-started, never UNKNOWN (the body provably never ran).
+  const settled = world.store.read(world.executionIdOf(exec))
+  assert.equal(settled.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+  assert.equal(settled.observation.bodyOutcome, 'not-started')
+
+  // DISTINCT: a plain shell keeps the generic process-axis code, so a reader can tell the two
+  // absences apart from the durable record alone.
+  const shell = { name: 'bash', callId: 'ptc-bash-1', arguments: { command: 'ls' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+  const shellVerdict = await world.dispatch(shell)
+  assert.equal(shellVerdict.kind, 'deny')
+  assert.match(String(shellVerdict.reason), /ADMISSION_AXIS_UNSUPPORTED/u)
+  assert.doesNotMatch(String(shellVerdict.reason), /ADMISSION_PTC_UNAVAILABLE/u, 'the two absences stay distinguishable in the refusal itself')
+  assert.equal(world.body.count, 1)
+  world.dispose()
+})
+
+test('ADM-88 — the capability table is CLOSED, each refusal names its own missing axis, and no code is generic', async () => {
+  const { HOST_SURFACE_REFUSALS, HOST_SURFACE_CAPABILITIES, hostSurfaceRefusal } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  assert.deepEqual([...HOST_SURFACE_CAPABILITIES], ['remote', 'alpha6', 'ptc'])
+  for (const capability of HOST_SURFACE_CAPABILITIES) {
+    const entry = HOST_SURFACE_REFUSALS[capability]
+    assert.match(entry.code, /^ADMISSION_[A-Z0-9_]+_UNAVAILABLE$/u)
+    assert.notEqual(entry.code, 'ADMISSION_AXIS_UNSUPPORTED', 'a capability-specific absence must not collapse into the generic code')
+    const refusal = hostSurfaceRefusal(capability)
+    assert.equal(refusal.kind, 'deny')
+    assert.equal(refusal.code, entry.code)
+    assert.match(refusal.reason, /explicitly unavailable/u)
+    assert.match(refusal.reason, new RegExp(entry.missing.slice(0, 24).replace(/[.*+?^${}()|[\]\\]/gu, '\\$&'), 'u'), 'the reason carries the measured missing axis')
+    // The axis it records is an EXISTING one — this module invents no axis.
+    assert.equal(['team.control', 'host.service', 'process.exec'].includes(entry.axis), true, `${capability}: ${entry.axis}`)
+  }
+  assert.throws(() => hostSurfaceRefusal('mcp'), (error) => /closed table/u.test(error.message), 'a new capability cannot be refused by being forgotten')
 })

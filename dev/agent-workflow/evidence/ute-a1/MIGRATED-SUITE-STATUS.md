@@ -789,3 +789,97 @@ or retry was added.
 7. **Scope.** One test file (`vnext-admission.test.mjs`, plus a default-preserving extension to its
    local `centreWorld` helper so a fresh world can adopt an on-disk ledger/store) and this document.
    No product source changed.
+
+## Round 55 (C stage): the three rows that were neither wired nor named
+
+**The state measured at HEAD `c01500e72`.** `CAPABILITY-MATRIX-C.md` carried three rows that were
+neither wired nor explicitly unavailable: C-remote ("not wired to the centre; no arms"), C-alpha6
+("preserved in the assembly; no centre interaction, no arms") and C-ptc ("the escalation row survives
+the A0 boundary but its adjudication is not wired to the centre"). That is the one state the A1 law
+must not leave behind, because «silently absent» reads as «working» in every log that does not mention
+it. Each now ends **EXPLICITLY UNAVAILABLE (b)** — the shape the contract lawfully allows when no axis
+exists — not by narration but by a code, a recorded fact, a settlement record and an arm.
+
+### Why (b) for all three, and which axis is missing
+
+`admit()` judges a call on axes the COMPILED member contract carries (`fs.*`, `net.*`, `process.exec`,
+`team.control`, `host.service`). None of the three is reachable from it:
+
+- **C-remote** — an S6 remote command is issued by an EXTERNAL caller authorized by the server-derived
+  principal (`createServerPrincipalDerivation`), not by a member binding. There is no remote-command
+  axis; admitting one would need a new axis (a contract change) or a second authority (the dispatcher
+  deciding for itself). The governed row therefore does not build the command plane at all.
+- **C-alpha6** — review routing decides WHO may review WHOM from the trusted review facts BEFORE any
+  tool call. There is no locator and no lane; the old "requires centreStatePath" rule bought a durable
+  store *outside* the centre, not centre adjudication.
+- **C-ptc** — `run_code` executes on `process.exec`, and there is no process lane in the frozen v4
+  ceiling at all (`CONTRACT-CHANGE-REQUEST-process-lane.md`, untouched). Even with one, the surviving
+  escalation row (`createPtcEscalationRouter`) mints its own one-shot grants, i.e. a second execution
+  authority. The tool is therefore refused before the body, which is what makes the escalation path
+  unreachable for a governed member: an escalation is only asked for a call that reached execution.
+
+### What is now in the product
+
+- **`packages/runtime/src/plugin/vnext/host-surface-refusal.mjs`** (new) — the ONE closed table for the
+  capabilities with no member I/O axis. Each entry carries its own code, its subject's EXISTING axis
+  (`team.control` / `host.service` / `process.exec`) and the measured missing axis in words. An unknown
+  capability throws; it cannot be "refused generically". `refuseHostSurfaceBefore(point, input)` is the
+  product's decision helper (`undefined` point = the row never configured the centre = no-op), so the
+  arms drive the SAME function `root.ts` calls instead of a copy of the rule. It opens the ledger from
+  `ledgerPath` itself so the typed caller does not import an untyped `.mjs`; the declaration half is
+  `host-surface-refusal.d.mts`, and `scripts/dist-placements/240-ute-vnext-centre.json` ships the
+  `.mjs` in the dist mirror (tsc never emits `.mjs`; omitting it would make a governed row unloadable
+  at boot while every source test stayed green — the GLUE-6 RED-A class).
+- **`admission.ts:318`** — `run_code` is refused with `ADMISSION_PTC_UNAVAILABLE`, distinct from the
+  `ADMISSION_AXIS_UNSUPPORTED` a plain `bash`/`pwsh` carries. The code is on the `AdmissionRefusalCode`
+  union and comes from the closed table (one string, two call sites).
+- **`centre-config.ts:67`** — `alpha6ReviewRouting: true` is refused with `ADMISSION_ALPHA6_UNAVAILABLE`
+  (the pure rule ADM-34 already exercises); **`root.ts:2500`** records the same refusal on
+  `host.service` and throws a typed boot refusal for a caller that built the root directly.
+- **`root.ts:4325`** — a centre-configured row does not build the S6 surfaces; the refusal is recorded
+  and `root.remoteDispatcher` is absent. Rows that never configured the centre are byte-identical (the
+  point is `undefined`, no file is touched).
+
+### Per-capability evidence
+
+| capability | code | axis recorded | arm | positive control | zero side effects |
+| --- | --- | --- | --- | --- | --- |
+| C-remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `ADM-86` (admission test) | the SAME helper with no point builds and dispatches (call count 1) | the dispatcher call count stays 1 after the refusal; fact + settlement `REFUSED`/`not-started` |
+| C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `ADM-85`, `ADM-34` | no point ⇒ the wake runs (count 1) | wake count stays 1 after the refusal; config rule and recorded gate carry the same code |
+| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `ADM-87`, `ADM-88`, `ADM-76` | the same centre world admits an in-lane `read` and settles `COMPLETED` | body count does not move; `bash` still refuses `ADMISSION_AXIS_UNSUPPORTED`, so the two absences are distinguishable from the durable record alone |
+
+`ADM-88` pins the table itself: exactly three capabilities, codes pairwise distinct, each reason
+carrying its own missing axis, and an unknown capability throwing.
+
+### What this round does NOT prove
+
+1. **No host boot.** No row moved to PRODUCT-PROVEN; this worktree cannot boot the product (D owns the
+   boot line). The root wiring is exercised by the 238 preserved vitest cases, not by a live host.
+2. **The PTC escalation router itself is not driven.** No governed face is registered in the A1 cut, so
+   the refusal proven is the TOOL admission that makes the escalation unreachable, not a router-side
+   refusal. The router's own five negative controls stay where they are (`a5ptc-escalation-row`).
+3. **A centre-configured row loses its remote API.** That is the honest consequence of (b), disclosed in
+   the C-remote row rather than hidden. The two lawful alternatives are a remote-command axis in the
+   contract, or principal-only execution declared outside the centre — neither is decided here.
+4. **The Alpha.6 PA approval-fact join stays UNPROVEN (D).** Refusing the capability says nothing about
+   the join the old row claimed; it stops the claim from being made without the centre.
+5. **The open rulings are untouched** (`CONTRACT-CHANGE-REQUEST-process-lane.md`,
+   `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, `ESCALATION-realmless-admission.md`). PTC's refusal
+   names the process-lane gap but does not resolve it.
+
+### Gates (round 55, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c4…  (150 pass + 2 disclosed skips)
+DSH-TEST-CATALOG tests=889 instruments=3 refused=0 findings=0
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0
+docs:sync --check findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+Vitest population unchanged at **238** (no vitest file was added); the node leg gained `ADM-85`…`ADM-88`
+and `ADM-76`'s rung-6 code moved to the PTC code (the B ladder's order and its «no body started»
+assertions are unchanged).

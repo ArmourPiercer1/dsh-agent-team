@@ -11,6 +11,8 @@
  * @module packages/runtime/src/plugin/vnext/centre-config
  */
 
+import { HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs'
+
 /** The subset of the row config these rules read. Deliberately structural, not `TeamPluginConfig`. */
 export interface CentreConfigFacts {
   readonly centreStatePath?: unknown
@@ -44,20 +46,26 @@ export function memberCentreUnwiredViolation (
 /**
  * The FIRST rule violation, or `undefined` when the centre-related config is coherent.
  *
- * R1 (external review 2026-11-22, C6/C7 deferral): Alpha.6 review routing decides who may review
- * whom. An enabled router whose decisions have nowhere durable to live is a governance claim with no
- * evidence behind it, so the opt-in requires the centre's state directory.
+ * R1 (external review 2026-11-22, C6/C7 deferral; settled round 55): Alpha.6 review routing decides
+ * who may review whom. The earlier shape of this rule accepted the opt-in when `centreStatePath` was
+ * present ("it records its decisions somewhere durable"). Round 55 measured what that bought: the
+ * decisions are written by the Alpha.6 composition, NOT by the centre, and no centre call ever
+ * receives a review-routing decision — so an enabled router is still a governance claim whose
+ * adjudication sits outside the ONE admission authority. C6 is therefore EXPLICITLY UNAVAILABLE: the
+ * code names the missing axis, and the row does not boot with a second review authority rather than
+ * claiming a join the centre cannot make.
  *
- * This does NOT claim the PA approval-fact join is proven. It only refuses a configuration in which
- * the join could not even be recorded.
+ * The code lives in `host-surface-refusal.ts`, the ONE closed table for the capabilities with no
+ * member I/O axis, so a config refusal and a recorded refusal can never name the same absence twice
+ * with two different strings.
  */
 export function centreConfigViolation (config: CentreConfigFacts | null | undefined): string | undefined {
   if (config === null || typeof config !== 'object') return undefined
   if (config.centreStatePath !== undefined && (typeof config.centreStatePath !== 'string' || config.centreStatePath.length === 0)) {
     return 'centreStatePath must be a non-empty string when present (the centre\'s durable facts and settlement directory)'
   }
-  if (config.alpha6ReviewRouting === true && (typeof config.centreStatePath !== 'string' || config.centreStatePath.length === 0)) {
-    return 'alpha6ReviewRouting requires centreStatePath: review routing is refused unless this row records its decisions in the centre\'s durable facts (C6/C7 deferral, 2026-11-22)'
+  if (config.alpha6ReviewRouting === true) {
+    return `${HOST_SURFACE_REFUSALS.alpha6.code}: alpha6ReviewRouting is explicitly unavailable in this cut. ${HOST_SURFACE_REFUSALS.alpha6.missing}. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim`
   }
   return undefined
 }

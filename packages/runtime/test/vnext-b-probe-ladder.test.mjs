@@ -47,7 +47,9 @@
  *   environment one. The only declaration source for a process lane in this generation is the v4
  *   member ceiling, whose frozen `io` field set is `{ read, write, network }` — there is no process
  *   axis, so no compiled answer can carry `binding.process`, and the centre refuses `process.exec`
- *   with `ADMISSION_AXIS_UNSUPPORTED` by design. That is the standing
+ *   with `ADMISSION_AXIS_UNSUPPORTED` (and the PTC entry `run_code` with its own
+ *   `ADMISSION_PTC_UNAVAILABLE`, which also names the escalation row's second authority) by design.
+ *   That is the standing
  *   `CONTRACT-CHANGE-REQUEST-process-lane` (`dev/agent-workflow/evidence/ute-a1/`), which names B's
  *   rung-6 positive control as blocked. Fabricating a lane here — or granting one from the write
  *   lane — would be a SECOND decision authority, which is the thing this whole round forbids. The
@@ -122,7 +124,9 @@ const LADDER = Object.freeze([
   Object.freeze({ rung: 3, tool: 'grep', axis: 'fs.read', refusalCode: 'LANE_DENY' }),
   Object.freeze({ rung: 4, tool: 'web_fetch', axis: 'net.fetch', refusalCode: 'NETWORK_DENY' }),
   Object.freeze({ rung: 5, tool: 'bash', axis: 'process.exec', refusalCode: 'ADMISSION_AXIS_UNSUPPORTED' }),
-  Object.freeze({ rung: 6, tool: 'run_code', axis: 'process.exec', refusalCode: 'ADMISSION_AXIS_UNSUPPORTED' }),
+  // Round 55 (C7): `run_code` is the PTC entry, and PTC's absence is the process lane PLUS the
+  // escalation row's second authority — its own code, distinct from a plain shell's.
+  Object.freeze({ rung: 6, tool: 'run_code', axis: 'process.exec', refusalCode: 'ADMISSION_PTC_UNAVAILABLE' }),
 ])
 
 /** The two rungs whose POSITIVE control the compiled answer cannot carry today (see the header). */
@@ -837,7 +841,8 @@ arm('ADM-76 — RUN_CODE negative: the same missing process lane refuses code ex
   assert.equal(admission.toolName, 'run_code')
   assert.equal(admission.axis, 'process.exec')
   assert.equal(admission.decision, 'deny')
-  assert.equal(admission.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (lane + escalation authority)')
+  assert.match(String(admission.reason ?? ''), /second execution authority/u)
   assert.equal(execution.outcome, 'admission-refusal')
   assert.equal(world.settlementOf(callId)?.state, 'REFUSED')
   assert.equal(world.spawnCalls(), before.spawn, 'a refused run_code must not start a worker or a process')

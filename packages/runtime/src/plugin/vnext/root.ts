@@ -369,8 +369,15 @@ import { createLiveResidencyOverlay } from '../s6-live-overlay.js'
 import { computeTeamLiveToken } from '../live-token.js'
 import { resolveSessionReadState } from '../team-read-state.js'
 import { createServerPrincipalDerivation } from '../s6-principal.js'
-import { isAbsolute } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 import { createS6RemoteSurfaces, governanceStartRefusal } from '../s6-remote.js'
+// Round 55 (C stage) — the ONE closed refusal table for capabilities with no member I/O axis. The
+// host surfaces that cannot be admitted by the centre (S6 remote, Alpha.6 review routing) are
+// refused HERE, at the product composition point, with their own durable fact + settlement: a row
+// configured for the centre must not run them through whichever surface happens to answer first.
+import { createHostSurfaceRefusalPoint, refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs'
+import { createExecutionSettlementStore } from '../../../settlement/execution-settlement.js'
+import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
 import type {
   S6CatalogMigrationState,
   S6RemoteCompatibilityOperations,
@@ -1014,6 +1021,34 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   } = params
   const repos: TeamDomainRepositories = domain.repositories
   const rootSid: string = config.rootSessionId
+
+  // --- C stage (round 55): the host-surface refusal point -----------------------------------------
+  // A row that configured `centreStatePath` asked the centre to be the ONE admission authority. Two
+  // host surfaces cannot be judged by it (no member binding, no I/O locator): the S6 remote command
+  // plane and Alpha.6 review routing. For such a row they are EXPLICITLY UNAVAILABLE — refused here,
+  // before either surface runs, with the product's own fact + settlement shapes. A row that never
+  // configured the centre keeps the pre-round behaviour exactly (no point is built, no file is
+  // touched), which is the same boundary `MEMBER_CENTRE_UNWIRED` draws for members.
+  const centreStatePath: string | undefined =
+    typeof config.centreStatePath === 'string' && config.centreStatePath !== '' ? config.centreStatePath : undefined
+  const hostSurfaceRefusalPoint = (capability: 'remote' | 'alpha6'): ReturnType<typeof createHostSurfaceRefusalPoint> | undefined =>
+    centreStatePath === undefined
+      ? undefined
+      : createHostSurfaceRefusalPoint({
+          capability,
+          ledgerPath: join(centreStatePath, `${capability}.host-surface.facts.jsonl`),
+          store: createExecutionSettlementStore({ dir: join(centreStatePath, 'settlement', 'host-surface', capability) }),
+          identityOf: (exec: { callId: string }) => ({
+            executionId: dispatchExecutionId({ rootSessionId: rootSid, agentInstanceId: 'host-surface' }, exec.callId),
+            actorId: 'host-surface',
+            worldId: rootSid,
+          }),
+          onFault: (error: unknown, context: object) => {
+            console.warn(
+              `[dsh-agent-team] host-surface refusal could not be recorded (${capability}, ${JSON.stringify(context)}): ${String((error as { message?: string })?.message ?? error)}`,
+            )
+          },
+        })
 
   // --- A02 handle / write ports ------------------------------------------------------
   const readHandle = createTeamDomainReadHandle(repos)
@@ -2455,6 +2490,26 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   // Fail closed: an explicit opt-in that cannot compose must NOT silently
   // fall back to the Leader path. Refusing here fails the root construction
   // (the Team does not boot) with a typed plugin error.
+  // C6 (round 55): an opted-in Alpha.6 router on a CENTRE-CONFIGURED row is
+  // refused here as well as in the config rule, and the refusal is recorded
+  // before the throw. Two independent gates exist on purpose: the config rule
+  // stops the row at validation, and this stops a caller that built the root
+  // directly (the test/fixture shape) from running a second review authority.
+  if (alpha6Wiring.mode === 'alpha6') {
+    const alpha6Refused = refuseHostSurfaceBefore(hostSurfaceRefusalPoint('alpha6'), {
+      subject: 'alpha6.review-routing',
+      owner: rootSid,
+      locator: rootSid,
+      detail: 'the row is configured for the centre, and the centre has no review-routing axis',
+    })
+    if (alpha6Refused) {
+      throw new TeamPluginError(
+        'TEAM_PLUGIN_CONFIG_INVALID',
+        `${HOST_SURFACE_REFUSALS.alpha6.code}: alpha6ReviewRouting is explicitly unavailable in this cut. ${HOST_SURFACE_REFUSALS.alpha6.missing}`,
+        { rootSessionId: rootSid, reason: 'alpha6-review-routing-unavailable', code: HOST_SURFACE_REFUSALS.alpha6.code },
+      )
+    }
+  }
   if (alpha6Wiring.mode === 'refused') {
     throw new TeamPluginError(
       'TEAM_PLUGIN_CONFIG_INVALID',
@@ -4261,7 +4316,18 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
   seams.projectionLiveOverlay.install(liveOverlay)
 
   // --- A31 + A33 + A34 the remote surfaces (built once, installed once) -----------------------------
-  const remoteSurfaces = createS6RemoteSurfaces({
+  // C-remote (round 55): on a centre-configured row the S6 command plane is EXPLICITLY UNAVAILABLE.
+  // The dispatcher is authorized by a server-derived principal, not by a member binding, so the
+  // compiled ceiling the centre judges cannot speak for it and there is no axis to admit a remote
+  // command on. Rather than leave an ungoverned second command authority beside the centre, the
+  // surface is not built at all and the refusal is written (fact + settlement REFUSED/not-started).
+  const remoteRefused = refuseHostSurfaceBefore(hostSurfaceRefusalPoint('remote'), {
+    subject: 'remote.surface',
+    owner: rootSid,
+    locator: rootSid,
+    detail: 'the row is configured for the centre, which has no remote-command axis',
+  })
+  const remoteSurfaces = remoteRefused ? undefined : createS6RemoteSurfaces({
     rootSessionId: rootSid,
     isOwnedRoot: ownsTeamSessionRoot,
     ...(config.defaultWorkspace !== undefined
@@ -4656,8 +4722,10 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     ...(admitRootInitialWork !== undefined ? { admitRootInitialWork } : {}),
     now,
   })
-  seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion)
-  seams.remoteHandlerRegistration.install(remoteSurfaces.registration)
+  if (remoteSurfaces !== undefined) {
+    seams.remoteQueryCommandCompletion.install(remoteSurfaces.completion)
+    seams.remoteHandlerRegistration.install(remoteSurfaces.registration)
+  }
 
   // --- A04 the intent surface (the remote method catalog) --------------------------------------------
   const intent = { catalog: REMOTE_METHOD_CATALOG }
@@ -5074,7 +5142,7 @@ export function createTeamProductionRoot(params: TeamProductionRootParams): Team
     // (the same ports/principal basis the mounted registration uses) so the
     // production-entry regressions exercise the real router → real root
     // closures, not a hand-built options object.
-    remoteDispatcher: remoteSurfaces.dispatcher,
+    ...(remoteSurfaces === undefined ? {} : { remoteDispatcher: remoteSurfaces.dispatcher }),
     messaging,
     control,
     ...(alpha6ReviewWakeTurnStart === undefined ? {} : { alpha6TurnLatchStart: alpha6ReviewWakeTurnStart }),

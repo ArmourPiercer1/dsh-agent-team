@@ -19,10 +19,10 @@ construction until D runs the real host; that is the honest state, not an omissi
 | C-web | Web family (`web_fetch`) | SLICE-31/32: positive through the confined web face, negative with the transport never called | MECHANISM (in-process, pinned host) |
 | C-subprocess | Subprocess family (`bash`) | `process.exec` judged on the working directory; the PTY face mounts and refuses an unregistered owner (`OWNER_NOT_LIVE`); positive control needs a live host agent. BLOCKED on a CONTRACT_CHANGE_REQUEST: there is no declaration source for a process lane | MECHANISM, positive control UNPROVEN (D); product admission BLOCKED pending ruling |
 | C-pty | PTY family | same face and same CONTRACT_CHANGE_REQUEST as C-subprocess | MECHANISM, positive control UNPROVEN (D); product admission BLOCKED pending ruling |
-| C-ptc | PTC escalation | `run_code` is `process.exec`, so it shares the subprocess lane's CONTRACT_CHANGE_REQUEST; the escalation row (`createPtcEscalationRouter`) survives the A0 boundary but its adjudication is not wired to the centre | UNPROVEN; blocked on the same ruling |
-| C-remote | Remote | not wired to the centre; no arms | UNPROVEN |
+| C-ptc | PTC escalation | **EXPLICITLY UNAVAILABLE (b)** — `run_code` is the PTC entry and the centre refuses it BEFORE the body with its own code `ADMISSION_PTC_UNAVAILABLE` (`admission.ts:318`), distinct from the generic `ADMISSION_AXIS_UNSUPPORTED` a plain `bash` carries. The row is recorded on `process.exec` with the reason naming BOTH absences (no process lane — the open CCR — and the escalation row's grants minted outside the centre). `ADM-87` proves the fact + settlement REFUSED/not-started + zero body on the real `installMemberCentre` composition, and the distinctness; `ADM-88` pins the closed table. The escalation ASK is unreachable for a governed member because the tool never executes. NOT PROVEN: a refusal driven through `createPtcEscalationRouter` itself (no governed face is registered in this cut) and any host boot | MECHANISM (explicit unavailability); escalation-router refusal UNPROVEN |
+| C-remote | Remote | **EXPLICITLY UNAVAILABLE (b)** — a row configured for the centre does not build the S6 command plane at all (`root.ts:4325`, via `refuseHostSurfaceBefore`): the refusal is written as a fact on the existing `team.control` axis and the product settlement closes it REFUSED/not-started. There is no remote-command axis in the compiled contract (the dispatcher is authorized by the server-derived principal, not by a member binding), so admitting it would need a new axis or a second authority. `ADM-86` drives the SAME product helper with a zeroed dispatcher and proves the ungoverned row still builds/dispatches (positive control). NOT PROVEN: a host boot; the disclosed product consequence is that a centre-configured row has no remote API (`root.remoteDispatcher` is absent) | MECHANISM (explicit unavailability); product entry wired, not booted |
 | C-mcp | MCP | judged on the NETWORK axis with the SERVER as the locator (`net.mcp`, `ADM-33`): unset is not allow, deny is deny, a tool-level restriction narrows it, and a `mcp__` name with no server is refused as malformed rather than matched by prefix. WHICH servers exist stays the mount gate's decision | MECHANISM |
-| C-alpha6 | Alpha.6 review routing | preserved in the assembly; no centre interaction, no arms | UNPROVEN |
+| C-alpha6 | Alpha.6 review routing | **EXPLICITLY UNAVAILABLE (b)** — the opt-in is refused with its own code `ADMISSION_ALPHA6_UNAVAILABLE`, in TWO independent gates that name the same missing axis: the pure config rule (`centre-config.ts:67`, `ADM-34`) and, for a row that builds the root directly on a centre-configured row, a recorded refusal on `host.service` (`root.ts:2500`) followed by a typed boot refusal — no review wake is dispatched. Review routing decides who may review whom before any tool call, so the centre has no lane or locator for it, and the previous "needs a centreStatePath" shape bought a durable store outside the centre, not centre adjudication. `ADM-85` proves the recorded refusal + settlement REFUSED/not-started + zero wakes, with an ungoverned positive control. NOT PROVEN: a host boot and the PA approval-fact join (D) | MECHANISM (explicit unavailability); PA join UNPROVEN |
 | C-goal | Goal / Todo | preserved as HOST CAPABILITIES (`get_goal`/`create_goal`/`update_goal`/`todo_write`), axis `host.service`, `ADM-32` | MECHANISM |
 | C-skill | Team Skill | preserved as a host capability (`skill`, axis `host.service`, `ADM-32`); its file reads go through the host skill service, NOT the member's confined fs | MECHANISM + recorded LIMIT |
 | C-fork | Subagent Fork | preserved as host capabilities (`subagent`, `send_message`, `interrupt_agent`, axis `host.service`, `ADM-32`); the CHILD's own binding governs the child's tools | MECHANISM |
@@ -112,4 +112,23 @@ that shape, `execution.executionBoundary` says WHO executes and not WHAT the she
 `shellClass` is an install-spec field the composition passes. There is no single-source declaration
 for a process lane, and the three alternatives (judge on the write lane, declare it only in the
 product realm, derive it from the boundary) are each a breach of the contract this round is
-implementing. The families therefore stay EXPLICITLY REFUSED (`ADMISSION_AXIS_UNSUPPORTED`).
+implementing. The families therefore stay EXPLICITLY REFUSED (`bash`/`pwsh`:
+`ADMISSION_AXIS_UNSUPPORTED`; `run_code`: its own `ADMISSION_PTC_UNAVAILABLE`, because PTC's absence
+is the lane PLUS the escalation row's second authority — round 55, `ADM-87`). The ruling is untouched.
+
+## Round 55: the three rows that were neither wired nor named
+
+`ADM-85`…`ADM-88` settle C-remote, C-alpha6 and C-ptc as **explicitly unavailable**, each with its
+own code, its own existing axis and the product's own fact + settlement shapes:
+
+| capability | code | axis recorded | where the refusal is taken | arm |
+| --- | --- | --- | --- | --- |
+| remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts:4325` (surface not built; `refuseHostSurfaceBefore`) | `ADM-86` |
+| Alpha.6 review routing | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts:67` (config) + `root.ts:2500` (recorded + typed boot refusal) | `ADM-85`, `ADM-34` |
+| PTC escalation | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:318` (the ONE centre, before the body) | `ADM-87`, `ADM-88` |
+
+The closed table is `host-surface-refusal.mjs`; an unknown capability throws rather than being
+"refused generically". What this does NOT buy: a host boot (D), a router-side PTC refusal (no governed
+face is registered), nor any claim that a governed row should keep its remote API — that trade-off is
+disclosed in the C-remote row, not hidden.
+

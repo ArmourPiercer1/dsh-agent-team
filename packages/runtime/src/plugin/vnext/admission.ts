@@ -23,6 +23,10 @@
 
 import { matchLocator } from '../../../member-io-policy/src/path-rules.js'
 import type { PathRuleSet } from '../../../member-io-policy/src/types.js'
+// The ONE closed vocabulary for the capabilities with no member I/O axis (round 55, C stage). The
+// PTC entry is the same string the host-surface refusal point records, so a `run_code` call and a
+// refused escalation can never carry two different names for the same missing authority.
+import { HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs'
 
 /** The axes a tool name can be admitted on. A name outside this table is not admitted at all. */
 export const TOOL_AXES = Object.freeze({
@@ -192,6 +196,14 @@ export type AdmissionRefusalCode =
   | 'ADMISSION_NO_LOCATOR'
   /** The axis is known but has no enforceable lane this round: refusing is the contract, not a TODO. */
   | 'ADMISSION_AXIS_UNSUPPORTED'
+  /**
+   * C7 (PTC) is EXPLICITLY UNAVAILABLE and must be individually identifiable. `run_code` is the PTC
+   * tool, and lumping it in with the generic subprocess refusal (`ADMISSION_AXIS_UNSUPPORTED`) made
+   * "a shell could not be judged" and "the escalation authority is not the centre" one code. They are
+   * two different absences: the process lane (a contract question) and the escalation row (a second
+   * authority). A PTC call is refused with its own code and the same durable shapes.
+   */
+  | 'ADMISSION_PTC_UNAVAILABLE'
 
 /**
  * Every code a refusal can carry. The two LANE codes are decisions about a JUDGED locator (the lane
@@ -296,6 +308,15 @@ export function admit (input: {
   const axis = TOOL_AXES[toolName as keyof typeof TOOL_AXES]
   if (axis === undefined) {
     return refuse('ADMISSION_TOOL_UNBOUND', `tool ${JSON.stringify(toolName)} has no declared I/O axis; an unclassified tool is never admitted by default`)
+  }
+  // C7 (PTC escalation) — EXPLICITLY UNAVAILABLE, and named as itself. `run_code` executes on the
+  // process axis, which this contract compiles no lane for; the escalation that would widen it is the
+  // surviving host row (`createPtcEscalationRouter`), whose one-shot grants are minted outside the
+  // centre. Refusing the TOOL before the body is what makes the escalation path unreachable: an
+  // escalation is only ever asked for a call that reached execution, and this call never does.
+  // It must be refused as PTC, not as "a shell": the two absences are different (see the code's doc).
+  if (toolName === 'run_code') {
+    return refuse(HOST_SURFACE_REFUSALS.ptc.code as AdmissionRefusalCode, `tool ${JSON.stringify(toolName)} is the PTC entry: ${HOST_SURFACE_REFUSALS.ptc.missing}`)
   }
   if (axis === 'process.exec') {
     // EXPLICITLY UNAVAILABLE, NOT SILENTLY ALLOWED. Without a compiled process lane there is nothing
