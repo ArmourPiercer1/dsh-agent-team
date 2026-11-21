@@ -1,0 +1,533 @@
+{
+  "schema": "ute-p0-assets-snapshot/1",
+  "frozenAt": "2026-11-21T09:56:08.965Z",
+  "note": "The A0 attestation: what the boundary WAS at freeze time. It is never regenerated to hide a removal — --check compares the live ledger against this record.",
+  "digest": "sha256:8b7e52522ef0259e150a310b94dc9de041b1d9c3848e9cec4385f56f1ab3f9f1",
+  "totals": {
+    "modules": 37,
+    "files": 180,
+    "lines": 69512,
+    "deleteFiles": 146,
+    "replaceFiles": 2,
+    "keepFiles": 32,
+    "wave1Files": 146,
+    "wave2Files": 0,
+    "wave1Lines": 48903,
+    "deleteLines": 36522
+  },
+  "modules": [
+    {
+      "id": "family-fs",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/fs-family/README.md",
+        "packages/tools/fs-family/src/edit-executor.mjs",
+        "packages/tools/fs-family/src/edit-row.mjs",
+        "packages/tools/fs-family/src/fs-family-contribution.mjs",
+        "packages/tools/fs-family/src/fs-mechanics.mjs",
+        "packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+        "packages/tools/fs-family/src/fs-read-contribution.mjs",
+        "packages/tools/fs-family/src/image-executor.mjs",
+        "packages/tools/fs-family/src/image-read-port.mjs",
+        "packages/tools/fs-family/src/image-row.mjs",
+        "packages/tools/fs-family/src/index.mjs",
+        "packages/tools/fs-family/src/read-executor.mjs",
+        "packages/tools/fs-family/src/read-normalizer.ts",
+        "packages/tools/fs-family/src/read-presentation.mjs",
+        "packages/tools/fs-family/src/read-row.mjs",
+        "packages/tools/fs-family/src/write-executor.mjs",
+        "packages/tools/fs-family/src/write-row.mjs"
+      ],
+      "lines": 3139
+    },
+    {
+      "id": "family-search",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/search-family/README.md",
+        "packages/tools/search-family/src/cancel-leg.mjs",
+        "packages/tools/search-family/src/glob-backend.mjs",
+        "packages/tools/search-family/src/index.mjs",
+        "packages/tools/search-family/src/search-backend.mjs",
+        "packages/tools/search-family/src/search-contribution.mjs",
+        "packages/tools/search-family/src/search-mechanics.mjs",
+        "packages/tools/search-family/src/search-row.mjs",
+        "packages/tools/search-family/src/stream-drain.mjs"
+      ],
+      "lines": 3651
+    },
+    {
+      "id": "family-web",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/web-family/README.md",
+        "packages/tools/web-family/src/fetch-executor.mjs",
+        "packages/tools/web-family/src/fetch-row.mjs",
+        "packages/tools/web-family/src/index.mjs",
+        "packages/tools/web-family/src/search-executor.mjs",
+        "packages/tools/web-family/src/search-row.mjs",
+        "packages/tools/web-family/src/web-family-contribution.mjs",
+        "packages/tools/web-family/src/web-mechanics.mjs",
+        "packages/tools/web-family/src/web-search-provider.mjs",
+        "packages/tools/web-family/src/web-transport.mjs"
+      ],
+      "lines": 1942
+    },
+    {
+      "id": "family-process",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/process-family/README.md",
+        "packages/tools/process-family/src/bash-contribution.mjs",
+        "packages/tools/process-family/src/bash-normalizer.ts",
+        "packages/tools/process-family/src/bash-row.mjs",
+        "packages/tools/process-family/src/confined-shell-executor.mjs",
+        "packages/tools/process-family/src/index.mjs",
+        "packages/tools/process-family/src/pwsh-confined.mjs",
+        "packages/tools/process-family/src/pwsh-executor.mjs",
+        "packages/tools/process-family/src/pwsh-mechanics.mjs",
+        "packages/tools/process-family/src/pwsh-row.mjs",
+        "packages/tools/process-family/src/shell-mechanics.mjs"
+      ],
+      "lines": 1813
+    },
+    {
+      "id": "family-ui",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/ui-family/README.md",
+        "packages/tools/ui-family/src/ask-executor.mjs",
+        "packages/tools/ui-family/src/ask-row.mjs",
+        "packages/tools/ui-family/src/index.mjs",
+        "packages/tools/ui-family/src/present-executor.mjs",
+        "packages/tools/ui-family/src/present-row.mjs",
+        "packages/tools/ui-family/src/ui-family-contribution.mjs",
+        "packages/tools/ui-family/src/ui-interaction-port.mjs",
+        "packages/tools/ui-family/src/ui-mechanics.mjs"
+      ],
+      "lines": 1586
+    },
+    {
+      "id": "family-inspect",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/inspect-family/README.md",
+        "packages/tools/inspect-family/src/index.mjs",
+        "packages/tools/inspect-family/src/inspect-executor.mjs",
+        "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+        "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+        "packages/tools/inspect-family/src/inspect-rows.mjs",
+        "packages/tools/inspect-family/src/row-names.mjs",
+        "packages/tools/inspect-family/src/skill-executor.mjs",
+        "packages/tools/inspect-family/src/skill-mechanics.mjs",
+        "packages/tools/inspect-family/src/skill-row.mjs"
+      ],
+      "lines": 1314
+    },
+    {
+      "id": "family-agent-control",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/agent-control-family/README.md",
+        "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+        "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+        "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+        "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+        "packages/tools/agent-control-family/src/fork-row.mjs",
+        "packages/tools/agent-control-family/src/index.mjs",
+        "packages/tools/agent-control-family/src/interrupt-row.mjs",
+        "packages/tools/agent-control-family/src/list-agents-row.mjs",
+        "packages/tools/agent-control-family/src/list-models-row.mjs",
+        "packages/tools/agent-control-family/src/native-output-schemas.mjs",
+        "packages/tools/agent-control-family/src/spawn-row.mjs",
+        "packages/tools/agent-control-family/src/steer-row.mjs",
+        "packages/tools/agent-control-family/src/workflow-row.mjs"
+      ],
+      "lines": 1657
+    },
+    {
+      "id": "family-agent-state",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/agent-state-family/README.md",
+        "packages/tools/agent-state-family/src/agent-state-law.mjs",
+        "packages/tools/agent-state-family/src/contribution.mjs",
+        "packages/tools/agent-state-family/src/executors.mjs",
+        "packages/tools/agent-state-family/src/fs-state-store.mjs",
+        "packages/tools/agent-state-family/src/index.mjs",
+        "packages/tools/agent-state-family/src/state-store.mjs"
+      ],
+      "lines": 2430
+    },
+    {
+      "id": "row-fs",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/fs.mjs"
+      ],
+      "lines": 170
+    },
+    {
+      "id": "row-search",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/search.mjs"
+      ],
+      "lines": 94
+    },
+    {
+      "id": "row-web",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/web.mjs"
+      ],
+      "lines": 212
+    },
+    {
+      "id": "row-process",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/process.mjs"
+      ],
+      "lines": 164
+    },
+    {
+      "id": "row-ui",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/ui.mjs"
+      ],
+      "lines": 129
+    },
+    {
+      "id": "row-inspect",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/inspect.mjs"
+      ],
+      "lines": 112
+    },
+    {
+      "id": "row-agent-control",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/agent-control.mjs"
+      ],
+      "lines": 151
+    },
+    {
+      "id": "row-agent-state",
+      "verdict": "delete",
+      "bucket": "D",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/agent-state.mjs"
+      ],
+      "lines": 123
+    },
+    {
+      "id": "rows-barrel",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/tools/families/index.d.mts",
+        "packages/tools/families/index.mjs",
+        "packages/tools/families/manifest.json"
+      ],
+      "lines": 101
+    },
+    {
+      "id": "shadow-fs",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/confined-fs-tool.mjs"
+      ],
+      "lines": 219
+    },
+    {
+      "id": "shadow-search",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/confined-search-tool.mjs"
+      ],
+      "lines": 157
+    },
+    {
+      "id": "shadow-web",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/confined-web-tool.mjs"
+      ],
+      "lines": 188
+    },
+    {
+      "id": "shadow-bash",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/confined-bash-tool.mjs"
+      ],
+      "lines": 220
+    },
+    {
+      "id": "shadow-terminal",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/confined-terminal-tool.mjs"
+      ],
+      "lines": 210
+    },
+    {
+      "id": "team-tool-plane",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/team-tool-plane.mjs"
+      ],
+      "lines": 2300
+    },
+    {
+      "id": "seam-family-assembly",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/family-assembly.mjs"
+      ],
+      "lines": 217
+    },
+    {
+      "id": "pa-mount-registry",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/pa-mount-registry.mjs"
+      ],
+      "lines": 477
+    },
+    {
+      "id": "native-tool-admission",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/native-tool-admission.mjs"
+      ],
+      "lines": 72
+    },
+    {
+      "id": "native-bash-shadow",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/native-bash-tool.mjs"
+      ],
+      "lines": 168
+    },
+    {
+      "id": "governance-closed-world",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/governance-center/README.md",
+        "packages/runtime/governance-center/contribution-schema.ts",
+        "packages/runtime/governance-center/host-adapter.ts",
+        "packages/runtime/governance-center/index.ts",
+        "packages/runtime/governance-center/kernel.ts",
+        "packages/runtime/governance-center/registry.ts",
+        "packages/runtime/tool-dispatch/closed-world-guard.ts",
+        "packages/runtime/tool-dispatch/index.ts",
+        "packages/runtime/tool-dispatch/install.ts",
+        "packages/runtime/tool-dispatch/pending-calls.ts",
+        "packages/runtime/tool-dispatch/scoped-dispatcher.ts"
+      ],
+      "lines": 4766
+    },
+    {
+      "id": "pa-control-bridge",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/operation-permission/pa-control-bridge.ts"
+      ],
+      "lines": 1265
+    },
+    {
+      "id": "pre-execute-adapter",
+      "verdict": "delete",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/operation-permission/pre-execute-adapter.ts"
+      ],
+      "lines": 2822
+    },
+    {
+      "id": "a5p5-tools",
+      "verdict": "delete",
+      "bucket": "A",
+      "wave": 1,
+      "files": [
+        "packages/tools/a5p5-tools/src/args.ts",
+        "packages/tools/a5p5-tools/src/backend-contract.ts",
+        "packages/tools/a5p5-tools/src/backend-direct.ts",
+        "packages/tools/a5p5-tools/src/backend-stub.ts",
+        "packages/tools/a5p5-tools/src/effects-schema.ts",
+        "packages/tools/a5p5-tools/src/index.ts",
+        "packages/tools/a5p5-tools/src/pipeline.ts",
+        "packages/tools/a5p5-tools/src/register.ts",
+        "packages/tools/a5p5-tools/src/render.ts",
+        "packages/tools/a5p5-tools/src/spill.ts",
+        "packages/tools/a5p5-tools/src/types.ts",
+        "packages/tools/a5p5-tools/test/a5p5-args.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-effects-schema.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-execution-outcome.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-parity.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-render.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-shell-effect-mapping.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-spill.test.ts",
+        "packages/tools/a5p5-tools/test/helpers/a5p5-fs-port.ts",
+        "packages/tools/a5p5-tools/tsconfig.build.json",
+        "packages/tools/a5p5-tools/tsconfig.json",
+        "packages/tools/a5p5-tools/vitest.config.ts"
+      ],
+      "lines": 4653
+    },
+    {
+      "id": "assembly-agent-bindings",
+      "verdict": "replace",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/live/agent-bindings.mjs"
+      ],
+      "lines": 7138
+    },
+    {
+      "id": "assembly-root",
+      "verdict": "replace",
+      "bucket": "B",
+      "wave": 1,
+      "files": [
+        "packages/runtime/src/plugin/root.ts"
+      ],
+      "lines": 5243
+    },
+    {
+      "id": "central-tools-src",
+      "verdict": "keep",
+      "bucket": "KEEP",
+      "wave": null,
+      "files": [
+        "packages/tools/src/builtin-deny.ts",
+        "packages/tools/src/guard.ts",
+        "packages/tools/src/index.ts",
+        "packages/tools/src/native-fs-binding.ts",
+        "packages/tools/src/tokens.ts",
+        "packages/tools/src/tool-selector.ts",
+        "packages/tools/src/tools.ts",
+        "packages/tools/src/types.ts"
+      ],
+      "lines": 3432
+    },
+    {
+      "id": "central-control",
+      "verdict": "keep",
+      "bucket": "KEEP",
+      "wave": null,
+      "files": [
+        "packages/runtime/control/errors.ts",
+        "packages/runtime/control/index.ts",
+        "packages/runtime/control/leader-notification.ts",
+        "packages/runtime/control/service.ts",
+        "packages/runtime/control/types.ts"
+      ],
+      "lines": 10526
+    },
+    {
+      "id": "central-alpha6",
+      "verdict": "keep",
+      "bucket": "KEEP",
+      "wave": null,
+      "files": [
+        "packages/runtime/alpha6/assigned-officer-facts.ts",
+        "packages/runtime/alpha6/authority-generation.ts",
+        "packages/runtime/alpha6/composition.ts",
+        "packages/runtime/alpha6/notifier.ts",
+        "packages/runtime/alpha6/root-composition.ts",
+        "packages/runtime/alpha6/root-router.ts",
+        "packages/runtime/alpha6/wake-dispatch.ts",
+        "packages/runtime/alpha6/wake-intent-directory.ts",
+        "packages/runtime/alpha6/wake-intent-store.ts",
+        "packages/runtime/alpha6/wake-intent.ts",
+        "packages/runtime/alpha6/wake-plan.ts",
+        "packages/runtime/alpha6/wiring.ts"
+      ],
+      "lines": 3362
+    },
+    {
+      "id": "central-permission-algebra",
+      "verdict": "keep",
+      "bucket": "KEEP",
+      "wave": null,
+      "files": [
+        "packages/runtime/operation-permission/approval-routing.ts",
+        "packages/runtime/operation-permission/canonical-operation.ts",
+        "packages/runtime/operation-permission/errors.ts",
+        "packages/runtime/operation-permission/index.ts",
+        "packages/runtime/operation-permission/permission-coverage.ts",
+        "packages/runtime/operation-permission/permission-resolver.ts",
+        "packages/runtime/operation-permission/types.ts"
+      ],
+      "lines": 3289
+    }
+  ]
+}

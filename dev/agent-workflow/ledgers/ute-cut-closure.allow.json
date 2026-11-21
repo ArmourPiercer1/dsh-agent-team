@@ -1,0 +1,900 @@
+{
+  "schema": "ute-cut-closure-allow/1",
+  "note": "Per-FILE registration of tests and records that reference the A0 delete set. A directory is never exempt: a new referrer must either be rewired or registered here in review. subject=retired-module retires with its subject; subject=replaced-entry must be re-pointed at the new entry in A1, not deleted; subject=evidence-record is a historical record, executed by no CI leg. Registration does NOT drop a capability — see 06-CAPABILITY-CONTRACT.md.",
+  "entries": [
+    {
+      "path": "dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+      "subject": "evidence-record",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Historical evidence: it NAMES retired files as a record of a past run and is executed by no CI leg. Keeping the record is the point — deleting it would rewrite history."
+    },
+    {
+      "path": "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts",
+      "subject": "evidence-record",
+      "targets": [
+        "index.ts",
+        "pa-control-bridge.ts"
+      ],
+      "reason": "Historical evidence: it NAMES retired files as a record of a past run and is executed by no CI leg. Keeping the record is the point — deleting it would rewrite history."
+    },
+    {
+      "path": "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "pre-execute-adapter.ts",
+        "root.ts"
+      ],
+      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "pre-execute-adapter.ts",
+        "root.ts"
+      ],
+      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a3p4-production-permission-plane.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "pre-execute-adapter.ts",
+        "root.ts"
+      ],
+      "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a3p5-permission-splice.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a5-cancel-glob.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "cancel-leg.mjs"
+      ],
+      "reason": "Its subject is a retired module (cancel-leg.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-cancel-search.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "cancel-leg.mjs"
+      ],
+      "reason": "Its subject is a retired module (cancel-leg.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-globoff-key.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-auth-bridge.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "index.ts",
+        "pa-control-bridge.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, index.ts, pa-control-bridge.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-bash-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-correlation.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-pa-mount-registry.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "pa-mount-registry.mjs"
+      ],
+      "reason": "Its subject is a retired module (pa-mount-registry.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-read-c1c2.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-seam-enforcement.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-m1-unsupported-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-pindir-reserved-native.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-pindir-subagent-flip.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-read-slice-window.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5-scratch-default.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5b3-cancel-leg.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5int-r3-mount-integration.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-bindings.mjs",
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (agent-bindings.mjs, index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5natexe-native-takeover.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1-closed-world-guard.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1-guard-install.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1-scoped-dispatcher.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1r-change-abort.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1r-gg-probes.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1r-scoped-registry-double.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1r-shadow-attribution.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p1r-validate-resolve.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p2-composition.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5pbr2-binding-feed.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5r-cause-relay.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-bindings.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-bindings.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "pa-control-bridge.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts, pa-control-bridge.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/a6-boot-settlement-lanes.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/a6-root-wiring.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-glob-backend.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-glob-harness.ts",
+      "subject": "retired-module",
+      "targets": [
+        "glob-backend.mjs"
+      ],
+      "reason": "Its subject is a retired module (glob-backend.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-glue7-plane-backends.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "glob-backend.mjs",
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (glob-backend.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-search-backend.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "glob-backend.mjs",
+        "search-mechanics.mjs"
+      ],
+      "reason": "Its subject is a retired module (glob-backend.mjs, search-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/alpha5-search-harness.ts",
+      "subject": "retired-module",
+      "targets": [
+        "search-backend.mjs"
+      ],
+      "reason": "Its subject is a retired module (search-backend.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/bound-blueprint-persona-root.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/d2-s6-ensure-root-live.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "root.ts"
+      ],
+      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/f15-mcp-live-loss.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "agent-bindings.mjs"
+      ],
+      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/pd41-allow-semantics.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/pd42-execution-outcome.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "pre-execute-adapter.ts"
+      ],
+      "reason": "Its subject is a retired module (pre-execute-adapter.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/t12a-live-bridge.mjs",
+      "subject": "replaced-entry",
+      "targets": [
+        "agent-bindings.mjs"
+      ],
+      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/team-session-activation-glue.test.ts",
+      "subject": "replaced-entry",
+      "targets": [
+        "agent-bindings.mjs"
+      ],
+      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
+    },
+    {
+      "path": "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr1-kernel.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr1-registry.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr2-kernel-flow.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "fs-read-contribution.mjs",
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (fs-read-contribution.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "read-normalizer.ts"
+      ],
+      "reason": "Its subject is a retired module (read-normalizer.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr2-review-r1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr3-bl01-ask-door.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr3-kernel-flow.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "bash-contribution.mjs",
+        "fs-read-contribution.mjs",
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (bash-contribution.mjs, fs-read-contribution.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "bash-normalizer.ts"
+      ],
+      "reason": "Its subject is a retired module (bash-normalizer.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr4-jobs-bridge.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-bindings.mjs",
+        "index.ts",
+        "pa-mount-registry.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-bindings.mjs, index.ts, pa-mount-registry.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr5-kernel-flow.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr5-search-golden-vectors.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u6-pr6-arc-d-matrix.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "fs-mutation-mechanics.mjs",
+        "image-executor.mjs",
+        "image-read-port.mjs",
+        "image-row.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (fs-mutation-mechanics.mjs, image-executor.mjs, image-read-port.mjs, image-row.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "fs-mutation-mechanics.mjs"
+      ],
+      "reason": "Its subject is a retired module (fs-mutation-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-runtime-port.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-runtime-port.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-agentstate-fs-store-audit.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-agentstate-fs-store-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-state.mjs",
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-state.mjs, index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-f-agent-control-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-control-executor.mjs",
+        "agent-control-mechanics.mjs",
+        "agent-runtime-port.mjs",
+        "index.mjs",
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-control-executor.mjs, agent-control-mechanics.mjs, agent-runtime-port.mjs, index.mjs, index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-f-ui-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "ask-executor.mjs",
+        "index.mjs",
+        "present-executor.mjs",
+        "team-tool-plane.mjs",
+        "ui-mechanics.mjs"
+      ],
+      "reason": "Its subject is a retired module (ask-executor.mjs, index.mjs, present-executor.mjs, team-tool-plane.mjs, ui-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "image-executor.mjs",
+        "image-read-port.mjs",
+        "index.mjs",
+        "present-executor.mjs",
+        "search-mechanics.mjs",
+        "skill-executor.mjs"
+      ],
+      "reason": "Its subject is a retired module (image-executor.mjs, image-read-port.mjs, index.mjs, present-executor.mjs, search-mechanics.mjs, skill-executor.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-grep-late-stream.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "stream-drain.mjs"
+      ],
+      "reason": "Its subject is a retired module (stream-drain.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-state-home-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-state-home-prod-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "agent-state.mjs",
+        "family-assembly.mjs",
+        "fs-state-store.mjs",
+        "index.mjs"
+      ],
+      "reason": "Its subject is a retired module (agent-state.mjs, family-assembly.mjs, fs-state-store.mjs, index.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-w0b-approval-entry-law.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7-w0b-family-seam.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "family-assembly.mjs",
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (family-assembly.mjs, index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u74a-jobs-producer.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7f-inspect-family-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "inspect-executor.mjs",
+        "inspect.mjs",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (inspect-executor.mjs, inspect.mjs, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "bash-contribution.mjs",
+        "bash-normalizer.ts",
+        "index.mjs",
+        "process.mjs",
+        "pwsh-mechanics.mjs"
+      ],
+      "reason": "Its subject is a retired module (bash-contribution.mjs, bash-normalizer.ts, index.mjs, process.mjs, pwsh-mechanics.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/runtime/test/u7f-web-c1.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "packages/tools/test/u7f-ask-port-agent-binding.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs",
+        "ui-interaction-port.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs, ui-interaction-port.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts",
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (index.ts, team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
+      "subject": "retired-module",
+      "targets": [
+        "team-tool-plane.mjs",
+        "web-transport.mjs"
+      ],
+      "reason": "Its subject is a retired module (team-tool-plane.mjs, web-transport.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    },
+    {
+      "path": "tests/u6-arc-a-probe-family/src/probe-assembly.mjs",
+      "subject": "retired-module",
+      "targets": [
+        "index.ts"
+      ],
+      "reason": "Its subject is a retired module (index.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
+    }
+  ]
+}

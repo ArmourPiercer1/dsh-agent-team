@@ -9706,3 +9706,125 @@ DSH-APPEND-ONLY-LOG verdict=pass
 - UTE-G1 证据集 host-absolute 路径 grep → 0（`HOST-PATH-AUDIT.md`）
 
 **诚实边界**：全仓证据树的历史绝对路径（6574 文件、62380 行）未清理——它们不属于 UTE-G1 证据集、不被任何 UTE-G1 文档或台账引用，且部分被各自套件逐字节比较；本 PR 只声明 UTE-G1 证据集为 0，并在 `HOST-PATH-AUDIT.md` 明示该范围。共享生成面仍无 gate 槽位；`oldPath.files` 为此保持 87。
+
+## 2026-11-21 — P0 盘点：旧执行体系 28 个模块 / 140 个文件 / 30,624 行，退役=整模块删除
+
+**owner 裁决（本轮，直接指令）**：G1 的"逐族等价→退役"判据过于保守，会让新机制永远等旧机制签字；改为**退役先于开发**、**以中心系统能力验收**、**中心绿后并行绑定各工具族**；旧模块**整体保留或整体删除**，不尝试修补旧资产。本轮只做 P0 盘点，不删任何东西。
+
+### 决定可行性的那一次测量
+
+在 pinned next host（`tests/deepseek-harness-next` @ `9c2670d3`）里，**除 PTC 外每个族的原生工具本来就走 Provider 服务**：
+`tool-fs`→`ctx.fs`×37；`tool-fs-search`→`ctx.fs`+`ctx.subprocess`+`ctx.shell`；`tool-web`→`ctx.web`×14；`tool-bash`/`tool-pwsh`→`ctx.shell`×7/×8；`tool-bash-persistent`→`ctx.terminals`×9；`ptc-runtime`→**无** `ctx.*`。
+所以 Team 的 family body 不是"某个能力的唯一实现"，而是**同一能力的第二个声明者** + 本该待在 Provider 里的强制。这使"整模块删除"从冒险变成结构性清理。
+
+### 三桶与两波（数字全部由 `scripts/ute-p0-assets.mjs` 从 git 生成，不手写）
+
+```
+UTE-P0-ASSETS pass modules=28 files=140 lines=30624 delete=97 keep=43 wave1=66 wave2=31 findings=0
+```
+
+| 桶 | 模块 | 处置 |
+| --- | --- | --- |
+| B（工具已由宿主服务，但今天只有它在强制） | `family-{fs,search,web,process,ui}` + 5 个 `confined-*` shadow + 5 个 row | **wave 1：删除 66 文件，且同一个 PR 必须绑上对应 Provider lane** |
+| C（有 booked name 没有对应物） | `family-{inspect,agent-control,agent-state}` + 3 row（`team_skill` / `subagent_fork` / `exit_plan_mode` 无宿主对应物） | **不可删，整体保留**；解阻塞只有两个答案：给它一个家，或裁决取消该能力 |
+| A（运行时零影响） | `a5p5-tools`（dormant，无人注册无人派发） | wave 2 删除；**明确标注"删它不改变任何行为"，不许当进展** |
+| KEEP | `packages/tools/src`（guard/deny/selector+`native-fs-binding.ts`）、`native-tool-admission` | 这是新路线要**建在**上面的准入层，不是旧路线 |
+
+**最重要的发现（写进 02 §4）**：`confined-*` shadow 的成因是一个真实 bug——preset scope 上的 `tool-fs` 行解析到**继承来的、未受限**的 `fs-sandbox` 服务（PD-17）。Team 当时的答案是"再声明一次这些名字"，这是**正确诊断 + 错误机制**，和 family body 犯的是同一个错误的高一层版本。正确的修法是"让 Member realm 成为 `ctx.fs` 解析到的地方"，而这一步做完，realm 里每个名字**恰好一个声明者**。
+
+### 新的机器门（本 PR 引入）
+
+`node scripts/ute-p0-assets.mjs --check`：清单由 `git ls-files` 生成，门在以下任一情况红——列出的文件不存在、模块根下有未列出的 tracked 文件、一个文件被两个模块认领、bucket/verdict/wave/kind 组合不自洽、B 桶没有写配对、C 桶没写原因、totals 不再等于各行之和、散文清单漏模块。`scripts/ute-p0-assets.test.mjs` 17 条变异臂，每条都是"把一张通过的清单改坏，必须红"。
+
+**处置的不是保守，是判据**：旧路线不再需要"证明等价"才能退役；新路线需要证明的是"**每个名字恰好一个声明者**"，那是可机械判定的。
+
+## 2026-11-21（续）— 计划冻结：A0→A1→B→C→D，删除边界 146 文件 / 36,522 行，且 `read` 先于 `write`
+
+**owner 裁决（本轮，直接指令）**：认可整套方案，只修正一处——**B 阶段必须先 `read` 再 `write`，因为宿主 write 依赖先前的 read**。另三项（整体保留/整体删除、允许彻底回退、中心验收优先用原生工具）确认为新实施原则。
+
+### 这个修正比"顺序"更深：它暴露了一条中心义务
+
+读代码确认了机制，不是风格偏好：`packages/fs/tool-fs/src/write.ts:119` 的 `fs/write-intent` 单槽由 `packages/fs/fs-observation-policy` 提供，而该插件**挂在 base bundle**（`packages/bundle/base/cordis.patch.yml:292`）。所以出厂组合下：写已存在文件而无先前观测 → `FS_NOT_OBSERVED`（"file has not been read"）；观测版本已变 → `FS_STALE_VERSION`。观测记录在**按执行 actor（`actor.agent.session`）弱键的 per-provider `WeakMap`** 里。
+
+由此得到新中心义务 **E-obs**：`read` 记录的那份观测状态，必须是 `write` 查询的同一份状态、同一会话、跨 lane 保真。两种破法都是静默的——lane 内重新派生执行上下文（新 actor → 新 owner），或按调用新建 provider 实例（新 WeakMap）。任一发生，read→write 全部 `FS_NOT_OBSERVED`，而**所有单次调用测试仍然绿**。
+
+这正是"第二声明者"架构藏住的缺陷类别：shadow 工具自己派生执行上下文，它的观测状态与宿主行的状态根本不可能是同一份。所以 E-obs 是中心义务（决定 binding 与 lane 生命周期），不是工具细节。红证很便宜：绿 = 同会话 read→write 成功；红 = 人为让 lane 换 actor 或按调用新建 provider，必须 `FS_NOT_OBSERVED`/`FS_STALE_VERSION`。
+
+### A0 冻结边界（机器账本，37 模块 / 180 文件 / 69,512 行）
+
+```
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 findings=0
+```
+
+- **删除 146 文件 / 36,522 行**：8 个 family body（87）+ 8 row + 生成 barrel（11）+ 5 shadow（994）+ plane/seam/pa-mount-registry/native-tool-admission/native-bash + governance-center∪tool-dispatch（11 文件 / 4,766，**闭世界语义先搬后删**）+ pa-control-bridge + pre-execute-adapter + a5p5（dormant）。
+- **替换 2 文件 / 12,381 行**：`agent-bindings.mjs`(7,138) + `root.ts`(5,243)——新建入口、同 PR 删旧、**禁止新老二入口跨 PR 并存**；team 生命周期/成员管理/control 装配必须在新入口重新落地，这是 A1 的主要成本。
+- **保留 32 文件 / 20,609 行**：`packages/tools/src`（准入层，含 `native-fs-binding.ts`）、`control`(5/10,526)、`alpha6`(12/3,362)、权限代数(7/3,289)。
+- 三个原先卡住删除的名字按 owner 裁决解掉：`team_skill` 给家、`subagent_fork` 给行、`exit_plan_mode` **取消**（宿主只有 mod 名映射）。
+
+### 门禁与窗口纪律（新增，写进 05 §6）
+
+A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿集合（账本、中心契约 P1–P5、探针 rung 1–2、docs/日志/清单/目录），旧产品套件在窗口内**按构造为红**且必须是**具名退休清单**；该清单只许缩短，未列名而跳过的测试即门禁失败。A1 自身附带**极小 deny-by-default 准入点**，把"开发分支安全空窗"换成"能力降级为拒绝"，而不是等 B 建完再补强制点。
+
+**#819 关闭不合**：它加固的门正是 A0 要退役的门，合入要为即将删除的门再付一次约 25 分钟 hosted census。分支保留可复查。
+
+## 2026-11-21（再审）— A0 依外部 review 修正：read 前提证伪、账本门自相矛盾、闭包实测 192 引用 + 52 dist
+
+**review（`huang-yuke`，CHANGES_REQUESTED，review 6004453254）**：支持退役优先方向，指出 A0 尚不可执行，列 P0-1…P0-4 + 5 条 P1。逐条实测结果：**五条为真，其中四条是我自己文档/账本的缺陷**。
+
+### P0-1 读前写前提——我上一条的陈述是错的
+
+`bundle/base/cordis.patch.yml:292-294` 该行是 `disabled: true`；上游 Agent Note（2026-10-29）明载出厂默认让 `write`/`edit`/`apply_patch` 对着裸 provider 跑，后果原话 "a model can overwrite or edit a file it never read"。所以**出厂组合不强制先读**，`FS_NOT_OBSERVED`/`FS_STALE_VERSION` 只在部署打开该行时出现。
+
+处置：`read` 仍在 `write` 之前，但降级为**测试顺序**（读轴更便宜、且 read 为断言建立文件内容），不再声称宿主强制。新增三条强制：①先 pin 实际 Team 产品组合（该行是否 enabled，作为测试内具名事实）；②`E-obs` **条件成立**（未启用则从计划删除，不留在文档里作装饰）；③**双向臂**——未读即写必须被拒（启用时）且必须成功（未启用时），单向绿等同 #819 那个 corpus 空转缺陷。`E-obs` 收紧为三要素：同一 gate 实例、同一 owner（`exec.agent.session`）、同一 event scope；并写明"共享 FS provider 本身不成立任何观测"（状态在 policy 插件内，per-`apply()` WeakMap）。
+
+### P0-2 必绿账本门在成功删除后必然失败（我的自相矛盾）
+
+原 `05 §6` 要求窗口全程 `UTE-P0-ASSETS` 绿，而该门对 148 个待删文件逐个 `existsSync`。改为三态 + 冻结快照：`--snapshot` 一次性冻结 A0 断言（内容寻址 `ute-p0-assets.snapshot.json`，`--check` 对漂移即红，**不许重生成掩盖删除**）；`--check` 报告 `cut=pending|partial|cut`——`partial` 是**具名红**（半删=每名字两个声明者），`cut` 才断言 148 全缺、保留 32 全在。本地实测：`cut=pending(0/148)`、21 条变异臂全绿。
+
+### P0-3 Control 需要执行前权威事实（架构纠正，接受）
+
+单一 `ExecutionFact` 不能替代 registry/bridge 的审批期职责：决定、复验、一次性 grant 消费都发生在执行前，Stop-before-consume 更要求它可在缺事实时 fail-closed。改为三份契约：`InvocationAuthorityFacts`（agent / definition 身份 / 请求操作与参数 / 绑定 Blueprint / policy 代际 / owner）、`DurableAdmission`、`ExecutionFact`；必须覆盖多审批腿、复审后漂移、Stop-before-consume、缺事实 fail-closed。
+
+### P0-4 清单≠依赖闭包——新增 `scripts/ute-cut-closure.mjs`（按**解析后**引用，不按 basename）
+
+实测：待删集合 148 文件，**192 处引用**——13 处来自 7 个存活生产文件、168 处来自旧测试（按前缀允许，各有理由）、5 POC、3 证据；另有 **52 个已提交 dist 产物**必须随源删除。三个 `git ls-files` 看不见的引用：`a5sf-realm-row.mjs` 用 `new URL('./confined-*.mjs', import.meta.url)` 动态引 5 个 shadow；`operation-permission/index.ts` re-export `pre-execute-adapter`；`scripts/dist-placements/*` 仍点名退役 shadow。7 个生产引用者每个必须带 `rewire|replace|delete-with-group` + 说明，缺失即 `UTE_CLOSURE_UNDISPOSED` 红。另新增 `06-CAPABILITY-CONTRACT.md`：18 项 Team 公共能力（13 个 `team_*`、成员/投递/Blueprint/Control/Officer/Wake/Stop/remote/MCP/projection…）逐项 保留·测试·裁决取消·延后，**两入口整替不得靠"能编译"证明能力还在**。
+
+### P1（两条均接受）
+
+①`02` 普查面集纠错：rc.5 `tool-fs-search/src/index.ts:7-11` 明写 "Spawn-backed, **not** a `ctx.fs` provider method…**never `ctx.shell`**"，grep/glob 需要面集只有 `ctx.subprocess`；此前是文本计数当注入，已注明"面集必须来自真实注入/调用点"。②探针夹具规则：`dsh.u6-probe-family` 不合格（`probe-assembly.mjs:23` 自行构建 `governance-center` 面，是待删模块的消费者），原生工具为默认探针，专用 ToolDefinition 仅限无原生工具可触发的中心属性。
+
+### CI 提示（不宣称绿）
+
+上一 head 的 `pr-settlement-gate` 因结算评论停留在旧 head 失败、`ci-required` 因 `ci-census` skipped 失败。本轮改动后重新推送并**按新 head 重发结算**；hosted 聚合在重跑前一律记为 UNKNOWN，不记为绿。
+
+`UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 unclassified=13 distResiduals=52 findings=0` · `DSH-TEST-CATALOG tests=894 refused=0` · `EB3-CI-REQUIRED pass workflows=10` · `docs-sync findings=0 blocking=0`。
+
+## 2026-11-21（第三轮）— 依第二轮 review 做有限修订：观测守卫 A1 默认关、C14 拆分、闭包检查器补齐"删除后仍能报"、按文件登记豁免
+
+第二轮 review 结论：四项 P0 在设计层面成立，A0 接近可冻结；但闭包检查器仍有验收漏洞，且两个产品决策须明确签字。裁决照办，不做新一轮架构审计。
+
+### 决策一（照办）：FS 观测守卫 A1/B 默认关闭
+
+`fs-observation-policy` 保持出厂 `disabled: true`。理由与 review 一致且写进 `06`：它守的是"是否观察过当前版本"（盲写/过期写），不是 UTE 的"是否有权写这个路径"；A1 一边说要保留原生语义一边默认开它，是自相矛盾；开它还会把 `exec.agent.session` + event scope 这套跨调用状态塞进阶段 B 的证明负担。C/D 两种组合都测（未观察写：开启时拒、关闭时过；读后版本变更；跨 Agent 隔离；冷恢复后观察失效）。若将来产品要开，开的是 DSH 原生策略，Team 不自建观测守卫。**验收矩阵措辞改为"既有文件写入不要求先前观察"，不得写成"写入不设防"**（路径上界、Control 准入、OS 沙箱全部仍在）——该矩阵属当期计划，主 Agent 负责改。
+
+### 决策二（照办并纠正）：C14 只删实现、不删安全语义；C17/C18 废弃
+
+`06` 把原 C14 拆成 **C14（drop：旧逐族工具实现、重复的策略计算、历史等价要求——pwsh parity、web 逐跳 redirect ownership）+ C14b（preserve：统一中心的路径读写上界、网络 allow/deny、Control 权威、Stop）**。C17 写明废弃的是 **Team 自己的 `exit_plan_mode` 工具**，不动 DSH Plan Mode，也不动 `get_goal/create_goal/update_goal`。补"阶段性延后 ≠ 授权发布一个静默缺 C1–C13/C15/C16 的产品"，并给 C6/C7 单独加约束：Alpha.6 未接入期间相应审批与自动唤醒必须**显式禁用**，不得静默回退到非裁决的 Leader 路径；冷启动手动恢复原则不变。另纠正 review 与我上一版的偏差：**13 个 `team_*` 工具的来源是保留模块 `packages/tools/src/tools.ts`（实测 15 个名字），不是被退役的 plane**——上一版把功劳记给了 plane，写错了。
+
+### P0（照办）：闭包检查器两处验收漏洞
+
+1. **`existsSync` 解析让悬空引用在删除后消失**——这是致命的：删掉 `confined-fs-tool.mjs` 后，存活文件里的 `new URL('./confined-fs-tool.mjs', …)` 会解析成 null，检查器反而变绿。改为**文本候选解析 + 对冻结快照（A0 attestation）求交**：目标已删仍是目标。顺带补上 side-effect import（`import 'x'`）这一形式。
+2. **`--check` 只比对报告、不要求归零**——现在 `cut` 状态必须满足四零：`retiredSources=0`、`survivingProductionRefs=0`、`retiredDistArtifacts=0`、`duplicateDeclarants=0`；`partial` 是具名红。第四项说明为静态预筛（权威判定在 B 的 binding assembler），且只统计 production（测试夹具与证据里出现的书名不算声明者，否则该臂永久红、失去意义）。
+3. **新增真正的删除后负控**（`CLOSURE-9/10/11`，在临时 git 仓库里跑真实 CLI）：先 `--write` 得绿 → 删一个 → 必须 `PARTIAL` 红 → 全删但保留引用 → 必须 `PRODUCTION_REF` 红；另有 dist 残留红、未登记测试红。
+
+### P1（照办）：豁免从目录级改为文件级
+
+`TEST_PREFIXES` 整目录豁免删除，改为两张**已提交登记表**：`ute-cut-closure.allow.json`（逐文件：`subject` = `retired-module` | `replaced-entry` | `evidence-record` + 理由）、`ute-cut-closure.dispositions.json`（逐文件：`rewire` | `replace` | `delete-with-group` + 说明）。未登记即红、登记后不再引用即红、处置说明过短即红。实测 192 处引用 / 109 个文件：production 13 处（6 文件）、随主题退役的测试 156 处（85 文件）、**属于保留能力但 import 被替换入口的测试 21 处（16 文件，必须在 A1 改指向、不得删除）**、历史证据 2 处。dist 残留 52。
+
+### 文档矛盾清理（照办）
+
+`05` 开头改成"`read` 先行是测试顺序，不是宿主强制"（与 §3.1 一致）；`05` 阶梯里 grep 的面集改为 **`ctx.subprocess` only**；`04` 的 Admission 行删掉将被删除的 `native-tool-admission` publication slot，改为"保留其唯一硬性质：按 runtime Agent 对象寻址"；`04 §4` 的 "probe family supplies…" 改为"一个真实原生工具提供 binding 所需的一切"；`04` 的 `CORE PATCH BUDGET = 0` 增加业主裁决的**窄例外**：公共扩展点确实不足时，允许经单独批准的极小宿主基础设施补丁（Scope/Executor/Provider 扩展点），但复制或修改原生工具业务定义、vendor 改过的宿主包仍在禁止之列。
+
+### 门禁
+
+`UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 prodRefs=13 distResiduals=52 cut=pending(148/148) dupNames=0 findings=0` · 变异臂 21（账本）+ 13（闭包，含 3 条在临时 git 仓库里运行的删除后负控）。hosted CI 在重跑前记 UNKNOWN，不宣称绿。

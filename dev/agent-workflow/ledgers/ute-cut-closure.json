@@ -1,0 +1,373 @@
+{
+  "schema": "ute-cut-closure/1",
+  "derivedFrom": "textual specifier resolution vs the FROZEN A0 delete set",
+  "frozenFrom": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+  "deletedCount": 148,
+  "groups": [
+    {
+      "group": "exempt",
+      "count": 179,
+      "referrers": [
+        "dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs",
+        "dev/agent-workflow/evidence/alpha6-rebase-poc-20261102/P-AUTH/pa-chain.test.ts",
+        "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
+        "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
+        "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
+        "packages/runtime/test/a3p4-production-permission-plane.test.ts",
+        "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
+        "packages/runtime/test/a3p5-permission-splice.test.ts",
+        "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
+        "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
+        "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts",
+        "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
+        "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
+        "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
+        "packages/runtime/test/a5-cancel-glob.test.ts",
+        "packages/runtime/test/a5-cancel-search.test.ts",
+        "packages/runtime/test/a5-globoff-key.test.ts",
+        "packages/runtime/test/a5-m1-auth-bridge.test.ts",
+        "packages/runtime/test/a5-m1-bash-c1.test.ts",
+        "packages/runtime/test/a5-m1-correlation.test.ts",
+        "packages/runtime/test/a5-m1-pa-mount-registry.test.ts",
+        "packages/runtime/test/a5-m1-read-c1c2.test.ts",
+        "packages/runtime/test/a5-m1-seam-enforcement.test.ts",
+        "packages/runtime/test/a5-m1-unsupported-c1.test.ts",
+        "packages/runtime/test/a5-pindir-reserved-native.test.ts",
+        "packages/runtime/test/a5-pindir-subagent-flip.test.ts",
+        "packages/runtime/test/a5-read-slice-window.test.ts",
+        "packages/runtime/test/a5-scratch-default.test.ts",
+        "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
+        "packages/runtime/test/a5b3-cancel-leg.test.ts",
+        "packages/runtime/test/a5int-r3-mount-integration.test.ts",
+        "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
+        "packages/runtime/test/a5natexe-native-takeover.test.ts",
+        "packages/runtime/test/a5p1-closed-world-guard.test.ts",
+        "packages/runtime/test/a5p1-guard-install.test.ts",
+        "packages/runtime/test/a5p1-scoped-dispatcher.test.ts",
+        "packages/runtime/test/a5p1r-change-abort.test.ts",
+        "packages/runtime/test/a5p1r-gg-probes.test.ts",
+        "packages/runtime/test/a5p1r-scoped-registry-double.ts",
+        "packages/runtime/test/a5p1r-shadow-attribution.test.ts",
+        "packages/runtime/test/a5p1r-validate-resolve.test.ts",
+        "packages/runtime/test/a5p2-composition.test.ts",
+        "packages/runtime/test/a5p7-jobs-assembly-actuator.test.ts",
+        "packages/runtime/test/a5pbr2-binding-feed.test.ts",
+        "packages/runtime/test/a5r-cause-relay.test.ts",
+        "packages/runtime/test/a5w-bindseam-subtree-seam-c1.test.ts",
+        "packages/runtime/test/a5w-vobs-admission-observe-c1.test.ts",
+        "packages/runtime/test/a5w-vseam-pa-verifier-seam-c1.test.ts",
+        "packages/runtime/test/a6-boot-settlement-lanes.test.ts",
+        "packages/runtime/test/a6-root-wiring.test.ts",
+        "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
+        "packages/runtime/test/alpha5-glob-backend.test.ts",
+        "packages/runtime/test/alpha5-glob-harness.ts",
+        "packages/runtime/test/alpha5-glue7-plane-backends.test.ts",
+        "packages/runtime/test/alpha5-search-backend.test.ts",
+        "packages/runtime/test/alpha5-search-harness.ts",
+        "packages/runtime/test/bound-blueprint-persona-root.test.ts",
+        "packages/runtime/test/d2-s6-ensure-root-live.test.ts",
+        "packages/runtime/test/f15-mcp-live-loss.test.ts",
+        "packages/runtime/test/pd41-allow-semantics.test.ts",
+        "packages/runtime/test/pd42-execution-outcome.test.ts",
+        "packages/runtime/test/t12a-live-bridge.mjs",
+        "packages/runtime/test/team-session-activation-glue.test.ts",
+        "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
+        "packages/runtime/test/u6-pr1-contribution-schema.test.ts",
+        "packages/runtime/test/u6-pr1-kernel.test.ts",
+        "packages/runtime/test/u6-pr1-registry.test.ts",
+        "packages/runtime/test/u6-pr2-kernel-flow.test.ts",
+        "packages/runtime/test/u6-pr2-kernel-guard-plants.test.ts",
+        "packages/runtime/test/u6-pr2-read-golden-vectors.test.ts",
+        "packages/runtime/test/u6-pr2-review-r1.test.ts",
+        "packages/runtime/test/u6-pr2-rrem2-read-lane.test.ts",
+        "packages/runtime/test/u6-pr3-bl01-ask-door.test.ts",
+        "packages/runtime/test/u6-pr3-kernel-flow.test.ts",
+        "packages/runtime/test/u6-pr3-shell-golden-vectors.test.ts",
+        "packages/runtime/test/u6-pr4-jobs-bridge.test.ts",
+        "packages/runtime/test/u6-pr5-kernel-flow.test.ts",
+        "packages/runtime/test/u6-pr5-search-golden-vectors.test.ts",
+        "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
+        "packages/runtime/test/u6-pr6-arc-d-matrix.test.ts",
+        "packages/runtime/test/u7-9a-fs-mutation-c1.test.ts",
+        "packages/runtime/test/u7-9a-mutation-golden-vectors.test.ts",
+        "packages/runtime/test/u7-ac1-subagents-port-c1.test.ts",
+        "packages/runtime/test/u7-agentstate-fs-store-audit.test.ts",
+        "packages/runtime/test/u7-agentstate-fs-store-c1.test.ts",
+        "packages/runtime/test/u7-f-agent-control-c1.test.ts",
+        "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts",
+        "packages/runtime/test/u7-f-ui-c1.test.ts",
+        "packages/runtime/test/u7-fixfwd-hardlink-alias.test.ts",
+        "packages/runtime/test/u7-grep-late-stream.test.ts",
+        "packages/runtime/test/u7-state-home-c1.test.ts",
+        "packages/runtime/test/u7-state-home-prod-c1.test.ts",
+        "packages/runtime/test/u7-w0b-approval-entry-law.test.ts",
+        "packages/runtime/test/u7-w0b-family-seam.test.ts",
+        "packages/runtime/test/u74a-jobs-producer.test.ts",
+        "packages/runtime/test/u7f-inspect-family-c1.test.ts",
+        "packages/runtime/test/u7f-pwsh-row-c1.test.ts",
+        "packages/runtime/test/u7f-web-c1.test.ts",
+        "packages/tools/test/u7f-ask-port-agent-binding.test.ts",
+        "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
+        "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
+        "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
+        "tests/u6-arc-a-probe-family/src/probe-assembly.mjs"
+      ]
+    },
+    {
+      "group": "production",
+      "count": 13,
+      "referrers": [
+        "packages/runtime/operation-permission/canonical-operation.ts",
+        "packages/runtime/operation-permission/index.ts",
+        "packages/runtime/src/plugin/host.ts",
+        "packages/runtime/src/plugin/live/a5sf-realm-row.mjs",
+        "packages/runtime/src/plugin/live/center-shadow-row.mjs",
+        "packages/runtime/src/plugin/types.ts"
+      ]
+    }
+  ],
+  "dispositions": {
+    "packages/runtime/operation-permission/canonical-operation.ts": {
+      "disposition": "rewire",
+      "note": "Imports bash-normalizer / read-normalizer from the retired process and fs families. Those normalizers are text normalization, not execution: they move into the kept algebra at the cut, so the permission result for a bash/read operation is unchanged."
+    },
+    "packages/runtime/operation-permission/index.ts": {
+      "disposition": "rewire",
+      "note": "Re-exports pa-control-bridge and pre-execute-adapter. The two re-export lines are removed with the modules; the algebra surface stays."
+    },
+    "packages/runtime/src/plugin/host.ts": {
+      "disposition": "replace",
+      "note": "Holds the lazy accessors that reach the old assembly (agent-bindings/root). Replaced by the new entry host surface in the A1 swap."
+    },
+    "packages/runtime/src/plugin/types.ts": {
+      "disposition": "replace",
+      "note": "Re-declares the assembly types of the replaced entries; rewritten with them."
+    },
+    "packages/runtime/src/plugin/live/center-shadow-row.mjs": {
+      "disposition": "replace",
+      "note": "A shadow row over the old assembly; the new binding assembler is its replacement, and it exists only to compensate for the preset-scope resolution problem the provider lane now fixes."
+    },
+    "packages/runtime/src/plugin/live/a5sf-realm-row.mjs": {
+      "disposition": "replace",
+      "note": "Reaches five confined shadows through `new URL(..., import.meta.url)` — a dynamic reference a static scan cannot see. It is the realm mount itself: the new provider-lane realm replaces it wholesale."
+    },
+    "packages/tools/test/u7f-ask-port-agent-binding.test.ts": {
+      "disposition": "delete-with-group",
+      "note": "Exercise of the retired ask port lane; retired with its subject."
+    }
+  },
+  "distResiduals": [
+    {
+      "source": "packages/runtime/governance-center/contribution-schema.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/contribution-schema.js"
+    },
+    {
+      "source": "packages/runtime/governance-center/contribution-schema.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/contribution-schema.d.ts"
+    },
+    {
+      "source": "packages/runtime/governance-center/contribution-schema.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/contribution-schema.js.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/contribution-schema.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/contribution-schema.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/host-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/host-adapter.js"
+    },
+    {
+      "source": "packages/runtime/governance-center/host-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/host-adapter.d.ts"
+    },
+    {
+      "source": "packages/runtime/governance-center/host-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/host-adapter.js.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/host-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/host-adapter.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/index.js"
+    },
+    {
+      "source": "packages/runtime/governance-center/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/index.d.ts"
+    },
+    {
+      "source": "packages/runtime/governance-center/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/index.js.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/index.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/kernel.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/kernel.js"
+    },
+    {
+      "source": "packages/runtime/governance-center/kernel.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/kernel.d.ts"
+    },
+    {
+      "source": "packages/runtime/governance-center/kernel.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/kernel.js.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/kernel.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/kernel.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/registry.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/registry.js"
+    },
+    {
+      "source": "packages/runtime/governance-center/registry.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/registry.d.ts"
+    },
+    {
+      "source": "packages/runtime/governance-center/registry.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/registry.js.map"
+    },
+    {
+      "source": "packages/runtime/governance-center/registry.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/governance-center/registry.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.js"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.d.ts"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.js.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/closed-world-guard.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/closed-world-guard.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/index.js"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/index.d.ts"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/index.js.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/index.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/index.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/install.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/install.js"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/install.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/install.d.ts"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/install.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/install.js.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/install.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/install.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/pending-calls.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/pending-calls.js"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/pending-calls.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/pending-calls.d.ts"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/pending-calls.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/pending-calls.js.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/pending-calls.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/pending-calls.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.d.ts"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.js.map"
+    },
+    {
+      "source": "packages/runtime/tool-dispatch/scoped-dispatcher.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/tool-dispatch/scoped-dispatcher.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.d.ts"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.js.map"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pa-control-bridge.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pa-control-bridge.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.js.map"
+    },
+    {
+      "source": "packages/runtime/operation-permission/pre-execute-adapter.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/operation-permission/pre-execute-adapter.d.ts.map"
+    },
+    {
+      "source": "packages/runtime/src/plugin/root.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/src/plugin/root.js"
+    },
+    {
+      "source": "packages/runtime/src/plugin/root.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/src/plugin/root.d.ts"
+    },
+    {
+      "source": "packages/runtime/src/plugin/root.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/src/plugin/root.js.map"
+    },
+    {
+      "source": "packages/runtime/src/plugin/root.ts",
+      "artifact": "packages/runtime/dist/packages/runtime/src/plugin/root.d.ts.map"
+    }
+  ],
+  "cut": {
+    "state": "pending",
+    "retiredSourcesOnDisk": 148
+  }
+}
