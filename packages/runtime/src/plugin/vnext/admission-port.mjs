@@ -123,6 +123,22 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     return store({ preExecute: { kind: 'allow' }, guard: undefined })
   }
 
+  /**
+   * POST-APPROVAL RECHECK. The pre-execute decision is a moment, not a licence: between the ask and
+   * the body the policy can be recompiled, the member revoked, or the lane narrowed. The guard is the
+   * LAST place before the body, so it re-decides with the binding as it is NOW and refuses when the
+   * answer changed - without spending the grant, because a grant that was not exercised must not be
+   * burned by a stale call.
+   */
+  const recheck = (entry, exec) => {
+    const wanted = entry.preExecute.kind === 'allow' ? 'allow' : 'ask'
+    const binding = resolveBinding(exec)
+    const now = admit({ binding, toolName: exec.name, arguments: exec.arguments })
+    if (now.kind === wanted) return undefined
+    const code = now.kind === 'deny' ? now.code : `RECHECK_${String(now.kind).toUpperCase()}`
+    return `ADMISSION_RECHECK_${code}: the decision for ${JSON.stringify(callIdOfExec(exec))} was ${wanted} at pre-execute and is ${now.kind} now; the call is refused rather than executed under an authority that no longer holds`
+  }
+
   /** Spend the grant once. Returns the guard reason (undefined = allow). */
   const spend = (entry, callId) => {
     /* c8 ignore next -- callers only invoke this with a minted capability */
@@ -160,7 +176,18 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   const disposeGuard = tools.guard((exec) => {
     const callId = callIdOfExec(exec)
     const entry = evaluate(exec)
-    if (entry.capability !== undefined) return spend(entry, callId)
+    // A REPLAY refusal is already final; rechecking it would ask the lane for a second opinion on a
+    // call that must never run.
+    if (entry.capability === undefined && entry.guard === undefined) {
+      const drift = recheck(entry, exec)
+      if (drift !== undefined) return drift
+      return undefined
+    }
+    if (entry.capability !== undefined) {
+      const drift = recheck(entry, exec)
+      if (drift !== undefined) return drift
+      return spend(entry, callId)
+    }
     return entry.guard
   })
 

@@ -22,6 +22,7 @@ const { admit, invocationFactsOf } = await import('../src/plugin/vnext/admission
 // assert the properties the centre relies on, so a regression in the product turns them red.
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
+const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
 
 const lane = (allow = [], ask = [], deny = []) => ({ mode: 'restricted', allow, ask, deny })
 
@@ -261,4 +262,81 @@ test('ADM-15 — a ledger that cannot read itself reports UNKNOWN for everything
   assert.equal(health.state, 'UNKNOWN')
   assert.equal(health.reason, 'LEDGER_TRUNCATED')
   assert.throws(() => ledger.recordAdmission({ callId: 'new-1', decision: 'allow' }), (error) => error.code === 'LEDGER_TRUNCATED', 'a corrupt ledger must fail closed, not start a second history beside the truncated one')
+})
+
+// ------------------------------------------------- POST-APPROVAL RECHECK (the guard re-decides)
+//
+// An approval is a decision at a moment, not a licence. Between the ask and the body the policy can
+// be recompiled or narrowed, so the guard - the last point before the body - re-decides with the
+// binding as it is NOW. These arms use a fake tools service: no host, no dispatch, just the two
+// stages the host calls.
+
+const fakeHost = () => {
+  const listeners = {}
+  let guardFn
+  const tools = {
+    guard (fn) { guardFn = fn; return () => {} },
+  }
+  const ctx = {
+    get: (name) => (name === 'tools' ? tools : undefined),
+    on: (event, fn) => { listeners[event] = fn; return () => {} },
+  }
+  return {
+    ctx,
+    preExecute: async (exec) => listeners['tools/pre-execute'](exec, async () => ({ kind: 'allow' })),
+    guard: (exec) => guardFn(exec),
+    result: (exec) => listeners['tools/result'](exec),
+  }
+}
+
+const askBinding = () => binding({ read: lane(['/work/a'], ['/work/ask']) })
+
+test('ADM-19 — an approval that no longer holds at guard time is REFUSED, not executed', async () => {
+  const host = fakeHost()
+  let current = askBinding()
+  const facts = []
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => current,
+    record: (fact) => facts.push(fact),
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+  })
+  const exec = { name: 'read', callId: 'recheck-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  const asked = await host.preExecute(exec)
+  assert.equal(asked.kind, 'ask', 'the ask must be raised so there is something to recheck')
+  // The lane narrows between approval and execution: the same locator is now outside it.
+  current = binding({ read: lane(['/work/a']) })
+  const verdict = await host.guard(exec)
+  assert.equal(typeof verdict, 'string', 'the guard must refuse after the authority changed')
+  assert.match(verdict, /ADMISSION_RECHECK_LANE_DENY/u)
+  assert.equal(facts.length, 1, 'the recheck does not write a second authority record; it refuses the call')
+})
+
+test('ADM-20 — an approval that still holds is spent exactly once, and a replay meets the ledger', async () => {
+  const host = fakeHost()
+  const facts = []
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => askBinding(),
+    record: (fact) => facts.push(fact),
+    // The replay authority is the DURABLE side; here the fact list stands in for the ledger so the
+    // arm can prove the memo's lifetime is one execution.
+    isReplay: (callId) => facts.some((fact) => fact.callId === callId),
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+  })
+  const exec = { name: 'read', callId: 'recheck-2', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await host.preExecute(exec)).kind, 'ask')
+  assert.equal(await host.guard(exec), undefined, 'the unchanged authority must let the approved call through')
+  assert.equal(await host.guard(exec), undefined, 'the host consults the guard twice in one execution; the memo serves the second')
+  host.result(exec)
+  // A SECOND dispatch with the same callId is a replay: the memo is gone with the execution.
+  const replayed = await host.preExecute(exec)
+  assert.equal(replayed.kind, 'deny')
+  assert.match(String(replayed.reason), /ADMISSION_REPLAY/u)
 })
