@@ -1,0 +1,943 @@
+{
+  "schema": "ute-p0-assets/1",
+  "derivedFrom": "git ls-files over the module roots in scripts/ute-p0-assets.mjs",
+  "totals": {
+    "modules": 28,
+    "files": 140,
+    "lines": 30624,
+    "deleteFiles": 97,
+    "keepFiles": 43,
+    "wave1Files": 66,
+    "wave2Files": 31
+  },
+  "duplicateClaims": [],
+  "modules": [
+    {
+      "id": "family-fs",
+      "title": "FS governed family body — four executors over ONE controlled root",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/fs-family"
+      ],
+      "names": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "hostCounterpart": [
+        "tool-fs: read, write, edit, read_image (+apply_patch)"
+      ],
+      "providerFaces": [
+        "ctx.fs"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:fs provider lane bound on the Member realm (promote tools/src/native-fs-binding.ts)"
+      ],
+      "note": "The four rows are ONE candidate: a partial mount is refused as PLANE_FS_FAMILY_INCOMPLETE. This body is the only write containment today, so it may not be deleted before the lane is bound — and the lane is the same decision this body makes, moved in front of the host provider.",
+      "files": [
+        "packages/tools/fs-family/README.md",
+        "packages/tools/fs-family/src/edit-executor.mjs",
+        "packages/tools/fs-family/src/edit-row.mjs",
+        "packages/tools/fs-family/src/fs-family-contribution.mjs",
+        "packages/tools/fs-family/src/fs-mechanics.mjs",
+        "packages/tools/fs-family/src/fs-mutation-mechanics.mjs",
+        "packages/tools/fs-family/src/fs-read-contribution.mjs",
+        "packages/tools/fs-family/src/image-executor.mjs",
+        "packages/tools/fs-family/src/image-read-port.mjs",
+        "packages/tools/fs-family/src/image-row.mjs",
+        "packages/tools/fs-family/src/index.mjs",
+        "packages/tools/fs-family/src/read-executor.mjs",
+        "packages/tools/fs-family/src/read-normalizer.ts",
+        "packages/tools/fs-family/src/read-presentation.mjs",
+        "packages/tools/fs-family/src/read-row.mjs",
+        "packages/tools/fs-family/src/write-executor.mjs",
+        "packages/tools/fs-family/src/write-row.mjs"
+      ],
+      "lines": 3139
+    },
+    {
+      "id": "family-search",
+      "title": "Search governed family body — grep/glob executor + presentation",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/search-family"
+      ],
+      "names": [
+        "grep",
+        "glob"
+      ],
+      "hostCounterpart": [
+        "tool-fs-search: grep, glob"
+      ],
+      "providerFaces": [
+        "ctx.fs",
+        "ctx.subprocess",
+        "ctx.shell"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:search provider faces (fs + subprocess) bound on the Member realm"
+      ],
+      "note": "SD-SEARCH-1 (a path-less grep returns zero hits) is a defect of THIS body, not a semantic difference to sign: deleting the body deletes the defect, and the host row never had it.",
+      "files": [
+        "packages/tools/search-family/README.md",
+        "packages/tools/search-family/src/cancel-leg.mjs",
+        "packages/tools/search-family/src/glob-backend.mjs",
+        "packages/tools/search-family/src/index.mjs",
+        "packages/tools/search-family/src/search-backend.mjs",
+        "packages/tools/search-family/src/search-contribution.mjs",
+        "packages/tools/search-family/src/search-mechanics.mjs",
+        "packages/tools/search-family/src/search-row.mjs",
+        "packages/tools/search-family/src/stream-drain.mjs"
+      ],
+      "lines": 3651
+    },
+    {
+      "id": "family-web",
+      "title": "Web governed family body — fetch/search + redirect ownership",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/web-family"
+      ],
+      "names": [
+        "web_fetch",
+        "web_search"
+      ],
+      "hostCounterpart": [
+        "tool-web: web_fetch, web_search"
+      ],
+      "providerFaces": [
+        "ctx.web"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:ctx.web lane bound on the Member realm"
+      ],
+      "note": "Network ownership lives in this body today; the host rows exist and call ctx.web, so the ownership moves to the provider, not to a second tool definition.",
+      "files": [
+        "packages/tools/web-family/README.md",
+        "packages/tools/web-family/src/fetch-executor.mjs",
+        "packages/tools/web-family/src/fetch-row.mjs",
+        "packages/tools/web-family/src/index.mjs",
+        "packages/tools/web-family/src/search-executor.mjs",
+        "packages/tools/web-family/src/search-row.mjs",
+        "packages/tools/web-family/src/web-family-contribution.mjs",
+        "packages/tools/web-family/src/web-mechanics.mjs",
+        "packages/tools/web-family/src/web-search-provider.mjs",
+        "packages/tools/web-family/src/web-transport.mjs"
+      ],
+      "lines": 1942
+    },
+    {
+      "id": "family-process",
+      "title": "Process governed family body — bash, plus a pwsh the shipped wiring never routes",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/process-family"
+      ],
+      "names": [
+        "bash",
+        "pwsh"
+      ],
+      "hostCounterpart": [
+        "tool-bash: bash",
+        "tool-pwsh: pwsh",
+        "tool-bash-persistent: bash over ctx.terminals"
+      ],
+      "providerFaces": [
+        "ctx.shell",
+        "ctx.terminals"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:ctx.shell lane bound on the Member realm"
+      ],
+      "note": "The preset removes the pwsh row and no route registers it, so this body never had a two-member unit; the ledger records the unit as 1/2 rather than shrinking it.",
+      "files": [
+        "packages/tools/process-family/README.md",
+        "packages/tools/process-family/src/bash-contribution.mjs",
+        "packages/tools/process-family/src/bash-normalizer.ts",
+        "packages/tools/process-family/src/bash-row.mjs",
+        "packages/tools/process-family/src/confined-shell-executor.mjs",
+        "packages/tools/process-family/src/index.mjs",
+        "packages/tools/process-family/src/pwsh-confined.mjs",
+        "packages/tools/process-family/src/pwsh-executor.mjs",
+        "packages/tools/process-family/src/pwsh-mechanics.mjs",
+        "packages/tools/process-family/src/pwsh-row.mjs",
+        "packages/tools/process-family/src/shell-mechanics.mjs"
+      ],
+      "lines": 1813
+    },
+    {
+      "id": "family-ui",
+      "title": "UI governed family body — ask_user_question + present",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/ui-family"
+      ],
+      "names": [
+        "ask_user_question",
+        "present"
+      ],
+      "hostCounterpart": [
+        "interaction/tool-ask-user: ask_user_question",
+        "deliverables/tool-present: present"
+      ],
+      "providerFaces": [
+        "ctx.userQuestions",
+        "ctx.fs",
+        "ctx.agents"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:userQuestions passthrough + present receipt face on the Member realm"
+      ],
+      "note": "PD-25 removes tool-ask-user from the shipping preset while the host row still exists; this body is a second declarant of both names.",
+      "files": [
+        "packages/tools/ui-family/README.md",
+        "packages/tools/ui-family/src/ask-executor.mjs",
+        "packages/tools/ui-family/src/ask-row.mjs",
+        "packages/tools/ui-family/src/index.mjs",
+        "packages/tools/ui-family/src/present-executor.mjs",
+        "packages/tools/ui-family/src/present-row.mjs",
+        "packages/tools/ui-family/src/ui-family-contribution.mjs",
+        "packages/tools/ui-family/src/ui-interaction-port.mjs",
+        "packages/tools/ui-family/src/ui-mechanics.mjs"
+      ],
+      "lines": 1586
+    },
+    {
+      "id": "shadow-fs",
+      "title": "Confined FS shadow — re-declares read/write/edit/read_image over a confined fs face",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/confined-fs-tool.mjs"
+      ],
+      "names": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "hostCounterpart": [
+        "tool-fs (the same rows, on the preset scope)"
+      ],
+      "providerFaces": [
+        "ctx.fs"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:fs provider lane (the shadow exists BECAUSE the preset scope resolves the inherited, unconfined fs service)"
+      ],
+      "note": "The shadow was the right diagnosis and the wrong mechanism: it answers \"the preset row resolves the wrong fs\" by declaring the name a second time. The target answers it by making the Member realm the place ctx.fs resolves.",
+      "files": [
+        "packages/runtime/src/plugin/live/confined-fs-tool.mjs"
+      ],
+      "lines": 219
+    },
+    {
+      "id": "shadow-search",
+      "title": "Confined search shadow — re-declares grep/glob",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/confined-search-tool.mjs"
+      ],
+      "names": [
+        "grep",
+        "glob"
+      ],
+      "hostCounterpart": [
+        "tool-fs-search"
+      ],
+      "providerFaces": [
+        "ctx.fs",
+        "ctx.subprocess"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:search provider faces bound on the Member realm"
+      ],
+      "note": "Same pattern as shadow-fs.",
+      "files": [
+        "packages/runtime/src/plugin/live/confined-search-tool.mjs"
+      ],
+      "lines": 157
+    },
+    {
+      "id": "shadow-web",
+      "title": "Confined web shadow — re-declares web_fetch/web_search",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/confined-web-tool.mjs"
+      ],
+      "names": [
+        "web_fetch",
+        "web_search"
+      ],
+      "hostCounterpart": [
+        "tool-web"
+      ],
+      "providerFaces": [
+        "ctx.web"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:ctx.web lane bound on the Member realm"
+      ],
+      "note": "Same pattern as shadow-fs.",
+      "files": [
+        "packages/runtime/src/plugin/live/confined-web-tool.mjs"
+      ],
+      "lines": 188
+    },
+    {
+      "id": "shadow-bash",
+      "title": "Confined bash shadow — re-declares bash",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/confined-bash-tool.mjs"
+      ],
+      "names": [
+        "bash"
+      ],
+      "hostCounterpart": [
+        "tool-bash"
+      ],
+      "providerFaces": [
+        "ctx.shell"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:ctx.shell lane bound on the Member realm"
+      ],
+      "note": "Same pattern as shadow-fs.",
+      "files": [
+        "packages/runtime/src/plugin/live/confined-bash-tool.mjs"
+      ],
+      "lines": 220
+    },
+    {
+      "id": "shadow-terminal",
+      "title": "Confined terminal shadow — re-declares the persistent shell face",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/confined-terminal-tool.mjs"
+      ],
+      "names": [
+        "bash (persistent)"
+      ],
+      "hostCounterpart": [
+        "tool-bash-persistent over ctx.terminals"
+      ],
+      "providerFaces": [
+        "ctx.terminals"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "central:ctx.terminals lane bound on the Member realm"
+      ],
+      "note": "The persistent shell is the one face where UTE-10 (immutable execution world) applies: the provider must pin the OS boundary at creation.",
+      "files": [
+        "packages/runtime/src/plugin/live/confined-terminal-tool.mjs"
+      ],
+      "lines": 210
+    },
+    {
+      "id": "row-fs",
+      "title": "FamilyAssembly row — dsh.fs-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/fs.mjs"
+      ],
+      "names": [
+        "read",
+        "write",
+        "edit",
+        "read_image"
+      ],
+      "hostCounterpart": [
+        "tool-fs"
+      ],
+      "providerFaces": [
+        "ctx.fs"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "family-fs (the row and the body are one unit)"
+      ],
+      "note": "The row is the descriptor the plane drives; deleting the body without the row leaves a dangling import.",
+      "files": [
+        "packages/tools/families/fs.mjs"
+      ],
+      "lines": 170
+    },
+    {
+      "id": "row-search",
+      "title": "FamilyAssembly row — dsh.search-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/search.mjs"
+      ],
+      "names": [
+        "grep",
+        "glob"
+      ],
+      "hostCounterpart": [
+        "tool-fs-search"
+      ],
+      "providerFaces": [
+        "ctx.fs",
+        "ctx.subprocess"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "family-search"
+      ],
+      "note": "One unit with its body.",
+      "files": [
+        "packages/tools/families/search.mjs"
+      ],
+      "lines": 94
+    },
+    {
+      "id": "row-web",
+      "title": "FamilyAssembly row — dsh.web-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/web.mjs"
+      ],
+      "names": [
+        "web_fetch",
+        "web_search"
+      ],
+      "hostCounterpart": [
+        "tool-web"
+      ],
+      "providerFaces": [
+        "ctx.web"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "family-web"
+      ],
+      "note": "One unit with its body.",
+      "files": [
+        "packages/tools/families/web.mjs"
+      ],
+      "lines": 212
+    },
+    {
+      "id": "row-process",
+      "title": "FamilyAssembly row — dsh.process-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/process.mjs"
+      ],
+      "names": [
+        "bash",
+        "pwsh"
+      ],
+      "hostCounterpart": [
+        "tool-bash",
+        "tool-pwsh"
+      ],
+      "providerFaces": [
+        "ctx.shell"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "family-process"
+      ],
+      "note": "One unit with its body.",
+      "files": [
+        "packages/tools/families/process.mjs"
+      ],
+      "lines": 164
+    },
+    {
+      "id": "row-ui",
+      "title": "FamilyAssembly row — dsh.ui-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/ui.mjs"
+      ],
+      "names": [
+        "ask_user_question",
+        "present"
+      ],
+      "hostCounterpart": [
+        "interaction/tool-ask-user",
+        "deliverables/tool-present"
+      ],
+      "providerFaces": [
+        "ctx.userQuestions",
+        "ctx.fs",
+        "ctx.agents"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 1,
+      "deleteWith": [
+        "family-ui"
+      ],
+      "note": "One unit with its body.",
+      "files": [
+        "packages/tools/families/ui.mjs"
+      ],
+      "lines": 129
+    },
+    {
+      "id": "family-inspect",
+      "title": "Inspect governed family body — team_skill + the two team_cordis_inspect rows",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/inspect-family"
+      ],
+      "names": [
+        "team_skill",
+        "team_cordis_inspect_list",
+        "team_cordis_inspect_query"
+      ],
+      "hostCounterpart": [
+        "extensions/tool-cordis: cordis_inspect_list, cordis_inspect_query — DIFFERENT spellings, no team_ prefix"
+      ],
+      "providerFaces": [
+        "ctx.cordisInspect"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "team_skill has NO host counterpart, and the cordis pair is spelled differently. Whole-module rules mean this module stays whole until team_skill has a home.",
+      "files": [
+        "packages/tools/inspect-family/README.md",
+        "packages/tools/inspect-family/src/index.mjs",
+        "packages/tools/inspect-family/src/inspect-executor.mjs",
+        "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+        "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+        "packages/tools/inspect-family/src/inspect-rows.mjs",
+        "packages/tools/inspect-family/src/row-names.mjs",
+        "packages/tools/inspect-family/src/skill-executor.mjs",
+        "packages/tools/inspect-family/src/skill-mechanics.mjs",
+        "packages/tools/inspect-family/src/skill-row.mjs"
+      ],
+      "lines": 1314
+    },
+    {
+      "id": "family-agent-control",
+      "title": "Agent-control governed family body — the seven subagent/orchestration rows",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/agent-control-family"
+      ],
+      "names": [
+        "subagent",
+        "subagent_fork",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "list_subagent_models",
+        "workflow"
+      ],
+      "hostCounterpart": [
+        "subagent/tool-subagent: subagent",
+        "subagent/tool-subagent-control: send_message, interrupt_agent, list_agents, list_subagent_models (+wait_agent)",
+        "workflow/tool-workflow: workflow"
+      ],
+      "providerFaces": [
+        "ctx.subagents",
+        "ctx.sessions",
+        "ctx.workflowEngine"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "subagent_fork is the one name with no host counterpart (the host ships subagent-fork-in-process as a PROVIDER, not a tool). Six of seven names are redundant; one is not, and whole-module rules forbid deleting six and keeping one.",
+      "files": [
+        "packages/tools/agent-control-family/README.md",
+        "packages/tools/agent-control-family/src/agent-control-contribution.mjs",
+        "packages/tools/agent-control-family/src/agent-control-executor.mjs",
+        "packages/tools/agent-control-family/src/agent-control-mechanics.mjs",
+        "packages/tools/agent-control-family/src/agent-runtime-port.mjs",
+        "packages/tools/agent-control-family/src/fork-row.mjs",
+        "packages/tools/agent-control-family/src/index.mjs",
+        "packages/tools/agent-control-family/src/interrupt-row.mjs",
+        "packages/tools/agent-control-family/src/list-agents-row.mjs",
+        "packages/tools/agent-control-family/src/list-models-row.mjs",
+        "packages/tools/agent-control-family/src/native-output-schemas.mjs",
+        "packages/tools/agent-control-family/src/spawn-row.mjs",
+        "packages/tools/agent-control-family/src/steer-row.mjs",
+        "packages/tools/agent-control-family/src/workflow-row.mjs"
+      ],
+      "lines": 1657
+    },
+    {
+      "id": "family-agent-state",
+      "title": "Agent-state governed family body — todo_write + the four goal rows",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/agent-state-family"
+      ],
+      "names": [
+        "todo_write",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode"
+      ],
+      "hostCounterpart": [
+        "todo/tool-todo: todo_write",
+        "goal/tool-goal: get_goal, create_goal, update_goal"
+      ],
+      "providerFaces": [
+        "ctx.sessionProjections",
+        "ctx.goals"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "exit_plan_mode exists in the host only as a claude-code-mods name mapping, not as a native tool, so this module is not deletable whole.",
+      "files": [
+        "packages/tools/agent-state-family/README.md",
+        "packages/tools/agent-state-family/src/agent-state-law.mjs",
+        "packages/tools/agent-state-family/src/contribution.mjs",
+        "packages/tools/agent-state-family/src/executors.mjs",
+        "packages/tools/agent-state-family/src/fs-state-store.mjs",
+        "packages/tools/agent-state-family/src/index.mjs",
+        "packages/tools/agent-state-family/src/state-store.mjs"
+      ],
+      "lines": 2430
+    },
+    {
+      "id": "row-inspect",
+      "title": "FamilyAssembly row — dsh.inspect-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/inspect.mjs"
+      ],
+      "names": [
+        "team_skill",
+        "team_cordis_inspect_list",
+        "team_cordis_inspect_query"
+      ],
+      "hostCounterpart": [],
+      "providerFaces": [
+        "ctx.cordisInspect"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "One unit with its kept body.",
+      "files": [
+        "packages/tools/families/inspect.mjs"
+      ],
+      "lines": 112
+    },
+    {
+      "id": "row-agent-control",
+      "title": "FamilyAssembly row — dsh.agent-control-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/agent-control.mjs"
+      ],
+      "names": [
+        "subagent",
+        "subagent_fork",
+        "send_message",
+        "interrupt_agent",
+        "list_agents",
+        "list_subagent_models",
+        "workflow"
+      ],
+      "hostCounterpart": [],
+      "providerFaces": [
+        "ctx.subagents"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "One unit with its kept body.",
+      "files": [
+        "packages/tools/families/agent-control.mjs"
+      ],
+      "lines": 151
+    },
+    {
+      "id": "row-agent-state",
+      "title": "FamilyAssembly row — dsh.agent-state-family",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/agent-state.mjs"
+      ],
+      "names": [
+        "todo_write",
+        "get_goal",
+        "create_goal",
+        "update_goal",
+        "exit_plan_mode"
+      ],
+      "hostCounterpart": [],
+      "providerFaces": [
+        "ctx.sessionProjections",
+        "ctx.goals"
+      ],
+      "bucket": "C",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "One unit with its kept body.",
+      "files": [
+        "packages/tools/families/agent-state.mjs"
+      ],
+      "lines": 123
+    },
+    {
+      "id": "rows-barrel",
+      "title": "Generated family barrel — index.mjs, index.d.mts, manifest.json",
+      "kind": "old-execution",
+      "roots": [
+        "packages/tools/families/index.mjs",
+        "packages/tools/families/index.d.mts",
+        "packages/tools/families/manifest.json"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [],
+      "bucket": "C",
+      "verdict": "delete",
+      "wave": 2,
+      "blockedBy": [
+        "row-inspect",
+        "row-agent-control",
+        "row-agent-state"
+      ],
+      "deleteWith": [
+        "team-tool-plane"
+      ],
+      "note": "Generated by node scripts/gen-family-index.mjs from whatever rows exist, so it is regenerated (not deleted) while the three C rows remain; it can only go when the last row goes.",
+      "files": [
+        "packages/tools/families/index.d.mts",
+        "packages/tools/families/index.mjs",
+        "packages/tools/families/manifest.json"
+      ],
+      "lines": 101
+    },
+    {
+      "id": "seam-family-assembly",
+      "title": "family-assembly.mjs — the generic seam the plane drives descriptors through",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/family-assembly.mjs"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [],
+      "bucket": "C",
+      "verdict": "delete",
+      "wave": 2,
+      "blockedBy": [
+        "family-inspect",
+        "family-agent-control",
+        "family-agent-state"
+      ],
+      "deleteWith": [
+        "team-tool-plane"
+      ],
+      "note": "Hosts the three C families until they go; no independent capability of its own.",
+      "files": [
+        "packages/runtime/src/plugin/live/family-assembly.mjs"
+      ],
+      "lines": 217
+    },
+    {
+      "id": "team-tool-plane",
+      "title": "The ToolPlane itself — 2,300 lines that mount, guard and own the governed rows",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/team-tool-plane.mjs"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [],
+      "bucket": "C",
+      "verdict": "delete",
+      "wave": 2,
+      "blockedBy": [
+        "family-inspect",
+        "family-agent-control",
+        "family-agent-state"
+      ],
+      "deleteWith": [
+        "family-inspect",
+        "family-agent-control",
+        "family-agent-state",
+        "native-tool-admission repointed at the binding assembler"
+      ],
+      "note": "The assembly that names every row. It cannot go before its last row goes, and its admission edge must first be re-pointed at the new binding (native-tool-admission is the publication slot that survives).",
+      "files": [
+        "packages/runtime/src/plugin/live/team-tool-plane.mjs"
+      ],
+      "lines": 2300
+    },
+    {
+      "id": "native-bash-shadow",
+      "title": "Native bash preservation — re-declares bash to wrap the pinned host row with admission",
+      "kind": "old-execution",
+      "roots": [
+        "packages/runtime/src/plugin/live/native-bash-tool.mjs"
+      ],
+      "names": [
+        "bash"
+      ],
+      "hostCounterpart": [
+        "tool-bash"
+      ],
+      "providerFaces": [
+        "ctx.shell"
+      ],
+      "bucket": "B",
+      "verdict": "delete",
+      "wave": 2,
+      "blockedBy": [
+        "central-native-admission"
+      ],
+      "deleteWith": [
+        "central:admission carried by the binding assembler, so no second bash declaration is needed"
+      ],
+      "note": "This is the ADMISSION pattern the target wants (wrap the host row, do not replace it) with the wrong mount: it declares bash a second time. Keep until admission is carried by the binding, then delete.",
+      "files": [
+        "packages/runtime/src/plugin/live/native-bash-tool.mjs"
+      ],
+      "lines": 168
+    },
+    {
+      "id": "a5p5-tools",
+      "title": "Alpha.5 PR5 lane barrel — search/shell arg parsing, effects, render, spill (DORMANT)",
+      "kind": "dormant",
+      "roots": [
+        "packages/tools/a5p5-tools"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [],
+      "bucket": "A",
+      "verdict": "delete",
+      "wave": 2,
+      "deleteWith": [
+        "team-tool-plane (the only importer)"
+      ],
+      "note": "Nothing registers and nothing dispatches (a5p5-dormant-audit enforces that); it is a library the old route never adopted. Deleting it changes no behaviour at all — which is exactly why it must not be presented as progress.",
+      "files": [
+        "packages/tools/a5p5-tools/src/args.ts",
+        "packages/tools/a5p5-tools/src/backend-contract.ts",
+        "packages/tools/a5p5-tools/src/backend-direct.ts",
+        "packages/tools/a5p5-tools/src/backend-stub.ts",
+        "packages/tools/a5p5-tools/src/effects-schema.ts",
+        "packages/tools/a5p5-tools/src/index.ts",
+        "packages/tools/a5p5-tools/src/pipeline.ts",
+        "packages/tools/a5p5-tools/src/register.ts",
+        "packages/tools/a5p5-tools/src/render.ts",
+        "packages/tools/a5p5-tools/src/spill.ts",
+        "packages/tools/a5p5-tools/src/types.ts",
+        "packages/tools/a5p5-tools/test/a5p5-args.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-barrel-emit.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-dormant-audit.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-effects-schema.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-execution-outcome.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-parity.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-render-injection.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-render.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-shell-effect-mapping.test.ts",
+        "packages/tools/a5p5-tools/test/a5p5-spill.test.ts",
+        "packages/tools/a5p5-tools/test/helpers/a5p5-fs-port.ts",
+        "packages/tools/a5p5-tools/tsconfig.build.json",
+        "packages/tools/a5p5-tools/tsconfig.json",
+        "packages/tools/a5p5-tools/vitest.config.ts"
+      ],
+      "lines": 4653
+    },
+    {
+      "id": "central-tools-src",
+      "title": "Admission layer — guard consult, builtin deny, tool selector, tokens, native FS binding",
+      "kind": "central",
+      "roots": [
+        "packages/tools/src"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [
+        "ctx.fs"
+      ],
+      "bucket": "KEEP",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "This is not the old route: it is the layer the new route keeps. native-fs-binding.ts is already the target shape (subclass the host provider, add one lane decision, delegate to super) and is the seed of the provider lane, not a mirror of it.",
+      "files": [
+        "packages/tools/src/builtin-deny.ts",
+        "packages/tools/src/guard.ts",
+        "packages/tools/src/index.ts",
+        "packages/tools/src/native-fs-binding.ts",
+        "packages/tools/src/tokens.ts",
+        "packages/tools/src/tool-selector.ts",
+        "packages/tools/src/tools.ts",
+        "packages/tools/src/types.ts"
+      ],
+      "lines": 3432
+    },
+    {
+      "id": "central-native-admission",
+      "title": "native-tool-admission.mjs — the publication slot that lets a NATIVE definition consult admission",
+      "kind": "central",
+      "roots": [
+        "packages/runtime/src/plugin/live/native-tool-admission.mjs"
+      ],
+      "names": [],
+      "hostCounterpart": [],
+      "providerFaces": [],
+      "bucket": "KEEP",
+      "verdict": "keep",
+      "wave": null,
+      "deleteWith": [],
+      "note": "Holds no policy of its own by construction; it is the seam the binding assembler publishes into. Keeping it is what lets admission survive the plane.",
+      "files": [
+        "packages/runtime/src/plugin/live/native-tool-admission.mjs"
+      ],
+      "lines": 72
+    }
+  ]
+}

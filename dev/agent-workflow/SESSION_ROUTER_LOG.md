@@ -9706,3 +9706,34 @@ DSH-APPEND-ONLY-LOG verdict=pass
 - UTE-G1 证据集 host-absolute 路径 grep → 0（`HOST-PATH-AUDIT.md`）
 
 **诚实边界**：全仓证据树的历史绝对路径（6574 文件、62380 行）未清理——它们不属于 UTE-G1 证据集、不被任何 UTE-G1 文档或台账引用，且部分被各自套件逐字节比较；本 PR 只声明 UTE-G1 证据集为 0，并在 `HOST-PATH-AUDIT.md` 明示该范围。共享生成面仍无 gate 槽位；`oldPath.files` 为此保持 87。
+
+## 2026-11-21 — P0 盘点：旧执行体系 28 个模块 / 140 个文件 / 30,624 行，退役=整模块删除
+
+**owner 裁决（本轮，直接指令）**：G1 的"逐族等价→退役"判据过于保守，会让新机制永远等旧机制签字；改为**退役先于开发**、**以中心系统能力验收**、**中心绿后并行绑定各工具族**；旧模块**整体保留或整体删除**，不尝试修补旧资产。本轮只做 P0 盘点，不删任何东西。
+
+### 决定可行性的那一次测量
+
+在 pinned next host（`tests/deepseek-harness-next` @ `9c2670d3`）里，**除 PTC 外每个族的原生工具本来就走 Provider 服务**：
+`tool-fs`→`ctx.fs`×37；`tool-fs-search`→`ctx.fs`+`ctx.subprocess`+`ctx.shell`；`tool-web`→`ctx.web`×14；`tool-bash`/`tool-pwsh`→`ctx.shell`×7/×8；`tool-bash-persistent`→`ctx.terminals`×9；`ptc-runtime`→**无** `ctx.*`。
+所以 Team 的 family body 不是"某个能力的唯一实现"，而是**同一能力的第二个声明者** + 本该待在 Provider 里的强制。这使"整模块删除"从冒险变成结构性清理。
+
+### 三桶与两波（数字全部由 `scripts/ute-p0-assets.mjs` 从 git 生成，不手写）
+
+```
+UTE-P0-ASSETS pass modules=28 files=140 lines=30624 delete=97 keep=43 wave1=66 wave2=31 findings=0
+```
+
+| 桶 | 模块 | 处置 |
+| --- | --- | --- |
+| B（工具已由宿主服务，但今天只有它在强制） | `family-{fs,search,web,process,ui}` + 5 个 `confined-*` shadow + 5 个 row | **wave 1：删除 66 文件，且同一个 PR 必须绑上对应 Provider lane** |
+| C（有 booked name 没有对应物） | `family-{inspect,agent-control,agent-state}` + 3 row（`team_skill` / `subagent_fork` / `exit_plan_mode` 无宿主对应物） | **不可删，整体保留**；解阻塞只有两个答案：给它一个家，或裁决取消该能力 |
+| A（运行时零影响） | `a5p5-tools`（dormant，无人注册无人派发） | wave 2 删除；**明确标注"删它不改变任何行为"，不许当进展** |
+| KEEP | `packages/tools/src`（guard/deny/selector+`native-fs-binding.ts`）、`native-tool-admission` | 这是新路线要**建在**上面的准入层，不是旧路线 |
+
+**最重要的发现（写进 02 §4）**：`confined-*` shadow 的成因是一个真实 bug——preset scope 上的 `tool-fs` 行解析到**继承来的、未受限**的 `fs-sandbox` 服务（PD-17）。Team 当时的答案是"再声明一次这些名字"，这是**正确诊断 + 错误机制**，和 family body 犯的是同一个错误的高一层版本。正确的修法是"让 Member realm 成为 `ctx.fs` 解析到的地方"，而这一步做完，realm 里每个名字**恰好一个声明者**。
+
+### 新的机器门（本 PR 引入）
+
+`node scripts/ute-p0-assets.mjs --check`：清单由 `git ls-files` 生成，门在以下任一情况红——列出的文件不存在、模块根下有未列出的 tracked 文件、一个文件被两个模块认领、bucket/verdict/wave/kind 组合不自洽、B 桶没有写配对、C 桶没写原因、totals 不再等于各行之和、散文清单漏模块。`scripts/ute-p0-assets.test.mjs` 17 条变异臂，每条都是"把一张通过的清单改坏，必须红"。
+
+**处置的不是保守，是判据**：旧路线不再需要"证明等价"才能退役；新路线需要证明的是"**每个名字恰好一个声明者**"，那是可机械判定的。
