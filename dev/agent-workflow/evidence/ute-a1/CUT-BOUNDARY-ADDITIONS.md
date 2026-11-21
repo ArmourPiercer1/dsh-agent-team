@@ -278,3 +278,29 @@ the gate needs a new "retired with subject" channel (a `retired` list or a
 - It does not re-create `governance-center`, the row, or any compatibility shim.
 - It does not touch `packages/runtime/src/plugin/vnext/`, the window ledger, or the two gate
   scripts.
+
+## 7. The closure gate has a measured blind spot — escalation, not a local fix
+
+`ute-cut-closure.mjs`'s `distCounterpartsOf` maps a source only to the **same-package** dist path
+and only for `.js`/`.d.ts`/`.map`. The aggregated `packages/runtime/dist/packages/<other-pkg>/*.mjs`
+byte-copies are therefore invisible: all eight retired family lanes, `a5p5-tools`,
+`families/manifest.json` and the live-row mirrors survived the A0 "52 dist artifacts" measurement
+and reported `distResiduals=0` both before and after. The real count was **150 frozen-source
+mirrors plus the row mirror**; they are all deleted in `82deae159`, so the four zeros are true
+*today*, but they were true *by accident* at A0: a future cut could leave a full stale dist tree
+in place and still print `distResiduals=0`.
+
+This is an evidence/tooling defect, not a keep-delete verdict — no frozen module verdict changes —
+so it is recorded here rather than fixed unilaterally: `ute-cut-closure.mjs` is frozen A0 evidence.
+The owner decision requested is narrow: teach `distCounterpartsOf` the cross-package aggregated
+layout (`dist/packages/<pkg>/...` for every tracked package, any extension), then re-run `--write`
+so the frozen report can no longer undercount. Until then every claim about dist residuals in this
+window carries the correction "the gate undercounts aggregated mirrors; the cut deleted them by
+hand and the tree is verified empty by `find tmp -name '*.mjs'` against the deleted set", not the
+gate's zero alone.
+
+A second, smaller correction: the instruction to "register the two retired suites in
+`ute-cut-closure.allow.json`" was wrong and was refused correctly. A deleted file is never
+scanned, so an exemption for it is `UTE_CLOSURE_STALE_EXEMPTION`; the existing 85
+`retired-module` entries are for files that SURVIVE and refer to the delete set. Retirement of the
+two suites is complete by deletion alone, and their reason is recorded in §5.
