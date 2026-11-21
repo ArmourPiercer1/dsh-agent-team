@@ -9481,3 +9481,20 @@ UTE-RETIREMENT-SUMMARY requested=2 allowed=0 refused=2
 **未触碰**：`packages/**` 产品代码、`tests/ute-g1-fs/**`、`tests/ute-g1-search/**`、其他族账本行、`docs/plans/active/**`、`arc-a-family-census.json`、上游/host 树、`tests/paths.mjs`；无新 CI workflow/job/leg（只在既有 "UTE G1 FS binding product lane" 的 argv 与 manifest `check[]` 追加**同一个** token，两侧仍逐字节一致）；未 push master/stable、未 force-push、未合并。
 
 **明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② **不证明网络隔离** —— 宿主 sandbox 只 claim 文件效果，`external=0` 是**本次运行**的实测零（由可双向证伪的 shim 产出），钉住 provider 仍会自行跟随同源重定向（`WEB_REDIRECT_UNMEDIATE_ON_ALLOW`）且对公网名仍走代理（`WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW`）；③ `capSearchSources` 未覆盖（shadow 取宿主默认 `searchMaxResults=50`，组合不暴露下调键，fixture 5 条源在上限内）——明写缺口，不静默删向量；④ 已映射但未触发的 code：`WEB_BLOCKED_URL`（故意 unmapped）、`WEB_INVALID_URL`、`WEB_PROVIDER_ERROR`、`WEB_SEARCH_DESTINATION_DENIED`；⑤ 跨源重定向拒绝只映射未测量（fixture 链同源）；⑥ 仅 dispatch 前取消可表达；⑦ 无 live boot（C1 host-free）；⑧ governed `webEnabled:true` 挂载/dispatch 未运行。
+
+## 2026-11-20 — 审批请求的**问题清单**（不是审批）：三族的全部可测轴已完成，剩余阻挡物是签名
+
+**这份文件不是审批记录，也不替代审批记录。** 依据 = 冻结合同 `RETIREMENT.md` §1：`SemanticDifferencesResolved` 必须有引用式 owner 记录（`PR #<n> @ <40-hex>`，且 40-hex 必须是 HEAD 的祖先）；gate 只证明绑定，不证明签署权。本条把"要签什么"写成可一次裁决的问题，正文 = `docs/plans/memo/ute-g1-20261120/APPROVAL-REQUEST-2026-11-20.md`。
+
+**当前三族（master `3c8412fc0`，gate 原样）**：
+```
+UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4
+UTE-RETIREMENT-REFUSED family=search codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=2/2
+UTE-RETIREMENT-REFUSED family=web codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/2
+UTE-RETIREMENT-SUMMARY requested=3 allowed=0 refused=3
+```
+三族各有**三条 blocking 语义差异**（fs 两条）且全部 `approval: null`。其中两条的性质必须分清：
+- `SD-SEARCH-1-grep-path-default` 是**产品行为缺陷**（无 path 的 `grep` 在产品路径返回 0 命中），不是措辞差异；接受它等于对用户承诺"这就是语义"，因此必须 owner 签，不能由 agent 记成"已解决"。
+- `SD-WEB-1-native-name-claim-collision` 是**架构问题**：`web_fetch`/`web_search` 两个原生名同时被 legacy family 与 route-C 产出，seam 未指认唯一所有者——名字有两个生产者时无法退役，这不是形式主义。
+
+**今天另有一条值得记住的观测纪律**：`ci-integration` 在 #810 上失败过一次，日志里只留下 `DSH-CENSUS-SUMMARY … verdict=FAIL codes=TASK_STATE_FAIL` 与一条 `GIT_READ_FAILED`，而同一套件在本机 100/100、41/41 全绿；`gh run rerun --failed` 后整层转绿。**结论：CI 层的单次红不是结论，也不是"已绿"**——要么复现要么重跑，两者都没做之前只能记 UNKNOWN。这条与"本地绿不算 hosted 绿"是同一件事的两面。
