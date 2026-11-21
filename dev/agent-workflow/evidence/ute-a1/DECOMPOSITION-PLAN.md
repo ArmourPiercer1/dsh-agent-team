@@ -268,3 +268,15 @@ Action (S9 — lane A, after S3):
 A step is done only when the gate set above is green, `git diff --stat` shows one new file + one
 editing file (+ generated mirror), and no call site was left with a stale comment naming the old
 location (the `a5PlaneSubtreeContains` block at 488–515 is a live example of that debt).
+
+---
+
+## Progress against this plan (append-only)
+
+| Step | Commit | What | Glue lines | Evidence |
+| --- | --- | --- | --- | --- |
+| pre-S1 | `f90a9af90` | `work-turn-reader.mjs` extracted | 5,301 → 5,102 | `vnext-work-turn-reader.test.mjs` (7 arms) |
+| pre-S1 | `4fd8f8e75` | `member-execution.mjs` extracted | 5,102 → 5,042 | ADM-35 |
+| **S1** | `9ff09a771` | **`session-identity.mjs`**: A4's nine functions + the two maps they answer from (`newWorkClosed`, `terminalAtReopen`), boot marker via `terminalMarkerOf`/`clearTerminalMarker` | 5,042 → **4,767** | ADM-36 (component-level) |
+| dup | `740dc7cba` | `freshCreateHintAdmits` de-duplicated (glue's copy claimed it had moved; it had not) | 4,767 → 4,769 | leg green |
+| S1 acceptance | unrun | the plan's four pinned vitest suites (`a5sf-pd20-admission-close`, `t12a-b2-child-identity`, `bp1-dual-team-gate`, `d3-member-identity-context`) cannot run in this worktree (no vitest) | — | **not verified** |

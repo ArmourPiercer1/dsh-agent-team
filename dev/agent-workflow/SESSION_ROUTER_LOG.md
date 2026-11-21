@@ -9941,3 +9941,15 @@ The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recomm
   `t12a-b2-child-identity`, `bp1-dual-team-gate`, `d3-member-identity-context`) cannot run in this
   worktree (no vitest). They are the acceptance for the move's behaviour, and they remain unrun — the
   module's own arms do not substitute for them.
+
+### R27 addendum — the rc.5 gap became an invariant, and a duplicated rule was deleted
+
+- **SLICE-35 / SLICE-36** (slice now 36 arms): the rc.5 confinement gap cannot be written as an
+  override against the pinned baseline (the rc.2 type has no `patchText`/`deleteFile`/`moveFile`), so
+  it became an invariant instead — SLICE-35 DERIVES every path-touching entry point from the real base
+  provider and refuses any the confined class does not override; SLICE-36 is the positive control
+  (a subclass with the three rc.5 names must be named by the derivation). Nothing about rc.5 is baked
+  in, and the nine-name non-IO set carries a stated reason each.
+- **`freshCreateHintAdmits` de-duplicated**: the glue's copy claimed it had "moved out of the retired
+  realm row" while the realm row still had its own. One exported source now; a rule adjacent to
+  authorization should exist once.
