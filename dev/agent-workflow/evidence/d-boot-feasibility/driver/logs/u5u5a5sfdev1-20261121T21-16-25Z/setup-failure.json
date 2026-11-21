@@ -1,0 +1,4 @@
+{
+  "error": "the remote handler registration (S6 A31) is not installed: the Remote contract v1 dispatcher is unavailable on the production root",
+  "stack": "TeamPluginError: the remote handler registration (S6 A31) is not installed: the Remote contract v1 dispatcher is unavailable on the production root\n    at Object.current (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/seams.js:83:23)\n    at mountRemoteNow (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:1005:69)\n    at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:2480:35)"
+}

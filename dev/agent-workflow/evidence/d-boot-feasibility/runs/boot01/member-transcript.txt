@@ -1,0 +1,1 @@
+NO MEMBER TRANSCRIPT (the Member session log was not found before teardown)

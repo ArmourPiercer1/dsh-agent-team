@@ -1,0 +1,256 @@
+[2026-11-21T21:06:31.083Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-21T21:06:31.083Z] shipped !!js substitutions: [{"expression":"(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')","value":[]},{"expression":"process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'","value":"https://api.exa.ai"},{"expression":"process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''","value":""},{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-21T21:06:31.118Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-21T21:06:31.119Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"}]
+[2026-11-21T21:06:31.119Z] governed preset plugins (15): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,tool-web,command-goal,tool-goal,planning,compaction,tool-todo,tool-plugin-manager
+[2026-11-21T21:06:31.119Z] PLAN OK
+[2026-11-21T21:06:39.519Z] ARCHIVE: (nothing to archive)
+[2026-11-21T21:06:39.523Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:06:39.550Z] host porcelain before: []
+[2026-11-21T21:06:39.608Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:06:39.609Z] DRIVER FAILED (outside the run): A5sfReadGateError: BUDGET_NOT_GRANTED reason=GRANT_FACE_MISMATCH: grant 'devlive-fs-search-1' authorises face 'FS Provider', but this start declares 'Subprocess'; a dev-live authorisation never widens to another face
+    at preRegisterDevLiveBudget (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/suites/150-a5sf-read.mjs:528:11)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:806:23)
+    at main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1355:21)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1424:1
+[2026-11-21T21:06:53.657Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-06-53-656Z
+[2026-11-21T21:06:53.660Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:06:53.689Z] host porcelain before: []
+[2026-11-21T21:06:53.747Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:06:53.748Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:06:53.756Z] [boot1] FAILED at pre-boot: ShippedPresetAuditError: A5SF_PROFILE_GRAPH_UNRESOLVED: dsh-agent-team does not resolve from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-06-53Z/profiles/web: ./web-tool (MODULE_NOT_FOUND); a shipped row naming any of these would be `never started`, which takes the whole Agent down rather than one tool (provision the graph, or run the negative control)
+    at verifyProfileModuleGraph (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/profile-module-graph.mjs:163:11)
+    at TestWorldFactory.createWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:396:9)
+    at Object.createWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/a5sf-harness.mjs:284:22)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:824:29
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/suites/150-a5sf-read.mjs:665:22)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:823:28)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1355:15)
+[2026-11-21T21:06:53.757Z] [boot1] dev-live slot released (released=false held=false)
+[2026-11-21T21:06:53.787Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-21T21:06:53.788Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:06:53.818Z] host porcelain after: []
+[2026-11-21T21:06:53.818Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:09:12.758Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-21T21:09:12.758Z] shipped !!js substitutions: [{"expression":"(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')","value":[]},{"expression":"process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'","value":"https://api.exa.ai"},{"expression":"process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''","value":""},{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-21T21:09:12.801Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-21T21:09:12.802Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"}]
+[2026-11-21T21:09:12.802Z] composition drops: [{"id":"tool-web","name":"dsh-agent-team/web-tool","reason":"the cut deleted the module this export targets","target":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs"}]
+[2026-11-21T21:09:12.803Z] governed preset plugins (15): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,tool-web,command-goal,tool-goal,planning,compaction,tool-todo,tool-plugin-manager
+[2026-11-21T21:09:12.803Z] PLAN OK
+[2026-11-21T21:09:17.739Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-09-17-738Z
+[2026-11-21T21:09:17.743Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:09:18.069Z] host porcelain before: []
+[2026-11-21T21:09:18.145Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:09:18.147Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:09:18.156Z] [boot1] FAILED at pre-boot: ShippedPresetAuditError: A5SF_PROFILE_GRAPH_UNRESOLVED: dsh-agent-team does not resolve from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-09-18Z/profiles/web: ./web-tool (MODULE_NOT_FOUND); a shipped row naming any of these would be `never started`, which takes the whole Agent down rather than one tool (provision the graph, or run the negative control)
+    at verifyProfileModuleGraph (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/profile-module-graph.mjs:163:11)
+    at TestWorldFactory.createWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/world-factory.mjs:396:9)
+    at Object.createWorld (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/lib/a5sf-harness.mjs:284:22)
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:845:29
+    at Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/suites/150-a5sf-read.mjs:665:22)
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:844:28)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1384:15)
+[2026-11-21T21:09:18.156Z] [boot1] dev-live slot released (released=false held=false)
+[2026-11-21T21:09:18.191Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-21T21:09:18.192Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:09:18.226Z] host porcelain after: []
+[2026-11-21T21:09:18.226Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:10:58.843Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-10-58-842Z
+[2026-11-21T21:10:58.846Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:10:58.874Z] host porcelain before: []
+[2026-11-21T21:10:58.932Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:10:58.933Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:10:58.937Z] [boot1] world=u5u5a5sfdev1-20261121T21-10-58Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-10-58Z
+[2026-11-21T21:10:58.939Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-21T21:11:37.378Z] [boot1] mock on 3497
+[2026-11-21T21:12:18.047Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T21-10-58Z/instance-port3187.log
+[2026-11-21T21:14:48.084Z] [boot1] p6t6 health=false
+[2026-11-21T21:14:48.088Z] [boot1] FAILED at composition: Error: the p6t6 harness route never answered: the World did not reach a usable Host
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:912:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1384:15)
+[2026-11-21T21:14:48.183Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-10-58Z","releasedPorts":[3187,3497,3187],"killedPids":[100],"notes":[]}
+[2026-11-21T21:14:48.184Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-21T21:14:48.643Z] boot 1 failed at composition; continuing is pointless (no agreeing pair)
+[2026-11-21T21:14:48.644Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:14:48.682Z] host porcelain after: []
+[2026-11-21T21:14:48.682Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:16:25.320Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-16-25-319Z
+[2026-11-21T21:16:25.323Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:16:25.351Z] host porcelain before: []
+[2026-11-21T21:16:25.411Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:16:25.413Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:16:25.417Z] [boot1] world=u5u5a5sfdev1-20261121T21-16-25Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-16-25Z
+[2026-11-21T21:16:25.418Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-21T21:17:04.084Z] [boot1] mock on 3497
+[2026-11-21T21:17:44.848Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T21-16-25Z/instance-port3187.log
+[2026-11-21T21:19:34.603Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-19-34-603Z
+[2026-11-21T21:19:34.607Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:19:34.634Z] host porcelain before: []
+[2026-11-21T21:19:34.691Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:19:34.692Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:19:34.697Z] [boot1] world=u5u5a5sfdev1-20261121T21-19-34Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-19-34Z
+[2026-11-21T21:19:34.699Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-21T21:20:13.428Z] [boot1] mock on 3498
+[2026-11-21T21:20:15.076Z] [boot1] p6t6 health=false
+[2026-11-21T21:20:15.077Z] [boot1] FAILED at composition: Error: the p6t6 harness route never answered: the World did not reach a usable Host
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:912:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1384:15)
+[2026-11-21T21:20:15.157Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-16-25Z","releasedPorts":[3187,3497,3187],"killedPids":[99],"notes":[]}
+[2026-11-21T21:20:15.157Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-21T21:20:15.187Z] boot 1 failed at composition; continuing is pointless (no agreeing pair)
+[2026-11-21T21:20:15.188Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:20:15.215Z] host porcelain after: []
+[2026-11-21T21:20:15.215Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:20:51.968Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T21-19-34Z/instance-port3187.log
+[2026-11-21T21:20:52.488Z] [boot1] p6t6 health=true
+[2026-11-21T21:20:52.758Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-21T21:20:52.758Z] [boot1] leader builtinToolDeny:
+[2026-11-21T21:20:53.234Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-5zv9zaqwwy","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:7bb37c0097d85c2836fd66526e2adede6e4cbd42f0a5c27ea5d149d2b266a994"},"createdAt":"2026-11-21T21:20:52.811Z","generatio
+[2026-11-21T21:20:54.435Z] [boot1] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-21T21:20:54.436Z] [boot1] delegate call=true result={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for member 'inst-0e23ryd1fmn2': Error: member-execution: Member 'inst-0e23ryd1fmn2' mounts a compiled realm but this row sets no config.centreStatePath; a governed member whose admission/execution facts and settlements cannot be written is refused rather than run unrecorded (set centreStatePath to a directory this deployment owns)","details":{"source":"activation-provider","provid
+[2026-11-21T21:20:54.442Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=undefined
+[2026-11-21T21:20:54.445Z] [boot1] case d:member-read-admitted: FAIL
+[2026-11-21T21:20:54.445Z] [boot1] case d:member-read-denied: FAIL
+[2026-11-21T21:20:54.445Z] [boot1] case d:native-read-surface: FAIL
+[2026-11-21T21:20:54.445Z] [boot1] case d:guard-facts: FAIL
+[2026-11-21T21:20:54.445Z] [boot1] case d:centre-facts: FAIL
+[2026-11-21T21:20:54.446Z] [boot1] diagnostics(final): mockRequests=5 delegateResult={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for member 'inst-0e23ryd1fmn2': Error: member-execution: Member 'inst-0e23ryd1fmn2' mounts a compiled realm but this row sets no config.centreStatePath; a governed member whose admiss sessions=["session-dboot-read-root","session-dboot-read-team"]
+[2026-11-21T21:20:54.447Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-21T21-19-34-663Z-b1 suite=a5sf-live-member overall=FAIL cases=5 FAIL:5 worlds=u5u5a5sfdev1-20261121T21-19-34Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-21T21:20:54.590Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-19-34Z","releasedPorts":[3187,3498,3187],"killedPids":[99],"notes":[]}
+[2026-11-21T21:20:54.590Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-21T21:20:54.629Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1
+overall                       FAIL
+admittedVerdict               REFUTED
+deniedVerdict                 REFUTED
+surfaceVerdict                REFUTED
+factsVerdict                  REFUTED
+centreVerdict                 REFUTED
+allowFacts                    0
+denyFacts                     0
+centreAdmissions              0
+centreExecutions              0
+governedSurface               false
+admittedBytes                 false
+deniedSecretAbsent            false
+transcriptSourceCount         null
+
+agreeing=false differing=[]
+[2026-11-21T21:20:54.666Z] host porcelain after: []
+[2026-11-21T21:20:54.666Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:21:06.528Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-21-06-527Z
+[2026-11-21T21:21:06.531Z] START head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-21T21:21:06.560Z] host porcelain before: []
+[2026-11-21T21:21:06.618Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:21:06.619Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=3fb8882f8739bf4c6a7c93c4d4bf88a32464641c
+[2026-11-21T21:21:06.623Z] [boot1] world=u5u5a5sfdev1-20261121T21-21-06Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-21-06Z
+[2026-11-21T21:21:06.625Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-21T21:21:45.311Z] [boot1] mock on 3497
+[2026-11-21T21:22:25.693Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T21-21-06Z/instance-port3187.log
+[2026-11-21T21:22:25.993Z] [boot1] p6t6 health=true
+[2026-11-21T21:22:26.266Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-21T21:22:26.267Z] [boot1] leader builtinToolDeny:
+[2026-11-21T21:22:26.680Z] [boot1] team.create status=200 ok=true {"type":"server-response","rpcId":"a5sflm-ns7h1uunpa","result":{"ok":true,"value":{"data":{"path":"fresh-root","durable":{"teamSession":{"schemaVersion":1,"rootSessionId":"session-dboot-read-team","blueprint":{"blueprintId":"team.dboot.read.main","revision":"1","contentHash":"sha256:705f959a9747b17a01c7c7d4de88c1262f9667a0286200762661cced411a47f8"},"createdAt":"2026-11-21T21:22:26.319Z","generatio
+[2026-11-21T21:22:27.881Z] [boot1] leader chain closed (DBOOT_L1_DONE)=true
+[2026-11-21T21:22:27.882Z] [boot1] delegate call=true result={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for member 'inst-0e23ryd1fmn2': Error: member-execution: Member 'inst-0e23ryd1fmn2' mounts a compiled realm but this row sets no config.centreStatePath; a governed member whose admission/execution facts and settlements cannot be written is refused rather than run unrecorded (set centreStatePath to a directory this deployment owns)","details":{"source":"activation-provider","provid
+[2026-11-21T21:22:27.888Z] [boot1] members=[{"instanceId":"inst-leader","templateId":"leader","lifecycle":"undefined"}] childSessionId=undefined
+[2026-11-21T21:22:27.891Z] [boot1] case d:member-read-admitted: FAIL
+[2026-11-21T21:22:27.891Z] [boot1] case d:member-read-denied: FAIL
+[2026-11-21T21:22:27.891Z] [boot1] case d:native-read-surface: FAIL
+[2026-11-21T21:22:27.891Z] [boot1] case d:guard-facts: FAIL
+[2026-11-21T21:22:27.891Z] [boot1] case d:centre-facts: FAIL
+[2026-11-21T21:22:27.892Z] [boot1] diagnostics(final): mockRequests=5 delegateResult={"status":"rejected","code":"TEAM_RUNTIME_DURABLE_WRITE_FAILED","message":"activation: child-session creation failed for member 'inst-0e23ryd1fmn2': Error: member-execution: Member 'inst-0e23ryd1fmn2' mounts a compiled realm but this row sets no config.centreStatePath; a governed member whose admiss sessions=["session-dboot-read-root","session-dboot-read-team"]
+[2026-11-21T21:22:27.892Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-21T21-21-06-589Z-b1 suite=a5sf-live-member overall=FAIL cases=5 FAIL:5 worlds=u5u5a5sfdev1-20261121T21-21-06Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-21T21:22:28.040Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":99,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-21-06Z","releasedPorts":[3187,3497,3187],"killedPids":[99],"notes":[]}
+[2026-11-21T21:22:28.040Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-21T21:22:28.079Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact                          boot1
+overall                       FAIL
+admittedVerdict               REFUTED
+deniedVerdict                 REFUTED
+surfaceVerdict                REFUTED
+factsVerdict                  REFUTED
+centreVerdict                 REFUTED
+allowFacts                    0
+denyFacts                     0
+centreAdmissions              0
+centreExecutions              0
+governedSurface               false
+admittedBytes                 false
+deniedSecretAbsent            false
+transcriptSourceCount         null
+
+agreeing=false differing=[]
+[2026-11-21T21:22:28.113Z] host porcelain after: []
+[2026-11-21T21:22:28.113Z] RESULT FAIL (1/1 boots; agreeing pair=false)

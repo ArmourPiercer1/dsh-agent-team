@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+dsh web: http://127.0.0.1:3187/?token=QM1u6J_-m80n2qQf9QShwUgtZckqd_j0aFu4Xp3qDTs
+[dsh-agent-team] bootstrap FAILED: TeamPluginError: the remote handler registration (S6 A31) is not installed: the Remote contract v1 dispatcher is unavailable on the production root
+    at Object.current (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/seams.js:83:23)
+    at mountRemoteNow (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:1005:69)
+    at bootstrap (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/host.js:2480:35)
