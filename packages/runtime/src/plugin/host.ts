@@ -72,6 +72,7 @@ import type {
   ArtifactLedgerPort,
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
+import { centreConfigViolation } from './vnext/centre-config.js'
 import {
   MCP_FACET_WILDCARD,
   resolveDurableMcpFacet,
@@ -698,9 +699,11 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
-  if (c.centreStatePath !== undefined && (typeof c.centreStatePath !== 'string' || c.centreStatePath.length === 0)) {
-    fail('centreStatePath must be a non-empty string when present (the centre\'s durable facts and settlement directory)')
-  }
+  // The CENTRE's own config rules live in `vnext/centre-config.ts` so they are testable without
+  // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
+  // exist after a build). This call is the only place they are enforced.
+  const centreViolation = centreConfigViolation(c as { centreStatePath?: unknown; alpha6ReviewRouting?: unknown })
+  if (centreViolation !== undefined) fail(centreViolation)
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
   for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
     if (

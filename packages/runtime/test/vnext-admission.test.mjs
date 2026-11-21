@@ -621,3 +621,23 @@ test('ADM-33 — an MCP tool is judged on the NETWORK axis, with the SERVER as i
   assert.equal(malformed.code, 'ADMISSION_TOOL_UNBOUND')
   assert.equal(call('mcp__github', {}, open).code, 'ADMISSION_TOOL_UNBOUND', 'a server with no tool name is equally malformed')
 })
+
+test('ADM-34 — the centre\'s config rules are checkable without booting the host', async () => {
+  // The rule was first written inline in host.ts, which reaches the remote handler tree through `.js`
+  // specifiers that only exist after a build - so the only way to verify it was a full build, and the
+  // build was broken. The pure function is the whole rule.
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  // A plain row is untouched.
+  assert.equal(centreConfigViolation({}), undefined)
+  assert.equal(centreConfigViolation(undefined), undefined)
+  // R1: Alpha.6 review routing needs somewhere durable for its decisions.
+  assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true })), /requires centreStatePath/u)
+  // An empty path is refused by the PATH rule first - the message names the value, which is what an
+  // operator needs; the Alpha.6 rule is the one that fires when the key is absent entirely.
+  assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '' })), /non-empty string/u)
+  assert.equal(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' }), undefined)
+  // The path itself is validated even when Alpha.6 is off.
+  assert.match(String(centreConfigViolation({ centreStatePath: 42 })), /non-empty string/u)
+  // Absent is not "empty": a row that never mentions the centre is legal.
+  assert.equal(centreConfigViolation({ alpha6ReviewRouting: false }), undefined)
+})
