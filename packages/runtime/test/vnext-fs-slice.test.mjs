@@ -550,6 +550,22 @@ test('SLICE-18 — observation policy ON: the same overwrite is refused until th
   }
 })
 
+test('SLICE-19 — observation policy ON: a version that moved under the member is refused, not clobbered', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'obs-stale'), observation: 'on' })
+  try {
+    const observed = await world.dispatch('read', { file_path: world.insideFile }, 'obs-stale-1')
+    assert.equal(observed.isError, false, `the observation must succeed: ${observed.text} ${String(observed.errorMessage)}`)
+    // The change the member cannot see: another writer between the read and the write.
+    writeFileSync(world.insideFile, 'changed by someone else\n', 'utf8')
+    const stale = await world.dispatch('write', { file_path: world.insideFile, content: 'member overwrite\n' }, 'obs-stale-2')
+    assert.equal(stale.isError, true, `a stale version must be refused: ${stale.text}`)
+    assert.match(String(stale.errorMessage), /changed since|not been read|version/iu, 'the refusal must be about freshness, not about the lane')
+    assert.equal(readFileSync(world.insideFile, 'utf8'), 'changed by someone else\n', 'the other writer\'s bytes must survive')
+  } finally {
+    await world.dispose()
+  }
+})
+
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
   const world = await buildWorld({ mountRealm: false, dir: join(dir, 'control') })
   try {
