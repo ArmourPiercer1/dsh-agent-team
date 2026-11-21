@@ -641,3 +641,28 @@ test('ADM-34 — the centre\'s config rules are checkable without booting the ho
   // Absent is not "empty": a row that never mentions the centre is legal.
   assert.equal(centreConfigViolation({ alpha6ReviewRouting: false }), undefined)
 })
+
+test('ADM-35 — the member execution composition refuses to run a governed member unrecorded', async () => {
+  const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
+  const compiledAnswer = {
+    members: [{
+      memberIdentity: 'member-1', templateId: 'worker', instanceGeneration: 1, revision: 'rev-1',
+      read: lane(['/work']), write: lane(['/work']), network: 'deny',
+    }],
+  }
+  const base = {
+    agentCtx: {}, realm: {}, sessionId: 'session-1', instanceId: 'member-1', teamRoot: 'root-1',
+    workspaceRoot: '/work', onDispose: () => {}, onNativeDispose: () => {}, observe: () => {},
+  }
+  // No state directory: refused, and the message names the member and the key.
+  await assert.rejects(
+    () => installMemberExecution({ ...base, compiledAnswer, config: {} }),
+    (error) => /member-1/u.test(error.message) && /centreStatePath/u.test(error.message),
+    'a governed member with nowhere to record must be refused, not run',
+  )
+  // An UNGOVERNED member (no compiled answer) installs nothing and touches no realm.
+  assert.equal(await installMemberExecution({ ...base, compiledAnswer: undefined, config: {} }), undefined)
+  // The two lifecycle callbacks are mandatory: a centre without a disposer outlives its member.
+  await assert.rejects(() => installMemberExecution({ ...base, compiledAnswer: undefined, config: {}, onDispose: undefined }), /onDispose/u)
+  await assert.rejects(() => installMemberExecution({ ...base, compiledAnswer: undefined, config: {}, observe: undefined }), /observe/u)
+})

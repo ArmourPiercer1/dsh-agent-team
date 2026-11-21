@@ -38,6 +38,11 @@
       "src": "packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/work-turn-reader.mjs",
       "note": "The delivered-turn reader, extracted from the glue (2026-11-22): the glue imports it, so the shipped face must carry it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/member-execution.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/member-execution.mjs",
+      "note": "One member's execution composition (centre + native mount + lifecycle), extracted from the glue (2026-11-22). The glue imports it, so the shipped face must carry it."
     }
   ]
 }

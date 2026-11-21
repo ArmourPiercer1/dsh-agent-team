@@ -357,17 +357,13 @@ import * as mcpClient from '@deepseek-ai/dsh-mcp-client'
 // A1 seam: the new centre's realm lane. It mounts the host's own native tool
 // modules inside the per-agent provider realm; this assembly never authors a
 // tool body and never owns dispatch.
-import { hostNativeSpecs, mountHostModules } from './realm-lane.mjs'
 // The delivered-turn reader lives on its own: it never touched this closure's state.
 import { readDeliveredWorkTurn } from './work-turn-reader.mjs'
 // The a5sf realm mount + its row helpers SURVIVE the cut (the realm is the
 // provider installation the lane mounts into).
 import { a5sfRealmConfigOf, compiledAnswerOfRealm, createA5sfRealmRowDisposer, mountMemberA5sfRealm } from '../live/a5sf-realm-row.mjs'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
-import { bindingFromCompiledMember, installMemberCentre } from './centre-install.mjs'
-import { openFactLedger } from './fact-ledger.mjs'
-import { createExecutionSettlementStore } from '../../../settlement/execution-settlement.js'
-import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
+import { installMemberExecution } from './member-execution.mjs'
 // The PTC escalation row survives the A0 boundary; the host entry keeps
 // building its router through this glue surface.
 export { createPtcEscalationRouter } from '../live/ptc-escalation-row.mjs'
@@ -2204,72 +2200,26 @@ export function createAgentBindings(deps) {
           })
           a5sfRealmDisposers.push(disposeRealm)
           toolDisposers.push(disposeRealm)
-          // THE CENTRE. A compiled realm means controlled tools are live on this member, so the
-          // admission point, the durable facts and the settlement store are part of the enforcement,
-          // not an option. Without a state directory the bind is REFUSED: a member whose controlled
-          // calls cannot be recorded is exactly the unwired case this project refuses to run.
-          const answer = compiledAnswerOfRealm(a5sfRealm)
-          if (answer !== undefined) {
-            const stateRoot = typeof config?.centreStatePath === 'string' && config.centreStatePath.trim() !== ''
-              ? config.centreStatePath
-              : undefined
-            if (stateRoot === undefined) {
-              throw new Error(
-                `agent-bindings: Member '${instanceId}' mounts a compiled realm but this row sets no config.centreStatePath;`
-                + ' a governed member whose admission/execution facts and settlements cannot be written is refused rather'
-                + ' than run unrecorded (set centreStatePath to a directory this deployment owns)',
-              )
-            }
-            const compiledMember = answer.members?.[0]
-            const binding = bindingFromCompiledMember({
-              member: compiledMember,
-              ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),
-              agentId: sessionId,
-              sessionId,
-              // The member's effective workspace: the same `session.header.cwd` basis the rest of
-              // this glue reads, never a guess and never the host process's cwd by default.
-              workspaceRoot: runtimeAgent?.session?.header?.cwd ?? config?.defaultWorkspace ?? process.cwd(),
-              owner: teamRoot,
-            })
-            const ledger = openFactLedger({ path: join(stateRoot, `${instanceId}.facts.jsonl`) })
-            const settlementStore = createExecutionSettlementStore({ dir: join(stateRoot, 'settlement') })
-            const identityOf = (exec) => ({
-              executionId: dispatchExecutionId({ rootSessionId: teamRoot, agentInstanceId: instanceId }, exec.callId),
-              actorId: instanceId,
-              worldId: sessionId,
-            })
-            const centre = installMemberCentre({
-              ctx: agentCtx,
-              binding,
-              recordAdmission: (fact) => ledger.recordAdmission(fact),
-              recordExecution: (fact) => ledger.recordExecution(fact),
-              isReplay: (callId) => ledger.has(callId),
-              recordReplay: (input) => ledger.recordReplayRefusal(input),
-              store: settlementStore,
-              identityOf,
-              onFault: (error, context) => observations.push(`centre: ${context.phase} fault: ${error instanceof Error ? error.message : String(error)}`),
-            })
-            // CRASH RECOVERY, at bind time: a record left RUNNING by a dead process becomes UNKNOWN
-            // with its missing evidence, and is never replayed.
-            const recovered = settlementStore.recoverUnsettled(new Date().toISOString())
-            if (recovered.length > 0) observations.push(`centre: recovered ${recovered.length} unsettled execution(s) as ${[...new Set(recovered.map((entry) => entry.after))].join(',')}`)
-            toolDisposers.push(() => centre.dispose())
-          }
-          const configuredNativeSpecs = a5sfRowConfig.nativeToolModules ?? []
-          if (configuredNativeSpecs.length > 0) {
-            const specs = hostNativeSpecs(await Promise.all(configuredNativeSpecs.map(async (spec) => ({
-              url: spec.url,
-              module: await import(spec.url),
-              ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
-            }))))
-            const nativeMount = await mountHostModules({
-              realm: a5sfRealm,
-              root: agentCtx,
-              scope: runtimeAgent ?? undefined,
-              specs,
-            })
-            nativeMountDisposers.push({ settled: () => nativeMount.dispose() })
-          }
+          // MEMBER EXECUTION COMPOSITION (centre + native mount + their lifecycle). The block below
+          // used to live here: it is now one component with explicit inputs, so the entry assembles
+          // and does not itself hold admission, facts, settlement or the mount's lifecycle.
+          await installMemberExecution({
+            agentCtx,
+            realm: a5sfRealm,
+            compiledAnswer: compiledAnswerOfRealm(a5sfRealm),
+            config,
+            sessionId,
+            instanceId,
+            teamRoot,
+            // The member's effective workspace: the same `session.header.cwd` basis the rest of this
+            // glue reads, never a guess and never the host process's cwd by default.
+            workspaceRoot: runtimeAgent?.session?.header?.cwd ?? config?.defaultWorkspace ?? process.cwd(),
+            nativeSpecs: a5sfRowConfig.nativeToolModules ?? [],
+            scope: runtimeAgent ?? undefined,
+            onDispose: (dispose) => toolDisposers.push(dispose),
+            onNativeDispose: (entry) => nativeMountDisposers.push(entry),
+            observe: (message) => observations.push(message),
+          })
         }
       }
       toolDisposers.push(installModelSelection(agentCtx, ref))
