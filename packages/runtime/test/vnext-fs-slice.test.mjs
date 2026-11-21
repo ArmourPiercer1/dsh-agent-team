@@ -669,7 +669,18 @@ test('SLICE-23 — lifecycle close: the centre stops deciding, and records nothi
   // mounted registration outlives the realm handle this world disposes. It is recorded as an open
   // defect (evidence section 13), not asserted as correct. What IS guaranteed today is that the
   // centre closed: no further decision and no further fact can be written for this member.
-  await world.dispatch('read', { file_path: world.insideFile }, 'life-2')
+  // WHICH definition answers after close? If the mount was really removed, the agent falls back to
+  // the PRESET definition - and the preset body is served by the UNCONFINED base provider. That is
+  // worse than a leak: a retired member keeps reading outside its ceiling. Measured below.
+  const afterDefinition = world.definitionOf('read')
+  const afterOutside = await world.dispatch('read', { file_path: world.outsideFile }, 'life-3')
+  // CHARACTERIZATION OF AN OPEN DEFECT (evidence section 13). Disposing the realm while the agent
+  // scope is still alive does not close the member: it REVERTS the agent to the preset definition,
+  // which the UNCONFINED base provider serves, and a locator outside the ceiling becomes readable.
+  // The arm pins that measured state so the fix cannot land silently; when close is implemented
+  // (refusing tombstone, or full agent disposal) this assertion must be inverted, not deleted.
+  assert.equal(afterDefinition, world.presetRead, 'documented defect: close reverts to the preset definition')
+  assert.equal(afterOutside.isError, false, 'documented defect: after close the outside locator is readable again')
   assert.equal(world.facts().length, factsBefore, 'no fact may be written after close')
   assert.equal(world.executions().length, executionsBefore, 'no execution fact may be written after close')
 })

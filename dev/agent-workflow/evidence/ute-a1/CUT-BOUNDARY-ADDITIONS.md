@@ -445,7 +445,18 @@ defect rather than encoding the leak as expected behaviour.
 
 Why it matters: "lifecycle close" is a B requirement, and a retired member whose native tools keep
 executing for whoever still holds the scope is the retired route's failure mode with the roles
-swapped. Two candidate causes, neither yet confirmed:
+swapped. **Sharper, measured afterwards:** what happens after close is not a stale mount but a FAIL-OPEN. The
+agent's `read` reverts to the PRESET definition, and the preset body is served by the UNCONFINED
+base provider - a locator outside the member's ceiling becomes readable again. So closing a member
+by disposing its realm, while the agent scope is still alive, WIDENS the surface instead of removing
+it. SLICE-23 now pins that measured state explicitly (a characterization of a defect, not an
+expectation of correct behaviour); when close is implemented the assertion must be inverted, never
+deleted.
+
+The shape of the fix is therefore not "dispose harder": a member that is closed must either take its
+agent scope with it (product teardown) or leave a refusing tombstone on its own tool layer, because
+removing an own registration only exposes the inherited one. Two candidate causes for why the
+removal happens at all, neither yet confirmed:
 
 1. the row's `mountMemberA5sfRealm` returns a HANDLE (`{realm, installation}`), so
    `realm.disposeNativeToolModules` is not the mounted realm's disposer and the lane's fallback
