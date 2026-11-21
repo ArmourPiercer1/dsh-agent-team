@@ -29,7 +29,9 @@ provides. Anything the centre needs that is **not** on this list is a
 | **Provider lanes** (`fs`, `web`, `shell`, `terminals`, `subprocess`, `userQuestions`, `goals`, `sessionProjections`) | enforcement lives in the service the host tool already calls; the lane is a *decision in front of the host provider*, delegating to `super` | UTE-06, UTE-08, UTE-12 |
 | **Face completeness** | a tool whose required faces are not all bound is refused **whole**, not partially confined | UTE-07 |
 | **Admission** (kept from the old route: guard, builtin-deny, selector) | the existed Alpha.4/6 authority wraps native calls through `native-tool-admission`'s publication slot | UTE-13 |
-| **Settlement** (existing route, untouched) | one `ExecutionId`, one canonical fact; `unknown` allowed; `tools/result` emit is not a durable commit | UTE-15, UTE-16, UTE-17 |
+| **`InvocationAuthorityFacts`** (pre-execution contract) | agent, definition identity, requested operation + parameters, bound Blueprint, policy generation, owner — the things Control needs **before** it decides | UTE-13, approval revalidation |
+| **`DurableAdmission`** | the recorded permission to enter execution, written before the body runs | UTE-14, UTE-15 |
+| **`ExecutionFact`** (settlement, existing route) | one `ExecutionId`, one canonical fact; `unknown` allowed; `tools/result` emit is not a durable commit | UTE-15, UTE-16, UTE-17 |
 | **Stop / lifecycle** (existing route, untouched) | stop persists first, then ends the OS domain; cold start restores facts and replays nothing | UTE-18 |
 
 Note what is **not** in this table: a tool definition. The centre never declares a
@@ -38,9 +40,14 @@ model-visible tool. That is the structural difference from the route being retir
 ## 3. The five red proofs (the centre's acceptance, no family required)
 
 Each proof is a *pair*: an assertion that must be green, and a mutation that must turn it
-red. A proof without its mutation is a claim, not a test. The probe family
-(`dsh.u6-probe-family`, test-only, out of retirement scope) is the fixture — it exists
-precisely so the centre can be graded without a real tool.
+red. A proof without its mutation is a claim, not a test.
+
+**The fixture rule (owner ruling + A0 review P1).** Real, unmodified DSH native tools are the
+default mechanism probes. `dsh.u6-probe-family` is **not** eligible: it builds its own
+governance-centre faces (`tests/u6-arc-a-probe-family/src/probe-assembly.mjs:23`) and is
+itself a consumer of a module A1 deletes. A purpose-built `ToolDefinition` registered through
+the ordinary public API is allowed only for a centre property no native tool can exercise —
+and never as a second execution channel.
 
 | # | obligation | green assertion | must-red mutation |
 | --- | --- | --- | --- |

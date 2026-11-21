@@ -28,7 +28,7 @@ Grouped by what each one is, because the *grouping* is what carries the safety a
 | generated barrel (3 generated files) | 3 | 101 | the last row; it is generated from the rows |
 | 5 `confined-*` shadows | 5 | 994 | the same lanes: the shadow existed only because the preset scope resolved the inherited, unconfined service (PD-17) |
 | `team-tool-plane`, `family-assembly` | 2 | 2,517 | the new binding assembler |
-| `pa-mount-registry` | 1 | 477 | the new `ExecutionFact` interface (Control stops reading a mount table) |
+| `pa-mount-registry` | 1 | 477 | the **pre-execution authority** contract (see §2b) — Control stops reading a mount table, and stops needing one to decide |
 | `native-tool-admission`, `native-bash-tool` | 2 | 240 | the new admission slot + no second `bash` declaration |
 | `governance-center` + `tool-dispatch` (one group) | 11 | 4,766 | closed-world semantics **moved first**, in their own commit |
 | `pa-control-bridge`, `pre-execute-adapter` | 2 | 4,087 | the three centre interfaces + a minimal deny-by-default admission point shipped in A1 |
@@ -38,6 +38,45 @@ Grouped by what each one is, because the *grouping* is what carries the safety a
 The two `*-family` rows for kept-vs-deleted accounting reconcile in the generated inventory,
 not here; if these tables and the ledger disagree, the ledger is right and the gate has
 already failed.
+
+## 2a. Cut edits — mechanical consequences of the deletion, not repairs
+
+A whole-module rule cannot mean "and therefore no other file may be touched": deleting a
+module requires editing whatever *named* it. Three kept files must change at the cut, and
+each change is the deletion's own consequence:
+
+| kept file | cut edit | why it is not a repair |
+| --- | --- | --- |
+| `packages/runtime/operation-permission/index.ts` | drop the `pa-control-bridge` / `pre-execute-adapter` re-exports | the algebra keeps its surface; only the deleted adapters stop being re-exported |
+| `packages/runtime/operation-permission/canonical-operation.ts` | take the bash/read normalizers in-tree | they are text normalization, not execution; without the move, the kept algebra imports a deleted family |
+| `packages/runtime/src/plugin/{host,types}.ts` | re-point at the new entries | they are the assembly surface being replaced, not an old route |
+
+## 2b. Control's three contracts (A0 review P0-3)
+
+Deleting the PA registry and the bridge is correct, but **`ExecutionFact` alone cannot
+replace their approval-time role**. Control decides *before* execution, revalidates at
+consume time, and consumes a grant exactly once; a fact written afterwards cannot answer any
+of those. Three separate contracts, three separate failure modes:
+
+| contract | answers | consumed by |
+| --- | --- | --- |
+| **`InvocationAuthorityFacts`** (pre-execution) | which agent, which definition identity, which requested operation and parameters, which bound Blueprint + policy generation, which owner | the approval decision, revalidation, and one-shot grant consumption |
+| **`DurableAdmission`** | whether this invocation may enter execution now, recorded before the body runs | dispatch, and every later replay/refusal judgement |
+| **`ExecutionFact`** (settlement) | what actually happened, once, per `ExecutionId` | recovery, projection, Stop accounting |
+
+The centre must exercise: multiple approval legs, post-review drift (Blueprint/generation
+moves between ask and consume), Stop-before-consume, and missing facts (fail closed). None of
+that requires the old PA kernel or registry to survive.
+
+## 2c. Closure — an inventory is not a dependency closure
+
+`git ls-files` over module roots cannot see a dynamic `new URL('./x.mjs', import.meta.url)`,
+a re-export, or a committed build artifact. `scripts/ute-cut-closure.mjs` computes all three
+against the delete set: **192 references** (13 from surviving production files across 7
+referrers, 168 from retired test suites, 5 POC, 3 evidence, 3 elsewhere) plus **52 committed
+dist artifacts** that must be deleted with their sources. Every production referrer carries a
+declared disposition (`rewire` | `replace` | `delete-with-group`) and the check reds if one is
+missing.
 
 ## 2. Replaced — 2 files, 12,381 lines
 

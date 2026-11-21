@@ -32,14 +32,23 @@ done
 `ctx.*` counts are the provider calls measured in that package's `src` (the face the Team
 provider must serve).
 
+**Correction (A0 review, 2026-11-21).** An earlier revision of this table listed
+`ctx.fs` + `ctx.subprocess` + `ctx.shell` for `grep`/`glob`. That was a *text count* of
+`ctx.` mentions, not the injected face set, and it was wrong: rc.5
+`fs/tool-fs-search/src/index.ts:7-11` states the tools are "**Spawn-backed, not a `ctx.fs`
+provider method**", executing through `ctx.subprocess.spawn()` with fixed ripgrep argv —
+"**never `ctx.shell`**". The required face for the search family is `ctx.subprocess`, full
+stop. Face sets in this document must come from real injection/call sites, never from a grep
+of the string `ctx.`; a text count is how a census turns into a guess.
+
 | booked name | host native row (package) | provider face(s) | verdict |
 | --- | --- | --- | --- |
 | `read` | `fs/tool-fs` | `ctx.fs` ×37 | served |
 | `write` | `fs/tool-fs` | `ctx.fs` | served |
 | `edit` | `fs/tool-fs` | `ctx.fs` | served |
 | `read_image` | `fs/tool-fs` | `ctx.fs` | served |
-| `grep` | `fs/tool-fs-search` | `ctx.fs`, `ctx.subprocess`, `ctx.shell` | served |
-| `glob` | `fs/tool-fs-search` | `ctx.fs`, `ctx.subprocess`, `ctx.shell` | served |
+| `grep` | `fs/tool-fs-search` | **`ctx.subprocess` only** | served |
+| `glob` | `fs/tool-fs-search` | **`ctx.subprocess` only** | served |
 | `web_fetch` | `web/tool-web` | `ctx.web` ×14 | served |
 | `web_search` | `web/tool-web` | `ctx.web` ×14 | served |
 | `bash` | `shell/tool-bash` (+ `tool-bash-persistent`) | `ctx.shell` ×7, `ctx.terminals` ×9 | served |

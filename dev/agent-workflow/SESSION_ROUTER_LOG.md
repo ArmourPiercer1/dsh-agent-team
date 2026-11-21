@@ -9766,3 +9766,35 @@ UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32
 A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿集合（账本、中心契约 P1–P5、探针 rung 1–2、docs/日志/清单/目录），旧产品套件在窗口内**按构造为红**且必须是**具名退休清单**；该清单只许缩短，未列名而跳过的测试即门禁失败。A1 自身附带**极小 deny-by-default 准入点**，把"开发分支安全空窗"换成"能力降级为拒绝"，而不是等 B 建完再补强制点。
 
 **#819 关闭不合**：它加固的门正是 A0 要退役的门，合入要为即将删除的门再付一次约 25 分钟 hosted census。分支保留可复查。
+
+## 2026-11-21（再审）— A0 依外部 review 修正：read 前提证伪、账本门自相矛盾、闭包实测 192 引用 + 52 dist
+
+**review（`huang-yuke`，CHANGES_REQUESTED，review 6004453254）**：支持退役优先方向，指出 A0 尚不可执行，列 P0-1…P0-4 + 5 条 P1。逐条实测结果：**五条为真，其中四条是我自己文档/账本的缺陷**。
+
+### P0-1 读前写前提——我上一条的陈述是错的
+
+`bundle/base/cordis.patch.yml:292-294` 该行是 `disabled: true`；上游 Agent Note（2026-10-29）明载出厂默认让 `write`/`edit`/`apply_patch` 对着裸 provider 跑，后果原话 "a model can overwrite or edit a file it never read"。所以**出厂组合不强制先读**，`FS_NOT_OBSERVED`/`FS_STALE_VERSION` 只在部署打开该行时出现。
+
+处置：`read` 仍在 `write` 之前，但降级为**测试顺序**（读轴更便宜、且 read 为断言建立文件内容），不再声称宿主强制。新增三条强制：①先 pin 实际 Team 产品组合（该行是否 enabled，作为测试内具名事实）；②`E-obs` **条件成立**（未启用则从计划删除，不留在文档里作装饰）；③**双向臂**——未读即写必须被拒（启用时）且必须成功（未启用时），单向绿等同 #819 那个 corpus 空转缺陷。`E-obs` 收紧为三要素：同一 gate 实例、同一 owner（`exec.agent.session`）、同一 event scope；并写明"共享 FS provider 本身不成立任何观测"（状态在 policy 插件内，per-`apply()` WeakMap）。
+
+### P0-2 必绿账本门在成功删除后必然失败（我的自相矛盾）
+
+原 `05 §6` 要求窗口全程 `UTE-P0-ASSETS` 绿，而该门对 148 个待删文件逐个 `existsSync`。改为三态 + 冻结快照：`--snapshot` 一次性冻结 A0 断言（内容寻址 `ute-p0-assets.snapshot.json`，`--check` 对漂移即红，**不许重生成掩盖删除**）；`--check` 报告 `cut=pending|partial|cut`——`partial` 是**具名红**（半删=每名字两个声明者），`cut` 才断言 148 全缺、保留 32 全在。本地实测：`cut=pending(0/148)`、21 条变异臂全绿。
+
+### P0-3 Control 需要执行前权威事实（架构纠正，接受）
+
+单一 `ExecutionFact` 不能替代 registry/bridge 的审批期职责：决定、复验、一次性 grant 消费都发生在执行前，Stop-before-consume 更要求它可在缺事实时 fail-closed。改为三份契约：`InvocationAuthorityFacts`（agent / definition 身份 / 请求操作与参数 / 绑定 Blueprint / policy 代际 / owner）、`DurableAdmission`、`ExecutionFact`；必须覆盖多审批腿、复审后漂移、Stop-before-consume、缺事实 fail-closed。
+
+### P0-4 清单≠依赖闭包——新增 `scripts/ute-cut-closure.mjs`（按**解析后**引用，不按 basename）
+
+实测：待删集合 148 文件，**192 处引用**——13 处来自 7 个存活生产文件、168 处来自旧测试（按前缀允许，各有理由）、5 POC、3 证据；另有 **52 个已提交 dist 产物**必须随源删除。三个 `git ls-files` 看不见的引用：`a5sf-realm-row.mjs` 用 `new URL('./confined-*.mjs', import.meta.url)` 动态引 5 个 shadow；`operation-permission/index.ts` re-export `pre-execute-adapter`；`scripts/dist-placements/*` 仍点名退役 shadow。7 个生产引用者每个必须带 `rewire|replace|delete-with-group` + 说明，缺失即 `UTE_CLOSURE_UNDISPOSED` 红。另新增 `06-CAPABILITY-CONTRACT.md`：18 项 Team 公共能力（13 个 `team_*`、成员/投递/Blueprint/Control/Officer/Wake/Stop/remote/MCP/projection…）逐项 保留·测试·裁决取消·延后，**两入口整替不得靠"能编译"证明能力还在**。
+
+### P1（两条均接受）
+
+①`02` 普查面集纠错：rc.5 `tool-fs-search/src/index.ts:7-11` 明写 "Spawn-backed, **not** a `ctx.fs` provider method…**never `ctx.shell`**"，grep/glob 需要面集只有 `ctx.subprocess`；此前是文本计数当注入，已注明"面集必须来自真实注入/调用点"。②探针夹具规则：`dsh.u6-probe-family` 不合格（`probe-assembly.mjs:23` 自行构建 `governance-center` 面，是待删模块的消费者），原生工具为默认探针，专用 ToolDefinition 仅限无原生工具可触发的中心属性。
+
+### CI 提示（不宣称绿）
+
+上一 head 的 `pr-settlement-gate` 因结算评论停留在旧 head 失败、`ci-required` 因 `ci-census` skipped 失败。本轮改动后重新推送并**按新 head 重发结算**；hosted 聚合在重跑前一律记为 UNKNOWN，不记为绿。
+
+`UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 unclassified=13 distResiduals=52 findings=0` · `DSH-TEST-CATALOG tests=894 refused=0` · `EB3-CI-REQUIRED pass workflows=10` · `docs-sync findings=0 blocking=0`。

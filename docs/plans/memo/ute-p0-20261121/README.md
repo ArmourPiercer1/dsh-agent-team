@@ -51,9 +51,10 @@ instead of a leap.
 | --- | --- |
 | [`01-ASSET-INVENTORY.md`](./01-ASSET-INVENTORY.md) | **generated** from the git tree: 37 modules, 180 files, 69,512 lines, per-file lists |
 | [`02-SERVING-CENSUS.md`](./02-SERVING-CENSUS.md) | for each booked name: does the retained path serve it, through which face, and what bucket that puts the module in |
-| [`03-RETIRE-KEEP.md`](./03-RETIRE-KEEP.md) | the delete/replace/keep list at **whole-module** granularity, the pairings, the three names that used to block deletion, rollback |
+| [`03-RETIRE-KEEP.md`](./03-RETIRE-KEEP.md) | the delete/replace/keep list at **whole-module** granularity, the cut edits, Control's three contracts, the measured closure, rollback |
 | [`04-SEAMS.md`](./04-SEAMS.md) | the central capability the centre must supply, the five red proofs that grade it, and the `CORE_SEAM_BLOCKER` rule |
-| [`05-IMPLEMENTATION-PLAN.md`](./05-IMPLEMENTATION-PLAN.md) | **the frozen sequence A0 → A1 → B → C → D**, the seven rulings, the `read`-before-`write` correction and the `E-obs` obligation it reveals, the window-branch gates, and the risk ledger |
+| [`05-IMPLEMENTATION-PLAN.md`](./05-IMPLEMENTATION-PLAN.md) | **the frozen sequence A0 → A1 → B → C → D**, the seven rulings, the corrected `read`-first rule and the *conditional* `E-obs` obligation, the snapshot/cut-state/closure gates, and the risk ledger |
+| [`06-CAPABILITY-CONTRACT.md`](./06-CAPABILITY-CONTRACT.md) | what the two replaced entries (12,381 lines) were *for*: 18 capabilities, each preserved / tested / dropped by ruling / deferred — the checklist A1 is graded against |
 
 ## The buckets (one per module, no mixing)
 
@@ -73,9 +74,11 @@ instead of a leap.
 ## Machine gate
 
 ```
-node scripts/ute-p0-assets.mjs --check    # UTE-P0-ASSETS pass modules=37 files=180 ...
-node scripts/ute-p0-assets.mjs --write    # regenerate ledger + 01-ASSET-INVENTORY.md
-node --test scripts/ute-p0-assets.test.mjs  # 19 arms, each a mutation that must red
+node scripts/ute-p0-assets.mjs --check     # coherence + frozen snapshot + cut state
+node scripts/ute-p0-assets.mjs --write     # regenerate ledger + 01-ASSET-INVENTORY.md
+node scripts/ute-cut-closure.mjs --check   # references into the delete set, dist parity
+node --test scripts/ute-p0-assets.test.mjs   # 21 arms, each a mutation that must red
+node --test scripts/ute-cut-closure.test.mjs # 8 arms, incl. the dynamic-URL control
 ```
 
 The ledger is `dev/agent-workflow/ledgers/ute-p0-assets.json`, **generated** by

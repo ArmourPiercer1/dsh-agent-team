@@ -30,13 +30,15 @@
  *       selector, provider binding), not a route to retire.
  *
  * Usage:
- *   node scripts/ute-p0-assets.mjs --check   # gate: ledger vs tree vs prose
- *   node scripts/ute-p0-assets.mjs --write   # regenerate ledger + prose table
+ *   node scripts/ute-p0-assets.mjs --check    # gate: coherence + frozen snapshot + cut state
+ *   node scripts/ute-p0-assets.mjs --write    # regenerate ledger + prose table
+ *   node scripts/ute-p0-assets.mjs --snapshot # freeze the A0 attestation (once, at freeze time)
  *   node scripts/ute-p0-assets.mjs --json    # machine-readable ledger
  *
  * Exit: 0 pass, 1 findings, 2 usage.
  */
 
+import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
@@ -46,6 +48,7 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..')
 const LEDGER_PATH = 'dev/agent-workflow/ledgers/ute-p0-assets.json'
 const INVENTORY_PATH = 'docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md'
+const SNAPSHOT_PATH = 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json'
 
 const SCHEMA = 'ute-p0-assets/1'
 const BUCKETS = new Set(['A', 'B', 'C', 'D', 'KEEP'])
@@ -619,6 +622,39 @@ export function derive () {
   }
 }
 
+/**
+ * THE CUT STATE. A gate that demands every listed file exist cannot survive the very cut it
+ * is meant to guard: 146 files are deleted on purpose, so `existsSync` on all of them
+ * deterministically fails a correct A1. The state makes the three moments explicit.
+ *
+ *   pending  nothing removed yet  -> every listed file must exist (pre-cut integrity)
+ *   partial  some removed         -> a named RED: a half-cut realm is a two-declarant realm
+ *   cut      every deletable file gone -> every listed file must be ABSENT, keep files present
+ */
+export function cutState (ledger, { root = ROOT } = {}) {
+  const gone = ledger.modules
+    .filter((m) => m.verdict === 'delete' || m.verdict === 'replace')
+    .flatMap((m) => m.files)
+    .filter((f) => !existsSync(join(root, f)))
+  const total = ledger.modules
+    .filter((m) => m.verdict === 'delete' || m.verdict === 'replace')
+    .reduce((n, m) => n + m.files.length, 0)
+  const state = gone.length === 0 ? 'pending' : gone.length === total ? 'cut' : 'partial'
+  return { state, gone: gone.length, total }
+}
+
+/** A content digest over the boundary itself (modules, files, verdicts, buckets). */
+export function snapshotDigest (ledger) {
+  const canonical = ledger.modules.map((m) => ({
+    id: m.id,
+    verdict: m.verdict,
+    bucket: m.bucket,
+    wave: m.wave ?? null,
+    files: [...m.files].sort(),
+  }))
+  return 'sha256:' + createHash('sha256').update(JSON.stringify(canonical)).digest('hex')
+}
+
 /** Grade the ledger: schema, coverage, bucket/verdict coherence, prose drift. */
 export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {}) {
   const findings = []
@@ -684,11 +720,33 @@ export function checkLedger (ledger, { root = ROOT, inventoryText = null } = {})
       push('UTE_P0_ASSETS_EMPTY', `${m.id}: module lists no files (an empty module is either a typo or already deleted)`)
     }
     for (const f of m.files ?? []) {
-      if (!existsSync(join(root, f))) push('UTE_P0_ASSETS_MISSING', `${m.id}: listed file does not exist: ${f}`)
       const seen = fileOwner.get(f)
       if (seen) push('UTE_P0_ASSETS_DOUBLE', `${f} is claimed by both ${seen} and ${m.id}`)
       else fileOwner.set(f, m.id)
     }
+  }
+  // FILE PRESENCE, by cut state (see cutState).
+  const cut = cutState({ modules }, { root })
+  if (cut.state === 'pending') {
+    for (const m of modules) {
+      for (const f of m.files ?? []) {
+        if (!existsSync(join(root, f))) push('UTE_P0_ASSETS_MISSING', `${m.id}: listed file does not exist: ${f}`)
+      }
+    }
+  } else if (cut.state === 'cut') {
+    for (const m of modules) {
+      if (m.verdict === 'keep') {
+        for (const f of m.files ?? []) {
+          if (!existsSync(join(root, f))) push('UTE_P0_ASSETS_KEEP_GONE', `${m.id}: retained file is missing after the cut: ${f}`)
+        }
+      } else {
+        for (const f of m.files ?? []) {
+          if (existsSync(join(root, f))) push('UTE_P0_ASSETS_RESIDUAL', `${m.id}: file still present after the cut: ${f}`)
+        }
+      }
+    }
+  } else {
+    push('UTE_P0_ASSETS_PARTIAL', `the cut is half-done: ${cut.gone} of ${cut.total} deletable files are gone — a half-cut realm has two declarants per name`)
   }
   // Coverage: every tracked file under every root must be listed by that module.
   for (const m of modules) {
@@ -777,7 +835,7 @@ export function renderInventory (ledger) {
 }
 
 const usage = () => {
-  console.error('usage: node scripts/ute-p0-assets.mjs --check|--write|--json')
+  console.error('usage: node scripts/ute-p0-assets.mjs --check|--write|--snapshot|--json')
   process.exit(2)
 }
 // Importable: the test suite imports derive/checkLedger, so the CLI only runs
@@ -789,6 +847,21 @@ if (!isMain) {
 const argv = process.argv.slice(2)
 if (argv.includes('--json')) {
   process.stdout.write(JSON.stringify(derive(), null, 2) + '\n')
+  process.exit(0)
+}
+if (argv.includes('--snapshot')) {
+  const ledger = derive()
+  const digest = snapshotDigest(ledger)
+  const payload = {
+    schema: 'ute-p0-assets-snapshot/1',
+    frozenAt: new Date().toISOString(),
+    note: 'The A0 attestation: what the boundary WAS at freeze time. It is never regenerated to hide a removal — --check compares the live ledger against this record.',
+    digest,
+    totals: ledger.totals,
+    modules: ledger.modules.map((m) => ({ id: m.id, verdict: m.verdict, bucket: m.bucket, wave: m.wave ?? null, files: m.files, lines: m.lines })),
+  }
+  writeFileSync(join(ROOT, SNAPSHOT_PATH), JSON.stringify(payload, null, 2) + '\n')
+  console.log(`UTE-P0-ASSETS snapshot digest=${digest} modules=${ledger.totals.modules} files=${ledger.totals.files}`)
   process.exit(0)
 }
 if (argv.includes('--write')) {
@@ -809,11 +882,19 @@ const ledger = JSON.parse(readFileSync(ledgerPath, 'utf8'))
 const invPath = join(ROOT, INVENTORY_PATH)
 const inventoryText = existsSync(invPath) ? readFileSync(invPath, 'utf8') : ''
 const findings = checkLedger(ledger, { inventoryText: existsSync(invPath) ? inventoryText : null })
+if (existsSync(join(ROOT, SNAPSHOT_PATH))) {
+  const snap = JSON.parse(readFileSync(join(ROOT, SNAPSHOT_PATH), 'utf8'))
+  if (snap.digest !== snapshotDigest(ledger)) {
+    findings.push({ code: 'UTE_P0_ASSETS_SNAPSHOT_DRIFT', detail: `the live boundary no longer matches the frozen A0 snapshot (${SNAPSHOT_PATH}) — the snapshot is an attestation, not a draft` })
+  }
+}
 for (const f of findings) console.error(`${f.code} ${f.detail}`)
 const t = ledger.totals ?? {}
+const cut = cutState(ledger)
 console.log(
   `UTE-P0-ASSETS ${findings.length === 0 ? 'pass' : 'fail'} modules=${t.modules} files=${t.files} ` +
-  `lines=${t.lines} delete=${t.deleteFiles} replace=${t.replaceFiles} keep=${t.keepFiles} wave1=${t.wave1Files} wave2=${t.wave2Files} findings=${findings.length}`,
+  `lines=${t.lines} delete=${t.deleteFiles} replace=${t.replaceFiles} keep=${t.keepFiles} wave1=${t.wave1Files} wave2=${t.wave2Files} ` +
+  `cut=${cut.state}(${cut.gone}/${cut.total}) findings=${findings.length}`,
 )
 process.exit(findings.length === 0 ? 0 : 1)
 }
