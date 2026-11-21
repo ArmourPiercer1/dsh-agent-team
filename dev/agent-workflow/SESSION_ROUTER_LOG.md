@@ -10393,3 +10393,25 @@ policy invented.
 
 Gates at `e309128bd`: leg `suites=7 files=7 exit=0` (161 pass + 2 disclosed skips), catalog `tests=889
 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R61 — the Provider-OS boundary holds: governed members mount native modules into their realm by default
+
+Round 60 refuted the owner's named risk on a live host (native `read` on the base provider, zero guard
+consults). This round fixes it as shape A and re-measures with the SAME unmodified driver, two agreeing boots:
+
+- `d:guard-facts` REFUTED → **PROVEN** (2 allow facts `stat`/`readText`, member identity, `decidedBy=[ALLOW]`,
+  zero out-of-lane provider facts);
+- `d:member-read-admitted` PASS, `d:centre-facts` PASS (allow + LANE_DENY + executions);
+- `d:member-read-denied` still reports the centre's LANE_DENY because the centre decides BEFORE execution —
+  the provider-side `IO_READ_DENIED` is proven in-process (ADM-100), which is the honest division;
+- `d:native-read-surface` still reads the top-level description while its marker lives in the `file_path`
+  parameter description: an instrument defect, to be re-anchored, not deleted.
+
+Mechanism: candidate modules come from the preset's OWN rows (`compositionInventory()`), each kept only if it
+declares a realm face and registers a centre-adjudicated name, then mounted through the existing host-module
+path (ONE definition per name, no shadow). Unresolvable/invalid/empty/ambiguous/conflicting ⇒ typed
+GOVERNED_NATIVE_MODULE_* refusals, never a base-provider fallback. Ungoverned rows unchanged.
+
+ADM-100/101/102 pin the behaviour. Gates at `26dde9dab`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed
+skips), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass,
+bound leg `PASS 238`.

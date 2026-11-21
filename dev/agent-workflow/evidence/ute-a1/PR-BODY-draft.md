@@ -226,6 +226,35 @@ row that a FRESH reader sees naming exactly the routed reviewer. What is missing
 the centre (`admission.ts:32/57/114`); driving one only fabricates a fallback-axis record. Two lawful shapes
 are recorded (compiled axis = contract change, or a ruling that a record-only approval fact is adjudication).
 
+## D stage, first live acceptance: the Provider-OS boundary now holds on a real host (round 61)
+
+Round 60's live run REFUTED the owner's named risk: a governed Member's native `read` was served by the BASE
+provider (ZERO guard consults). Round 61 implements the fix (shape A: mount by default) and re-measures with
+the SAME unmodified driver, two agreeing boots:
+
+**`d:guard-facts` moved from REFUTED to PROVEN** — 2 allow facts (`stat`, `readText`) naming the member
+identity, `decidedBy=[ALLOW]`, zero out-of-lane provider facts. `d:member-read-admitted` still PASS, and
+`d:centre-facts` still PASS (allow + `LANE_DENY` + executions).
+
+How: a governed member's native tool modules are now mounted INTO ITS ISOLATED SCOPE by default. The candidate
+set is derived from the preset's OWN rows (never a second hand-maintained list); each module is kept only if it
+declares a realm face and registers a name the centre adjudicates; the HOST module is mounted through the
+existing host-module path, so there is exactly ONE definition per name and no shadow. Unresolvable/invalid/
+empty/ambiguous/conflicting cases are typed refusals (`GOVERNED_NATIVE_MODULE_*`,
+`GOVERNED_NATIVE_SURFACE_CONFLICT/_CHANGED`) — never a base-provider fallback. Ungoverned rows are untouched.
+
+Two residuals recorded, not relaxed:
+
+1. `d:member-read-denied` still reports the centre's `LANE_DENY` rather than the provider's `IO_READ_DENIED`,
+   because the centre decides BEFORE execution — by design. The provider-side refusal is proven in-process
+   (ADM-100: provider deny with zero secret bytes).
+2. `d:native-read-surface` reads the top-level description while the marker it looks for lives in the
+   `file_path` PARAMETER description — an instrument defect, re-anchored rather than deleted.
+
+ADM-100/101/102 pin the new behaviour: governed default mount through the confined face (identity changed,
+same host `execute`, allow guard facts, provider deny), ungoverned unchanged, and unresolvable ⇒ typed refusal
+with no fallback.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
