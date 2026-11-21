@@ -56,7 +56,7 @@ import {
   UNKNOWN_CATEGORY,
   VOCABULARY_INCOMPLETE,
 } from './lib/effect-oracle.mjs'
-import { classifyConnectTarget } from './lib/net-witness.mjs'
+import { classifyConnectTarget, networkWitnessInstalled, normalizeConnectTarget } from './lib/net-witness.mjs'
 import { captureVector } from './lib/old-path.mjs'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -66,6 +66,12 @@ const goldenById = new Map(golden.map((record) => [record.id, record]))
 
 let controls = 0
 let failed = 0
+
+// The lane suite re-runs this script and compares the transcript line for
+// line. `UTE_WEB_NC_MUTATE=drop-widening` is a deliberately broken run: it
+// disables the first control's mutant so the battery MUST print RED. That is
+// how the suite proves the committed GREEN is not a hard-coded constant.
+const MUTATION = process.env.UTE_WEB_NC_MUTATE ?? ''
 
 /** Report one control; `ok === false` fails the run. */
 function verdict(name, ok, detail) {
@@ -87,6 +93,13 @@ function reproduces(record) {
   return { ok: false, detail: `${record.id} differs: ${comparison.diffs.map((diff) => `${diff.field}: golden=${JSON.stringify(diff.expected)} observed=${JSON.stringify(diff.observed)}`).join('; ')}` }
 }
 
+
+/** Classify an argument bag that carries a port but NO string host. */
+function normalizeNoHostBag() {
+  const target = normalizeConnectTarget([{ port: 443 }])
+  return classifyConnectTarget(target)
+}
+
 const vectorOf = (id) => {
   const vector = CORPUS.find((candidate) => candidate.id === id)
   if (vector === undefined) throw new Error(`unknown vector ${id}`)
@@ -96,12 +109,16 @@ const vectorOf = (id) => {
 /* ── 1. per-member: the declared admission is what refused the destination ── */
 {
   const baseline = await captureVector(vectorOf('WB-F11-destination-forbidden'))
-  const widened = await captureVector(vectorOf('WB-F11-destination-forbidden'), {
-    // Widening the DECLARED set only: the face, the provider and the pinned
-    // policy are untouched. `localhost` is a local name the SSRF leg refuses
-    // until the composition declares that exact origin.
-    extraTestEndpoints: ['http://localhost:3182'],
-  })
+  const widened = MUTATION === 'drop-widening'
+    // The mutation keeps the declared set UNCHANGED, so the control's own
+    // premise is false and the arm must report failure below.
+    ? baseline
+    : await captureVector(vectorOf('WB-F11-destination-forbidden'), {
+      // Widening the DECLARED set only: the face, the provider and the pinned
+      // policy are untouched. `localhost` is a local name the SSRF leg refuses
+      // until the composition declares that exact origin.
+      extraTestEndpoints: ['http://localhost:3182'],
+    })
   const ok = baseline.outcome === 'deny'
     && baseline.refusal === 'denied-by-lane'
     && widened.outcome === 'allow'
@@ -230,6 +247,8 @@ const vectorOf = (id) => {
   const { installNetworkWitness, uninstallNetworkWitness } = await import('./lib/net-witness.mjs')
   const counters = installNetworkWitness()
   let refused = null
+  let unidentified = null
+  let installed = false
   try {
     const socket = new net.Socket()
     await new Promise((resolvePromise) => {
@@ -243,19 +262,33 @@ const vectorOf = (id) => {
       setTimeout(() => resolvePromise(), 1_000).unref()
     })
     socket.destroy()
+    // A `connect({port})` bag with NO string `host` is unidentifiable. It must
+    // classify EXTERNAL and be refused, not default to `localhost` (fail-open).
+    const unidentifiedSocket = new net.Socket()
+    await new Promise((resolvePromise) => {
+      unidentifiedSocket.once('error', (error) => {
+        unidentified = error?.code ?? 'no-code'
+        resolvePromise()
+      })
+      unidentifiedSocket.connect({ port: 443 })
+      setTimeout(() => resolvePromise(), 1_000).unref()
+    })
+    unidentifiedSocket.destroy()
+    installed = networkWitnessInstalled()
   } finally {
     uninstallNetworkWitness()
   }
   const snapshot = counters.snapshot()
-  const installed = net.Socket.prototype.connect !== undefined
-  uninstallNetworkWitness()
   const classifier = classifyConnectTarget({ kind: 'tcp', host: 'example.com', port: 443, label: 'example.com:443' })
+  const unknownClassifier = normalizeNoHostBag()
   const ok = refused === 'EGRESS_REFUSED'
-    && snapshot.external === 1
+    && unidentified === 'EGRESS_REFUSED'
+    && snapshot.external === 2
     && snapshot.forwarded === 0
     && classifier === 'external'
-    && installed
-  verdict('NC-NET-COUNTER-POSITIVE', ok, `external=${snapshot.external} forwarded=${snapshot.forwarded} real-connect-ran=${snapshot.forwarded === 0 ? 'no' : 'YES(!!)'} refused=${refused} classifier(example.com:443)=${classifier} witness-installed=${installed ? 'yes' : 'no'}`)
+    && unknownClassifier === 'external'
+    && installed === true
+  verdict('NC-NET-COUNTER-POSITIVE', ok, `external=${snapshot.external} forwarded=${snapshot.forwarded} real-connect-ran=${snapshot.forwarded === 0 ? 'no' : 'YES(!!)'} refused=${refused} host-less-bag=${unidentified} classifier(example.com:443)=${classifier} classifier({port:443})=${unknownClassifier} witness-installed=${installed === true ? 'yes' : 'no'}`)
 }
 
 /* ── 10. the one concurrent vector declares its request witness sorted ── */

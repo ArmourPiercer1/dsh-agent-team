@@ -29,7 +29,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
 import { test } from 'node:test'
 
 import { CORPUS } from './lib/corpus.mjs'
@@ -76,7 +76,7 @@ test('old path: every corpus vector reproduces its golden row', async () => {
   const observed = await captureCorpus()
   const compared = compareAll(golden, observed)
   const same = compared.failures.length === 0 && compared.missingGolden.length === 0 && compared.missingObserved.length === 0
-  console.log(`OLD-PATH-GOLDEN compare=${same ? 'identical' : 'DIFFERS'} fixture=${GOLDEN} vectors=${golden.length} captured=${observed.length}`)
+  console.log(`OLD-PATH-GOLDEN compare=${same ? 'identical' : 'DIFFERS'} fixture=${relative(ROOT, GOLDEN)} vectors=${golden.length} captured=${observed.length}`)
   if (!same) {
     for (const failure of compared.failures) {
       console.error(`OLD-PATH-DRIFT ${failure.id} ${failure.diffs.map((diff) => `${diff.field}: golden=${JSON.stringify(diff.expected)} observed=${JSON.stringify(diff.observed)}`).join(' | ')}`)
@@ -215,9 +215,10 @@ test('new path: the mutation controls bite (comparator, declaration channel, pro
   console.log(verdictLine)
   assert.match(verdictLine, /^NEW-PATH-NC-VERDICT GREEN controls=(\d+) failed=0$/u, `the new-path controls are not green: ${verdictLine}`)
   const controls = Number(verdictLine.match(/controls=(\d+)/u)[1])
-  assert.ok(
-    controls >= 12,
-    `only ${controls} new-path controls ran; the lane claims at least 12 (8 comparator/declaration mutations + 1 declaration-table check + 1 provenance check + 2 real-run lane controls)`,
+  assert.equal(
+    controls,
+    12,
+    `the new-path mutant battery has exactly 12 controls (8 comparator/declaration mutations + 1 declaration-table check + 1 provenance check + 2 real-run lane controls); got ${controls}`,
   )
   verdict.newPathControls = 'GREEN'
 })
@@ -233,7 +234,10 @@ test('old path: the family-level and per-member negative controls are green', ()
   console.log(verdictLine)
   assert.match(verdictLine, /^NC-VERDICT GREEN controls=(\d+) failed=0$/u, `the negative controls are not green: ${verdictLine}`)
   const controls = Number(verdictLine.match(/controls=(\d+)/u)[1])
-  assert.ok(controls >= 8, `only ${controls} controls ran; the lane claims 2 family-level + 2 per-member + 2 positive arms + 2 composition controls`)
+  assert.equal(controls, 8, `the family battery has exactly 8 controls (2 family-level + 2 per-member + 2 positive arms + 2 composition); got ${controls}`)
+  const committed = readFileSync(join(ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-search-b1-20261120', 'negative-controls.txt'), 'utf8').trim().split('\n')
+  const fresh = output.trim().split('\n')
+  assert.deepEqual(fresh, committed, 'the committed search negative-control transcript must be exactly a fresh run (a shrunk battery reds)')
   verdict.negativeControls = 'GREEN'
 })
 

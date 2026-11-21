@@ -1,0 +1,18 @@
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=892 digest=sha256:f7a6d9c7d421b15bafec4d0b7c14dd26762fc072c9a6e2e4bc414dad881db93b refused=0 findings=0
+$ node scripts/eb3-family-definitions.mjs
+EB3-FAMILY-DEFINITIONS pass files=88 findings=0
+$ node scripts/ute-family-inventory.mjs
+UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=184 notes=4 plans=143(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer","pointer_file":"dev/engineering/current-authority.json","snapshot_file":"dev/engineering/authority-snapshots/as20261109r1.json","snapshot_version":"as20261109r1","content_digest":"sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3","pointer_digest_verified":true,"view_may_not_reverse_decide_authority":true}
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+$ node scripts/check-append-only-log.mjs
+DSH-APPEND-ONLY-LOG verdict=pass base=2b69193fac66f5b89fb2010ca398de3f5b2ecdb5 lines=9653 added=23 removed=0 detail="appended 23 line(s)"
+$ git diff --check
+git diff --check: clean
+$ git ls-tree -r --name-only HEAD | grep -c "^tests/deepseek-harness"
+0

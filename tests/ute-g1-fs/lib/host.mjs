@@ -119,5 +119,5 @@ export async function loadHostSurface(repoRoot) {
 
 /** The generation identity line the evidence quotes. */
 export function hostIdentity(host) {
-  return `host=next version=${NEXT_HOST.version} tag=${NEXT_HOST.tag} commit=${NEXT_HOST.sha} tree=${host.tree}`
+  return `host=next version=${NEXT_HOST.version} tag=${NEXT_HOST.tag} commit=${NEXT_HOST.sha} tree=${NEXT_HOST.treeRel}`
 }

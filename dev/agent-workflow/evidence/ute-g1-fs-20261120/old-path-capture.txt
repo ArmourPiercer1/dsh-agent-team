@@ -16,4 +16,4 @@ OLD-PATH-VECTOR FS-I4-missing-image entry=read_image composition=post-gap-1 outc
 OLD-PATH-VECTOR FS-I5-route-unresolved entry=read_image composition=post-gap-1 outcome=deny refusal=image-modality-denied effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-VECTOR FS-I6-cancel-before-dispatch entry=read_image composition=post-gap-1 outcome=deny refusal=cancelled effects=@result:none:absent,inside/pixel.png:70B/0o644 codes=- leaks=none
 OLD-PATH-IDENTITY host=0.2.0-rc.2@639ed015397290b3745d163aafe02ffee4aa3f84 seam="mountMemberA5sfRealm + attachA5sfNativeToolModules (route C)" dispatch="ctx.tools.execute({'calls':[...]})" vectors=17
-OLD-PATH-GOLDEN compare=identical fixture=/home/armourpiercer/projects/dsh-agent-team/.worktrees/ute3-fs-image-20261120/tests/ute-g1-fs/golden/old-path.tsv
+OLD-PATH-GOLDEN compare=identical fixture=tests/ute-g1-fs/golden/old-path.tsv

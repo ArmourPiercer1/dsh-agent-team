@@ -24,7 +24,7 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
     id: 'two-implementations',
     klass: 'definition-surface',
     blocking: true,
-    statement: 'Every booked spelling is declared TWICE: by a governed family body (packages/tools/{ui,agent-state}-family) and by the pinned host package the product preset already mounts. Retiring the governed plane would not remove the host implementation, and the host implementation would not adopt the governed law.',
+    statement: 'SIX of the SEVEN booked spellings are declared twice AND mounted on the product preset: by a governed family body (packages/tools/{ui,agent-state}-family) and by the pinned host package the Member preset mounts (present + the four agent-state rows). `ask_user_question` is the exception: both sides DECLARE the name, but the preset does NOT mount tool-ask-user (PD-25), so the host implementation is unreachable. Retiring the governed body would not remove the six mounted host implementations, and those host rows would not adopt the governed law.',
     evidence: [
       'dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt (PROBE-UISTATE … two-implementations=yes, one line per member)',
       'packages/tools/ui-family/src/{ask-row,present-row}.mjs + packages/tools/agent-state-family/src/executors.mjs (governed name declarations)',
@@ -138,7 +138,7 @@ export const SEMANTIC_DIFFERENCES = Object.freeze([
     id: 'product-route-absent',
     klass: 'unit-ownership',
     blocking: true,
-    statement: 'Neither family is reachable on the product route-C composition: the bare route registers none of the seven names (`unknown tool`), the shipped preset serves four agent-state names from the HOST packages plus `present` from the route-C host shadow, and `ask_user_question` is deliberately absent from the Member preset (PD-25). The retirement unit therefore spans rows no measured product route owns.',
+    statement: 'The governed family BODY is not mounted on product route-C, but the NAMES are not all absent: the BARE route (a deliberately configured composition with no native tool modules) registers none of the seven names (`unknown tool`), while the shipped preset serves `present` on the preset scope (route-C host shadow) plus the four agent-state names from HOST packages, and `ask_user_question` is deliberately absent from the Member preset (PD-25). What is absent is the bare route registering any of them, not product route-C reachability: 5 of the 7 names are reachable there, served by host preset rows, while the governed body that would be retired is never reached.',
     evidence: [
       'dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt (PROBE-ROUTE-C-BARE / PROBE-ROUTE-C-PRESET / PROBE-DISPOSITION)',
       'cordis.patch.yml:302+ (preset-a5sf-governed-member: no tool-ask-user row)',
