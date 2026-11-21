@@ -9902,3 +9902,17 @@ shipped face. 99 of 119 placement sources were files the cut had already deleted
 the glue, zero shared state) + `vnext-work-turn-reader.test.mjs` (7 arms) — its defensive branches (no
 log seam, absent delivery, crash-closed turn) were previously only reachable through a live delivery.
 Leg now suites=5 files=5.
+
+### R26 addendum — next-host feasibility, PR body, and what the review did not catch
+
+- **rc.5 feasibility measured (read-only)**: `NEXT-HOST-RC5-FEASIBILITY.md`. Verdict RUNNABLE WITH
+  HARNESS WORK (~4–6 h), no missing core seam. The false-green risk is module resolution (repo
+  `@deepseek-ai/*` are 0.2.0-rc.2 symlinks; the world factory hard-codes the test-use tree), plus rc.5's
+  static `workingDirectory` inject (Cordis defers silently → no preset read/write/edit at all) and the
+  batch+executor dispatch (`TOOL_EXECUTOR_UNAVAILABLE` otherwise).
+- **A real gap the investigation exposed**: rc.5 adds `patchText`/`deleteFile`/`moveFile`; the Team
+  confined provider overrides ten methods ending at `editText` and none of the three. On rc.5 those
+  paths would reach the provider without the Member lane — invisible today because the slice never uses
+  them. Recorded as B5; NOT fixed; the feasibility doc says not to claim FS confinement on rc.5.
+- **PR #822 body refreshed** (it still described the pre-B state): status, evidence index, arm counts,
+  the gates actually run, the review response and the limits above.
