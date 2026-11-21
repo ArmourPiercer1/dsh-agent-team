@@ -96,13 +96,6 @@
         "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
         "tests/u6-arc-a-probe-family/src/probe-assembly.mjs"
       ]
-    },
-    {
-      "group": "production",
-      "count": 1,
-      "referrers": [
-        "packages/runtime/src/plugin/live/center-shadow-row.mjs"
-      ]
     }
   ],
   "dispositions": {
