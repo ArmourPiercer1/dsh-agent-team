@@ -347,3 +347,32 @@ lane now re-reads until every declared name changed or a bounded settle budget i
 judges. `read_image` is deliberately undeclared in this world: the pinned tool-fs registers it
 from a deferred child that injects `attachments`, which the minimal world does not mount, so it is
 an absent optional capability (the mount seam's own settle rule), not a missing mount.
+
+## 10. OPEN OBLIGATION: the three new suites are not yet collected by CI
+
+`packages/runtime/test/vnext-{realm-lane,fs-slice,admission}.test.mjs` run and pass locally, but
+`scripts/test-catalog.mjs` refuses them:
+
+```
+REFUSED UNCOLLECTED_NEW packages/runtime/test/vnext-admission.test.mjs
+REFUSED UNCOLLECTED_NEW packages/runtime/test/vnext-fs-slice.test.mjs
+REFUSED UNCOLLECTED_NEW packages/runtime/test/vnext-realm-lane.test.mjs
+```
+
+That is the gate working: a suite nothing collects is a suite that never runs, and the baseline
+count ratchet is 41. Two ways out exist and only one of them is honest:
+
+- `--write-uncollected-baseline` and raising `--max-uncollected` to 44 — **rejected**, this is
+  exactly the "widen the skip budget to stay green" move the plan forbids; the suites would be
+  recorded as permanently uncollected.
+- declare a **ci-census leg** with `env.A5SF_REQUIRE_PINNED_HOST='1'` naming all three suites,
+  plus the workflow step that runs `node scripts/dispatch-tests.mjs --run --leg <id>` —
+  **the intended fix, not attempted in haste**: the fs-slice and realm-lane suites load the pinned
+  baseline's built `lib/` entries, so a leg without that env would fail rather than refuse, and a
+  leg declared in the manifest without its workflow step is the "declared but never run" shape the
+  same gate refuses (`CI_LAYER_LEG_MISSING`, `CI_HOST_REFUSAL_UNGUARDED`). It needs one careful
+  edit across `dev/ci/eb3-ci-manifest.json` and `.github/workflows/ci-census.yml`, validated by
+  `node scripts/eb3-ci-required.mjs`, which is the first task of the next round.
+
+Until then the window's own Required set is honestly red on the catalog gate, and that is the
+correct state to be in: the arms exist and pass; they are simply not yet wired to run.
