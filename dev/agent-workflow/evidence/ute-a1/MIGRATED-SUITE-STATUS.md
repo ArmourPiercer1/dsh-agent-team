@@ -374,3 +374,85 @@ that fix.
 **Not proven:** the diagnostic arm was exercised only by restoring the pre-fix symbol (a scratch edit,
 reverted — `agent-bindings.mjs` sha1 unchanged); no NEW rejection mode was fabricated. The retire of
 `waitFor` in G8 is scoped to G8 — G5/G7/G9/G10 still use the same 3 s poll and were not touched.
+
+## Round 51 (B stage): the `ask` path is real — durable Control approval, recheck, one-shot grant
+
+**The B gap, stated as measured.** `admission-port.mjs` had an `ask` branch, a one-shot grant and a
+recheck, and **nothing in the product ever supplied `grants`**: every ask in a governed member was
+`ADMISSION_ASK_UNWIRED` (`admission-port.mjs:393-397` at the pre-round HEAD). The branch was also
+incomplete in the other direction: even with a binder, the "approval" was the pre-execute verdict
+itself — no durable request, no recorded decision, no refusal code for a denied or expired approval.
+
+**What is now real (file:line at this HEAD).**
+
+| step | where |
+| --- | --- |
+| the product's grant binder + trusted-member projection | `agent-bindings.mjs:556-568` (ONE `createInvocationBinder()` per row; the identity is projected from the binding, never invented) |
+| the durable approval authority (port over the EXISTING bridge) | `admission-port.mjs:60-199` (`createControlApprovalPort`: `requestControl({executionCoupling:'inline'})` → `awaitControlDecision` → the closed decision mapped to a code), wired lazily at `agent-bindings.mjs:569-571` |
+| the glue supplies BOTH ports to the ONE centre | `agent-bindings.mjs:1868-1869` → `member-execution.mjs:161-162` → `centre-install.mjs:148` |
+| the binding carries the authoring reference a grant needs | `centre-install.mjs:86-93` (`templateId` from the compiled policy; absent ⇒ no grant, `ADMISSION_MEMBER_UNIDENTIFIED`) |
+| the ask becomes a Control request, then a grant | `admission-port.mjs:399-402` (hand the ask to pre-execute) + `admission-port.mjs:435-521` (`completeAsk`: identity → durable request → decision → `binder.bind`) |
+| the post-approval recheck (lane AND policy generation) | `admission-port.mjs:524-538` re-admits at the guard; `admission-port.mjs:540-556` consumes with the generation **as it is now**, so a recompiled policy is `ADMISSION_GRANT_CAPABILITY_REVISION_MISMATCH` |
+| one-shot spend, replay refused | `admission-port.mjs:540-556` (`binder.consume` exactly once) + the durable ledger replay (`:355-360`) |
+| the host-native ask is preserved | `admission-port.mjs:403-432`: with a binder and NO approval authority the verdict stays `ask` (the host's own approval prompt) — the shape `vnext-fs-slice` SLICE-20/22 already enforce |
+
+**Controls (all in `packages/runtime/test/vnext-admission.test.mjs`; 55/55 green).**
+
+- ADM-46 — three wirings: no binder ⇒ `ADMISSION_ASK_UNWIRED`; binder only ⇒ the host-native `ask`
+  (grant spendable at the guard); binder + approval authority ⇒ `allow` after exactly ONE approval
+  request.
+- ADM-47 — a DENIED approval: refusal `ADMISSION_APPROVAL_DENIED`, no execution (the guard refuses
+  too, both consultations), the durable fact names the enforced refusal + `laneDecision: 'ask'`, and
+  the product settlement store is `REFUSED` (closed at admission).
+- ADM-48 — an EXPIRED (`stale-denied`) approval has its OWN code, asserted distinct from a denial.
+- ADM-49 — a throwing authority and an answer with no verdict are both `ADMISSION_APPROVAL_FAULT`.
+- ADM-50 — over the REAL durable ControlService (real TeamDomain world): exactly one durable request
+  (`kind: leader-approval`, `executionCoupling: inline`, `correlation: admission:<callId>`,
+  `requester = the member`), exactly one durable `allow` decision, the guard spends exactly ONCE
+  (counted binder), the host's second guard consultation spends nothing, and a same-callId replay is
+  `ADMISSION_REPLAY`. Negative control: a NEW callId is a NEW request + decision (no approval reuse).
+- ADM-51 — over the REAL service: a leader DENY ⇒ `ADMISSION_APPROVAL_DENIED`, a durable `deny`
+  decision row, and the guard cannot turn it into an execution.
+- ADM-52 — the post-approval recheck: the same lane at a NEW policy generation is refused
+  (`ADMISSION_GRANT_CAPABILITY_REVISION_MISMATCH`); negative controls prove the unchanged generation
+  spends and that lane-narrowing is a different refusal (`ADMISSION_RECHECK_LANE_DENY`).
+- ADM-53 — an incomplete trusted identity refuses BEFORE a reviewer is asked (zero approval requests).
+- ADM-54 — the SUPPLY chain: `installMemberExecution` installs a centre that still refuses every ask
+  without the two ports, and with them turns the same ask into a real approval + spendable grant; plus
+  a source pin on the glue hop (destructure, lazy `controlOf`, both ports on the ONE install call, the
+  PRODUCT binder import).
+- ADM-55 — the wait bridge's closed outcomes each map to their own code: `aborted` →
+  `ADMISSION_APPROVAL_WAIT_ABORTED`, `abandoned` → `ADMISSION_APPROVAL_ABANDONED` (asserted distinct),
+  an unrecognized decision value and an absent service are refusals, never allows.
+
+**Gates (this HEAD).** `dispatch-tests --run --leg ute-vnext-a1` → `suites=6 files=6 exit=0` (117
+pass); `test-catalog --max-uncollected 41 --max-excluded 7` → `UNCOLLECTED 41`, `findings=0`;
+`ute-cut-closure --check` → `findings=0`; `ute-p0-assets --check` → `findings=0`;
+`docs-sync --check` → `findings=0 blocking=0`; `place-dist-glue` → 27 byte-identical placements;
+`eb3-ci-required` → `findings=0`; the bound leg `eb3-security-run --layer ci-integration
+--list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000` →
+`verdict=PASS suites=15 files=15 passed=238 failed=0` (the count did not move: the new arms are
+node:test in `vnext-admission.test.mjs`, which rides the `ute-vnext-a1` leg, not the vitest list).
+
+**NOT proven — do not read more into this than it says.**
+
+1. **No host boot.** The product hop is pinned behaviourally at `member-execution` (ADM-54) and by a
+   source pin on the glue, not by booting a real host with a real leader. A member ask reaching a
+   real leader's `team_list_pending_control` / `team_resolve_control` (or the GUI) end to end is
+   **not** exercised here.
+2. **The durable allow is not consumed by the Control guard.** The request is `executionCoupling:
+   'inline'`, and the Control plane's own law is that an inline allow is NOT a last-mile guard token
+   (`control/service.ts:4278-4290`) — it authorizes its own waiter. The exactly-once enforcement here
+   is therefore the one-shot `member-io-policy` grant plus the durable admission-ledger replay
+   refusal. A `guarded` + `guardOperation` variant was NOT built: it would consume twice and would
+   burn a durable allow on a crash between the consumption and the body.
+3. **`stale-denied` over the real service** is not exercised (its fixture needs the target to become
+   terminal between request and decision); only the mapping is proven (ADM-48). The abort/abandon wait
+   paths are likewise proven at the mapping level (ADM-55), not over a real aborted wait.
+4. **E3 is untouched.** This round does not resolve `ESCALATION-realmless-admission.md`,
+   `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` or `CONTRACT-CHANGE-REQUEST-process-lane.md`, and
+   the E3 blocker recorded above is unchanged. No row in `CAPABILITY-MATRIX-C.md` is upgraded.
+5. **The `ask` grant is bound to member + call + tool + policy revision, not to the locator.** The
+   Control request carries no `operationFingerprint` (canonicalizing the operation is async and the
+   port's decision is sync), so two asks by the same member for the same tool under the same revision
+   are distinguished by callId alone.

@@ -372,6 +372,11 @@ import { freshCreateHintAdmits } from './bind-path.mjs'
 import { memberCentreUnwiredViolation } from './centre-config.js'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
+// B (the ask path): the ONE grant binder the contract names lives in the product's
+// `member-io-policy` lane, and the durable approval authority is the Control plane. Both are supplied
+// together below; the centre refuses an ask that has only one of them.
+import { createInvocationBinder } from '../../../member-io-policy/src/invocation.js'
+import { createControlApprovalPort } from './admission-port.mjs'
 // E3 (round 49): the durable overlay supplier for the centre's admission port. It can only REMOVE
 // authority, and it reads the SAME `permissionOverlay` port the mutation lane appends through.
 import { createOverlayDecisionProvider } from './overlay-decision.mjs'
@@ -531,7 +536,39 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend } = deps
+
+  // ── B (the ask path): THE ONE grant binder + THE ONE durable approval authority ─────────────
+  //
+  // `ask` was a refusal because nothing could spend an approval: the centre's `grants` input was
+  // never supplied by the product, so every ask became ADMISSION_ASK_UNWIRED. The binder is the
+  // product's own (`member-io-policy` invocation binder — one per row, so an epoch bump or a revoke
+  // is coherent for every member the row binds), and the approval authority is the durable Control
+  // plane through the EXISTING wait bridge (`createControlApprovalPort` → `requestControl` →
+  // `awaitControlDecision`).
+  //
+  // A row with no `controlServiceRef` (factory / unit worlds) supplies NEITHER: an ask there keeps
+  // its own ASK_UNWIRED refusal instead of becoming a prompt nobody can answer. The ref is read
+  // LAZILY per request — the host fills `.current` during root construction (the teamToolsRef
+  // pattern), after this closure exists.
+  const grantBinder = createInvocationBinder()
+  const memberOfBinding = (binding) => {
+    const teamId = typeof binding?.owner === 'string' ? binding.owner : ''
+    const memberInstanceId = typeof binding?.instanceId === 'string' && binding.instanceId !== ''
+      ? binding.instanceId
+      : (typeof binding?.agentId === 'string' ? binding.agentId : '')
+    const templateId = typeof binding?.templateId === 'string' ? binding.templateId : ''
+    // NO PARTIAL IDENTITY. A binder validates every field; filling a missing one here would be this
+    // assembly inventing the trusted identity the TeamDomain owns.
+    if (teamId === '' || memberInstanceId === '' || templateId === '' || !Number.isInteger(binding?.instanceGeneration)) {
+      return undefined
+    }
+    return { teamId, memberInstanceId, templateId, instanceGeneration: binding.instanceGeneration }
+  }
+  const grants = controlServiceRef === undefined ? undefined : { binder: grantBinder, memberOf: memberOfBinding }
+  const approvals = controlServiceRef === undefined
+    ? undefined
+    : createControlApprovalPort({ controlOf: () => controlServiceRef.current })
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -1826,6 +1863,10 @@ export function createAgentBindings(deps) {
             workspaceRoot: memberWorkspace,
             // The durable restriction consulted beside the lane verdict (can only REMOVE authority).
             ...(overlayDecision === undefined ? {} : { overlayDecision }),
+            // The ask path (B): the one-shot grant binder and the durable Control approval authority,
+            // supplied together or not at all.
+            ...(grants === undefined ? {} : { grants }),
+            ...(approvals === undefined ? {} : { approvals }),
             nativeSpecs: a5sfRowConfig.nativeToolModules ?? [],
             scope: runtimeAgent ?? undefined,
             onDispose: (dispose) => toolDisposers.push(dispose),

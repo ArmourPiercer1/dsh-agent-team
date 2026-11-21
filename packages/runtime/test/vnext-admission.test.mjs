@@ -295,6 +295,25 @@ const fakeHost = () => {
 
 const askBinding = () => binding({ read: lane(['/work/a'], ['/work/ask']) })
 
+/**
+ * The durable approval authority, as a deterministic stand-in for the Control plane in the arms that
+ * are NOT about the Control plane: an approval that is recorded, and nothing else. The real bridge
+ * (request → durable decision → wait) is measured by ADM-50/51 over the REAL ControlService, and every
+ * mapping of its closed outcomes is measured by ADM-55.
+ */
+const approvalOnce = (over = {}) => {
+  const asked = []
+  return {
+    asked,
+    port: {
+      async request (input) {
+        asked.push(input)
+        return { ok: true, approval: { approvalId: 'approval-1', policyRevision: 'gen-7' }, ...over }
+      },
+    },
+  }
+}
+
 test('ADM-19 — an approval that no longer holds at guard time is REFUSED, not executed', async () => {
   const host = fakeHost()
   let current = askBinding()
@@ -303,6 +322,8 @@ test('ADM-19 — an approval that no longer holds at guard time is REFUSED, not 
     ctx: host.ctx,
     resolveBinding: () => current,
     record: (fact) => facts.push(fact),
+    // The HOST-NATIVE ask: no durable approval authority, so the pre-execute verdict is the host's
+    // approval prompt and the grant anticipates it. (The durable-Control shape is ADM-50/51.)
     grants: {
       binder: createInvocationBinder(),
       memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
@@ -335,7 +356,9 @@ test('ADM-20 — an approval that still holds is spent exactly once, and a repla
     },
   })
   const exec = { name: 'read', callId: 'recheck-2', arguments: { file_path: '/work/ask/doc.txt' } }
-  assert.equal((await host.preExecute(exec)).kind, 'ask')
+  const asked = await host.preExecute(exec)
+  assert.equal(asked.kind, 'ask')
+  assert.equal(facts[0].decision, 'ask', 'the record keeps the ask for the host-native shape: approval does not rewrite what was asked')
   assert.equal(await host.guard(exec), undefined, 'the unchanged authority must let the approved call through')
   assert.equal(await host.guard(exec), undefined, 'the host consults the guard twice in one execution; the memo serves the second')
   host.result(exec)
@@ -1158,4 +1181,538 @@ test('ADM-45 — the durable overlay can only REMOVE authority, and a fault is a
   } finally {
     centre.dispose()
   }
+})
+
+// =============================================================== THE ASK PATH (B stage)
+//
+// An `ask` is only a decision if somebody RECORDS it. The centre turns it into a durable Control
+// request, waits for the durable decision through the ONE existing bridge
+// (`ControlService.awaitControlDecision`), and only then mints the one-shot grant the guard spends
+// immediately before the body. Every failure mode is its own refusal code, recorded as the decision
+// that was ENFORCED - an ask is never an allow and never a prompt nobody can answer.
+
+const { createControlApprovalPort } = await import('../src/plugin/vnext/admission-port.mjs')
+
+/** A durable-approval stand-in that answers with ONE fixed verdict and counts its consultations. */
+const approvalsAnswer = (answer) => {
+  const asked = []
+  return {
+    asked,
+    port: {
+      async request (input) {
+        asked.push(input)
+        if (answer instanceof Error) throw answer
+        return typeof answer === 'function' ? answer(input) : answer
+      },
+    },
+  }
+}
+
+test('ADM-46 — an ask is WIRED only when BOTH halves exist: a grant binder AND a recorded approval', async () => {
+  const askHost = async (over) => {
+    const host = fakeHost()
+    const facts = []
+    installAdmissionPoint({
+      ctx: host.ctx,
+      resolveBinding: () => askBinding(),
+      record: (fact) => facts.push(fact),
+      ...over,
+    })
+    const exec = { name: 'read', callId: `wired-${Math.random().toString(16).slice(2)}`, arguments: { file_path: '/work/ask/doc.txt' } }
+    return { verdict: await host.preExecute(exec), facts, host, exec }
+  }
+  const binder = () => createInvocationBinder()
+  const memberOf = (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration })
+
+  // (1) NEGATIVE CONTROL: no grant binder at all — nobody could spend an approval.
+  const noGrants = await askHost({ approvals: approvalsAnswer({ ok: true, approval: { approvalId: 'a' } }).port })
+  assert.equal(noGrants.verdict.kind, 'deny')
+  assert.match(String(noGrants.verdict.reason), /ADMISSION_ASK_UNWIRED/u)
+  assert.equal(noGrants.facts[0].refusalCode, 'ADMISSION_ASK_UNWIRED')
+
+  // (2) HOST-NATIVE ASK (grants, no durable approval authority): the ask goes to the host as its own
+  //     approval request, and the grant is spendable at the guard. This is the shape every world
+  //     WITHOUT a Control plane runs, and the product supplies `approvals` wherever it has one.
+  const hostNative = await askHost({ grants: { binder: binder(), memberOf } })
+  assert.equal(hostNative.verdict.kind, 'ask')
+  assert.equal(hostNative.facts[0].decision, 'ask')
+  assert.equal(await hostNative.host.guard(hostNative.exec), undefined, 'the host-native grant is spent at the guard')
+
+  // (3) POSITIVE: both halves, an approving authority → the call proceeds under a one-shot grant.
+  const approvals = approvalsAnswer({ ok: true, approval: { approvalId: 'approval-46', policyRevision: 'gen-7' } })
+  const both = await askHost({ grants: { binder: binder(), memberOf }, approvals: approvals.port })
+  assert.equal(both.verdict.kind, 'allow')
+  assert.equal(approvals.asked.length, 1, 'exactly one approval request per ask')
+  assert.equal(approvals.asked[0].callId, approvals.asked[0].callId)
+  assert.equal(both.facts[0].decision, 'allow')
+  assert.equal(both.facts[0].laneDecision, 'ask', 'the lane asked; the record keeps that')
+  assert.equal(await both.host.guard(both.exec), undefined, 'the grant is spendable exactly at the guard')
+})
+
+test('ADM-47 — a DENIED approval is its own refusal: no execution, a durable fact, settlement closed', async () => {
+  const host = fakeHost()
+  const facts = []
+  const { store, writer } = await settlementWorld('approval-denied')
+  const approvals = approvalsAnswer({ ok: false, code: 'ADMISSION_APPROVAL_DENIED', reason: 'the leader said no' })
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => askBinding(),
+    record: (fact) => facts.push(fact),
+    settlement: writer,
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvals.port,
+  })
+  const exec = { name: 'read', callId: 'deny-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  const verdict = await host.preExecute(exec)
+  assert.equal(verdict.kind, 'deny', 'a denied approval never becomes an allow')
+  assert.match(String(verdict.reason), /ADMISSION_APPROVAL_DENIED/u)
+  // THE DURABLE FACT names the refusal that was enforced, with the lane's answer kept.
+  assert.equal(facts.length, 1)
+  assert.equal(facts[0].decision, 'deny')
+  assert.equal(facts[0].refusalCode, 'ADMISSION_APPROVAL_DENIED')
+  assert.equal(facts[0].laneDecision, 'ask')
+  // NO EXECUTION: the guard refuses too, and both consultations agree.
+  assert.match(String(host.guard(exec)), /ADMISSION_APPROVAL_DENIED/u)
+  assert.match(String(host.guard(exec)), /ADMISSION_APPROVAL_DENIED/u)
+  // SETTLEMENT CLOSED: the store's own admission writer closed the refusal as REFUSED at birth.
+  const executionId = dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, 'deny-1')
+  assert.equal(store.read(executionId).state, 'REFUSED')
+  assert.match(String(store.read(executionId).terminalReason ?? ''), /ADMISSION_APPROVAL_DENIED/u)
+})
+
+test('ADM-48 — an EXPIRED approval has its OWN code, distinct from a denial', async () => {
+  const host = fakeHost()
+  const facts = []
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => askBinding(),
+    record: (fact) => facts.push(fact),
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvalsAnswer({ ok: false, code: 'ADMISSION_APPROVAL_EXPIRED', reason: 'stale-denied' }).port,
+  })
+  const exec = { name: 'read', callId: 'expired-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  const verdict = await host.preExecute(exec)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_APPROVAL_EXPIRED/u)
+  assert.notEqual(facts[0].refusalCode, 'ADMISSION_APPROVAL_DENIED', 'an expired approval is not a denial and must not be counted as one')
+  assert.equal(facts[0].refusalCode, 'ADMISSION_APPROVAL_EXPIRED')
+})
+
+test('ADM-49 — a FAULTING approval authority is a refusal, and an unreadable answer is too', async () => {
+  const run = async (approvals) => {
+    const host = fakeHost()
+    const facts = []
+    installAdmissionPoint({
+      ctx: host.ctx,
+      resolveBinding: () => askBinding(),
+      record: (fact) => facts.push(fact),
+      grants: {
+        binder: createInvocationBinder(),
+        memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    const exec = { name: 'read', callId: `fault-${Math.random().toString(16).slice(2)}`, arguments: { file_path: '/work/ask/doc.txt' } }
+    return { verdict: await host.preExecute(exec), facts }
+  }
+  // (1) the authority throws.
+  const thrown = await run(approvalsAnswer(new Error('control plane down')).port)
+  assert.equal(thrown.verdict.kind, 'deny')
+  assert.match(String(thrown.verdict.reason), /ADMISSION_APPROVAL_FAULT/u)
+  assert.equal(thrown.facts[0].refusalCode, 'ADMISSION_APPROVAL_FAULT')
+  // (2) NEGATIVE CONTROL: an answer with no verdict is NOT an allow.
+  const empty = await run(approvalsAnswer(undefined).port)
+  assert.equal(empty.verdict.kind, 'deny')
+  assert.equal(empty.facts[0].refusalCode, 'ADMISSION_APPROVAL_FAULT')
+})
+
+test('ADM-50 — the REAL Control plane: ask → durable request → leader allow → one-shot spend', async () => {
+  const { createP6T4World, createP6T4Service, destroyP6T1World, leaderCaller, P6T4_ROOT, P6T4_SEEDS } =
+    await import('./p6t4-helpers.js')
+  const world = await createP6T4World('vnext-ask-allow')
+  const service = createP6T4Service(world)
+  try {
+    const host = fakeHost()
+    const facts = []
+    const worker = String(P6T4_SEEDS.worker.instanceId)
+    const binding = {
+      agentId: worker,
+      instanceId: worker,
+      sessionId: P6T4_SEEDS.worker.childSessionId,
+      instanceGeneration: 2,
+      templateId: 'worker',
+      read: lane(['/work/a'], ['/work/ask']),
+      write: lane(['/work/a']),
+      workspaceRoot: '/work/a',
+      policyGeneration: 'gen-7',
+      owner: P6T4_ROOT,
+    }
+    // The REAL binder, with its consumption COUNTED: "exactly once" must be measured, not assumed.
+    const binder = createInvocationBinder()
+    let consumed = 0
+    const countedBinder = {
+      bind: (input) => binder.bind(input),
+      consume: (capability, request) => {
+        consumed += 1
+        return binder.consume(capability, request)
+      },
+    }
+    // The approval authority over the REAL durable Control plane; the leader resolves inside
+    // `onRequested`, which runs AFTER the request row is durable and BEFORE the wait begins, so the
+    // sequence is deterministic with no polling and no sleeps.
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      onRequested: async (record) => {
+        await service.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: record.requestId,
+          decision: 'allow',
+        })
+      },
+    })
+    installAdmissionPoint({
+      ctx: host.ctx,
+      resolveBinding: () => binding,
+      record: (fact) => facts.push(fact),
+      // The DURABLE replay authority, exactly as the product supplies it (the fact ledger): a second
+      // dispatch carrying a judged callId is a replay, not a new approval.
+      isReplay: (callId) => facts.some((fact) => fact.callId === callId),
+      grants: {
+        binder: countedBinder,
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    const exec = { name: 'read', callId: 'real-ask-1', arguments: { file_path: '/work/ask/doc.txt' } }
+    const verdict = await host.preExecute(exec)
+    assert.equal(verdict.kind, 'allow', `an approved ask proceeds (${JSON.stringify(verdict)})`)
+
+    // (1) THE DURABLE REQUEST exists, with the shape this port raised: one inline leader-approval
+    //     addressed to the member, correlated to the call.
+    const state = await service.listControlState(P6T4_ROOT)
+    assert.equal(state.requests.length, 1, 'exactly one durable control request for one ask')
+    const request = state.requests[0]
+    assert.equal(request.kind, 'leader-approval')
+    assert.equal(request.executionCoupling, 'inline')
+    assert.equal(request.correlation, 'admission:real-ask-1')
+    assert.equal(request.targetInstanceId, worker)
+    assert.equal(request.actionName, 'admission-ask')
+    assert.equal(request.toolName, 'read')
+    assert.equal(request.requester.instanceId, worker, 'the MEMBER asked for its own call')
+
+    // (2) THE DURABLE DECISION exists and is the decision that authorized the call.
+    assert.equal(state.decisions.length, 1)
+    assert.equal(state.decisions[0].decision, 'allow')
+    assert.equal(state.decisions[0].requestId, request.requestId)
+
+    // (3) THE ONE-SHOT SPEND: the guard spends once, and the host's second consultation spends nothing.
+    assert.equal(host.guard(exec), undefined)
+    assert.equal(consumed, 1, 'the approval was spent exactly once')
+    assert.equal(host.guard(exec), undefined)
+    assert.equal(consumed, 1, 'the second guard consultation re-uses the memo; it does not spend again')
+    host.result(exec)
+
+    // (4) REPLAY: a second dispatch with the same callId meets the ledger.
+    const replayed = await host.preExecute(exec)
+    assert.equal(replayed.kind, 'deny')
+    assert.match(String(replayed.reason), /ADMISSION_REPLAY/u)
+
+    // (5) NEGATIVE CONTROL: the approval is durable for THIS call only — the same scope under a new
+    //     callId is a new request, never a reuse of the old decision (a second request + a second
+    //     decision must appear).
+    const second = { name: 'read', callId: 'real-ask-2', arguments: { file_path: '/work/ask/doc.txt' } }
+    assert.equal((await host.preExecute(second)).kind, 'allow')
+    const after = await service.listControlState(P6T4_ROOT)
+    assert.equal(after.requests.length, 2)
+    assert.equal(after.decisions.length, 2)
+  } finally {
+    await destroyP6T1World(world)
+  }
+})
+
+test('ADM-51 — the REAL Control plane: a leader DENY refuses the call and is durably recorded', async () => {
+  const { createP6T4World, createP6T4Service, destroyP6T1World, leaderCaller, P6T4_ROOT, P6T4_SEEDS } =
+    await import('./p6t4-helpers.js')
+  const world = await createP6T4World('vnext-ask-deny')
+  const service = createP6T4Service(world)
+  try {
+    const host = fakeHost()
+    const facts = []
+    const worker = String(P6T4_SEEDS.worker.instanceId)
+    const binding = {
+      agentId: worker,
+      instanceId: worker,
+      sessionId: P6T4_SEEDS.worker.childSessionId,
+      instanceGeneration: 2,
+      templateId: 'worker',
+      read: lane(['/work/a'], ['/work/ask']),
+      write: lane(['/work/a']),
+      workspaceRoot: '/work/a',
+      policyGeneration: 'gen-7',
+      owner: P6T4_ROOT,
+    }
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      onRequested: async (record) => {
+        await service.resolveControl({
+          rootSessionId: P6T4_ROOT,
+          caller: leaderCaller(),
+          requestId: record.requestId,
+          decision: 'deny',
+          note: 'not this file',
+        })
+      },
+    })
+    installAdmissionPoint({
+      ctx: host.ctx,
+      resolveBinding: () => binding,
+      record: (fact) => facts.push(fact),
+      grants: {
+        binder: createInvocationBinder(),
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    const exec = { name: 'read', callId: 'real-deny-1', arguments: { file_path: '/work/ask/doc.txt' } }
+    const verdict = await host.preExecute(exec)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_APPROVAL_DENIED/u)
+    assert.equal(facts[0].refusalCode, 'ADMISSION_APPROVAL_DENIED')
+    assert.equal(facts[0].laneDecision, 'ask')
+    // The durable decision is a deny, and the guard cannot turn it into an execution.
+    const state = await service.listControlState(P6T4_ROOT)
+    assert.equal(state.decisions.length, 1)
+    assert.equal(state.decisions[0].decision, 'deny')
+    assert.match(String(host.guard(exec)), /ADMISSION_APPROVAL_DENIED/u)
+  } finally {
+    await destroyP6T1World(world)
+  }
+})
+
+test('ADM-52 — the POST-APPROVAL RECHECK refuses when the policy generation moved after the approval', async () => {
+  const host = fakeHost()
+  const facts = []
+  let current = binding({ ...askBinding(), policyGeneration: 'gen-7' })
+  const approvals = approvalsAnswer({ ok: true, approval: { approvalId: 'approval-52', policyRevision: 'gen-7' } })
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => current,
+    record: (fact) => facts.push(fact),
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvals.port,
+  })
+  const exec = { name: 'read', callId: 'drift-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await host.preExecute(exec)).kind, 'allow')
+  // The SAME lane, but the policy was recompiled: the approval named gen-7, the world runs gen-8.
+  current = { ...askBinding(), policyGeneration: 'gen-8' }
+  const verdict = host.guard(exec)
+  assert.equal(typeof verdict, 'string', 'a recompiled policy must not execute under the old approval')
+  assert.match(verdict, /ADMISSION_GRANT_CAPABILITY_REVISION_MISMATCH/u)
+  // NEGATIVE CONTROL: the SAME wiring with the generation UNCHANGED spends (nothing else is at fault).
+  const host2 = fakeHost()
+  let current2 = binding({ ...askBinding(), policyGeneration: 'gen-7' })
+  installAdmissionPoint({
+    ctx: host2.ctx,
+    resolveBinding: () => current2,
+    record: () => {},
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvalsAnswer({ ok: true, approval: { approvalId: 'approval-52b', policyRevision: 'gen-7' } }).port,
+  })
+  const exec2 = { name: 'read', callId: 'drift-2', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await host2.preExecute(exec2)).kind, 'allow')
+  assert.equal(host2.guard(exec2), undefined, 'without the move the same wiring spends the approval')
+  // ...and the LANE-narrowing recheck is a DIFFERENT refusal on the same approved call.
+  const host3 = fakeHost()
+  let current3 = binding({ ...askBinding(), policyGeneration: 'gen-7' })
+  installAdmissionPoint({
+    ctx: host3.ctx,
+    resolveBinding: () => current3,
+    record: () => {},
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvalsAnswer({ ok: true, approval: { approvalId: 'approval-52c', policyRevision: 'gen-7' } }).port,
+  })
+  const exec3 = { name: 'read', callId: 'drift-3', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await host3.preExecute(exec3)).kind, 'allow')
+  current3 = binding({ read: lane(['/work/a']), policyGeneration: 'gen-7' })
+  assert.match(String(host3.guard(exec3)), /ADMISSION_RECHECK_LANE_DENY/u)
+})
+
+test('ADM-53 — an incomplete member identity refuses BEFORE a reviewer is asked', async () => {
+  const host = fakeHost()
+  const facts = []
+  const approvals = approvalsAnswer({ ok: true, approval: { approvalId: 'approval-53' } })
+  installAdmissionPoint({
+    ctx: host.ctx,
+    resolveBinding: () => askBinding(),
+    record: (fact) => facts.push(fact),
+    grants: {
+      binder: createInvocationBinder(),
+      // No templateId: the trusted TeamDomain identity cannot be projected, and this assembly must not
+      // invent the missing field.
+      memberOf: () => undefined,
+    },
+    approvals: approvals.port,
+  })
+  const exec = { name: 'read', callId: 'unidentified-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  const verdict = await host.preExecute(exec)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_MEMBER_UNIDENTIFIED/u)
+  assert.equal(approvals.asked.length, 0, 'a reviewer is never asked for an approval nobody could bind')
+})
+
+test('ADM-54 — the PRODUCT composition supplies the ask path: member-execution threads it, the glue wires it', async () => {
+  // The admission port owning the ask path is not the same claim as the PRODUCT supplying it. The A1
+  // cut's gap was exactly that difference: the port could spend a grant, and nothing ever handed it
+  // one. These two arms pin the supply chain at its two hops that CAN be exercised without a boot.
+  const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+
+  const compiledAnswer = {
+    members: [{
+      identity: { instanceId: 'member-1', instanceGeneration: 1 },
+      policy: {
+        ok: true,
+        value: {
+          memberIdentity: 'member-1',
+          templateId: 'worker',
+          instanceGeneration: 1,
+          revision: 'rev-1',
+          read: lane(['/work'], ['/work/ask']),
+          write: lane(['/work']),
+          network: { access: 'deny' },
+        },
+      },
+    }],
+  }
+  const makeCtx = () => {
+    const listeners = {}
+    let guardFn
+    const tools = { guard (fn) { guardFn = fn; return () => { guardFn = undefined } } }
+    return {
+      ctx: {
+        get: (name) => (name === 'tools' ? tools : undefined),
+        on: (event, fn) => { listeners[event] = fn; return () => {} },
+      },
+      preExecute: async (exec) => listeners['tools/pre-execute'](exec, async () => ({ kind: 'allow' })),
+      guard: (exec) => guardFn(exec),
+      result: (exec) => listeners['tools/result']?.(exec, {}),
+    }
+  }
+  const install = async (over) => {
+    const host = makeCtx()
+    const state = mkdtempSync(`${tmpdir()}/vnext-supply-`)
+    const disposers = []
+    const installed = await installMemberExecution({
+      agentCtx: host.ctx,
+      realm: {},
+      compiledAnswer,
+      config: { centreStatePath: state },
+      sessionId: 'session-1',
+      instanceId: 'member-1',
+      teamRoot: 'root-1',
+      workspaceRoot: '/work',
+      onDispose: (dispose) => { disposers.push(dispose) },
+      onNativeDispose: () => {},
+      observe: () => {},
+      ...over,
+    })
+    return { host, installed, dispose: () => { for (const dispose of disposers.reverse()) dispose() } }
+  }
+  const grants = () => ({
+    binder: createInvocationBinder(),
+    memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+  })
+
+  // (1) NO SUPPLY: the composition installs a centre and every ask is still ADMISSION_ASK_UNWIRED. This
+  //     is the state the B stage found the product in.
+  const bare = await install({})
+  const asked = { name: 'read', callId: 'supply-1', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await bare.host.preExecute(asked)).kind, 'deny')
+  assert.match(String((await bare.host.preExecute({ ...asked, callId: 'supply-1b' })).reason), /ADMISSION_ASK_UNWIRED/u)
+  bare.dispose()
+
+  // (2) SUPPLIED: the SAME composition, with the two ports threaded, makes the ask a real approval.
+  const approvals = approvalsAnswer({ ok: true, approval: { approvalId: 'supply-approval', policyRevision: 'rev-1' } })
+  const supplied = await install({ grants: grants(), approvals: approvals.port })
+  const approved = { name: 'read', callId: 'supply-2', arguments: { file_path: '/work/ask/doc.txt' } }
+  assert.equal((await supplied.host.preExecute(approved)).kind, 'allow')
+  assert.equal(approvals.asked.length, 1)
+  assert.equal(approvals.asked[0].binding.templateId, 'worker', 'the binding carries the template the trusted identity needs')
+  assert.equal(supplied.host.guard(approved), undefined, 'and the grant it minted is spendable')
+  supplied.dispose()
+
+  // (3) THE GLUE HOP (source pin): the row assembly reads the shared Control ref and passes BOTH ports
+  //     into the ONE centre composition. A boot would prove more, but it cannot be faked here - and a
+  //     hop nobody pins is how the port came to be written and never supplied.
+  const { readFileSync } = await import('node:fs')
+  const glue = readFileSync(new URL('../src/plugin/vnext/agent-bindings.mjs', import.meta.url), 'utf8')
+  assert.match(glue, /const \{ agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef,/u, 'the glue must read the Control ref the host fills')
+  assert.match(glue, /createControlApprovalPort\(\{ controlOf: \(\) => controlServiceRef\.current \}\)/u, 'the approval authority is the durable Control service, read lazily')
+  assert.match(glue, /\.\.\.\(grants === undefined \? \{\} : \{ grants \}\),\n\s*\.\.\.\(approvals === undefined \? \{\} : \{ approvals \}\),/u, 'both ports ride the ONE installMemberExecution call')
+  assert.match(glue, /from '\.\.\/\.\.\/\.\.\/member-io-policy\/src\/invocation\.js'/u, 'the binder is the PRODUCT binder, not a local re-implementation')
+})
+
+test('ADM-55 — the wait bridge\'s own closed outcomes map to their own refusal codes', async () => {
+  // The wait bridge is the EXISTING `ControlService.awaitControlDecision`; its typed settle values are
+  // the port's inputs. Each one must become a DISTINCT refusal: an aborted wait and an abandoned
+  // request are different facts an operator has to be able to tell apart, and neither is an allow.
+  const run = async (controlOf) => {
+    const host = fakeHost()
+    const facts = []
+    const approvals = createControlApprovalPort({ controlOf })
+    installAdmissionPoint({
+      ctx: host.ctx,
+      resolveBinding: () => askBinding(),
+      record: (fact) => facts.push(fact),
+      grants: {
+        binder: createInvocationBinder(),
+        memberOf: (b) => ({ teamId: 'team-1', memberInstanceId: b.agentId, templateId: 'tmpl', instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    const exec = { name: 'read', callId: `wait-${Math.random().toString(16).slice(2)}`, arguments: { file_path: '/work/ask/doc.txt' } }
+    return { verdict: await host.preExecute(exec), facts }
+  }
+  const serviceWith = (settle) => ({
+    async requestControl () { return { requestId: 'ctrl-1' } },
+    async awaitControlDecision () { return settle() },
+  })
+
+  // (1) the wait is aborted (the inline request is durably closed by the service).
+  const aborted = await run(() => serviceWith(() => { const error = new Error('aborted'); error.code = 'CONTROL_WAIT_ABORTED'; throw error }))
+  assert.equal(aborted.verdict.kind, 'deny')
+  assert.equal(aborted.facts[0].refusalCode, 'ADMISSION_APPROVAL_WAIT_ABORTED')
+
+  // (2) the request was durably abandoned (the terminal mark beats any decision).
+  const abandoned = await run(() => serviceWith(() => { const error = new Error('abandoned'); error.code = 'CONTROL_REQUEST_ABANDONED'; throw error }))
+  assert.equal(abandoned.facts[0].refusalCode, 'ADMISSION_APPROVAL_ABANDONED')
+  assert.notEqual(abandoned.facts[0].refusalCode, aborted.facts[0].refusalCode, 'abort and abandon are different durable facts')
+
+  // (3) NEGATIVE CONTROL: a decision value outside the closed vocabulary is a refusal, not an allow.
+  const unrecognized = await run(() => serviceWith(() => ({ decision: 'maybe' })))
+  assert.equal(unrecognized.verdict.kind, 'deny')
+  assert.equal(unrecognized.facts[0].refusalCode, 'ADMISSION_APPROVAL_UNRECOGNIZED')
+
+  // (4) NEGATIVE CONTROL: NO Control service on the row is its own refusal, and it is never an allow.
+  const noService = await run(() => undefined)
+  assert.equal(noService.verdict.kind, 'deny')
+  assert.equal(noService.facts[0].refusalCode, 'ADMISSION_APPROVAL_UNAVAILABLE')
 })

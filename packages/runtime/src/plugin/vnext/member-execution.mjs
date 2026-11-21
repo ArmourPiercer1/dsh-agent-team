@@ -47,6 +47,10 @@ import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
  *   answers `undefined` and the guard refuses with ADMISSION_NO_BINDING.
  * @param {readonly object[]} [input.nativeSpecs] - `{url, expectedTools?}` native modules to mount.
  * @param {string} [input.scope] - the resolved agent scope for definition-identity checks.
+ * @param {object} [input.grants] - the one-shot grant binder (`member-io-policy`) and the projection
+ *   from a binding to the trusted member identity. Absent = every ask is refused (ADMISSION_ASK_UNWIRED).
+ * @param {object} [input.approvals] - the durable approval authority (`createControlApprovalPort`).
+ *   Required beside `grants`: a grant without a recorded approval is never minted.
  * @param {(dispose: () => void) => void} input.onDispose - where the centre's disposer goes.
  * @param {(entry: {settled: () => Promise<void>}) => void} input.onNativeDispose - where the native
  *   mount's async disposer goes (the caller awaits it BEFORE disposing the realm).
@@ -79,6 +83,8 @@ export async function installMemberExecution ({
   teamRoot,
   workspaceRoot,
   overlayDecision,
+  grants,
+  approvals,
   nativeSpecs = [],
   scope,
   onDispose,
@@ -149,6 +155,11 @@ export async function installMemberExecution ({
       // able only to REMOVE authority. Absent means "no overlay wired on this row", which the centre
       // records as such rather than reading as an allow.
       ...(overlayDecision === undefined ? {} : { overlayDecision }),
+      // THE ASK PATH (B): the one-shot grant binder and the durable approval authority. Both are
+      // supplied together by the glue, or neither is: an ask must become a Control request and a
+      // one-shot grant, and a half-wired ask is refused by the centre with its own code.
+      ...(grants === undefined ? {} : { grants }),
+      ...(approvals === undefined ? {} : { approvals }),
       isReplay: (callId) => ledger.has(callId),
       recordReplay: (input) => ledger.recordReplayRefusal(input),
       store: settlementStore,

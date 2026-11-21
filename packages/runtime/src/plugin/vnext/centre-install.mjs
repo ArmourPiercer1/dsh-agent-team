@@ -82,6 +82,15 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
     // NOT a hardcoded package name: the compiled member names where its definitions came from when it
     // knows, and '' means "no single source" (the tools come from several modules) rather than a guess.
     definitionSource: typeof member.definitionSource === 'string' ? member.definitionSource : '',
+    // THE AUTHORING REFERENCE the trusted member identity is projected from. A grant binds a complete
+    // (`teamId` / `memberInstanceId` / `templateId` / `instanceGeneration`) identity; without the
+    // template the projection is incomplete and the centre refuses to mint (ADMISSION_MEMBER_UNIDENTIFIED)
+    // rather than inventing one.
+    ...(typeof policy.templateId === 'string' && policy.templateId.trim() !== ''
+      ? { templateId: policy.templateId }
+      : typeof identity.templateId === 'string' && identity.templateId.trim() !== ''
+        ? { templateId: identity.templateId }
+        : {}),
     policyGeneration: policy.revision ?? '',
     blueprintRevision: identity.blueprintRevision ?? '',
     owner: owner ?? '',
@@ -103,12 +112,14 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
  * @param {(callId: string) => boolean} [input.isReplay]
  * @param {(input: object) => void} [input.recordReplay]
  * @param {object} [input.grants]
+ * @param {object} [input.approvals] - the durable approval authority (`createControlApprovalPort`); an
+ *   ask with a binder but no approval authority is refused, never self-approved.
  * @param {object} [input.store] - the product `ExecutionSettlementStore`.
  * @param {(exec: object) => {executionId: string, actorId: string, worldId: string}} input.identityOf
  * @param {(error: unknown, context: object) => void} [input.onFault]
  * @returns {{ dispose: () => void }} the disposer for every installed point.
  */
-export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, store, identityOf, overlayDecision, onFault }) {
+export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, approvals, store, identityOf, overlayDecision, onFault }) {
   if (ctx === undefined || ctx === null) throw new TypeError('centre-install: a member centre needs the agent context')
   if (typeof recordAdmission !== 'function' || typeof recordExecution !== 'function') {
     throw new TypeError('centre-install: both durable sinks are required; a centre that cannot write a fact is not a centre')
@@ -134,6 +145,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(isReplay === undefined ? {} : { isReplay }),
       ...(recordReplay === undefined ? {} : { recordReplay }),
       ...(grants === undefined ? {} : { grants }),
+      ...(approvals === undefined ? {} : { approvals }),
       ...(settlement === undefined ? {} : { settlement }),
       ...(overlayDecision === undefined ? {} : { overlayDecision }),
       ...(onFault === undefined ? {} : { onFault }),
