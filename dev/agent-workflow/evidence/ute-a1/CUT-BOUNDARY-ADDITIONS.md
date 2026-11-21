@@ -389,3 +389,32 @@ and both are the gate's own reasons:
 Measured after the change: `EB3-CI-REQUIRED pass workflows=10 findings=0` and
 `DSH-TEST-CATALOG tests=885 refused=0 findings=0` at the unchanged `--max-uncollected 41`. Nothing
 was added to the uncollected baseline and no ratchet was raised.
+
+## 11. B's first three guarantees, and what "migrated" can and cannot mean here
+
+**Durable admission + no replay (SLICE-12/13/14).** An in-memory fact array cannot answer after a
+crash, so the ledger is an append-only JSONL file and a *second* world on the same file stands in
+for the resumed process (nothing carried in memory between them). Both decisions read back — the
+allow and, importantly, the refusal (`has()` is true for a callId that was denied: it was decided).
+A replay after that restart is refused `ADMISSION_REPLAY`, the first decision is not overwritten,
+and the attempt is recorded as its own `replay-refusal` line. The ledger refuses its own corruption
+by name: `LEDGER_TRUNCATED`, `LEDGER_DUPLICATE_AUTHORITY`, `LEDGER_EXECUTION_UNBOUND`.
+
+Two defects the arms found, both real: the host consults a guard **more than once per execution**
+(prepare and commit both ask) — the port now memoizes the verdict per callId, so consulting twice
+cannot append a second authority record or change its mind; and `readAll()` registered records into
+the live map before `has()` re-read the same lines into it, reporting a corrupt ledger on a good
+file.
+
+**One native registration per name (SLICE-15).** The static `dupNames=0` from the closure gate is
+not where the model reads. `tools.schemas(agentKey)` has no name twice, `read`/`write`/`edit` each
+appear exactly once, and the single visible entry **is** the member-mounted definition — a name
+present once while dispatch resolved the inherited body would be the old defect wearing one entry.
+
+**The 16 kept-capability tests.** They were re-pointed at `vnext/agent-bindings.mjs` /
+`vnext/root.js`; a static check over all 16 (`migrated-entry-imports.json`) finds **every imported
+symbol exported by the new entry, 0 missing**. That is the strongest claim available in this
+environment and it is deliberately weaker than "the tests pass": they are `vitest` suites and
+vitest cannot run here (recorded env limitation), so their execution is a CI obligation, not a
+measured fact. Calling this "migration verified" on the strength of an import check would be
+exactly the kind of unproven claim the plan forbids.
