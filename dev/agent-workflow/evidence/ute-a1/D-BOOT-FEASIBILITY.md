@@ -345,3 +345,69 @@ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/check
 4. That the native-read surface judge measures the intended field — its failing clause reads the top-level
    description, not the `file_path` parameter description.
 5. Candidate/product-proven status: every record is `DEV-LIVE`; no `CAPABILITY-MATRIX-C.md` row is upgraded.
+
+## 13. Round 61 update (2026-11-22) — shape A: the native read is served by the Member's CONTROLLED provider (guard consulted)
+
+HEAD at run start `e739ddbbb774d4b921ec0264a08881419df88b49` + the round-61 working-tree changes below;
+host pin `639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty before and after), branch
+`vnext/a1-cut`, record class `DEV-LIVE` (never candidate evidence). **Verdict: IMPROVED — 3/5 judges PASS,
+and the judge that falsifies the finding (`d:guard-facts`) is now PROVEN.** The driver is UNMODIFIED this
+round; the only changes are product code and the tests below.
+
+### What changed (product code)
+
+| file | change |
+| --- | --- |
+| `packages/runtime/src/plugin/vnext/realm-lane.mjs` | new `mountGovernedNativeToolModules`: derive the candidate host modules from the preset's own rows, forward each row's own `config`, observe ownership, skip faces the realm does not own, refuse typed when a module cannot be mounted, mount through `mountHostModules` (host body, definition identity) |
+| `packages/runtime/src/plugin/vnext/agent-bindings.mjs` | wire the default mount for a governed member (`compiledAnswerOfRealm !== undefined`) after `applyBuiltInToolDeny`, unless the row configures `a5sfNativeToolModules`; derive rows/configs from `compositionInventory()` + `readDocument()` |
+| `packages/runtime/src/plugin/host.ts` | the lazy `agentPresets` accessor exposes `compositionInventory()` and `readDocument()` (public seam, same as the persona observer) |
+| `packages/runtime/test/vnext-admission.test.mjs` | `ADM-100` (governed default mount + guard consult + provider denial), `ADM-101` (ungoverned row unchanged), `ADM-102` (unresolvable module → typed fail-closed) |
+
+No `a5sfNativeToolModules` entry was added to any fixture, no shadow definition was created, and no
+upstream file was touched.
+
+### The two boots (identical; `agreeing=true`, `differing=[]`)
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| overall | FAIL (2 judges refute) | FAIL |
+| `d:member-read-admitted` | PROVEN | PROVEN |
+| `d:guard-facts` | PROVEN | PROVEN |
+| `d:centre-facts` | PROVEN | PROVEN |
+| `d:member-read-denied` | REFUTED | REFUTED |
+| `d:native-read-surface` | REFUTED | REFUTED |
+| allowFacts / denyFacts | 2 / 0 | 2 / 0 |
+| centreAdmissions / centreExecutions | 2 / 2 | 2 / 2 |
+| admittedBytes / deniedSecretAbsent | true / false | true / false |
+
+`d:guard-facts` detail: `allow-facts-present 2 (methods: stat, readText)`, `allow-identity
+["inst-0pe2z220bhfb"]`, `allow-decidedBy ["ALLOW"]`, `out-lane-never-reached-provider 0` — i.e. the
+confined provider's guard was entered for the admitted read and never entered for the refused one (the
+centre's `LANE_DENY` precedes the tool body).
+
+`d:member-read-denied` still fails its `typed-denial` clause: the result text is `Error: LANE_DENY: fs.read
+"…/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane`, not `IO_READ_DENIED`;
+`zero-secret-bytes` and `not-enoent` pass. `d:native-read-surface` still fails only `native-description`
+(`description=Read a UTF-8 text file and return line-numbered content.`), while
+`no-shadow-modules` and `tool-fs-is-shipped-row` pass. Both are the residuals recorded in
+`FINDING-native-tool-provider.md`; neither was relaxed and neither judge was skipped.
+
+### Commands
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+node scripts/ute-cut-closure.mjs --check
+node scripts/ute-p0-assets.mjs --check
+node scripts/docs-sync.mjs --check
+node scripts/place-dist-glue.mjs
+node scripts/eb3-ci-required.mjs
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+env -u DBOOT_WITHOUT_CENTRE -u A5SF_WF_NO_INSTALL_GRAPH \
+  node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2
+```
+
+The driver still exits `1` (two refuting judges). What this round does NOT prove: the refused live call
+reaching the provider (`IO_READ_DENIED`); the `native-description` clause's intended field; runtime team
+creation (still 405); any candidate/product-proven status (all `DEV-LIVE`); a realm face the composition
+does not own (skipped, recorded in the lane's result).

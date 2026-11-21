@@ -380,6 +380,24 @@ interface GlueModule {
     readonly agentPresets?: {
       mount(agentCtx: unknown, presetId?: string): Promise<unknown>
       composedPreset?(agentCtx: unknown): string | undefined
+      /**
+       * SHAPE A (round 61): the ACTIVE preset's own composition rows, read through the public
+       * `agentPresets` seam (the same call the persona observer already uses). The governed
+       * member's default native-tool module set is DERIVED from these rows; a composition whose
+       * seam cannot answer is a typed refusal, never a guessed host-package list.
+       */
+      compositionInventory?(): Promise<readonly {
+        id?: string
+        rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+        broken?: string
+      }[]>
+      /**
+       * SHAPE A: the ACTIVE preset's DECLARED composition document (the public `readDocument`
+       * seam the persona observer already uses). The governed default mount forwards each row's
+       * OWN `config` verbatim — the same module AND the same configuration the preset row would
+       * have mounted, never a second set of defaults invented here.
+       */
+      readDocument?(presetId: string): Promise<string>
     }
     /**
      * alpha.2 (A6 live fix V1-1, optional additive): the per-agent `fs` seam
@@ -1380,6 +1398,53 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
         return undefined
       }
       return svc.composedPreset(agentCtx)
+    },
+    // SHAPE A (round 61): the preset's OWN composition rows, through the same lazy public seam.
+    // A composition service that cannot answer compositionInventory is a typed refusal at the
+    // governed member's bind: the module set for its native tools may not be guessed.
+    async compositionInventory(): Promise<readonly {
+      id?: string
+      rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+      broken?: string
+    }[]> {
+      const svc = ctx.get('agentPresets') as
+        | {
+            compositionInventory?: () => Promise<readonly {
+              id?: string
+              rows?: readonly { entryId?: string | null; moduleName?: string; enabled?: unknown }[]
+              broken?: string
+            }[]>
+          }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.compositionInventory !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks compositionInventory) — a governed member derives its default native-tool module set from the active preset\'s own rows and refuses rather than leaving them on the base provider',
+        )
+      }
+      return svc.compositionInventory()
+    },
+    async readDocument(presetId: string): Promise<string> {
+      const svc = ctx.get('agentPresets') as
+        | { readDocument?: (presetId: string) => Promise<string | { readonly content?: string } | unknown> }
+        | null
+        | undefined
+      if (svc === undefined || svc === null || typeof svc.readDocument !== 'function') {
+        throw new TeamPluginError(
+          TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+          'the "agentPresets" public service is absent (or lacks readDocument) — a governed member reads its preset rows\' declared config through this public seam; it never invents a second set of module defaults',
+        )
+      }
+      const doc = await svc.readDocument(presetId)
+      if (typeof doc === 'string') return doc
+      if (doc !== null && typeof doc === 'object' && typeof (doc as { content?: unknown }).content === 'string') {
+        return (doc as { content: string }).content
+      }
+      throw new TeamPluginError(
+        TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING,
+        `the "agentPresets" readDocument returned no YAML content for preset '${presetId}' — the governed native module configs cannot be read (fail closed)`,
+      )
     },
   }
 

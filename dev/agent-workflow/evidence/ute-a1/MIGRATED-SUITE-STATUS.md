@@ -1129,3 +1129,57 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 
 Vitest population unchanged at **238**; the node leg is unchanged at 161 pass + 2 disclosed skips. This
 round added no test arm: it is a boot/provisioning round. **No row is PRODUCT-PROVEN.**
+
+## Round 61 (D stage) — shape A: governed members mount their preset's native modules by default
+
+The round-60 finding (`FINDING-native-tool-provider.md`) was that a governed Member's native `read` ran on
+the preset standing scope's BASE provider with zero guard consults. Round 61 implements **shape A** and
+re-measures:
+
+- `packages/runtime/src/plugin/vnext/realm-lane.mjs` — `mountGovernedNativeToolModules`: candidate modules
+  derived from the preset's own rows (`compositionInventory`), each row's own `config` from the declared
+  document (`readDocument`), ownership observed per module, faces the realm does not own skipped and
+  recorded, typed refusals for unresolved/invalid/empty/conflicting/ambiguous/changed mounts, and the host's
+  own module mounted through `mountHostModules` (definition identity; NO shadow).
+- `packages/runtime/src/plugin/vnext/agent-bindings.mjs` — the governed default mount, applied AFTER
+  `applyBuiltInToolDeny` (own-scope registrations sit outside `tools.restrict`), only when the row does not
+  configure `a5sfNativeToolModules`, with its disposer registered.
+- `packages/runtime/src/plugin/host.ts` — the lazy `agentPresets` accessor exposes `compositionInventory()`
+  and `readDocument()` (public seam, same as the persona observer).
+- `packages/runtime/test/vnext-admission.test.mjs` — `ADM-100`…`ADM-102`, in process on the real pinned host:
+  (a) governed default mount, and the admitted read is served by the realm's confined provider (guard
+  consulted, allow fact names the member; the out-of-lane call is refused by the PROVIDER lane with no secret
+  bytes); (b) an ungoverned row mounts nothing and keeps the base provider; (c) an unresolvable preset
+  module is a typed `GOVERNED_NATIVE_MODULE_UNRESOLVED` refusal, never a silent base-provider fallback.
+
+### The live driver, UNMODIFIED, two boots
+
+`d:guard-facts` went from REFUTED (0 facts) to **PROVEN** — 2 allow facts for the in-lane locator
+(`stat`, `readText`), `memberIdentity=inst-0pe2z220bhfb`, `decidedBy=ALLOW` — and `d:member-read-admitted` /
+`d:centre-facts` stay PASS. Two clauses remain REFUTED and are recorded as findings, not relaxed:
+
+- `d:member-read-denied`: the out-of-lane call is refused by the CENTRE (`LANE_DENY`) before the tool body,
+  so the provider's `IO_READ_DENIED` is unreachable on that path (0 deny facts). The provider-side typed
+  refusal is proven in process by `ADM-100`.
+- `d:native-read-surface`: its `native-description` clause reads the top-level description while the native
+  marker lives in the `file_path` parameter description (instrument defect, unchanged since round 60).
+
+Full judge-by-judge: `D-BOOT-FEASIBILITY.md` §13. `CAPABILITY-MATRIX-C.md` records the provider boundary as
+DEV-LIVE only; no row is upgraded to PRODUCT-PROVEN.
+
+### Gates (round 61, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494…  (164 pass + 2 disclosed skips; +3 ADM arms)
+DSH-TEST-CATALOG tests=889 instruments=3 digest=sha256:3e409a68e913… refused=0 findings=0 (uncollected=41 ≤ 41, excluded=14 with reason)
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+docs:sync --check findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+The vitest population is unchanged at **238**; the node leg is **164 pass + 2 disclosed skips** (the three
+new arms). `test-catalog` still reports 889 tests: the three arms live inside the existing
+`vnext-admission.test.mjs` file, whose collected count is per file. **No row is PRODUCT-PROVEN.**

@@ -798,6 +798,29 @@ export async function apply(ctx, config) {
             }
             return svc.composedPreset(agentCtx);
         },
+        // SHAPE A (round 61): the preset's OWN composition rows, through the same lazy public seam.
+        // A composition service that cannot answer compositionInventory is a typed refusal at the
+        // governed member's bind: the module set for its native tools may not be guessed.
+        async compositionInventory() {
+            const svc = ctx.get('agentPresets');
+            if (svc === undefined || svc === null || typeof svc.compositionInventory !== 'function') {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "agentPresets" public service is absent (or lacks compositionInventory) — a governed member derives its default native-tool module set from the active preset\'s own rows and refuses rather than leaving them on the base provider');
+            }
+            return svc.compositionInventory();
+        },
+        async readDocument(presetId) {
+            const svc = ctx.get('agentPresets');
+            if (svc === undefined || svc === null || typeof svc.readDocument !== 'function') {
+                throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, 'the "agentPresets" public service is absent (or lacks readDocument) — a governed member reads its preset rows\' declared config through this public seam; it never invents a second set of module defaults');
+            }
+            const doc = await svc.readDocument(presetId);
+            if (typeof doc === 'string')
+                return doc;
+            if (doc !== null && typeof doc === 'object' && typeof doc.content === 'string') {
+                return doc.content;
+            }
+            throw new TeamPluginError(TEAM_PLUGIN_ERROR_CODES.TEAM_PLUGIN_SERVICE_MISSING, `the "agentPresets" readDocument returned no YAML content for preset '${presetId}' — the governed native module configs cannot be read (fail closed)`);
+        },
     };
     // pre-alpha3 W2-A (review fix F14, guide §5 B): the PRODUCTION persona
     // observer over the DSH public `agentPresets` seam — `compositionInventory`

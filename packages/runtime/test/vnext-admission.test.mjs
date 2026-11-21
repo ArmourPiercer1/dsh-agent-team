@@ -9,6 +9,7 @@
  */
 
 import assert from 'node:assert/strict'
+import { appendFileSync, rmSync } from 'node:fs'
 import { register } from 'node:module'
 import { test } from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -4542,5 +4543,268 @@ test('ADM-99 — C-alpha6 missing seam: the CENTRE has no vocabulary for a revie
     assert.match(String(HOST_SURFACE_REFUSALS.alpha6.missing), /no review-routing axis/u)
   } finally {
     world.dispose()
+  }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADM-100 … ADM-102 — SHAPE A: a GOVERNED member's native tools are mounted into its own realm
+// BY DEFAULT, from the preset's own rows, and the call is served by the member's CONTROLLED
+// provider. Round 60 measured the defect on a live host (zero guard consults: the native `read`
+// ran on the preset standing scope's BASE provider because only an explicit module row re-mounts).
+//
+// These arms are IN PROCESS and use the REAL pinned host: the real `@deepseek-ai/dsh-tools`
+// registry, the real `@deepseek-ai/dsh-tool-fs` module, the real confined `LocalFileSystem` and
+// the product's own `mountA5sfRealm` + `mountGovernedNativeToolModules` seams. No mocked host, no
+// fake Member, no skipped judge: the positive arm asserts the provider CONSULTED its guard, and
+// the same world without the mount is the falsifiable control.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DOMAIN_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+
+const SHAPE_A_IDENTITY = Object.freeze({
+  teamId: 'team-adm-shape-a',
+  memberInstanceId: 'member-adm-shape-a',
+  templateId: 'worker',
+  instanceGeneration: 1,
+})
+
+const shapeALane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
+
+/**
+ * One in-process GOVERNED Member world: the preset standing scope installs the host's own tool
+ * module (the inherited definition the defect ran on), the agent scope joins it, and the product's
+ * realm mount installs the member's confined provider with the guard-consult sink.
+ * `mountRealm: false` is the ungoverned control: there is no controlled provider at all.
+ */
+async function buildShapeAWorld ({ dir, mountRealm = true }) {
+  const { instrumentedFileSystemClass, loadFsContractSeams } = await import('../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs')
+  const { mountA5sfRealm } = await import('../team-services/src/mount.ts')
+  const seams = await loadFsContractSeams(DOMAIN_ROOT)
+  const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules } = seams
+
+  const inside = join(dir, 'inside')
+  const outside = join(dir, 'outside')
+  mkdirSync(inside, { recursive: true })
+  mkdirSync(outside, { recursive: true })
+  const insideFile = join(inside, 'doc.txt')
+  const outsideFile = join(outside, 'secret.txt')
+  writeFileSync(insideFile, 'ADM100-IN-LANE\n', 'utf8')
+  writeFileSync(outsideFile, 'ADM100-SECRET-NOT-FOR-MEMBER\n', 'utf8')
+
+  const root = new Context()
+  await root.plugin(SystemPrompt)
+  await root.plugin(ToolRuntime)
+  // The composition's provider: what a member resolves if nothing confines it.
+  await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
+
+  // THE PRESET TOPOLOGY. The standing scope installs the host's own tool module; this is the
+  // definition the member would inherit (the base-provider definition of the finding).
+  const standingKey = {}
+  const standing = createScope(root, standingKey)
+  await standing.ctx.plugin(nativeToolModules)
+
+  const agentKey = {
+    id: 'agent-adm-shape-a',
+    session: {
+      header: { cwd: inside },
+      requestHeader: () => ({ config: { provider: 'mock-provider', model: 'mock-model' } }),
+    },
+    options: {},
+  }
+  const agent = createScope(root, agentKey)
+  agentKey.ctx = agent.ctx
+  bindScopeParent(agentKey, standingKey)
+  const presetRead = root.get('tools').get('read', agentKey)
+
+  const sinkPath = join(dir, 'guard-consult.jsonl')
+  let realm
+  let providerClass
+  if (mountRealm) {
+    const InstrumentedFs = instrumentedFileSystemClass(LocalFileSystem, [])
+    providerClass = InstrumentedFs
+    realm = await mountA5sfRealm({
+      root: agent.ctx,
+      members: [{
+        identity: SHAPE_A_IDENTITY,
+        policy: {
+          ok: true,
+          value: Object.freeze({
+            memberIdentity: SHAPE_A_IDENTITY.memberInstanceId,
+            templateId: SHAPE_A_IDENTITY.templateId,
+            instanceGeneration: SHAPE_A_IDENTITY.instanceGeneration,
+            revision: 'rev-adm-shape-a',
+            read: shapeALane([inside]),
+            write: shapeALane([inside]),
+            network: Object.freeze({ access: 'allow' }),
+          }),
+        },
+        config: { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 },
+      }],
+      providerClass: InstrumentedFs,
+      // The product sink: every provider guard consultation lands on disk, exactly as the live
+      // acceptance driver's `a5sfEvidencePath` does.
+      onGuardConsult: (fact) => appendFileSync(sinkPath, `${JSON.stringify(fact)}\n`),
+    })
+  }
+
+  const facts = () => {
+    if (!mountRealm) return []
+    let text
+    try {
+      text = readFileSync(sinkPath, 'utf8')
+    } catch {
+      return []
+    }
+    return text.trim() === '' ? [] : text.trim().split('\n').map((line) => JSON.parse(line))
+  }
+
+  const dispatch = async (name, args, callId) => {
+    const settled = await root.get('tools').execute({
+      signal: new AbortController().signal,
+      callId,
+      name,
+      arguments: args,
+      agent: agentKey,
+    })
+    const text = Array.isArray(settled.content)
+      ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
+      : ''
+    return { isError: settled.isError === true, text, errorMessage: settled.error?.message, error: settled.error }
+  }
+
+  return {
+    root,
+    agentCtx: agent.ctx,
+    agentKey,
+    insideFile,
+    outsideFile,
+    inside,
+    presetRead,
+    realm,
+    providerClass,
+    facts,
+    dispatch,
+    definitionOf: (name) => root.get('tools').get(name, agentKey),
+    surface: () => root.get('tools').schemas(agentKey).map((schema) => schema.name),
+    async dispose () {
+      if (realm !== undefined) await realm.dispose()
+      await root.dispose?.()
+    },
+  }
+}
+
+test('ADM-100 — a GOVERNED member mounts the host native module BY DEFAULT, and the admitted read is served by the realm\'s confined provider (guard consulted)', async () => {
+  const { mountGovernedNativeToolModules } = await import('../src/plugin/vnext/realm-lane.mjs')
+  const dir = mkdtempSync(join(tmpdir(), 'adm-shape-a-100-'))
+  const world = await buildShapeAWorld({ dir })
+  let mounted
+  try {
+    // The module set is DERIVED from the preset's own row for `tool-fs`; no `a5sfNativeToolModules`
+    // entry is configured, which is exactly the round-60 defect shape.
+    mounted = await mountGovernedNativeToolModules({
+      governed: true,
+      realm: world.realm,
+      root: world.agentCtx,
+      scope: world.agentKey,
+      presetModules: ['@deepseek-ai/dsh-tool-fs'],
+    })
+    assert.notEqual(mounted, undefined, 'a governed member with a preset native module must mount by default')
+    assert.deepEqual([...mounted.modules], ['@deepseek-ai/dsh-tool-fs'])
+
+    const resolved = world.definitionOf('read')
+    assert.notEqual(resolved, world.presetRead, 'the default mount must CHANGE the definition the member resolves')
+    assert.equal(String(resolved.execute), String(world.presetRead.execute), 'the body must be the HOST module\'s own, not a Team-authored shadow')
+
+    const admitted = await world.dispatch('read', { file_path: world.insideFile }, 'adm100-inside')
+    assert.equal(admitted.isError, false, `the in-lane read must succeed: ${admitted.text}`)
+    assert.match(admitted.text, /ADM100-IN-LANE/u)
+
+    // THE FINDING'S OWN PROOF: a base-provider read leaves ZERO guard consults. Exactly one allow
+    // fact, naming the real member identity, means the MEMBER provider was consulted.
+    const allow = world.facts().filter((fact) => String(fact.locator ?? '') === world.insideFile && fact.decision === 'allow')
+    assert.ok(allow.length >= 1, `the confined provider's guard was consulted for the admitted read (facts: ${JSON.stringify(world.facts())})`)
+    assert.ok(allow.every((fact) => typeof fact.memberIdentity === 'string' && fact.memberIdentity !== ''), 'an allow fact must name the member identity')
+
+    // The out-of-lane call is refused BY THE PROVIDER PATH, typed, with zero secret bytes.
+    const denied = await world.dispatch('read', { file_path: world.outsideFile }, 'adm100-outside')
+    assert.equal(denied.isError, true)
+    assert.doesNotMatch(denied.text, /ADM100-SECRET-NOT-FOR-MEMBER/u)
+    assert.equal(world.realm.installation.members[0].faces.fs, 'confined', 'the realm that served the call owns the confined fs face')
+    assert.ok(
+      world.facts().some((fact) => String(fact.locator ?? '') === world.outsideFile && fact.decision === 'deny'),
+      'the provider lane recorded the out-of-lane refusal as its own guard fact',
+    )
+  } finally {
+    if (mounted !== undefined) await mounted.dispose()
+    await world.dispose()
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('ADM-101 — an UNGOVERNED row is unchanged: no default mount, no realm, and the inherited base provider still serves the call', async () => {
+  const { mountGovernedNativeToolModules } = await import('../src/plugin/vnext/realm-lane.mjs')
+  const dir = mkdtempSync(join(tmpdir(), 'adm-shape-a-101-'))
+  const world = await buildShapeAWorld({ dir, mountRealm: false })
+  try {
+    // The decision the row makes for a member WITHOUT a centre: `governed !== true` answers
+    // `undefined` before the realm or the preset rows are read. A realm double that would throw is
+    // the control that proves the lane never touched it.
+    let touched = false
+    const untouchedRealm = {
+      async mountNativeToolModules () {
+        touched = true
+        throw new Error('an ungoverned row must never mount native modules')
+      },
+    }
+    const result = await mountGovernedNativeToolModules({
+      governed: false,
+      realm: untouchedRealm,
+      root: { get: () => world.root.get('tools') },
+      scope: world.agentKey,
+      presetModules: ['@deepseek-ai/dsh-tool-fs'],
+    })
+    assert.equal(result, undefined, 'an ungoverned row must not mount anything')
+    assert.equal(touched, false, 'the realm must not even be asked')
+
+    // Today's behaviour exactly: the member resolves the inherited preset definition and the BASE
+    // provider serves it (including a path outside any compiled lane, because none exists).
+    assert.equal(world.definitionOf('read'), world.presetRead, 'an ungoverned row keeps the inherited definition')
+    const outside = await world.dispatch('read', { file_path: world.outsideFile }, 'adm101-outside')
+    assert.equal(outside.isError, false, 'with no centre there is no compiled lane, so the base provider still reads it')
+    assert.match(outside.text, /ADM100-SECRET-NOT-FOR-MEMBER/u)
+  } finally {
+    await world.dispose()
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('ADM-102 — a preset native module that cannot be RESOLVED is a TYPED fail-closed refusal, never a base-provider fallback', async () => {
+  const { mountGovernedNativeToolModules, VnextRealmError } = await import('../src/plugin/vnext/realm-lane.mjs')
+  const dir = mkdtempSync(join(tmpdir(), 'adm-shape-a-102-'))
+  const world = await buildShapeAWorld({ dir })
+  try {
+    await assert.rejects(
+      () => mountGovernedNativeToolModules({
+        governed: true,
+        realm: world.realm,
+        root: world.agentCtx,
+        scope: world.agentKey,
+        presetModules: ['@deepseek-ai/dsh-tool-adm102-does-not-exist'],
+      }),
+      (error) => {
+        assert.ok(error instanceof VnextRealmError, `the refusal must be the lane's typed error: ${String(error)}`)
+        assert.equal(error.code, 'GOVERNED_NATIVE_MODULE_UNRESOLVED')
+        assert.match(String(error.message), /adm102-does-not-exist/u)
+        return true
+      },
+    )
+    // FAIL CLOSED means the member did NOT silently continue on the inherited definition: the
+    // refusal propagated and the agent still resolves the preset definition (the caller's setup
+    // fails; nothing was mounted).
+    assert.equal(world.definitionOf('read'), world.presetRead, 'a refused default mount leaves no shadow behind')
+    assert.deepEqual(world.facts(), [], 'no confined provider call happened for a module that could not be resolved')
+  } finally {
+    await world.dispose()
+    rmSync(dir, { recursive: true, force: true })
   }
 })

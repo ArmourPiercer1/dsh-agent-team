@@ -4,9 +4,9 @@ overall                       FAIL                          FAIL
 admittedVerdict               PROVEN                        PROVEN
 deniedVerdict                 REFUTED                       REFUTED
 surfaceVerdict                REFUTED                       REFUTED
-factsVerdict                  REFUTED                       REFUTED
+factsVerdict                  PROVEN                        PROVEN
 centreVerdict                 PROVEN                        PROVEN
-allowFacts                    0                             0
+allowFacts                    2                             2
 denyFacts                     0                             0
 centreAdmissions              2                             2
 centreExecutions              2                             2

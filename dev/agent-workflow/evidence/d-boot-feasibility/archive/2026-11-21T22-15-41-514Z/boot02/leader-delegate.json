@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-dboot-read-root",
+      "requestToken": "dboot-read-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-13-35Z/workspace",
+      "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"rejected\",\"code\":\"TEAM_RUNTIME_DURABLE_WRITE_FAILED\",\"message\":\"activation: child-session creation failed for member 'inst-0pe2z220bhfb': VnextRealmError: vnext-realm: the preset names \\\"@deepseek-ai/dsh-plan-mode\\\" but it did not import a Cordis plugin (no apply function); refusing to leave its tools on the base provider\",\"details\":{\"source\":\"activation-provider\",\"providerCode\":\"ACTIVATION_CHILD_SESSION_CREATION_FAILED\",\"rootSessionId\":\"session-dboot-read-root\",\"instanceId\":\"inst-0pe2z220bhfb\"}}"
+  }
+}

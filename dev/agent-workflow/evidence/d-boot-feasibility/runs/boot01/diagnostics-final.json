@@ -19,14 +19,14 @@
       "lastUser": "[{\"type\":\"text\",\"text\":\"DBOOT_L1_DRIVE\"}]",
       "isMemberRequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sflm-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-dboot-read-root\",\"requestToken\":\"dboot-read-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sflm-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/workspace\",\"prompt\":\"dboot-read-turn:"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sflm-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-dboot-read-root\",\"requestToken\":\"dboot-read-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sflm-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace\",\"prompt\":\"dboot-read-turn:"
     },
     {
       "seq": 3,
       "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则",
       "isMemberRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-admit\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/workspace/in-lane.txt\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-admit\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt\"}}]}"
     },
     {
       "seq": 4,
@@ -37,17 +37,17 @@
     },
     {
       "seq": 5,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-admit\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: DBOOT_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-admit\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: DBOOT_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
       "isMemberRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-deny\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/out-of-lane/secret-out-of-lane.txt\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-deny\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\"}}]}"
     },
     {
       "seq": 6,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's fs.read lane (policy generation a5sf1:791dfda962caa7ed43197b1b55a2ad90)\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's fs.read lane (policy generation a5sf1:7ea664b58f7c02003e38d25558349bca)\"}],\"is_error\":true}]",
       "isMemberRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"text\",\"content\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}"
+      "reply": "{\"kind\":\"text\",\"content\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}"
     },
     {
       "seq": 7,
@@ -65,7 +65,7 @@
       "requestToken": "dboot-read-turn-delegate",
       "delegationTemplateId": "worker",
       "label": "a5sflm-worker",
-      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/workspace",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace",
       "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
       "async": false
     }
@@ -73,34 +73,35 @@
   "delegateResult": {
     "source": "model",
     "isError": false,
-    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pe2z220bhfb\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a\",\"operationId\":\"op-0jkcq8g1vzs5c30bu29uq0g0\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"succeeded\",\"body\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}},\"requestToken\":\"dboot-read-turn-delegate\"}"
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pe2z220bhfb\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a\",\"operationId\":\"op-0jkcq8g1vzs5c30bu29uq0g0\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"succeeded\",\"body\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}},\"requestToken\":\"dboot-read-turn-delegate\"}"
   },
   "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3187/?token=<redacted>\n[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record\n",
   "sessions": [
     {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
-      "bytes": 29129,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
+      "bytes": 29138,
       "id": "session-dboot-read-root",
       "kind": null
     },
     {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd",
-      "bytes": 26062,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd",
+      "bytes": 26055,
       "id": "session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a",
       "kind": null
     }
   ],
   "sessionFiles": [
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-dboot-read-root/session.lock",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.lock",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-46-45Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T21-46-45Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd"
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd"
   ],
   "homeListing": [
     ".anonymous-user-id",
     ".credentials.yaml",
     ".u5-created.json",
     ".u5-ownership.json",
+    "a5sf-consult.jsonl",
     "blueprints",
     "canary-ledger.jsonl",
     "centre",
@@ -115,7 +116,38 @@
   ],
   "sessionsExists": true,
   "sessionCopy": false,
-  "guardFacts": [],
+  "guardFacts": [
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0pe2z220bhfb",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:7ea664b58f7c02003e38d25558349bca",
+      "method": "stat",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 1,
+      "observedAt": "2026-11-21T22:28:42.540Z",
+      "tool": "read",
+      "callId": "call-dboot-read-admit"
+    },
+    {
+      "schema": "a5sf-guard-consult/1",
+      "realm": "member",
+      "memberIdentity": "inst-0pe2z220bhfb",
+      "toolBindingIdentity": null,
+      "policyRevision": "a5sf1:7ea664b58f7c02003e38d25558349bca",
+      "method": "readText",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt",
+      "decision": "allow",
+      "decidedBy": "ALLOW",
+      "sequence": 2,
+      "observedAt": "2026-11-21T22:28:42.544Z",
+      "tool": "read",
+      "callId": "call-dboot-read-admit"
+    }
+  ],
   "counters": {
     "confinedTurnLaunchers": 0,
     "preflightLaunchers": 0,
@@ -123,7 +155,7 @@
     "procSecretCommandSightings": 0,
     "baseBwrapWithMarkers": 0,
     "guardFacts": {
-      "allow": 0,
+      "allow": 2,
       "deny": 0
     },
     "mockRequests": 8,
@@ -131,8 +163,8 @@
     "procBatches": 0,
     "otherBwrapPids": 1,
     "memberWindow": {
-      "from": "2026-11-21T21:48:04.630Z",
-      "to": "2026-11-21T21:48:05.909Z"
+      "from": "2026-11-21T22:28:41.858Z",
+      "to": "2026-11-21T22:28:43.136Z"
     }
   }
 }

@@ -5,7 +5,7 @@
   "procSecretCommandSightings": 0,
   "baseBwrapWithMarkers": 0,
   "guardFacts": {
-    "allow": 0,
+    "allow": 2,
     "deny": 0
   },
   "mockRequests": 8,
@@ -13,7 +13,7 @@
   "procBatches": 0,
   "otherBwrapPids": 1,
   "memberWindow": {
-    "from": "2026-11-21T21:49:27.153Z",
-    "to": "2026-11-21T21:49:28.427Z"
+    "from": "2026-11-21T22:30:04.216Z",
+    "to": "2026-11-21T22:30:05.493Z"
   }
 }

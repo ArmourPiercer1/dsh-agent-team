@@ -372,6 +372,9 @@ import { freshCreateHintAdmits } from './bind-path.mjs'
 import { memberCentreUnwiredViolation } from './centre-config.js'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
+// SHAPE A (round 61): a governed member's native modules are mounted into its realm BY DEFAULT,
+// derived from the ACTIVE preset's own rows. The lane is the ONE mount seam (realm-lane.mjs).
+import { mountGovernedNativeToolModules, VnextRealmError } from './realm-lane.mjs'
 // B (the ask path): the ONE grant binder the contract names lives in the product's
 // `member-io-policy` lane, and the durable approval authority is the Control plane. Both are supplied
 // together below; the centre refuses an ask that has only one of them.
@@ -387,6 +390,10 @@ import { createTemplateBinding } from './template-binding.mjs'
 // The PTC escalation row survives the A0 boundary; the host entry keeps
 // building its router through this glue surface.
 export { createPtcEscalationRouter } from '../live/ptc-escalation-row.mjs'
+// SHAPE A (round 61): the preset's DECLARED row configs are read from the public `readDocument`
+// seam. `yaml` is a runtime dependency of this package (the same document dialect the preset
+// registry emits), and the `!!js` tag is preserved as data — this glue never evaluates it.
+import { parse as parsePresetDocument } from 'yaml'
 // A56-SEMANTICS: the ONE input-provenance law shared by the producers here
 // (which source kind a delivery carries) and the Host's Alpha.6 Sticky Stop
 // resume arbour (whether a claimed input is an explicit HUMAN interaction).
@@ -519,6 +526,134 @@ export function a5PlaneSubtreeContains(a, b) {
   }
   if (child === root) return true
   return child.startsWith(`${root.replace(/\/+$/, '')}/`)
+}
+
+/**
+ * SHAPE A (round 61) — the ACTIVE preset's own row module specifiers, for the governed default
+ * native mount.
+ *
+ * WHY THE PRESET REGISTRY: the module set must be derived from what the product already knows. The
+ * preset's composition inventory is that source (`compositionInventory()` returns each row's
+ * `moduleName` and enablement), so this glue reads it instead of carrying a second list of host
+ * packages that could drift from `cordis.patch.yml`. A preset whose rows cannot be read is a typed
+ * refusal (`GOVERNED_NATIVE_PRESET_UNAVAILABLE`) — a governed member's confinement may not rest on
+ * a guess about what its preset declared.
+ *
+ * @param {object} presets - the `agentPresets` service (already mounted for this agent).
+ * @param {object} agentCtx - the agent Context whose composed preset is read.
+ * @param {boolean} isRoot - root rows use `config.rootPresetId`; members `config.memberPresetId`.
+ * @param {object} config - the row config.
+ * @returns {Promise<readonly {url: string, config?: unknown}[]>} enabled row module specifiers with
+ *   each row's own declared `config`, in composition order.
+ */
+async function governedPresetModuleSpecifiers(presets, agentCtx, isRoot, config) {
+  if (presets === undefined || presets === null || typeof presets.compositionInventory !== 'function') {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      'a governed member needs its preset\'s composition rows to derive the native tool modules to mount, but the agentPresets service cannot answer compositionInventory(); refusing rather than leaving the module set on the base provider',
+    )
+  }
+  const composed = typeof presets.composedPreset === 'function' ? presets.composedPreset(agentCtx) : undefined
+  const wanted = composed ?? (isRoot ? config.rootPresetId : config.memberPresetId) ?? presets.defaultId
+  const inventory = await presets.compositionInventory()
+  const preset = Array.isArray(inventory) ? inventory.find((entry) => entry?.id === wanted) : undefined
+  if (preset === undefined) {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      `a governed member names preset ${JSON.stringify(String(wanted))} but the composition inventory does not carry it; the native tool module set cannot be derived (fail closed)`,
+    )
+  }
+  if (typeof preset.broken === 'string' && preset.broken !== '') {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      `a governed member's preset ${JSON.stringify(String(preset.id))} is broken (${preset.broken}); its native tool rows cannot be read (fail closed)`,
+    )
+  }
+  // THE ROW'S OWN CONFIG, not a second set of defaults. The inventory carries the LIVE enablement
+  // answer, but not the declared `config`; the public `readDocument` seam carries the config and
+  // is the same document the registry composes. A module that requires a config value (the pinned
+  // `dsh-tool-fs-search` requires `sampleOverCapGlobResults`) can therefore be mounted with the
+  // EXACT configuration its preset row would have received — no invented default, no skipped row.
+  const configOfRow = await declaredPresetRowConfigs(presets, wanted)
+  return Object.freeze((preset.rows ?? [])
+    .filter((row) => row?.enabled === true && typeof row?.moduleName === 'string')
+    .map((row) => {
+      const byEntry = typeof row.entryId === 'string' && row.entryId !== ''
+        ? configOfRow.entry.get(`${row.entryId}\u0000${row.moduleName}`)
+        : undefined
+      const config = byEntry !== undefined ? byEntry : configOfRow.byModule.get(row.moduleName)
+      return Object.freeze({
+        url: row.moduleName,
+        ...(config !== undefined ? { config } : {}),
+      })
+    }))
+}
+
+/** The `!!js` tag the preset registry's document dialect emits; preserved as data, never evaluated. */
+const PRESET_JS_TAG = Object.freeze({
+  tag: 'tag:yaml.org,2002:js',
+  resolve: (value) => ({ __jsExpr: value }),
+})
+
+/**
+ * Map every DECLARED row of a preset document to its own `config` (entry-id+module and module
+ * keys). Group rows are structural and flattened the way the Loader flattens them.
+ * @param {object} presets - the agentPresets accessor (must expose `readDocument`).
+ * @param {string} presetId - the preset whose declared rows are read.
+ * @returns {Promise<{entry: Map<string, unknown>, byModule: Map<string, unknown>}>}
+ */
+async function declaredPresetRowConfigs(presets, presetId) {
+  if (typeof presets.readDocument !== 'function') {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      'a governed member needs its preset rows\' declared config (each host module is mounted with the configuration its own preset row carries), but the agentPresets accessor cannot answer readDocument(); refusing rather than mounting a module with invented defaults',
+    )
+  }
+  const document = await presets.readDocument(presetId)
+  // The REAL public service answers `{ agentPreset, content }`; a test-world double may answer
+  // the bare YAML string. Both are the declared document; anything else is unreadable (typed).
+  const content = typeof document === 'string'
+    ? document
+    : (document !== null && typeof document === 'object' && typeof document.content === 'string' ? document.content : undefined)
+  if (content === undefined) {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      `the agentPresets readDocument returned no YAML content for preset ${JSON.stringify(presetId)}; the native module configs cannot be read (fail closed)`,
+    )
+  }
+  let parsed
+  try {
+    parsed = parsePresetDocument(content, { customTags: [PRESET_JS_TAG] })
+  } catch (error) {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      `a governed member could not parse the declared document of preset ${JSON.stringify(presetId)} (${error instanceof Error ? error.message : String(error)}); its native module configs cannot be read (fail closed)`,
+    )
+  }
+  if (!Array.isArray(parsed)) {
+    throw new VnextRealmError(
+      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
+      `the declared document of preset ${JSON.stringify(presetId)} is not a plugin row list; the native module configs cannot be read (fail closed)`,
+    )
+  }
+  const entry = new Map()
+  const byModule = new Map()
+  const visit = (rows) => {
+    for (const row of rows) {
+      if (row === null || typeof row !== 'object') continue
+      if (row.group === true && Array.isArray(row.config)) {
+        visit(row.config)
+        continue
+      }
+      if (typeof row.name !== 'string') continue
+      if (row.config !== undefined && !byModule.has(row.name)) byModule.set(row.name, row.config)
+      if (typeof row.id === 'string' && row.id !== '') {
+        entry.set(`${row.id}\u0000${row.name}`, row.config)
+      }
+    }
+  }
+  visit(parsed)
+  return { entry, byModule }
 }
 
 /**
@@ -1793,6 +1928,14 @@ export function createAgentBindings(deps) {
       // identity. A refusal propagates out of setup untouched: a member never
       // runs on a realm whose host modules did not take effect.
       const a5sfRowConfig = a5sfRealmConfigOf(config)
+      // SHAPE A (round 61). The finding: on a member scope the native `read` was served by the BASE
+      // provider (zero guard consults) because only an explicitly configured native-module row
+      // re-mounts the host module into the member's isolated scope. For a GOVERNED member the module
+      // set is now derived from the ACTIVE preset's own rows and mounted AFTER the capability deny
+      // lane (`governedDefaultRealm` is filled when the realm compiled, and the preset rows are read
+      // once the preset is mounted/known). Rows without a centre never enter this path.
+      let governedDefaultRealm
+      let governedPresetModules
       // A governed member without a realm is REFUSED, not left unmediated (round 35). The rule is narrow:
       // it fires only when the row asked for the centre (centreStatePath) and no realm was mounted, so a
       // row that never configured the centre is unchanged.
@@ -1814,6 +1957,17 @@ export function createAgentBindings(deps) {
           },
         })
         if (a5sfRealm !== undefined) {
+          // SHAPE A: a compiled realm means this member is GOVERNED (a centre is installed below).
+          // When the row declares no native module set, the default mount owns the confinement of
+          // the preset's own native tools. A row that DOES declare a set keeps its configured mount
+          // (the pre-shape-A behaviour) — the default never stacks a second mount on top.
+          const compiled = compiledAnswerOfRealm(a5sfRealm)
+          if (
+            compiled !== undefined &&
+            (a5sfRowConfig.nativeToolModules === undefined || a5sfRowConfig.nativeToolModules.length === 0)
+          ) {
+            governedDefaultRealm = a5sfRealm
+          }
           const disposeRealm = createA5sfRealmRowDisposer(a5sfRealm, (error) => {
             observations.push(`a5sf: realm dispose failed: ${error instanceof Error ? error.message : String(error)}`)
           })
@@ -1943,6 +2097,12 @@ export function createAgentBindings(deps) {
           // to the root per the ruling citing D1 v2 + plan §13-L4/§12.3).
           await presets.mount(agentCtx, isRoot ? config.rootPresetId : config.memberPresetId)
         }
+        // SHAPE A: the module set is read from the preset that is ACTUALLY composed for this agent
+        // (the already-joined case included). Done here, before the deny/mount below, so the
+        // post-deny default mount has the product's own answer and never guesses a host package.
+        if (governedDefaultRealm !== undefined) {
+          governedPresetModules = await governedPresetModuleSpecifiers(presets, agentCtx, isRoot, config)
+        }
       }
       // P0-3 (hardening §5): the built-in tool deny blacklist — applied
       // BEFORE the Team tool scoped registrations (the frozen ordering:
@@ -1970,6 +2130,36 @@ export function createAgentBindings(deps) {
       // SELECTIVE mode only; an empty list is a no-op (zero restrict calls).
       if (capabilities.mode === 'selective') {
         toolDisposers.push(applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny))
+      }
+      // SHAPE A (round 61) — THE GOVERNED MEMBER'S NATIVE TOOLS, ON ITS OWN PROVIDER, BY DEFAULT.
+      //
+      // ORDER IS LOAD-BEARING and this is why the mount lives HERE and not beside the realm mount:
+      // an own-scope registration sits OUTSIDE the inherited `tools.restrict` filter, so a shadow
+      // created BEFORE the deny lane would survive it and re-enable a denied tool. The default mount
+      // therefore runs AFTER `applyBuiltInToolDeny` (the same law the route-C row documents).
+      //
+      // The set comes from the ACTIVE preset's rows (`governedPresetModules`); the lane proves each
+      // declared name changed definition identity and that the model-visible surface is unchanged.
+      // Any refusal (unimportable module, invalid module, an empty or conflicting frontier, an
+      // unmountable realm) propagates: the member never runs on a realm whose native tools stayed on
+      // the base provider. Ungoverned rows never reach this block (`governedDefaultRealm` is unset).
+      if (governedDefaultRealm !== undefined) {
+        const governedNative = await mountGovernedNativeToolModules({
+          governed: true,
+          realm: governedDefaultRealm,
+          root: agentCtx,
+          scope: runtimeAgent,
+          presetModules: governedPresetModules ?? [],
+        })
+        if (governedNative !== undefined) {
+          observations.push(
+            `a5sf: governed native default mount on '${sessionId}' (${governedNative.modules.join(', ')})`
+            + (governedNative.skipped.length === 0
+              ? ''
+              : `; skipped ${governedNative.skipped.map((entry) => `${entry.url} (${entry.reason})`).join('; ')}`),
+          )
+          nativeMountDisposers.push({ settled: () => governedNative.dispose() })
+        }
       }
       // The host fills teamToolsRef.current AFTER root assembly; the setup
       // callback reads it when it runs — never before. Absent -> the
