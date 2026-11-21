@@ -9849,3 +9849,18 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
   `CAPABILITY-MATRIX-C.md` say exactly that.
 - Gates at this round: leg `ute-vnext-a1` suites=4 exit=0; catalog `tests=886 refused=0 findings=0`;
   P0 assets / cut-closure / a1-window all pass. Arms now 78 (admission 33, slice 33, realm 9, os 3).
+
+## R25 — 2026-11-21 — UTE vNext C: revocation between the decision and the body is now a proven refusal
+
+- **`SLICE-34`** models what a real permission revoke looks like from inside one dispatch: the binding
+  resolves for the pre-execute decision, then the holder is revoked, so the guard's RECHECK sees no
+  binding. It asserts the refusal names `ADMISSION_RECHECK`, the provider was never touched, the
+  admission fact keeps the `allow` that was genuinely decided, and the execution fact is
+  `admission-refusal` with the guard's own code.
+- That exposed a real defect in `execution-facts.mjs`: a refusal at the GUARD was classified `failed`,
+  because the join only knew about `decision: 'deny'`. An operator's revoke would have been
+  indistinguishable from a broken tool in every report built on those facts. The fact now carries the
+  centre's stable `ADMISSION_*` code, read from the tool error (the only signal that survives to
+  `tools/result`), and the guard's code wins over the admission record's generic one.
+- Gates: leg suites=4 exit=0; catalog `tests=886 refused=0 findings=0`; arms now 79
+  (admission 33, slice 34, realm 9, os 3).

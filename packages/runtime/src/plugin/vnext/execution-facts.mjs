@@ -62,8 +62,16 @@ export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf
       )
     }
     const admission = typeof admissionOf === 'function' ? admissionOf(callId) : undefined
-    const refusedAtAdmission = admission !== undefined && admission.decision === 'deny'
+    // A refusal can happen at TWO points and both are the CENTRE's, not the tool's: at admission
+    // (`decision: 'deny'`), and at the guard's post-approval RECHECK - where the decision WAS an
+    // allow and the authority was revoked before the body. The guard's verdict reaches this event only
+    // as the tool error carrying the centre's own stable code, so the prefix is matched deliberately
+    // and the code is kept in the fact instead of being reduced to prose.
     const isError = result?.isError === true
+    const guardCode = isError
+      ? (/^(ADMISSION_[A-Z_]+):/u.exec(String(result?.error?.message ?? result?.errorMessage ?? result?.text ?? ''))?.[1])
+      : undefined
+    const refusedAtAdmission = (admission !== undefined && admission.decision === 'deny') || guardCode !== undefined
     const fact = Object.freeze({
       callId,
       ...(typeof executionIdOf === 'function' ? { executionId: executionIdOf(callId) } : {}),
@@ -83,7 +91,12 @@ export function installExecutionFacts ({ ctx, record, admissionOf, executionIdOf
             ? 'approval-refused'
             : isError ? 'failed' : 'completed',
       isError,
-      ...(refusedAtAdmission ? { refusalCode: admission.refusalCode ?? 'ADMISSION_REFUSED' } : {}),
+      // The guard's own code when the refusal happened there (the decision was an allow), otherwise
+      // the admission record's code. A recheck refusal with no code would be indistinguishable from a
+      // body failure in every later report.
+      ...(guardCode !== undefined
+        ? { refusalCode: guardCode }
+        : refusedAtAdmission ? { refusalCode: admission.refusalCode ?? 'ADMISSION_REFUSED' } : {}),
       ...(isError && !refusedAtAdmission && typeof result?.error?.message === 'string' ? { errorMessage: result.error.message } : {}),
       ...(admission?.policyGeneration === undefined ? {} : { policyGeneration: admission.policyGeneration }),
     })

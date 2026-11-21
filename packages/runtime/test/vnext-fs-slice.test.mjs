@@ -61,7 +61,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -380,9 +380,18 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       ...(web ? { network: webNetwork } : {}),
       ...(bash ? { process: lane([inside]) } : {}),
     }
+    // REVOCATION (SLICE-34): the binding holder can be revoked between the pre-execute decision and
+    // the guard, which is what a real permission revoke looks like from inside one dispatch. The
+    // count is deliberate: the FIRST resolution is the decision, the SECOND is the guard's recheck.
+    let bindingResolutions = 0
     disposeAdmission = installAdmissionPoint({
       ctx: agent.ctx,
-      resolveBinding: () => (admission === 'bound' || admission === 'ask-granted' ? binding : undefined),
+      resolveBinding: () => {
+        if (admission !== 'bound' && admission !== 'ask-granted') return undefined
+        bindingResolutions += 1
+        if (revokeAfterDecision && bindingResolutions > 1) return undefined
+        return binding
+      },
       record: (record) => {
         facts.push(record)
         if (ledger !== undefined) ledger.recordAdmission(record)
@@ -1088,6 +1097,27 @@ test('SLICE-33 — rung 6: a PTY shell is refused to an owner the host does not 
     assert.match(String(result.errorMessage), /OWNER_NOT_LIVE|not the registered PTY owner/u)
     assert.equal(String(result.text).includes('SHOULD-NOT-RUN\n') && !result.isError, false)
     assert.equal(world.webFetchCalls(), 0)
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-34 — REVOCATION between the decision and the body: the recheck refuses, the body never runs', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'revoke'), admission: 'bound', revokeAfterDecision: true })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const revoked = await world.dispatch('read', { file_path: world.insideFile }, 'revoke-1')
+    assert.equal(revoked.isError, true, 'a revoked authority must not execute')
+    assert.match(String(revoked.errorMessage), /ADMISSION_RECHECK/u, `the refusal must name the recheck, not a tool failure: ${String(revoked.errorMessage)}`)
+    assert.equal(member.calls.readText + member.calls.streamText + member.calls.stat, 0, 'the body must never be reached')
+    // The decision that WAS made is still on record, because it was genuinely made.
+    const facts = world.facts()
+    assert.equal(facts.length, 1)
+    assert.equal(facts[0].decision, 'allow', 'the record keeps the allow the centre actually decided; the recheck is a separate refusal')
+    const executions = world.executions()
+    assert.equal(executions.length, 1)
+    assert.equal(executions[0].outcome, 'admission-refusal', `a recheck refusal is an admission refusal, not a broken tool: ${JSON.stringify(executions[0])}`)
+    assert.match(String(executions[0].refusalCode), /^ADMISSION_RECHECK_/u, 'the fact keeps the code the guard used')
   } finally {
     await world.dispose()
   }
