@@ -322,3 +322,28 @@ preserves the `..` segment instead of normalizing it away, so a dot-dot path can
 ancestor rule.
 
 The centre's rule from here: **it calls `member-io-policy`; it never re-derives it.**
+
+## 9. A1 acceptance slice: measured, not argued
+
+`packages/runtime/test/vnext-fs-slice.test.mjs` — four arms on the pinned baseline's own code (the
+real `@deepseek-ai/dsh-tools` registry, the real `@deepseek-ai/dsh-tool-fs` module from the pinned
+built tree, the real `LocalFileSystem`, Cordis scopes) and no Team-authored tool body:
+
+| arm | measured |
+| --- | --- |
+| SLICE-1 | the member resolves a **different definition object** than its preset installed, while `execute` is the **same function source** — the mount took effect and the body is still the host's |
+| SLICE-2 | an in-ceiling `read` succeeds and exactly one call reaches the member provider |
+| SLICE-3 | an out-of-ceiling `read` is refused by the member's own lane (`outside every allow subtree`), the bytes never appear in the result, and the real filesystem is **not touched at all** (zero stat/lstat/read calls) |
+| SLICE-4 | negative control — the same world without the realm mount reads the outside file successfully, so the three arms above are falsifiable |
+
+**Owner risk #1 is closed at the mechanism level:** a native tool on a Member scope does resolve
+that member's controlled provider, through public seams only, with no Shadow Definition and no
+host patch. The remaining question for D is not "is this possible" but "does the product assembly
+wiring reach it on a real host boot", which is a B/D item.
+
+Two lane defects the slice found and fixed: the mount takes **descriptors**, not module
+namespaces; and **deferred registration** means "unchanged at mount-return" is not a fact — the
+lane now re-reads until every declared name changed or a bounded settle budget is spent, then
+judges. `read_image` is deliberately undeclared in this world: the pinned tool-fs registers it
+from a deferred child that injects `attachments`, which the minimal world does not mount, so it is
+an absent optional capability (the mount seam's own settle rule), not a missing mount.
