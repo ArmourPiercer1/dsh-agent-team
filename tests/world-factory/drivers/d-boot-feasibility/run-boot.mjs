@@ -102,6 +102,25 @@
  *   7. The `runId`/`suite` strings still read `a5sf-live-member`: the record
  *      shape is inherited from the ancestor driver. Artifacts under
  *      evidence/d-boot-feasibility are this driver's, and the report says so.
+ *
+ * ROUND 60 (2026-11-22, escalation path 3 — `ESCALATION-centre-row-creation-entrance.md`).
+ * The round-59 blocker was that the driver's ONLY creation entrance was
+ * `POST /team-remote/team.create`, which a centre-configured row refuses by
+ * design (C-remote will not build the S6 plane: `root.ts:4324`, seam only
+ * installed at `root.ts:4722-4730`; host.ts then records `skipped`, so the
+ * route 405s). This revision exercises the entrance the product ALREADY has on
+ * such a row: the boot create (`root.ts:4888-4925`). The row's
+ * `blueprintSource` is now the v4 `main` blueprint itself (the identical
+ * document the remote entrance used to receive via `blueprintId`), the
+ * boot-created Team lives on `BOOT_ROOT`, and the Leader's first turn is sent
+ * with `apiPrompt` instead of the remote `initialWork`. NO judge, assertion,
+ * timeout, retry, composition row or fixture value changed.
+ *
+ * DISCLOSED LIMIT (not hidden): on a centre-configured row the product has no
+ * RUNTIME team-creation entrance. The measured Team is boot-created; a second
+ * team cannot be created at runtime on this row. That is a product gap
+ * (escalation shapes 1/2), not a measurement artifact, and this driver must
+ * not be read as proving it away.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -122,7 +141,7 @@ import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
 import {
-  lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
+  lastUserTextOfStatic, messagesOf, surfaceNamesOf, textOf,
 } from '../../lib/u6-fs-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -138,8 +157,11 @@ const LEDGER_PATH = join(EVIDENCE, 'run-ledger.jsonl')
 const GRANT_PATH = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'a5sf-fs-devlive', 'dev-live-grant.json')
 
 const LINE = 'u5a5sfdev1'
+// ROUND 60: ONE root. The Team is minted by the boot create (`root.ts:4888`),
+// so the root the discovery turn and the Leader chain run on IS the team root.
+// The former second `session-dboot-read-team` root existed only because
+// `team.create` minted a fresh team on demand.
 const BOOT_ROOT = 'session-dboot-read-root'
-const ACCEPTANCE_ROOT = 'session-dboot-read-team'
 const BP_ANCHOR_ID = 'team.dboot.read.anchor'
 const BP_MAIN_ID = 'team.dboot.read.main'
 const PRESET_ID = 'a5sf-governed-member'
@@ -347,10 +369,10 @@ function assertBlueprintText(text, wantId, label) {
 // the composed rows
 // ─────────────────────────────────────────────────────────────────────────────
 function p6t6Directive({ worldId, logDir }) {
-  return { boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: ACCEPTANCE_ROOT }
+  return { boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: BOOT_ROOT }
 }
 
-function composedRows({ home, workspaceDir, anchorYaml, layer }) {
+function composedRows({ home, workspaceDir, mainYaml, layer }) {
   const hostRow = layer.rows.find((row) => row?.name === 'dsh-agent-team/host')
   const presetRow = layer.rows.find((row) => row?.config?.id === PRESET_ID)
   if (hostRow === undefined) throw new Error('the shipped layer carries no dsh-agent-team/host row')
@@ -379,7 +401,14 @@ function composedRows({ home, workspaceDir, anchorYaml, layer }) {
     ...hostRow.config,
     rootSessionId: BOOT_ROOT,
     bootPhase: 'create',
-    blueprintSource: anchorYaml,
+    // ROUND 60 (escalation path 3): the row's bootstrap anchor IS the v4
+    // acceptance blueprint, so the boot-created Team (`root.ts:4888-4925`)
+    // binds the same document the driver measures. A centre-configured row
+    // refuses the S6 remote plane (`root.ts:4324`), so `POST
+    // /team-remote/team.create` is a 405 and the boot create is that row's
+    // ONLY creation entrance. This is the identical blueprint the remote
+    // entrance used to receive; no assertion, judge or fixture moves with it.
+    blueprintSource: mainYaml,
     blueprintDir: join(home, 'blueprints'),
     seedMembers: [],
     // THE OPT-IN (both keys are explicit; a v3 design or a missing ceiling
@@ -520,7 +549,7 @@ function makeDecide({ inLanePath, secretPath, workspaceDir }) {
             id: 'call-a5sflm-delegate',
             name: 'team_delegate',
             arguments: {
-              rootSessionId: ACCEPTANCE_ROOT,
+              rootSessionId: BOOT_ROOT,
               requestToken: `${TOK_MEMBER}-delegate`,
               delegationTemplateId: 'worker',
               label: 'a5sflm-worker',
@@ -814,7 +843,7 @@ function planOnly() {
   const a = assertBlueprintText(anchor, BP_ANCHOR_ID, 'anchor.yaml')
   const m = assertBlueprintText(main, BP_MAIN_ID, 'main.yaml')
   log(`blueprints accepted: anchor=${JSON.stringify(a)} main=${JSON.stringify(m)}`)
-  const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: join(EVIDENCE, 'plan-workspace'), anchorYaml: anchor, layer })
+  const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: join(EVIDENCE, 'plan-workspace'), mainYaml: main, layer })
   writeFileSync(join(EVIDENCE, 'plan-patch.yml'), emitPatchLayer(['a5sf-live-member plan (no World)'], rows) + '\n')
   log(`rows: ${JSON.stringify(rows.map((r) => ({ id: r.id, name: String(r.name).slice(0, 80) })))}`)
   log(`composition drops: ${JSON.stringify(COMPOSITION_DROPS)}`)
@@ -877,11 +906,17 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       writeFileSync(secretPath, `${SECRET_TEXT}\n`, 'utf8')
       writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2) + '\n')
 
-      const anchor = anchorBlueprintYaml()
-      writeFileSync(join(world.home, 'blueprints', 'anchor.yaml'), anchor)
-      // main.yaml is written AFTER the discovery turn (the Leader's deny list
-      // is measured, not guessed), exactly like the proven live lanes.
-      const rows = composedRows({ home: world.home, workspaceDir: workspace, anchorYaml: anchor, layer })
+      // ROUND 60: the v4 acceptance blueprint is the row's BOOTSTRAP ANCHOR, so
+      // it must exist before the host boots (the boot create freezes/binds it).
+      // The former anchor document is gone with the remote entrance it served.
+      // The Leader declares NO capabilities (see mainBlueprintYaml), so the deny
+      // list is the empty list both before and after the discovery turn; the
+      // discovery turn below still MEASURES the real Leader surface and records
+      // it — this is a binding-order move, not a guessed composition.
+      const mainText = mainBlueprintYaml({ denyList: [], workspace })
+      assertBlueprintText(mainText, BP_MAIN_ID, 'main.yaml')
+      writeFileSync(join(world.home, 'blueprints', 'main.yaml'), mainText)
+      const rows = composedRows({ home: world.home, workspaceDir: workspace, mainYaml: mainText, layer })
       world.u6Fs.rows.push(...rows)
       record.record.bindings.compositionDrops = COMPOSITION_DROPS
       record.record.bindings.layout = process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre'
@@ -936,9 +971,9 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     if (!healthOk) throw new Error('the p6t6 harness route never answered: the World did not reach a usable Host')
 
     // The /proc observer is INDEPENDENT of the product and of our counters. It
-    // must start BEFORE `team.create`: the Leader's whole chain (and therefore
-    // the Member turn) runs inside that synchronous call — measured. A watcher
-    // started afterwards sees an empty window and reads as "no spawn".
+    // must start BEFORE the Leader turn: that turn's chain (and therefore the
+    // Member turn) runs inside the synchronous `team_delegate` call — measured.
+    // A watcher started afterwards sees an empty window and reads as "no spawn".
     const procLog = []
     const otherBwrapPids = new Set()
     const memberPromptAt = new Date().toISOString()
@@ -977,18 +1012,19 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       throw new Error(`the Leader surface carries no team tools (${leaderSurface.join(',')}) — the composition did not register them`)
     }
     writeFileSync(join(bootDir, 'leader-surface.json'), JSON.stringify({ at: new Date().toISOString(), tools: leaderSurface, denyList }, null, 2) + '\n')
-    const mainText = mainBlueprintYaml({ denyList, workspace: paths.workspace })
-    assertBlueprintText(mainText, BP_MAIN_ID, 'main.yaml')
-    writeFileSync(join(world.home, 'blueprints', 'main.yaml'), mainText)
 
-    // ── team.create: the Leader's first turn delegates the governed Member ─
-    abortStage = 'team-create'
-    const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
-      rootSessionId: ACCEPTANCE_ROOT, blueprintId: BP_MAIN_ID, initialWork: { prompt: MK_L1 },
-    }, 'a5sflm')
-    const createOk = created.status === 200 && created.body?.result?.ok === true
-    log(`[boot${String(index)}] team.create status=${String(created.status)} ok=${String(createOk)} ${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
-    if (!createOk) throw new Error(`team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 400)}`)
+    // ── the Leader turn on the BOOT-CREATED Team ──────────────────────────
+    // ROUND 60 (escalation path 3): NO `POST /team-remote/team.create`. On a
+    // centre-configured row that route is a 405 by design (C-remote refuses to
+    // build the S6 plane, `root.ts:4324`), and the boot create is the row's
+    // only creation entrance. This prompt is the SAME first turn the remote
+    // `initialWork.prompt` used to carry, sent through the public session
+    // prompt route; the Leader's chain (delegate → Member turn → collect) and
+    // every judge are untouched.
+    abortStage = 'leader-turn'
+    const lead = await apiPrompt(origin, cookie, BOOT_ROOT, MK_L1, 'a5sflm')
+    log(`[boot${String(index)}] leader turn status=${String(lead.status)} root=${BOOT_ROOT}`)
+    if (lead.status !== 200) throw new Error(`session/prompt failed: status=${String(lead.status)} body=${redact(JSON.stringify(lead.body ?? null)).slice(0, 400)}`)
 
     abortStage = 'member-turn'
     // A turn that never settles must still leave a diagnosable trail: the
@@ -1072,7 +1108,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     const member = members.find((m) => String(m?.templateId ?? '') === 'worker') ?? members[0] ?? null
     const instanceId = member?.instanceId ?? null
     const childSessionId = member?.childSessionId ?? member?.row?.childSessionId
-      ?? (instanceId === null ? null : `session-team-child-${createHash('sha256').update(`${ACCEPTANCE_ROOT}\u0000${instanceId}`).digest('hex').slice(0, 32)}`)
+      ?? (instanceId === null ? null : `session-team-child-${createHash('sha256').update(`${BOOT_ROOT}\u0000${instanceId}`).digest('hex').slice(0, 32)}`)
     log(`[boot${String(index)}] members=${JSON.stringify(members.map((m) => ({ instanceId: m.instanceId, templateId: m.templateId, lifecycle: m.lifecycle })))} childSessionId=${String(childSessionId)}`)
 
     const transcript = childSessionId === null ? null : readMemberTranscript(world.home, childSessionId)

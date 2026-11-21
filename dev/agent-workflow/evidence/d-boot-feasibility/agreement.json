@@ -1,9 +1,44 @@
 {
   "schema": "a5sf-live-member/agreement/1",
-  "at": "2026-11-21T21:33:52.259Z",
-  "boots": 1,
-  "agreeing": false,
+  "at": "2026-11-21T21:49:29.805Z",
+  "boots": 2,
+  "agreeing": true,
   "differing": [],
-  "rows": [],
-  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact\noverall\nadmittedVerdict\ndeniedVerdict\nsurfaceVerdict\nfactsVerdict\ncentreVerdict\nallowFacts\ndenyFacts\ncentreAdmissions\ncentreExecutions\ngovernedSurface\nadmittedBytes\ndeniedSecretAbsent\ntranscriptSourceCount\n\nagreeing=false differing=[]"
+  "rows": [
+    {
+      "boot": 1,
+      "overall": "FAIL",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "REFUTED",
+      "surfaceVerdict": "REFUTED",
+      "factsVerdict": "REFUTED",
+      "centreVerdict": "PROVEN",
+      "allowFacts": 0,
+      "denyFacts": 0,
+      "centreAdmissions": 2,
+      "centreExecutions": 2,
+      "governedSurface": false,
+      "admittedBytes": true,
+      "deniedSecretAbsent": false,
+      "transcriptSourceCount": 2
+    },
+    {
+      "boot": 2,
+      "overall": "FAIL",
+      "admittedVerdict": "PROVEN",
+      "deniedVerdict": "REFUTED",
+      "surfaceVerdict": "REFUTED",
+      "factsVerdict": "REFUTED",
+      "centreVerdict": "PROVEN",
+      "allowFacts": 0,
+      "denyFacts": 0,
+      "centreAdmissions": 2,
+      "centreExecutions": 2,
+      "governedSurface": false,
+      "admittedBytes": true,
+      "deniedSecretAbsent": false,
+      "transcriptSourceCount": 2
+    }
+  ],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\noverall                       FAIL                          FAIL\nadmittedVerdict               PROVEN                        PROVEN\ndeniedVerdict                 REFUTED                       REFUTED\nsurfaceVerdict                REFUTED                       REFUTED\nfactsVerdict                  REFUTED                       REFUTED\ncentreVerdict                 PROVEN                        PROVEN\nallowFacts                    0                             0\ndenyFacts                     0                             0\ncentreAdmissions              2                             2\ncentreExecutions              2                             2\ngovernedSurface               false                         false\nadmittedBytes                 true                          true\ndeniedSecretAbsent            false                         false\ntranscriptSourceCount         2                             2\n\nagreeing=true differing=[]"
 }

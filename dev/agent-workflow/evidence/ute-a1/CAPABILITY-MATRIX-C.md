@@ -6,9 +6,11 @@ Statuses used, and they are not interchangeable:
 - **PRODUCT-PROVEN** — the above AND a real product assembly exercised it end to end.
 - **UNPROVEN** — nothing here should be reported as working.
 
-This worktree cannot boot the product: `node_modules` links a pnpm store path that does not exist
-here, so neither `tsc` nor a host boot can run. Every PRODUCT-PROVEN row below is therefore empty by
-construction until D runs the real host; that is the honest state, not an omission.
+This worktree **does** boot the product at this HEAD (measured rounds 58–60, `D-BOOT-FEASIBILITY.md` §2/§11/
+§12): the `node_modules` link resolves, `tsc` runs from the main install, and a real `dsh web` host serves a
+centre-configured row. The earlier statement that the link points at a nonexistent pnpm store was true only
+at the commit where it was observed and is corrected here. That changes the ENVIRONMENT fact only: no row
+below is PRODUCT-PROVEN, and "boots" is not "the capability is proven".
 
 | C row | capability | where the centre stands | status |
 | --- | --- | --- | --- |
@@ -125,12 +127,30 @@ so a well-formed name for a never-mounted server is not refused BY THE CENTRE (t
 tool registry are what exclude it) — stated above as a LIMIT and pinned by `ADM-97`. Policy
 COMPILATION is not exercised (the compiled answer is an input).
 
-## BLOCKING PRODUCT LIMIT (round 59): a centre row cannot create a team at runtime
+## BLOCKING PRODUCT LIMIT (round 59, refined round 60): a centre row cannot create a team at runtime
 
 `ESCALATION-centre-row-creation-entrance.md`. The centre row BOOTS (43 model-visible tools, remote mount
 `SKIPPED` with the C-remote reason) but `POST /team-remote/team.create` is **405**: C-remote refuses to build
 the plane, and that plane is the product's only runtime creation entrance. Governance and runtime creation are
 mutually exclusive today. Nothing in this table may be read as "both work".
+
+**Round 60 measures the escalation's path 3 (DEV-LIVE, not PRODUCT-PROVEN).** The driver binds the v4
+blueprint at boot instead of calling the remote creation route, and the boot-created Team
+(`root.ts:4888-4925`) does reach a governed Member on a real host: two agreeing boots, gate
+`ADMISSION_OPEN`, a worker Member turn, and a durable centre ledger with 2 `fs.read` admission facts
+(`allow` + `LANE_DENY`) and 2 execution facts. **What that does NOT buy, and this table does not claim:**
+
+- runtime creation on a centre row is unchanged (still 405 — the measured Team is boot-created);
+- the admitted native `read` was **not** served by the Member's controlled Provider: zero
+  `a5sf-guard-consult/1` facts (the preset's `tool-fs` row resolves the base `fs`; only
+  `a5sfNativeToolModules` re-mounts it into the member scope, and this row declares none);
+- the out-of-lane refusal is the centre's typed **`LANE_DENY`**, not the realm provider's
+  `IO_READ_DENIED`;
+- one judge clause (`d:native-read-surface` `native-description`) reads the top-level `description` while
+  the native marker is in the `file_path` parameter description — an instrument defect, reported unfixed.
+
+So `C-fs` / `C-member` stay MECHANISM: the centre adjudicates the call, the provider path is not proven.
+Full evidence, judge-by-judge: `D-BOOT-FEASIBILITY.md` §12.
 
 ## MEASURED (round 49): the durable Alpha.4 overlay reaches the centre — E3 green, still not PRODUCT-PROVEN
 

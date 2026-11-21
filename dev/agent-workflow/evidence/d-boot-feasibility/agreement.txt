@@ -1,18 +1,18 @@
 TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
-fact
-overall
-admittedVerdict
-deniedVerdict
-surfaceVerdict
-factsVerdict
-centreVerdict
-allowFacts
-denyFacts
-centreAdmissions
-centreExecutions
-governedSurface
-admittedBytes
-deniedSecretAbsent
-transcriptSourceCount
+fact                          boot1                         boot2
+overall                       FAIL                          FAIL
+admittedVerdict               PROVEN                        PROVEN
+deniedVerdict                 REFUTED                       REFUTED
+surfaceVerdict                REFUTED                       REFUTED
+factsVerdict                  REFUTED                       REFUTED
+centreVerdict                 PROVEN                        PROVEN
+allowFacts                    0                             0
+denyFacts                     0                             0
+centreAdmissions              2                             2
+centreExecutions              2                             2
+governedSurface               false                         false
+admittedBytes                 true                          true
+deniedSecretAbsent            false                         false
+transcriptSourceCount         2                             2
 
-agreeing=false differing=[]
+agreeing=true differing=[]

@@ -220,3 +220,128 @@ there is no remote-command axis in the compiled ceiling), (2) add a non-remote p
 (3) redesign the driver to bind the v4 blueprint at boot and use the boot-created Team. Each is a product
 decision; none is a small non-weakening fix. §7's "no measurement" remains true for the Member, while the
 host/centre/Leader half is now measured live.
+
+## 12. Round 60 update (2026-11-22) — path 3: the boot-bound Team reaches a Member; the native read is NOT served by the controlled Provider
+
+HEAD at run start `f9c7f4f72658b308fd168297eddfe376ff702a94` (the driver edit of this round is the only
+tracked change; `packages/runtime/dist` was already current and `place-dist-glue` reports 28 byte-identical
+placements), host pin `639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty), branch `vnext/a1-cut`,
+record class `DEV-LIVE` (never candidate evidence). **Verdict: PARTIAL — the Member runs, the centre
+adjudicates, the controlled-Provider clause is REFUTED.** Two judges PASS, three REFUTE, identically on both
+boots (`agreeing=true`).
+
+### What changed (one file, driver only)
+
+`tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs`, no product code:
+
+1. The row's `blueprintSource` is the **v4 `main` blueprint** (the identical document `team.create` used to
+   receive by `blueprintId`), written and validated **before** boot. The boot create
+   (`root.ts:4888-4925`) therefore mints the Team on that bound snapshot.
+2. `POST /team-remote/team.create` is **gone** from the driver. The Leader's first turn — the same `MK_L1`
+   prompt the remote `initialWork` carried — is sent with `apiPrompt(origin, cookie, BOOT_ROOT, MK_L1)` on
+   the boot-created Team. The delegate's `rootSessionId`, the p6t6 directive root and the child-session
+   derivation use `BOOT_ROOT`; the former second root (`session-dboot-read-team`) existed only to receive
+   the remote team and is removed.
+3. **No judge clause, assertion, timeout, retry, composition row or fixture value changed.** The anchor
+   document is no longer part of the boot composition because it was only the remote entrance's anchor;
+   `anchorBlueprintYaml()` is still validated by `--plan`.
+
+Commands, verbatim:
+
+```
+node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --plan   # exit 0, both blueprints accepted, drops []
+env -u DBOOT_WITHOUT_CENTRE -u A5SF_WF_NO_INSTALL_GRAPH \
+  node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2
+```
+
+The driver exits `1` because its own judges refute (below). `agreement.json`: `boots=2, agreeing=true,
+differing=[]`.
+
+### What the two boots measured (identical)
+
+| Fact | boot01 / boot02 |
+| --- | --- |
+| World / install graph | created, `composition drops: []`, preset 14 plugins |
+| remote mount | `SKIPPED` — `the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis)` |
+| boot-created Team | root `session-dboot-read-root`, blueprint `team.dboot.read.main` (schemaVersion 4) |
+| Leader turn | `session/prompt` 200, delegate `status:"executed"`, `admissionCode:"ADMISSION_OPEN"`, `member-activated` |
+| Member instance / child session | `inst-0pe2z220bhfb` / `session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a` |
+| Member model requests | 3 (`counters.memberModelRequests`) |
+| centre admissions / executions | 2 / 2 (`allow` + `LANE_DENY`, each with an execution fact) |
+| guard-consult facts (`a5sfEvidencePath`) | **0** — the sink file does not exist (`guard-facts.json` = `[]`) |
+| secret bytes in transcript | 0 (`SECRET_TEXT` absent) |
+
+### The five judges, exact results
+
+| judge | verdict | evidence |
+| --- | --- | --- |
+| `d:member-read-admitted` | **PASS** | native `read(file_path=<workspace>/in-lane.txt)`, `isError=false`, result carries `1: DBOOT_IN_LANE_BYTES` in the native `<path>/<type>/<content>` envelope. **This judge does not witness WHICH provider served the bytes** — see `d:guard-facts`. |
+| `d:member-read-denied` | **REFUTED** | one failing clause `typed-denial`: the tool result is `Error: LANE_DENY: fs.read "…/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane (policy generation a5sf1:791dfda962caa7ed43197b1b55a2ad90)`. The refusal is typed, is a policy denial (not ENOENT) and leaks no secret bytes, but the code is **`LANE_DENY`** (the centre's admission refusal, recorded in the ledger) — **not `IO_READ_DENIED`**, which this judge requires. |
+| `d:native-read-surface` | **REFUTED** | one failing clause `native-description`: it requires the schema's top-level `description` to contain `resolved by the filesystem backend`, but the pinned host's native `read` top-level description is `Read a UTF-8 text file and return line-numbered content.` and that phrase is the **`file_path` parameter** description (`tests/deepseek-harness-test-use/packages/fs/tool-fs/src/read.ts:79-81`). The other four clauses pass: `read` present once, `properties=file_path,limit,offset`, `a5sfNativeToolModules=[]`, `tool-fs` is the shipped row. **Instrument defect (wrong field), not a product deviation; left unmodified.** |
+| `d:guard-facts` | **REFUTED** | `allow-facts-present`: 0 allow facts for the in-lane locator; `allow-identity`: no member identity. **Zero `a5sf-guard-consult/1` facts for the admitted read.** |
+| `d:centre-facts` | **PASS** | durable per-member ledger `<centreStatePath>/inst-0pe2z220bhfb.facts.jsonl`: 2 `invocation-authority` facts on `fs.read` (`allow` for the in-lane locator; `deny` with `refusalCode:"LANE_DENY"` for the out-of-lane one), member identity in both, 2 execution facts, ledger read fresh from disk. |
+
+### Why `d:guard-facts` refutes the central proposition (not a driver artifact)
+
+The member row carries `a5sfNativeToolModules: []`, i.e. the product's default composition: the preset's
+`tool-fs` row stays mounted at the **preset's standing scope**, which is an ancestor of the member scope and
+therefore resolves that scope's **base** `fs`. The confined `fs` is mounted by the realm inside the member's
+isolated scope; the only product mechanism that moves the model-visible native `read` onto it is re-mounting
+the native module *inside* the member scope (`packages/runtime/team-services/src/mount.ts:70-96`, the
+"route C" native-tool mount; `a5sfNativeToolModules` is that mount's input). This row declares none, so the
+admitted read's body is served by the base Provider — the product's own source states the mechanism plainly
+("the definition a preset registers therefore resolves the preset scope's `fs` (the base Provider)").
+
+What still holds is the **call** layer: the centre decides `allow`/`deny` from the compiled `fs.read` lane
+BEFORE the body, so the out-of-lane read is refused without the base Provider being asked (the denied result
+is the centre's `LANE_DENY`, and `out-lane-never-reached-provider` passes vacuously with zero facts).
+
+So the D proposition "in-lane bytes arrive through the Member's CONTROLLED Provider" is **not proven and is
+contradicted by the measurement**: no guard consultation occurred. The judge set also contains the tension
+in one place — `no-shadow-modules` demands `a5sfNativeToolModules: []`, while the only current product route
+to the confined Provider for a native tool is that same re-mount.
+
+### LIMIT retained (not hidden)
+
+A centre-configured row **still cannot create a team at runtime**: `POST /team-remote/team.create` remains a
+405 by design. The Team measured here is **boot-created**; this round proves the boot entrance reaches a
+Member, not that runtime creation works on such a row. Escalation shapes 1 (a centre-governed creation
+command, contract change) and 2 (a non-remote creation entrance, product feature) remain open.
+
+### Gates (all run at this tree, all green)
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+  → DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0
+    tests 163 / pass 161 / fail 0 / skipped 2 / set=sha256:edd4f1c494a7…
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  → tests=889 DISCOVERED_AND_COLLECTED 834 EXCLUDED_WITH_REASON 14 UNCOLLECTED 41 refused=0 findings=0
+node scripts/ute-cut-closure.mjs --check
+  → pass deleted=148 references=163 prodRefs=0 distResiduals=0 dupNames=0 findings=0
+node scripts/ute-p0-assets.mjs --check
+  → pass modules=37 files=180 lines=69512 cut=cut(148/148) findings=0
+node scripts/docs-sync.mjs --check
+  → docs=193 plans=152 pairs compared=20 findings=0 blocking=0 (authority pointer as20261109r1 verified)
+node scripts/place-dist-glue.mjs
+  → done (28 placement(s)), all byte-identical
+node scripts/eb3-ci-required.mjs
+  → pass workflows=10 findings=0
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+  → EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 passed=238 failed=0
+```
+
+### Discipline
+
+`:3080` untouched (`curl → 401`); host tree porcelain empty before and after; both DSH_HOMEs inside
+`tests/homes/` and deleted by teardown; ports 3187/3497 released per boot; dev-live slots
+`released=true held=false`; no product change, no upstream patch, no fixture or judge change; the two
+`run-ledger.jsonl` starts bind `head f9c7f4f72…` and `grantId devlive-fs-search-1`.
+
+### What this round does NOT prove
+
+1. Provider-level confinement of the native `read` — refuted above (zero guard facts).
+2. `IO_READ_DENIED` on the admission path — the product emits `LANE_DENY` here.
+3. Runtime team creation on a centre row — still 405, still the escalation.
+4. That the native-read surface judge measures the intended field — its failing clause reads the top-level
+   description, not the `file_path` parameter description.
+5. Candidate/product-proven status: every record is `DEV-LIVE`; no `CAPABILITY-MATRIX-C.md` row is upgraded.
