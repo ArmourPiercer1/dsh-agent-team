@@ -479,6 +479,22 @@
           ]
         },
         {
+          "id": "ute vnext A1 migrated capability suites (vitest, host-free)",
+          "cmd": [
+            "node",
+            "scripts/eb3-security-run.mjs"
+          ],
+          "check": [
+            "--layer",
+            "ci-integration",
+            "--list-file",
+            "tests/checks/eb3-ute-migrated-suites.txt",
+            "--timeout",
+            "30000"
+          ],
+          "why": "UTE vNext A1 (2026-11-22): the A1 cut re-pointed sixteen preserved-capability suites at the NEW entry. They are vitest suites, so they cannot ride the node:test ute-vnext-a1 leg, and NOTHING ran them for nine days: the import bookkeeping said 'missing: []' while the first real execution found 8 failures, including a live ReferenceError (resolvePaMount) on the authority-generation publish path, and E3, which showed the durable Alpha.4 overlay had no decision-side effect in the new centre. They rotted because CI never executed them; this leg is the fix. Population declared ONCE in tests/checks/eb3-ute-migrated-suites.txt - fifteen suites, because the sixteenth bookkeeping entry is a helper with no tests - and the token runner refuses a listed-but-absent file, a report with fewer files than listed, or an empty run, so a shorter list can never be graded green. Host-free: no boot, no port, no DSH_HOME."
+        },
+        {
           "id": "a5sf fs contract (layer B — per-native-tool, host-free)",
           "cmd": [
             "node",
