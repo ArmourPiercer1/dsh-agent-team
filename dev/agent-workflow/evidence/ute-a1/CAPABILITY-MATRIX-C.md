@@ -12,9 +12,9 @@ construction until D runs the real host; that is the honest state, not an omissi
 
 | C row | capability | where the centre stands | status |
 | --- | --- | --- | --- |
-| C-tools | 15 `team_*` tools | declared centre-owned (`CENTRE_TOOL_NAMES`), admitted on authority not on a lane; `ADM-31` pins the closed list against `createTeamTools` in BOTH directions (a 16th tool would be refused as unbound, and the arm fails first) | MECHANISM |
-| C-member | Member lifecycle (create → archive) | tools preserved in the new assembly; `installMemberCentre` runs at the member bind, and a governed bind without `centreStatePath` is REFUSED | MECHANISM (unverified end to end) |
-| C-work | work delivery (delegate → collect) | same as above: the tools are the centre's own surface, no fs/net lane applies | MECHANISM (unverified end to end) |
+| C-tools | 15 `team_*` tools | declared centre-owned (`CENTRE_TOOL_NAMES`), admitted on authority not on a lane; `ADM-31` pins the closed list against `createTeamTools` in BOTH directions. **ROUND 56 — DRIVEN END TO END over the product's own surface** (`createTeamTools` over the real `TeamRuntime`, `TeamDomain`, `ControlService`): `ADM-89` admits all 15 in declared order on `team.control`, each with a durable authority fact (read back from disk) + execution fact + `COMPLETED` settlement and its PRODUCT body reached; `ADM-90` refuses all 15 for an unbound agent with `ADMISSION_NO_BINDING`, zero bodies/deliveries/creations, `REFUSED`/`not-started` settlements; `ADM-91` refuses an unlisted name (`team_delete_team`, `team_promote_member`) by `ADMISSION_TOOL_UNBOUND` while the same centre still admits a classified `read` on `fs.read` | MECHANISM (end-to-end in-process over the product tool surface; NO host boot) |
+| C-member | Member lifecycle (create → archive) | tools preserved in the new assembly; `installMemberCentre` runs at the member bind, and a governed bind without `centreStatePath` is REFUSED. **ROUND 56:** `ADM-92` creates a member through `team_create_member` (real `member-activated` effect, durable row, Leader authority fact `team.control`/allow/`COMPLETED`); the member's OWN centre is installed through `installMemberExecution` at the child-session factory, and its calls are judged there (member ledger, member's `policyGeneration`) with the Leader's centre allowing the same locator the member's narrower lane denies. `ADM-93` archives through `team_archive_member` (production step ports: quiesce → settle-then-archive commits → `release-residency` disposes the member handle, which runs the centre's close): the member's pre-close fact survives, the durable row is `ARCHIVED`, and the next call is `ADMISSION_MEMBER_CLOSED` with a `REFUSED`/`not-started` settlement (transitions `ADMITTED → REFUSED`), never `UNKNOWN`; a second archive commits nothing, and the Leader's centre is unaffected | MECHANISM (end-to-end in-process; the archived member's PRODUCT ROUTE refuses earlier at the durable lifecycle gate — see "not proven") |
+| C-work | work delivery (delegate → collect) | same as above: the tools are the centre's own surface, no fs/net lane applies. **ROUND 56:** `ADM-94` delegates through `team_delegate` (one synchronous unit, prompt delivered verbatim through the host work-delivery seam, `work-admitted` with `settled: true` and the member result) and collects it through `team_collect` (terminal `succeeded` entry with the same result, durable `settledSequence`); the collected work's own member calls are judged by THAT member's centre — its ledger, its generation, its lane (member `LANE_DENY` where the Leader allows) — and never appear in the Leader's ledger. `ADM-95` (negative) shows a refused delegation (`ADMISSION_NO_BINDING`) delivers nothing, admits no work unit and commits no lifecycle transition, and that the following collect is a zero-write read returning `unavailable` for that token | MECHANISM (end-to-end in-process over the product tool surface; NO host boot) |
 | C-fs | FS family (`read`/`write`/`edit`/`read_image`/`grep`/`glob`) | SLICE-1..30 on the pinned host: native definitions remounted per member, real read/write, lane refusals, observation policy both states, search family under ASK and Stop | MECHANISM (in-process, pinned host) |
 | C-web | Web family (`web_fetch`) | SLICE-31/32: positive through the confined web face, negative with the transport never called | MECHANISM (in-process, pinned host) |
 | C-subprocess | Subprocess family (`bash`) | `process.exec` judged on the working directory; the PTY face mounts and refuses an unregistered owner (`OWNER_NOT_LIVE`); positive control needs a live host agent. BLOCKED on a CONTRACT_CHANGE_REQUEST: there is no declaration source for a process lane | MECHANISM, positive control UNPROVEN (D); product admission BLOCKED pending ruling |
@@ -27,6 +27,42 @@ construction until D runs the real host; that is the honest state, not an omissi
 | C-skill | Team Skill | preserved as a host capability (`skill`, axis `host.service`, `ADM-32`); its file reads go through the host skill service, NOT the member's confined fs | MECHANISM + recorded LIMIT |
 | C-fork | Subagent Fork | preserved as host capabilities (`subagent`, `send_message`, `interrupt_agent`, axis `host.service`, `ADM-32`); the CHILD's own binding governs the child's tools | MECHANISM |
 | C-policy | observation policy two-state | SLICE-10/11 pin OFF (default) and ON on the pinned host | MECHANISM |
+
+## MEASURED (round 56): C-tools / C-member / C-work driven END TO END over the product tool surface
+
+The three rows above stopped being "unverified end to end" this round. `ADM-89`…`ADM-95` live in
+`packages/runtime/test/vnext-admission.test.mjs` (node:test, the `ute-vnext-a1` leg: 157 pass + 2
+disclosed skips; vitest population unchanged at 238).
+
+**What is REAL in the assembly** (`cStage` in that file):
+
+- the tool surface is `createTeamTools` — the factory `root.ts` fills `teamToolsRef` with — over the
+  REAL `createTeamRuntime`, the REAL durable `TeamDomain` (+ real repositories), the REAL
+  `ControlService`, the REAL messaging coordinator and activity ledger. Every create / archive /
+  delegate / collect runs the tool's own `execute` body; nothing re-implements a tool.
+- the centre is the ONE composition point: `installMemberCentre` for the Leader, `installMemberExecution`
+  for every member (binding from `bindingFromCompiledMember`, the durable fact ledger, the per-member
+  settlement store, crash recovery, the native-mount lifecycle). No admission point is installed by
+  hand and no lane is rebuilt.
+- archive runs the PRODUCTION step-port row: `archiveMember` quiesces (close admission → interrupt →
+  drain → quiescence) and then commits `settle-then-archive` through the real repository CAS; the
+  `release-residency` step disposes the member handle, which is where the centre's lifecycle CLOSE runs
+  (the same path `agent-bindings.mjs` wires via `onDispose` and the lifecycle via `live.residency`).
+- every fact and settlement assertion is a READ-BACK FROM DISK through a FRESH ledger / store.
+
+**What is a HOST STAND-IN (named, deciding nothing):** the agent-context double (which runs the host's
+pre-execute → guard → body → `tools/result` order), the member's "live agent handle" (its `dispose()`
+running the disposers `installMemberExecution` registered), the child-session factory (the member-bind
+moment where a created member's centre is installed), and the work-delivery port (the host's
+session-input seam). The compiled member answer is an INPUT (a ceiling), not a decision.
+
+**NOT proven (honest limits):** no host boot, so no row is PRODUCT-PROVEN. The archived member's
+PRODUCT ROUTE refuses at the durable lifecycle gate (`LIFECYCLE_ADMISSION_CLOSED` /
+`memberResumeRefusal`) before the centre is reached — what `ADM-93` proves is the centre's own
+tombstone on the member's layer (`ADMISSION_MEMBER_CLOSED`), which is the guarantee the row names. The
+glue's own hop (that `agent-bindings` installs the member centre at every bind and that the residency
+drop reaches the same disposer list) is pinned by source and by the existing composition arms, not
+booted here. Policy COMPILATION is not exercised: the ceiling is an input.
 
 ## What this table is for
 

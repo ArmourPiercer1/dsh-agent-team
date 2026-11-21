@@ -3138,3 +3138,840 @@ test('ADM-88 — the capability table is CLOSED, each refusal names its own miss
   }
   assert.throws(() => hostSurfaceRefusal('mcp'), (error) => /closed table/u.test(error.message), 'a new capability cannot be refused by being forgotten')
 })
+
+// ================================================ C STAGE (round 56): C-tools / C-member / C-work OVER THE ONE CENTRE
+//
+// WHAT WAS UNPROVEN. The 15 `team_*` tools are CENTRE-OWNED: `CENTRE_TOOL_NAMES` admits them on
+// `team.control`, not on an fs/net/process lane, because their authority is enforced INSIDE the team
+// (Leader-only checks, the ControlService, work delivery). ADM-31 pinned only that CLOSED LIST. No arm
+// drove the product's OWN tool surface through the centre, so C-tools/C-member/C-work stood at
+// "MECHANISM (unverified end to end)".
+//
+// WHAT IS REAL HERE, layer by layer (and what is a HOST STAND-IN, named, never silent):
+//
+//  * the TOOL SURFACE: `createTeamTools` — the factory `root.ts` fills `teamToolsRef.current` with —
+//    over the REAL `createTeamRuntime` facade, the REAL `TeamDomain` (durable scratch world, real
+//    repositories), the REAL `ControlService`, the REAL messaging coordinator and activity ledger.
+//    Every create / archive / delegate / collect below runs the tool's OWN `execute` body.
+//  * the CENTRE: `installMemberCentre` (the ONE composition point) for the Leader and
+//    `installMemberExecution` (the product member composition: binding, durable fact ledger, per-member
+//    settlement store, crash recovery, native-mount lifecycle) for every member. No admission point is
+//    installed by hand and no lane is rebuilt: the binding is `bindingFromCompiledMember`'s projection.
+//  * the FACTS and the SETTLEMENTS: read back from DISK through FRESH ledger/store objects.
+//  * HOST STAND-INS (the parts a boot would supply, each carrying NO policy and deciding nothing):
+//    (a) the agent-context double runs the host's own dispatch ORDER (pre-execute waterfall -> guard ->
+//    body -> `tools/result`); (b) a member's "live agent handle" is an object whose `dispose()` runs the
+//    disposers `installMemberExecution` registered — exactly what `agent-bindings.mjs` does
+//    (`onDispose: (dispose) => toolDisposers.push(dispose)`) and what the lifecycle's
+//    `release-residency` step calls; (c) the child-session factory is where a created member's centre is
+//    installed, i.e. the product's member-bind moment; (d) the work delivery port is the host's
+//    session-input seam. The compiled member answer is an INPUT (a ceiling), not a decision.
+//
+// WHAT THIS DOES NOT PROVE: no host boot, so NO ROW BECOMES PRODUCT-PROVEN. The archived member's
+// PRODUCT ROUTE refuses at the durable lifecycle gate before the centre is reached; what these arms
+// prove is the centre's own tombstone on the member's layer, which is the guarantee the row names.
+
+const C_LEADER = 'inst-leader'
+
+/** The arm's compiled-answer INPUT for one member (the shape `installMemberExecution` consumes). */
+const cCompiledAnswer = ({ instanceId, templateId, revision, read, write }) => ({
+  members: [{
+    identity: { instanceId, instanceGeneration: 1 },
+    definitionSource: '@deepseek-ai/dsh-tool-fs',
+    policy: {
+      ok: true,
+      value: {
+        memberIdentity: instanceId,
+        templateId,
+        instanceGeneration: 1,
+        revision,
+        read: lane(read),
+        write: lane(write),
+        network: { access: 'deny' },
+      },
+    },
+  }],
+})
+
+/**
+ * The host's dispatch order, as one double: every pre-execute listener in order, then the guard, then
+ * the body, then `tools/result`. It decides nothing — it is the HOST, and the verdicts come from the
+ * centre installed on the same ctx.
+ */
+const cHost = () => {
+  const listeners = { pre: [], result: [] }
+  let guardFn
+  const ctx = {
+    get: (name) => (name === 'tools'
+      ? { guard (fn) { guardFn = fn; return () => { guardFn = undefined } } }
+      : undefined),
+    on: (event, fn) => {
+      const target = event === 'tools/pre-execute' ? listeners.pre : event === 'tools/result' ? listeners.result : undefined
+      if (target === undefined) return () => {}
+      target.push(fn)
+      return () => {
+        const at = target.indexOf(fn)
+        if (at >= 0) target.splice(at, 1)
+      }
+    },
+  }
+  return {
+    ctx,
+    preExecute: async (exec) => {
+      const chain = listeners.pre.slice()
+      const step = async (index) => (index >= chain.length ? { kind: 'allow' } : chain[index](exec, () => step(index + 1)))
+      return await step(0)
+    },
+    guard: (exec) => (guardFn === undefined ? undefined : guardFn(exec)),
+    result: (exec, outcome) => {
+      for (const handler of listeners.result.slice()) handler(exec, outcome)
+    },
+  }
+}
+
+/**
+ * Build ONE C-stage assembly: the durable TeamDomain world + the real satellite set + the product tool
+ * surface + the Leader's centre + a centre per member (seeded members at build time, created members at
+ * the child-session factory). The lifecycle STEP ports are installed, so archive runs the production
+ * quiesce-then-commit procedure and `release-residency` disposes the member's handle.
+ */
+const cStage = async (label, options = {}) => {
+  const { existsSync, mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { createP6T2World, P6T2_ROOT, P6T2_NOW, P6T2_SEEDS, createFakeLifecycleCommitPort, TEST_STATIC_MODEL } = await import('./p6t2-helpers.ts')
+  const { destroyP6T1World } = await import('./p6t1-helpers.ts')
+  const { scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  const { createTeamTools } = await import('../../tools/src/index.ts')
+  const { createP6T6CallerMap, createFakeSessionInput } = await import('../../tools/test/p6t6-helpers.ts')
+  const { createTeamRuntime } = await import('../action-router/index.ts')
+  const { createControlService } = await import('../control/index.ts')
+  const { createMessagingCoordinator } = await import('../messaging/index.ts')
+  const { createActivityLedger, createWorkActivityWriter } = await import('../activity/index.ts')
+  const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
+  const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
+  const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
+
+  const root = String(P6T2_ROOT)
+  const worker = String(P6T2_SEEDS.worker.instanceId)
+  // The p6t1 world uses a DETERMINISTIC scratch dir per basename, so a killed run must not poison the
+  // next one: the dir is removed first and in `destroy()`.
+  destroyDir(scratchDir(label))
+  const world = await createP6T2World(label, options.seed ?? ['leader', 'worker'])
+  const dir = mkdtempSync(join(tmpdir(), `${label}-`))
+  const centreStatePath = dir
+
+  const toolsById = new Map()
+  const members = new Map()
+  const handles = new Map()
+  const bodies = []
+  const deliveries = []
+  const commits = createFakeLifecycleCommitPort(world)
+  let sequence = 0
+
+  /** Install ONE member's centre through the PRODUCT composition, and register its handle. */
+  const installMember = async (member) => {
+    if (members.has(member.instanceId)) return members.get(member.instanceId)
+    const host = cHost()
+    const disposers = []
+    const files = join(centreStatePath, `${member.instanceId}.facts.jsonl`)
+    const entry = { ...member, host, disposers, files }
+    members.set(member.instanceId, entry)
+    handles.set(member.childSessionId, {
+      async dispose () { for (const dispose of disposers.reverse()) dispose() },
+    })
+    entry.state = await installMemberExecution({
+      agentCtx: host.ctx,
+      realm: {},
+      compiledAnswer: cCompiledAnswer({
+        instanceId: member.instanceId,
+        templateId: member.templateId,
+        revision: `rev-${member.instanceId}`,
+        read: options.memberLane ?? ['/work/member'],
+        write: options.memberLane ?? ['/work/member'],
+      }),
+      config: { centreStatePath },
+      sessionId: member.childSessionId,
+      instanceId: member.instanceId,
+      teamRoot: root,
+      workspaceRoot: '/work',
+      onDispose: (dispose) => disposers.push(dispose),
+      onNativeDispose: () => {},
+      observe: () => {},
+    })
+    return entry
+  }
+
+  // ── the Leader's centre: the ONE composition point over its own durable ledger + settlement store ──
+  const leaderHost = cHost()
+  const leaderLedgerPath = join(centreStatePath, `${C_LEADER}.facts.jsonl`)
+  const leaderLedger = openFactLedger({ path: leaderLedgerPath })
+  const leaderStore = createExecutionSettlementStore({ dir: join(centreStatePath, 'settlement', C_LEADER) })
+  const leaderBinding = bindingFromCompiledMember({
+    member: cCompiledAnswer({
+      instanceId: C_LEADER,
+      templateId: 'leader',
+      revision: `rev-${C_LEADER}`,
+      read: options.leaderLane ?? ['/work', '/work/member'],
+      write: options.leaderLane ?? ['/work', '/work/member'],
+    }).members[0],
+    agentId: C_LEADER,
+    instanceId: C_LEADER,
+    sessionId: root,
+    workspaceRoot: '/work',
+    owner: root,
+  })
+  let currentBinding = leaderBinding
+  const leaderIdentity = (exec) => ({
+    executionId: dispatchExecutionId({ rootSessionId: root, agentInstanceId: C_LEADER }, exec.callId),
+    actorId: C_LEADER,
+    worldId: root,
+  })
+  installMemberCentre({
+    ctx: leaderHost.ctx,
+    binding: leaderBinding,
+    resolveBinding: () => currentBinding,
+    recordAdmission: (fact) => leaderLedger.recordAdmission(fact),
+    recordExecution: (fact) => leaderLedger.recordExecution(fact),
+    isReplay: (callId) => leaderLedger.has(callId),
+    recordReplay: (input) => leaderLedger.recordReplayRefusal(input),
+    store: leaderStore,
+    identityOf: leaderIdentity,
+  })
+
+  // ── a created member's centre at the CHILD SESSION FACTORY (the product's member-bind moment) ─────
+  const factory = world.childFactory
+  const originalCreate = factory.createChildSession.bind(factory)
+  factory.createChildSession = async (request) => {
+    const made = await originalCreate(request)
+    const instanceId = String(request.instanceId)
+    if (!members.has(instanceId)) {
+      await installMember({ instanceId, childSessionId: String(made.childSessionId), templateId: String(request.templateId) })
+    }
+    return made
+  }
+
+  // ── a seeded member is bound at BOOT (its row exists before any tool call) ────────────────────────
+  if (options.seedCentres !== false) {
+    for (const row of world.domain.repositories.memberInstances.list(root)) {
+      const instanceId = String(row.instanceId)
+      if (instanceId === C_LEADER || String(row.lifecycle) === 'DISPOSED' || row.childSessionId === undefined) continue
+      await installMember({ instanceId, childSessionId: String(row.childSessionId), templateId: String(row.templateId) })
+    }
+  }
+
+  // ── the satellites + the product tool surface ─────────────────────────────────────────────────────
+  const deliveryBody = options.deliveryBody ?? 'C-STAGE-MEMBER-BODY'
+  const workDelivery = {
+    async deliver (args) {
+      deliveries.push({ requestToken: String(args.requestToken), prompt: args.prompt })
+      return { requestToken: String(args.requestToken), status: 'succeeded', body: deliveryBody }
+    },
+  }
+  const residency = {
+    has: (sessionId) => handles.has(String(sessionId)),
+    hasResidency: (sessionId) => handles.has(String(sessionId)),
+    dropResidency (sessionId) {
+      const handle = handles.get(String(sessionId))
+      if (handle === undefined) return false
+      handles.delete(String(sessionId))
+      // The sync port cannot await; the handle's dispose runs the centre's LIFECYCLE CLOSE synchronously
+      // (ADM-59: the point stays installed in its closed mode and refuses with ADMISSION_MEMBER_CLOSED).
+      void handle.dispose()
+      return true
+    },
+  }
+  const lifecyclePorts = {
+    teamDomain: world.domain,
+    commit: commits,
+    admission: { closeNewWork: async () => {}, reopenNewWork: async () => {} },
+    activity: { interrupt: () => {} },
+    descendants: { drainDescendants: async () => ({ drained: 0, quiescent: true }) },
+    residency,
+  }
+  const runtime = createTeamRuntime({
+    teamDomain: world.domain,
+    activationProvider: world.provider,
+    blueprintCatalog: world.catalog,
+    environmentFacts: world.ports.environmentFacts,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    staticModel: TEST_STATIC_MODEL,
+    now: () => P6T2_NOW,
+    lifecycleCommit: commits,
+    lifecyclePorts,
+    workDelivery,
+    workActivity: createWorkActivityWriter({ teamDomain: world.domain, now: () => P6T2_NOW }),
+  })
+  const control = createControlService({
+    teamDomain: world.domain,
+    blueprintCatalog: world.catalog,
+    externalPolicyFacts: world.ports.externalPolicyFacts,
+    now: () => P6T2_NOW,
+  })
+  const sessionInput = createFakeSessionInput()
+  const messaging = createMessagingCoordinator({ teamRuntime: runtime, teamDomain: world.domain, sessionInput, now: () => P6T2_NOW })
+  const activity = createActivityLedger({ teamDomain: world.domain, runtime, now: () => P6T2_NOW })
+  const callerMap = createP6T6CallerMap(options.seed ?? ['leader', 'worker'])
+  const { tools } = createTeamTools({
+    teamRuntime: runtime,
+    controlService: control,
+    messaging,
+    activity,
+    async resolveCaller (sessionId) {
+      const caller = callerMap.bySession.get(sessionId)
+      if (caller === undefined) throw new Error(`C-stage caller map: no caller for session ${sessionId}`)
+      return { caller, rootSessionId: root }
+    },
+  })
+  for (const definition of tools) toolsById.set(definition.name, definition)
+
+  /** The host dispatch of ONE product tool on the LEADER's own centre. */
+  const leaderDispatch = async (name, args) => {
+    const callId = `${label}-leader-${++sequence}`
+    const exec = { name, callId, arguments: { rootSessionId: root, ...args }, agent: { id: root }, turn: 1, step: 1 }
+    const verdict = await leaderHost.preExecute(exec)
+    if (verdict.kind !== 'allow') {
+      leaderHost.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      return { callId, verdict, bodyRan: false, result: undefined }
+    }
+    const reason = leaderHost.guard(exec)
+    if (reason !== undefined) {
+      leaderHost.result(exec, { isError: true, error: { message: String(reason) } })
+      return { callId, verdict: { kind: 'deny', reason }, bodyRan: false, result: undefined }
+    }
+    const definition = toolsById.get(name)
+    if (definition === undefined) throw new Error(`C-stage: the world has no tool named ${name}`)
+    bodies.push(name)
+    // A typed tool rejection is a RESULT, not a host error (the tool layer's own contract), so only a
+    // THROWN body is `isError`.
+    const result = await definition.execute(exec.arguments, exec)
+    leaderHost.result(exec, { isError: false })
+    return { callId, verdict: { kind: 'allow' }, bodyRan: true, result }
+  }
+
+  /** The host dispatch of ONE call on a MEMBER's own centre (the member's own layer). */
+  const memberDispatch = async (instanceId, name, args, callId) => {
+    const member = members.get(instanceId)
+    if (member === undefined) throw new Error(`C-stage: no member centre installed for ${instanceId}`)
+    const exec = { name, callId, arguments: args, agent: { id: member.childSessionId }, turn: 1, step: 1 }
+    const verdict = await member.host.preExecute(exec)
+    if (verdict.kind !== 'allow') {
+      member.host.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      return { callId, verdict, bodyRan: false }
+    }
+    const reason = member.host.guard(exec)
+    if (reason !== undefined) {
+      member.host.result(exec, { isError: true, error: { message: String(reason) } })
+      return { callId, verdict: { kind: 'deny', reason }, bodyRan: false }
+    }
+    // The member's tool BODY is not this round's subject (the ladder owns the native bodies); the call
+    // is observed as having reached the body so a refusal can be told from an execution.
+    member.host.result(exec, { isError: false })
+    return { callId, verdict: { kind: 'allow' }, bodyRan: true }
+  }
+
+  /** One call on the LEADER's centre with NO product body (a non-team tool: the axis is the subject). */
+  const leaderProbe = async (name, args, callId) => {
+    const exec = { name, callId, arguments: args, agent: { id: root }, turn: 1, step: 1 }
+    const verdict = await leaderHost.preExecute(exec)
+    if (verdict.kind !== 'allow') {
+      leaderHost.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      return { callId, verdict, bodyRan: false }
+    }
+    const reason = leaderHost.guard(exec)
+    if (reason !== undefined) {
+      leaderHost.result(exec, { isError: true, error: { message: String(reason) } })
+      return { callId, verdict: { kind: 'deny', reason }, bodyRan: false }
+    }
+    leaderHost.result(exec, { isError: false })
+    return { callId, verdict: { kind: 'allow' }, bodyRan: true }
+  }
+
+  /** Facts, read back from DISK through a FRESH ledger (never the in-memory writer). */
+  const factsOf = (path) => openFactLedger({ path }).readAll()
+  const memberSettlementOf = (instanceId, callId) => {
+    const store = createExecutionSettlementStore({ dir: join(centreStatePath, 'settlement', instanceId) })
+    return store.read(dispatchExecutionId({ rootSessionId: root, agentInstanceId: instanceId }, callId))
+  }
+
+  return {
+    label,
+    root,
+    worker,
+    dir,
+    world,
+    runtime,
+    control,
+    tools,
+    toolsById,
+    commits,
+    bodies,
+    deliveries,
+    handles,
+    members,
+    leader: {
+      host: leaderHost,
+      ledgerPath: leaderLedgerPath,
+      store: leaderStore,
+      binding: leaderBinding,
+      setBinding (value) { currentBinding = value },
+      dispatch: leaderDispatch,
+      facts: () => factsOf(leaderLedgerPath),
+      probe: leaderProbe,
+      settlementOf: (callId) => leaderStore.read(leaderIdentity({ callId }).executionId),
+      identityOf: leaderIdentity,
+    },
+    memberOf: (instanceId) => members.get(instanceId),
+    memberFacts: (instanceId) => {
+      const member = members.get(instanceId)
+      if (member === undefined) throw new Error(`C-stage: no member ${instanceId}`)
+      return existsSync(member.files) ? factsOf(member.files) : []
+    },
+    memberSettlementOf,
+    memberDispatch,
+    lifecycleRows: () => world.domain.repositories.memberInstances.list(root),
+    async destroy () {
+      try { await destroyP6T1World(world) } catch { /* a world already closed is not a test failure */ }
+      destroyDir(dir)
+    },
+  }
+}
+
+// The 15 tools' arguments, built per name. The bodies are the PRODUCT bodies; a body's own typed
+// rejection is allowed (the claim here is ADMISSION on team.control plus a recorded fact), but the arm
+// asserts every body was REACHED, so a centre that silently refused could not pass.
+const cToolArgs = (state) => ({
+  team_list_members: {},
+  team_list_templates: {},
+  team_inspect_config: { targetInstanceId: state.worker },
+  team_create_member: { delegationTemplateId: 'scout', label: 'c-tools-scout' },
+  team_delegate: { delegationInstanceId: state.worker, label: 'c-tools-work', prompt: 'c-tools: deliver this unit', async: false },
+  team_follow_up: { targetInstanceId: state.worker, prompt: 'c-tools: follow this up', async: false },
+  team_collect: { requestTokens: ['c-tools-absent'] },
+  team_send_message: { recipientInstanceId: state.worker, body: 'c-tools message body' },
+  team_report_progress: { instanceId: state.worker, subject: 'c-tools', progress: 'in-progress' },
+  team_request_control: { kind: 'leader-approval', targetInstanceId: state.worker, actionName: 'archive-member' },
+  team_resolve_control: { requestId: 'ctl-c-tools-absent', decision: 'deny' },
+  team_list_pending_control: {},
+  team_archive_member: { targetInstanceId: state.created ?? state.worker },
+  team_grant_permission: { targetInstanceId: state.worker, rules: [{ operationClass: 'fs.write', matcher: { kind: 'exact', value: '/work/member/x.txt' }, effect: 'allow' }] },
+  team_revoke_permission: { targetInstanceId: state.worker, rules: [{ operationClass: 'fs.write', matcher: { kind: 'exact', value: '/work/member/x.txt' }, effect: 'allow' }] },
+})
+
+const cToken = (name) => `tok-${name.replace(/^team_/u, '').replace(/_/gu, '-')}`
+
+test('ADM-89 — C-tools: every one of the closed 15 is ADMITTED on team.control through the product tool surface, and records a fact', async () => {
+  const stage = await cStage('vnext-c-tools')
+  try {
+    const state = { worker: stage.worker, created: undefined }
+    const runs = []
+    for (const name of CENTRE_TOOL_NAMES) {
+      const run = await stage.leader.dispatch(name, { requestToken: cToken(name), ...cToolArgs(state)[name] })
+      runs.push({ name, ...run })
+      if (name === 'team_create_member' && run.result?.status === 'executed') state.created = run.result.effect.instanceId
+    }
+    // (1) ADMISSION — all 15, in the centre's own order, allowed BEFORE the body and then executed.
+    assert.deepEqual(runs.map((run) => run.name), [...CENTRE_TOOL_NAMES], 'the closed 15 are driven in their declared order')
+    for (const run of runs) {
+      assert.equal(run.verdict.kind, 'allow', `${run.name} must be admitted for a bound agent`)
+      assert.equal(run.bodyRan, true, `${run.name} reached its product body`)
+      assert.notEqual(run.result, undefined, `${run.name} returned its lossless result`)
+    }
+    assert.equal(stage.bodies.length, CENTRE_TOOL_NAMES.length, 'every tool ran its body exactly once')
+    assert.notEqual(state.created, undefined, 'team_create_member produced a real TeamDomain member')
+    assert.equal(stage.lifecycleRows().some((row) => String(row.instanceId) === state.created), true)
+
+    // (2) THE DURABLE FACTS, read back from disk with a FRESH ledger: one authority fact per call, on
+    //     team.control, attributed to the Leader's member identity and its compiled generation.
+    const facts = stage.leader.facts()
+    const authority = facts.filter((record) => record.kind === 'invocation-authority')
+    assert.equal(authority.length, CENTRE_TOOL_NAMES.length)
+    assert.deepEqual(authority.map((record) => record.toolName), [...CENTRE_TOOL_NAMES])
+    for (const fact of authority) {
+      assert.equal(fact.axis, 'team.control', `${fact.toolName} is centre-owned, not judged on an fs/net lane`)
+      assert.equal(fact.decision, 'allow')
+      assert.equal(fact.agentId, C_LEADER)
+      assert.equal(fact.instanceId, C_LEADER)
+      assert.equal(fact.sessionId, stage.root)
+      assert.equal(fact.owner, stage.root)
+      assert.equal(fact.policyGeneration, `rev-${C_LEADER}`)
+      assert.equal(fact.instanceGeneration, 1)
+      assert.equal(fact.refusalCode, undefined)
+      assert.equal(fact.locator, '', 'a centre tool has NO locator: recording a path nobody judged would be worse than none')
+    }
+    assert.equal(facts.filter((record) => record.kind === 'execution').length, CENTRE_TOOL_NAMES.length)
+    for (const run of runs) {
+      const settled = stage.leader.settlementOf(run.callId)
+      assert.equal(settled.state, 'COMPLETED', `${run.name} settled COMPLETED`)
+      assert.equal(settled.observation.dispatch, 'quiesced')
+      assert.equal(settled.observation.bodyOutcome, 'completed')
+    }
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-90 — C-tools: an UNBOUND agent is REFUSED for all 15, with the A1 code, zero bodies and REFUSED/not-started settlements', async () => {
+  const stage = await cStage('vnext-c-tools-unbound')
+  try {
+    // The SAME world, the SAME tool set: only the centre's binding is removed (the A1 law's input).
+    stage.leader.setBinding(undefined)
+    const state = { worker: stage.worker, created: undefined }
+    const runs = []
+    for (const name of CENTRE_TOOL_NAMES) {
+      runs.push({ name, ...(await stage.leader.dispatch(name, { requestToken: cToken(name), ...cToolArgs(state)[name] })) })
+    }
+    for (const run of runs) {
+      assert.equal(run.verdict.kind, 'deny', `${run.name} must be refused for an unbound agent`)
+      assert.match(String(run.verdict.reason), /ADMISSION_NO_BINDING/u, `${run.name}: the unwired call is refused, not forwarded`)
+      assert.equal(run.bodyRan, false, `${run.name}: ZERO side effects`)
+    }
+    assert.equal(stage.bodies.length, 0, 'no tool body ran for any of the 15')
+    assert.equal(stage.deliveries.length, 0, 'no work was delivered')
+    assert.equal(stage.lifecycleRows().length, 2, 'no member was created (the runtime was never reached)')
+
+    const facts = stage.leader.facts()
+    const authority = facts.filter((record) => record.kind === 'invocation-authority')
+    assert.equal(authority.length, CENTRE_TOOL_NAMES.length)
+    for (const fact of authority) {
+      assert.equal(fact.decision, 'deny')
+      assert.equal(fact.refusalCode, 'ADMISSION_NO_BINDING')
+      assert.equal(fact.agentId, '', 'a refused unbound call has no agent identity to claim')
+      assert.equal(fact.axis, 'team.control', 'the axis is the tool\'s, even when the identity is absent')
+    }
+    // A refusal writes the EXECUTION fact too (nothing ran), so the durable record can tell a refused
+    // call from a call that was never attempted.
+    const execution = facts.filter((record) => record.kind === 'execution')
+    assert.equal(execution.length, CENTRE_TOOL_NAMES.length)
+    for (const record of execution) {
+      assert.equal(record.refusalCode, 'ADMISSION_NO_BINDING')
+      assert.equal(record.outcome, 'admission-refusal', 'the execution fact says the refusal was the admission\'s')
+    }
+    for (const run of runs) {
+      const settled = stage.leader.settlementOf(run.callId)
+      assert.equal(settled.state, 'REFUSED')
+      assert.equal(settled.observation.dispatch, 'not-started')
+      assert.equal(settled.observation.bodyOutcome, 'not-started')
+    }
+
+    // POSITIVE CONTROL, same world: restoring the binding admits the same tool (the refusal is the
+    // absent binding, not a broken assembly).
+    stage.leader.setBinding(stage.leader.binding)
+    const restored = await stage.leader.dispatch('team_list_members', { requestToken: 'tok-restored' })
+    assert.equal(restored.verdict.kind, 'allow')
+    assert.equal(restored.bodyRan, true)
+    assert.equal(stage.leader.settlementOf(restored.callId).state, 'COMPLETED')
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-91 — C-tools: a tool NOT in the closed list is refused by name, never silently admitted', async () => {
+  const { readFileSync } = await import('node:fs')
+  const stage = await cStage('vnext-c-tools-unlisted')
+  try {
+    // The closed list is the admission table AND the created set (ADM-31's two-way pin, re-read here so
+    // "not in the list" cannot be a stale literal in this arm).
+    const source = readFileSync(new URL('../../../packages/tools/src/tools.ts', import.meta.url), 'utf8')
+    for (const absent of ['team_delete_team', 'team_promote_member']) {
+      assert.equal(CENTRE_TOOL_NAMES.includes(absent), false)
+      assert.equal(source.includes(`name: '${absent}'`), false, `${absent} is not a product tool — so admitting it would be invention`)
+
+      const run = await stage.leader.dispatch(absent, { requestToken: cToken(absent) })
+      assert.equal(run.verdict.kind, 'deny', `${absent} must NOT be admitted`)
+      assert.match(String(run.verdict.reason), /ADMISSION_TOOL_UNBOUND/u, 'an unclassified tool is refused by name')
+      assert.equal(run.bodyRan, false, 'ZERO side effects')
+      const fact = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === absent)
+      assert.equal(fact.decision, 'deny')
+      assert.equal(fact.refusalCode, 'ADMISSION_TOOL_UNBOUND')
+      const settled = stage.leader.settlementOf(run.callId)
+      assert.equal(settled.state, 'REFUSED')
+      assert.equal(settled.observation.dispatch, 'not-started')
+    }
+    // The refusal is NOT a blanket: the same centre admits a CLASSIFIED tool on its own axis, so a green
+    // here cannot come from a permanently-denying assembly.
+    const read = await stage.leader.probe('read', { file_path: '/work/member/doc.txt' }, 'c-tools-read-probe')
+    assert.equal(read.verdict.kind, 'allow')
+    const readFact = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === 'read')
+    assert.equal(readFact.axis, 'fs.read')
+    assert.equal(readFact.decision, 'allow')
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-92 — C-member: create through the tool surface records the authority fact and installs the MEMBER\'s own centre', async () => {
+  const { existsSync } = await import('node:fs')
+  const stage = await cStage('vnext-c-member-create')
+  try {
+    const created = await stage.leader.dispatch('team_create_member', {
+      requestToken: 'tok-c-member-create',
+      delegationTemplateId: 'scout',
+      label: 'c-member-scout',
+    })
+    assert.equal(created.verdict.kind, 'allow')
+    assert.equal(created.result.status, 'executed')
+    assert.equal(created.result.effect.kind, 'member-activated')
+    const instanceId = created.result.effect.instanceId
+    const childSessionId = created.result.effect.childSessionId
+
+    // (1) the LEADER's authority fact for the lifecycle operation, read back from disk.
+    const fact = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === 'team_create_member')
+    assert.equal(fact.axis, 'team.control')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.instanceId, C_LEADER)
+    assert.equal(stage.leader.settlementOf(created.callId).state, 'COMPLETED')
+
+    // (2) the REAL product object: the durable member row the create committed.
+    const row = stage.lifecycleRows().find((candidate) => String(candidate.instanceId) === instanceId)
+    assert.notEqual(row, undefined)
+    assert.equal(String(row.templateId), 'scout')
+    assert.equal(String(row.childSessionId), childSessionId)
+
+    // (3) the MEMBER'S OWN CENTRE EXISTS: its durable ledger was opened at the member bind, and it is
+    //     EMPTY (no call has been judged yet) — a centre that already carried facts would be a copy.
+    const member = stage.memberOf(instanceId)
+    assert.notEqual(member, undefined, 'the created member is bound to its own centre')
+    assert.notEqual(member.state, undefined, 'installMemberExecution returned the member\'s centre state')
+    assert.equal(member.state.binding.agentId, instanceId, 'the centre\'s binding is the MEMBER\'s own identity')
+    assert.equal(member.state.binding.sessionId, childSessionId)
+    assert.deepEqual(stage.memberFacts(instanceId), [], 'no call has been judged yet, so no fact exists')
+
+    // (4) THE MEMBER'S CALLS ARE JUDGED BY THE MEMBER'S CENTRE: an in-lane read is admitted and recorded
+    //     in the MEMBER's ledger, not the Leader's.
+    const memberCall = await stage.memberDispatch(instanceId, 'read', { file_path: '/work/member/doc.txt' }, 'c-member-read-1')
+    assert.equal(memberCall.verdict.kind, 'allow')
+    assert.equal(existsSync(member.files), true, 'the member\'s durable fact ledger exists after its first call')
+    const memberFacts = stage.memberFacts(instanceId).filter((record) => record.kind === 'invocation-authority')
+    assert.equal(memberFacts.length, 1)
+    assert.equal(memberFacts[0].kind, 'invocation-authority')
+    assert.equal(memberFacts[0].toolName, 'read')
+    assert.equal(memberFacts[0].axis, 'fs.read')
+    assert.equal(memberFacts[0].agentId, instanceId)
+    assert.equal(memberFacts[0].instanceId, instanceId)
+    assert.equal(memberFacts[0].policyGeneration, `rev-${instanceId}`, 'the member\'s own compiled generation, not the Leader\'s')
+    assert.equal(stage.memberSettlementOf(instanceId, 'c-member-read-1').state, 'COMPLETED')
+    assert.equal(stage.leader.facts().some((record) => record.kind === 'invocation-authority' && record.toolName === 'read'), false,
+      'the member\'s call never reaches the Leader\'s ledger')
+
+    // (5) NEGATIVE CONTROL: the member's own lane is narrower than the Leader's, so the SAME locator is
+    //     refused by the MEMBER's centre while the Leader's centre allows it — the judgement belongs to
+    //     that member, not to the leader.
+    const refused = await stage.memberDispatch(instanceId, 'read', { file_path: '/work/shared/other.txt' }, 'c-member-read-2')
+    assert.equal(refused.verdict.kind, 'deny')
+    assert.match(String(refused.verdict.reason), /LANE_DENY/u)
+    const leaderSame = await stage.leader.probe('read', { file_path: '/work/shared/other.txt' }, 'c-member-leader-read')
+    assert.equal(leaderSame.verdict.kind, 'allow')
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-93 — C-member: archive through the tool surface CLOSES the member\'s own centre; a later call is ADMISSION_MEMBER_CLOSED, not admitted and not UNKNOWN', async () => {
+  const stage = await cStage('vnext-c-member-archive')
+  try {
+    const created = await stage.leader.dispatch('team_create_member', {
+      requestToken: 'tok-c-archive-create',
+      delegationTemplateId: 'scout',
+      label: 'c-archive-scout',
+    })
+    assert.equal(created.result.status, 'executed')
+    const instanceId = created.result.effect.instanceId
+    const member = stage.memberOf(instanceId)
+
+    // Make the member legally archivable through the SAME tool surface: one synchronous work unit takes
+    // it through the real FSM (CREATED -> RUNNING -> SETTLED, committed through the real repository CAS).
+    const work = await stage.leader.dispatch('team_delegate', {
+      requestToken: 'tok-c-archive-work',
+      delegationInstanceId: instanceId,
+      label: 'c-archive-work',
+      prompt: 'c-archive: one unit of work',
+      async: false,
+    })
+    assert.equal(work.result.status, 'executed')
+    assert.equal(work.result.effect.settled, true)
+    assert.equal(String(stage.lifecycleRows().find((row) => String(row.instanceId) === instanceId).lifecycle), 'SETTLED')
+
+    // POSITIVE CONTROL, before the archive: the member's centre ADMITS a call (so the tombstone below is
+    // the archive's, not an assembly that never worked).
+    const before = await stage.memberDispatch(instanceId, 'read', { file_path: '/work/member/before.txt' }, 'c-member-before-archive')
+    assert.equal(before.verdict.kind, 'allow')
+
+    // THE ARCHIVE, through the product's own tool.
+    const archived = await stage.leader.dispatch('team_archive_member', {
+      requestToken: 'tok-c-archive-op',
+      targetInstanceId: instanceId,
+    })
+    assert.equal(archived.verdict.kind, 'allow')
+    assert.equal(archived.result.status, 'executed')
+    assert.equal(archived.result.effect.kind, 'lifecycle-changed')
+    assert.equal(archived.result.effect.to, 'ARCHIVED')
+    const archiveFact = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === 'team_archive_member')
+    assert.equal(archiveFact.axis, 'team.control')
+    assert.equal(archiveFact.decision, 'allow')
+    assert.equal(stage.leader.settlementOf(archived.callId).state, 'COMPLETED')
+
+    // the durable product state, and the handle released by the lifecycle's `release-residency` step.
+    assert.equal(String(stage.lifecycleRows().find((candidate) => String(candidate.instanceId) === instanceId).lifecycle), 'ARCHIVED')
+    assert.equal(stage.handles.has(member.childSessionId), false, 'the member\'s handle was released by the archive procedure')
+
+    // (1) THE MEMBER'S CENTRE IS CLOSED: its pre-close fact survives (nothing is rewritten) and the NEXT
+    //     call is refused with the lifecycle code, recorded on the member's own ledger.
+    assert.equal(stage.memberFacts(instanceId).filter((record) => record.kind === 'invocation-authority').length, 1)
+    const after = await stage.memberDispatch(instanceId, 'read', { file_path: '/work/member/after.txt' }, 'c-member-after-archive')
+    assert.equal(after.verdict.kind, 'deny')
+    assert.match(String(after.verdict.reason), /ADMISSION_MEMBER_CLOSED/u, 'a closed centre refuses with its OWN code, not a lane denial')
+    assert.equal(after.bodyRan, false, 'ZERO side effects after the close')
+    const facts = stage.memberFacts(instanceId).filter((record) => record.kind === 'invocation-authority')
+    assert.equal(facts.length, 2)
+    assert.equal(facts[0].callId, 'c-member-before-archive', 'the pre-close fact is untouched')
+    assert.equal(facts[1].callId, 'c-member-after-archive')
+    assert.equal(facts[1].decision, 'deny')
+    assert.equal(facts[1].refusalCode, 'ADMISSION_MEMBER_CLOSED')
+    assert.equal(facts[1].agentId, instanceId, 'the closed centre still names WHICH member refused')
+
+    // (2) NOT ADMITTED, NOT UNKNOWN: the product settlement says REFUSED and nothing started.
+    const settled = stage.memberSettlementOf(instanceId, 'c-member-after-archive')
+    assert.equal(settled.state, 'REFUSED')
+    assert.equal(settled.state === 'UNKNOWN', false, 'a closed member\'s call is a decision, not an unknown')
+    assert.equal(settled.observation.dispatch, 'not-started')
+    assert.equal(settled.observation.bodyOutcome, 'not-started')
+    assert.deepEqual(settled.transitions.map((transition) => transition.to), ['ADMITTED', 'REFUSED'])
+    assert.match(String(settled.terminalReason), /ADMISSION_MEMBER_CLOSED/u, 'the durable record carries the code, not prose')
+
+    // (3) THE CLOSE IS PER MEMBER: the Leader's centre still admits its own calls.
+    const leaderStill = await stage.leader.dispatch('team_list_members', { requestToken: 'tok-after-archive' })
+    assert.equal(leaderStill.verdict.kind, 'allow')
+    assert.equal(stage.leader.settlementOf(leaderStill.callId).state, 'COMPLETED')
+
+    // (4) NEGATIVE CONTROL: archiving the ARCHIVED target again is not a second success and commits
+    //     nothing.
+    const commitsBefore = stage.commits.calls.length
+    const again = await stage.leader.dispatch('team_archive_member', { requestToken: 'tok-c-archive-again', targetInstanceId: instanceId })
+    assert.equal(again.result.status === 'executed', false, 'a non-live target is not archived twice')
+    assert.equal(stage.commits.calls.length, commitsBefore, 'no second durable lifecycle commit')
+    assert.equal(String(stage.lifecycleRows().find((candidate) => String(candidate.instanceId) === instanceId).lifecycle), 'ARCHIVED')
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-94 — C-work: delegate -> collect through the tool surface delivers the unit, and the collected work\'s own member calls are judged by THAT member\'s centre', async () => {
+  const stage = await cStage('vnext-c-work')
+  try {
+    // (1) DELEGATE through the product tool: one synchronous unit on the seeded worker, delivered
+    //     through the work-delivery port and settled durably.
+    const delegated = await stage.leader.dispatch('team_delegate', {
+      requestToken: 'tok-c-work-delegate',
+      delegationInstanceId: stage.worker,
+      label: 'c-work-unit',
+      prompt: 'c-work: the exact delivered prompt',
+      async: false,
+    })
+    assert.equal(delegated.verdict.kind, 'allow')
+    assert.equal(delegated.result.status, 'executed')
+    assert.equal(delegated.result.effect.kind, 'work-admitted')
+    assert.equal(delegated.result.effect.instanceId, stage.worker)
+    assert.equal(delegated.result.effect.settled, true, 'the work unit settled through the delivery chain')
+    assert.equal(delegated.result.effect.memberResult.body, 'C-STAGE-MEMBER-BODY')
+    assert.deepEqual(stage.deliveries, [{ requestToken: 'tok-c-work-delegate', prompt: 'c-work: the exact delivered prompt' }],
+      'the PROMPT reached the host delivery seam verbatim')
+
+    // the LEADER's durable record of the delegation, read back from disk.
+    const fact = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === 'team_delegate')
+    assert.equal(fact.axis, 'team.control', 'delegation is centre-owned authority, not an fs/net lane')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(stage.leader.settlementOf(delegated.callId).state, 'COMPLETED')
+
+    // (2) COLLECT through the product tool: the terminal state comes back from the durable work status.
+    const collected = await stage.leader.dispatch('team_collect', {
+      requestToken: 'tok-c-work-collect',
+      requestTokens: ['tok-c-work-delegate'],
+    })
+    assert.equal(collected.result.status, 'executed')
+    assert.equal(collected.result.effect.kind, 'work-status')
+    const entry = collected.result.effect.entries.find((candidate) => candidate.requestToken === 'tok-c-work-delegate')
+    assert.notEqual(entry, undefined)
+    assert.equal(entry.status, 'succeeded')
+    assert.equal(entry.instanceId, stage.worker)
+    assert.equal(typeof entry.settledSequence, 'number')
+    assert.equal(entry.memberResult.body, 'C-STAGE-MEMBER-BODY')
+    assert.equal(stage.leader.settlementOf(collected.callId).state, 'COMPLETED')
+
+    // (3) THE COLLECTED WORK'S OWN MEMBER CALLS ARE JUDGED BY THAT MEMBER'S CENTRE. The member's lane is
+    //     narrower than the Leader's, and both facts are read back from their OWN ledgers.
+    const inLane = await stage.memberDispatch(stage.worker, 'read', { file_path: '/work/member/doc.txt' }, 'c-work-member-1')
+    assert.equal(inLane.verdict.kind, 'allow')
+    const outOfLane = await stage.memberDispatch(stage.worker, 'read', { file_path: '/work/shared/doc.txt' }, 'c-work-member-2')
+    assert.equal(outOfLane.verdict.kind, 'deny')
+    assert.match(String(outOfLane.verdict.reason), /LANE_DENY/u)
+    assert.match(String(outOfLane.verdict.reason), new RegExp(`policy generation rev-${stage.worker}`, 'u'),
+      'the refusal names the MEMBER\'s generation')
+
+    const memberFacts = stage.memberFacts(stage.worker).filter((record) => record.kind === 'invocation-authority')
+    assert.equal(memberFacts.length, 2)
+    for (const record of memberFacts) {
+      assert.equal(record.agentId, stage.worker)
+      assert.equal(record.instanceId, stage.worker)
+      assert.equal(record.policyGeneration, `rev-${stage.worker}`)
+      assert.equal(record.owner, stage.root)
+    }
+    assert.equal(memberFacts[0].decision, 'allow')
+    assert.equal(memberFacts[1].decision, 'deny')
+    assert.equal(stage.memberSettlementOf(stage.worker, 'c-work-member-1').state, 'COMPLETED')
+    assert.equal(stage.memberSettlementOf(stage.worker, 'c-work-member-2').state, 'REFUSED')
+
+    // and the LEADER's centre does NOT share the member's judgement: the same locator is allowed there.
+    const leaderSame = await stage.leader.probe('read', { file_path: '/work/shared/doc.txt' }, 'c-work-leader-read')
+    assert.equal(leaderSame.verdict.kind, 'allow')
+    const leaderReadFacts = stage.leader.facts().filter((record) => record.kind === 'invocation-authority' && record.toolName === 'read')
+    assert.equal(leaderReadFacts.length, 1, 'the Leader\'s ledger holds only the Leader\'s own read')
+    assert.equal(leaderReadFacts[0].callId, leaderSame.callId)
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-95 — C-work negative: a refused delegation delivers NOTHING and admits no work; the collect stays a read with an unknown entry', async () => {
+  const stage = await cStage('vnext-c-work-negative')
+  try {
+    // The A1 law at the delegation itself: no binding, no delegation — and no delivery.
+    stage.leader.setBinding(undefined)
+    const refused = await stage.leader.dispatch('team_delegate', {
+      requestToken: 'tok-c-work-refused',
+      delegationInstanceId: stage.worker,
+      label: 'c-work-refused',
+      prompt: 'c-work: this must never be delivered',
+      async: false,
+    })
+    assert.equal(refused.verdict.kind, 'deny')
+    assert.match(String(refused.verdict.reason), /ADMISSION_NO_BINDING/u)
+    assert.equal(refused.bodyRan, false)
+    assert.equal(stage.deliveries.length, 0, 'ZERO delivery: a refused delegation reaches no member turn')
+    assert.equal(String(stage.lifecycleRows().find((candidate) => String(candidate.instanceId) === stage.worker).lifecycle), 'RUNNING',
+      'the target was not moved by a refused admission')
+    assert.equal(stage.commits.calls.length, 0, 'no lifecycle commit for a refused admission')
+    const refusal = stage.leader.facts().find((record) => record.kind === 'invocation-authority' && record.toolName === 'team_delegate')
+    assert.equal(refusal.refusalCode, 'ADMISSION_NO_BINDING')
+    assert.equal(stage.leader.settlementOf(refused.callId).state, 'REFUSED')
+
+    // With the binding restored, `team_collect` reads the durable work status: the refused token was
+    // never admitted, so it is UNKNOWN — and the read writes nothing.
+    stage.leader.setBinding(stage.leader.binding)
+    const writesBefore = stage.world.seam.writeCount
+    const collected = await stage.leader.dispatch('team_collect', {
+      requestToken: 'tok-c-work-collect-refused',
+      requestTokens: ['tok-c-work-refused'],
+    })
+    assert.equal(collected.result.status, 'executed')
+    const entry = collected.result.effect.entries.find((candidate) => candidate.requestToken === 'tok-c-work-refused')
+    assert.notEqual(entry, undefined)
+    assert.equal(entry.status, 'unavailable', 'a token with no admitted work unit has no work status, never a fabricated success')
+    assert.equal(entry.settledSequence, undefined)
+    assert.equal(entry.memberResult, undefined)
+    assert.equal(stage.world.seam.writeCount, writesBefore, 'the collect is a READ: zero durable writes')
+    assert.equal(stage.leader.settlementOf(collected.callId).state, 'COMPLETED')
+  } finally {
+    await stage.destroy()
+  }
+})

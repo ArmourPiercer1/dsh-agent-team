@@ -883,3 +883,65 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 Vitest population unchanged at **238** (no vitest file was added); the node leg gained `ADM-85`…`ADM-88`
 and `ADM-76`'s rung-6 code moved to the PTC code (the B ladder's order and its «no body started»
 assertions are unchanged).
+
+## Round 56 (C stage) — C-tools / C-member / C-work end to end over the ONE centre
+
+**What changed.** Three rows moved from "MECHANISM (unverified end to end)" to end-to-end in-process
+over the PRODUCT's own tool surface: `ADM-89`…`ADM-95` were added to
+`packages/runtime/test/vnext-admission.test.mjs` and ride the `ute-vnext-a1` leg (7 suites, now
+157 pass + the 2 disclosed host skips). No new file, so the manifest leg, the workflow step and the
+vitest population are unchanged (238).
+
+**The missing seam was NOT missing.** The arm first asked whether the product installs/closes the
+member's centre at the right moments. It does, on paths that already exist:
+
+- the member centre is installed by `installMemberExecution` at the member bind
+  (`agent-bindings.mjs:1852`) — the arm drives the same composition point from the child-session factory,
+  which is where a created member's agent first exists;
+- the lifecycle's `release-residency` step (`packages/runtime/lifecycle/quiesce.ts`, port
+  `residency.dropResidency`) disposes the member handle (`agent-bindings.mjs:4122`), and that dispose runs
+  the disposers `installMemberExecution` registered (`agent-bindings.mjs:1872`, `onDispose`) — one of
+  which is the centre's `close()` (`admission-port.mjs:871`). So an ARCHIVE through the tool surface
+  closes the member's centre; no new seam and no second authority was added.
+
+**What each arm proves** (facts/settlements read back from DISK; real `TeamDomain` + real
+`ControlService`; the product tool bodies):
+
+| arm | claim | positive control | negative control(s) |
+| --- | --- | --- | --- |
+| `ADM-89` | all 15 closed tools are ADMITTED on `team.control` through `createTeamTools` over the real runtime, in declared order, each with an authority fact + execution fact + `COMPLETED` settlement, and each PRODUCT body reached | the created member is a real durable row; `team_create_member` really activates | — (the negative is `ADM-90`/`ADM-91`) |
+| `ADM-90` | an UNBOUND agent is REFUSED for all 15 (`ADMISSION_NO_BINDING`), zero bodies, zero deliveries, zero creations, `REFUSED`/`not-started` settlements | restoring the SAME binding admits `team_list_members` (`COMPLETED`) | the refusal is the absent binding, not a broken assembly |
+| `ADM-91` | a name outside the closed list (`team_delete_team`, `team_promote_member`, neither of which is a product tool) is refused by name (`ADMISSION_TOOL_UNBOUND`), recorded, `REFUSED`/`not-started` | the same centre admits `read` on `fs.read` | "not in the list" is not a blanket denial |
+| `ADM-92` | `team_create_member` records the Leader's `team.control` allow fact; the created member's OWN centre exists (binding = member identity/session, empty ledger), and its calls are judged there — member ledger, member `policyGeneration` | the member's in-lane `read` is allowed and settles `COMPLETED` | the same locator is allowed by the Leader's centre and `LANE_DENY`ed by the member's — the judgement is that member's |
+| `ADM-93` | `team_archive_member` (production step ports) commits `SETTLED → ARCHIVED`, releases residency, and the member's centre is CLOSED: the pre-close fact survives, the next call is `ADMISSION_MEMBER_CLOSED` with a `REFUSED`/`not-started` settlement (`ADMITTED → REFUSED`), never `UNKNOWN` | the same member call is ALLOWED before the archive, and the Leader's centre still admits afterwards | a second archive is not executed and commits nothing (commit count unchanged) |
+| `ADM-94` | `team_delegate` → `team_collect` delivers one unit (prompt verbatim at the delivery seam, `settled: true`, terminal `succeeded` entry with the same result and a durable `settledSequence`); the collected work's own member calls are judged by THAT member's centre (its ledger/generation/lane) and never appear in the Leader's ledger | the Leader's centre allows the same locator | the member's `LANE_DENY` names the member's policy generation; the Leader's read fact is the Leader's own callId only |
+| `ADM-95` | a refused delegation delivers NOTHING, admits no work unit, commits no lifecycle transition; the following `team_collect` is a zero-write read returning `unavailable` for that token | the binding is restored and the collect runs (`COMPLETED`) | `world.seam.writeCount` unchanged across the collect |
+
+**Named host stand-ins** (each carries no policy): the agent-context double (host dispatch order
+pre-execute → guard → body → `tools/result`), the member's "live handle" (its `dispose()` runs the
+registered disposers), the child-session factory (member-bind moment), and the work-delivery port (the
+host session-input seam). The compiled member answer is an INPUT (a ceiling), not a decision.
+
+**What round 56 does NOT prove.** No host boot, so no row is PRODUCT-PROVEN. The archived member's
+PRODUCT ROUTE refuses at the durable lifecycle gate before the centre is reached; `ADM-93` proves the
+centre's tombstone on the member's layer, not the route's ordering. Policy compilation is not
+exercised. The glue hops (`agent-bindings` installs the centre at every bind; the residency drop reaches
+the same disposer list) are cited at file:line, not booted. The open escalations are untouched
+(`ESCALATION-realmless-admission.md`, `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`,
+`CONTRACT-CHANGE-REQUEST-process-lane.md`).
+
+### Gates (round 56, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494…  (157 pass + 2 disclosed skips)
+DSH-TEST-CATALOG tests=889 instruments=3 refused=0 findings=0
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148) findings=0
+docs:sync --check findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+Vitest population unchanged at **238**; the node leg gained `ADM-89`…`ADM-95` (7 arms), and the
+`vnext-admission` suite now runs 79 cases in ~1.3 s.
