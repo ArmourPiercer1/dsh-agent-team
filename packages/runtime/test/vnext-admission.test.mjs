@@ -18,6 +18,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 // file runs under plain `node --test` as well as under scripts/run-tests.mjs.
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
 const { admit, invocationFactsOf } = await import('../src/plugin/vnext/admission.ts')
+// The centre does not own grants: `member-io-policy` does. These arms use the PRODUCT binder and
+// assert the properties the centre relies on, so a regression in the product turns them red.
+const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
 
 const lane = (allow = [], ask = [], deny = []) => ({ mode: 'restricted', allow, ask, deny })
 
@@ -108,4 +111,78 @@ test('ADM-9 — `path` is accepted where the tool uses it, and a blank locator i
   const blank = call('read', { file_path: '   ' })
   assert.equal(blank.kind, 'deny')
   assert.equal(blank.code, 'ADMISSION_NO_LOCATOR')
+})
+
+// ---------------------------------------------------------------------------- one-shot grants
+//
+// `ask` is granted per CALL, not per locator: the approval authorizes exactly one execution. The
+// binder is the product's, and these arms measure the three ways an approval must die - it was
+// used, it belongs to another member/call/binding, or the world moved (epoch bump / member revoke).
+
+const member = (over = {}) => ({ teamId: 'team-1', memberInstanceId: 'member-1', templateId: 'tmpl-1', instanceGeneration: 2, ...over })
+const bindInput = (binder, over = {}) => binder.bind({
+  member: member(),
+  callId: 'call-1',
+  policyRevision: 'rev-1',
+  toolBindingIdentity: 'owner/read',
+  approvedOnce: true,
+  lease: null,
+  ...over,
+})
+const consumeRequest = (over = {}) => ({ memberIdentity: 'member-1', callId: 'call-1', policyRevision: 'rev-1', toolBindingIdentity: 'owner/read', ...over })
+
+test('ADM-10 — one approval, one execution: a consumed grant cannot be presented again', () => {
+  const binder = createInvocationBinder()
+  const bound = bindInput(binder)
+  assert.equal(bound.ok, true, JSON.stringify(bound))
+  const first = binder.consume(bound.value, consumeRequest())
+  assert.equal(first.ok, true, JSON.stringify(first))
+  const second = binder.consume(bound.value, consumeRequest())
+  assert.equal(second.ok, false)
+  assert.equal(second.code, 'CAPABILITY_CONSUMED', 'a second execution on one approval is exactly what a one-shot grant forbids')
+})
+
+test('ADM-11 — a grant is bound to its call: another member/call/binding is refused', () => {
+  const binder = createInvocationBinder()
+  const bound = bindInput(binder)
+  assert.equal(bound.ok, true)
+  for (const [field, request, code] of [
+    ['member', consumeRequest({ memberIdentity: 'member-2' }), 'CAPABILITY_MEMBER_MISMATCH'],
+    ['call', consumeRequest({ callId: 'call-2' }), 'CAPABILITY_CALL_MISMATCH'],
+    ['binding', consumeRequest({ toolBindingIdentity: 'owner/write' }), 'CAPABILITY_BINDING_MISMATCH'],
+    ['revision', consumeRequest({ policyRevision: 'rev-2' }), 'CAPABILITY_REVISION_MISMATCH'],
+  ]) {
+    const result = binder.consume(bound.value, request)
+    assert.equal(result.ok, false, `${field} mismatch must refuse`)
+    assert.equal(result.code, code, `${field} mismatch refused with ${result.code}`)
+  }
+  // ...and none of those attempts burned the grant: the real request still works exactly once.
+  assert.equal(binder.consume(bound.value, consumeRequest()).ok, true)
+})
+
+test('ADM-12 — the world moving kills an outstanding grant: cold start and member revocation', () => {
+  const binder = createInvocationBinder()
+  const cold = bindInput(binder)
+  assert.equal(cold.ok, true)
+  binder.bumpEpoch()
+  const afterCold = binder.consume(cold.value, consumeRequest())
+  assert.equal(afterCold.ok, false)
+  assert.equal(afterCold.code, 'CAPABILITY_EPOCH_STALE', 'a cold start must not leave an approved call usable')
+
+  const revoked = bindInput(binder)
+  assert.equal(revoked.ok, true)
+  binder.revoke('member-1')
+  const afterRevoke = binder.consume(revoked.value, consumeRequest())
+  assert.equal(afterRevoke.ok, false)
+  assert.equal(afterRevoke.code, 'CAPABILITY_MEMBER_REVOKED', 'revocation must reach a grant already minted')
+})
+
+test('ADM-13 — a structural COPY of a grant is not a grant', () => {
+  const binder = createInvocationBinder()
+  const bound = bindInput(binder)
+  assert.equal(bound.ok, true)
+  const copy = { ...bound.value }
+  const result = binder.consume(copy, consumeRequest())
+  assert.equal(result.ok, false)
+  assert.equal(result.code, 'CAPABILITY_UNKNOWN', 'branding is the point: a JSON round-trip must not mint authority')
 })
