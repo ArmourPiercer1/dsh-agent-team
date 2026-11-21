@@ -348,6 +348,80 @@
       "note": "WEB is the sixth census family in this ledger (dsh.web-family, the first NETWORK-effect family). Its retirement unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (nativeNames web_fetch/web_search, literal native spellings with no `(bound-definition)` prefix), not from this row. UTE-3 PR B1 (stage B1) closes the OLD-PATH half for both members (15 baseline vectors over a real loopback fixture, one real control per member with POSITIVE arms, two identical capture runs) and the NEGATIVE-CONTROLS half. It may NOT retire: no new path exists for Web (newPathVerified FALSE, zero NEW-PATH-VECTOR PASS lines) and all three measured semantic differences are blocking with NO approval found (approval: null on every entry and on the row — stated explicitly, not left blank). The old-path baseline is NOT a safety verdict and NOT a network-confinement proof: a refusal record pins the refusal, the zero provider entry and the zero outbound sockets of THIS fixture run; the host sandbox claims FILE effects only, so network confinement remains admission-time Team authority, and the pinned provider still FOLLOWS same-origin redirects (disclosed as WEB_REDIRECT_UNMEDIATE_ON_ALLOW) and still honours a process proxy for public names (WEB_PROXY_ENV_UNMEDIATE_ON_ALLOW)."
     },
     {
+      "family": "inspect",
+      "unit": {
+        "familyId": "dsh.inspect-family"
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/inspect.mjs",
+          "packages/tools/inspect-family/src/index.mjs",
+          "packages/tools/inspect-family/src/inspect-executor.mjs",
+          "packages/tools/inspect-family/src/inspect-family-contribution.mjs",
+          "packages/tools/inspect-family/src/inspect-mechanics.mjs",
+          "packages/tools/inspect-family/src/inspect-rows.mjs",
+          "packages/tools/inspect-family/src/row-names.mjs",
+          "packages/tools/inspect-family/src/skill-executor.mjs",
+          "packages/tools/inspect-family/src/skill-mechanics.mjs",
+          "packages/tools/inspect-family/src/skill-row.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md",
+            "expect": [
+              "PROBE-INSPECT single-implementation=yes member=team_skill"
+            ],
+            "contradicts": []
+          },
+          "note": "NO baseline effect table was captured for this family, deliberately. Stage 0 (dev/agent-workflow/evidence/ute3-inspect-b1-20261120/composition-probe.txt) measured that each booked member name has EXACTLY ONE implementation: the governed family body (packages/tools/inspect-family/src/skill-row.mjs:64-66 for team_skill; inspect-rows.mjs:19-48 for the cordis pair; row-names.mjs:20-22 declares the three spellings once). There is no same-name second path to baseline against: route-C (mountMemberA5sfRealm + attachA5sfNativeToolModules) does not register team_skill / team_cordis_inspect_list / team_cordis_inspect_query at all (unknown-tool refusal, providerCalls=0, inheritedServiceCalls=0, guardFacts=0). The native/service side serves the CAPABILITY under different names (skill via the host @deepseek-ai/dsh-tool-skill row + the Team skills SERVICE provider a5sf-skill-provider.mjs; cordis_inspect_* via the host @deepseek-ai/dsh-tool-cordis rows over the cordisInspect service). Manufacturing a TSV for a new-path name that does not exist would be fabricated progress, so oldBaseline stays false and the gate refuses UTE_OLD_BASELINE_MISSING. The evidence pointer proves the single-implementation fact, not an effect table. The follow-on UTE_UNIT_UNGRADABLE finding is the gate's honest answer to 'there is no baseline TSV to parse', not a schema defect."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md",
+            "expect": [
+              "PROBE-INSPECT single-implementation=yes member=team_cordis_inspect_list"
+            ],
+            "contradicts": []
+          },
+          "note": "Nothing to verify on a new path under the booked name: route-C refuses all three names as unknown tools and the host native spellings (skill / cordis_inspect_*) are DIFFERENT model-visible names. The probe measures that difference rather than transferring the FS/Search/Web answer. newPathVerified therefore stays false, and no NEW-PATH-VECTOR line is claimed."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "alias-to-native-name-change",
+              "blocking": true,
+              "approval": null,
+              "summary": "The governed family serves team_skill / team_cordis_inspect_list / team_cordis_inspect_query (alias spellings, row-names.mjs:20-22); the native/service side serves the capability as skill / cordis_inspect_list / cordis_inspect_query with the HOST tool definitions. Retiring the booked member is therefore a model-visible NAME + schema + presentation change, not a same-name switch. It needs an owner-approved semantic change naming the adopted interface and its uncovered branches; no approval exists (approval: null), so the term is false. This is a measured difference, not an inherited conclusion from another family."
+            }
+          ],
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md",
+            "expect": [
+              "PROBE-INSPECT single-implementation=yes member=team_cordis_inspect_query"
+            ],
+            "contradicts": []
+          }
+        },
+        "negativeControlsPass": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-inspect-b1-20261120/non-retirement.md",
+            "expect": [
+              "PROBE-CONCLUSION booked-members=governed-family-body-only"
+            ],
+            "contradicts": []
+          },
+          "note": "No per-member negative-control transcript exists for this family and none is claimed. The probe is a composition measurement, not a control battery: it does not mutate a claim and require a named control to turn red. negativeControlsPass stays false; UNKNOWN is not PASS."
+        }
+      }
+    },
+    {
       "family": "process",
       "unit": {
         "familyId": "dsh.process-family",
