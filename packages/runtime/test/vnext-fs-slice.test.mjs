@@ -45,6 +45,7 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
 const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
 const { installExecutionFacts } = await import('../src/plugin/vnext/execution-facts.mjs')
+const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -56,7 +57,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission }) {
+async function buildWorld ({ mountRealm, dir, admission, durable }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -147,6 +148,9 @@ async function buildWorld ({ mountRealm, dir, admission }) {
   let executions = []
   let disposeAdmission
   let disposeExecutions
+  // `durable` = the ledger path. When present every admission/execution record goes to disk and a
+  // SECOND world built on the same path stands in for the resumed process.
+  const ledger = durable === undefined ? undefined : openFactLedger({ path: durable })
   if (mountRealm && admission !== undefined) {
     const lanes = { read: { mode: 'restricted', allow: [inside], ask: [], deny: [] }, write: { mode: 'restricted', allow: [inside], ask: [], deny: [] } }
     const binding = {
@@ -163,11 +167,18 @@ async function buildWorld ({ mountRealm, dir, admission }) {
     disposeAdmission = installAdmissionPoint({
       ctx: agent.ctx,
       resolveBinding: () => (admission === 'bound' ? binding : undefined),
-      record: (record) => { facts.push(record) },
+      record: (record) => {
+        facts.push(record)
+        if (ledger !== undefined) ledger.recordAdmission(record)
+      },
+      ...(ledger === undefined ? {} : { isReplay: (callId) => ledger.has(callId), recordReplay: (input) => ledger.recordReplayRefusal(input) }),
     })
     disposeExecutions = installExecutionFacts({
       ctx: agent.ctx,
-      record: (fact) => { executions.push(fact) },
+      record: (fact) => {
+        executions.push(fact)
+        if (ledger !== undefined) ledger.recordExecution(fact)
+      },
       admissionOf: (callId) => facts.find((entry) => entry.callId === callId),
     })
   }
@@ -188,6 +199,7 @@ async function buildWorld ({ mountRealm, dir, admission }) {
 
   return {
     dir,
+    ledger,
     facts: () => facts,
     executions: () => executions,
     inside,
@@ -377,6 +389,88 @@ test('SLICE-11 — a duplicate callId is a REFUSAL, not a merge (UTE-15)', async
   assert.equal(record.length, 1, 'the refused duplicate must not have been written')
   assert.throws(() => listener({ name: 'read' }, { isError: false }), (error) => error.code === 'CALL_ID_MISSING')
   dispose()
+})
+
+test('SLICE-12 — the ledger is durable: a SECOND world on the same file reads both decisions back', async () => {
+  const ledgerPath = join(dir, 'durable', 'facts.jsonl')
+  const first = await buildWorld({ mountRealm: true, dir: join(dir, 'durable-w1'), admission: 'bound', durable: ledgerPath })
+  try {
+    const allowed = await first.dispatch('read', { file_path: first.insideFile }, 'dur-allow')
+    assert.equal(allowed.isError, false, `the allowed read must succeed: ${allowed.text}`)
+    const denied = await first.dispatch('read', { file_path: first.outsideFile }, 'dur-deny')
+    assert.equal(denied.isError, true)
+  } finally {
+    await first.dispose()
+  }
+
+  // A fresh ledger instance = the resumed process: nothing is carried in memory between them.
+  const reopened = openFactLedger({ path: ledgerPath })
+  const records = reopened.readAll()
+  const admissions = records.filter((record) => record.kind === 'invocation-authority')
+  const executions = records.filter((record) => record.kind === 'execution')
+  assert.equal(admissions.length, 2, `two calls, two durable authority records: ${JSON.stringify(records)}`)
+  assert.equal(executions.length, 2, 'two calls, two durable execution records')
+  assert.equal(reopened.has('dur-allow'), true)
+  assert.equal(reopened.has('dur-deny'), true, 'a REFUSED call is admitted-and-decided; it must be on disk too')
+  const denial = admissions.find((record) => record.callId === 'dur-deny')
+  assert.equal(denial.decision, 'deny')
+  assert.equal(denial.refusalCode, 'LANE_DENY')
+  assert.equal(executions.find((record) => record.callId === 'dur-deny').outcome, 'admission-refusal')
+})
+
+test('SLICE-13 — NO REPLAY: after a restart the same callId is refused, not re-judged', async () => {
+  const ledgerPath = join(dir, 'replay', 'facts.jsonl')
+  const first = await buildWorld({ mountRealm: true, dir: join(dir, 'replay-w1'), admission: 'bound', durable: ledgerPath })
+  try {
+    const allowed = await first.dispatch('read', { file_path: first.insideFile }, 'replay-1')
+    assert.equal(allowed.isError, false, `the first call must succeed: ${allowed.text}`)
+  } finally {
+    await first.dispose()
+  }
+  const second = await buildWorld({ mountRealm: true, dir: join(dir, 'replay-w2'), admission: 'bound', durable: ledgerPath })
+  try {
+    const member = second.realm.installation.members[0].fs
+    const replay = await second.dispatch('read', { file_path: second.insideFile }, 'replay-1')
+    assert.equal(replay.isError, true, `a replay must be refused: ${replay.text}`)
+    assert.match(String(replay.errorMessage), /ADMISSION_REPLAY/u)
+    assert.equal(member.calls.readText + member.calls.streamText, 0, 'the replay refusal must precede any execution')
+    const records = second.ledger.readAll()
+    const replays = records.filter((record) => record.kind === 'replay-refusal')
+    assert.equal(replays.length, 1, 'the replay attempt must itself be durable')
+    assert.equal(replays[0].callId, 'replay-1')
+    assert.equal(records.filter((record) => record.kind === 'invocation-authority').length, 1, 'the first decision must NOT be overwritten by the replay')
+  } finally {
+    await second.dispose()
+  }
+})
+
+test('SLICE-14 — the ledger refuses to read its own corruption rather than guessing', async () => {
+  const { mkdirSync, writeFileSync } = await import('node:fs')
+  const base = join(dir, 'ledger-rules')
+  mkdirSync(base, { recursive: true })
+
+  // A crash mid-append leaves a partial line. Treating it as absent would silently drop an
+  // admission record; treating it as valid would mis-parse. It is refused by name.
+  const truncated = join(base, 'truncated.jsonl')
+  writeFileSync(truncated, '{"kind":"invocation-authority","callId":"t-1","decision":"allow"}\n{"kind":"invoc')
+  assert.throws(() => openFactLedger({ path: truncated }).readAll(), (error) => error.code === 'LEDGER_TRUNCATED')
+
+  // Two authority records for one callId: the file cannot arbitrate, so it refuses to.
+  const dup = join(base, 'dup.jsonl')
+  writeFileSync(dup, [
+    JSON.stringify({ kind: 'invocation-authority', callId: 'd-1', decision: 'allow' }),
+    JSON.stringify({ kind: 'invocation-authority', callId: 'd-1', decision: 'deny' }),
+    '',
+  ].join('\n'))
+  assert.throws(() => openFactLedger({ path: dup }).readAll(), (error) => error.code === 'LEDGER_DUPLICATE_AUTHORITY')
+
+  // An execution record for a callId the ledger never admitted is not writable: the two halves of
+  // the record must join, and a join with nothing on the other side is a defect, not a new fact.
+  const ledger = openFactLedger({ path: join(base, 'join.jsonl') })
+  assert.throws(() => ledger.recordExecution({ callId: 'never-admitted', outcome: 'completed' }), (error) => error.code === 'LEDGER_EXECUTION_UNBOUND')
+  ledger.recordAdmission({ callId: 'ok-1', decision: 'allow' })
+  ledger.recordExecution({ callId: 'ok-1', outcome: 'completed' })
+  assert.throws(() => ledger.recordAdmission({ callId: 'ok-1', decision: 'allow' }), (error) => error.code === 'LEDGER_REPLAY')
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
