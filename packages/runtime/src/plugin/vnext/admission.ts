@@ -71,6 +71,28 @@ export const CENTRE_TOOL_NAMES: readonly string[] = Object.freeze([
 const CENTRE_TOOLS: ReadonlySet<string> = new Set(CENTRE_TOOL_NAMES)
 
 /**
+ * MCP TOOLS. A mounted MCP server contributes `mcp__<server>__<tool>`. The centre cannot know what a
+ * server tool does, so it judges the ONE thing the product declaration actually says about MCP: the
+ * member's NETWORK axis, with the SERVER name as the locator. The mount-level per-member server gate
+ * (`filterMcpServers` / the template's mcp grant) decides WHICH servers exist; the centre decides
+ * whether this agent may reach them at all.
+ *
+ * A name that starts with the prefix but names no server is malformed, not a wildcard: it is refused
+ * by name rather than admitted on a prefix match.
+ */
+export const MCP_TOOL_PREFIX = 'mcp__'
+
+/** The server segment of a mounted MCP tool name, or `undefined` when the name is malformed. */
+export function mcpServerOf (toolName: string): string | undefined {
+  if (!toolName.startsWith(MCP_TOOL_PREFIX)) return undefined
+  const rest = toolName.slice(MCP_TOOL_PREFIX.length)
+  const separator = rest.indexOf('__')
+  if (separator <= 0) return undefined
+  const server = rest.slice(0, separator)
+  return server === '' ? undefined : server
+}
+
+/**
  * PRESERVED HOST CAPABILITIES. Goal/Todo, Team Skill and Subagent (spawn/control) are host tools
  * whose I/O is the HOST's own service (the goal store, `$DSH_HOME/skills`, the subagent registry),
  * not the member's workspace. They are preserved by the 06 contract, so refusing them would be the
@@ -183,7 +205,7 @@ export interface InvocationAuthorityFacts {
   readonly sessionId: string
   readonly instanceGeneration: number
   readonly toolName: string
-  readonly axis: ToolAxis | 'team.control' | 'host.service'
+  readonly axis: ToolAxis | 'team.control' | 'host.service' | 'net.mcp'
   readonly locator: string
   readonly definitionSource: string
   readonly policyGeneration: string
@@ -241,6 +263,18 @@ export function admit (input: {
   if (HOST_CAPABILITY_TOOLS.has(toolName)) {
     // A preserved host capability: NO lane applies (its I/O is the host's own service). The action
     // is admitted for a bound agent and recorded; the service's internal I/O is a stated limit.
+    return { kind: 'allow' }
+  }
+  if (toolName.startsWith(MCP_TOOL_PREFIX)) {
+    const server = mcpServerOf(toolName)
+    if (server === undefined) {
+      return refuse('ADMISSION_TOOL_UNBOUND', `tool ${JSON.stringify(toolName)} looks like an MCP tool but names no server; a prefix is not a permission`)
+    }
+    const perToolMcp = binding.perTool?.[toolName]?.network
+    const network = perToolMcp ?? binding.network
+    if (network !== 'allow') {
+      return refuse('NETWORK_DENY', `MCP server ${JSON.stringify(server)} is refused: the network axis for this tool is ${network === 'deny' ? 'deny' : network === 'unsupported' ? 'unsupported by this binding' : 'unset'}, and an unset axis is not a permission`)
+    }
     return { kind: 'allow' }
   }
   const axis = TOOL_AXES[toolName as keyof typeof TOOL_AXES]
@@ -307,8 +341,14 @@ export function invocationFactsOf (input: {
     ? 'team.control'
     : HOST_CAPABILITY_TOOLS.has(toolName)
       ? 'host.service'
-      : (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read')) as ToolAxis | 'team.control' | 'host.service'
-  const locator = judgedLocator(toolName, args, binding) ?? ''
+      : toolName.startsWith(MCP_TOOL_PREFIX)
+        ? 'net.mcp'
+        : (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read')) as ToolAxis | 'team.control' | 'host.service' | 'net.mcp'
+  // An MCP call's locator is the SERVER, not a path: recording a path nobody judged would be worse
+  // than recording no locator at all.
+  const locator = toolName.startsWith(MCP_TOOL_PREFIX)
+    ? (mcpServerOf(toolName) ?? '')
+    : (judgedLocator(toolName, args, binding) ?? '')
   // A refused call still records what was ASKED — that is the point of the record: after an
   // incident, "which locator did the model try, under which generation" must not be reconstructible
   // only from a refusal message.

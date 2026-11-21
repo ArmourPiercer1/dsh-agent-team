@@ -17,7 +17,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 // convention, resolved to `.ts` by its test hooks). Register the hooks BEFORE the import so this
 // file runs under plain `node --test` as well as under scripts/run-tests.mjs.
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
-const { admit, invocationFactsOf, CENTRE_TOOL_NAMES, HOST_CAPABILITY_TOOL_NAMES } = await import('../src/plugin/vnext/admission.ts')
+const { admit, invocationFactsOf, CENTRE_TOOL_NAMES, HOST_CAPABILITY_TOOL_NAMES, mcpServerOf } = await import('../src/plugin/vnext/admission.ts')
 // The centre does not own grants: `member-io-policy` does. These arms use the PRODUCT binder and
 // assert the properties the centre relies on, so a regression in the product turns them red.
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
@@ -581,7 +581,7 @@ test('ADM-31 — the centre\'s closed list matches the tools the product actuall
     'the centre\'s closed list and the created tools must be the same set, in both directions')
 })
 
-test('ADM-32 — preserved host capabilities stay usable, and MCP stays explicitly unavailable', () => {
+test('ADM-32 — preserved host capabilities stay usable, and an MCP name still needs a server', () => {
   // Refusing these would be the feature loss C exists to prevent: their I/O is the HOST's service
   // (goal store, $DSH_HOME/skills, subagent registry), not the member's workspace.
   for (const toolName of HOST_CAPABILITY_TOOL_NAMES) {
@@ -592,9 +592,32 @@ test('ADM-32 — preserved host capabilities stay usable, and MCP stays explicit
   }
   // Still not a blanket: an unbound agent gets nothing.
   assert.equal(admit({ binding: undefined, toolName: 'skill', arguments: {} }).code, 'ADMISSION_NO_BINDING')
-  // MCP: the transport and the effects are unknowable to the centre, so it is REFUSED BY NAME until
-  // an MCP family binding exists. Explicit unavailability beats a silent forward.
+  // MCP names are judged on the network axis (ADM-33). With the axis unset the call is refused - and
+  // a name that names no server is refused as malformed rather than matched by prefix.
   const mcp = call('mcp__github__search', { query: 'x' }, binding())
   assert.equal(mcp.kind, 'deny')
-  assert.equal(mcp.code, 'ADMISSION_TOOL_UNBOUND')
+  assert.equal(mcp.code, 'NETWORK_DENY')
+})
+
+test('ADM-33 — an MCP tool is judged on the NETWORK axis, with the SERVER as its locator', () => {
+  const open = binding({ network: 'allow' })
+  const decision = call('mcp__github__search_code', { query: 'x' }, open)
+  assert.equal(decision.kind, 'allow')
+  const facts = invocationFactsOf({ binding: open, toolName: 'mcp__github__search_code', callId: 'c-33', arguments: { query: 'x' }, admission: decision })
+  assert.equal(facts.axis, 'net.mcp')
+  assert.equal(facts.locator, 'github', 'the locator is the SERVER; a path nobody judged must not be recorded')
+  // Unset is not allow, and deny is deny.
+  for (const b of [binding(), binding({ network: 'deny' })]) {
+    const refused = call('mcp__github__search_code', { query: 'x' }, b)
+    assert.equal(refused.kind, 'deny')
+    assert.equal(refused.code, 'NETWORK_DENY')
+  }
+  // A tool-level restriction still narrows it.
+  const narrowed = binding({ network: 'allow', perTool: { mcp__github__search_code: { read: lane(['/work']), write: lane(['/work']), network: 'deny' } } })
+  assert.equal(call('mcp__github__search_code', {}, narrowed).code, 'NETWORK_DENY')
+  // A prefix is not a permission: `mcp__` with no server is malformed, not a wildcard.
+  const malformed = call('mcp__', {}, open)
+  assert.equal(malformed.kind, 'deny')
+  assert.equal(malformed.code, 'ADMISSION_TOOL_UNBOUND')
+  assert.equal(call('mcp__github', {}, open).code, 'ADMISSION_TOOL_UNBOUND', 'a server with no tool name is equally malformed')
 })

@@ -9828,3 +9828,24 @@ A1 不是小 PR 而是**单一窗口分支**（`vnext/a1-cut`），自带必绿�
 ### 门禁
 
 `UTE-P0-ASSETS pass … cut=pending(0/148) findings=0` · `UTE-CUT-CLOSURE pass references=192 prodRefs=13 distResiduals=52 cut=pending(148/148) dupNames=0 findings=0` · 变异臂 21（账本）+ 13（闭包，含 3 条在临时 git 仓库里运行的删除后负控）。hosted CI 在重跑前记 UNKNOWN，不宣称绿。
+
+## R24 — 2026-11-21 — UTE vNext C: MCP on the network axis, and the subprocess lane's missing declaration source
+
+- **MCP judged, not refused by prefix** (`ADM-33`): `mcp__<server>__<tool>` is axis `net.mcp`, locator =
+  SERVER name (recording a path nobody judged would be worse than no locator). Unset ≠ allow, deny is
+  deny, a per-tool restriction narrows it, and `mcp__` with no server (or no tool) is
+  `ADMISSION_TOOL_UNBOUND` — a prefix is not a permission. WHICH servers exist stays the mount gate's
+  decision (`filterMcpServers` / the template's mcp grant).
+- **`CONTRACT_CHANGE_REQUEST` opened** (not `CORE_SEAM_BLOCKER`: no upstream patch is wanted): there is
+  no single-source declaration for a PROCESS lane. v4 Blueprint ceiling is `{read, write, network}`
+  (frozen), the product realm declaration reuses that shape, `execution.executionBoundary` says WHO
+  executes and not WHAT the shell may touch, and `shellClass` is an install-spec field the composition
+  passes. Options A (add `process` to the v4 ceiling) / B (a v5 schema) / C (declare the family not
+  supported) are recorded in `evidence/ute-a1/CONTRACT-CHANGE-REQUEST-process-lane.md`; the three
+  workarounds (judge on the write lane, declare it only in the product realm, derive it from the
+  boundary) are each a breach of the invariant this round implements.
+- While the ruling is pending the families stay **explicitly refused** (`ADMISSION_AXIS_UNSUPPORTED`):
+  the refusal is the safe state, not a workaround. `C-subprocess` / `C-pty` / `C-ptc` rows in
+  `CAPABILITY-MATRIX-C.md` say exactly that.
+- Gates at this round: leg `ute-vnext-a1` suites=4 exit=0; catalog `tests=886 refused=0 findings=0`;
+  P0 assets / cut-closure / a1-window all pass. Arms now 78 (admission 33, slice 33, realm 9, os 3).
