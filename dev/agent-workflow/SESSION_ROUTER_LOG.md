@@ -10227,3 +10227,24 @@ Gates at `def820ca7`: leg `suites=6 files=6 exit=0`, docs-sync `findings=0`.
 
 Next: the ruling decides the shape; either way the work is the same two steps (compile through the ONE
 compiler; make the native mount the optional half), and E3 is the acceptance test for the plane half.
+
+### R35 — the half of the escalation that does not need a ruling, done
+
+The ruling question is about rows that did NOT ask for the centre. The rows that DID ask have an obvious
+answer, and it is fail-closed: a member whose row sets `centreStatePath` but got no confined-provider realm
+was running its native tools with no admission, no durable fact and no settlement. That is not "an unwired
+call is refused"; it is the call being outside the centre while the row believes it is governed.
+
+`memberCentreUnwiredViolation` (centre-config.ts) is the narrow rule: fires only when the row asked for
+governance AND no realm mounted, refusing the member with `MEMBER_CENTRE_UNWIRED` and naming it. Rows that
+never configured the centre are untouched — deliberately, so this closes a silent gap WITHOUT turning a
+wiring gap into a product-wide outage. ADM-44 carries both negative controls (realm present; centre never
+configured; non-string path left to R1).
+
+Still escalated, unchanged: rows that did not ask remain outside the centre, and whether the product admits
+them against a compiled ceiling (recording `provider: 'unconfined'`) or refuses them is the owner's ruling
+(`ESCALATION-realmless-admission.md`). E3 stays red for the other half — the durable overlay has no
+decision-side effect.
+
+Gates at `4c892adf8`: leg `suites=6 files=6 exit=0` (44 admission arms), catalog `tests=888 refused=0
+findings=0`, cut-closure `prodRefs=0 distResiduals=0`, place-dist-glue 26 placements.
