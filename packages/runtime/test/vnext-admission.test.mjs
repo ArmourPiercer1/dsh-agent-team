@@ -21,6 +21,7 @@ const { admit, invocationFactsOf } = await import('../src/plugin/vnext/admission
 // The centre does not own grants: `member-io-policy` does. These arms use the PRODUCT binder and
 // assert the properties the centre relies on, so a regression in the product turns them red.
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
+const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 
 const lane = (allow = [], ask = [], deny = []) => ({ mode: 'restricted', allow, ask, deny })
 
@@ -185,4 +186,34 @@ test('ADM-13 — a structural COPY of a grant is not a grant', () => {
   const result = binder.consume(copy, consumeRequest())
   assert.equal(result.ok, false)
   assert.equal(result.code, 'CAPABILITY_UNKNOWN', 'branding is the point: a JSON round-trip must not mint authority')
+})
+
+// ------------------------------------------------------------------- UNKNOWN is not permission
+//
+// The dangerous reading of a durable store is "no record found, so nothing objected". These arms
+// pin the opposite: an unanswerable question is UNKNOWN, and a store that cannot read itself
+// answers UNKNOWN for EVERYTHING rather than a partial truth.
+
+test('ADM-14 — an unknown callId is UNKNOWN, never "not refused, therefore allowed"', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const ledger = openFactLedger({ path: `${mkdtempSync(`${tmpdir()}/vnext-unknown-`)}/facts.jsonl` })
+  assert.equal(ledger.observe('never-seen').state, 'UNKNOWN')
+  assert.match(String(ledger.observe('never-seen').reason), /no durable admission record/u)
+  ledger.recordAdmission({ callId: 'seen-1', decision: 'deny' })
+  assert.equal(ledger.observe('seen-1').state, 'KNOWN')
+  assert.equal(ledger.observe('seen-1').admission.decision, 'deny', 'a REFUSAL is a known state, not an absence')
+})
+
+test('ADM-15 — a ledger that cannot read itself reports UNKNOWN for everything and refuses new writes', async () => {
+  const { mkdtempSync, writeFileSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const base = mkdtempSync(`${tmpdir()}/vnext-health-`)
+  const broken = `${base}/broken.jsonl`
+  writeFileSync(broken, '{"kind":"invocation-authority","callId":"t-1","decision":"allow"}\n{"kind":"invo')
+  const ledger = openFactLedger({ path: broken })
+  const health = ledger.health()
+  assert.equal(health.state, 'UNKNOWN')
+  assert.equal(health.reason, 'LEDGER_TRUNCATED')
+  assert.throws(() => ledger.recordAdmission({ callId: 'new-1', decision: 'allow' }), (error) => error.code === 'LEDGER_TRUNCATED', 'a corrupt ledger must fail closed, not start a second history beside the truncated one')
 })

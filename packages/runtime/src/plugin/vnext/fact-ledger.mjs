@@ -47,7 +47,7 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
   mkdirSync(dirname(path), { recursive: true })
 
   /** callId -> the admission record already written for it. This map IS the no-replay guarantee. */
-  const admitted = new Map()
+  let admitted = new Map()
   let loaded = false
 
   // `registry` is passed in so `readAll` can validate the file WITHOUT mutating the live
@@ -73,20 +73,30 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
 
   const load = () => {
     if (loaded) return
-    loaded = true
+    // `loaded` is set only AFTER a successful parse: a failed read must leave the ledger unloaded so
+    // the next call re-reads and fails again, instead of treating "I could not read it" as "empty".
     let text
     try {
       text = readFileSync(path, 'utf8')
     } catch (error) {
-      if (error?.code === 'ENOENT') return
+      if (error?.code === 'ENOENT') {
+        loaded = true
+        return
+      }
       throw error
     }
+    // Parse into a THROWAWAY map and publish it only after the whole file parsed: a load that dies
+    // on line 2 must not leave line 1's record in the live map, or the next append would report
+    // LEDGER_DUPLICATE_AUTHORITY for a file it never managed to read.
+    const registry = new Map()
     const lines = text.split('\n')
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index]
       if (line.trim() === '') continue
-      parseLine(line, index, admitted)
+      parseLine(line, index, registry)
     }
+    admitted = registry
+    loaded = true
   }
 
   const append = (record) => {
@@ -119,6 +129,30 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
         throw new LedgerError('LEDGER_EXECUTION_UNBOUND', `execution for callId ${JSON.stringify(facts.callId)} has no admission record; an execution the ledger cannot join to an authority record is not writable`)
       }
       return append({ kind: 'execution', at: now(), ...facts })
+    },
+    /**
+     * What the ledger can say about one callId. `UNKNOWN` is NOT "no record, therefore allowed":
+     * it is the state of a call the durable side cannot answer for, and every consumer must treat
+     * it as unproven rather than as permission.
+     */
+    observe (callId) {
+      load()
+      const admission = admitted.get(callId)
+      if (admission === undefined) return Object.freeze({ callId, state: 'UNKNOWN', reason: 'no durable admission record for this callId' })
+      return Object.freeze({ callId, state: 'KNOWN', admission })
+    },
+    /**
+     * Whether the durable side can be trusted at all. A ledger that cannot read itself (a truncated
+     * tail, two authority records for one callId) answers UNKNOWN for everything rather than a
+     * partial truth: a half-readable authority record is worse than an admission of ignorance.
+     */
+    health () {
+      try {
+        load()
+        return Object.freeze({ state: 'KNOWN', records: admitted.size })
+      } catch (error) {
+        return Object.freeze({ state: 'UNKNOWN', reason: error?.code ?? 'LEDGER_UNREADABLE', detail: error?.message ?? String(error) })
+      }
     },
     /** True only for a callId with a durable ADMISSION record — replay refusals do not count. */
     has (callId) {
