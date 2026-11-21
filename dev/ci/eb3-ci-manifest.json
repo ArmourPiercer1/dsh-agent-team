@@ -821,7 +821,8 @@
             "packages/runtime/test/vnext-fs-slice.test.mjs",
             "packages/runtime/test/vnext-admission.test.mjs",
             "packages/runtime/test/vnext-os-probe.test.mjs",
-            "packages/runtime/test/vnext-work-turn-reader.test.mjs"
+            "packages/runtime/test/vnext-work-turn-reader.test.mjs",
+            "packages/runtime/test/vnext-template-binding.test.mjs"
           ]
         },
         {

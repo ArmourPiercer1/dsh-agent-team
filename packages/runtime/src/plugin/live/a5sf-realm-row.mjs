@@ -76,6 +76,8 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
+import { freshCreateHintAdmits } from '../vnext/bind-path.mjs'
+
 import { isAbsolute } from 'node:path'
 import { URL, pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
@@ -95,35 +97,6 @@ import { skillCatalogOf } from './a5sf-skill-provider.mjs'
 /** The row-config key carrying the JSONL evidence path (JSON-safe string). */
 export const A5SF_EVIDENCE_PATH_KEY = 'a5sfEvidencePath'
 
-/**
- * THE FRESH-CREATE HINT GATE — the ONE rule saying when a setup may stand in a
- * not-yet-durable fact with the value the activation contract is about to
- * commit (WINDOW-HUNT, 2026-11-12).
- *
- * The activation order (`activation/provider.ts` steps 13→14→15) runs the
- * child's setup BEFORE the MemberInstance row is durably written:
- *
- *     createChildSession (the setup runs inside it)
- *       -> bindChildSession
- *       -> commitInstance     (the MemberInstance row)
- *
- * So a member setup legitimately sees NO durable roster row for the very
- * instance it is composing. The child factory carries the two values the flow
- * commits moments later (`instanceId`, `templateId`) and names the call path
- * with `bindPath`. The hint may bridge ONLY `fresh-member`; a cold resume, a
- * request boundary or any other path reads the row it resumed and fails closed
- * when it is absent (P0-1 §3.4: a hint is never an authorization fallback).
- *
- * It lives HERE (not in the glue) so the rule is importable by the host-free
- * suites without loading the whole agent-bindings module graph; the glue's two
- * consumers both spell it through this ONE function.
- * @param {string} [bindPath] - the T1 bind path (fresh-member / cold-member /
- *   fresh-root / cold-root), `undefined` for the state route.
- * @returns {boolean} true only for the fresh member creation window.
- */
-export function freshCreateHintAdmits(bindPath) {
-  return bindPath === 'fresh-member'
-}
 
 /**
  * The row-config key carrying the PRODUCT declaration that gives declared

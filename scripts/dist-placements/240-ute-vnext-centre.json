@@ -48,6 +48,16 @@
       "src": "packages/runtime/src/plugin/vnext/session-identity.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/session-identity.mjs",
       "note": "Session identity, durable lifecycle gate, admission close and the boot-publish marker; extracted from the glue (plan S1, 2026-11-22). The glue imports it."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/template-binding.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/template-binding.mjs",
+      "note": "The per-team-root bound-blueprint cache + fail-closed template locator + static projection; extracted from the glue (plan M4, 2026-11-22)."
+    },
+    {
+      "src": "packages/runtime/src/plugin/vnext/bind-path.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/bind-path.mjs",
+      "note": "The bind path and the ONE rule about what it may bridge (fresh-member only); imported by the realm row, the template locator and the glue so the rule exists once."
     }
   ]
 }

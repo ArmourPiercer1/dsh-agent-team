@@ -9953,3 +9953,26 @@ The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recomm
 - **`freshCreateHintAdmits` de-duplicated**: the glue's copy claimed it had "moved out of the retired
   realm row" while the realm row still had its own. One exported source now; a rule adjacent to
   authorization should exist once.
+
+### R28 — M4 extracted, and the adversarial review's P1s are now the work queue
+
+- **`template-binding.mjs` (plan M4)**: the per-team-root bound-blueprint cache, the fail-closed template
+  locator and the static projection left the glue **with the cache they answer from** (the BP-F custom is
+  that one row carries many roots, each bound to its own snapshot). Glue 4,769 → **4,499**. TB-1..TB-6
+  pin: one parse per root, per-root isolation, the hint bridging only `fresh-member`, the four typed
+  refusal reasons with no legacy degradation, and the legacy anchor's null contract.
+- **The parser and the projection are injected**, not imported: `template-binding` is policy, not a
+  parser, and it must be unit-testable under plain `node:test` (the domain packages are TS that only the
+  build resolves). `bind-path.mjs` now holds `freshCreateHintAdmits` so three importers share ONE rule
+  without dragging each other's dependency graphs.
+- **Adversarial review received (no P0, seven P1s).** Accepted as the queue, and two of them will change
+  what this branch claims: **P1-1** the product's post-approval recheck is vacuous (`resolveBinding` is a
+  constant frozen binding, so the second answer can never differ — SLICE-34 proves the mechanism only
+  through a custom resolver, not through `installMemberCentre`); **P1-2** the settlement records the
+  pre-execute `admit()` result rather than the port's final verdict, so an ask-unwired refusal is durably
+  stored as `allow`/`ask` and then recovered as UNKNOWN, never REFUSED; **P1-3** every member bind runs
+  `recoverUnsettled` over a SHARED settlement directory, so binding member B marks member A's live
+  execution UNKNOWN and A's terminal write then conflicts. Also P1-4 (close ordering contradicts its own
+  comment: the realm disposer is pushed into `toolDisposers` too, so it starts before the native-mount
+  tombstone is awaited), P1-5 (a throwing ledger/settlement path is not a refusal), P1-6 (memo before the
+  durable replay check).
