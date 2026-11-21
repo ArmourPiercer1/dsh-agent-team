@@ -369,6 +369,7 @@ import {
   mountMemberA5sfRealm,
 } from '../live/a5sf-realm-row.mjs'
 import { freshCreateHintAdmits } from './bind-path.mjs'
+import { memberCentreUnwiredViolation } from './centre-config.js'
 // C (2026-11-21): the ONE centre composition point + its durable sinks.
 import { installMemberExecution } from './member-execution.mjs'
 // Who a session is, and whether it may be brought back - one component (plan S1).
@@ -1752,6 +1753,13 @@ export function createAgentBindings(deps) {
       // identity. A refusal propagates out of setup untouched: a member never
       // runs on a realm whose host modules did not take effect.
       const a5sfRowConfig = a5sfRealmConfigOf(config)
+      // A governed member without a realm is REFUSED, not left unmediated (round 35). The rule is narrow:
+      // it fires only when the row asked for the centre (centreStatePath) and no realm was mounted, so a
+      // row that never configured the centre is unchanged.
+      if (sessionId !== teamRoot && !(a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)) {
+        const unwired = memberCentreUnwiredViolation(config, { instanceId, mountedRealm: false })
+        if (unwired !== undefined) throw new Error(`agent-bindings: ${unwired}`)
+      }
       if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot) {
         const a5sfRealm = await mountMemberA5sfRealm({
           root: agentCtx,

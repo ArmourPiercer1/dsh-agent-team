@@ -18,6 +18,30 @@ export interface CentreConfigFacts {
 }
 
 /**
+ * R3 (round 35): a member whose row is CONFIGURED for the centre but gets no confined-provider realm
+ * would otherwise run its native tools with no admission decision, no ledger line and no settlement
+ * record — unmediated and unreported. That is not "an unwired controlled call is refused"; it is the
+ * call being outside the centre.
+ *
+ * The rule is narrow ON PURPOSE: it fires only when the row asked for governance (`centreStatePath`) and
+ * the member did not get a centre. A row that never configured the centre keeps its current behaviour, so
+ * this cannot turn a wiring gap into a product-wide outage — but a row that DID ask can no longer be
+ * silently unmediated.
+ *
+ * @param mountedRealm - whether a confined-provider realm was actually mounted for this member.
+ * @returns the refusal message, or `undefined` when there is nothing to refuse.
+ */
+export function memberCentreUnwiredViolation (
+  config: CentreConfigFacts | null | undefined,
+  member: { readonly instanceId?: unknown; readonly mountedRealm: boolean },
+): string | undefined {
+  const asked = config !== null && typeof config === 'object' && typeof config.centreStatePath === 'string' && config.centreStatePath.length > 0
+  if (!asked || member.mountedRealm) return undefined
+  const who = typeof member.instanceId === 'string' && member.instanceId !== '' ? member.instanceId : '<unnamed>'
+  return `MEMBER_CENTRE_UNWIRED: member ${JSON.stringify(who)} is configured for the centre (centreStatePath is set) but no confined-provider realm was mounted, so its controlled calls would run with no admission decision, no durable fact and no settlement — this row asked for governance and cannot have it, so the member is refused instead of running unmediated`
+}
+
+/**
  * The FIRST rule violation, or `undefined` when the centre-related config is coherent.
  *
  * R1 (external review 2026-11-22, C6/C7 deferral): Alpha.6 review routing decides who may review

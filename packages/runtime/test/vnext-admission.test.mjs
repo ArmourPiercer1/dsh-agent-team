@@ -1091,3 +1091,23 @@ test('ADM-43 — the record names the MEMBER and the session, not one value in b
   })
   assert.equal('instanceId' in bare, false, 'no member, no member field')
 })
+
+test('ADM-44 — a row that asked for the centre cannot run unmediated', async () => {
+  // A governed member whose realm never mounted used to run its native tools with NO admission decision,
+  // no durable fact and no settlement — unmediated and unreported. The rule is deliberately narrow: it
+  // fires only when the row ASKED for the centre, so it cannot convert a wiring gap into an outage.
+  const { memberCentreUnwiredViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const asked = { centreStatePath: '/tmp/centre' }
+  // (1) asked + no realm ⇒ refused, with the member named and the reason spelled out.
+  const refused = memberCentreUnwiredViolation(asked, { instanceId: 'inst-9', mountedRealm: false })
+  assert.match(String(refused), /MEMBER_CENTRE_UNWIRED/u)
+  assert.match(String(refused), /no admission decision/u)
+  assert.match(String(refused), /inst-9/u)
+  // (2) NEGATIVE CONTROL: the same member WITH a realm is fine.
+  assert.equal(memberCentreUnwiredViolation(asked, { instanceId: 'inst-9', mountedRealm: true }), undefined)
+  // (3) NEGATIVE CONTROL: a row that never configured the centre keeps its behaviour — no new outage.
+  assert.equal(memberCentreUnwiredViolation({}, { instanceId: 'inst-9', mountedRealm: false }), undefined)
+  assert.equal(memberCentreUnwiredViolation(undefined, { instanceId: 'inst-9', mountedRealm: false }), undefined)
+  // A non-string centreStatePath is the config rule's business (R1), not this one's.
+  assert.equal(memberCentreUnwiredViolation({ centreStatePath: 7 }, { instanceId: 'inst-9', mountedRealm: false }), undefined)
+})

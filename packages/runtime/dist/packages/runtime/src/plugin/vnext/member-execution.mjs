@@ -108,7 +108,10 @@ export async function installMemberExecution ({
     const buildBinding = (answer) => bindingFromCompiledMember({
       member: answer.members?.[0],
       ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),
-      agentId: sessionId,
+      // The MEMBER, not the session. `agentId` used to be the session id, which put the host's identity
+      // where the record's member identity belongs; they are now separate fields.
+      agentId: String(instanceId),
+      instanceId: String(instanceId),
       sessionId,
       // No silent cwd substitution: a member whose workspace nobody can name is judged against the
       // host process's cwd, which is not this deployment's answer to give.
