@@ -579,3 +579,33 @@ Two measured facts worth keeping:
    polls with empty sends between commands; the face refuses an empty command body
    (`TERMINALS_COMMAND_CANCELLED`). The two seams do not compose, which is why the product path is
    `mode: 'pty'` - the pinned "one live shell per Member" semantics.
+
+### §17 C wiring — the product now calls the centre (2026-11-21)
+
+`agent-bindings.mjs` installs the centre for every Member whose realm compiled:
+
+- the admission binding is built **by reference** from the compiled answer
+  (`compiledAnswerOfRealm`, a WeakMap attached to the mounted realm object — a spread would have
+  produced a husk whose `dispose()` no longer belonged to the realm it describes);
+- durable facts go to `<config.centreStatePath>/<instanceId>.facts.jsonl` (one JSONL, three record
+  kinds: invocation-authority, replay-refusal, execution);
+- settlements go to `<config.centreStatePath>/settlement` (the product store, one file per execution);
+- `recoverUnsettled()` runs **at bind time**, so a record left RUNNING by a dead process becomes
+  UNKNOWN with its missing evidence instead of being silently replayed;
+- a row that compiles Member realms but sets no `centreStatePath` **REFUSES the bind**: a governed
+  member whose controlled calls cannot be recorded is exactly the unwired case this project will not
+  run.
+
+**STATUS: UNVERIFIED LOCALLY, and it must not be read as PASS.** This worktree cannot run `tsc`
+(its `node_modules` links a pnpm store path that does not exist here) and cannot run the product
+boot, so neither the TypeScript build nor a real assembly has exercised this wiring. The arms that
+DO pass are the composition point's own (`ADM-25..28` on the in-process host). What is owed:
+
+1. Required CI: the runtime build + typecheck must be green on this commit.
+2. D: a real host boot must show a member's `read` producing an authority fact, an execution fact and
+   a COMPLETED settlement record under `centreStatePath`, plus the crash-recovery path.
+
+Also recorded as a LIMIT of this wiring: the binding's lanes are the Member CEILING; per-tool
+restrictions (`bindings[]`) are enforced by the realm FACES, not yet by the centre's admission. That
+is defence in depth (the face still refuses), but it means an admission 'allow' can be followed by a
+face refusal. Binding per-tool effective lanes into admission is C work, not a claim of done.

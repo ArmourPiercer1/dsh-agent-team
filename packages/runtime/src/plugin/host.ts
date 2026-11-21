@@ -698,6 +698,9 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   if (c.blueprintDir !== undefined && (typeof c.blueprintDir !== 'string' || c.blueprintDir.length === 0)) fail('blueprintDir must be a non-empty string when present')
   if (typeof c.generation !== 'number' || !Number.isInteger(c.generation) || c.generation < 1) fail('generation must be a positive integer')
   if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string') fail('defaultWorkspace must be a string when present')
+  if (c.centreStatePath !== undefined && (typeof c.centreStatePath !== 'string' || c.centreStatePath.length === 0)) {
+    fail('centreStatePath must be a non-empty string when present (the centre\'s durable facts and settlement directory)')
+  }
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
   for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
     if (

@@ -269,6 +269,21 @@ export interface TeamPluginConfig {
    */
   readonly a5sfEvidencePath?: string
   /**
+   * C-DIRECTORY (2026-11-21): where the CENTRE keeps this team's durable records.
+   *
+   * The centre writes three things that must outlive the process: the invocation-authority facts
+   * (one JSONL per member instance), the execution facts (same file, different record kind), and the
+   * product `ExecutionSettlementStore` records (one file per execution). They are not evidence and
+   * not telemetry: `recoverUnsettled` reads them back after a crash, and an UNKNOWN there is the
+   * difference between "nobody looked" and "nothing happened".
+   *
+   * LAW. When a row compiles Member realms, the centre is part of the enforcement, not an option:
+   * a governed world without this directory REFUSES the bind rather than running members whose
+   * controlled calls would be unrecorded. With no compiled realm there is nothing for the centre to
+   * record, and the key stays absent with the legacy path byte-for-byte unchanged.
+   */
+  readonly centreStatePath?: string
+  /**
    * PRODUCT ASSEMBLY (2026-11-05; policy-source fix 2026-11-05, optional and
    * ADDITIVE): the PRODUCT-VISIBLE declaration that gives the Members it names
    * their compiled a5sf realm (confined `fs` Provider, the two-axis lane, and —

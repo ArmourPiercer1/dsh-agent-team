@@ -381,6 +381,19 @@ export function a5sfToolPlaneOf(realm) {
  *   a confined web face factory, `skillCatalog` only when the row declares a
  *   non-empty skill catalog (PD-26). Keys are omitted, never `undefined`-valued.
  */
+/** The compiled answer behind a mounted realm (see the mount call at the bottom of the row). */
+const COMPILED_REALM_ANSWERS = new WeakMap()
+
+/**
+ * The exact compiled answer a mounted realm enforces, or `undefined` for an
+ * object this row did not produce. The centre builds its admission binding from
+ * THIS value: re-compiling would be a second policy.
+ * @param realm - a realm returned by {@link mountMemberA5sfRealm}.
+ */
+export function compiledAnswerOfRealm(realm) {
+  return realm === null || typeof realm !== 'object' ? undefined : COMPILED_REALM_ANSWERS.get(realm)
+}
+
 export function a5sfRealmConfigOf(config) {
   const settings = config === undefined || config === null ? undefined : config
   const rawEvidence = settings === undefined ? undefined : settings[A5SF_EVIDENCE_PATH_KEY]
@@ -981,7 +994,20 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   // attaches the shadow LATER, through `attachA5sfNativeToolModules`, called by
   // the glue AFTER its capability deny lane: a shadow created first would sit
   // OUTSIDE the `tools.restrict` filter and survive the deny (measured).
-  return await mountA5sfRealm(mountInput)
+  //
+  // ADDITIVE (C, 2026-11-21): the caller gets the COMPILED answer back. The
+  // centre's admission binding must be built from the SAME compiled policy the
+  // realm enforces - re-compiling it in the glue would be a second policy, and
+  // a binding that disagrees with the face is worse than no binding.
+  const mounted = await mountA5sfRealm(mountInput)
+  // A WeakMap, not a spread: the mounted realm's surface is a live object with methods, and copying
+  // it would produce a husk whose `dispose()` is detached from the fibers it describes. The compiled
+  // answer is attached to the SAME object identity the caller already holds.
+  COMPILED_REALM_ANSWERS.set(mounted, Object.freeze({
+    members: compiled.members,
+    ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
+  }))
+  return mounted
 }
 
 
