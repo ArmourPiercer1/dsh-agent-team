@@ -882,6 +882,14 @@ export function createAgentBindings(deps) {
   /** @type {Array<() => void>} tool-registration + model-selection disposers. */
   /** Alpha.5 realm disposers this row started (awaited by close). */
   const a5sfRealmDisposers = []
+  /**
+   * NATIVE MOUNT DISPOSERS (async). `mountHostModules` returns `{ dispose }` whose job is to release
+   * the realm's definition AND install the MEMBER_CLOSED tombstone in its place. The first production
+   * wiring discarded that handle, so on member teardown the retired member's confinement outlived the
+   * member and its native tools kept executing for whoever still held the scope -
+   * the exact regression SLICE-23 found, still live on the product path.
+   */
+  const nativeMountDisposers = []
   const toolDisposers = []
   /** @type {number} synthetic callId counter (the driver may omit callIds). */
   let callCounter = 0
@@ -2463,12 +2471,13 @@ export function createAgentBindings(deps) {
               module: await import(spec.url),
               ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
             }))))
-            await mountHostModules({
+            const nativeMount = await mountHostModules({
               realm: a5sfRealm,
               root: agentCtx,
               scope: runtimeAgent ?? undefined,
               specs,
             })
+            nativeMountDisposers.push({ settled: () => nativeMount.dispose() })
           }
         }
       }
@@ -5033,6 +5042,15 @@ export function createAgentBindings(deps) {
     }
     // Alpha.5: the realm disposals are ASYNC; await the ones this row started
     // so close() does not return before the isolated provider fibers unmount.
+    // The native mounts go BEFORE the realm disposal: their dispose() asks the realm to release the
+    // definition and installs the MEMBER_CLOSED tombstone in its place, so no later dispatch can
+    // resolve an unconfined inherited body through a scope it still holds - and it needs a realm that
+    // is still alive to do it.
+    for (const disposeMount of nativeMountDisposers.splice(0)) {
+      try {
+        await disposeMount.settled()
+      } catch { /* the realm disposal below still unmounts the providers */ }
+    }
     for (const disposeRealm of a5sfRealmDisposers.splice(0)) {
       await disposeRealm.settled()
     }
