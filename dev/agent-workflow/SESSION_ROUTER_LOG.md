@@ -10181,3 +10181,26 @@ sequence.
 Gates at `a686f1180`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
 cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, ci-required pass (the
 revert restored it).
+
+### R33 — E3 is two defects, and the second one was not in the failure message
+
+Read the call site rather than the assertion text: the centre (admission leg + ledger + settlement) is
+installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`. A member without a
+confined-provider realm therefore gets **no centre at all** — native tools run under the host's mediation
+with no admission decision, no ledger, no settlement. The A1 law says an unwired controlled call must be
+refused; here it is simply **not covered**, which is worse. E3's world is such a world, which is exactly
+why it counts zero pre-execute legs.
+
+Repair order, recorded in `MIGRATED-SUITE-STATUS.md` + the capability matrix:
+
+1. **admission must not be realm-conditional** (security gap). Small in shape but NOT a one-line move: the
+   binding is built from `compiledAnswerOfRealm(realm)`, so a realm-less member needs a second, legitimate
+   compiled answer — that is a design question about where the ceiling comes from, not a code edit.
+2. **the overlay decision** (injected port per call vs compile-into-binding + generation recheck).
+
+I did not start either half this round: (1) is not the small change its call site suggests, and starting it
+late would have left the branch half-refactored. E3 stays red, the CI leg stays unbound, and both are
+stated in the matrix rather than narrated away.
+
+Gates at `acde9af5c`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, ci-required pass.
