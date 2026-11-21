@@ -127,3 +127,24 @@ body — the provider is not merely unproven for that call, it is never entered.
   in-process identity assertion (`ADM-100`).
 - Do not relax `d:guard-facts` to "facts may be absent": zero guard consults IS the finding.
 - Do not fix this by writing a Team tool that shadows `read` — that is the shadow definition A1 forbids.
+
+## Round 62 addendum — the denied live call and the revocation semantics
+
+Two things measured after the boundary fix:
+
+1. **`IO_READ_DENIED` on the live path is unreachable by design**: the centre decides BEFORE execution, so an
+   out-of-lane call never reaches the provider. The provider-side refusal is proven in-process (ADM-100: zero
+   secret bytes). The live judge therefore reports the centre's `LANE_DENY`, which is the correct division of
+   labour, not a missing guarantee.
+2. **Authority revocation cannot come from the durable overlay, and that is a CONTRACT INVARIANT, not a bug**:
+   `overlay-decision.mjs:9` (deny-only), `admission-port.mjs:498-521` (consulted only when the compiled lane
+   allows; the only verdict is `ADMISSION_OVERLAY_DENY`), `permission-mutation.ts:435-436` (a revoke removes
+   restrictions and "never needs expansion authority"). Measured live: add a durable deny ⇒ the call is refused
+   `ADMISSION_OVERLAY_DENY`; revoke that deny ⇒ the call is admitted again; an untouched in-lane call keeps
+   working. What CANNOT happen — and must not — is the overlay WIDENING authority or a revoke producing a new
+   compiled generation.
+
+So D's "permission revocation" acceptance must be stated in the contract's own terms: **revocation of access =
+a durable deny (refused with zero body), restoration = removing that deny, and widening beyond the compiled
+ceiling is refused.** A judge that requires the overlay to grant is testing for a capability the contract
+forbids; it is REFUTED on purpose.
