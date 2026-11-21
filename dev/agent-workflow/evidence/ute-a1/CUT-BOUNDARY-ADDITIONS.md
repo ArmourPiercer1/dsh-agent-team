@@ -304,3 +304,21 @@ A second, smaller correction: the instruction to "register the two retired suite
 scanned, so an exemption for it is `UTE_CLOSURE_STALE_EXEMPTION`; the existing 85
 `retired-module` entries are for files that SURVIVE and refer to the delete set. Retirement of the
 two suites is complete by deletion alone, and their reason is recorded in §5.
+
+## 8. Withdrawal: the centre does not get a second I/O algebra
+
+`vnext/effective-io.ts` was written in this window before `packages/runtime/member-io-policy/`
+was read. That package is the product's compiler — 2,524 lines, `compileMemberPolicy`,
+`compileEffectiveIo`, `coversLocator`, `matchLocator`, `bindInvocation`/`consumeInvocation`, the
+approval-takeover codes — and it is what the realm compiler consumes. A second algebra in
+`vnext/` would have been exactly the fork this plan exists to prevent: two answers to "may this
+call touch this path", with the weaker one deciding whenever it was reached first.
+
+It is withdrawn in the same window it was written. The two arms that were genuinely worth keeping
+were re-checked against the product implementation before dropping them, not merely assumed:
+`coversLocator('/w/a', '/w/ab') === false` (a subtree boundary is a PATH boundary, not a string
+prefix), `('/w/a','/w/a/b') === true`, `('/w/a','/w') === false`, and `toLocatorKey('/w/../etc')`
+preserves the `..` segment instead of normalizing it away, so a dot-dot path cannot match an
+ancestor rule.
+
+The centre's rule from here: **it calls `member-io-policy`; it never re-derives it.**
