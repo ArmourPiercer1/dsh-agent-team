@@ -852,3 +852,104 @@ test('ADM-37 — a refusal is recorded as REFUSED, and the recheck can actually 
   assert.equal(disposals, afterFirst, 'a second dispose must be a no-op, not a re-run')
   recheckCenter.dispose()
 })
+
+test('ADM-38 — a fault while reading or writing the record is a REFUSAL, and a second dispatch is a replay', async () => {
+  // A truncated ledger line or a settlement conflict must not escape from a pre-execute listener: what
+  // the host does with a thrown listener is unmeasured, and a decision nobody can record is not one this
+  // centre will run under. Both become explicit denies with the fault's own code.
+  const { installMemberCentre, bindingFromCompiledMember } = await import('../src/plugin/vnext/centre-install.mjs')
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const member = {
+    identity: { instanceId: 'inst-1', instanceGeneration: 1, blueprintRevision: 'rev-1' },
+    templateId: 'worker',
+    policy: { read: lane(['/a']), write: lane(['/a']), network: 'deny', revision: 'gen-1' },
+  }
+  const binding = bindingFromCompiledMember({ member, agentId: 'session-1', sessionId: 'session-1', workspaceRoot: '/a', owner: 'root-1' })
+  const makeHost = () => {
+    const host = {
+      pre: [], result: [], guards: [],
+      on (event, handler) {
+        if (event === 'tools/pre-execute') host.pre.push(handler)
+        else if (event === 'tools/result') host.result.push(handler)
+        return () => {}
+      },
+      guard (fn) { host.guards.push(fn); return () => {} },
+      get: (name) => (name === 'tools' ? { guard: (fn) => host.guard(fn) } : undefined),
+      async dispatch (exec) {
+        let verdict = { kind: 'allow' }
+        for (const handler of host.pre) verdict = await handler(exec, async () => verdict)
+        if (verdict.kind !== 'allow') return verdict
+        for (const guard of host.guards) {
+          const reason = guard(exec)
+          if (reason !== undefined) return { kind: 'deny', reason }
+        }
+        for (const handler of host.result) handler(exec, { isError: false })
+        return { kind: 'allow' }
+      },
+    }
+    return host
+  }
+  const identityOf = (exec) => ({ executionId: `exec-${exec.callId}`, actorId: 'inst-1', worldId: 'session-1' })
+  const store = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'centre-38-')) })
+  // (1) the ledger cannot be read
+  const host1 = makeHost()
+  const faults = []
+  const centre1 = installMemberCentre({
+    ctx: host1, binding, resolveBinding: () => binding,
+    recordAdmission: () => {}, recordExecution: () => {}, store, identityOf,
+    isReplay: () => { throw new Error('LEDGER_TRUNCATED: the last line is not valid JSON') },
+    onFault: (error, context) => faults.push([error, context]),
+  })
+  const unreadable = await host1.dispatch({ callId: 'c-unreadable', name: 'read', arguments: { file_path: '/a/x' } })
+  assert.equal(unreadable.kind, 'deny')
+  assert.match(unreadable.reason, /ADMISSION_LEDGER_UNREADABLE/u)
+  assert.match(unreadable.reason, /LEDGER_TRUNCATED/u, 'the fault text survives into the refusal')
+  assert.equal(faults.at(-1)[1].phase, 'replay-check')
+  centre1.dispose()
+  // (2) the ledger cannot be written
+  const host2 = makeHost()
+  const centre2 = installMemberCentre({
+    ctx: host2, binding, resolveBinding: () => binding,
+    recordAdmission: () => { throw new Error('disk full') }, recordExecution: () => {}, store, identityOf,
+    onFault: (error, context) => faults.push([error, context]),
+  })
+  const unwritable = await host2.dispatch({ callId: 'c-unwritable', name: 'read', arguments: { file_path: '/a/x' } })
+  assert.equal(unwritable.kind, 'deny')
+  assert.match(unwritable.reason, /ADMISSION_LEDGER_UNWRITABLE/u)
+  centre2.dispose()
+  // (3) the settlement cannot be opened
+  const host3 = makeHost()
+  const centre3 = installMemberCentre({
+    ctx: host3, binding, resolveBinding: () => binding,
+    recordAdmission: () => {}, recordExecution: () => {},
+    store: { ...store, recordAdmission: () => { throw new Error('SETTLEMENT_CONFLICT') } },
+    identityOf,
+    onFault: (error, context) => faults.push([error, context]),
+  })
+  const unsettleable = await host3.dispatch({ callId: 'c-settlement', name: 'read', arguments: { file_path: '/a/x' } })
+  assert.equal(unsettleable.kind, 'deny')
+  assert.match(unsettleable.reason, /ADMISSION_SETTLEMENT_FAULT/u)
+  centre3.dispose()
+  // (4) THE MEMO SERVES ONE DISPATCH. Same callId, a different execution object, before any tools/result:
+  // that is a replay, and it must meet the ledger rather than inherit the first verdict.
+  const host4 = makeHost()
+  const centre4 = installMemberCentre({
+    ctx: host4, binding, resolveBinding: () => binding,
+    recordAdmission: () => {}, recordExecution: () => {}, store, identityOf,
+  })
+  const first = host4.pre[0]
+  const verdictOne = await first({ callId: 'c-dup', name: 'read', arguments: { file_path: '/a/x' } }, async () => ({ kind: 'allow' }))
+  assert.equal(verdictOne.kind, 'allow')
+  const verdictTwo = await first({ callId: 'c-dup', name: 'read', arguments: { file_path: '/a/x' } }, async () => ({ kind: 'allow' }))
+  assert.equal(verdictTwo.kind, 'deny', 'a second dispatch of the same callId is a replay, not a memo hit')
+  assert.match(verdictTwo.reason, /ADMISSION_REPLAY/u)
+  // The SAME execution object consulting again (the host's second consultation) still reads the memo.
+  const sameExec = { callId: 'c-dup2', name: 'read', arguments: { file_path: '/a/x' } }
+  const ok = await first(sameExec, async () => ({ kind: 'allow' }))
+  assert.equal(ok.kind, 'allow')
+  const again = await first(sameExec, async () => ({ kind: 'allow' }))
+  assert.equal(again.kind, 'allow', 'the same execution may be consulted twice')
+  centre4.dispose()
+})

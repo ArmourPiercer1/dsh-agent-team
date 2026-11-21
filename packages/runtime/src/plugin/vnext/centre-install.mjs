@@ -121,6 +121,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(recordReplay === undefined ? {} : { recordReplay }),
       ...(grants === undefined ? {} : { grants }),
       ...(settlement === undefined ? {} : { settlement }),
+      ...(onFault === undefined ? {} : { onFault }),
     }))
     disposers.push(installExecutionFacts({
       ctx,
