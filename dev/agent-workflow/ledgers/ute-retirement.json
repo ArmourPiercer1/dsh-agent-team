@@ -422,6 +422,138 @@
       }
     },
     {
+      "family": "process",
+      "unit": {
+        "familyId": "dsh.process-family",
+        "members": [
+          "bash",
+          "pwsh"
+        ]
+      },
+      "oldPath": {
+        "files": [
+          "packages/tools/families/process.mjs",
+          "packages/tools/process-family/src/bash-contribution.mjs",
+          "packages/tools/process-family/src/bash-normalizer.ts",
+          "packages/tools/process-family/src/bash-row.mjs",
+          "packages/tools/process-family/src/confined-shell-executor.mjs",
+          "packages/tools/process-family/src/index.mjs",
+          "packages/tools/process-family/src/pwsh-confined.mjs",
+          "packages/tools/process-family/src/pwsh-executor.mjs",
+          "packages/tools/process-family/src/pwsh-mechanics.mjs",
+          "packages/tools/process-family/src/pwsh-row.mjs",
+          "packages/tools/process-family/src/shell-mechanics.mjs"
+        ]
+      },
+      "state": "NOT_RETIREABLE",
+      "terms": {
+        "oldBaseline": {
+          "verdict": true,
+          "evidence": {
+            "path": "tests/ute-g1-process/golden/old-path.tsv",
+            "expect": [
+              "PB-B1-inlane-stdout",
+              "PB-B2-exit-code",
+              "PB-B3-stderr",
+              "PB-B4-stdout-cap",
+              "PB-B5-timeout",
+              "PB-B6-abort-before-dispatch",
+              "PB-B7-outside-workdir",
+              "PB-B8-outside-read-os",
+              "PB-B9-outside-write-os",
+              "PB-B10-env-scrub",
+              "PB-B11-stdin-ignored",
+              "PB-B12-missing-workdir",
+              "PB-B13-invalid-command",
+              "PB-B14-bound-workdir"
+            ],
+            "contradicts": []
+          },
+          "note": "14 (request -> effect) vectors captured on the pinned host 0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84 through the PRODUCT route-C seam (mountMemberA5sfRealm + attachA5sfNativeToolModules, i.e. the compiled EffectiveIo lane + the confined subprocess face + the PD-12 confined bash shadow, packages/runtime/src/plugin/live/confined-bash-tool.mjs, module name a5sf-confined-bash). ALL 14 cover `bash`; `pwsh` is a DECLARED, PRINTED EXCLUSION and the unit is therefore covered 1 of 2 members (see UTE_MEMBER_UNCOVERED in this row's gate output). COMPOSITION MEASURED FIRST, not assumed: dev/agent-workflow/evidence/ute3-process-b1-20261120/composition-probe.txt shows the attach REPLACES the preset bash definition (PROBE-OWNER bash-replaced-by-attach=yes before=preset-definition after=routed-definition), the call reaches the CONFINED provider (confined=yes providerCalls=1 inheritedServiceCalls=0), and PROBE-ROUTE-UNREACHABLE member=pwsh records the exclusion from WIRING facts (no route-C shadow; the shipped governed preset REMOVES the tool-pwsh row; nothing registered on the post-attach Member scope), while the pwsh binary is recorded only as a HOST OBSERVATION — hosted run 44843401144 proved a runner may ship PowerShell, so no rule depends on it. The legacy governed plane ACCEPTS the native bash name on a COMPLETE name map (PROBE-PLANE names=bash-native+search-aliased gate=accepted; PLANE_SUPPORTED_NATIVE_TAKEOVERS.bash=[bash]) and cannot express pwsh at all (PLANE_NAMES_INVALID) — this family's plane answer was measured rather than transferred from Search, whose native names the plane refuses. Effects are the PARSED confined record (real exit status, real stdout/stderr bytes, real timedOut/aborted flags), the fixture-tree digest (unchanged on every vector), the confined spawn count and the realm's guard facts. The terminating SIGNAL name, wall-clock, pid and the absolute workdir are excluded by the PRINTED exclusion set in capture-old-path.mjs, and the timeout claim is carried by the absent marker file instead. Refusals are mapped onto the closed nine-category vocabulary REUSED from tests/ute-g1-fs/lib/refusal-categories.mjs (imported, not forked; that tree is out of this task's write scope, so this surface's three prose entries live in tests/ute-g1-process/lib/effect-oracle.mjs with citations): 4 classes used, the residual `unknown` unreachable by construction, and an unexplained refusal raises REFUSAL_VOCABULARY_INCOMPLETE instead of being bucketed. The shared IO_READ_DENIED code is disambiguated by the deny locator plus a FILESYSTEM witness (absent locator -> missing-path; locator outside every lane root -> denied-by-lane). Two capture runs are byte-identical and the committed fixture is exactly what a fresh capture writes (asserted by lane-suite.test.mjs). Fixture identity in tests/ute-g1-process/golden/old-path.meta.txt; member->vector->control table in golden/COVERAGE.md. This is the OldBaseline term for the PROCESS family only, at stage B1."
+        },
+        "newPathVerified": {
+          "verdict": false,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-process-b1-20261120/new-path-absent.txt",
+            "expect": [
+              "NEW-PATH-ABSENT family=dsh.process-family stage=B1 member=bash newPathVerified=false"
+            ],
+            "contradicts": []
+          },
+          "note": "NO new path exists for this family at stage B1: there is no runner, no new-path-controls transcript, and no ute3-process-b2 evidence directory in this tree. The evidence file is an explicit NEW-PATH-ABSENT record, deliberately not an empty PASS transcript (an empty transcript would look like a skipped verification, and a skip is never PASS). Consequently `ute-retirement-gate --all` reports UTE_NEW_PATH_UNVERIFIED and UTE_VECTOR_UNREPRODUCED for every bash vector, and UTE_MEMBER_UNCOVERED for pwsh, and prints unit=0/2."
+        },
+        "semanticDifferencesResolved": {
+          "verdict": false,
+          "differences": [
+            {
+              "id": "SD-PROCESS-1-no-truncation-flag",
+              "blocking": true,
+              "approval": null,
+              "summary": "stdout/stderr are silently TAIL-truncated at the declared 262144-byte cap and the record carries NO truncation flag, so a consumer cannot distinguish 'the command printed exactly this' from 'the head was dropped' (PB-B4: 300022 emitted bytes arrive as exactly 262144 ending with the final marker). MEASURED on the product route and load-bearing by NC-CAP-LOAD-BEARING (the inherited definition answers a different cap). APPROVAL: PENDING (owner signature required) — a new path either reproduces the untold truncation or is approved to change it."
+            },
+            {
+              "id": "SD-PROCESS-2-killed-exit-status",
+              "blocking": true,
+              "approval": null,
+              "summary": "A child killed by the caller timeout reports exitCode=null plus a SIGNAL name; the status is not a number and the signal name is excluded from the golden by the printed exclusion set. A new path must agree on the null-status shape and on the caller-visible settle flag timedOut, corroborated by the absent filesystem effect. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-PROCESS-3-pty-face-not-measured",
+              "blocking": true,
+              "approval": null,
+              "summary": "The shipped product wiring mounts NO governed PTY face, so the measured `bash` is the route-C confined-bash-tool.mjs (PD-12) definition over the confined subprocess face. packages/runtime/src/plugin/live/native-bash-tool.mjs (NATIVE-BASH-PRESERVATION, the host bash-persistent definition) is selected whenever a composition wires faces.terminals.governedPty, and that face adds persistent cd/export state and the stty -echo/marker protocol this corpus does NOT cover. The baseline therefore does not cover the persistent-PTY semantics of the same model-visible name. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-PROCESS-4-refusal-surface",
+              "blocking": true,
+              "approval": null,
+              "summary": "Lane denials are typed IO_READ_DENIED with authored-locator prose ('authored locator ... is outside every allow subtree of the lane'), and a MISSING WORKDIR shares the SAME code with different prose ('read target ... does not exist'); the corpus compares a closed CATEGORY vocabulary plus the filesystem witness, never the code or the sentence. A new path that answers a different code is compatible only by an approved semantic change. APPROVAL: PENDING (owner signature required)."
+            },
+            {
+              "id": "SD-PROCESS-5-pwsh-member-unreachable",
+              "blocking": true,
+              "approval": null,
+              "summary": "The census books TWO members (bash, pwsh) but pwsh is unreachable on the product route because the SHIPPED WIRING serves no definition for it: no route-C shadow, no preset row (the shipped governed preset REMOVES tool-pwsh as an un-instrumented second shell), and nothing registered on the post-attach Member scope. A pwsh vector could only be captured on a hand-built composition that no shipped wiring produces, so the unit is covered 1 of 2 and a new path cannot claim the unit until a pwsh-serving composition is measured. The binary's presence is NOT part of this reason (a GitHub runner ships PowerShell; hosted run 44843401144 red the revision that assumed otherwise). APPROVAL: PENDING (owner signature required)."
+            }
+          ],
+          "note": "Five measured differences, ALL blocking, NONE approved: the term is FALSE by derivation, and the lane suite asserts every entry stays blocking with approval null. A difference is resolved only by an owner-approved record naming an approver, a date, a PR and a merged ancestor commit (RETIREMENT.md §3); no such record exists.",
+          "evidence": {
+            "path": "tests/ute-g1-process/lib/semantic-differences.mjs",
+            "expect": [
+              "SD-PROCESS-1-no-truncation-flag",
+              "SD-PROCESS-2-killed-exit-status",
+              "SD-PROCESS-3-pty-face-not-measured",
+              "SD-PROCESS-4-refusal-surface",
+              "SD-PROCESS-5-pwsh-member-unreachable"
+            ],
+            "contradicts": []
+          }
+        },
+        "negativeControlsPass": {
+          "verdict": true,
+          "evidence": {
+            "path": "dev/agent-workflow/evidence/ute3-process-b1-20261120/negative-controls.txt",
+            "expect": [
+              "NC-VERDICT GREEN controls=10 failed=0",
+              "NC NC-HARNESS-BITES ok",
+              "NC NC-CATEGORY-TOTAL ok",
+              "NC NC-PWSH-EXCLUSION-CONDITIONAL ok",
+              "NC NC-MEMBER bash ok",
+              "NC NC-MEMBER bash-POSITIVE ok",
+              "NC NC-SHADOW-LOAD-BEARING ok",
+              "NC NC-CONFINEMENT-WITNESS ok",
+              "NC NC-TIMEOUT-LOAD-BEARING ok",
+              "NC NC-ENV-SCRUB-LOAD-BEARING ok",
+              "NC NC-CAP-LOAD-BEARING ok"
+            ],
+            "contradicts": []
+          },
+          "note": "Two family-level controls (NC-HARNESS-BITES: a flipped golden stdout digest / exit status must go RED; NC-CATEGORY-TOTAL: an unexplained refusal must raise REFUSAL_VOCABULARY_INCOMPLETE and `unknown` must be unreachable) PLUS the portability control NC-PWSH-EXCLUSION-CONDITIONAL: the pwsh exclusion is derived from the SHIPPED WIRING (route-C shadow / preset row / post-attach definition), never from a host binary, and each of the three wiring facts flipped to \"serves pwsh\" must REFUSE the exclusion with PWSH-EXCLUSION-UNJUSTIFIED instead of inheriting it (the same wiring WITH a pwsh vector is accepted). This control exists because hosted run 44843401144 red on the first revision's `PROBE-PWSH binary=ABSENT` assertion — a laptop fact that a GitHub runner (which ships PowerShell) falsified; no test may require the host's shape PLUS one REAL per-member control for the ONE exercisable member: NC-MEMBER bash (widen ONLY the read lane around PB-B8 -> the same call succeeds and returns the planted out-of-lane secret) with its NC-MEMBER bash-POSITIVE arm (the unmodified vector still reproduces its golden row). pwsh has NO control because it has no vector to mutate: a control for an unreachable member would be vacuous, and a vacuous control is not a control — the member is EXCLUDED and the unit is short (1/2) instead, which the gate reports. Three composition-level controls prove the declarations are load-bearing rather than decorative: NC-SHADOW-LOAD-BEARING (disposing the realm's own PD-12 bash shadow makes the refused out-of-lane WORKDIR call succeed through the inherited preset definition), NC-CONFINEMENT-WITNESS (the same disposal on PB-B8 makes the inherited unconfined shell read the planted secret, so the confined-vs-inherited witness demonstrably bites), and NC-CAP-LOAD-BEARING (the inherited definition answers a different cap, so the recorded 262144 is the shadow's declaration). Two declaration-level controls: NC-TIMEOUT-LOAD-BEARING (a 30 s caller timeout lets the payload finish and write its marker, so the kill was the declared timeout) and NC-ENV-SCRUB-LOAD-BEARING (the secret opted in through the install spec's env, layered AFTER the scrub, DOES reach the child, so the baseline's ABSENT is the scrub and not a broken channel). Each mutated arm must go RED and every applicable positive arm must stay green; lane-suite.test.mjs re-runs the script and requires the committed transcript to agree line for line."
+        }
+      },
+      "note": "UTE-3 / G1 PROCESS family (bash, pwsh), stage B1: old-path baseline + per-member negative controls. The unit is derived from dev/agent-workflow/ledgers/arc-a-family-census.json (`dsh.process-family`, nativeNames bash + pwsh) and is covered 1 of 2 (bash only; pwsh is a printed exclusion). state=NOT_RETIREABLE: oldBaseline true, newPathVerified false (absence evidence), semanticDifferencesResolved false (five blocking, unapproved), negativeControlsPass true. No product code, no authority and no legacy file is touched by this stage; CORE PATCH BUDGET = 0."
+    },
+    {
       "family": "agent-control",
       "unit": {
         "familyId": "dsh.agent-control-family",

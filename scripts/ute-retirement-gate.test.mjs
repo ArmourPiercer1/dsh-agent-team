@@ -666,21 +666,20 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.equal(payload.verdicts[0].allowed, false)
 
   // `--all` now grades FIVE seeded families (fs + search + web + inspect +
-  // agent-control). The SEARCH row (UTE-3 PR B1) moved this from `requested=1`
-  // to `requested=2`, the WEB row to `requested=3`, the INSPECT row (single-
-  // implementation proof) to `requested=4`, and the AGENT-CONTROL row (seven
-  // dual implementations, full baseline) to `requested=5`, so the arm pins the
-  // NEW seeded state EXACTLY — and derives the summary's counts from the printed
-  // `UTE-RETIREMENT-REFUSED` lines instead of trusting the constant, so a sixth
-  // family added to the ledger can never be absorbed silently by a stale number
-  // here. Changing a family or its code list means updating THIS arm: silence
+  // process). The SEARCH row (UTE-3 PR B1) moved this from `requested=1` to
+  // `requested=2`, the WEB row to `requested=3`, the INSPECT row (single-
+  // implementation proof) to `requested=4`, and the PROCESS row (UTE-3 PR B1)
+  // to `requested=5`, so the arm pins the NEW seeded state EXACTLY — and derives
+  // the summary's counts from the printed `UTE-RETIREMENT-REFUSED` lines instead
+  // of trusting the constant, so a sixth family added to the ledger can never be
+  // absorbed silently by a stale number here. Changing a family or its code list means updating THIS arm: silence
   // is not an option, and a looser match would be the regression.
   const all = run(['--all'])
   assert.equal(all.status, 1)
   const refusedLines = all.stdout.split('\n').filter((line) => line.startsWith('UTE-RETIREMENT-REFUSED family='))
   assert.deepEqual(
     refusedLines.map((line) => line.match(/family=(\S+)/u)[1]).sort(),
-    ['agent-control', 'fs', 'inspect', 'search', 'web'],
+    ['agent-control', 'fs', 'inspect', 'process', 'search', 'web'],
     `--all must refuse exactly the seeded families; it refused ${JSON.stringify(refusedLines.length)}`,
   )
   const codesFor = (family) => {
@@ -789,6 +788,45 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   const inspectBlock = blockFor('inspect')
   assert.match(inspectBlock, /term=semanticDifferencesResolved[^\n]*alias-to-native-name-change/)
   assert.match(inspectBlock, /code=UTE_OLD_BASELINE_MISSING term=oldBaseline/u)
+  // process — UTE-3 PR B1 captured the OLD PATH only (14 bash vectors; pwsh is
+  // a DECLARED exclusion derived from the SHIPPED WIRING, not from a host
+  // binary), so this row reports BOTH coverage codes plus the unverified new
+  // path and an unreproduced vector for EVERY bash vector. Asserted as an exact
+  // set: adding a vector, dropping a member, acquiring a new path or turning the
+  // pwsh exclusion into a silent inheritance changes this list and reds here.
+  const processRow = codesFor('process')
+  assert.deepEqual(processRow.codes, [
+    'UTE_MEMBER_UNCOVERED',
+    'UTE_NEW_PATH_UNVERIFIED',
+    'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
+    'UTE_VECTOR_UNREPRODUCED',
+  ])
+  assert.match(processRow.line, /state=NOT_RETIREABLE unit=0\/2$/u)
+  const processBlock = blockFor('process')
+  assert.match(processBlock, /term=oldBaseline[^\n]*member \\"pwsh\\" has no baseline vector/u)
+  assert.match(processBlock, /term=newPathVerified[^\n]*member \\"pwsh\\" has no baseline vector to reproduce/u)
+  assert.match(processBlock, /term=semanticDifferencesResolved[^\n]*SD-PROCESS-5-pwsh-member-unreachable/u)
+  // Exactly one unreproduced vector per bash row: the 14 PB-B ids, no more and
+  // no fewer (the member-level finding also names a PB- id, so the count is
+  // taken from the per-vector sentence, not from a bare substring).
+  const processNewPath = processBlock.split('\n').filter((line) => line.includes('term=newPathVerified') && /does not contain .*NEW-PATH-VECTOR PB-B/u.test(line))
+  assert.equal(processNewPath.length, 14, 'the process row must report exactly one unreproduced baseline vector per bash row')
+  // The axes this stage DOES establish must stay established FOR THE MEMBER IT
+  // MEASURED. `pwsh` is EXPECTED to be UTE_MEMBER_UNCOVERED on oldBaseline (that
+  // is the declared 1/2 unit, asserted above); what must NOT appear is a
+  // baseline finding that names a PB-B VECTOR (the golden losing bash coverage)
+  // or ANY negativeControlsPass finding (bash has a real NC-MEMBER line).
+  const processFindings = processBlock.split('\n').filter((line) => line.startsWith('  UTE-RETIREMENT-FINDING'))
+  assert.deepEqual(
+    processFindings.filter((line) => line.includes('term=negativeControlsPass')),
+    [],
+    'the process controls axis must stay established for bash (NC-MEMBER bash is in the committed transcript)',
+  )
+  assert.equal(
+    processFindings.filter((line) => line.includes('term=oldBaseline') && /PB-B/u.test(line)).length,
+    0,
+    'no oldBaseline finding may name a PB-B vector: the bash baseline exists',
+  )
   // agent-control — UTE-3 B1 measured SEVEN dual implementations (Stage-0
   // probe: 7 two-implementation / 0 single), so this family gets a REAL 42-vector
   // baseline and 24 controls, and is refused for the two axes it genuinely
@@ -823,7 +861,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.equal(Number(summary[1]), refusedLines.length, 'requested must equal the number of printed refusals')
   assert.equal(Number(summary[3]), refusedLines.length, 'refused must equal the number of printed refusals')
   assert.equal(Number(summary[2]), 0, 'no seeded family may be allowed')
-  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=5 allowed=0 refused=5/)
+  assert.match(all.stdout, /UTE-RETIREMENT-SUMMARY requested=6 allowed=0 refused=6/)
 
   const unknown = run(['--family', 'mcp'])
   assert.equal(unknown.status, 1)
