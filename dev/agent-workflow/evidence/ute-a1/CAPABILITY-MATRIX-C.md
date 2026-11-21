@@ -21,11 +21,11 @@ construction until D runs the real host; that is the honest state, not an omissi
 | C-pty | PTY family | same face as C-subprocess; a session is only opened for a live registered agent | MECHANISM, positive control UNPROVEN (D) |
 | C-ptc | PTC escalation | the escalation row survives the A0 boundary (`createPtcEscalationRouter`) but the centre has NOT been wired to it | UNPROVEN |
 | C-remote | Remote | not wired to the centre; no arms | UNPROVEN |
-| C-mcp | MCP | `mcp__*` tools have no `TOOL_AXES` entry, so the centre REFUSES them (`ADMISSION_TOOL_UNBOUND`) — explicit unavailability, not silent execution | UNPROVEN (explicitly unavailable) |
+| C-mcp | MCP | `mcp__*` has no axis and is REFUSED by name (`ADMISSION_TOOL_UNBOUND`, `ADM-32`): its transport and effects are unknowable to the centre until an MCP family binding exists | UNPROVEN (explicitly unavailable) |
 | C-alpha6 | Alpha.6 review routing | preserved in the assembly; no centre interaction, no arms | UNPROVEN |
-| C-goal | Goal / Todo | host tools; no centre axis, so the centre refuses them by name. They are not in the closed centre list | UNPROVEN (explicitly unavailable) |
-| C-skill | Team Skill | preserved; skill loading reads through the host `skill` service, NOT through the member's confined fs — a known ceiling hole to state in D | UNPROVEN |
-| C-fork | Subagent Fork | preserved; no centre interaction, no arms | UNPROVEN |
+| C-goal | Goal / Todo | preserved as HOST CAPABILITIES (`get_goal`/`create_goal`/`update_goal`/`todo_write`), axis `host.service`, `ADM-32` | MECHANISM |
+| C-skill | Team Skill | preserved as a host capability (`skill`, axis `host.service`, `ADM-32`); its file reads go through the host skill service, NOT the member's confined fs | MECHANISM + recorded LIMIT |
+| C-fork | Subagent Fork | preserved as host capabilities (`subagent`, `send_message`, `interrupt_agent`, axis `host.service`, `ADM-32`); the CHILD's own binding governs the child's tools | MECHANISM |
 | C-policy | observation policy two-state | SLICE-10/11 pin OFF (default) and ON on the pinned host | MECHANISM |
 
 ## What this table is for
@@ -34,3 +34,15 @@ It exists so no row can be silently upgraded by narration. A row moves to PRODUC
 real host boot line at a named commit. The `UNPROVEN (explicitly unavailable)` rows are the ones the
 centre currently refuses — which is the A1 law working, not a defect: an unwired controlled call is
 refused rather than forwarded.
+
+## The `host.service` judgement (recorded, not hidden)
+
+Goal/Todo, Team Skill and Subagent are preserved by the 06 contract, and their I/O belongs to the
+HOST's own services (the goal store, `$DSH_HOME/skills`, the subagent registry), not to the member's
+workspace. Judging them by the member's fs lane would be wrong in both directions: it would refuse a
+capability the contract preserves, and it would pretend the centre confines an I/O it does not see.
+
+So the centre binds the CALL and records the fact with axis `host.service`, and states the limit
+plainly: a skill file read by the host skill service is OUTSIDE the member's fs ceiling. That is a
+D-report limit, not a claim of confinement. MCP is treated differently because its effects are
+unknowable rather than merely out-of-lane: it stays refused by name.

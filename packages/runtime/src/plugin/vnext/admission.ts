@@ -70,6 +70,34 @@ export const CENTRE_TOOL_NAMES: readonly string[] = Object.freeze([
 
 const CENTRE_TOOLS: ReadonlySet<string> = new Set(CENTRE_TOOL_NAMES)
 
+/**
+ * PRESERVED HOST CAPABILITIES. Goal/Todo, Team Skill and Subagent (spawn/control) are host tools
+ * whose I/O is the HOST's own service (the goal store, `$DSH_HOME/skills`, the subagent registry),
+ * not the member's workspace. They are preserved by the 06 contract, so refusing them would be the
+ * feature loss this round exists to prevent - and judging them by the member's fs lane would be
+ * wrong, because they do not touch it.
+ *
+ * THE JUDGEMENT IS RECORDED, NOT HIDDEN: their internal reads are OUTSIDE the member's fs ceiling
+ * (a skill file is read by the host skill service). The centre binds the CALL and records the fact;
+ * it does not claim the host service's own I/O is confined. Stated in the D report as a limit.
+ *
+ * MCP tools (`mcp__<server>__<tool>`) are deliberately NOT here: their transport and their effects
+ * are unknowable to the centre, so they stay refused (explicit unavailability) until an MCP family
+ * binding exists.
+ */
+export const HOST_CAPABILITY_TOOL_NAMES: readonly string[] = Object.freeze([
+  'skill',
+  'todo_write',
+  'get_goal',
+  'create_goal',
+  'update_goal',
+  'subagent',
+  'send_message',
+  'interrupt_agent',
+])
+
+const HOST_CAPABILITY_TOOLS: ReadonlySet<string> = new Set(HOST_CAPABILITY_TOOL_NAMES)
+
 /** Argument keys that carry the locator, in the order they are tried. */
 const LOCATOR_KEYS: Readonly<Record<string, readonly string[]>> = Object.freeze({
   read: ['file_path', 'path'],
@@ -155,7 +183,7 @@ export interface InvocationAuthorityFacts {
   readonly sessionId: string
   readonly instanceGeneration: number
   readonly toolName: string
-  readonly axis: ToolAxis | 'team.control'
+  readonly axis: ToolAxis | 'team.control' | 'host.service'
   readonly locator: string
   readonly definitionSource: string
   readonly policyGeneration: string
@@ -208,6 +236,11 @@ export function admit (input: {
   }
   if (CENTRE_TOOLS.has(toolName)) {
     // Bound, then the centre's own authority decides. No lane is consulted because no lane applies.
+    return { kind: 'allow' }
+  }
+  if (HOST_CAPABILITY_TOOLS.has(toolName)) {
+    // A preserved host capability: NO lane applies (its I/O is the host's own service). The action
+    // is admitted for a bound agent and recorded; the service's internal I/O is a stated limit.
     return { kind: 'allow' }
   }
   const axis = TOOL_AXES[toolName as keyof typeof TOOL_AXES]
@@ -270,7 +303,11 @@ export function invocationFactsOf (input: {
   readonly admission: Admission
 }): InvocationAuthorityFacts {
   const { binding, toolName, callId, arguments: args, admission } = input
-  const axis = (CENTRE_TOOLS.has(toolName) ? 'team.control' : (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read')) as ToolAxis | 'team.control'
+  const axis = (CENTRE_TOOLS.has(toolName)
+    ? 'team.control'
+    : HOST_CAPABILITY_TOOLS.has(toolName)
+      ? 'host.service'
+      : (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read')) as ToolAxis | 'team.control' | 'host.service'
   const locator = judgedLocator(toolName, args, binding) ?? ''
   // A refused call still records what was ASKED — that is the point of the record: after an
   // incident, "which locator did the model try, under which generation" must not be reconstructible
