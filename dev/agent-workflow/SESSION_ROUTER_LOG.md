@@ -9599,3 +9599,32 @@ UTE-RETIREMENT-SUMMARY requested=6 allowed=0 refused=6
 **未触碰**：`packages/**` 产品代码、authority、生产切换、legacy 删除、host 树、`tests/paths.mjs`、其他族目录/账本行、`docs/plans/active/**`、`arc-a-family-census.json`；CORE PATCH BUDGET = 0；无新 CI workflow/job/leg（只在既有 "UTE G1 FS binding product lane" 的 argv 与 manifest `check[]` 末尾追加同一个 token，两侧仍逐字节一致、同序）；交付树 `tests/deepseek-harness*` 跟踪计数 0；未 push master/stable、未 force-push、未合并。
 
 **明写的限制（不是 PASS）**：① 新路径不存在（`newPathVerified=false`，零 `NEW-PATH-VECTOR … PASS`），退役仍禁止；② 两族的 governed 行只在 family body 直执行，未跑完整 kernel/PA dispatch 的 live Member 组合；③ `present` 的 `@published` 见证是 harness 注入 publication face 的记录 + 重新 `stat`，不是真实 UI 服务；④ 排除的 `route-unresolved` 只在 mount 时拒绝，调用级不可观测——是实测形状，不是待办；⑤ UI 定时 ask 的 pending 分支只在注入 port 上测量，未接真实 UI 端口。
+
+## 2026-11-21 — G1 收束请求提交（**未执行切换**）：八族全部可测，八族全部被拒，零族退役
+
+依据 `RETIREMENT.md` §6，本轮以**一份**合并请求收束，正文 = `docs/plans/memo/ute-g1-20261120/RELEASE-REQUEST-2026-11-21.md`。master = `1d64aeb45`（#815 合并后）。台账原样：
+
+```
+UTE-RETIREMENT-SUMMARY requested=8 allowed=0 refused=8
+```
+
+**矩阵（八族 / 20 个成员 / 77 个旧实现文件 / 31 条 blocking 差异）**：
+| 族 | unit | old | new | NC | 差异 | 判决 |
+| --- | --- | --- | --- | --- | --- | --- |
+| fs | 4/4 | ✅ | ✅ 16/16 | ✅ | 2 | 拒（语义） |
+| search | 2/2 | ✅ | ✅ 15/15 | ✅ | 3 | 拒（语义） |
+| web | 2/2 | ✅ | ❌ 无 | ✅ | 3 | 拒 |
+| inspect | 单实现 | ❌ n/a | ❌ | ❌ n/a | 1 | 拒 + `UTE_UNIT_UNGRADABLE` |
+| process | 1/2（pwsh 排除） | ✅ | ❌ 无 | ✅ | 5 | 拒 |
+| agent-control | 7/7 | ✅ | ❌ 无 | ✅ | 3 | 拒 |
+| ui | 2/2 | ✅ | ❌ 无 | ✅ | 7 | 拒 |
+| agent-state | 5/5 | ✅ | ❌ 无 | ✅ | 7 | 拒 |
+
+**这份请求为什么"提交即不可执行"**：`SemanticDifferencesResolved` 需要引用式 owner 记录，31 条差异全部 `approval: null`。这不是测量不足（六族的 baseline 与 controls 都已建立、两族的新路径逐向量复现），而是**决策程序尚未启动**——把这一点写进机器可读的台账，比在散文里写"基本完成"有用得多。
+
+**本轮最有价值的三个发现（都不是测试通过数）**：
+1. **名字有两个声明者**（`SD-WEB-1`、`SD-*-two-implementations`、`alias-to-native-name-change`）：每个拼写同时被 governed family body 与 Member preset 已挂载的 host package 声明。删掉 77 个文件里的一批**不会移除任何用户可达能力**——这就是为什么"假阴性删除"比"不删除"更危险：它看起来像进展，实际什么也没变。
+2. **产品路由并不服务待退役的族**（`SD-AGENTCTL-1`、`SD-UI/AS-product-route-absent`）：agent-control / ui / agent-state 的旧路径是 C1 governed plane，路由注册的是 host 原生行。任何声称"路由 C 基线即族基线"的报告都是错的，且会被这份矩阵一眼看穿。
+3. **`SD-SEARCH-1` 是真实产品缺陷**（无 path 的 `grep` 在产品路径返回 0 命中），不是措辞差异；接受它等于向用户承诺"这就是语义"，所以必须 owner 签，agent 不能记"已解决"。
+
+**明确的 UNKNOWN（永不记 PASS）**：未做任何生产切换；无新路径的 live-boot 验收；`pwsh` 语义未知；process 的读隔离未被证明（只钉住拒绝、秘密缺席、树未变）；goal 三件套只经 governed plane 自己的 store 验证过；FS/Search/Web 基线是 route-C 现实而 agent-control/ui/agent-state 是 governed-plane 现实，两者不可互换，矩阵逐族标注而非取平均。
