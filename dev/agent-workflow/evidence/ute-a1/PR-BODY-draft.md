@@ -80,6 +80,26 @@ it all came after that fix. It is now reproduced deterministically, and the arm 
 **Still not PRODUCT-PROVEN**: no host boot line. Overlay `ask`/`allow` are outside the port; subtree
 matching is implemented but unexercised by the E3 probe. The realm-less admission ruling is open.
 
+## B stage, first slice: the ask path is REAL (round 51)
+
+Before this, every `ask` was a hard refusal: no approval binder was wired at all (`ADMISSION_ASK_UNWIRED`).
+Now an `ask` becomes a durable Control request, its decision is recorded, the **post-approval recheck** runs
+(lane AND policy generation), and a **one-shot** grant is minted and consumed exactly once — over the
+EXISTING `ControlService.awaitControlDecision` bridge, not a second one. Host-native asks are preserved
+(the host's own prompt is a legitimate approval authority).
+
+Controls, all node:test in the `ute-vnext-a1` leg (119 pass): ADM-46 three wirings; ADM-47 deny ⇒ no
+execution + durable fact + REFUSED settlement; ADM-48 expired distinct from denied; ADM-49 fault; ADM-50
+over the REAL durable ControlService (one request, one durable allow, spend counted once across the host's
+double guard consultation, replay refused); ADM-51 real service deny; ADM-52 generation drift after
+approval; ADM-53 incomplete identity refuses before asking a reviewer; ADM-54 supply-chain pin; ADM-55
+aborted vs abandoned.
+
+**Not proven:** no host boot (a member ask surfacing in a real leader's `team_list_pending_control` is not
+exercised); the durable allow is `inline` and therefore not a guard token (`control/service.ts:4278-4290`),
+so exactly-once rests on the binder grant + ledger replay refusal; `stale-denied` and the abort/abandon
+distinction are proven at mapping level only; the grant binds member+call+tool+revision but not the locator.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all

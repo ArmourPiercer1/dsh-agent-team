@@ -10248,3 +10248,27 @@ decision-side effect.
 
 Gates at `4c892adf8`: leg `suites=6 files=6 exit=0` (44 admission arms), catalog `tests=888 refused=0
 findings=0`, cut-closure `prodRefs=0 distResiduals=0`, place-dist-glue 26 placements.
+
+### R50-51 — A1 closes; the first B slice makes `ask` real
+
+R50: E3's world was rebuilt on v4 (it was pre-cut, not mis-wired), the centre got a durable-overlay provider
+(async prepare keyed on the overlay generation, sync decide over the frozen `resolveOperationPermission`),
+the migrated suites went 238/238 and were bound as a **required ci-integration leg**
+(`verdict=PASS suites=15 files=15 passed=238`). G8's "flake" was the retired `resolvePaMount`
+ReferenceError on the delivery path, reproduced deterministically and then fixed for real by awaiting the
+world's own `resumeGate` instead of polling a 3 s clock.
+
+R51: the B-stage gap was that **no approval binder was wired at all**, so every `ask` was
+`ADMISSION_ASK_UNWIRED`. It is now a durable Control request over the EXISTING
+`awaitControlDecision` bridge, with a recorded decision, a post-approval recheck (lane AND generation), a
+one-shot grant spent exactly once, and refusal codes that stay distinct (denied / expired / fault /
+revision mismatch / replay). Host-native asks preserved — a first attempt that made an approval authority
+mandatory broke SLICE-20/22, and the fix restored that path rather than editing those tests.
+
+NOT proven and stated as such: no host boot (leader-side pending-control surface unexercised); the durable
+allow is `inline`, so exactly-once rests on the grant binder + ledger replay refusal, not on
+`guardOperation`; stale-denied and abort/abandon are mapping-level; the grant does not bind the locator.
+
+Gates at `518109063`: leg `suites=6 files=6 exit=0` (119 pass), catalog `findings=0`, cut-closure
+`prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, place-dist-glue 27, ci-required pass,
+bound leg `PASS 238`.
