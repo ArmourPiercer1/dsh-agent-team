@@ -1740,7 +1740,10 @@ const centreWorld = async (label, over = {}) => {
   const { mkdtempSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
   const { join } = await import('node:path')
-  const dir = mkdtempSync(`${tmpdir()}/vnext-b-${label}-`)
+  // The durable half (round 54) re-opens the SAME directory with FRESH objects after a child process
+  // died, so a world may adopt an existing dir/ledger/store instead of minting new ones. Every default
+  // is exactly what it was before: no existing arm changed its world.
+  const dir = over.dir ?? mkdtempSync(`${tmpdir()}/vnext-b-${label}-`)
   const listeners = { pre: [], result: [] }
   let guardFn
   const ctx = {
@@ -1755,8 +1758,8 @@ const centreWorld = async (label, over = {}) => {
       }
     },
   }
-  const ledger = openFactLedger({ path: join(dir, `${label}.facts.jsonl`) })
-  const store = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
+  const ledger = over.ledger ?? openFactLedger({ path: join(dir, `${label}.facts.jsonl`) })
+  const store = over.store ?? createExecutionSettlementStore({ dir: join(dir, 'settlement') })
   const faults = []
   const body = { count: 0 }
   const lookups = { count: 0 }
@@ -1767,11 +1770,11 @@ const centreWorld = async (label, over = {}) => {
     if (resolveImpl !== undefined) return resolveImpl(exec)
     return currentBinding
   }
-  const identityOf = (exec) => ({
+  const identityOf = over.identityOf ?? ((exec) => ({
     executionId: dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, exec.callId),
     actorId: 'agent-1',
     worldId: 'session-1',
-  })
+  }))
   const centre = installMemberCentre({
     ctx,
     binding: over.binding,
@@ -2370,4 +2373,576 @@ test('ADM-62 — the PRODUCT composition CLOSES the member: member-execution\'s 
   assert.equal(record.observation.bodyOutcome, 'not-started')
   assert.equal(centreState.settlementStore.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left open to recover as UNKNOWN')
   assert.equal(observed.filter((line) => line.includes('fault')).length, 0, `the close path must report no fault: ${JSON.stringify(observed)}`)
+})
+
+// ============================================================================================
+// THE DURABLE HALF (B stage, round 54): crash recovery, UNKNOWN, and no replay
+//
+// Rounds 51-53 proved the decision path, the Stop/lifecycle close and the probe ladder IN ONE
+// PROCESS. What stayed "coded" is what survives a process: a record opened before a crash, a callId
+// that must not be admitted twice, and a ledger that cannot be read. So every arm below reads its
+// answer back FROM THE FILES with FRESH product objects, and the writer is a CHILD PROCESS that
+// exits without unwinding (`process.exit`), leaving on disk exactly what a crash leaves: a complete
+// record for what happened, an OPEN record for what did not, and a writer lock still naming the dead
+// pid (which the next open reclaims - ADM-79 asserts that pid transition on disk).
+//
+// There is NO sleep, NO retry and NO timer here: the child's exit status is part of the assertion.
+// ============================================================================================
+
+const { settlementRecordPath } = await import('../settlement/execution-settlement.ts')
+const { mkdtempSync, mkdirSync, readFileSync, writeFileSync, chmodSync, readdirSync } = await import('node:fs')
+const { tmpdir } = await import('node:os')
+const { join } = await import('node:path')
+const { spawnSync } = await import('node:child_process')
+
+/** The worktree root, so the child resolves the same modules and hooks this file does. */
+const durableRoot = fileURLToPath(new URL('../../..', import.meta.url))
+
+/** The ONE durable identity both processes derive execution ids from. */
+const DURABLE_IDENTITY = Object.freeze({
+  rootSessionId: 'root-durable',
+  agentInstanceId: 'member-durable',
+  actorId: 'member-durable',
+  worldId: 'session-durable',
+})
+
+const durableExecutionId = (callId) => dispatchExecutionId(
+  { rootSessionId: DURABLE_IDENTITY.rootSessionId, agentInstanceId: DURABLE_IDENTITY.agentInstanceId },
+  callId,
+)
+
+const durableIdentityOf = (exec) => ({
+  executionId: durableExecutionId(exec.callId),
+  actorId: DURABLE_IDENTITY.actorId,
+  worldId: DURABLE_IDENTITY.worldId,
+})
+
+/**
+ * THE CRASH. A child process that (a) writes through the PRODUCT composition (`installMemberCentre`
+ * over a real `openFactLedger` and a real `ExecutionSettlementStore`), (b) prints ONE JSON line
+ * SYNCHRONOUSLY (`writeSync`, so an abrupt exit cannot truncate it) and (c) `process.exit()`s without
+ * running a disposer. The only state that survives is what reached the files.
+ */
+const DURABLE_CHILD = String.raw`
+import { writeSync } from 'node:fs'
+import { register } from 'node:module'
+import { pathToFileURL } from 'node:url'
+const root = process.env.VNEXT_CHILD_ROOT
+const plan = JSON.parse(process.argv[1])
+register(pathToFileURL(root + '/scripts/run-tests-hooks.mjs').href)
+const load = (rel) => import(pathToFileURL(root + '/' + rel).href)
+const { openFactLedger } = await load('packages/runtime/src/plugin/vnext/fact-ledger.mjs')
+const { installMemberCentre } = await load('packages/runtime/src/plugin/vnext/centre-install.mjs')
+const { createExecutionSettlementStore } = await load('packages/runtime/settlement/execution-settlement.ts')
+const { dispatchExecutionId } = await load('packages/runtime/settlement/dispatch-settlement.ts')
+const binding = plan.binding
+const listeners = { pre: [], result: [] }
+let guardFn
+const ctx = {
+  get: (name) => (name === 'tools' ? { guard (fn) { guardFn = fn; return () => {} } } : undefined),
+  on: (event, fn) => {
+    const target = event === 'tools/pre-execute' ? listeners.pre : event === 'tools/result' ? listeners.result : undefined
+    if (target === undefined) return () => {}
+    target.push(fn)
+    return () => {}
+  },
+}
+const ledger = openFactLedger({ path: plan.dir + '/' + plan.ledger })
+const store = plan.store === true ? createExecutionSettlementStore({ dir: plan.dir + '/' + plan.settlement }) : undefined
+const identityOf = (exec) => ({
+  executionId: dispatchExecutionId({ rootSessionId: plan.rootSessionId, agentInstanceId: plan.agentInstanceId }, exec.callId),
+  actorId: plan.actorId,
+  worldId: plan.worldId,
+})
+const faults = []
+installMemberCentre({
+  ctx,
+  binding,
+  resolveBinding: () => binding,
+  recordAdmission: (fact) => ledger.recordAdmission(fact),
+  recordExecution: (fact) => ledger.recordExecution(fact),
+  isReplay: (callId) => ledger.has(callId),
+  recordReplay: (input) => ledger.recordReplayRefusal(input),
+  ...(store === undefined ? {} : { store }),
+  identityOf,
+  onFault: (error, context) => faults.push(context.phase + ': ' + String(error instanceof Error ? error.message : error)),
+})
+const preExecute = async (exec) => {
+  const chain = listeners.pre.slice()
+  const step = async (index) => (index >= chain.length ? { kind: 'allow' } : chain[index](exec, () => step(index + 1)))
+  return step(0)
+}
+const results = []
+const bodyCounts = {}
+for (const step of plan.steps) {
+  const exec = { name: 'read', callId: step.callId, arguments: { file_path: step.filePath }, agent: { id: plan.actorId }, turn: 1, step: 1 }
+  const entry = { callId: step.callId, mode: step.mode }
+  const verdict = await preExecute(exec)
+  entry.verdict = verdict.kind
+  if (verdict.reason !== undefined) entry.reason = String(verdict.reason)
+  if (step.mode !== 'admit' && verdict.kind === 'allow') {
+    const reason = guardFn === undefined ? undefined : guardFn(exec)
+    if (reason !== undefined) entry.guardReason = String(reason)
+    else {
+      bodyCounts[step.callId] = (bodyCounts[step.callId] ?? 0) + 1
+      if (step.mode === 'complete') {
+        for (const handler of listeners.result.slice()) handler(exec, { isError: false })
+        entry.settled = 'completed'
+      }
+    }
+  }
+  results.push(entry)
+}
+writeSync(1, JSON.stringify({ pid: process.pid, results, bodyCounts, faults }) + '\n')
+process.exit(plan.exit === undefined ? 0 : plan.exit)
+`
+
+/** Run the crash child and lift its ONE machine-readable line. No shell, no timeout, no retry. */
+const runDurableChild = (plan) => {
+  const run = spawnSync(process.execPath, ['--input-type=module', '-e', DURABLE_CHILD, JSON.stringify(plan)], {
+    cwd: durableRoot,
+    encoding: 'utf8',
+    env: { ...process.env, VNEXT_CHILD_ROOT: durableRoot },
+    maxBuffer: 64 * 1024 * 1024,
+  })
+  const line = String(run.stdout ?? '').split('\n').map((entry) => entry.trim()).filter((entry) => entry.startsWith('{')).at(-1)
+  return { ...run, summary: line === undefined ? undefined : JSON.parse(line) }
+}
+
+const durableWorldDir = (label) => mkdtempSync(join(tmpdir(), `vnext-durable-${label}-`))
+
+const durablePlan = (dir, steps, over = {}) => ({
+  dir,
+  ledger: 'facts.jsonl',
+  settlement: 'settlement',
+  store: true,
+  ...DURABLE_IDENTITY,
+  binding: binding(),
+  steps,
+  ...over,
+})
+
+const durableText = (path) => readFileSync(path, 'utf8')
+
+/** A fresh ledger instance over the SAME file. Its maps are new; the authority is the file. */
+const readBackLedger = (dir) => openFactLedger({ path: join(dir, 'facts.jsonl') })
+
+/** A fresh store over the SAME directory (it reclaims a dead writer lock on open). */
+const readBackStore = (dir, settlement = 'settlement') => createExecutionSettlementStore({ dir: join(dir, settlement) })
+
+test('ADM-79 — a crash between the admission fact and the execution fact is recovered by a NEW process as UNKNOWN, never COMPLETED, and never re-executed', async () => {
+  const dir = durableWorldDir('crash')
+  const crash = runDurableChild(durablePlan(dir, [
+    { callId: 'crash-done-1', filePath: '/work/a/doc.txt', mode: 'complete' },
+    { callId: 'crash-open-1', filePath: '/work/a/doc.txt', mode: 'admit' },
+  ], { exit: 7 }))
+  assert.equal(crash.status, 7, `the writer must die abruptly, not unwind (stderr: ${crash.stderr})`)
+  assert.notEqual(crash.summary, undefined, 'the child reports what it did BEFORE dying')
+  assert.equal(crash.summary.bodyCounts['crash-done-1'], 1, 'the control call really ran')
+  assert.equal(crash.summary.bodyCounts['crash-open-1'], undefined, 'the crashing call never reached the body')
+  assert.equal(crash.summary.results.find((entry) => entry.callId === 'crash-open-1').verdict, 'allow', 'the admission decision was an ALLOW before the crash')
+
+  // (1) THE CRASH IS ON DISK. The lock still names the dead process; the open call has an admission
+  // fact and an ADMITTED settlement, and NO execution fact. Nothing below reads the child's memory.
+  const lockBefore = JSON.parse(durableText(join(dir, 'settlement', '.settlement-writer.lock')))
+  assert.equal(lockBefore.pid, crash.summary.pid, 'the writer lock on disk still names the DEAD writer')
+
+  const ledger = readBackLedger(dir)
+  const store = readBackStore(dir)
+  const lockAfter = JSON.parse(durableText(join(dir, 'settlement', '.settlement-writer.lock')))
+  assert.equal(lockAfter.pid, process.pid, 'the FRESH process reclaimed the dead writer lock - a new process, not a cleared map')
+
+  const openBefore = store.read(durableExecutionId('crash-open-1'))
+  assert.equal(openBefore.state, 'ADMITTED', 'the record the dead process opened is the record on disk')
+  assert.deepEqual(openBefore.transitions.map((entry) => entry.to), ['ADMITTED'])
+  const factsAtCrash = ledger.readAll()
+  assert.deepEqual(
+    factsAtCrash.filter((entry) => entry.callId === 'crash-open-1').map((entry) => entry.kind),
+    ['invocation-authority'],
+    'an admission fact, and no execution fact: the crash is BETWEEN them',
+  )
+
+  // (2) COLD RECOVERY by the new process: the product's own `recoverUnsettled`, the same call
+  // `member-execution` makes at bind time.
+  const at = new Date(Date.parse(openBefore.updatedAt) + 1000).toISOString()
+  const recovered = createSettlementWriter({ store, identityOf: durableIdentityOf }).recover()
+  assert.equal(recovered.length, 1, 'exactly the OPEN record is reconciled')
+  const mine = recovered[0]
+  assert.equal(mine.executionId, durableExecutionId('crash-open-1'))
+  assert.equal(mine.before, 'ADMITTED')
+  assert.equal(mine.after, 'UNKNOWN', 'nobody knows whether the body ran, so the only honest state is UNKNOWN')
+  const openAfter = store.read(durableExecutionId('crash-open-1'))
+  assert.equal(openAfter.state, 'UNKNOWN')
+  assert.deepEqual(openAfter.transitions.map((entry) => entry.to), ['ADMITTED', 'UNKNOWN'], 'no RUNNING and no COMPLETED was invented')
+  assert.match(String(openAfter.terminalReason), /PROCESS_TERMINATED_WITHOUT_OUTCOME/u)
+  assert.equal(openAfter.observation.dispatch, 'not-started', 'the admission observed no dispatch, and recovery does not rewrite that')
+  assert.equal(openAfter.observation.bodyOutcome, 'unknown')
+  assert.equal(openAfter.observation.effectEvidence, 'unknown', 'unknown is the absence of proof, never proof of absence')
+  assert.equal(openAfter.missingEvidence.length > 0, true)
+  assert.equal(openAfter.missingEvidence.includes('dispatch-confirmation'), true, 'the record says WHAT is missing')
+  assert.deepEqual(openAfter.stops, [], 'recovery fabricated no Stop evidence')
+
+  // NEGATIVE CONTROL: a record that DID reach its execution fact is a closed record, and recovery
+  // must leave it alone. Without this, "UNKNOWN" could be a blanket rewrite of every file it reads.
+  const done = store.read(durableExecutionId('crash-done-1'))
+  assert.equal(done.state, 'COMPLETED', 'a call that ended before the crash stays COMPLETED')
+  assert.deepEqual(done.transitions.map((entry) => entry.to), ['ADMITTED', 'RUNNING', 'COMPLETED'])
+  assert.equal(recovered.some((entry) => entry.executionId === durableExecutionId('crash-done-1')), false)
+
+  // (3) NOT DROPPED: the durable side can still answer for the crashed call, and says it was ALLOWED.
+  const observed = ledger.observe('crash-open-1')
+  assert.equal(observed.state, 'KNOWN', 'the callId is not forgotten by the crash')
+  assert.equal(observed.admission.decision, 'allow')
+
+  // (4) NOT RE-EXECUTED: the same callId, through the product centre, in THIS fresh process.
+  const fresh = await centreWorld('crash-readback', {
+    binding: binding(),
+    dir,
+    ledger,
+    store,
+    identityOf: durableIdentityOf,
+  })
+  const replayExec = readExec('crash-open-1')
+  const replayVerdict = await fresh.preExecute(replayExec)
+  assert.equal(replayVerdict.kind, 'deny')
+  assert.match(String(replayVerdict.reason), /ADMISSION_REPLAY/u)
+  assert.match(String(fresh.guard(replayExec)), /ADMISSION_REPLAY/u)
+  assert.equal(fresh.body.count, 0, 'a recovered call is never run a second time')
+  const afterReplay = store.read(durableExecutionId('crash-open-1'))
+  assert.equal(afterReplay.state, 'UNKNOWN', 'the replay refusal does not invent a terminal state either')
+  assert.deepEqual(afterReplay.transitions.map((entry) => entry.to), ['ADMITTED', 'UNKNOWN'])
+  const factsNow = ledger.readAll()
+  assert.equal(factsNow.filter((entry) => entry.kind === 'invocation-authority' && entry.callId === 'crash-open-1').length, 1, 'one call, one authority record')
+  assert.equal(factsNow.filter((entry) => entry.kind === 'execution' && entry.callId === 'crash-open-1').length, 0)
+  assert.equal(factsNow.filter((entry) => entry.kind === 'replay-refusal' && entry.callId === 'crash-open-1').length, 1, 'the second attempt is itself recorded')
+
+  // NEGATIVE CONTROL: a NEW callId in the SAME recovered world is admitted and completes, so the
+  // refusal above is about the callId and not about a world the crash left broken.
+  const newer = readExec('crash-new-1')
+  assert.equal((await fresh.dispatch(newer)).kind, 'allow')
+  assert.equal(fresh.body.count, 1)
+  assert.equal(store.read(durableExecutionId('crash-new-1')).state, 'COMPLETED')
+
+  // (5) IDEMPOTENT. A THIRD fresh store finds nothing left to recover, and the record files are
+  // byte-identical: recovery is not a second writer that keeps "cleaning up".
+  const openPath = settlementRecordPath(join(dir, 'settlement'), durableExecutionId('crash-open-1'))
+  const donePath = settlementRecordPath(join(dir, 'settlement'), durableExecutionId('crash-done-1'))
+  const bytes = { open: durableText(openPath), done: durableText(donePath) }
+  const third = readBackStore(dir)
+  assert.deepEqual(createSettlementWriter({ store: third, identityOf: durableIdentityOf }).recover(), [])
+  assert.equal(durableText(openPath), bytes.open, 'a second recovery rewrites nothing')
+  assert.equal(durableText(donePath), bytes.done)
+  fresh.dispose()
+})
+
+test('ADM-80 — a callId with a durable fact is REFUSED on a second attempt in a FRESH process, before the body, and the ledger keeps ONE authority record', async () => {
+  const dir = durableWorldDir('replay')
+  const populate = runDurableChild(durablePlan(dir, [
+    { callId: 'replay-1', filePath: '/work/a/doc.txt', mode: 'complete' },
+  ], { exit: 0 }))
+  assert.equal(populate.status, 0, `the populating process must exit cleanly (stderr: ${populate.stderr})`)
+  assert.equal(populate.summary.results[0].verdict, 'allow')
+  assert.equal(populate.summary.bodyCounts['replay-1'], 1)
+
+  // THE SECOND PROCESS: same directory, same product composition, DIFFERENT pid. No settlement store
+  // is opened here on purpose: the replay authority is the LEDGER, and a second writer on the same
+  // settlement root would be measuring the writer lock, not replay.
+  const second = runDurableChild(durablePlan(dir, [
+    { callId: 'replay-1', filePath: '/work/a/doc.txt', mode: 'admit' },
+    { callId: 'replay-new-1', filePath: '/work/a/doc.txt', mode: 'complete' },
+  ], { store: false, exit: 0 }))
+  assert.equal(second.status, 0, `the second process must not throw (stderr: ${second.stderr})`)
+  assert.notEqual(second.summary.pid, populate.summary.pid, 'this is a DIFFERENT process, not another object in the first one')
+  assert.notEqual(second.summary.pid, process.pid)
+  const replay = second.summary.results.find((entry) => entry.callId === 'replay-1')
+  assert.equal(replay.verdict, 'deny')
+  assert.match(String(replay.reason), /ADMISSION_REPLAY/u)
+  assert.equal(second.summary.bodyCounts['replay-1'], undefined, 'the replay must never reach the body')
+  // NEGATIVE CONTROL: a NEW callId in the same second process is admitted and completes, so the
+  // refusal is the callId's history and not "this process refuses everything".
+  const freshCall = second.summary.results.find((entry) => entry.callId === 'replay-new-1')
+  assert.equal(freshCall.verdict, 'allow')
+  assert.equal(second.summary.bodyCounts['replay-new-1'], 1)
+  assert.deepEqual(second.summary.faults, [], 'a replay is a decision, not a fault')
+
+  // READ BACK FROM THE FILE by a FRESH ledger instance in THIS process.
+  const back = readBackLedger(dir)
+  const all = back.readAll()
+  assert.equal(all.filter((entry) => entry.kind === 'invocation-authority' && entry.callId === 'replay-1').length, 1, 'one call, one authority record')
+  assert.equal(all.filter((entry) => entry.kind === 'execution' && entry.callId === 'replay-1').length, 1, 'one call, one execution fact')
+  const refusal = all.find((entry) => entry.kind === 'replay-refusal' && entry.callId === 'replay-1')
+  assert.notEqual(refusal, undefined, 'the second attempt is itself a durable governance event')
+  assert.match(String(refusal.reason), /ADMISSION_REPLAY/u)
+  assert.equal(all.filter((entry) => entry.kind === 'invocation-authority' && entry.callId === 'replay-new-1').length, 1)
+
+  // AND AT THE LEDGER ITSELF: a fresh instance refuses a second admission with its own code, and the
+  // refusal appends NOTHING (a refused replay may not mutate the record it was refused by).
+  const bytesBefore = durableText(join(dir, 'facts.jsonl'))
+  assert.throws(
+    () => back.recordAdmission({ callId: 'replay-1', toolName: 'read', decision: 'allow' }),
+    (error) => error?.code === 'LEDGER_REPLAY',
+  )
+  assert.equal(durableText(join(dir, 'facts.jsonl')), bytesBefore, 'a refused replay writes nothing')
+})
+
+test('ADM-81 — a duplicate execution fact on disk is a REFUSAL, never "two answers" for one call', async () => {
+  const dir = durableWorldDir('dup')
+  const dupPath = join(dir, 'dup.jsonl')
+  writeFileSync(dupPath, [
+    JSON.stringify({ kind: 'invocation-authority', callId: 'dup-1', decision: 'allow', at: '2026-11-22T00:00:00.000Z' }),
+    JSON.stringify({ kind: 'execution', callId: 'dup-1', outcome: 'completed', at: '2026-11-22T00:00:01.000Z' }),
+    JSON.stringify({ kind: 'execution', callId: 'dup-1', outcome: 'failed', at: '2026-11-22T00:00:02.000Z' }),
+    '',
+  ].join('\n'))
+
+  const corrupt = openFactLedger({ path: dupPath })
+  assert.equal(corrupt.health().state, 'UNKNOWN', 'a ledger with two endings for one call cannot be trusted about anything')
+  assert.equal(corrupt.health().reason, 'LEDGER_DUPLICATE_EXECUTION')
+  assert.throws(() => corrupt.readAll(), (error) => error?.code === 'LEDGER_DUPLICATE_EXECUTION')
+  assert.throws(() => corrupt.has('dup-1'), (error) => error?.code === 'LEDGER_DUPLICATE_EXECUTION', 'even a lookup must not answer from a corrupt file')
+
+  // THROUGH THE CENTRE: a fault while reading an authority record is a REFUSAL, never "no opinion".
+  const world = await centreWorld('dup-centre', {
+    binding: binding(),
+    dir,
+    ledger: corrupt,
+    store: createExecutionSettlementStore({ dir: join(dir, 'settlement') }),
+  })
+  const exec = readExec('dup-call-1')
+  const verdict = await world.preExecute(exec)
+  assert.equal(verdict.kind, 'deny')
+  assert.match(String(verdict.reason), /ADMISSION_LEDGER_UNREADABLE/u)
+  assert.match(String(verdict.reason), /two execution records on disk/u, "the ledger own reason survives into the refusal")
+  assert.match(String(world.guard(exec)), /ADMISSION_LEDGER_UNREADABLE/u, 'both stages agree')
+  assert.equal(world.faults.length, 1, 'the fault is REPORTED, not swallowed into an allow')
+  assert.equal(world.faults[0][1].phase, 'replay-check')
+  assert.equal(world.store.list().length, 0, 'no settlement record was invented for a call the ledger could not adjudicate')
+  world.dispose()
+
+  // NEGATIVE CONTROL: the same file with ONE execution fact is readable, and the centre admits a NEW
+  // call. So the refusal above is about the contradiction, not about "a file that mentions execution".
+  const okPath = join(dir, 'one.jsonl')
+  writeFileSync(okPath, [
+    JSON.stringify({ kind: 'invocation-authority', callId: 'dup-1', decision: 'allow', at: '2026-11-22T00:00:00.000Z' }),
+    JSON.stringify({ kind: 'execution', callId: 'dup-1', outcome: 'completed', at: '2026-11-22T00:00:01.000Z' }),
+    '',
+  ].join('\n'))
+  const okLedger = openFactLedger({ path: okPath })
+  assert.equal(okLedger.health().state, 'KNOWN')
+  assert.equal(okLedger.readAll().filter((entry) => entry.kind === 'execution').length, 1)
+  const ok = await centreWorld('dup-ok', {
+    binding: binding(),
+    dir: join(dir, 'ok'),
+    ledger: okLedger,
+    store: createExecutionSettlementStore({ dir: join(dir, 'ok-settlement') }),
+    identityOf: durableIdentityOf,
+  })
+  const accepted = await ok.dispatch(readExec('dup-new-1'))
+  assert.equal(accepted.kind, 'allow')
+  assert.equal(ok.body.count, 1)
+  assert.equal(ok.store.read(durableExecutionId('dup-new-1')).state, 'COMPLETED')
+  assert.equal(okLedger.readAll().filter((entry) => entry.callId === 'dup-new-1').map((entry) => entry.kind).sort().join(','), 'execution,invocation-authority')
+  ok.dispose()
+})
+
+test('ADM-82 — a truncated or garbage ledger line is a REFUSAL, not an empty ledger and not "no opinion"', async () => {
+  const dir = durableWorldDir('trunc')
+  const good = JSON.stringify({ kind: 'invocation-authority', callId: 'kept-1', decision: 'allow', at: '2026-11-22T00:00:00.000Z' })
+  const cases = [
+    ['truncated-tail', `${good}\n{"kind":"invocation-autho`, 'LEDGER_TRUNCATED', /partially written record must not be read as authority/u],
+    ['garbage-line', `${good}\nthis line is not json at all\n`, 'LEDGER_TRUNCATED', /is not valid JSON/u],
+    ['no-call-id', `${good}\n${JSON.stringify({ kind: 'execution', outcome: 'completed' })}\n`, 'LEDGER_RECORD_INVALID', /has no callId/u],
+  ]
+  for (const [label, text, code, detail] of cases) {
+    const path = join(dir, `${label}.jsonl`)
+    writeFileSync(path, text)
+    const back = openFactLedger({ path })
+    assert.equal(back.health().state, 'UNKNOWN', `${label}: a half-readable authority record must fail closed`)
+    assert.equal(back.health().reason, code, label)
+    assert.throws(
+      () => back.recordAdmission({ callId: `after-${label}`, toolName: 'read', decision: 'allow' }),
+      (error) => error?.code === code,
+      `${label}: a corrupt ledger must not start a second history beside the damaged one`,
+    )
+    const world = await centreWorld(`trunc-${label}`, {
+      binding: binding(),
+      dir: join(dir, label),
+      ledger: back,
+      store: createExecutionSettlementStore({ dir: join(dir, `${label}-settlement`) }),
+    })
+    const exec = readExec(`trunc-${label}-call`)
+    const verdict = await world.preExecute(exec)
+    assert.equal(verdict.kind, 'deny', `${label}: the call must be refused, never sent to the body`)
+    assert.notEqual(verdict.kind, 'ask', `${label}: a fault is not an approval request`)
+    assert.match(String(verdict.reason), /ADMISSION_LEDGER_UNREADABLE/u)
+    assert.match(String(verdict.reason), detail, `${label}: the ledger's own reason survives into the refusal`)
+    assert.match(String(world.guard(exec)), /ADMISSION_LEDGER_UNREADABLE/u, `${label}: both stages agree`)
+    assert.equal(world.faults.length, 1)
+    assert.equal(world.faults[0][1].phase, 'replay-check')
+    assert.equal(world.store.list().length, 0, `${label}: a refused call gets no settlement record at all`)
+    world.dispose()
+  }
+
+  // POSITIVE CONTROL: the same wiring over a COMPLETE ledger is readable and the centre admits.
+  const goodPath = join(dir, 'good.jsonl')
+  writeFileSync(goodPath, `${good}\n`)
+  const goodLedger = openFactLedger({ path: goodPath })
+  assert.equal(goodLedger.health().state, 'KNOWN')
+  const ok = await centreWorld('trunc-good', {
+    binding: binding(),
+    dir: join(dir, 'good-world'),
+    ledger: goodLedger,
+    store: createExecutionSettlementStore({ dir: join(dir, 'good-settlement') }),
+    identityOf: durableIdentityOf,
+  })
+  const accepted = await ok.dispatch(readExec('trunc-good-call'))
+  assert.equal(accepted.kind, 'allow')
+  assert.equal(ok.body.count, 1)
+  assert.equal(ok.store.read(durableExecutionId('trunc-good-call')).state, 'COMPLETED')
+  ok.dispose()
+})
+
+test('ADM-83 — an UNWRITABLE ledger is a REFUSAL (ADMISSION_LEDGER_UNWRITABLE), never an unrecorded run', async () => {
+  const base = durableWorldDir('unwritable')
+  const lockedDir = join(base, 'locked')
+  mkdirSync(lockedDir, { recursive: true })
+  chmodSync(lockedDir, 0o555)
+  try {
+    // PRECONDITION, asserted rather than assumed: if this process can still write there (a root run),
+    // the arm would pass for the wrong reason, so the precondition fails loudly instead.
+    let writable = false
+    try {
+      writeFileSync(join(lockedDir, 'probe'), 'x')
+      writable = true
+    } catch { writable = false }
+    assert.equal(writable, false, 'PRECONDITION: the ledger directory must really be unwritable for this arm to mean anything')
+
+    const back = openFactLedger({ path: join(lockedDir, 'facts.jsonl') })
+    assert.equal(back.health().state, 'KNOWN', 'nothing on disk yet is a valid EMPTY ledger, not a corrupt one')
+    const world = await centreWorld('unwritable', {
+      binding: binding(),
+      dir: join(base, 'world'),
+      ledger: back,
+      store: createExecutionSettlementStore({ dir: join(base, 'world-settlement') }),
+    })
+    const exec = readExec('unwritable-call-1')
+    const verdict = await world.preExecute(exec)
+    assert.equal(verdict.kind, 'deny', 'a decision nobody can record is not one the centre will run under')
+    assert.notEqual(verdict.kind, 'ask')
+    assert.match(String(verdict.reason), /ADMISSION_LEDGER_UNWRITABLE/u)
+    assert.match(String(world.guard(exec)), /ADMISSION_LEDGER_UNWRITABLE/u, 'both stages agree')
+    assert.equal(world.faults.length, 1, 'the write fault is reported')
+    assert.equal(world.faults[0][1].phase, 'record')
+    assert.equal(world.store.list().length, 0, 'no settlement record claims an admission that was never written')
+    assert.equal(readdirSync(lockedDir).includes('facts.jsonl'), false, 'nothing was written to the unwritable directory')
+    world.dispose()
+  } finally {
+    chmodSync(lockedDir, 0o755)
+  }
+
+  // POSITIVE CONTROL: the same wiring, same call shape, writable directory -> recorded and completed.
+  const okDir = join(base, 'writable')
+  mkdirSync(okDir, { recursive: true })
+  const ok = await centreWorld('writable', {
+    binding: binding(),
+    dir: join(base, 'ok-world'),
+    ledger: openFactLedger({ path: join(okDir, 'facts.jsonl') }),
+    store: createExecutionSettlementStore({ dir: join(base, 'ok-settlement') }),
+    identityOf: durableIdentityOf,
+  })
+  const accepted = await ok.dispatch(readExec('unwritable-call-2'))
+  assert.equal(accepted.kind, 'allow')
+  assert.equal(ok.body.count, 1)
+  assert.equal(ok.store.read(durableExecutionId('unwritable-call-2')).state, 'COMPLETED')
+  assert.deepEqual(ok.ledger.readAll().map((entry) => entry.kind), ['invocation-authority', 'execution'])
+  ok.dispose()
+})
+
+test('ADM-84 — a settlement left OPEN by a crash is CLASSIFIED from disk as UNKNOWN with what is missing, and no terminal state is invented', async () => {
+  const dir = durableWorldDir('cold')
+  const crash = runDurableChild(durablePlan(dir, [
+    { callId: 'cold-refused-1', filePath: '/etc/passwd', mode: 'complete' },
+    { callId: 'cold-admitted-1', filePath: '/work/a/doc.txt', mode: 'admit' },
+    { callId: 'cold-running-1', filePath: '/work/a/doc.txt', mode: 'guard' },
+  ], { exit: 7 }))
+  assert.equal(crash.status, 7, `the writer must die abruptly (stderr: ${crash.stderr})`)
+  const modes = Object.fromEntries(crash.summary.results.map((entry) => [entry.callId, entry.verdict]))
+  assert.equal(modes['cold-refused-1'], 'deny', 'the refusal is a decision the dead process already made')
+  assert.equal(modes['cold-admitted-1'], 'allow')
+  assert.equal(modes['cold-running-1'], 'allow')
+  assert.equal(crash.summary.bodyCounts['cold-running-1'], 1, 'the RUNNING record belongs to a call whose body started')
+
+  const store = readBackStore(dir)
+  const refused = store.read(durableExecutionId('cold-refused-1'))
+  const admitted = store.read(durableExecutionId('cold-admitted-1'))
+  const running = store.read(durableExecutionId('cold-running-1'))
+  assert.equal(refused.state, 'REFUSED', 'a refusal is terminal at birth: it was CLOSED before the crash')
+  assert.equal(admitted.state, 'ADMITTED', 'open between the admission and the body')
+  assert.equal(running.state, 'RUNNING', 'open after the body started')
+  assert.equal(running.observation.dispatch, 'started')
+
+  const at = new Date(Date.parse(running.updatedAt) + 1000).toISOString()
+  const recovered = createSettlementWriter({ store, identityOf: durableIdentityOf }).recover()
+  assert.deepEqual(
+    recovered.map((entry) => entry.executionId).sort(),
+    [durableExecutionId('cold-admitted-1'), durableExecutionId('cold-running-1')].sort(),
+    'exactly the OPEN records - and not the refusal that was already classified',
+  )
+  const byId = new Map(recovered.map((entry) => [entry.executionId, entry]))
+  const recAdmitted = byId.get(durableExecutionId('cold-admitted-1'))
+  const recRunning = byId.get(durableExecutionId('cold-running-1'))
+  assert.equal(recAdmitted.before, 'ADMITTED')
+  assert.equal(recAdmitted.after, 'UNKNOWN')
+  assert.equal(recRunning.before, 'RUNNING')
+  assert.equal(recRunning.after, 'UNKNOWN')
+
+  const admittedAfter = store.read(durableExecutionId('cold-admitted-1'))
+  const runningAfter = store.read(durableExecutionId('cold-running-1'))
+  assert.deepEqual(admittedAfter.transitions.map((entry) => entry.to), ['ADMITTED', 'UNKNOWN'])
+  assert.deepEqual(runningAfter.transitions.map((entry) => entry.to), ['ADMITTED', 'RUNNING', 'UNKNOWN'])
+  for (const record of [admittedAfter, runningAfter]) {
+    assert.equal(record.state, 'UNKNOWN', 'the ONLY state recovery may write here')
+    assert.notEqual(record.state, 'COMPLETED')
+    assert.notEqual(record.state, 'FAILED')
+    assert.notEqual(record.state, 'REFUSED')
+    assert.notEqual(record.state, 'CANCELLED')
+    assert.match(String(record.terminalReason), /PROCESS_TERMINATED_WITHOUT_OUTCOME/u)
+    assert.equal(record.observation.bodyOutcome, 'unknown')
+    assert.equal(record.observation.effectEvidence, 'unknown')
+    assert.deepEqual(record.stops, [], 'no Stop was invented to justify a terminal state')
+  }
+  // Recovery does NOT rewrite what the dead process observed: the phase it reached is still readable.
+  assert.equal(admittedAfter.observation.dispatch, 'not-started')
+  assert.equal(runningAfter.observation.dispatch, 'started')
+  // ...and the missing evidence is DERIVED from that phase, not a fixed template.
+  assert.equal(admittedAfter.missingEvidence.includes('dispatch-confirmation'), true)
+  assert.equal(runningAfter.missingEvidence.includes('dispatch-confirmation'), false)
+  assert.equal(runningAfter.missingEvidence.includes('host-result'), true)
+  assert.equal(admittedAfter.missingEvidence.includes('host-result'), false)
+
+  // NEGATIVE CONTROL: a decision the dead process DID make is not re-classified. The refusal stays
+  // REFUSED and is not swept into UNKNOWN with the open records.
+  const refusedAfter = store.read(durableExecutionId('cold-refused-1'))
+  assert.equal(refusedAfter.state, 'REFUSED')
+  assert.equal(recovered.some((entry) => entry.executionId === durableExecutionId('cold-refused-1')), false)
+
+  // NEGATIVE CONTROL, "no invented terminal": the store will not re-drive the classified record into
+  // a success. UNKNOWN is terminal; a later COMPLETED is a conflict, not an overwrite.
+  const writer = createSettlementWriter({ store, identityOf: durableIdentityOf })
+  assert.throws(
+    () => writer.settled({ exec: { name: 'read', callId: 'cold-running-1' }, outcome: 'completed' }),
+    (error) => error?.code === 'SETTLEMENT_CONFLICT',
+    'an UNKNOWN record must not be promoted to COMPLETED after the fact',
+  )
+
+  // IDEMPOTENT, and byte-identical on disk: a THIRD fresh store finds nothing left to recover.
+  const paths = {
+    admitted: settlementRecordPath(join(dir, 'settlement'), durableExecutionId('cold-admitted-1')),
+    running: settlementRecordPath(join(dir, 'settlement'), durableExecutionId('cold-running-1')),
+    refused: settlementRecordPath(join(dir, 'settlement'), durableExecutionId('cold-refused-1')),
+  }
+  const bytes = Object.fromEntries(Object.entries(paths).map(([key, path]) => [key, durableText(path)]))
+  const third = readBackStore(dir)
+  assert.deepEqual(createSettlementWriter({ store: third, identityOf: durableIdentityOf }).recover(), [])
+  for (const [key, path] of Object.entries(paths)) assert.equal(durableText(path), bytes[key], `${key}: recovery must not keep rewriting the record`)
 })

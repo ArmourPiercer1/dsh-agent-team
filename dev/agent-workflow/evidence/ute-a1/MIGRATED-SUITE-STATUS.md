@@ -680,3 +680,112 @@ or retry was added.
 6. **Scope.** One test file plus one manifest line; no product source changed, `E3` and the open
    escalations are untouched, and **no row in `CAPABILITY-MATRIX-C.md` is upgraded** (`C-subprocess` /
    `C-ptc` stay `positive control UNPROVEN`).
+
+## Round 54 (B stage): the durable half — crash/cold recovery, UNKNOWN, and no replay
+
+**What was missing, measured at HEAD `cf2a44180`.** Rounds 51-53 proved the decision path, the Stop /
+lifecycle close and the probe ladder, all **in one process**. Three claims were still only "coded":
+
+- **crash recovery** existed as `settlementStore.recoverUnsettled(...)` in
+  `member-execution.mjs:181-186` and as ADM-23, but ADM-23 recovered with the SAME store object that
+  wrote the open record. No test ever let a writer die and asked a different process what was on disk.
+- **no replay** existed as `isReplay: (callId) => ledger.has(callId)` (`member-execution.mjs:171`) and
+  as ADM-20/ADM-38, but both replay arms shared the writer's process. A memo map and a fresh ledger
+  read are indistinguishable if the same process owns both.
+- **cold recovery of an open settlement** had no arm at all beyond ADM-23's in-process call, and no
+  arm asserted that recovery preserves the PHASE the dead process reached.
+
+**How it is proved now** — `packages/runtime/test/vnext-admission.test.mjs` ADM-79 … ADM-84 (node:test,
+rides the `ute-vnext-a1` leg; the vitest population is untouched at 238).
+
+- **The crash is a CHILD PROCESS.** `DURABLE_CHILD` (a `String.raw` script passed to
+  `node --input-type=module -e`) resolves the SAME product modules and hooks, builds ONE member on the
+  PRODUCT composition (`installMemberCentre` over a real `openFactLedger` + real
+  `ExecutionSettlementStore`), writes, prints one JSON line with `writeSync` and calls
+  `process.exit()` **without running a disposer**. The parent then opens fresh objects over the same
+  directory. Nothing is a map that a test clears, and the writer lock on disk keeps naming the DEAD
+  pid until the fresh store reclaims it (asserted: `lock.pid === crash.pid`, then
+  `lock.pid === process.pid`).
+- **Every assertion is a read-back from disk** by a fresh ledger instance / a fresh store / a fresh
+  centre — including the settlement record's raw file bytes (`settlementRecordPath`) for the
+  idempotence controls.
+- **No sleep, no timer, no retry, no raised timeout.** The child's exit status is part of the
+  assertion.
+
+### Per-claim status
+
+| # | claim | positive control | negative control(s) | NOT proven |
+| --- | --- | --- | --- | --- |
+| 1 | **Crash recovery**: a process that dies between the admission fact and the execution fact is recoverable from disk by a NEW process; the record is **UNKNOWN**, never silently `COMPLETED`, never dropped, never re-executed (ADM-79) | the child admits `crash-open-1` (`allow`) and dies (exit 7) with the record `ADMITTED`, the admission fact written and **zero** execution facts; a fresh store reclaims the dead lock, `settlement-port.recover()` returns exactly that record `ADMITTED → UNKNOWN` with `PROCESS_TERMINATED_WITHOUT_OUTCOME`, the missing-evidence list names `dispatch-confirmation`, `dispatch` stays `not-started`, `bodyOutcome`/`effectEvidence` are `unknown`, `stops` is `[]`, transitions are exactly `['ADMITTED','UNKNOWN']`; the fresh ledger still answers `observe('crash-open-1') = KNOWN / allow` (not dropped); a second `recover()` finds nothing and both record files are **byte-identical**; the fresh centre refuses the same callId `ADMISSION_REPLAY` (body count 0, record still `UNKNOWN`, one authority fact, zero execution facts, exactly one replay-refusal fact) | **the same child also completes `crash-done-1` before dying**: after recovery its `COMPLETED` record is *not* in the recovered set and is byte-identical (recovery is not a blanket rewrite); **a new callId in the same recovered world** is admitted and settles `COMPLETED` (the refusal is the callId's, not a broken world); mutation M1 (drop `settlement-port.recover`'s reconciliation) and M1b (`observe` never answers) each turn ADM-79 red | a teardown-free crash is `process.exit`, not SIGKILL mid-`appendFileSync`; a torn write is proved at the READ side (hand-written truncated tail, ADM-82), not by interrupting a real append. The `bootId`-changes path of the lock reclaim (a reboot with a reused pid) is code, not exercised. `member-execution`'s own bind-time call site is not booted here: the arm drives the SAME store call through the centre's writer |
+| 2a | **No replay, cross-process** (ADM-80) | a first child completes `replay-1`; a SECOND child (different pid, no settlement store) reads the same file and refuses `replay-1` at pre-execute with `ADMISSION_REPLAY`, before the body (no body count), recording exactly one `replay-refusal` fact; a fresh ledger in the parent reads back exactly ONE authority fact and ONE execution fact for `replay-1`; a fresh ledger instance refuses `recordAdmission('replay-1')` with `LEDGER_REPLAY` and appends **nothing** (file bytes unchanged) | a NEW callId in the same second child is admitted and completes (the refusal is per-callId); the second child reports **no fault** (a replay is a decision, not a fault); mutation M2 (durable replay treated as a fresh call) turns ADM-80 red | the host's own `tools/result` for a refused replay is not driven: a real host that emitted a result after a pre-execute deny would hit `LEDGER_DUPLICATE_EXECUTION` on the second execution fact — that refusal is measured at the ledger (ADM-81) but not end to end through a host |
+| 2b | **Duplicate execution fact on disk** is a refusal, never two answers (ADM-81) | a ledger file with two `execution` facts for one callId: a fresh ledger reports `health() = UNKNOWN / LEDGER_DUPLICATE_EXECUTION`, `readAll()` and even `has()` throw that code | **through the centre** the call is `deny` with `ADMISSION_LEDGER_UNREADABLE` (phase `replay-check`, both stages agree), **one** reported fault, **no** settlement record invented; **negative control**: the same file with ONE execution fact is `KNOWN`, and the centre admits a NEW callId which completes | a real crash that produced the duplicate (two writers) is not re-driven: the duplicate is written as data on disk, which is the state the ledger must refuse |
+| 2c | **A truncated / garbage line** is a refusal, never "no opinion" (ADM-82) | three on-disk corruptions (partial JSON tail, non-JSON line, valid JSON with no `callId`): fresh `health()` is `UNKNOWN` with `LEDGER_TRUNCATED` / `LEDGER_RECORD_INVALID`, a write is refused with the same code (no second history), and the centre refuses the call `ADMISSION_LEDGER_UNREADABLE` (never `ask`), both stages agreeing, one fault reported, zero settlement records | the same wiring over a COMPLETE ledger is `KNOWN` and the centre admits and completes the same call shape | the tail is hand-written, not the product of a real interrupted append (see claim 1) |
+| 2d | **An unwritable ledger** is a refusal (ADM-83) | a `chmod 0555` directory: the centre refuses `ADMISSION_LEDGER_UNWRITABLE` (phase `record`), both stages agree, one fault reported, **zero** settlement records, and nothing was created in the directory | **precondition asserted**: the test first proves *this* process cannot write there (a root runner is RED, not a silent pass); the same wiring in a writable directory records the fact and completes the call | a full disk / read-only filesystem is not exercised; `EACCES` on one directory is the instance |
+| 3 | **Cold recovery of an OPEN settlement is a classification, not an invention** (ADM-84) | one child leaves three records: `cold-refused-1` (`REFUSED` at birth, closed before the crash), `cold-admitted-1` (`ADMITTED`, crash before the body), `cold-running-1` (`RUNNING`, body started). A fresh store + the centre's `recover()` reconciles **exactly the two open ones**, both to `UNKNOWN`, preserving the phase each reached (`dispatch` `not-started` vs `started`) and deriving DIFFERENT missing-evidence sets (`dispatch-confirmation` only for the ADMITTED one; `host-result` only for the RUNNING one); `stops` is `[]`, `bodyOutcome`/`effectEvidence` are `unknown` | **the refusal the dead process already decided is NOT re-classified** (`REFUSED` stays `REFUSED`, not in the recovered set); **no invented terminal**: a later `completed` settle on the `UNKNOWN` record is `SETTLEMENT_CONFLICT`, and the record file is byte-identical; a THIRD fresh store recovers nothing and rewrites nothing; mutations M1 and M6 (admission enters `RUNNING`, so the crash phase is misread) turn ADM-84 red | the "closable" half is proved as CLASSIFICATION (`UNKNOWN` is terminal and cannot be promoted). Closing an `allow`-admitted record as `REFUSED`/`CANCELLED` after the crash is **the open settlement CCR's blocked cell** (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`), and this slice deliberately does not need it: a replayed callId is refused *before* any settlement decision, so the record is left to recovery as `UNKNOWN` — which is option D of that CCR, not a workaround around it. **No contract change was requested or made.** |
+
+### Mutation evidence (each claim can actually fail; every edit reverted and `git diff --quiet` verified)
+
+| mutation | went red |
+| --- | --- |
+| M1 `settlement-port.mjs`: `recover()` returns `[]` (no cold reconciliation) | ADM-79, ADM-84 |
+| M1b `fact-ledger.mjs`: `observe()` never answers (a recovered call reads as dropped) | ADM-79 |
+| M2 `admission-port.mjs`: the durable replay refusal removed | ADM-80 |
+| M3 `fact-ledger.mjs`: a duplicate execution fact on disk accepted | ADM-81 |
+| M4 `admission-port.mjs`: an unreadable ledger read as "no replay" (i.e. no opinion) | ADM-82 |
+| M5 `admission-port.mjs`: a ledger WRITE fault escapes instead of refusing | ADM-83 |
+| M6 `admission-port.mjs`: admission enters `RUNNING` (the crash phase is misread) | ADM-84 |
+
+The fabricated-`COMPLETED` direction (mutating the store's `RECOVERY_*` constants) is **not** repeated
+here: it belongs to the frozen settlement contract's own mutation control, and the contract was not
+edited in this round.
+
+### Gates (this round, on this worktree, pasted)
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+  → 146 pass / 0 fail / 2 skipped (7 suites), exit=0
+    DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c4…
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  → tests=889 findings=0 uncollected=41 excluded=14 (node=146, vitest=736)
+node scripts/ute-cut-closure.mjs --check
+  → pass deleted=148 references=163 prodRefs=0 distResiduals=0 findings=0
+node scripts/ute-p0-assets.mjs --check
+  → pass modules=37 files=180 cut=cut(148/148) findings=0
+node scripts/docs-sync.mjs --check
+  → findings=0 blocking=0 contracts=20 pairs compared
+node scripts/place-dist-glue.mjs
+  → done (27 placements, byte-identical)
+node scripts/eb3-ci-required.mjs
+  → pass workflows=10 findings=0
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+  → verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+The leg's node population went 140 → 146 (six new arms, **no new skips**); the vitest population is
+unchanged at 238. No existing assertion was weakened, skipped, retimed or deleted, and no sleep, timer
+or retry was added.
+
+### What is NOT proven
+
+1. **No live host boot.** The crash writer is the PRODUCT composition (`installMemberCentre`) over the
+   product ledger and settlement store, and the fresh reader is the product's own `recover()` /
+   `ADMISSION_REPLAY` path — but no host process was booted and no real `tools/result` for a refused
+   replay was driven. `member-execution`'s bind-time recovery is the same store call, not separately
+   booted.
+2. **The crash point is chosen, not random.** `process.exit` lands exactly between the admission fact
+   and the execution fact (and, in ADM-84, after the guard). A kill inside `appendFileSync` was not
+   produced; ADM-82 covers the resulting artifact (a truncated tail) from the read side.
+3. **One writer at a time.** The fresh process reads only after the writer is dead. The
+   `SETTLEMENT_WRITER_CONFLICT` refusal against a LIVE foreign writer is the store's own rule and is
+   not re-driven here.
+4. **Same boot only.** The dead-lock reclaim is proved for a dead pid in the same `bootId`; the
+   reboot/reused-pid path is code.
+5. **`ADMISSION_LEDGER_UNWRITABLE` rides a real permission denial.** On a runner that can write into a
+   `0555` directory (root), that arm is RED by its asserted precondition rather than silently green.
+6. **The open settlement CCR is untouched.** The `REFUSED`-after-`allow` cell is never needed by this
+   slice and is never written; no compatibility layer, no contract edit, no new terminal state. `E3`,
+   `ESCALATION-realmless-admission.md` and `CONTRACT-CHANGE-REQUEST-process-lane.md` are untouched, and
+   **no row in `CAPABILITY-MATRIX-C.md` is upgraded**.
+7. **Scope.** One test file (`vnext-admission.test.mjs`, plus a default-preserving extension to its
+   local `centreWorld` helper so a fresh world can adopt an on-disk ledger/store) and this document.
+   No product source changed.
