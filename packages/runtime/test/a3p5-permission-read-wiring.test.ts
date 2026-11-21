@@ -40,7 +40,7 @@ import {
   scratchDir,
 } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import { createS6RemoteDispatcher, createS6RemotePorts } from '../src/plugin/s6-remote.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import type { TeamPermissionPlane } from '../src/plugin/permission-plane.js'

@@ -29,14 +29,6 @@
       "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
     },
     {
-      "path": "packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
       "path": "packages/runtime/test/a3p4-pr7-entry-exec-contract-regression.test.ts",
       "subject": "retired-module",
       "targets": [
@@ -53,70 +45,6 @@
         "root.ts"
       ],
       "reason": "Its subject is a retired module (pre-execute-adapter.ts, root.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/a3p5-permission-read-wiring.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a3p5-permission-splice.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4f1-row-version-not-document-version.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p6-start-gate-entrances.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-ceiling-port-assembly-pin.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-live-descendant-authority.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-v3-cutover-acceptance.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a4p7-v8-catalog-migration-state.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
     },
     {
       "path": "packages/runtime/test/a5-cancel-glob.test.ts",
@@ -404,22 +332,6 @@
       "reason": "Its subject is a retired module (index.ts, pa-control-bridge.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
     },
     {
-      "path": "packages/runtime/test/a6-boot-settlement-lanes.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/a6-root-wiring.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
       "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
       "subject": "retired-module",
       "targets": [
@@ -471,30 +383,6 @@
       "reason": "Its subject is a retired module (search-backend.mjs): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
     },
     {
-      "path": "packages/runtime/test/bound-blueprint-persona-root.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/d2-s6-ensure-root-live.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "root.ts"
-      ],
-      "reason": "Exercises a REPLACED entry (root.ts), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/f15-mcp-live-loss.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
       "path": "packages/runtime/test/pd41-allow-semantics.test.ts",
       "subject": "retired-module",
       "targets": [
@@ -509,22 +397,6 @@
         "pre-execute-adapter.ts"
       ],
       "reason": "Its subject is a retired module (pre-execute-adapter.ts): the test retires with it. Registering it per file is what stops a whole directory from becoming a blanket exemption."
-    },
-    {
-      "path": "packages/runtime/test/t12a-live-bridge.mjs",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
-    },
-    {
-      "path": "packages/runtime/test/team-session-activation-glue.test.ts",
-      "subject": "replaced-entry",
-      "targets": [
-        "agent-bindings.mjs"
-      ],
-      "reason": "Exercises a REPLACED entry (agent-bindings.mjs), not a retired module. It must be re-pointed at the new entry in A1; it is registered here so the closure can tell it apart from a test that silently outlives its subject."
     },
     {
       "path": "packages/runtime/test/u6-fixk-kernel-safety.test.ts",

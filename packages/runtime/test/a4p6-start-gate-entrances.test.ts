@@ -55,7 +55,7 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamAgentBindings, TeamPluginConfig, TeamProductionRoot } from '../src/plugin/types.js'
 import type { GovernanceStartOutcome, GovernanceWarningService } from '../governance-warning/index.js'
 import { createTeamDomain, openTeamDomain } from '../../storage/repositories/index.js'
@@ -411,7 +411,7 @@ const w4 = await (async () => {
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const S6_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 's6-remote.ts'), 'utf8')
-const ROOT_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 'root.ts'), 'utf8')
+const ROOT_SOURCE_TEXT = readFileSync(join(HERE, '..', 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
 const HANDOFF_SOURCE_TEXT = readFileSync(join(HERE, '..', 'handoff', 'service.ts'), 'utf8')
 
 // --- assertions ---------------------------------------------------------------------

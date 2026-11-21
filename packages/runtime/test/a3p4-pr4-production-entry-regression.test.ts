@@ -70,7 +70,7 @@ import { createPermissionOverlayRepositoryPort } from '../permission-governance/
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
 import * as hostEntry from '../src/plugin/host.js'
 import { TEAM_PLUGIN_ERROR_CODES } from '../src/plugin/types.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import {
   createAuthorityCeilingReader,
   createPermissionAuthorityFacts,

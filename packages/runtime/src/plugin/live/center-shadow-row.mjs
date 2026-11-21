@@ -53,7 +53,26 @@
  */
 import { appendFileSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { definitionIdentityOf } from '../../../tool-dispatch/index.js'
+// U6 PR2 identity minter, inlined when the tool-dispatch lane retired: the
+// row is the shadow of the old assembly and keeps its audit-only identity
+// answer local (no authority: a WeakMap from the Definition object to a
+// stable id, never a stringified body).
+const definitionIds = new WeakMap()
+let definitionIdCounter = 0
+function definitionFingerprint(target) {
+  if (target === null || (typeof target !== 'object' && typeof target !== 'function')) return null
+  const existing = definitionIds.get(target)
+  if (existing !== undefined) return existing
+  definitionIdCounter += 1
+  const id = `def#${definitionIdCounter}`
+  definitionIds.set(target, id)
+  return id
+}
+function definitionIdentityOf(target) {
+  if (target === null || (typeof target !== 'object' && typeof target !== 'function')) return null
+  const body = target.execute
+  return definitionFingerprint(typeof body === 'function' ? body : target)
+}
 
 /** K5 default budgets — generous for a real session's audit trail, finite,
  *  and overridable per install by the trusted caller. */

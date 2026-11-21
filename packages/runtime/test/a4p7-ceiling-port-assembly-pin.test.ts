@@ -100,7 +100,7 @@ import {
 } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import * as hostEntry from '../src/plugin/host.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import type { CanonicalKeyContains } from '../src/plugin/permission-plane.js'
 import { PERMISSION_MUTATION_ERROR_CODES } from '../governance/permission-mutation.js'

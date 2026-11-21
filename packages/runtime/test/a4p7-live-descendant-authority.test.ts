@@ -90,7 +90,7 @@ import { openPermissionOverlayStore } from '../../storage/repositories/permissio
 import { destroyDir, FileStorageSeam, scratchDir } from '../../testkit/fault-injection/file-seam.mjs'
 import { createPermissionOverlayRepositoryPort } from '../permission-governance/index.js'
 import type { PermissionOverlayRepositoryPort } from '../permission-governance/port.js'
-import { createTeamProductionRoot } from '../src/plugin/root.js'
+import { createTeamProductionRoot } from '../src/plugin/vnext/root.js'
 import type { TeamPluginConfig } from '../src/plugin/types.js'
 import { createPermissionGovernanceLane } from '../src/plugin/permission-plane.js'
 import type { CanonicalKeyContains, TeamPermissionPlane } from '../src/plugin/permission-plane.js'
