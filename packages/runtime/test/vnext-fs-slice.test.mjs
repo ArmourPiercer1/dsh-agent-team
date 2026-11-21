@@ -100,6 +100,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
 
   const fsInstances = []
   let realm
+  let installedModules
   if (mountRealm) {
     const InstrumentedFs = instrumentedFileSystemClass(LocalFileSystem, fsInstances)
     realm = await row.mountMemberA5sfRealm({
@@ -145,7 +146,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       // mount. Declaring it here would ask the lane to prove something this world cannot provide.
       expectedTools: ['read', 'write', 'edit'],
     }])
-    await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
+    installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
   }
 
   // THE ADMISSION POINT, installed on the agent scope exactly as product wiring will install it.
@@ -246,6 +247,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     async dispose () {
       if (typeof disposeExecutions === 'function') disposeExecutions()
       if (typeof disposeAdmission === 'function') disposeAdmission()
+      if (installedModules !== undefined) await installedModules.dispose()
       if (realm !== undefined) await realm.dispose()
       await root.dispose?.()
     },
@@ -649,6 +651,27 @@ test('SLICE-22 — STOP during approval: a cancelled ask ends the call and the g
   } finally {
     await world.dispose()
   }
+})
+
+test('SLICE-23 — lifecycle close: the centre stops deciding, and records nothing after close', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'lifecycle'), admission: 'bound', durable: join(dir, 'lifecycle', 'facts.jsonl') })
+  let factsBefore
+  let executionsBefore
+  try {
+    const one = await world.dispatch('read', { file_path: world.insideFile }, 'life-1')
+    assert.equal(one.isError, false, `the pre-dispose read must succeed: ${one.text}`)
+    factsBefore = world.facts().length
+    executionsBefore = world.executions().length
+  } finally {
+    await world.dispose()
+  }
+  // MEASURED, AND NOT WHAT WE WANT: after dispose the member's native `read` STILL EXECUTES - the
+  // mounted registration outlives the realm handle this world disposes. It is recorded as an open
+  // defect (evidence section 13), not asserted as correct. What IS guaranteed today is that the
+  // centre closed: no further decision and no further fact can be written for this member.
+  await world.dispatch('read', { file_path: world.insideFile }, 'life-2')
+  assert.equal(world.facts().length, factsBefore, 'no fact may be written after close')
+  assert.equal(world.executions().length, executionsBefore, 'no execution fact may be written after close')
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {

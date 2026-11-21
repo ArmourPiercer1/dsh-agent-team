@@ -434,3 +434,26 @@ Two things this settles that the plan left implicit: the refusal is matched on t
 wording rather than `isError`, so no unrelated failure can satisfy the arm; and a policy mounted on
 the ROOT scope still governs a member's write through its own realm, because the observed state is
 keyed by the calling session, not by the provider instance.
+
+## 13. OPEN DEFECT: a disposed member's native tools still execute
+
+Measured while adding the lifecycle arm. In the slice world the member realm is disposed and the
+mounted module fibers are released, yet a `read` dispatched after disposal **still returns the
+file**, through the member's confined provider. The centre's own guarantees do hold (no new
+decision, no new fact after close), so SLICE-23 asserts exactly that and records this as an open
+defect rather than encoding the leak as expected behaviour.
+
+Why it matters: "lifecycle close" is a B requirement, and a retired member whose native tools keep
+executing for whoever still holds the scope is the retired route's failure mode with the roles
+swapped. Two candidate causes, neither yet confirmed:
+
+1. the row's `mountMemberA5sfRealm` returns a HANDLE (`{realm, installation}`), so
+   `realm.disposeNativeToolModules` is not the mounted realm's disposer and the lane's fallback
+   disposes fibers that had already been superseded;
+2. the tool-fs module registers on its FIRST `apply()` and later applies reuse the registration,
+   so the fiber disposed is not the one that owns the live registration (the same C1
+   ownership-probe hazard `a5sf-realm-row.mjs:1237` documents for the shadow lane).
+
+Not fixed in this round on purpose: the fix belongs in the row's dispose path, it needs its own
+arm proving the definition is GONE (not merely that the call fails), and a rushed patch here would
+hide the defect behind a passing test.

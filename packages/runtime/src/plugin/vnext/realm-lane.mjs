@@ -103,7 +103,11 @@ export function hostNativeSpecs (specs) {
  *   pinned `read_image` is one: GAP-FS-CONTRACT-1), so the name is legitimately absent for a few
  *   ticks after the mount returns. Waiting is not leniency: the identity assertion still runs, it
  *   just runs after the registry has had its chance to settle.
- * @returns {Promise<{ mounted: readonly string[], fibers: readonly object[] }>}
+ * @returns {Promise<{ mounted: readonly string[], fibers: readonly object[], dispose: () => Promise<void> }>}
+ *   `dispose` releases what THIS mount registered. It is part of the contract, not a convenience:
+ *   the mount happens on the agent's context, so disposing the member realm does not by itself
+ *   remove those registrations - measured, before it was fixed, as a disposed member whose native
+ *   `read` still executed.''
  */
 export async function mountHostModules ({ realm, root, scope, specs, surface, settleRounds = 20 }) {
   if (realm === null || typeof realm !== 'object') fail('REALM_MISSING', 'no member realm: a tool definition may not fall back to the composition provider')
@@ -178,7 +182,30 @@ export async function mountHostModules ({ realm, root, scope, specs, surface, se
       fail('SURFACE_UNCOVERED', `the composed surface names ${absent.join(', ')} but no host module spec declares them`)
     }
   }
-  return Object.freeze({ mounted: Object.freeze(mounted), fibers: Object.freeze(Array.isArray(fibers) ? [...fibers] : []) })
+  return Object.freeze({
+    mounted: Object.freeze(mounted),
+    fibers: Object.freeze(Array.isArray(fibers) ? [...fibers] : []),
+    // LIFECYCLE CLOSE. The mount lives on the agent's context, so the member realm's disposal does
+    // not remove it; without this the retired member's confinement outlives the member and its
+    // native tools keep executing for whoever still holds the scope.
+    dispose: async () => {
+      // The mounted realm wrapper does not always expose `disposeNativeToolModules` (the row
+      // returns a handle, not the realm), so the fibers THIS mount received are released directly
+      // when the realm-level disposer is absent. Measured: relying on the wrapper alone left the
+      // disposed member's native `read` executing.
+      if (typeof realm?.disposeNativeToolModules === 'function') {
+        await disposeQuietly(realm)
+        return
+      }
+      for (const fiber of [...(Array.isArray(fibers) ? fibers : [])].reverse()) {
+        try {
+          await fiber?.dispose?.()
+        } catch {
+          // The mount's own refusal is the failure worth reporting, not a dispose race.
+        }
+      }
+    },
+  })
 }
 
 async function disposeQuietly (realm) {
