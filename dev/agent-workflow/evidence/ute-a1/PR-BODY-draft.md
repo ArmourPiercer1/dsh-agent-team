@@ -100,6 +100,24 @@ exercised); the durable allow is `inline` and therefore not a guard token (`cont
 so exactly-once rests on the binder grant + ledger replay refusal; `stale-denied` and the abort/abandon
 distinction are proven at mapping level only; the grant binds member+call+tool+revision but not the locator.
 
+## B stage, second slice: Stop priority and lifecycle close (round 52)
+
+Stop is the host's own `exec.signal` — no second stop mechanism. A Stop decides BEFORE the lane and before
+any reviewer (`ADMISSION_STOPPED`, distinct from deny/expired/fault), is recorded as the enforced deny with
+settlement `REFUSED`/`not-started`, aborts a pending ask through the ControlService's existing inline-abort
+cascade, and is re-checked after the durable decision returns so a late approval can never downgrade it.
+
+Lifecycle close is a STATE, not a removal: `close()` keeps the pre-execute and guard installed in closed
+mode, aborts a pending ask, refuses new calls with `ADMISSION_MEMBER_CLOSED` without ever consulting the
+live binding, still settles in-flight calls, and is idempotent. ADM-56..62 (7 arms, 126 pass) each carry a
+positive and negative control; seven mutation edits (reverted) turned their own arm red.
+
+**Not proven, stated:** a Stop that lands AFTER an `allow` was recorded cannot be `REFUSED` under the frozen
+settlement contract (that cell is the open `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` option A); the
+store's own Stop shape (Stop + `CANCELLED`, `not-started`) is recorded and asserted instead. An
+`allow`-admitted call that has not reached the guard is allowed to finish so it settles — refusing it would
+hit the same wall and leave UNKNOWN. No host boot, no real Stop keypress.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all

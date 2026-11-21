@@ -10272,3 +10272,24 @@ allow is `inline`, so exactly-once rests on the grant binder + ledger replay ref
 Gates at `518109063`: leg `suites=6 files=6 exit=0` (119 pass), catalog `findings=0`, cut-closure
 `prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, place-dist-glue 27, ci-required pass,
 bound leg `PASS 238`.
+
+### R52 — Stop priority and lifecycle close, and the one cell the frozen contract still blocks
+
+Stop is the host's `exec.signal` (no second mechanism): it decides before the lane AND before any reviewer,
+records `ADMISSION_STOPPED` as the enforced deny with `REFUSED`/`not-started`, aborts a pending ask through
+the ControlService's existing inline-abort cascade, and is re-checked after the durable decision so a late
+approval cannot downgrade it.
+
+`close()` is a state, not a removal: the pre-execute and guard stay installed in closed mode, new calls are
+`ADMISSION_MEMBER_CLOSED` without ever consulting the live binding, in-flight calls still settle, and close
+is idempotent. ADM-56..62 (126 pass), each with positive + negative controls; seven mutation edits
+(reverted, `cmp`-verified) each turned exactly their own arm red.
+
+**Blocked and named, not worked around:** a Stop landing AFTER an `allow` was recorded cannot be `REFUSED`
+under the frozen settlement contract (`REFUSED` may not cite an `allow`, `execution-settlement.ts:932-955`;
+`CANCELLED` needs a `pre-dispatch` Stop, `:1019-1027`). That is exactly the open
+`CONTRACT-CHANGE-REQUEST-settlement-recheck.md` option A. The store's own Stop shape is asserted instead, and
+the literal shape stays unreachable until the contract is ruled on.
+
+Gates at `eb0726512`: leg `suites=6 files=6 exit=0` (126 pass), catalog `findings=0`, cut-closure, P0,
+docs-sync, place-dist-glue 27, ci-required pass, bound leg `PASS 238`.
