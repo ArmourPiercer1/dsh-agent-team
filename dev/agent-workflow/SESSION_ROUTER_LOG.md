@@ -10006,3 +10006,18 @@ not see because they test the mechanism rather than the product composition. Act
   FAILED is unreachable from ADMITTED; UNKNOWN would claim the effect was merely unobserved when the
   body provably never ran). The centre reports `SETTLEMENT_CONTRACT_GAP` and leaves the record rather
   than writing a lie. `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` lays out four options.
+
+### R28 addendum 2 — close ordering (P1-4) fixed; what remains from the review
+
+- **P1-4 fixed, ordering only.** The realm disposer was registered in two lists, so `close()` STARTED it
+  during the tool-disposer pass — before the native-mount pass whose own comment says it must run first
+  because installing the MEMBER_CLOSED tombstone needs a living realm. Now: realm disposer registered
+  once (in the waitable list), native mounts drained FIRST, then the tool/centre disposers, then the
+  realm. The invariant the comment described is now the code.
+  Not claimed: a dispatch racing a close is still unmeasured (SLICE-23 tests after close).
+- **Still open from the review** and next: P1-5 (a throwing ledger/settlement path escapes as an
+  exception rather than an explicit deny), P1-6 (the memo is consulted before the durable replay check),
+  and the P2 batch — `definitionSource` hardcoded to the fs package for every tool, per-tool key
+  fallbacks that widen to the ceiling, the third grant-id scheme, execution-id join by convention,
+  ledger duplicate/kind-override, unbounded maps, the identity fields (agentId vs sessionId,
+  instanceGeneration defaulting to 0), and `await import()` before the `@deepseek-ai/*` check.
