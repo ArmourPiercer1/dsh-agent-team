@@ -497,18 +497,23 @@ its ancestor, and the ancestor here is the composition provider with no confinem
 | 2 | `write` | yes | same, on the write lane | — |
 | 3 | `edit` | yes (mounted) | — | no arm yet; the definition is mounted but untested |
 | 3 | `edit` | yes | in-ceiling edit lands through the member provider (axis `fs.write`), out-of-ceiling refused before the provider | — |
-| 4 | `grep`/`glob` | **refused at composition time** | the ADMISSION gate (outside path denied, omitted `path` = workspace root and still judged) AND the product's own `SUBPROCESS_UNCONFINED_REALM` refusal: the realm mounts a confined `fs` face only, so a module injecting `subprocess` would resolve the inherited unconfined base service. `team-services/mount.ts:1503` refuses instead | no positive control: rung 4 needs a **confined subprocess face on the member realm**, which does not exist yet |
+| 4 | `grep`/`glob` | **YES** (since the confined subprocess face landed) | a real in-ceiling `grep` returns ripgrep matches through the MEMBER scope's confined `subprocess`, and an out-of-ceiling `grep` is refused by the centre's `fs.read` lane BEFORE any spawn (the error is `LANE_DENY`, not a ripgrep failure), with the execution fact recorded as `admission-refusal` | `glob` is mounted but has no arm of its own |
 | 5 | `web_fetch` | no | the NETWORK axis: unset is not allow, deny is deny, allow is allow, and the fs lanes say nothing about it | no positive control (no `web` provider) |
 | 6 | `bash` / `run_code` | no | EXPLICIT `ADMISSION_AXIS_UNSUPPORTED`: the compiled policy has no subprocess lane, so the call is refused rather than admitted | no positive control, and no subprocess lane to enforce |
 
 `@vscode/ripgrep` IS present in the pinned runtime (pnpm store, 1.18.0), so rung 4 was never blocked by
-a missing binary - and it is not blocked by a missing provider either. Measured: with `subprocess` and
-`spill` mounted at the root, the MOUNT still refuses with `SUBPROCESS_UNCONFINED_REALM`, because the
-member realm presents a confined `fs` face and nothing else; letting the module resolve `subprocess`
-would hand it the inherited, unconfined base service. The blocking item is therefore a real
-architecture gap (a confined subprocess face per realm), not wiring, and it belongs to C's subprocess
-family. It is not counted as ENV_BLOCK and not as a pass: the refusal is the correct behaviour, and
-SLICE-28 pins it.
+a missing binary. It WAS blocked by an architecture gap, and the gap is now closed the way the product
+intends: the composition supplies `compiled.subprocess = { effective, provider }` - the compiled
+execution profile plus the P1-07 OS provider - and the realm mounts that face on its own isolated
+scope, so `grep` resolves the confined `subprocess` and never the inherited base one.
+
+Two product details had to be respected, and both are facts rather than preferences: the search module
+REQUIRES `sampleOverCapGlobResults` in its config (a mount without it fails as "invalid config"), and
+the confined face needs an additive `runtimeAllowPaths` entry for the runtime's own package store -
+the member lane covers the workspace, not the interpreter.
+
+What is still NOT proven at rung 4: `glob` has no arm, and the search family has not been exercised
+under an ASK decision or a Stop.
 
 The subprocess refusal is the contract, not a TODO that will quietly become an allow: when C wires
 the family, it must arrive with a compiled subprocess lane, otherwise the refusal stays.

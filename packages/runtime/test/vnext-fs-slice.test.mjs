@@ -116,6 +116,42 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   bindScopeParent(agentKey, standingKey)
   const presetRead = root.get('tools').get('read', agentKey)
 
+  // RUNG 4/6. The realm can only host a `subprocess`-consuming module if it OWNS a confined
+  // subprocess face, and the composition is what builds it: the product's compiled profile plus the
+  // product's P1-07 OS provider. Nothing here decides policy or launches a process by hand.
+  let subprocessFace
+  if (search) {
+    const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
+    const sandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/sandbox-provider/index.ts')).href)
+    const profile = teamSandbox.compileExecutionProfile({
+      memberIdentity: IDENTITY.memberInstanceId,
+      revision: 'rev-vnext-slice',
+      read: lane(askPath === undefined ? [inside] : [inside, askPath]),
+      write: lane([inside]),
+      network: Object.freeze({ access: 'deny' }),
+    })
+    if (!profile.ok) throw new Error(`the slice profile must compile: ${profile.code} ${profile.detail}`)
+    subprocessFace = {
+      effective: {
+        memberIdentity: IDENTITY.memberInstanceId,
+        toolBindingIdentity: 'member-subprocess',
+        invocationId: 'member-subprocess-face',
+        policyRevision: 'rev-vnext-slice',
+        read: lane(askPath === undefined ? [inside] : [inside, askPath]),
+        write: lane([inside]),
+        network: Object.freeze({ access: 'deny' }),
+      },
+      provider: sandbox.createConfinedProcessProvider({ realmId: IDENTITY.memberInstanceId, trustRoot: dir, scratchRoot: join(dir, 'scratch') }),
+      // The realm id the provider was created for: a request naming a different realm is refused.
+      realmId: IDENTITY.memberInstanceId,
+      bindingId: 'member-subprocess',
+      memberScope: IDENTITY.memberInstanceId,
+      // ripgrep lives outside the member's lane; the interpreter/executable's own directory is the
+      // documented additive exception, and it is the ONLY one added here.
+      runtimeAllowPaths: Object.freeze([{ path: join(REPO_ROOT, 'tests/deepseek-harness-test-use/node_modules/.pnpm'), accessBits: { readFile: true, readDir: true, execute: true } }]),
+    }
+  }
+
   const fsInstances = []
   let realm
   let installedModules
@@ -146,6 +182,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
             config: { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 },
           }],
           providerClass: InstrumentedFs,
+          ...(subprocessFace === undefined ? {} : { subprocess: subprocessFace }),
         }),
       }),
       member: {
@@ -165,7 +202,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       expectedTools: ['read', 'write', 'edit'],
     }
     const specs = hostNativeSpecs(search
-      ? [primary, { url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'] }]
+      ? [primary, { url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'], config: { sampleOverCapGlobResults: false } }]
       : [primary])
     try {
       installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
@@ -796,17 +833,32 @@ test('SLICE-27 — edit: outside the ceiling it is refused before the provider i
   }
 })
 
-test('SLICE-28 — rung 4 is refused at composition time, by the product, for a real reason', async () => {
-  // The search family injects `subprocess`. The realm mounts a confined `fs` face and nothing else,
-  // so mounting the module would let it resolve the INHERITED, unconfined base subprocess service.
-  // `team-services/mount.ts` refuses that composition. This arm pins the refusal, because the
-  // alternative - a lane that "just mounts it" - is exactly the unconfined-provider defect the whole
-  // architecture exists to prevent.
+test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused outside it', async () => {
+  // The realm owns a confined subprocess face (compiled profile + P1-07 provider), which is what
+  // makes the search module admissible at all: without it the product refuses the composition
+  // (measured in the previous round as SUBPROCESS_UNCONFINED_REALM). Now the family is mounted on
+  // the MEMBER scope, so `grep` resolves the confined `subprocess`, never the inherited base one.
   const world = await buildWorld({ mountRealm: true, dir: join(dir, 'search'), admission: 'bound', search: true })
   try {
-    assert.notEqual(world.mountRefusal, undefined, 'mounting a process consumer into an fs-only realm must not succeed')
-    assert.equal(world.mountRefusal.code, 'SUBPROCESS_UNCONFINED_REALM')
-    assert.match(String(world.mountRefusal.message), /no confined subprocess face/u, 'the refusal must name the missing face, not just say no')
+    assert.equal(world.mountRefusal, undefined, `the composition must mount now: ${world.mountRefusal?.message ?? ''}`)
+    const inside = await world.dispatch('grep', { pattern: 'alpha', path: world.inside }, 'grep-in')
+    assert.equal(inside.isError, false, `an in-ceiling grep must succeed: ${inside.text}`)
+    assert.match(String(inside.text), /alpha/u, 'the match must come back from the real ripgrep run')
+    const facts = world.facts()
+    assert.equal(facts[0].axis, 'fs.read')
+    // The negative control: the same tool and pattern, a locator outside the ceiling.
+    const outside = await world.dispatch('grep', { pattern: 'alpha', path: world.outside }, 'grep-out')
+    assert.equal(outside.isError, true, `an out-of-ceiling grep must fail: ${outside.text}`)
+    // The refusal is the CENTRE's admission decision, not ripgrep failing: the call never reached a
+    // process. That distinction is the whole point of rung 4 - the lane decides before the spawn.
+    assert.match(String(outside.errorMessage), /outside the binding's fs\.read lane/u, 'the refusal must be the lane, not a ripgrep error')
+    // The host settles the refused call too (it emits tools/result), and the fact keeps the
+    // provenance: two facts, the second one an admission refusal - never a 'failed' that would read
+    // like ripgrep broke.
+    const executions = world.executions()
+    assert.equal(executions.length, 2)
+    assert.equal(executions[1].outcome, 'admission-refusal')
+    assert.equal(executions[1].toolName, 'grep')
   } finally {
     await world.dispose()
   }
