@@ -11,6 +11,16 @@
 - **Not `ENV_BLOCK`**: the host environment is adequate (pinned tree present and built, `node_modules` resolves, ports/leases work, sandbox assets present). The blockers are this branch's committed build artifacts and product wiring, all in-repo and reversible; no upstream patch is needed, so this is **not** a `CORE_SEAM_BLOCKER`.
 - **Evidence artifacts**: `dev/agent-workflow/evidence/d-boot-feasibility/` (driver, `driver.log`, `run-ledger.jsonl`, `runs/boot01/*`, per-world host logs). This report is the human-readable summary.
 
+> **STATUS UPDATE — round 59 (2026-11-22, HEAD `2e2d36543` + a rebuilt dist).** The three code blockers
+> in §5/§6 are fixed and the fourth (stale dist) is provisioned; the centre-configured composition now
+> **boots** (no `TeamPluginError`; remote mount recorded `skipped`), the install graph resolves, and the
+> boot Leader carries 43 model-visible tools including the native `read` and the 15 `team_*` tools. It
+> then **stops at `team.create` (HTTP 405)**: C-remote refuses the S6 remote plane on a centre-config row,
+> and that plane is the driver's only team-creation entrance, so no Member turn runs and all five judges
+> are unmeasured. Verdict for round 59: **PARTIAL** (host live, Member blocked). Full record, exact
+> commands and gate outputs: `MIGRATED-SUITE-STATUS.md`, "Round 59 (D stage)". This report's §1–§10 remain
+> the round-58 record at `3fb8882f8`; see §11 for the round-59 delta.
+
 ---
 
 ## 1. What was asked
@@ -157,3 +167,56 @@ In order; each is in-repo and no upstream patch is required.
 ## 10. Bottom line
 
 **Can this worktree boot the product host?** The **host process** yes (with a locally rebuilt `dist`); the **product Team with a governed Member and a centre** no, at this HEAD, for a reason that is now precise: a stale committed dist, a dangling package export, and a centre/remote bootstrap contradiction. **Does the native-tool-provider question have a measurable answer?** The measurement exists and is encoded (native `read` schema + guard facts + centre admission ledger + typed denial), but it produced **no measurement this round** because no Member turn ran. Fix the three items above and the next run answers it directly instead of inferring it.
+
+## 11. Round 59 update (2026-11-22) — boot works, creation does not
+
+HEAD `2e2d36543ab2d34bb6cbaac476cda39582765e50`, host `639ed01539…` (porcelain empty), branch
+`vnext/a1-cut`. Record class `DEV-LIVE`. Commands, verbatim:
+
+```
+node /home/armourpiercer/projects/dsh-agent-team/node_modules/typescript/bin/tsc \
+  -p packages/runtime/tsconfig.build.json          # exit 0 (25 tracked dist files changed, 12 added)
+node scripts/place-dist-glue.mjs                    # exit 0, 28 placements byte-identical
+env -u DBOOT_WITHOUT_CENTRE -u A5SF_WF_NO_INSTALL_GRAPH \
+  node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2
+```
+
+What §4–§6's blockers now do:
+
+1. **remote seam** — a centre row boots. `host.ts` records `skipped` instead of dereferencing the absent
+   registration seam; the host log carries
+   `remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis)`.
+2. **retired `tool-web`** — World creation reaches the host with the install graph **provisioned** and
+   `composition drops: []`; `A5SF_PROFILE_GRAPH_UNRESOLVED` no longer occurs, so
+   `A5SF_WF_NO_INSTALL_GRAPH=1` was not used.
+3. **gate** — green (§ below); the NAME class is covered.
+4. **stale dist** — provisioned exactly as §8 step 1 proposed. `import(host.js)` succeeds and the host
+   boots. All 37 changed/added files are artifact classes the repo already tracks
+   (`dist/**/*.js`, `*.js.map`, `*.d.ts`, `*.d.ts.map`); the 28 byte-copied `.mjs`/`.py` placements ride
+   `place-dist-glue` and were already tracked.
+
+New blocker (round 59), with the exact line:
+
+- the driver creates its acceptance team through `remoteCall(...)` →
+  `POST /team-remote/team.create` (`tests/world-factory/lib/u6-fs-assembly.mjs:505-510`); that route belongs
+  to the S6 remote plane, which a centre row refuses at `root.ts:4324-4331` (the seam is installed only when
+  the surfaces are built, `root.ts:4722-4730`). `host.ts:1631-1641` therefore skips the mount, no route is
+  registered, and `team.create` returns **405**; the driver aborts at
+  `run-boot.mjs:991` (`team.create failed: status=405 body=null`).
+- Round 58's no-centre arm got `team.create status=200` on the same driver, which isolates the cause to the
+  remote refusal. A centre-configured row has no runtime team-creation entrance; the only Team it can have
+  is the boot-created one (`root.ts:4888-4925`).
+
+Consequence: `mockRequests` never reached a Member request, `member-surface.json` / `guard-facts.json` /
+`centre-facts.json` do not exist, and the driver's five judges are recorded fail-closed `FAIL`
+(`selected case produced no verdict`), `agreement.json` `boots=1, agreeing=false`. **No Member turn, no
+native tool call, no admission/execution fact.** The round-59 artifact set is `runs/boot01`; round 58's is
+preserved at `archive/2026-11-21T21-31-24-221Z/` (archive-before-start), and the first attempt of this round
+(the driver's `record.bindings` crash, fixed in two receiver names with no assertion change) at
+`archive/2026-11-21T21-32-33-226Z/`.
+
+What is needed is a ruling, not a patch: (1) make creation a centre-adjudicated command (contract change —
+there is no remote-command axis in the compiled ceiling), (2) add a non-remote product creation entrance, or
+(3) redesign the driver to bind the v4 blueprint at boot and use the boot-created Team. Each is a product
+decision; none is a small non-weakening fix. §7's "no measurement" remains true for the Member, while the
+host/centre/Leader half is now measured live.

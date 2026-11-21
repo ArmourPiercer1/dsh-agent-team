@@ -56,6 +56,7 @@ import { register } from 'module';
 import { fileURLToPath } from 'url';
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js';
 import { ARTIFACT_READ_GRANTED_FACT_TYPE, TeamArtifactAuthority, } from '../../artifact-read/index.js';
+import { centreConfigViolation } from './vnext/centre-config.js';
 import { MCP_FACET_WILDCARD, resolveDurableMcpFacet, } from '../../agent-setup/capability/index.js';
 import { resolveDurableModelSelection } from '../../agent-setup/model/index.js';
 import { createOrOpenTeamDomainDetailed, createTeamDomain, openTeamDomain, } from '../../../storage/repositories/index.js';
@@ -111,7 +112,7 @@ import { createRuntimeRequirementFactsProvider } from '../../requirement-facts/i
 // contract.
 import { SHIPPED_STATE_DEPLOYMENT_DEFAULT_PRESET_ID, shippedStatePersonaObserver, } from '../../requirements/observed-persona.js';
 import { TEAM_ARTIFACT_AUTHORITY_SERVICE } from './artifact-grant-bridge.js';
-import { createTeamProductionRoot } from './root.js';
+import { createTeamProductionRoot } from './vnext/root.js';
 import { ALPHA6_WAKE_MARKER } from '../../alpha6/wake-dispatch.js';
 import { createTeamSessionActivationFence } from './team-session-activation.js';
 import { resolveOwningTeamRoot } from './team-session-ownership.js';
@@ -220,6 +221,12 @@ export function validateTeamPluginConfig(raw) {
         fail('generation must be a positive integer');
     if (c.defaultWorkspace !== undefined && typeof c.defaultWorkspace !== 'string')
         fail('defaultWorkspace must be a string when present');
+    // The CENTRE's own config rules live in `vnext/centre-config.ts` so they are testable without
+    // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
+    // exist after a build). This call is the only place they are enforced.
+    const centreViolation = centreConfigViolation(c);
+    if (centreViolation !== undefined)
+        fail(centreViolation);
     if (!Array.isArray(c.seedMembers))
         fail('seedMembers must be an array');
     for (const seed of c.seedMembers) {
@@ -331,7 +338,7 @@ export function validateTeamPluginConfig(raw) {
  * @returns the derived glue file URL.
  */
 export function defaultGlueUrl(hostModuleUrl) {
-    return new URL('./live/agent-bindings.mjs', hostModuleUrl).href;
+    return new URL('./vnext/agent-bindings.mjs', hostModuleUrl).href;
 }
 /**
  * The row config with the default-workspace derivation applied
@@ -995,6 +1002,21 @@ export async function apply(ctx, config) {
         // The production root installs the registration seam during its
         // construction (A31); current() throws the seam's stable
         // not-installed code if that ever regresses (propagated as-is).
+        //
+        // C-remote (round 58): a CENTRE-configured row does NOT build the S6 command plane at all — the
+        // dispatcher is authorized by a server-derived principal, which the centre's compiled ceiling cannot
+        // speak for, so the surface is refused (fact + REFUSED settlement) rather than left as an ungoverned
+        // second command authority beside the centre. The seam is therefore absent BY DESIGN on those rows, and
+        // dereferencing it turned an intended refusal into a boot failure. A disabled seam is a "skipped" mount
+        // (not "failed"): the refusal is already on the durable record, and this leg has nothing to register.
+        if (!root.seams.remoteHandlerRegistration.installed) {
+            const skipped = {
+                state: 'skipped',
+                reason: 'the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record',
+            };
+            remoteMountState = skipped;
+            return skipped;
+        }
         const registerRemote = root.seams.remoteHandlerRegistration.current();
         let registration;
         try {
@@ -1328,12 +1350,6 @@ export async function apply(ctx, config) {
         // boundary resolves, the ref is filled; a world without the ref (test
         // compositions) keeps the pre-PR-B legacy input.
         const policyReaderRef = { current: null };
-        // 9e-3 (PR358): the shared PA call-level facts adapter ref (the same
-        // late-fill pattern as policyReaderRef): created before the glue, filled
-        // with builtRoot.paReadCallFactsRef.current right after root
-        // construction. The plane's consumption edge awaits THIS reader — one
-        // adapter with the Control verifier, no second authority path.
-        const paReadCallFactsRef = { current: undefined };
         // pre-alpha3 PR4 — the shared permission-plane reference (the exact
         // `controlServiceRef` / `artifactAuthorityRef` precedent): a construction-
         // time object the ROOT fills during its construction; the live glue reads
@@ -1715,7 +1731,6 @@ export async function apply(ctx, config) {
             // (filled with builtRoot.policyReader right after root construction
             // — the glue reads it lazily per boundary; see the ref's rationale).
             policyReaderRef,
-            paReadCallFactsRef,
             // pre-alpha3 PR-C §C.6/§C.7: the durable capability-runtime telemetry
             // hook — the glue emits the MCP mount transitions (mount-failed /
             // mount-restored) and the host durably records each as a
@@ -2242,7 +2257,6 @@ export async function apply(ctx, config) {
         // boundaries: the remote surface is not servable until the boot is
         // armed, and the boot preload below runs after this point).
         policyReaderRef.current = builtRoot.policyReader;
-        paReadCallFactsRef.current = builtRoot.paReadCallFactsRef?.current;
         // Alpha.6 (opt-in only): the REAL Host turn boundary for a review latch.
         // `agent/inbox/claimed` is the message's owning turn start; `agent/status`
         // idle is the turn end. The marker filter keeps ordinary user turns from

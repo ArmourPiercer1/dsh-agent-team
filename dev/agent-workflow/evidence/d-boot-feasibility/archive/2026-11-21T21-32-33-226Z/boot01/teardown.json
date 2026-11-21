@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-21T21:31:24.347Z",
+  "teardown": {
+    "host": {
+      "wasRunning": false
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-31-24Z",
+    "releasedPorts": [],
+    "killedPids": [],
+    "notes": []
+  },
+  "hostTreePorcelain": []
+}

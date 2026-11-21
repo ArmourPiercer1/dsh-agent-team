@@ -1,15 +1,8 @@
 {
   "schema": "dboot/composition-drops/1",
-  "at": "2026-11-21T21:21:06.625Z",
+  "at": "2026-11-21T21:32:33.325Z",
   "disclosure": "Rows removed from THIS driver's composition only (product files untouched). Every drop is a measured reason, never a convenience.",
-  "drops": [
-    {
-      "id": "tool-web",
-      "name": "dsh-agent-team/web-tool",
-      "reason": "the cut deleted the module this export targets",
-      "target": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/dist/packages/runtime/src/plugin/live/confined-web-tool.mjs"
-    }
-  ],
+  "drops": [],
   "presetPluginsAfterDrop": [
     "persona",
     "agent-instructions",

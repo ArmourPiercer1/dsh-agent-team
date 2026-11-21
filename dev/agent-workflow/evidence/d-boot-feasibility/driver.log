@@ -254,3 +254,84 @@ transcriptSourceCount         null
 agreeing=false differing=[]
 [2026-11-21T21:22:28.113Z] host porcelain after: []
 [2026-11-21T21:22:28.113Z] RESULT FAIL (1/1 boots; agreeing pair=false)
+[2026-11-21T21:31:19.628Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-21T21:31:19.628Z] shipped !!js substitutions: [{"expression":"(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')","value":[]},{"expression":"process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'","value":"https://api.exa.ai"},{"expression":"process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''","value":""},{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-21T21:31:19.661Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist domain facade)"}
+[2026-11-21T21:31:19.662Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packa"}]
+[2026-11-21T21:31:19.662Z] composition drops: []
+[2026-11-21T21:31:19.662Z] governed preset plugins (14): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,command-goal,tool-goal,planning,compaction,tool-todo,tool-plugin-manager
+[2026-11-21T21:31:19.662Z] PLAN OK
+[2026-11-21T21:31:24.222Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-31-24-221Z
+[2026-11-21T21:31:24.225Z] START head=2e2d36543ab2d34bb6cbaac476cda39582765e50 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-21T21:31:24.252Z] host porcelain before: []
+[2026-11-21T21:31:24.310Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:31:24.311Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=2e2d36543ab2d34bb6cbaac476cda39582765e50
+[2026-11-21T21:31:24.317Z] [boot1] world=u5u5a5sfdev1-20261121T21-31-24Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-31-24Z
+[2026-11-21T21:31:24.320Z] [boot1] FAILED at pre-boot: TypeError: Cannot set properties of undefined (setting 'compositionDrops')
+    at file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:886:40
+    at async Object.boot (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/suites/150-a5sf-read.mjs:665:16)
+    at async bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:866:16)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1410:15)
+[2026-11-21T21:31:24.320Z] [boot1] teardown: {"host":{"wasRunning":false},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-31-24Z","releasedPorts":[],"killedPids":[],"notes":[]}
+[2026-11-21T21:31:24.320Z] [boot1] dev-live slot released (released=false held=false)
+[2026-11-21T21:31:24.347Z] boot 1 failed at pre-boot; continuing is pointless (no agreeing pair)
+[2026-11-21T21:31:24.348Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:31:24.374Z] host porcelain after: []
+[2026-11-21T21:31:24.374Z] RESULT FAIL (1/2 boots; agreeing pair=false)
+[2026-11-21T21:32:33.227Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/archive/2026-11-21T21-32-33-226Z
+[2026-11-21T21:32:33.230Z] START head=2e2d36543ab2d34bb6cbaac476cda39582765e50 hostTree=/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-21T21:32:33.257Z] host porcelain before: []
+[2026-11-21T21:32:33.316Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-21T21:32:33.317Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=2e2d36543ab2d34bb6cbaac476cda39582765e50
+[2026-11-21T21:32:33.323Z] [boot1] world=u5u5a5sfdev1-20261121T21-32-33Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-32-33Z
+[2026-11-21T21:32:33.325Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools
+[2026-11-21T21:33:11.367Z] [boot1] mock on 3497
+[2026-11-21T21:33:51.556Z] [boot1] BOOTED port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261121T21-32-33Z/instance-port3187.log
+[2026-11-21T21:33:51.825Z] [boot1] p6t6 health=true
+[2026-11-21T21:33:52.095Z] [boot1] leader surface (43): ask_user_question,bash,create_goal,edit,exit_plan_mode,get_goal,glob,grep,interrupt_agent,job_kill,job_list,job_output,list_agents,present,read,read_image,send_message,skill,subagent,subagent_fork,team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message,todo_write,u5_canary,u6fs_probe,update_goal,web_fetch,web_search,workflow,write
+[2026-11-21T21:33:52.095Z] [boot1] leader builtinToolDeny:
+[2026-11-21T21:33:52.126Z] [boot1] team.create status=405 ok=false null
+[2026-11-21T21:33:52.127Z] [boot1] FAILED at team-create: Error: team.create failed: status=405 body=null
+    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:991:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:1410:15)
+[2026-11-21T21:33:52.229Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T21-32-33Z","releasedPorts":[3187,3497,3187],"killedPids":[100],"notes":[]}
+[2026-11-21T21:33:52.229Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-21T21:33:52.258Z] boot 1 failed at team-create; continuing is pointless (no agreeing pair)
+[2026-11-21T21:33:52.259Z] TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)
+fact
+overall
+admittedVerdict
+deniedVerdict
+surfaceVerdict
+factsVerdict
+centreVerdict
+allowFacts
+denyFacts
+centreAdmissions
+centreExecutions
+governedSurface
+admittedBytes
+deniedSecretAbsent
+transcriptSourceCount
+
+agreeing=false differing=[]
+[2026-11-21T21:33:52.287Z] host porcelain after: []
+[2026-11-21T21:33:52.287Z] RESULT FAIL (1/2 boots; agreeing pair=false)

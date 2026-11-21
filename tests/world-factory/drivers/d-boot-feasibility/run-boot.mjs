@@ -883,8 +883,8 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       // is measured, not guessed), exactly like the proven live lanes.
       const rows = composedRows({ home: world.home, workspaceDir: workspace, anchorYaml: anchor, layer })
       world.u6Fs.rows.push(...rows)
-      record.bindings.compositionDrops = COMPOSITION_DROPS
-      record.bindings.layout = process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre'
+      record.record.bindings.compositionDrops = COMPOSITION_DROPS
+      record.record.bindings.layout = process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre'
       log(`[boot${String(index)}] rows: ${rows.map((r) => r.id).join(',')}`)
       writeFileSync(join(bootDir, 'composition-drops.json'), JSON.stringify({
         schema: 'dboot/composition-drops/1',

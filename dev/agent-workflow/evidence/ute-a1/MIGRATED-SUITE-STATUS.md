@@ -994,3 +994,138 @@ Vitest population unchanged at **238**; the node leg gained `ADM-96`…`ADM-99` 
 `vnext-admission` suite now runs 83 cases in ~1.5 s. No host boot, so no row is PRODUCT-PROVEN. The
 open escalations are untouched (`ESCALATION-realmless-admission.md`,
 `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, `CONTRACT-CHANGE-REQUEST-process-lane.md`).
+
+## Round 59 (D stage) — the centre-configured host now BOOTS; team creation has no non-remote entrance
+
+**Verdict: PARTIAL — the host half is LIVE on a centre-configured row, the Member half is BLOCKED at
+team creation.** No Member turn ran; all five judges are unmeasured (fail-closed `FAIL`). Nothing here
+is candidate evidence: every record is `recordClass: DEV-LIVE` and no `CAPABILITY-MATRIX-C.md` row is
+upgraded to PRODUCT-PROVEN (that needs the reviewed acceptance report at D, which this run is not).
+
+### What was run (exact)
+
+```
+# 1. provisioning: the stale committed dist (round 58's fourth blocker)
+node /home/armourpiercer/projects/dsh-agent-team/node_modules/typescript/bin/tsc \
+  -p packages/runtime/tsconfig.build.json                       # exit 0
+node scripts/place-dist-glue.mjs                                 # exit 0, 28 placements, byte-identical
+
+# 2. the acceptance arm: the driver UNMODIFIED as to composition, no env switch, two boots
+env -u DBOOT_WITHOUT_CENTRE -u A5SF_WF_NO_INSTALL_GRAPH \
+  node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2
+```
+
+`--plan` (host-free) was run first and passed: both blueprints parsed through the dist domain facade,
+rows = `dsh-agent-team,preset-a5sf-governed-member,p6t6-team-tools`, **`composition drops: []`**, the
+shipped governed preset carries 14 plugins including `tool-fs`.
+
+**One driver defect had to be corrected before the acceptance could run at all** (disclosed, not a
+weakening): the committed driver wrote its disclosure fields to `record.bindings`, but `createRunRecord()`
+returns `{record, …}` — the object is `record.record.bindings`. First attempt died at
+`run-boot.mjs:886` `TypeError: Cannot set properties of undefined (setting 'compositionDrops')`. Round 58
+ran a pre-commit working copy (its archived run record has `bindings` WITHOUT `layout`/`installGraph`; the
+committed file has the extra `runBindings` fields), which is why the divergence was not seen. The fix is
+two receiver names (`record.bindings` → `record.record.bindings`); **no assertion, judge, timeout or
+composition changed**. Everything else in the driver is byte-identical.
+
+### What is now LIVE (the three fixed blockers, observed on a real host)
+
+| Fact | Value |
+| --- | --- |
+| HEAD | `2e2d36543ab2d34bb6cbaac476cda39582765e50` |
+| Host | `639ed015397290b3745d163aafe02ffee4aa3f84` (`0.2.0-rc.2`), porcelain empty before and after |
+| World creation | succeeds with the install graph **provisioned** — `A5SF_PROFILE_GRAPH_UNRESOLVED` is gone |
+| Composition drops | `[]` (the dead `tool-web` row is gone from the product, not dropped by the driver) |
+| Host boot | `dsh web` on leased port 3187, mock on 3497, `p6t6 health=true` |
+| Centre bootstrap | **no `TeamPluginError`**: a centre-configured row now boots; the fix's skip path is exercised |
+| Remote mount | `[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record` |
+| Leader surface | 43 model-visible tools, incl. the host's native `read` and all 15 `team_*` tools |
+| Teardown | `portFree=true`, world home deleted, host pid killed by identity, `:3080` still `401` |
+
+So blocker 4 (stale dist) is **provisioned and validated**: `host.js` imports, the host boots, and the
+three fixes from `2e2d36543` hold on a real web host.
+
+### The exact blocker (new, and deeper than provisioning)
+
+```
+[boot1] team.create status=405 ok=false null
+FAILED at team-create: Error: team.create failed: status=405 body=null
+  at bootOnce (.../tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs:991:26)
+```
+
+Cause, with file:line:
+
+- the driver reaches a team through exactly one entrance: `remoteCall(...)` →
+  `POST /team-remote/team.create` (`tests/world-factory/lib/u6-fs-assembly.mjs:505-510`);
+- `/team-remote` is the S6 remote command plane. On a centre-configured row C-remote refuses that surface
+  outright: `remoteRefused` is taken at `packages/runtime/src/plugin/vnext/root.ts:4324-4331`, so
+  `createS6RemoteSurfaces()` is never called and `seams.remoteHandlerRegistration.install(...)` is skipped
+  at `root.ts:4722-4730`;
+- `host.ts:1631-1641` (the round-58 fix) now correctly records `skipped` instead of dereferencing the
+  absent seam — which is why the boot succeeds — but no dispatcher is registered, so the HTTP channel has
+  no route and `team.create` answers 405.
+
+This is the already-disclosed product consequence of C-remote ("a centre-configured row has no remote
+API"), now observed at the driver level: **a centre-configured row has no entrance that creates a Team
+other than the boot-created one**, and the driver's acceptance team is created at runtime from a v4
+blueprint written after the discovery turn. The A/B is unambiguous: round 58's *no-centre* arm got
+`team.create status=200` on the same driver because there the remote plane exists — and that same arm
+refused the Member for want of a centre.
+
+### Judges (all five unmeasured)
+
+| judge | verdict | why |
+| --- | --- | --- |
+| `d:member-read-admitted` | **FAIL** (fail-closed, never ran) | no Member exists |
+| `d:member-read-denied` | **FAIL** (fail-closed, never ran) | no Member exists |
+| `d:native-read-surface` | **FAIL** (fail-closed, never ran) | no Member surface was captured (the Leader's surface carries the native `read`, which is not the judge) |
+| `d:guard-facts` | **FAIL** (fail-closed, never ran) | zero guard facts |
+| `d:centre-facts` | **FAIL** (fail-closed, never ran) | no member ledger, no admission/execution facts |
+
+The two-run agreement is `boots=1`, `agreeing=false` (the driver correctly refuses to call a single boot a
+pair). Record: `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/run-record.json`
+(`overall=FAIL`, `partial=true`, `abortedAt=team-create`). Round 58's run artifacts are preserved under
+`archive/2026-11-21T21-31-24-221Z/` (archive-before-start); the two attempts of this round are under
+`archive/2026-11-21T21-32-33-226Z/` (the crash) and `runs/boot01` (the boot).
+
+### Matrix rows that now have a LIVE line (none upgraded)
+
+| row | what is live | what is still NOT proven |
+| --- | --- | --- |
+| **C-remote** | a centre-configured row BOOTS, the refusal is durable, and the mount is `skipped`; the remote API is measurably absent (`team.create` → 405) | — (this is the refusal itself; the row stays `MECHANISM (explicit unavailability)`) |
+| **C-tools** | the boot Leader's model-visible surface carries all 15 `team_*` tools, at boot, on a centre row | no tool was called, so no admission fact, no `team.control` allow, no settlement |
+| **C-fs** | the boot Leader's surface carries the host-native `read` (one definition, 43-tool surface) on a centre-configured boot | the Member-scoped `read`, its controlled Provider, the guard facts and the typed `IO_READ_DENIED` are all unmeasured |
+| C-member / C-work / C-mcp / C-ptc / C-alpha6 | untouched this round | everything |
+
+### What must be ruled before this acceptance can run (not implemented; each is a product decision)
+
+1. **A centre-governed creation entrance.** Make Team creation (`team.create`/`handoff.create`) a
+   centre-adjudicated command instead of part of the refused S6 plane. C-remote's own reasoning says a
+   remote command has no axis the compiled ceiling can speak for, so this is a **contract change** (new
+   axis or a ruling that creation is not a member-scope decision), not wiring.
+2. **A non-remote product entrance.** Expose creation on a local product route/seam that the centre can
+   adjudicate. This is a new product surface; it is not a small fix.
+3. **A driver redesign** that uses the boot-created TeamSession (`root.ts:4888-4925` really does mint
+   TeamSession + binding + Leader at boot) and binds the v4 `main.yaml` at boot instead of after the
+   discovery turn. That changes the measured composition and loses the measured-deny-list step; it needs
+   an owner ruling, and this round did not take it.
+
+Options 1 and 2 would weaken C-remote unless a centre join is designed with them, so neither was a
+"small, in-repo, non-weakening" fix; the run stopped here as instructed rather than working around the
+invariant.
+
+### Gates (round 59, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494…  (161 pass + 2 disclosed skips)
+DSH-TEST-CATALOG tests=889 instruments=3 digest=sha256:3e409a68e913… refused=0 findings=0 (uncollected=41 ≤ 41, excluded=14 with reason)
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+docs:sync --check findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```
+
+Vitest population unchanged at **238**; the node leg is unchanged at 161 pass + 2 disclosed skips. This
+round added no test arm: it is a boot/provisioning round. **No row is PRODUCT-PROVEN.**

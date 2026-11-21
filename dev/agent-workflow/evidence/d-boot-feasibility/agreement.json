@@ -1,27 +1,9 @@
 {
   "schema": "a5sf-live-member/agreement/1",
-  "at": "2026-11-21T21:22:28.078Z",
+  "at": "2026-11-21T21:33:52.259Z",
   "boots": 1,
   "agreeing": false,
   "differing": [],
-  "rows": [
-    {
-      "boot": 1,
-      "overall": "FAIL",
-      "admittedVerdict": "REFUTED",
-      "deniedVerdict": "REFUTED",
-      "surfaceVerdict": "REFUTED",
-      "factsVerdict": "REFUTED",
-      "centreVerdict": "REFUTED",
-      "allowFacts": 0,
-      "denyFacts": 0,
-      "centreAdmissions": 0,
-      "centreExecutions": 0,
-      "governedSurface": false,
-      "admittedBytes": false,
-      "deniedSecretAbsent": false,
-      "transcriptSourceCount": null
-    }
-  ],
-  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1\noverall                       FAIL\nadmittedVerdict               REFUTED\ndeniedVerdict                 REFUTED\nsurfaceVerdict                REFUTED\nfactsVerdict                  REFUTED\ncentreVerdict                 REFUTED\nallowFacts                    0\ndenyFacts                     0\ncentreAdmissions              0\ncentreExecutions              0\ngovernedSurface               false\nadmittedBytes                 false\ndeniedSecretAbsent            false\ntranscriptSourceCount         null\n\nagreeing=false differing=[]"
+  "rows": [],
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact\noverall\nadmittedVerdict\ndeniedVerdict\nsurfaceVerdict\nfactsVerdict\ncentreVerdict\nallowFacts\ndenyFacts\ncentreAdmissions\ncentreExecutions\ngovernedSurface\nadmittedBytes\ndeniedSecretAbsent\ntranscriptSourceCount\n\nagreeing=false differing=[]"
 }
