@@ -58,6 +58,14 @@ assembly until the centre consumes it. Options and consequences are in
 `MIGRATED-SUITE-STATUS.md`; the decision belongs with the Control allow/ask/deny wiring, because both ask
 "what is the ONE place a durable restriction becomes a verdict".
 
+## ESCALATED: a realm-less member has no admission at all (round 34)
+
+`ESCALATION-realmless-admission.md` — the ceiling for such a member can come from the SAME compiler
+(`createProductRealmProvider(...).compiledFor(member)`, which the realm mount itself calls), so compiling
+without mounting is not a second policy. The question is what the product should DO: admit calls whose
+provider is unconfined and say so, or refuse everything without a confined provider. Current state is
+neither — the calls are unmediated and unreported.
+
 ## RED: admission is installed only when a realm is mounted (round 33)
 
 The centre is installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`, so a
