@@ -21,7 +21,7 @@
  * @module packages/runtime/src/plugin/vnext/admission-port
  */
 
-import { admit, invocationFactsOf } from './admission.ts'
+import { admit, invocationFactsOf } from './admission.js'
 
 export class AdmissionPortError extends TypeError {
   constructor (code, message) {

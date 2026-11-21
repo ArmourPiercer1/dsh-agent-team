@@ -187,10 +187,18 @@ export type AdmissionRefusalCode =
   /** The axis is known but has no enforceable lane this round: refusing is the contract, not a TODO. */
   | 'ADMISSION_AXIS_UNSUPPORTED'
 
+/**
+ * Every code a refusal can carry. The two LANE codes are decisions about a JUDGED locator (the lane
+ * said no, or the network axis said no); `AdmissionRefusalCode` covers calls that could not be judged
+ * at all. Keeping one alias means `refuse()` cannot be called with a code the deny arm does not
+ * accept - which is exactly the mismatch that broke the build.
+ */
+export type AdmissionDenialCode = 'LANE_DENY' | 'NETWORK_DENY' | AdmissionRefusalCode
+
 export type Admission =
   | { readonly kind: 'allow' }
   | { readonly kind: 'ask'; readonly reason: string }
-  | { readonly kind: 'deny'; readonly code: 'LANE_DENY' | 'NETWORK_DENY' | AdmissionRefusalCode; readonly reason: string }
+  | { readonly kind: 'deny'; readonly code: AdmissionDenialCode; readonly reason: string }
 
 /**
  * The durable record of *what was asked and under what authority*, written at admission time.
@@ -217,7 +225,7 @@ export interface InvocationAuthorityFacts {
   readonly reason?: string
 }
 
-const refuse = (code: AdmissionRefusalCode, reason: string): Admission => ({ kind: 'deny', code, reason })
+const refuse = (code: AdmissionDenialCode, reason: string): Admission => ({ kind: 'deny', code, reason })
 
 /** Read the locator an axis needs. Absent means the call cannot be judged, so it is refused. */
 function locatorOf (toolName: string, args: unknown): string | undefined {
