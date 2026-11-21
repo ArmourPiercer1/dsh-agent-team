@@ -1,0 +1,2 @@
+tag=prev-r1 worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/a6deny-prev head=c66fa8b0377c21f653d3dfd58bea0798cd5d41a5 host=3184 mock=3484 start=2026-11-10T16:40:54Z
+exit=2 end=2026-11-10T16:42:54Z

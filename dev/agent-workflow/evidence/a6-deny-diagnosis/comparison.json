@@ -1,0 +1,104 @@
+{
+  "schema": "a6-deny-diagnosis/1",
+  "recordClass": "DEV-LIVE",
+  "question": "Does the A6-28/A6-29 deny-arm failure on 168266dbf come from the candidate delta, an instrument precondition, or a measurement error?",
+  "verdict": "instrument-precondition",
+  "hostPin": "639ed015397290b3745d163aafe02ffee4aa3f84",
+  "kit": "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs",
+  "points": {
+    "candidate": {
+      "commit": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+      "ref": "refs/heads/candidate/v0.1.6-1",
+      "worktree": ".worktrees/a6deny-cand"
+    },
+    "previouslyMeasuredGood": {
+      "commit": "c66fa8b0377c21f653d3dfd58bea0798cd5d41a5",
+      "ref": null,
+      "worktree": ".worktrees/a6deny-prev",
+      "ancestorOfCandidate": false
+    }
+  },
+  "cells": [
+    {
+      "run": "cand-r1",
+      "point": "candidate",
+      "worktreeHead": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+      "env": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1"],
+      "ports": { "host": 3183, "mock": 3483 },
+      "exit": 2,
+      "verdicts": { "A6-28": "FAIL", "A6-29": "FAIL" },
+      "a6_28_detail": "request=none decision=none consumed=false execFacts=0 file=false done=true",
+      "deny_request": null,
+      "admissionRequiresApprovalEvents": 1,
+      "toolResult": "permission denied: exec fingerprint sha256:c0cbeb3e23930c97c7f41caa094e6c2b4651934f1ae6172669cab91a2293b344 answered deny from the fallback"
+    },
+    {
+      "run": "prev-r1",
+      "point": "previouslyMeasuredGood",
+      "worktreeHead": "c66fa8b0377c21f653d3dfd58bea0798cd5d41a5",
+      "env": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1"],
+      "ports": { "host": 3184, "mock": 3484 },
+      "exit": 2,
+      "verdicts": { "A6-28": "FAIL", "A6-29": "FAIL" },
+      "a6_28_detail": "request=none decision=none consumed=false execFacts=0 file=false done=true",
+      "deny_request": null,
+      "admissionRequiresApprovalEvents": 1
+    },
+    {
+      "run": "acceptworktree-r1",
+      "point": "acceptance-workspace-control",
+      "worktreeHead": "3f5de31c164b1cfedbd89ec8dfef127e63bfbbc5",
+      "env": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1"],
+      "ports": { "host": 3185, "mock": 3485 },
+      "exit": 2,
+      "verdicts": { "A6-28": "FAIL", "A6-29": "FAIL" },
+      "a6_28_detail": "request=none decision=none consumed=false execFacts=0 file=false done=true",
+      "deny_request": null,
+      "admissionRequiresApprovalEvents": 1,
+      "note": "same worktree and worktree-local tests/deepseek-harness-test-use that produced the recorded 2026-11-09 PASS"
+    },
+    {
+      "run": "prev-r2-recipients",
+      "point": "previouslyMeasuredGood",
+      "worktreeHead": "c66fa8b0377c21f653d3dfd58bea0798cd5d41a5",
+      "env": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1", "C1_A6_RECIPIENTS=1"],
+      "ports": { "host": 3184, "mock": 3484 },
+      "exit": 0,
+      "verdicts": { "A6-28": "PASS", "A6-29": "PASS", "A6-7": "PASS" },
+      "deny_request": "ctrl-0370oo51llo2de09ochxb0xb",
+      "admissionRequiresApprovalEvents": 4
+    },
+    {
+      "run": "cand-r2-recipients",
+      "point": "candidate",
+      "worktreeHead": "168266dbfe7f2de091d998431bd56ce4dba0dbb5",
+      "env": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1", "C1_A6_RECIPIENTS=1"],
+      "ports": { "host": 3183, "mock": 3483 },
+      "exit": 0,
+      "verdicts": { "A6-28": "PASS", "A6-29": "PASS", "A6-7": "PASS" },
+      "deny_request": "ctrl-0ahby1g13g62pn0n54edu02u",
+      "admissionRequiresApprovalEvents": 4
+    }
+  ],
+  "historicalAcceptanceBoots": [
+    {
+      "run": "dev/agent-workflow/evidence/v016-acceptance/a6-deny-r1",
+      "commit": "c66fa8b0377c21f653d3dfd58bea0798cd5d41a5",
+      "flagsActuallySet": ["C1_ALPHA6_OFFICER=1", "C1_PLANE_TAKEOVER=1", "C1_A6_EXEC_NEG=1", "C1_A6_RECIPIENTS=1"],
+      "flagsEvidence": ["a6-self-review.json present", "a6-self-mock.json present", "A6-7 PASS in the check list (A6-7 is gated on A6_RECIPIENTS)"],
+      "verdicts": { "A6-28": "PASS", "A6-29": "PASS" },
+      "admissionRequiresApprovalEvents": 4
+    }
+  ],
+  "precondition": {
+    "flagNeeded": "C1_A6_RECIPIENTS=1 (or C1_A6_HANDOFF=1, via A6_EXTRA)",
+    "kitLocus": [
+      "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:330 (A6_EXTRA = A6_RECIPIENTS || A6_HANDOFF)",
+      "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:817-819 (Officer permissions ask rule: bash any only when A6_EXTRA; otherwise ask: [] under default: deny)",
+      "tests/kits/c1-leader-approval-smoke/c1-leader-approval-smoke.mjs:833-843 (Officer member envelope admits request-control only when A6_EXTRA)"
+    ],
+    "recordDefect": "dev/agent-workflow/evidence/v016-acceptance/README.md:45 records the deny arm as C1_A6_EXEC_NEG=1 only"
+  },
+  "productFilesChangedByThisDiagnosis": [],
+  "localRevertExperimentOfPR697": "not run (the two points did not differ; with alpha6ReviewRouting === true the candidate expression reduces to the c66fa8b03 one, so a revert could not discriminate)"
+}

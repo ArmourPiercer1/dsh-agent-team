@@ -1,0 +1,247 @@
+{
+  "schema": "a6-exec-negatives/1",
+  "deny": {
+    "request": {
+      "sequence": 19,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0370oo51llo2de09ochxb0xb",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-0iiof4h11hqy",
+      "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-10T16-48-18:inst-0iiof4h11hqy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0iiof4h11hqy-bash:hexec:8e9866c0-929c-4b51-978b-4254c643bf78-1",
+      "approvalCaseId": "case-1pmdp7n0eti1681nyx7q507y",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-10T16:48:34.554Z"
+    },
+    "decision": {
+      "sequence": 20,
+      "factType": "control-decision-recorded",
+      "requestId": "ctrl-0370oo51llo2de09ochxb0xb",
+      "decision": "deny",
+      "decider": {
+        "humanId": "session-c1-smoke-a6-2026-11-10T16-48-18",
+        "kind": "human"
+      },
+      "createdAt": "2026-11-10T16:48:34.705Z"
+    },
+    "consumption": null,
+    "executionResults": [],
+    "responses": [
+      {
+        "requestId": "ctrl-1fq7ug518tugye1xd14rf01z",
+        "actionName": "parameter-permission",
+        "decision": "allow",
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "c1a6deny-yac8lmct4z",
+          "result": {
+            "ok": true,
+            "value": {
+              "data": {
+                "decision": {
+                  "requestId": "ctrl-1fq7ug518tugye1xd14rf01z",
+                  "decision": "allow",
+                  "decider": {
+                    "kind": "human",
+                    "humanId": "session-c1-smoke-a6-2026-11-10T16-48-18"
+                  },
+                  "scope": {
+                    "rootSessionId": "session-c1-smoke-a6-2026-11-10T16-48-18",
+                    "subject": {
+                      "kind": "instance",
+                      "instanceId": "inst-0iiof4h11hqy"
+                    },
+                    "targetInstanceId": "inst-0iiof4h11hqy",
+                    "actionName": "parameter-permission",
+                    "correlation": "call-c1-amczm65d",
+                    "toolName": "bash",
+                    "operationFingerprint": "sha256:956125714cc17e7a9ac899bc4e7d5cf010ad9da99a89d987323552094bb151b4",
+                    "authorityScope": {
+                      "operationClass": "bash",
+                      "matcher": {
+                        "kind": "exact",
+                        "resource": "bash"
+                      }
+                    }
+                  },
+                  "requestSequence": 16,
+                  "decisionSequence": 17,
+                  "createdAt": "2026-11-10T16:48:34.288Z",
+                  "note": "C1 A6 exec-result negative control: admit the guard leg so the PA leg exists"
+                }
+              },
+              "provenance": {
+                "origin": "team-remote",
+                "method": "team.resolveControl",
+                "endpoint": "team.resolveControl",
+                "contractVersion": 4,
+                "requestToken": null,
+                "projectionGeneration": null,
+                "effectSequence": null
+              }
+            }
+          }
+        }
+      },
+      {
+        "requestId": "ctrl-0370oo51llo2de09ochxb0xb",
+        "actionName": "team-tool-execute",
+        "decision": "deny",
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "c1a6deny-w5nx2adox7",
+          "result": {
+            "ok": true,
+            "value": {
+              "data": {
+                "decision": {
+                  "requestId": "ctrl-0370oo51llo2de09ochxb0xb",
+                  "decision": "deny",
+                  "decider": {
+                    "kind": "human",
+                    "humanId": "session-c1-smoke-a6-2026-11-10T16-48-18"
+                  },
+                  "scope": {
+                    "rootSessionId": "session-c1-smoke-a6-2026-11-10T16-48-18",
+                    "subject": {
+                      "kind": "instance",
+                      "instanceId": "inst-0iiof4h11hqy"
+                    },
+                    "targetInstanceId": "inst-0iiof4h11hqy",
+                    "actionName": "team-tool-execute",
+                    "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-10T16-48-18:inst-0iiof4h11hqy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0iiof4h11hqy-bash:hexec:8e9866c0-929c-4b51-978b-4254c643bf78-1",
+                    "toolName": "bash",
+                    "operationFingerprint": "sha256:acefdc2813c5015a484490608c5dec53a33d4e002daadd68794bb0131e0e05f0",
+                    "authorityScope": {
+                      "operationClass": "tool-invoke",
+                      "matcher": {
+                        "kind": "exact",
+                        "resource": "c1-plane-realm-2026-11-10T16-48-18|tool:bash"
+                      }
+                    }
+                  },
+                  "requestSequence": 19,
+                  "decisionSequence": 20,
+                  "createdAt": "2026-11-10T16:48:34.715Z",
+                  "note": "C1 A6 exec-result DENY negative control"
+                }
+              },
+              "provenance": {
+                "origin": "team-remote",
+                "method": "team.resolveControl",
+                "endpoint": "team.resolveControl",
+                "contractVersion": 4,
+                "requestToken": null,
+                "projectionGeneration": null,
+                "effectSequence": null
+              }
+            }
+          }
+        }
+      }
+    ],
+    "fileExisted": false,
+    "done": true,
+    "ok": true
+  },
+  "throw": {
+    "request": {
+      "sequence": 24,
+      "factType": "control-request-recorded",
+      "requestId": "ctrl-0i9gv3r1xfwqg00oldnvh0qo",
+      "kind": "leader-approval",
+      "toolName": "bash",
+      "actionName": "team-tool-execute",
+      "targetInstanceId": "inst-0iiof4h11hqy",
+      "correlation": "pa:tadm:session-c1-smoke-a6-2026-11-10T16-48-18:inst-0iiof4h11hqy:sha256:77b14744144ea4ac367ea6695ffebcdc03c603c4b25650ffc239c08559048b56:g0:team-inst-0iiof4h11hqy-bash:hexec:8e9866c0-929c-4b51-978b-4254c643bf78-2",
+      "approvalCaseId": "case-0ytethw1l5aswv0495cbe062",
+      "legOrdinal": 1,
+      "reviewAuthority": "leader",
+      "createdAt": "2026-11-10T16:48:35.593Z"
+    },
+    "consumption": {
+      "sequence": 26,
+      "factType": "control-allow-consumed",
+      "requestId": "ctrl-0i9gv3r1xfwqg00oldnvh0qo",
+      "createdAt": "2026-11-10T16:48:35.913Z"
+    },
+    "executionResults": [
+      {
+        "sequence": 27,
+        "factType": "control-execution-result",
+        "requestId": "ctrl-0i9gv3r1xfwqg00oldnvh0qo",
+        "callId": "team-inst-0iiof4h11hqy-bash:hexec:8e9866c0-929c-4b51-978b-4254c643bf78-2",
+        "outcome": "failed",
+        "recordedAt": "2026-11-10T16:48:35.952Z",
+        "createdAt": "2026-11-10T16:48:35.952Z"
+      }
+    ],
+    "responses": [
+      {
+        "requestId": "ctrl-1e18e3s167jgub1o83xri1oh",
+        "actionName": "parameter-permission",
+        "status": 200,
+        "body": {
+          "type": "server-response",
+          "rpcId": "c1a6throw-vii7zs7zex",
+          "result": {
+            "ok": true,
+            "value": {
+              "data": {
+                "decision": {
+                  "requestId": "ctrl-1e18e3s167jgub1o83xri1oh",
+                  "decision": "allow",
+                  "decider": {
+                    "kind": "human",
+                    "humanId": "session-c1-smoke-a6-2026-11-10T16-48-18"
+                  },
+                  "scope": {
+                    "rootSessionId": "session-c1-smoke-a6-2026-11-10T16-48-18",
+                    "subject": {
+                      "kind": "instance",
+                      "instanceId": "inst-0iiof4h11hqy"
+                    },
+                    "targetInstanceId": "inst-0iiof4h11hqy",
+                    "actionName": "parameter-permission",
+                    "correlation": "call-c1-5rjy7ds5",
+                    "toolName": "bash",
+                    "operationFingerprint": "sha256:bb03c917b2666dddab8e850921615baecfe9b1b66ec3843f17ccdeb4d26f9d34",
+                    "authorityScope": {
+                      "operationClass": "bash",
+                      "matcher": {
+                        "kind": "exact",
+                        "resource": "bash"
+                      }
+                    }
+                  },
+                  "requestSequence": 21,
+                  "decisionSequence": 22,
+                  "createdAt": "2026-11-10T16:48:35.368Z",
+                  "note": "C1 A6 exec-result THROW control: admit then let the backend throw"
+                }
+              },
+              "provenance": {
+                "origin": "team-remote",
+                "method": "team.resolveControl",
+                "endpoint": "team.resolveControl",
+                "contractVersion": 4,
+                "requestToken": null,
+                "projectionGeneration": null,
+                "effectSequence": null
+              }
+            }
+          }
+        }
+      }
+    ],
+    "consumedBeforeDone": true,
+    "memberToolResults": [
+      "a5p5-refused kind=backend-failed code=target-unresolvable detail=cwd: target does not exist inside the governed root (c1-a6-no-such-dir-2026-11-10T16-48-18)"
+    ],
+    "ok": true
+  }
+}

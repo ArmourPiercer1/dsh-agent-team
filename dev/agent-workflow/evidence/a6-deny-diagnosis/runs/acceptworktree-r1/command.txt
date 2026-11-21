@@ -1,0 +1,2 @@
+tag=acceptworktree-r1 worktree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/v016-accept head=3f5de31c164b1cfedbd89ec8dfef127e63bfbbc5 host=3185 mock=3485 start=2026-11-10T16:44:54Z
+exit=2 end=2026-11-10T16:46:55Z
