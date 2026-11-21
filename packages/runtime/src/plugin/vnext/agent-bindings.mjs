@@ -527,7 +527,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount } = deps
 
   // ── A5-M1 (root ruling on the generation seam): THE ONE authority-generation
   // reader. Every consumer of the durable permission overlay's generation calls
@@ -2801,7 +2801,15 @@ export function createAgentBindings(deps) {
     if (typeof generation !== 'number' || !Number.isFinite(generation) || generation < 0) {
       throw new Error(`agent-bindings: publishAuthorityGeneration was handed ${JSON.stringify(generation) ?? String(generation)} — a generation nobody read is never published`)
     }
-    const mount = resolvePaMount(String(teamRootSid), String(memberInstanceId))
+    // THE MOUNT INDEX IS A SEAM, NOT A MODULE IMPORT. The old `pa-mount-registry.mjs` was retired with
+    // the execution route; calling its function here left a ReferenceError on a LIVE path (the F15 MCP
+    // legs found it). The centre now takes the resolution as an optional dep, and an unwired seam is an
+    // EXPLICIT reason rather than a crash or a silent "nothing to refresh".
+    if (typeof resolveMemberMount !== 'function') {
+      observations.push(`a5m1-authority-refresh: ${observationKey} generation ${String(generation)} NOT published — no mount-resolution seam is wired (the authority-generation refresh cannot fire until the centre exposes live bindings)`)
+      return { refreshed: false, reason: 'no-mount-seam' }
+    }
+    const mount = resolveMemberMount(String(teamRootSid), String(memberInstanceId))
     const guard = mount?.guard
     const dispatcher = guard?.dispatcher
     if (dispatcher === undefined || typeof dispatcher.revise !== 'function'
