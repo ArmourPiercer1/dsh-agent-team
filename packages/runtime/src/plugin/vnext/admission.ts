@@ -40,6 +40,36 @@ export const TOOL_AXES = Object.freeze({
 
 export type ToolAxis = (typeof TOOL_AXES)[keyof typeof TOOL_AXES]
 
+/**
+ * THE CENTRE'S OWN TOOLS. These are not I/O operations: they ask the centre to act (delegate, list,
+ * resolve a control request) and their authority is enforced INSIDE the centre (Leader-only checks,
+ * ControlService, work delivery), not by a file lane. They still require a binding, because an agent
+ * the centre has not bound cannot be allowed to speak for a team - but they have no locator and no
+ * fs/net/process axis, so judging them by one would be a category error.
+ *
+ * The list is CLOSED. A tool that is neither in it nor in `TOOL_AXES` is refused by name, so a new
+ * family cannot become admitted by being forgotten here.
+ */
+export const CENTRE_TOOL_NAMES: readonly string[] = Object.freeze([
+  'team_list_members',
+  'team_list_templates',
+  'team_inspect_config',
+  'team_create_member',
+  'team_delegate',
+  'team_follow_up',
+  'team_collect',
+  'team_send_message',
+  'team_report_progress',
+  'team_request_control',
+  'team_resolve_control',
+  'team_list_pending_control',
+  'team_archive_member',
+  'team_grant_permission',
+  'team_revoke_permission',
+])
+
+const CENTRE_TOOLS: ReadonlySet<string> = new Set(CENTRE_TOOL_NAMES)
+
 /** Argument keys that carry the locator, in the order they are tried. */
 const LOCATOR_KEYS: Readonly<Record<string, readonly string[]>> = Object.freeze({
   read: ['file_path', 'path'],
@@ -113,7 +143,7 @@ export interface InvocationAuthorityFacts {
   readonly sessionId: string
   readonly instanceGeneration: number
   readonly toolName: string
-  readonly axis: ToolAxis
+  readonly axis: ToolAxis | 'team.control'
   readonly locator: string
   readonly definitionSource: string
   readonly policyGeneration: string
@@ -163,6 +193,10 @@ export function admit (input: {
     // THE UNWIRED RULE. Not "no policy says no": there is no binding, so there is no governing
     // authority for this call, and admitting it would mean the composition provider decides.
     return refuse('ADMISSION_NO_BINDING', `no binding for tool ${JSON.stringify(toolName)} on this agent; a call the centre has not been wired for is refused, not forwarded`)
+  }
+  if (CENTRE_TOOLS.has(toolName)) {
+    // Bound, then the centre's own authority decides. No lane is consulted because no lane applies.
+    return { kind: 'allow' }
   }
   const axis = TOOL_AXES[toolName as keyof typeof TOOL_AXES]
   if (axis === undefined) {
@@ -216,7 +250,7 @@ export function invocationFactsOf (input: {
   readonly admission: Admission
 }): InvocationAuthorityFacts {
   const { binding, toolName, callId, arguments: args, admission } = input
-  const axis = (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read') as ToolAxis
+  const axis = (CENTRE_TOOLS.has(toolName) ? 'team.control' : (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read')) as ToolAxis | 'team.control'
   const locator = judgedLocator(toolName, args, binding) ?? ''
   // A refused call still records what was ASKED — that is the point of the record: after an
   // incident, "which locator did the model try, under which generation" must not be reconstructible

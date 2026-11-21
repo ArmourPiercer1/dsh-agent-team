@@ -24,6 +24,7 @@ const { createInvocationBinder } = await import('../member-io-policy/src/invocat
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
 const { createSettlementWriter } = await import('../src/plugin/vnext/settlement-port.mjs')
+const { bindingFromCompiledMember, installMemberCentre } = await import('../src/plugin/vnext/centre-install.mjs')
 const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
 const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
 
@@ -414,4 +415,105 @@ test('ADM-24 — WITH a compiled process lane, the shell is judged on its workin
   assert.equal(facts.locator, '/work/a', 'the judged locator is the shell directory, and the record says which one')
   // A process lane does not leak into the fs axes, and vice versa.
   assert.equal(call('read', { file_path: '/work/b/x' }, withLane).kind, 'deny', 'a process lane is not a read permission')
+})
+
+test('ADM-25 — the centre\'s own tools are admitted on authority, not on a file lane', () => {
+  // Every team_* tool is declared centre-owned: bound => allow, with an axis that says so. The
+  // alternative would be to invent an fs lane for `team_delegate`, which is a category error.
+  for (const toolName of ['team_delegate', 'team_resolve_control', 'team_grant_permission', 'team_revoke_permission']) {
+    const decision = call(toolName, {}, binding())
+    assert.equal(decision.kind, 'allow', `${toolName} must be admitted for a bound agent`)
+    const facts = invocationFactsOf({ binding: binding(), toolName, callId: `c-${toolName}`, arguments: {}, admission: decision })
+    assert.equal(facts.axis, 'team.control')
+    assert.equal(facts.locator, '', 'a centre tool has no locator, and the record must not invent one')
+  }
+  // The authority is NOT a blanket: an unbound agent still cannot speak for a team.
+  assert.equal(admit({ binding: undefined, toolName: 'team_delegate', arguments: {} }).code, 'ADMISSION_NO_BINDING')
+  // And the closed list is closed: an unknown tool is still refused by name.
+  assert.equal(call('some_future_tool', {}, binding()).code, 'ADMISSION_TOOL_UNBOUND')
+  // A centre tool is not a way to reach an I/O lane: the fs axes stay exactly as strict.
+  assert.equal(call('read', { file_path: '/elsewhere/x' }, binding()).kind, 'deny')
+})
+
+// ------------------------------------------------- THE PRODUCT COMPOSITION POINT
+//
+// `installMemberCentre` is the ONE place a member agent is wired to the centre. These arms pin its
+// two halves: the compiled member policy maps onto a binding without reinterpreting it, and the
+// three observation points install over one callId.
+
+const compiledMember = (read = lane(['/work/a']), write = lane(['/work/a']), network = 'deny') => ({
+  identity: { memberInstanceId: 'member-1', instanceGeneration: 7, blueprintRevision: 'bp-1' },
+  policy: { ok: true, value: { memberIdentity: 'member-1', revision: 'rev-1', read, write, network: { access: network }, instanceGeneration: 7 } },
+})
+
+test('ADM-26 — a compiled member maps onto a binding by reference, never by re-interpretation', () => {
+  const member = compiledMember(lane(['/work/a'], ['/work/ask']), lane(['/work/a']), 'allow')
+  const b = bindingFromCompiledMember({ member, agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a', owner: 'root-1' })
+  assert.equal(b.read, member.policy.value.read, 'the READ lane must be the SAME object: a rebuilt lane is a second policy')
+  assert.equal(b.write, member.policy.value.write)
+  assert.equal(b.network, 'allow')
+  assert.equal(b.instanceGeneration, 7)
+  assert.equal(b.policyGeneration, 'rev-1')
+  assert.equal(b.blueprintRevision, 'bp-1')
+  assert.equal(b.process, undefined, 'no subprocess lane compiled => process.exec stays unsupported')
+  // A compiled answer without lanes is refused rather than defaulted to something permissive.
+  assert.throws(() => bindingFromCompiledMember({ member: { identity: {}, policy: { value: { revision: 'r' } } }, agentId: 'a', sessionId: 's', workspaceRoot: '/w' }), /read and write lanes/u)
+})
+
+test('ADM-27 — installMemberCentre wires admission, facts and settlement over ONE callId', async () => {
+  const host = fakeHost()
+  const admitted = []
+  const executed = []
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const store = createExecutionSettlementStore({ dir: mkdtempSync(`${tmpdir()}/vnext-centre-`) })
+  const identityOf = (exec) => ({
+    executionId: dispatchExecutionId({ rootSessionId: 'session-1', agentInstanceId: 'agent-1' }, exec.callId),
+    actorId: 'agent-1',
+    worldId: 'session-1',
+  })
+  const centre = installMemberCentre({
+    ctx: host.ctx,
+    binding: bindingFromCompiledMember({ member: compiledMember(), agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a' }),
+    recordAdmission: (fact) => admitted.push(fact),
+    recordExecution: (fact) => executed.push(fact),
+    store,
+    identityOf,
+  })
+  try {
+    const exec = { name: 'read', callId: 'centre-1', arguments: { file_path: '/work/a/doc.txt' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await host.preExecute(exec)).kind, 'allow')
+    assert.equal(host.guard(exec), undefined)
+    host.result({ ...exec, result: { isError: false } })
+    assert.equal(admitted.length, 1)
+    assert.equal(executed.length, 1)
+    const record = store.read(identityOf(exec).executionId)
+    assert.equal(record.state, 'COMPLETED', 'the settlement must close the same execution the fact named')
+    assert.equal(record.identity.toolName, 'read')
+  } finally {
+    centre.dispose()
+  }
+})
+
+test('ADM-28 — the centre refuses an out-of-lane call BEFORE the body, on the product composition point', async () => {
+  const host = fakeHost()
+  const executed = []
+  const centre = installMemberCentre({
+    ctx: host.ctx,
+    binding: bindingFromCompiledMember({ member: compiledMember(), agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a' }),
+    recordAdmission: () => {},
+    recordExecution: (fact) => executed.push(fact),
+  })
+  try {
+    const exec = { name: 'read', callId: 'centre-2', arguments: { file_path: '/elsewhere/secret' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    const decision = await host.preExecute(exec)
+    assert.equal(decision.kind, 'deny')
+    assert.match(String(decision.reason), /LANE_DENY|outside the binding/u)
+    host.result({ ...exec, result: { isError: true, error: { message: 'x' } } })
+    assert.equal(executed[0].outcome, 'admission-refusal', 'the fact must say the CENTRE refused, not that the tool failed')
+  } finally {
+    centre.dispose()
+  }
+  // ...and after disposal no point answers any more.
+  assert.equal(host.guard({ name: 'read', callId: 'centre-3', arguments: { file_path: '/work/a/x' } }), undefined)
 })
