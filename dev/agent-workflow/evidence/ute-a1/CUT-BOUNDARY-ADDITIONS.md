@@ -499,7 +499,7 @@ its ancestor, and the ancestor here is the composition provider with no confinem
 | 3 | `edit` | yes | in-ceiling edit lands through the member provider (axis `fs.write`), out-of-ceiling refused before the provider | — |
 | 4 | `grep`/`glob` | **YES** (since the confined subprocess face landed) | a real in-ceiling `grep` returns ripgrep matches through the MEMBER scope's confined `subprocess`, and an out-of-ceiling `grep` is refused by the centre's `fs.read` lane BEFORE any spawn (the error is `LANE_DENY`, not a ripgrep failure), with the execution fact recorded as `admission-refusal` | `glob` is mounted but has no arm of its own |
 | 5 | `web_fetch` | **YES** | with the network axis ALLOW: the tool runs on the member scope's confined web face and the composition transport returns the body (real HTTP to a test endpoint); with the axis DENY the same call is refused and the transport is called **zero** times | nothing about real public egress: the destination is a loopback test endpoint the composition declares, and that is the SSRF leg's own exemption, not a widening |
-| 6 | `bash` / `run_code` | no | EXPLICIT `ADMISSION_AXIS_UNSUPPORTED`: the compiled policy has no subprocess lane, so the call is refused rather than admitted | no positive control: the `terminals` (PTY) face and the shell module are not wired; `node-pty` IS available in the pinned runtime, so this is wiring, not a missing capability |
+| 6 | `bash` | **PARTIAL** | the CENTRE now judges `process.exec` on the working directory when the binding compiles a process lane (`ADM-24`), and the governed PTY face mounts on the member realm; `SLICE-33` shows the face refusing an owner the host does not recognise (`OWNER_NOT_LIVE`) | **NO POSITIVE CONTROL YET**: the host PTY service opens a session only for an agent the LIVE registry holds (`agents.get(owner.id) === owner`), and this in-process world has no host agent. Deferred to D's real host boot - the only place a live agent exists. See §16 |
 
 `@vscode/ripgrep` IS present in the pinned runtime (pnpm store, 1.18.0), so rung 4 was never blocked by
 a missing binary. It WAS blocked by an architecture gap, and the gap is now closed the way the product
@@ -554,3 +554,28 @@ correctly rather than a test inconvenience:
    (`testEndpoints`), which is a composition declaration - a member cannot reach it.
 3. `WebFetchBody`'s text arm is `{kind:'text', content}`; the tool's output validation rejected a
    `{kind:'text', text}` body as "not lossless JSON". The closed union is the authority.
+
+### §16 Rung 6 status (measured 2026-11-21, honest)
+
+The PTY path is wired and measured as far as an in-process world can take it:
+
+- the realm mounts a governed PTY face (host `sandboxPolicy` + base `subprocess` + the pinned
+  `terminal-bash` backend) and the tool `bash` dispatches on the member scope;
+- the CENTRE admits the call on the process lane (working directory judged, `ADM-24`), and
+- the PTY service then refuses the owner: `OWNER_NOT_LIVE` — it only opens a shell for an agent the
+  LIVE host registry holds (`agents.get(owner.id) === owner`).
+
+That refusal is a REAL guarantee (a shell is never opened for an unregistered owner), but it is a
+NEGATIVE control. There is **no positive control for persistent bash** here, because this world has
+no live host agent, and fabricating one would be exactly the "shadow host" this project refuses.
+The positive control belongs to D's real host boot.
+
+Two measured facts worth keeping:
+
+1. `sandboxPolicy` statically injects `sessionProjections`; Cordis DEFERS a plugin whose static
+   inject is unmet, silently from the caller's point of view. `root.get('sandboxPolicy')` was
+   `undefined` until the projection service was mounted.
+2. The confined (non-PTY) terminal face spawns ONE child per send, while `tool-bash-persistent`
+   polls with empty sends between commands; the face refuses an empty command body
+   (`TERMINALS_COMMAND_CANCELLED`). The two seams do not compose, which is why the product path is
+   `mode: 'pty'` - the pinned "one live shell per Member" semantics.

@@ -75,6 +75,11 @@ export interface Binding {
   readonly workspaceRoot?: string
   /** The compiled network axis. Absent is NOT allow. */
   readonly network?: 'allow' | 'deny'
+  /**
+   * The compiled PROCESS lane. Absent means this policy generation does not compile one, and every
+   * `process.exec` call is refused as unsupported - it does not mean "no restriction".
+   */
+  readonly process?: PathRuleSet
   /** The declared source of the definitions this binding mounted (a host package specifier). */
   readonly definitionSource: string
   /** The policy generation the lanes were compiled under. */
@@ -133,6 +138,18 @@ function locatorOf (toolName: string, args: unknown): string | undefined {
 }
 
 /**
+ * The locator this call is actually judged on. ONE definition, used by the decision AND by the
+ * record, because a record that names a different locator than the one the lane judged is worse than
+ * no record: it makes a refusal unreviewable. A shell has no locator argument, so its working
+ * directory is the binding's workspace root - the same value the process lane is matched against.
+ */
+function judgedLocator (toolName: string, args: unknown, binding: Binding | undefined): string | undefined {
+  if (TOOL_AXES[toolName as keyof typeof TOOL_AXES] === 'process.exec') return locatorOf(toolName, args) ?? binding?.workspaceRoot
+  const defaulted = DEFAULTED_LOCATORS[toolName]
+  return locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding?.workspaceRoot : undefined)
+}
+
+/**
  * Decide one call. Pure: no I/O, no clock, no binding mutation. A caller that needs the decision
  * to depend on state must pass that state in.
  */
@@ -152,13 +169,24 @@ export function admit (input: {
     return refuse('ADMISSION_TOOL_UNBOUND', `tool ${JSON.stringify(toolName)} has no declared I/O axis; an unclassified tool is never admitted by default`)
   }
   if (axis === 'process.exec') {
-    // EXPLICITLY UNAVAILABLE, NOT SILENTLY ALLOWED. The compiled policy has no subprocess lane this
-    // round, so there is nothing to judge a shell command against; a centre that admitted it anyway
-    // would be claiming an enforcement it does not have. C wires this family for real.
-    return refuse('ADMISSION_AXIS_UNSUPPORTED', `tool ${JSON.stringify(toolName)} needs a subprocess lane, which this policy generation does not compile; a call the centre cannot judge is refused`)
+    // EXPLICITLY UNAVAILABLE, NOT SILENTLY ALLOWED. Without a compiled process lane there is nothing
+    // to judge a shell command against, and admitting it anyway would claim an enforcement the centre
+    // does not have. With one, the shell is judged on its WORKING DIRECTORY - the only locator a
+    // shell has before it runs; what it may touch inside is the confined face's own business.
+    if (binding.process === undefined) {
+      return refuse('ADMISSION_AXIS_UNSUPPORTED', `tool ${JSON.stringify(toolName)} needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused`)
+    }
+    const shellRoot = judgedLocator(toolName, args, binding)
+    if (shellRoot === undefined) {
+      return refuse('ADMISSION_NO_LOCATOR', `tool ${JSON.stringify(toolName)} has no working directory and the binding names no workspace root to judge it against`)
+    }
+    switch (matchLocator(binding.process, shellRoot)) {
+      case 'allow': return { kind: 'allow' }
+      case 'ask': return { kind: 'ask', reason: `process.exec in ${JSON.stringify(shellRoot)} requires approval under policy generation ${binding.policyGeneration}` }
+      case 'deny': return { kind: 'deny', code: 'LANE_DENY', reason: `process.exec in ${JSON.stringify(shellRoot)} is outside the binding's process lane (policy generation ${binding.policyGeneration})` }
+    }
   }
-  const defaulted = DEFAULTED_LOCATORS[toolName]
-  const locator = locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding.workspaceRoot : undefined)
+  const locator = judgedLocator(toolName, args, binding)
   if (axis === 'net.fetch') {
     if (binding.network !== 'allow') {
       return refuse('NETWORK_DENY', `${JSON.stringify(locator ?? '')} is refused: the binding's network axis is ${binding.network === 'deny' ? 'deny' : 'unset'}, and an unset axis is not a permission`)
@@ -189,8 +217,7 @@ export function invocationFactsOf (input: {
 }): InvocationAuthorityFacts {
   const { binding, toolName, callId, arguments: args, admission } = input
   const axis = (TOOL_AXES[toolName as keyof typeof TOOL_AXES] ?? 'fs.read') as ToolAxis
-  const defaulted = DEFAULTED_LOCATORS[toolName]
-  const locator = locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding?.workspaceRoot ?? '' : '')
+  const locator = judgedLocator(toolName, args, binding) ?? ''
   // A refused call still records what was ASKED — that is the point of the record: after an
   // incident, "which locator did the model try, under which generation" must not be reconstructible
   // only from a refusal message.

@@ -116,7 +116,7 @@ test('ADM-17 — the NETWORK axis is its own: unset is not allow, and allow is n
   assert.equal(facts.locator, 'https://example.invalid/x')
 })
 
-test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable, not silently admitted', () => {
+test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable when no process lane is compiled', () => {
   for (const toolName of ['bash', 'pwsh', 'run_code']) {
     const decision = call(toolName, { command: 'ls' })
     assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no subprocess lane exists`)
@@ -401,4 +401,17 @@ test('ADM-23 — a process that dies mid-call recovers as UNKNOWN, never as succ
   assert.equal(mine.before, 'RUNNING')
   assert.equal(mine.after, 'UNKNOWN', 'an effect nobody observed is UNKNOWN - the one honest answer')
   assert.equal(mine.missingEvidence.length > 0, true, 'the record must say WHAT was not observed, not just that it was not')
+})
+
+test('ADM-24 — WITH a compiled process lane, the shell is judged on its working directory', () => {
+  const withLane = binding({ process: lane(['/work/a']) })
+  assert.equal(call('bash', { command: 'ls' }, withLane).kind, 'allow', 'the workspace root is inside the process lane')
+  const outside = call('bash', { command: 'ls' }, binding({ process: lane(['/work/a']), workspaceRoot: '/work/b' }))
+  assert.equal(outside.kind, 'deny')
+  assert.equal(outside.code, 'LANE_DENY')
+  const facts = invocationFactsOf({ binding: withLane, toolName: 'bash', callId: 'c-24', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }, withLane) })
+  assert.equal(facts.axis, 'process.exec')
+  assert.equal(facts.locator, '/work/a', 'the judged locator is the shell directory, and the record says which one')
+  // A process lane does not leak into the fs axes, and vice versa.
+  assert.equal(call('read', { file_path: '/work/b/x' }, withLane).kind, 'deny', 'a process lane is not a read permission')
 })

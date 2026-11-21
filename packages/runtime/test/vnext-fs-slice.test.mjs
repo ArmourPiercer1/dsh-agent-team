@@ -61,7 +61,7 @@ const IDENTITY = Object.freeze({
 const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze([...allow]), ask: Object.freeze([]), deny: Object.freeze([]) })
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
-async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints }) {
+async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -83,18 +83,20 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // so those two providers are mounted only when the world is asking for the search family. Loading
   // them always would make every other arm depend on a spawn service it never uses.
   let searchModules
-  if (search) {
+  if (search || bash) {
     const { createRequire } = await import('node:module')
     const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
     // The subprocess provider is not a direct dependency of packages/runtime; it resolves from the
-    // search module's own scope, which is the package that declares it.
+    // search module's own scope, which is the package that declares it. BOTH rung 4 and rung 6 need
+    // it: the confined face WRAPS the base service, so the base service has to exist first.
     const searchRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search/package.json'))
     const LocalSubprocessRuntime = (await import(pathToFileURL(searchRequire.resolve('@deepseek-ai/dsh-subprocess-local')).href)).default
-    const LocalSpillStore = (await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-spill-local')).href)).default
-    const toolFsSearch = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search')).href)
     await root.plugin(LocalSubprocessRuntime)
-    await root.plugin(LocalSpillStore, { root: join(dir, 'spill'), cleanupPeriodDays: 1 })
-    searchModules = toolFsSearch
+    if (search) {
+      const LocalSpillStore = (await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-spill-local')).href)).default
+      await root.plugin(LocalSpillStore, { root: join(dir, 'spill'), cleanupPeriodDays: 1 })
+      searchModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search')).href)
+    }
   }
   // The two states of the observation policy. The product default in A1/B is OFF, which in this
   // host means "the plugin is not mounted" - the policy has no config switch, so absence IS the
@@ -108,6 +110,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   await standing.ctx.plugin(nativeToolModules)
 
   const agentKey = {
+    // The confined terminal face fences every session by an OWNER id; an owner with no `id` is
+    // refused (TERMINALS_OWNER_UNTRUSTED), which is exactly what the first bash arm hit.
+    id: 'agent-vnext-slice',
     session: {
       header: { cwd: inside },
       requestHeader: () => ({ config: { provider: 'mock-provider', model: 'mock-model' } }),
@@ -115,6 +120,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     options: {},
   }
   const agent = createScope(root, agentKey)
+  // A real Agent carries its OWN context, and tools that register per-owner cleanup reach it
+  // (`owner.ctx.effect`). Without it the first bash call died inside the tool's session bookkeeping.
+  agentKey.ctx = agent.ctx
   bindScopeParent(agentKey, standingKey)
   const presetRead = root.get('tools').get('read', agentKey)
 
@@ -122,7 +130,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // subprocess face, and the composition is what builds it: the product's compiled profile plus the
   // product's P1-07 OS provider. Nothing here decides policy or launches a process by hand.
   let subprocessFace
-  if (search) {
+  if (search || bash) {
     const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
     const sandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/sandbox-provider/index.ts')).href)
     const profile = teamSandbox.compileExecutionProfile({
@@ -151,11 +159,41 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       // ripgrep lives outside the member's lane; the interpreter/executable's own directory is the
       // documented additive exception, and it is the ONLY one added here.
       runtimeAllowPaths: Object.freeze([{ path: join(REPO_ROOT, 'tests/deepseek-harness-test-use/node_modules/.pnpm'), accessBits: { readFile: true, readDir: true, execute: true } }]),
+      // The realm's DECLARED shell class: a persistent shell is only admissible when the composition
+      // names the programs it may run. Not a permission for a command - a class of executables.
+      shellClass: Object.freeze({ programs: Object.freeze(['bash', 'sh']) }),
     }
   }
 
   // RUNG 5. The confined web face is composition-owned: the transport is this test's provider, and
   // the lane that guards it is the Member's compiled network axis.
+  // RUNG 6 (PTY). The governed PTY face confines through the deployment `sandbox` provider and
+  // allocates the PTY through the BASE subprocess service; both are host plugins, and the launcher
+  // pin is the composition's (the same one the OS arms measured).
+  if (bash) {
+    const { createRequire } = await import('node:module')
+    const launcher = join(REPO_ROOT, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
+    // Neither sandbox package is a direct dependency of packages/runtime; they resolve from the
+    // shell module's own scope, which is what a real composition that hosts a PTY would declare.
+    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
+    const shellRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-bash-persistent/package.json'))
+    const SandboxPolicyService = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-sandbox-policy')).href)).default
+    const LocalSandboxProvider = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-sandbox-local')).href)).default
+    // `sandboxPolicy` statically injects `sessionProjections`, and Cordis DEFERS a plugin whose
+    // static inject is unmet - silently, from the caller's point of view. The first attempt mounted
+    // it this way and root.get('sandboxPolicy') stayed undefined. Give it what it injects.
+    const SessionProjection = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-session-projection')).href)).default
+    await root.plugin(SessionProjection)
+    await root.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: inside })
+    await root.plugin(LocalSandboxProvider, {
+      runnerCommand: ['python3', launcher],
+      // The launcher's own fail-closed marker on stderr; the provider requires the declaration so a
+      // sandbox failure is classified as a sandbox failure and never as a tool error.
+      runnerFailureSignatures: ['abi_unavailable', 'launcher_error'],
+    })
+  }
+
+  let shellModules
   let webFace
   let webModules
   let webFetchCalls = 0
@@ -231,6 +269,15 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
           providerClass: InstrumentedFs,
           ...(subprocessFace === undefined ? {} : { subprocess: subprocessFace }),
           ...(webFace === undefined ? {} : { web: webFace }),
+          // RUNG 6. The confined terminal face runs ON the confined child face (no PTY, no base
+          // subprocess), so a persistent-looking shell is still a confined child per command.
+          ...(bash
+            ? {
+                // The PRODUCT path is the governed PTY face (one live shell per Member). The
+                // confined per-send child face is a different seam with a different consumer.
+                terminal: { mode: 'pty', program: '/bin/bash', memberSessionId: 'agent-vnext-slice', backendType: 'a5sf-pty' },
+              }
+            : {}),
         }),
       }),
       member: {
@@ -253,6 +300,12 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       ...(search ? [{ url: '@deepseek-ai/dsh-tool-fs-search', module: searchModules, expectedTools: ['grep', 'glob'], config: { sampleOverCapGlobResults: false } }] : []),
       ...(web ? [{ url: '@deepseek-ai/dsh-tool-web', module: webModules, expectedTools: ['web_fetch'] }] : []),
     ]
+    if (bash) {
+      const { createRequire } = await import('node:module')
+      const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
+      shellModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-bash-persistent')).href)
+      extra.push({ url: '@deepseek-ai/dsh-tool-bash-persistent', module: shellModules, expectedTools: ['bash'] })
+    }
     const specs = hostNativeSpecs(extra.length === 0 ? [primary] : [primary, ...extra])
     try {
       installedModules = await mountHostModules({ realm, root: agent.ctx, scope: agentKey, specs })
@@ -325,6 +378,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       // own permission - absent is not allow.
       workspaceRoot: inside,
       ...(web ? { network: webNetwork } : {}),
+      ...(bash ? { process: lane([inside]) } : {}),
     }
     disposeAdmission = installAdmissionPoint({
       ctx: agent.ctx,
@@ -1016,6 +1070,24 @@ test('SLICE-32 — rung 5 NEGATIVE CONTROL: the same tool with the network axis 
     // The refusal names the network axis, not a connection error: port 9 would fail to connect, and
     // the arm must not be able to pass by that accident.
     assert.equal(/ECONNREFUSED|fetch failed/u.test(String(result.errorMessage)), false, `the refusal must be the lane, not a network accident: ${result.errorMessage}`)
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-33 — rung 6: a PTY shell is refused to an owner the host does not recognise', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'bash-on'), admission: 'bound', bash: true })
+  try {
+    assert.equal(world.mountRefusal, undefined, `the governed PTY face must mount: ${world.mountRefusal?.message ?? ''}`)
+    // The admission point admits it (the process lane covers the workspace root), and the PTY face
+    // then refuses the OWNER: the host PTY service only opens a session for an agent the registry
+    // holds (`agents.get(owner.id) === owner`). This world has no live host agent, so the fence does
+    // its job - which is exactly the guarantee: a shell is never opened for an unregistered owner.
+    const result = await world.dispatch('bash', { command: 'echo SHOULD-NOT-RUN' }, 'bash-1')
+    assert.equal(result.isError, true, `the shell must be refused: ${result.text}`)
+    assert.match(String(result.errorMessage), /OWNER_NOT_LIVE|not the registered PTY owner/u)
+    assert.equal(String(result.text).includes('SHOULD-NOT-RUN\n') && !result.isError, false)
+    assert.equal(world.webFetchCalls(), 0)
   } finally {
     await world.dispose()
   }
