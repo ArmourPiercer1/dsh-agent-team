@@ -418,3 +418,19 @@ environment and it is deliberately weaker than "the tests pass": they are `vites
 vitest cannot run here (recorded env limitation), so their execution is a CI obligation, not a
 measured fact. Calling this "migration verified" on the strength of an import check would be
 exactly the kind of unproven claim the plan forbids.
+
+## 12. Two states of the observation policy, measured on the vnext assembly
+
+In this host the policy has **no config switch**: it is mounted or absent, so absence IS the off
+state and the arms differ by exactly one plugin.
+
+| arm | state | measured |
+| --- | --- | --- |
+| SLICE-17 | OFF (product default for A1/B) | an overwrite of an existing file needs no prior read and lands |
+| SLICE-18 | ON | the same overwrite is refused with the policy's own sentence (`file has not been read — read the file, then retry`), the file stays byte-identical, and the SAME write lands after one observation read |
+| SLICE-19 | ON | read → another writer changes the file → write is refused as stale and the external bytes survive |
+
+Two things this settles that the plan left implicit: the refusal is matched on the policy's own
+wording rather than `isError`, so no unrelated failure can satisfy the arm; and a policy mounted on
+the ROOT scope still governs a member's write through its own realm, because the observed state is
+keyed by the calling session, not by the provider instance.
