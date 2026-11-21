@@ -1,0 +1,10 @@
+{
+  "schema": "ute-approval/1",
+  "family": "synthetic-selftest",
+  "difference": "synthetic-difference",
+  "decision": "approved",
+  "by": "owner",
+  "on": "2026-11-20",
+  "reference": "PR #793 @ 06de9751a836fa238b72c32557a7e3570bc64a6c",
+  "rationale": "SELF-TEST FIXTURE ONLY. Adopts compatibility interface (A) for the synthetic difference in scripts/fixtures/ute-retirement-selftest/ledger.json. This family exists only in that fixture ledger; it is not a production row, and this record cannot licence any real family. The reference is PR #793's merge commit, which is a real non-root ancestor of the graded HEAD."
+}
