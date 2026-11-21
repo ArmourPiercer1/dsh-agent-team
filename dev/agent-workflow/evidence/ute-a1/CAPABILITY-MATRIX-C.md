@@ -125,6 +125,13 @@ so a well-formed name for a never-mounted server is not refused BY THE CENTRE (t
 tool registry are what exclude it) — stated above as a LIMIT and pinned by `ADM-97`. Policy
 COMPILATION is not exercised (the compiled answer is an input).
 
+## BLOCKING PRODUCT LIMIT (round 59): a centre row cannot create a team at runtime
+
+`ESCALATION-centre-row-creation-entrance.md`. The centre row BOOTS (43 model-visible tools, remote mount
+`SKIPPED` with the C-remote reason) but `POST /team-remote/team.create` is **405**: C-remote refuses to build
+the plane, and that plane is the product's only runtime creation entrance. Governance and runtime creation are
+mutually exclusive today. Nothing in this table may be read as "both work".
+
 ## MEASURED (round 49): the durable Alpha.4 overlay reaches the centre — E3 green, still not PRODUCT-PROVEN
 
 `a3p4-pr4-production-entry-regression` E3 is GREEN and the migrated suite is 238/238. The world was
