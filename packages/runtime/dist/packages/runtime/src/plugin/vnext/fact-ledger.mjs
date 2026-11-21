@@ -29,10 +29,15 @@ export class LedgerError extends TypeError {
   }
 }
 
-/** The record kinds this ledger accepts. An unknown kind is a schema error, not a new feature. */
-export const LEDGER_KINDS = Object.freeze(['invocation-authority', 'playback-refusal', 'playback-refusal/1'])
-
-const KINDS = Object.freeze(['invocation-authority', 'replay-refusal', 'execution'])
+/**
+ * The record kinds this ledger accepts. An unknown kind is a schema error, not a new feature.
+ *
+ * ONE list, exported. There used to be two - an exported `LEDGER_KINDS` that named a `playback-refusal`
+ * kind the writer never emitted and omitted `execution` entirely - so anyone validating against the
+ * public list would reject the ledger's own execution records, and accept a kind it never writes.
+ */
+export const LEDGER_KINDS = Object.freeze(['invocation-authority', 'replay-refusal', 'execution'])
+const KINDS = LEDGER_KINDS
 
 /**
  * Open a ledger at `path`. The file is created on first append; its directory is created eagerly so
@@ -48,6 +53,8 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
 
   /** callId -> the admission record already written for it. This map IS the no-replay guarantee. */
   let admitted = new Map()
+  /** callIds that already have an execution fact. Reset on load: `observe()` is the read side. */
+  let executed = new Set()
   let loaded = false
 
   // `registry` is passed in so `readAll` can validate the file WITHOUT mutating the live
@@ -64,10 +71,14 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
       throw new LedgerError('LEDGER_RECORD_INVALID', `line ${index + 1} of ${path} has no callId`)
     }
     if (!KINDS.includes(record.kind)) throw new LedgerError('LEDGER_RECORD_INVALID', `line ${index + 1} of ${path} has unknown kind ${JSON.stringify(record.kind)}`)
+    if (record.kind === 'execution' && registry.get(`execution:${record.callId}`) === true) {
+      throw new LedgerError('LEDGER_DUPLICATE_EXECUTION', `callId ${JSON.stringify(record.callId)} has two execution records on disk; the ledger cannot say which one happened`)
+    }
     if (record.kind === 'invocation-authority') {
       if (registry.has(record.callId)) throw new LedgerError('LEDGER_DUPLICATE_AUTHORITY', `callId ${JSON.stringify(record.callId)} has two authority records on disk; the ledger is corrupt and cannot arbitrate`)
       registry.set(record.callId, record)
     }
+    if (record.kind === 'execution') registry.set(`execution:${record.callId}`, true)
     return record
   }
 
@@ -89,13 +100,16 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
     // on line 2 must not leave line 1's record in the live map, or the next append would report
     // LEDGER_DUPLICATE_AUTHORITY for a file it never managed to read.
     const registry = new Map()
+    const ended = new Set()
     const lines = text.split('\n')
     for (let index = 0; index < lines.length; index++) {
       const line = lines[index]
       if (line.trim() === '') continue
-      parseLine(line, index, registry)
+      const record = parseLine(line, index, registry)
+      if (record.kind === 'execution') ended.add(record.callId)
     }
     admitted = registry
+    executed = ended
     loaded = true
   }
 
@@ -117,18 +131,26 @@ export function openFactLedger ({ path, now = () => new Date().toISOString() }) 
     path,
     /** Write one admission record. Throws LEDGER_REPLAY for a callId already admitted. */
     recordAdmission (facts) {
-      return append({ kind: 'invocation-authority', at: now(), ...facts })
+      // `kind` and `at` are the LEDGER's, not the caller's: spreading the facts last let a malformed
+      // caller record a different kind under this method and walk past the replay rule it was writing.
+      return append({ ...facts, kind: 'invocation-authority', at: now() })
     },
     /** Record that a callId was attempted again. Never satisfies `has()`. */
     recordReplayRefusal ({ callId, toolName, reason }) {
-      return append({ kind: 'replay-refusal', at: now(), callId, toolName, reason })
+      return append({ ...{ callId, toolName, reason }, kind: 'replay-refusal', at: now() })
     },
     /** Record how an execution ended (the ExecutionFact half). Not keyed uniquely: one call, one line. */
     recordExecution (facts) {
       if (admitted.has(facts.callId) === false) {
         throw new LedgerError('LEDGER_EXECUTION_UNBOUND', `execution for callId ${JSON.stringify(facts.callId)} has no admission record; an execution the ledger cannot join to an authority record is not writable`)
       }
-      return append({ kind: 'execution', at: now(), ...facts })
+      if (executed.has(facts.callId)) {
+        // One call, one execution fact. A second one would make 'how did this call end' a question with
+        // two answers on the same durable record, and the first is the one that happened.
+        throw new LedgerError('LEDGER_DUPLICATE_EXECUTION', `callId ${JSON.stringify(facts.callId)} already has an execution record; a call ends once`)
+      }
+      executed.add(facts.callId)
+      return append({ ...facts, kind: 'execution', at: now() })
     },
     /**
      * What the ledger can say about one callId. `UNKNOWN` is NOT "no record, therefore allowed":

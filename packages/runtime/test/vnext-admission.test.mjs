@@ -1012,3 +1012,48 @@ test('ADM-40 — a binding names its generation or refuses to exist, and never i
   assert.deepEqual(withBindings.perTool.write.write.allow, ['/a/sub'])
   assert.equal(withBindings.perTool.write.network, 'deny')
 })
+
+test('ADM-41 — the ledger owns its reserved fields, and one call ends once', async () => {
+  const { openFactLedger, LEDGER_KINDS } = await import('../src/plugin/vnext/fact-ledger.mjs')
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  // ONE exported list of kinds. It used to name a `playback-refusal` the writer never emits and omit
+  // `execution` entirely, so anything validating against the public list rejected the ledger's own
+  // execution records.
+  assert.ok(LEDGER_KINDS.includes('execution'))
+  assert.ok(LEDGER_KINDS.includes('replay-refusal'))
+  assert.ok(!LEDGER_KINDS.includes('playback-refusal'), 'a kind the writer never emits is not a ledger kind')
+  const path = join(mkdtempSync(join(tmpdir(), 'ledger-41-')), 'l.jsonl')
+  const ledger = openFactLedger({ path, now: () => '2026-11-22T00:00:00.000Z' })
+  // A caller cannot rename the record kind through the facts it passes: `kind` is the ledger's.
+  const written = ledger.recordAdmission({ callId: 'c-1', toolName: 'read', kind: 'execution', at: '1999-01-01T00:00:00.000Z', decision: 'allow' })
+  assert.equal(written.kind, 'invocation-authority', 'the method decides the kind, not the caller')
+  assert.equal(written.at, '2026-11-22T00:00:00.000Z', 'the ledger stamps the time')
+  // ONE execution fact per call: a second one would make "how did this call end" a question with two
+  // answers on the same durable record.
+  ledger.recordExecution({ callId: 'c-1', outcome: 'completed' })
+  assert.throws(() => ledger.recordExecution({ callId: 'c-1', outcome: 'failed' }), /LEDGER_DUPLICATE_EXECUTION|already has an execution/u)
+  // And the same rule holds when the duplicate is already ON DISK (a crash between two writers): the
+  // file is refused as corrupt rather than read as two answers.
+  const corrupt = join(mkdtempSync(join(tmpdir(), 'ledger-41b-')), 'l.jsonl')
+  const { writeFileSync } = await import('node:fs')
+  writeFileSync(corrupt, [
+    JSON.stringify({ kind: 'invocation-authority', callId: 'c-9', at: '2026-11-22T00:00:00.000Z' }),
+    JSON.stringify({ kind: 'execution', callId: 'c-9', outcome: 'completed', at: '2026-11-22T00:00:01.000Z' }),
+    JSON.stringify({ kind: 'execution', callId: 'c-9', outcome: 'failed', at: '2026-11-22T00:00:02.000Z' }),
+    '',
+  ].join('\n'))
+  const reader = openFactLedger({ path: corrupt })
+  assert.throws(() => reader.readAll(), (error) => error.code === 'LEDGER_DUPLICATE_EXECUTION')
+})
+
+test('ADM-42 — a native module specifier is judged before it is imported', async () => {
+  // `await import()` runs the code it names. A validation that inspects the module afterwards has
+  // already executed the thing it exists to refuse, so the check is a decision about the string.
+  const { assertHostModuleSpecifier } = await import('../src/plugin/vnext/member-execution.mjs')
+  assert.equal(assertHostModuleSpecifier('@deepseek-ai/dsh-tool-fs'), '@deepseek-ai/dsh-tool-fs')
+  for (const bad of ['/etc/passwd.mjs', 'file:///tmp/x.mjs', 'node:fs', 'https://example.com/x.mjs', '', undefined]) {
+    assert.throws(() => assertHostModuleSpecifier(bad), /needs a specifier|refusing to import/u, `must refuse ${JSON.stringify(bad)}`)
+  }
+})

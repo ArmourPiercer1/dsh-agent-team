@@ -10021,3 +10021,32 @@ not see because they test the mechanism rather than the product composition. Act
   fallbacks that widen to the ceiling, the third grant-id scheme, execution-id join by convention,
   ledger duplicate/kind-override, unbounded maps, the identity fields (agentId vs sessionId,
   instanceGeneration defaulting to 0), and `await import()` before the `@deepseek-ai/*` check.
+
+### R28 addendum 3 — the ledger was the fourth place a permission could be invented
+
+The review's P2 batch was "small things that widen". Three more, all in the durable ledger, which is the
+half that a reviewer reads AFTER the fact and therefore cannot afford to be generous:
+
+- **A gap in a compiled answer was a permission.** `perTool?.read ?? binding.read` treated a missing field
+  on a compiled tool answer as "no restriction here" and fell back to the CEILING — the widest lane in the
+  binding. A compiler that had something to say about a tool and said nothing about one axis now gets a
+  refusal (`ADMISSION_AXIS_UNSUPPORTED`); the documented ceiling fallback is narrowed to what it always
+  meant (a tool with NO compiled entry at all). ADM-39 keeps both halves.
+- **`definitionSource` was `'@deepseek-ai/dsh-tool-fs'` for every tool in every binding** — a provenance
+  claim that was wrong for every non-fs tool and could not be right for all of them. It now comes from the
+  compiled member; `''` means "several sources", not a guess.
+- **`instanceGeneration` defaulted to 0.** The generation is what the recheck compares a live answer
+  against, so a fabricated 0 makes every revocation look like a match. A member that cannot name its
+  generation now fails the bind.
+- **The ledger let the caller rename the record kind** (`{kind, at, ...facts}` spread the facts last), kept
+  TWO lists of kinds (the exported one named a `playback-refusal` the writer never emits and omitted
+  `execution`), and accepted a second execution fact for the same callId. All three are fixed: the ledger
+  owns `kind`/`at`, there is ONE exported `LEDGER_KINDS`, and a call ends once — enforced both at append
+  time and when a file already on disk carries two (ADM-41).
+- **`await import(spec.url)` ran before the `@deepseek-ai/*` check.** A check after the import has already
+  executed the code it exists to refuse. The specifier is now judged as a string (ADM-42).
+
+Still open from the review, and now the largest remaining items rather than small ones: the third grant-id
+scheme, unbounded in-memory maps, `agentId: sessionId` in the binding (two identities in one field), and
+`executionIdOf`'s synthetic `{callId, name: ''}` join. Those are contract questions, not widenings, and the
+first has to be answered together with the Settlement identity so there is not a fourth scheme.

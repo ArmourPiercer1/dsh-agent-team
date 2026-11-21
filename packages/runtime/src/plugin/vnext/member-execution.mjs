@@ -53,6 +53,21 @@ import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
  * @param {(message: string) => void} input.observe - the row's observation sink.
  * @returns {object|undefined} `{binding, ledger, settlementStore}` when a centre was installed.
  */
+/**
+ * A native tool module must be a host package. The check is on the SPECIFIER, before the import: an
+ * `await import()` of an unvalidated string runs the code it names, so a validation that happens after
+ * it has already executed the thing it was supposed to refuse.
+ */
+export function assertHostModuleSpecifier (specifier) {
+  if (typeof specifier !== 'string' || specifier === '') {
+    throw new TypeError('member-execution: a native tool module needs a specifier')
+  }
+  if (!specifier.startsWith('@deepseek-ai/')) {
+    throw new Error(`member-execution: refusing to import ${JSON.stringify(specifier)}: native tool modules are host packages (@deepseek-ai/*), and importing anything else would execute code this deployment did not choose`)
+  }
+  return specifier
+}
+
 export async function installMemberExecution ({
   agentCtx,
   realm,
@@ -148,11 +163,20 @@ export async function installMemberExecution ({
   // tombstone; the caller must await it BEFORE disposing the realm, because the tombstone needs a
   // living realm to be installed.
   if (Array.isArray(nativeSpecs) && nativeSpecs.length > 0) {
-    const specs = hostNativeSpecs(await Promise.all(nativeSpecs.map(async (spec) => ({
-      url: spec.url,
-      module: await import(spec.url),
-      ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
-    }))))
+    // VALIDATE BEFORE IMPORTING. `await import()` executes whatever the spec names - a remote URL, a
+    // path outside the deployment, a package that is not a host tool module - so the check that the
+    // module belongs to `@deepseek-ai/*` must be a decision about the STRING, taken before any code
+    // runs. Importing first and inspecting afterwards would already have paid the cost the check exists
+    // to avoid.
+    const specs = hostNativeSpecs(await Promise.all(nativeSpecs.map(async (spec) => {
+      assertHostModuleSpecifier(spec.url)
+      const url = spec.url
+      return {
+        url,
+        module: await import(url),
+        ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
+      }
+    })))
     const nativeMount = await mountHostModules({ realm, root: agentCtx, scope, specs })
     onNativeDispose({ settled: () => nativeMount.dispose() })
   }
