@@ -32,7 +32,7 @@ import { createSettlementWriter } from './settlement-port.mjs'
  * @param {string} [input.owner] - the owning team root session.
  * @returns {object} the binding the admission point resolves per call.
  */
-export function bindingFromCompiledMember ({ member, agentId, sessionId, workspaceRoot, owner }) {
+export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner }) {
   if (member === undefined || member === null) throw new TypeError('centre-install: a member binding needs the compiled member')
   const policy = member.policy?.value ?? member.policy
   if (policy === undefined || policy === null || typeof policy !== 'object') {
@@ -44,6 +44,20 @@ export function bindingFromCompiledMember ({ member, agentId, sessionId, workspa
   }
   if (typeof agentId !== 'string' || agentId === '') throw new TypeError('centre-install: agentId is required')
   if (typeof sessionId !== 'string' || sessionId === '') throw new TypeError('centre-install: sessionId is required')
+  // The compiled per-tool answers, keyed by the bare tool name. They are passed through as the
+  // compiler produced them; a tool with no declared restriction simply has no entry, and the ceiling
+  // answers for it.
+  const perTool = {}
+  for (const binding of Array.isArray(bindings) ? bindings : []) {
+    const toolName = binding?.toolName
+    const effective = binding?.effective
+    if (typeof toolName !== 'string' || toolName === '' || effective === undefined || effective === null) continue
+    perTool[toolName] = Object.freeze({
+      read: effective.read,
+      write: effective.write,
+      ...(effective.network === undefined || effective.network === null ? {} : { network: effective.network.access }),
+    })
+  }
   return Object.freeze({
     agentId,
     sessionId,
@@ -52,6 +66,7 @@ export function bindingFromCompiledMember ({ member, agentId, sessionId, workspa
     write: policy.write,
     ...(policy.network === undefined ? {} : { network: policy.network.access }),
     workspaceRoot,
+    ...(Object.keys(perTool).length === 0 ? {} : { perTool: Object.freeze(perTool) }),
     definitionSource: '@deepseek-ai/dsh-tool-fs',
     policyGeneration: policy.revision ?? '',
     blueprintRevision: identity.blueprintRevision ?? '',

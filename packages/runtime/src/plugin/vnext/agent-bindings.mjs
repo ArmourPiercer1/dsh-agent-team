@@ -2424,6 +2424,7 @@ export function createAgentBindings(deps) {
             const compiledMember = answer.members?.[0]
             const binding = bindingFromCompiledMember({
               member: compiledMember,
+              ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),
               agentId: sessionId,
               sessionId,
               // The member's effective workspace: the same `session.header.cwd` basis the rest of

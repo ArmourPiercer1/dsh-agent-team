@@ -106,6 +106,18 @@ export interface Binding {
   /** The compiled network axis. Absent is NOT allow. */
   readonly network?: 'allow' | 'deny'
   /**
+   * The per-TOOL effective lanes (`EffectiveIo ⊆ AgentCeiling ∩ ToolRestriction`), keyed by the bare
+   * tool name. Absent = no tool restriction was declared for that tool, and the ceiling answers.
+   *
+   * This is NOT a second policy: every entry is an already-compiled `EffectiveIo`, produced by the
+   * ONE compiler. The centre only chooses WHICH compiled answer applies to which call.
+   */
+  readonly perTool?: Readonly<Record<string, {
+    readonly read?: PathRuleSet
+    readonly write?: PathRuleSet
+    readonly network?: 'allow' | 'deny' | 'unsupported'
+  }>>
+  /**
    * The compiled PROCESS lane. Absent means this policy generation does not compile one, and every
    * `process.exec` call is refused as unsupported - it does not mean "no restriction".
    */
@@ -221,16 +233,24 @@ export function admit (input: {
     }
   }
   const locator = judgedLocator(toolName, args, binding)
+  const perTool = binding.perTool?.[toolName]
   if (axis === 'net.fetch') {
-    if (binding.network !== 'allow') {
-      return refuse('NETWORK_DENY', `${JSON.stringify(locator ?? '')} is refused: the binding's network axis is ${binding.network === 'deny' ? 'deny' : 'unset'}, and an unset axis is not a permission`)
+    // The tool-level answer is the INTERSECTION the compiler already produced; where it declares the
+    // network unsupported, the call is refused even if the ceiling allows the network at all.
+    const network = perTool?.network ?? binding.network
+    if (network !== 'allow') {
+      return refuse('NETWORK_DENY', `${JSON.stringify(locator ?? '')} is refused: the network axis for this tool is ${network === 'deny' ? 'deny' : network === 'unsupported' ? 'unsupported by this binding' : 'unset'}, and an unset axis is not a permission`)
     }
     return { kind: 'allow' }
   }
   if (locator === undefined) {
     return refuse('ADMISSION_NO_LOCATOR', `tool ${JSON.stringify(toolName)} was called without a locator the ${axis} lane can be judged on`)
   }
-  const lane = axis === 'fs.read' ? binding.read : binding.write
+  // The TOOL's compiled lane when one exists, the CEILING otherwise. Never a union of the two: the
+  // compiled answer already IS the intersection, and re-combining would be a second policy.
+  const lane = axis === 'fs.read'
+    ? (perTool?.read ?? binding.read)
+    : (perTool?.write ?? binding.write)
   switch (matchLocator(lane, locator)) {
     case 'allow':
       return { kind: 'allow' }

@@ -262,6 +262,7 @@ export function projectToolIoRestriction(
     ok: true,
     value: Object.freeze({
       bindingIdentity: `${owner}/${name}`,
+      toolName: name,
       read: laneValue('read'),
       write: laneValue('write'),
       network: networkMode === 'allow' || networkMode === 'deny' ? networkMode : 'unsupported',

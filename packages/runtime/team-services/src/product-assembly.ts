@@ -1296,6 +1296,9 @@ export function createProductRealmProvider(plan: A5sfProductRealmPlan): A5sfProd
         return Object.freeze({
           identity,
           toolBindingIdentity: restriction.bindingIdentity,
+          // The CENTRE joins a call to this binding by tool NAME; the identity string is
+          // `<owner>/<name>` and splitting it would be parsing policy.
+          ...(restriction.toolName === undefined ? {} : { toolName: restriction.toolName }),
           effective: effective.value as EffectiveIoPolicy,
         })
       })

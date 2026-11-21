@@ -605,7 +605,10 @@ DO pass are the composition point's own (`ADM-25..28` on the in-process host). W
 2. D: a real host boot must show a member's `read` producing an authority fact, an execution fact and
    a COMPLETED settlement record under `centreStatePath`, plus the crash-recovery path.
 
-Also recorded as a LIMIT of this wiring: the binding's lanes are the Member CEILING; per-tool
-restrictions (`bindings[]`) are enforced by the realm FACES, not yet by the centre's admission. That
-is defence in depth (the face still refuses), but it means an admission 'allow' can be followed by a
-face refusal. Binding per-tool effective lanes into admission is C work, not a claim of done.
+LIMIT CLOSED (same round, ADM-26/29/30): per-tool restrictions now reach admission. The projection
+carries the bare `toolName` (`bindingIdentity` is `<owner>/<name>`, and splitting that string would be
+parsing policy), the realm binding forwards it, `bindingFromCompiledMember` keys the compiled
+`EffectiveIo` by tool name BY REFERENCE, and admission judges a call on that compiled intersection
+when one exists - the ceiling otherwise, never a union of the two. A per-tool `network: 'unsupported'`
+refuses the fetch even when the ceiling allows the network; a path inside the CEILING but outside the
+TOOL lane is `LANE_DENY`; and the fact records the locator that was judged.

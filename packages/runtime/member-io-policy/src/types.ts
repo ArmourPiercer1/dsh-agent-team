@@ -99,6 +99,12 @@ export interface MemberPolicy {
 /** One tool's restriction inside a Member ceiling (the RIGHT factor). */
 export interface ToolIoRestriction {
   readonly bindingIdentity: string
+  /**
+   * The bare model-facing tool name this restriction narrows (`read`, `grep`, ...). ADDITIVE
+   * (C, 2026-11-21): the identity string is `<owner>/<name>`, and splitting it back apart to find
+   * the tool would be parsing policy. Optional so every existing projection stays valid.
+   */
+  readonly toolName?: string
   readonly read: ToolPathLane
   readonly write: ToolPathLane
   readonly network: NetworkAccess | 'unsupported'

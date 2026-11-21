@@ -456,6 +456,16 @@ test('ADM-26 — a compiled member maps onto a binding by reference, never by re
   assert.equal(b.policyGeneration, 'rev-1')
   assert.equal(b.blueprintRevision, 'bp-1')
   assert.equal(b.process, undefined, 'no subprocess lane compiled => process.exec stays unsupported')
+  // Per-tool compiled answers are carried THROUGH by tool name, by reference, so admission can pick
+  // the tool's own intersection instead of the ceiling.
+  const toolEffective = { memberIdentity: 'member-1', toolBindingIdentity: 'dsh.fs/read', invocationId: 'i', policyRevision: 'rev-1', read: lane(['/work/a/docs']), write: lane(['/work/a']), network: { access: 'deny' } }
+  const withTool = bindingFromCompiledMember({
+    member, agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a',
+    bindings: [{ identity: {}, toolBindingIdentity: 'dsh.fs/read', toolName: 'read', effective: toolEffective }],
+  })
+  assert.equal(withTool.perTool.read.read, toolEffective.read, 'the tool lane must be the compiled object, not a copy')
+  assert.equal(withTool.perTool.read.network, 'deny')
+  assert.equal(call('read', { file_path: '/work/a/other.md' }, withTool).code, 'LANE_DENY', 'the tool lane, not the ceiling, decides')
   // A compiled answer without lanes is refused rather than defaulted to something permissive.
   assert.throws(() => bindingFromCompiledMember({ member: { identity: {}, policy: { value: { revision: 'r' } } }, agentId: 'a', sessionId: 's', workspaceRoot: '/w' }), /read and write lanes/u)
 })
@@ -516,4 +526,38 @@ test('ADM-28 — the centre refuses an out-of-lane call BEFORE the body, on the 
   }
   // ...and after disposal no point answers any more.
   assert.equal(host.guard({ name: 'read', callId: 'centre-3', arguments: { file_path: '/work/a/x' } }), undefined)
+})
+
+test('ADM-29 — a TOOL restriction answers before the ceiling, and it can only narrow', () => {
+  // The compiler already produced the intersection; the centre's job is to pick the right compiled
+  // answer for the call, never to combine two of them.
+  const b = binding({
+    read: lane(['/work']),
+    write: lane(['/work']),
+    perTool: {
+      read: { read: lane(['/work/docs']), write: lane(['/work']) },
+      grep: { read: lane(['/work']), write: lane(['/work']), network: 'unsupported' },
+    },
+  })
+  assert.equal(call('read', { file_path: '/work/docs/a.md' }, b).kind, 'allow')
+  const outsideToolLane = call('read', { file_path: '/work/other.md' }, b)
+  assert.equal(outsideToolLane.kind, 'deny', 'inside the CEILING but outside the TOOL lane must be denied')
+  assert.equal(outsideToolLane.code, 'LANE_DENY')
+  // A tool with no declared restriction falls back to the ceiling - and only there.
+  assert.equal(call('write', { file_path: '/work/new.md' }, b).kind, 'allow')
+  // A per-tool network answer of 'unsupported' refuses the fetch even though the ceiling allows it.
+  const net = binding({ network: 'allow', perTool: { web_fetch: { read: lane(['/work']), write: lane(['/work']), network: 'unsupported' } } })
+  const decided = call('web_fetch', { url: 'https://example.test/x' }, net)
+  assert.equal(decided.kind, 'deny')
+  assert.equal(decided.code, 'NETWORK_DENY')
+  assert.match(String(decided.reason), /unsupported/u)
+})
+
+test('ADM-30 — the tool-level answer reaches the record, so a refusal names what was judged', () => {
+  const b = binding({ read: lane(['/work']), perTool: { read: { read: lane(['/work/docs']), write: lane(['/work']) } } })
+  const decision = call('read', { file_path: '/work/other.md' }, b)
+  const facts = invocationFactsOf({ binding: b, toolName: 'read', callId: 'c-30', arguments: { file_path: '/work/other.md' }, admission: decision })
+  assert.equal(facts.locator, '/work/other.md')
+  assert.equal(facts.decision, 'deny')
+  assert.equal(facts.refusalCode, 'LANE_DENY')
 })
