@@ -44,6 +44,7 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 // hoisted above the registration).
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
 const { installAdmissionPoint } = await import('../src/plugin/vnext/admission-port.mjs')
+const { installExecutionFacts } = await import('../src/plugin/vnext/execution-facts.mjs')
 
 const IDENTITY = Object.freeze({
   teamId: 'team-vnext-slice',
@@ -143,7 +144,9 @@ async function buildWorld ({ mountRealm, dir, admission }) {
   // `admission: 'bound'` resolves the member's binding; `admission: 'unbound'` models a controlled
   // call the centre has NOT been wired for, which must be refused rather than forwarded.
   let facts = []
+  let executions = []
   let disposeAdmission
+  let disposeExecutions
   if (mountRealm && admission !== undefined) {
     const lanes = { read: { mode: 'restricted', allow: [inside], ask: [], deny: [] }, write: { mode: 'restricted', allow: [inside], ask: [], deny: [] } }
     const binding = {
@@ -161,6 +164,11 @@ async function buildWorld ({ mountRealm, dir, admission }) {
       ctx: agent.ctx,
       resolveBinding: () => (admission === 'bound' ? binding : undefined),
       record: (record) => { facts.push(record) },
+    })
+    disposeExecutions = installExecutionFacts({
+      ctx: agent.ctx,
+      record: (fact) => { executions.push(fact) },
+      admissionOf: (callId) => facts.find((entry) => entry.callId === callId),
     })
   }
 
@@ -181,6 +189,7 @@ async function buildWorld ({ mountRealm, dir, admission }) {
   return {
     dir,
     facts: () => facts,
+    executions: () => executions,
     inside,
     outside,
     insideFile,
@@ -191,6 +200,7 @@ async function buildWorld ({ mountRealm, dir, admission }) {
     fsInstances,
     dispatch,
     async dispose () {
+      if (typeof disposeExecutions === 'function') disposeExecutions()
       if (typeof disposeAdmission === 'function') disposeAdmission()
       if (realm !== undefined) await realm.dispose()
       await root.dispose?.()
@@ -332,6 +342,41 @@ test('SLICE-9 — UNWIRED: with no binding the same in-ceiling call is refused, 
   } finally {
     await world.dispose()
   }
+})
+
+test('SLICE-10 — one execution, one canonical fact, with provenance kept apart from outcome', async () => {
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'exec-facts'), admission: 'bound' })
+  try {
+    const allowed = await world.dispatch('read', { file_path: world.insideFile }, 'exec-allow')
+    assert.equal(allowed.isError, false, `the allowed read must succeed: ${allowed.text}`)
+    const denied = await world.dispatch('read', { file_path: world.outsideFile }, 'exec-deny')
+    assert.equal(denied.isError, true, 'the second read must be refused')
+    const executions = world.executions()
+    assert.equal(executions.length, 2, `two calls must produce two facts, got ${JSON.stringify(executions)}`)
+    const byId = Object.fromEntries(executions.map((fact) => [fact.callId, fact]))
+    assert.equal(byId['exec-allow'].outcome, 'completed')
+    assert.equal(byId['exec-allow'].isError, false)
+    assert.equal(byId['exec-deny'].outcome, 'admission-refusal', 'a governed refusal is NOT a tool failure; merging the two makes a refusal look like a broken tool')
+    assert.equal(byId['exec-deny'].refusalCode, 'LANE_DENY')
+    assert.equal(byId['exec-deny'].errorMessage, undefined, 'a refusal carries its code, not a body error')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-11 — a duplicate callId is a REFUSAL, not a merge (UTE-15)', async () => {
+  // A fake observer context: this arm is about the fact ledger's own rule, so it needs no host.
+  let listener
+  const record = []
+  const dispose = installExecutionFacts({ ctx: { on: (name, fn) => { if (name === 'tools/result') listener = fn; return () => { listener = undefined } } }, record: (fact) => record.push(fact) })
+  assert.equal(typeof listener, 'function')
+  const exec = { callId: 'dup-1', name: 'read', agent: { id: 'agent-1' }, turn: 1, step: 1 }
+  listener(exec, { isError: false })
+  assert.equal(record.length, 1)
+  assert.throws(() => listener(exec, { isError: false }), (error) => error.code === 'EXECUTION_FACT_DUPLICATE', 'a second fact for one callId is a replay and must be refused')
+  assert.equal(record.length, 1, 'the refused duplicate must not have been written')
+  assert.throws(() => listener({ name: 'read' }, { isError: false }), (error) => error.code === 'CALL_ID_MISSING')
+  dispose()
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
