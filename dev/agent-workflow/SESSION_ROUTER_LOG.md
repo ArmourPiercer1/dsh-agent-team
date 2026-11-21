@@ -10151,3 +10151,33 @@ a vitest `suiteList` leg — they rotted because nothing ran them; (3) make G8 d
 Gates at `a74a646e8`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
 cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, ci-required pass, docs-sync `findings=0`.
 Migrated suite: **237/238** (`dev/agent-workflow/evidence/ute-a1/migrated-suite.json`).
+
+### R32 — the census told the truth about its own shape, and I did not ship a red leg
+
+Built the CI binding for the migrated suites and measured it in full: the token runner
+(`scripts/eb3-security-run.mjs --list-file`) is the repo's vitest vehicle, the manifest splits `cmd` from
+`check` (the workflow line is `cmd + check`), and both gates fired and cleared against the new entry
+(`CI_LAYER_LEG_UNPROVEN` while the leg sat in the wrong layer; `CI_LAYER_LEG_ARGUMENT_MISSING` until the
+argv was split). The end-to-end reading is now:
+
+```
+EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
+```
+
+Two things that measurement taught, both worth more than the leg:
+
+1. **Fifteen, not sixteen.** The sixteenth entry in `migrated-entry-imports.json` is
+   `t12a-live-bridge.mjs`, a live-bridge HELPER with no tests of its own — the token runner refuses a list
+   longer than its own report, which is how the census found that out about itself. The A1 clause counts
+   16 BOOKKEEPING entries; the executable population is 15 suites.
+2. **The leg is not bound to a Required layer, deliberately.** Its population is red on E3. Binding it
+   would either redden Required or require the exemption/expected-fail this project forbids, so the
+   binding was built, measured, and REVERTED. `tests/checks/eb3-ute-migrated-suites.txt` is committed as
+   the population declaration with the command in its header and the state recorded.
+
+Order from here: **fix E3 → the list goes green → bind the leg.** Nothing else in A1 depends on that
+sequence.
+
+Gates at `a686f1180`: leg `suites=6 files=6 exit=0`, catalog `tests=888 refused=0 findings=0`,
+cut-closure `prodRefs=0 distResiduals=0`, P0 assets pass, docs-sync `findings=0`, ci-required pass (the
+revert restored it).
