@@ -51,7 +51,7 @@ pin.
 | 3 | `a4p6-start-gate-entrances` BLOCKER 1 | missing `from './s6-remote.js'` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
 | 4 | `a4p7-ceiling-port-assembly-pin` a4-76 | `ENOENT …/src/plugin/root.ts` | LAYOUT PIN | **RE-ANCHORED** (round 31) |
 | 5 | `a4p7-live-descendant-authority` §7.6 row 5 | walk lost `pre-execute-adapter.ts` | LAYOUT PIN | **RE-ANCHORED** (round 31, walk now covers the centre) |
-| 6 | `team-session-activation-glue` G8 | `bothFulfilled === false` once | **FLAKY** | passed 3 further full runs and in isolation; one occurrence under parallel load is recorded as a flake risk, not a pass — the arm must be made deterministic before D |
+| 6 | `team-session-activation-glue` G8 | `bothFulfilled === false` once | **MISLABELLED FLAKE — it was the retired `resolvePaMount` `ReferenceError` on the delivery path**, the same live defect `f6ceacc2a` fixed for the f15 legs; the re-runs that "cleared" it all came after that fix | reproduced deterministically by restoring the pre-fix line (round 50), then fixed for real: G8 now awaits the world's own `resumeGate` promise instead of polling a 3 s wall clock. 238/238 in 8 full parallel runs (5 under CPU load) plus 32 standalone runs |
 
 Note 1 and 6 are behaviour; 2–5 are pins that must be RE-ANCHORED to the new assembly without weakening
 what they assert. Classification is by reading the failure message only; each one needs its own

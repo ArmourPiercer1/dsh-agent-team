@@ -58,6 +58,28 @@ forbids. Fix the one red → it goes green → the leg goes in.
    `MEMBER_CENTRE_UNWIRED`); rows that never asked remain outside the centre and face the owner ruling in
    `ESCALATION-realmless-admission.md` (admit against the compiled ceiling vs refuse).
 
+## E3 is GREEN, and the migrated suites are a Required leg (rounds 48-50)
+
+The last red was not a wiring gap: **E3's world was pre-cut** (v3 document, no v4 `memberIoCeilings`, no
+realm, no `centreStatePath`), so no centre installed and no ALLOW lane existed for its control — measured
+with instrumentation, four facts with file:line. The assertion was right; the fixture was stale. It was
+rebuilt on the v4 contract, and the centre got a real durable-overlay provider
+(`overlay-decision.mjs`: async prepare keyed on the overlay generation, sync `decide` over the frozen
+`resolveOperationPermission` — the async/sync split was one of the four measured facts).
+
+```
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+EB3-CI-REQUIRED pass workflows=10 findings=0
+```
+
+G8's "flake" was also mislabelled: `bothFulfilled === false` was the retired `resolvePaMount`
+`ReferenceError` **on the delivery path**, the same defect fixed for the f15 legs; the re-runs that cleared
+it all came after that fix. It is now reproduced deterministically, and the arm awaits the world's own
+`resumeGate` promise instead of polling a 3 s wall clock.
+
+**Still not PRODUCT-PROVEN**: no host boot line. Overlay `ask`/`allow` are outside the port; subtree
+matching is implemented but unexercised by the E3 probe. The realm-less admission ruling is open.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
