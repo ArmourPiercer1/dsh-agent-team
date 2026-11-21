@@ -749,7 +749,12 @@ test('SLICE-16 — an ASK is refused as ADMISSION_ASK_UNWIRED, never executed an
     assert.equal(member.calls.readText + member.calls.streamText, 0, 'an unadjudicated ask must not reach the provider')
     const facts = world.facts()
     assert.equal(facts.length, 1)
-    assert.equal(facts[0].decision, 'ask', 'the record must say ask, not deny: the difference is who refused')
+    // The record says BOTH: `decision` is what the centre enforced (a deny - it refused the call), and
+    // `laneDecision` is what the lane answered (an ask). Recording only the ask let a refused call be
+    // durably reported as allowed; recording only the deny would lose who refused and why.
+    assert.equal(facts[0].decision, 'deny', 'the enforced decision is a refusal')
+    assert.equal(facts[0].laneDecision, 'ask', 'the lane answer is kept, so "who refused" stays answerable')
+    assert.equal(facts[0].refusalCode, 'ADMISSION_ASK_UNWIRED')
     assert.match(String(facts[0].reason), /requires approval/u)
   } finally {
     await world.dispose()

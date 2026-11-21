@@ -9976,3 +9976,33 @@ The decomposition plan (`DECOMPOSITION-PLAN.md`, anchored at `4fd8f8e75`) recomm
   comment: the realm disposer is pushed into `toolDisposers` too, so it starts before the native-mount
   tombstone is awaited), P1-5 (a throwing ledger/settlement path is not a refusal), P1-6 (memo before the
   durable replay check).
+
+### R28 addendum — the review's P1s: three fixed, one escalated, and a fact that now says what happened
+
+The adversarial review (`d3ddd45d`) found **no P0 and seven P1s**, two of which the existing tests could
+not see because they test the mechanism rather than the product composition. Acted on:
+
+- **P1-2 fixed.** The port settled the lane's RAW answer, then possibly overruled it (ask → ask-unwired
+  deny), so a refused call was durably `allow`/`ask` and recovered as UNKNOWN. It now settles the
+  decision it ENFORCED, and the authority fact carries `decision: 'deny'` + `refusalCode:
+  ADMISSION_ASK_UNWIRED` while keeping `laneDecision: 'ask'` — losing that would make "who refused"
+  unanswerable. SLICE-16 was asserting the old behaviour and was corrected, not deleted.
+- **P1-3 fixed.** Every member bind ran `recoverUnsettled` over ONE shared settlement directory, so
+  binding member B turned member A's LIVE execution into UNKNOWN and A's real terminal write then
+  conflicted. Settlement is now per member (`<centreStatePath>/settlement/<instanceId>`), and the
+  instance id is validated as a file stem before it names a file.
+- **P1-1 fixed.** `resolveBinding` was `() => binding` (frozen at bind), so the post-approval recheck
+  could only ever agree with itself. `installMemberCentre` now takes a live resolver; `member-execution`
+  rebuilds the binding from the CURRENT compiled answer and returns `undefined` once the member is
+  closed, so the recheck can refuse (ADMISSION_NO_BINDING) for a real reason.
+- **P2-14 fixed with it**: `installMemberCentre` rolls back a half-install and its `dispose()` is
+  idempotent (it used to reverse the disposer array in place and re-run everything).
+- **P1-4 not yet**: the realm disposer is still pushed into BOTH `a5sfRealmDisposers` and
+  `toolDisposers`, so close starts the realm disposal before the native-mount tombstone is awaited —
+  the comment above it claims the opposite. Not fixed in this round, and now on the queue as the next
+  item rather than a note.
+- **ESCALATED, not worked around**: a call admitted as `allow` and then refused by the recheck has NO
+  legal settlement state (REFUSED is forbidden against an allow; CANCELLED needs a recorded Stop;
+  FAILED is unreachable from ADMITTED; UNKNOWN would claim the effect was merely unobserved when the
+  body provably never ran). The centre reports `SETTLEMENT_CONTRACT_GAP` and leaves the record rather
+  than writing a lie. `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` lays out four options.

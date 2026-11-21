@@ -1778,6 +1778,7 @@ export function createAgentBindings(deps) {
             agentCtx,
             realm: a5sfRealm,
             compiledAnswer: compiledAnswerOfRealm(a5sfRealm),
+            resolveCompiledAnswer: () => compiledAnswerOfRealm(a5sfRealm),
             config,
             sessionId,
             instanceId,

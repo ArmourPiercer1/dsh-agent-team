@@ -94,7 +94,7 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
  * @param {(error: unknown, context: object) => void} [input.onFault]
  * @returns {{ dispose: () => void }} the disposer for every installed point.
  */
-export function installMemberCentre ({ ctx, binding, recordAdmission, recordExecution, isReplay, recordReplay, grants, store, identityOf, onFault }) {
+export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmission, recordExecution, isReplay, recordReplay, grants, store, identityOf, onFault }) {
   if (ctx === undefined || ctx === null) throw new TypeError('centre-install: a member centre needs the agent context')
   if (typeof recordAdmission !== 'function' || typeof recordExecution !== 'function') {
     throw new TypeError('centre-install: both durable sinks are required; a centre that cannot write a fact is not a centre')
@@ -106,34 +106,55 @@ export function installMemberCentre ({ ctx, binding, recordAdmission, recordExec
   // authorised it. One map, one process: it is not a second durable store.
   const admissions = new Map()
   const record = (fact) => {
-    admissions.set(fact.callId, fact)
+    // The durable append comes FIRST: an in-memory admission for a fact that was never written would
+    // let an execution be joined to a decision no reviewer can find.
     recordAdmission(fact)
+    admissions.set(fact.callId, fact)
   }
   const disposers = []
-  disposers.push(installAdmissionPoint({
-    ctx,
-    resolveBinding: () => binding,
-    record,
-    ...(isReplay === undefined ? {} : { isReplay }),
-    ...(recordReplay === undefined ? {} : { recordReplay }),
-    ...(grants === undefined ? {} : { grants }),
-    ...(settlement === undefined ? {} : { settlement }),
-  }))
-  disposers.push(installExecutionFacts({
-    ctx,
-    record: recordExecution,
-    admissionOf: (callId) => admissions.get(callId),
-    ...(identityOf === undefined ? {} : { executionIdOf: (callId) => identityOf({ callId, name: '' }).executionId }),
-    ...(settlement === undefined ? {} : {
-      onFact: (fact, exec) => {
-        if (fact.outcome === 'admission-refusal') return
-        if (fact.outcome === 'aborted') settlement.stop({ exec, phase: 'in-flight' })
-        settlement.settled({ exec, outcome: fact.outcome })
-      },
-    }),
-  }))
+  try {
+    disposers.push(installAdmissionPoint({
+      ctx,
+      resolveBinding: typeof resolveBinding === 'function' ? resolveBinding : () => binding,
+      record,
+      ...(isReplay === undefined ? {} : { isReplay }),
+      ...(recordReplay === undefined ? {} : { recordReplay }),
+      ...(grants === undefined ? {} : { grants }),
+      ...(settlement === undefined ? {} : { settlement }),
+    }))
+    disposers.push(installExecutionFacts({
+      ctx,
+      record: recordExecution,
+      admissionOf: (callId) => admissions.get(callId),
+      ...(identityOf === undefined ? {} : { executionIdOf: (callId) => identityOf({ callId, name: '' }).executionId }),
+      ...(settlement === undefined ? {} : {
+        onFact: (fact, exec) => {
+          if (fact.outcome === 'admission-refusal') {
+            // The refusal happened AFTER the record opened (the post-approval recheck). It is terminal:
+            // leaving it open would recover as UNKNOWN and report "nobody knows" about a call nobody ran.
+            settlement.refused({ exec, code: fact.refusalCode, reason: fact.error?.message ?? fact.errorMessage })
+            return
+          }
+          if (fact.outcome === 'aborted') settlement.stop({ exec, phase: 'in-flight' })
+          settlement.settled({ exec, outcome: fact.outcome })
+        },
+      }),
+    }))
+  } catch (error) {
+    // A half-installed centre is worse than none: roll the installed points back before rethrowing, or
+    // a leaked admission point keeps refusing calls for a member the caller believes was never bound.
+    for (const dispose of disposers.reverse()) {
+      try { dispose() } catch (rollbackError) { if (onFault !== undefined) onFault(rollbackError, { phase: 'rollback' }) }
+    }
+    throw error
+  }
+  let disposed = false
   return Object.freeze({
     dispose () {
+      // Idempotent: `disposers.reverse()` mutates in place, so a second dispose would re-run every
+      // disposer in the opposite order - the kind of double-teardown that hides as a random fault later.
+      if (disposed) return
+      disposed = true
       for (const dispose of disposers.reverse()) {
         try { dispose() } catch (error) { if (onFault !== undefined) onFault(error, { phase: 'dispose' }) }
       }

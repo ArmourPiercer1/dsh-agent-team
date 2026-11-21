@@ -41,6 +41,10 @@ import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
  * @param {string} input.instanceId - the member instance id (also the fact ledger's file stem).
  * @param {string} input.teamRoot - the owning team root session id (settlement provenance).
  * @param {string|undefined} input.workspaceRoot - the member's effective workspace root.
+ * @param {() => object|undefined} [input.resolveCompiledAnswer] - re-read the CURRENT compiled answer
+ *   (the glue passes `() => compiledAnswerOfRealm(realm)`). This is what makes the centre's
+ *   post-approval recheck a real second question instead of a constant: a member whose realm is gone
+ *   answers `undefined` and the guard refuses with ADMISSION_NO_BINDING.
  * @param {readonly object[]} [input.nativeSpecs] - `{url, expectedTools?}` native modules to mount.
  * @param {string} [input.scope] - the resolved agent scope for definition-identity checks.
  * @param {(dispose: () => void) => void} input.onDispose - where the centre's disposer goes.
@@ -53,6 +57,7 @@ export async function installMemberExecution ({
   agentCtx,
   realm,
   compiledAnswer,
+  resolveCompiledAnswer,
   config,
   sessionId,
   instanceId,
@@ -67,6 +72,11 @@ export async function installMemberExecution ({
   if (typeof onDispose !== 'function') throw new TypeError('member-execution: onDispose must be a function (a centre without a disposer outlives its member)')
   if (typeof observe !== 'function') throw new TypeError('member-execution: observe must be a function (a fault with nowhere to go is a silent fault)')
   let centreState
+  // Path safety: the instance id names a file under the deployment-owned directory, so it is
+  // validated here rather than trusted from a blueprint/config value.
+  if (!/^[A-Za-z0-9._-]+$/u.test(String(instanceId)) || String(instanceId) === '.' || String(instanceId) === '..') {
+    throw new Error(`member-execution: instance id ${JSON.stringify(String(instanceId))} is not a safe file stem (letters, digits, dot, underscore, dash only)`)
+  }
   // THE CENTRE. A compiled realm means controlled tools are live on this member, so the admission
   // point, the durable facts and the settlement store are part of the enforcement, not an option.
   if (compiledAnswer !== undefined) {
@@ -80,24 +90,40 @@ export async function installMemberExecution ({
         + ' than run unrecorded (set centreStatePath to a directory this deployment owns)',
       )
     }
-    const binding = bindingFromCompiledMember({
-      member: compiledAnswer.members?.[0],
-      ...(compiledAnswer.bindings === undefined ? {} : { bindings: compiledAnswer.bindings }),
+    const buildBinding = (answer) => bindingFromCompiledMember({
+      member: answer.members?.[0],
+      ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),
       agentId: sessionId,
       sessionId,
-      workspaceRoot: workspaceRoot ?? config?.defaultWorkspace ?? process.cwd(),
+      // No silent cwd substitution: a member whose workspace nobody can name is judged against the
+      // host process's cwd, which is not this deployment's answer to give.
+      ...(workspaceRoot === undefined && (config?.defaultWorkspace === undefined || config.defaultWorkspace === '')
+        ? {}
+        : { workspaceRoot: workspaceRoot ?? config.defaultWorkspace }),
       owner: teamRoot,
     })
+    const binding = buildBinding(compiledAnswer)
     const ledger = openFactLedger({ path: join(stateRoot, `${instanceId}.facts.jsonl`) })
-    const settlementStore = createExecutionSettlementStore({ dir: join(stateRoot, 'settlement') })
+    // PER MEMBER. One shared settlement directory multipled two defects: recovery at member B's bind
+    // turned member A's LIVE execution into UNKNOWN, and A's real terminal write then conflicted.
+    const settlementStore = createExecutionSettlementStore({ dir: join(stateRoot, 'settlement', String(instanceId)) })
     const identityOf = (exec) => ({
       executionId: dispatchExecutionId({ rootSessionId: teamRoot, agentInstanceId: instanceId }, exec.callId),
       actorId: instanceId,
       worldId: sessionId,
     })
+    let closed = false
     const centre = installMemberCentre({
       ctx: agentCtx,
       binding,
+      // The live resolver: the answer as it is NOW, or nothing once the member is closed. This is the
+      // difference between a recheck that can refuse and one that can only agree.
+      resolveBinding: () => {
+        if (closed) return undefined
+        const current = typeof resolveCompiledAnswer === 'function' ? resolveCompiledAnswer() : compiledAnswer
+        if (current === undefined) return undefined
+        return buildBinding(current)
+      },
       recordAdmission: (fact) => ledger.recordAdmission(fact),
       recordExecution: (fact) => ledger.recordExecution(fact),
       isReplay: (callId) => ledger.has(callId),
@@ -112,7 +138,10 @@ export async function installMemberExecution ({
     if (recovered.length > 0) {
       observe(`centre: recovered ${recovered.length} unsettled execution(s) as ${[...new Set(recovered.map((entry) => entry.after))].join(',')}`)
     }
-    onDispose(() => centre.dispose())
+    onDispose(() => {
+      closed = true
+      centre.dispose()
+    })
     centreState = { binding, ledger, settlementStore }
   }
   // THE NATIVE MOUNT. Its dispose() releases the realm's definition and installs the MEMBER_CLOSED

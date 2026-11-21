@@ -727,3 +727,128 @@ test('ADM-36 — session identity, the durable lifecycle gate and the admission 
   // A domain that cannot answer is refused at construction, not later.
   assert.throws(() => createSessionIdentity({ domain: {}, bootRootSessionId: 'r' }), /memberInstances\.list/u)
 })
+
+test('ADM-37 — a refusal is recorded as REFUSED, and the recheck can actually refuse', async () => {
+  // Three defects the adversarial review found in the PRODUCT composition, one arm because they are one
+  // story: a decision that was overruled, a settlement that kept the overruled version, and a recheck
+  // whose second question was the same frozen answer as the first.
+  const { installMemberCentre, bindingFromCompiledMember } = await import('../src/plugin/vnext/centre-install.mjs')
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+
+  const member = {
+    identity: { instanceId: 'inst-1', instanceGeneration: 1, blueprintRevision: 'rev-1' },
+    templateId: 'worker',
+    policy: { read: lane(['/a']), write: lane(['/a']), network: 'deny', revision: 'gen-1' },
+  }
+  const bindWith = (over = {}) => bindingFromCompiledMember({
+    member: { ...member, ...over, policy: { ...member.policy, ...(over.policy ?? {}) } },
+    agentId: 'session-1', sessionId: 'session-1', workspaceRoot: '/a', owner: 'root-1',
+  })
+  // A host double that runs the waterfall the way the real one does: pre-execute, then one guard pass,
+  // then one result.
+  const makeHost = () => {
+    const host = {
+      pre: [], result: [], guards: [],
+      on (event, handler) {
+        if (event === 'tools/pre-execute') host.pre.push(handler)
+        else if (event === 'tools/result') host.result.push(handler)
+        return () => {
+          host.pre = host.pre.filter((h) => h !== handler)
+          host.result = host.result.filter((h) => h !== handler)
+        }
+      },
+      guard (fn) { host.guards.push(fn); return () => { host.guards = host.guards.filter((g) => g !== fn) } },
+      get: (name) => (name === 'tools' ? { guard: (fn) => host.guard(fn) } : undefined),
+      async dispatch (exec) {
+        const decision = { kind: 'allow' }
+        let verdict = decision
+        for (const handler of host.pre) verdict = await handler(exec, async () => verdict)
+        if (verdict.kind !== 'allow') {
+          for (const handler of host.result) handler(exec, { isError: true, error: { message: verdict.reason } })
+          return verdict
+        }
+        for (const guard of host.guards) {
+          const reason = guard(exec)
+          if (reason !== undefined) {
+            for (const handler of host.result) handler(exec, { isError: true, error: { message: reason } })
+            return { kind: 'deny', reason }
+          }
+        }
+        for (const handler of host.result) handler(exec, { isError: false })
+        return { kind: 'allow' }
+      },
+    }
+    return host
+  }
+  const identityOf = (exec) => ({ executionId: `exec-${exec.callId}`, actorId: 'inst-1', worldId: 'session-1' })
+
+  // (1) ASK with no grants is a REFUSAL - and the settlement must say REFUSED, not `allow` with
+  // decisionKind `ask` left open to recover as UNKNOWN. The port used to settle the lane's raw answer
+  // before turning it into the refusal it enforced.
+  const store1 = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'centre-37a-')) })
+  const host1 = makeHost()
+  const admissions = []
+  const askBinding = bindWith({ policy: { read: lane(['/a'], ['/a/secret']) } })
+  const askCenter = installMemberCentre({
+    ctx: host1, binding: askBinding, resolveBinding: () => askBinding,
+    recordAdmission: (fact) => admissions.push(fact), recordExecution: () => {}, store: store1, identityOf,
+  })
+  const askDecision = await host1.dispatch({ callId: 'call-ask', name: 'read', arguments: { file_path: '/a/secret/keys.txt' } })
+  assert.equal(askDecision.kind, 'deny')
+  assert.match(askDecision.reason, /ADMISSION_ASK_UNWIRED/u)
+  assert.equal(store1.read('exec-call-ask').state, 'REFUSED', 'a refused call must be terminal REFUSED')
+  const askFact = admissions.find((fact) => fact.callId === 'call-ask')
+  assert.equal(askFact.decision, 'deny', 'the authority fact records the refusal, not the raw ask')
+  assert.equal(askFact.refusalCode, 'ADMISSION_ASK_UNWIRED')
+  askCenter.dispose()
+
+  // (2) THE RECHECK. The live answer is narrowed between the two consultations - exactly "the lane was
+  // narrowed" - and the guard must refuse. With a constant binding this arm could not fail.
+  const store2 = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'centre-37b-')) })
+  const host2 = makeHost()
+  const wide = bindWith()
+  const narrowed = bindWith({ policy: { read: lane(['/b']) } })
+  let phase = 'pre'
+  const recheckFaults = []
+  const recheckFacts = []
+  const recheckCenter = installMemberCentre({
+    ctx: host2, binding: wide,
+    resolveBinding: () => (phase === 'pre' ? wide : narrowed),
+    recordAdmission: () => {}, recordExecution: (fact) => recheckFacts.push(fact), store: store2, identityOf,
+    onFault: (error, context) => recheckFaults.push([error, context]),
+  })
+  const guard = host2.guards[0]
+  host2.guards[0] = (exec) => { phase = 'guard'; return guard(exec) }
+  const recheckDecision = await host2.dispatch({ callId: 'call-read', name: 'read', arguments: { file_path: '/a/x' } })
+  assert.equal(recheckDecision.kind, 'deny', 'a lane narrowed between the two consultations must refuse')
+  assert.match(recheckDecision.reason, /ADMISSION_RECHECK/u)
+  // And the case the contract cannot express: admitted as `allow`, refused by the recheck. No terminal
+  // state exists for it (REFUSED is forbidden against an allow, CANCELLED needs a Stop), so the centre
+  // REPORTS the gap instead of writing a state that lies - and the durable fact still carries the refusal.
+  // This is an escalation, recorded in CONTRACT-CHANGE-REQUEST-settlement-recheck.md.
+  assert.equal(store2.read('exec-call-read').state, 'ADMITTED', 'no fabricated terminal state')
+  assert.ok(recheckFaults.some(([error]) => error?.code === 'SETTLEMENT_CONTRACT_GAP'), 'the gap is reported, not swallowed')
+  assert.match(recheckFacts.find((fact) => fact.callId === 'call-read').refusalCode, /ADMISSION_RECHECK/u)
+
+  // (3) IDEMPOTENT DISPOSE: `disposers.reverse()` mutates in place, so a second dispose would re-run the
+  // whole teardown in the opposite order.
+  let disposals = 0
+  const countingHost = makeHost()
+  const originalOn = countingHost.on
+  countingHost.on = (event, handler) => {
+    const dispose = originalOn(event, handler)
+    return () => { disposals += 1; dispose() }
+  }
+  const store3 = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'centre-37c-')) })
+  const idempotent = installMemberCentre({
+    ctx: countingHost, binding: wide, resolveBinding: () => wide,
+    recordAdmission: () => {}, recordExecution: () => {}, store: store3, identityOf,
+  })
+  idempotent.dispose()
+  const afterFirst = disposals
+  idempotent.dispose()
+  assert.equal(disposals, afterFirst, 'a second dispose must be a no-op, not a re-run')
+  recheckCenter.dispose()
+})

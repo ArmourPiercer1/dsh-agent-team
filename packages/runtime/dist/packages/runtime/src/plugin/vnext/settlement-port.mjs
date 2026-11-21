@@ -132,6 +132,49 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
         throw error
       }
     },
+    /**
+     * Close an OPEN record for a call that was refused BEFORE its body ran, when the refusal is the
+     * ADMISSION's own decision (the record's admission reference already says `deny`).
+     *
+     * Idempotent: an already-terminal record is returned unchanged.
+     *
+     * THE CASE THIS DELIBERATELY DOES NOT PAPER OVER. When a call was admitted as `allow` and refused
+     * LATER (the post-approval recheck), the frozen settlement contract has NO state for it: REFUSED is
+     * forbidden against a recorded allow (`SETTLEMENT_ADMISSION_MISMATCH`), CANCELLED requires a recorded
+     * Stop (`STOP_EVIDENCE_MISSING` - and fabricating an authority signal is not an option), the only
+     * path out of ADMITTED into FAILED is via RUNNING, and UNKNOWN would claim the effect was merely
+     * unobserved when the body provably never ran. Rather than write a state that lies, this reports the
+     * gap as a fault and leaves the record to recovery (UNKNOWN), and the durable execution FACT still
+     * carries `admission-refusal` + the refusal code. See
+     * `dev/agent-workflow/evidence/ute-a1/CONTRACT-CHANGE-REQUEST-settlement-recheck.md` - this is an
+     * escalation (a settlement invariant would have to be relaxed), not something to invent around.
+     */
+    refused ({ exec, code, reason }) {
+      try {
+        const identity = identityOf(exec)
+        const existing = store.read(identity.executionId)
+        if (existing === null) return null
+        if (existing.state !== 'ADMITTED' && existing.state !== 'RUNNING') return existing
+        try {
+          return store.settle({
+            executionId: identity.executionId,
+            state: 'REFUSED',
+            observation: observationOf(identity.executionId, { refused: true, bodyOutcome: 'not-started', effectEvidence: 'none-confirmed' }),
+            at: clock(),
+            reason: `${code ?? 'ADMISSION_REFUSED'}: ${reason ?? 'the call was refused before its body ran'}`,
+          })
+        } catch (error) {
+          if (error?.code !== 'SETTLEMENT_ADMISSION_MISMATCH') throw error
+          const gap = new Error(`SETTLEMENT_CONTRACT_GAP: ${identity.executionId} was admitted as allow and refused before its body (${code ?? 'ADMISSION_REFUSED'}); the frozen settlement contract has no terminal state for that (REFUSED is forbidden against an allow, CANCELLED needs a Stop) - the record stays ${existing.state} and recovery will mark it UNKNOWN, while the execution fact carries the refusal`)
+          gap.code = 'SETTLEMENT_CONTRACT_GAP'
+          fault(gap, { phase: 'terminal', executionId: identity.executionId, toolName: exec?.name, refusalCode: code })
+          return existing
+        }
+      } catch (error) {
+        fault(error, { phase: 'terminal', toolName: exec?.name })
+        throw error
+      }
+    },
     /** The host settled the call. `outcome` is the centre's own vocabulary, not the store's. */
     settled ({ exec, outcome, missingEvidence }) {
       try {

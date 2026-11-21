@@ -91,39 +91,55 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     if (typeof isReplay === 'function' && isReplay(callId)) return refuseReplay(exec, callId)
     const binding = resolveBinding(exec)
     const admission = admit({ binding, toolName: exec.name, arguments: exec.arguments })
-    record(invocationFactsOf({ binding, toolName: exec.name, callId, arguments: exec.arguments, admission }))
-    // The settlement record references the decision that was just made; it does not make one.
-    if (settlement !== undefined) settlement.admitted({ exec, callId, admission })
-    const store = (entry) => {
-      decided.set(callId, entry)
-      return entry
-    }
-    if (admission.kind === 'deny') {
-      // The code is part of the reason the model and the durable `tool/result` see: a refusal that
-      // reads like prose cannot be grepped or counted, and cannot be told from a body failure later.
-      const verdict = { kind: 'deny', reason: `${admission.code}: ${admission.reason}` }
-      return store({ preExecute: verdict, guard: verdict.reason })
-    }
+    // THE FINAL DECISION, not the lane's raw answer. `admit` can answer `ask`, and an ask this port
+    // cannot turn into a spendable approval is a REFUSAL - so the fact and the settlement must record
+    // the refusal that was enforced, never the ask that was overruled. (Getting this backwards made a
+    // refused call durably read as `allow` with decisionKind `ask`, then recover as UNKNOWN.)
+    let decision = admission
+    let capability
     if (admission.kind === 'ask') {
       if (grants === undefined || binding === undefined) {
         // No grant binder: there is no approval anyone could spend, so the ask is a refusal that
         // names itself rather than a prompt nobody can adjudicate, or an allow with a note on it.
-        const verdict = { kind: 'deny', reason: `ADMISSION_ASK_UNWIRED: ${admission.reason}` }
-        return store({ preExecute: verdict, guard: verdict.reason })
+        decision = { kind: 'deny', code: 'ADMISSION_ASK_UNWIRED', reason: admission.reason }
+      } else {
+        const minted = grants.binder.bind({
+          member: grants.memberOf(binding),
+          callId,
+          policyRevision: binding.policyGeneration,
+          toolBindingIdentity: `${binding.owner}/${exec.name}`,
+          approvedOnce: true,
+          lease: null,
+        })
+        if (minted.ok === false) {
+          decision = { kind: 'deny', code: 'ADMISSION_GRANT_UNMINTABLE', reason: String(minted.code) }
+        } else {
+          capability = minted.value
+        }
       }
-      const minted = grants.binder.bind({
-        member: grants.memberOf(binding),
-        callId,
-        policyRevision: binding.policyGeneration,
-        toolBindingIdentity: `${binding.owner}/${exec.name}`,
-        approvedOnce: true,
-        lease: null,
-      })
-      if (minted.ok === false) {
-        const verdict = { kind: 'deny', reason: `ADMISSION_GRANT_UNMINTABLE: ${minted.code}` }
-        return store({ preExecute: verdict, guard: verdict.reason })
-      }
-      return store({ preExecute: { kind: 'ask', reason: admission.reason }, guard: undefined, capability: minted.value })
+    }
+    record(invocationFactsOf({
+      binding,
+      toolName: exec.name,
+      callId,
+      arguments: exec.arguments,
+      admission: decision,
+      ...(admission.kind === decision.kind ? {} : { laneDecision: admission.kind }),
+    }))
+    // The settlement record references the decision that was ENFORCED; it does not make one.
+    if (settlement !== undefined) settlement.admitted({ exec, callId, admission: decision })
+    const store = (entry) => {
+      decided.set(callId, entry)
+      return entry
+    }
+    if (decision.kind === 'deny') {
+      // The code is part of the reason the model and the durable `tool/result` see: a refusal that
+      // reads like prose cannot be grepped or counted, and cannot be told from a body failure later.
+      const verdict = { kind: 'deny', reason: `${decision.code}: ${decision.reason}` }
+      return store({ preExecute: verdict, guard: verdict.reason })
+    }
+    if (decision.kind === 'ask') {
+      return store({ preExecute: { kind: 'ask', reason: decision.reason }, guard: undefined, capability })
     }
     return store({ preExecute: { kind: 'allow' }, guard: undefined })
   }

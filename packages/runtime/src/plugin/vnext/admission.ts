@@ -343,8 +343,10 @@ export function invocationFactsOf (input: {
   readonly callId: string
   readonly arguments: unknown
   readonly admission: Admission
+  /** The lane's own answer when the centre ENFORCED something else (an ask it could not adjudicate). */
+  readonly laneDecision?: 'allow' | 'ask' | 'deny'
 }): InvocationAuthorityFacts {
-  const { binding, toolName, callId, arguments: args, admission } = input
+  const { binding, toolName, callId, arguments: args, admission, laneDecision } = input
   const axis = (CENTRE_TOOLS.has(toolName)
     ? 'team.control'
     : HOST_CAPABILITY_TOOLS.has(toolName)
@@ -373,6 +375,10 @@ export function invocationFactsOf (input: {
     blueprintRevision: binding?.blueprintRevision ?? '',
     owner: binding?.owner ?? '',
     decision: admission.kind,
+    // The enforced decision is `decision`; when the centre overruled the lane (an ask nobody could
+    // adjudicate), `laneDecision` keeps what the lane answered. Losing it would make "who refused"
+    // unanswerable from the record.
+    ...(laneDecision === undefined || laneDecision === admission.kind ? {} : { laneDecision }),
     ...(admission.kind === 'deny' ? { refusalCode: admission.code, reason: admission.reason } : {}),
     ...(admission.kind === 'ask' ? { reason: admission.reason } : {}),
   })
