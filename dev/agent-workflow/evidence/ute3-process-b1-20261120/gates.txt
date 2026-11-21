@@ -1,4 +1,4 @@
-# UTE-3 / G1 PROCESS B1 — measured gates (on the tree of the head that contains this file; base = merged master 82e8c5d1c)
+# UTE-3 / G1 PROCESS B1 — measured gates (on the tree of the head that contains this file; base = merged master 182ef8842)
 
 $ node scripts/eb3-ci-required.mjs
 EB3-CI-REQUIRED pass workflows=10 findings=0
@@ -7,7 +7,7 @@ $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 DSH-TEST-CATALOG tests=890 digest=sha256:8c85b258eb82be8f8b374cbbc974c075d04de0f24ed0057966c91e8d6cc56d2a refused=0 findings=0
 
 $ node scripts/eb3-family-definitions.mjs
-EB3-FAMILY-DEFINITIONS pass files=52 findings=0
+EB3-FAMILY-DEFINITIONS pass files=60 findings=0
 
 $ node scripts/ute-family-inventory.mjs
 UTE-FAMILY-INVENTORY-SUMMARY families=9 files=92 findings=0
@@ -16,14 +16,15 @@ $ node scripts/ute-retirement-gate.mjs --all   (exit 1 by design: nothing is ret
 UTE-RETIREMENT-REFUSED family=fs codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=4/4
 UTE-RETIREMENT-REFUSED family=search codes=UTE_SEMANTIC_DIFFERENCES_UNRESOLVED state=NOT_RETIREABLE unit=2/2
 UTE-RETIREMENT-REFUSED family=web codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED,UTE_MEMBER_UNCOVERED state=NOT_RETIREABLE unit=0/2
+UTE-RETIREMENT-REFUSED family=inspect codes=UTE_OLD_BASELINE_MISSING,UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_NEGATIVE_CONTROLS_FAILING,UTE_UNIT_UNGRADABLE state=NOT_RETIREABLE unit=0/3
 UTE-RETIREMENT-REFUSED family=process codes=UTE_NEW_PATH_UNVERIFIED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_MEMBER_UNCOVERED,UTE_VECTOR_UNREPRODUCED state=NOT_RETIREABLE unit=0/2
-UTE-RETIREMENT-SUMMARY requested=4 allowed=0 refused=4
+UTE-RETIREMENT-SUMMARY requested=5 allowed=0 refused=5
 
 $ node scripts/docs-sync.mjs --check
 docs:sync --check: docs=182 notes=4 plans=141(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
 
 $ node scripts/check-append-only-log.mjs
-DSH-APPEND-ONLY-LOG verdict=pass base=82e8c5d1c73da0a5ab16202ffe9d87905ca78543 lines=9523 added=23 removed=0 detail="appended 23 line(s)"
+DSH-APPEND-ONLY-LOG verdict=pass base=82e8c5d1c73da0a5ab16202ffe9d87905ca78543 lines=9544 added=44 removed=0 detail="appended 44 line(s)"
 
 $ node --test scripts/ute-retirement-gate.test.mjs
 ℹ tests 31
@@ -37,16 +38,17 @@ UTE-INVENTORY-MUTANTS total=29 red=29
 ℹ fail 0
 
 $ node --test tests/ute-g1-process/lane-suite.test.mjs
+PROC-CONTROLS NC-VERDICT GREEN controls=10 failed=0 transcript=<repo>/dev/agent-workflow/evidence/ute3-process-b1-20261120/negative-controls.txt
 PROC-PWSH-CONDITIONAL wiring=serves-none exclusion=LEGAL arms-refused=3 covered-arm=COVERED
 UTE-G1-PROCESS-VERDICT old-baseline=REPRODUCIBLE new-path=ABSENT semantic-differences=UNRESOLVED negative-controls=GREEN retirement=FORBIDDEN unit=1/2
-✔ PROC-1 the old path reproduces its golden fixture and two captures agree byte for byte (58829.343503ms)
-✔ PROC-2 the golden speaks only the closed vocabulary and carries no machine-specific path (0.840981ms)
-✔ PROC-3 the covered member set and the DECLARED pwsh exclusion are both explicit (1.470523ms)
-✔ PROC-4 the measured semantic differences are declared, blocking and unapproved (0.676581ms)
-✔ PROC-5 the family and per-member negative controls are GREEN, and the committed transcript agrees (36746.347973ms)
-✔ PROC-6 the composition probe reproduces the measured verdict the baseline rests on (7221.38526ms)
-✔ PROC-8 the pwsh exclusion is conditional on the SHIPPED WIRING, not on a binary (7131.083741ms)
-✔ PROC-7 the evidence directory is complete and retirement stays honestly forbidden (4.128844ms)
+✔ PROC-1 the old path reproduces its golden fixture and two captures agree byte for byte (58816.320185ms)
+✔ PROC-2 the golden speaks only the closed vocabulary and carries no machine-specific path (0.871099ms)
+✔ PROC-3 the covered member set and the DECLARED pwsh exclusion are both explicit (0.605817ms)
+✔ PROC-4 the measured semantic differences are declared, blocking and unapproved (0.636305ms)
+✔ PROC-5 the family and per-member negative controls are GREEN, and the committed transcript agrees (36583.066088ms)
+✔ PROC-6 the composition probe reproduces the measured verdict the baseline rests on (7159.390081ms)
+✔ PROC-8 the pwsh exclusion is conditional on the SHIPPED WIRING, not on a binary (7141.815445ms)
+✔ PROC-7 the evidence directory is complete and retirement stays honestly forbidden (0.588984ms)
 ℹ tests 8
 ℹ pass 8
 ℹ fail 0

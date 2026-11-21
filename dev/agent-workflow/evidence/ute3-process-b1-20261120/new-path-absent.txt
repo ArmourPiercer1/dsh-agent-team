@@ -25,4 +25,4 @@ Measured, not assumed:
 Consequence (honest): `unit=0/2` at the retirement gate — bash has an old-path
 baseline and a per-member control but NO new-path vector, pwsh has no vector at
 all. Retirement stays FORBIDDEN. The `--all` summary on the merged base is
-`requested=4 allowed=0 refused=4` (fs, search, web, process).
+`requested=5 allowed=0 refused=5` (fs, search, web, inspect, process).

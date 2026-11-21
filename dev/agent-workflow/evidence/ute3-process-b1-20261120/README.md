@@ -62,7 +62,8 @@ Host pin: `0.2.0-rc.2 @ 639ed015397290b3745d163aafe02ffee4aa3f84`
 `NOT_RETIREABLE`: `oldBaseline` true, `newPathVerified` false (absence evidence
 above), `semanticDifferencesResolved` false (five blocking differences, none
 approved), `negativeControlsPass` true. `ute-retirement-gate --all` prints
-`unit=0/2` and `requested=4 allowed=0 refused=4` (fs, search, web, process).
+`unit=0/2` and `requested=5 allowed=0 refused=5` (fs, search, web, inspect,
+process).
 
 **Branch-base note, recorded rather than smoothed over:** the work started on
 `origin/master 69e292a29`, where the retirement ledger held only `fs` and
