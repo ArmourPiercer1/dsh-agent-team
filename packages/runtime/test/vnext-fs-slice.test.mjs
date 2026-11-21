@@ -30,7 +30,7 @@
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { after, before, test } from 'node:test'
 import { register } from 'node:module'
@@ -706,6 +706,33 @@ test('SLICE-24 — the execution fact carries the PRODUCT settlement id, determi
   } finally {
     await world.dispose()
   }
+})
+
+test('SLICE-25 — crash recovery across a REAL process boundary: a child writes, this process reads', async () => {
+  // The in-process "second world" arm proves re-reading; it does not prove the FILE is the authority.
+  // Here a separate `node` process appends the records and exits, then THIS process (which never saw
+  // that memory) answers for the calls.
+  const ledgerPath = join(dir, 'crash', 'facts.jsonl')
+  mkdirSync(dirname(ledgerPath), { recursive: true })
+  const script = `
+    const { openFactLedger } = await import(${JSON.stringify(pathToFileURL(join(REPO_ROOT, 'packages/runtime/src/plugin/vnext/fact-ledger.mjs')).href)})
+    const ledger = openFactLedger({ path: ${JSON.stringify(ledgerPath)} })
+    ledger.recordAdmission({ callId: 'crash-1', decision: 'allow', toolName: 'read' })
+    ledger.recordExecution({ callId: 'crash-1', outcome: 'completed' })
+    console.log('CHILD-WROTE')
+  `
+  const { execFileSync } = await import('node:child_process')
+  const childOut = execFileSync(process.execPath, ['--input-type=module', '-e', script], { encoding: 'utf8' })
+  assert.match(childOut, /CHILD-WROTE/u)
+
+  const reopened = openFactLedger({ path: ledgerPath })
+  assert.equal(reopened.health().state, 'KNOWN')
+  const observed = reopened.observe('crash-1')
+  assert.equal(observed.state, 'KNOWN', 'the durable side must answer for a call written by another process')
+  assert.equal(observed.admission.decision, 'allow')
+  assert.equal(reopened.readAll().filter((record) => record.kind === 'execution').length, 1)
+  // ...and the recovered process still cannot admit it a second time.
+  assert.throws(() => reopened.recordAdmission({ callId: 'crash-1', decision: 'allow' }), (error) => error.code === 'LEDGER_REPLAY')
 })
 
 test('SLICE-4 — NEGATIVE CONTROL: without the realm mount the same outside read SUCCEEDS', async () => {
