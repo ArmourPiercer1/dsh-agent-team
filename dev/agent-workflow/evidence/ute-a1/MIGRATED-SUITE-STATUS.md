@@ -105,3 +105,39 @@ argv tokens, matching `ci-security`'s shape) is bound to `ci-integration` with t
 workflow step. I measured that binding end to end (the gate's `CI_LAYER_LEG_UNPROVEN` /
 `CI_LAYER_LEG_ARGUMENT_MISSING` findings both fired and cleared), then reverted it rather than ship a red
 Required leg.
+
+## E3, diagnosed further (round 33): admission is CONDITIONAL on the realm
+
+Reading the call site, not the failure message:
+
+```js
+const a5sfRowConfig = a5sfRealmConfigOf(config)
+if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined && sessionId !== teamRoot) {
+  const a5sfRealm = await mountMemberA5sfRealm({ ... })
+  ... installMemberExecution(...)   // the centre, and therefore the ONLY admission point
+}
+```
+
+The centre — and with it the admission leg, the durable ledger and the settlement — is installed
+**only when a confined provider realm is mounted**. A member whose row has no `a5sf` realm config, or a
+world that provides no realm provider, gets **no centre at all**: its native tools run with the host's
+own mediation and NO admission decision. That is not "explicitly refused"; it is "not covered", which is
+worse, because the A1 law says an unwired controlled call must be refused rather than forwarded.
+
+So E3 is the witness to TWO defects, not one:
+
+1. **the durable Alpha.4 overlay has no decision-side effect** (the adapter that consulted it was retired
+   with the execution route) — this is what E3's assertion text names;
+2. **admission itself is conditional on the realm** — a member without a realm is unmediated. E3's world
+   has no realm, which is exactly why it observes zero pre-execute legs.
+
+Order of repair, and why:
+
+- **First (2), because it is a security gap and it is small:** install the centre for every governed
+  member and make the native mount the OPTIONAL half (`realm`/`nativeSpecs` absent ⇒ admission-only
+  centre). A member with no confined provider is then still admitted-or-refused, and the record says so.
+- **Then (1),** which needs the decision recorded in the matrix: the centre consults an injected
+  overlay-decision port per call, or overlay mutations compile into the binding and the generation
+  recheck recompiles it.
+
+Neither is a test edit. E3 stays red until both are done; the CI leg stays unbound until then.

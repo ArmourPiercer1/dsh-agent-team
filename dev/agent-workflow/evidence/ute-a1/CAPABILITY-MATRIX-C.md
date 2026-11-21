@@ -58,6 +58,15 @@ assembly until the centre consumes it. Options and consequences are in
 `MIGRATED-SUITE-STATUS.md`; the decision belongs with the Control allow/ask/deny wiring, because both ask
 "what is the ONE place a durable restriction becomes a verdict".
 
+## RED: admission is installed only when a realm is mounted (round 33)
+
+The centre is installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`, so a
+member without a confined-provider realm gets NO admission point at all — its native tools run under the
+host's mediation with no decision, no ledger and no settlement. That is not the "unwired controlled call
+is explicitly refused" law; it is the tool not being covered. E3's world is such a world, which is why it
+observes zero pre-execute legs. Small, security-relevant, and first in the repair order (see
+`MIGRATED-SUITE-STATUS.md`).
+
 ## What the adversarial review found in the centre (round 28)
 
 No P0. Seven P1s; the ones that mattered were all in the PRODUCT composition rather than in the
