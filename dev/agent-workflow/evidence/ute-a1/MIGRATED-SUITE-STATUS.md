@@ -1,7 +1,8 @@
 # The 16 migrated capability suites — measured, not assumed
 
-**CURRENT (round 49, 2026-11-23): 238/238, E3 GREEN.** See §"Round 49 (current)" at the end; the
-round-30/31 narrative below is kept as history.
+**CURRENT (round 70, consistency audit): 238/238, E3 GREEN, leg green.** The latest round is at the
+end (§"Round 70 (consistency audit)"); the round-30/31 narrative below is kept as history and its
+counts are that round's, not the current ones.
 
 **Measured:** 2026-11-22 (round 30) on `vnext/a1-cut`.
 **Command:** `node <main-worktree>/node_modules/.pnpm/vitest@…/vitest.mjs run <the 16 files in
@@ -1556,3 +1557,114 @@ host-sandbox preflight refuses a launcher whose realpath escapes the runtime tre
 (`LAUNCHER_PATH_OUTSIDE_TREE`). It was replaced with a real, self-contained copy of the same
 porcelain-empty tree at the pinned baseline (`639ed01539`), which is what TEST_METHODS §1 describes
 per worktree. No tracked file and no shared baseline was written.
+
+## Round 70 (consistency audit)
+
+Adversarial read of the reviewable set at HEAD `189d6cabca5b4de9ec3059f9949ab9302364f789`: every count
+in `PR-BODY-draft.md` and `D-ACCEPTANCE-REPORT.md` re-measured, every capability claim traced to the
+path that says it, every citation resolved, and two reviewer aids added (the "what this candidate is"
+paragraph in the PR body and the readiness checklist in the D report). Docs/evidence only — no gate,
+no test, no product code was touched.
+
+### Gates at this HEAD (fresh, round 70)
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 182
+ℹ pass 180
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67
+  DISCOVERED_AND_COLLECTED 834
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+DSH-TEST-CATALOG tests=889 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+
+$ node scripts/ute-a1-window.mjs --check
+UTE-A1-WINDOW pass branch=vnext/a1-cut red=0/0 cut=(148/52) findings=0
+```
+
+`git rev-list --count a19d1df01..HEAD` = 144; `git diff --stat` = 1643 files, +107914 / −79603.
+
+### Mismatches found and fixed (numbers)
+
+| document | was | is (fresh) |
+| --- | --- | --- |
+| PR body, verification table | `suites=6 files=6`, no test counts | `suites=7 files=7`, `tests=182 pass=180 fail=0 skipped=2` |
+| PR body, verification table | `tests=888` | `tests=889` |
+| PR body, verification table | `done (26 placement(s))` | `done (28 placement(s))` |
+| PR body, A1 bullet | "146 legacy files and 52 dist artifacts retired" | 148 sources gone (146 deleted + 2 replaced) and 200 stale dist mirrors, 28 placements restored |
+| PR body, B slice 1 / 2 / durable half | "119 pass", "126 pass", "146 pass" (unqualified) | marked "at that round", with 180 today |
+| PR body, migrated-suite section | "Now 237/238" against the later 238/238 | that first run was 237/238; today 238/238 |
+| PR body, limits | `agent-bindings.mjs` "4,499 lines" | 4,780 lines (`wc -l`), down from 5,301 at plan start |
+| D report §1 | HEAD `ef2ddbff7`, 137 commits, 1568 files, +101557/−79598, 1125 A/75 M | HEAD `189d6cab`, 144 commits, 1643 files, +107914/−79603, 1199 A/76 M |
+| CAPABILITY-MATRIX, round 56/57/64/67 rows | 157 / 161 / 168 / "tests 179 pass 177" | marked per-round; 182 tests / 180 pass at this HEAD |
+
+### Claims corrected (stated more strongly, or more weakly, than the evidence)
+
+- **"No approval binder is wired in the product, so every ask lane is a hard refusal."** False at this
+  HEAD: the product installs the grant binder and the durable Control approval port when the row has a
+  `controlServiceRef` (`agent-bindings.mjs:688-706`); rows without one still refuse
+  `ADMISSION_ASK_UNWIRED`. The true limit is that no live *approval/consume* has been observed (the live
+  ask only reaches its Stop terminal). Fixed in the PR body limits, D report C5 and matrix round-28 text.
+- **"No arm here has booted a real host process"** (PR body, why-draft). Refuted by this branch's own
+  D records (two agreeing `dsh web` boots per driver). Replaced with the accurate statement: the D boots
+  are `DEV-LIVE` records, not gates, and no row is PRODUCT-PROVEN.
+- **"No real host boot ... all step D"** (PR body limits). Same stale carry-over; replaced with the real
+  limits (no gate-grade acceptance, no load, scripted mock, no live approval).
+- **"Every capability row is MECHANISM or UNPROVEN"** (PR body). The matrix also carries
+  REFUSED-BY-DESIGN/BLOCKED rows; the traceable claim is "no row is PRODUCT-PROVEN"
+  (`CAPABILITY-MATRIX-C.md:71-74`).
+- **"Two contract questions are escalated"** — there are three CCRs; the third (search face) already has
+  shape B implemented. The PR body now says three, with the search-face state named.
+- **Matrix `d3:alpha6` round-63 row** said "no fact file" and the round-63 NOT-PROVEN list included the
+  recorded-fact path; round 68 recorded it at the host entry. Both now carry the round-68 correction;
+  the verdict is unchanged (typed refusal, routed path still unproven).
+- **Matrix round-28 "there is no approval binder wired at all"** — qualified as the round-28 state.
+
+### Links/citations fixed
+
+- `admission.ts:318` → `:326` for the PTC refusal (D C13/C16 area, §6.3, matrix C-ptc and round-55 table).
+- `centre-config.ts:67` → `:73` and `root.ts:2500` → `:2496` in the PR body's round-55 table.
+- `root.ts:4325` → `:4322` for the remote-surface refusal.
+- `admission.ts:110-119` → `:114-122` for `HOST_CAPABILITY_TOOL_NAMES` (D C15/C16/C17).
+- `a5sf-realm-row.mjs:989` → `packages/runtime/src/plugin/live/a5sf-realm-row.mjs:989` (the file is not
+  under `scripts/`).
+- `agent-bindings.mjs:1852`/`:2049` → `:2006`/`:2241` for the bind/mount ordering (D §6.12, matrix C-mcp).
+- `PR-BODY-draft.md:113,161` pointed at unrelated lines; replaced by the two section names (the §"B stage,
+  second slice" and §"The durable half of B" mutation counts).
+- All `.../d-boot-feasibility/...` ellipsis citations expanded to `dev/agent-workflow/evidence/...`; both
+  documents now state that `path:line` citations are repo-root-relative.
+- `MIGRATED-SUITE-STATUS.md` header said "CURRENT (round 49)" and pointed at a round-49 section while
+  round 68 existed; it now points here.
+
+### Could not substantiate (deleted or demoted, not softened)
+
+- Nothing was deleted outright. One stale sentence was unsupportable at this HEAD and was **removed**
+  rather than reworded: the PR-body limit "No approval binder is wired in the product…". Its replacement
+  states the narrower, checkable fact.
+- The PR body's rounds-30-32 statement "The leg is not bound to a Required layer yet" was true only at
+  that round. It is now in `dev/ci/eb3-ci-manifest.json` (the migrated-suite leg in layer
+  `ci-integration`; the node leg is `layers[4].legs[11]`), and the fresh `eb3-ci-required` run confirms
+  `workflows=10 findings=0`. The text now says so instead of reading as a current gap.

@@ -1,13 +1,29 @@
 # feat(ute-vnext): A1 cut + centre (draft; not for merge)
 
-Draft candidate for the UTE vNext A1/B floor on top of the frozen A0 contract
-(`master @ a19d1df01`, PR #821). **Not for merge, not a release, not a deployment.**
+Draft candidate for the UTE vNext floor on top of the frozen A0 contract
+(`master @ a19d1df01`, PR #821). **Not for merge, not a release, not a deployment.** Citation
+convention: a path containing `/` is repo-root-relative; a bare filename is shorthand for the full path
+named in the same row or section.
+
+## What this candidate is (one paragraph)
+
+This is the UTE vNext floor, cut and measured in four stages. **A1** retires the old governed-family
+plane: 148 frozen sources gone (146 deleted + 2 replaced), 200 stale dist mirrors, closure at four zeros
+(`prodRefs`, `distResiduals`, `dupNames`, `findings`), census unchanged at 37/180/69,512. **B** makes the
+centre real: one admission authority on three unmerged axes, durable facts, an ask path, Stop and crash
+recovery that never replays, and a probe ladder over unmodified host tools. **C** disposes of all 19
+contract rows — 15 team tools, member lifecycle, work delivery, a real MCP mount — and refuses remote,
+Alpha.6 routing and PTC with their own codes. **D** adds live `dsh web` evidence: nine judges PROVEN
+and the refuted items named (`d3:persistent-subprocess`, `d2:revocation`, `d:member-read-denied`, 405).
 
 ## What this branch is
 
-- **A1 cut** — 146 legacy files and 52 dist artifacts retired, `agent-bindings.mjs` and `root.ts`
-  replaced wholesale; no legacy Plane/Family Body/Kernel/PA Bridge wrapped as an internal component and
-  no legacy fallback. Closure gate: `prodRefs=0 distResiduals=0 dupNames=0`.
+- **A1 cut** — 146 frozen files deleted and 2 entries replaced wholesale (`agent-bindings.mjs`,
+  `root.ts`) = 148 sources gone, plus 200 stale dist mirrors deleted (`place-dist-glue` restores the
+  28 live placements). `ute-p0-assets` still reads `modules=37 files=180 lines=69512`; no legacy
+  Plane/Family Body/Kernel/PA Bridge wrapped as an internal component and no legacy fallback.
+  Closure gate: `deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0
+  findings=0`.
 - **The centre** — one admission authority: identity/IPC binding, `EffectiveIO ⊆ AgentCeiling ∩
   ToolRestriction` on three axes that are never merged, `InvocationAuthorityFacts` /
   `DurableAdmission` / `ExecutionFact`, Control allow/ask/deny with a post-approval recheck, one-shot
@@ -19,15 +35,19 @@ Draft candidate for the UTE vNext A1/B floor on top of the frozen A0 contract
 
 ## Why it is a draft
 
-Every capability row in `dev/agent-workflow/evidence/ute-a1/CAPABILITY-MATRIX-C.md` is MECHANISM or
-UNPROVEN; **none is PRODUCT-PROVEN**, because no arm here has booted a real host process. Closing that
-is step D, not this PR. Two contract questions are escalated rather than worked around:
+No capability row in `dev/agent-workflow/evidence/ute-a1/CAPABILITY-MATRIX-C.md` is PRODUCT-PROVEN
+(the matrix's own rule, `CAPABILITY-MATRIX-C.md:71-74`): the D boots below are `DEV-LIVE` records, not
+gates. Closing that is step D, not this PR. Three contract questions are recorded rather than worked
+around — one already answered by an implemented shape:
 
 - `CONTRACT-CHANGE-REQUEST-process-lane.md` — subprocess/PTY/PTC have no single-source process-lane
   declaration, so the three families stay explicitly refused.
 - `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` — the frozen settlement contract has **no legal state**
   for "admitted as allow, then refused before the body"; the centre reports `SETTLEMENT_CONTRACT_GAP`
   rather than fabricate a Stop or claim UNKNOWN certainty.
+- `CONTRACT-CHANGE-REQUEST-search-face.md` — shape B is implemented (the durable overlay abstains on an
+  out-of-vocabulary face, the compiled lane judges it); shape A, a search face the overlay can deny, is
+  still open.
 
 ## Owner decisions needed (six, all consolidated)
 
@@ -52,23 +72,25 @@ limits. Its verdict: **A1+B+C implemented with live D evidence for the listed it
 product acceptance** — the REFUTED judges (`d3:persistent-subprocess`, `d2:revocation`,
 `d:member-read-denied`), the 405 creation entrance, and the absent PRODUCT-PROVEN row are named there.
 
-## The 16 migrated capability suites are now RUN, not assumed (rounds 30-32)
+## The 16 migrated capability suites were first RUN, not assumed (rounds 30-32)
 
 `migrated-entry-imports.json` said `missing: []` — every file imports the new entry — and that was read as
 "migration done". Nothing had ever executed them. They run from the main worktree's vitest install (this
 worktree's `.bin` points at a deleted sibling), and the first execution found **8 failures**, one a live
 `ReferenceError` (`resolvePaMount`) on the authority-generation publish path.
 
-Now **237/238**, with the population declared in `tests/checks/eb3-ute-migrated-suites.txt`:
+That first run was **237/238** (the last red was fixed in rounds 48-50; today 238/238). The
+population is declared in `tests/checks/eb3-ute-migrated-suites.txt`:
 
 ```
 EB3-LAYER layer=ci-integration verdict=FAIL suites=15 files=15 describes=76 passed=237 failed=1
 ```
 
 (The 16th bookkeeping entry is `t12a-live-bridge.mjs`, a helper with no tests — the token runner refuses a
-list longer than its report, which is how the census found that out about itself.) The leg is **not bound
-to a Required layer yet**: its population is red, and binding it would need the exemption this project
-forbids. Fix the one red → it goes green → the leg goes in.
+list longer than its report, which is how the census found that out about itself.) At that round the leg
+was **not bound to a Required layer** because its population was red: binding a red leg would need the
+exemption this project forbids. The one red was fixed in rounds 48-50 and the leg is now in
+`dev/ci/eb3-ci-manifest.json` (layer `ci-integration`, the migrated-suite leg).
 
 ## Two capability gaps found by running them (both escalated, neither papered over)
 
@@ -111,7 +133,7 @@ Now an `ask` becomes a durable Control request, its decision is recorded, the **
 EXISTING `ControlService.awaitControlDecision` bridge, not a second one. Host-native asks are preserved
 (the host's own prompt is a legitimate approval authority).
 
-Controls, all node:test in the `ute-vnext-a1` leg (119 pass): ADM-46 three wirings; ADM-47 deny ⇒ no
+Controls, all node:test in the `ute-vnext-a1` leg (119 pass at that round; 180 today): ADM-46 three wirings; ADM-47 deny ⇒ no
 execution + durable fact + REFUSED settlement; ADM-48 expired distinct from denied; ADM-49 fault; ADM-50
 over the REAL durable ControlService (one request, one durable allow, spend counted once across the host's
 double guard consultation, replay refused); ADM-51 real service deny; ADM-52 generation drift after
@@ -132,8 +154,9 @@ cascade, and is re-checked after the durable decision returns so a late approval
 
 Lifecycle close is a STATE, not a removal: `close()` keeps the pre-execute and guard installed in closed
 mode, aborts a pending ask, refuses new calls with `ADMISSION_MEMBER_CLOSED` without ever consulting the
-live binding, still settles in-flight calls, and is idempotent. ADM-56..62 (7 arms, 126 pass) each carry a
-positive and negative control; seven mutation edits (reverted) turned their own arm red.
+live binding, still settles in-flight calls, and is idempotent. ADM-56..62 (7 arms, 126 pass at that
+round) each carry a positive and negative control; seven mutation edits (reverted) turned their own arm
+red.
 
 **Not proven, stated:** a Stop that lands AFTER an `allow` was recorded cannot be `REFUSED` under the frozen
 settlement contract (that cell is the open `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` option A); the
@@ -181,8 +204,9 @@ disk read-backs. Dead writer lock asserted on disk and reclaimed.
 | unwritable ledger (ADM-83) | `ADMISSION_LEDGER_UNWRITABLE`, both stages agree, nothing created | precondition ASSERTED (a root runner is RED, not silently green); writable twin records |
 | cold recovery of an open settlement (ADM-84) | only the two OPEN records reconcile to `UNKNOWN`, preserving the reached phase and deriving DIFFERENT missing evidence | already-decided `REFUSED` stays; promoting `UNKNOWN` to `COMPLETED` is `SETTLEMENT_CONFLICT` with the file byte-identical |
 
-Six mutation edits each red exactly their own arm (all reverted, verified). Leg 146 pass / 2 disclosed skips;
-vitest still 238. **No `CONTRACT-CHANGE-REQUEST` was needed**: a replayed callId is refused BEFORE any
+Six mutation edits each red exactly their own arm (all reverted, verified). At that round the leg was 146
+pass / 2 disclosed skips (182 tests / 180 pass today); vitest still 238. **No `CONTRACT-CHANGE-REQUEST`
+was needed**: a replayed callId is refused BEFORE any
 settlement decision, so the open `allow` record is left to recovery as UNKNOWN (option D of the open CCR).
 
 ## C stage, first slice: Remote, Alpha.6 and PTC are EXPLICITLY UNAVAILABLE (round 55)
@@ -192,9 +216,9 @@ subject's existing axis, through the product's own ledger and settlement — no 
 
 | row | code | axis | refused at |
 | --- | --- | --- | --- |
-| C-remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts:4325` — the surface is not built; the refusal is recorded, then the dispatcher is omitted |
-| C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts:67` (config) + `root.ts:2500` (recorded fact, then a typed boot refusal before any wake) |
-| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:318` — the ONE centre, before the body |
+| C-remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts:4322` — the surface is not built; the refusal is recorded, then the dispatcher is omitted |
+| C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts:73` (config) + `root.ts:2496` (recorded fact, then a typed boot refusal before any wake) |
+| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:326` — the ONE centre, before the body |
 
 ADM-85..88 carry positives and negatives: an ungoverned remote row still dispatches (calls=1) while a
 governed row records the deny and settles `REFUSED`/`not-started`; a wake runs without the point and does
@@ -315,30 +339,44 @@ in the product composition, not the mechanism — which is the useful part of th
 
 ## Verification on this HEAD
 
+Measured at `189d6cabca5b4de9ec3059f9949ab9302364f789` (round 70; all eight commands were re-run fresh
+in this worktree, full output in `D-ACCEPTANCE-REPORT.md` §4):
+
 | gate | result |
 | --- | --- |
-| `dispatch-tests --leg ute-vnext-a1` | `suites=6 files=6 exit=0` (42 admission arms, 36 fs-slice, 7 reader, 6 template-binding, …) |
-| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=888 refused=0 findings=0` |
-| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 cut=cut(148/148)` |
-| `ute-cut-closure --check` | `pass deleted=148 prodRefs=0 distResiduals=0 dupNames=0` |
-| `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0` |
+| `dispatch-tests --run --leg ute-vnext-a1` | `suites=7 files=7` · `tests=182 pass=180 fail=0 skipped=2` · `exit=0` (the 2 skips are ADM-68/69, disclosed below) |
+| `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=889 uncollected=41 excluded=14 refused=0 findings=0` (41 is the ceiling; zero headroom) |
+| `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148)` |
+| `ute-cut-closure --check` | `pass deleted=148 references=163 prodRefs=0 distResiduals=0 dupNames=0 findings=0` |
+| `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0 cut=(148/52)` |
 | `eb3-ci-required` | `pass workflows=10 findings=0` |
-| `docs-sync --check` | `findings=0 blocking=0` |
-| `place-dist-glue` | `done (26 placement(s))` |
+| `docs-sync --check` | `docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0` |
+| `place-dist-glue` | `done (28 placement(s))` |
+| `eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt` | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
+
+`git rev-list --count a19d1df01..HEAD` = **144**; `git diff --stat a19d1df01..HEAD` = **1643 files
+changed, +107914 / −79603** (1199 A · 363 D · 76 M · 2 R060 · 1 R094 · 1 R095 · 1 R096).
 
 ## Limits stated plainly (not claims)
 
-- No real host boot, no multi-agent concurrency, no revocation-under-load, no Stop-under-load: all
-  step D. Nothing here is a statement about a running product.
+- **No gate-grade product acceptance.** The D boots are `DEV-LIVE` records with two agreeing boots each;
+  they are not gates and no row is PRODUCT-PROVEN. No capability under load: no multi-agent load beyond
+  two Members, no revocation-under-load, no Stop-under-load, no real Stop keypress.
+- **The model is a scripted mock** in every D record, so model-driven choice, retries and adversarial
+  tool selection are not measured.
 - `host.service` capabilities (Goal/Todo, Team Skill, Subagent) are bound and recorded, but their I/O
   is the **host's** — a skill file read by the host skill service is outside the member's fs ceiling.
   This is a limit, not a confinement claim.
-- No approval binder is wired in the product, so every ask lane is a hard refusal today (fail-closed,
-  and the record says so).
-- Local environment: no `tsc`, no vitest, no product boot; the pinned rc.2 host is built, the rc.5 host
-  is present but not installed (see `NEXT-HOST-RC5-FEASIBILITY.md`).
+- **Ask is wired but no live approval is measured.** The product installs the grant binder and the
+  durable Control approval port when the row has a `controlServiceRef`
+  (`agent-bindings.mjs:688-706`); a row without one still refuses asks as `ADMISSION_ASK_UNWIRED`.
+  What is missing at D is a live leader-approves → one-shot-consumed observation: the only live ask is
+  `d2:stop`, which parks at the pending request and then stops it.
+- Local environment: no `tsc`, no vitest, no product boot for this audit; the pinned rc.2 host is built,
+  the rc.5 host is present but not installed (see `NEXT-HOST-RC5-FEASIBILITY.md`).
 - The two giant files are being decomposed by ownership, not by line count; `agent-bindings.mjs` is
-  4,499 lines from 5,301 and the progress table is append-only in `DECOMPOSITION-PLAN.md`.
+  **4,780** lines today, down from 5,301 when the decomposition plan started, and the progress table is
+  append-only in `DECOMPOSITION-PLAN.md`.
 
 ## Not done here
 
