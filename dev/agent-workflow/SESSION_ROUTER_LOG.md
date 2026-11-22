@@ -10738,3 +10738,49 @@ Gates at `9b22541e6`: leg 198 cases / 196 pass + 2 disclosed skips, catalog 785/
 28 placements, ci-required, bound vitest 238, ci-pr-gate 10/10. NOT proven: DEV-LIVE is not a gate, scripted mock
 model, shell `ask`/`deny` are in-process only, no Windows deployment, and a governed deployment without
 `@deepseek-ai/dsh-terminal` cannot bind the preset (stated in cordis.patch.yml).
+
+### R77 — the rc.5 FS additions are CONFINED: B5 closes, SLICE-35 is green on both hosts
+
+DSH `0.2.2-rc.5`'s `FileSystem` adds `patchText`, `deleteFile`, `moveFile` (`packages/fs/fs/src/index.ts:325,345,368`).
+The Team confined provider overrode ten methods ending at `editText`, so on rc.5 `apply_patch`, delete and move
+reached the backend with the Member's lane never consulted — the external review's #1 security item. SLICE-35 is
+the invariant that goes red exactly for this; it was RED on rc.5 at round 72b naming SEVEN un-overridden names.
+
+Three overrides now exist in the SAME shape as the ten (`packages/runtime/team-services/src/fs.ts`): `patchText`
+(`:365`) like `editText`; `deleteFile` (`:383`) like a write of the file it removes (write axis + `write => read`);
+`moveFile` (`:416`) judges BOTH paths (source as a removal of an existing file, destination as a write plus a read
+when it already exists) before either effect, so an out-of-lane destination refuses with `IO_WRITE_DENIED` and the
+source is NOT removed. `WRITE_METHODS` (`:120`) carries the three names.
+
+rc.2 compatibility is by construction: the three are extra methods on a separate `FsNewMethodSurface` (`:99`) plus
+ONE local, commented cast on `Base.prototype` (`:250-264`) — no `any`, no shim; a base that implements none of them
+refuses TYPED `IO_POLICY_UNSUPPORTED` (`:279`) with the Member identity both install sites now pass
+(`install.ts:510`, `:875`). `MANAGED_FS_METHODS` was deliberately not grown: growing it would refuse every rc.2
+install; capability is decided per call.
+
+SLICE-35 makes the exclusion decision round 72b deferred, and makes it WITNESSED: rc.5's four TS-`private` concrete
+helpers are not entry points, and each excluded name must be called from a base method the class overrides (plus a
+host-relative assertion that the three public names are derived AND covered whenever the base declares them).
+Mutation control: renaming the `patchText` override turns SLICE-35 RED on rc.5 naming `patchText`. SLICE-36 keeps
+its exact `deepEqual`; its fixture now adds `copyFile`/`truncateFile`/`renamePath` (names the product does NOT
+cover), because reusing the rc.5 names would have measured the new coverage instead of the derivation.
+
+Arms ADM-135..140: in-lane reaches the spy provider EXACTLY once with the same target(s); out-of-lane is a typed
+refusal with zero provider calls (source survives); cross-root follows the product's per-path rule (no invented
+cross-root ban — the lane has no root concept beyond `allow` subtree roots, and rc.5's move is publish-then-remove);
+an old backend is a typed refusal; the REAL pinned provider performs the three on rc.5 and refuses them typed on
+rc.2, and asserts the branch matches the selected host.
+
+Lanes: rc.2 leg 204 cases / 202 pass + 2 disclosed skips, exit 0 (was 182/180 at round 72b). rc.5 per suite
+(the leg cannot run as one invocation there — `vnext-b-probe-ladder` HANGS on rc.5, baseline-identical):
+realm-lane 12/12, fs-slice 34/36 (SLICE-21/30 remain red, genuine rc.5 drift), admission 124 tests / 119 pass /
+5 red, os-probe 3/3, work-turn-reader 7/7, template-binding 6/6. The five admission reds (ADM-96/97
+`signals[0] is not of type AbortSignal`; ADM-100/101/102 preset native-module default mount) and the b-ladder hang
+are pre-existing rc.5 drift, reproduced with this round's four product/test files reverted, and are recorded,
+not bent.
+
+Gates at this round's commit: leg 204/202+2, catalog 785/38 uncollected/14 excluded, cut-closure, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, artifacts ok/1939, ci-pr-gate 10/10 (census 2 captures). NOT proven:
+in-process only (no booted apply_patch/delete/move, no model turn), no kernel boundary (the base provider's TOCTOU
+is inherited), moveFile's version-guarded/patched-on-move path unexercised, no matrix upgrade (C-fs stays
+MECHANISM).

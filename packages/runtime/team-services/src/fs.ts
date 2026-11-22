@@ -17,6 +17,18 @@
  * provider-resolved real path, so a symlink that escapes the authorized subtree
  * is refused even though its authored name is inside.
  *
+ * THE 0.2.2-rc.5 ADDITIONS (`patchText`, `deleteFile`, `moveFile`) are confined
+ * the same way and are the B5 closure of the rc.5 review: before them,
+ * `apply_patch`, delete and move reached the base Provider with the Member's
+ * lane never consulted. `patchText` is judged like `editText`, `deleteFile`
+ * like a write of the file it removes, and `moveFile` judges BOTH paths (the
+ * source being removed and the destination being published) before either
+ * effect. Because this repo compiles against rc.2's provider type, the three
+ * are declared as extra methods reached through one local, commented cast, and
+ * a base that implements none of them is a TYPED `IO_POLICY_UNSUPPORTED`
+ * refusal rather than an untyped crash or a fallthrough (see
+ * {@link FsNewMethodSurface} and `team-services/src/fs.ts` in the factory).
+ *
  * `ask` IS A REFUSAL HERE (A5-DUAL-PLANE-01, 2026-11-05): the compiled lane can
  * carry the disposition `ask`, and this plane owns no approval consumer
  * (`resolveAskClassCall` is the designed seam and has no production caller), so
@@ -70,14 +82,42 @@ export interface FsProviderSurface {
   editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>
 }
 
+/**
+ * The THREE `FileSystem` methods 0.2.2-rc.5 added — `patchText`, `deleteFile`,
+ * `moveFile` (`@deepseek-ai/dsh-fs`'s abstract class).
+ *
+ * WHY THEY ARE NOT ON {@link FsProviderSurface}: this repo compiles against
+ * 0.2.0-rc.2's provider type, which has none of them. Declaring them on the
+ * surface the subclass `extends` would make the repo's tsc demand them from
+ * every rc.2 provider AND would turn the subclass's own declarations into
+ * `noImplicitOverride` violations. A separate, minimal surface keeps the
+ * version reality explicit: on rc.2 these are EXTRA methods the subclass
+ * declares; on rc.5 they override the base's. The ONE cast that reaches the
+ * base implementation is local to the factory below (see `baseNew`), and a
+ * base that does not implement a method is a TYPED refusal, never a fallthrough.
+ */
+export interface FsNewMethodSurface {
+  patchText(target: unknown, hunks: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
+  deleteFile(target: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
+  moveFile(source: unknown, destination: unknown, options: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>
+}
+
 /** A Provider constructor that Cordis can mount as the `fs` service. */
 export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface
 
 /** Host sandbox modes, strictest first — the ladder `hostPolicyOf` narrows on. */
 const STRICTNESS: readonly string[] = Object.freeze(['read-only', 'workspace-write', 'danger-full-access'])
 
-/** The write half of the managed surface (everything else is read). */
-const WRITE_METHODS: ReadonlySet<string> = new Set(['writeText', 'editText'])
+/**
+ * The write half of the managed surface (everything else is read).
+ *
+ * rc.5's three additions are WRITE-axis entry points and are judged exactly
+ * like the two they extend: `patchText` like `editText` (same path, same lane),
+ * `deleteFile` like a write of the file it removes, and `moveFile` on BOTH
+ * paths — the source is removed (a write on an existing file) and the
+ * destination is published (a write, plus a read when it already exists).
+ */
+const WRITE_METHODS: ReadonlySet<string> = new Set(['writeText', 'editText', 'patchText', 'deleteFile', 'moveFile'])
 
 /**
  * The policy lanes the guard reads. A Member ceiling and an effective policy
@@ -192,17 +232,61 @@ export function createMemberFsGuard(
  * the base, every target-bearing method guards first and delegates second.
  * The returned constructor is mountable through Cordis (`ctx.plugin`) and
  * registers the same `fs` service name in the context it is mounted under.
+ *
+ * @param Base - the live provider class (rc.2 or rc.5).
+ * @param guard - the Member's admission function.
+ * @param memberIdentity - the Member whose refusals are recorded; carried only
+ *   by the "base does not implement this rc.5 method" refusal. `install.ts`
+ *   always supplies it; the default exists for derivation-only callers (the
+ *   SLICE-35/36 fixtures) that mount the class without a Member.
  */
 export function createConfinedFileSystemClass(
   Base: FsProviderConstructor,
   guard: FsGuard,
+  memberIdentity = '',
 ): FsProviderConstructor {
+  /**
+   * THE ONE VERSION CAST, and why it is needed. This repo compiles against
+   * rc.2's provider type; rc.5's three additions are not on it, so `super`'s
+   * type has no such members. The implementation is looked up ONCE on the BASE
+   * prototype (property lookup follows the chain, so a subclass that inherits
+   * the method is found too) and invoked with `this`. Nothing is re-implemented
+   * here: the effect a permitted call produces is the base Provider's own.
+   */
+  const baseNew = Base.prototype as unknown as Partial<FsNewMethodSurface>
+  const basePatchText = baseNew.patchText
+  const baseDeleteFile = baseNew.deleteFile
+  const baseMoveFile = baseNew.moveFile
+
   class TeamConfinedFileSystem extends Base {
     /** Guard one target-bearing call, then delegate to the base Provider. */
     private async admitted(method: string, target: unknown): Promise<string> {
       const hostPath = this.processPath(target)
       await guard(method, hostPath)
       return hostPath
+    }
+
+    /**
+     * The base implementation of an rc.5 method, or a TYPED refusal.
+     *
+     * The lane decision above has already been taken (an out-of-lane call never
+     * reaches this point), so this is not a second authority: it answers the
+     * separate question "can this backend perform the operation at all?".
+     * Without it, an rc.2 backend would throw a bare `TypeError` on
+     * `undefined(...)` — an untyped crash that a caller could mistake for a
+     * tool bug instead of "this host generation does not have the method".
+     */
+    private baseImplementation<M extends keyof FsNewMethodSurface>(
+      method: M,
+      implementation: FsNewMethodSurface[M] | undefined,
+      target: string,
+    ): FsNewMethodSurface[M] {
+      if (typeof implementation === 'function') return implementation
+      throw new TeamIoDenial(
+        'IO_POLICY_UNSUPPORTED',
+        `this fs provider does not implement ${method}(); the operation was refused rather than falling through to a different path`,
+        { memberIdentity, method, target },
+      )
     }
 
     override async readText(target: unknown, signal?: AbortSignal): Promise<string> {
@@ -269,6 +353,79 @@ export function createConfinedFileSystemClass(
     ): Promise<unknown> {
       await this.admitted('editText', target)
       return super.editText(target, edit, expected, signal, this.hostPolicyOf(policy))
+    }
+
+    /**
+     * rc.5 `patchText` — judged EXACTLY like `editText`: the same target, the
+     * write axis, and (when the file exists) the read coverage the native
+     * read-before-mutate contract requires. `apply_patch` therefore cannot
+     * reach the backend without the Member's lane. No `override` modifier: the
+     * rc.2 type this file compiles against has no such member.
+     */
+    async patchText(
+      target: unknown,
+      hunks: unknown,
+      expected?: unknown,
+      signal?: AbortSignal,
+      policy?: unknown,
+    ): Promise<unknown> {
+      const hostPath = await this.admitted('patchText', target)
+      const implementation = this.baseImplementation('patchText', basePatchText, hostPath)
+      return implementation.call(this, target, hunks, expected, signal, this.hostPolicyOf(policy))
+    }
+
+    /**
+     * rc.5 `deleteFile` — judged like a WRITE of the file it removes: the write
+     * axis decides, and because the target exists by construction the existing
+     * `write ⇒ read` rule also applies (a lane that may delete but not read a
+     * file is refused, exactly as a lane that may overwrite but not read it).
+     */
+    async deleteFile(
+      target: unknown,
+      expected?: unknown,
+      signal?: AbortSignal,
+      policy?: unknown,
+    ): Promise<unknown> {
+      const hostPath = await this.admitted('deleteFile', target)
+      const implementation = this.baseImplementation('deleteFile', baseDeleteFile, hostPath)
+      return implementation.call(this, target, expected, signal, this.hostPolicyOf(policy))
+    }
+
+    /**
+     * rc.5 `moveFile` — TWO paths, and BOTH are judged before anything happens.
+     *
+     * The SOURCE is removed: it is an existing file the operation must rewrite,
+     * so it gets the same admission `editText` gives (write axis + read
+     * coverage). The DESTINATION is published: it gets the write admission
+     * `writeText` gives, including the read requirement when the destination
+     * already exists. Either refusal happens BEFORE the base Provider runs, so a
+     * move whose destination is out of lane changes nothing at all (the source
+     * is not removed either).
+     *
+     * WHY THERE IS NO SEPARATE "cross-root" REFUSAL: the Member lane has no root
+     * of its own beyond its `allow` locators (each is a subtree root), and the
+     * rule the product already owns is PER PATH. A move between two different
+     * allow roots therefore succeeds only when the source passes the source
+     * admission AND the destination passes the destination admission — which is
+     * exactly the composition rule for "write here, delete there". Adding a
+     * distinct cross-root ban would be a policy the owner never authored (a
+     * second authority), and the rc.5 provider's own move is a publish-then-
+     * remove with no rename, so no cross-filesystem constraint exists to mirror.
+     * The arms pin both the admitted cross-root case and the refused one.
+     */
+    async moveFile(
+      source: unknown,
+      destination: unknown,
+      options: unknown,
+      signal?: AbortSignal,
+      policy?: unknown,
+    ): Promise<unknown> {
+      const sourcePath = this.processPath(source)
+      await guard('moveFile', sourcePath)
+      const destinationPath = this.processPath(destination)
+      await guard('moveFile', destinationPath)
+      const implementation = this.baseImplementation('moveFile', baseMoveFile, `${sourcePath} -> ${destinationPath}`)
+      return implementation.call(this, source, destination, options, signal, this.hostPolicyOf(policy))
     }
 
     /**

@@ -9,7 +9,8 @@
  */
 
 import assert from 'node:assert/strict'
-import { appendFileSync, rmSync } from 'node:fs'
+import { appendFileSync, existsSync, rmSync } from 'node:fs'
+import { join as pathJoin } from 'node:path'
 import { register } from 'node:module'
 import { test } from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -6790,4 +6791,331 @@ test('ADM-134 — a process-class binding may only declare the CEILING lane; a n
     (error) => error?.code === 'REALM_DECLARATION_INVALID' && /process-class/.test(String(error.message)),
     'a process-class binding that narrows the ceiling must refuse rather than mount an unenforced lane',
   )
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADM-135 … ADM-140 — the 0.2.2-rc.5 FS additions are CONFINED (B5 closure).
+//
+// The rc.5 review's #1 item: `FileSystem` grew `patchText` / `deleteFile` /
+// `moveFile`, and the Team confined provider overrode ten methods ending at
+// `editText`. On rc.5 `apply_patch`, delete and move therefore reached the real
+// backend with the Member's lane never consulted. These arms pin the three
+// overrides the way the tenant-facing guarantee is worded:
+//
+//   in-lane      ⇒ the SPY base provider is reached EXACTLY once, with the SAME
+//                  target object(s) the caller passed (the confined class does
+//                  not re-resolve, so the effect is the base's own);
+//   out-of-lane  ⇒ a typed TeamIoDenial, and the provider is NEVER called (so
+//                  the source of a refused move is not removed either);
+//   cross-root   ⇒ per the PRODUCT's own rule: both paths judged on their own
+//                  admission (the destination write + read-if-existing), and no
+//                  invented cross-root ban;
+//   old backend  ⇒ a typed IO_POLICY_UNSUPPORTED refusal, never a fallthrough
+//                  and never an untyped crash on `undefined(...)`.
+//
+// ADM-140 is the same three calls against the REAL pinned provider, host-
+// relative: on rc.5 they take effect; on rc.2 (the type this repo compiles
+// against) the identical calls must be refused typed with nothing changed.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FS_ADDITIONS_ROOT = pathJoin(DOMAIN_ROOT, '.artifacts', 'tmp', 'adm-fs-additions')
+
+/** One lane (the file's shared helper) wrapped in the compiled policy shape. */
+const additionsPolicy = ({ read, write, memberIdentity = 'member-adm-fs-additions' }) => ({
+  memberIdentity,
+  templateId: 'worker',
+  instanceGeneration: 1,
+  revision: 'rev-adm-fs-additions',
+  read: lane(read),
+  write: lane(write),
+  network: { access: 'allow' },
+})
+
+/** A REAL temp tree inside the workspace (a DSH_HOME/tmp world is forbidden outside it). */
+function prepareAdditionsArm (name) {
+  const dir = pathJoin(FS_ADDITIONS_ROOT, name)
+  rmSync(dir, { recursive: true, force: true })
+  const inside = pathJoin(dir, 'inside')
+  const outside = pathJoin(dir, 'outside')
+  mkdirSync(inside, { recursive: true })
+  mkdirSync(outside, { recursive: true })
+  return { dir, inside, outside }
+}
+
+/** The recording base: every admitted call is recorded with the EXACT arguments it received. */
+class RecordingFsBase {
+  constructor () {
+    this.calls = []
+  }
+
+  processPath (target) {
+    return target.hostPath
+  }
+
+  async patchText (target, hunks, expected, signal, policy) {
+    this.calls.push({ method: 'patchText', target, hunks, expected, signal, policy })
+    return { patched: true }
+  }
+
+  async deleteFile (target, expected, signal, policy) {
+    this.calls.push({ method: 'deleteFile', target, expected, signal, policy })
+    return { before: 'deleted-basis' }
+  }
+
+  async moveFile (source, destination, options, signal, policy) {
+    this.calls.push({ method: 'moveFile', source, destination, options, signal, policy })
+    return { sourceDeleted: true }
+  }
+}
+
+/** A base of the OLD generation: it has none of the three methods. */
+class LegacyFsBase {
+  constructor () {
+    this.calls = []
+  }
+
+  processPath (target) {
+    return target.hostPath
+  }
+}
+
+/** Mount the confined class over `Base` with the REAL production guard. */
+async function confinedOver (Base, policy) {
+  const { createConfinedFileSystemClass, createMemberFsGuard } = await import('../team-services/src/fs.ts')
+  const Confined = createConfinedFileSystemClass(Base, createMemberFsGuard(policy), policy.memberIdentity)
+  return new Confined()
+}
+
+/** A typed refusal, asserted by class + code + method (never by message text alone). */
+const refusal = (code, method) => (error) => {
+  assert.equal(error?.name, 'TeamIoDenial', `expected a typed TeamIoDenial, got ${error?.name}: ${error?.message}`)
+  assert.equal(error.code, code, `expected ${code}, got ${error.code}: ${error.message}`)
+  assert.equal(error.method, method, `the refusal must name the method that asked: ${error.method}`)
+  return true
+}
+
+test('ADM-135 — rc.5 patchText is confined like editText: in-lane reaches the provider once, out-of-lane is refused before it', async () => {
+  const { inside, outside } = prepareAdditionsArm('patch-text')
+  const insideFile = pathJoin(inside, 'patch-me.txt')
+  const outsideFile = pathJoin(outside, 'not-yours.txt')
+  writeFileSync(insideFile, 'one\ntwo\n', 'utf8')
+  writeFileSync(outsideFile, 'SECRET\n', 'utf8')
+  const policy = additionsPolicy({ read: [inside], write: [inside] })
+  const fs = await confinedOver(RecordingFsBase, policy)
+  const target = { hostPath: insideFile }
+
+  const outcome = await fs.patchText(target, [])
+  assert.deepEqual(outcome, { patched: true })
+  assert.equal(fs.calls.length, 1, 'an admitted patch must reach the base provider exactly once')
+  assert.equal(fs.calls[0].method, 'patchText')
+  assert.equal(fs.calls[0].target, target, 'the SAME target object is delegated: the confined class never re-resolves the path')
+  assert.equal(fs.calls[0].target.hostPath, insideFile, 'and it is the caller\'s path')
+  assert.deepEqual(fs.calls[0].hunks, [])
+
+  const outsideTarget = { hostPath: outsideFile }
+  await assert.rejects(() => fs.patchText(outsideTarget, []), refusal('IO_WRITE_DENIED', 'patchText'))
+  assert.equal(fs.calls.length, 1, 'an out-of-lane patch must never reach the provider (zero side effects)')
+  assert.equal(existsSync(outsideFile), true, 'and the out-of-lane file is untouched')
+})
+
+test('ADM-136 — rc.5 deleteFile is judged like a WRITE of the file it removes (write axis, and read coverage)', async () => {
+  const { inside, outside } = prepareAdditionsArm('delete-file')
+  const insideFile = pathJoin(inside, 'remove-me.txt')
+  const outsideFile = pathJoin(outside, 'not-yours.txt')
+  writeFileSync(insideFile, 'bye\n', 'utf8')
+  writeFileSync(outsideFile, 'SECRET\n', 'utf8')
+  const fs = await confinedOver(RecordingFsBase, additionsPolicy({ read: [inside], write: [inside] }))
+  const target = { hostPath: insideFile }
+
+  const outcome = await fs.deleteFile(target, undefined)
+  assert.deepEqual(outcome, { before: 'deleted-basis' })
+  assert.equal(fs.calls.length, 1, 'an admitted delete must reach the base provider exactly once')
+  assert.equal(fs.calls[0].method, 'deleteFile')
+  assert.equal(fs.calls[0].target, target, 'the SAME target object is delegated')
+
+  const outsideTarget = { hostPath: outsideFile }
+  await assert.rejects(() => fs.deleteFile(outsideTarget), refusal('IO_WRITE_DENIED', 'deleteFile'))
+  assert.equal(fs.calls.length, 1, 'an out-of-lane delete must never reach the provider')
+  assert.equal(existsSync(outsideFile), true, 'and the out-of-lane file survives')
+
+  // "Like a write" is not only the axis: the native write contract requires READ
+  // coverage of an existing target, and a delete removes an existing file. A lane
+  // that may delete but not read is refused with the write-requires-read code.
+  const writeOnly = await confinedOver(RecordingFsBase, additionsPolicy({ read: [], write: [inside] }))
+  await assert.rejects(() => writeOnly.deleteFile(target), refusal('IO_WRITE_REQUIRES_READ', 'deleteFile'))
+  assert.equal(writeOnly.calls.length, 0, 'the write-requires-read refusal happens before the provider')
+})
+
+test('ADM-137 — rc.5 moveFile judges BOTH paths: an out-of-lane destination refuses the move and removes nothing', async () => {
+  const { inside, outside } = prepareAdditionsArm('move-file')
+  const sourceFile = pathJoin(inside, 'move-me.txt')
+  const insideDestination = pathJoin(inside, 'moved.txt')
+  const outsideDestination = pathJoin(outside, 'exfiltrated.txt')
+  writeFileSync(sourceFile, 'MOVE-ME\n', 'utf8')
+  const policy = additionsPolicy({ read: [inside], write: [inside] })
+  const fs = await confinedOver(RecordingFsBase, policy)
+  const source = { hostPath: sourceFile }
+  const destination = { hostPath: insideDestination }
+
+  const outcome = await fs.moveFile(source, destination, {})
+  assert.deepEqual(outcome, { sourceDeleted: true })
+  assert.equal(fs.calls.length, 1, 'an admitted move must reach the base provider exactly once')
+  assert.equal(fs.calls[0].method, 'moveFile')
+  assert.equal(fs.calls[0].source, source, 'the SAME source object is delegated')
+  assert.equal(fs.calls[0].destination, destination, 'the SAME destination object is delegated')
+  assert.equal(fs.calls[0].source.hostPath, sourceFile)
+  assert.equal(fs.calls[0].destination.hostPath, insideDestination)
+
+  // The destination is OUT OF LANE: the move is refused and the provider is never
+  // entered, so the source is still there (nothing was published, nothing removed).
+  await assert.rejects(
+    () => fs.moveFile(source, { hostPath: outsideDestination }, {}),
+    refusal('IO_WRITE_DENIED', 'moveFile'),
+  )
+  assert.equal(fs.calls.length, 1, 'an out-of-lane DESTINATION must never reach the provider')
+  assert.equal(existsSync(sourceFile), true, 'and the source is not removed by a refused move')
+  assert.equal(existsSync(outsideDestination), false, 'and nothing is published outside the lane')
+
+  // Symmetrically: an out-of-lane SOURCE is refused before the destination is written.
+  const outsideSource = pathJoin(outside, 'foreign.txt')
+  writeFileSync(outsideSource, 'FOREIGN\n', 'utf8')
+  await assert.rejects(
+    () => fs.moveFile({ hostPath: outsideSource }, destination, {}),
+    refusal('IO_WRITE_DENIED', 'moveFile'),
+  )
+  assert.equal(fs.calls.length, 1, 'an out-of-lane SOURCE must never reach the provider')
+  assert.equal(existsSync(outsideSource), true)
+})
+
+test('ADM-138 — a CROSS-ROOT move follows the product\'s own rule: each path is admitted on its own, no invented ban', async () => {
+  const { dir, inside: rootA, outside: rootB } = prepareAdditionsArm('cross-root')
+  const sourceFile = pathJoin(rootA, 'from-a.txt')
+  const existingInB = pathJoin(rootB, 'already-there.txt')
+  const freshInB = pathJoin(rootB, 'fresh-target.txt')
+  writeFileSync(sourceFile, 'FROM-A\n', 'utf8')
+  writeFileSync(existingInB, 'IN-B\n', 'utf8')
+  const policy = additionsPolicy({ read: [rootA], write: [rootA, rootB] })
+  const fs = await confinedOver(RecordingFsBase, policy)
+  const source = { hostPath: sourceFile }
+
+  // Root B is WRITABLE but not READABLE, so a destination that ALREADY EXISTS
+  // cannot be admitted: the write would publish over bytes this Member may not
+  // read. That is the product's `write ⇒ read` rule applied to the destination —
+  // the cross-root case is refused by the SAME rule, not by a root comparison.
+  await assert.rejects(
+    () => fs.moveFile(source, { hostPath: existingInB }, {}),
+    refusal('IO_WRITE_REQUIRES_READ', 'moveFile'),
+  )
+  assert.equal(fs.calls.length, 0, 'the destination admission refuses before the provider')
+  assert.equal(existsSync(sourceFile), true, 'the source is untouched')
+
+  // The control that makes the arm above meaningful: a move into root B is NOT
+  // banned as "cross-root" when each path passes its own admission (a fresh
+  // destination only needs the write axis). Both paths are delegated unchanged.
+  assert.equal(dir.startsWith(FS_ADDITIONS_ROOT), true)
+  const destination = { hostPath: freshInB }
+  const outcome = await fs.moveFile(source, destination, {})
+  assert.deepEqual(outcome, { sourceDeleted: true })
+  assert.equal(fs.calls.length, 1, 'the cross-root move reaches the provider exactly once when both paths are admitted')
+  assert.equal(fs.calls[0].source, source)
+  assert.equal(fs.calls[0].destination, destination)
+})
+
+test('ADM-139 — a base provider WITHOUT the rc.5 methods refuses typed (IO_POLICY_UNSUPPORTED), never a fallthrough or a crash', async () => {
+  const { inside } = prepareAdditionsArm('legacy-base')
+  const aFile = pathJoin(inside, 'a.txt')
+  const bFile = pathJoin(inside, 'b.txt')
+  writeFileSync(aFile, 'A\n', 'utf8')
+  writeFileSync(bFile, 'B\n', 'utf8')
+  const policy = additionsPolicy({ read: [inside], write: [inside] })
+  const fs = await confinedOver(LegacyFsBase, policy)
+
+  const unsupported = (method) => (error) => {
+    // The typed refusal, NOT the `TypeError: undefined is not a function` an
+    // unguarded `this.basePatchText.call(...)` would produce.
+    assert.equal(error instanceof TypeError, false, 'an old backend must not surface an untyped crash')
+    assert.equal(error?.name, 'TeamIoDenial', `expected a typed refusal for ${method}`)
+    assert.equal(error.code, 'IO_POLICY_UNSUPPORTED', `expected the unsupported capability code for ${method}: ${error.message}`)
+    assert.match(String(error.message), new RegExp(`${method}\\(\\)`), 'the refusal names the method the host does not implement')
+    assert.equal(error.memberIdentity, policy.memberIdentity, 'and the Member whose call was refused')
+    return true
+  }
+
+  await assert.rejects(() => fs.patchText({ hostPath: aFile }, []), unsupported('patchText'))
+  await assert.rejects(() => fs.deleteFile({ hostPath: aFile }), unsupported('deleteFile'))
+  await assert.rejects(() => fs.moveFile({ hostPath: aFile }, { hostPath: bFile }, {}), unsupported('moveFile'))
+  assert.equal(fs.calls.length, 0, 'nothing reaches a provider that cannot perform the operation')
+  assert.equal(existsSync(aFile), true, 'and no effect happened: the typed refusal is not a partial move/delete')
+  assert.equal(existsSync(bFile), true)
+})
+
+test('ADM-140 — the REAL pinned provider, host-relative: rc.5 performs the three calls, rc.2 refuses them typed with nothing changed', async () => {
+  const { inside } = prepareAdditionsArm('real-base')
+  const { createConfinedFileSystemClass, createMemberFsGuard } = await import('../team-services/src/fs.ts')
+  const { loadFsContractSeams } = await import('../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs')
+  const seams = await loadFsContractSeams(DOMAIN_ROOT)
+  const hostHasAdditions = ['patchText', 'deleteFile', 'moveFile']
+    .every((name) => typeof seams.LocalFileSystem.prototype[name] === 'function')
+  // The branch below must be the one the SELECTED host implies: a lane that says
+  // `TEAM_TEST_HOST=next` and resolves the rc.2 tree would otherwise pass the
+  // rc.2 half and read as a green that proves nothing about rc.5.
+  const { testHostMode } = await import('../../../tests/next-host/host-select.mjs')
+  assert.equal(hostHasAdditions, testHostMode() === 'next', 'the resolved provider generation must match the lane the run claims')
+
+  const patchFile = pathJoin(inside, 'patch.txt')
+  const deleteFile = pathJoin(inside, 'delete.txt')
+  const moveSource = pathJoin(inside, 'move.txt')
+  const moveDestination = pathJoin(inside, 'moved.txt')
+  writeFileSync(patchFile, 'one\ntwo\n', 'utf8')
+  writeFileSync(deleteFile, 'bye\n', 'utf8')
+  writeFileSync(moveSource, 'MOVE\n', 'utf8')
+  const target = (hostPath) => ({ targetKey: hostPath, displayPath: hostPath })
+  const policy = additionsPolicy({ read: [inside], write: [inside] })
+
+  const root = new seams.Context()
+  const Confined = createConfinedFileSystemClass(seams.LocalFileSystem, createMemberFsGuard(policy), policy.memberIdentity)
+  await root.plugin(Confined, { cwd: inside, diffBasisMaxBytes: 10 * 1024 * 1024 })
+  try {
+    const fs = root.get('fs')
+    assert.ok(fs !== undefined, 'the confined class must mount as the `fs` service over the real provider')
+
+    if (hostHasAdditions) {
+      // rc.5: the effect is the REAL provider's own (empty hunk list = a no-op patch).
+      const patched = await fs.patchText(target(patchFile), [])
+      assert.equal(patched.before, 'one\ntwo\n')
+      assert.equal(patched.after, 'one\ntwo\n')
+      const deleted = await fs.deleteFile(target(deleteFile))
+      assert.equal(deleted.before, 'bye\n')
+      assert.equal(existsSync(deleteFile), false, 'rc.5: the admitted delete really removes the file')
+      const moved = await fs.moveFile(target(moveSource), target(moveDestination), {})
+      assert.equal(moved.sourceDeleted, true)
+      assert.equal(existsSync(moveDestination), true)
+      assert.equal(existsSync(moveSource), false)
+
+      // …and the SAME real provider refuses an out-of-lane destination with the lane's code.
+      const outside = pathJoin(inside, '..', 'outside-real.txt')
+      writeFileSync(outside, 'OUT\n', 'utf8')
+      await assert.rejects(() => fs.moveFile(target(moveDestination), target(outside), {}), refusal('IO_WRITE_DENIED', 'moveFile'))
+      assert.equal(existsSync(moveDestination), true, 'the refused destination move changed nothing')
+    } else {
+      // rc.2: the base class has none of the three methods. The SAME calls are
+      // typed refusals and no file moves.
+      for (const run of [
+        () => fs.patchText(target(patchFile), []),
+        () => fs.deleteFile(target(deleteFile)),
+        () => fs.moveFile(target(moveSource), target(moveDestination), {}),
+      ]) {
+        await assert.rejects(run, (error) => {
+          assert.equal(error?.name, 'TeamIoDenial')
+          assert.equal(error.code, 'IO_POLICY_UNSUPPORTED')
+          return true
+        })
+      }
+      assert.equal(existsSync(deleteFile), true)
+      assert.equal(existsSync(moveSource), true)
+      assert.equal(existsSync(moveDestination), false)
+    }
+  } finally {
+    await root.fiber.dispose()
+  }
 })

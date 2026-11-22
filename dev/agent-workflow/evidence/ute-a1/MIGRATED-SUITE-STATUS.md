@@ -2306,3 +2306,63 @@ interleaving; the `ask`/`deny` arms are in-process only (`ADM-126/127/131`); no 
 row is disabled on win32); durable shell state is shell-local across two turns, not a tmux/Processo env
 proof; the deployment requirement above is real (a governed deployment without `@deepseek-ai/dsh-terminal`
 cannot bind the preset).
+
+## Round 77 (rc.5 FS new-method confinement) — 2026-11-23
+
+Full evidence: `RC5-MIGRATION.md` §6.1/§11 and `CAPABILITY-MATRIX-C.md` (round 77 section). The
+external review's #1 security item: DSH **0.2.2-rc.5**'s `FileSystem` adds `patchText`, `deleteFile`
+and `moveFile` (`packages/fs/fs/src/index.ts:325,345,368`), and the Team confined provider overrode
+ten methods ending at `editText` — so on rc.5 `apply_patch`, delete and move reached the backend with
+the Member's lane never consulted. SLICE-35 is the invariant that goes red exactly for this; it was
+RED on rc.5 at round 72b (7 un-overridden names) and is now **GREEN on rc.5 AND rc.2**.
+
+**Product change.** `packages/runtime/team-services/src/fs.ts`: `patchText` (`:365`) mirrors
+`editText` (same path, same write-axis + read-if-existing admission); `deleteFile` (`:383`) is judged
+like a write of the file it removes; `moveFile` (`:416`) judges BOTH paths — the source as a removal
+of an existing file, the destination as a write (plus a read when it exists) — and refuses BEFORE the
+provider runs, so an out-of-lane destination leaves the source in place. `WRITE_METHODS` (`:120`)
+carries the three names. rc.2 compatibility is a separate `FsNewMethodSurface` (`:99`) + ONE local
+commented cast (`:250-264`); a base without a method is a TYPED `IO_POLICY_UNSUPPORTED`
+(`:279`), never a `TypeError` and never a fallthrough. `install.ts` passes the Member identity at
+both call sites. `MANAGED_FS_METHODS` deliberately not grown (an rc.2 install must still be accepted;
+the capability decision moved per call).
+
+**Invariant work.** SLICE-35 now excludes rc.5's four TS-`private` concrete helpers
+(`patchContent`/`requireFile`/`withLocks`/`writeTarget`) — the decision round 72b deferred — and makes
+it **witnessed**: each excluded name must be called from a base method the class overrides, plus a
+host-relative assertion that the three public names are derived and covered whenever the base
+declares them. SLICE-36 keeps its exact `deepEqual`; its fixture now adds `copyFile`/`truncateFile`/
+`renamePath` (names the product does NOT cover), because reusing the rc.5 names would have measured
+the product's new coverage instead of the derivation. Mutation control: renaming the `patchText`
+override turns SLICE-35 RED on rc.5 naming `patchText`.
+
+**Arms (node:test, `ute-vnext-a1`, `ADM-135`…`ADM-140`).** `ADM-135` `patchText` in-lane ⇒ spy
+reached exactly once with the SAME target; out-of-lane ⇒ `IO_WRITE_DENIED`, zero calls.
+`ADM-136` `deleteFile` same, plus write-only lane ⇒ `IO_WRITE_REQUIRES_READ` (judged LIKE A WRITE).
+`ADM-137` `moveFile` both objects delegated; out-of-lane destination ⇒ refused, zero calls, source
+NOT removed, nothing published; out-of-lane source ⇒ same. `ADM-138` cross-root per the product's
+own per-path rule: an existing destination in a write-only root refuses `IO_WRITE_REQUIRES_READ`,
+while a fresh destination in a second allow root IS admitted (no invented cross-root ban; the lane
+has no root concept beyond its `allow` subtree roots, and rc.5's move is publish-then-remove, not a
+rename). `ADM-139` a base without the three ⇒ `IO_POLICY_UNSUPPORTED` naming the method, no
+`TypeError`, nothing changed. `ADM-140` the REAL pinned provider, host-relative, and it asserts the
+branch matches the selected host: rc.5 performs patch/delete/move (real effects), rc.2 refuses them
+typed with nothing moved.
+
+**Lanes.** rc.2 (`ute-vnext-a1`, default): **204 tests / 202 pass / 0 fail / 2 disclosed skips**,
+exit 0 (was 182/180 at round 72b). rc.5 per suite (the leg cannot run as one invocation there):
+realm-lane 12/12, fs-slice **34/36** (was 33/36; SLICE-21/30 remain red, genuine rc.5 drift),
+admission 124 tests / 119 pass / 5 red, os-probe 3/3, work-turn-reader 7/7, template-binding 6/6,
+b-probe-ladder **hangs**. The five admission reds (`ADM-96/97`: `signals[0] is not of type
+AbortSignal`; `ADM-100/101/102`: preset native-module default mount) and the b-ladder hang are
+**pre-existing on rc.5 — reproduced with this round's four files reverted** — and are recorded, not
+bent.
+
+**Gates, fresh at this HEAD:** dispatch `204/202/0/2` exit 0; catalog `785 tests / 38 uncollected /
+14 excluded` findings 0; cut-closure `cut(0/148)` findings 0; P0 `cut(148/148)` findings 0; docs-sync
+findings 0; 28 placements; ci-required `workflows=10 findings=0`; bound vitest **238 pass**;
+`ci-pr-gate --full --census-captures 2` **PASS**.
+
+**Not proven.** In-process only (no booted `apply_patch`/delete/move, no model turn); no kernel
+boundary (the base provider's TOCTOU is inherited); `moveFile`'s version-guarded / patched-on-move
+path is not exercised; no matrix upgrade (C-fs stays MECHANISM).

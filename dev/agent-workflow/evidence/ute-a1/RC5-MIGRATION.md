@@ -1,6 +1,6 @@
-# RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 signal collected
+# RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 CLOSED (round 77)
 
-Round 72b, 2026-11-22. Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
+Round 72b, 2026-11-22; round 77 (2026-11-23) closes B5 — see §6.1 and §11. Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
 base `6350d04b0` (+ this round's commit). Read first: `NEXT-HOST-RC5-FEASIBILITY.md` (the
 feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
 
@@ -15,8 +15,8 @@ feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
 | existing next-host lane | **19/19 pass** | boot, native-api (A1–A6), provisioning controls (11 refusals + positive) |
 | ute-g1-fs rc.5 lane | **5/5 pass** | 16/16 vectors reproduce the rc.2 golden; 13/13 negative controls |
 | A1 slice on rc.2 | **36/36 pass** | no regression from the port (default = legacy) |
-| A1 slice on rc.5 | **33/36 pass** | 3 red: SLICE-35 (the intended B5 signal) + SLICE-21/30 (genuine rc.5 drift, §7) |
-| B5 three unconfined FS methods | **not fixed (by instruction)** | the invariant is RED on rc.5 and names **7** un-overridden entry points (§6) |
+| A1 slice on rc.5 | **34/36 pass** (round 77) | was 33/36 at round 72b; SLICE-35 is now GREEN (§6.1); the remaining 2 reds are SLICE-21/30 (genuine rc.5 drift, §7) |
+| B5 three unconfined FS methods | **CLOSED (round 77)** | `patchText`/`deleteFile`/`moveFile` are confined, SLICE-35 GREEN on rc.5 and rc.2; six new arms `ADM-135`…`ADM-140` (§6.1, §11) |
 | local gates | **all green** | dispatch 180+2skip, catalog 785/38/14, cut-closure, P0, docs-sync, 28 placements, ci-required 10/0, bound vitest 238 |
 
 No `CORE_SEAM_BLOCKER`. No host-tree file was written (the only host writes are the gitignored
@@ -272,6 +272,10 @@ host drift, one is the intended product signal.
 
 ## 6. SLICE-35 — the confinement invariant is RED on rc.5 (the intended B5 signal)
 
+> **ROUND 77 UPDATE — this section is history, B5 is closed.** The signal below was collected at
+> round 72b and is kept verbatim because the fix has to be read against it. It now reads GREEN on
+> BOTH lanes; what closed it, and the evidence, is §6.1 and §11.
+
 ```
 ✖ SLICE-35 — the base provider has path-touching entry points the Team confined class does not override:
   deleteFile, moveFile, patchContent, patchText, requireFile, withLocks, writeTarget
@@ -297,6 +301,97 @@ allowlist, which the arm's design explicitly refused ("no allowlist to rot"), so
 No claim of "FS confinement holds on rc.5" may be made until the three overrides exist. B5 itself
 (three overrides in `packages/runtime/team-services/src/fs.ts` + arms) is a separate product task
 and was NOT attempted this round, per instruction.
+
+## 6.1 ROUND 77 — B5 CLOSED: the three rc.5 FS methods are confined
+
+**What changed (product).** `packages/runtime/team-services/src/fs.ts`:
+
+| method | impl | mirrors |
+| --- | --- | --- |
+| `patchText` | `fs.ts:365` | `editText` — same target, write axis, read coverage when the file exists |
+| `deleteFile` | `fs.ts:383` | a write of the file it removes — write axis + `write ⇒ read` (the file exists by construction) |
+| `moveFile` | `fs.ts:416` | BOTH paths: the SOURCE as `editText` (removal of an existing file), the DESTINATION as `writeText` (write + read-if-existing) |
+
+Both `moveFile` paths are judged on the REAL guard (`createMemberFsGuard`, same
+`evaluateLocatorAccess` canonicalization) BEFORE the base Provider runs, so an out-of-lane
+destination refuses with `IO_WRITE_DENIED` and the source is not removed either. `WRITE_METHODS`
+(`fs.ts:120`) grew the three names so the axis table treats them as mutations, not reads.
+
+**Type strategy (rc.2 compile / rc.5 runtime).** rc.2's provider type has none of the three, so they
+are declared as extra methods on a separate `FsNewMethodSurface` (`fs.ts:99`) and the base
+implementation is looked up ONCE on `Base.prototype` through one local cast (`fs.ts:250-264`). No
+`any` was added. A base that does not implement a method refuses TYPED with
+`IO_POLICY_UNSUPPORTED` (`fs.ts:279`, carrying the Member identity every install site now passes —
+`install.ts:510`, `:875`) instead of throwing `TypeError` on `undefined(...)`. `MANAGED_FS_METHODS`
+was deliberately NOT grown: the three are optional per-call capabilities, so the install still
+accepts an rc.2 provider and the refusal happens at the call.
+
+**SLICE-35 GREEN on BOTH lanes.** The 7-name derivation needed one decision, and it is now made and
+WITNESSED rather than a bare allowlist: the four TS-`private` helpers (`patchContent`, `requireFile`,
+`withLocks`, `writeTarget`) are not entry points, and each excluded name must be called from a base
+method that is itself in the guarded set — if a future host calls a helper from a method the class
+does not override, that method is still derived and red; if the guarded caller disappears, the
+witness fails. An extra host-relative assertion pins that the three public names ARE derived and ARE
+covered whenever the selected base declares them, so the exclusion cannot swallow them. SLICE-36
+(the positive control) keeps the same exact `deepEqual`; its fixture now adds three names the
+PRODUCT does not cover (`copyFile`/`truncateFile`/`renamePath`), because reusing the rc.5 names
+would have measured the product's new coverage instead of the derivation.
+
+```
+$ node --test --test-reporter=spec --test-name-pattern='SLICE-3[56]' packages/runtime/test/vnext-fs-slice.test.mjs
+✔ SLICE-35 — the confined provider covers EVERY base entry point that touches a path
+✔ SLICE-36 — the coverage invariant actually detects an unconfined entry point
+
+$ TEAM_TEST_HOST=next node --test --test-reporter=spec --test-name-pattern='SLICE-3[56]' packages/runtime/test/vnext-fs-slice.test.mjs
+✔ SLICE-35 — the confined provider covers EVERY base entry point that touches a path
+✔ SLICE-36 — the coverage invariant actually detects an unconfined entry point
+```
+
+**Mutation control (the green is falsifiable).** Renaming the `patchText` override (so the class no
+longer covers it) turns SLICE-35 RED on rc.5, naming exactly that method:
+
+```
+✖ SLICE-35 — the base provider has path-touching entry points the Team confined class does not override: patchText
+  — on a newer host those calls reach the real backend with the Member lane never consulted.
+```
+
+**Six new arms, `ADM-135`…`ADM-140`** (node:test, `vnext-admission.test.mjs`, `ute-vnext-a1` leg):
+
+| arm | positive | negative |
+| --- | --- | --- |
+| `ADM-135` `patchText` | spy provider reached exactly once with the SAME target object | out-of-lane ⇒ `IO_WRITE_DENIED`, provider never called, file untouched |
+| `ADM-136` `deleteFile` | same, on a delete | out-of-lane ⇒ `IO_WRITE_DENIED`; write-only lane ⇒ `IO_WRITE_REQUIRES_READ` (judged LIKE A WRITE) |
+| `ADM-137` `moveFile` | both objects delegated, source+destination unchanged | out-of-lane DESTINATION ⇒ refused, zero provider calls, source NOT removed, nothing published; out-of-lane SOURCE ⇒ same |
+| `ADM-138` cross-root | a move into a second allow root IS admitted when each path passes its own admission | an existing destination in a write-only root ⇒ `IO_WRITE_REQUIRES_READ` (the product's per-path rule, no invented cross-root ban) |
+| `ADM-139` old backend | — | a base without the three ⇒ `IO_POLICY_UNSUPPORTED` naming the method, no `TypeError`, nothing changed |
+| `ADM-140` REAL provider | on rc.5 the three calls take effect through the real `LocalFileSystem` (patch is a no-op, delete removes, move publishes+removes) | out-of-lane destination refused by the real provider's lane; on rc.2 the same calls are typed `IO_POLICY_UNSUPPORTED` and nothing moves |
+
+`ADM-140` asserts the branch it took matches the selected host, so a lane that says
+`TEAM_TEST_HOST=next` and resolves the rc.2 tree cannot read as an rc.5 green.
+
+**Lane results (both hosts, this HEAD).** `ute-vnext-a1` on rc.2: **204 tests / 202 pass / 0 fail /
+2 disclosed skips**, exit 0 (was 182/180 at round 72b). The rc.5 lane cannot run as ONE `node --test`
+invocation: `vnext-b-probe-ladder.test.mjs` hangs there (16/16 arms never settle; **baseline-identical
+— the same hang reproduces with this round's four files reverted**), so the rc.5 evidence is taken
+per suite, exactly as round 72b did. Per suite on rc.5: realm-lane 12/12, fs-slice 34/36 (SLICE-21/30
+red, §7), admission 124 tests / 119 pass / 5 red (pre-existing, below), os-probe 3/3,
+work-turn-reader 7/7, template-binding 6/6; b-probe-ladder hangs. The five admission failures and the
+b-ladder hang are **pre-existing rc.5 drift, measured against the reverted tree, not caused by this
+round**: `ADM-96`/`ADM-97` (`TypeError: signals[0] is not of type AbortSignal`, rc.5 MCP call shape)
+and `ADM-100`/`ADM-101`/`ADM-102` (the preset native-module default mount). They are recorded, not
+bent, and remain open rc.5 work for a later round.
+
+**What this does NOT prove.** The arms are IN-PROCESS: a spy/real provider class mounted through
+Cordis in the test process, and the "real provider" arm is the real pinned `LocalFileSystem` with the
+REAL lane guard, but there is still no host boot, no model turn, and no kernel boundary at this
+layer. In particular: (a) no live `apply_patch`/delete/move through a booted member is measured;
+(b) the guard is in-process, so a TOCTOU between the guard's canonicalization and the provider's own
+syscall is inherited from the base provider, not closed here; (c) the rc.2 compile-time reality is
+asserted by `tsc` + the typed-refusal arm, not by running rc.2's provider through a real move;
+(d) `moveFile`'s rc.5 semantics (publish-then-remove, `sourceDeleted:false` on a retained source)
+were read from the host source and exercised only for the unconditional case (no hunks, no version
+guards).
+
 
 ## 7. SLICE-21 / SLICE-30 — genuine rc.5 behavioural drift (B6), not a porting bug
 
@@ -354,11 +449,11 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 
 | item | state | why |
 | --- | --- | --- |
-| **B5** — three unconfined FS methods | **not attempted (by instruction)** | separate product task; the invariant that keeps it visible (SLICE-35) is red on rc.5 and reported |
+| **B5** — three unconfined FS methods | **CLOSED (round 77)** | three overrides + six arms; SLICE-35 GREEN on rc.5 and rc.2 (§6.1, §11) |
 | SLICE-21 / SLICE-30 on rc.5 | **red, deliberately** | rc.5 batch synthesizes pre-dispatch abort results without the pipeline (§7); needs a product decision, not a test edit |
 | provisioning CLI on a symlinked tree (`--assets`) | **environment friction, worked around** | `LAUNCHER_PATH_OUTSIDE_TREE` is lexical; realpath-anchored transport used and verified. A realpath fix in the CLI is a follow-up, not done here |
 | hosted CI `next-host` leg | **not run here** | the leg provisions the tree on the runner; this round only proves the LANE, locally, against the real pinned host |
-| claim "FS confinement holds on rc.5" | **forbidden until B5** | §6 |
+| claim "FS confinement holds on rc.5" | **allowed for the three FS methods, with the scope in §11** | §6.1/§11: in-process + real-provider evidence, NOT a live-host or kernel claim |
 | any `CAPABILITY-MATRIX-C.md` row upgrade | **not done** | no row is PRODUCT-PROVEN; rc.5 greens are lane evidence, not a matrix upgrade |
 
 ## 10. Files changed (this round)
@@ -371,3 +466,31 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 
 Untracked, gitignored, not committed: the rc.5 tree (its own checkout), `.artifacts/tmp/**`
 (provisioning driver, logs, probes), `tests/homes/**`.
+
+## 11. Round 77 — files changed and the gate outputs
+
+Product: `packages/runtime/team-services/src/fs.ts` (three overrides + `FsNewMethodSurface` +
+`WRITE_METHODS` + `baseImplementation` + the module header), `packages/runtime/team-services/src/install.ts`
+(two call sites pass `spec.identity.memberInstanceId`). Tests: `packages/runtime/test/vnext-admission.test.mjs`
+(`ADM-135`…`ADM-140`), `packages/runtime/test/vnext-fs-slice.test.mjs` (SLICE-35 witnessed-helper
+exclusion + host-relative assertion; SLICE-36 fixture + additive assertion). Docs: this file,
+`CAPABILITY-MATRIX-C.md`, `D-ACCEPTANCE-REPORT.md`, `MIGRATED-SUITE-STATUS.md`.
+
+Gates at this HEAD (all green; the `ci-pr-gate --full --census-captures 2` output is the last block
+of the round's commit message / `SESSION_ROUTER_LOG.md` entry):
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 204  pass 202  fail 0  skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=785 … uncollected=38 excluded=14 findings=0
+$ node scripts/ute-cut-closure.mjs --check      → UTE-CUT-CLOSURE pass cut=cut(0/148) findings=0
+$ node scripts/ute-p0-assets.mjs --check        → UTE-P0-ASSETS pass cut=cut(148/148) findings=0
+$ node scripts/docs-sync.mjs --check            → findings=0 blocking=0
+$ node scripts/place-dist-glue.mjs              → done (28 placement(s))
+$ node scripts/eb3-ci-required.mjs              → EB3-CI-REQUIRED pass workflows=10 findings=0
+$ node scripts/eb3-security-run.mjs --layer ci-integration \
+    --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+```

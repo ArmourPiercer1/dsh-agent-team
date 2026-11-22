@@ -1221,9 +1221,31 @@ test('SLICE-35 — the confined provider covers EVERY base entry point that touc
     if (proto.constructor?.name === 'Service') break
     for (const name of Object.getOwnPropertyNames(proto)) baseNames.add(name)
   }
-  const ioEntryPoints = [...baseNames].filter((name) => !NOT_IO.has(name))
+  // rc.5 ALSO declares four TS-`private` helpers of its concrete provider
+  // (`patchContent`, `requireFile`, `withLocks`, `writeTarget`). They are NOT
+  // entry points: nothing outside the provider can name them (TS `private` is
+  // not runtime-private, which is why this derivation sees them), and each is
+  // reached ONLY from a public mutation this class confines. The rc.5
+  // migration deferred the decision to exclude them; B5 makes it, and makes it
+  // WITNESSED instead of an allowlist that rots: every excluded name that the
+  // base declares must be called from a base method that is itself in the
+  // guarded set. If a future host calls a helper from a method the class does
+  // not override, that method is still derived (and red), and if the guarded
+  // caller disappears the witness below goes red.
+  const INTERNAL_HELPERS = new Set(['withLocks', 'writeTarget', 'requireFile', 'patchContent'])
+  const ioEntryPoints = [...baseNames].filter((name) => !NOT_IO.has(name) && !INTERNAL_HELPERS.has(name))
   const Confined = createConfinedFileSystemClass(LocalFileSystem, async () => {})
   const confined = new Set(Object.getOwnPropertyNames(Confined.prototype))
+  for (const helper of INTERNAL_HELPERS) {
+    if (!baseNames.has(helper)) continue
+    const witnesses = [...confined].filter((name) => name !== helper && typeof LocalFileSystem.prototype[name] === 'function'
+      && String(LocalFileSystem.prototype[name]).includes(`this.${helper}(`))
+    assert.ok(
+      witnesses.length > 0,
+      `the excluded helper '${helper}' is declared by the base provider but no method the Team class overrides calls it; `
+      + 'the exclusion is no longer justified (a path-touching entry point is being ignored)',
+    )
+  }
   const unconfined = ioEntryPoints.filter((name) => !confined.has(name)).sort()
   assert.deepEqual(
     unconfined,
@@ -1238,6 +1260,16 @@ test('SLICE-35 — the confined provider covers EVERY base entry point that touc
   for (const name of ['readText', 'writeText', 'editText', 'stat', 'listDir']) {
     assert.ok(ioEntryPoints.includes(name), `${name} must be recognised as an IO entry point`)
   }
+  // B5: on a host that declares the rc.5 additions they are IO entry points AND
+  // this class confines them. Host-relative on purpose: on rc.2 the base has none
+  // of the three, so requiring them there would be an rc.5 fact baked into the
+  // legacy lane. Excluding them from the derivation (the mistake this arm exists
+  // to catch) fails HERE even if it somehow passed the unconfined comparison.
+  for (const name of ['patchText', 'deleteFile', 'moveFile']) {
+    if (typeof LocalFileSystem.prototype[name] !== 'function') continue
+    assert.ok(ioEntryPoints.includes(name), `${name} must be derived as an IO entry point on a host that declares it`)
+    assert.ok(confined.has(name), `${name} must be confined by the Team class (B5)`)
+  }
 })
 
 test('SLICE-36 — the coverage invariant actually detects an unconfined entry point', async () => {
@@ -1251,19 +1283,29 @@ test('SLICE-36 — the coverage invariant actually detects an unconfined entry p
     'constructor', 'withLock', 'resolve', 'processPath', 'processPathFromHostPath',
     'fileUrl', 'contains', 'versionAfterWrite', 'sandboxMode',
   ])
+  // The same witnessed exclusion SLICE-35 applies (rc.5's TS-`private` helpers of
+  // the concrete provider). Duplicated deliberately: this control must derive with
+  // the SAME rule the arm under test uses, or it would grade a different algorithm.
+  const INTERNAL_HELPERS = new Set(['withLocks', 'writeTarget', 'requireFile', 'patchContent'])
   const derive = (Base) => {
     const names = new Set()
     for (let proto = Base.prototype; proto && proto !== Object.prototype && proto !== Function.prototype; proto = Object.getPrototypeOf(proto)) {
       if (proto.constructor?.name === 'Service') break
       for (const name of Object.getOwnPropertyNames(proto)) names.add(name)
     }
-    return [...names].filter((name) => !NOT_IO.has(name))
+    return [...names].filter((name) => !NOT_IO.has(name) && !INTERNAL_HELPERS.has(name))
   }
   class FutureProvider extends LocalFileSystem {
-    // The rc.5 additions, verbatim in name, as an unconfined future entry point looks from here.
-    async patchText() { throw new Error('never called: this arm measures the DERIVATION, not the effect') }
-    async deleteFile() { throw new Error('never called') }
-    async moveFile() { throw new Error('never called') }
+    // Three entry points the PRODUCT does not cover, i.e. what a future host
+    // addition looks like from here. They used to be patchText/deleteFile/
+    // moveFile — the point of B5 is that those three are now confined, so reusing
+    // their names would measure the product's coverage instead of this
+    // derivation (the control would go red for the wrong reason, and the only way
+    // to make it green would be to stop covering them). The names are otherwise
+    // arbitrary: the arm measures the DERIVATION, never these bodies.
+    async copyFile() { throw new Error('never called: this arm measures the DERIVATION, not the effect') }
+    async truncateFile() { throw new Error('never called') }
+    async renamePath() { throw new Error('never called') }
   }
   const ConfinedFuture = createConfinedFileSystemClass(FutureProvider, async () => {})
   const confined = new Set(Object.getOwnPropertyNames(ConfinedFuture.prototype))
@@ -1271,18 +1313,30 @@ test('SLICE-36 — the coverage invariant actually detects an unconfined entry p
   // HOST-RELATIVE EXPECTATION, still exact. The fixture ADDS three names to whatever the selected
   // host already declares, so the expected set is "the selected base's own un-overridden entry
   // points PLUS those three". Deriving it (instead of hard-coding three) is what lets this control
-  // run on rc.5, whose base carries four MORE path-touching entry points than rc.2: a hard-coded
-  // expectation would fail here for the right reason but with the wrong message, and satisfying it
-  // by allowlisting rc.5's names would turn the control into a no-op.
+  // run on both hosts without baking one generation's extra names in: on rc.5 the base carries four
+  // MORE path-touching names than rc.2 (handled by the same witnessed INTERNAL_HELPERS exclusion
+  // SLICE-35 applies), and a hard-coded expectation would fail here for the right reason but with
+  // the wrong message. What must NOT be done is allowlisting rc.5's names on the `unconfined` side:
+  // that would turn the control into a no-op. B5 note: the fixture's three names are deliberately
+  // NOT the rc.5 additions, because those are now covered by the product — see the fixture comment.
   const ConfinedBase = createConfinedFileSystemClass(LocalFileSystem, async () => {})
   const confinedBase = new Set(Object.getOwnPropertyNames(ConfinedBase.prototype))
+  const fixtureAdditions = ['copyFile', 'renamePath', 'truncateFile']
   const expected = [...new Set([
     ...derive(LocalFileSystem).filter((name) => !confinedBase.has(name)),
-    'deleteFile', 'moveFile', 'patchText',
+    ...fixtureAdditions,
   ])].sort()
   assert.deepEqual(
     unconfined.sort(),
     expected,
     'the derivation must name exactly the un-overridden path-touching methods: the selected base\'s own + the three the fixture adds',
   )
+  // ADDITIVE (B5), not a replacement: on a host that declares the rc.5 additions
+  // the PRODUCT covers all three, so a derivation that stopped seeing them would
+  // pass the comparison above by losing them from `derive` — this pins them.
+  for (const name of ['patchText', 'deleteFile', 'moveFile']) {
+    if (typeof LocalFileSystem.prototype[name] !== 'function') continue
+    assert.ok(confinedBase.has(name), `${name} must be covered by the product class on a host that declares it`)
+    assert.ok(derive(LocalFileSystem).includes(name), `${name} must still be DERIVED as an IO entry point`)
+  }
 })

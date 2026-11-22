@@ -17,6 +17,18 @@
  * provider-resolved real path, so a symlink that escapes the authorized subtree
  * is refused even though its authored name is inside.
  *
+ * THE 0.2.2-rc.5 ADDITIONS (`patchText`, `deleteFile`, `moveFile`) are confined
+ * the same way and are the B5 closure of the rc.5 review: before them,
+ * `apply_patch`, delete and move reached the base Provider with the Member's
+ * lane never consulted. `patchText` is judged like `editText`, `deleteFile`
+ * like a write of the file it removes, and `moveFile` judges BOTH paths (the
+ * source being removed and the destination being published) before either
+ * effect. Because this repo compiles against rc.2's provider type, the three
+ * are declared as extra methods reached through one local, commented cast, and
+ * a base that implements none of them is a TYPED `IO_POLICY_UNSUPPORTED`
+ * refusal rather than an untyped crash or a fallthrough (see
+ * {@link FsNewMethodSurface} and `team-services/src/fs.ts` in the factory).
+ *
  * `ask` IS A REFUSAL HERE (A5-DUAL-PLANE-01, 2026-11-05): the compiled lane can
  * carry the disposition `ask`, and this plane owns no approval consumer
  * (`resolveAskClassCall` is the designed seam and has no production caller), so
@@ -59,6 +71,25 @@ export interface FsProviderSurface {
     watch(target: unknown, changed: (error?: Error) => void, signal: AbortSignal): Promise<() => Promise<void>>;
     writeText(target: unknown, content: string, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
     editText(target: unknown, edit: unknown, expected?: unknown, signal?: AbortSignal, policy?: unknown): Promise<unknown>;
+}
+/**
+ * The THREE `FileSystem` methods 0.2.2-rc.5 added — `patchText`, `deleteFile`,
+ * `moveFile` (`@deepseek-ai/dsh-fs`'s abstract class).
+ *
+ * WHY THEY ARE NOT ON {@link FsProviderSurface}: this repo compiles against
+ * 0.2.0-rc.2's provider type, which has none of them. Declaring them on the
+ * surface the subclass `extends` would make the repo's tsc demand them from
+ * every rc.2 provider AND would turn the subclass's own declarations into
+ * `noImplicitOverride` violations. A separate, minimal surface keeps the
+ * version reality explicit: on rc.2 these are EXTRA methods the subclass
+ * declares; on rc.5 they override the base's. The ONE cast that reaches the
+ * base implementation is local to the factory below (see `baseNew`), and a
+ * base that does not implement a method is a TYPED refusal, never a fallthrough.
+ */
+export interface FsNewMethodSurface {
+    patchText(target: unknown, hunks: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
+    deleteFile(target: unknown, expected?: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
+    moveFile(source: unknown, destination: unknown, options: unknown, signal?: AbortSignal, sandboxPolicy?: unknown): Promise<unknown>;
 }
 /** A Provider constructor that Cordis can mount as the `fs` service. */
 export type FsProviderConstructor = new (ctx: Context, config?: Record<string, unknown>) => FsProviderSurface;
@@ -104,6 +135,13 @@ export declare function createMemberFsGuard(policy: PolicyLanes, resolver?: Path
  * the base, every target-bearing method guards first and delegates second.
  * The returned constructor is mountable through Cordis (`ctx.plugin`) and
  * registers the same `fs` service name in the context it is mounted under.
+ *
+ * @param Base - the live provider class (rc.2 or rc.5).
+ * @param guard - the Member's admission function.
+ * @param memberIdentity - the Member whose refusals are recorded; carried only
+ *   by the "base does not implement this rc.5 method" refusal. `install.ts`
+ *   always supplies it; the default exists for derivation-only callers (the
+ *   SLICE-35/36 fixtures) that mount the class without a Member.
  */
-export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard): FsProviderConstructor;
+export declare function createConfinedFileSystemClass(Base: FsProviderConstructor, guard: FsGuard, memberIdentity?: string): FsProviderConstructor;
 //# sourceMappingURL=fs.d.ts.map

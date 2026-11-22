@@ -172,5 +172,11 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 # ADM-125…130 arms are appended at the end and contain no blueprint document). Re-recorded from the
 # gate's own `verify-blueprint-version-clean.mjs` report; no literal added, none resolved, no shipped
 # surface gained a namespace literal.
+# 2026-11-23 (UTE A1 cut, Round 77, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4416 -> L4417 because round 77 appended the six rc.5 FS arms
+# (ADM-135…ADM-140) at the END of the file and added one import line at the top. No literal was
+# added or removed, the appended arms author no blueprint document, and no shipped surface gained a
+# namespace literal. Re-recorded from the gate's own `verify-blueprint-version-clean.mjs` report,
+# not by hand-guessing an offset.
 OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4416=v5
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4417=v5

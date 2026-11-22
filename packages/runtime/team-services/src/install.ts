@@ -507,7 +507,7 @@ export async function installMemberIoProviders(
         toolBindingIdentity: null,
         policyRevision: policy.revision,
       })
-    const Confined = createConfinedFileSystemClass(Base, observed)
+    const Confined = createConfinedFileSystemClass(Base, observed, spec.identity.memberInstanceId)
     let disposeMount: () => Promise<void>
     try {
       const fiber = await scoped.plugin(Confined, spec.config ?? {})
@@ -872,7 +872,7 @@ export async function installToolBindingRealm(input: {
       toolBindingIdentity: spec.toolBindingIdentity,
       policyRevision: spec.effective.policyRevision,
     })
-  const Confined = createConfinedFileSystemClass(Base, observed)
+  const Confined = createConfinedFileSystemClass(Base, observed, spec.identity.memberInstanceId)
   const scoped = root.isolate('fs', Symbol(`binding:${key}`))
   let fiber: { dispose(): Promise<void> } | undefined
   try {
