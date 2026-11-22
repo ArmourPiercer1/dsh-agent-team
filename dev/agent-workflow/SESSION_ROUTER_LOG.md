@@ -10599,3 +10599,30 @@ Recommendations recorded: C for items 1-2 to make a reviewable candidate now, B 
 increment, A for item 1 as the contract decision that also unblocks B rungs 5-6, one sentence each for 3-5, and
 item 6 stays refused until a routed path can be governed. Explicitly forbidden: closing any item by re-enabling an
 ungoverned plane, inventing an axis, or widening an invariant for a green row.
+
+### R72 — the external review's CI findings were real: one genuine ReferenceError, five red jobs, and 252 deletions that needed auditing
+
+The review (docs/reviews/20261122-1225.txt) read PR #822 from GitHub and reported hosted CI red while our local
+legs were green — because local gates never ran typecheck/lint/build/the other layers. Measured and repaired:
+
+- REAL BUG: `a5sf-realm-row.mjs:1182` consumed `skillSpec`/`presentSpec` that an earlier commit had removed, so
+  every path into the realm row died with ReferenceError (`ci-product`). Restored by computing both from the
+  module's own helpers with their real inputs (post-deny surface, configured modules, declared skill catalog),
+  and the same defect in `agent-bindings.mjs` (four helpers) was restored the same way.
+- The five hosted jobs now pass locally with the SAME commands the workflows run: pr-gate 10/10, ci-product
+  contracts 6/8 files + build, ci-integration (trusted sources booked, 238 vitest), ci-security 216, ci-fast, and
+  ci-required (the census leg had been absent).
+
+Because turning those jobs green required disposing of tests whose subjects the A0 cut deleted, a second,
+adversarial round audited all 108 deleted test files against the frozen inventory: 102 RETIRED-SUBJECT
+(justified, each cited), 1 PRESERVED restored green (`a3p3-governance-lane-hygiene`, re-anchored on vnext/root.ts
+and with a stale allow-list entry REMOVED), 5 AMBIGUOUS recorded as needing a ruling, 0 left restored-but-red.
+One negative control had fully lost its only proof (pwsh shell-class laws) and was MIGRATED as 8 arms.
+
+Audit findings that must not be buried: `retiredSubjects` had listed 3 LIVE files as retired (now forbidden) and
+the key is record-only, so it can never turn a gate red; the p4t6 ledger lost 142 real lane bookings to one
+snapshot; the a2c2 permission-coverage gate is kept, exported, and wired nowhere; and the two boundary raises are
+measured (6834 evidence files, 461 records) with headroom recorded as headroom.
+
+Gates: leg 180 + 2 disclosed skips, catalog 785 tests / 38 uncollected, cut-closure cut(0/148), P0 cut(148/148),
+docs-sync 0, 28 placements, ci-required 10 workflows, bound vitest 238.
