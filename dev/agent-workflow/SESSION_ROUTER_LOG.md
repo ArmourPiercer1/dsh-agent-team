@@ -10434,3 +10434,21 @@ REFUTED and escalated rather than worked around:
 
 Gates at `aa05de669`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed skips), catalog `tests=889
 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R64 — search face restored: the overlay abstains instead of faulting, and faults on covered faces still deny
+
+Shape B of the search-face CCR, implemented at the overlay decision: classify by vocabulary membership BEFORE
+canonicalizing; out-of-vocabulary ⇒ `no-opinion` (lane alone judges), covered faults ⇒ still
+`ADMISSION_OVERLAY_FAULT`, stored denies ⇒ still deny. The durable fact now carries
+`overlayOutcome: deny | no-opinion | fault`.
+
+Live (two agreeing boots): in-lane `grep` goes from refused-as-fault to `decision=allow`,
+`overlayOutcome=no-opinion`, execution `completed`, a real match returned, fact byte-identical after the SIGKILL
+cold restart. ADM-103..106 pin all four directions.
+
+Residual, disclosed: the durable overlay cannot DENY a search (lane-only governance there); shape A (subtree
+search face) stays open. Also disclosed: one intermediate run flagged work-delivery REFUTED because the driver
+picked a tools-less auxiliary request; the probe now selects a tool-carrying request, the clause is unchanged.
+
+Gates at `186d2c5c4`: leg `suites=7 files=7 exit=0` (168 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.

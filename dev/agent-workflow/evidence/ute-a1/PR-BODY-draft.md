@@ -255,6 +255,26 @@ ADM-100/101/102 pin the new behaviour: governed default mount through the confin
 same host `execute`, allow guard facts, provider deny), ungoverned unchanged, and unresolvable ⇒ typed refusal
 with no fallback.
 
+## D stage, live: the search face is restored without silencing faults (round 64)
+
+Round 63 measured an IN-LANE `grep` being refused as `ADMISSION_OVERLAY_FAULT` (`tool-unsupported`) — the closed
+permission vocabulary cannot canonicalize a search tool. Shape B of the search-face CCR is now implemented:
+
+- the overlay classifies by **vocabulary membership** BEFORE canonicalizing; an out-of-vocabulary tool is
+  `no-opinion` and never enters the canonicalizer, so it can never fault;
+- the compiled LANE alone judges it;
+- a fault on a COVERED tool still denies `ADMISSION_OVERLAY_FAULT` (faults are not silenced), and a stored deny
+  still denies;
+- the durable fact carries `overlayOutcome: 'deny' | 'no-opinion' | 'fault'`, so a reader can tell WHY the
+  overlay abstained.
+
+Live, two agreeing boots: the same `grep` is now `decision=allow`, `overlayOutcome=no-opinion`, execution
+`completed`, real match returned; the fact is byte-identical after a SIGKILL cold restart. ADM-103..106 pin the
+four directions (covered+deny, covered fault, out-of-vocabulary in lane, out-of-vocabulary out of lane).
+
+Residual stated plainly: the durable overlay still cannot DENY a search (the lane ceiling is its whole
+governance); shape A (a subtree search face in the vocabulary) remains open.
+
 ## The adversarial centre review (round 28)
 
 No P0, seven P1. Six are fixed on this branch; the seventh is the settlement gap above. They were all
