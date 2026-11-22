@@ -531,7 +531,7 @@ Round 75 replaced the path-lane question with an EXECUTION-authority question (o
   fourth lane.
 - **ROUND 76 — THE SWAP WAS MADE AND THE LIVE ARM IS PROVEN.** The shipped governed preset now carries
   the HOST's `@deepseek-ai/dsh-tool-bash-persistent` as a TOP-LEVEL row
-  (`cordis.patch.yml:355-360`, `config.backendType: a5sf-governed-shell`) BESIDE the one-shot
+  (`cordis.patch.yml:363-368`, `config.backendType: a5sf-governed-shell`) BESIDE the one-shot
   `tool-bash`, which stays as the surface baseline the lane replaces. The D3 main blueprint declares
   `toolBindings[]` for `bash` (`run-boot-d3.mjs:309-321`: `authorization: allow`,
   `executionBoundary: confined-subprocess`, `implementationOrigin: dsh-native`, io lanes `all` + empty

@@ -348,7 +348,7 @@ weakening a judge:
 1. **The governed preset mounted only the one-shot `tool-bash`.** Its body injects the HOST's base
    `ctx.shell` (`['tools','shell','systemPrompt','shellEnv']`), so it can never resolve a realm face.
    Round 76 mounts the HOST's own `@deepseek-ai/dsh-tool-bash-persistent` (no shadow, no Team copy) as a
-   TOP-LEVEL preset row in `cordis.patch.yml:355-360`, `config.backendType: a5sf-governed-shell` — the
+   TOP-LEVEL preset row in `cordis.patch.yml:363-368`, `config.backendType: a5sf-governed-shell` — the
    registered backend of the governed PTY face (`terminal-pty.ts`; the install default). The one-shot row
    stays as the SURFACE BASELINE the lane replaces (shape A needs a baseline name to swap: it requires a
    definition-identity change and an unchanged surface name set), exactly mirroring the `tool-fs` pattern.

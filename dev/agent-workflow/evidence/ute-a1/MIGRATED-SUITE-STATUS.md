@@ -2237,7 +2237,7 @@ projection (unchanged limitation).
 touching a judge:
 
 1. **The governed preset mounted only the one-shot `tool-bash`.** Round 76 adds the HOST's own
-   `@deepseek-ai/dsh-tool-bash-persistent` as a TOP-LEVEL preset row (`cordis.patch.yml:355-360`,
+   `@deepseek-ai/dsh-tool-bash-persistent` as a TOP-LEVEL preset row (`cordis.patch.yml:363-368`,
    `config.backendType: a5sf-governed-shell` — the governed PTY face's registered backend), BESIDE the
    one-shot row, which stays as the surface baseline the lane replaces (shape A requires a
    definition-identity change and an unchanged surface NAME set; the same pattern as `tool-fs`). The row
