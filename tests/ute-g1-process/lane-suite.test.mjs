@@ -264,7 +264,14 @@ test('PROC-6 the POST-CUT composition probe reproduces the wiring facts the excl
   console.log(wiringLine(facts))
   const committed = readFileSync(PROBE_TRANSCRIPT, 'utf8')
   assert.equal(committed.startsWith('ACCEPTED-BY round81-a1-cut reason='), true, 'the re-recorded probe transcript must name this round and its reason')
-  assert.ok(committed.includes(output.trim()), 'the committed probe transcript must be exactly a fresh run of the post-cut probe')
+  // The `PROBE-PWSH binary=` line is a HOST OBSERVATION (a runner may ship no
+  // pwsh, or a different path). Compare everything EXCEPT that line: the wiring
+  // facts must be byte-identical across hosts, the observation must not be.
+  const hostFree = (text) => text.split('\n')
+    .filter((line) => !line.startsWith('PROBE-PWSH binary=') && !line.startsWith('ACCEPTED-BY '))
+    .join('\n')
+    .trim()
+  assert.equal(hostFree(committed), hostFree(output), 'the committed probe transcript must be exactly a fresh run of the post-cut probe, modulo the host-only binary observation')
   const readme = readFileSync(join(DIR, 'README.md'), 'utf8')
   assert.match(readme, /probe-composition\.mjs/u, 'the lane README must record which probe produces the wiring facts')
   console.log('PROC-PROBE route-c=absent pwsh=UNREACHABLE reason=no-definition successor=composition-declared-native-modules')

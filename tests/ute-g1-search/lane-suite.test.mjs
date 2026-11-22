@@ -99,6 +99,8 @@ test('RETIRED-BY-A0: the appended PD-16 search shadow is gone, and the new path 
   // LIVE: mount with NO composition-declared module. The seam appends nothing.
   const { mountRouteCWorld } = await import('./lib/world.mjs')
   const { mkdirSync, mkdtempSync, rmSync, writeFileSync } = await import('node:fs')
+  // A fresh runner has no .artifacts/tmp: mkdtemp refuses a missing parent.
+  mkdirSync(join(ROOT, '.artifacts', 'tmp', 'ute-g1-search'), { recursive: true })
   const scratch = mkdtempSync(join(ROOT, '.artifacts', 'tmp', 'ute-g1-search', 'retired-'))
   mkdirSync(join(scratch, 'inside'), { recursive: true })
   writeFileSync(join(scratch, 'inside', 'a.txt'), 'alpha\n')
