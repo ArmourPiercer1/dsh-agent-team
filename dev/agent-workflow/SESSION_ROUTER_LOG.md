@@ -10506,3 +10506,27 @@ a projection read at a product entry is impossible on a centre row (C9). No row 
 
 Gates at `e581cc205`: leg 173 cases / 171 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
 P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R67 — C14b: no safety invariant was enforced only by a deleted component, and the status table now says what it means
+
+Six arms (ADM-110..115) each witness the dropped family body is GONE (`existsSync=false`) and then prove the
+invariant it used to enforce is still enforced elsewhere — positive executes and settles, negative is refused
+with its own code before the body with a closed settlement:
+
+- fs bodies -> centre + provider (`PATH_SYMLINK_ESCAPE`); search -> lane (overlay abstains); web -> network axis;
+  process -> typed refusal + OS profile; ui/inspect/agent-control/agent-state -> unbound or `host.service`
+  recording, with the child's own centre governing the child;
+- the retired PA bridge / pre-execute adapter / native-tool-admission / confined-* shadows -> one approval
+  authority in the centre (`admission-port.mjs`), and Stop-never-completion in the settlement;
+- crucially, the `confined-*` shadows were mounted by the REALM ROW at A0, so a realm-less member never had them
+  as enforcement; and an asked-but-realm-less member is REFUSED `MEMBER_CENTRE_UNWIRED` (ADM-44).
+
+Audit of the C1-C18 table found five real mismatches and fixed them: C1 cited the 405 line for the 15-tool
+surface; C5 said a Stop "resolved" a pending ask (it does not - a Stop is not an approval); C15 cited a file
+with no list; §6.9 (and the matrix + escalation) claimed a realm-less centre row "runs unmediated" when the code
+REFUSES it; §7 said "four" where nine judges are PROVEN. No row was upgraded; the lower status plus a dated note
+won each time.
+
+Gates at `a04ebb60d`: leg 179 cases / 177 pass + 2 disclosed skips (the bash/run_code process-lane positives,
+still never passes), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required
+pass, bound leg `PASS 238`.
