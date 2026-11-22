@@ -5291,3 +5291,418 @@ test('ADM-109 — C11 NEGATIVE: the live overlay is not a second authority, an a
     await stage.destroy()
   }
 })
+
+// =============================================================== C14b: the invariants the DROP must not take
+//
+// C14 drops the eight governed-family bodies (fs, search, web, process, ui, inspect, agent-control,
+// agent-state), their duplicated policy computation, and the old per-family equivalence requirements
+// (`06-CAPABILITY-CONTRACT.md:40`, `:54-63`). C14b preserves the safety invariants those bodies
+// enforced: path read/write upper bounds, network allow/deny, Control authority, Stop. Each arm below
+// proves its invariant AFTER the drop, in both directions, at the component that now owns it — and
+// witnesses that the body it used to live in is still gone. A refusal counts only with its own typed
+// code, its durable fact and a CLOSED settlement: the A1 law, never a narrower tolerance and never a
+// second authority.
+
+const repoPath = (relative) => fileURLToPath(new URL(`../../../${relative}`, import.meta.url))
+
+/** The C14 drop witness: an invariant may not still be enforced by a deleted body. */
+const droppedFilesGone = async (paths) => {
+  const { existsSync } = await import('node:fs')
+  for (const path of paths) {
+    assert.equal(existsSync(repoPath(path)), false, `C14 dropped ${path}; a preserved invariant must not depend on it`)
+  }
+}
+
+/** The C14b owner witness: the component that now enforces the invariant is present. */
+const keptFilePresent = async (path) => {
+  const { existsSync } = await import('node:fs')
+  assert.equal(existsSync(repoPath(path)), true, `${path} is the component that now owns the invariant and must exist`)
+}
+
+test('ADM-110 — C14b PATH BOUNDS: with the fs/search family bodies gone, read/write are still bounded at the centre AND on the RESOLVED provider path', async () => {
+  // (0) THE DROP WITNESS. The bodies C14 deleted are the ones that used to compute path policy; the
+  //     lifted algebra and the provider face are KEEP surfaces, and they are what the arms below use.
+  await droppedFilesGone([
+    'packages/tools/fs-family/src/read-executor.mjs',
+    'packages/tools/fs-family/src/write-executor.mjs',
+    'packages/tools/fs-family/src/fs-mechanics.mjs',
+    'packages/tools/search-family/src/search-backend.mjs',
+    'packages/tools/search-family/src/search-mechanics.mjs',
+  ])
+  await keptFilePresent('packages/runtime/member-io-policy/src/provider-capabilities.ts')
+
+  // (1) POSITIVE CONTROL AT THE CENTRE: an in-lane read AND an in-lane write are admitted, run their
+  //     bodies exactly once each, and settle COMPLETED with a durable fact on their own axis.
+  const w = await centreWorld('c14b-path', { binding: binding() })
+  try {
+    const read = readExec('c14b-path-read')
+    assert.equal((await w.dispatch(read)).kind, 'allow')
+    const write = { name: 'write', callId: 'c14b-path-write', arguments: { file_path: '/work/a/new.txt', content: 'x' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await w.dispatch(write)).kind, 'allow')
+    assert.equal(w.body.count, 2, 'the positive control really ran both bodies')
+    assert.equal(w.store.read(w.executionIdOf(read)).state, 'COMPLETED')
+    assert.equal(w.store.read(w.executionIdOf(write)).state, 'COMPLETED')
+    assert.equal(w.admissionFact('c14b-path-read').axis, 'fs.read')
+    assert.equal(w.admissionFact('c14b-path-write').axis, 'fs.write')
+
+    // (2) NEGATIVE CONTROL AT THE CENTRE: the same two calls outside the lane are refused BEFORE any
+    //     body, recorded with the lane's own code, and settled REFUSED/not-started.
+    const outRead = readExec('c14b-path-out-read', undefined, '/work/b/secret.txt')
+    const outWrite = { name: 'write', callId: 'c14b-path-out-write', arguments: { file_path: '/work/b/new.txt', content: 'x' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    for (const exec of [outRead, outWrite]) {
+      const verdict = await w.preExecute(exec)
+      assert.equal(verdict.kind, 'deny', `${exec.name} outside the lane must be refused`)
+      assert.match(String(verdict.reason), /LANE_DENY/u)
+      w.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      assert.equal(w.admissionFact(exec.callId).refusalCode, 'LANE_DENY')
+      const record = w.store.read(w.executionIdOf(exec))
+      assert.equal(record.state, 'REFUSED')
+      assert.equal(record.observation.dispatch, 'not-started')
+    }
+    assert.equal(w.body.count, 2, 'a lane refusal never reaches a body')
+  } finally {
+    w.close()
+  }
+
+  // (3) THE SECOND LAYER, WITH A REAL FILESYSTEM: authored containment cannot decide `..` or a
+  //     symlink, so the provider face takes the decision on the RESOLVED path. That algebra is the
+  //     KEPT `member-io-policy` module the confined providers call — not a deleted family body.
+  const { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { evaluateLocatorAccess } = await import('../member-io-policy/src/provider-capabilities.ts')
+  const base = mkdtempSync(join(tmpdir(), 'c14b-path-'))
+  try {
+    const inside = join(base, 'inside')
+    const outside = join(base, 'outside')
+    mkdirSync(inside)
+    mkdirSync(outside)
+    writeFileSync(join(inside, 'doc.txt'), 'alpha', 'utf8')
+    writeFileSync(join(outside, 'secret.txt'), 'SECRET', 'utf8')
+    symlinkSync(join(outside, 'secret.txt'), join(inside, 'link-out'))
+    symlinkSync(join(inside, 'doc.txt'), join(inside, 'link-in'))
+    const providerLane = lane([inside])
+
+    // POSITIVE: a real in-lane file, and an in-lane symlink that RESOLVES inside, are allowed.
+    const ok = await evaluateLocatorAccess({ lane: providerLane, locator: join(inside, 'doc.txt') })
+    assert.equal(ok.decision, 'allow')
+    const okLink = await evaluateLocatorAccess({ lane: providerLane, locator: join(inside, 'link-in') })
+    assert.equal(okLink.decision, 'allow')
+
+    // NEGATIVE: a plain outside path.
+    const out = await evaluateLocatorAccess({ lane: providerLane, locator: join(outside, 'secret.txt') })
+    assert.equal(out.decision, 'deny')
+    assert.equal(out.code, 'PATH_NOT_ALLOWED')
+
+    // NEGATIVE: AUTHORED containment admits `inside/../outside/secret.txt` (the `..` segment is kept
+    // literal, never folded — pinned in `path-rules.ts`), so the CENTRE allows the authored locator;
+    // the RESOLVED path is outside the lane and the provider face refuses it. This is the division of
+    // labour the old body performed, still enforced after the body is gone.
+    // NB `path.join` would NORMALIZE the `..`; the authored string is built by hand on purpose.
+    const traversal = `${inside}/../outside/secret.txt`
+    assert.equal(admit({ binding: binding({ read: lane([inside]) }), toolName: 'read', arguments: { file_path: traversal } }).kind, 'allow', 'the centre decides the AUTHORED locator; the provider face must decide the resolved one')
+    const escaped = await evaluateLocatorAccess({ lane: providerLane, locator: traversal })
+    assert.equal(escaped.decision, 'deny')
+    assert.equal(escaped.code, 'PATH_NOT_ALLOWED')
+
+    // NEGATIVE: a symlink authored INSIDE the lane that resolves OUTSIDE it is its own typed refusal.
+    const linked = await evaluateLocatorAccess({ lane: providerLane, locator: join(inside, 'link-out') })
+    assert.equal(linked.decision, 'deny')
+    assert.equal(linked.code, 'PATH_SYMLINK_ESCAPE')
+  } finally {
+    rmSync(base, { recursive: true, force: true })
+  }
+})
+
+test('ADM-111 — C14b NETWORK: with the web family body gone, allow/deny still decides, and no fs lane authorises the network', async () => {
+  await droppedFilesGone([
+    'packages/tools/web-family/src/fetch-executor.mjs',
+    'packages/tools/web-family/src/web-transport.mjs',
+    'packages/tools/web-family/src/web-mechanics.mjs',
+  ])
+  await keptFilePresent('packages/runtime/team-services/src/web.ts')
+
+  // (1) POSITIVE CONTROL: an explicit network allow admits the call, runs the body once, records
+  //     `net.fetch` with the judged locator, and settles COMPLETED.
+  const allow = await centreWorld('c14b-net-allow', { binding: binding({ network: 'allow' }) })
+  try {
+    const exec = { name: 'web_fetch', callId: 'c14b-net-allow-1', arguments: { url: 'https://example.test/in' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    assert.equal((await allow.dispatch(exec)).kind, 'allow')
+    assert.equal(allow.body.count, 1)
+    const fact = allow.admissionFact('c14b-net-allow-1')
+    assert.equal(fact.axis, 'net.fetch')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.locator, 'https://example.test/in')
+    assert.equal(allow.store.read(allow.executionIdOf(exec)).state, 'COMPLETED')
+  } finally {
+    allow.close()
+  }
+
+  // (2) NEGATIVE CONTROL: the SAME binding's read/write lanes DO allow its workspace, and the network
+  //     is still refused — an fs grant is never read as a network grant.
+  const unset = await centreWorld('c14b-net-unset', { binding: binding() })
+  try {
+    assert.equal(binding().network, undefined, 'the negative binding really has no network axis')
+    const exec = { name: 'web_fetch', callId: 'c14b-net-unset-1', arguments: { url: 'https://example.test/in' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    const verdict = await unset.preExecute(exec)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /NETWORK_DENY/u)
+    assert.match(String(verdict.reason), /unset axis is not a permission/u)
+    unset.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+    assert.equal(unset.admissionFact('c14b-net-unset-1').refusalCode, 'NETWORK_DENY')
+    assert.equal(unset.store.read(unset.executionIdOf(exec)).state, 'REFUSED')
+    assert.equal(unset.body.count, 0)
+  } finally {
+    unset.close()
+  }
+
+  // (3) NEGATIVE CONTROL 2: an explicit deny, and a TOOL-level `unsupported` that narrows a
+  //     network-wide allow to a refusal — the compiled intersection decides, never the widest input.
+  const deny = await centreWorld('c14b-net-deny', { binding: binding({ network: 'deny' }) })
+  try {
+    const verdict = await deny.preExecute({ name: 'web_fetch', callId: 'c14b-net-deny-1', arguments: { url: 'https://example.test/in' }, agent: { id: 'agent-1' }, turn: 1, step: 1 })
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /NETWORK_DENY/u)
+    assert.equal(deny.admissionFact('c14b-net-deny-1').refusalCode, 'NETWORK_DENY')
+    assert.equal(deny.body.count, 0)
+  } finally {
+    deny.close()
+  }
+  assert.equal(
+    admit({ binding: binding({ network: 'allow', perTool: { web_fetch: { network: 'unsupported' } } }), toolName: 'web_fetch', arguments: { url: 'https://example.test/in' } }).code,
+    'NETWORK_DENY',
+    'a tool-level unsupported narrows the ceiling allow to a refusal',
+  )
+})
+
+test('ADM-112 — C14b CONTROL AUTHORITY: with pa-mount-registry and pre-execute-adapter gone, the ONE durable Control plane still adjudicates every ask', async () => {
+  await droppedFilesGone([
+    'packages/runtime/src/plugin/live/pa-mount-registry.mjs',
+    'packages/runtime/src/plugin/live/pre-execute-adapter.mjs',
+    'packages/runtime/src/plugin/live/pa-control-bridge.mjs',
+  ])
+  await keptFilePresent('packages/runtime/control/service.ts')
+
+  const { createP6T4World, createP6T4Service, destroyP6T1World, leaderCaller, P6T4_ROOT, P6T4_SEEDS } =
+    await import('./p6t4-helpers.js')
+  const { destroyDir, scratchDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  destroyDir(scratchDir('vnext-c14b-control'))
+  const world = await createP6T4World('vnext-c14b-control')
+  const service = createP6T4Service(world)
+  const worker = String(P6T4_SEEDS.worker.instanceId)
+  const workerBinding = {
+    agentId: worker,
+    instanceId: worker,
+    sessionId: P6T4_SEEDS.worker.childSessionId,
+    instanceGeneration: 2,
+    templateId: 'worker',
+    read: lane(['/work/a'], ['/work/ask']),
+    write: lane(['/work/a']),
+    workspaceRoot: '/work/a',
+    policyGeneration: 'gen-7',
+    owner: P6T4_ROOT,
+  }
+  try {
+    // (1) NEGATIVE CONTROL: an ask whose grant half is missing cannot be spent, so it is refused as
+    //     UNWIRED — never self-approved, never forwarded to the host as an implicit allow.
+    const unwired = await centreWorld('c14b-control-unwired', { binding: workerBinding })
+    try {
+      const exec = { name: 'read', callId: 'c14b-control-unwired-1', arguments: { file_path: '/work/ask/doc.txt' }, agent: { id: worker }, turn: 1, step: 1 }
+      const verdict = await unwired.preExecute(exec)
+      assert.equal(verdict.kind, 'deny')
+      assert.match(String(verdict.reason), /ADMISSION_ASK_UNWIRED/u)
+      unwired.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      assert.equal(unwired.admissionFact('c14b-control-unwired-1').refusalCode, 'ADMISSION_ASK_UNWIRED')
+      assert.equal(unwired.store.read(unwired.executionIdOf(exec)).state, 'REFUSED')
+      assert.equal(unwired.body.count, 0)
+    } finally {
+      unwired.close()
+    }
+
+    // (2) NEGATIVE CONTROL 2 + POSITIVE, over the REAL durable Control plane: the leader DENIES one
+    //     ask (refused, body never runs) and ALLOWS the next (one durable request, one durable
+    //     decision, one one-shot spend, body runs once).
+    let consumed = 0
+    const binder = createInvocationBinder()
+    const countedBinder = {
+      bind: (input) => binder.bind(input),
+      consume: (capability, request) => {
+        consumed += 1
+        return binder.consume(capability, request)
+      },
+    }
+    const approvals = createControlApprovalPort({
+      controlOf: () => service,
+      onRequested: async (record) => {
+        const decision = record.correlation === 'admission:c14b-control-deny' ? 'deny' : 'allow'
+        await service.resolveControl({ rootSessionId: P6T4_ROOT, caller: leaderCaller(), requestId: record.requestId, decision })
+      },
+    })
+    const centre = await centreWorld('c14b-control', {
+      binding: workerBinding,
+      grants: {
+        binder: countedBinder,
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals,
+    })
+    try {
+      const denied = { name: 'read', callId: 'c14b-control-deny', arguments: { file_path: '/work/ask/doc.txt' }, agent: { id: worker }, turn: 1, step: 1 }
+      const deniedVerdict = await centre.preExecute(denied)
+      assert.equal(deniedVerdict.kind, 'deny')
+      assert.match(String(deniedVerdict.reason), /ADMISSION_APPROVAL_DENIED/u)
+      centre.result(denied, { isError: true, error: { message: String(deniedVerdict.reason) } })
+      assert.equal(centre.admissionFact('c14b-control-deny').refusalCode, 'ADMISSION_APPROVAL_DENIED')
+      assert.equal(centre.store.read(centre.executionIdOf(denied)).state, 'REFUSED')
+      assert.equal(centre.body.count, 0)
+      assert.equal(consumed, 0, 'a denied ask spends nothing')
+
+      const approved = { name: 'read', callId: 'c14b-control-allow', arguments: { file_path: '/work/ask/doc.txt' }, agent: { id: worker }, turn: 1, step: 1 }
+      assert.equal((await centre.dispatch(approved)).kind, 'allow')
+      assert.equal(consumed, 1, 'the approved ask is spent exactly once, at the guard')
+      assert.equal(centre.body.count, 1)
+      assert.equal(centre.store.read(centre.executionIdOf(approved)).state, 'COMPLETED')
+
+      // THE DURABLE SIDE: one request per ask, one decision each, and the decisions are the leader's
+      // own rows in the Control plane — the centre is not a second approval authority.
+      const state = await service.listControlState(P6T4_ROOT)
+      assert.equal(state.requests.length, 2)
+      assert.deepEqual(state.decisions.map((row) => row.decision), ['deny', 'allow'])
+    } finally {
+      centre.close()
+    }
+  } finally {
+    await destroyP6T1World(world)
+  }
+})
+
+test('ADM-113 — C14b STOP: with the family bodies gone, Stop is still the ONE host signal, REFUSED/not-started, and durable across a fresh reader', async () => {
+  await droppedFilesGone([
+    'packages/tools/fs-family/src/read-executor.mjs',
+    'packages/tools/process-family/src/confined-shell-executor.mjs',
+  ])
+  await keptFilePresent('packages/runtime/control/service.ts')
+  await keptFilePresent('packages/runtime/settlement/execution-settlement.ts')
+
+  // (1) POSITIVE CONTROL: without a Stop the same call is admitted, runs, and settles COMPLETED —
+  //     so a Stop refusal cannot be what this assembly always says.
+  const ok = await centreWorld('c14b-stop-ok', { binding: binding() })
+  try {
+    const exec = readExec('c14b-stop-ok-1')
+    assert.equal((await ok.dispatch(exec)).kind, 'allow')
+    assert.equal(ok.body.count, 1)
+    assert.equal(ok.store.read(ok.executionIdOf(exec)).state, 'COMPLETED')
+  } finally {
+    ok.close()
+  }
+
+  // (2) NEGATIVE CONTROL: the host's own abort signal refuses the call before the body, with its own
+  //     code, and the settlement says not-started with no execution state.
+  const w = await centreWorld('c14b-stop', { binding: binding() })
+  try {
+    const controller = new AbortController()
+    controller.abort()
+    const stopped = readExec('c14b-stop-1', controller.signal)
+    const verdict = await w.preExecute(stopped)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_STOPPED/u)
+    assert.equal(w.body.count, 0)
+    w.result(stopped, { isError: true, error: { message: String(verdict.reason) } })
+    const fact = w.admissionFact('c14b-stop-1')
+    assert.equal(fact.refusalCode, 'ADMISSION_STOPPED')
+    assert.notEqual(fact.refusalCode, 'LANE_DENY', 'a Stop is never recorded as a lane rule')
+    const record = w.store.read(w.executionIdOf(stopped))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'REFUSED'])
+
+    // (3) DURABLE AND NON-REPLAYING AFTER THE DROP: a FRESH store over the same directory reads the
+    //     same REFUSED record, and NOTHING is left open to be recovered as UNKNOWN.
+    const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
+    const { join } = await import('node:path')
+    const fresh = createExecutionSettlementStore({ dir: join(w.dir, 'settlement') })
+    const reread = fresh.read(w.executionIdOf(stopped))
+    assert.equal(reread.state, 'REFUSED')
+    assert.equal(reread.observation.dispatch, 'not-started')
+    assert.equal(fresh.recoverUnsettled(new Date().toISOString()).length, 0, 'a Stop leaves no open record to replay')
+    assert.equal(w.ledger.readAll().filter((entry) => entry.kind === 'execution' && entry.callId === 'c14b-stop-1').length, 1, 'exactly one execution fact, never a replay')
+  } finally {
+    w.close()
+  }
+})
+
+test('ADM-114 — C14b PROCESS: with the process family body gone, an unjudgeable shell is REFUSED by the centre, never run unconfined', async () => {
+  await droppedFilesGone([
+    'packages/tools/process-family/src/confined-shell-executor.mjs',
+    'packages/tools/process-family/src/bash-contribution.mjs',
+    'packages/tools/process-family/src/pwsh-executor.mjs',
+  ])
+  await keptFilePresent('packages/runtime/team-services/src/subprocess.ts')
+
+  const w = await centreWorld('c14b-process', { binding: binding() })
+  try {
+    // (1) POSITIVE CONTROL: the SAME binding still admits a call it can judge (`fs.read`), so the
+    //     process refusal is not a blanket refusal of everything.
+    const read = readExec('c14b-process-read')
+    assert.equal((await w.dispatch(read)).kind, 'allow')
+    assert.equal(w.body.count, 1)
+
+    // (2) NEGATIVE CONTROL: `bash` has no compiled process lane, so it is refused at the ONE centre
+    //     with its own code, on its own axis, before any body — the invariant "no unconfined shell"
+    //     survives as a typed refusal, not as an unjudged execution.
+    const bash = { name: 'bash', callId: 'c14b-process-bash', arguments: { command: 'cat /etc/passwd' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    const verdict = await w.preExecute(bash)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_AXIS_UNSUPPORTED/u)
+    w.result(bash, { isError: true, error: { message: String(verdict.reason) } })
+    const fact = w.admissionFact('c14b-process-bash')
+    assert.equal(fact.axis, 'process.exec')
+    assert.equal(fact.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
+    const record = w.store.read(w.executionIdOf(bash))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(w.body.count, 1, 'the shell body was never entered')
+
+    // (3) NEGATIVE CONTROL 2: PTC is its OWN absence, not the generic shell code — the escalation
+    //     authority is not the centre, and the call is still refused before the body.
+    assert.equal(admit({ binding: binding(), toolName: 'run_code', arguments: { code: '1' } }).code, 'ADMISSION_PTC_UNAVAILABLE')
+  } finally {
+    w.close()
+  }
+})
+
+test('ADM-115 — C14b NAME DISCIPLINE: the dropped families’ tool names are not silently admitted, and preserved host faces keep their own axis', async () => {
+  await droppedFilesGone([
+    'packages/tools/ui-family/src/ask-executor.mjs',
+    'packages/tools/inspect-family/src/skill-executor.mjs',
+    'packages/tools/agent-control-family/src/fork-row.mjs',
+    'packages/tools/agent-state-family/src/executors.mjs',
+  ])
+
+  // POSITIVE CONTROL: the preserved host capabilities the four deleted families re-homed are admitted
+  // for a bound agent and recorded on `host.service` (their I/O is the host's, a stated limit).
+  const w = await centreWorld('c14b-names', { binding: binding() })
+  try {
+    for (const toolName of ['skill', 'subagent', 'todo_write', 'get_goal']) {
+      const exec = { name: toolName, callId: `c14b-names-${toolName}`, arguments: {}, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+      assert.equal((await w.dispatch(exec)).kind, 'allow', `${toolName} is a preserved host capability`)
+      assert.equal(w.admissionFact(`c14b-names-${toolName}`).axis, 'host.service')
+    }
+    assert.equal(w.body.count, 4)
+
+    // NEGATIVE CONTROL: the names that had a body and no preserved home are REFUSED by the centre as
+    // unbound — the drop did not leave a name that the composition could still execute.
+    for (const toolName of ['ask_user_question', 'present', 'exit_plan_mode', 'team_skill']) {
+      const exec = { name: toolName, callId: `c14b-names-dropped-${toolName}`, arguments: {}, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+      const verdict = await w.preExecute(exec)
+      assert.equal(verdict.kind, 'deny', `${toolName} has no preserved home and must be refused`)
+      assert.match(String(verdict.reason), /ADMISSION_TOOL_UNBOUND/u)
+      w.result(exec, { isError: true, error: { message: String(verdict.reason) } })
+      assert.equal(w.store.read(w.executionIdOf(exec)).state, 'REFUSED')
+    }
+    assert.equal(w.body.count, 4, 'no dropped name reached a body')
+  } finally {
+    w.close()
+  }
+})

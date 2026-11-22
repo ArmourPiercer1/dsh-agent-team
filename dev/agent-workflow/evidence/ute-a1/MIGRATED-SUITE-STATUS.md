@@ -1335,3 +1335,119 @@ The vitest population is unchanged at **238**; the node leg is **171 pass + 2 di
 three new arms). `test-catalog` is unchanged at 889 tests (the arms live inside the existing
 `vnext-admission.test.mjs`, whose collected count is per file). **No row is PRODUCT-PROVEN; C11's host
 `sessionProjections.stateOf` half remains unproven pending a live boot.**
+
+## Round 67 (C14b + audit) — the invariants the implementation drop must not take, and a row-by-row audit of the C1–C18 table
+
+C14 drops **implementations**; C14b preserves the safety invariants they enforced
+(`docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:26`, `:40`, `:54-63`; owner ruling
+`dev/agent-workflow/SESSION_ROUTER_LOG.md:9810`). This round proves the second half and audits the
+first.
+
+### The dropped implementations (enumerated, not summarised)
+
+The frozen text plus the retirement inventory (`03-RETIRE-KEEP.md:21-22`,
+`01-ASSET-INVENTORY.md:14-21`) name eight governed-family bodies — `family-fs` (17 files),
+`family-search` (9), `family-web` (10), `family-process` (11), `family-ui` (9), `family-inspect` (10),
+`family-agent-control` (14), `family-agent-state` (7) — plus the retired pre-execution/dispatch
+components (`pa-mount-registry`, `pa-control-bridge`, `pre-execute-adapter`, `native-tool-admission`,
+`governance-center` + `tool-dispatch`, the five `confined-*` shadows, `family-assembly`, the
+`team-tool-plane`). The full drop→owner table with `file:line` is `D-ACCEPTANCE-REPORT.md` §2.3.
+
+### The preserved invariants and their arms
+
+Six new node:test arms ride the `ute-vnext-a1` leg (`packages/runtime/test/vnext-admission.test.mjs`,
+`ADM-110`…`ADM-115`). Each one (a) witnesses the C14 body is gone, (b) proves the invariant POSITIVELY
+(the allowed case executes and settles) and NEGATIVELY (the violating case is refused with its own code
+before the body, with a CLOSED settlement).
+
+- **`ADM-110` — path read/write upper bounds.** In-lane `read` + `write` allowed and `COMPLETED`;
+  out-of-lane both `LANE_DENY`, `REFUSED`/`not-started`, body never entered. Second layer, real
+  filesystem: `evaluateLocatorAccess` allows an in-lane file and an in-lane symlink resolving inside,
+  refuses an outside path (`PATH_NOT_ALLOWED`), a symlink resolving outside
+  (`PATH_SYMLINK_ESCAPE`), and an authored `inside/../outside` path that AUTHORED containment admits
+  but the RESOLVED path refuses — the division of labour the deleted body used to perform.
+- **`ADM-111` — network allow/deny.** Explicit allow admits `net.fetch` and runs the body once; an
+  unset axis and an explicit deny are `NETWORK_DENY` with zero body and `REFUSED`; a tool-level
+  `unsupported` narrows a network-wide allow to a refusal.
+- **`ADM-112` — Control authority.** An ask with no grant half is `ADMISSION_ASK_UNWIRED`; the REAL
+  durable `ControlService` DENIES one ask (`ADMISSION_APPROVAL_DENIED`, zero body, zero spend) and
+  ALLOWS the next (one request, one decision, one one-shot spend, body once). Two durable requests and
+  the leader's own decision rows, not a second approval authority.
+- **`ADM-113` — Stop.** Without a Stop the call `COMPLETED`; with the host's abort it is
+  `ADMISSION_STOPPED`, `REFUSED`/`not-started`, transitions `ADMITTED → REFUSED`, one execution fact,
+  and a FRESH settlement store over the same directory re-reads `REFUSED` with nothing open to recover
+  as `UNKNOWN`.
+- **`ADM-114` — process fail-closed.** The same binding still admits `fs.read` (so the refusal is not
+  a blanket), while `bash` is `ADMISSION_AXIS_UNSUPPORTED` on `process.exec` before any body and
+  `run_code` carries its own `ADMISSION_PTC_UNAVAILABLE`.
+- **`ADM-115` — dropped-name discipline.** `skill`/`subagent`/`todo_write`/`get_goal` are admitted on
+  `host.service`; `ask_user_question`/`present`/`exit_plan_mode`/`team_skill` have no preserved home
+  and are `ADMISSION_TOOL_UNBOUND`, `REFUSED`, body never entered.
+
+### The finding question, answered by measurement
+
+The brief's failure mode is an invariant enforced only by a component that is itself gone. **None of
+C14b's four invariants is in that state**: every one has a surviving owner on both layers (centre lane
++ provider face), named in §2.3 with `file:line`. The `confined-*` shadows were checked against the A0
+tree rather than assumed: they were mounted by the realm row itself (`a5sf-realm-row.mjs`, A0,
+`A5SF_CONFINED_FS_TOOL`), so a member with no realm never had them as its enforcement. The residual is
+the **ungoverned row** (never set `centreStatePath`), which stays outside the centre by design; an
+asked-but-realm-less row is refused `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, `ADM-44`). The
+report states this as a limit, never as preserved enforcement.
+
+### Audit of the C1–C18 table (D-ACCEPTANCE-REPORT §2) — mismatches found and corrected
+
+- **C1:** the live "surface carries all 15" claim cited `ESCALATION-centre-row-creation-entrance.md:12`,
+  which is the **405** line. Corrected to `:8-9`, where the 43-tool surface is recorded.
+- **C5:** said `d2:stop` "resolved" the pending `admission-ask` request through `session/cancel`. A
+  cancel is a **Stop, not an approval** — the live record shows `status=pending` and an
+  `ADMISSION_STOPPED` fact, with no decision row. Corrected to "stopped", and the unproven
+  approval/consume legs stay named.
+- **C15:** cited `scripts/place-dist-glue.mjs`'s "placement list" for `a5sf-skill-provider`. The loader
+  holds no list (placements are data files); the citation now names
+  `scripts/dist-placements/190-a5sf-pd29-service-seam.json:5-6` and the realm mount at
+  `a5sf-realm-row.mjs:989`.
+- **§6.9:** said a member with `centreStatePath` but no realm "runs unmediated and unreported". The
+  round-35 rule refuses exactly that member (`MEMBER_CENTRE_UNWIRED`, `ADM-44`); the section is
+  corrected, and the same stale statement in `CAPABILITY-MATRIX-C.md`'s OPEN section is corrected with
+  a dated banner.
+- **§7:** "Four live judges are PROVEN" listed **nine**. Corrected to nine; no status changed.
+- **No row was upgraded.** No row claims PROVEN where its artifact says REFUTED or vice versa: the
+  three REFUTED judges stay REFUTED in §3.2/§7, and `C6/C9` stay REFUSED-BY-DESIGN.
+
+### Gates (round 67, pasted)
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 179
+ℹ pass 177
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+The vitest population stays **238**; the node leg is **177 pass + 2 disclosed skips** (the two `bash` /
+`run_code` positives are still NOT RUN, never passes). **No row is PRODUCT-PROVEN**; C14b's arms are
+in-process, the OS probe is a node-leg measurement, and a product-entry drive of each invariant is still
+missing.

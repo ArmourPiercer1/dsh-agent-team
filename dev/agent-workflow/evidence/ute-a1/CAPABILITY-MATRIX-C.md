@@ -188,15 +188,20 @@ without mounting is not a second policy. The question is what the product should
 provider is unconfined and say so, or refuse everything without a confined provider. Current state is
 neither — the calls are unmediated and unreported.
 
-## OPEN: admission is installed only when a realm is mounted (round 33; E3 no longer witnesses it)
+## OPEN: admission is installed only when a realm is mounted (round 33; corrected round 67)
 
-The centre is installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`, so a
-member without a confined-provider realm gets NO admission point at all — its native tools run under the
-host's mediation with no decision, no ledger and no settlement. That is not the "unwired controlled call
-is explicitly refused" law; it is the tool not being covered. Round 49 rebuilt E3's world to mount a
-declared realm, so E3 no longer observes zero legs and no longer acts as this defect's witness; the
-defect itself is UNCHANGED and remains tracked by `ESCALATION-realmless-admission.md`. Small,
-security-relevant, and still the first item in the repair order (see `MIGRATED-SUITE-STATUS.md`).
+The centre is installed inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`
+(`agent-bindings.mjs:1942-1948`). **CORRECTED (round 67):** the original text of this section said a member
+without a confined-provider realm "gets NO admission point at all — its native tools run under the host's
+mediation". That is true only for a row that **never asked** for the centre. A row that set
+`centreStatePath` and got no realm is **refused** by `memberCentreUnwiredViolation`
+(`centre-config.ts:36-49`, called at `agent-bindings.mjs:1942-1944`, `ADM-44`), so it has no unmediated
+call to make. Round 49 rebuilt E3's world to mount a declared realm, so E3 no longer observes zero legs.
+The remaining item is the ungoverned (never-asked) row — unchanged by configuration, not covered by the
+centre, and the reason C14b is not claimed for it (D report §2.3). The design question (admit a
+realm-less member against the same compiled ceiling with an explicitly unconfined provider, or refuse)
+is tracked by `ESCALATION-realmless-admission.md`, whose "What the code says" snippet predates the
+round-35 refusal.
 
 ## What the adversarial review found in the centre (round 28)
 
@@ -315,3 +320,31 @@ projection arms use the product functions over the product's durable domain with
 production leader shape (`leaderChildSessionIsRoot`) — the fixture adjustment is disclosed in the arm
 (`vnext-admission.test.mjs`, `cStage`), because the P6-T2 seed's synthetic leader child id is a shape
 production never writes and the frozen DTO contract rightly rejects it.
+
+## MEASURED (round 67): C14b — the safety invariants the C14 drop must not take
+
+C14 drops eight governed-family bodies and the retired pre-execution/dispatch components
+(`06-CAPABILITY-CONTRACT.md:40`, `:54-63`); C14b preserves the invariants those bodies enforced. The
+drop→owner enumeration is `D-ACCEPTANCE-REPORT.md` §2.3. Matrix-side summary:
+
+| C row | invariant (C14b) | owner now (file:line) | arm (positive + negative) |
+| --- | --- | --- | --- |
+| C-fs | path READ/WRITE upper bounds, authored AND resolved | centre `admission.ts:380-389`; provider `team-services/src/fs.ts:134,179` → `member-io-policy/src/provider-capabilities.ts:299-405` | `ADM-110` |
+| C-fs (search) | search-root bound; omitted path = workspace root | `admission.ts:35-36`, `:145-149`; overlay abstains (`overlay-decision.mjs:226-228`) | `ADM-110`, `ADM-16`, `ADM-105/106` |
+| C-web | network allow/deny; no fs grant stands in | centre `admission.ts:349-357`; provider `team-services/src/web.ts` | `ADM-111` |
+| C-subprocess | no unconfined shell; fail-closed when no lane | `admission.ts:329-347` (`ADMISSION_AXIS_UNSUPPORTED`), `:326-328` (PTC); OS profile `team-services/src/subprocess.ts:1372` | `ADM-114`, `OS-1/2/3` |
+| C-tools (Control) | one approval authority; current facts; one-shot spend | `admission-port.mjs:94,336-344,477`; `packages/runtime/control/service.ts` | `ADM-112` |
+| C-member (Stop) | Stop is REFUSED/not-started, durable, non-replaying | `admission-port.mjs:336-344,477,801-802`; `settlement/execution-settlement.ts` | `ADM-113` |
+| C-goal / C-skill / C-fork / dropped names | preserved host faces recorded on `host.service`; a dropped name is never silently admitted | `admission.ts:114-122`; `exit_plan_mode`/`team_skill`/`ask_user_question`/`present` unbound (`:316-319`) | `ADM-115` |
+
+All six arms live in `packages/runtime/test/vnext-admission.test.mjs` and ride the `ute-vnext-a1` leg
+(tests 179 / pass 177 / fail 0 / skipped 2). Each arm first witnesses that the C14 body is gone
+(`existsSync` = false), then proves its invariant POSITIVELY (the allowed case runs and settles) and
+NEGATIVELY (the violating case is refused with its own code, before the body, with a CLOSED settlement).
+
+**No invariant is left enforced only by a deleted component** — checked against the A0 tree, not assumed:
+the five `confined-*` shadows were mounted by the realm row itself (`a5sf-realm-row.mjs` at A0,
+`A5SF_CONFINED_FS_TOOL`), so a row with no realm never had them as enforcement either. **NOT PROVEN:**
+product-entry (host-boot) enforcement of each invariant, network containment under a real model, and any
+PRODUCT-PROVEN status. The ungoverned row stays outside the centre by design (see the corrected OPEN
+section above).

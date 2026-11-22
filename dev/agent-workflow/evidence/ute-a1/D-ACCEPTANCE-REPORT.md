@@ -1,7 +1,7 @@
 # D acceptance report — UTE vNext A1 cut + centre (candidate)
 
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
-**HEAD:** `7b2db7ad7c877c49ec0d619b84c22776834883bc` · **Base for the cut:** `a19d1df01` (frozen A0,
+**HEAD at round-67 measurement start:** `ef2ddbff7bd7e585e50ce3709010eb04f5dce38c` · **Base for the cut:** `a19d1df01` (frozen A0,
 PR #821) · **Record class of everything below:** in-process `MECHANISM` + `DEV-LIVE`. Never candidate
 evidence, never a gate.
 
@@ -25,18 +25,28 @@ what would prove it.
 > `sessionProjections.stateOf` half is still unproven and needs a live boot. Nothing is upgraded to
 > PRODUCT-PROVEN.
 
+> **Round 67 addendum (C14b + audit).** The owner's C14b row now carries its own proof: six node:test
+> arms (`ADM-110`…`ADM-115`) witness that the eight deleted family bodies are gone and that each
+> preserved safety invariant — path bounds, network allow/deny, Control authority, Stop, plus the
+> process family's fail-closed rule and dropped-name discipline — still holds in BOTH directions at its
+> new owner. §2.2's C14b row, the new §2.3 drop→owner table, §3, §4.1/§4.2 and §7 are refreshed. The
+> same round audited §2 row by row: three evidence citations were corrected (C1's live line number,
+> C5's "resolved" wording, C15's placement path), §6.9's stale realm-less sentence was corrected (the
+> code refuses that member), and §7's "Four live judges" was corrected to the nine it lists. Nothing is
+> upgraded to PRODUCT-PROVEN.
+
 ---
 
 ## 1. HEAD, branch, and scope facts
 
 | fact | value | how measured |
 | --- | --- | --- |
-| HEAD sha | `7b2db7ad7c877c49ec0d619b84c22776834883bc` | `git rev-parse HEAD` |
+| HEAD sha | `ef2ddbff7bd7e585e50ce3709010eb04f5dce38c` | `git rev-parse HEAD` |
 | branch | `vnext/a1-cut` | `git rev-parse --abbrev-ref HEAD` |
-| commits since A0 `a19d1df01` | **132** | `git rev-list --count a19d1df01..HEAD` |
+| commits since A0 `a19d1df01` | **137** | `git rev-list --count a19d1df01..HEAD` |
 | working tree at measurement start | clean | `git status --porcelain` (empty) |
-| diff vs A0 | 1567 files changed, +100460 / −79598 | `git diff --stat a19d1df01..HEAD` |
-| file-status counts vs A0 | 1124 A · 363 D · 75 M · 2 R060 · 1 R094 · 1 R095 · 1 R096 | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` |
+| diff vs A0 | 1568 files changed, +101557 / −79598 | `git diff --stat a19d1df01..HEAD` |
+| file-status counts vs A0 | 1125 A · 363 D · 75 M · 2 R060 · 1 R094 · 1 R095 · 1 R096 | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` |
 
 ### 1.1 Cut closure (fresh runs, this HEAD, pasted verbatim)
 
@@ -122,11 +132,11 @@ Status vocabulary — these are not interchangeable:
 
 | # | capability (verbatim) | disposition (verbatim) | status at this HEAD | evidence | what would prove it (if not PRODUCT-PROVEN) |
 | --- | --- | --- | --- | --- | --- |
-| **C1** | the **15** `team_*` tools (member/template/delegation/control board) | **preserve** — not the retired plane; the earlier draft credited the plane, which was wrong | MECHANISM + DEV-LIVE surface. The closed list is `CENTRE_TOOL_NAMES` (`packages/runtime/src/plugin/vnext/admission.ts:57-73`); `ADM-31` pins it against `createTeamTools` **in both directions**; `ADM-89/90/91` admit all 15 on `team.control`, refuse all 15 unbound, and refuse an unlisted name. Live: the booted centre row's model-visible surface carries all 15 (`ESCALATION-centre-row-creation-entrance.md:12`) | `packages/runtime/test/vnext-admission.test.mjs`; `ESCALATION-centre-row-creation-entrance.md:12` | a governed row that **creates and drives** the board end to end through a product entrance (GUI or remote) with a real model. Blocked today by the 405 in §6.2 |
+| **C1** | the **15** `team_*` tools (member/template/delegation/control board) | **preserve** — not the retired plane; the earlier draft credited the plane, which was wrong | MECHANISM + DEV-LIVE surface. The closed list is `CENTRE_TOOL_NAMES` (`packages/runtime/src/plugin/vnext/admission.ts:57-73`); `ADM-31` pins it against `createTeamTools` **in both directions**; `ADM-89/90/91` admit all 15 on `team.control`, refuse all 15 unbound, and refuse an unlisted name. Live: the booted centre row's model-visible surface carries all 15 (`ESCALATION-centre-row-creation-entrance.md:8-9`) | `packages/runtime/test/vnext-admission.test.mjs`; `ESCALATION-centre-row-creation-entrance.md:8-9` | a governed row that **creates and drives** the board end to end through a product entrance (GUI or remote) with a real model. Blocked today by the 405 in §6.2 |
 | **C2** | member create / resume / archive | **preserve** | MECHANISM. `ADM-92` creates through `team_create_member` and installs the **member's own** centre at its bind; `ADM-93` archives through `team_archive_member` (production step ports: quiesce → settle-then-archive → `release-residency`), and the next call is `ADMISSION_MEMBER_CLOSED`. **DEV-LIVE (create only):** the D3 delegate produced a real `member-activated` effect with `instanceId`/`childSessionId` (`d3:work-delivery`, §15) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md` §15; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` | a live **archive** and a live **resume** on a booted host. Archive's live path currently refuses **earlier**, at the durable lifecycle gate (`LIFECYCLE_ADMISSION_CLOSED` / `memberResumeRefusal`) — `CAPABILITY-MATRIX-C.md:61-64`. Resume is not measured live at all |
 | **C3** | work delegation + delivery receipts | **preserve** | **DEV-LIVE PROVEN** (`d3:work-delivery`, two agreeing boots). `team_delegate` → `effect.kind=member-activated`, prompt delivered **verbatim** as the Member's first user message, final text and `memberResult.body` both exactly `DBOOT_D3_DELIVERED_UNIT_ALPHA`; `team_collect` returns the terminal `succeeded` entry, **byte-identical when collected again after a SIGKILL cold restart**; the unit is on disk; every member call fact is in the member's own ledger. `ADM-94/95` carry the in-process positive and negative | `D-BOOT-FEASIBILITY.md:618-628`; `.../d-boot-feasibility/d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a **real-model** interleaving (the current model is the product's scripted mock, §6.7) and a delivery driven at a product entrance rather than the driver's boot-bound team |
 | **C4** | Blueprint binding + identity generation | **preserve** (KEEP module) | MECHANISM. `ADM-26` maps a compiled member onto a binding by reference, never by re-interpretation; `TB-1…TB-6` pin the durable-row resolution and the four typed refusal reasons with **no** legacy degradation. Live: the round-60 path-3 boot binds a v4 blueprint at boot and reaches a governed Member (`CAPABILITY-MATRIX-C.md:137-141`) | `packages/runtime/test/vnext-admission.test.mjs`; `.../vnext-template-binding.test.mjs`; `CAPABILITY-MATRIX-C.md:137-141` | an identity generated for a member **created at runtime** on a governed row (needs the 405 entrance, §6.2) |
-| **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and resolved it through the public `session/cancel` RPC | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal; the product wires no approval binder, so asks that reach the port are refusals (`PR-BODY-draft.md:313-314`) |
+| **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and **stopped** it through the public `session/cancel` RPC — a Stop, not an approval (no decision row is granted; the live record stops at the pending request and the `ADMISSION_STOPPED` fact) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal; the product wires no approval binder, so asks that reach the port are refusals (`PR-BODY-draft.md:313-314`) |
 | **C6** | Officer assignment + ReviewCapability routing | **preserve** (KEEP module) — *and* the contract's own rule: if Alpha.6 is not wired, "the corresponding approval and auto-wake paths must be **explicitly disabled**, never silently fall back" (`06-CAPABILITY-CONTRACT.md:95-98`) | **REFUSED-BY-DESIGN**, and that is the contract-compliant state. `ADMISSION_ALPHA6_UNAVAILABLE` in two independent gates: `centre-config.ts:62-70` rejects the opt-in on **every** row (`ADM-34`, `ADM-99`), and `root.ts:2498-2512` records the refusal then types the boot refusal. **Live:** `d3:alpha6` **PROVEN** as the typed-refusal shape — no team root (`/__p6t6/state` 404), no decision, no wake intent, no fact file | `D-BOOT-FEASIBILITY.md:629-643`; `.../d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a compiled review-routing **axis** in the member contract, or an owner ruling that a record-only approval fact on `host.service` **is** adjudication (`CAPABILITY-MATRIX-C.md:119-123`) |
 | **C7** | durable Wake intents + cold wake | **preserve** | MECHANISM, in-process only. `ADM-98` composes `createAlpha6RootWiring` directly, the ONE shared `createAlpha6RootRouter` takes a real `recipient` decision off a durable control row (Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that a **fresh** reader sees naming exactly the routed reviewer | `packages/runtime/test/vnext-admission.test.mjs` | the same, reached at a **product entry**. Unreachable while C6's axis is missing: the config gate runs before root construction, so at a host entry the machinery is never built (§6.5) |
 | **C8** | Stop (sticky, durable, non-replaying) | **preserve** | MECHANISM + **DEV-LIVE PROVEN** (`d2:stop`, two boots). Stop is the host's own `exec.signal` — no second stop mechanism. `ADM-56…ADM-62` cover Stop before the body, while an ask is pending, after the approval and before the body, lifecycle close with a call in flight, and the product composition's own close. Live: `POST /api/session/cancel` → tool result `ADMISSION_STOPPED`, centre fact `refusalCode=ADMISSION_STOPPED`, settlement `REFUSED`/`dispatch=not-started` with **no** execution fact, never `UNKNOWN`; a second Member completed with zero stops | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493`; `.../d2/README.md` | Stop **under load** and a real Stop keypress; and the one open cell: a Stop that lands **after** an `allow` was recorded cannot be `REFUSED` under the frozen settlement contract (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`) |
@@ -136,8 +146,8 @@ Status vocabulary — these are not interchangeable:
 | **C12** | tool admission (guard, builtin deny, selector) | **preserve** (KEEP module) | MECHANISM + DEV-LIVE. `ADM-1…ADM-45` (lanes, deny precedence, unbound refusal, `ADMISSION_TOOL_UNBOUND`), `ADM-29/30` (tool restriction answers before the ceiling and only narrows), `ADM-31` (closed list matches `createTeamTools` both ways), `ADM-35` (a governed member refuses to run unrecorded), `ADM-44` (`MEMBER_CENTRE_UNWIRED`). Live: `d:centre-facts` PROVEN — 2 `fs.read` admissions (`allow` + `DENY/LANE_DENY`) and 2 execution facts, read back from disk | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:369-395` | a real model choosing tools adversarially (the mock is scripted), and a policy compiled at runtime rather than passed as an input (`CAPABILITY-MATRIX-C.md:66-67`) |
 | **C13** | confined I/O faces (fs/web/subprocess/terminals/userQuestions) | **replace** with provider lanes | MECHANISM + DEV-LIVE for **fs and web**; **process family REFUSED**. fs: `d:guard-facts` **PROVEN** (2 `allow` facts, methods `stat`/`readText`, `memberIdentity=inst-0pe2z220bhfb`), `SLICE-1…SLICE-36`, and `d2:multi-member-concurrency` live. web: `SLICE-31/32` (transport reached / never reached), `ADM-67/74`. subprocess/PTY/PTC: `ADMISSION_AXIS_UNSUPPORTED` / `ADMISSION_PTC_UNAVAILABLE` (`admission.ts:318`), see §6.3 | `D-BOOT-FEASIBILITY.md:349-414`; `packages/runtime/test/vnext-fs-slice.test.mjs`; `packages/runtime/test/vnext-b-probe-ladder.test.mjs` | a process-lane declaration (CCR), a live `web_fetch` at a boot, and `userQuestions`/terminals beyond the PTY-owner refusal (`SLICE-33`) |
 | **C14** | **old governed-family execution implementations**: each family's own tool body, its duplicated policy computation, and the historical per-family semantic-equivalence requirement … | **dropped** — the host rows own execution now, and the equivalence criterion is retired with the bodies; the differences that mattered were defects of the deleted body (`SD-SEARCH-1`) | **DROPPED-AS-RULED**, and closure holds: `deleted=148 prodRefs=0 distResiduals=0 dupNames=0` (fresh run, §1.1); no legacy Plane/Family Body/Kernel/PA Bridge is wrapped as an internal component and there is no legacy fallback (`PR-BODY-draft.md:8-10`) | `ute-cut-closure` line in §1.1; `CUT-BOUNDARY-ADDITIONS.md`; `docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md` | nothing — a drop is complete when the closure gate is green and the ruling is named, which it is (`06-CAPABILITY-CONTRACT.md:90`) |
-| **C14b** *(the contract's split row, not a 19th criterion)* | **the safety invariants those families enforced**: path read/write upper bounds, network allow/deny, Control authority, Stop | **preserved** — never implied by C14's drop | **MECHANISM + DEV-LIVE.** The P1–P5 proofs (§3) plus the OS controls: `OS-1` Landlock ABI 7, `OS-2` **negative** (a confined payload CANNOT read outside its allow set), `OS-3` **positive** (the same payload CAN read inside it), and `SLICE-4` (without the realm mount the outside read **succeeds**, so the confinement arms are falsifiable) | §3; `packages/runtime/test/vnext-os-probe.test.mjs`; `packages/runtime/test/vnext-fs-slice.test.mjs` | a live OS-boundary measurement at a boot (today the OS probe runs in the node leg on the CI host); network containment under a real model |
-| **C15** | `team_skill` | **preserve, re-homed** — Team skill provider into a host-shaped row | MECHANISM + **recorded LIMIT**. Bound on `host.service` (`ADM-32`); `skill` is in `HOST_CAPABILITY_TOOL_NAMES` (`admission.ts:110-119`); the governed preset mounts `a5sf-skill-provider` (`scripts/place-dist-glue.mjs` placement list). **Limit, not a confinement claim:** a skill file read by the host skill service is OUTSIDE the member's fs ceiling (`CAPABILITY-MATRIX-C.md:76-87`) | `packages/runtime/test/vnext-admission.test.mjs`; `CAPABILITY-MATRIX-C.md:29,76-87` | a D judge that has a governed Member invoke `team_skill` on a booted host and asserts the row is reachable — with the limit stated in the same evidence, not only here |
+| **C14b** *(the contract's split row, not a 19th criterion)* | **the safety invariants those families enforced**: path read/write upper bounds, network allow/deny, Control authority, Stop | **preserved** — never implied by C14's drop | **MECHANISM + DEV-LIVE, now with a per-invariant positive+negative pair (round 67).** §2.3 maps every dropped implementation to a surviving owner with `file:line`; `ADM-110` (path bounds: centre authored lane + provider resolved path, `..` and symlink), `ADM-111` (network: allow/unset/deny + tool-level narrowing), `ADM-112` (Control authority: the REAL durable `ControlService` asks, denies and one-shot spends), `ADM-113` (Stop: REFUSED/not-started, never UNKNOWN, durable across a fresh reader), `ADM-114` (process: fail-closed `ADMISSION_AXIS_UNSUPPORTED`, never an unconfined shell), `ADM-115` (dropped names are unbound; preserved host faces keep `host.service`). The P1–P5 proofs (§3) and the OS controls still stand: `OS-1` Landlock ABI 7, `OS-2` **negative**, `OS-3` **positive**, `SLICE-4` (without the realm mount the outside read **succeeds**, so the confinement arms are falsifiable). **No invariant is enforced only by a deleted component** — checked, not assumed: the five `confined-*` shadows were mounted by the realm row itself (`a5sf-realm-row.mjs` at A0), so a realm-less member was never confined by them; the residual is the *ungoverned* (never-asked) row, which this row does not claim to govern (§2.3) | §2.3; §3; `packages/runtime/test/vnext-admission.test.mjs` (`ADM-110`…`ADM-115`); `packages/runtime/test/vnext-os-probe.test.mjs`; `packages/runtime/test/vnext-fs-slice.test.mjs` | a live OS-boundary measurement at a boot (today the OS probe runs in the node leg on the CI host); network containment under a real model; and a product entry that drives each invariant (not only the in-process centre) |
+| **C15** | `team_skill` | **preserve, re-homed** — Team skill provider into a host-shaped row | MECHANISM + **recorded LIMIT**. Bound on `host.service` (`ADM-32`); `skill` is in `HOST_CAPABILITY_TOOL_NAMES` (`admission.ts:110-119`); the governed preset mounts `a5sf-skill-provider` (`scripts/dist-placements/190-a5sf-pd29-service-seam.json:5-6` places the module; the governed realm row mounts it at `a5sf-realm-row.mjs:989`). **Limit, not a confinement claim:** a skill file read by the host skill service is OUTSIDE the member's fs ceiling (`CAPABILITY-MATRIX-C.md:76-87`) | `packages/runtime/test/vnext-admission.test.mjs`; `CAPABILITY-MATRIX-C.md:29,76-87` | a D judge that has a governed Member invoke `team_skill` on a booted host and asserts the row is reachable — with the limit stated in the same evidence, not only here |
 | **C16** | `subagent_fork` | **preserve, re-homed** — row over `subagent-fork-in-process` | MECHANISM. Bound as host capabilities (`subagent`, `send_message`, `interrupt_agent`, `admission.ts:110-119`, `ADM-32`); the **child's own** binding governs the child's tools (so the parent's ceiling is not a claim about the child) | `packages/runtime/test/vnext-admission.test.mjs`; `CAPABILITY-MATRIX-C.md:30` | a live fork at a boot, and an assertion that the child's own centre judges the child's calls — neither is measured in the D legs |
 | **C17** | **Team's own `exit_plan_mode` tool** — not DSH plan mode, and not the goal tools | **dropped by owner ruling** — the host has only a `claude-code-mods` name mapping, and re-creating a plan-mode state machine is out of scope. `get_goal`/`create_goal`/`update_goal` are untouched | **DROPPED-AS-RULED**, provable by **absence**: zero `exit_plan_mode` references under `packages/runtime/src` and `packages/tools/src`, and it is in neither closed table (`admission.ts:32-41`, `:57-73`, `:110-119`). The goal tools **are** present on `host.service` | `grep -rn exit_plan_mode packages/runtime/src packages/tools/src` → no matches; `admission.ts:110-119` | nothing — the ruling is named and the absence is checkable |
 | **C18** | `a5p5-tools` lane helpers (arg parsing, effects, render, spill) | **dropped** — dormant, nothing dispatched | **DROPPED-AS-RULED.** `packages/tools/a5p5-tools` no longer exists under `packages/tools/src` (only `builtin-deny.ts`, `guard.ts`, `index.ts`, `native-fs-binding.ts`, `tokens.ts`, `tool-selector.ts`, `tools.ts`, `types.ts`), it is absent from the migrated population, and the cut-closure run reports 148 sources gone with zero residual references | `ls packages/tools/src`; `grep a5p5 tests/checks/eb3-ute-migrated-suites.txt` → none; `ute-cut-closure` line in §1.1 | nothing — dormant-and-deleted with an empty dispatch path is the ruling's own completion criterion |
@@ -149,6 +159,48 @@ PRODUCT-PROVEN. **C11 now has mechanism arms** (`ADM-107`…`ADM-109`, round 66)
 its host `sessionProjections.stateOf` half is still unproven and needs a live boot.
 **No cell above says PRODUCT-PROVEN, and none may be upgraded by narration.**
 
+### 2.3 C14's dropped implementations, and where their safety invariants live now
+
+C14 drops **implementations**, never safety (`06-CAPABILITY-CONTRACT.md:54-63`). The frozen text
+(`:40`) and the retirement inventory (`03-RETIRE-KEEP.md:21-22`, `01-ASSET-INVENTORY.md:14-21`; per-file
+lists at `:54-218`) name **eight governed-family bodies** — fs, search, web, process, ui, inspect,
+agent-control, agent-state — plus the retired pre-execution/dispatch components. The table is the
+drop→owner enumeration the C14b row relies on; every "now enforced at" cell is a `file:line` a reviewer
+can open, and the arm column names the round-67 positive+negative pair that proves the invariant after
+the drop.
+
+| dropped implementation (C14) | files | safety invariant it enforced | now enforced at (file:line) | arm (round 67) |
+| --- | --- | --- | --- | --- |
+| `family-fs` — read/write/edit/read_image executors over ONE controlled root | 17 | path READ/WRITE upper bounds, including the **resolved** path (symlink / `..`) | centre: authored locator decided in `admission.ts:380-389`; provider: `team-services/src/fs.ts:134,179` → `member-io-policy/src/provider-capabilities.ts:299-405` (`PATH_SYMLINK_ESCAPE`, resolved containment) | `ADM-110` (+ `SLICE-3/6/27`, `ADM-2`) |
+| `family-search` — grep/glob executor + presentation | 9 | search-root bound; an omitted path means the workspace root, never "unbounded" | `admission.ts:35-36` (`TOOL_AXES`), `:145-149` (`DEFAULTED_LOCATORS`); the durable overlay ABSTAINS instead of faulting (`overlay-decision.mjs:226-228`) | `ADM-110` (provider half), `ADM-16`, `ADM-105/106` |
+| `family-web` — fetch/search + redirect ownership | 10 | network allow/deny; an fs grant never stands in for it | centre `admission.ts:349-357` (`net.fetch`, tool-level narrowing included); provider face `team-services/src/web.ts` (compiled `network` axis) | `ADM-111` (+ `SLICE-31/32`, `ADM-17`) |
+| `family-process` — bash + an unrouted pwsh + confined-shell executor | 11 | **no unconfined shell execution**; the OS boundary belongs to the provider, not a body | centre refuses an uncompiled lane `admission.ts:329-347` (`ADMISSION_AXIS_UNSUPPORTED`); PTC has its own code `:326-328`; OS profile `team-services/src/subprocess.ts:1372` (`compileExecutionProfile`) | `ADM-114` (+ `OS-1/2/3`; `d3:persistent-subprocess` REFUTED) |
+| `family-ui` — ask_user_question + present | 9 | no second declarant / no undeclared I/O surface | the names have no preserved home ⇒ `ADMISSION_TOOL_UNBOUND` (`admission.ts:316-319`); terminals stay the PTY-owner refusal (`SLICE-33`) | `ADM-115` |
+| `family-inspect` — team_skill + two `team_cordis_*` rows | 10 | host-service I/O is RECORDED on its own axis, never judged by the fs lane | `HOST_CAPABILITY_TOOL_NAMES` (`admission.ts:114-122`, axis `host.service`); the limit is stated at `:100-108` | `ADM-115` (+ `ADM-32`) |
+| `family-agent-control` — seven subagent/orchestration rows | 14 | the CHILD's own binding governs the child's tools | `host.service` table (`admission.ts:114-122`); the child's centre is installed at its own bind (`ADM-92`) | `ADM-115` (+ `ADM-32`) |
+| `family-agent-state` — todo_write + goal rows + `exit_plan_mode` | 7 | preserved state faces recorded; `exit_plan_mode` dropped by ruling | `host.service` table (`admission.ts:114-122`); `exit_plan_mode` is in no closed table (`ADM-115`) | `ADM-115` |
+| `pa-mount-registry`, `pa-control-bridge`, `pre-execute-adapter`, `native-tool-admission`, the five `confined-*` shadows, `family-assembly` | 10 | **Control authority**: one approval authority, current mount facts, no second dispatch authority | centre ask path `admission-port.mjs:94` (`createControlApprovalPort`), `:336-344`, `:477`; authority `packages/runtime/control/service.ts`; closed tables `admission.ts:32-41/57-73/114-122` | `ADM-112` (+ `ADM-46…55`) |
+| `governance-center` + `tool-dispatch` (one group) | 11 | one decision, one durable closure; a Stop never becomes a completion | centre `refuseStop` `admission-port.mjs:336-344,477,801-802`; settlement `settlement/execution-settlement.ts` | `ADM-113` (+ `ADM-56…62`) |
+
+**What the enumeration establishes.** Each of C14b's four named invariants has a surviving enforcer on
+both layers the old bodies used: the centre's compiled lane (authored locator, network axis, approval
+path, Stop) and the provider face (resolved path, web transport, OS profile, settlement). The old
+per-family equivalence demands (`pwsh` parity, web redirect ownership) are retired **with** the bodies
+because they were criteria of the deleted implementation, not safety properties (`06-…:40`).
+
+**The one residual, measured rather than assumed (not a preserved enforcement).** The five `confined-*`
+shadows existed because the preset scope otherwise resolved the inherited unconfined service (PD-17),
+and they were mounted by the **realm row** itself (`a5sf-realm-row.mjs` at A0, `A5SF_CONFINED_FS_TOOL`).
+They are gone, so the question is whether any member that used to be confined by them now is not. Two
+cases, and the answer is the same in both: a member whose row **asked for the centre** but mounted no
+realm is **refused** `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, called at
+`agent-bindings.mjs:1942-1944`, `ADM-44`); a member whose row **never asked** also never mounted the
+realm row, so the deleted shadows were never its enforcement either. **No invariant in C14b is left
+enforced only by a component that is gone.** The ungoverned row remains ungoverned by design — a
+capability limit, not a regression this cut introduced — and the open design question (admit against
+the same compiled ceiling with an explicitly unconfined provider, or refuse) is
+`ESCALATION-realmless-admission.md`, whose "What the code says" snippet predates the round-35 refusal.
+
 ---
 
 ## 3. The P1–P5 ladder and the OS negative controls
@@ -156,7 +208,10 @@ its host `sessionProjections.stateOf` half is still unproven and needs a live bo
 The P1–P5 obligation set is frozen in `docs/plans/memo/ute-p0-20261121/04-SEAMS.md:57-67`: "Each proof is
 a *pair*: an assertion that must be green, and a mutation that must turn it red. A proof without its
 mutation is a claim, not a test." The C14b row names them as the evidence that the safety invariants
-survived the C14 drop (`06-CAPABILITY-CONTRACT.md:48`).
+survived the C14 drop (`06-CAPABILITY-CONTRACT.md:48`). Round 67 adds the invariant-shaped arms
+`ADM-110`…`ADM-115` (§2.3): same proof shape (a green positive, a must-refuse negative), applied to the
+four preserved invariants and to the process family's fail-closed rule. They supplement, never replace,
+the P-rungs below.
 
 | proof | what the rung proves (verbatim obligation) | arms that carry it | live judge that carries it | negative control / must-red mutation | committed evidence |
 | --- | --- | --- | --- | --- | --- |
@@ -223,8 +278,8 @@ All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim
 
 ```
 $ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
-ℹ tests 173
-ℹ pass 171
+ℹ tests 179
+ℹ pass 177
 ℹ fail 0
 ℹ skipped 2
 DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
@@ -471,15 +526,21 @@ the interleaving recorded rather than scripted.
   product's refusal order (`CAPABILITY-MATRIX-C.md:61-64`); `IO_READ_DENIED` is unreachable on the live
   path by design and is proven **in-process** (`ADM-100`).
 
-### 6.9 A realm-less member has no admission at all
+### 6.9 A realm-less member that asked for the centre is refused; one that never asked stays outside it
 
 The centre is installed only inside `if (a5sfRowConfig !== undefined && a5sfRealmProvider !== undefined)`
-(`CAPABILITY-MATRIX-C.md:191-199`). A member with `centreStatePath` but no confined-provider realm
-therefore runs **unmediated and unreported** — not the "unwired call is explicitly refused" law, but the
-tool not being covered. Rows that *asked* are refused `MEMBER_CENTRE_UNWIRED`; rows that never asked
-remain outside the centre. The ruling is open in `ESCALATION-realmless-admission.md`. *Would prove it:*
-the owner ruling (admit against the same compiled ceiling and say so, vs refuse), then a test in both
-directions.
+(`agent-bindings.mjs:1942-1948`). **Correction (round 67):** an earlier draft of this section said a
+member with `centreStatePath` but no realm "runs unmediated and unreported". That was wrong and is
+corrected here, not softened: `memberCentreUnwiredViolation` (`centre-config.ts:36-49`, called at
+`agent-bindings.mjs:1942-1944`) **refuses** exactly that member with `MEMBER_CENTRE_UNWIRED` (`ADM-44`),
+so it never runs a call. What remains outside the centre is the row that **never asked**
+(`centreStatePath` unset): it keeps the host's own mediation with no admission, no ledger and no
+settlement — unchanged behaviour by design, not a governance claim (and, per §2.3, the deleted
+`confined-*` shadows were mounted by the realm row, so such a row was never confined by them either).
+The open question is therefore not exposure of an asked-for member but whether a realm-less member
+should be *admitted* against the same compiled ceiling with an explicitly unconfined provider (option A
+of `ESCALATION-realmless-admission.md`, whose "What the code says" snippet predates the round-35
+refusal). *Would prove it:* that ruling, then a test in both directions.
 
 ### 6.10 The settlement contract has no state for "admitted, then refused before the body"
 
@@ -536,11 +597,11 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
 
 1. **The candidate implements A1 + B + C.** The A1 cut is closed by measurement, not by prose: 148 sources
    gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 28 byte-identical dist placements, and the 37/180/
-   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-109` in the
-   `ute-vnext-a1` node leg (**171 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
-   suites (**238/238**, `verdict=PASS`) (§4).
-2. **There is live D evidence for the listed items.** Four live judges are **PROVEN** at two agreeing
-   boots each: `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
+   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-115` in the
+   `ute-vnext-a1` node leg (**177 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
+   suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count.
+2. **There is live D evidence for the listed items.** Nine live judges are **PROVEN** at two agreeing
+   boots each (the earlier "Four" was a miscount against this same list): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
    (repaired, not deleted), `d2:multi-member-concurrency`, `d2:stop`, `d3:crash-cold-recovery`,
    `d3:work-delivery`, `d3:alpha6` (as the typed-refusal shape). The P1–P5 obligations each have a green
    assertion, a negative control, and a live carrier (§3).
@@ -556,6 +617,9 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
    - **No row is PRODUCT-PROVEN**, and the model is a **scripted mock** (§6.1, §6.7).
    - **C11 (state projections)** has mechanism arms for its Team-owned projection (`ADM-107`…`ADM-109`,
      round 66), but its host `sessionProjections.stateOf` half is unproven and needs a live boot (§2.2).
+   - **C14b** is preserved with its own positive+negative arms (`ADM-110`…`ADM-115`, round 67), but it is
+     still **not PRODUCT-PROVEN**: the arms are in-process, the OS probe is a node-leg measurement, and
+     the ungoverned (never-asked) row remains outside the centre by design (§2.3, §6.9).
 4. **Therefore:** the honest description is *"A1+B+C implemented and measured, with D live evidence for
    the named, listed items — **not** a completed product acceptance."* The centre behaves as an A1 cut
    should: an unwired controlled call is **refused with a typed code**, not forwarded. That is a

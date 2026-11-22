@@ -1,5 +1,14 @@
 # ESCALATION — a member without a confined-provider realm gets NO admission at all
 
+> **ROUND 67 CORRECTION — the "What the code says" section below is stale.** Round 35 added the narrow
+> refusal this document predates: a row that set `centreStatePath` and mounted no realm is **refused**
+> `MEMBER_CENTRE_UNWIRED` (`centre-config.ts:36-49`, called at `agent-bindings.mjs:1942-1944`;
+> `ADM-44`). It does not run unmediated. What remains outside the centre is the row that **never asked**
+> for it (unchanged behaviour by design). The design question in this document (admit a realm-less
+> member against the same compiled ceiling with an explicitly unconfined provider, vs refuse) is still
+> open; the exposure claim is not. See `D-ACCEPTANCE-REPORT.md` §2.3/§6.9 and
+> `CAPABILITY-MATRIX-C.md` OPEN section (both corrected round 67).
+
 **Raised:** round 34. **Class:** a preserved capability cannot be delivered under the current contract
 without a ruling (it is not a bug I can fix by choosing a side).
 
