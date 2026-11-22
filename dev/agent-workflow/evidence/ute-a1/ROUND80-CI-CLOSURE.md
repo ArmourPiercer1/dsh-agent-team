@@ -595,3 +595,45 @@ Suite verdict lines printed by the run: `UTE-G1-FS-VERDICT GREEN vectors=16 pend
 `PROC-GOLDEN vectors=14 state=FROZEN re-records=0` + `NC-VERDICT GREEN controls=9 failed=0`,
 `UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42 …` + `NC-VERDICT GREEN controls=14 failed=0`,
 `UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=15 transcript=exact`.
+
+### 4.6 Hosted outcome, measured at every head this round pushed
+
+The round was pushed four times because the hosted runner found three fresh-runner defects and one
+long-standing, out-of-scope red that only became REACHABLE once the UTE G1 layer went green. Every row
+below is a hosted job log, not a local run.
+
+| head | `ci-census` UTE G1 layer | what the hosted log said | this round's action |
+| --- | --- | --- | --- |
+| `2c776e87f` | 71/89 (18 red) — unchanged | `next-host` step red first: `UTE_EVIDENCE_CONTRADICTED` + `UTE_MEMBER_UNCOVERED` for search/web/process/agent-control/ui/agent-state | real defects in the disposition: per-member coverage had retired with its subject, and the ledger still pinned the retired batteries' tokens (see §4.3) → `eddba2ef6` |
+| `eddba2ef6` | 86/89 | `ute-g1-search` test 1 `ENOENT … mkdtemp .artifacts/tmp/ute-g1-search`; `PROC-6` transcript diff on `PROBE-PWSH binary=` | `mkdirSync` the parent; compare the probe transcript modulo the host-only observation → `12d874bec` |
+| `12d874bec` | 88/89 | `PROC-6` still differed on `binary-on-path=yes` vs `no` | exclude BOTH `PROBE-PWSH binary…` lines from the exact diff; their host-independent half is asserted by regex → `003c407ff` |
+| `003c407ff` | **89/89, `ℹ fail 0`** | census captures **22/22 ×2**, `next-host` **184/184**, UTE G1 **89/89** — then the `ute-vnext-a1` leg red (below) | none: the layer is green; the red is a different lane's environment |
+
+**The one remaining `ci-census` red is NOT on this round's surface, and is named rather than papered
+over.** At `003c407ff` (and identically on a rerun) the `ute-vnext-a1` dispatch leg failed five arms,
+all rooted in the pinned host's confined subprocess / OS realm:
+
+```
+✖ ADM-66 — GREP positive … grep subprocess failed before reporting an outcome (ripgrep provider failure)
+✖ SLICE-28 — rung 4: grep runs confined inside the ceiling … same (ripgrep provider failure)
+✖ OS-2 — … prepare must succeed: {"code":"IO_POLICY_UNSUPPORTED",
+     "message":"network profile 'deny' is not offered in realm 'os-probe-realm': no provider in this
+     lane demonstrates full network deny (PoC-4b) …"}
+✖ OS-3 — the positive control, same realm refusal
+✖ ADM-70 — ORDER: the `grep` rung is missing from the ladder because ADM-66 could not run
+```
+
+Facts about that red: (a) the leg's seven files (`packages/runtime/test/vnext-{realm-lane,fs-slice,
+admission,os-probe,work-turn-reader,template-binding,b-probe-ladder}.test.mjs`) are **untouched by this
+round** — the diff touches only `tests/ute-g1-*`, `tests/ute1-fs` untouched, two ledgers and this
+evidence; (b) the same leg is **206 tests / 204 pass / 2 declared skips / exit 0** locally; (c) it is
+deterministic on the hosted runner across two attempts, and no `ci-required` run on this branch has
+ever been green, so the leg was red (or unreached) long before round 81 — it only became *reachable*
+when this round turned the two earlier steps green; (d) fixing it means changing the pinned host's
+provider/OS-realm provisioning or the leg's host requirements — CI infrastructure outside the A1
+disposition, and a change this round must not smuggle in.
+
+**So the honest hosted verdict for round 81:** the `ci-census` **UTE G1 layer is PROVEN green hosted**
+(89/89, with the census population 22/22 twice and the 184-test next-host step green), and
+`ci-census`/`ci-required` as a whole remain **UNPROVEN** because of the `ute-vnext-a1`
+ripgrep/OS-realm red above, which this round neither caused nor is licensed to repair.

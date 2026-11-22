@@ -2581,6 +2581,14 @@ an owner ruling, named in `ROUND80-CI-CLOSURE.md` §3.6, not an instrument fix. 
 
 ---
 
+**Hosted (`ci-required` / `ci-census`), round-81 heads.** UTE G1 layer: 71/89 → 86/89 → 88/89 → **89/89
+hosted at `003c407ff`**, with the census population 22/22 on both captures and the 184-test `next-host`
+step green. Full detail and the four-head table: `ROUND80-CI-CLOSURE.md` §4.6. The job's remaining red is
+the `ute-vnext-a1` dispatch leg (`ripgrep provider failure` + `IO_POLICY_UNSUPPORTED` for the OS realm),
+on seven files this round does not touch and which pass locally 204/2-skip; it therefore makes
+`ci-required` UNPROVEN overall, while the UTE G1 layer itself is proven. See §4.6 for the exact log
+lines and why repairing it is outside this disposition.
+
 ## Round 81 — the five route-C lane suites, disposed per subject (not re-recorded)
 
 The "**Not closed**" paragraph above is now closed, and its framing was wrong in one respect worth
