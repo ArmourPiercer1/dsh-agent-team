@@ -500,32 +500,28 @@ test('F1-6 TEARDOWN: after dispose the scope lookup answers undefined (no BASE f
 // F1-7 — structural pin of the glue call site (source, not a live setup)
 // ===========================================================================
 
-test('F1-7 the glue places the Member tool plane on the realm scope and routes the adapter fs seam through it', () => {
-  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-  const pins = [
-    // P01-PLANE-REALM (2026-11-11) added three names to this SAME import: the
-    // surface snapshot, the forwarded-name reader and the one admission
-    // predicate. Additive again - the mount, the naming call and the disposer
-    // are untouched; the pin tracks the import because the import is the claim.
-    // ROUTE C (2026-11-03) added `attachA5sfNativeToolModules` to this SAME
-    // import: the native shadow is attached AFTER the capability deny lane, on
-    // the realm object this mount returns. Additive: the ONE mount, the naming
-    // call and the safe disposer factory are unchanged.
-    ["import { a5sfAgentToolSurface, a5sfAttachedToolNames, a5sfBindableRealmNames, a5sfRealmConfigOf, a5sfToolPlaneOf, attachA5sfNativeToolModules, createA5sfRealmRowDisposer, freshCreateHintAdmits, mountMemberA5sfRealm } from './a5sf-realm-row.mjs'", 'the tool-plane naming import'],
-    ['a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)', 'the per-setup tool-plane assignment'],
-    ['const toolPlaneCtx = a5sfToolPlane === undefined ? agentCtx : a5sfToolPlane.ctx', 'the default-path ternary (ctx)'],
-    ['const toolPlaneFsBackend = a5sfToolPlane === undefined ? fsBackend : () => a5sfToolPlane.fs', 'the default-path ternary (fs)'],
-    ['toolDisposers.push(toolPlaneCtx.tools.register(def))', 'the Team tools are placed on the tool-plane scope'],
-    ['const placed = built.value.mount(toolPlaneCtx)', 'the governed plane mounts on the tool-plane scope'],
-  ]
-  for (const [needle, why] of pins) assert.ok(source.includes(needle), `${why}: missing \`${needle}\``)
-  assert.equal(
-    (source.match(/toolPlaneFsBackend\(agentCtx\)/g) ?? []).length,
-    4,
-    'all four permission-adapter fs reads (setup containment check, resolveTarget, containsTargets, containOverlayKeys) use the routed accessor',
-  )
-  assert.equal((source.match(/fsBackend\(agentCtx\)/g) ?? []).length, 0, 'no permission-adapter read is left on the unrouted accessor')
-  assert.ok(source.includes('presets.mount(agentCtx,'), 'the preset mount stays on the agent ctx (the preset registry owns its plugin fibers — route (a) is not implementable here)')
+test('F1-7 the product composition orders the realm, the preset surface, the deny lane and the native shadow', () => {
+  // RETIRED-BY-A0 (round 80) for the LEGACY arm: this test used to pin `a5sfToolPlaneOf` placement inside
+  // `live/agent-bindings.mjs`. That assembly was retired by the A0/A1 cut; the successor mediates a
+  // governed member through the EXECUTION CENTRE (`installMemberExecution`), not by placing the legacy
+  // tool plane on the realm ctx. The F1 mechanism itself is still behavioured by F1-1..F1-6 above, and
+  // the centre's admission contract is carried by `packages/runtime/test/vnext-admission.test.mjs`
+  // (the same `ute-vnext-a1` CI leg). What this arm keeps pinning is the ORDER the successor must hold,
+  // because that order is the security property, not the placement mechanism.
+  const successor = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
+  const realm = successor.indexOf('await mountMemberA5sfRealm({')
+  const preset = successor.indexOf('await presets.mount(agentCtx,')
+  const deny = successor.indexOf('applyBuiltInToolDeny(agentCtx,')
+  const shadow = successor.indexOf('await attachA5sfNativeToolModules(')
+  for (const [at, what] of [[realm, 'the realm mount'], [preset, 'the preset mount'], [deny, 'the deny lane'], [shadow, 'the native shadow']]) {
+    assert.notEqual(at, -1, `${what} is present in the successor`)
+  }
+  assert.equal(realm < preset, true, 'the confined PROVIDER is mounted before the preset TOOL SURFACE')
+  assert.equal(preset < deny, true, 'the deny lane follows the preset mount')
+  assert.equal(deny < shadow, true, 'the native shadow is created AFTER the deny lane')
+  assert.ok(successor.includes('await installMemberExecution({'), 'the governed member is mediated by the ONE execution composition')
+  assert.ok(successor.includes('toolDisposers.push(agentCtx.tools.register(def))'), 'the Team tools are registered on the member ctx the centre mediates')
+  assert.ok(successor.includes('presets.mount(agentCtx,'), 'the preset mount stays on the agent ctx')
 })
 
 // ===========================================================================
@@ -533,17 +529,11 @@ test('F1-7 the glue places the Member tool plane on the realm scope and routes t
 // ===========================================================================
 
 test('F1-8 the glue does NOT swallow a malformed-realm fault: no try/catch, no ?? / || fallback', () => {
-  const source = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
-  const call = 'a5sfToolPlane = a5sfToolPlaneOf(a5sfRealm)'
-  assert.equal(source.split(call).length - 1, 1, 'the naming call appears exactly once')
-  const idx = source.indexOf(call)
-  const window = source.slice(Math.max(0, idx - 400), idx + 300)
-  // M-g: `try { a5sfToolPlane = a5sfToolPlaneOf(...) } catch { a5sfToolPlane = undefined }`
-  // — or `?? undefined` / `|| undefined` on the same statement — would make a
-  // MALFORMED mount fail OPEN: `undefined` means "no realm mounted", so the
-  // whole tool plane (Team tools, governed plane, adapter seam) would silently
-  // go back to the BASE provider. That is the regression this arm kills.
-  assert.doesNotMatch(window, /\btry\b|\bcatch\b|\?\?|\|\|/, 'nothing may catch or default the naming call')
+  // RETIRED-BY-A0 (round 80): the source half pinned a call in the legacy assembly. The negative
+  // control below is the part that never depended on that file — it replays the naming expression
+  // itself and proves a malformed realm RAISES instead of degrading to "no realm" (fail open).
+  // The legacy call site is gone with its assembly; the helper it called is still exported and its
+  // contract is what this arm measures.
   // Behavioural replay of the SAME expression the glue evaluates: a malformed
   // mount raises out of the setup (which rolls the agent back) — it does not
   // become "no realm".

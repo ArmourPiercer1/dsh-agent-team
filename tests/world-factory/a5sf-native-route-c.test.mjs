@@ -522,9 +522,15 @@ test('N4 teardown: disposing the realm removes the shadow (the preset definition
 // ===========================================================================
 test('N5 glue order: the production glue attaches the native shadow AFTER applyBuiltInToolDeny; the reverse order re-enables the denied tool', async () => {
   // --- structural half: the order in the ONE production glue -----------------
-  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'agent-bindings.mjs'), 'utf8')
+  // ROUND 80: the A1 cut replaced the legacy `live/agent-bindings.mjs` with the vnext assembly. This
+  // arm reads the SUCCESSOR — and it is not a formality: on the first re-point the successor mounted
+  // the row's native modules inside `installMemberExecution`, which runs BEFORE `agentPresets.mount`
+  // and BEFORE the deny lane, while the pin still believed the attach was post-deny. Reading a deleted
+  // file had made this arm vacuous and the inversion invisible. The attach now lives after the deny
+  // again (this test is why), next to the restored review disclosure.
+  const glue = readFileSync(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'vnext', 'agent-bindings.mjs'), 'utf8')
   const denyAt = glue.indexOf('applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny)')
-  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfRealm, agentCtx, a5sfRowConfig, runtimeAgent)')
+  const attachAt = glue.indexOf('await attachA5sfNativeToolModules(a5sfMountedRealm, agentCtx, a5sfRowConfig, runtimeAgent)')
   assert.notEqual(denyAt, -1, 'the glue applies the capability deny lane')
   assert.notEqual(attachAt, -1, 'the glue attaches the native shadow through the row helper')
   assert.ok(
@@ -533,9 +539,9 @@ test('N5 glue order: the production glue attaches the native shadow AFTER applyB
     + '(an own-scope registration is outside the inherited tools.restrict filter)',
   )
   assert.equal(
-    glue.includes('nativeToolModules:'),
+    glue.includes('nativeSpecs:'),
     false,
-    'the realm mount must not create the shadow (no native modules on the mount input)',
+    'the composition must not mount the row natives before the deny (no native modules on the mount input)',
   )
 
   // --- behavioral half: DENY then ATTACH (the fixed order) -------------------

@@ -10879,3 +10879,16 @@ grade (owner action if the gate needs a repo variable/label is reported, never f
 
 NOT proven, stated: nothing here was observed on hosted runners in this session. Every job below was
 run with the hosted command locally; the `hosted` column says UNPROVEN until the workflow logs exist.
+
+**Second pass (same round) — the stop-at-first-red layer hid a regression.** `ci-integration` halts
+at its first failing step, so the 473 family-definitions red concealed six more failures downstream.
+Replaying the layer's extracted step list found them; one was not a test problem: the A1 successor
+mounted a row's `nativeToolModules` inside `installMemberExecution`, i.e. BEFORE `agentPresets.mount`
+and BEFORE `applyBuiltInToolDeny`, so an own-scope native shadow could be created outside
+`tools.restrict` before the deny lane and survive it — the exact fail-open route-C pins. The deleted
+legacy file had made that pin vacuous. Fixed in the composition (post-deny
+`attachA5sfNativeToolModules`, realm reference hoisted, disclosure restored); route-C N5 now measures
+the real order. The other five (structural pins reading the deleted glue, the hint-gate move, the
+host-dependent inject key set, the retired appended shell shadow, and PA15 stale since round 75) are
+disposed per subject in `ROUND80-CI-CLOSURE.md` §2.1. The layer then ran end to end locally, step by
+step, in the workflow's own order.

@@ -48,6 +48,15 @@ Adjacent reds from the same cause (measured at HEAD):
 | `ci-census` | `DSH-CENSUS-REFUSED code=POPULATION_SHRANK` (`packages/runtime` −102 files, `packages/tools` −1, `packages/tools/a5p5-tools` root absent) | 1 refusal |
 | `pr-settlement-gate` | no dated settlement comment carrying the head sha | 1 requirement |
 
+Two more reds were MASKED behind the first failing `ci-integration` step (GitHub stops the job at
+the first red), found by running the layer's steps in order locally. They are not consequences of
+this round; they were simply never reached:
+
+| instrument | red (hidden behind the 473) | count |
+|---|---|---|
+| `scripts/eb3-run-manifest.mjs` | `RUN_HOST_PIN_DRIFT` — every round-79 rc.5 record measures `NEXT_HOST` (0.2.2-rc.5), but the law only knew the baseline pin, so it graded the generation the tree DECLARES as foreign | 18 |
+| `tests/kits/a5sf-golden/compare.test.mjs` | the corpus requires every vector's source to be on disk; 5 sources were deleted with the cut (4 booked per-file in `retiredSubjects`, 1 frozen A0) | 1 failing test |
+
 ## 2. Disposition of every category
 
 The licence is `dev/agent-workflow/ledgers/ute-cut-closure.allow.json#retiredSurfaces`
@@ -74,9 +83,26 @@ declared surface is not wholly inside the frozen set is graded as LIVE
 | 12 census node:test failures | RE-BASE the fixture on the A0 frozen tree (option (a) of `MIGRATED-SUITE-STATUS.md` §6.2) | `retiredSurfaces#frozenTree` | mutation batteries preserved: inventory 32/32, p0-assets 21, cut-closure 13, retirement-gate 45 |
 | 3 cut-closure failures | FIX the instrument: the build-face arm graded a foreign `--root` with THIS repo's placements | n/a — a real bug | `placements=self|fixture` in the check line |
 | `POPULATION_SHRANK` | REGENERATE the baseline with an attributed reason | `retiredSurfaces` + `retiredSubjects` | baseline 712 → 599, roots 12 → 11, reason recorded |
+| 18 `RUN_HOST_PIN_DRIFT` | FIX the law's input: `tests/paths.mjs` declares TWO host generations (baseline + `NEXT_HOST`, line 214); the manifest read only one and graded the declared rc.5 generation as drift. `hostPins()` now reads both from the same file; a record on an undeclared sha still refuses (probed: `hostSha=1111…` → `RUN_HOST_PIN_DRIFT`, `findings=1`) | `tests/paths.mjs#NEXT_HOST` | `--new-since` → `records=489 strict=117 findings=0` |
+| golden corpus: 5 deleted sources | RE-POINT the inspectability law, not the vectors: 4 sources are booked per-file in `retiredSubjects` (round 72) and 1 is a frozen A0 module, so the test reads the retirement record / the frozen tree instead of a missing file. Dispositions unchanged (RETIRE/UNUSABLE were already NOT_APPLICABLE) | `retiredSubjects.entries` + `retiredSurfaces#frozenTree` | `compare.test.mjs` 19/19 |
 | `ci-census`/`ci-required` not green | two successor legs added to REQUIRED `ci-integration` | `dev/ci/eb3-ci-manifest.json` | `ute-cut-closure --check`, `ute-p0-assets --check` |
 
-### 2.1 Why `eb3-family-definitions` was NOT deleted
+### 2.1 The reds the FIRST red was hiding (found by running the layer step by step)
+
+`ci-integration` stops at its first failing step, so the 473-family-definitions red concealed six
+more. They were measured by replaying the layer's own step list locally (`.workflow` steps extracted
+verbatim, `CI_BASE` = the A0 frozen tree) and each one is disposed on its own terms:
+
+| masked red | what it was | disposition |
+|---|---|---|
+| `a5sf-p2-wiring` W6, `a5sf-native-route-c` N5, `a5sf-tool-axis` TA5, `a5sf-window-taxonomy` W2/W3a, `a5sf-pd29` (`PD29-*`), `a5sf-f1-ctx` F1-7/F1-8 | six structural pins still `readFileSync`-ed `packages/runtime/src/plugin/live/agent-bindings.mjs` — a file the A1 cut DELETED. A pin that reads a missing file does not fail closed; it made those arms vacuous at HEAD | RE-POINT to the survivor `packages/runtime/src/plugin/vnext/agent-bindings.mjs` where the property survived (order, implant site, stop sequence, hint gate, attach call); RETIRE the two arms whose SUBJECT was the legacy tool plane (F1-7/F1-8 source halves) with the citation that the A1 centre mediates through admission, and keep every behavioural arm |
+| **`a5sf-native-route-c` N5 (order inversion)** | re-pointing N5 exposed a REAL regression, not a stale path: the successor mounted the row's `nativeToolModules` from inside `installMemberExecution`, which runs BEFORE `agentPresets.mount` and BEFORE `applyBuiltInToolDeny`. An own-scope registration outside `tools.restrict` therefore preceded the deny lane — the exact fail-open route-C was written to prevent. The deleted-file read is what had hidden it | **PRODUCT FIX (not a test edit)**: the row's native modules are no longer handed to the composition; the surviving post-deny helper `attachA5sfNativeToolModules(a5sfMountedRealm, …)` is called AFTER the deny (as it was pre-cut), the realm reference is hoisted for it, and the review disclosure (sibling `isolate()`, deny-then-attach) is restored beside the call. N5 now measures the real order and passes for the right reason |
+| `a5sf-tool-axis` TA12 | the refusal message asserted an exact `inject` key set; an rc.2 fiber keeps the already-resolved `fs` in `inject`, a later generation prunes it (message: `[attachments,tools,systemPrompt,fs]`) | FIX the law, not the producer: assert the public state + each inject NAME + the absence of the upstream error text. The seam never reads the private error slot, which is the property |
+| `a5sf-window-taxonomy` W5 | its fixture read a `shellRead` guard fact produced by the LEGACY appended shell shadow — a retired Family Contribution module; the A1 composition mounts the preset's own modules instead | RETIRE the retired-surface half with citation (fact provenance is carried by the execution centre's `vnext-admission` arms), KEEP the revision-identity measurement and the forged-revision refusal |
+| `a5sf-product-assembly` PA15 | stale since round 75: it asserted zero per-Member restrictions from a Team-scoped `toolBindings` family, while the derivation deliberately CARRIES those entries onto every Member (they have no template association; dropping them would compile a Team-level process binding to nothing) | UPDATE to the living law: the entries are carried VERBATIM (identity, tool name, authorization, execution boundary, lane) and the `blueprint-tool-bindings-not-member-scoped` residual is still asserted — nothing is silently invented or dropped |
+| `a5sf-window-taxonomy` W2 | `freshCreateHintAdmits` moved out of the realm row into `vnext/bind-path.mjs` | RE-POINT the import; the ONE-gate law now counts the two call sites across `agent-bindings` + `template-binding` (where `locateTemplate` moved) |
+
+### 2.2 Why `eb3-family-definitions` was NOT deleted
 
 It stays, and it is not vacuous. What it still grades on every PR: the family set both directions,
 member/lane/mount/definition parity, the census booking, the retirement-ledger licence

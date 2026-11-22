@@ -1198,7 +1198,7 @@ test('PA14 a5sfMemberAuthority + blueprintSource governs Members with NO declara
 // PA15 — what derivation does NOT represent is named, not silently dropped
 // =============================================================================
 
-test('PA15 a bound blueprint with a Team-scoped toolBindings family yields the typed residual (no per-Member binding invention)', () => {
+test('PA15 a bound blueprint with a Team-scoped toolBindings family is carried verbatim AND named as a residual', () => {
   const document = {
     schemaVersion: 4,
     blueprintId: TEAM,
@@ -1239,7 +1239,23 @@ test('PA15 a bound blueprint with a Team-scoped toolBindings family yields the t
   })
   assert.equal(plan.members.length, 1, 'only the member ceiling is derived; the leader is not a Member')
   assert.equal(plan.members[0].templateId, 'worker')
-  assert.equal(plan.members[0].restrictions.length, 0, 'no per-Member restriction is invented from a Team-scoped binding')
+  // ROUND 80 (measured, stale since round 75): the derivation deliberately CARRIES Team-scoped
+  // `toolBindings[]` onto every derived Member — the family has no template association, and the
+  // two-axis law intersects it with each Member's ceiling per call, so omitting it would silently
+  // drop execution authority (a Team-level process binding would compile to nothing). What this arm
+  // must still prove is that the entries are CARRIED VERBATIM, not invented or reshaped, and that the
+  // plan still NAMES the family as not member-scoped.
+  assert.equal(plan.members[0].restrictions.length, 1, 'the Team-scoped binding is carried onto the derived Member')
+  const carried = plan.members[0].restrictions[0]
+  assert.equal(carried.bindingIdentity, 'dsh.fs/read', `the carried binding keeps its compiled identity: ${JSON.stringify(carried)}`)
+  assert.equal(carried.toolName, 'read', 'the carried binding keeps its declared tool name')
+  assert.equal(carried.authorization, 'allow', 'the carried binding keeps its declared authorization')
+  assert.equal(carried.execution.executionBoundary, 'trusted-host', 'the carried binding keeps its declared execution boundary')
+  assert.deepEqual(
+    carried.read.allow,
+    ['/work/docs'],
+    'the carried binding keeps its declared lane (verbatim, never re-derived from the Member ceiling)',
+  )
   assert.ok(
     plan.provenance.residuals.includes('blueprint-tool-bindings-not-member-scoped'),
     'the uncovered binding family is NAMED, not silently dropped',

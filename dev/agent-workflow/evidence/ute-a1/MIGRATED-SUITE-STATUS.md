@@ -2513,3 +2513,26 @@ into `ute-g1`'s frozen evidence and the round-72 per-file retirement record:
 The vitest population stays **238** (the `ute-vnext-a1` leg: 7 suites / 206 tests / exit 0; the
 bound `ci-integration` leg: 15 files / 238 passed). Nothing was restored, no skip widened, no
 negative control removed, no A0 evidence edited.
+
+### Round 80, second pass — the six reds the first red was hiding
+
+The hosted `ci-integration` red at `5cf7cba8` was `eb3-family-definitions`; the layer stops at its
+first failure, so nothing downstream had run at HEAD. Replaying the layer's own step list found six
+more failures, and one of them was not a stale test:
+
+- **A REAL REGRESSION, FIXED IN THE PRODUCT.** `a5sf-native-route-c` N5's structural half read a
+  deleted file, so it was vacuous; re-pointing it to the A1 survivor
+  (`packages/runtime/src/plugin/vnext/agent-bindings.mjs`) showed that the successor mounted a
+  row's `nativeToolModules` from inside `installMemberExecution` — BEFORE `agentPresets.mount` and
+  BEFORE `applyBuiltInToolDeny`. An own-scope registration outside `tools.restrict` created before
+  the deny lane survives it, which is the fail-open route-C exists to prevent. The fix restores the
+  pre-cut order: the row's modules are attached by the surviving
+  `attachA5sfNativeToolModules(a5sfMountedRealm, …)` AFTER the deny, and the F1 disclosure (sibling
+  `isolate()`, deny-then-attach) is back beside the call. N5 now passes because the order is right.
+- **FIVE STALE/PATH-BOUND ARMS, re-pointed or retired per subject**, each with its citation in
+  `ROUND80-CI-CLOSURE.md` §2.1: W6/N5/TA5/W3a/PD29 structural pins (survivor path), W2 (the hint
+  gate moved to `vnext/bind-path.mjs`; the ONE-gate law now spans two files), TA12 (the refusal's
+  inject key set is a host detail — the law is the public state + each name + no upstream error
+  text), W5 (the legacy appended shell shadow is a retired surface; the revision-identity arm and
+  the forged-revision refusal stay), PA15 (stale since round 75: Team-scoped `toolBindings` are
+  carried VERBATIM onto every Member by design — asserted, with the residual still named).

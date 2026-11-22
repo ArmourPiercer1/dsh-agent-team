@@ -50,7 +50,10 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 const REPO_ROOT = join(HERE, '..', '..')
-const BINDINGS = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
+// ROUND 80: the A1 cut replaced the legacy glue; the stop sequence survived in the successor.
+const BINDINGS = 'packages/runtime/src/plugin/vnext/agent-bindings.mjs'
+// The historical base is read at its OWN path (the vnext assembly did not exist then).
+const LEGACY_BINDINGS = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
 const BASE_COMMIT = process.env.A5SF_PD29_BASE ?? '24d2cf760'
 
 function read(rel, rev = null) {
@@ -125,7 +128,7 @@ test('PD29-STOP-SEQUENCE: cancel, then disarm, then the durable CAS pause', () =
 })
 
 test('PD29-PIN: the base commit had no disarm seam (a revert reddens this suite)', () => {
-  const base = read(BINDINGS, BASE_COMMIT)
+  const base = read(LEGACY_BINDINGS, BASE_COMMIT)
   assert.equal(base.includes('disarmStoppedGoal'), false, `base ${BASE_COMMIT} must not contain the PD-29 disarm seam`)
   assert.throws(() => stopFacts(base))
 })

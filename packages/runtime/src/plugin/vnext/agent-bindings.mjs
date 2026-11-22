@@ -363,6 +363,7 @@ import { readDeliveredWorkTurn } from './work-turn-reader.mjs'
 // fresh-member window is a path predicate (it was duplicated here and in the realm row).
 import {
   a5sfRealmConfigOf,
+  attachA5sfNativeToolModules,
   compiledAnswerOfRealm,
   createA5sfRealmRowDisposer,
   mountMemberA5sfRealm,
@@ -1958,6 +1959,9 @@ export function createAgentBindings(deps) {
       // once the preset is mounted/known). Rows without a centre never enter this path.
       let governedDefaultRealm
       let governedPresetModules
+      // The mounted realm, hoisted so the POST-DENY native attach below can reach it. The attach may
+      // not live inside this block: the deny lane runs later, and route-C N5 pins the order.
+      let a5sfMountedRealm
       // A governed member without a realm is REFUSED, not left unmediated (round 35). The rule is narrow:
       // it fires only when the row asked for the centre (centreStatePath) and no realm was mounted, so a
       // row that never configured the centre is unchanged.
@@ -1978,6 +1982,7 @@ export function createAgentBindings(deps) {
             bindPath,
           },
         })
+        a5sfMountedRealm = a5sfRealm
         if (a5sfRealm !== undefined) {
           // SHAPE A: a compiled realm means this member is GOVERNED (a centre is installed below).
           // When the row declares no native module set, the default mount owns the confinement of
@@ -2043,7 +2048,9 @@ export function createAgentBindings(deps) {
             // supplied together or not at all.
             ...(grants === undefined ? {} : { grants }),
             ...(approvals === undefined ? {} : { approvals }),
-            nativeSpecs: a5sfRowConfig.nativeToolModules ?? [],
+            // The row's native modules are NOT mounted here: this composition runs BEFORE the deny
+            // lane, and an own-scope registration outside `tools.restrict` must never exist before
+            // it. They are attached below, after `applyBuiltInToolDeny` (route-C N5's law).
             scope: runtimeAgent ?? undefined,
             onDispose: (dispose) => toolDisposers.push(dispose),
             onNativeDispose: (entry) => nativeMountDisposers.push(entry),
@@ -2152,6 +2159,20 @@ export function createAgentBindings(deps) {
       // SELECTIVE mode only; an empty list is a no-op (zero restrict calls).
       if (capabilities.mode === 'selective') {
         toolDisposers.push(applyBuiltInToolDeny(agentCtx, capabilities.builtinToolDeny))
+      }
+      // ROUTE C (2026-11-03, review fix) — the row's OWN native modules, attached AFTER the deny.
+      //
+      // F1 (review response 2026-11-03) — WHAT THE MOUNT DOES AND HOW IT IS CONSUMED. The realm mount
+      // installs the confined Provider through the installer's `root.isolate('fs', …)`. Cordis
+      // `isolate()` creates a SIBLING scope, so THIS agent ctx keeps the BASE provider — a fact about
+      // the installer, not a bug in it. The native shadow is created by re-mounting the SAME native
+      // module inside the isolated scope, which shadows the preset's descendant registration for THIS
+      // agent only. An own-scope registration sits OUTSIDE the inherited `tools.restrict` filter, so
+      // the shadow MUST be created after the deny lane: created first, it would survive the deny and
+      // keep a denied tool visible and executable on the confined lane (measured). Only
+      // deny-then-attach is safe, which is why this call sits HERE and not beside the realm mount.
+      if (a5sfMountedRealm !== undefined && Array.isArray(a5sfRowConfig?.nativeToolModules) && a5sfRowConfig.nativeToolModules.length > 0) {
+        await attachA5sfNativeToolModules(a5sfMountedRealm, agentCtx, a5sfRowConfig, runtimeAgent)
       }
       // SHAPE A (round 61) — THE GOVERNED MEMBER'S NATIVE TOOLS, ON ITS OWN PROVIDER, BY DEFAULT.
       //
