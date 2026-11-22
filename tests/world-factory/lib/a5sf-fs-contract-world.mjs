@@ -272,10 +272,15 @@ export function provideWorkingDirectoryDouble(ctx, defaultDirectory) {
  *
  * @param {object} tools - `root.get('tools')`.
  * @param {{callId: string, name: string, arguments: unknown, signal: AbortSignal, agent: object}} call
- * @param {{hostMode: 'legacy'|'next'}} host
+ * @param {object} host
+ * @param {'legacy'|'next'} host.hostMode - which host generation's call shape to use.
+ * @param {(input: {calls: readonly object[], completion: object}) => void} [host.onCompletion] - receives
+ *   the host's OWN returned value before it is unwrapped. rc.5 announces a pre-dispatch cancellation
+ *   only in that value (`batch.results[].result`), never through `tools/result`; a caller that wants to
+ *   observe it must see the completion, and this is the one place the composition still has it.
  * @returns {Promise<object>} the settled tool result.
  */
-export async function executeToolDispatch(tools, call, { hostMode }) {
+export async function executeToolDispatch(tools, call, { hostMode, onCompletion }) {
   if (hostMode === 'next') {
     const batch = await tools.execute({
       calls: [{ type: 'tool-call', id: call.callId, name: call.name, arguments: JSON.stringify(call.arguments) }],
@@ -284,15 +289,18 @@ export async function executeToolDispatch(tools, call, { hostMode }) {
     })
     const outcome = batch.results?.[0]
     if (outcome === undefined) throw new Error(`the ${call.name} batch returned no result`)
+    if (typeof onCompletion === 'function') onCompletion({ calls: [{ id: call.callId, name: call.name }], completion: batch })
     return outcome.result
   }
-  return tools.execute({
+  const settled = await tools.execute({
     signal: call.signal,
     callId: call.callId,
     name: call.name,
     arguments: call.arguments,
     agent: call.agent,
   })
+  if (typeof onCompletion === 'function') onCompletion({ calls: [{ id: call.callId, name: call.name }], completion: settled })
+  return settled
 }
 
 /**

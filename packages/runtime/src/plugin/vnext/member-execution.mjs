@@ -57,7 +57,10 @@ import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
  * @param {(entry: {settled: () => Promise<void>}) => void} input.onNativeDispose - where the native
  *   mount's async disposer goes (the caller awaits it BEFORE disposing the realm).
  * @param {(message: string) => void} input.observe - the row's observation sink.
- * @returns {object|undefined} `{binding, ledger, settlementStore}` when a centre was installed.
+ * @returns {object|undefined} `{binding, ledger, settlementStore, observeExecutorCompletion}` when a centre
+ *   was installed. `observeExecutorCompletion` is the pre-dispatch observation point: whoever owns a
+ *   `tools.execute` call site on this member hands it the RETURNED value (see
+ *   `pre-dispatch-abort.mjs`); it writes the same execution fact the pipeline observer would have.
  */
 /**
  * A native tool module must be a host package. The check is on the SPECIFIER, before the import: an
@@ -188,7 +191,7 @@ export async function installMemberExecution ({
       if (typeof centre.close === 'function') centre.close()
       else centre.dispose()
     })
-    centreState = { binding, ledger, settlementStore }
+    centreState = { binding, ledger, settlementStore, observeExecutorCompletion: (input) => centre.observeExecutorCompletion(input) }
   }
   // THE NATIVE MOUNT. Its dispose() releases the realm's definition and installs the MEMBER_CLOSED
   // tombstone; the caller must await it BEFORE disposing the realm, because the tombstone needs a

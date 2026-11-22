@@ -176,6 +176,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
   }
   const disposers = []
   let admissionPoint
+  let executionFacts
   try {
     admissionPoint = installAdmissionPoint({
       ctx,
@@ -192,7 +193,7 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
       ...(onFault === undefined ? {} : { onFault }),
     })
     disposers.push(admissionPoint)
-    disposers.push(installExecutionFacts({
+    executionFacts = installExecutionFacts({
       ctx,
       record: recordExecution,
       admissionOf: (callId) => admissions.get(callId),
@@ -208,8 +209,25 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
           if (fact.outcome === 'aborted') settlement.stop({ exec, phase: 'in-flight' })
           settlement.settled({ exec, outcome: fact.outcome })
         },
+        // THE PRE-DISPATCH STOP. rc.5 cancels a call before dispatch without entering the pipeline,
+        // so there is no `tools/result` and no in-flight Stop to record. The settle writer's
+        // `stoppedBeforeBody` records the Stop and settles CANCELLED when an admission record exists,
+        // and reports the unrecorded case VISIBLY instead of inventing one (a call aborted before the
+        // admission point never opened a record). It is never called for a pipeline-settled call: the
+        // execution-fact dedupe by ExecutionId answers first.
+        onPreDispatchAbort: (fact, exec) => {
+          settlement.stoppedBeforeBody({ exec, stopId: `stop:${String(exec.callId)}:pre-dispatch`, observedAt: 'executor-completion' })
+        },
+        // A pre-dispatch abort before the admission point has no durable record to write (the ledger
+        // refuses an execution it cannot join to an admission record) and no settlement to close. The
+        // refusal is REPORTED - the product's no-fabrication rule, made visible - and never turned into
+        // an invented record.
+        onUnrecordable: (fact, error) => {
+          if (onFault !== undefined) onFault(error, { phase: 'pre-dispatch-record', callId: fact.callId, executionId: fact.executionId, outcome: fact.outcome })
+        },
       }),
-    }))
+    })
+    disposers.push(executionFacts.dispose)
   } catch (error) {
     // A half-installed centre is worse than none: roll the installed points back before rethrowing, or
     // a leaked admission point keeps refusing calls for a member the caller believes was never bound.
@@ -221,6 +239,23 @@ export function installMemberCentre ({ ctx, binding, resolveBinding, recordAdmis
   let disposed = false
   let closedByLifecycle = false
   return Object.freeze({
+    /**
+     * The executor-completion observation point.
+     *
+     * A caller that owns a `tools.execute` call site hands the RETURNED value here; the observer
+     * reads only the pinned hosts' own `TOOL_ABORTED_BEFORE_DISPATCH` result and writes the same
+     * execution fact the pipeline observer would have written, deduped by ExecutionId. It is exposed
+     * rather than called here because the product does not own the host agent loop's call site (see
+     * `pre-dispatch-abort.mjs` and `RC5-MIGRATION.md` §7).
+     */
+    observeExecutorCompletion (input) {
+      if (executionFacts === undefined) {
+        // No execution observer (no settlement store / no identity) is an unwired centre, and a
+        // silent no-op would read as "nothing was aborted". Say so.
+        throw new TypeError('centre-install: this centre installed no execution-fact observer, so it cannot observe a pre-dispatch abort')
+      }
+      return executionFacts.observeExecutorCompletion(input)
+    },
     dispose () {
       // Idempotent: `disposers.reverse()` mutates in place, so a second dispose would re-run every
       // disposer in the opposite order - the kind of double-teardown that hides as a random fault later.

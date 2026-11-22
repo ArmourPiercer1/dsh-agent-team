@@ -70,6 +70,20 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
 
   const fault = (error, context) => { if (typeof onFault === 'function') onFault(error, context) }
 
+  /**
+   * NO FABRICATION, REPORTED. A call that ended before the admission point has no record, and this
+   * writer will not invent one: settling it would attribute an admission decision nobody made to an
+   * execution nobody admitted, which is worse than an admitted gap. What it does instead is REPORT
+   * the gap under one stable code, so an operator can see that a call ended unrecorded rather than
+   * reading silence as "nothing was cancelled". The execution fact still carries the Stop.
+   */
+  const noRecordGap = (identity, exec, observedAt) => {
+    const gap = new Error(`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION: execution ${identity.executionId} (${observedAt}) ended before the admission point, so no settlement record exists; the call is NOT settled and nothing is invented for it (the execution fact carries the Stop)`)
+    gap.code = 'SETTLEMENT_NO_RECORD_BEFORE_ADMISSION'
+    fault(gap, { phase: 'terminal', executionId: identity.executionId, toolName: exec?.name, observedAt })
+    return null
+  }
+
   return Object.freeze({
     /** The admission decision the ControlService already made, referenced - never re-decided. */
     admitted ({ exec, callId, admission }) {
@@ -232,8 +246,7 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
         // settling it would invent an admission decision nobody made. It is reported as a fault -
         // visibly - and the execution fact still carries 'aborted'.
         if (store.read(identity.executionId) === null) {
-          fault(new Error(`no settlement record for ${identity.executionId}: the call ended before admission`), { phase: 'terminal', executionId: identity.executionId, toolName: exec?.name })
-          return null
+          return noRecordGap(identity, exec, 'tools/result')
         }
         const state = settlementStateOf(outcome)
         return store.settle({
@@ -266,12 +279,22 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
      * the effect evidence is `none-confirmed`. The record is terminal, never UNKNOWN.
      *
      * Idempotent: a terminal record is returned unchanged.
+     *
+     * @param {object} input
+     * @param {object} input.exec - the call the Stop names.
+     * @param {string} [input.stopId] - the Stop's stable id (defaults to one derived from the record).
+     * @param {'pre-dispatch'|'in-flight'} [input.phase] - the Stop phase the store records.
+     * @param {string} [input.observedAt] - WHERE the observation was made, named in the no-record
+     *   report (`pipeline` for the admission point's own stop check, `executor-completion` for the
+     *   batch boundary). Required for the report to be actionable rather than generic.
      */
-    stoppedBeforeBody ({ exec, stopId, phase = 'pre-dispatch' }) {
+    stoppedBeforeBody ({ exec, stopId, phase = 'pre-dispatch', observedAt = 'pipeline' }) {
       try {
         const identity = identityOf(exec)
         const existing = store.read(identity.executionId)
-        if (existing === null) return null
+        // An abort observed BEFORE the admission point (rc.5's batch `skip`) has no record to close.
+        // It is reported, never fabricated - the same rule as the terminal writer above.
+        if (existing === null) return noRecordGap(identity, exec, observedAt)
         if (existing.state !== 'ADMITTED') return existing
         store.recordStop({
           executionId: identity.executionId,

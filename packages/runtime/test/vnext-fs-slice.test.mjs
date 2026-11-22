@@ -355,6 +355,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   let executions = []
   let disposeAdmission
   let disposeExecutions
+  let executionFacts
   // `ask-granted` models a host with an approval channel that answers 'allowed-once'. The stub is
   // the smallest thing that proves the centre's half: mint when the ask is raised, spend exactly
   // once at the guard. It is a TEST double for `ctx.get('approval')`, not product wiring.
@@ -372,6 +373,9 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // SETTLEMENT. One store per world, keyed by the product's own execution id, observed at the host's
   // tools/result - the same place the ledger observes it.
   const settlementStore = createExecutionSettlementStore({ dir: join(dir, 'settlement') })
+  // A fault is a REPORT, not a silent no-op: the writer's "no fabrication" rule (a call that ended
+  // before admission has no record and none is invented) is only observable if someone collects it.
+  const faults = []
   const settlement = createSettlementWriter({
     store: settlementStore,
     identityOf: (exec) => ({
@@ -382,6 +386,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       actorId: IDENTITY.memberInstanceId,
       worldId: 'session-vnext-slice',
     }),
+    onFault: (error, context) => { faults.push({ code: error?.code ?? '', message: error instanceof Error ? error.message : String(error), ...context }) },
   })
 
   // `durable` = the ledger path. When present every admission/execution record goes to disk and a
@@ -445,11 +450,13 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       ...(grants === undefined ? {} : { grants }),
       settlement,
     })
-    disposeExecutions = installExecutionFacts({
+    executionFacts = installExecutionFacts({
       ctx: agent.ctx,
       record: (fact) => {
-        executions.push(fact)
+        // Durable append FIRST, exactly as the product's centre does: a fact the ledger refuses must
+        // not be observable as if it had been recorded.
         if (ledger !== undefined) ledger.recordExecution(fact)
+        executions.push(fact)
       },
       admissionOf: (callId) => facts.find((entry) => entry.callId === callId),
       // The settlement writer consumes the SAME fact the ledger got, and the store's transition law
@@ -459,11 +466,29 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
         if (fact.outcome === 'aborted') settlement.stop({ exec, phase: 'in-flight' })
         settlement.settled({ exec, outcome: fact.outcome })
       },
+      // THE PRE-DISPATCH PATH (rc.5). Same rule as the product wiring: close the record as CANCELLED
+      // with a pre-dispatch Stop when one exists, and REPORT the unrecorded case instead of inventing
+      // a settlement for a call that never reached admission.
+      onPreDispatchAbort: (fact, exec) => {
+        settlement.stoppedBeforeBody({ exec, stopId: `stop:${String(exec.callId)}:pre-dispatch`, observedAt: 'executor-completion' })
+      },
+      // Same rule as the product wiring: a fact the durable ledger refuses is REPORTED, never written
+      // into a fake record and never allowed to break the host's dispatch.
+      onUnrecordable: (fact, error) => {
+        faults.push({ code: error?.code ?? '', message: error instanceof Error ? error.message : String(error), phase: 'pre-dispatch-record', callId: fact.callId, executionId: fact.executionId })
+      },
       // The product's own settlement identity, not a second scheme: same agent + same callId must
       // always produce the same ExecutionId, or the settlement store cannot join a retry.
       executionIdOf: (callId) => dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, callId),
     })
+    disposeExecutions = executionFacts.dispose
   }
+
+  // The last executor completion, kept so an arm can re-deliver the SAME completion (the
+  // both-paths-fire case) without re-running the host.
+  let lastCompletion
+  let lastObservation
+  const completions = []
 
   const dispatch = async (name, args, callId, options = {}) => {
     // B4: rc.5 takes a BATCH input (`calls:[{type:'tool-call', …}]` with JSON-string arguments)
@@ -474,7 +499,18 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       name,
       arguments: args,
       agent: agentKey,
-    }, { hostMode: HOST_MODE })
+    }, {
+      hostMode: HOST_MODE,
+      // THE OBSERVATION POINT. The composition hands the host's OWN returned value to the product's
+      // observer; nothing here fabricates an event or re-enters the scheduler.
+      onCompletion: ({ calls, completion }) => {
+        lastCompletion = { calls, completion }
+        lastObservation = typeof executionFacts === 'object'
+          ? executionFacts.observeExecutorCompletion({ calls, completion, agent: agentKey })
+          : undefined
+        completions.push(lastObservation)
+      },
+    })
     const text = Array.isArray(settled.content)
       ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
       : ''
@@ -488,6 +524,14 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
     definitionOf: (name) => root.get('tools').get(name, agentKey),
     facts: () => facts,
     executions: () => executions,
+    faults: () => faults,
+    completions: () => completions,
+    lastObservation: () => lastObservation,
+    /** Re-deliver the LAST executor completion: the both-observation-paths-fire case, measured. */
+    observeCompletionAgain () {
+      if (lastCompletion === undefined) throw new Error('no executor completion to re-observe')
+      return executionFacts.observeExecutorCompletion({ ...lastCompletion, agent: agentKey })
+    },
     inside,
     outside,
     insideFile,
@@ -672,7 +716,7 @@ test('SLICE-11 — a duplicate callId is a REFUSAL, not a merge (UTE-15)', async
   // A fake observer context: this arm is about the fact ledger's own rule, so it needs no host.
   let listener
   const record = []
-  const dispose = installExecutionFacts({ ctx: { on: (name, fn) => { if (name === 'tools/result') listener = fn; return () => { listener = undefined } } }, record: (fact) => record.push(fact) })
+  const { dispose } = installExecutionFacts({ ctx: { on: (name, fn) => { if (name === 'tools/result') listener = fn; return () => { listener = undefined } } }, record: (fact) => record.push(fact) })
   assert.equal(typeof listener, 'function')
   const exec = { callId: 'dup-1', name: 'read', agent: { id: 'agent-1' }, turn: 1, step: 1 }
   listener(exec, { isError: false })
@@ -1338,5 +1382,109 @@ test('SLICE-36 — the coverage invariant actually detects an unconfined entry p
     if (typeof LocalFileSystem.prototype[name] !== 'function') continue
     assert.ok(confinedBase.has(name), `${name} must be covered by the product class on a host that declares it`)
     assert.ok(derive(LocalFileSystem).includes(name), `${name} must still be DERIVED as an IO entry point`)
+  }
+})
+
+test('SLICE-37 — a pre-dispatch abort is observed ONCE at the executor completion boundary, deduped by ExecutionId', async () => {
+  // THE rc.5 DRIFT, OBSERVED WHERE THE HOST ACTUALLY ANNOUNCES IT. rc.2 announced a pre-dispatch
+  // cancellation through the pipeline (`tools/result`); rc.5's batch scheduler returns
+  // `ABORTED_BEFORE_DISPATCH` for skipped calls WITHOUT running the pipeline, so the only place the
+  // call is visible is the value `tools.execute` returns. This arm pins the product's answer:
+  //  - the DURABLE execution fact still exists (outcome `aborted`, `abortPhase: 'pre-dispatch'`);
+  //  - no admission decision, no settlement record and no tool event are invented for it;
+  //  - the unrecorded settlement is REPORTED (one stable code), not swallowed;
+  //  - the same ExecutionId delivered twice (both observation paths firing) produces ONE fact.
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-observe'), admission: 'bound' })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const controller = new AbortController()
+    controller.abort()
+    const aborted = await world.dispatch('read', { file_path: world.insideFile }, 'stop-observe-1', { signal: controller.signal })
+    assert.equal(aborted.isError, true, `an aborted call must not succeed: ${aborted.text}`)
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText, 0, 'the provider must not be touched')
+
+    // The fact exists, and it says WHERE the Stop landed: the pipeline never saw this call.
+    const executions = world.executions()
+    assert.equal(executions.length, 1, `the abort must be recorded once, got ${JSON.stringify(executions)}`)
+    assert.equal(executions[0].outcome, 'aborted', 'a Stop is not a failure of the tool')
+    assert.equal(executions[0].abortPhase, 'pre-dispatch', 'a pre-dispatch Stop must be distinguishable from an in-flight one')
+    assert.equal(
+      executions[0].executionId,
+      dispatchExecutionId({ rootSessionId: 'session-vnext-slice', agentInstanceId: 'agent-vnext-slice' }, 'stop-observe-1'),
+      'the fact must carry the PRODUCT ExecutionId, which is the identity the dedupe and the settlement join on',
+    )
+    // WHAT IS NOT INVENTED: there is no admission decision to settle against, so no settlement record
+    // is written (settling one would attribute an admission nobody made to a call nobody admitted),
+    // and no `tools/result`-shaped fact with a fabricated turn/step is produced.
+    assert.equal(world.facts().length, 0, 'no admission decision exists for a call aborted before admission; none may be invented')
+    assert.equal(world.settlementStore.list().length, 0, 'no settlement record may be invented for a call that never reached admission')
+    // WHAT IS REPORTED: the unrecorded case is visible under one stable code, never silent.
+    const gap = world.faults().find((fault) => fault.code === 'SETTLEMENT_NO_RECORD_BEFORE_ADMISSION')
+    assert.notEqual(gap, undefined, `the unrecorded settlement must be reported, got ${JSON.stringify(world.faults())}`)
+    assert.match(String(gap.message), new RegExp(executions[0].executionId, 'u'), 'the report must name the ExecutionId it could not settle')
+
+    // DEDUPE BY ExecutionId. Re-deliver the SAME completion: this is both observation paths firing for
+    // one call (rc.2 reports it twice for real; a caller may also re-deliver). One fact, one report.
+    const observedFirst = world.lastObservation()
+    assert.equal(observedFirst.observed, 1, 'the completion carries exactly one pre-dispatch abort')
+    const again = world.observeCompletionAgain()
+    assert.equal(again.observed, 1)
+    assert.equal(again.deduped, 1, 'the second observation of the same ExecutionId must be DEDUPED, not merged into a second fact')
+    assert.equal(again.recorded, 0, 'a deduped observation records nothing')
+    assert.equal(world.executions().length, 1, 'one execution, one fact - even when both paths report it')
+    assert.equal(world.settlementStore.list().length, 0, 'a deduped observation must not settle anything either')
+
+    // NEGATIVE CONTROL: a call that ENTERED the pipeline is never touched by this observer.
+    const completed = await world.dispatch('read', { file_path: world.insideFile }, 'stop-observe-2')
+    assert.equal(completed.isError, false, `the in-ceiling read must succeed: ${completed.text}`)
+    assert.equal(world.lastObservation().observed, 0, 'a completed call carries no pre-dispatch abort code, so the observer reports nothing to do')
+    assert.deepEqual(world.executions().map((fact) => fact.outcome), ['aborted', 'completed'], 'the pipeline call keeps its own outcome and is not re-settled by the observer')
+    const settled = world.settlementStore.list()
+    assert.equal(settled.length, 1, 'the completed call is settled exactly once, by the pipeline path')
+    assert.equal(settled[0].state, 'COMPLETED')
+  } finally {
+    await world.dispose()
+  }
+})
+
+test('SLICE-38 — a DURABLE centre refuses to invent a record for a pre-dispatch abort, and says so', async () => {
+  // The no-fabrication rule has a DURABLE edge: the product ledger refuses an execution it cannot
+  // join to an admission record (`LEDGER_EXECUTION_UNBOUND`). A pre-dispatch abort before the
+  // admission point is exactly that case. The observer must (a) not throw into the host's dispatch,
+  // (b) not leave a settlement or a durable execution record behind, and (c) report the refusal.
+  const ledgerPath = join(dir, 'stop-durable', 'facts.jsonl')
+  const world = await buildWorld({ mountRealm: true, dir: join(dir, 'stop-durable'), admission: 'bound', durable: ledgerPath })
+  try {
+    const member = world.realm.installation.members[0].fs
+    const controller = new AbortController()
+    controller.abort()
+    const aborted = await world.dispatch('read', { file_path: world.insideFile }, 'stop-durable-1', { signal: controller.signal })
+    assert.equal(aborted.isError, true, 'the abort still settles as the host reported it')
+    assert.equal(member.calls.stat + member.calls.readText + member.calls.streamText, 0, 'the provider is untouched')
+
+    const observation = world.lastObservation()
+    assert.equal(observation.observed, 1, 'the completion carries one pre-dispatch abort')
+    assert.equal(observation.recorded, 0, 'nothing may be recorded durably for an execution with no admission record')
+    assert.equal(observation.unrecordable, 1, 'the refusal must be counted, not swallowed')
+    assert.equal(world.executions().length, 0, 'a refused fact must not surface as an in-memory execution either')
+    const unrecordable = world.faults().find((fault) => fault.code === 'LEDGER_EXECUTION_UNBOUND')
+    assert.notEqual(unrecordable, undefined, `the ledger refusal must be reported, got ${JSON.stringify(world.faults())}`)
+    assert.equal(unrecordable.callId, 'stop-durable-1', 'the report must name the call it could not bind')
+    // The durable side: NO invented execution record, and no admission record either.
+    const records = openFactLedger({ path: ledgerPath }).readAll()
+    assert.equal(records.filter((record) => record.kind === 'execution').length, 0, 'no execution record may be fabricated')
+    assert.equal(records.filter((record) => record.kind === 'invocation-authority').length, 0, 'no admission record may be fabricated')
+    assert.equal(world.settlementStore.list().length, 0, 'no settlement record may be fabricated')
+
+    // CONTROL: the same durable centre records a call that DID reach admission, so the refusal above
+    // is specific to "no record to join", not a dead ledger.
+    const completed = await world.dispatch('read', { file_path: world.insideFile }, 'stop-durable-2')
+    assert.equal(completed.isError, false, `the in-ceiling read must succeed: ${completed.text}`)
+    const after = openFactLedger({ path: ledgerPath }).readAll()
+    assert.equal(after.filter((record) => record.kind === 'execution').length, 1, 'the admitted call IS durably recorded')
+    assert.equal(world.settlementStore.list().length, 1)
+    assert.equal(world.settlementStore.list()[0].state, 'COMPLETED')
+  } finally {
+    await world.dispose()
   }
 })

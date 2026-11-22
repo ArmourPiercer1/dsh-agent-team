@@ -20,6 +20,11 @@
       "note": "One physical execution, one canonical fact, joined to the admission record."
     },
     {
+      "src": "packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs",
+      "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs",
+      "note": "Round 79: reads the pinned hosts' own ABORTED_BEFORE_DISPATCH result off the value tools.execute returns. rc.5's batch scheduler cancels a call before dispatch without running the pipeline, so it never emits tools/result; execution-facts.mjs imports this module, and without the placement the shipped face would fail to load at the first governed member bind."
+    },
+    {
       "src": "packages/runtime/src/plugin/vnext/fact-ledger.mjs",
       "dist": "packages/runtime/dist/packages/runtime/src/plugin/vnext/fact-ledger.mjs",
       "note": "The durable JSONL ledger: authority, replay refusal and execution records."
