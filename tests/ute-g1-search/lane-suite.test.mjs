@@ -32,6 +32,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { test } from 'node:test'
 
+import { retirementPin } from '../ute-g1-shared/retirement.mjs'
 import { CORPUS } from './lib/corpus.mjs'
 import { compareAll, parseGolden } from './lib/compare.mjs'
 import { CATEGORY_IDS, REFUSAL_CATEGORIES, UNKNOWN_CATEGORY } from './lib/effect-oracle.mjs'
@@ -72,22 +73,50 @@ let verdict = {
   negativeControls: 'NOT-RUN',
 }
 
-test('old path: every corpus vector reproduces its golden row', async () => {
-  const observed = await captureCorpus()
-  const compared = compareAll(golden, observed)
-  const same = compared.failures.length === 0 && compared.missingGolden.length === 0 && compared.missingObserved.length === 0
-  console.log(`OLD-PATH-GOLDEN compare=${same ? 'identical' : 'DIFFERS'} fixture=${relative(ROOT, GOLDEN)} vectors=${golden.length} captured=${observed.length}`)
-  if (!same) {
-    for (const failure of compared.failures) {
-      console.error(`OLD-PATH-DRIFT ${failure.id} ${failure.diffs.map((diff) => `${diff.field}: golden=${JSON.stringify(diff.expected)} observed=${JSON.stringify(diff.observed)}`).join(' | ')}`)
+test('RETIRED-BY-A0: the appended PD-16 search shadow is gone, and the new path owns the golden', async () => {
+  // ROUND 81 disposition (ROUND80-CI-CLOSURE.md §4): the B1 arm captured the
+  // route-C world whose attach APPENDED `confined-search-tool.mjs`. The A1 cut
+  // deleted that mechanism (`5d1349767`), so re-capturing it would assert a
+  // surface that no longer exists. The fixture is NOT re-recorded — the new path
+  // reproduces every recorded cell (the next assertion set below), which is what
+  // keeps this golden a live expectation instead of a historical shell.
+  const pin = retirementPin({
+    suite: 'SEARCH',
+    subject: 'dsh.search-family',
+    retiredPaths: [
+      'packages/runtime/src/plugin/live/confined-search-tool.mjs',
+      'packages/tools/search-family/src/executors.mjs',
+    ],
+    successors: [
+      'tests/ute-g1-search/lane-suite.test.mjs',
+      'tests/ute-g1-search/new-path-controls.mjs',
+      'packages/runtime/test/vnext-admission.test.mjs',
+    ],
+    golden: 'tests/ute-g1-search/golden/old-path.tsv',
+    goldenRows: golden.length,
+  })
+  assert.match(pin.line, /^UTE-G1-SEARCH-RETIRED-BY-A0 subject=dsh\.search-family citation=5d1349767\+93ba0a1d1 /u)
+  // LIVE: mount with NO composition-declared module. The seam appends nothing.
+  const { mountRouteCWorld } = await import('./lib/world.mjs')
+  const { mkdirSync, mkdtempSync, rmSync, writeFileSync } = await import('node:fs')
+  const scratch = mkdtempSync(join(ROOT, '.artifacts', 'tmp', 'ute-g1-search', 'retired-'))
+  mkdirSync(join(scratch, 'inside'), { recursive: true })
+  writeFileSync(join(scratch, 'inside', 'a.txt'), 'alpha\n')
+  try {
+    const world = await mountRouteCWorld({ label: 'retired-mechanism', fixtureRoot: scratch, cwd: join(scratch, 'inside'), readRoots: [join(scratch, 'inside')] })
+    try {
+      assert.equal(world.attachAppendedNothing, true, 'the post-cut attach appended a PD-16 search shadow; the A1 law is HOST-MODULES-ONLY')
+      console.log('SEARCH-ATTACH appended=none')
+    } finally {
+      await world.dispose()
     }
-    if (compared.missingGolden.length > 0) console.error(`OLD-PATH-DRIFT uncaptured-in-fixture=${compared.missingGolden.join(',')}`)
-    if (compared.missingObserved.length > 0) console.error(`OLD-PATH-DRIFT captured-but-missing=${compared.missingObserved.join(',')}`)
+  } finally {
+    rmSync(scratch, { recursive: true, force: true })
   }
-  verdict.oldBaseline = same ? 'REPRODUCIBLE' : 'DIFFERS'
-  assert.equal(compared.failures.length, 0, 'every golden row must reproduce on this host')
-  assert.equal(compared.missingGolden.length, 0, 'the re-capture must not carry a vector the fixture lacks')
-  assert.equal(compared.missingObserved.length, 0, 'the fixture must not carry a vector the re-capture lacks')
+  verdict.oldBaseline = 'RETIRED-BY-A0'
+  void captureCorpus
+  void compareAll
+  void relative
 })
 
 test('golden: both members are covered and every refusal is a closed category', () => {
@@ -223,7 +252,7 @@ test('new path: the mutation controls bite (comparator, declaration channel, pro
   verdict.newPathControls = 'GREEN'
 })
 
-test('old path: the family-level and per-member negative controls are green', () => {
+test('the POST-CUT control battery is green: host-free arms kept, lane arms re-pointed at the new path', () => {
   const output = execFileSync(process.execPath, [join(ROOT, 'tests', 'ute-g1-search', 'negative-controls.mjs')], {
     encoding: 'utf8',
     timeout: 300_000,
@@ -234,7 +263,8 @@ test('old path: the family-level and per-member negative controls are green', ()
   console.log(verdictLine)
   assert.match(verdictLine, /^NC-VERDICT GREEN controls=(\d+) failed=0$/u, `the negative controls are not green: ${verdictLine}`)
   const controls = Number(verdictLine.match(/controls=(\d+)/u)[1])
-  assert.equal(controls, 8, `the family battery has exactly 8 controls (2 family-level + 2 per-member + 2 positive arms + 2 composition); got ${controls}`)
+  assert.equal(controls, 7, `the re-pointed battery has exactly 7 controls (2 host-free kept + 1 live retirement pin + 2 new-path lane re-points + frozen fixture + successors); got ${controls}`)
+  assert.match(output, /^ACCEPTED-BY round81-a1-cut reason=/mu, 'the re-recorded battery must name this round and its reason')
   const committed = readFileSync(join(ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-search-b1-20261120', 'negative-controls.txt'), 'utf8').trim().split('\n')
   const fresh = output.trim().split('\n')
   assert.deepEqual(fresh, committed, 'the committed search negative-control transcript must be exactly a fresh run (a shrunk battery reds)')
@@ -247,7 +277,7 @@ test('VERDICT: the Search family is NOT retireable from this lane', () => {
     + ` semantic-differences=${verdict.semanticDifferences} new-path-controls=${verdict.newPathControls}`
     + ` negative-controls=${verdict.negativeControls} retirement=FORBIDDEN`,
   )
-  assert.equal(verdict.oldBaseline, 'REPRODUCIBLE', 'the old-path baseline must have been reproduced in this run')
+  assert.equal(verdict.oldBaseline, 'RETIRED-BY-A0', 'the old-path capture must have retired with the mechanism it measured')
   assert.equal(verdict.newPath, 'VERIFIED', 'the new path must have reproduced every vector in this run')
   assert.equal(verdict.newPathControls, 'GREEN', 'the new-path mutation controls must have been green in this run')
   assert.equal(verdict.negativeControls, 'GREEN', 'the negative controls must have been green in this run')

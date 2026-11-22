@@ -1,12 +1,10 @@
-NC-PASS NC-MEMBER web_fetch restricted=deny/denied-by-lane widened=allow providerFetches=1 (widening the DECLARED set flips the refusal)
-NC-PASS NC-MEMBER web_search unavailable=deny/route-unresolved available=allow providerSearches=1 (the provider's own available() is the decision)
-NC-PASS NC-MEMBER-POSITIVE web_fetch WB-F1-inline-text reproduces its golden row | WB-F11-destination-forbidden reproduces its golden row
-NC-PASS NC-MEMBER-POSITIVE web_search WB-S1-search-single reproduces its golden row | WB-S3-search-unavailable reproduces its golden row
-NC-PASS NC-GOLDEN-MUTATION mutated golden cells turn the comparator RED with fields=[effects]
-NC-PASS NC-CATEGORY-TOTAL mapped=cancelled invented=REFUSAL_VOCABULARY_INCOMPLETE totality-of-invented=refused unknown-reachable=no
-NC-PASS NC-SHADOW-LOAD-BEARING without-shadow=error/hostweb=1/providerFetches=0/requests=0; with-shadow=reproduces
-NC-PASS NC-NET-SHIM-LOAD-BEARING without-witness=NET_WITNESS_MISSING; with-witness external=0 loopback=yes
-NC-PASS NC-NET-COUNTER-POSITIVE external=2 forwarded=0 real-connect-ran=no refused=EGRESS_REFUSED host-less-bag=EGRESS_REFUSED classifier(example.com:443)=external classifier({port:443})=external witness-installed=yes
-NC-PASS NC-CONCURRENT-NORMALIZATION WB-S2-search-multi request witness mode="sorted"
-NC-PASS NC-GOLDEN-DESIGN-CLAIMS all 15 golden rows satisfy their corpus claim
-NC-VERDICT GREEN controls=11 failed=0
+ACCEPTED-BY round81-a1-cut reason=re-record of the WEB battery: old-path shadow controls retired per subject (ROUND80-CI-CLOSURE.md §4)
+NC NC-GOLDEN-FROZEN ok — vectors=15 re-recorded=no
+NC NC-RETIRED-SHADOW-ABSENT ok — deleted=3 live-attach=appends-nothing
+NC NC-HOST-MODULES-ONLY ok — successor=composition-declared-native-modules appended=0
+NC NC-SUCCESSORS-EXIST ok — named=4
+NC NC-CATEGORY-TOTAL ok — observed=8 invented=refused categories=9
+NC NC-GOLDEN-MUTATION ok — flipped=WB-F1-inline-text differs=yes
+NC NC-GOLDEN-DESIGN-CLAIMS ok — rows=15 claims=hold
+NC NC-LEDGER-CITES-SUCCESSOR ok — subject=dsh.web-family citations=4 lane-booked=yes
+NC-VERDICT GREEN controls=8 failed=0

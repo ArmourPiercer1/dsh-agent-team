@@ -327,8 +327,11 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
   // face. `overrides.dropSearchShadow` is the negative control that removes it
   // AFTER the attach, through the realm's own disposal — the preset definition
   // then answers again (never a second, test-only mount).
+  // POST-CUT LAW (round 81): the A1 seam appends NO Team-authored shadow. With no
+  // composition-declared native module the attach answers `undefined`; the
+  // retirement pin measures exactly that instead of asserting the shadow exists.
   const fibers = await row.attachA5sfNativeToolModules(mounted, agent.ctx, row.a5sfRealmConfigOf({}))
-  assert.ok(Array.isArray(fibers), 'the attach must answer the fibers it created')
+  const attachAppendedNothing = fibers === undefined
   if (overrides.dropSearchShadow === true) {
     assert.equal(typeof mounted.disposeNativeToolModules, 'function', 'the realm must expose the native-module disposal the control uses')
     await mounted.disposeNativeToolModules()
@@ -365,6 +368,7 @@ export async function mountRouteCWorld({ label, fixtureRoot, cwd, readRoots, wri
     dispatch,
     facts,
     baseCalls,
+    attachAppendedNothing,
     providerCalls: () => [...confined.calls],
     async dispose() {
       if (disposed) return

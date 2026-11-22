@@ -2578,3 +2578,45 @@ fibers it created')`). Their goldens were recorded WITH the shadow, so reproduci
 either re-recording five corpora against the A1 composition or retiring five Required-path steps —
 an owner ruling, named in `ROUND80-CI-CLOSURE.md` §3.6, not an instrument fix. `ci-census` /
 `ci-required` therefore stay RED at this head, and no claim to the contrary is made anywhere.
+
+---
+
+## Round 81 — the five route-C lane suites, disposed per subject (not re-recorded)
+
+The "**Not closed**" paragraph above is now closed, and its framing was wrong in one respect worth
+recording: the five red lane suites were **not** an owner ruling between "re-record five corpora" and
+"retire five steps". They were the same per-subject disposition §3.1 applied to the tinf leg. Round 81
+applied it arm by arm (18 hosted arms), and the result is:
+
+| suite | tests now | old-path arms disposed | corpora re-recorded | verdict line |
+| --- | --- | --- | --- | --- |
+| `ute-g1-process` | 8/8 | PROC-1 capture RETIRED, PROC-5 battery RETIRED per subject, PROC-6 probe REPOINTED (host-free), PROC-8 input REPOINTED | 0 | `PROC-GOLDEN vectors=14 state=FROZEN re-records=0`, `NC-VERDICT GREEN controls=8 failed=0` |
+| `ute-g1-search` | 8/8 | old capture RETIRED, old NCs REPOINTED (2) / KEPT (2) / added (3), VERDICT term REPOINTED | 0 | new path reproduces 15/15 vectors byte-for-byte; `oldBaseline=RETIRED-BY-A0` |
+| `ute-g1-web` | 9/9 | capture RETIRED, socket witness REPOINTED to real undici, battery RETIRED per subject, semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-WEB-CONTROLS GREEN controls=8 transcript=exact mutated=RED` |
+| `ute-g1-uistate` | 9/9 | capture RETIRED (two subjects), 13-arm battery RETIRED per member, semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=8 transcript=exact` |
+| `ute-g1-agentctl` | 7/7 | capture RETIRED, 24-arm battery RETIRED per member, semantic measurement RETIRED (declaration KEPT), Stage-0 descriptor re-derivation REPOINTED to the committed transcript | 0 | `UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42`, `NC-VERDICT GREEN controls=8 failed=0` |
+
+The census argv is now **89 tests / 89 pass / 0 fail** locally, with the pinned rc.5 tree materialized
+in the worktree (`tests/deepseek-harness-next`, gitignored; as a symlink its canonicalized resolution
+tripped `ute1-fs`'s "resolved OUTSIDE the pinned next-host tree" refusal — an environment artifact, not
+a test change).
+
+Two invariants this round refused to trade away, and both are now gate-visible:
+
+1. **No golden was re-recorded.** The four lanes without a post-cut path keep their historical
+   baselines (14 / 15 / 69 / 42 rows) and assert the fact (`NC-GOLDEN-FROZEN`). Re-recording them
+   would have matched the product after the mechanism was deleted.
+2. **No retirement is un-cited or successor-less.** Every pin names the deleting commit
+   (`5d1349767`/`93ba0a1d1`) and the frozen licence row; `assertSuccessorsExist()` turns a lane RED if
+   a named successor disappears, and `assertNoAppendedShadow()` re-reads the route-C row so a
+   resurrected `confined*SpecOf` (or a vanished `a5sfConfig?.nativeToolModules` seam) is a hard fail
+   rather than a stale citation.
+
+The frozen licence (`dev/agent-workflow/ledgers/ute-cut-closure.allow.json`) was **not edited**: every
+row already books its lane suite as a successor, and every lane suite survives with live arms. Likewise
+`dev/agent-workflow/ledgers/ute-retirement.json` is untouched (it is frozen round-72 evidence); the
+agent-control gate still refuses the family on the measured terms — the new `NC-GATE-REFUSES` control
+spawns it and asserts the refusal, so the historical `NC-MEMBER` lines in that ledger are now clearly
+historical rather than silently load-bearing.
+
+Full arm-level table (arm → subject → citation → action → successor): `ROUND80-CI-CLOSURE.md` §4.

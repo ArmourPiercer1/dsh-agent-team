@@ -30,6 +30,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
+import { retirementPin } from '../ute-g1-shared/retirement.mjs'
 import { CORPUS, PROCESS_SECRET } from './lib/corpus.mjs'
 import { compareAll, effectOf, parseGolden, processMode } from './lib/compare.mjs'
 import { CATEGORY_IDS, REFUSAL_CATEGORIES, UNKNOWN_CATEGORY, auditProcessVocabulary } from './lib/effect-oracle.mjs'
@@ -65,24 +66,57 @@ const FORBIDDEN_IN_GOLDEN = [
   ['w-PB-', 'a scratch world name'],
 ]
 
-test('PROC-1 the old path reproduces its golden fixture and two captures agree byte for byte', async () => {
-  const first = await captureCorpus()
-  const second = await captureCorpus()
-  assert.equal(first.length, CORPUS.length, 'every corpus vector must be captured')
-  const firstVerdict = compareAll(golden, first)
-  assert.deepEqual(firstVerdict.failures, [], `the old path drifted from the golden fixture: ${JSON.stringify(firstVerdict.failures)}`)
-  assert.deepEqual(firstVerdict.missingObserved, [], 'the fixture must not carry a vector the corpus no longer has')
-  assert.deepEqual(firstVerdict.missingGolden, [], 'the corpus must not carry a vector the fixture has not recorded')
-  const secondVerdict = compareAll(golden, second)
-  assert.deepEqual(secondVerdict.failures, [], 'a second capture must reproduce the fixture identically')
-  // The strongest form: the two independent runs serialize to the same bytes.
-  const { serializeGolden } = await import('./lib/compare.mjs')
-  assert.equal(serializeGolden(first), serializeGolden(second), 'two captures are not byte-identical')
-  // And the committed fixture is exactly what a fresh capture writes.
-  assert.equal(serializeGolden(first), goldenText, 'the committed fixture differs from a fresh capture')
-  console.log(identityLine())
-  console.log(`PROC-GOLDEN vectors=${String(golden.length)} claimProblems=0 captures=2 compare=identical`)
+test('PROC-1 RETIRED-BY-A0: the appended bash shadow is gone and the fixture is the frozen baseline', async () => {
+  // ROUND 81 disposition (ROUND80-CI-CLOSURE.md §4): the B1 arm captured the
+  // route-C world whose attach APPENDED `confined-bash-tool.mjs`. The A1 cut
+  // deleted that mechanism (`5d1349767`), so reproducing the old capture would
+  // assert a surface that no longer exists. The fixture stays as the FROZEN
+  // historical baseline (never re-recorded: this lane owns no new path), and the
+  // retired surface is asserted ABSENT with a LIVE mount underneath.
+  const pin = retirementPin({
+    suite: 'PROCESS',
+    subject: 'dsh.process-family',
+    retiredPaths: [
+      'packages/runtime/src/plugin/live/confined-bash-tool.mjs',
+      'packages/runtime/src/plugin/live/confined-terminal-tool.mjs',
+      'packages/tools/process-family/src/executors.mjs',
+    ],
+    successors: [
+      'packages/runtime/test/vnext-admission.test.mjs',
+      'tests/ute-g1-fs/lane-suite.test.mjs',
+      'tests/world-factory/a5sf-pd12-bash-governance.test.mjs',
+      'tests/ute-g1-process/lane-suite.test.mjs',
+    ],
+    golden: 'tests/ute-g1-process/golden/old-path.tsv',
+    goldenRows: 14,
+  })
+  assert.match(pin.line, /^UTE-G1-PROCESS-RETIRED-BY-A0 subject=dsh\.process-family citation=5d1349767\+93ba0a1d1 /u)
+  // LIVE: mount the product route-C composition with NO composition-declared
+  // native module. The seam must append nothing and the preset definition must be
+  // untouched — a resurrected shadow turns this RED.
+  const { mountRouteCWorld } = await import('./lib/world.mjs')
+  const scratch = join(ROOT, '.artifacts', 'tmp', 'ute-g1-process', `retired-${String(process.pid)}`)
+  const fs = await import('node:fs')
+  fs.mkdirSync(join(scratch, 'inside'), { recursive: true })
+  fs.writeFileSync(join(scratch, 'inside', 'a.txt'), 'alpha\n')
+  try {
+    const world = await mountRouteCWorld({ label: 'retired-mechanism', fixtureRoot: scratch, cwd: join(scratch, 'inside'), readRoots: [join(scratch, 'inside')] })
+    try {
+      assert.equal(world.attachAppendedNothing, true, 'the post-cut attach appended a Team-authored shadow; the A1 law is HOST-MODULES-ONLY')
+      assert.equal(world.shadowReplaced, false, 'the preset bash definition was replaced by an appended shadow')
+      assert.equal(world.definitionAfterAttach, world.definitionBeforeAttach, 'the attach changed the resolved bash definition with no composition-declared module')
+      console.log(`PROC-ATTACH appended=none definition=unchanged shadowReplaced=no`)
+    } finally {
+      await world.dispose()
+    }
+  } finally {
+    fs.rmSync(scratch, { recursive: true, force: true })
+  }
+  assert.match(readFileSync(META, 'utf8'), /OLD-PATH-META vectors=14 host=0\.2\.0-rc\.2 /mu, 'the frozen fixture lost its old-path meta header')
+  console.log(`PROC-GOLDEN vectors=${String(golden.length)} state=FROZEN re-records=0`)
   void processMode
+  void identityLine
+  void compareAll
 })
 
 test('PROC-2 the golden speaks only the closed vocabulary and carries no machine-specific path', async () => {
@@ -163,28 +197,37 @@ test('PROC-4 the measured semantic differences are declared, blocking and unappr
   assert.equal(existsSync(join(EVIDENCE, 'new-path-run.txt')), false, 'no new-path PASS transcript may exist at B1')
 })
 
-test('PROC-5 the family and per-member negative controls are GREEN, and the committed transcript agrees', () => {
+test('PROC-5 the POST-CUT control battery is GREEN, and the committed transcript agrees exactly', () => {
   const output = execFileSync(process.execPath, [join(DIR, 'negative-controls.mjs')], { cwd: ROOT, encoding: 'utf8' })
   const lines = output.trim().split('\n')
   const verdict = lines.filter((line) => line.startsWith('NC-VERDICT ')).at(-1)
   assert.ok(verdict !== undefined, 'the control script must print a verdict')
-  assert.match(verdict, /^NC-VERDICT GREEN controls=[0-9]+ failed=0$/u, `the controls are not green: ${verdict}`)
-  assert.match(output, /^NC NC-MEMBER bash ok$/mu, 'the per-member control must be present and green (the retirement gate greps it)')
-  assert.match(output, /^NC NC-MEMBER bash-POSITIVE ok$/mu, 'the per-member control needs its positive arm')
-  for (const id of ['NC-HARNESS-BITES', 'NC-CATEGORY-TOTAL', 'NC-PWSH-EXCLUSION-CONDITIONAL', 'NC-SHADOW-LOAD-BEARING', 'NC-CONFINEMENT-WITNESS', 'NC-TIMEOUT-LOAD-BEARING', 'NC-ENV-SCRUB-LOAD-BEARING', 'NC-CAP-LOAD-BEARING']) {
-    assert.match(output, new RegExp(`^NC ${id} ok$`, 'mu'), `${id} must be present and green`)
+  assert.match(verdict, /^NC-VERDICT GREEN controls=8 failed=0$/u, `the controls are not green: ${verdict}`)
+  assert.equal(lines[0].startsWith('ACCEPTED-BY round81-a1-cut reason='), true, 'the re-recorded battery must name this round and its reason')
+  // The retired appended-shadow controls are replaced one-for-one by controls
+  // that prove the successor is load-bearing (see ROUND80-CI-CLOSURE.md §4).
+  for (const id of [
+    'NC-RETIRED-SHADOW-ABSENT',
+    'NC-HOST-MODULES-ONLY',
+    'NC-SUCCESSORS-EXIST',
+    'NC-GOLDEN-FROZEN',
+    'NC-CATEGORY-TOTAL',
+    'NC-PWSH-EXCLUSION-CONDITIONAL',
+    'NC-VOCABULARY-CLOSED',
+    'NC-LEDGER-CITES-SUCCESSOR',
+  ]) {
+    assert.match(output, new RegExp(`^NC ${id} ok`, 'mu'), `${id} must be present and green`)
   }
   assert.equal(output.includes('FAIL'), false, `a control failed: ${output}`)
-  const committed = readFileSync(NC_TRANSCRIPT, 'utf8')
-  const committedVerdict = committed.trim().split('\n').filter((line) => line.startsWith('NC-VERDICT ')).at(-1)
-  assert.equal(committedVerdict, verdict, 'the committed control transcript does not agree with the live run')
-  for (const line of lines.filter((line) => line.startsWith('NC '))) {
-    assert.equal(committed.includes(line), true, `the committed transcript is missing the live line: ${line}`)
-  }
+  const committed = readFileSync(NC_TRANSCRIPT, 'utf8').trim().split('\n')
+  assert.deepEqual(lines, committed, 'the committed control transcript must be exactly a fresh run (a shrunk battery reds)')
   console.log(`PROC-CONTROLS ${verdict} transcript=${NC_TRANSCRIPT.replace(ROOT, '<repo>')}`)
 })
 
-test('PROC-6 the composition probe reproduces the measured verdict the baseline rests on', () => {
+test('PROC-6 the POST-CUT composition probe reproduces the wiring facts the exclusion rests on', () => {
+  // ROUND 81: the B1 probe mounted the route-C world and graded the deleted
+  // governed plane (`team-tool-plane.mjs`, cut by 93ba0a1d1). The probe now
+  // measures SOURCE facts only, so it cannot inherit a dead world's answer.
   const output = execFileSync(process.execPath, [join(DIR, 'probe-composition.mjs')], { cwd: ROOT, encoding: 'utf8' })
   // ONLY host-independent facts are asserted here. The binary presence is a
   // HOST OBSERVATION (a GitHub runner ships PowerShell and that must never
@@ -197,11 +240,8 @@ test('PROC-6 the composition probe reproduces the measured verdict the baseline 
     [/^PROBE-PWSH preset-row=REMOVED-by-the-shipped-governed-preset/mu, 'the shipped governed preset REMOVES the tool-pwsh row'],
     [/^PROBE-PWSH reason=shipped-wiring route-c-shadow=ABSENT preset-row=REMOVED\S* post-attach-definition=ABSENT — the binary line above is a HOST OBSERVATION, not the exclusion reason$/mu, 'the probe must name the WIRING as the exclusion reason and label the binary as an observation'],
     [/^PROBE-ROUTE-UNREACHABLE member=pwsh reason=.+$/mu, 'pwsh must be declared unreachable by NAME'],
-    [/^PROBE-OWNER bash-replaced-by-attach=yes before=preset-definition after=routed-definition$/mu, 'the attach must replace the preset bash definition'],
-    [/^PROBE-MEMBER bash reachable=yes outcome=allow$/mu, 'bash must be reachable'],
-    [/^PROBE-MEMBER bash confined=yes providerCalls=1 inheritedServiceCalls=0$/mu, 'bash must reach the confined provider, not the inherited service'],
-    [/^PROBE-PLANE names=native\+bash-pwsh gate=PLANE_NAMES_INVALID$/mu, 'the plane must refuse to express the pwsh name'],
-    [/^PROBE-PLANE names=bash-native\+search-aliased gate=accepted$/mu, 'the plane must ACCEPT the native bash name on a complete map'],
+    [/^PROBE-MOUNT bash=host-module-of-the-active-preset via .*mounts-on-by-default=yes\)$/mu, 'the successor must mount the active preset\'s own module by default'],
+    [/^PROBE-SUCCESSOR appended-shadow=ABSENT composition-declared-native-modules=PRESENT$/mu, 'the retired shadow must stay absent and the composition-declared module present'],
     [/^PROBE-CONCLUSION baseline-scope=bash only; pwsh is a DECLARED, PRINTED exclusion/mu, 'the probe must print the baseline scope decision'],
   ]
   for (const [pattern, why] of expect) {
@@ -223,9 +263,11 @@ test('PROC-6 the composition probe reproduces the measured verdict the baseline 
   assert.equal(obligation.status, 'EXCLUDED', `the corpus must be excluded only while the wiring serves no pwsh: ${JSON.stringify(obligation)}`)
   console.log(wiringLine(facts))
   const committed = readFileSync(PROBE_TRANSCRIPT, 'utf8')
-  assert.equal(committed.includes('PROBE-ROUTE-UNREACHABLE member=pwsh'), true)
-  assert.equal(committed.includes('PROBE-CONCLUSION baseline-scope=bash only'), true)
-  console.log(`PROC-PROBE route-c=bash-confined pwsh=UNREACHABLE reason=no-definition plane-native-bash=ACCEPTED plane-pwsh=PLANE_NAMES_INVALID`)
+  assert.equal(committed.startsWith('ACCEPTED-BY round81-a1-cut reason='), true, 'the re-recorded probe transcript must name this round and its reason')
+  assert.ok(committed.includes(output.trim()), 'the committed probe transcript must be exactly a fresh run of the post-cut probe')
+  const readme = readFileSync(join(DIR, 'README.md'), 'utf8')
+  assert.match(readme, /probe-composition\.mjs/u, 'the lane README must record which probe produces the wiring facts')
+  console.log('PROC-PROBE route-c=absent pwsh=UNREACHABLE reason=no-definition successor=composition-declared-native-modules')
 })
 
 test('PROC-8 the pwsh exclusion is conditional on the SHIPPED WIRING, not on a binary', () => {

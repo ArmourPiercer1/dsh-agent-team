@@ -269,7 +269,10 @@ export async function mountRouteCWorld({ label, overrides = {} }) {
       row.a5sfRealmConfigOf({ a5sfEvidencePath: sinkPath }),
       agentKey,
     )
-    assert.ok(Array.isArray(fibers), 'the attach must answer the fibers it created')
+    // POST-CUT LAW (round 81): the A1 seam appends NO Team-authored shadow. With
+    // no composition-declared native module the attach answers `undefined`; the
+    // retirement pin measures exactly that.
+    const attachAppendedNothing = fibers === undefined
     if (overrides.dropWebShadow === true) {
       assert.equal(typeof mounted.disposeNativeToolModules, 'function', 'the realm must expose the native-module disposal the control uses')
       await mounted.disposeNativeToolModules()
@@ -308,6 +311,7 @@ export async function mountRouteCWorld({ label, overrides = {} }) {
         queries: Object.freeze([...provider.stats.queries]),
       }),
       network: () => networkWitnessOf(witness),
+      attachAppendedNothing,
       visible,
       hostWebCalls: () => hostState.calls,
       dispatch,

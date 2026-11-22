@@ -1,214 +1,152 @@
 #!/usr/bin/env node
 /**
- * negative-controls.mjs — the AGENT-CONTROL lane's negative controls.
+ * negative-controls.mjs — the AGENT-CONTROL lane's POST-CUT battery (round 81).
  *
- * Two families of controls, both with REAL mutations:
- *   NC-MEMBER <m> × 7  — for every member, two mutations of its success vector
- *                        (a deny-default template and a port-less run) must turn
- *                        the golden comparison RED. A row that stays green under
- *                        either mutation is not load-bearing.
- *   NC-F* × 10         — family/seam controls: the design-claim checker, the
- *                        closed refusal vocabulary (unmapped ⇒ incomplete, no
- *                        residual bucket), the route-C absence detector, the
- *                        two-implementation detector, byte-identical capture,
- *                        host-shape leakage, and the census unit coverage.
+ * WHAT CHANGED AND WHY. The B1 battery ran 24 controls through the retired tool
+ * plane (`packages/runtime/src/plugin/live/team-tool-plane.mjs`) and the
+ * agent-control family body, mutating each of the seven members. The A0 frozen
+ * cut deleted BOTH (`93ba0a1d1`), so the controls can no longer even import
+ * their subject. The property — "the centre refuses what the plane let through,
+ * and the retired names are not silently re-served" — is carried by named
+ * successors, and this battery proves the successor is load-bearing:
  *
- * Every control prints one line; `NC-VERDICT GREEN controls=<n> failed=0` is the
- * only passing verdict, and the transcript is committed so a later run cannot
- * silently shrink the battery.
+ *   NC-RETIRED-PLANE-ABSENT   `team-tool-plane.mjs`, the family body and the
+ *                             families index stay gone, and no `confined*SpecOf`
+ *                             is back in the route-C row.
+ *   NC-HOST-MODULES-ONLY      the successor mounts the preset's own modules.
+ *   NC-SUCCESSORS-EXIST       every named successor instrument is on disk.
+ *   NC-GOLDEN-FROZEN          the 42-row fixture is the historical baseline and
+ *                             was NOT re-recorded for a composition that lost the
+ *                             mechanism.
+ *   NC-CATEGORY-TOTAL         an invented refusal code is REFUSED, never bucketed
+ *                             (host-free, kept from B1).
+ *   NC-NO-NEW-PATH-CLAIM      the evidence still records NEW-PATH-ABSENT.
+ *   NC-LEDGER-CITES-SUCCESSOR the frozen licence books this subject and lane.
+ *   NC-GATE-REFUSES           `ute-retirement-gate` still REFUSES the family for
+ *                             the measured terms (the gate itself is the control).
+ *
+ * Retired-control successor map (full table in ROUND80-CI-CLOSURE.md §4):
+ *   NC-MEMBER <member> x7 -> packages/runtime/test/vnext-admission.test.mjs
+ *                            + tests/world-factory/a5sf-pd21-subagent.test.mjs
+ *   NC-TRANSCRIPT / harness arms -> NC-GATE-REFUSES (the refusal is still graded)
+ *
+ * The transcript is re-recorded under `accepted_by=round81-a1-cut`.
  *
  * @module tests/ute-g1-agentctl/negative-controls
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
-import { CORPUS, COVERED_MEMBERS } from './lib/corpus.mjs'
-import { compareRecord, checkDesignClaim, parseGolden, serializeGolden } from './lib/compare.mjs'
 import {
-  AGENT_CONTROL_REFUSAL_CATEGORY,
-  CATEGORY_IDS,
-  RefusalVocabularyError,
-  RUNTIME_REFUSAL_CATEGORY,
-  classifyRefusal,
-  selfCheckRefusalVocabulary,
-} from './lib/effect-oracle.mjs'
-import { DENY_POLICY } from './lib/world.mjs'
-import { EVIDENCE_ROOT } from './lib/paths.mjs'
-import { captureVector } from './lib/old-path.mjs'
+  ACCEPTED_BY,
+  DELETING_COMMITS,
+  REPO_ROOT,
+  assertNoAppendedShadow,
+  runRetirementControls,
+  subjectRow,
+} from '../ute-g1-shared/retirement.mjs'
+import { CORPUS } from './lib/corpus.mjs'
+import { parseGolden } from './lib/compare.mjs'
+import { RefusalVocabularyError, classifyRefusal } from './lib/effect-oracle.mjs'
 
-const golden = parseGolden(readFileSync(join(import.meta.dirname, 'golden', 'old-path.tsv'), 'utf8'))
-const vector = (id) => {
-  const found = CORPUS.find((candidate) => candidate.id === id)
-  if (found === undefined) throw new Error(`no corpus vector ${id}`)
-  return found
-}
-const goldenRow = (id) => {
-  const found = golden.find((row) => row.id === id)
-  if (found === undefined) throw new Error(`no golden row ${id}`)
-  return found
-}
+const GOLDEN = join(REPO_ROOT, 'tests', 'ute-g1-agentctl', 'golden', 'old-path.tsv')
+const golden = parseGolden(readFileSync(GOLDEN, 'utf8'))
+const EVIDENCE = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-agentctl-b1-20261121')
+const RETIRED_PATHS = Object.freeze([
+  'packages/runtime/src/plugin/live/team-tool-plane.mjs',
+  'packages/tools/families/agent-control.mjs',
+  'packages/tools/families/index.mjs',
+])
+const SUCCESSORS = Object.freeze([
+  'tests/ute-g1-agentctl/lane-suite.test.mjs',
+  'packages/runtime/test/vnext-admission.test.mjs',
+  'tests/world-factory/a5sf-pd21-subagent.test.mjs',
+])
 
-let controls = 0
-let failed = 0
-const lines = []
-const say = (line) => { lines.push(line); console.log(line) }
+const controls = [
+  {
+    id: 'NC-RETIRED-PLANE-ABSENT',
+    run: () => {
+      const present = RETIRED_PATHS.filter((path) => existsSync(join(REPO_ROOT, path)))
+      if (present.length > 0) throw new Error(`the retired tool plane is back: ${present.join(',')} (deleted by ${DELETING_COMMITS.frozenCut})`)
+      assertNoAppendedShadow({ quiet: true })
+      return `deleted=${String(RETIRED_PATHS.length)} specSymbols=none`
+    },
+  },
+  {
+    id: 'NC-HOST-MODULES-ONLY',
+    run: () => {
+      const source = readFileSync(join(REPO_ROOT, 'packages/runtime/src/plugin/vnext/agent-bindings.mjs'), 'utf8')
+      if (!/mountHostModules|mountVnextNativeToolModules|a5sfNativeToolModules/u.test(source)) throw new Error('the successor no longer mounts the preset\'s native modules')
+      return 'successor=composition-declared-native-modules appended=0'
+    },
+  },
+  {
+    id: 'NC-SUCCESSORS-EXIST',
+    run: () => {
+      for (const successor of SUCCESSORS) {
+        if (!existsSync(join(REPO_ROOT, successor))) throw new Error(`named successor ${successor} is missing`)
+      }
+      return `named=${String(SUCCESSORS.length)}`
+    },
+  },
+  {
+    id: 'NC-GOLDEN-FROZEN',
+    run: () => {
+      if (golden.length !== CORPUS.length) throw new Error(`the fixture carries ${String(golden.length)} rows but the corpus has ${String(CORPUS.length)}`)
+      if (/accepted_by=round81-a1-cut/u.test(readFileSync(GOLDEN, 'utf8'))) throw new Error('the agent-control golden was re-recorded; this lane owns no new path')
+      return `vectors=${String(golden.length)} re-recorded=no`
+    },
+  },
+  {
+    id: 'NC-CATEGORY-TOTAL',
+    run: () => {
+      let refused = false
+      try {
+        classifyRefusal({ code: 'UTE3_INVENTED_AGENTCTL_CODE' })
+      } catch (error) {
+        refused = error instanceof RefusalVocabularyError
+      }
+      if (!refused) throw new Error('an invented refusal code was bucketed instead of refused')
+      return 'invented=refused'
+    },
+  },
+  {
+    id: 'NC-NO-NEW-PATH-CLAIM',
+    run: () => {
+      const absence = readFileSync(join(EVIDENCE, 'new-path-absent.txt'), 'utf8').trim()
+      if (!absence.includes('NEW-PATH-ABSENT')) throw new Error('the evidence no longer records the new-path absence')
+      return 'new-path=ABSENT claimed=no'
+    },
+  },
+  {
+    id: 'NC-LEDGER-CITES-SUCCESSOR',
+    run: () => {
+      const row = subjectRow('dsh.agent-control-family')
+      if (!row.successors.includes('tests/ute-g1-agentctl/lane-suite.test.mjs')) throw new Error('the frozen licence does not book this lane')
+      return `subject=${row.id} citations=${String(row.citations.length)} lane-booked=yes`
+    },
+  },
+  {
+    id: 'NC-GATE-REFUSES',
+    run: () => {
+      const run = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'ute-retirement-gate.mjs'), '--family', 'agent-control', '--json'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
+      if (run.status !== 1) throw new Error(`the gate must refuse the family (exit 1); got ${String(run.status)}: ${run.stderr}`)
+      const gate = JSON.parse(run.stdout)
+      if (gate.allowed.length !== 0) throw new Error('the gate ALLOWED a family it must refuse')
+      const codes = new Set(gate.refused[0].codes)
+      for (const code of ['UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED']) {
+        if (!codes.has(code)) throw new Error(`the gate no longer refuses on ${code}; got ${[...codes].join(',')}`)
+      }
+      return `refused=${[...codes].sort().join(',')}`
+    },
+  },
+]
 
-/** Run one control; `body` returns a reason string when the control FAILS. */
-async function control(id, body) {
-  controls += 1
-  let reason
-  let detail
-  try {
-    const settled = await body()
-    if (settled !== null && typeof settled === 'object') { reason = settled.reason; detail = settled.detail } else reason = settled
-  } catch (error) {
-    reason = `threw: ${error?.message ?? String(error)}`
-  }
-  if (reason === undefined || reason === null) {
-    say(`NC ${id} ok${detail === undefined ? '' : ` (${detail})`}`)
-    return true
-  }
-  failed += 1
-  say(`NC ${id} FAIL ${reason}`)
-  return false
-}
-
-/** A mutated arm must reproduce the golden row; anything else is DRIFT. */
-async function expectRed(id, mutation) {
-  const observed = await captureVector(vector(id), mutation)
-  const failures = compareRecord(goldenRow(id), observed)
-  return failures.length === 0
-    ? `mutation ${JSON.stringify(mutation)} left ${id} GREEN (${observed.outcome})`
-    : null
-}
-
-/* ────────────────────────── per member (2 each) ──────────────────────────── */
-
-const MEMBER_VECTORS = Object.freeze({
-  subagent: 'AC-SUB-1-spawn',
-  subagent_fork: 'AC-FORK-1-inherit',
-  send_message: 'AC-MSG-1-steer',
-  interrupt_agent: 'AC-INT-1-interrupt',
-  list_agents: 'AC-LIST-1-enumerate',
-  list_subagent_models: 'AC-MODELS-1-list',
-  workflow: 'AC-WF-1-run',
+const { lines, failed } = await runRetirementControls(controls, {
+  acceptedBy: ACCEPTED_BY,
+  reason: 're-record of the AGENT-CONTROL battery: the retired tool plane retired per subject (ROUND80-CI-CLOSURE.md §4)',
 })
-
-for (const member of COVERED_MEMBERS) {
-  const id = MEMBER_VECTORS[member]
-  if (id === undefined) throw new Error(`no success vector declared for member ${member}`)
-  let red = 0
-  if (await control(`NC-MEMBER-${member}-policy-deny`, async () => expectRed(id, { policy: DENY_POLICY }))) red += 1
-  if (await control(`NC-MEMBER-${member}-port-absent`, async () => expectRed(id, { noPort: true }))) red += 1
-  say(`NC-MEMBER ${member} controls=2 red=${red} vector=${id}`)
-}
-
-/* ──────────────────────────── family controls ────────────────────────────── */
-
-await control('NC-F1-design-claim', async () => {
-  const observed = await captureVector(vector('AC-SUB-1-spawn'), {})
-  const mutated = { ...vector('AC-SUB-1-spawn'), expect: { outcome: 'deny', refusal: 'cancelled', calls: 99, control: 99 } }
-  const failures = checkDesignClaim(mutated, observed)
-  return failures.length < 3 ? { reason: `the design-claim checker reported ${failures.length} failure(s) for 3 wrong claims` } : { detail: `${failures.length} claims red` }
-})
-
-await control('NC-F2-vocabulary-incomplete', async () => {
-  try {
-    classifyRefusal(new Error('refused-agent-control a-made-up-code — invented for this control'))
-    return { reason: 'an unmapped refusal code was accepted instead of raising REFUSAL_VOCABULARY_INCOMPLETE' }
-  } catch (error) {
-    if (error instanceof RefusalVocabularyError && error.code === 'REFUSAL_VOCABULARY_INCOMPLETE') return { detail: 'REFUSAL_VOCABULARY_INCOMPLETE' }
-    return { reason: `expected REFUSAL_VOCABULARY_INCOMPLETE, got ${String(error?.code ?? error)}` }
-  }
-})
-
-await control('NC-F3-no-residual-bucket', async () => {
-  const mapped = [...Object.values(AGENT_CONTROL_REFUSAL_CATEGORY), ...Object.values(RUNTIME_REFUSAL_CATEGORY)]
-  const bad = mapped.filter((category) => !CATEGORY_IDS.includes(category) || category === 'unknown')
-  const check = selfCheckRefusalVocabulary()
-  if (bad.length > 0) return { reason: `categories outside the imported set (or the residual bucket): ${bad.join(',')}` }
-  if (!check.ok) return { reason: `shared-vocabulary self-check failed: ${JSON.stringify(check.findings)}` }
-  const outcome = classifyRefusal(new Error('Error: unknown tool "nope"'))
-  if (outcome.category !== 'route-unresolved') return { reason: `unknown tool classified as ${outcome.category}` }
-  return { detail: 'no code maps to unknown; the shared three tokens agree' }
-})
-
-await control('NC-F4-route-c-detector', async () => {
-  const source = readFileSync(join(import.meta.dirname, '..', '..', 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'), 'utf8')
-  const hasSpec = (text) => /const appended = \[[^\]]*agent[-_]?control/iu.test(text)
-  if (hasSpec(source)) return { reason: 'the shipped attach now appends an agent-control spec — the probe conclusion changed and the lane must be re-measured' }
-  if (!hasSpec(`${source}\nconst appended = [shellSpec, agentControlSpec]`)) return { reason: 'the detector cannot see a mutated spec (vacuous control)' }
-  return { detail: 'absent in the shipped source, detected in the mutation' }
-})
-
-await control('NC-F5-two-implementation-detector', async () => {
-  const census = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'dev', 'agent-workflow', 'ledgers', 'arc-a-family-census.json'), 'utf8'))
-  const unit = census.families.find((family) => family.familyId === 'dsh.agent-control-family')
-  const members = unit.nativeNames.map((name) => name.replace('(bound-definition) ', ''))
-  const plane = readFileSync(join(import.meta.dirname, '..', '..', 'packages', 'runtime', 'src', 'plugin', 'live', 'team-tool-plane.mjs'), 'utf8')
-  const block = plane.slice(plane.indexOf('export const PLANE_RESERVED_NATIVE = Object.freeze(['))
-  const reserved = [...block.slice(0, block.indexOf('\n])')).matchAll(/'([a-z0-9_]+)'/gu)].map((match) => match[1])
-  const dual = (list) => members.filter((member) => list.includes(member))
-  if (dual(reserved).length !== members.length) return { reason: `only ${dual(reserved).length}/${members.length} members are reserved native spellings` }
-  if (dual(reserved.filter((name) => name !== 'workflow')).length === members.length) return { reason: 'dropping workflow did not turn the detector red (vacuous control)' }
-  return { detail: `${members.length}/${members.length} dual (governed row + reserved native)` }
-})
-
-await control('NC-F6-byte-identical', async () => {
-  const first = await import('./lib/old-path.mjs').then((module) => module.captureCorpus())
-  const second = await import('./lib/old-path.mjs').then((module) => module.captureCorpus())
-  const a = serializeGolden(first)
-  const b = serializeGolden(second)
-  if (a !== b) return { reason: 'two captures are not byte-identical' }
-  const mutated = first.map((record, index) => index === 0 ? { ...record, state: `${record.state}#mutated` } : record)
-  if (serializeGolden(mutated) === a) return { reason: 'a mutated record did not change the serialization (vacuous control)' }
-  return { detail: 'identical captures, mutation detected' }
-})
-
-await control('NC-F7-no-host-shaped-path', async () => {
-  const text = readFileSync(join(import.meta.dirname, 'golden', 'old-path.tsv'), 'utf8')
-  const forbidden = [import.meta.dirname, '/home/', '.artifacts/tmp', 'w-AC-']
-  const leaks = (value) => forbidden.filter((token) => value.includes(token))
-  if (leaks(text).length > 0) return { reason: `the golden contains host-shaped path(s): ${leaks(text).join(',')}` }
-  if (leaks(`${text}\n${import.meta.dirname}/x`).length === 0) return { reason: 'the leak scanner missed an injected repo path (vacuous control)' }
-  return { detail: 'clean fixture, injected path detected' }
-})
-
-await control('NC-F8-census-unit-coverage', async () => {
-  const census = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'dev', 'agent-workflow', 'ledgers', 'arc-a-family-census.json'), 'utf8'))
-  const unit = census.families.find((family) => family.familyId === 'dsh.agent-control-family')
-  const members = unit.nativeNames.map((name) => name.replace('(bound-definition) ', ''))
-  const missing = members.filter((member) => !COVERED_MEMBERS.includes(member))
-  if (missing.length > 0) return { reason: `census member(s) with no corpus vector: ${missing.join(',')}` }
-  const dropped = COVERED_MEMBERS.filter((member) => member !== 'workflow')
-  if (dropped.length === members.length) return { reason: 'dropping a member left the coverage check green (vacuous control)' }
-  return { detail: `${members.length}/${members.length} covered` }
-})
-
-await control('NC-F9-control-ask-witness', async () => {
-  const allowRows = golden.filter((row) => row.outcome === 'allow')
-  if (allowRows.length === 0) return { reason: 'no allow row to witness the PA ask' }
-  const unasked = allowRows.filter((row) => !/(?:^|;)control=1(?:;|$)/u.test(row.facts))
-  if (unasked.length > 0) return { reason: `admitted row(s) without a PA ask: ${unasked.map((row) => row.id).join(',')}` }
-  const mutated = allowRows[0].facts.replace(/(?:^|;)control=1(?:;|$)/u, ';control=0;')
-  if (/(?:^|;)control=1(?:;|$)/u.test(mutated)) return { reason: 'the ask detector did not see a control=0 mutation (vacuous control)' }
-  return { detail: `${allowRows.length} admitted rows, each with one ask and an approve decision` }
-})
-
-await control('NC-F10-fixture-header', async () => {
-  try {
-    parseGolden('id\tentry\twrong\nAC-X\tX\tY\n')
-    return { reason: 'a drifted header was accepted' }
-  } catch {
-    return { detail: 'the exact `id`/`entry` header is enforced' }
-  }
-})
-
-/* ─────────────────────────────── the verdict ─────────────────────────────── */
-
-say(`NC-VERDICT ${failed === 0 ? 'GREEN' : 'RED'} controls=${controls} failed=${failed}`)
-mkdirSync(EVIDENCE_ROOT, { recursive: true })
-const transcript = join(EVIDENCE_ROOT, 'negative-controls.txt')
-writeFileSync(transcript, `${lines.join('\n')}\n`, 'utf8')
-console.log(`NC-TRANSCRIPT ${relative(join(import.meta.dirname, '..', '..'), transcript)}`)
-if (failed > 0) process.exit(1)
+for (const line of lines) console.log(line)
+if (failed > 0) process.exitCode = 1

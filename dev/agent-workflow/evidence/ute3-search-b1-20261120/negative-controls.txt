@@ -1,9 +1,9 @@
-NC NC-HARNESS-BITES ok
-NC NC-CATEGORY-TOTAL ok
-NC-MEMBER-POSITIVE grep ok (the unmodified SR-G3-outside-denied row still reproduces)
-NC NC-MEMBER grep ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked content UTE3_SEARCH_OUTLANE_SECRET_5be1)
-NC-MEMBER-POSITIVE glob ok (the unmodified SR-L2-outside-denied row still reproduces)
-NC NC-MEMBER glob ok (mutation: outcome deny->allow, refusal denied-by-lane->null, match effect absent->present, leaked path abs:<scratch>/<world>/outside/secret.txt)
-NC NC-SHADOW-LOAD-BEARING ok
-NC NC-STDIN-LOAD-BEARING ok
-NC-VERDICT GREEN controls=8 failed=0
+ACCEPTED-BY round81-a1-cut reason=re-record of the SEARCH battery: old-path shadow controls retired/re-pointed per subject (ROUND80-CI-CLOSURE.md §4)
+NC NC-HARNESS-BITES ok — flipped=outcome allow->deny differs=yes
+NC NC-CATEGORY-TOTAL ok — invented=refused categories=9
+NC NC-RETIRED-SHADOW-ABSENT ok — deleted=2 live-attach=appends-nothing
+NC NC-NEW-PATH-LANE-BITES-GREP ok — restricted=deny widened=allow leak=yes
+NC NC-NEW-PATH-LANE-BITES-GLOB ok — restricted=deny widened=allow
+NC NC-GOLDEN-FROZEN ok — vectors=15 re-recorded=no (new path reproduces every cell)
+NC NC-SUCCESSORS-EXIST ok — named=3 subject=dsh.search-family
+NC-VERDICT GREEN controls=7 failed=0
