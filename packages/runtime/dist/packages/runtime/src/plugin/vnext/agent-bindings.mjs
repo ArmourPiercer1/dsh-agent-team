@@ -348,7 +348,6 @@
  *                                 entry — the global prompt layer is never
  *                                 touched; idempotent)
  */
-import { join } from 'node:path'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { installModelSelection } from '@deepseek-ai/dsh-agent'
 import { ToolCallId, createUserMessage } from '@deepseek-ai/dsh-llm'
@@ -4228,6 +4227,94 @@ export function createAgentBindings(deps) {
     // through its own client RPC and does not pass through this function.
     handle.agent.cancel({ kind: 'hook', reason: 'team-member-interrupt' })
     disarmStoppedGoal(handle.agent, target)
+  }
+
+  /** Withdraw goal-continuation authority on a Team stop (PD-29). */
+  function disarmStoppedGoal(agent, target) {
+    let goals
+    try {
+      goals = typeof deps.goals === 'function' ? deps.goals() : undefined
+    } catch (error) {
+      goals = undefined
+      observations.push(`pd29: goal service accessor threw on stop of '${String(target?.instanceId ?? '<unknown>')}': ${String(error?.message ?? error)}`)
+    }
+    if (goals === undefined || goals === null || typeof goals.disarm !== 'function') {
+      observations.push(`pd29: no goals service on this host; stop of '${String(target?.instanceId ?? '<unknown>')}' disarmed nothing (no goal continuation can exist without it)`)
+      return
+    }
+    let before
+    try {
+      before = typeof goals.get === 'function' ? goals.get(agent) : undefined
+    } catch {
+      before = undefined
+    }
+    if (before === undefined || before === null) {
+      observations.push(`pd29: stop of '${String(target?.instanceId ?? '<unknown>')}' found no current goal; nothing to disarm`)
+      return
+    }
+    // The durable pause FIRST (the same CAS the goal bar uses), then the
+    // process-local withdrawal. A pause that the service refuses (the goal was
+    // already paused/complete/blocked) is not an error: there is nothing to
+    // pause, and the disarm below is still required.
+    let paused = null
+    if (typeof goals.pause === 'function' && before.phase === 'active') {
+      try {
+        paused = goals.pause(agent, { id: before.id, revision: before.revision })
+      } catch (error) {
+        observations.push(`pd29: durable pause refused on stop of '${String(target?.instanceId ?? '<unknown>')}' (phase=${String(before.phase)}): ${String(error?.message ?? error)}`)
+      }
+    }
+    try {
+      const after = goals.disarm(agent)
+      observations.push(`pd29: goal stopped on Team interrupt of '${String(target?.instanceId ?? '<unknown>')}': id=${String(after?.id)} revision=${String(after?.revision)} phase=${String(after?.phase)} paused=${String(paused === null ? '<refused>' : `${String(paused.phase)}@${String(paused.revision)}`)} activation ${String(before?.activation)}->${String(after?.activation)}`)
+    } catch (error) {
+      observations.push(`pd29: goal disarm FAILED on stop of '${String(target?.instanceId ?? '<unknown>')}': ${String(error?.message ?? error)}`)
+    }
+  }
+
+  // T12-M3: the typed fail-closed error for a drain that cannot ESTABLISH
+  // quiescence (no live agent, subagents service absent/unusable,
+  // infrastructural rejection). Carries code 'recursive-drain-unavailable';
+  // the lifecycle layer (lifecycle/quiesce.ts) maps the REJECTION to a
+  // live-effect failure and the archive/dispose procedure REFUSES
+  // completion — quiescence is never faked.
+  function recursiveDrainUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: recursive drain unavailable for '${sessionId}': ${reason} (code: recursive-drain-unavailable)`)
+    error.code = 'recursive-drain-unavailable'
+    observations.push(`p6t6: recursive-drain-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // D1 (v2): the typed fail-closed error for a member setup that cannot
+  // mount its ordinary preset substrate (the agentPresets service absent or
+  // unusable). Carries code 'member-base-tools-unavailable'; the rejection
+  // propagates out of the AgentSetup callback, which rolls the unpublished
+  // agent back (the AgentSetup contract) — a member never runs without its
+  // base tools (the D1 defect), and the production host's lazy accessor
+  // fails with the same stability for a service-less composition (a
+  // TeamPluginError surfaced through the same setup rejection).
+  function memberBaseToolsUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: member base tools unavailable for '${sessionId}': ${reason} (code: member-base-tools-unavailable)`)
+    error.code = 'member-base-tools-unavailable'
+    observations.push(`p6t6: member-base-tools-unavailable for ${sessionId}: ${reason}`)
+    return error
+  }
+
+  // D1 (v3): the typed fail-closed error for a ROOT (leader) setup that
+  // cannot mount its ordinary preset substrate (the agentPresets service
+  // absent or unusable). Carries code 'root-base-tools-unavailable'; the
+  // rejection propagates out of the AgentSetup callback, which rolls the
+  // unpublished agent back (the AgentSetup contract) — the leader never
+  // runs without its base tools (the D1 v3 extension: a plugin-created
+  // root otherwise has no base tools and the leader file lanes are
+  // unreachable — plan §13-L4 / §12.3; the ruling cites D1 v2 + plan
+  // L4/§12.3). Zero partial state: the boot rejection lands at the FIRST
+  // setup (the root), before any member is created.
+  function rootBaseToolsUnavailable(sessionId, reason) {
+    const error = new Error(`agent-bindings: root base tools unavailable for '${sessionId}': ${reason} (code: root-base-tools-unavailable)`)
+    error.code = 'root-base-tools-unavailable'
+    observations.push(`p6t6: root-base-tools-unavailable for ${sessionId}: ${reason}`)
+    return error
   }
 
   /**

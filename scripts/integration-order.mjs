@@ -51,8 +51,13 @@
  * adjudication for cand-v0.1.6-2 committed 205 per-run artifacts under
  * `evidence/c2-adjudication-2/`: measured, origin/master carries 3863 tracked `.json` under the
  * evidence root and that branch 4068. The bound is a capacity budget, not a safety assertion,
- * so it is raised with a measurement rather than by trimming committed evidence; 6000 leaves
- * room for two more adjudication rounds of that size), each ≤ 512 KiB (over the cap:
+ * so it is raised with a measurement rather than by trimming committed evidence. RAISED AGAIN on
+ * 2026-11-22 (Round 72, hosted-CI repair) with this measurement: on `vnext/a1-cut` (a descendant of
+ * that master) `git ls-files` over the evidence root reports 6832 tracked `.json`, of which 461
+ * mention `u5-run-record/1` and 440 parse as that schema — so the audit had hit BOUND HIT at 6000
+ * candidates and again at 400 records, and `E5` ("the bound is not hit on this tree") was RED on
+ * every PR since. maxCandidates 6000 → 8000 and maxRecords 400 → 600; the bound is never trimmed to
+ * fit the tree and no committed evidence was deleted to fit the bound), each ≤ 512 KiB (over the cap:
  * NOT GRADED by name and size, never read). Rows reported ≤ 40 per class; stdout ≤ 24 KiB; one
  * memoized git call per distinct SHA; no child process other than `git`.
  *
@@ -67,7 +72,13 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const BOUNDS = Object.freeze({ maxRecords: 400, maxCandidates: 6000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
+// maxCandidates raised 6000 → 8000 and maxRecords 400 → 600 on 2026-11-22 (Round 72, hosted-CI
+// repair), each with a measurement: on `vnext/a1-cut` the committed evidence root carries 6832
+// tracked `.json`, of which 461 mention `u5-run-record/1` and 440 parse as that schema. The audit
+// had therefore hit BOTH bounds (6000 candidates, then 400 records) and `devex-diag`'s `E5` — "the
+// bound is not hit on this tree" — was RED on every PR. Bounds are capacity budgets: raised with a
+// measurement, never trimmed by deleting committed evidence.
+export const BOUNDS = Object.freeze({ maxRecords: 600, maxCandidates: 8000, maxRecordBytes: 512 * 1024, perClass: 40, outputBytes: 24 * 1024 })
 const EVIDENCE_ROOT = 'dev/agent-workflow/evidence'
 const SCHEMA = 'u5-run-record/1'
 

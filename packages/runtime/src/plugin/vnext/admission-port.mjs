@@ -581,7 +581,12 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         }
       }
     }
-    return { entry: commit(exec, { binding, admission, decision, overlayOutcome }) }
+    // THE MINTED GRANT TRAVELS WITH THE ENTRY. The host-native ask minted its one-shot grant above
+    // ("spent at the guard once the host's approval lands"); dropping it here left the entry without a
+    // capability, so the guard took the no-capability branch — no spend, no `settlement.running`, and a
+    // grant nobody could account for. `commit` is what attaches it to the memoized decision, so the
+    // spend (and its identity/revision checks) is the ONLY way this call reaches its body.
+    return { entry: commit(exec, { binding, admission, decision, capability, overlayOutcome }) }
   }
 
   /** Complete a wired ask: record the CONTROL decision, then mint the one-shot grant it authorizes. */

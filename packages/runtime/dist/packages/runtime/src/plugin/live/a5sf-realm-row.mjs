@@ -76,8 +76,6 @@
  *
  * @module @dsh-agent-team/runtime/plugin/live/a5sf-realm-row
  */
-import { freshCreateHintAdmits } from '../vnext/bind-path.mjs'
-
 import { isAbsolute } from 'node:path'
 import { URL, pathToFileURL } from 'node:url'
 import { scopeOf } from '@deepseek-ai/dsh-scope'
@@ -994,21 +992,6 @@ const A5SF_HOST_SKILL_PACKAGE = '@deepseek-ai/dsh-tool-skill'
 /** PD-29: the pinned host package whose `present` row is re-mounted on the realm's confined `fs`. */
 const A5SF_HOST_PRESENT_PACKAGE = '@deepseek-ai/dsh-tool-present'
 
-
-
-
-
-/**
- * The pinned host package the governed preset mounts as its own `read`/`write`/
- * `edit`/`read_image` row. A configured entry naming this specifier is a
- * DECLARED filesystem owner: the composition already routed (or explicitly
- * placed) the host module, so this seam must not add a second registration
- * beside it.
- */
-const A5SF_HOST_FS_PACKAGE = '@deepseek-ai/dsh-tool-fs'
-
-
-
 /**
  * The service names a plugin module DECLARES it will inject, in the shapes
  * Cordis accepts (an array, or a name→config object). Used only to answer "is
@@ -1178,7 +1161,50 @@ export async function attachA5sfNativeToolModules(realm, root, a5sfConfig, runti
   // module specs (`nativeToolModules`); no Team-authored shadow spec is appended.
   // The two SERVICE-layer restorations that are not tool copies stay: the Team
   // `skills` provider and the pinned host `present` module on the confined fs.
-
+  //
+  // ORDER IS PART OF THE CONTRACT, and it is why these lines sit HERE rather than
+  // beside the helpers: the configured modules are imported FIRST, because a
+  // specifier this seam cannot spell (an absolute path to the pinned package, a
+  // re-export) must still be recognised by the module's own exported `name`
+  // before either restoration asks whether the composition already owns that
+  // service. Both helpers then read the SAME inputs the surface gate reads: the
+  // mounted realm (its confined `fs` face), the configured specs, the POST-DENY
+  // surface, those already-imported modules and — for `skill` only — the row's
+  // declared catalog, whose absence means "no consumer", not "empty provider".
+  const loadNativeModule = async (spec) => {
+    // Imported by the ROW COMPOSITION's specifier; the mount seam forwards it.
+    // WRAPPED: a resolution failure must name the configured entry, not surface
+    // as a bare ERR_MODULE_NOT_FOUND from the middle of agent setup.
+    let imported
+    try {
+      imported = await import(moduleSpecifierOf(spec.url))
+    } catch (error) {
+      throw new TypeError(
+        `agent-bindings: cannot load ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)}: `
+        + `${error instanceof Error ? error.message : String(error)}`,
+      )
+    }
+    if (imported === null || (typeof imported !== 'object' && typeof imported !== 'function')) {
+      throw new TypeError(`agent-bindings: ${A5SF_NATIVE_TOOL_MODULES_KEY} entry ${JSON.stringify(spec.url)} did not evaluate to a Cordis plugin module`)
+    }
+    return Object.freeze({
+      module: imported,
+      specifier: spec.url,
+      ...(spec.config === undefined ? {} : { config: spec.config }),
+      ...(spec.expectedTools === undefined ? {} : { expectedTools: spec.expectedTools }),
+      ...(spec.allowEmpty === undefined ? {} : { allowEmpty: spec.allowEmpty }),
+      ...(spec.direct === true ? { direct: true } : {}),
+    })
+  }
+  const configuredModules = await Promise.all(nativeSpecs.map(loadNativeModule))
+  // PD-29 (2026-11-14): the two capabilities are restored at the SERVICE layer
+  // they were always missing. `skill` keeps the pinned host tool row and gains a
+  // Team `skills` provider (`a5sfSkillProviderSpecOf`) whose body read rides the
+  // Member's confined `fs`; `present` is the pinned HOST module re-mounted on the
+  // same confined face (`hostPresentSpecOf`, verified by definition identity).
+  // Neither is a Team copy of a tool.
+  const skillSpec = a5sfSkillProviderSpecOf(realm, nativeSpecs, before, configuredModules, a5sfConfig?.skillCatalog)
+  const presentSpec = hostPresentSpecOf(realm, nativeSpecs, before, configuredModules)
   const appended = [skillSpec, presentSpec].filter((spec) => spec !== undefined)
   if (nativeSpecs.length === 0 && appended.length === 0) return undefined
   // The baseline DEFINITIONS, by name: the coverage check below needs identity,

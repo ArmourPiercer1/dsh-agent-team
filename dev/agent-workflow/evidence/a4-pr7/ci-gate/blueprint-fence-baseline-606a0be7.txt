@@ -153,3 +153,15 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 # is a derived copy of the A6 COLD-WAKE kit and authors the SAME v5 Team-create document (the subject
 # is the four-step restart flow, not the document). Four v5 literals, appended in the open from a re-run
 # of scripts/verify-blueprint-version-clean.mjs on this tree, not by hand-editing an offset.
+# 2026-11-22 (UTE A1 cut, Round 72 hosted-CI repair, vnext/a1-cut): TWO new test-fixture identities,
+# appended in the open from a re-run of scripts/verify-blueprint-version-clean.mjs on this tree (not by
+# hand-editing an offset). Cause is the cut, not a product change:
+#   - a3p4-pr4-production-entry-regression.test.ts was re-pointed at the NEW product entry by the A1
+#     cut and authors its E3 team as a v4 `memberIoCeilings` document (the retired Alpha.4
+#     `capabilities.permissions` lane is deliberately absent). ONE v4 literal.
+#   - vnext-admission.test.mjs grew the C-alpha6 `reachable vs refused` arms; their source is a v5
+#     Team-create document, the same shape a6-root-wiring authors. ONE v5 literal.
+# Both are documents a TEST authors and feeds to the parser. No shipped surface gained a blueprint
+# namespace literal, nothing was resolved, and no existing identity line moved.
+OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4324=v5

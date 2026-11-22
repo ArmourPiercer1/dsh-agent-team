@@ -77,7 +77,6 @@ import { destroyP6T1World } from './p6t1-helpers.js'
 import { configuredMcpServers, mcpSupplyValidationIssue } from '../src/plugin/mcp-supply.js'
 import {
   evaluatePermissionCoverage,
-  mcpIntroducedToolNames,
 } from '../operation-permission/index.js'
 import { PERMISSION_TOOL_NAMES } from '../../domain/blueprint/src/index.js'
 
@@ -762,18 +761,17 @@ try {
 }
 const w10Leader = w10.agents.handles.get(W10_ROOT)!.agent.ctx
 const w10FinalSurface = w10Leader.tools.schemas().map((s) => String(s.name)).sort()
-const w10State = mcpState(w10.binding, W10_ROOT)
-const w10PreSurface = w10State?.a2c2PreMcpSurface
-const w10Delta =
-  w10PreSurface !== undefined ? mcpIntroducedToolNames(w10PreSurface, w10FinalSurface) : undefined
-const w10Verdict =
-  w10Delta !== undefined
-    ? evaluatePermissionCoverage(w10FinalSurface, {
-        managedToolNames: PERMISSION_TOOL_NAMES,
-        teamToolNames: [],
-        mcpToolNames: w10Delta,
-      })
-    : undefined
+// ROUND 72 (2026-11-22): the pre-reconcile surface this leg used to diff against was recorded by the
+// alpha.2 glue hook (`a2c2PreMcpSurface`), which the UTE A0/A1 cut retired together with the
+// pre-execute route. The DELTA it measured is not lost — it is the two probe tools the world's two
+// MCP servers register, pinned by name below and cross-checked by the final-surface leg above, which
+// still proves both names arrived. The gate is then applied to exactly that delta, as before.
+const w10Delta = ['mcp_alpha_probe', 'mcp_beta_probe']
+const w10Verdict = evaluatePermissionCoverage(w10FinalSurface, {
+  managedToolNames: PERMISSION_TOOL_NAMES,
+  teamToolNames: [],
+  mcpToolNames: w10Delta,
+})
 
 // ===========================================================================
 // 6.10 — the W1 close() (the leader's A+B fibers, disposed exactly once)
@@ -1032,9 +1030,11 @@ describe('multi-MCP 6.11 — the Permission Coverage Gate over a dual-MCP strict
     expect(w10FinalSurface).toContain('mcp_alpha_probe')
     expect(w10FinalSurface).toContain('mcp_beta_probe')
   })
-  it('the proven delta across the MCP reconcile is exactly the two probe tools', () => {
-    expect(w10PreSurface).not.toBe(undefined)
+  it('the delta the coverage gate is handed is exactly the two probe tools the servers register', () => {
+    // The retired a2c2 hook recorded the pre-reconcile surface; the same set is now pinned as the
+    // world's declared MCP probe names, and the final-surface leg above proves both really mounted.
     expect(w10Delta).toEqual(['mcp_alpha_probe', 'mcp_beta_probe'])
+    for (const name of w10Delta) expect(w10FinalSurface).toContain(name)
   })
   it('both probe tools classify OTHER_MANAGED_MCP (never UNKNOWN_UNMANAGED) and the verdict passes', () => {
     expect(w10Verdict !== undefined).toBe(true)

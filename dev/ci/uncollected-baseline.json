@@ -88,24 +88,6 @@
       "reason": "no lane collects it"
     },
     {
-      "path": "tests/poc-web-native-reuse/poc-w1-native-shape.test.ts",
-      "runner": "vitest",
-      "classification": "UNCOLLECTED",
-      "reason": "only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)"
-    },
-    {
-      "path": "tests/poc-web-native-reuse/poc-w2-ctx-web-adapter.test.ts",
-      "runner": "vitest",
-      "classification": "UNCOLLECTED",
-      "reason": "only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)"
-    },
-    {
-      "path": "tests/poc-web-native-reuse/poc-w3-fetch-parity.test.ts",
-      "runner": "vitest",
-      "classification": "UNCOLLECTED",
-      "reason": "only tests/poc-web-native-reuse/vitest.poc.config.ts includes it; that config is authoring-only (no lane passes --config)"
-    },
-    {
       "path": "tests/poc-web-native-reuse/poc-w4-e4-public-accept.test.ts",
       "runner": "vitest",
       "classification": "UNCOLLECTED",

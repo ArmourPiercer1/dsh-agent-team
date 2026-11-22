@@ -171,9 +171,13 @@ Two shared surfaces remain, deliberately:
   family mount seam. Each family is imported by name, registered by its own
   `registry.register(<x>Contribution)` call, given its own `ensure<X>ApprovalEntry`, and switched by
   its own `centerKernel.families.<x>` flag (`team-tool-plane.mjs` ≈ :2045–2131, :2255–2371,
-  :2528–2610 at `88107ad71`). U7-9a had to add 230 lines there. ARC-A fitness also classes the
+  :2528–2610 at `88107ad71`). U7-9a had to add 230 lines there. ARC-A fitness used to class the
   plane as NOT protected on purpose: `isProtectedPath('…/team-tool-plane.mjs') === false` in
-  [u6-arc-a-fitness.test.ts](../packages/runtime/test/u6-arc-a-fitness.test.ts). §1 above also
+  `packages/runtime/test/u6-arc-a-fitness.test.ts` — **that suite, and the plane itself, were
+  retired by the UTE A0/A1 cut (2026-11-22, Round 72); the protected set is graded today by the
+  blueprint fence in [ci-pr-gate.mjs](../scripts/ci-pr-gate.mjs) against
+  [blueprint-fence-baseline-606a0be7.txt](../dev/agent-workflow/evidence/a4-pr7/ci-gate/blueprint-fence-baseline-606a0be7.txt)**.
+  §1 above also
   still describes families wiring "in non-conflicting semantic regions" of it. Lifting this needs a
   generic plane mount seam from the named Center-Owner product PR (w0b). Until that lands, the plane
   remains the one shared file a governed-family lane touches, and §3's short-transaction order
@@ -241,8 +245,9 @@ the full aggregate green. `CI_DEFERRAL_CONFLICT` reds a head that shows both the
 ## 5. What this does not answer
 
 * Whether any C2 run PASSED its own lanes (a binding check, not a lane-verdict check).
-* Whether the protected-set is drift-free on the candidate (that is the L1 scan in
-  [ARC-A fitness](../packages/runtime/test/u6-arc-a-fitness.test.ts)).
+* Whether the protected-set is drift-free on the candidate (that was the L1 scan in the ARC-A
+  fitness suite, retired by the UTE A0/A1 cut on 2026-11-22; the protected set is now graded by the
+  blueprint fence in [ci-pr-gate.mjs](../scripts/ci-pr-gate.mjs)).
 * Whether the cross-family security negatives were exercised (the Integrator's obligation, not
   statically checkable from the binding alone).
 

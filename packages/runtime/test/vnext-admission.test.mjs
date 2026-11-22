@@ -18,7 +18,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 // convention, resolved to `.ts` by its test hooks). Register the hooks BEFORE the import so this
 // file runs under plain `node --test` as well as under scripts/run-tests.mjs.
 register(pathToFileURL(fileURLToPath(new URL('../../../scripts/run-tests-hooks.mjs', import.meta.url))).href)
-const { admit, invocationFactsOf, CENTRE_TOOL_NAMES, HOST_CAPABILITY_TOOL_NAMES, mcpServerOf } = await import('../src/plugin/vnext/admission.ts')
+const { admit, invocationFactsOf, CENTRE_TOOL_NAMES, HOST_CAPABILITY_TOOL_NAMES } = await import('../src/plugin/vnext/admission.ts')
 // The centre does not own grants: `member-io-policy` does. These arms use the PRODUCT binder and
 // assert the properties the centre relies on, so a regression in the product turns them red.
 const { createInvocationBinder } = await import('../member-io-policy/src/invocation.ts')
@@ -303,25 +303,6 @@ const fakeHost = () => {
 
 const askBinding = () => binding({ read: lane(['/work/a'], ['/work/ask']) })
 
-/**
- * The durable approval authority, as a deterministic stand-in for the Control plane in the arms that
- * are NOT about the Control plane: an approval that is recorded, and nothing else. The real bridge
- * (request → durable decision → wait) is measured by ADM-50/51 over the REAL ControlService, and every
- * mapping of its closed outcomes is measured by ADM-55.
- */
-const approvalOnce = (over = {}) => {
-  const asked = []
-  return {
-    asked,
-    port: {
-      async request (input) {
-        asked.push(input)
-        return { ok: true, approval: { approvalId: 'approval-1', policyRevision: 'gen-7' }, ...over }
-      },
-    },
-  }
-}
-
 test('ADM-19 — an approval that no longer holds at guard time is REFUSED, not executed', async () => {
   const host = fakeHost()
   let current = askBinding()
@@ -422,7 +403,7 @@ test('ADM-22 — a call refused at admission is REFUSED without ever entering RU
 })
 
 test('ADM-23 — a process that dies mid-call recovers as UNKNOWN, never as success or failure', async () => {
-  const { store, writer } = await settlementWorld('crash')
+  const { writer } = await settlementWorld('crash')
   const exec = { name: 'read', callId: 'settle-3' }
   writer.admitted({ exec, callId: 'settle-3', admission: { kind: 'allow' } })
   writer.running({ exec })
@@ -1590,8 +1571,6 @@ test('ADM-54 — the PRODUCT composition supplies the ask path: member-execution
   const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
   const { mkdtempSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
-  const { join } = await import('node:path')
-
   const compiledAnswer = {
     members: [{
       identity: { instanceId: 'member-1', instanceGeneration: 1 },
@@ -2329,7 +2308,6 @@ test('ADM-62 — the PRODUCT composition CLOSES the member: member-execution\'s 
   const { installMemberExecution } = await import('../src/plugin/vnext/member-execution.mjs')
   const { mkdtempSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
-  const { join } = await import('node:path')
   const compiledAnswer = {
     members: [{
       identity: { instanceId: 'member-1', instanceGeneration: 1 },
@@ -2612,7 +2590,6 @@ test('ADM-79 — a crash between the admission fact and the execution fact is re
 
   // (2) COLD RECOVERY by the new process: the product's own `recoverUnsettled`, the same call
   // `member-execution` makes at bind time.
-  const at = new Date(Date.parse(openBefore.updatedAt) + 1000).toISOString()
   const recovered = createSettlementWriter({ store, identityOf: durableIdentityOf }).recover()
   assert.equal(recovered.length, 1, 'exactly the OPEN record is reconciled')
   const mine = recovered[0]
@@ -2929,7 +2906,6 @@ test('ADM-84 — a settlement left OPEN by a crash is CLASSIFIED from disk as UN
   assert.equal(running.state, 'RUNNING', 'open after the body started')
   assert.equal(running.observation.dispatch, 'started')
 
-  const at = new Date(Date.parse(running.updatedAt) + 1000).toISOString()
   const recovered = createSettlementWriter({ store, identityOf: durableIdentityOf }).recover()
   assert.deepEqual(
     recovered.map((entry) => entry.executionId).sort(),

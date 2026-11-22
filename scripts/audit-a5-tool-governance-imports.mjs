@@ -66,168 +66,31 @@ const PERMITTED_OUTSIDE = [
  * subtree prefix cannot smuggle a new file past review.
  */
 const PR1_CONSUMERS = Object.freeze([
-  'runtime/tool-dispatch/',
-  'runtime/src/plugin/live/agent-bindings.mjs',
-  // GLUE-7 (alpha5-glue7-backend): the plane row consumes the §6 feed face
-  // (`definitionIdentityOf` from tool-dispatch) to mint placement-binding
-  // rows for the Guard — the #313 入参面's first production caller.
-  'runtime/src/plugin/live/team-tool-plane.mjs',
-  // alpha5-ptc-fs (branch `alpha5-ptc-pr` off master 1962f879; review
-  // provenance 独审 PASS — the round's 独审 id 7f0e5d6e, booked by the
-  // integration coordinator on the #334 census red): the PTC fs escalation
-  // adjudication row consumes the lane's effect-grammar face DIRECTLY
-  // (packages/runtime/src/plugin/live/ptc-escalation-row.mjs:66 —
-  // `parseRequestedEffectSet`, the canonical one-shot effect set the grant
-  // carries), and reaches the frozen grant algebra only through the
-  // ALREADY-REVIEWED PR2 consumer
-  // packages/runtime/src/plugin/live/ptc-escalation-row.mjs:65 —
-  // `../../../tool-admission/grant-mint.js` (mintOperationGrant/
-  // createGrantLedger — grant-mint.ts is in this list via the PR2 prefix;
-  // the row imports the RUNTIME module, never the lane barrel for grants).
-  // Zero lane edits; scope-gated production consumer by the :2412 face.
-  'runtime/src/plugin/live/ptc-escalation-row.mjs',
-  // PR2 (plan §5) reviewed addition — see the block comment.
-  'runtime/tool-admission/',
-  // PR3/PR5 (Alpha.5) reviewed additions — provenance in the block comment.
-  'runtime/controlled-fs/src/',
-  'tools/a5p5-tools/src/',
-  // U6 PR2 (FS family lane) booked FILE-BY-FILE, single thin face:
-  // `tools/fs-family/src/read-executor.mjs` imports
-  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) — the
-  // same face `runtime/src/plugin/live/plane-effect-backends.mjs` carried
-  // until this move (its booking retired with the retirement note below).
-  // The file IS that plane file's moved governed-read executor (U6
-  // slice plan PR2: the Family owns the read body; the effect grammar stays
-  // the domain's); zero lane edits. The lane's other modules import only
-  // contracts/controlled-fs mechanics, and the plane re-exports nothing of
-  // the governance lane onward (owner role: packages/tools/fs-family/README.md).
-  'tools/fs-family/src/read-executor.mjs',
-  // U7-9a (FS family mutation slice) booked FILE-BY-FILE, SAME single thin
-  // face as read-executor above: each of the three governed mutation/
-  // executors imports ONLY `parseRequestedEffectSet` (domain/tool-governance
-  // effect grammar) to mint the PA operation fingerprint pre-authority —
-  // exactly the face the read executor carries; no other lane export is
-  // reachable from these files (verified by this audit itself: a different
-  // face stays a finding). Zero lane edits; the mechanics/rows/contribution
-  // modules of the same slice import nothing of the governance lane.
-  'tools/fs-family/src/write-executor.mjs',
-  'tools/fs-family/src/edit-executor.mjs',
-  'tools/fs-family/src/image-executor.mjs',
-  // U7-f (web family lane) booked FILE-BY-FILE, SAME single thin face as
-  // every executor above: both governed executors import ONLY
-  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
-  // declare the family body's [tool-invoke + connect@origin] effect set
-  // pre-authority — no other lane export is reachable from these files
-  // (the audit itself enforces that; a different face stays a finding).
-  // Zero lane edits; web-mechanics / web-transport / web-search-provider /
-  // rows / contribution / index import NOTHING of the governance lane
-  // (network confinement is the admission plane per DECISION-3 — this
-  // family carries no sandbox claim), matching the fs-family slice shape.
-  'tools/web-family/src/fetch-executor.mjs',
-  'tools/web-family/src/search-executor.mjs',
-  // U7-F (agent-control family) booked FILE-BY-FILE, SAME single thin face:
-  // `tools/agent-control-family/src/agent-control-executor.mjs` imports ONLY
-  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
-  // canonicalize the DERIVED per-call effect set at the PA edge; no other
-  // family module imports anything of the governance lane (mechanics/rows/
-  // port/contribution verified), and a different face stays a finding, as
-  // every booking above states.
-  'tools/agent-control-family/src/agent-control-executor.mjs',
-  // U7-F (inspect-family lane: skill / cordis_inspect_list /
-  // cordis_inspect_query) booked FILE-BY-FILE, SAME single thin face as the
-  // fs-family executors above: each governed executor imports ONLY
-  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
-  // validate its admitted effect set at the PA boundary — skill-executor
-  // reads anchored SKILL.md files, inspect-executor reaches ONLY the
-  // read-only inspect-provider face, and neither grants anything. Zero lane
-  // edits; the mechanics/rows/contribution/descriptor modules of the same
-  // slice import nothing of the governance lane.
-  'tools/inspect-family/src/inspect-executor.mjs',
-  'tools/inspect-family/src/skill-executor.mjs',
-  // U7-F (process-family governed PWSH row) booked FILE-BY-FILE.
-  // `tools/process-family/src/pwsh-executor.mjs` imports
-  // `parseRequestedEffectSet` (the SAME thin effect-grammar face the fs
-  // executors carry — it mints the call's closed `tool-invoke:pwsh`
-  // requested-effect set) AND `canonicalJsonFingerprint` (VALUE, the
-  // control/service.ts precedent face) for the PA `parametersFingerprint`:
-  // the shell-class H2 law says the OPAQUE COMMAND is the security-relevant
-  // field, so the fingerprint binds the PARSED parameter record, not the
-  // per-call-uniform effect-set digest (fs-row form) — an effect-set
-  // fingerprint would make every pwsh command fingerprint-identical. No
-  // other lane export is reachable from the file; the row/mechanics/
-  // confined/contribution modules of the same slice import nothing of the
-  // governance lane.
-  'tools/process-family/src/pwsh-executor.mjs',
-  // u7-f (UI family) booked FILE-BY-FILE, SAME single thin face: the two
-  // governed executors (ask/present bodies) import ONLY
-  // `parseRequestedEffectSet` (domain/tool-governance effect grammar) to
-  // mint the PA operation fingerprint pre-authority — exactly the face the
-  // read/fs executors carry; no other lane export is reachable from these
-  // files (verified by this audit itself). Zero lane edits; the mechanics/
-  // rows/port/contribution modules of the same slice import nothing of the
-  // governance lane (owner role: packages/tools/ui-family/README.md).
-  'tools/ui-family/src/ask-executor.mjs',
-  'tools/ui-family/src/present-executor.mjs',
-  // U7-F B (agent-state family) booked FILE-BY-FILE, thin faces only:
-  // `tools/agent-state-family/src/executors.mjs` imports ONLY
-  // `parseRequestedEffectSet` (the SAME effect-grammar face the fs-family
-  // executors carry) to validate the five rows' per-call PA arm sets;
-  // `tools/agent-state-family/src/contribution.mjs` imports ONLY
-  // `canonicalJsonStringify` (the deterministic canonical serialization the
-  // contribution provider-digest needs — a pure function, zero authority,
-  // the face the shadow-row booking above carries for its digest documents).
-  // No other lane export is reachable from these files (a different face
-  // stays a finding by this audit's own rule); zero lane edits.
-  'tools/agent-state-family/src/executors.mjs',
-  'tools/agent-state-family/src/contribution.mjs',
-  // A5-M1 (PR358) additions, booked FILE-BY-FILE by the census CI-only round
-  // at headSha efecfe2b4 (census run 39866646962 listed exactly these four
-  // as un-listed). Each entry states WHICH SYMBOL it imports and WHAT FOR:
-  // the law this list enforces is not "who may import" but "which thin
-  // center-interface face each consumer was reviewed for", so a listed file
-  // reaching for a DIFFERENT face of the lane stays a design change, and a
-  // new file stays a finding. Nothing here touches the lane's pure-domain law
-  // or the reverse-edge prohibition — no entry lets `domain/tool-governance`
-  // import anything, and no entry widens a subtree prefix.
+  // ── ROUND 72 (2026-11-22): the set was re-booked against the UTE A0/A1 cut. ──
+  // The cut retired the whole governed-execution route this list used to book: `runtime/tool-dispatch/`,
+  // `tools/a5p5-tools/src/`, `runtime/src/plugin/live/team-tool-plane.mjs`,
+  // `runtime/src/plugin/live/agent-bindings.mjs` and every `tools/*-family/src/*-executor.mjs` (the
+  // governed bodies moved to the centre, which does not import this lane). Their bookings were REMOVED
+  // here rather than left to rot: a booking for a file that no longer exists is not a pin, it is a
+  // permanent `expected PR1 consumer never found` red on every PR (19 of them were red on this tree).
+  // The law is unchanged and still exact in BOTH directions: every live lane consumer must be listed
+  // below, and every listed consumer must still consume the lane.
   //
-  // The Control lane's WRITE-side fingerprint: control/service.ts:183 imports
-  // `canonicalJsonFingerprint` (VALUE) and uses it at :2311, where
-  // `requestControl` recomputes the PA operation-manifest digest and refuses
-  // a `reviewPayloadDigest` / `operationFingerprint` pair that is not the
-  // SERVICE-computed digest of the payload it pairs with (malformed → NO row
-  // written). The Control lane already rode this exact domain edge (its own
-  // types.ts names service.ts as the precedent); A5-M1 adds the use sites,
-  // zero lane edits.
+  // The surviving consumers, each carrying its original review provenance:
+  // A5-M1 (PR358) — Control's WRITE-side `canonicalJsonFingerprint` (control/service.ts:183/:2311)
+  // and READ-side fingerprint face (control/types.ts), booked by the audit red at headSha efecfe2b4.
   'runtime/control/service.ts',
-  // The Control lane's READ-side fingerprint plus its call-facts TYPES:
-  // control/types.ts:136 imports `canonicalJsonFingerprint` (VALUE) for the
-  // PR358 f5 item-4 read-back VALUE check at :1285 (a payload that stayed
-  // schema-valid but no longer hashes to the row's pairing re-reads as the
-  // damage it is), and :153 is `import type { RequestedEffectSet, ToolBinding,
-  // ToolPolicyDocument }` — the durable-owner types the call-facts slots carry
-  // at :1407 / :1414 / :1423. The type half is erased at emit (ADR X7-R3):
-  // the Control plane gains no runtime edge from it.
   'runtime/control/types.ts',
-  // The PA↔Control bridge: operation-permission/pa-control-bridge.ts:91
-  // imports `canonicalJsonFingerprint` (VALUE — the manifest digest it writes
-  // at :394, the assurance-snapshot compare at :752) and :93-98 is `import
-  // type { AdmissionRequest, GovernanceResult, OperationGrant,
-  // RequestedEffectSet }`, the closed vocabulary its admit/guard ports are
-  // typed against rather than restate. Direction is the reviewed one (runtime
-  // lane → domain leaf, no storage, no plugin). NOTE for the record: this file
-  // ALSO consumes the Alpha.4 ladder (`authorityRank` / `mayReview` /
-  // `RuntimeAuthority`); that edge is booked on the a3p3 governance-lane rows
-  // and this list says nothing about it.
-  'runtime/operation-permission/pa-control-bridge.ts',
-  // The governed effect backends row's booking RETIRED at U6 PR2: its one
-  // lane edge (`parseRequestedEffectSet`, used by the governed READ row's
-  // effect parsing) MOVED with the read executor to
-  // `tools/fs-family/src/read-executor.mjs` (booked just above); the file
-  // itself now imports nothing from the lane (the read sections are family
-  // imports/re-exports, the surviving search/glob/shell backends never had
-  // a lane edge). Retiring the entry is the honest state, not a widening:
-  // the symbol's consumer SET is unchanged in count, only in location.
-
+  // PR3 (Alpha.5, review #259@23dc3bd1) — the controlled-fs lane's five files, booked as the reviewed
+  // subtree prefix, exactly as before.
+  'runtime/controlled-fs/src/',
+  // PR2 (plan §5) — the tool-admission lane (admission-kernel / approval-case / assurance-runtime /
+  // clock / grant-mint), booked as the reviewed subtree prefix.
+  'runtime/tool-admission/',
+  // alpha5-ptc-fs (review provenance 独审 PASS id 7f0e5d6e, booked on the #334 census red): the PTC fs
+  // escalation adjudication row consumes the effect-grammar face directly (:66 `parseRequestedEffectSet`)
+  // and reaches the frozen grant algebra only through the reviewed PR2 prefix (:65 grant-mint).
+  'runtime/src/plugin/live/ptc-escalation-row.mjs',
 ])
 
 const SPECIFIER_PATTERNS = [

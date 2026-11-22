@@ -802,14 +802,17 @@ function buildSurface(caseName: string, options: SurfaceOptions = {}, root = joi
 
   const hostEntryFile = join(root, 'packages/runtime/dist/packages/runtime/src/plugin/host.js')
   write(hostEntryFile, 'export const host = 1\n')
-  const glueRel = options.glueRel ?? 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs'
+  // ROUND 72: the fixture mirrors what the host DERIVES today. `place-dist-glue.mjs` places the centre's
+  // bindings (`vnext/agent-bindings.mjs`); the old `live/agent-bindings.mjs` retired with the A0/A1 cut, so
+  // a fixture that still writes/derives the old path fails `derived-urls-resolve` by construction.
+  const glueRel = options.glueRel ?? 'packages/runtime/dist/packages/runtime/src/plugin/vnext/agent-bindings.mjs'
   write(join(root, glueRel), 'export const glue = 1\n')
   const seamRels = options.seamRels ?? ['packages/runtime/root-binding/harness/seam.mjs']
   for (const rel of seamRels) write(join(root, rel), 'export const seam = 1\n')
   for (const rel of options.extraFiles ?? []) write(join(root, rel), 'export const extra = 1\n')
 
   const hostModule = {
-    defaultGlueUrl: (hostModuleUrl: string) => new URL('./live/agent-bindings.mjs', hostModuleUrl).href,
+    defaultGlueUrl: (hostModuleUrl: string) => new URL('./vnext/agent-bindings.mjs', hostModuleUrl).href,
     defaultSeamUrlCandidates: (hostModuleUrl: string) => [
       new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,
       new URL('../../root-binding/harness/seam.mjs', hostModuleUrl).href,
@@ -1073,7 +1076,11 @@ describe('composition-smoke required arm set', () => {
         defaultGlueUrl: hostModule.defaultGlueUrl,
         defaultSeamUrlCandidates: hostModule.defaultSeamUrlCandidates,
       },
-      gluePlacementDist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
+      // ROUND 72 (2026-11-22): the host's `defaultGlueUrl` derives the CENTRE's bindings after the UTE
+      // A0/A1 cut (`./vnext/agent-bindings.mjs`); `./live/agent-bindings.mjs` was retired with the old
+      // governed route, so pinning the placement to it made this leg compare the derived glue against a
+      // mirror that no longer exists. The assertion itself is unchanged: derived == placed mirror.
+      gluePlacementDist: 'packages/runtime/dist/packages/runtime/src/plugin/vnext/agent-bindings.mjs',
     })
     expect(checkSetDifferences(result.checks)).toEqual({ missing: [], unexpected: [] })
   }, 60_000)
@@ -1091,7 +1098,11 @@ describe('composition-smoke against this repository', () => {
         defaultGlueUrl: hostModule.defaultGlueUrl,
         defaultSeamUrlCandidates: hostModule.defaultSeamUrlCandidates,
       },
-      gluePlacementDist: 'packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
+      // ROUND 72 (2026-11-22): the host's `defaultGlueUrl` derives the CENTRE's bindings after the UTE
+      // A0/A1 cut (`./vnext/agent-bindings.mjs`); `./live/agent-bindings.mjs` was retired with the old
+      // governed route, so pinning the placement to it made this leg compare the derived glue against a
+      // mirror that no longer exists. The assertion itself is unchanged: derived == placed mirror.
+      gluePlacementDist: 'packages/runtime/dist/packages/runtime/src/plugin/vnext/agent-bindings.mjs',
     })
     const red = result.checks.filter((check) => !check.ok).map((check) => `${check.id}: ${check.detail}`)
     expect(red).toEqual([])
@@ -1271,7 +1282,7 @@ function gateEntrySource(target: CompositionSmokeTarget, entryCase: GateCase): s
       `  failure.code = ${JSON.stringify(target.expectCode ?? 'NO_PINNED_CODE')}`,
       "  ctx.provide('teamRoot', { ready: Promise.reject(failure) })",
       '}',
-      "export const defaultGlueUrl = (hostModuleUrl) => new URL('./live/agent-bindings.mjs', hostModuleUrl).href",
+      "export const defaultGlueUrl = (hostModuleUrl) => new URL('./vnext/agent-bindings.mjs', hostModuleUrl).href",
       'export const defaultSeamUrlCandidates = (hostModuleUrl) => [',
       "  new URL('../../../../../root-binding/harness/seam.mjs', hostModuleUrl).href,",
       "  new URL('../../root-binding/harness/seam.mjs', hostModuleUrl).href,",

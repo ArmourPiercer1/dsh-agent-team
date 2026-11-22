@@ -163,14 +163,33 @@ describe('P1-07 real OS leg (Landlock launcher)', () => {
   })
 
   it('refuses a network-deny policy when the backend cannot enforce it (no bare process)', async () => {
+    // THE LAW IS "NEVER RUN NAKED", NOT "ALWAYS REFUSE". The runner refuses a `network: deny`
+    // policy exactly when the backend does not PROVE network isolation; on a backend that proves it
+    // (a measured net-namespace identity row) refusing would be wrong, and running is not naked. The
+    // premise is environment-dependent, so the leg reads the probe — the same shape the FS leg above
+    // uses — and asserts the law in whichever world this box is in instead of assuming one. On an
+    // enforcing backend the executed branch is the one that must be pinned: the profile still
+    // DEMANDS the deny, so "it ran" can never be read as "the deny was dropped".
     const provider = createConfinedProcessProvider({ realmId: 'realm-a5sf-os2', trustRoot: 'git:a5sf:os-runner', scratchRoot: world })
+    const probe = await provider.probe()
+    expect(probe.ok).toBe(true)
+    if (!probe.ok) return
+    const levels = new Map(probe.value.map((row) => [row.dimension, row.level]))
     const runner = createTeamConfinedRunner(provider)
+    const denyPolicy = policy(lane([allowed]), lane([allowed]), 'deny')
     const result = await runner.spawn({
-      policy: policy(lane([allowed]), lane([allowed]), 'deny'),
+      policy: denyPolicy,
       realmId: 'realm-a5sf-os2', bindingId: 'b', memberScope: 'm', grantFingerprint: 'sha256:g2',
       argv: ['/bin/true'], cwd: world, env: [],
     })
-    expect(result).toMatchObject({ ok: false, code: 'ENFORCEMENT_UNAVAILABLE' })
+    if (levels.get('network-destination') !== 'enforced') {
+      // No enforcing network backend: the refusal is the whole law, and the only lawful answer.
+      expect(result, 'a network-deny policy must never run when the backend cannot enforce it').toMatchObject({ ok: false, code: 'ENFORCEMENT_UNAVAILABLE' })
+      return
+    }
+    // Enforcing backend: the call may run, but only under a profile that still says `deny`.
+    expect(result, 'an enforcing backend may run the policy, never without carrying the deny').toMatchObject({ ok: true })
+    expect(compileExecutionProfile(denyPolicy), 'the compiled profile the runner spawned under still demands the deny').toMatchObject({ ok: true, value: { networkProfile: 'deny' } })
   })
 
   it('refuses an empty argv and an inexpressible profile before any process', async () => {

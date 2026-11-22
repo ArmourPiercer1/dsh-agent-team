@@ -369,7 +369,7 @@ import { createLiveResidencyOverlay } from '../s6-live-overlay.js'
 import { computeTeamLiveToken } from '../live-token.js'
 import { resolveSessionReadState } from '../team-read-state.js'
 import { createServerPrincipalDerivation } from '../s6-principal.js'
-import { isAbsolute, join } from 'node:path'
+import { isAbsolute } from 'node:path'
 import { createS6RemoteSurfaces, governanceStartRefusal } from '../s6-remote.js'
 // Round 55 (C stage) — the ONE closed refusal table for capabilities with no member I/O axis. The
 // host surfaces that cannot be admitted by the centre (S6 remote, Alpha.6 review routing) are
