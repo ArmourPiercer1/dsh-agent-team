@@ -17,10 +17,11 @@
  *
  * That is a law about the CURRENT product: an ordinary (non-Team) install is never narrowed. It is
  * re-expressed here over the host's own `tools/pre-execute` + `tools.guard` seam, PAIRED with a
- * negative half on the SAME double — the centre, installed for a member whose compiled process lane
- * denies the shell's working directory, stops the spawn. Without the negative half the positive could
- * be true merely because the harness cannot observe a refusal, which is the vacuous control the P1
- * law exists to prevent.
+ * negative half on the SAME double — the centre, installed for a member whose compiled tool-level
+ * EXECUTION authorization DENIES the shell, stops the spawn (round 75: execution authority, never a
+ * working directory; a cwd is not a permission). Without the negative half the positive could be true
+ * merely because the harness cannot observe a refusal, which is the vacuous control the P1 law exists
+ * to prevent.
  */
 import { describe, expect, it } from 'vitest'
 import { nativeRideDouble } from './native-ride-double.mjs'
@@ -36,8 +37,14 @@ const binding = (over: Record<string, unknown> = {}) => ({
   instanceGeneration: 1,
   read: lane(['/work/in']),
   write: lane(['/work/in']),
-  process: lane(['/work/in']),
   workspaceRoot: '/work/in',
+  executors: { 'confined-subprocess': 'ready' },
+  perTool: {
+    bash: {
+      authorization: 'allow',
+      execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+    },
+  },
   definitionSource: '@deepseek-ai/dsh-tool-shell',
   policyGeneration: 'gen-7',
   blueprintRevision: 'rev-2',
@@ -68,16 +75,16 @@ describe('BL-01 preserved — the non-Team native bash rides on, and the centre 
     expect(run.refusal).toBeUndefined()
   })
 
-  it('NEGATIVE CONTROL: the SAME double, with the centre bound to a denying process lane, spawns nothing', async () => {
-    // Same call, same double, ONE difference — the centre is installed and the member's compiled
-    // process lane does not include the working directory. Zero bodies is "the spawn gate never
-    // opened", the BL-01 shape stated at the seam that survives.
+  it('NEGATIVE CONTROL: the SAME double, with the centre bound to a DENYING execution authorization, spawns nothing', async () => {
+    // Same call, same double, ONE difference — the centre is installed and the compiled tool-level
+    // execution authorization for `bash` is `deny`. Zero bodies is "the spawn gate never opened", the
+    // BL-01 shape stated at the seam that survives. The cwd is irrelevant to the decision.
     const double = nativeRideDouble({ names: ['bash', 'grep'] })
-    const centre = await installCentre(double.ctx, binding({ process: lane([], [], ['/work/out']) }))
+    const centre = await installCentre(double.ctx, binding({ perTool: { bash: { authorization: 'deny', execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' } } } }))
     try {
       const run = await double.runCall({ callId: 'ci03-bash-neg', name: 'bash', args: { command: 'true', cwd: '/work/out' } })
-      expect(run.bodies.length, 'a shell the compiled process lane denies never reaches a spawn').toBe(0)
-      expect(String(run.verdict?.reason ?? '')).toMatch(/LANE_DENY/u)
+      expect(run.bodies.length, 'a shell the compiled execution authorization denies never reaches a spawn').toBe(0)
+      expect(String(run.verdict?.reason ?? '')).toMatch(/ADMISSION_EXECUTION_DENIED/u)
       expect(centre.facts.length, 'the refusal was decided by the centre, and recorded').toBe(1)
     } finally {
       centre.dispose()
@@ -86,7 +93,7 @@ describe('BL-01 preserved — the non-Team native bash rides on, and the centre 
 
   it('the positive survives DISPOSAL: a removed point narrows nothing', async () => {
     const double = nativeRideDouble({ names: ['bash', 'grep'] })
-    const centre = await installCentre(double.ctx, binding({ process: lane([], [], ['/work/out']) }))
+    const centre = await installCentre(double.ctx, binding({ perTool: { bash: { authorization: 'deny', execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' } } } }))
     centre.dispose()
     const run = await double.runCall({ callId: 'ci03-bash-after', name: 'bash', args: { command: 'true', cwd: '/work/out' } })
     expect(run.bodies.length, 'a disposed centre narrows nothing').toBe(1)

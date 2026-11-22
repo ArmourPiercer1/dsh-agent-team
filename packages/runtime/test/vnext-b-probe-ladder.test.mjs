@@ -43,19 +43,17 @@
  *
  * WHAT THIS SUITE DOES NOT PROVE (reported, never silently reduced):
  *
- *   bash / run_code POSITIVE controls are BLOCKED, and the block is a CONTRACT gap, not an
- *   environment one. The only declaration source for a process lane in this generation is the v4
- *   member ceiling, whose frozen `io` field set is `{ read, write, network }` — there is no process
- *   axis, so no compiled answer can carry `binding.process`, and the centre refuses `process.exec`
- *   with `ADMISSION_AXIS_UNSUPPORTED` (and the PTC entry `run_code` with its own
- *   `ADMISSION_PTC_UNAVAILABLE`, which also names the escalation row's second authority) by design.
- *   That is the standing
- *   `CONTRACT-CHANGE-REQUEST-process-lane` (`dev/agent-workflow/evidence/ute-a1/`), which names B's
- *   rung-6 positive control as blocked. Fabricating a lane here — or granting one from the write
- *   lane — would be a SECOND decision authority, which is the thing this whole round forbids. The
- *   NEGATIVE control for both rungs IS proven below (refused before the body, zero side effects,
- *   fact + settlement REFUSED/not-started), and the suite prints the block machine-readably in its
- *   own output instead of quietly running five rungs and calling the ladder complete.
+ *   bash / run_code POSITIVE controls stay BLOCKED in THIS world, and round 75 changed WHY. Process
+ *   execution no longer needs (and no longer has) a path lane: a shell is admitted on the v4
+ *   tool-level EXECUTION authorization (`toolBindings[].authorization` + `execution.executionBoundary`)
+ *   carried into the compiled per-tool answer. This world's compiled answer declares NO tool binding
+ *   for `bash`, so the centre refuses `process.exec` with `ADMISSION_EXECUTION_UNAUTHORIZED` (and the
+ *   PTC entry `run_code` with its own `ADMISSION_PTC_UNAVAILABLE`, which names the missing
+ *   worker/nested/escalation/Stop proof). The positive control is no longer contract-blocked; it needs
+ *   a world whose blueprint declares the binding (proven in `vnext-admission.test.mjs` ADM-125+).
+ *   Fabricating that declaration here — or granting it from the write lane — would be a SECOND
+ *   decision authority, which this round forbids. The NEGATIVE control for both rungs IS proven below
+ *   (refused before the body, zero side effects, fact + settlement REFUSED/not-started).
  *
  * HOST REFUSAL follows `tests/world-factory/a5sf-fs-contract.test.mjs`: absent pinned host ⇒ one
  * machine-readable `VNEXT-B-LADDER-HOST-REFUSED` line and EVERY case `t.skip` (never a pass); host
@@ -123,7 +121,7 @@ const LADDER = Object.freeze([
   Object.freeze({ rung: 2, tool: 'write', axis: 'fs.write', refusalCode: 'LANE_DENY' }),
   Object.freeze({ rung: 3, tool: 'grep', axis: 'fs.read', refusalCode: 'LANE_DENY' }),
   Object.freeze({ rung: 4, tool: 'web_fetch', axis: 'net.fetch', refusalCode: 'NETWORK_DENY' }),
-  Object.freeze({ rung: 5, tool: 'bash', axis: 'process.exec', refusalCode: 'ADMISSION_AXIS_UNSUPPORTED' }),
+  Object.freeze({ rung: 5, tool: 'bash', axis: 'process.exec', refusalCode: 'ADMISSION_EXECUTION_UNAUTHORIZED' }),
   // Round 55 (C7): `run_code` is the PTC entry, and PTC's absence is the process lane PLUS the
   // escalation row's second authority — its own code, distinct from a plain shell's.
   Object.freeze({ rung: 6, tool: 'run_code', axis: 'process.exec', refusalCode: 'ADMISSION_PTC_UNAVAILABLE' }),
@@ -131,8 +129,8 @@ const LADDER = Object.freeze([
 
 /** The two rungs whose POSITIVE control the compiled answer cannot carry today (see the header). */
 const POSITIVE_BLOCKED = Object.freeze({
-  bash: 'process-lane-contract-change-request: the v4 member ceiling io field set is {read,write,network}; no compiled answer can carry binding.process',
-  run_code: 'process-lane-contract-change-request: same compiled process lane; run_code is process.exec and shares it',
+  bash: 'execution-authority-not-declared-in-this-world: the compiled answer carries no toolBindings[] entry for bash, so there is no tool-level authorization to admit it (round 75 admission now keys on that declaration, not on a path lane)',
+  run_code: 'ptc-proof-missing: run_code needs its worker, nested tool calls, escalation and Stop all shown to pass the same centre; that proof does not exist this round',
 })
 
 // ---------------------------------------------------------------- host gate (declared, not guessed)
@@ -704,24 +702,24 @@ arm('ADM-67 — WEB_FETCH positive: in-lane fetch is admitted, the transport ser
   positiveLog.push('web_fetch')
 })
 
-arm('ADM-68 — BASH positive: NOT RUN (compiled process lane does not exist) — disclosed, never a pass', (t) => {
+arm('ADM-68 — BASH positive: NOT RUN in this world (no compiled execution authorization) — disclosed, never a pass', (t) => {
   const world = inLane
   const definition = world.definitionOf('bash')
-  assert.notEqual(definition, undefined, 'the host bash module IS mounted: the block is the LANE, not a missing tool')
+  assert.notEqual(definition, undefined, 'the host bash module IS mounted: the block is the missing DECLARATION, not a missing tool')
   // The precise block, asserted so a future process-lane change flips THIS arm loudly instead of
   // leaving a stale skip behind.
-  assert.equal(world.binding.process, undefined, 'no compiled process lane exists to carry this rung')
-  assert.equal(world.answer.members[0].policy.value.process, undefined, 'the compiled member answer must not carry a process axis')
+  assert.equal(world.binding.process, undefined, 'there is no process LANE field at all (round 75)')
+  assert.equal(world.binding.perTool?.bash?.authorization, undefined, 'this world declares no tool-level execution authorization for bash')
   process.stdout.write(`VNEXT-B-LADDER-BLOCKED rung=5 tool=bash control=positive verdict=NOT_RUN reason=${POSITIVE_BLOCKED.bash}\n`)
-  t.skip(`BASH positive control BLOCKED (${POSITIVE_BLOCKED.bash}) — see CONTRACT-CHANGE-REQUEST-process-lane.md; the negative control IS proven (ADM-75)`)
+  t.skip(`BASH positive control NOT RUN (${POSITIVE_BLOCKED.bash}); the positive control on a declared world is ADM-125, the negative IS proven (ADM-75)`)
 })
 
-arm('ADM-69 — RUN_CODE positive: NOT RUN (same compiled process lane) — disclosed, never a pass', (t) => {
+arm('ADM-69 — RUN_CODE positive: NOT RUN (the PTC worker/nested/escalation/Stop proof does not exist) — disclosed, never a pass', (t) => {
   const world = inLane
-  assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry\'s reserved transport IS registered: the block is the LANE')
+  assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry\'s reserved transport IS registered: the block is the missing PTC governance proof')
   assert.equal(world.binding.process, undefined)
   process.stdout.write(`VNEXT-B-LADDER-BLOCKED rung=6 tool=run_code control=positive verdict=NOT_RUN reason=${POSITIVE_BLOCKED.run_code}\n`)
-  t.skip(`RUN_CODE positive control BLOCKED (${POSITIVE_BLOCKED.run_code}) — see CONTRACT-CHANGE-REQUEST-process-lane.md; the negative control IS proven (ADM-76)`)
+  t.skip(`RUN_CODE positive control NOT RUN (${POSITIVE_BLOCKED.run_code}); the negative control IS proven (ADM-76)`)
 })
 
 arm('ADM-70 — ORDER (positive): the durable facts read back in LADDER order', () => {
@@ -808,7 +806,7 @@ arm('ADM-74 — WEB_FETCH negative: denied network axis is refused before the bo
   negativeLog.push('web_fetch')
 })
 
-arm('ADM-75 — BASH negative: with no compiled process lane, a shell is refused before the body with zero side effects', async () => {
+arm('ADM-75 — BASH negative: with no compiled execution authorization, a shell is refused before the body with zero side effects', async () => {
   const world = outOfLane
   const callId = 'ladder-neg-bash'
   const before = { spawn: world.spawnCalls(), confine: world.confineCalls() }
@@ -819,8 +817,8 @@ arm('ADM-75 — BASH negative: with no compiled process lane, a shell is refused
   assert.equal(admission.toolName, 'bash')
   assert.equal(admission.axis, 'process.exec')
   assert.equal(admission.decision, 'deny')
-  assert.equal(admission.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED', 'the refusal must be the MISSING LANE, not a spawn failure')
-  assert.match(String(admission.reason ?? ''), /subprocess lane/u)
+  assert.equal(admission.refusalCode, 'ADMISSION_EXECUTION_UNAUTHORIZED', 'the refusal must be the MISSING EXECUTION AUTHORIZATION, not a spawn failure')
+  assert.match(String(admission.reason ?? ''), /execution authorization/u)
   assert.equal(execution.outcome, 'admission-refusal')
   const settlement = world.settlementOf(callId)
   assert.equal(settlement?.state, 'REFUSED')
@@ -830,7 +828,7 @@ arm('ADM-75 — BASH negative: with no compiled process lane, a shell is refused
   negativeLog.push('bash')
 })
 
-arm('ADM-76 — RUN_CODE negative: the same missing process lane refuses code execution before the body, with zero side effects', async () => {
+arm('ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero side effects, for its own missing proof', async () => {
   const world = outOfLane
   const callId = 'ladder-neg-run-code'
   const before = { spawn: world.spawnCalls(), confine: world.confineCalls() }
@@ -841,7 +839,7 @@ arm('ADM-76 — RUN_CODE negative: the same missing process lane refuses code ex
   assert.equal(admission.toolName, 'run_code')
   assert.equal(admission.axis, 'process.exec')
   assert.equal(admission.decision, 'deny')
-  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (lane + escalation authority)')
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (missing worker/nested/escalation/Stop proof)')
   assert.match(String(admission.reason ?? ''), /second execution authority/u)
   assert.equal(execution.outcome, 'admission-refusal')
   assert.equal(world.settlementOf(callId)?.state, 'REFUSED')
@@ -862,13 +860,14 @@ arm('ADM-77 — ORDER (negative): the durable refusals read back in LADDER order
 
 arm('ADM-78 — the binding is the COMPILED answer, and its absent axes stay absent (no second policy)', () => {
   // The positive binding is exactly what `bindingFromCompiledMember` projects from the realm's own
-  // compiled answer — the suite never authors a lane. Its absent axes are the CCR: no process lane.
-  assert.equal(inLane.binding.process, undefined, 'the binding must not invent a process lane the compiled answer does not carry')
+  // compiled answer — the suite never authors a lane. Its absent axes are this world's declarations.
+  assert.equal(inLane.binding.process, undefined, 'there is no process lane field, and the binding must not invent one')
+  assert.equal(inLane.binding.perTool?.bash?.authorization, undefined, 'nor may it invent execution authority the compiled answer does not carry')
   assert.equal(inLane.binding.network, 'allow', 'the in-lane ceiling allows the network axis, and the binding must say exactly that')
   assert.equal(outOfLane.binding.network, 'deny', 'the out-of-lane ceiling denies the network axis')
   assert.equal(outOfLane.binding.process, undefined)
   assert.deepEqual(inLane.binding.read.allow, [inLane.inside], 'the fs lane must be the compiled lane, by value')
-  assert.equal(inLane.binding.workspaceRoot, inLane.inside, 'the process default locator is the member workspace, never the host cwd')
+  assert.equal(inLane.binding.workspaceRoot, inLane.inside, 'the member workspace is recorded context, never a process permission')
 })
 
 // ---------------------------------------------------------------- registration

@@ -386,6 +386,7 @@ export interface A5sfDerivedRealmInput {
     /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
     readonly availableFaces?: Readonly<{
         readonly web?: boolean;
+        readonly process?: boolean;
     }>;
 }
 /** The lazy provider answer the product row consumes (`compiledFor`). */
@@ -474,9 +475,10 @@ export interface A5sfBoundBlueprintRealmInput {
     readonly instanceGenerations?: Readonly<Record<string, number>>;
     /** Optional subset of blueprint templates; absent = every ceiling but the leader's. */
     readonly templateIds?: readonly string[];
-    /** PD-30 — see {@link A5sfProductRealmParseContext.availableFaces}. */
+    /** PD-30 / process authority — see {@link A5sfProductRealmParseContext.availableFaces}. */
     readonly availableFaces?: Readonly<{
         readonly web?: boolean;
+        readonly process?: boolean;
     }>;
 }
 /**

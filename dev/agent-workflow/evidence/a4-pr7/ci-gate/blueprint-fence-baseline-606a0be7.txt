@@ -167,5 +167,10 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 # vnext-admission.test.mjs moved L4324 -> L4401 because round 74 rewrote ADM-86 (the C-remote arm) earlier
 # in the file. No literal was added or removed and no shipped surface gained a namespace literal; the
 # identity is re-recorded in the open from the gate's own report, not by guessing an offset.
+# 2026-11-22 (UTE A1 cut, Round 75, vnext/a1-cut): the SAME v5 literal moved L4401 -> L4416 because
+# round 75 rewrote ADM-18/24/26/87/114 and the C14b negative arms earlier in the file (the new
+# ADM-125…130 arms are appended at the end and contain no blueprint document). Re-recorded from the
+# gate's own `verify-blueprint-version-clean.mjs` report; no literal added, none resolved, no shipped
+# surface gained a namespace literal.
 OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4401=v5
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4416=v5

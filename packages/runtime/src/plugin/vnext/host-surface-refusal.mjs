@@ -12,15 +12,17 @@
  *    not by a member binding, so there is no lane (and no binding) for the centre to judge;
  *  - Alpha.6 review routing decides WHO may review WHOM from the trusted review facts; it is a
  *    governance decision that precedes any tool call and has no I/O locator;
- *  - a PTC escalation asks the HOST sandbox to widen the process lane, which this contract does not
- *    compile at all (`CONTRACT-CHANGE-REQUEST-process-lane.md`), and the surviving escalation row
- *    mints its own one-shot grants outside the centre.
+ *  - a PTC escalation asks the HOST sandbox to widen the process execution domain, and the surviving
+ *    escalation row mints its own one-shot grants outside the centre; `run_code` also spawns a WORKER
+ *    whose nested tool calls, escalation and Stop are not shown to pass this centre (round 75).
  *
  * ROUND 74 UPDATE (owner ruling `docs/reviews/20261122-1536.txt` §3). For S6 the unit of refusal
  * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
  * entrance, so a centre row now builds it as a governed control plane and refuses only the commands
  * whose actual effect is agent execution (`s6-command-classification.ts`). The `remote` entry below
- * therefore describes the refused SUBSET. Alpha.6 and PTC are unchanged (still surface-level).
+ * therefore describes the refused SUBSET. Alpha.6 and PTC are unchanged (still surface-level; round
+ * 75 re-justified PTC on the missing worker/nested/escalation/Stop proof rather than on a missing
+ * process lane, because process execution authority is now a real declaration).
  *
  * Each therefore ends EXPLICITLY UNAVAILABLE rather than silently absorbed by whichever surface
  * happened to answer first. The refusal is one closed table (so the three codes cannot collapse into
@@ -80,7 +82,7 @@ export const HOST_SURFACE_REFUSALS = Object.freeze({
     code: 'ADMISSION_PTC_UNAVAILABLE',
     axis: 'process.exec',
     subject: 'PTC escalation',
-    missing: 'no process lane is compiled (CONTRACT-CHANGE-REQUEST-process-lane.md) and the surviving escalation row (createPtcEscalationRouter) mints its own one-shot grants outside the centre, so admitting it would be a second execution authority',
+    missing: 'allowing `run_code` requires proving its WORKER process, its NESTED tool calls, its escalation path and its Stop all pass this same centre; none of those four is demonstrated, and the surviving escalation row (createPtcEscalationRouter) mints its own one-shot grants outside the centre, so admitting it would be a second execution authority',
   }),
 })
 

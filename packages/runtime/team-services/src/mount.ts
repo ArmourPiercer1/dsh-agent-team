@@ -72,6 +72,13 @@ export interface A5sfRealmBinding {
   /** The bare tool name this binding narrows (additive, C 2026-11-21; absent on legacy bindings). */
   readonly toolName?: string
   readonly effective: EffectiveIoPolicy
+  /**
+   * The v4 tool-level authorization and execution block, carried through from the SAME declaration
+   * the lanes came from. They are EXECUTION authority (may this tool start a process, on which
+   * executor), never an I/O lane; a process-class admission consults them, the fs/net lanes do not.
+   */
+  readonly authorization?: 'allow' | 'ask' | 'deny'
+  readonly execution?: { readonly implementationOrigin: string; readonly executionBoundary: 'trusted-host' | 'confined-subprocess' | 'delegated-remote' }
   readonly config?: Record<string, unknown>
 }
 

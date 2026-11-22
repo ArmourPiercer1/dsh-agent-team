@@ -1,0 +1,22 @@
+{
+  "at": "2026-11-22T03:40:57.323Z",
+  "teardown": {
+    "host": {
+      "wasRunning": true,
+      "pid": 522,
+      "killed": true,
+      "portFree": true
+    },
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z",
+    "releasedPorts": [
+      3193,
+      3498,
+      3193
+    ],
+    "killedPids": [
+      522
+    ],
+    "notes": []
+  },
+  "hostTreePorcelain": []
+}

@@ -118,22 +118,26 @@ test('ADM-17 — the NETWORK axis is its own: unset is not allow, and allow is n
   assert.equal(facts.locator, 'https://example.invalid/x')
 })
 
-test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable when no process lane is compiled', () => {
+test('ADM-18 — the SUBPROCESS family is EXPLICITLY unavailable when no tool-level EXECUTION authorization is compiled', () => {
+  // ROUND 75 (owner ruling, review 20261122-1536 §1): a process tool is no longer judged on a
+  // process LANE (there is none and there must not be). It is judged on the v4 tool-level EXECUTION
+  // authorization. This binding declares none, so absence is not permission and the call is refused
+  // with the execution-specific code — not admitted, and not silently re-read as an fs lane.
   for (const toolName of ['bash', 'pwsh']) {
     const decision = call(toolName, { command: 'ls' })
-    assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no subprocess lane exists`)
-    assert.equal(decision.code, 'ADMISSION_AXIS_UNSUPPORTED')
+    assert.equal(decision.kind, 'deny', `${toolName} must not be admitted while no execution authorization exists`)
+    assert.equal(decision.code, 'ADMISSION_EXECUTION_UNAUTHORIZED')
   }
   // C7 (round 55): `run_code` is the PTC entry and PTC is a DIFFERENT absence from "a shell with no
-  // lane" — the escalation row would be a second execution authority even if a process lane existed.
-  // It therefore carries its own code; collapsing the two made both unreviewable.
+  // execution authorization" — the escalation row would be a second execution authority even if the
+  // tool were authorized. It therefore carries its own code; collapsing the two made both unreviewable.
   const ptc = call('run_code', { command: 'ls' })
   assert.equal(ptc.kind, 'deny')
   assert.equal(ptc.code, 'ADMISSION_PTC_UNAVAILABLE')
   assert.notEqual(ptc.code, call('bash', { command: 'ls' }).code, 'the two absences must stay distinguishable')
   const facts = invocationFactsOf({ binding: binding(), toolName: 'bash', callId: 'c-18', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }) })
-  assert.equal(facts.axis, 'process.exec', 'the record must say which axis was unavailable')
-  assert.equal(facts.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
+  assert.equal(facts.axis, 'process.exec', 'the record must say which axis the absence belongs to')
+  assert.equal(facts.refusalCode, 'ADMISSION_EXECUTION_UNAUTHORIZED')
 })
 
 test('ADM-5 — UNWIRED: a call with no locator cannot be judged, so it is refused', () => {
@@ -416,17 +420,27 @@ test('ADM-23 — a process that dies mid-call recovers as UNKNOWN, never as succ
   assert.equal(mine.missingEvidence.length > 0, true, 'the record must say WHAT was not observed, not just that it was not')
 })
 
-test('ADM-24 — WITH a compiled process lane, the shell is judged on its working directory', () => {
-  const withLane = binding({ process: lane(['/work/a']) })
-  assert.equal(call('bash', { command: 'ls' }, withLane).kind, 'allow', 'the workspace root is inside the process lane')
-  const outside = call('bash', { command: 'ls' }, binding({ process: lane(['/work/a']), workspaceRoot: '/work/b' }))
-  assert.equal(outside.kind, 'deny')
-  assert.equal(outside.code, 'LANE_DENY')
-  const facts = invocationFactsOf({ binding: withLane, toolName: 'bash', callId: 'c-24', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }, withLane) })
+test('ADM-24 — a compiled EXECUTION authorization admits the shell, and the working directory never decides', () => {
+  // ROUND 75: the old arm asserted the shell was judged on its cwd against `Binding.process`. That
+  // was the axis confusion the owner struck down: a cwd does not bound what a shell can open. The
+  // SAME authorization now admits the shell from ANY cwd, and the record still names the cwd as
+  // context — never as the permission.
+  const authorized = binding({
+    workspaceRoot: '/work/a',
+    executors: { 'confined-subprocess': 'ready' },
+    perTool: { bash: { authorization: 'allow', execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' } } },
+  })
+  assert.equal(call('bash', { command: 'ls' }, authorized).kind, 'allow')
+  const elsewhere = { ...authorized, workspaceRoot: '/somewhere/else' }
+  assert.equal(call('bash', { command: 'ls' }, elsewhere).kind, 'allow', 'the cwd is not a permission: moving it changes nothing')
+  const facts = invocationFactsOf({ binding: authorized, toolName: 'bash', callId: 'c-24', arguments: { command: 'ls' }, admission: call('bash', { command: 'ls' }, authorized) })
   assert.equal(facts.axis, 'process.exec')
-  assert.equal(facts.locator, '/work/a', 'the judged locator is the shell directory, and the record says which one')
-  // A process lane does not leak into the fs axes, and vice versa.
-  assert.equal(call('read', { file_path: '/work/b/x' }, withLane).kind, 'deny', 'a process lane is not a read permission')
+  assert.equal(facts.locator, '/work/a', 'the cwd is recorded as context, and the record still names it')
+  // Execution authority is not a path lane: it does not widen any fs axis, and vice versa.
+  assert.equal(call('read', { file_path: '/work/b/x' }, authorized).kind, 'deny', 'a process authorization is not a read permission')
+  // A read/write lane never becomes process authority either.
+  const wideFs = binding({ read: { mode: 'all', allow: [], ask: [], deny: [] }, write: { mode: 'all', allow: [], ask: [], deny: [] } })
+  assert.equal(call('bash', { command: 'ls' }, wideFs).code, 'ADMISSION_EXECUTION_UNAUTHORIZED', 'an open fs lane must not stand in for execution authority')
 })
 
 test('ADM-25 — the centre\'s own tools are admitted on authority, not on a file lane', () => {
@@ -467,7 +481,8 @@ test('ADM-26 — a compiled member maps onto a binding by reference, never by re
   assert.equal(b.instanceGeneration, 7)
   assert.equal(b.policyGeneration, 'rev-1')
   assert.equal(b.blueprintRevision, 'bp-1')
-  assert.equal(b.process, undefined, 'no subprocess lane compiled => process.exec stays unsupported')
+  assert.equal(b.process, undefined, 'round 75: there is no process LANE field at all; execution authority rides perTool')
+  assert.equal(b.perTool, undefined, 'and with no compiled tool binding, a process tool has no execution authority to admit it')
   // Per-tool compiled answers are carried THROUGH by tool name, by reference, so admission can pick
   // the tool's own intersection instead of the ceiling.
   const toolEffective = { memberIdentity: 'member-1', toolBindingIdentity: 'dsh.fs/read', invocationId: 'i', policyRevision: 'rev-1', read: lane(['/work/a/docs']), write: lane(['/work/a']), network: { access: 'deny' } }
@@ -3196,8 +3211,8 @@ test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is 
   assert.equal(fact.decision, 'deny')
   assert.equal(fact.refusalCode, 'ADMISSION_PTC_UNAVAILABLE')
   assert.equal(fact.axis, 'process.exec')
-  assert.match(String(fact.reason), /process lane/u)
-  assert.match(String(fact.reason), /second execution authority/u, 'the reason names the escalation row, not just the lane')
+  assert.match(String(fact.reason), /PTC entry/u)
+  assert.match(String(fact.reason), /second execution authority/u, 'the reason names the escalation row, not just the missing lane')
 
   // SETTLEMENT: REFUSED, not-started, never UNKNOWN (the body provably never ran).
   const settled = world.store.read(world.executionIdOf(exec))
@@ -3205,12 +3220,12 @@ test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is 
   assert.equal(settled.observation.dispatch, 'not-started')
   assert.equal(settled.observation.bodyOutcome, 'not-started')
 
-  // DISTINCT: a plain shell keeps the generic process-axis code, so a reader can tell the two
-  // absences apart from the durable record alone.
+  // DISTINCT: a plain shell with no compiled execution authorization keeps the EXECUTION code, so a
+  // reader can tell the two absences apart from the durable record alone.
   const shell = { name: 'bash', callId: 'ptc-bash-1', arguments: { command: 'ls' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
   const shellVerdict = await world.dispatch(shell)
   assert.equal(shellVerdict.kind, 'deny')
-  assert.match(String(shellVerdict.reason), /ADMISSION_AXIS_UNSUPPORTED/u)
+  assert.match(String(shellVerdict.reason), /ADMISSION_EXECUTION_UNAUTHORIZED/u)
   assert.doesNotMatch(String(shellVerdict.reason), /ADMISSION_PTC_UNAVAILABLE/u, 'the two absences stay distinguishable in the refusal itself')
   assert.equal(world.body.count, 1)
   world.dispose()
@@ -5701,17 +5716,18 @@ test('ADM-114 — C14b PROCESS: with the process family body gone, an unjudgeabl
     assert.equal((await w.dispatch(read)).kind, 'allow')
     assert.equal(w.body.count, 1)
 
-    // (2) NEGATIVE CONTROL: `bash` has no compiled process lane, so it is refused at the ONE centre
-    //     with its own code, on its own axis, before any body — the invariant "no unconfined shell"
-    //     survives as a typed refusal, not as an unjudged execution.
+    // (2) NEGATIVE CONTROL: `bash` has no compiled tool-level EXECUTION authorization in this
+    //     binding, so it is refused at the ONE centre with its own code, on its own axis, before any
+    //     body — the invariant "no unconfined shell" survives as a typed refusal (round 75: the
+    //     absence is execution authority, not a path lane), not as an unjudged execution.
     const bash = { name: 'bash', callId: 'c14b-process-bash', arguments: { command: 'cat /etc/passwd' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
     const verdict = await w.preExecute(bash)
     assert.equal(verdict.kind, 'deny')
-    assert.match(String(verdict.reason), /ADMISSION_AXIS_UNSUPPORTED/u)
+    assert.match(String(verdict.reason), /ADMISSION_EXECUTION_UNAUTHORIZED/u)
     w.result(bash, { isError: true, error: { message: String(verdict.reason) } })
     const fact = w.admissionFact('c14b-process-bash')
     assert.equal(fact.axis, 'process.exec')
-    assert.equal(fact.refusalCode, 'ADMISSION_AXIS_UNSUPPORTED')
+    assert.equal(fact.refusalCode, 'ADMISSION_EXECUTION_UNAUTHORIZED')
     const record = w.store.read(w.executionIdOf(bash))
     assert.equal(record.state, 'REFUSED')
     assert.equal(record.observation.dispatch, 'not-started')
@@ -6251,4 +6267,250 @@ test('ADM-124 — SETTLEMENT OPTION A (fail-closed): when the deny-decision writ
   } finally {
     world.world.close()
   }
+})
+
+// ============================================================================
+// ROUND 75 — PROCESS EXECUTION AUTHORITY IS NOT PATH AUTHORITY
+// (owner ruling, review 20261122-1536 §1)
+//
+// What these arms pin, in the order the ruling names it:
+//   ADM-125  allow  ⇒ the process tool runs AND the call is recorded (fact + settlement)
+//   ADM-126  deny   ⇒ refused before the body, with its own code
+//   ADM-127  ask    ⇒ a durable Control decision, then the body under a one-shot grant
+//   ADM-128  a declared boundary with no ready executor ⇒ typed refusal, no body
+//   ADM-129  grep runs on its fs.read lane with NO process authority anywhere
+//   ADM-130  a process's file reach is the OS profile's, not a path lane (in-process half)
+//
+// The process authority is the v4 declaration the compiled answer already carries
+// (`toolBindings[].authorization` + `execution.executionBoundary`). These arms never author a lane
+// and never pass a cwd as a permission.
+// ============================================================================
+
+/** A compiled per-tool entry: exactly what `projectToolIoRestriction` now carries. */
+const processTool = (authorization, boundary = 'confined-subprocess') => ({
+  authorization,
+  execution: { implementationOrigin: 'dsh-native', executionBoundary: boundary },
+})
+
+/** A binding whose `bash` tool has a compiled execution authorization and a ready executor. */
+const processBinding = (authorization, over = {}) => binding({
+  instanceId: 'member-1',
+  templateId: 'worker',
+  executors: { 'confined-subprocess': 'ready' },
+  perTool: { bash: processTool(authorization) },
+  ...over,
+})
+
+const bashExec = (callId, command = 'echo round-75') => ({
+  name: 'bash',
+  callId,
+  arguments: { command },
+  agent: { id: 'agent-1' },
+  turn: 1,
+  step: 1,
+})
+
+test('ADM-125 — a process tool ALLOWED by its tool-level authorization runs, and the call is recorded', async () => {
+  const world = await centreWorld('round75-allow', { binding: processBinding('allow') })
+  try {
+    const exec = bashExec('r75-allow-1')
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'allow', 'the compiled tool-level authorization is what admits the shell')
+    assert.equal(world.body.count, 1, 'the admitted body really ran')
+    const fact = world.admissionFact('r75-allow-1')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.axis, 'process.exec')
+    assert.equal(fact.refusalCode, undefined)
+    assert.equal(fact.policyGeneration, 'gen-7', 'the fact names the policy generation the authorization came from')
+    const record = world.store.read(world.executionIdOf(exec))
+    assert.equal(record.state, 'COMPLETED', 'the settlement follows the run, not a refusal')
+    // The cwd is recorded as CONTEXT and was never an input: moving it changes nothing.
+    assert.equal(fact.locator, '/work/a', 'the fact still names the working directory it observed')
+    world.setBinding(processBinding('allow', { workspaceRoot: '/elsewhere/entirely' }))
+    assert.equal((await world.dispatch(bashExec('r75-allow-2'))).kind, 'allow', 'a different cwd is the same authority')
+  } finally {
+    world.close()
+  }
+})
+
+test('ADM-126 — a tool-level DENY refuses the shell before the body, with its own code', async () => {
+  const world = await centreWorld('round75-deny', { binding: processBinding('deny') })
+  try {
+    const exec = bashExec('r75-deny-1')
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_EXECUTION_DENIED/u)
+    assert.equal(world.body.count, 0, 'deny is decided before the body')
+    const fact = world.admissionFact('r75-deny-1')
+    assert.equal(fact.decision, 'deny')
+    assert.equal(fact.refusalCode, 'ADMISSION_EXECUTION_DENIED')
+    assert.equal(fact.axis, 'process.exec')
+    const record = world.store.read(world.executionIdOf(exec))
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    // A DENY does not need an executor fact: it wins even when the executor is ready, and it wins
+    // when it is not (a reviewer is never asked to approve what the declaration forbids).
+    const noExecutor = binding({
+      instanceId: 'member-1',
+      templateId: 'worker',
+      executors: { 'confined-subprocess': 'unavailable' },
+      perTool: { bash: processTool('deny') },
+    })
+    const deniedAnyway = admit({ binding: noExecutor, toolName: 'bash', arguments: { command: 'ls' } })
+    assert.equal(deniedAnyway.code, 'ADMISSION_EXECUTION_DENIED', 'deny outranks the executor check')
+  } finally {
+    world.close()
+  }
+})
+
+test('ADM-127 — an ASK goes to the durable Control plane, and only the approval admits the shell', async () => {
+  const approvals = approvalsAnswer({ ok: true, approval: { approvalId: 'r75-approval', policyRevision: 'gen-7' } })
+  const world = await centreWorld('round75-ask', {
+    binding: processBinding('ask'),
+    grants: {
+      binder: createInvocationBinder(),
+      memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+    },
+    approvals: approvals.port,
+  })
+  try {
+    const exec = bashExec('r75-ask-1')
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'allow', 'the approval lands, the grant is spent, the call runs')
+    assert.equal(approvals.asked.length, 1, 'exactly one durable approval request')
+    assert.equal(approvals.asked[0].toolName, 'bash', 'the reviewer is asked about THIS tool')
+    assert.match(String(approvals.asked[0].laneReason ?? ''), /executionBoundary/u, 'the request names the declared execution boundary')
+    assert.equal(world.body.count, 1)
+    const fact = world.admissionFact('r75-ask-1')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.laneDecision, 'ask', 'the record keeps the lane answer the centre overruled by approval')
+    assert.equal(world.store.read(world.executionIdOf(exec)).state, 'COMPLETED')
+
+    // NEGATIVE HALF: a DENIED Control decision refuses before the body. Without this the arm could
+    // pass on an approval port that says yes to everything.
+    const deniedApprovals = approvalsAnswer({ ok: false, code: 'ADMISSION_APPROVAL_DENIED', reason: 'the operator said no' })
+    const deniedWorld = await centreWorld('round75-ask-denied', {
+      binding: processBinding('ask'),
+      grants: {
+        binder: createInvocationBinder(),
+        memberOf: (b) => ({ teamId: b.owner, memberInstanceId: b.instanceId, templateId: b.templateId, instanceGeneration: b.instanceGeneration }),
+      },
+      approvals: deniedApprovals.port,
+    })
+    try {
+      const deniedExec = bashExec('r75-ask-2')
+      const deniedVerdict = await deniedWorld.dispatch(deniedExec)
+      assert.equal(deniedVerdict.kind, 'deny')
+      assert.match(String(deniedVerdict.reason), /ADMISSION_APPROVAL_DENIED/u)
+      assert.equal(deniedWorld.body.count, 0, 'a denied approval never reaches the body')
+      assert.equal(deniedWorld.store.read(deniedWorld.executionIdOf(deniedExec)).state, 'REFUSED')
+    } finally {
+      deniedWorld.close()
+    }
+  } finally {
+    world.close()
+  }
+})
+
+test('ADM-128 — a declared boundary with NO ready executor is a typed refusal, never a narrow run', () => {
+  // (1) No readiness fact at all: UNKNOWN is not ready.
+  const unknown = binding({
+    instanceId: 'member-1',
+    templateId: 'worker',
+    perTool: { bash: processTool('allow') },
+  })
+  const unknownDecision = admit({ binding: unknown, toolName: 'bash', arguments: { command: 'ls' } })
+  assert.equal(unknownDecision.kind, 'deny')
+  assert.equal(unknownDecision.code, 'ADMISSION_EXECUTOR_UNAVAILABLE')
+  assert.match(String(unknownDecision.reason), /UNKNOWN/u)
+
+  // (2) The composition says the confined executor is unavailable (no OS sandbox face).
+  const unavailable = binding({
+    instanceId: 'member-1',
+    templateId: 'worker',
+    executors: { 'confined-subprocess': 'unavailable' },
+    perTool: { bash: processTool('allow') },
+  })
+  const unavailableDecision = admit({ binding: unavailable, toolName: 'bash', arguments: { command: 'ls' } })
+  assert.equal(unavailableDecision.kind, 'deny')
+  assert.equal(unavailableDecision.code, 'ADMISSION_EXECUTOR_UNAVAILABLE')
+  assert.match(String(unavailableDecision.reason), /UNAVAILABLE/u)
+
+  // (3) The SAME authorization against the boundary it declared READY is admitted: the refusal is
+  //     about the executor, not about the tool. A `trusted-host` declaration is not satisfied by a
+  //     ready `confined-subprocess` entry and vice versa.
+  const mismatch = binding({
+    instanceId: 'member-1',
+    templateId: 'worker',
+    executors: { 'confined-subprocess': 'ready' },
+    perTool: { bash: processTool('allow', 'delegated-remote') },
+  })
+  assert.equal(admit({ binding: mismatch, toolName: 'bash', arguments: { command: 'ls' } }).code, 'ADMISSION_EXECUTOR_UNAVAILABLE', 'a different boundary is a different executor')
+  const trusted = binding({
+    instanceId: 'member-1',
+    templateId: 'worker',
+    executors: { 'trusted-host': 'ready' },
+    perTool: { bash: processTool('allow', 'trusted-host') },
+  })
+  assert.equal(admit({ binding: trusted, toolName: 'bash', arguments: { command: 'ls' } }).kind, 'allow')
+
+  // (4) A declaration whose authorization is absent is NOT an executor problem and never becomes
+  //     one: absence of execution authority keeps its own code.
+  assert.equal(admit({ binding: binding(), toolName: 'bash', arguments: { command: 'ls' } }).code, 'ADMISSION_EXECUTION_UNAUTHORIZED')
+})
+
+test('ADM-129 — grep runs on its fs.read lane and needs NO process authority', async () => {
+  // A binding whose `bash` is explicitly DENIED (and has no executor), so any implementation that
+  // routed grep through process authority would refuse the search. grep must still be admitted.
+  const world = await centreWorld('round75-grep', { binding: processBinding('deny') })
+  try {
+    const exec = {
+      name: 'grep',
+      callId: 'r75-grep-1',
+      arguments: { pattern: 'needle', path: '/work/a' },
+      agent: { id: 'agent-1' },
+      turn: 1,
+      step: 1,
+    }
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'allow', 'grep is a search tool on the read lane; bash authority is irrelevant to it')
+    assert.equal(world.body.count, 1)
+    const fact = world.admissionFact('r75-grep-1')
+    assert.equal(fact.axis, 'fs.read', 'the record says which lane actually judged it')
+    // The process tool is still refused on the SAME binding: the two decisions are independent.
+    assert.equal(admit({ binding: processBinding('deny'), toolName: 'bash', arguments: { command: 'ls' } }).code, 'ADMISSION_EXECUTION_DENIED')
+    // And an out-of-lane search is still a lane denial, not a process refusal.
+    const outOfLane = { ...exec, callId: 'r75-grep-2', arguments: { pattern: 'needle', path: '/elsewhere' } }
+    const outVerdict = await world.dispatch(outOfLane)
+    assert.equal(outVerdict.kind, 'deny')
+    assert.equal(world.admissionFact('r75-grep-2').refusalCode, 'LANE_DENY', 'the read lane decides, and it is not a process code')
+  } finally {
+    world.close()
+  }
+})
+
+test('ADM-130 — a process\'s file reach is bounded by the OS profile and the three lanes, never by a path lane', async () => {
+  const { compileExecutionProfile } = await import('../team-sandbox/src/profile.ts')
+  const effective = {
+    read: lane(['/work/a']),
+    write: lane(['/work/a/out']),
+    network: { access: 'deny' },
+  }
+  const compiled = compileExecutionProfile(effective)
+  assert.equal(compiled.ok, true, `the effective lanes must compile to an OS profile: ${JSON.stringify(compiled)}`)
+  const readPaths = compiled.value.readPaths
+  assert.deepEqual(readPaths, ['/work/a'], 'the OS read reach is the effective READ lane')
+  assert.deepEqual(compiled.value.writeOnlyPaths, ['/work/a/out'], 'the OS write-only reach is the effective WRITE lane')
+  assert.equal(compiled.value.networkProfile, 'deny', 'the network reach is the compiled network axis')
+  assert.equal(readPaths.includes('/etc/passwd'), false, 'an outside path is not in the profile by construction')
+  assert.equal(readPaths.includes('/work/a/out'), false, 'and the write-only subtree is not a read root')
+  // The profile refuses to express a lane it cannot honour, rather than widening it.
+  const askLane = compileExecutionProfile({ read: lane(['/work/a'], ['/work/a/secret']), write: lane(['/work/a']), network: { access: 'deny' } })
+  assert.equal(askLane.ok, false)
+  assert.equal(askLane.code, 'PATH_LANE_UNSUPPORTED', 'an ask is an approval, never an OS grant')
+
+  // WHAT THIS ARM CANNOT PROVE (stated, not implied): it does NOT run a child under Landlock, so it
+  // proves the PROFILE the executor applies, not the kernel's answer to it. Kernel enforcement is
+  // measured by the OS arms (`dev/agent-workflow/evidence/a5sf-bl16-grep/`, `a5sf-p1-07/OS-RUNNER-
+  // EVIDENCE.md`) and by the live boot; this arm would be dishonest if it claimed otherwise.
 })

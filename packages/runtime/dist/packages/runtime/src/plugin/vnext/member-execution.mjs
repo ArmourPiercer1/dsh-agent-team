@@ -23,7 +23,7 @@
  */
 
 import { join } from 'node:path'
-import { bindingFromCompiledMember, installMemberCentre } from './centre-install.mjs'
+import { bindingFromCompiledMember, executorReadinessOf, installMemberCentre } from './centre-install.mjs'
 import { openFactLedger } from './fact-ledger.mjs'
 import { hostNativeSpecs, mountHostModules } from './realm-lane.mjs'
 import { createExecutionSettlementStore } from '../../../settlement/execution-settlement.js'
@@ -115,6 +115,11 @@ export async function installMemberExecution ({
     const buildBinding = (answer) => bindingFromCompiledMember({
       member: answer.members?.[0],
       ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),
+      // THE EXECUTOR READINESS the compiled answer itself answers: a process-class tool declared on
+      // `confined-subprocess` is admitted only while this realm still carries the confined face.
+      // Rebuilt on every recheck, so a face that disappeared between the approval and the body is a
+      // typed `ADMISSION_EXECUTOR_UNAVAILABLE`, not a stale allow.
+      executors: executorReadinessOf(answer),
       // The MEMBER, not the session. `agentId` used to be the session id, which put the host's identity
       // where the record's member identity belongs; they are now separate fields.
       agentId: String(instanceId),

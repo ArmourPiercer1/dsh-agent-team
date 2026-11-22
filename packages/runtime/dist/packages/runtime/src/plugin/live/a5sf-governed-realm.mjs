@@ -377,7 +377,15 @@ export function createGovernedRealmProvider(options = {}) {
         // realm DOES install one, so it says so — the refusal's premise is what
         // changes, not the refusal's rule. Without a transport the previous
         // behaviour is byte-identical (a narrowed lane is still refused).
-        ...(liveTransport === undefined ? {} : { availableFaces: Object.freeze({ web: true }) }),
+        //
+        // PROCESS AUTHORITY (round 75): this realm ALWAYS installs the confined
+        // subprocess face and the governed PTY terminal face, so a Team-scoped
+        // `toolBindings[]` entry declaring `executionBoundary: confined-subprocess`
+        // has a ready executor here. The premise of the assembly's
+        // `SUBPROCESS_UNCONFINED_REALM` refusal is a FACT about the composition,
+        // and this composition's fact is `process: true`; the rule itself does not
+        // change. Without the face the previous behaviour is byte-identical.
+        availableFaces: Object.freeze({ ...(liveTransport === undefined ? {} : { web: true }), process: true }),
       })
       const compiled = createProductRealmProvider(plan).compiledFor(member)
       if (compiled === undefined) return undefined

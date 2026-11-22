@@ -258,6 +258,19 @@ export function projectToolIoRestriction(
   if (owner === '' || name === '') {
     return refuse('IO_POLICY_UNSUPPORTED', 'a projected tool binding must carry its authoring owner and tool name', 'toolBindings')
   }
+  // EXECUTION AUTHORITY, CARRIED NOT RE-DERIVED (owner ruling, review 20261122-1536 §1). The v4
+  // projection already produced these two fields; dropping them here was the reason no compiled
+  // answer could authorize a process. They describe WHETHER this tool may start a process and WHICH
+  // executor it runs on — never what it may read/write/reach (that stays the three lanes).
+  const authorization = value['authorization']
+  const executionValue = value['execution'] as Readonly<Record<string, unknown>> | undefined
+  const boundary = executionValue?.['executionBoundary']
+  const execution = boundary === 'trusted-host' || boundary === 'confined-subprocess' || boundary === 'delegated-remote'
+    ? Object.freeze({
+        implementationOrigin: String(executionValue?.['implementationOrigin'] ?? ''),
+        executionBoundary: boundary,
+      })
+    : undefined
   return {
     ok: true,
     value: Object.freeze({
@@ -266,6 +279,8 @@ export function projectToolIoRestriction(
       read: laneValue('read'),
       write: laneValue('write'),
       network: networkMode === 'allow' || networkMode === 'deny' ? networkMode : 'unsupported',
+      ...(authorization === 'allow' || authorization === 'ask' || authorization === 'deny' ? { authorization } : {}),
+      ...(execution === undefined ? {} : { execution }),
     }),
   }
 }

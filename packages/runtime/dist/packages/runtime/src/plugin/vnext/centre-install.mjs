@@ -41,7 +41,7 @@ function requireGeneration (identity, policy, member) {
   return generation
 }
 
-export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner, instanceId }) {
+export function bindingFromCompiledMember ({ member, bindings, agentId, sessionId, workspaceRoot, owner, instanceId, executors }) {
   if (member === undefined || member === null) throw new TypeError('centre-install: a member binding needs the compiled member')
   const policy = member.policy?.value ?? member.policy
   if (policy === undefined || policy === null || typeof policy !== 'object') {
@@ -65,6 +65,10 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
       read: effective.read,
       write: effective.write,
       ...(effective.network === undefined || effective.network === null ? {} : { network: effective.network.access }),
+      // EXECUTION authority, passed through from the SAME compiled binding. Absent is absent: the
+      // admission point refuses a process-class call with no compiled authorization, never allow.
+      ...(binding.authorization === undefined ? {} : { authorization: binding.authorization }),
+      ...(binding.execution === undefined ? {} : { execution: binding.execution }),
     })
   }
   return Object.freeze({
@@ -79,6 +83,10 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
     ...(policy.network === undefined ? {} : { network: policy.network.access }),
     workspaceRoot,
     ...(Object.keys(perTool).length === 0 ? {} : { perTool: Object.freeze(perTool) }),
+    // Which declared executors this composition reports READY. The caller computes it from the
+    // compiled answer's OWN faces (`executorReadinessOf`) or omits it: an omitted entry is UNKNOWN,
+    // and unknown is never ready.
+    ...(executors === undefined ? {} : { executors: Object.freeze({ ...executors }) }),
     // NOT a hardcoded package name: the compiled member names where its definitions came from when it
     // knows, and '' means "no single source" (the tools come from several modules) rather than a guess.
     definitionSource: typeof member.definitionSource === 'string' ? member.definitionSource : '',
@@ -94,6 +102,30 @@ export function bindingFromCompiledMember ({ member, bindings, agentId, sessionI
     policyGeneration: policy.revision ?? '',
     blueprintRevision: identity.blueprintRevision ?? '',
     owner: owner ?? '',
+  })
+}
+
+/**
+ * Derive the executor readiness facts from the compiled answer's OWN faces.
+ *
+ * This asks no declaration and grants nothing: it answers "can this composition actually place a
+ * process in the executor a tool declaration names?" from the faces it mounted.
+ *  - `confined-subprocess` is ready iff the answer carries a confined `subprocess` face with a
+ *    `spawnStreaming` provider (the OS sandbox is the provider). No face = UNAVAILABLE.
+ *  - `trusted-host` is the host process itself: there is no executor to mount, so it is ready by
+ *    construction. A composition that must not host a process simply does not declare that boundary.
+ *  - `delegated-remote` needs a remote executor; this product mounts none, so it is UNAVAILABLE —
+ *    a declaration is refused rather than silently run locally.
+ *
+ * @param {object|undefined} answer - the compiled answer (`{ members, bindings?, subprocess?, ... }`).
+ * @returns {{ 'trusted-host': 'ready'|'unavailable', 'confined-subprocess': 'ready'|'unavailable', 'delegated-remote': 'ready'|'unavailable' }}
+ */
+export function executorReadinessOf (answer) {
+  const provider = answer?.subprocess?.provider
+  return Object.freeze({
+    'trusted-host': 'ready',
+    'confined-subprocess': typeof provider?.spawnStreaming === 'function' ? 'ready' : 'unavailable',
+    'delegated-remote': 'unavailable',
   })
 }
 

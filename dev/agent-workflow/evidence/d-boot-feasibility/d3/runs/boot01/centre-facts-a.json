@@ -7,15 +7,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T03:40:47.468Z"
+    "at": "2026-11-22T09:25:59.026Z"
   },
   {
     "callId": "call-d3-a-inlane",
@@ -24,9 +24,9 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "kind": "execution",
-    "at": "2026-11-22T03:40:47.491Z"
+    "at": "2026-11-22T09:25:59.049Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -36,16 +36,16 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "deny",
-    "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "reason": "tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused",
+    "refusalCode": "ADMISSION_EXECUTION_UNAUTHORIZED",
+    "reason": "tool \"bash\" has no compiled tool-level execution authorization (toolBindings[].authorization + execution.executionBoundary); a process the declaration does not authorize is refused",
     "kind": "invocation-authority",
-    "at": "2026-11-22T03:40:47.528Z"
+    "at": "2026-11-22T09:25:59.088Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -54,10 +54,10 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "admission-refusal",
     "isError": true,
-    "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "refusalCode": "ADMISSION_EXECUTION_UNAUTHORIZED",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "kind": "execution",
-    "at": "2026-11-22T03:40:47.537Z"
+    "at": "2026-11-22T09:25:59.097Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -67,16 +67,16 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "deny",
-    "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "reason": "tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused",
+    "refusalCode": "ADMISSION_EXECUTION_UNAUTHORIZED",
+    "reason": "tool \"bash\" has no compiled tool-level execution authorization (toolBindings[].authorization + execution.executionBoundary); a process the declaration does not authorize is refused",
     "kind": "invocation-authority",
-    "at": "2026-11-22T03:40:48.241Z"
+    "at": "2026-11-22T09:26:00.058Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -85,10 +85,10 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "admission-refusal",
     "isError": true,
-    "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "refusalCode": "ADMISSION_EXECUTION_UNAUTHORIZED",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "kind": "execution",
-    "at": "2026-11-22T03:40:48.251Z"
+    "at": "2026-11-22T09:26:00.068Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -98,15 +98,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T03:40:54.780Z"
+    "at": "2026-11-22T09:26:06.649Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -115,8 +115,8 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
+    "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
     "kind": "execution",
-    "at": "2026-11-22T03:40:54.798Z"
+    "at": "2026-11-22T09:26:06.669Z"
   }
 ]

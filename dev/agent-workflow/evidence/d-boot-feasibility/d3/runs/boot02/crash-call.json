@@ -1,31 +1,31 @@
 {
-  "at": "2026-11-22T03:44:47.903Z",
+  "at": "2026-11-22T09:30:22.309Z",
   "bOpenCall": null,
   "bGrepCall": {
     "callId": "call-d3-b-grep-probe",
     "name": "grep",
     "arguments": {
       "pattern": "DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046",
-      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-42-46Z/workspace/team-b/corpus"
+      "path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-28-08Z/workspace/team-b/corpus"
     },
     "result": {
       "callId": "call-d3-b-grep-probe",
       "isError": false,
       "text": "Found 1 match\n\nteam-b/corpus/huge-7.txt\nLine 65537: DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046",
-      "at": 1795319084615
+      "at": 1795339819013
     }
   },
   "bReadCall": {
     "callId": "call-d3-b-inlane",
     "name": "read",
     "arguments": {
-      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-42-46Z/workspace/team-b/in-lane-b.txt"
+      "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-28-08Z/workspace/team-b/in-lane-b.txt"
     },
     "result": {
       "callId": "call-d3-b-inlane",
       "isError": false,
-      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-42-46Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D3_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-      "at": 1795319081244
+      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-28-08Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D3_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+      "at": 1795339815690
     }
   },
   "note": "the crashed call (the edit) is present with NO tool result (its body never returned); the same callId never reappears as a second admission. The grep probe before it is a COMPLETED admitted call, not the in-flight record"

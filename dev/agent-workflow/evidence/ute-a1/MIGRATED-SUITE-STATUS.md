@@ -2156,3 +2156,77 @@ refused with zero provider requests. `D-BOOT-FEASIBILITY.md` §17 records the ru
 **Not proven / not claimed:** multi-user RBAC (it is a per-DSH_HOME authenticated operator model);
 `handoff.create` live (classified, not exercised); any S6 command that would execute a tool (refused by
 design, so its positive path does not exist).
+
+## Round 75 (process execution authority) — the lane was never the question
+
+**Owner ruling:** `docs/reviews/20261122-1536.txt` §1 (裁决一). **Escalation closed:**
+`CONTRACT-CHANGE-REQUEST-process-lane.md` is now **RESOLVED / SUPERSEDED**.
+
+**Step 0 — CONTRACT FITNESS CHECK: SUFFICIENT, no schema change.** The v4 grammar already declares
+process execution authority: `toolBindings[].authorization` (allow/ask/deny) and
+`execution.implementationOrigin/executionBoundary`
+(`packages/domain/blueprint/src/blueprint-v4.ts:100,103,123,193-204`). The chain from authored
+document to decision DIED TWICE in the middle: `projectToolIoRestriction`
+(`member-io-policy/src/compile.ts:237-283`) dropped both fields, and `bindingFromCompiledMember`
+(`src/plugin/vnext/centre-install.mjs:64`) mapped only `effective` lanes into `perTool`. The centre,
+having nothing to read, had invented a `Binding.process` path lane that no surface declared. **The
+defect was carriage, not declaration.** No `io.process`, no `Binding.process`, no fourth axis.
+
+**What the decision now keys on** (`src/plugin/vnext/admission.ts:409-452`), in order:
+`perTool[tool].authorization` + `perTool[tool].execution` present, else
+`ADMISSION_EXECUTION_UNAUTHORIZED`; `deny` ⇒ `ADMISSION_EXECUTION_DENIED`; the boundary must be in
+the closed v4 vocabulary, else `ADMISSION_EXECUTION_UNAUTHORIZED`; the composition's
+`binding.executors[boundary]` must be `ready`, else `ADMISSION_EXECUTOR_UNAVAILABLE`; `ask` ⇒ the
+existing durable Control approval; otherwise allow. The cwd is RECORDED as context and is never
+consulted. Readiness is a composition FACT derived from the compiled answer's own faces
+(`executorReadinessOf`: `confined-subprocess` ready iff a `spawnStreaming` provider exists;
+`trusted-host` ready by construction; `delegated-remote` unavailable).
+
+**Carriage fixed, in four places (no new authority):** `member-io-policy/src/types.ts` +
+`compile.ts` (the restriction keeps `authorization`/`execution`); `team-services/src/product-assembly.ts`
+(forwards them into the realm binding; refuses `confined-subprocess` only when the realm installs NO
+confined face, and attaches Team `toolBindings[]` to each derived Member);
+`src/plugin/vnext/live/a5sf-governed-realm.mjs` (declares `availableFaces: { process: true }` because
+it mounts the confined subprocess + governed PTY faces); `centre-install.mjs` / `member-execution.mjs`
+(carry the fields and the executor-readiness fact, rebuilt on the post-approval recheck).
+
+**Resource bounds unchanged, stated in code and docs:** what a process may read/write/reach is the
+three existing lanes plus the OS sandbox the declared executor applies. `team-services/src/subprocess.ts`
+layer 1 = admission on declared read intents, layer 2 = the Landlock profile; the in-process arm
+`ADM-130` pins the PROFILE, and the OS arms/boot pin the kernel.
+
+**`grep` was never on the process axis** (`TOOL_AXES.grep = fs.read`); `ADM-129` now pins that an
+in-lane `grep` is admitted while the same binding's `bash` is DENIED, and that an out-of-lane `grep`
+is `LANE_DENY`.
+
+**PTC stays refused for its own, smaller reason** (`admission.ts:405-407`, `ADMISSION_PTC_UNAVAILABLE`):
+the missing proof is the WORKER process, its NESTED tool calls, its escalation path and its Stop all
+passing this same centre. The code and the reason text are distinct from the shell's.
+
+**Arms (population 238 vitest unchanged; the node leg went 188 → 194):**
+
+| arm | proposition |
+| --- | --- |
+| `ADM-125` | allow ⇒ body runs, fact `allow` on `process.exec`, settlement `COMPLETED`; a different cwd changes nothing |
+| `ADM-126` | deny ⇒ `ADMISSION_EXECUTION_DENIED` before the body, `REFUSED/not-started`, deny outranks executor readiness |
+| `ADM-127` | ask ⇒ exactly one durable Control request naming tool+boundary, then the body under a one-shot grant; a denied approval refuses before the body |
+| `ADM-128` | UNKNOWN/unavailable executor ⇒ `ADMISSION_EXECUTOR_UNAVAILABLE`; `trusted-host`/`confined-subprocess` are different executors; absent declaration keeps its own code |
+| `ADM-129` | `grep` needs no process authority; out-of-lane is `LANE_DENY`, not a process code |
+| `ADM-130` | OS profile derives from the three lanes; an outside path is not in it; an `ask` lane is refused, never widened. Does NOT prove kernel enforcement |
+| updated | `ADM-18/24/26/87/114`, ladder rung 5 (`ADMISSION_EXECUTION_UNAUTHORIZED`), `SLICE-33` (admitted, PTY owner fence still refuses), `u6-pr3-bl01-ask-door` (negative control now `deny`) |
+
+**Live (D3, `--boots 2`, two agreeing boots, DEV-LIVE):** `d3:persistent-subprocess` is **REFUTED**,
+now for a measured reason: both `bash` turns return
+`ADMISSION_EXECUTION_UNAUTHORIZED … toolBindings[].authorization + execution.executionBoundary`
+(both facts `decision=deny` on `process.exec`; both settlements `ADMITTED→REFUSED`; state file never
+written), because the D3 world declares no `toolBindings[]` for `bash` AND the preset mounts only the
+one-shot `tool-bash`. Authorizing the one-shot tool would run an UNCONFINED shell (its body injects
+the host's base `ctx.shell`, not the realm's confined face), so it is deliberately not authorized.
+The product-correct swap — `dsh-tool-bash-persistent` with `backendType: a5sf-governed-shell`, plus a
+`toolBindings[]` entry — changes the model-visible `bash` parameter surface for every governed
+deployment and is left to its own composition round. `crash` / `work` / `alpha6` stay PROVEN.
+
+**Not proven / not claimed:** a live persistent shell (REFUTED above); PTC's four-part governance
+proof; kernel enforcement from an in-process arm; any remote executor (`delegated-remote` is refused
+rather than run locally); a `authorization: deny` honoured for non-process tools in the realm
+projection (unchanged limitation).

@@ -96,6 +96,22 @@ export interface MemberPolicy {
   readonly network: { readonly access: NetworkAccess }
 }
 
+/**
+ * The v4 tool-level authorization, carried through the projection unchanged. It is EXECUTION
+ * authority (may this Member start this class of process/executor), NOT an I/O lane.
+ */
+export type ToolAuthorization = 'allow' | 'ask' | 'deny'
+
+/** The v4 execution boundaries (the declared executor), carried through unchanged. */
+export const TOOL_EXECUTION_BOUNDARIES = ['trusted-host', 'confined-subprocess', 'delegated-remote'] as const
+export type ToolExecutionBoundary = (typeof TOOL_EXECUTION_BOUNDARIES)[number]
+
+/** The declared executor of one tool binding (`execution` in v4). */
+export interface ToolExecution {
+  readonly implementationOrigin: string
+  readonly executionBoundary: ToolExecutionBoundary
+}
+
 /** One tool's restriction inside a Member ceiling (the RIGHT factor). */
 export interface ToolIoRestriction {
   readonly bindingIdentity: string
@@ -108,6 +124,13 @@ export interface ToolIoRestriction {
   readonly read: ToolPathLane
   readonly write: ToolPathLane
   readonly network: NetworkAccess | 'unsupported'
+  /**
+   * The v4 `authorization` the binding declared. Carried so a PROCESS-class tool can be admitted on
+   * execution authority; it is not consulted for the fs/net lanes (their reach is the lanes).
+   */
+  readonly authorization?: ToolAuthorization
+  /** The v4 `execution` block the binding declared. See {@link ToolExecution}. */
+  readonly execution?: ToolExecution
 }
 
 /**

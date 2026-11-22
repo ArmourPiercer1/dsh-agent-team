@@ -16,27 +16,27 @@
       {
         "id": "first-call-admitted",
         "ok": false,
-        "detail": "isError=true text=Error: ADMISSION_AXIS_UNSUPPORTED: tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused"
+        "detail": "isError=true text=Error: ADMISSION_EXECUTION_UNAUTHORIZED: tool \"bash\" has no compiled tool-level execution authorization (toolBindings[].authorization + execution.executionBoundary); a process the declaration does not authorize is refused"
       },
       {
         "id": "state-written-by-shell",
         "ok": false,
-        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/d3-persistent-state.txt exists=false"
+        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-a/d3-persistent-state.txt exists=false"
       },
       {
         "id": "second-turn-saw-state",
         "ok": false,
-        "detail": "isError=true sawState=false text=Error: ADMISSION_AXIS_UNSUPPORTED: tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused"
+        "detail": "isError=true sawState=false text=Error: ADMISSION_EXECUTION_UNAUTHORIZED: tool \"bash\" has no compiled tool-level execution authorization (toolBindings[].authorization + execution.executionBoundary); a process the declaration does not authorize is refused"
       },
       {
         "id": "first-call-centre-fact",
         "ok": false,
-        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_AXIS_UNSUPPORTED\"}"
+        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_EXECUTION_UNAUTHORIZED\"}"
       },
       {
         "id": "second-call-centre-fact",
         "ok": false,
-        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_AXIS_UNSUPPORTED\"}"
+        "detail": "fact={\"axis\":\"process.exec\",\"decision\":\"deny\",\"refusalCode\":\"ADMISSION_EXECUTION_UNAUTHORIZED\"}"
       },
       {
         "id": "first-call-settled-completed",
@@ -67,12 +67,12 @@
       {
         "id": "kill-was-sigkill",
         "ok": true,
-        "detail": "pid=112 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
+        "detail": "pid=113 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
       },
       {
         "id": "restart-same-home",
         "ok": true,
-        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z booted=true bootPhase=create-or-open"
+        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z booted=true bootPhase=create-or-open"
       },
       {
         "id": "completed-ledger-survives",
@@ -117,12 +117,12 @@
       {
         "id": "work-fact-survived",
         "ok": true,
-        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/storages/team_domain.json\"]"
       },
       {
         "id": "state-file-never-written",
         "ok": true,
-        "detail": "the persistent-shell probe never ran a shell: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/d3-persistent-state.txt exists=false"
+        "detail": "the persistent-shell probe never ran a shell: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-a/d3-persistent-state.txt exists=false"
       }
     ],
     "failing": []
@@ -169,7 +169,7 @@
       {
         "id": "work-fact-durable-on-disk",
         "ok": true,
-        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/storages/team_domain.json\"]"
       },
       {
         "id": "member-calls-in-own-ledger",
@@ -179,7 +179,7 @@
       {
         "id": "member-calls-not-in-leader-ledger",
         "ok": true,
-        "detail": "member callIds=4 stray member call facts in other ledgers=[]; other ledger files=[\"remote.host-surface.facts.jsonl\"]"
+        "detail": "member callIds=4 stray member call facts in other ledgers=[]; other ledger files=[]"
       },
       {
         "id": "member-surface-measured",
@@ -196,7 +196,7 @@
       {
         "id": "host-process-was-spawned",
         "ok": true,
-        "detail": "spawned=true port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T03-37-03Z/instance-port3193.log"
+        "detail": "spawned=true port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T09-21-54Z/instance-port3193.log"
       },
       {
         "id": "row-refused-with-typed-code",
@@ -206,7 +206,7 @@
       {
         "id": "typed-code-present",
         "ok": true,
-        "detail": "refusal text=\n[dsh-agent-team] row refused at validation and RECORDED: code=ADMISSION_ALPHA6_UNAVAILABLE callId=alpha6:68b46ade-c325-4c28-a423-66a2b3a71f33:0 fact=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-37-03Z/centre/alpha6.host-surface.facts.jsonl settlement=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-37-03Z/centre/settlement/host-surface/alpha6\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted"
+        "detail": "refusal text=\n[dsh-agent-team] row refused at validation and RECORDED: code=ADMISSION_ALPHA6_UNAVAILABLE callId=alpha6:4d92ca3e-b519-4017-bbcc-149dcb97cf54:0 fact=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-21-54Z/centre/alpha6.host-surface.facts.jsonl settlement=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-21-54Z/centre/settlement/host-surface/alpha6\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted"
       },
       {
         "id": "missing-axis-named",

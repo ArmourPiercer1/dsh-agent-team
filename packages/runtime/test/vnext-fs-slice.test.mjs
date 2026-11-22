@@ -410,7 +410,20 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       // own permission - absent is not allow.
       workspaceRoot: inside,
       ...(web ? { network: webNetwork } : {}),
-      ...(bash ? { process: lane([inside]) } : {}),
+      // ROUND 75: a shell is admitted on its compiled tool-level EXECUTION authorization, never on a
+      // path lane. The PTY face is the declared executor (it is mounted below), so readiness is a
+      // fact this world knows and states, not a permission it invents.
+      ...(bash
+        ? {
+            executors: { 'confined-subprocess': 'ready' },
+            perTool: {
+              bash: {
+                authorization: 'allow',
+                execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+              },
+            },
+          }
+        : {}),
     }
     // REVOCATION (SLICE-34): the binding holder can be revoked between the pre-execute decision and
     // the guard, which is what a real permission revoke looks like from inside one dispatch. The
@@ -1127,8 +1140,9 @@ test('SLICE-33 — rung 6: a PTY shell is refused to an owner the host does not 
   const world = await buildWorld({ mountRealm: true, dir: join(dir, 'bash-on'), admission: 'bound', bash: true })
   try {
     assert.equal(world.mountRefusal, undefined, `the governed PTY face must mount: ${world.mountRefusal?.message ?? ''}`)
-    // The admission point admits it (the process lane covers the workspace root), and the PTY face
-    // then refuses the OWNER: the host PTY service only opens a session for an agent the registry
+    // The admission point admits it (the compiled execution authorization allows it and the PTY face
+    // is a ready executor), and the PTY face then refuses the OWNER: the host PTY service only opens a
+    // session for an agent the registry
     // holds (`agents.get(owner.id) === owner`). This world has no live host agent, so the fence does
     // its job - which is exactly the guarantee: a shell is never opened for an unregistered owner.
     const result = await world.dispatch('bash', { command: 'echo SHOULD-NOT-RUN' }, 'bash-1')

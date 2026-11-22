@@ -274,10 +274,14 @@ function projectedRestrictionOf(raw, where, faces = undefined) {
     const binding = closedRecord(raw, ['owner', 'name', 'authorization', 'io', 'execution'], where);
     const execution = closedRecord(binding['execution'], ['implementationOrigin', 'executionBoundary'], `${where}.execution`);
     const boundary = execution['executionBoundary'];
-    if (boundary === 'confined-subprocess') {
+    if (boundary === 'confined-subprocess' && faces?.process !== true) {
+        // The premise of this refusal is a FACT about the composition: a realm that installs no confined
+        // `subprocess` face cannot honour a confined-process declaration. A composition that DOES own the
+        // face (the governed realm: confined subprocess + governed PTY) says so with `availableFaces.process`
+        // and the SAME declaration is accepted — the refusal's premise changes, not its rule.
         refuse('SUBPROCESS_UNCONFINED_REALM', `${where} declares a binding-scoped PROCESS face (executionBoundary=confined-subprocess);`
-            + ' a tool-binding realm owns a confined `fs` and NO confined `subprocess` face, so the search/CLI'
-            + ' two-axis restriction is UNSUPPORTED — the declaration is refused instead of mounting a narrower answer', where);
+            + ' this realm installs NO confined `subprocess` face, so the search/CLI two-axis restriction is'
+            + ' UNSUPPORTED — the declaration is refused instead of mounting a narrower answer', where);
     }
     if (boundary === 'delegated-remote') {
         refuse('NETWORK_UNCONFINED_REALM', `${where} declares a delegated-remote execution boundary; the Member realm owns no remote/web face,`
@@ -431,10 +435,20 @@ function derivedMembersOf(bound, instanceGenerations, templateIds) {
         refuse('REALM_DECLARATION_INVALID', `the bound blueprint for team '${bound.blueprintId}' declares no memberIoCeilings entry for the requested `
             + `template(s) ${JSON.stringify(templateIds ?? [])} (the leader template is never a Member)`, `${A5SF_MEMBER_POLICIES_KEY}.members`);
     }
+    // TEAM-SCOPED TOOL BINDINGS APPLY TO EVERY MEMBER. `toolBindings[]` carries no template
+    // association (it is a Team-level tool restriction), and the two-axis law intersects it with EACH
+    // Member's ceiling per call. Attaching the SAME declared entries to every derived Member is
+    // therefore not a new declaration source: it is the one place the derived declaration can carry
+    // them at all. Omitting them would silently drop execution authority (a process tool declared at
+    // Team level would compile to nothing).
+    const toolRestrictions = Array.isArray(bound.toolBindings)
+        ? bound.toolBindings
+        : undefined;
     return selected.map((entry) => Object.freeze({
         templateId: entry.templateId,
         instanceGeneration: instanceGenerations?.[entry.templateId] ?? 0,
         ceiling: entry.io,
+        ...(toolRestrictions === undefined || toolRestrictions.length === 0 ? {} : { toolRestrictions }),
     }));
 }
 /**
@@ -811,6 +825,10 @@ export function createProductRealmProvider(plan) {
                     // `<owner>/<name>` and splitting it would be parsing policy.
                     ...(restriction.toolName === undefined ? {} : { toolName: restriction.toolName }),
                     effective: effective.value,
+                    // EXECUTION authority, carried from the SAME toolBindings entry the lanes came from. It is
+                    // not re-derived and not a lane: the admission point decides a process-class call on it.
+                    ...(restriction.authorization === undefined ? {} : { authorization: restriction.authorization }),
+                    ...(restriction.execution === undefined ? {} : { execution: restriction.execution }),
                 });
             });
             return Object.freeze({

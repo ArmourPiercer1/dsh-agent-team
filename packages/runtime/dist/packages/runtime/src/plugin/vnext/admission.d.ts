@@ -13,6 +13,30 @@
  * **which axis a tool name belongs to**, and **that a call with no binding is refused rather than
  * admitted**. That is the whole delta, deliberately.
  *
+ * PROCESS EXECUTION IS NOT AN I/O AXIS (owner ruling, review 20261122-1536 §1). The two questions
+ * are different and are answered by different declarations:
+ *
+ *  - MAY this Member start this class of process/executor? That is an EXECUTION authorization. It
+ *    comes from the already-existing v4 declarations compiled into the binding: the tool-level
+ *    `toolBindings[].authorization` (allow / ask / deny), the declared
+ *    `execution.executionBoundary` (`trusted-host | confined-subprocess | delegated-remote`), its
+ *    `implementationOrigin`, and the composition's trusted `shellClass`/executor configuration.
+ *  - WHAT may that process actually read, write and reach? That is bounded by the existing
+ *    read/write/network ceilings and by the OS sandbox the executor applies. A shell's working
+ *    directory does NOT bound what it can open, so it must never stand in for a path lane and this
+ *    module never derives a process permission from one.
+ *
+ * There is deliberately NO `io.process` lane and no `Binding.process` rule set: process execution
+ * authority is not path authority.
+ *
+ * `grep` is NOT a process tool. Its internal ripgrep child is an IMPLEMENTATION detail of the
+ * native search tool, so a search call is admitted on the `fs.read` lane and never requires bash
+ * execution authority.
+ *
+ * PTC (`run_code`) stays refused. Allowing `run_code` would be safe only if its worker, nested tool
+ * calls, escalation and Stop all passed the same governance; that proof does not exist this round,
+ * so the call is refused before the body with its own code rather than admitted on faith.
+ *
  * THE UNWIRED RULE, AS CODE. `admit` refuses when the binding is absent, when the tool has no
  * declared axis, or when the arguments carry no locator the axis can be judged on. A controlled
  * call that the centre has not been wired for is refused — never forwarded to the composition
@@ -75,6 +99,24 @@ export declare function mcpServerOf(toolName: string): string | undefined;
  * binding exists.
  */
 export declare const HOST_CAPABILITY_TOOL_NAMES: readonly string[];
+/**
+ * The v4 tool-level authorization, carried through the compiler unchanged. This is the EXECUTION
+ * authority for a process-class tool, not an I/O lane.
+ */
+export type ToolAuthorization = 'allow' | 'ask' | 'deny';
+/** The v4 execution boundaries, carried through the compiler unchanged. */
+export declare const EXECUTION_BOUNDARIES: readonly ["trusted-host", "confined-subprocess", "delegated-remote"];
+export type ExecutionBoundary = (typeof EXECUTION_BOUNDARIES)[number];
+/** The v4 `execution` block a process tool was declared with. */
+export interface CompiledExecution {
+    readonly implementationOrigin: string;
+    readonly executionBoundary: ExecutionBoundary;
+}
+/**
+ * The executor states the composition can report for one Member. A boundary with no entry is
+ * UNKNOWN, and unknown is never ready.
+ */
+export type ExecutionReadiness = Readonly<Partial<Record<ExecutionBoundary, 'ready' | 'unavailable'>>>;
 export interface Binding {
     /** The runtime Agent this binding is for. The object itself is the key; never a session id. */
     readonly agentId: string;
@@ -99,17 +141,28 @@ export interface Binding {
      *
      * This is NOT a second policy: every entry is an already-compiled `EffectiveIo`, produced by the
      * ONE compiler. The centre only chooses WHICH compiled answer applies to which call.
+     *
+     * `authorization` / `execution` are the SAME v4 `toolBindings[]` declarations the compiler
+     * projected (not a second source): they are EXECUTION authority, not I/O lanes. A process-class
+     * tool is admitted on them; an fs/net tool ignores them here (their path reach stays the lanes).
      */
     readonly perTool?: Readonly<Record<string, {
         readonly read?: PathRuleSet;
         readonly write?: PathRuleSet;
         readonly network?: 'allow' | 'deny' | 'unsupported';
+        /** The declared tool-level authorization (`allow` | `ask` | `deny`). Absent is NOT allow. */
+        readonly authorization?: ToolAuthorization;
+        /** The declared executor this tool runs on. Absent means no execution authority was declared. */
+        readonly execution?: CompiledExecution;
     }>>;
     /**
-     * The compiled PROCESS lane. Absent means this policy generation does not compile one, and every
-     * `process.exec` call is refused as unsupported - it does not mean "no restriction".
+     * Which declared executors this composition reports READY for this Member. Absent entry = unknown,
+     * and unknown is never ready: a process the centre cannot place in a ready executor is refused.
+     *
+     * This is not a policy and grants nothing. It is a FACT the composition knows (does this realm own
+     * a confined subprocess face? a remote executor?) that a pure decision function must be handed.
      */
-    readonly process?: PathRuleSet;
+    readonly executors?: ExecutionReadiness;
     /** The declared source of the definitions this binding mounted (a host package specifier). */
     readonly definitionSource: string;
     /** The policy generation the lanes were compiled under. */
@@ -127,7 +180,21 @@ export type AdmissionRefusalCode = 'ADMISSION_NO_BINDING' | 'ADMISSION_TOOL_UNBO
  * two different absences: the process lane (a contract question) and the escalation row (a second
  * authority). A PTC call is refused with its own code and the same durable shapes.
  */
- | 'ADMISSION_PTC_UNAVAILABLE';
+ | 'ADMISSION_PTC_UNAVAILABLE'
+/**
+ * A process-class tool the compiled answer does not authorize. The absence can be either half of
+ * the execution declaration (`toolBindings[].authorization` or `execution.executionBoundary`):
+ * both are required, and neither is inferred from a path, a cwd or the member's fs lanes.
+ */
+ | 'ADMISSION_EXECUTION_UNAUTHORIZED'
+/** The declared tool-level authorization is `deny`. The body never runs. */
+ | 'ADMISSION_EXECUTION_DENIED'
+/**
+ * The tool IS authorized, but the executor its `executionBoundary` names is not ready (for example
+ * a `confined-subprocess` declaration on a composition with no OS sandbox). Starting the process
+ * anyway would claim an isolation that does not exist, so it is refused typed.
+ */
+ | 'ADMISSION_EXECUTOR_UNAVAILABLE';
 /**
  * Every code a refusal can carry. The two LANE codes are decisions about a JUDGED locator (the lane
  * said no, or the network axis said no); `AdmissionRefusalCode` covers calls that could not be judged

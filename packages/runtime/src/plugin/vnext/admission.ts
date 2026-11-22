@@ -13,6 +13,30 @@
  * **which axis a tool name belongs to**, and **that a call with no binding is refused rather than
  * admitted**. That is the whole delta, deliberately.
  *
+ * PROCESS EXECUTION IS NOT AN I/O AXIS (owner ruling, review 20261122-1536 §1). The two questions
+ * are different and are answered by different declarations:
+ *
+ *  - MAY this Member start this class of process/executor? That is an EXECUTION authorization. It
+ *    comes from the already-existing v4 declarations compiled into the binding: the tool-level
+ *    `toolBindings[].authorization` (allow / ask / deny), the declared
+ *    `execution.executionBoundary` (`trusted-host | confined-subprocess | delegated-remote`), its
+ *    `implementationOrigin`, and the composition's trusted `shellClass`/executor configuration.
+ *  - WHAT may that process actually read, write and reach? That is bounded by the existing
+ *    read/write/network ceilings and by the OS sandbox the executor applies. A shell's working
+ *    directory does NOT bound what it can open, so it must never stand in for a path lane and this
+ *    module never derives a process permission from one.
+ *
+ * There is deliberately NO `io.process` lane and no `Binding.process` rule set: process execution
+ * authority is not path authority.
+ *
+ * `grep` is NOT a process tool. Its internal ripgrep child is an IMPLEMENTATION detail of the
+ * native search tool, so a search call is admitted on the `fs.read` lane and never requires bash
+ * execution authority.
+ *
+ * PTC (`run_code`) stays refused. Allowing `run_code` would be safe only if its worker, nested tool
+ * calls, escalation and Stop all passed the same governance; that proof does not exist this round,
+ * so the call is refused before the body with its own code rather than admitted on faith.
+ *
  * THE UNWIRED RULE, AS CODE. `admit` refuses when the binding is absent, when the tool has no
  * declared axis, or when the arguments carry no locator the axis can be judged on. A controlled
  * call that the centre has not been wired for is refused — never forwarded to the composition
@@ -124,6 +148,28 @@ export const HOST_CAPABILITY_TOOL_NAMES: readonly string[] = Object.freeze([
 
 const HOST_CAPABILITY_TOOLS: ReadonlySet<string> = new Set(HOST_CAPABILITY_TOOL_NAMES)
 
+/**
+ * The v4 tool-level authorization, carried through the compiler unchanged. This is the EXECUTION
+ * authority for a process-class tool, not an I/O lane.
+ */
+export type ToolAuthorization = 'allow' | 'ask' | 'deny'
+
+/** The v4 execution boundaries, carried through the compiler unchanged. */
+export const EXECUTION_BOUNDARIES = Object.freeze(['trusted-host', 'confined-subprocess', 'delegated-remote'] as const)
+export type ExecutionBoundary = (typeof EXECUTION_BOUNDARIES)[number]
+
+/** The v4 `execution` block a process tool was declared with. */
+export interface CompiledExecution {
+  readonly implementationOrigin: string
+  readonly executionBoundary: ExecutionBoundary
+}
+
+/**
+ * The executor states the composition can report for one Member. A boundary with no entry is
+ * UNKNOWN, and unknown is never ready.
+ */
+export type ExecutionReadiness = Readonly<Partial<Record<ExecutionBoundary, 'ready' | 'unavailable'>>>
+
 /** Argument keys that carry the locator, in the order they are tried. */
 const LOCATOR_KEYS: Readonly<Record<string, readonly string[]>> = Object.freeze({
   read: ['file_path', 'path'],
@@ -171,17 +217,28 @@ export interface Binding {
    *
    * This is NOT a second policy: every entry is an already-compiled `EffectiveIo`, produced by the
    * ONE compiler. The centre only chooses WHICH compiled answer applies to which call.
+   *
+   * `authorization` / `execution` are the SAME v4 `toolBindings[]` declarations the compiler
+   * projected (not a second source): they are EXECUTION authority, not I/O lanes. A process-class
+   * tool is admitted on them; an fs/net tool ignores them here (their path reach stays the lanes).
    */
   readonly perTool?: Readonly<Record<string, {
     readonly read?: PathRuleSet
     readonly write?: PathRuleSet
     readonly network?: 'allow' | 'deny' | 'unsupported'
+    /** The declared tool-level authorization (`allow` | `ask` | `deny`). Absent is NOT allow. */
+    readonly authorization?: ToolAuthorization
+    /** The declared executor this tool runs on. Absent means no execution authority was declared. */
+    readonly execution?: CompiledExecution
   }>>
   /**
-   * The compiled PROCESS lane. Absent means this policy generation does not compile one, and every
-   * `process.exec` call is refused as unsupported - it does not mean "no restriction".
+   * Which declared executors this composition reports READY for this Member. Absent entry = unknown,
+   * and unknown is never ready: a process the centre cannot place in a ready executor is refused.
+   *
+   * This is not a policy and grants nothing. It is a FACT the composition knows (does this realm own
+   * a confined subprocess face? a remote executor?) that a pure decision function must be handed.
    */
-  readonly process?: PathRuleSet
+  readonly executors?: ExecutionReadiness
   /** The declared source of the definitions this binding mounted (a host package specifier). */
   readonly definitionSource: string
   /** The policy generation the lanes were compiled under. */
@@ -204,6 +261,20 @@ export type AdmissionRefusalCode =
    * authority). A PTC call is refused with its own code and the same durable shapes.
    */
   | 'ADMISSION_PTC_UNAVAILABLE'
+  /**
+   * A process-class tool the compiled answer does not authorize. The absence can be either half of
+   * the execution declaration (`toolBindings[].authorization` or `execution.executionBoundary`):
+   * both are required, and neither is inferred from a path, a cwd or the member's fs lanes.
+   */
+  | 'ADMISSION_EXECUTION_UNAUTHORIZED'
+  /** The declared tool-level authorization is `deny`. The body never runs. */
+  | 'ADMISSION_EXECUTION_DENIED'
+  /**
+   * The tool IS authorized, but the executor its `executionBoundary` names is not ready (for example
+   * a `confined-subprocess` declaration on a composition with no OS sandbox). Starting the process
+   * anyway would claim an isolation that does not exist, so it is refused typed.
+   */
+  | 'ADMISSION_EXECUTOR_UNAVAILABLE'
 
 /**
  * Every code a refusal can carry. The two LANE codes are decisions about a JUDGED locator (the lane
@@ -268,10 +339,14 @@ function locatorOf (toolName: string, args: unknown): string | undefined {
 /**
  * The locator this call is actually judged on. ONE definition, used by the decision AND by the
  * record, because a record that names a different locator than the one the lane judged is worse than
- * no record: it makes a refusal unreviewable. A shell has no locator argument, so its working
- * directory is the binding's workspace root - the same value the process lane is matched against.
+ * no record: it makes a refusal unreviewable.
+ *
+ * A process-class call is judged on EXECUTION authority, not on a locator; the value returned here is
+ * recorded as CONTEXT (the working directory the call named, or the member's workspace root) and is
+ * never an authorization input.
  */
 function judgedLocator (toolName: string, args: unknown, binding: Binding | undefined): string | undefined {
+  // Recorded context for a process call, NOT a permission (see the doc above).
   if (TOOL_AXES[toolName as keyof typeof TOOL_AXES] === 'process.exec') return locatorOf(toolName, args) ?? binding?.workspaceRoot
   const defaulted = DEFAULTED_LOCATORS[toolName]
   return locatorOf(toolName, args) ?? (defaulted === 'workspaceRoot' ? binding?.workspaceRoot : undefined)
@@ -318,31 +393,60 @@ export function admit (input: {
     return refuse('ADMISSION_TOOL_UNBOUND', `tool ${JSON.stringify(toolName)} has no declared I/O axis; an unclassified tool is never admitted by default`)
   }
   // C7 (PTC escalation) — EXPLICITLY UNAVAILABLE, and named as itself. `run_code` executes on the
-  // process axis, which this contract compiles no lane for; the escalation that would widen it is the
-  // surviving host row (`createPtcEscalationRouter`), whose one-shot grants are minted outside the
-  // centre. Refusing the TOOL before the body is what makes the escalation path unreachable: an
-  // escalation is only ever asked for a call that reached execution, and this call never does.
-  // It must be refused as PTC, not as "a shell": the two absences are different (see the code's doc).
+  // process axis; the escalation that would widen it is the surviving host row
+  // (`createPtcEscalationRouter`), whose one-shot grants are minted outside the centre. Refusing the
+  // TOOL before the body is what makes the escalation path unreachable: an escalation is only ever
+  // asked for a call that reached execution, and this call never does.
+  //
+  // WHY STILL REFUSED AFTER PROCESS-AUTHORITY ROUND 75: proving `run_code` safe requires showing its
+  // WORKER process, every NESTED tool call it makes, its escalation path and its Stop all pass this
+  // same governance. None of those four is demonstrated this round, so allowing the tool because
+  // `run_code` carries an `authorization: allow` would be admitting a second, unproven execution
+  // authority. It keeps its own code so the missing proof stays individually identifiable.
   if (toolName === 'run_code') {
     return refuse(HOST_SURFACE_REFUSALS.ptc.code as AdmissionRefusalCode, `tool ${JSON.stringify(toolName)} is the PTC entry: ${HOST_SURFACE_REFUSALS.ptc.missing}`)
   }
   if (axis === 'process.exec') {
-    // EXPLICITLY UNAVAILABLE, NOT SILENTLY ALLOWED. Without a compiled process lane there is nothing
-    // to judge a shell command against, and admitting it anyway would claim an enforcement the centre
-    // does not have. With one, the shell is judged on its WORKING DIRECTORY - the only locator a
-    // shell has before it runs; what it may touch inside is the confined face's own business.
-    if (binding.process === undefined) {
-      return refuse('ADMISSION_AXIS_UNSUPPORTED', `tool ${JSON.stringify(toolName)} needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused`)
+    // PROCESS EXECUTION AUTHORITY, NOT A PATH LANE (owner ruling, review 20261122-1536 §1).
+    //
+    // AdmitProcess = ToolAuthorized ∧ MemberValid ∧ SandboxReady ∧ BindingValid. The three inputs
+    // are all COMPILED facts that already existed in v4; none is derived here:
+    //  - `perTool[tool].authorization` is `toolBindings[].authorization` (allow/ask/deny);
+    //  - `perTool[tool].execution` is `toolBindings[].execution` (boundary + implementation origin);
+    //  - `binding.executors[boundary]` is the composition's readiness fact for that boundary.
+    // MemberValid/BindingValid are the `binding !== undefined` check above and the trusted binding
+    // the caller handed in.
+    //
+    // The tool's working directory is deliberately NOT consulted: a shell's cwd does not bound what
+    // it can open, so it is not a permission. What the process may read/write/reach is bounded by
+    // the existing three lanes plus the OS sandbox the declared executor applies - never here.
+    const tool = binding.perTool?.[toolName]
+    const authorization = tool?.authorization
+    const execution = tool?.execution
+    if (authorization === undefined || execution === undefined) {
+      // ABSENCE IS NOT PERMISSION. No compiled tool-level authorization means the declaration
+      // genuinely cannot authorize this process; admitting it would claim an authority nobody wrote.
+      return refuse('ADMISSION_EXECUTION_UNAUTHORIZED', `tool ${JSON.stringify(toolName)} has no compiled tool-level execution authorization (toolBindings[].authorization + execution.executionBoundary); a process the declaration does not authorize is refused`)
     }
-    const shellRoot = judgedLocator(toolName, args, binding)
-    if (shellRoot === undefined) {
-      return refuse('ADMISSION_NO_LOCATOR', `tool ${JSON.stringify(toolName)} has no working directory and the binding names no workspace root to judge it against`)
+    if (authorization === 'deny') {
+      // deny wins before any ask or any executor check: a reviewer must never be asked to approve a
+      // call the declaration forbids.
+      return refuse('ADMISSION_EXECUTION_DENIED', `tool ${JSON.stringify(toolName)} is denied by its compiled tool-level authorization (policy generation ${binding.policyGeneration}); the body never runs`)
     }
-    switch (matchLocator(binding.process, shellRoot)) {
-      case 'allow': return { kind: 'allow' }
-      case 'ask': return { kind: 'ask', reason: `process.exec in ${JSON.stringify(shellRoot)} requires approval under policy generation ${binding.policyGeneration}` }
-      case 'deny': return { kind: 'deny', code: 'LANE_DENY', reason: `process.exec in ${JSON.stringify(shellRoot)} is outside the binding's process lane (policy generation ${binding.policyGeneration})` }
+    const boundary = execution.executionBoundary
+    if (!EXECUTION_BOUNDARIES.includes(boundary)) {
+      return refuse('ADMISSION_EXECUTION_UNAUTHORIZED', `tool ${JSON.stringify(toolName)} declares an execution boundary outside the closed v4 vocabulary (${JSON.stringify(String(boundary))}); an unreadable executor is not an authorization`)
     }
+    const executor = binding.executors?.[boundary]
+    if (executor !== 'ready') {
+      // The declaration is authorized but this composition cannot place it in the executor it named.
+      // Starting it anyway would run a process under an isolation nobody verified.
+      return refuse('ADMISSION_EXECUTOR_UNAVAILABLE', `tool ${JSON.stringify(toolName)} declares executionBoundary=${JSON.stringify(boundary)}, but this composition reports the executor ${executor === 'unavailable' ? 'UNAVAILABLE' : 'UNKNOWN'}; a process with no ready executor is refused`)
+    }
+    if (authorization === 'ask') {
+      return { kind: 'ask', reason: `process.exec on ${JSON.stringify(toolName)} requires approval under policy generation ${binding.policyGeneration} (executionBoundary=${JSON.stringify(boundary)})` }
+    }
+    return { kind: 'allow' }
   }
   const locator = judgedLocator(toolName, args, binding)
   const perTool = binding.perTool?.[toolName]
