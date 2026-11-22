@@ -10646,3 +10646,35 @@ Review 20261122-1536 §2 (Option A), now in the store rather than in a workaroun
 
 Gates: leg 188 cases / 186 pass + 2 disclosed skips, catalog 785 tests, cut-closure `cut(0/148)`, P0, docs-sync,
 28 placements, ci-required, bound vitest 238, artifact verdict ok/1935.
+
+### R74 — S6 Remote returns as a GOVERNED MANAGEMENT plane: creation works at runtime, tool dispatch still cannot bypass UTE
+
+Review 20261122-1536 §3 implemented with its boundary intact. New `s6-command-classification.ts` is the ONE closed
+effect table over all 36 catalog methods with NO default-allow, applied after method recognition and BEFORE
+envelope/params/handlers (`s6-remote.ts:4791`). On a centre row the S6 surfaces are built and installed again
+(`root.ts:4341`); `admission.ts` was NOT touched — no new axis, no admission duty, no member binding on the
+management route.
+
+Classes: creation (`team.create`, `handoff.create`) -> S6 principal + TeamDomain ownership + createAndStartTeam
+gates; reads -> principal + domain read authority; management -> principal + lifecycle/govemance gates;
+**agent-execution (`member.create`, `member.send`, `member.followup`, `team.admitInitialWork`,
+`team.ensureRootLive`) -> REFUSED** with `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`, durable fact +
+REFUSED/not-started, because this plane has no member binding and serving it would be a second execution authority.
+
+Live, two agreeing boots, 6/6 judges PASS including the new `d:remote-creation`: unauthenticated create 401 and
+`minted=false`; cross-team read `TEAM_REMOTE_FOREIGN_TEAM`; legitimate create 200 `path=fresh-root` with durable
+teamSession/binding/leaderRow; the runtime-created team's Member chain admitted on ITS OWN binding (2 admission
+facts, 2 execution facts, 2 guard facts naming that member) while the management request carried no binding;
+`member.send` refused with 0 provider requests; duplicate create added no root and made 0 provider requests.
+
+ADM-86 was REWRITTEN stronger (table equality both ways against REMOTE_METHOD_NAMES + served command + refused
+five + durable fact/settlement + unauthenticated refusal + an unclassified command refused rather than
+default-allowed). The round-60 boot-bound workaround was removed: the driver creates its Team over the real API now.
+
+Gates at `b151fe95c`: leg 188/186+2, catalog 785, cut-closure cut(0/148), P0, docs-sync, 28 placements,
+ci-required, bound vitest 238, and the full ci-pr-gate pass=10 fail=0 legs=10.
+
+Disclosed: settlement reason kept under the 512-char cap (E3 verified no SETTLEMENT_INPUT_INVALID); p4t6 booking
+also closed a pre-existing round-72 omission; blueprint-fence re-recorded one literal moved L4324->L4401.
+NOT proven: no PRODUCT-PROVEN row, scripted mock model, per-DSH_HOME operator model is NOT multi-user RBAC,
+`handoff.create` not exercised live, crash/Stop duplicate-safety cited from the earlier d2/d3 judges.
