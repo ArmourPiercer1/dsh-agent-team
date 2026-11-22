@@ -1642,6 +1642,10 @@ files, +107914 / −79603. This audit adds one docs-only commit on top (no code,
 - **Matrix `d3:alpha6` round-63 row** said "no fact file" and the round-63 NOT-PROVEN list included the
   recorded-fact path; round 68 recorded it at the host entry. Both now carry the round-68 correction;
   the verdict is unchanged (typed refusal, routed path still unproven).
+- **`FINDING-native-tool-provider.md` and the matrix still said two judge clauses were REFUTED.** Round
+  62 repaired `d:native-read-surface` (instrument re-anchored, PROVEN with all six clauses), so only
+  `d:member-read-denied` remains REFUTED; the FINDING header, its round-61 table, its residuals and the
+  matrix's round-60/61 bullets now record the repair and the reason it is kept as history.
 - **Matrix round-28 "there is no approval binder wired at all"** — qualified as the round-28 state.
 
 ### Links/citations fixed

@@ -4,8 +4,9 @@ This is the owner's named risk, measured on a real host instead of argued about:
 解析到该 Agent 的受控 Provider（无 Shadow Definition）"*. Round 60 answered **NO** and recorded the defect
 below. Round 61 implements **shape A** (mount the preset's own host modules into the governed Member's
 isolated scope, by default) and re-measures the SAME unmodified acceptance driver: the admitted call is now
-served by the Member's controlled provider and the guard is consulted. Two judge clauses remain REFUTED for
-causes recorded in "Residuals" — they are findings, not relaxations.
+served by the Member's controlled provider and the guard is consulted. One judge clause remains REFUTED
+(`d:member-read-denied`) for the cause recorded in "Residuals" — a finding, not a relaxation; the second
+round-61 red (`d:native-read-surface`) was an instrument defect, repaired and re-anchored in round 62.
 
 ## Round 60 measurement (the defect, kept as history)
 
@@ -82,7 +83,7 @@ confine); every other unresolved/unmountable case is a typed refusal that propag
 | `d:guard-facts` | REFUTED (0 facts) | **PROVEN** | 2 allow facts for the in-lane locator (`stat`, `readText`), naming `inst-0pe2z220bhfb`, `decidedBy=ALLOW` |
 | `d:centre-facts` | PASS | **PASS** | 2 `fs.read` admissions (`allow` + `deny/LANE_DENY`) and 2 execution facts |
 | `d:member-read-denied` | REFUTED | REFUTED | residual 1: the centre refuses BEFORE the provider, so `IO_READ_DENIED` is unreachable for that call |
-| `d:native-read-surface` | REFUTED | REFUTED | residual 2: the judge's `native-description` clause reads the top-level description, where the marker is not |
+| `d:native-read-surface` | REFUTED | REFUTED | residual 2: the judge's `native-description` clause reads the top-level description, where the marker is not (**round 62: instrument re-anchored, now PROVEN — see the round-62 addendum**) |
 
 Guard facts are the finding's own falsifier: they only exist when the confined provider's guard is entered.
 `out-lane-never-reached-provider` also passes with 0 facts, because the centre's `LANE_DENY` precedes the tool
@@ -97,13 +98,16 @@ body — the provider is not merely unproven for that call, it is never entered.
    own `deny` fact). Making the live judge pass would require the provider path to run BEFORE the centre —
    the wrong order for a governance system. The judge's clause is therefore a product-semantics finding, not
    a tolerance to widen.
-2. **`d:native-read-surface` `native-description` is an instrument defect** (unchanged since round 60): it
-   requires `resolved by the filesystem backend` in the top-level tool description, but in the pinned host
-   that phrase is the **`file_path` PARAMETER** description
+2. **`d:native-read-surface` `native-description` was an instrument defect — REPAIRED in round 62, kept
+   here as history.** It required `resolved by the filesystem backend` in the top-level tool description,
+   but in the pinned host that phrase is the **`file_path` PARAMETER** description
    (`tests/deepseek-harness-test-use/packages/fs/tool-fs/src/read.ts`); the top-level description is
-   `Read a UTF-8 text file and return line-numbered content.` The other four clauses pass, including
-   `no-shadow-modules` (the row still configures `a5sfNativeToolModules=[]`) and `read-present-once`. Do not
-   delete the "no shadow" claim — it is the right claim; re-anchor the clause to the field it means.
+   `Read a UTF-8 text file and return line-numbered content.` The clause was re-anchored rather than
+   deleted (`native-description` reads the top-level field, `native-file-path-description` reads the
+   parameter field) and the judge is **PROVEN** with all six clauses on two agreeing boots
+   (`D-BOOT-FEASIBILITY.md:494-511`). The "no shadow" claim was kept — it was the right claim. This is no
+   longer an open residual; it is recorded because deleting the evidence of a wrong instrument is how the
+   same defect returns.
 3. **Face coverage is derived, so a face the realm does not own stays on the preset row.** The D realm owns
    `fs` and `subprocess`, so `tool-fs` (read/write/edit/read_image) and `tool-fs-search` (grep/glob) both
    mount. A realm with no `subprocess` face would skip `fs-search` (recorded in `skipped`), leaving
@@ -136,7 +140,12 @@ Two things measured after the boundary fix:
    out-of-lane call never reaches the provider. The provider-side refusal is proven in-process (ADM-100: zero
    secret bytes). The live judge therefore reports the centre's `LANE_DENY`, which is the correct division of
    labour, not a missing guarantee.
-2. **Authority revocation cannot come from the durable overlay, and that is a CONTRACT INVARIANT, not a bug**:
+2. **`d:native-read-surface` was an instrument defect, repaired rather than deleted.** The `native-description`
+   clause read the top-level `description`; the marker lives in the `file_path` parameter description. Round 62
+   re-anchored the clause (top-level field for `native-description`, parameter field for
+   `native-file-path-description`), and the judge is now **PROVEN** on real boots with all six clauses
+   (`D-BOOT-FEASIBILITY.md:494-511`). Nothing about the product changed for this.
+3. **Authority revocation cannot come from the durable overlay, and that is a CONTRACT INVARIANT, not a bug**:
    `overlay-decision.mjs:9` (deny-only), `admission-port.mjs:498-521` (consulted only when the compiled lane
    allows; the only verdict is `ADMISSION_OVERLAY_DENY`), `permission-mutation.ts:435-436` (a revoke removes
    restrictions and "never needs expansion authority"). Measured live: add a durable deny ⇒ the call is refused

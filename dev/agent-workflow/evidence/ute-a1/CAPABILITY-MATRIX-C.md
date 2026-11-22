@@ -147,7 +147,8 @@ blueprint at boot instead of calling the remote creation route, and the boot-cre
 - the out-of-lane refusal is the centre's typed **`LANE_DENY`**, not the realm provider's
   `IO_READ_DENIED`;
 - one judge clause (`d:native-read-surface` `native-description`) reads the top-level `description` while
-  the native marker is in the `file_path` parameter description — an instrument defect, reported unfixed.
+  the native marker is in the `file_path` parameter description — an instrument defect, **reported at
+  round 60 and repaired in round 62** (the judge is now PROVEN, all six clauses).
 
 So `C-fs` / `C-member` stay MECHANISM: the centre adjudicates the call, the provider path is not proven.
 Full evidence, judge-by-judge: `D-BOOT-FEASIBILITY.md` §12.
@@ -157,10 +158,11 @@ controlled provider: the same unmodified driver, two agreeing boots, `d:guard-fa
 facts (`stat`, `readText`, `memberIdentity=inst-0pe2z220bhfb`). The fix is shape A — the preset's own host
 modules are mounted into the member's isolated scope by default, with each row's own config, no shadow
 definition, and typed fail-closed refusals (`FINDING-native-tool-provider.md`). **Still not upgraded to
-PRODUCT-PROVEN** (a `DEV-LIVE` boot is not a gate), and two clauses stay REFUTED: the out-of-lane call is
-refused by the centre's `LANE_DENY` before the provider is entered (so `IO_READ_DENIED` is unreachable on
-that path), and `d:native-read-surface`'s `native-description` clause still reads the wrong field. Details:
-`D-BOOT-FEASIBILITY.md` §13.
+PRODUCT-PROVEN** (a `DEV-LIVE` boot is not a gate), and (at round 61) two clauses were REFUTED: the
+out-of-lane call is refused by the centre's `LANE_DENY` before the provider is entered (so `IO_READ_DENIED`
+is unreachable on that path) and `d:native-read-surface`'s `native-description` clause read the wrong field.
+**Round 62 repaired the instrument**: the surface judge is PROVEN with all six clauses, so only
+`d:member-read-denied` remains REFUTED, by design. Details: `D-BOOT-FEASIBILITY.md` §13-§14.
 
 ## MEASURED (round 49): the durable Alpha.4 overlay reaches the centre — E3 green, still not PRODUCT-PROVEN
 
