@@ -1,0 +1,13 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND79PREDISPATCH",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1311,
+    "to": 1312
+  },
+  "reason": "Round 79 (rc.5 pre-dispatch abort, B6) adds ONE scannable production source, packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs: the closed reader of the pinned hosts' own ABORTED_BEFORE_DISPATCH result at the executor completion boundary (batch.ts:271-280 -> index.ts:375-377), imported by vnext/execution-facts.mjs and mirrored into dist by the placement list (dist is outside the scan). The file carries no denylist vocabulary; the denylist hit set is measured unchanged.",
+  "tieNote": "MEASURED on this tree, not copied: the p4t6 coverage leg printed `scanner counts 1312, ledger derives 0 + 1311 = 1311` before this booking, and the single unbooked scanned path was exactly the one above. 1311 + 1 = 1312."
+}
