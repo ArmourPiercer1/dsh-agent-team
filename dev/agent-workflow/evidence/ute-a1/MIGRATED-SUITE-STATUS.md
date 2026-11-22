@@ -2058,3 +2058,56 @@ shape (`calls:[{type:'tool-call',…}]` → `batch.results[0].result`) with
 28 placements, ci-required 10 workflows / 0 findings, bound vitest `PASS 238`. No row in
 `CAPABILITY-MATRIX-C.md` was upgraded by this round — the rc.5 greens are lane evidence, and the
 matrix upgrade is an owner decision.
+
+## Round 73 (settlement Option A) — 2026-11-23
+
+The owner ruled on the one open settlement invariant (`docs/reviews/20261122-1536.txt` §2): approve
+**Option A** of `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`. The call the post-approval recheck
+refuses after an `allow` is no longer reported as an unclosable gap. It now settles truthfully.
+
+**What was implemented (no host patch, no new store, no second authority).**
+
+- `packages/runtime/settlement/execution-settlement.ts` — `RecheckDecisionReference` (decisionId,
+  digest, `decision: 'deny'`, `decisionKind`, `reasonCode`, `subjectExecutionId`, `callId`,
+  `policyGeneration`, `decidedAt`); `recordRecheckDecision` appends it to
+  `record.recheckDecisions` and refuses with `RECHECK_NOT_BEFORE_BODY` once the record is no longer
+  `ADMITTED`; `assertAdmissionCoherence` permits `REFUSED` against a cited `allow` **only** when the
+  store itself holds that durable deny; `settle` writes `terminalDecision` (the deny) while
+  `admission` keeps the original `allow`; `enterRunning` refuses with
+  `RECHECK_DENY_BLOCKS_DISPATCH` when a deny exists; `recoverUnsettled` settles an
+  `ADMITTED`-with-deny record `REFUSED`/`not-started` from the decision instead of classifying it
+  `UNKNOWN`.
+- `packages/runtime/src/plugin/vnext/admission-port.mjs` — `refuseBeforeBody` appends the durable
+  deny at the guard, synchronously, BEFORE the settlement termination, for lane/overlay drift and for
+  a grant that cannot be spent. A throw is surfaced and the refusal still stands (fail-closed).
+- `packages/runtime/src/plugin/vnext/settlement-port.mjs` — `recheckDenied` writes the decision;
+  `refused` keeps the `SETTLEMENT_CONTRACT_GAP` path for the no-durable-deny case.
+
+**The decision's code is the PRODUCT's existing recheck code** (`ADMISSION_RECHECK_LANE_DENY`, …), the
+same code the durable execution fact already carries — no second vocabulary was introduced.
+
+**Arms (real store + real port + real ledger, `ute-vnext-a1` leg):**
+
+| arm | result |
+| --- | --- |
+| `ADM-119` positive: allow gen-1 → durable deny gen-2 → `REFUSED`/`not-started`/`terminalDecision` = the deny; allow reference and ledger fact byte-identical; no fault | PASS |
+| `ADM-120` negative 1: `REFUSED` against an allow without a durable deny still `SETTLEMENT_ADMISSION_MISMATCH`, port still reports the gap, record stays `ADMITTED` | PASS |
+| `ADM-121` negative 2: `RUNNING` refuses `recordRecheckDecision`; `RUNNING → REFUSED` is `ILLEGAL_TRANSITION`; a durable deny blocks `enterRunning` | PASS |
+| `ADM-122` negative 3: Stop still `CANCELLED` + `pre-dispatch` stop fact, no deny; a recheck refusal is `REFUSED` with no stop | PASS |
+| `ADM-123` crash window: deny written, no termination → fresh store recovers `REFUSED`/`not-started` from the durable deny; fresh ledger refuses the callId as `ADMISSION_REPLAY`; body not re-run | PASS |
+| `ADM-124` fail-closed: deny write throws → the guard still refuses, body never runs, the fault is surfaced, the terminal write reports the gap and leaves the record `ADMITTED` | PASS |
+
+`ADM-37`'s recheck half was rewritten from the old "asserts the gap" expectation to the Option A
+positive (the old assertion is false by owner ruling, not weakened).
+
+**Gates, fresh at this HEAD:** `dispatch-tests --run --leg ute-vnext-a1` → 188 cases / **186 pass / 0
+fail / 2 disclosed skips**; `test-catalog --max-uncollected 41 --max-excluded 7` → tests 785 /
+collected 733 / excluded 14 / **uncollected 38**, findings 0; `ute-cut-closure --check` →
+`cut(0/148)`, four zeros; `ute-p0-assets --check` → 37 modules / 180 files / 69,512 lines; `docs-sync
+--check` → 0 findings / 0 blocking; `place-dist-glue` → 28 placements; `eb3-ci-required` → 10
+workflows / 0 findings; bound migrated layer → **PASS 238/238** (population unchanged).
+
+**Not proven.** The six arms are in-process mechanism evidence. No live `D` judge boots a host through
+the recheck path in this round, so no matrix row becomes PRODUCT-PROVEN and the settlement row stays
+MECHANISM. The Stop rule is unchanged: a refusal is never recorded as `CANCELLED`, and no Stop is
+invented.

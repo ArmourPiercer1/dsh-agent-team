@@ -224,7 +224,7 @@ mechanism, which is why the mechanism-level arms could not see them:
 | realm disposer registered twice, so close STARTED it before the native tombstone was awaited | FIXED — ordering |
 | a throwing ledger/settlement path escaped the listener instead of refusing | FIXED — three explicit deny codes, ADM-38 |
 | the per-call memo served any dispatch with the same callId (a retry could inherit an allow) | FIXED — memo serves one execution object, ADM-38 |
-| an admitted-as-allow call refused by the recheck has no legal settlement state | **ESCALATED** — `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`; reported as `SETTLEMENT_CONTRACT_GAP` |
+| an admitted-as-allow call refused by the recheck has no legal settlement state | **FIXED (round 73, owner-approved Option A)** — the settlement store appends a durable recheck deny (`recordRecheckDecision`) beside the untouched allow and settles `REFUSED`/`not-started` citing it; without the durable deny the old `SETTLEMENT_ADMISSION_MISMATCH` / `SETTLEMENT_CONTRACT_GAP` still holds. Arms `ADM-119`…`ADM-124`; see `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` (RESOLVED) |
 
 Two P2 classes are also closed (a gap in the compiled answer no longer inherits the ceiling; the ledger
 no longer lets a caller rename a record kind or end a call twice). Three remain and are CONTRACT

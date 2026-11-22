@@ -133,21 +133,70 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
       }
     },
     /**
+     * A post-approval recheck REFUSED this call BEFORE its body. Write that decision down as its own
+     * DURABLE, append-only deny — same callId, same executionId, the policy generation that refused —
+     * beside the original `allow`, which is never rewritten.
+     *
+     * WHY THE DECISION IS WRITTEN HERE AND NOT AT THE TERMINAL WRITE. The recheck runs at the guard,
+     * synchronously, immediately before the body. Writing the deny there is what makes the crash
+     * window safe: a process that dies after this line and before the settlement termination leaves a
+     * record whose durable denial recovery can settle (REFUSED/not-started) without re-running the
+     * tool. Writing it later, from the `tools/result` observer, would lose the decision in exactly the
+     * window the ruling must survive.
+     *
+     * FAIL-CLOSED: a throw is reported and rethrown. The caller keeps refusing the call (the body does
+     * not run); the eventual terminal write reports the gap rather than settling a decision nobody
+     * wrote. This method never invents a decision — it records the one the guard made.
+     */
+    recheckDenied ({ exec, callId, code, policyGeneration }) {
+      try {
+        const identity = identityOf(exec)
+        const existing = store.read(identity.executionId)
+        if (existing === null) return null
+        // NEVER BACK-FILL. Once the body may have started there is no pre-execution refusal to record;
+        // the call must settle by its real evidence (Stop, failure, UNKNOWN).
+        if (existing.state !== 'ADMITTED') {
+          fault(new Error(`recheck denial for ${identity.executionId} was not recorded: the record is ${existing.state}, so the body may already have run`), { phase: 'recheck', executionId: identity.executionId, toolName: exec?.name, refusalCode: code })
+          return existing
+        }
+        const facts = {
+          decision: 'deny',
+          decisionKind: 'recheck-decision',
+          reasonCode: code ?? 'ADMISSION_RECHECK_DENIED',
+          subjectExecutionId: identity.executionId,
+          callId: String(callId),
+          policyGeneration: typeof policyGeneration === 'string' ? policyGeneration : '',
+        }
+        return store.recordRecheckDecision({
+          executionId: identity.executionId,
+          decision: {
+            decisionId: `admission-recheck:${String(callId)}`,
+            // The digest binds the DECISION's fields (not the clock), so a repeated guard consultation
+            // is an idempotent duplicate rather than a conflict.
+            decisionDigest: digestOf(facts),
+            ...facts,
+            decidedAt: clock(),
+          },
+          at: clock(),
+        })
+      } catch (error) {
+        fault(error, { phase: 'recheck', callId, toolName: exec?.name, refusalCode: code })
+        throw error
+      }
+    },
+    /**
      * Close an OPEN record for a call that was refused BEFORE its body ran, when the refusal is the
      * ADMISSION's own decision (the record's admission reference already says `deny`).
      *
      * Idempotent: an already-terminal record is returned unchanged.
      *
-     * THE CASE THIS DELIBERATELY DOES NOT PAPER OVER. When a call was admitted as `allow` and refused
-     * LATER (the post-approval recheck), the frozen settlement contract has NO state for it: REFUSED is
-     * forbidden against a recorded allow (`SETTLEMENT_ADMISSION_MISMATCH`), CANCELLED requires a recorded
-     * Stop (`STOP_EVIDENCE_MISSING` - and fabricating an authority signal is not an option), the only
-     * path out of ADMITTED into FAILED is via RUNNING, and UNKNOWN would claim the effect was merely
-     * unobserved when the body provably never ran. Rather than write a state that lies, this reports the
-     * gap as a fault and leaves the record to recovery (UNKNOWN), and the durable execution FACT still
-     * carries `admission-refusal` + the refusal code. See
-     * `dev/agent-workflow/evidence/ute-a1/CONTRACT-CHANGE-REQUEST-settlement-recheck.md` - this is an
-     * escalation (a settlement invariant would have to be relaxed), not something to invent around.
+     * TWO REFUSALS, ONE TERMINAL STATE. A refusal AT admission cites a `deny` admission reference and
+     * settles REFUSED as before. A refusal AFTER admission (`allow` at pre-execute, the recheck said
+     * no) settles REFUSED only when the store can see its OWN durable recheck deny for this execution
+     * — that is the owner-approved Option A. If the deny is missing (its write failed, or nobody wrote
+     * it), the store still refuses the terminal write with `SETTLEMENT_ADMISSION_MISMATCH` and this
+     * port still reports `SETTLEMENT_CONTRACT_GAP` instead of settling a refusal it cannot evidence.
+     * See `dev/agent-workflow/evidence/ute-a1/CONTRACT-CHANGE-REQUEST-settlement-recheck.md`.
      */
     refused ({ exec, code, reason }) {
       try {
@@ -165,7 +214,7 @@ export function createSettlementWriter ({ store, identityOf, clock = () => new D
           })
         } catch (error) {
           if (error?.code !== 'SETTLEMENT_ADMISSION_MISMATCH') throw error
-          const gap = new Error(`SETTLEMENT_CONTRACT_GAP: ${identity.executionId} was admitted as allow and refused before its body (${code ?? 'ADMISSION_REFUSED'}); the frozen settlement contract has no terminal state for that (REFUSED is forbidden against an allow, CANCELLED needs a Stop) - the record stays ${existing.state} and recovery will mark it UNKNOWN, while the execution fact carries the refusal`)
+          const gap = new Error(`SETTLEMENT_CONTRACT_GAP: ${identity.executionId} was admitted as allow and refused before its body (${code ?? 'ADMISSION_REFUSED'}), but no durable recheck deny is recorded for it - REFUSED is forbidden against an allow without that decision - so the record stays ${existing.state} and is NOT settled as a refusal it cannot evidence`)
           gap.code = 'SETTLEMENT_CONTRACT_GAP'
           fault(gap, { phase: 'terminal', executionId: identity.executionId, toolName: exec?.name, refusalCode: code })
           return existing

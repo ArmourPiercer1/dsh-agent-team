@@ -73,7 +73,7 @@ named in that same row/section (the reviewable set uses this to keep the tables 
 
 ```
 $ node scripts/ute-cut-closure.mjs --check
-UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
 ```
 
 ```
@@ -299,15 +299,15 @@ All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim
 
 ```
 $ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
-ℹ tests 182
-ℹ pass 180
+ℹ tests 188
+ℹ pass 186
 ℹ fail 0
 ℹ skipped 2
 DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
 ```
 
-Round 68 adds three in-process arms (`ADM-116/117/118`); the population rises by three and the two
-disclosed skips are unchanged.
+Round 68 adds three in-process arms (`ADM-116/117/118`) and round 73 adds six settlement-Option-A arms
+(`ADM-119`…`ADM-124`); the two disclosed skips are unchanged.
 
 The **2 skips are disclosed and labelled**, never passes:
 
@@ -322,22 +322,23 @@ VNEXT-B-LADDER rungs=read,write,grep,web_fetch,bash,run_code negatives=6/6 posit
 ```
 $ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
 test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
-  tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67
-  DISCOVERED_AND_COLLECTED 834
+  tests=785 instruments=3 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32
+  DISCOVERED_AND_COLLECTED 733
   EXCLUDED_WITH_REASON     14
-  UNCOLLECTED              41
-  by runner: node=146 none=7 vitest=736
-DSH-TEST-CATALOG tests=889 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67 refused=0 findings=0
+  UNCOLLECTED              38
+  by runner: node=146 none=7 vitest=632
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
 ```
 
-Note for the reviewer: `41` is the **ceiling**, and the measured `UNCOLLECTED` is exactly `41` — the
-gate is green with zero headroom. It must not be read as "only 41 are uncollected by accident".
+Note for the reviewer: `41` is the **ceiling**; the measured `UNCOLLECTED` is `38`, so the gate is green
+with three units of headroom. New arms are added to an already-collected suite, so the catalog population
+(785 files) is unchanged by round 73.
 
 ### 4.3 `ute-cut-closure --check`
 
 ```
 $ node scripts/ute-cut-closure.mjs --check
-UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
 ```
 
 ### 4.4 `ute-p0-assets --check`
@@ -440,7 +441,7 @@ of three lawful shapes:
 | search face and the durable overlay | shape B implemented in this repo (`overlay-decision.mjs`, `admission-port.mjs`), shape A left open in `CONTRACT-CHANGE-REQUEST-search-face.md` | the change is to this repo's plugin and its fact shape, not to the host |
 | Alpha.6 review routing | typed refusal + two lawful shapes (`CAPABILITY-MATRIX-C.md:119-123`) | needs a compiled axis or an owner ruling; nothing upstream |
 | runtime team creation on a centre row | `ESCALATION-centre-row-creation-entrance.md` (405) | a ruling, not a patch (see §6.2) |
-| admitted-then-refused settlement | `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`; the centre reports `SETTLEMENT_CONTRACT_GAP` rather than fabricate a state | the frozen settlement contract has no legal state; relaxing it is an owner decision |
+| admitted-then-refused settlement | **RESOLVED in round 73 by owner-approved Option A** — the settled contract now appends a durable recheck deny beside the allow and reaches `REFUSED`/`not-started` (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`; `ADM-119`…`ADM-124`) | the change is inside this repo's settlement store and plugin, not a host patch; the original escalation was an owner decision and the owner ruled |
 
 ### 5.3 No DSH upstream patch exists
 
@@ -582,14 +583,23 @@ should be *admitted* against the same compiled ceiling with an explicitly unconf
 of `ESCALATION-realmless-admission.md`, whose "What the code says" snippet predates the round-35
 refusal). *Would prove it:* that ruling, then a test in both directions.
 
-### 6.10 The settlement contract has no state for "admitted, then refused before the body"
+### 6.10 "Admitted, then refused before the body" is now settled by an appended deny decision — but only in process
 
-`LEGAL_TRANSITIONS.ADMITTED` has no legal refusal when the cited decision is `allow`;
-`REFUSED` would be `SETTLEMENT_ADMISSION_MISMATCH` (`execution-settlement.ts:932`); `CANCELLED` needs a
-Stop; `UNKNOWN` asserts "the effect was not observed" when the body provably never ran. The centre reports
-`SETTLEMENT_CONTRACT_GAP` and leaves the record `ADMITTED` rather than lie
-(`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`). Option A is recommended there and **not implemented**.
-*Would prove it:* an owner ruling, then the state or the second decision reference.
+The old limit — `REFUSED` was `SETTLEMENT_ADMISSION_MISMATCH` against a cited `allow`, `CANCELLED` needed
+a Stop, and `UNKNOWN` asserted an unobserved effect for a body that provably never ran — was **closed in
+round 73** by owner-approved Option A (`docs/reviews/20261122-1536.txt` §2;
+`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, RESOLVED). The recheck now appends a durable deny
+decision for the same executionId (its own `policyGeneration`, the product's existing
+`ADMISSION_RECHECK_*` code) beside the untouched allow, and the settlement reaches
+`REFUSED`/`dispatch=not-started` citing it as `terminalDecision`. Without that durable deny the old
+`SETTLEMENT_ADMISSION_MISMATCH` / `SETTLEMENT_CONTRACT_GAP` path is unchanged (negative 1); a call that
+reached `RUNNING` cannot be back-filled (negative 2); a Stop remains `CANCELLED` (negative 3); the crash
+window recovers `REFUSED` without replay; and a failed deny write keeps the refusal and surfaces the gap.
+Arms `ADM-119`…`ADM-124` over the real store + real port + real ledger.
+
+*Still not proven:* the arms are **in-process mechanism** evidence. No live `D` judge boots a host
+through the recheck path in this round, so no row moves to PRODUCT-PROVEN (§6.1); the rule against
+inventing a Stop for a refusal is unchanged.
 
 ### 6.11 `host.service` capabilities' I/O is outside the member's fs ceiling
 
@@ -655,10 +665,10 @@ evidenced; neither is conflated with the other.
 
 1. **The candidate implements A1 + B + C.** The A1 cut is closed by measurement, not by prose: 148 sources
    gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 28 byte-identical dist placements, and the 37/180/
-   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-118` in the
-   `ute-vnext-a1` node leg (**180 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
+   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-124` in the
+   `ute-vnext-a1` node leg (**186 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
    suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count, as are
-   round 68's three entry-ordering arms.
+   round 68's three entry-ordering arms and round 73's six settlement-Option-A arms (`ADM-119`…`ADM-124`).
 2. **There is live D evidence for the listed items.** Eleven live judges are **PROVEN** at two agreeing
    boots each (round 71 added the two repaired judges to the earlier nine): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
    (repaired, not deleted), `d:member-read-denied` (round 71: channel-typed, provider guard facts
@@ -683,6 +693,9 @@ evidenced; neither is conflated with the other.
      channel remains unreachable on the LIVE path by design (its proof is in-process, `ADM-100`), and
      widening beyond the compiled ceiling remains impossible by design (§6.6, §6.13). A reviewer must
      not read "PROVEN" there as "the overlay can widen" or "the live path reaches the provider".
+   - **The round-73 settlement Option A is a MECHANISM result.** `ADM-119`…`ADM-124` prove the appended
+     deny, the two negatives, the crash window and the fail-closed write in process; no live `D` judge
+     boots a host through the recheck path, so no row moves to PRODUCT-PROVEN (§6.10).
 4. **Therefore:** the honest description is *"A1+B+C implemented and measured, with D live evidence for
    the named, listed items — **not** a completed product acceptance."* The centre behaves as an A1 cut
    should: an unwired controlled call is **refused with a typed code**, not forwarded. That is a
@@ -690,9 +703,10 @@ evidenced; neither is conflated with the other.
    release note, or review summary.
 
 **What would change this verdict** (in order): an owner ruling on the process lane (one declaration
-source), a ruling on the settlement gap, a ruling/wiring for Alpha.6's review-routing axis, a governed
-runtime creation entrance (shape 2, then 1), a real-model interleaving, and then a gate-grade product
-acceptance run that boots at a named commit and drives each C row end to end.
+source), a ruling/wiring for Alpha.6's review-routing axis, a governed runtime creation entrance (shape
+2, then 1), a real-model interleaving, and then a gate-grade product acceptance run that boots at a
+named commit and drives each C row end to end. (The settlement-recheck ruling was given and implemented
+in round 73; it removed a red cell, not the product-acceptance gap.)
 
 **Nothing in this report authorises a merge, a release, or a deployment.** `master` is untouched by this
 branch; the candidate must not auto-merge (`PR-BODY-draft.md` §"What this candidate is" and §"Not done
@@ -708,7 +722,7 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 | --- | --- | --- | --- |
 | 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `189d6cabca5b4de9ec3059f9949ab9302364f789` (+ this docs-only audit's commits), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
-| 3 | **Gates green** | all eight required commands pass at this HEAD (dispatch 182/180/0/2; catalog 889/41; closure four zeros; assets 37/180/69,512; docs-sync 0 findings; 28 placements; CI-required 10/0; migrated layer 238/238) | §4.1–§4.8, pasted verbatim |
+| 3 | **Gates green** | all eight required commands pass at this HEAD (dispatch 188/186/0/2; catalog 785/38; closure four zeros; assets 37/180/69,512; docs-sync 0 findings; 28 placements; CI-required 10/0; migrated layer 238/238) | §4.1–§4.8, pasted verbatim |
 | 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, 405 runtime creation, Alpha.6 routed path unreachable, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design | §3.2, §6.2–§6.5, §6.6, §6.13, §7 |
 | 5 | **Owner decisions listed** | six, each with what is measured, the lawful options and their cost | `OWNER-DECISIONS.md` |
 | 6 | **Host untouched** | pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty; CORE PATCH BUDGET = 0 with no upstream patch | §5.1–§5.3 |

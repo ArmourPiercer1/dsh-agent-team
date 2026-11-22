@@ -154,6 +154,8 @@ export const SETTLEMENT_REFUSAL_CODES = Object.freeze([
     'SETTLEMENT_NOT_FOUND',
     'SETTLEMENT_DIRECTORY_FSYNC_FAILED',
     'SETTLEMENT_WRITER_CONFLICT',
+    'RECHECK_NOT_BEFORE_BODY',
+    'RECHECK_DENY_BLOCKS_DISPATCH',
 ]);
 /**
  * The ONE error type this module throws. `code` is always one of
@@ -368,6 +370,39 @@ function freezeAdmissionReference(input) {
         ...(decidedAt === undefined ? {} : { decidedAt }),
     });
 }
+/** Freeze + validate ONE durable recheck decision. It only ever records a deny. */
+function freezeRecheckDecision(input) {
+    if (!isPlainObject(input)) {
+        throw refusal('SETTLEMENT_INPUT_INVALID', 'a recheck decision must be an object');
+    }
+    const decisionId = requireString(input.decisionId, 'recheck.decisionId');
+    const decisionDigest = requireString(input.decisionDigest, 'recheck.decisionDigest', 64);
+    if (!SHA256_HEX_RE.test(decisionDigest)) {
+        throw refusal('SETTLEMENT_INPUT_INVALID', 'recheck.decisionDigest must be the 64-hex sha256 of the decision it references', { decisionId });
+    }
+    if (input.decision !== 'deny') {
+        throw refusal('SETTLEMENT_INPUT_INVALID', "a recheck decision recorded beside an admission must be 'deny' — an allow is never appended as a refusal", { decisionId, decision: input.decision });
+    }
+    if (typeof input.policyGeneration !== 'string') {
+        throw refusal('SETTLEMENT_INPUT_INVALID', 'recheck.policyGeneration must be a string', { decisionId });
+    }
+    return Object.freeze({
+        decisionId,
+        decisionDigest,
+        decision: 'deny',
+        decisionKind: requireString(input.decisionKind, 'recheck.decisionKind'),
+        reasonCode: requireString(input.reasonCode, 'recheck.reasonCode'),
+        subjectExecutionId: requireString(input.subjectExecutionId, 'recheck.subjectExecutionId'),
+        callId: requireString(input.callId, 'recheck.callId'),
+        policyGeneration: input.policyGeneration,
+        decidedAt: requireTimestamp(input.decidedAt, 'recheck.decidedAt'),
+    });
+}
+/** The durable recheck deny recorded for this record, if any. */
+function recheckDenyOf(record) {
+    const decisions = record.recheckDecisions ?? [];
+    return decisions.find((decision) => decision.decision === 'deny' && decision.subjectExecutionId === record.identity.executionId);
+}
 /** Freeze + cross-check one contract fact against its settlement identity. */
 function freezeContractFact(input, identity) {
     if (!isPlainObject(input)) {
@@ -537,14 +572,23 @@ function assertLegalTransition(from, to) {
         });
     }
 }
-function assertAdmissionCoherence(admission, state) {
+function assertAdmissionCoherence(admission, state, record) {
     const decision = admissionDecision(admission);
     if (state === 'REFUSED') {
         // A refusal may cite a deny decision, or an admission that carries only a
         // request reference (no verdict exists to contradict the refusal). It may
-        // NEVER contradict a recorded 'allow'.
+        // NEVER contradict a recorded 'allow' — with ONE exception, owned by the
+        // post-approval recheck: the call was admitted as `allow`, the authority was
+        // revoked before the body, and the recheck wrote a SECOND, durable deny
+        // decision for the same executionId. That is the only way an `allow` may be
+        // followed by REFUSED, and the evidence must already be in this record (the
+        // store never takes the caller's word for it), which is what makes the
+        // relaxation survive a crash: the deny is on disk before the terminal write.
         if (decision === 'allow') {
-            throw refusal('SETTLEMENT_ADMISSION_MISMATCH', "a REFUSED settlement cannot reference a decision recorded as 'allow'", { decisionId: admission.decisionId, decision });
+            const durableDeny = record.state === 'ADMITTED' ? recheckDenyOf(record) : undefined;
+            if (durableDeny === undefined) {
+                throw refusal('SETTLEMENT_ADMISSION_MISMATCH', "a REFUSED settlement cannot reference a decision recorded as 'allow'", { decisionId: admission.decisionId, decision });
+            }
         }
         return;
     }
@@ -599,7 +643,7 @@ function assertTerminalObservation(state, observation, admission, record) {
     if (state === 'UNKNOWN' && observation.effectEvidence === 'none-confirmed') {
         throw refusal('UNCONFIRMED_WITHOUT_UNCERTAINTY', "UNKNOWN must not claim 'none-confirmed' effects — unknown is the absence of proof, not proof of absence", { state, effectEvidence: observation.effectEvidence });
     }
-    assertAdmissionCoherence(admission, state);
+    assertAdmissionCoherence(admission, state, record);
     if (state === 'CANCELLED') {
         const required = record.state === 'ADMITTED' ? 'pre-dispatch' : 'in-flight';
         if (!record.stops.some((stop) => stop.phase === required)) {
@@ -1016,12 +1060,36 @@ function validateRecordPayload(payload, source) {
     const observation = payload.observation;
     const record = payload;
     let contractFact;
+    let recheckDecisions;
+    let terminalDecision;
     try {
         freezeIdentity(identity);
         freezeAdmissionReference(admission);
         freezeObservation(observation);
         assertSameExecution(identity.executionId, observation.executionId, 'observation.executionId');
         assertSameExecution(identity.executionId, admission.subjectExecutionId, 'admission.subjectExecutionId');
+        if (payload.recheckDecisions !== undefined) {
+            if (!Array.isArray(payload.recheckDecisions))
+                fail('recheckDecisions must be an array when present');
+            const frozen = payload.recheckDecisions.map((value, index) => {
+                try {
+                    const decision = freezeRecheckDecision(value);
+                    assertSameExecution(identity.executionId, decision.subjectExecutionId, `recheckDecisions[${index}].subjectExecutionId`);
+                    return decision;
+                }
+                catch (error) {
+                    return fail(error instanceof Error ? error.message : String(error));
+                }
+            });
+            recheckDecisions = Object.freeze(frozen);
+        }
+        if (payload.terminalDecision !== undefined) {
+            const decision = freezeRecheckDecision(payload.terminalDecision);
+            const known = (recheckDecisions ?? []).some((entry) => entry.decisionId === decision.decisionId);
+            if (!known)
+                fail('terminalDecision is not one of the record\'s own recheckDecisions');
+            terminalDecision = decision;
+        }
         if (payload.contractFact !== undefined) {
             contractFact = freezeContractFact(payload.contractFact, identity);
             try {
@@ -1045,6 +1113,8 @@ function validateRecordPayload(payload, source) {
         observation: freezeObservation(observation),
         transitions: Object.freeze(transitions.map((t) => Object.freeze({ ...t }))),
         stops: Object.freeze(payload.stops.map((s) => Object.freeze({ ...s }))),
+        ...(recheckDecisions === undefined ? {} : { recheckDecisions }),
+        ...(terminalDecision === undefined ? {} : { terminalDecision }),
         missingEvidence: Object.freeze([...payload.missingEvidence]),
         ...(contractFact === undefined ? {} : { contractFact }),
     });
@@ -1185,6 +1255,52 @@ export function createExecutionSettlementStore(options) {
         });
         return { record: publishRecord(dir, record, durability), outcome: 'created', code: null };
     }
+    /**
+     * Append ONE durable post-approval recheck deny decision to an already-admitted record.
+     *
+     * APPEND-ONLY, BY CONSTRUCTION. The admission reference is never touched: the decision that allowed
+     * the call is the true history, and this is the later decision that refused it before the body. The
+     * decision must be for THIS execution, and it may only be appended while the record is ADMITTED —
+     * after the body has started there is no pre-execution refusal to back-fill (a RUNNING record must
+     * settle by its real evidence: Stop, failure, or UNKNOWN).
+     *
+     * FAIL-CLOSED AT THE CALLER. This method's failure is a NORMAL refusal code, so the caller can keep
+     * refusing the call and report the gap; it never leaves a record that claims a decision nobody wrote.
+     */
+    function recordRecheckDecision(input) {
+        if (!isPlainObject(input)) {
+            throw refusal('SETTLEMENT_INPUT_INVALID', 'recordRecheckDecision requires an input object');
+        }
+        assertLockHeld();
+        const executionId = requireString(input.executionId, 'executionId');
+        const at = requireTimestamp(input.at, 'at');
+        const decision = freezeRecheckDecision(input.decision);
+        assertSameExecution(executionId, decision.subjectExecutionId, 'recheck.subjectExecutionId');
+        const existing = readRecord(dir, executionId);
+        if (existing === null) {
+            throw refusal('SETTLEMENT_NOT_FOUND', `no settlement record for execution '${executionId}'`, { executionId });
+        }
+        const recorded = existing.recheckDecisions ?? [];
+        const sameDecision = recorded.find((entry) => entry.decisionId === decision.decisionId);
+        if (sameDecision !== undefined) {
+            if (sameDecision.decisionDigest === decision.decisionDigest &&
+                sameDecision.reasonCode === decision.reasonCode &&
+                sameDecision.policyGeneration === decision.policyGeneration &&
+                sameDecision.callId === decision.callId) {
+                return { record: existing, outcome: 'duplicate', code: 'DUPLICATE_SETTLEMENT' };
+            }
+            throw refusal('SETTLEMENT_CONFLICT', `recheck decision '${decision.decisionId}' is already recorded with different facts`, { executionId, decisionId: decision.decisionId });
+        }
+        if (existing.state !== 'ADMITTED') {
+            throw refusal('RECHECK_NOT_BEFORE_BODY', `a pre-execution recheck deny cannot be recorded for execution '${executionId}': its record is ${existing.state}, so the body may already have run and the deny would be a back-fill`, { executionId, state: existing.state, decisionId: decision.decisionId });
+        }
+        assertTimestampMonotonic(existing, at);
+        return {
+            record: publishRecord(dir, Object.freeze({ ...existing, recheckDecisions: Object.freeze([...recorded, decision]) }), durability),
+            outcome: 'recorded',
+            code: null,
+        };
+    }
     function enterRunning(input) {
         if (!isPlainObject(input)) {
             throw refusal('SETTLEMENT_INPUT_INVALID', 'enterRunning requires an input object');
@@ -1214,6 +1330,14 @@ export function createExecutionSettlementStore(options) {
         assertTimestampMonotonic(existing, at);
         if (admissionDecision(existing.admission) === 'deny') {
             throw refusal('SETTLEMENT_ADMISSION_MISMATCH', `execution '${executionId}' cannot enter RUNNING: its referenced decision is recorded as 'deny'`, { executionId, decisionId: existing.admission.decisionId });
+        }
+        // A DURABLE RECHECK DENY IS A BAR, NOT A NOTE. Once the recheck has refused the call before the
+        // body, entering RUNNING would execute the very call the durable decision refused — the record
+        // must settle REFUSED/not-started instead, and this check is what makes that a property of the
+        // store rather than a promise of one caller.
+        const recheckDeny = recheckDenyOf(existing);
+        if (recheckDeny !== undefined) {
+            throw refusal('RECHECK_DENY_BLOCKS_DISPATCH', `execution '${executionId}' cannot enter RUNNING: the durable recheck decision '${recheckDeny.decisionId}' already refused it before the body`, { executionId, decisionId: recheckDeny.decisionId, reasonCode: recheckDeny.reasonCode });
         }
         if (observation.dispatch === 'not-started') {
             throw refusal('SETTLEMENT_INPUT_INVALID', "enterRunning requires dispatch !== 'not-started'", { executionId });
@@ -1315,11 +1439,18 @@ export function createExecutionSettlementStore(options) {
         }
         assertTerminalObservation(state, observation, existing.admission, existing);
         const transition = nextTransition(existing, state, at, reason, missingEvidence, factsDigest);
+        // The recheck deny that terminated this record is named ON the settlement, so a reader does not
+        // have to search the decision log to learn WHICH decision refused the call. `admission` keeps the
+        // original `allow` untouched.
+        const terminalDecision = state === 'REFUSED' && admissionDecision(existing.admission) === 'allow'
+            ? recheckDenyOf(existing)
+            : undefined;
         return {
             record: publishRecord(dir, withContractSnapshot(withTransition(existing, transition, {
                 observation,
                 terminalReason: reason,
                 missingEvidence,
+                ...(terminalDecision === undefined ? {} : { terminalDecision }),
             }), input, existing.identity), durability),
             outcome: 'transitioned',
             code: null,
@@ -1331,6 +1462,35 @@ export function createExecutionSettlementStore(options) {
         for (const record of readAll(dir)) {
             if (TERMINAL_SETTLEMENT_STATES.includes(record.state))
                 continue;
+            // A DURABLE RECHECK DENY OUTLIVED THE PROCESS — AND THE BODY NEVER RAN. This is the crash window
+            // between the deny-decision write and the settlement termination: the decision is on disk, the
+            // record is still ADMITTED. Recovery settles the refusal the dead process already made; it does
+            // NOT classify the call as UNKNOWN, and it does NOT re-run it (the callId is not replayed: the
+            // durable admission record makes the next attempt a replay refusal).
+            const recheckDeny = record.state === 'ADMITTED' ? recheckDenyOf(record) : undefined;
+            if (recheckDeny !== undefined) {
+                const write = settle({
+                    executionId: record.identity.executionId,
+                    at: timestamp,
+                    state: 'REFUSED',
+                    reason: `${recheckDeny.reasonCode}: recovered the durable recheck deny '${recheckDeny.decisionId}' recorded before the body; the call never started and is not replayed`,
+                    observation: {
+                        executionId: record.identity.executionId,
+                        dispatch: 'not-started',
+                        bodyOutcome: 'not-started',
+                        effectEvidence: 'none-confirmed',
+                        observedEffects: [],
+                    },
+                });
+                results.push(Object.freeze({
+                    executionId: record.identity.executionId,
+                    before: record.state,
+                    after: write.record.state,
+                    outcome: write.outcome,
+                    missingEvidence: Object.freeze([]),
+                }));
+                continue;
+            }
             const missingEvidence = missingEvidenceForRecovery(record);
             const write = settle({
                 executionId: record.identity.executionId,
@@ -1353,7 +1513,7 @@ export function createExecutionSettlementStore(options) {
     function list() {
         return readAll(dir);
     }
-    return Object.freeze({ dir, writerLock, recordAdmission, enterRunning, recordStop, settle, recoverUnsettled, read, list });
+    return Object.freeze({ dir, writerLock, recordAdmission, recordRecheckDecision, enterRunning, recordStop, settle, recoverUnsettled, read, list });
 }
 function readAll(dir) {
     let names;

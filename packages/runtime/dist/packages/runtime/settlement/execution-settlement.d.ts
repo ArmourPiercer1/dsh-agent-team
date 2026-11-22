@@ -13,7 +13,7 @@ export declare const SETTLEMENT_STATES: readonly SettlementState[];
 /** The states from which no transition exists. */
 export declare const TERMINAL_SETTLEMENT_STATES: readonly SettlementState[];
 /** The closed set of named refusals this module can produce. */
-export type SettlementRefusalCode = 'DUPLICATE_SETTLEMENT' | 'SETTLEMENT_CONFLICT' | 'ILLEGAL_TRANSITION' | 'EFFECT_CLAIM_WITHOUT_OBSERVATION' | 'SETTLEMENT_CROSS_WIRED' | 'SETTLEMENT_ADMISSION_MISMATCH' | 'SETTLEMENT_ADMISSION_REFERENCE_INVALID' | 'SETTLEMENT_INPUT_INVALID' | 'SETTLEMENT_TIMESTAMP_REGRESSION' | 'UNCONFIRMED_WITHOUT_UNCERTAINTY' | 'STOP_EVIDENCE_MISSING' | 'ILLEGAL_STOP_TIMING' | 'SETTLEMENT_CORRUPT' | 'SETTLEMENT_WRITE_FAILED' | 'SETTLEMENT_NOT_FOUND' | 'SETTLEMENT_DIRECTORY_FSYNC_FAILED' | 'SETTLEMENT_WRITER_CONFLICT';
+export type SettlementRefusalCode = 'DUPLICATE_SETTLEMENT' | 'SETTLEMENT_CONFLICT' | 'ILLEGAL_TRANSITION' | 'EFFECT_CLAIM_WITHOUT_OBSERVATION' | 'SETTLEMENT_CROSS_WIRED' | 'SETTLEMENT_ADMISSION_MISMATCH' | 'SETTLEMENT_ADMISSION_REFERENCE_INVALID' | 'SETTLEMENT_INPUT_INVALID' | 'SETTLEMENT_TIMESTAMP_REGRESSION' | 'UNCONFIRMED_WITHOUT_UNCERTAINTY' | 'STOP_EVIDENCE_MISSING' | 'ILLEGAL_STOP_TIMING' | 'SETTLEMENT_CORRUPT' | 'SETTLEMENT_WRITE_FAILED' | 'SETTLEMENT_NOT_FOUND' | 'SETTLEMENT_DIRECTORY_FSYNC_FAILED' | 'SETTLEMENT_WRITER_CONFLICT' | 'RECHECK_NOT_BEFORE_BODY' | 'RECHECK_DENY_BLOCKS_DISPATCH';
 /** Every refusal code, so a caller/test can enumerate the closed vocabulary. */
 export declare const SETTLEMENT_REFUSAL_CODES: readonly SettlementRefusalCode[];
 /**
@@ -63,6 +63,33 @@ export interface AdmissionReference {
     /** Required (non-empty) for 'control-request-reference'; absent otherwise. */
     readonly requestIds?: readonly string[];
     readonly decidedAt?: string;
+}
+/**
+ * ONE durable post-approval recheck decision, appended to the record beside (never over) the admission
+ * reference. `admission` stays the true history — the decision that allowed the call — and this is the
+ * LATER decision that refused it before the body.
+ *
+ * It is a decision reference, not a verdict minted by this store: the caller (the admission point)
+ * made it, this module only records it, exactly as it does for `admission`. `policyGeneration` is the
+ * generation the recheck answered from, which is what makes a revocation visible as a DIFFERENT
+ * generation rather than a re-written allow.
+ */
+export interface RecheckDecisionReference {
+    /** Stable id, derived from the callId: `admission-recheck:<callId>`. */
+    readonly decisionId: string;
+    /** Stable 64-hex digest of the decision's own fields (id, reason code, generation, subject). */
+    readonly decisionDigest: string;
+    /** Always 'deny' — a recheck decision that allows is not appended, it is simply not a refusal. */
+    readonly decision: 'deny';
+    readonly decisionKind: string;
+    /** The product's own recheck code (e.g. `ADMISSION_RECHECK_LANE_DENY`). */
+    readonly reasonCode: string;
+    /** The execution the decision was issued for; cross-checked against the record identity. */
+    readonly subjectExecutionId: string;
+    readonly callId: string;
+    /** The policy generation that refused, which is NOT the generation the allow was issued under. */
+    readonly policyGeneration: string;
+    readonly decidedAt: string;
 }
 /** How far the execution got. `DISPATCH_ENTERED` does not imply the body ran. */
 export type DispatchPhase = 'not-started' | 'started' | 'quiesced' | 'termination-unconfirmed';
@@ -152,6 +179,16 @@ export interface ExecutionSettlementRecord {
     readonly observation: ExecutionObservation;
     readonly transitions: readonly SettlementTransition[];
     readonly stops: readonly StopRecord[];
+    /**
+     * Append-only post-approval recheck decisions, in the order they were recorded. Absent on records
+     * written before this field existed (read as `[]`), and never a rewrite of `admission`.
+     */
+    readonly recheckDecisions?: readonly RecheckDecisionReference[];
+    /**
+     * The recheck deny that terminated this record, when the terminal `REFUSED` came from a durable
+     * recheck decision rather than from the admission itself. `admission` still says `allow`.
+     */
+    readonly terminalDecision?: RecheckDecisionReference;
     readonly terminalReason: string | null;
     readonly missingEvidence: readonly string[];
     readonly createdAt: string;
@@ -174,6 +211,12 @@ export interface RecordAdmissionInput {
     readonly reason?: string;
     /** Set by the Writer adapter; the store only freezes and cross-checks it. */
     readonly contractFact?: ContractExecutionFact;
+}
+/** Input to `recordRecheckDecision`. */
+export interface RecordRecheckDecisionInput {
+    readonly executionId: string;
+    readonly decision: RecheckDecisionReference;
+    readonly at: string;
 }
 /** Input to `enterRunning`. */
 export interface EnterRunningInput {
@@ -237,6 +280,7 @@ export interface ExecutionSettlementStore {
     readonly dir: string;
     readonly writerLock: SettlementWriterLockInfo;
     recordAdmission(input: RecordAdmissionInput): SettlementWriteResult;
+    recordRecheckDecision(input: RecordRecheckDecisionInput): SettlementWriteResult;
     enterRunning(input: EnterRunningInput): SettlementWriteResult;
     recordStop(input: RecordStopInput): SettlementWriteResult;
     settle(input: SettleInput): SettlementWriteResult;

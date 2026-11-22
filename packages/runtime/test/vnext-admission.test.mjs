@@ -820,7 +820,7 @@ test('ADM-37 — a refusal is recorded as REFUSED, and the recheck can actually 
   const store2 = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'centre-37b-')) })
   const host2 = makeHost()
   const wide = bindWith()
-  const narrowed = bindWith({ policy: { read: lane(['/b']) } })
+  const narrowed = bindWith({ policy: { read: lane(['/b']), revision: 'gen-2' } })
   let phase = 'pre'
   const recheckFaults = []
   const recheckFacts = []
@@ -835,12 +835,20 @@ test('ADM-37 — a refusal is recorded as REFUSED, and the recheck can actually 
   const recheckDecision = await host2.dispatch({ callId: 'call-read', name: 'read', arguments: { file_path: '/a/x' } })
   assert.equal(recheckDecision.kind, 'deny', 'a lane narrowed between the two consultations must refuse')
   assert.match(recheckDecision.reason, /ADMISSION_RECHECK/u)
-  // And the case the contract cannot express: admitted as `allow`, refused by the recheck. No terminal
-  // state exists for it (REFUSED is forbidden against an allow, CANCELLED needs a Stop), so the centre
-  // REPORTS the gap instead of writing a state that lies - and the durable fact still carries the refusal.
-  // This is an escalation, recorded in CONTRACT-CHANGE-REQUEST-settlement-recheck.md.
-  assert.equal(store2.read('exec-call-read').state, 'ADMITTED', 'no fabricated terminal state')
-  assert.ok(recheckFaults.some(([error]) => error?.code === 'SETTLEMENT_CONTRACT_GAP'), 'the gap is reported, not swallowed')
+  // The case the OLD contract could not express is now the owner-approved Option A: the recheck writes a
+  // SECOND durable deny decision (same executionId, its OWN generation) beside the untouched allow, and
+  // the settlement terminates REFUSED/not-started citing THAT decision. No gap is reported: the refusal
+  // is evidenced by a durable decision, not by a fabricated state.
+  const rechecked = store2.read('exec-call-read')
+  assert.equal(rechecked.state, 'REFUSED', 'the recheck refusal is terminal REFUSED, not ADMITTED')
+  assert.equal(rechecked.observation.dispatch, 'not-started')
+  assert.equal(rechecked.observation.bodyOutcome, 'not-started')
+  assert.equal(rechecked.admission.decision, 'allow', 'the ORIGINAL allow is preserved, never rewritten')
+  assert.equal(rechecked.terminalDecision.decisionId, 'admission-recheck:call-read')
+  assert.equal(rechecked.terminalDecision.decision, 'deny')
+  assert.equal(rechecked.terminalDecision.reasonCode, 'ADMISSION_RECHECK_LANE_DENY')
+  assert.equal(rechecked.terminalDecision.policyGeneration, 'gen-2', 'the deny names the generation that refused')
+  assert.equal(recheckFaults.some(([error]) => error?.code === 'SETTLEMENT_CONTRACT_GAP'), false, 'a durable deny means no gap')
   assert.match(recheckFacts.find((fact) => fact.callId === 'call-read').refusalCode, /ADMISSION_RECHECK/u)
 
   // (3) IDEMPOTENT DISPOSE: `disposers.reverse()` mutates in place, so a second dispose would re-run the
@@ -5845,4 +5853,333 @@ test('ADM-118 — C-alpha6 recorded refusal (c): a covered-face fault elsewhere 
   createAlpha6RowRefusalHook({ onRecorded: (row) => recorded.push(row) })(String(badViolation), badField)
   assert.equal(recorded.length, 0, 'a covered-face config fault elsewhere writes no Alpha.6 refusal')
   assert.equal(existsSync(join(dir, 'alpha6.host-surface.facts.jsonl')), false)
+})
+
+// ================================================ SETTLEMENT OPTION A (round 73)
+//
+// "Admitted as allow, then refused before the body" now has a TRUTHFUL terminal state, under the
+// owner-approved Option A (docs/reviews/20261122-1536.txt §2; CONTRACT-CHANGE-REQUEST-settlement-
+// recheck.md): the original allow is never rewritten, the recheck appends a NEW durable deny decision
+// for the same call (same executionId, its own policyGeneration), and settlement may then reach
+// REFUSED/not-started citing THAT decision — only while the body demonstrably never started.
+//
+// The six arms below run over the REAL store, the REAL settlement port and the REAL fact ledger. The
+// two negatives are what keep the relaxation from becoming a hole: without a durable deny the old
+// SETTLEMENT_ADMISSION_MISMATCH still refuses the terminal write, and a call that reached RUNNING can
+// never be back-filled into a pre-execution refusal.
+
+/** One dispatch that stops at the guard, between the two consultations, so the recheck can refuse. */
+const recheckWorld = async (label, { dir, store, ledger } = {}) => {
+  const world = await centreWorld(label, {
+    binding: binding({ policyGeneration: 'gen-1' }),
+    ...(dir === undefined ? {} : { dir }),
+    ...(store === undefined ? {} : { store }),
+    ...(ledger === undefined ? {} : { ledger }),
+  })
+  let phase = 'pre'
+  const wide = binding({ policyGeneration: 'gen-1' })
+  const narrow = binding({ policyGeneration: 'gen-2', read: lane(['/work/b']) })
+  world.setResolve(() => (phase === 'pre' ? wide : narrow))
+  const exec = readExec(`${label}-1`)
+  const preVerdict = await world.preExecute(exec)
+  assert.equal(preVerdict.kind, 'allow', 'the call is admitted BEFORE the authority changes')
+  const executionId = world.executionIdOf(exec)
+  const opened = world.store.read(executionId)
+  const allowFact = world.ledger.readAll().find((record) => record.kind === 'invocation-authority' && record.callId === exec.callId)
+  phase = 'guard'
+  const refusal = world.guard(exec)
+  return { world, exec, phase, executionId, opened, allowFact, refusal, setPhase: (value) => { phase = value } }
+}
+
+test('ADM-119 — SETTLEMENT OPTION A (positive): allow → durable recheck deny → REFUSED/not-started citing the deny; the allow survives unchanged', async () => {
+  const { world, exec, executionId, opened, allowFact, refusal } = await recheckWorld('option-a')
+  try {
+    // (1) THE ORDER IS THE GUARANTEE. At the moment the guard refuses, the durable deny is ALREADY on
+    //     disk while the record is still ADMITTED: the decision precedes the termination, which is what
+    //     makes the crash window (ADM-123) recoverable instead of lossy.
+    assert.match(String(refusal), /^ADMISSION_RECHECK_LANE_DENY:/u, 'the refusal is the product\'s existing recheck code')
+    const denied = world.store.read(executionId)
+    assert.equal(denied.state, 'ADMITTED', 'the deny decision is written BEFORE the settlement terminates')
+    assert.equal(denied.recheckDecisions.length, 1, 'exactly one durable deny decision is appended')
+    assert.equal(denied.admission.decision, 'allow', 'the admission still says allow')
+    assert.equal(denied.terminalDecision, undefined)
+
+    // (2) THE HOST NOW SETTLES THE REFUSED CALL through the real port.
+    assert.equal(world.body.count, 0, 'the body never ran')
+    world.result(exec, { isError: true, error: { message: String(refusal) } })
+    const record = world.store.read(executionId)
+
+    // (3) THE TERMINAL STATE. REFUSED, not-started, and citing the SECOND decision — never UNKNOWN,
+    //     never CANCELLED (there was no Stop), never FAILED (the body did not run).
+    assert.equal(record.state, 'REFUSED')
+    assert.equal(record.observation.dispatch, 'not-started')
+    assert.equal(record.observation.bodyOutcome, 'not-started')
+    assert.equal(record.observation.effectEvidence, 'none-confirmed')
+    assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'REFUSED'], 'the call never entered an execution state')
+    assert.match(String(record.terminalReason), /ADMISSION_RECHECK_LANE_DENY/u)
+    assert.equal(record.terminalDecision.decision, 'deny')
+    assert.equal(record.terminalDecision.decisionId, `admission-recheck:${exec.callId}`)
+    assert.equal(record.terminalDecision.subjectExecutionId, executionId, 'the deny is for the SAME execution')
+    assert.equal(record.terminalDecision.callId, exec.callId, 'and for the SAME callId')
+    assert.deepEqual(record.terminalDecision, record.recheckDecisions[0], 'terminalDecision IS the appended deny')
+
+    // (4) THE ORIGINAL ALLOW IS TRUE HISTORY: still readable, byte-for-byte unchanged, and it names the
+    //     generation it was issued under. The deny names a DIFFERENT generation — that difference is the
+    //     revocation, not a rewritten allow.
+    assert.deepEqual(record.admission, opened.admission, 'the admission reference is untouched by the recheck')
+    assert.equal(record.admission.decision, 'allow')
+    assert.equal(record.admission.decisionId, `admission:${exec.callId}`)
+    const allowFactAfter = world.ledger.readAll().find((entry) => entry.kind === 'invocation-authority' && entry.callId === exec.callId)
+    assert.deepEqual(allowFactAfter, allowFact, 'the durable allow fact is unchanged after the refusal')
+    assert.equal(allowFact.decision, 'allow')
+    assert.equal(allowFact.policyGeneration, 'gen-1', 'the allow was issued under gen-1')
+    assert.equal(record.terminalDecision.policyGeneration, 'gen-2', 'the deny was issued under gen-2')
+    assert.notEqual(record.terminalDecision.policyGeneration, allowFact.policyGeneration)
+
+    // (5) The durable execution fact keeps the provenance too, and nothing is left open to recover.
+    const execution = world.ledger.readAll().find((entry) => entry.kind === 'execution' && entry.callId === exec.callId)
+    assert.equal(execution.outcome, 'admission-refusal')
+    assert.equal(execution.refusalCode, 'ADMISSION_RECHECK_LANE_DENY')
+    assert.equal(world.store.recoverUnsettled(new Date().toISOString()).length, 0, 'nothing is left ADMITTED')
+    assert.deepEqual(world.faults, [], 'no gap, no fault: the refusal is fully evidenced')
+  } finally {
+    world.close()
+  }
+})
+
+test('ADM-120 — SETTLEMENT OPTION A (negative 1): REFUSED against an allow WITHOUT a durable recheck deny still fails exactly as today', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'option-a-no-deny-'))
+  const store = createExecutionSettlementStore({ dir })
+  const faults = []
+  const identityOf = (exec) => ({ executionId: `exec-${exec.callId}`, actorId: 'agent-1', worldId: 'session-1' })
+  const writer = createSettlementWriter({ store, identityOf, onFault: (error, context) => faults.push([error, context]) })
+  const exec = readExec('no-deny-1')
+
+  // Admitted as allow, nothing else. THE RELAXATION IS NOT "REFUSED FROM ADMITTED": it is "REFUSED FROM
+  // ADMITTED WITH A DURABLE RECHECK DENY", and without the deny the old invariant is intact.
+  writer.admitted({ exec, callId: exec.callId, admission: { kind: 'allow', code: 'LANE_ALLOW', reason: 'in lane' } })
+  const observation = { executionId: 'exec-no-deny-1', dispatch: 'not-started', bodyOutcome: 'not-started', effectEvidence: 'none-confirmed', observedEffects: [] }
+  assert.throws(
+    () => store.settle({ executionId: 'exec-no-deny-1', state: 'REFUSED', observation, at: new Date().toISOString(), reason: 'a refusal nobody recorded' }),
+    (error) => error?.code === 'SETTLEMENT_ADMISSION_MISMATCH',
+    'the store still refuses a REFUSED that contradicts a recorded allow with no second decision',
+  )
+  // ...and the PORT still reports the gap and leaves the record open rather than settle a lie.
+  writer.refused({ exec, code: 'ADMISSION_RECHECK_LANE_DENY', reason: 'refused' })
+  assert.equal(store.read('exec-no-deny-1').state, 'ADMITTED', 'no terminal state is fabricated')
+  assert.ok(faults.some(([error]) => error?.code === 'SETTLEMENT_CONTRACT_GAP'), 'the gap is surfaced')
+  assert.deepEqual(store.read('exec-no-deny-1').recheckDecisions ?? [], [], 'no decision was invented')
+})
+
+test('ADM-121 — SETTLEMENT OPTION A (negative 2): a call that reached RUNNING cannot be back-filled with a pre-execution refusal', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'option-a-running-'))
+  const store = createExecutionSettlementStore({ dir })
+  const faults = []
+  const identityOf = (exec) => ({ executionId: `exec-${exec.callId}`, actorId: 'agent-1', worldId: 'session-1' })
+  const writer = createSettlementWriter({ store, identityOf, onFault: (error, context) => faults.push([error, context]) })
+  const exec = readExec('running-1')
+  writer.admitted({ exec, callId: exec.callId, admission: { kind: 'allow', code: 'LANE_ALLOW', reason: 'in lane' } })
+  writer.running({ exec })
+  assert.equal(store.read('exec-running-1').state, 'RUNNING')
+
+  // (1) The deny decision cannot be appended after dispatch: a "pre-execution" refusal recorded after
+  //     the body started would be a back-fill, and the store names the reason it refuses it.
+  assert.throws(
+    () => store.recordRecheckDecision({
+      executionId: 'exec-running-1',
+      at: new Date().toISOString(),
+      decision: {
+        decisionId: 'admission-recheck:running-1',
+        decisionDigest: 'a'.repeat(64),
+        decision: 'deny',
+        decisionKind: 'recheck-decision',
+        reasonCode: 'ADMISSION_RECHECK_LANE_DENY',
+        subjectExecutionId: 'exec-running-1',
+        callId: 'running-1',
+        policyGeneration: 'gen-2',
+        decidedAt: new Date().toISOString(),
+      },
+    }),
+    (error) => error?.code === 'RECHECK_NOT_BEFORE_BODY',
+    'a deny decision cannot be appended once the body may have run',
+  )
+
+  // (2) And the settlement cannot be forced to REFUSED from RUNNING: the state machine has no such
+  //     transition, so the port's refused() throws rather than silently rewriting the record.
+  const observation = { executionId: 'exec-running-1', dispatch: 'not-started', bodyOutcome: 'not-started', effectEvidence: 'none-confirmed', observedEffects: [] }
+  assert.throws(
+    () => store.settle({ executionId: 'exec-running-1', state: 'REFUSED', observation, at: new Date().toISOString(), reason: 'back-filled' }),
+    (error) => error?.code === 'ILLEGAL_TRANSITION',
+    'RUNNING → REFUSED is not a legal transition',
+  )
+  assert.throws(
+    () => writer.refused({ exec, code: 'ADMISSION_RECHECK_LANE_DENY', reason: 'back-filled' }),
+    (error) => error?.code === 'ILLEGAL_TRANSITION',
+    'the port does not paper over the illegal transition',
+  )
+  assert.equal(store.read('exec-running-1').state, 'RUNNING', 'the record keeps its real phase')
+  assert.deepEqual(store.read('exec-running-1').recheckDecisions ?? [], [])
+
+  // (3) The mirror-image guard: once a durable deny EXISTS, the call cannot enter RUNNING either — the
+  //     store itself is the bar, not a promise of one caller.
+  const dir2 = mkdtempSync(join(tmpdir(), 'option-a-deny-bar-'))
+  const store2 = createExecutionSettlementStore({ dir: dir2 })
+  const writer2 = createSettlementWriter({
+    store: store2,
+    identityOf: (value) => ({ executionId: `exec-${value.callId}`, actorId: 'agent-1', worldId: 'session-1' }),
+    onFault: () => {},
+  })
+  const exec2 = readExec('deny-bar-1')
+  writer2.admitted({ exec: exec2, callId: exec2.callId, admission: { kind: 'allow', code: 'LANE_ALLOW', reason: 'in lane' } })
+  writer2.recheckDenied({ exec: exec2, callId: exec2.callId, code: 'ADMISSION_RECHECK_LANE_DENY', reason: 'narrowed', policyGeneration: 'gen-2' })
+  assert.throws(
+    () => writer2.running({ exec: exec2 }),
+    (error) => error?.code === 'RECHECK_DENY_BLOCKS_DISPATCH',
+    'a durable recheck deny blocks the body even if a caller forgets to check it',
+  )
+})
+
+test('ADM-122 — SETTLEMENT OPTION A (negative 3): a Stop still settles CANCELLED with its own fact, and a refusal is never CANCELLED', async () => {
+  // (1) THE STOP PATH. The host's OWN signal is the authority: a pre-dispatch Stop, CANCELLED, and no
+  //     fabricated refusal decision — the two are different events and must stay different states.
+  const stopWorld = await centreWorld('option-a-stop', { binding: binding({ policyGeneration: 'gen-1' }) })
+  try {
+    const controller = new AbortController()
+    const exec = readExec('option-a-stop-1', controller.signal)
+    assert.equal((await stopWorld.preExecute(exec)).kind, 'allow')
+    const opened = stopWorld.store.read(stopWorld.executionIdOf(exec))
+    assert.equal(opened.state, 'ADMITTED')
+    controller.abort()
+    const stopped = stopWorld.guard(exec)
+    assert.match(String(stopped), /ADMISSION_STOPPED/u)
+    stopWorld.result(exec, { isError: true, error: { message: String(stopped) } })
+    const record = stopWorld.store.read(stopWorld.executionIdOf(exec))
+    assert.equal(record.state, 'CANCELLED', 'a Stop is CANCELLED, never REFUSED')
+    assert.deepEqual(record.stops.map((entry) => entry.phase), ['pre-dispatch'], 'the Stop fact is recorded')
+    assert.deepEqual(record.transitions.map((entry) => entry.to), ['ADMITTED', 'CANCELLED'])
+    assert.equal(record.admission.decision, 'allow', 'the admission is still allow')
+    assert.deepEqual(record.recheckDecisions ?? [], [], 'no deny decision is invented for a Stop')
+    assert.equal(record.terminalDecision, undefined)
+    assert.equal(stopWorld.ledger.readAll().find((entry) => entry.kind === 'execution' && entry.callId === 'option-a-stop-1').refusalCode, 'ADMISSION_STOPPED')
+  } finally {
+    stopWorld.close()
+  }
+
+  // (2) THE REFUSAL PATH, same assembly without a Stop: REFUSED with NO stop record. The refusal is
+  //     never laundered into CANCELLED (which would make a security refusal look like an operator act).
+  const refused = await recheckWorld('option-a-not-cancelled')
+  try {
+    refused.world.result(refused.exec, { isError: true, error: { message: String(refused.refusal) } })
+    const record = refused.world.store.read(refused.executionId)
+    assert.equal(record.state, 'REFUSED')
+    assert.notEqual(record.state, 'CANCELLED')
+    assert.deepEqual(record.stops, [], 'a recheck refusal records no Stop')
+    assert.equal(record.terminalDecision.decision, 'deny')
+  } finally {
+    refused.world.close()
+  }
+})
+
+test('ADM-123 — SETTLEMENT OPTION A (crash window): deny written, settlement not terminated — a fresh store recovers REFUSED/not-started from the durable deny, never replays the call', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'option-a-crash-'))
+  const ledgerPath = join(dir, 'option-a-crash.facts.jsonl')
+  const settlementDir = join(dir, 'settlement')
+  const ledger1 = openFactLedger({ path: ledgerPath })
+  const store1 = createExecutionSettlementStore({ dir: settlementDir })
+  const crashed = await recheckWorld('option-a-crash', { dir, ledger: ledger1, store: store1 })
+  const callId = crashed.exec.callId
+  try {
+    // THE WINDOW: the deny is durable, the record is still ADMITTED, and the process "dies" before the
+    // host ever emits a result. No tools/result, no terminal write.
+    assert.match(String(crashed.refusal), /^ADMISSION_RECHECK_LANE_DENY:/u)
+    const beforeCrash = store1.read(crashed.executionId)
+    assert.equal(beforeCrash.state, 'ADMITTED')
+    assert.equal(beforeCrash.recheckDecisions.length, 1)
+    assert.equal(beforeCrash.terminalDecision, undefined)
+    assert.equal(ledger1.readAll().filter((entry) => entry.kind === 'execution' && entry.callId === callId).length, 0, 'the crash happened before any execution fact')
+  } finally {
+    crashed.world.dispose()
+  }
+
+  // (1) A FRESH STORE over the same directory: recovery reads the durable deny and settles the refusal
+  //     the dead process already made. It does NOT classify the call as UNKNOWN.
+  const store2 = createExecutionSettlementStore({ dir: settlementDir })
+  const recovered = store2.recoverUnsettled(new Date().toISOString())
+  assert.equal(recovered.length, 1, 'exactly the one open record is reconciled')
+  assert.equal(recovered[0].before, 'ADMITTED')
+  assert.equal(recovered[0].after, 'REFUSED')
+  const record = store2.read(crashed.executionId)
+  assert.equal(record.state, 'REFUSED')
+  assert.equal(record.observation.dispatch, 'not-started')
+  assert.equal(record.observation.bodyOutcome, 'not-started')
+  assert.equal(record.observation.effectEvidence, 'none-confirmed')
+  assert.equal(record.terminalDecision.decisionId, `admission-recheck:${callId}`)
+  assert.equal(record.admission.decision, 'allow', 'the allow the dead process recorded is still the history')
+  assert.match(String(record.terminalReason), /ADMISSION_RECHECK_LANE_DENY/u)
+  // Idempotent: a second recovery rewrites nothing.
+  assert.equal(store2.recoverUnsettled(new Date().toISOString()).length, 0)
+
+  // (2) THE CALL IS NOT REPLAYED. A fresh ledger over the same file still holds the durable admission,
+  //     so the same callId meets the replay rule at pre-execute — before the lane, before the body —
+  //     and the body counter never moves.
+  const ledger2 = openFactLedger({ path: ledgerPath })
+  assert.equal(ledger2.has(callId), true, 'the durable admission survived the crash')
+  const rebooted = await centreWorld('option-a-crash-reboot', { dir, ledger: ledger2, store: store2, binding: binding() })
+  try {
+    const replay = readExec(callId)
+    const verdict = await rebooted.preExecute(replay)
+    assert.equal(verdict.kind, 'deny')
+    assert.match(String(verdict.reason), /ADMISSION_REPLAY/u, 'the callId is refused as a replay, not re-judged')
+    rebooted.result(replay, { isError: true, error: { message: String(verdict.reason) } })
+    assert.equal(rebooted.body.count, 0, 'the tool body is NOT re-run on recovery')
+    const authorityRecords = ledger2.readAll().filter((entry) => entry.kind === 'invocation-authority' && entry.callId === callId)
+    assert.equal(authorityRecords.length, 1, 'no second admission record was appended for the replay')
+    const executionFacts = ledger2.readAll().filter((entry) => entry.kind === 'execution' && entry.callId === callId)
+    assert.equal(executionFacts.length, 1, 'the replay refusal is the only execution fact; recovery itself wrote none')
+    assert.equal(executionFacts[0].refusalCode, 'ADMISSION_REPLAY', 'and it names the replay, not a tool body outcome')
+    assert.equal(store2.read(crashed.executionId).state, 'REFUSED', 'the recovered terminal state is not rewritten by the replay')
+  } finally {
+    rebooted.close()
+  }
+})
+
+test('ADM-124 — SETTLEMENT OPTION A (fail-closed): when the deny-decision write fails, the call still does not run and the failure is surfaced', async () => {
+  const { mkdtempSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const realStore = createExecutionSettlementStore({ dir: mkdtempSync(join(tmpdir(), 'option-a-fail-')) })
+  const failingStore = {
+    ...realStore,
+    recordRecheckDecision: () => { const error = new Error('disk full: the deny decision is not durable'); error.code = 'SETTLEMENT_WRITE_FAILED'; throw error },
+  }
+  const world = await recheckWorld('option-a-fail', { store: failingStore })
+  try {
+    // (1) The recheck still REFUSES. The body never runs: a persistence failure must never turn a
+    //     refusal into a permission.
+    assert.match(String(world.refusal), /^ADMISSION_RECHECK_LANE_DENY:/u)
+    assert.equal(world.world.body.count, 0, 'the refusal happens even though the decision could not be written')
+    assert.ok(
+      world.world.faults.some(([error, context]) => context?.phase === 'recheck' && /disk full/u.test(String(error?.message))),
+      'the persistence failure is surfaced through the fault sink',
+    )
+    // (2) The settlement is NOT silently settled: there is no durable deny, so the terminal write
+    //     reports the gap and the record stays ADMITTED (recovery may classify it UNKNOWN, which is
+    //     honest about what this process could prove).
+    world.world.result(world.exec, { isError: true, error: { message: String(world.refusal) } })
+    const record = world.world.store.read(world.executionId)
+    assert.equal(record.state, 'ADMITTED', 'a refusal nobody could write down is not settled as a refusal')
+    assert.equal(record.terminalDecision, undefined)
+    assert.ok(world.world.faults.some(([error]) => error?.code === 'SETTLEMENT_CONTRACT_GAP'), 'the gap is surfaced, never swallowed')
+  } finally {
+    world.world.close()
+  }
 })

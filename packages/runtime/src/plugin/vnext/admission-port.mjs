@@ -709,6 +709,35 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
   }
 
   /**
+   * A PRE-BODY REFUSAL AFTER AN ALLOW WRITES ITS DECISION DOWN. The recheck (and the grant spend it
+   * feeds) is a decision, not a message: refusing a call that was already admitted is exactly the
+   * case the settlement contract cannot infer, so the centre appends a NEW durable deny decision —
+   * same callId, same executionId, the policy generation that refused — BEFORE the settlement is
+   * terminated. The original `allow` is untouched: both decisions are the history.
+   *
+   * FAIL-CLOSED. If the durable deny cannot be written, the call is STILL refused (the body does not
+   * run) and the persistence fault is reported. The terminal write then finds no durable deny and
+   * reports `SETTLEMENT_CONTRACT_GAP` rather than settling a refusal it cannot evidence.
+   */
+  const refuseBeforeBody = (entry, exec, code, reason, binding) => {
+    entry.capability = undefined
+    if (settlement !== undefined && entry.running !== true) {
+      try {
+        settlement.recheckDenied({
+          exec,
+          callId: callIdOfExec(exec),
+          code,
+          policyGeneration: binding === undefined ? undefined : binding.policyGeneration,
+        })
+      } catch (error) {
+        if (typeof onFault === 'function') onFault(error, { phase: 'recheck', callId: callIdOfExec(exec), toolName: exec?.name, refusalCode: code })
+      }
+    }
+    entry.guard = reason
+    return reason
+  }
+
+  /**
    * POST-APPROVAL RECHECK. The pre-execute decision is a moment, not a licence: between the ask and
    * the body the policy can be recompiled, the member revoked, or the lane narrowed. The guard is the
    * LAST place before the body, so it re-decides with the binding as it is NOW and refuses when the
@@ -721,7 +750,13 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     const now = admit({ binding, toolName: exec.name, arguments: exec.arguments })
     if (now.kind === wanted) return undefined
     const code = now.kind === 'deny' ? now.code : `RECHECK_${String(now.kind).toUpperCase()}`
-    return `ADMISSION_RECHECK_${code}: the decision for ${JSON.stringify(callIdOfExec(exec))} was ${wanted} at pre-execute and is ${now.kind} now; the call is refused rather than executed under an authority that no longer holds`
+    return {
+      // The PRODUCT's existing recheck code: the composed reason names both the point and the lane
+      // answer, and it is what the durable execution fact already carries. No second vocabulary.
+      code: `ADMISSION_RECHECK_${code}`,
+      reason: `ADMISSION_RECHECK_${code}: the decision for ${JSON.stringify(callIdOfExec(exec))} was ${wanted} at pre-execute and is ${now.kind} now; the call is refused rather than executed under an authority that no longer holds`,
+      binding,
+    }
   }
 
   /**
@@ -851,7 +886,7 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     // call that must never run.
     if (entry.capability === undefined && entry.guard === undefined) {
       const drift = recheck(entry, exec)
-      if (drift !== undefined) return drift
+      if (drift !== undefined) return refuseBeforeBody(entry, exec, drift.code, drift.reason, drift.binding)
       // THE BODY IS ABOUT TO RUN, so the settlement leaves ADMITTED exactly once. The host consults
       // the guard twice per execution; entering RUNNING twice would be a transition the store refuses,
       // which is how this was found.
@@ -863,13 +898,19 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     }
     if (entry.capability !== undefined) {
       const drift = recheck(entry, exec)
-      if (drift !== undefined) return drift
+      if (drift !== undefined) return refuseBeforeBody(entry, exec, drift.code, drift.reason, drift.binding)
       const spent = spend(entry, callId, exec)
-      if (spent === undefined && settlement !== undefined && entry.running !== true) {
+      if (spent !== undefined) {
+        // The grant could not be spent (a recompiled policy / a stale approval): still a pre-body
+        // refusal of an admitted call, so the durable deny is written here too.
+        const spentCode = /^(ADMISSION_GRANT_[A-Z_]+):/u.exec(spent)?.[1] ?? 'ADMISSION_GRANT_UNSPENDABLE'
+        return refuseBeforeBody(entry, exec, spentCode, spent, resolveBinding(exec))
+      }
+      if (settlement !== undefined && entry.running !== true) {
         settlement.running({ exec })
         entry.running = true
       }
-      return spent
+      return undefined
     }
     return entry.guard
   })
