@@ -633,7 +633,7 @@ boots, and the ROW is refused inside the plugin bootstrap with
 `ADMISSION_ALPHA6_UNAVAILABLE … no review-routing axis exists` (full text in the host log), and NOTHING is
 live — `/__p6t6/state` answers 404 (no team root), `teamSession present=false`, `liveMembers=0`, no
 Alpha.6 decision, no wake-intent file. The refusal is a product rule, not a driver string:
-`centreConfigViolation` at row validation (`packages/runtime/src/plugin/vnext/centre-config.ts:62-70`,
+`centreConfigViolation` at row validation (`packages/runtime/src/plugin/vnext/centre-config.ts:73`,
 `host.ts` `validateTeamPluginConfig`) over the closed table (`host-surface-refusal.mjs:50`).
 
 **Round 68: the recorded-fact half is REACHED at the same entry.** `host.ts` passes

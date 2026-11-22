@@ -149,7 +149,7 @@ authority beside the centre, so the row is refused rather than booted with an un
 
 and NOTHING is live: `/__p6t6/state` answers **404** (no team root), `teamSession present=false`,
 `liveMembers=0`, no Alpha.6 decision, no wake-intent file. The typed refusal is a product rule, not a
-driver string: `centreConfigViolation` (`packages/runtime/src/plugin/vnext/centre-config.ts:67`) at row
+driver string: `centreConfigViolation` (`packages/runtime/src/plugin/vnext/centre-config.ts:73`) at row
 validation (`host.ts` `validateTeamPluginConfig`), over the closed refusal table
 (`host-surface-refusal.mjs:50`, `code=ADMISSION_ALPHA6_UNAVAILABLE, axis=host.service`).
 
