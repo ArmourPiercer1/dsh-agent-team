@@ -307,3 +307,13 @@ which is red by construction while the round-78 changes are still uncommitted;
 re-run, and both census captures are identical and red-free at the commit
 (`identity set IDENTICAL to the published baseline`). No assertion, timeout or
 suite was changed for either.
+
+The full gate was re-run at the round-78 code commit and again at
+`dfbc00ab2` (the commit that added this record and the first census
+comparison artifact): `DSH-CI-VERDICT pass pass=10 fail=0` both times, census
+`2 captures, identical identity sets`, `identity set IDENTICAL to the published
+baseline`. The run at `dfbc00ab2` wrote
+`scratch/census-comparison-20261122T153050Z-3.json`; it is committed with this
+paragraph as a third evidence-only commit (it changes no install surface, no
+test, no source), so the tree is clean at the pushed HEAD. The earlier
+pre-commit census reds are explained above and none was papered over.
