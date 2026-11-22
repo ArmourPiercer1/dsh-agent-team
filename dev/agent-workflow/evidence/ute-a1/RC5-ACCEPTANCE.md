@@ -259,3 +259,51 @@ Measured requirements for a real rc.5 deployment of the governed preset:
 - No upstream patch was needed and none was made; the rc.5 tree stayed clean
   (porcelain empty before/after every boot). If a future acceptance needs a
   seam rc.5 genuinely lacks, that is a `CORE_SEAM_BLOCKER`, not a patch.
+
+## 5. Gates at the round-78 commit
+
+Run in this worktree, in this order, after the rc.2 and rc.5 driver runs:
+
+```
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 204
+ℹ pass 202
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+  (by runner: node=146 none=7 vitest=632)
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=20000
+
+$ node scripts/ci-pr-gate.mjs --full --census-captures 2
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=299.5
+```
+
+The vitest population is unchanged at **238**. `ci-pr-gate --full` was run once
+BEFORE the commit and failed the census leg for two non-product reasons: (a)
+`A4-PR7 §7.6` asserts the committed install surface is fresh against the tree,
+which is red by construction while the round-78 changes are still uncommitted;
+(b) `u6-mcp-017` timed out connecting to its own in-process mini-MCP listener on
+`127.0.0.1:3985`, which was momentarily held; the same file passes in 76 ms when
+re-run, and both census captures are identical and red-free at the commit
+(`identity set IDENTICAL to the published baseline`). No assertion, timeout or
+suite was changed for either.
