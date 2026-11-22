@@ -264,11 +264,13 @@ test('PROC-6 the POST-CUT composition probe reproduces the wiring facts the excl
   console.log(wiringLine(facts))
   const committed = readFileSync(PROBE_TRANSCRIPT, 'utf8')
   assert.equal(committed.startsWith('ACCEPTED-BY round81-a1-cut reason='), true, 'the re-recorded probe transcript must name this round and its reason')
-  // The `PROBE-PWSH binary=` line is a HOST OBSERVATION (a runner may ship no
-  // pwsh, or a different path). Compare everything EXCEPT that line: the wiring
-  // facts must be byte-identical across hosts, the observation must not be.
+  // Both `PROBE-PWSH binary=…` lines are HOST OBSERVATIONS (a runner may ship
+  // no pwsh, a different path, or no PATH entry). Compare everything EXCEPT
+  // them: the wiring facts must be byte-identical across hosts, the observation
+  // must not be — and its host-independent half (`host-package=present
+  // route-c-shadow=ABSENT`) is asserted by the regex above.
   const hostFree = (text) => text.split('\n')
-    .filter((line) => !line.startsWith('PROBE-PWSH binary=') && !line.startsWith('ACCEPTED-BY '))
+    .filter((line) => !line.startsWith('PROBE-PWSH binary') && !line.startsWith('ACCEPTED-BY '))
     .join('\n')
     .trim()
   assert.equal(hostFree(committed), hostFree(output), 'the committed probe transcript must be exactly a fresh run of the post-cut probe, modulo the host-only binary observation')
