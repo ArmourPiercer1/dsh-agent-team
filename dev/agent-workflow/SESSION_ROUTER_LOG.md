@@ -10784,3 +10784,34 @@ Gates at this round's commit: leg 204/202+2, catalog 785/38 uncollected/14 exclu
 in-process only (no booted apply_patch/delete/move, no model turn), no kernel boundary (the base provider's TOCTOU
 is inherited), moveFile's version-guarded/patched-on-move path unexercised, no matrix upgrade (C-fs stays
 MECHANISM).
+
+### R77 — rc.5's three new FS methods are CONFINED: the security gap the review named is closed and watched
+
+rc.5 adds `patchText`, `deleteFile`, `moveFile`; the Team confined provider overrode ten methods ending at
+`editText` and none of the three, so on rc.5 `apply_patch`/delete/move would have reached the provider WITHOUT the
+Member's lane. Closed by implementing all three in the SAME shape as the existing ten — each calls the identical
+`admitted(...)` helper (path canonicalization -> lane guard), so they are judged exactly like `editText`/`writeText`:
+
+- `deleteFile` = a write of the file it removes (and therefore also needs read, by the existing `write => read`
+  rule — no new rule invented; `WRITE_METHODS` now carries the three names);
+- `moveFile` judges BOTH paths before any effect (source as removal, destination as publication); an out-of-lane
+  destination refuses and the source SURVIVES; no invented cross-root ban (`ADM-138` pins the product's own
+  per-path rule instead);
+- a base provider lacking a method refuses typed `IO_POLICY_UNSUPPORTED` naming the method — no fallthrough, no
+  no-op shim.
+
+Types: rc.2 compiles, rc.5 runs — one local, commented cast on the base prototype and a declared (non-`override`)
+surface; `MANAGED_FS_METHODS` deliberately not grown (that would refuse every rc.2 install); capability decided per
+call.
+
+Arms ADM-135..140 (`ute-vnext-a1` leg), including a REAL pinned-provider arm that runs against whichever host the
+lane selects: rc.5 performs patch/delete/move with real effects; rc.2 refuses them typed with nothing moved.
+SLICE-35 (the invariant that derives every path-touching entry point from the real base provider) is GREEN on rc.5
+and stays green on rc.2; SLICE-36 still passes.
+
+NOT proven, stated: no kernel boundary (this is a trusted-code lane guard over a model-controlled path, so the
+base provider's own canonicalize-to-syscall TOCTOU is inherited); no live `apply_patch`/delete/move through a
+booted Member; rc.2's provider is exercised through the typed-refusal branch, not a real move.
+
+Remaining rc.5 drift reds are unchanged and recorded: the admission/pre-execute tool call `{input:"bash"}` form
+and the batch-dispatch probe. C-fs stays MECHANISM — lane evidence is not a booted measurement.
