@@ -10586,3 +10586,16 @@ file and no shared baseline was written.
 
 Gates at `7aa98a6bd`: leg 182 cases / 180 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
 P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R69 — six open rulings consolidated into one owner-facing decision memo
+
+`dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` states, for each blocked item, what is MEASURED today,
+the lawful options, and the cost of each: the process lane (A/B/C with C = "declare unsupported", which is what
+ships), runtime creation on a centre row (the 405; C is what D already does, B is the product fix), the
+settlement recheck cell, realmless admission (code refuses today), search-face governance depth (shape B shipped,
+shape A open), and Alpha.6 routing (refusal recorded, routed path unreachable).
+
+Recommendations recorded: C for items 1-2 to make a reviewable candidate now, B for item 2 as the next product
+increment, A for item 1 as the contract decision that also unblocks B rungs 5-6, one sentence each for 3-5, and
+item 6 stays refused until a routed path can be governed. Explicitly forbidden: closing any item by re-enabling an
+ungoverned plane, inventing an axis, or widening an invariant for a green row.
