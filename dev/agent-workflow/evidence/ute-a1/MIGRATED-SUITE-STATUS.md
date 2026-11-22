@@ -1977,3 +1977,26 @@ when selected alone (`-t "cannot change another instrument"` → 1 passed, 34 sk
 deletes `scripts/lint-scratch-control-{a,b}.mts` and re-measures lint identities; a preceding leg in
 that 2000-line file leaves residue it reads. The census above ran the same file in the nine-root
 population and saw no red, so this is an intra-file ordering effect, not a product regression.
+
+**Final `pr-gate --full` on this tree (the command `ci-product` runs, all ten legs, census included):**
+
+```
+DSH-CI-LEG leg=graph-parse        verdict=pass
+DSH-CI-LEG leg=kit-home-guard     verdict=pass
+DSH-CI-LEG leg=state-freshness    verdict=pass
+DSH-CI-LEG leg=append-only-log    verdict=pass
+DSH-CI-LEG leg=install            verdict=pass
+DSH-CI-LEG leg=blueprint-fence    verdict=pass   (no new offending path; dirty 20 files/54 sites; baseline 20)
+DSH-CI-LEG leg=typecheck          verdict=pass   (all packages, tests included)
+DSH-CI-LEG leg=lint-identities    verdict=pass   (new 0, resolved 13)
+DSH-CI-LEG leg=artifacts-at-head   verdict=pass  (HEAD carries its own build)
+DSH-CI-LEG leg=census             verdict=pass   (598f/7383l, identical captures, counts moved set did not)
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none
+```
+
+And the other hosted layers, re-measured after the last edit: `ci-security`
+`PASS suites=14 files=14 describes=61 passed=216 failed=0`; `ci-integration`
+`PASS suites=15 files=15 describes=76 passed=238 failed=0`; `ci-product` L1
+`contracts=6 files=8 exit=0` (64 tests). `ci-fast` is docs-only: `docs-probe blocking=0`,
+`docs-sync findings=0 blocking=0`. The one hosted leg this workstation cannot run is `next-host`
+(§6.1) and the one instrument still red is `ute-family-inventory.test.mjs` (§6.2).
