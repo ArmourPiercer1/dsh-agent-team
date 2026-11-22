@@ -1953,3 +1953,27 @@ minutes; the transcripts are in `.artifacts/round72/transcripts/`).
    ledger and rebuild the fixture base synthetically (a dedicated instrument round), or **(b)** retire
    the instrument together with the family system and keep `eb3-family-definitions` (which now passes
    with 0 findings) as the family-side law. It is disclosed here so the next round can choose.
+
+**Census re-run after the round (clean tree, nothing else running):**
+
+```
+DSH-CI-LEG leg=census verdict=pass
+detail[census]: roots: nine (packages/*/test) via the root vitest config; baseline
+nine-root-u7-1-old-reds.md = 0 titled reds + 0 collection files;
+captured 598f/7383l, 598f/7383l vs baseline-declared 626 / 7936;
+2 captures, identical identity sets — COUNTS MOVED, SET DID NOT
+```
+
+`NEW RED(S) 0`, `NEW COLLECTION-ERROR FILE(S) 0`, both captures identical. The first two census
+attempts in this round were taken while the tree was still being edited (they reported 55 then 3
+reds and differing identity sets); the run above is the one that counts, and its transcript is
+`.artifacts/round72/transcripts-clean2/`. With the census green, `ci-pr-gate --full` is now
+**pass=10 fail=0** on this tree (all ten legs).
+
+**One ordering fragility disclosed** (pre-existing, not repaired here): in the full-file run of
+`packages/testkit/test/a4p7-merge-gate.test.ts` the leg `the scratch the commit-level instrument
+builds cannot change another instrument's measurement` fails after ~37 s, while the SAME leg passes
+when selected alone (`-t "cannot change another instrument"` → 1 passed, 34 skipped). It builds and
+deletes `scripts/lint-scratch-control-{a,b}.mts` and re-measures lint identities; a preceding leg in
+that 2000-line file leaves residue it reads. The census above ran the same file in the nine-root
+population and saw no red, so this is an intra-file ordering effect, not a product regression.
