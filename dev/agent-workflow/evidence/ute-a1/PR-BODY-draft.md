@@ -29,6 +29,16 @@ is step D, not this PR. Two contract questions are escalated rather than worked 
   for "admitted as allow, then refused before the body"; the centre reports `SETTLEMENT_CONTRACT_GAP`
   rather than fabricate a Stop or claim UNKNOWN certainty.
 
+## D acceptance report
+
+The single reviewable document for this candidate is
+`dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md`. It carries the C1–C18 checklist (wording
+verbatim from `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md`), the HEAD/scope facts, the
+P1–P5 ladder with its live judges, all eight required-CI lines, the host-authority statement, and the
+limits. Its verdict: **A1+B+C implemented with live D evidence for the listed items, not a completed
+product acceptance** — the REFUTED judges (`d3:persistent-subprocess`, `d2:revocation`,
+`d:member-read-denied`), the 405 creation entrance, and the absent PRODUCT-PROVEN row are named there.
+
 ## The 16 migrated capability suites are now RUN, not assumed (rounds 30-32)
 
 `migrated-entry-imports.json` said `missing: []` — every file imports the new entry — and that was read as

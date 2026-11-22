@@ -1237,3 +1237,33 @@ The vitest population is unchanged at **238**; the node leg is **168 pass + 2 di
 new arms). `test-catalog` still reports 889 tests: the arms live inside the existing
 `vnext-admission.test.mjs` file, whose collected count is per file. **No row is PRODUCT-PROVEN; the search
 face is lane-governed only.**
+
+## Round 65 (D report) — the owner-facing D acceptance report, and the checklist source it found
+
+Documentation-only round. `dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` is now the single
+reviewable document for the candidate: HEAD/scope facts, the C1–C18 checklist, the P1–P5 ladder and OS
+negative controls, all eight required-CI lines, the host-modification-authority statement, the limits, and
+a verdict that does not round up.
+
+**The C1–C18 source is authoritative, not reconstructed.** It is
+`docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md` §"The list (A1 must dispose of every row)"
+(`:30-52`), and the report quotes its capability/disposition wording verbatim. One structural detail is
+stated in the report rather than smoothed over: that table has 19 rows — C1…C18 **plus C14b**, the owner's
+split of C14 into "drop the implementations" and "preserve the safety invariants" (`:26`, `:54-63`).
+
+Three measurements this round worth keeping:
+
+- the required-CI command for the migrated population has an `eb3-` prefix in the committed filename. As
+  specified (`--list-file tests/checks/ute-migrated-suites.txt`) the token runner answers
+  `verdict=REFUSED reason=suite list absent`; with `tests/checks/eb3-ute-migrated-suites.txt` it is
+  `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0`. Both lines are pasted in the report,
+  because a typo that graded green would be the defect.
+- `place-dist-glue` now reports **28** placements (the HANDOFF's `26` and rounds 49-50's `27` are stale).
+  This is not the frozen A0 "52 committed dist artifacts" measure; `CUT-BOUNDARY-ADDITIONS.md:27-32`
+  explains why the two are not comparable.
+- the pinned host was re-verified pristine at `639ed015397290b3745d163aafe02ffee4aa3f84`
+  (`git -C tests/deepseek-harness-test-use status --porcelain` → 0 lines), equal to `TEST_USE_BASELINE_SHA`
+  in `tests/paths.mjs`, so the CORE PATCH BUDGET = 0 statement in the report is measured, not asserted.
+
+`PR-BODY-draft.md` gained a five-line pointer to the report (not a duplicate). No product code, no test,
+no gate-definition change. The vitest population stays 238; the node leg stays 168 pass + 2 disclosed skips.
