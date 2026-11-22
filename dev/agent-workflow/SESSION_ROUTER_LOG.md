@@ -10558,3 +10558,31 @@ Gates at `b5bbb0a90` + this change: leg 182 cases / 180 pass + 2 disclosed skips
 `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
 `PASS 238`. Test-infra note: this worktree's test-use tree was a symlink whose realpath broke the sandbox
 launcher containment check; it is now a real pinned copy (gitignored, porcelain-empty).
+
+### R68 — the host entry now RECORDS the Alpha.6 refusal it already decided (shape A)
+
+C-alpha6's typed refusal existed at the row gate, but that gate runs at ROW VALIDATION, before the root and the
+refusal point exist, so the decision was never durable at a host entry. Shape A: the gate still decides (same
+`ADMISSION_ALPHA6_UNAVAILABLE`, same boot outcome), and the entry now records it through the product's ONE point
+constructor (`row-refusal-entry.ts:73`, shared with root.ts:1035). A hook fault is caught and warned — it can
+never soften or delay the refusal.
+
+Arms: ADM-116 (refused + exactly 1 deny fact on `host.service`/`alpha6.review-routing` + settlement
+`REFUSED`/`not-started` + `ADMITTED->REFUSED`), ADM-117 (row without the opt-in passes the rule, writes nothing,
+and still binds — the positive control), ADM-118 (the shared point still records the REMOTE refusal, and a
+non-Alpha.6 centre violation writes nothing).
+
+Live, two identical boots: `d3:alpha6` now sees `refusalFactCount=1`, `nonRefusalFactCount=0`, the raw
+settlement envelope `REFUSED/not-started`, while the boot outcome is unchanged (`/__p6t6/state` 404,
+`liveMembers=0`, no wake intent, no decision). The no-silent-route judge was made STRICTER, not weaker: the
+probe now feeds it a fact that claims a route.
+
+NOT proven: a row with the opt-in but no `centreStatePath` is refused but unwritten (no durable dir); the routed
+path is still unreachable; C-alpha6 stays REFUSED-BY-DESIGN (MECHANISM + DEV-LIVE), the centre/PA joins unproven.
+
+Disclosure: this worktree's `tests/deepseek-harness-test-use` symlink escaped the runtime tree
+(`LAUNCHER_PATH_OUTSIDE_TREE`), so it was replaced with a real gitignored copy at the pinned baseline — no tracked
+file and no shared baseline was written.
+
+Gates at `7aa98a6bd`: leg 182 cases / 180 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
+P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
