@@ -2,7 +2,7 @@
 
 **Worktree:** `.worktrees/vnext-a1-cut` · **Branch:** `vnext/a1-cut` ·
 **HEAD measured at round 70:** `189d6cabca5b4de9ec3059f9949ab9302364f789` (the audit's own docs-only
-commit sits on top of it) · **Base for the
+commits sit on top of it) · **Base for the
 cut:** `a19d1df01` (frozen A0, PR #821) · **Record class of everything below:** in-process `MECHANISM` +
 `DEV-LIVE`. Never candidate evidence, never a gate.
 
@@ -41,9 +41,9 @@ what would prove it.
 ## 1. HEAD, branch, and scope facts
 
 Round 70 re-measured every row below at the measurement commit `189d6cab` (the round-67 values are
-superseded; the docs-only commits since `ef2ddbff7` moved the commit count and the diff). The audit
-commit itself changes no code, so it adds one commit to `git rev-list --count` without changing any
-other number below. Citation convention: a path
+superseded; the docs-only commits since `ef2ddbff7` moved the commit count and the diff). The audit's
+docs-only commits change no code, so they add to `git rev-list --count` without changing any other number
+below. Citation convention: a path
 containing `/` is repo-root-relative; a bare filename in a row or section is shorthand for the full path
 named in that same row/section (the reviewable set uses this to keep the tables readable).
 
@@ -662,7 +662,7 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 
 | # | check | state | where to verify |
 | --- | --- | --- | --- |
-| 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `189d6cabca5b4de9ec3059f9949ab9302364f789` (+ this docs-only audit commit), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
+| 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `189d6cabca5b4de9ec3059f9949ab9302364f789` (+ this docs-only audit's commits), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
 | 3 | **Gates green** | all eight required commands pass at this HEAD (dispatch 182/180/0/2; catalog 889/41; closure four zeros; assets 37/180/69,512; docs-sync 0 findings; 28 placements; CI-required 10/0; migrated layer 238/238) | §4.1–§4.8, pasted verbatim |
 | 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, `d2:revocation` (REQUIRED direction), `d:member-read-denied`, 405 runtime creation, Alpha.6 routed path unreachable, search face lane-only | §3.2, §6.2–§6.5, §7 |

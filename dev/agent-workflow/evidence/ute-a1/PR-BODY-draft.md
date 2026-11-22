@@ -340,8 +340,8 @@ in the product composition, not the mechanism — which is the useful part of th
 ## Verification on this HEAD
 
 Measured at `189d6cabca5b4de9ec3059f9949ab9302364f789` (round 70; all eight commands were re-run fresh
-in this worktree, full output in `D-ACCEPTANCE-REPORT.md` §4). The audit commit on top of it is
-docs-only and changes none of these results:
+in this worktree, full output in `D-ACCEPTANCE-REPORT.md` §4). The audit's docs-only commits on top of it
+change none of these results:
 
 | gate | result |
 | --- | --- |
