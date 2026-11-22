@@ -2411,3 +2411,56 @@ real model/MCP/PTY backend/Windows/hosted deployment; `d3` `inflightAfter` is
 UNKNOWN by contract; Alpha.6 routing unavailable by design; the `{{cwd}}`
 removal changes persona text on both hosts (verdicts unchanged); the runtime
 context stating the same working directory on rc.5 is assumed, not judged.
+
+---
+
+## Round 79 (rc.5 pre-dispatch abort) — 2026-11-23
+
+**What changed.** rc.5's batch scheduler cancels a call before dispatch WITHOUT running the tool
+pipeline: `BatchSettlement.skip()` synthesizes `ABORTED_BEFORE_DISPATCH` (`batch.ts:225-229`,
+`:271-280`) and `ToolsService.execute` returns the batch (`index.ts:375-377`), so `tools/result`
+never fires. The centre observed only the pipeline event, so a pre-dispatch cancellation on rc.5
+produced no fact, no settlement and no report — SLICE-21/SLICE-30 red (they pass on rc.2, whose
+pipeline emits the event). The centre now ALSO reads the value the host returns:
+`vnext/pre-dispatch-abort.mjs` (new) selects only entries carrying the host's own code;
+`execution-facts.mjs` writes the SAME canonical fact through the SAME ExecutionId-keyed dedupe map
+from `observeExecutorCompletion`, with `abortPhase:'pre-dispatch'`; `centre-install.mjs` /
+`member-execution.mjs` wire and expose the observer; `settlement-port.mjs#stoppedBeforeBody` records
+`Stop(pre-dispatch)` + `CANCELLED` when an admission record exists and otherwise writes NO
+settlement and REPORTS `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION`. No scheduler was intercepted or
+replaced, no `tools/result` was fabricated, no allow/deny was invented.
+
+**Durable facts for a pre-dispatch abort.** No admission record (the case the arms drive): ONE
+execution fact (`outcome:'aborted'`, `abortPhase:'pre-dispatch'`, product ExecutionId), **no**
+settlement, a visible `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` naming the ExecutionId; in a world
+with the product ledger the ledger itself refuses the unbound fact (`LEDGER_EXECUTION_UNBOUND`) and
+that refusal is reported, not written. Record exists: the same fact plus a recorded pre-dispatch
+Stop and `CANCELLED` — never `UNKNOWN`.
+
+**Arms.** SLICE-21/SLICE-30 keep their assertions verbatim and are GREEN on rc.5 and rc.2.
+`SLICE-37` (new) pins one fact / zero settlements / a visible gap report for the abort,
+`deduped:1` when the same completion is delivered again (the both-paths-fire case), and `observed:0`
+for a call that entered the pipeline. `SLICE-38` (new) pins the durable edge: no execution record,
+no settlement, no invented admission record, the refusal reported with the callId, and an admitted
+control call still recorded and `COMPLETED`. Full slice: **38/38 on rc.2 and rc.5**.
+
+**Lanes and gates, fresh at the code commit `274aec2cc`.** `ute-vnext-a1` **206 tests / 204 pass /
+0 fail / 2 disclosed skips**, exit 0 (was 204/202). rc.5 per suite: fs-slice **38/38** (was 34/36),
+admission 124 tests / 122 pass (ADM-96/97 red: pre-existing rc.5 MCP `AbortSignal.any` shape,
+reproduced unchanged), realm-lane / os-probe / work-turn-reader / template-binding green as at round
+78. vitest population **238 pass** (unchanged; the new arms are node:test). Catalog `785 / 38
+uncollected / 14 excluded` findings 0; cut-closure `cut(0/148)` findings 0; P0 `cut(148/148)`
+findings 0; docs-sync findings 0; **29** placements; ci-required `workflows=10 findings=0`;
+`ci-pr-gate --full --census-captures 2` **PASS** (recorded in `RC5-ACCEPTANCE.md` §7).
+
+**D drivers, both hosts, `--boots 2`, re-run at the code commit** (transcripts:
+`dev/agent-workflow/evidence/ute-a1/rc5/round79/*.log`): `run-boot.mjs` PASS 2/2, `run-boot-d2.mjs`
+PASS 2/2, `run-boot-d3.mjs` PASS 2/2 `evidence-complete=true allProven=true`, on rc.2 AND rc.5, every
+counted fact identical to round 78 (`RC5-ACCEPTANCE.md` §2.5). No row differs between hosts or boots.
+
+**Not proven.** The production `tools.execute` call site belongs to the host agent loop; the observer
+is exported and driven end to end in the slice composition but is NOT yet wired into a booted rc.5
+member turn (an upstream seam — `CORE_SEAM_BLOCKER` for that leg). No real interleaving that aborts
+between admission and dispatch was produced. The drivers exercise the pipeline path, so their re-run
+proves no regression, not a live pre-dispatch observation. No matrix row upgrade (C-member (Stop)
+stays MECHANISM + lane evidence).

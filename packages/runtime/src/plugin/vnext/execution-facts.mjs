@@ -156,7 +156,8 @@ export function createExecutionFacts ({ record, admissionOf, executionIdOf, onFa
    * swallowing it.
    *
    * @param {{callId: string, toolName: string, result: object, agent?: object, turn?: number, step?: number}} entry
-   * @returns {{observed: boolean, deduped: boolean, fact?: object}} the observation result.
+   * @returns {{observed: boolean, deduped: boolean, recorded?: boolean, fact?: object}} the observation result;
+   *   `recorded:false` means the durable sink refused the fact and reported it, so nothing was settled.
    */
   const observePreDispatchAbort = (entry) => {
     const callId = entry?.callId
@@ -187,7 +188,7 @@ export function createExecutionFacts ({ record, admissionOf, executionIdOf, onFa
    * observed here. Returns counts, not silence: a caller can assert that the observation happened.
    *
    * @param {{calls: readonly object[], completion: object, agent?: object, turn?: number, step?: number}} input
-   * @returns {{observed: number, recorded: number, deduped: number}} what the completion carried.
+   * @returns {{observed: number, recorded: number, deduped: number, unrecordable: number}} what the completion carried.
    */
   const observeExecutorCompletion = ({ calls, completion, agent, turn, step }) => {
     const aborts = preDispatchAbortsOf({ calls, completion })

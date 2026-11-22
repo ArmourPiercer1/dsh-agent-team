@@ -131,9 +131,29 @@ are in the driver logs kept at `dev/agent-workflow/evidence/ute-a1/rc5/`
 trees (rc.2, the last run). No row differs between the two boots of a host, and
 no row differs between the hosts.
 
+### 2.5 Round 79 re-run of all three drivers on both hosts
+
+The B6 change (§3.5) is observation-only, but it touches the centre every driver exercises, so all
+six combinations were re-run at the code commit `274aec2cc` with `--boots 2`. Transcripts:
+`dev/agent-workflow/evidence/ute-a1/rc5/round79/*.log`.
+
+| driver | rc.2 | rc.5 |
+| --- | --- | --- |
+| `run-boot.mjs` | PASS 2/2, `agreeing pair=true`, `differing=[]` | PASS 2/2, `agreeing pair=true`, `differing=[]` |
+| `run-boot-d2.mjs` | PASS 2/2, `d2:multi-member-concurrency` / `d2:revocation` / `d2:stop` all PROVEN | identical |
+| `run-boot-d3.mjs` | PASS 2/2, `evidence-complete=true allProven=true` | identical |
+
+Every counted fact is identical to §2's round-78 table on both hosts: allowFacts 2 / denyFacts 0 /
+centreAdmissions 2 / centreExecutions 2 / transcriptSourceCount 2; aAdmissions 9 / bAdmissions 9 /
+aGuardFacts 14 / bGuardFacts 14 / windowsOverlap true / crossRefused true /
+stopSettlementState REFUSED / bAfterStopCompleted true; aAdmissions 4 / bAdmissions 3 /
+inflightAfter UNKNOWN / collectStatus succeeded / both bash states COMPLETED. No assertion, timeout
+or judge was touched for this re-run, and the host trees' porcelain was empty before and after every
+boot (`asserted:true` on every candidate row).
+
 ## 3. rc.5 drifts and how they were resolved (task 2/3)
 
-Four genuine host drifts surfaced. Each is a host-contract change, not a
+Five genuine host drifts surfaced (the fifth, §3.5, is round 79's Stop-semantics drift). Each is a host-contract change, not a
 weakened judge: no assertion was relaxed, no timeout widened, no judge skipped,
 no retry loop added, no upstream patch.
 
@@ -236,6 +256,63 @@ Measured requirements for a real rc.5 deployment of the governed preset:
    session-controller's per-request default on rc.5.
 5. **Batch dispatch** (§3.3) for any in-process consumer of `tools.execute`.
 
+### 3.5 Pre-dispatch cancellation has no `tools/result` on rc.5 (round 79, B6)
+
+- **rc.2 does**: a cancellation before the body still travels the tool pipeline, so the host emits
+  `tools/result` and the centre's event observer writes the execution fact.
+- **rc.5 does**: `executeToolBatch` drains the started calls and calls `BatchSettlement.skip()` for
+  every call that was never started (`tests/deepseek-harness-next/packages/core/tools/src/batch.ts:225-229`,
+  `:271-280`). The synthetic result carries the host's own
+  `code: ABORTED_BEFORE_DISPATCH` (`contracts.ts:268` — exported as `TOOL_ABORTED_BEFORE_DISPATCH`,
+  valued `ABORTED_BEFORE_DISPATCH`) and the batch is returned from `ToolsService.execute`
+  (`index.ts:375-377`). **The pipeline never runs and no `tools/result` fires.** Measured with one
+  probe, one call, both hosts (round 77, kept as the drift record):
+
+  ```
+  ABORT-PROBE mode=legacy isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEvents=1
+  ABORT-PROBE mode=next   isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEvents=0
+  ```
+
+- **consequence for the centre**: a product that keys its durable Stop evidence off `tools/result`
+  observes NOTHING for a call cancelled before dispatch on rc.5 — no fact, no settlement, no report.
+- **resolution (product, round 79)**: the centre reads the abort where the host announces it, at the
+  **executor completion boundary**:
+  `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` (new) normalises the value
+  `tools.execute` returns for both host generations and selects ONLY results carrying the host's own
+  pre-dispatch code; `execution-facts.mjs` writes the SAME canonical fact through the SAME
+  ExecutionId-keyed dedupe map (`observeExecutorCompletion`); `centre-install.mjs` /
+  `member-execution.mjs` expose the observer and wire its settlement side; `settlement-port.mjs`'s
+  `stoppedBeforeBody()` records the Stop and settles `CANCELLED` when a record exists and otherwise
+  reports `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` **visibly**. The native scheduler is not
+  intercepted, replaced or re-entered: the product only reads the value it already returns. No
+  `tools/result` is fabricated and no allow/deny is invented.
+- **durable facts written for a pre-dispatch abort**:
+  - no admission record (aborted before the admission point): ONE execution fact
+    (`outcome: 'aborted'`, `abortPhase: 'pre-dispatch'`, product `executionId`); **no** settlement
+    record (inventing one would attribute an admission nobody made); a visible
+    `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` report naming the ExecutionId. This is the case both
+    slice arms drive.
+  - admission record exists: the same fact plus `recordStop({phase:'pre-dispatch'})` and
+    `settle(CANCELLED)`.
+- **dedupe by ExecutionId**: `SLICE-37` re-delivers the same completion (the both-paths-fire case —
+  on rc.2 the pipeline reports it as well) and requires `observed:1, recorded:0, deduped:1`, one
+  fact, zero settlement; a completed (pipeline) call makes the observer report `observed:0` and is
+  settled once by the pipeline path.
+- **the durable edge, measured**: `SLICE-38` runs the same abort against a centre WITH the product
+  ledger. The ledger refuses an execution it cannot join to an authority record
+  (`LEDGER_EXECUTION_UNBOUND`), so the arm requires exactly that: no durable execution record, no
+  settlement, no invented admission record, the refusal REPORTED with the callId, and the host's
+  dispatch unbroken — while a control call that reached admission is recorded and `COMPLETED`.
+- **after**: `SLICE-21` and `SLICE-30` are GREEN on rc.5 **and** rc.2 with their assertions
+  unchanged (`vnext-fs-slice.test.mjs` full suite: 38/38 on both hosts). No assertion weakened, no
+  timeout widened, no retry loop, no mocked host, no upstream patch.
+- **NOT proven**: the production `tools.execute` call site is the host agent loop's, which the
+  product does not own. The observer is exported by the product composition and driven end to end in
+  the slice composition, but no booted rc.5 member's pre-dispatch cancel is recorded by production
+  wiring yet — that leg needs an upstream seam (`CORE_SEAM_BLOCKER` for it), and it is not claimed
+  here. Also not proven: a real rc.5 interleaving that aborts between admission and dispatch (the
+  pinned `startCall` prepares and dispatches in one step).
+
 ## 4. Everything NOT proven
 
 - Only these three scripted drivers were run on rc.5. The rest of the vitest
@@ -317,3 +394,46 @@ baseline`. The run at `dfbc00ab2` wrote
 paragraph as a third evidence-only commit (it changes no install surface, no
 test, no source), so the tree is clean at the pushed HEAD. The earlier
 pre-commit census reds are explained above and none was papered over.
+
+## 6. Round-79 gates at the code commit
+
+Run in this worktree after the B6 change, in this order; the two host re-runs above were done before
+the gate block so the acceptance face and the unit face measure the same code.
+
+```
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (29 placement(s))
+
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 206
+ℹ pass 204
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+  (by runner: node=146 none=7 vitest=632)
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+AUTHORITY_SOURCE_BINDING {"kind":"authority-pointer",…,"pointer_digest_verified":true,…}
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+The vitest population is unchanged at **238**; the new arms are node:test arms in the
+`ute-vnext-a1` leg (204 pass, was 202). `ci-pr-gate --full --census-captures 2` and its census
+artifact are recorded in §7 below, which is committed after this paragraph so the gate runs against
+a committed tree (the round-78 §5 disclosure applies identically: an uncommitted install surface is
+red by construction for the A4-PR7 freshness fence, and that red was NOT papered over).

@@ -1,6 +1,7 @@
-# RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 CLOSED (round 77)
+# RC5-MIGRATION — the rc.5 lane actually RUNS: B1–B4 measured, B5 CLOSED (round 77), B6 (Stop semantics) CLOSED (round 79)
 
-Round 72b, 2026-11-22; round 77 (2026-11-23) closes B5 — see §6.1 and §11. Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
+Round 72b, 2026-11-22; round 77 (2026-11-23) closes B5 — see §6.1 and §11; round 79 (2026-11-23)
+closes B6 — see §7 and §12. Worktree `.worktrees/vnext-a1-cut`, branch `vnext/a1-cut`,
 base `6350d04b0` (+ this round's commit). Read first: `NEXT-HOST-RC5-FEASIBILITY.md` (the
 feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
 
@@ -15,9 +16,9 @@ feasibility this round executes), `docs/TEST_METHODS.md` §2/§5/§7/§11.
 | existing next-host lane | **19/19 pass** | boot, native-api (A1–A6), provisioning controls (11 refusals + positive) |
 | ute-g1-fs rc.5 lane | **5/5 pass** | 16/16 vectors reproduce the rc.2 golden; 13/13 negative controls |
 | A1 slice on rc.2 | **36/36 pass** | no regression from the port (default = legacy) |
-| A1 slice on rc.5 | **34/36 pass** (round 77) | was 33/36 at round 72b; SLICE-35 is now GREEN (§6.1); the remaining 2 reds are SLICE-21/30 (genuine rc.5 drift, §7) |
+| A1 slice on rc.5 | **38/38 pass** (round 79) | was 34/36 at round 77; SLICE-35 GREEN since round 77 (§6.1), SLICE-21/30 GREEN since round 79 (§7), plus the new SLICE-37 dedupe arm and the SLICE-38 durable no-fabrication arm. The same 38/38 runs on rc.2 (unset selector) |
 | B5 three unconfined FS methods | **CLOSED (round 77)** | `patchText`/`deleteFile`/`moveFile` are confined, SLICE-35 GREEN on rc.5 and rc.2; six new arms `ADM-135`…`ADM-140` (§6.1, §11) |
-| local gates | **all green** | dispatch 180+2skip, catalog 785/38/14, cut-closure, P0, docs-sync, 28 placements, ci-required 10/0, bound vitest 238 |
+| local gates | **all green** | dispatch 204+2skip, catalog 785/38/14, cut-closure, P0, docs-sync, 29 placements, ci-required 10/0, bound vitest 238 (round 79) |
 
 No `CORE_SEAM_BLOCKER`. No host-tree file was written (the only host writes are the gitignored
 install/build outputs and the pinned `bin/` payload, both by the provisioning transport). No
@@ -393,7 +394,13 @@ were read from the host source and exercised only for the unconditional case (no
 guards).
 
 
-## 7. SLICE-21 / SLICE-30 — genuine rc.5 behavioural drift (B6), not a porting bug
+## 7. SLICE-21 / SLICE-30 — rc.5 pre-dispatch cancellation (B6): the drift, and the observation point that closes it
+
+**Status: CLOSED (round 79).** Both arms are GREEN on rc.5 AND rc.2, with their assertions unchanged
+(no weakening, no skip, no widened timeout). This section keeps the measured drift, then states where
+the product now observes the call and what it does — and does not — record for it.
+
+### 7.1 The measured drift (round 77, kept verbatim)
 
 Both arms abort a call BEFORE dispatch and then require the host to have SETTLED it, so the
 admission/settlement record exists. On rc.5 it does not: rc.5's batch scheduler synthesizes
@@ -406,11 +413,98 @@ ABORT-PROBE mode=legacy isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEve
 ABORT-PROBE mode=next   isError=true code=ABORTED_BEFORE_DISPATCH toolsResultEvents=0
 ```
 
-This is a real semantic difference the migration must not paper over: a product that keys its
-durable Stop evidence off `tools/result` observes nothing for a call aborted before dispatch on
-rc.5. The harness is NOT adjusted to accept it (no assertion weakened, no skip): the arms stay red
-so the product decision ("where does a pre-dispatch Stop get recorded on rc.5?") is forced. This is
-exactly the B6 risk the feasibility named — the first green run telling drift from a porting bug.
+### 7.2 Where rc.5 actually announces it (the observation point)
+
+rc.5 does not hide the cancellation; it announces it at a different boundary. In the pinned tree:
+
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:225-229` — an aborted group is
+  drained and `settlement.skip(call.block)` is called for every call that was never started;
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:271-280` — `skip()` synthesizes the
+  ordered error result, with the host's own `code: TOOL_ABORTED_BEFORE_DISPATCH`
+  (`contracts.ts:268`; the exported NAME is `TOOL_ABORTED_BEFORE_DISPATCH`, its VALUE is
+  `ABORTED_BEFORE_DISPATCH` — the first implementation of this round matched the NAME and was
+  correctly red until it matched the VALUE);
+- `tests/deepseek-harness-next/packages/core/tools/src/batch.ts:88` —
+  `executeToolBatch` returns the complete batch, synthetic results included;
+- `tests/deepseek-harness-next/packages/core/tools/src/index.ts:375-377` — `ToolsService.execute`
+  returns that batch to its caller.
+
+So the boundary where the abort becomes observ**able** is the value `tools.execute` RETURNS. Nothing
+in the pipeline can see it, and nothing emits an event for it.
+
+Product side (one reader, one writer):
+
+- `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` (new) — `preDispatchAbortsOf({calls,
+  completion})` reads that returned value for BOTH host generations (rc.5 `ToolBatchResult`, rc.2
+  single `ToolExecutionResult`) and returns exactly the entries carrying the host's pre-dispatch
+  code. It schedules nothing, dispatches nothing, and never invents an event.
+- `packages/runtime/src/plugin/vnext/execution-facts.mjs` — the same canonical fact writer now has a
+  second entry point (`observeExecutorCompletion`) over the SAME `written` map, keyed by the
+  product's **ExecutionId** (`dispatchExecutionId(provenance, callId)`).
+- `packages/runtime/src/plugin/vnext/centre-install.mjs` — `installMemberCentre` wires
+  `onPreDispatchAbort` to the settle writer and exposes `observeExecutorCompletion`;
+  `member-execution.mjs` re-exports it on the member composition.
+- `packages/runtime/src/plugin/vnext/settlement-port.mjs` — `stoppedBeforeBody()` now reports an
+  UNRECORDED settlement visibly under one stable code (`SETTLEMENT_NO_RECORD_BEFORE_ADMISSION`)
+  instead of returning null silently; the same code is used by the terminal writer's no-record path.
+- `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — `executeToolDispatch` hands the host's OWN
+  returned value to the composition (`onCompletion`); the slice world installs the product observer.
+
+**No scheduler was intercepted or replaced.** The product does not register a `ToolExecutor`, does
+not wrap `ToolsService.execute`, and does not touch rc.5's batching: it reads the value the scheduler
+already returns.
+
+### 7.3 What is recorded for a pre-dispatch abort
+
+| case | durable record | why |
+| --- | --- | --- |
+| abort observed, **no admission record** (a call aborted before the admission point — the case both slices drive) | an **execution fact** `outcome: 'aborted'`, `abortPhase: 'pre-dispatch'`, with the product ExecutionId; **no settlement record**; the unrecorded settlement is **reported** under `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` | the admission point never ran, so there is no authority record to close. Inventing a settlement would attribute an admission nobody made to a call nobody admitted. The fact still carries the Stop, so the cancellation is not lost |
+| abort observed **and** an admission record exists | the same fact, plus `recordStop({phase:'pre-dispatch'})` and `settle(CANCELLED)` through `stoppedBeforeBody()` | the record exists and must be closed: `ADMITTED → CANCELLED` is legal exactly with a recorded pre-dispatch Stop (`settlement/execution-settlement.ts:1127-1133`) |
+| the call entered the pipeline and settled normally | nothing from this observer | the completion carries no pre-dispatch code; and the ExecutionId dedupe refuses a second fact anyway |
+
+**No fabrication rule, stated once.** An abort before the admission point has no admission record,
+and the product does not manufacture one: no fabricated `tools/result`, no fake allow/deny, no
+invented settlement. What it owes is a visible report, and it writes one.
+
+### 7.4 Dedupe by ExecutionId (the arm)
+
+`SLICE-37` (new) pins the law on BOTH hosts:
+
+1. a pre-dispatch abort produces exactly ONE execution fact whose `executionId` is the product id,
+   and ZERO settlement records, with the unrecorded gap REPORTED naming that ExecutionId;
+2. the SAME completion delivered again through the observer (the both-paths-fire case; on rc.2 the
+   pipeline really does report it too) is DEDUPED: `observed:1, recorded:0, deduped:1`, the fact
+   count stays 1 and no settlement appears;
+3. a call that ENTERED the pipeline (`completed`) makes the observer report `observed: 0`, and its
+   settlement is written exactly once by the pipeline path.
+
+On rc.2 the first fact is written by the `tools/result` path and the completion observation is the
+deduped one; on rc.5 the completion observation writes it and the re-delivery is deduped. The arm is
+one arm, not a host-conditional assertion.
+
+`SLICE-38` pins the DURABLE edge of the same rule: in a world WITH the product ledger, a
+pre-dispatch abort before the admission point cannot be written at all (`LEDGER_EXECUTION_UNBOUND`:
+"an execution the ledger cannot join to an authority record is not writable"). The arm requires the
+observer to report that refusal (`unrecordable: 1`, the ledger's own code, the callId it could not
+bind), to write NO execution record, NO settlement and NO admission record, and to leave the host's
+dispatch unbroken; a control call that DID reach admission is then recorded and settled normally.
+
+### 7.5 NOT proven, and the residual gap
+
+**The production `tools.execute` call site is not wired.** In a real rc.5 agent turn the caller of
+`tools.execute` is the host's own agent loop, which the product does not own. The observer exists,
+is exported by the product composition (`member-execution.mjs` → `observeExecutorCompletion`) and is
+driven end to end in the slice composition, but no product composition is the caller of the host
+loop's batch. Wiring it there needs an upstream seam; per the repo rule that is a
+`CORE_SEAM_BLOCKER` for that leg, **not** a patch. What this round therefore proves is the
+OBSERVATION AND RECORDING contract at the boundary, over the real pinned hosts — not that a booted
+rc.5 member's pre-dispatch cancel is recorded by production wiring. That is recorded here and in
+`RC5-ACCEPTANCE.md` §3.5 as an open item rather than claimed.
+
+Also NOT proven: a pre-dispatch abort that lands between admission and dispatch on rc.5. The pinned
+scheduler's `startCall` prepares and dispatches in one step (no recheck between them), so the
+"record exists, dispatch skipped" row above is exercised by the settle writer's contract and by
+`stoppedBeforeBody`'s arms, not by a real rc.5 interleaving.
 
 ## 8. Local gates, pasted
 
@@ -450,7 +544,7 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 | item | state | why |
 | --- | --- | --- |
 | **B5** — three unconfined FS methods | **CLOSED (round 77)** | three overrides + six arms; SLICE-35 GREEN on rc.5 and rc.2 (§6.1, §11) |
-| SLICE-21 / SLICE-30 on rc.5 | **red, deliberately** | rc.5 batch synthesizes pre-dispatch abort results without the pipeline (§7); needs a product decision, not a test edit |
+| SLICE-21 / SLICE-30 on rc.5 | **CLOSED (round 79)** | observed at the executor completion boundary, deduped by ExecutionId; GREEN on rc.5 and rc.2 with unchanged assertions (§7, §12) |
 | provisioning CLI on a symlinked tree (`--assets`) | **environment friction, worked around** | `LAUNCHER_PATH_OUTSIDE_TREE` is lexical; realpath-anchored transport used and verified. A realpath fix in the CLI is a follow-up, not done here |
 | hosted CI `next-host` leg | **not run here** | the leg provisions the tree on the runner; this round only proves the LANE, locally, against the real pinned host |
 | claim "FS confinement holds on rc.5" | **allowed for the three FS methods, with the scope in §11** | §6.1/§11: in-process + real-provider evidence, NOT a live-host or kernel claim |
@@ -494,3 +588,65 @@ $ node scripts/eb3-security-run.mjs --layer ci-integration \
     --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
 EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
 ```
+
+## 12. Round 79 — B6 CLOSED: files, gates, and what is not proven
+
+### Files changed (this round)
+
+- `packages/runtime/src/plugin/vnext/pre-dispatch-abort.mjs` — **new**: reads the host's own
+  pre-dispatch result out of the value `ToolsService.execute` returns, for rc.5's batch shape and
+  rc.2's single-result shape. Selects by the host's own code only.
+- `packages/runtime/src/plugin/vnext/execution-facts.mjs` — the second observation entry point
+  (`observeExecutorCompletion` / `observePreDispatchAbort`) over the SAME ExecutionId-keyed dedupe
+  map; `abortPhase: 'pre-dispatch'`; a durable refusal is reported (`onUnrecordable`) instead of
+  thrown or fabricated.
+- `packages/runtime/src/plugin/vnext/centre-install.mjs` — wires the observation to the settle
+  writer (`stoppedBeforeBody`, `observedAt: 'executor-completion'`) and the refusal to `onFault`;
+  exposes `observeExecutorCompletion` on the composition.
+- `packages/runtime/src/plugin/vnext/member-execution.mjs` — re-exports the observer.
+- `packages/runtime/src/plugin/vnext/settlement-port.mjs` — `stoppedBeforeBody` records
+  `Stop(pre-dispatch)` + `CANCELLED` when a record exists, and reports
+  `SETTLEMENT_NO_RECORD_BEFORE_ADMISSION` (naming the observation point) when none does; the
+  terminal writer uses the same code for its own no-record path.
+- `packages/runtime/dist/**` — the byte-identical mirror of the five modules above (the placement
+  list gained the new module; without it the shipped face would fail with `ERR_MODULE_NOT_FOUND`).
+- `scripts/dist-placements/240-ute-vnext-centre.json` — the placement entry.
+- `tests/world-factory/lib/a5sf-fs-contract-world.mjs` — `executeToolDispatch` hands the host's OWN
+  returned value to the composition (`onCompletion`); the durable sink appends to the ledger BEFORE
+  the in-memory list so a refused fact is never observable as recorded.
+- `packages/runtime/test/vnext-fs-slice.test.mjs` — the world installs the observer; new SLICE-37
+  (dedupe + no fabrication + visible report + normal-call no-op) and SLICE-38 (durable refusal).
+  SLICE-21/30 unchanged.
+
+### Gates (fresh at the code commit `274aec2cc`)
+
+```
+place-dist-glue                 done (29 placement(s))
+dispatch-tests --leg ute-vnext-a1   tests 206 / pass 204 / fail 0 / skipped 2, exit 0
+test-catalog --max-uncollected 41 --max-excluded 7   tests=785 refused=0 findings=0
+ute-cut-closure --check         pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut(0/148) findings=0
+ute-p0-assets --check           pass modules=37 files=180 lines=69512 cut(148/148) findings=0
+docs-sync --check               docs=193 findings=0 blocking=0
+eb3-ci-required                 pass workflows=10 findings=0
+vitest leg (ci-integration)     passed=238 failed=0
+vnext-fs-slice on rc.2          38/38
+vnext-fs-slice on rc.5          38/38
+vnext-admission on rc.2         124/124
+vnext-admission on rc.5         122/124 (ADM-96/97 red: pre-existing rc.5 MCP `AbortSignal.any` shape, unchanged by this round)
+```
+
+`ci-pr-gate --full --census-captures 2` is recorded in `RC5-ACCEPTANCE.md` §7 (it is run against the
+committed tree, as in round 78).
+
+### Not proven (this round)
+
+- The production `tools.execute` call site is the host agent loop's. The observer is exported by the
+  product composition and driven end to end in the slice composition, but no booted rc.5 member's
+  pre-dispatch cancel is recorded by production wiring yet — that leg needs an upstream seam
+  (`CORE_SEAM_BLOCKER` for it) and is NOT claimed.
+- No real rc.5 interleaving that aborts between admission and dispatch was produced; the pinned
+  `startCall` prepares and dispatches in one step.
+- `place-dist-glue` only proves the mirror is byte-identical; it does not load the shipped face.
+- The three D drivers exercise the pipeline path (their Stops land in-flight), so the re-run
+  confirms no regression from the shared fact writer, NOT that a driver observes a pre-dispatch
+  abort. The pre-dispatch observation is proven in-process on both hosts (SLICE-21/30/37/38).
