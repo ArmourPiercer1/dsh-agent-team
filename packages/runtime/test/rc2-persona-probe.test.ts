@@ -156,7 +156,7 @@ describe('PP4 open ledger: production still registers the invented persona name'
   /**
    * NOT fixed here, and not silently accepted either.
    *
-   * `packages/runtime/src/plugin/live/agent-bindings.mjs` installs the team
+   * `packages/runtime/src/plugin/vnext/agent-bindings.mjs` installs the team
    * persona with `systemPrompt.section({ name: 'deployment:persona', order: 0, text })`.
    * That slot name is not the persona slot in any pinned host, so the section is
    * added alongside the deployment persona instead of shadowing it. Observed in
@@ -173,7 +173,10 @@ describe('PP4 open ledger: production still registers the invented persona name'
    * prefix slot (or the shadowing claim is dropped from the comments), this test
    * fails on purpose and must be updated with the evidence that decided it.
    */
-  const GLUE = 'packages/runtime/src/plugin/live/agent-bindings.mjs'
+  // ROUND 72 (2026-11-22): the glue moved to the centre (`vnext/agent-bindings.mjs`) with the UTE A0/A1
+  // cut; the OPEN DEFECT this ledger pins moved with it, unchanged — the section is still registered
+  // under `deployment:persona`, a slot no pinned host has, so it still cannot shadow the persona.
+  const GLUE = 'packages/runtime/src/plugin/vnext/agent-bindings.mjs'
 
   it('the glue still registers the non-persona slot name (open defect, tracked)', () => {
     const glue = pluginFile(GLUE)

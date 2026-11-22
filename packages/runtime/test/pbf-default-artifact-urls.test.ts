@@ -59,13 +59,13 @@ function minimalConfig(): Record<string, unknown> {
 describe('plugin-bundle-form: location-derived artifact URLs', () => {
   it('defaultGlueUrl resolves the co-located glue in the dist layout', () => {
     expect(host.defaultGlueUrl(DIST_HOST_URL)).toBe(
-      'file:///install/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/live/agent-bindings.mjs',
+      'file:///install/dsh-agent-team/packages/runtime/dist/packages/runtime/src/plugin/vnext/agent-bindings.mjs',
     )
   })
 
   it('defaultGlueUrl resolves the co-located glue in the source layout', () => {
     expect(host.defaultGlueUrl(SRC_HOST_URL)).toBe(
-      'file:///install/dsh-agent-team/packages/runtime/src/plugin/live/agent-bindings.mjs',
+      'file:///install/dsh-agent-team/packages/runtime/src/plugin/vnext/agent-bindings.mjs',
     )
   })
 

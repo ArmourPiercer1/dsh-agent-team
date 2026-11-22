@@ -175,7 +175,10 @@ describe('A6-PR3 zero production consumers', () => {
       // inert unless `alpha6ReviewRouting` is true, and the PR3 law targets
       // UNWIRED production code, not this Host entry. Keep the exemption to
       // exactly this file so any other runtime consumer still fails.
-      if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'root.ts')) continue
+      // ROUND 72 (2026-11-22): the opt-in adapter moved to the centre with the UTE A0/A1 cut
+      // (`src/plugin/root.ts` → `src/plugin/vnext/root.ts`). The exemption stays "exactly this file",
+      // so any OTHER runtime consumer of the lane is still a finding.
+      if (file === join(PACKAGES_DIR, 'runtime', 'src', 'plugin', 'vnext', 'root.ts')) continue
       const code = codeOnly(readFileSync(file, 'utf8'))
       if (/\breview-wake\b/.test(code) || /\bReviewWake/.test(code)) {
         consumers.push(relative(PACKAGES_DIR, file))

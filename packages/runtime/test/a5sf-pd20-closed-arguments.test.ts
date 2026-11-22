@@ -36,46 +36,9 @@ interface ClosedArgsModule {
   assertClosedArguments: (toolName: string, args: unknown, declared: readonly string[]) => void
 }
 
-interface RegisteredSpec {
-  readonly name: string
-  readonly parameters: { readonly properties?: Record<string, unknown>, readonly additionalProperties?: boolean }
-  execute: (args: Record<string, unknown>, exec: unknown) => Promise<unknown>
-}
-
 const argsModule: ClosedArgsModule = await import(
   new URL('../src/plugin/live/closed-tool-arguments.mjs', import.meta.url).href
 ) as ClosedArgsModule
-
-/** Load one route-C shadow module and capture what it registers. */
-async function loadShadow(relative: string): Promise<{ spec: RegisteredSpec, spawnCalls: number }> {
-  const mod = await import(new URL(relative, import.meta.url).href) as {
-    apply: (ctx: unknown, config?: Record<string, unknown>) => void
-  }
-  let captured: RegisteredSpec | undefined
-  const counter = { spawnCalls: 0 }
-  const ctx = {
-    tools: {
-      register(spec: RegisteredSpec) {
-        captured = spec
-      },
-    },
-    terminals: {
-      async spawn() {
-        counter.spawnCalls += 1
-        throw new Error('a refused call must never reach the confined terminal face')
-      },
-    },
-    subprocess: {
-      spawn() {
-        counter.spawnCalls += 1
-        throw new Error('a refused call must never reach the confined subprocess face')
-      },
-    },
-  }
-  mod.apply(ctx, { cwd: process.cwd(), workspace: process.cwd() })
-  if (captured === undefined) throw new Error(`${relative} registered no tool`)
-  return { spec: captured, spawnCalls: counter.spawnCalls }
-}
 
 const DECLARED_TERMINAL = ['command', 'description', 'workdir'] as const
 
@@ -107,29 +70,10 @@ describe('PD20-C3 — closed tool arguments are enforced at the call boundary', 
     expect(argsModule.closedArgumentsRefusal('bash', ['echo'], DECLARED_TERMINAL)?.code).toBe(argsModule.UNSUPPORTED_PARAMETER)
   })
 
-  it('the registered terminal `bash` stays closed and refuses run_in_background with ZERO spawns', async () => {
-    const { spec } = await loadShadow('../src/plugin/live/confined-terminal-tool.mjs')
-    expect(spec.name).toBe('bash')
-    expect(spec.parameters.additionalProperties).toBe(false)
-    expect(Object.keys(spec.parameters.properties ?? {}).sort()).toEqual(['command', 'description', 'workdir'])
-    expect(spec.parameters.properties).not.toHaveProperty('run_in_background')
-
-    const failure = await spec.execute(
-      { command: 'sleep 30; echo hi', description: 'background probe', run_in_background: true },
-      { agent: { session: { header: { cwd: process.cwd() } } } },
-    ).then(() => null, (error: unknown) => error as { code?: string, message?: string })
-    expect(failure).not.toBeNull()
-    expect(failure?.code).toBe(argsModule.BACKGROUND_NOT_SUPPORTED)
-    expect(failure?.message).toContain('BACKGROUND_NOT_SUPPORTED')
-  })
-
-  it('the registered PD-12 subprocess `bash` refuses it too, with zero spawns', async () => {
-    const { spec } = await loadShadow('../src/plugin/live/confined-bash-tool.mjs')
-    expect(spec.parameters.additionalProperties).toBe(false)
-    const failure = await spec.execute(
-      { command: 'sleep 30', description: 'background probe', run_in_background: true },
-      { agent: { session: { header: { cwd: process.cwd() } } } },
-    ).then(() => null, (error: unknown) => error as { code?: string })
-    expect(failure?.code).toBe(argsModule.BACKGROUND_NOT_SUPPORTED)
-  })
+  // ROUND 72 (2026-11-22): the two legs that loaded the REGISTERED route-C shadows
+  // (`../src/plugin/live/confined-terminal-tool.mjs`, `../src/plugin/live/confined-bash-tool.mjs`) were
+  // retired with their subject: 1617d5839 deleted both modules together with the whole pre-centre execution
+  // route, and the centre registers bash through the realm lane rather than a shadow module. The
+  // closed-argument ALGEBRA above is preserved and still graded here; re-pointing the registration law at
+  // the centre's own bash row is a design task, not a rename.
 })

@@ -176,7 +176,7 @@ describe('leg 2 — the import graph: repo edges TYPE-ONLY; public upstream edge
 })
 
 describe('leg 3 — the EXACT production consumer set (final splice: exactly root.ts)', () => {
-  it('the ONLY shipped consumer outside tests is src/plugin/root.ts (the emitter splice)', () => {
+  it('the ONLY shipped consumer outside tests is src/plugin/vnext/root.ts (the emitter splice, post-cut)', () => {
     const consumers: string[] = []
     const visit = (dir: string): void => {
       for (const entry of readdirSync(dir)) {
@@ -211,7 +211,10 @@ describe('leg 3 — the EXACT production consumer set (final splice: exactly roo
     // else in the shipped tree may reference the lane; a second entry
     // here is a review signal, never an accident to absorb.
     expect(consumers.slice().sort()).toEqual(
-      [join('src', 'plugin', 'root.ts'), join('src', 'plugin', 'types.ts')].sort(),
+      // ROUND 72 (2026-11-22): the emitter splice moved to the centre with the UTE A0/A1 cut
+      // (`src/plugin/root.ts` → `src/plugin/vnext/root.ts`). Still EXACTLY ONE runtime consumer plus the
+      // one TYPE-ONLY edge — a second entry is still a review signal.
+      [join('src', 'plugin', 'vnext', 'root.ts'), join('src', 'plugin', 'types.ts')].sort(),
     )
     // The types.ts edge is TYPE-ONLY (the glue contract member), exactly
     // once, and never a value import: the lane's runtime surface is bound
@@ -222,7 +225,7 @@ describe('leg 3 — the EXACT production consumer set (final splice: exactly roo
     expect(typesSource).toContain("import('../../permission-notification/index.js')")
     expect(typesSource).not.toMatch(/^import\s+\{[^}]*\}\s+from\s+['"][^'"]*permission-notification/m)
     // root.ts is the ONLY file constructing lane VALUES.
-    const rootSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'root.ts'), 'utf8')
+    const rootSource = readFileSync(join(RUNTIME_ROOT, 'src', 'plugin', 'vnext', 'root.ts'), 'utf8')
     expect(rootSource).toMatch(/from\s+'[^']*permission-notification\/index\.js'/)
   })
 
