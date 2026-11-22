@@ -36,7 +36,9 @@ real-data to synthetic (the `p4t6` booking ledger). The two boundary raises are
 * Deletion set: `git diff --name-status 29307bfa0..fc7ae61e0 -- 'tests/**' 'packages/**'`
   → 250 deleted paths under those roots (108 test/spec/helper files, 142
   `packages/testkit/test/p4t6-bookings/*.json` fixtures; the remaining 2 of the
-  round's 252 are outside these roots).
+  round's 252 are `scripts/eslint-node-globals/030-{inspect,web}-family*.json`,
+  ESLint environment maps of the retired inspect/web families — also
+  retired-subject, and not test files).
 * Frozen inventory (the only authority):
   * `docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md` — per-module
     keep/delete (`DELETE (wave 1)` / `REPLACE`);
