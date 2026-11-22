@@ -10706,3 +10706,35 @@ Gates at `9989c3289`: leg 194/192+2, catalog 785/38 uncollected, cut-closure, P0
 ci-required, bound vitest 238, artifacts ok/1939, and full ci-pr-gate pass=10 fail=0 (census identity set identical
 across two captures). Two gate defects were repaired rather than waived: SLICE-33 and u6-pr3-bl01 asserted the
 DELETED process lane and now assert the real authorization; the blueprint fence re-recorded a LINE SHIFT only.
+
+### R76 — the governed persistent shell is LIVE and PROVEN: state survives turns, and the OS refuses the escape
+
+`d3:persistent-subprocess` goes REFUTED -> **PROVEN** in two agreeing DEV-LIVE boots. The composition now mounts
+the HOST's own `@deepseek-ai/dsh-tool-bash-persistent` (no shadow, no Team copy) with
+`backendType: a5sf-governed-shell`, and the acceptance blueprint declares the execution authorization in the
+closed v4 grammar (`authorization: allow`, `executionBoundary: confined-subprocess`, `io` adding no narrowing on
+purpose — process authority is NOT a path lane).
+
+Confinement is kernel-level and measured, both directions: the in-lane state file is written (32 bytes), the
+out-of-lane write is refused (`Read-only file system` from the shell itself, file absent and 0 bytes read by a
+driver process outside the sandbox). The chain is the PTY spawn wrapped by the HOST sandbox provider with the
+member's narrow policy; on Linux bubblewrap 0.11.1 (verified usable) with the Landlock launcher as fallback.
+
+Turn persistence: first call `DBOOT_D3_STATE_WRITTEN`, second turn `DBOOT_D3_PERSISTENT_SHELL_STATE` ->
+`DBOOT_D3_STATE_READ`; both facts `{axis: process.exec, decision: allow}` and both settlements
+`ADMITTED->RUNNING->COMPLETED`.
+
+THREE runtime defects the real path exposed, all fixed inside CORE PATCH BUDGET = 0: (1) product-assembly refused
+a `confined-subprocess` answer that DID report `availableFaces.process` (and still refuses a narrower
+process-class lane, which nothing would enforce); (2) the compiled answer kept for admission dropped the mounted
+faces, so readiness said `unavailable` for a realm that had mounted the face; (3) a process-class binding claimed
+`bash` for an fs-only realm.
+
+Every surface-assertion update is listed in the round record (persistent `bash` takes `{command}` only; the crash
+judge's absence-as-evidence clause became `state-file-survives-restart`; both other drivers' rows grew the inert
+terminal half). Two cross-world probes FAILED before the fixes and PASS after — recorded, not hidden.
+
+Gates at `9b22541e6`: leg 198 cases / 196 pass + 2 disclosed skips, catalog 785/38, cut-closure, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, ci-pr-gate 10/10. NOT proven: DEV-LIVE is not a gate, scripted mock
+model, shell `ask`/`deny` are in-process only, no Windows deployment, and a governed deployment without
+`@deepseek-ai/dsh-terminal` cannot bind the preset (stated in cordis.patch.yml).
