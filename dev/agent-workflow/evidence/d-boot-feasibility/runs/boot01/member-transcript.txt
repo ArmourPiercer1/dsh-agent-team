@@ -1,5 +1,5 @@
 # Member transcript — session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a
-# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd
+# durable log: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd
 
 USER:
 [team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.
@@ -27,7 +27,7 @@ Instructions from: AGENTS.md
 USER:
 Current runtime context. This snapshot supersedes earlier runtime-context snapshots.
 
-Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace". Some platform temporary areas may also be writable.
+Current DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace". Some platform temporary areas may also be writable.
 
 Approval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.
 
@@ -41,9 +41,9 @@ A skill is a reusable set of task-specific instructions. The following skills ar
 … [rendered truncated at 900 chars; the full text is in member-transcript.json]
 
 TOOL CALL [read] call-dboot-read-admit
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt
 TOOL RESULT isError=false
-  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt</path>
+  <path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt</path>
   <type>file</type>
   <content>
   1: DBOOT_IN_LANE_BYTES
@@ -52,9 +52,9 @@ TOOL RESULT isError=false
   </content>
 
 TOOL CALL [read] call-dboot-read-deny
-  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt
+  file_path: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt
 TOOL RESULT isError=true
-  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane (policy generation a5sf1:7ea664b58f7c02003e38d25558349bca)
+  Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's fs.read lane (policy generation a5sf1:9f4c2fc929663f3548230e9fee9a636a)
 
 ASSISTANT (final):
-DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's
+DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt" is outside the binding's

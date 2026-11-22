@@ -1,42 +1,46 @@
 {
   "schema": "dboot-d2/agreement/1",
-  "at": "2026-11-21T23:39:37.900Z",
+  "at": "2026-11-22T04:28:34.684Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
   "rows": [
     {
       "boot": 1,
-      "overall": "FAIL",
+      "overall": "PASS",
       "multiMemberVerdict": "PROVEN",
-      "revocationVerdict": "REFUTED",
+      "revocationVerdict": "PROVEN",
       "stopVerdict": "PROVEN",
       "aAdmissions": 9,
-      "bAdmissions": 5,
+      "bAdmissions": 9,
       "aGuardFacts": 14,
-      "bGuardFacts": 8,
+      "bGuardFacts": 14,
       "windowsOverlap": true,
       "crossRefused": true,
       "stopSettlementState": "REFUSED",
-      "revocationPostRefused": false,
+      "revocationDenyRefused": true,
+      "revocationRestored": true,
+      "revocationWideningNotMinted": true,
       "bAfterStopCompleted": true
     },
     {
       "boot": 2,
-      "overall": "FAIL",
+      "overall": "PASS",
       "multiMemberVerdict": "PROVEN",
-      "revocationVerdict": "REFUTED",
+      "revocationVerdict": "PROVEN",
       "stopVerdict": "PROVEN",
       "aAdmissions": 9,
-      "bAdmissions": 5,
+      "bAdmissions": 9,
       "aGuardFacts": 14,
-      "bGuardFacts": 8,
+      "bGuardFacts": 14,
       "windowsOverlap": true,
       "crossRefused": true,
       "stopSettlementState": "REFUSED",
-      "revocationPostRefused": false,
+      "revocationDenyRefused": true,
+      "revocationRestored": true,
+      "revocationWideningNotMinted": true,
       "bAfterStopCompleted": true
     }
   ],
-  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             FAIL                                FAIL\nmultiMemberVerdict                  PROVEN                              PROVEN\nrevocationVerdict                   REFUTED                             REFUTED\nstopVerdict                         PROVEN                              PROVEN\naAdmissions                         9                                   9\nbAdmissions                         5                                   5\naGuardFacts                         14                                  14\nbGuardFacts                         8                                   8\nwindowsOverlap                      true                                true\ncrossRefused                        true                                true\nstopSettlementState                 REFUSED                             REFUSED\nrevocationPostRefused               false                               false\nbAfterStopCompleted                 true                                true\n\nagreeing=true differing=[]"
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             PASS                                PASS\nmultiMemberVerdict                  PROVEN                              PROVEN\nrevocationVerdict                   PROVEN                              PROVEN\nstopVerdict                         PROVEN                              PROVEN\naAdmissions                         9                                   9\nbAdmissions                         9                                   9\naGuardFacts                         14                                  14\nbGuardFacts                         14                                  14\nwindowsOverlap                      true                                true\ncrossRefused                        true                                true\nstopSettlementState                 REFUSED                             REFUSED\nrevocationDenyRefused               true                                true\nrevocationRestored                  true                                true\nrevocationWideningNotMinted         true                                true\nbAfterStopCompleted                 true                                true\n\nagreeing=true differing=[]"
 }

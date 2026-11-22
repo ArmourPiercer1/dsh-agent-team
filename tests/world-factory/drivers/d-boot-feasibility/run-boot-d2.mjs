@@ -17,13 +17,16 @@
  *   2. `d2:revocation` — the durable `permissionOverlay` mutation lane
  *      (`team_grant_permission` / `team_revoke_permission` -> the ONE
  *      governance mutation authority) is driven while the Member is live, and
- *      the SAME call is measured before / after. The REQUIRED direction
- *      ("a revoke refuses the call that previously succeeded, with a NEW policy
- *      generation in the fact") is judged exactly and is REFUTED by the product
- *      at this HEAD; the measured reason and the two lawful product shapes are
- *      recorded in the verdict detail and in the evidence README. The
- *      OPPOSITE direction (a tightening grant refuses, its revoke re-admits)
- *      is measured live and reported as facts, never as the required clause.
+ *      the SAME call is measured before / after. ROUND 71 rewrote the judge to
+ *      measure the CONTRACT, strictly: (a) a durable DENY refuses the
+ *      previously admitted call (`ADMISSION_OVERLAY_DENY`, zero body,
+ *      settlement REFUSED, fact naming the overlay + a policy generation);
+ *      (b) removing that deny RESTORES the call (admitted + COMPLETED, a NEW
+ *      fact); (c) an untouched in-lane call is admitted at every phase; and
+ *      (d) WIDENING IS REFUSED — the same lane is asked for an `allow` beyond
+ *      the compiled ceiling, its answer is recorded verbatim (typed refusal,
+ *      no-op or — the only failing shape — a commit), and the widened locator
+ *      is still refused with zero foreign bytes.
  *   3. `d2:stop` — a Member turn is STOPPED through the product's own Stop path
  *      (`goals/get -> goals/pause -> session/cancel`, the sequence the Team
  *      view's member-stop button issues; `packages/client/src/model/member-stop.ts`).
@@ -115,6 +118,8 @@ const MK_L4 = 'DBOOT_D2_L4_GRANT'
 const MK_L5 = 'DBOOT_D2_L5_B_MID'
 const MK_L6 = 'DBOOT_D2_L6_REVOKE'
 const MK_L7 = 'DBOOT_D2_L7_B_POST'
+const MK_L8 = 'DBOOT_D2_L8_WIDEN_ATTEMPT'
+const MK_L9 = 'DBOOT_D2_L9_B_WIDEN_READ'
 
 // One unique token per delegated work unit. A member request is identified
 // STRUCTURALLY by the token its own delegate/follow-up prompt carries (the
@@ -128,7 +133,8 @@ const TOK_B_AFTER = 'dboot-d2-b-after-stop'
 const TOK_B_PRE = 'dboot-d2-b-pre-revoke'
 const TOK_B_MID = 'dboot-d2-b-mid-revoke'
 const TOK_B_POST = 'dboot-d2-b-post-revoke'
-const MEMBER_TOKENS = Object.freeze([TOK_A_STOP, TOK_B_AFTER, TOK_B_PRE, TOK_B_MID, TOK_B_POST, TOK_A, TOK_B])
+const TOK_B_WIDEN = 'dboot-d2-b-widen-probe'
+const MEMBER_TOKENS = Object.freeze([TOK_A_STOP, TOK_B_AFTER, TOK_B_PRE, TOK_B_MID, TOK_B_POST, TOK_B_WIDEN, TOK_A, TOK_B])
 
 const CALL_A_OWN = 'call-d2-a-own'
 const CALL_A_CROSS = 'call-d2-a-cross'
@@ -138,6 +144,11 @@ const CALL_A_ASK = 'call-d2-a-ask'
 const CALL_B_PRE = 'call-d2-b-pre'
 const CALL_B_MID = 'call-d2-b-mid'
 const CALL_B_POST = 'call-d2-b-post'
+const CALL_B_PRE_INLANE = 'call-d2-b-pre-inlane'
+const CALL_B_MID_INLANE = 'call-d2-b-mid-inlane'
+const CALL_B_POST_INLANE = 'call-d2-b-post-inlane'
+const CALL_B_WIDEN = 'call-d2-b-widen'
+const CALL_GRANT_WIDEN = 'call-d2-grant-widen'
 const CALL_DELEGATE_A = 'call-d2-delegate-a'
 const CALL_DELEGATE_B = 'call-d2-delegate-b'
 const CALL_FOLLOW_A = 'call-d2-follow-a'
@@ -145,6 +156,7 @@ const CALL_FOLLOW_B = 'call-d2-follow-b'
 const CALL_FOLLOW_B_PRE = 'call-d2-follow-b-pre'
 const CALL_FOLLOW_B_MID = 'call-d2-follow-b-mid'
 const CALL_FOLLOW_B_POST = 'call-d2-follow-b-post'
+const CALL_FOLLOW_B_WIDEN = 'call-d2-follow-b-widen'
 const CALL_GRANT = 'call-d2-grant'
 const CALL_REVOKE = 'call-d2-revoke'
 
@@ -154,6 +166,9 @@ const DONE_MEMBER_B_AFTER = 'DBOOT_D2_MEMBER_B_AFTER_DONE'
 const DONE_MEMBER_B_PRE = 'DBOOT_D2_MEMBER_B_PRE_DONE'
 const DONE_MEMBER_B_MID = 'DBOOT_D2_MEMBER_B_MID_DONE'
 const DONE_MEMBER_B_POST = 'DBOOT_D2_MEMBER_B_POST_DONE'
+const DONE_MEMBER_B_WIDEN = 'DBOOT_D2_MEMBER_B_WIDEN_DONE'
+const DONE_L8 = 'DBOOT_D2_L8_DONE'
+const DONE_L9 = 'DBOOT_D2_L9_DONE'
 const DONE_L1 = 'DBOOT_D2_L1_DONE'
 const DONE_L2 = 'DBOOT_D2_L2_DONE'
 const DONE_L3 = 'DBOOT_D2_L3_DONE'
@@ -608,16 +623,28 @@ function makeDecide({ paths, ids }) {
         return text(`${DONE_MEMBER_B_AFTER} ${lastToolResultText(req).slice(0, 260)}`)
       }
       if (token === TOK_B_PRE) {
+        // The in-lane read is the UNTOUCHED control. It is measured at EVERY
+        // phase (pre / deny / restore) so "unaffected throughout" is a
+        // measurement, not an inference from one call before the mutation.
+        if (!seen.has(CALL_B_PRE_INLANE)) return readCall(CALL_B_PRE_INLANE, paths.bInLane)
         if (!seen.has(CALL_B_PRE)) return readCall(CALL_B_PRE, paths.revocable)
         return text(`${DONE_MEMBER_B_PRE} ${lastToolResultText(req).slice(0, 260)}`)
       }
       if (token === TOK_B_MID) {
+        if (!seen.has(CALL_B_MID_INLANE)) return readCall(CALL_B_MID_INLANE, paths.bInLane)
         if (!seen.has(CALL_B_MID)) return readCall(CALL_B_MID, paths.revocable)
         return text(`${DONE_MEMBER_B_MID} ${lastToolResultText(req).slice(0, 260)}`)
       }
       if (token === TOK_B_POST) {
+        if (!seen.has(CALL_B_POST_INLANE)) return readCall(CALL_B_POST_INLANE, paths.bInLane)
         if (!seen.has(CALL_B_POST)) return readCall(CALL_B_POST, paths.revocable)
         return text(`${DONE_MEMBER_B_POST} ${lastToolResultText(req).slice(0, 260)}`)
+      }
+      // ── Member B widening probe: after the mutation lane was asked to mint
+      //    an `allow` BEYOND B's compiled lane, B tries that exact locator. ──
+      if (token === TOK_B_WIDEN) {
+        if (!seen.has(CALL_B_WIDEN)) return readCall(CALL_B_WIDEN, paths.aInLane)
+        return text(`${DONE_MEMBER_B_WIDEN} ${lastToolResultText(req).slice(0, 260)}`)
       }
       return text('DBOOT_D2_MEMBER_NOOP')
     }
@@ -628,7 +655,7 @@ function makeDecide({ paths, ids }) {
     // the accumulated conversation: after an async delegation the provider's
     // next request may carry a synthetic last-user message (measured), so a
     // `lastUser`-only test would fall through to NOOP. Highest marker wins.
-    const leaderPhase = [MK_L1, MK_L2, MK_L3, MK_L4, MK_L5, MK_L6, MK_L7]
+    const leaderPhase = [MK_L1, MK_L2, MK_L3, MK_L4, MK_L5, MK_L6, MK_L7, MK_L8, MK_L9]
       .filter((m) => allText.includes(m)).at(-1) ?? null
 
     // ── L1: two ASYNCHRONOUS delegations (the concurrency subject) ──
@@ -736,6 +763,55 @@ function makeDecide({ paths, ids }) {
         }
       }
       return text(done)
+    }
+
+    // ── L8 / L9: WIDENING IS REFUSED (measured, not assumed) ───────────────
+    // L8 asks the ONE durable mutation lane to mint an `allow` on a locator
+    // OUTSIDE Member B's compiled read lane (A's in-lane file). The product's
+    // own answer shape is recorded verbatim — typed refusal, no-op, or commit —
+    // and L9 then makes B try that locator, so the EFFECT is measured too.
+    if (leaderPhase === MK_L8) {
+      const seen = resultIdsOf(req)
+      if (!seen.has(CALL_GRANT_WIDEN)) {
+        return {
+          kind: 'tool-call',
+          toolCalls: [{
+            id: CALL_GRANT_WIDEN,
+            name: 'team_grant_permission',
+            arguments: {
+              rootSessionId: BOOT_ROOT,
+              requestToken: 'dboot-d2-grant-widen',
+              targetInstanceId: ids.b,
+              rules: [{
+                operationClass: 'read',
+                matcher: { kind: 'exact', value: paths.aInLane },
+                effect: 'allow',
+              }],
+            },
+          }],
+        }
+      }
+      return text(DONE_L8)
+    }
+    if (leaderPhase === MK_L9) {
+      const seen = resultIdsOf(req)
+      if (!seen.has(CALL_FOLLOW_B_WIDEN)) {
+        return {
+          kind: 'tool-call',
+          toolCalls: [{
+            id: CALL_FOLLOW_B_WIDEN,
+            name: 'team_follow_up',
+            arguments: {
+              rootSessionId: BOOT_ROOT,
+              requestToken: 'dboot-d2-follow-b-widen',
+              targetInstanceId: ids.b,
+              prompt: `${TOK_B_WIDEN}: read the file \`${paths.aInLane}\`, one tool call, then report briefly.`,
+              async: true,
+            },
+          }],
+        }
+      }
+      return text(DONE_L9)
     }
 
     // ── L4 / L6: the ONE durable permission mutation lane ──
@@ -957,7 +1033,11 @@ function judgeMultiMember({ a, b, facts, paths }) {
   const aAllow = aAdmissions.find((r) => String(r?.locator ?? '') === paths.aInLane && r?.decision === 'allow') ?? null
   const aDeny = aAdmissions.find((r) => String(r?.locator ?? '') === paths.bInLane && r?.decision === 'deny') ?? null
   const bAllow = bAdmissions.find((r) => String(r?.locator ?? '') === paths.bInLane && r?.decision === 'allow') ?? null
-  const bLaneDeny = bAdmissions.filter((r) => r?.refusalCode === 'LANE_DENY')
+  // B's OWN lane denials. The judged one is the widening probe at A's
+  // locator (round 71), which is a DIFFERENT call than A's cross-member read:
+  // the clause below proves A's cross refusal never appears in B's ledger, so
+  // it looks at B's in-lane locator only.
+  const bLaneDeny = bAdmissions.filter((r) => r?.refusalCode === 'LANE_DENY' && String(r?.locator ?? '') === paths.bInLane)
   const aExec = (a?.ledger ?? []).filter((r) => r?.kind === 'execution')
   const bExec = (b?.ledger ?? []).filter((r) => r?.kind === 'execution')
   // Only ADMISSION facts carry the member identity; execution facts carry the
@@ -980,7 +1060,7 @@ function judgeMultiMember({ a, b, facts, paths }) {
       { id: 'a-ledger-cross-deny', ok: aDeny?.refusalCode === 'LANE_DENY' && aDeny?.axis === 'fs.read', detail: `decision=${String(aDeny?.decision)} refusalCode=${String(aDeny?.refusalCode)}` },
       { id: 'a-ledger-only-a-identity', ok: aIdentities.length === 1 && aIdentities[0] === `${a.instance}/${a.instance}`, detail: `identities=${JSON.stringify(aIdentities)}` },
       { id: 'b-ledger-own-allow', ok: bAllow?.decision === 'allow' && bAllow?.axis === 'fs.read', detail: `decision=${String(bAllow?.decision)} axis=${String(bAllow?.axis)}` },
-      { id: 'b-ledger-no-lane-deny', ok: bLaneDeny.length === 0, detail: `B LANE_DENY admissions=${String(bLaneDeny.length)} (A's cross-lane refusal never appears in B's ledger; the only B denial is the judged overlay restriction)` },
+      { id: 'b-ledger-no-lane-deny', ok: bLaneDeny.length === 0, detail: `B LANE_DENY admissions AT B's OWN locator=${String(bLaneDeny.length)} (A's cross-lane refusal never appears in B's ledger; the separate round-71 widening probe at A's locator is B's OWN call, not A's)` },
       { id: 'b-ledger-only-b-identity', ok: bIdentities.length === 1 && bIdentities[0] === `${b.instance}/${b.instance}`, detail: `identities=${JSON.stringify(bIdentities)}` },
       { id: 'a-ledger-executions', ok: aExec.some((r) => r?.outcome === 'completed') && aExec.some((r) => r?.outcome === 'admission-refusal'), detail: `executions=${JSON.stringify(aExec.map((r) => r?.outcome))}` },
       { id: 'b-ledger-executions', ok: bExec.some((r) => r?.outcome === 'completed'), detail: `executions=${JSON.stringify(bExec.map((r) => r?.outcome))}` },
@@ -992,34 +1072,101 @@ function factsAtIdentity(facts, locator, identity) {
   return facts.filter((f) => String(f.locator ?? '') === locator && String(f.memberIdentity ?? '') === String(identity))
 }
 
-function judgeRevocation({ b, paths, mutation }) {
-  const preText = String(mutation?.pre?.result?.text ?? '')
-  const midText = String(mutation?.mid?.result?.text ?? '')
-  const postText = String(mutation?.post?.result?.text ?? '')
-  const grantText = String(mutation?.grant?.result?.text ?? '')
-  const revokeText = String(mutation?.revoke?.result?.text ?? '')
-  const preFact = findAdmission(b?.ledger, paths.revocable, 'allow')
-  const postFact = findAdmission(b?.ledger, paths.revocable, 'allow')
-  const generations = (b?.ledger ?? [])
-    .filter((r) => r?.kind === 'invocation-authority' && String(r?.locator ?? '') === paths.revocable)
-    .map((r) => String(r?.policyGeneration ?? ''))
+/**
+ * ROUND 71 (judge semantics). The old REQUIRED clause demanded that the
+ * durable overlay WIDEN authority: revoking the durable deny had to refuse a
+ * call that previously succeeded, with a new compiled generation in the fact.
+ * The contract forbids exactly that (`overlay-decision.mjs:9`,
+ * `admission-port.mjs:498-521`, `permission-mutation.ts:435-436`), so the judge
+ * was measuring a capability the product must never have.
+ *
+ * The rewritten judge measures the CONTRACT, strictly:
+ *
+ *   (a) a durable DENY lands -> the previously admitted call is refused
+ *       `ADMISSION_OVERLAY_DENY`, zero body, settlement REFUSED, and the fact
+ *       names the overlay as the deciding authority and carries a policy
+ *       generation;
+ *   (b) removing that deny RESTORES the call (admitted + COMPLETED) as a NEW
+ *       fact in the same call-id family;
+ *   (c) an untouched in-lane call is admitted at EVERY phase (pre / deny /
+ *       restore), so "unaffected throughout" is measured;
+ *   (d) WIDENING IS REFUSED: the durable mutation path is asked for an `allow`
+ *       beyond B's compiled lane. Its own answer is recorded verbatim (typed
+ *       refusal, no-op, or commit) and must not mint authority; B's subsequent
+ *       call to that locator must still be refused with zero A bytes.
+ */
+function judgeRevocation({ b, paths, mutation, widening, settlement }) {
+  const textOf = (sample) => String(sample?.result?.text ?? '')
+  const preText = textOf(mutation?.pre)
+  const midText = textOf(mutation?.mid)
+  const postText = textOf(mutation?.post)
+  const grantText = textOf(mutation?.grant)
+  const revokeText = textOf(mutation?.revoke)
+  const ledger = b?.ledger ?? []
+  const factsFor = (locator) => ledger.filter((r) => r?.kind === 'invocation-authority' && String(r?.locator ?? '') === locator)
+  const revocableFacts = factsFor(paths.revocable)
+  const factOf = (sample) => revocableFacts.find((r) => String(r?.callId ?? '') === String(sample?.call?.callId ?? '')) ?? null
+  const preFact = factOf(mutation?.pre)
+  const midFact = factOf(mutation?.mid)
+  const postFact = factOf(mutation?.post)
+  const grantSettled = (() => {
+    try { return JSON.parse(grantText) } catch { return null }
+  })()
+  const revokeSettled = (() => {
+    try { return JSON.parse(revokeText) } catch { return null }
+  })()
+  // (c) The in-lane control at every phase.
+  const inLane = [
+    ['pre', mutation?.preInLane, settlement?.bPreInLane],
+    ['deny', mutation?.midInLane, settlement?.bMidInLane],
+    ['restore', mutation?.postInLane, settlement?.bPostInLane],
+  ].map(([phase, sample, settled]) => ({
+    phase,
+    callId: String(sample?.call?.callId ?? ''),
+    admitted: sample?.result?.isError === false && textOf(sample).includes(B_IN_LANE_TEXT),
+    state: settled?.state ?? null,
+    fact: ledger.find((r) => r?.kind === 'invocation-authority' && String(r?.callId ?? '') === String(sample?.call?.callId ?? '')) ?? null,
+  }))
+  // (d) The widening answer, recorded verbatim. `allowedShapes` is DELIBERATELY
+  // not "whatever came back": a committed expansion (`changed:true`) is the one
+  // shape the contract forbids and the one this clause refuses to accept.
+  const wideningText = textOf(widening?.grant)
+  let wideningAnswer = null
+  try { wideningAnswer = JSON.parse(wideningText) } catch { wideningAnswer = null }
+  const wideningRefusedOrNoop = wideningAnswer !== null
+    && ((wideningAnswer.status === 'rejected' && typeof wideningAnswer.code === 'string' && wideningAnswer.code !== '')
+      || (wideningAnswer.status === 'permission-mutated' && wideningAnswer.changed === false))
+  const wideningReadText = textOf(widening?.read)
+  const wideningFact = ledger.find((r) => r?.kind === 'invocation-authority' && String(r?.callId ?? '') === String(widening?.read?.call?.callId ?? '')) ?? null
+  const callFamily = [mutation?.pre?.call?.callId, mutation?.mid?.call?.callId, mutation?.post?.call?.callId].map((v) => String(v ?? ''))
+  const familyOk = callFamily.every((id) => id.startsWith('call-d2-b-')) && new Set(callFamily).size === 3
   return verdictOf(
-    'REQUIRED: a permission is revoked through the product\'s durable permissionOverlay mutation lane while the Member is live, and the SAME call that previously succeeded is refused by the centre with a NEW policy generation in the fact; a call that remains in lane still succeeds',
+    'REQUIRED: a durable permission DENY through the product\'s ONE permissionOverlay mutation lane refuses the previously admitted call (`ADMISSION_OVERLAY_DENY`, zero body, settlement REFUSED, fact naming the overlay and carrying a policy generation); removing that deny restores the SAME call (admitted + COMPLETED, a NEW fact); an untouched in-lane call is admitted at every phase; and the same durable lane CANNOT mint an `allow` beyond the compiled ceiling',
     [
       { id: 'member-live-at-mutation', ok: mutation?.lifecycleBefore === 'RUNNING' || mutation?.lifecycleBefore === 'SETTLED', detail: `lifecycle=${String(mutation?.lifecycleBefore)}` },
-      { id: 'pre-revoke-call-admitted', ok: mutation?.pre?.result?.isError === false && preText.includes(REVOCABLE_TEXT), detail: `isError=${String(mutation?.pre?.result?.isError)} bytes=${String(preText.includes(REVOCABLE_TEXT))}` },
-      { id: 'product-mutation-lane-driven', ok: mutation?.grant?.call?.name === 'team_grant_permission' || mutation?.revoke?.call?.name === 'team_revoke_permission', detail: `grantCall=${String(mutation?.grant?.call?.name)} revokeCall=${String(mutation?.revoke?.call?.name)}` },
-      { id: 'grant-committed', ok: grantText.includes('"status":"permission-mutated"') && grantText.includes('"changed":true'), detail: grantText.slice(0, 220) },
-      { id: 'tightening-grant-refuses', ok: mutation?.mid?.result?.isError === true && midText.includes('ADMISSION_OVERLAY_DENY'), detail: `isError=${String(mutation?.mid?.result?.isError)} overlayDeny=${String(midText.includes('ADMISSION_OVERLAY_DENY'))}` },
-      { id: 'revoke-committed', ok: revokeText.includes('"status":"permission-mutated"') && revokeText.includes('"changed":true'), detail: revokeText.slice(0, 220) },
-      { id: 'in-lane-call-still-succeeds', ok: b?.own?.result?.isError === false && String(b?.own?.result?.text ?? '').includes(B_IN_LANE_TEXT), detail: 'Member B\'s untouched in-lane read was admitted after the mutation' },
-      { id: 'REQUIRED-revoke-refuses-previously-admitted', ok: mutation?.post?.result?.isError === true, detail: `post-revoke isError=${String(mutation?.post?.result?.isError)} bytesReturned=${String(postText.includes(REVOCABLE_TEXT))} — the durable overlay can only REMOVE restrictions (overlay-decision.mjs header + admission-port.mjs:497-521: "it can remove authority, never grant it"), so revoking the only writable effect (a deny) re-admits the call; there is no revocable ALLOW layer in the decision path and no recompile on a generation bump. Missing seam: a decision-path ALLOW that a revoke can withdraw. Two lawful shapes: (A) let the centre's overlayDecision return allow as well as deny, so a durable ALLOW stands in for a lane deny and its revoke restores the deny; (B) derive the compiled member lane + centre binding from the overlay snapshot and re-bind on generation change (extend the A5-M1 publication), so a revoked ALLOW recompiles to deny and the fact carries the new generation.` },
-      { id: 'REQUIRED-new-policy-generation-in-fact', ok: new Set(generations).size >= 2, detail: `policyGeneration values on the revocable locator's centre facts=${JSON.stringify(generations)} (a mutation bumps the durable overlay generation, but the compiled policy revision and the centre binding do not change; no new generation reaches the fact)` },
+      { id: 'pre-deny-call-admitted', ok: mutation?.pre?.result?.isError === false && preText.includes(REVOCABLE_TEXT) && preFact?.decision === 'allow', detail: `isError=${String(mutation?.pre?.result?.isError)} bytes=${String(preText.includes(REVOCABLE_TEXT))} factDecision=${String(preFact?.decision)}` },
+      { id: 'product-mutation-lane-driven', ok: mutation?.grant?.call?.name === 'team_grant_permission' && mutation?.revoke?.call?.name === 'team_revoke_permission', detail: `grantCall=${String(mutation?.grant?.call?.name)} revokeCall=${String(mutation?.revoke?.call?.name)}` },
+      // ── (a) the durable deny lands and removes authority ──────────────────
+      { id: 'a-durable-deny-committed', ok: grantSettled?.status === 'permission-mutated' && grantSettled?.changed === true, detail: grantText.slice(0, 220) },
+      { id: 'a-overlay-refuses-previously-admitted', ok: mutation?.mid?.result?.isError === true && midText.includes('ADMISSION_OVERLAY_DENY'), detail: `isError=${String(mutation?.mid?.result?.isError)} overlayDeny=${String(midText.includes('ADMISSION_OVERLAY_DENY'))} text=${midText.slice(0, 200)}` },
+      { id: 'a-zero-body', ok: midText.includes(REVOCABLE_TEXT) === false, detail: 'the refused call returned ZERO bytes of the previously readable file' },
+      { id: 'a-settlement-refused', ok: settlement?.bMid?.state === 'REFUSED' && settlement?.bMid?.dispatch === 'not-started', detail: `state=${String(settlement?.bMid?.state)} dispatch=${String(settlement?.bMid?.dispatch)} bodyOutcome=${String(settlement?.bMid?.bodyOutcome)}` },
+      { id: 'a-fact-names-overlay-deciding-authority', ok: midFact?.decision === 'deny' && midFact?.refusalCode === 'ADMISSION_OVERLAY_DENY' && midFact?.overlayOutcome === 'deny' && midFact?.laneDecision === 'allow', detail: `decision=${String(midFact?.decision)} refusalCode=${String(midFact?.refusalCode)} overlayOutcome=${String(midFact?.overlayOutcome)} laneDecision=${String(midFact?.laneDecision)} (the lane allowed; the overlay is what refused)` },
+      { id: 'a-fact-carries-policy-generation', ok: typeof midFact?.policyGeneration === 'string' && midFact.policyGeneration !== '', detail: `policyGeneration=${String(midFact?.policyGeneration)}` },
+      // ── (b) removing the deny restores the call ───────────────────────────
+      { id: 'b-deny-removal-committed', ok: revokeSettled?.status === 'permission-mutated' && revokeSettled?.changed === true, detail: revokeText.slice(0, 220) },
+      { id: 'b-call-restored-admitted', ok: mutation?.post?.result?.isError === false && postText.includes(REVOCABLE_TEXT) && postFact?.decision === 'allow', detail: `isError=${String(mutation?.post?.result?.isError)} bytes=${String(postText.includes(REVOCABLE_TEXT))} factDecision=${String(postFact?.decision)}` },
+      { id: 'b-call-restored-completed', ok: settlement?.bPost?.state === 'COMPLETED' && settlement?.bPost?.dispatch === 'quiesced', detail: `state=${String(settlement?.bPost?.state)} dispatch=${String(settlement?.bPost?.dispatch)} bodyOutcome=${String(settlement?.bPost?.bodyOutcome)}` },
+      { id: 'b-same-call-family-new-fact', ok: familyOk && preFact !== null && postFact !== null && String(preFact?.callId) !== String(postFact?.callId) && new Set([preFact?.at, midFact?.at, postFact?.at]).size >= 2, detail: `callIds=${JSON.stringify(callFamily)} preFact=${String(preFact?.callId)}@${String(preFact?.at)} midFact=${String(midFact?.callId)}@${String(midFact?.at)} postFact=${String(postFact?.callId)}@${String(postFact?.at)} (same family, distinct durable facts — never a replay of the pre fact)` },
+      // ── (c) the untouched in-lane call, at every phase ────────────────────
+      { id: 'c-in-lane-unaffected-throughout', ok: inLane.every((s) => s.admitted && s.state === 'COMPLETED' && s.fact?.decision === 'allow'), detail: `phases=${JSON.stringify(inLane.map((s) => ({ phase: s.phase, callId: s.callId, admitted: s.admitted, settlement: s.state, fact: s.fact?.decision ?? null })))}` },
+      // ── (d) widening is refused — measured, not assumed ───────────────────
+      { id: 'd-widening-attempt-issued', ok: widening?.grant?.call?.name === 'team_grant_permission' && typeof wideningText === 'string' && wideningText !== '', detail: `call=${String(widening?.grant?.call?.name)} effect=allow locator=${String(paths.aInLane)} (outside Member B's compiled read lane) answer=${wideningText.slice(0, 220)}` },
+      { id: 'd-widening-not-minted', ok: wideningAnswer !== null && wideningRefusedOrNoop, detail: `measured answer: status=${String(wideningAnswer?.status)} code=${String(wideningAnswer?.code)} changed=${String(wideningAnswer?.changed)} — a typed refusal or a no-op passes; a committed expansion (\`permission-mutated\` + \`changed:true\`) fails` },
+      { id: 'd-widened-locator-still-refused', ok: widening?.read?.result?.isError === true && wideningReadText.includes('LANE_DENY') && wideningReadText.includes(A_IN_LANE_TEXT) === false, detail: `isError=${String(widening?.read?.result?.isError)} laneDeny=${String(wideningReadText.includes('LANE_DENY'))} A-bytes=${String(wideningReadText.includes(A_IN_LANE_TEXT))} text=${wideningReadText.slice(0, 180)}` },
+      { id: 'd-widened-locator-fact-still-deny', ok: wideningFact?.decision === 'deny' && wideningFact?.refusalCode === 'LANE_DENY', detail: `decision=${String(wideningFact?.decision)} refusalCode=${String(wideningFact?.refusalCode)} (the compiled lane still decides; the attempt minted no authority)` },
     ],
   )
-}
-function findAdmission(ledger, locator, decision) {
-  return (ledger ?? []).find((r) => r?.kind === 'invocation-authority' && String(r?.locator ?? '') === locator && r?.decision === decision) ?? null
 }
 
 function judgeStop({ a, b, paths, control, settlement }) {
@@ -1337,6 +1484,16 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     if (!(await waitFor(() => sawReply(DONE_MEMBER_B_POST), 150_000))) throw new Error('member B post-revoke read never completed')
     await waitSettled(ids.b, 'member B after post-read')
 
+    // ── widening: ask the lane for authority beyond B's compiled ceiling,
+    //    then have B try the widened locator (the EFFECT, not just the answer) ──
+    abortStage = 'widening-grant'
+    await promptTurn(MK_L8, DONE_L8, 'd2l8')
+    abortStage = 'widening-read'
+    await waitSettled(ids.b, 'member B before widening read')
+    await promptTurn(MK_L9, DONE_L9, 'd2l9')
+    if (!(await waitFor(() => sawReply(DONE_MEMBER_B_WIDEN), 150_000))) throw new Error('member B widening-probe read never completed')
+    await waitSettled(ids.b, 'member B after widening read')
+
     // ── evidence collection (before teardown deletes the World home) ────────
     abortStage = 'evidence-collection'
     const allRequests = requests()
@@ -1385,6 +1542,10 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       bPre: settleOf(ids.b, CALL_B_PRE),
       bMid: settleOf(ids.b, CALL_B_MID),
       bPost: settleOf(ids.b, CALL_B_POST),
+      bPreInLane: settleOf(ids.b, CALL_B_PRE_INLANE),
+      bMidInLane: settleOf(ids.b, CALL_B_MID_INLANE),
+      bPostInLane: settleOf(ids.b, CALL_B_POST_INLANE),
+      bWiden: settleOf(ids.b, CALL_B_WIDEN),
     }
     writeFileSync(join(bootDir, 'settlement.json'), JSON.stringify(settlement, null, 2) + '\n')
 
@@ -1399,8 +1560,15 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
         pre: { call: callOf(transcriptB, CALL_B_PRE), result: callOf(transcriptB, CALL_B_PRE)?.result ?? null },
         mid: { call: callOf(transcriptB, CALL_B_MID), result: callOf(transcriptB, CALL_B_MID)?.result ?? null },
         post: { call: callOf(transcriptB, CALL_B_POST), result: callOf(transcriptB, CALL_B_POST)?.result ?? null },
+        preInLane: { call: callOf(transcriptB, CALL_B_PRE_INLANE), result: callOf(transcriptB, CALL_B_PRE_INLANE)?.result ?? null },
+        midInLane: { call: callOf(transcriptB, CALL_B_MID_INLANE), result: callOf(transcriptB, CALL_B_MID_INLANE)?.result ?? null },
+        postInLane: { call: callOf(transcriptB, CALL_B_POST_INLANE), result: callOf(transcriptB, CALL_B_POST_INLANE)?.result ?? null },
         grant: { call: callOfReq(CALL_GRANT), result: resultOfReq(CALL_GRANT) ?? null },
         revoke: { call: callOfReq(CALL_REVOKE), result: resultOfReq(CALL_REVOKE) ?? null },
+      },
+      widening: {
+        grant: { call: callOfReq(CALL_GRANT_WIDEN), result: resultOfReq(CALL_GRANT_WIDEN) ?? null },
+        read: { call: callOf(transcriptB, CALL_B_WIDEN), result: callOf(transcriptB, CALL_B_WIDEN)?.result ?? null },
       },
     }
     writeFileSync(join(bootDir, 'probes.json'), JSON.stringify(calls, null, 2) + '\n')
@@ -1439,7 +1607,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     // ── judges ─────────────────────────────────────────────────────────────
     const verdicts = {
       multiMember: judgeMultiMember({ a, b, facts, paths }),
-      revocation: judgeRevocation({ b, paths, mutation: calls.mutation }),
+      revocation: judgeRevocation({ b, paths, mutation: calls.mutation, widening: calls.widening, settlement }),
       stop: judgeStop({ a, b, paths, control: { pending: pendingRequest, cancelStatus: cancel.status, stopAt }, settlement }),
     }
     // NOTE: `detail` must NOT carry a `verdict` key — the record spreads it
@@ -1696,19 +1864,22 @@ function buildAgreement(results) {
     windowsOverlap: r?.verdicts?.multiMember?.clauses?.find((c) => c.id === 'concurrent-overlap')?.ok ?? null,
     crossRefused: r?.verdicts?.multiMember?.clauses?.find((c) => c.id === 'cross-lane-refused')?.ok ?? null,
     stopSettlementState: r?.settlement?.ask?.state ?? null,
-    revocationPostRefused: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'REQUIRED-revoke-refuses-previously-admitted')?.ok ?? null,
+    revocationDenyRefused: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'a-overlay-refuses-previously-admitted')?.ok ?? null,
+    revocationRestored: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'b-call-restored-admitted')?.ok ?? null,
+    revocationWideningNotMinted: r?.verdicts?.revocation?.clauses?.find((c) => c.id === 'd-widening-not-minted')?.ok ?? null,
     bAfterStopCompleted: r?.verdicts?.stop?.clauses?.find((c) => c.id === 'second-member-unaffected')?.ok ?? null,
   })
   const rows = ok.map((r) => ({ boot: r.boot, ...pick(r) }))
   const keys = [
     'overall', 'multiMemberVerdict', 'revocationVerdict', 'stopVerdict',
     'aAdmissions', 'bAdmissions', 'aGuardFacts', 'bGuardFacts',
-    'windowsOverlap', 'crossRefused', 'stopSettlementState', 'revocationPostRefused',
+    'windowsOverlap', 'crossRefused', 'stopSettlementState',
+    'revocationDenyRefused', 'revocationRestored', 'revocationWideningNotMinted',
     'bAfterStopCompleted',
   ]
-  // `REQUIRED-` clauses are EXPECTED to fail (the required revocation direction
-  // is refuted by the product at this HEAD); agreement is about the MEASURED
-  // facts being reproduced, not about the required clause passing.
+  // Agreement is about the MEASURED facts being reproduced. The widening ANSWER
+  // shape is recorded per boot, not compared, because a typed code is allowed to
+  // differ in wording while the effect clause must still hold.
   const differing = keys.filter((k) => new Set(rows.map((r) => JSON.stringify(r[k]))).size > 1)
   const agreeing = rows.length >= 2 && differing.length === 0
   const header = ['fact', ...rows.map((r) => `boot${String(r.boot)}`)]

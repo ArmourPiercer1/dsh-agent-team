@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-member-2026-11-21T23-38-12-960Z-b2",
+  "runId": "a5sf-live-member-2026-11-22T04-26-38-242Z-b2",
   "suite": "a5sf-live-member",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-21T23:38:12.961Z",
+  "startedAt": "2026-11-22T04:26:38.243Z",
   "selectedCases": [
     "d2:multi-member-concurrency",
     "d2:revocation",
@@ -28,7 +28,7 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "b583de6315cae08f34e09e43c1aa281cd771e6f5",
+      "head": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -42,18 +42,18 @@
     "compositionDrops": [],
     "layout": "centre",
     "installGraph": "provisioned",
-    "teamSha": "b583de6315cae08f34e09e43c1aa281cd771e6f5",
+    "teamSha": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfdev1-20261121T23-38-12Z"
+      "u5u5a5sfdev1-20261122T04-26-38Z"
     ]
   },
   "cases": [
     {
       "id": "d2:multi-member-concurrency",
       "verdict": "PASS",
-      "at": "2026-11-21T23:39:37.717Z",
+      "at": "2026-11-22T04:28:34.214Z",
       "proposition": "TWO governed Members run at the same time; each native `read` is admitted inside its OWN compiled lane and served by its OWN controlled Provider, the centre ledgers stay separate, and Member A's out-of-lane read of Member B's file is refused with zero B bytes",
       "failed": [],
       "clauses": [
@@ -75,7 +75,7 @@
         {
           "id": "concurrent-overlap",
           "ok": true,
-          "detail": "A=[2026-11-21T23:39:34.079Z..2026-11-21T23:39:34.703Z] B=[2026-11-21T23:39:34.312Z..2026-11-21T23:39:34.453Z]"
+          "detail": "A=[2026-11-22T04:28:29.202Z..2026-11-22T04:28:29.881Z] B=[2026-11-22T04:28:29.464Z..2026-11-22T04:28:29.578Z]"
         },
         {
           "id": "a-guard-facts-own-identity",
@@ -85,7 +85,7 @@
         {
           "id": "b-guard-facts-own-identity",
           "ok": true,
-          "detail": "facts=4 identities=[\"inst-12x4j4t1rn1g\"] expected=inst-12x4j4t1rn1g"
+          "detail": "facts=10 identities=[\"inst-12x4j4t1rn1g\"] expected=inst-12x4j4t1rn1g"
         },
         {
           "id": "cross-lane-refused",
@@ -125,7 +125,7 @@
         {
           "id": "b-ledger-no-lane-deny",
           "ok": true,
-          "detail": "B LANE_DENY admissions=0 (A's cross-lane refusal never appears in B's ledger; the only B denial is the judged overlay restriction)"
+          "detail": "B LANE_DENY admissions AT B's OWN locator=0 (A's cross-lane refusal never appears in B's ledger; the separate round-71 widening probe at A's locator is B's OWN call, not A's)"
         },
         {
           "id": "b-ledger-only-b-identity",
@@ -140,24 +140,21 @@
         {
           "id": "b-ledger-executions",
           "ok": true,
-          "detail": "executions=[\"completed\",\"completed\",\"completed\",\"admission-refusal\",\"completed\"]"
+          "detail": "executions=[\"completed\",\"completed\",\"completed\",\"completed\",\"completed\",\"admission-refusal\",\"completed\",\"completed\",\"admission-refusal\"]"
         },
         {
           "id": "ledgers-are-separate-files",
           "ok": true,
-          "detail": "A=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-38-12Z/centre/inst-1235q1w1rd1u.facts.jsonl B=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-38-12Z/centre/inst-12x4j4t1rn1g.facts.jsonl"
+          "detail": "A=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-26-38Z/centre/inst-1235q1w1rd1u.facts.jsonl B=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-26-38Z/centre/inst-12x4j4t1rn1g.facts.jsonl"
         }
       ]
     },
     {
       "id": "d2:revocation",
-      "verdict": "FAIL",
-      "at": "2026-11-21T23:39:37.717Z",
-      "proposition": "REQUIRED: a permission is revoked through the product's durable permissionOverlay mutation lane while the Member is live, and the SAME call that previously succeeded is refused by the centre with a NEW policy generation in the fact; a call that remains in lane still succeeds",
-      "failed": [
-        "REQUIRED-revoke-refuses-previously-admitted: post-revoke isError=false bytesReturned=true — the durable overlay can only REMOVE restrictions (overlay-decision.mjs header + admission-port.mjs:497-521: \"it can remove authority, never grant it\"), so revoking the only writable effect (a deny) re-admits the call; there is no revocable ALLOW layer in the decision path and no recompile on a generation bump. Missing seam: a decision-path ALLOW that a revoke can withdraw. Two lawful shapes: (A) let the centre's overlayDecision return allow as well as deny, so a durable ALLOW stands in for a lane deny and its revoke restores the deny; (B) derive the compiled member lane + centre binding from the overlay snapshot and re-bind on generation change (extend the A5-M1 publication), so a revoked ALLOW recompiles to deny and the fact carries the new generation.",
-        "REQUIRED-new-policy-generation-in-fact: policyGeneration values on the revocable locator's centre facts=[\"a5sf1:81b16c5aef508a682ec94f6331d3f291\",\"a5sf1:81b16c5aef508a682ec94f6331d3f291\",\"a5sf1:81b16c5aef508a682ec94f6331d3f291\"] (a mutation bumps the durable overlay generation, but the compiled policy revision and the centre binding do not change; no new generation reaches the fact)"
-      ],
+      "verdict": "PASS",
+      "at": "2026-11-22T04:28:34.214Z",
+      "proposition": "REQUIRED: a durable permission DENY through the product's ONE permissionOverlay mutation lane refuses the previously admitted call (`ADMISSION_OVERLAY_DENY`, zero body, settlement REFUSED, fact naming the overlay and carrying a policy generation); removing that deny restores the SAME call (admitted + COMPLETED, a NEW fact); an untouched in-lane call is admitted at every phase; and the same durable lane CANNOT mint an `allow` beyond the compiled ceiling",
+      "failed": [],
       "clauses": [
         {
           "id": "member-live-at-mutation",
@@ -165,9 +162,9 @@
           "detail": "lifecycle=SETTLED"
         },
         {
-          "id": "pre-revoke-call-admitted",
+          "id": "pre-deny-call-admitted",
           "ok": true,
-          "detail": "isError=false bytes=true"
+          "detail": "isError=false bytes=true factDecision=allow"
         },
         {
           "id": "product-mutation-lane-driven",
@@ -175,41 +172,86 @@
           "detail": "grantCall=team_grant_permission revokeCall=team_revoke_permission"
         },
         {
-          "id": "grant-committed",
+          "id": "a-durable-deny-committed",
           "ok": true,
           "detail": "{\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"grant\",\"changed\":true}"
         },
         {
-          "id": "tightening-grant-refuses",
+          "id": "a-overlay-refuses-previously-admitted",
           "ok": true,
-          "detail": "isError=true overlayDeny=true"
+          "detail": "isError=true overlayDeny=true text=Error: ADMISSION_OVERLAY_DENY: a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)"
         },
         {
-          "id": "revoke-committed",
+          "id": "a-zero-body",
+          "ok": true,
+          "detail": "the refused call returned ZERO bytes of the previously readable file"
+        },
+        {
+          "id": "a-settlement-refused",
+          "ok": true,
+          "detail": "state=REFUSED dispatch=not-started bodyOutcome=not-started"
+        },
+        {
+          "id": "a-fact-names-overlay-deciding-authority",
+          "ok": true,
+          "detail": "decision=deny refusalCode=ADMISSION_OVERLAY_DENY overlayOutcome=deny laneDecision=allow (the lane allowed; the overlay is what refused)"
+        },
+        {
+          "id": "a-fact-carries-policy-generation",
+          "ok": true,
+          "detail": "policyGeneration=a5sf1:5966e2dbb94e4d13143cd72c25c05d78"
+        },
+        {
+          "id": "b-deny-removal-committed",
           "ok": true,
           "detail": "{\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"revoke\",\"changed\":true}"
         },
         {
-          "id": "in-lane-call-still-succeeds",
+          "id": "b-call-restored-admitted",
           "ok": true,
-          "detail": "Member B's untouched in-lane read was admitted after the mutation"
+          "detail": "isError=false bytes=true factDecision=allow"
         },
         {
-          "id": "REQUIRED-revoke-refuses-previously-admitted",
-          "ok": false,
-          "detail": "post-revoke isError=false bytesReturned=true — the durable overlay can only REMOVE restrictions (overlay-decision.mjs header + admission-port.mjs:497-521: \"it can remove authority, never grant it\"), so revoking the only writable effect (a deny) re-admits the call; there is no revocable ALLOW layer in the decision path and no recompile on a generation bump. Missing seam: a decision-path ALLOW that a revoke can withdraw. Two lawful shapes: (A) let the centre's overlayDecision return allow as well as deny, so a durable ALLOW stands in for a lane deny and its revoke restores the deny; (B) derive the compiled member lane + centre binding from the overlay snapshot and re-bind on generation change (extend the A5-M1 publication), so a revoked ALLOW recompiles to deny and the fact carries the new generation."
+          "id": "b-call-restored-completed",
+          "ok": true,
+          "detail": "state=COMPLETED dispatch=quiesced bodyOutcome=completed"
         },
         {
-          "id": "REQUIRED-new-policy-generation-in-fact",
-          "ok": false,
-          "detail": "policyGeneration values on the revocable locator's centre facts=[\"a5sf1:81b16c5aef508a682ec94f6331d3f291\",\"a5sf1:81b16c5aef508a682ec94f6331d3f291\",\"a5sf1:81b16c5aef508a682ec94f6331d3f291\"] (a mutation bumps the durable overlay generation, but the compiled policy revision and the centre binding do not change; no new generation reaches the fact)"
+          "id": "b-same-call-family-new-fact",
+          "ok": true,
+          "detail": "callIds=[\"call-d2-b-pre\",\"call-d2-b-mid\",\"call-d2-b-post\"] preFact=call-d2-b-pre@2026-11-22T04:28:31.160Z midFact=call-d2-b-mid@2026-11-22T04:28:32.002Z postFact=call-d2-b-post@2026-11-22T04:28:32.967Z (same family, distinct durable facts — never a replay of the pre fact)"
+        },
+        {
+          "id": "c-in-lane-unaffected-throughout",
+          "ok": true,
+          "detail": "phases=[{\"phase\":\"pre\",\"callId\":\"call-d2-b-pre-inlane\",\"admitted\":true,\"settlement\":\"COMPLETED\",\"fact\":\"allow\"},{\"phase\":\"deny\",\"callId\":\"call-d2-b-mid-inlane\",\"admitted\":true,\"settlement\":\"COMPLETED\",\"fact\":\"allow\"},{\"phase\":\"restore\",\"callId\":\"call-d2-b-post-inlane\",\"admitted\":true,\"settlement\":\"COMPLETED\",\"fact\":\"allow\"}]"
+        },
+        {
+          "id": "d-widening-attempt-issued",
+          "ok": true,
+          "detail": "call=team_grant_permission effect=allow locator=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-26-38Z/workspace/team-a/in-lane-a.txt (outside Member B's compiled read lane) answer={\"status\":\"permission-mutated\",\"rootSessionId\":\"session-dboot-d2-root\",\"targetInstanceId\":\"inst-12x4j4t1rn1g\",\"verb\":\"grant\",\"changed\":false,\"reason\":\"mutation-proposal-pending\"}"
+        },
+        {
+          "id": "d-widening-not-minted",
+          "ok": true,
+          "detail": "measured answer: status=permission-mutated code=undefined changed=false — a typed refusal or a no-op passes; a committed expansion (`permission-mutated` + `changed:true`) fails"
+        },
+        {
+          "id": "d-widened-locator-still-refused",
+          "ok": true,
+          "detail": "isError=true laneDeny=true A-bytes=false text=Error: LANE_DENY: fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-26-38Z/workspace/team-a/in-lane-a.txt\" is outsid"
+        },
+        {
+          "id": "d-widened-locator-fact-still-deny",
+          "ok": true,
+          "detail": "decision=deny refusalCode=LANE_DENY (the compiled lane still decides; the attempt minted no authority)"
         }
       ]
     },
     {
       "id": "d2:stop",
       "verdict": "PASS",
-      "at": "2026-11-21T23:39:37.717Z",
+      "at": "2026-11-22T04:28:34.214Z",
       "proposition": "a Member turn is STOPPED through the product's own Stop path, and the stopped call's outcome is the centre's ADMISSION_STOPPED — never a completion, never UNKNOWN — while a second Member unaffected by the Stop completes",
       "failed": [],
       "clauses": [
@@ -221,7 +263,7 @@
         {
           "id": "ask-request-was-durable-and-pending",
           "ok": true,
-          "detail": "pending control request={\"requestId\":\"ctrl-1uotk6813a7all00kru1a0cm\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-1235q1w1rd1u\",\"actionName\":\"admission-ask\",\"toolName\":\"read\",\"correlation\":\"admission:call-d2-a-ask\",\"status\":\"pending\",\"createdAt\":\"2026-11-21T23:39:35.172Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1235q1w1rd1u\"},\"executionCoupling\":\"inline\",\"requestSequence\":15,\"summary\":\"admission ask: read (fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T23-38-12Z/workspace/team-a-ask/ask-me.txt\\\" requires approval under policy generation a5sf1:06c51162a05634361a430b61a6e9d472)\"}"
+          "detail": "pending control request={\"requestId\":\"ctrl-1uotk6813a7all00kru1a0cm\",\"kind\":\"leader-approval\",\"targetInstanceId\":\"inst-1235q1w1rd1u\",\"actionName\":\"admission-ask\",\"toolName\":\"read\",\"correlation\":\"admission:call-d2-a-ask\",\"status\":\"pending\",\"createdAt\":\"2026-11-22T04:28:30.385Z\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-1235q1w1rd1u\"},\"executionCoupling\":\"inline\",\"requestSequence\":15,\"summary\":\"admission ask: read (fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-26-38Z/workspace/team-a-ask/ask-me.txt\\\" requires approval under policy generation a5sf1:a3a3e281112a005892d05385ca39b104)\"}"
         },
         {
           "id": "pending-targets-stopped-member",
@@ -276,8 +318,8 @@
     "thisRunCount": 2,
     "thisRunEntries": [
       {
-        "at": "2026-11-21T23:38:12.991Z",
-        "runId": "a5sf-live-member-2026-11-21T23-38-12-960Z-b2",
+        "at": "2026-11-22T04:26:38.276Z",
+        "runId": "a5sf-live-member-2026-11-22T04-26-38-242Z-b2",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -288,15 +330,15 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "b583de6315cae08f34e09e43c1aa281cd771e6f5",
+        "headCommit": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
         "plannedStarts": 1
       },
       {
-        "at": "2026-11-21T23:38:52.259Z",
-        "runId": "a5sf-live-member-2026-11-21T23-38-12-960Z-b2",
+        "at": "2026-11-22T04:27:21.757Z",
+        "runId": "a5sf-live-member-2026-11-22T04-26-38-242Z-b2",
         "suite": "a5sf-live-member",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261121T23-38-12Z",
+        "world": "u5u5a5sfdev1-20261122T04-26-38Z",
         "phase": "a5sf-live-member-boot2"
       }
     ]
@@ -304,17 +346,17 @@
   "boots": [
     {
       "phase": "a5sf-live-member-boot2",
-      "world": "u5u5a5sfdev1-20261121T23-38-12Z",
-      "port": 3187,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261121T23-38-12Z/instance-port3187.log"
+      "world": "u5u5a5sfdev1-20261122T04-26-38Z",
+      "port": 3193,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261122T04-26-38Z/instance-port3193.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-member-2026-11-21T23-38-12-960Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-member-2026-11-22T04-26-38-242Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
-  "overall": "FAIL",
+  "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-21T23:39:37.717Z"
+  "finishedAt": "2026-11-22T04:28:34.214Z"
 }

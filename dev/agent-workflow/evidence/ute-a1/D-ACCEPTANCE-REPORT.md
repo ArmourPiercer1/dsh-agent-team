@@ -11,10 +11,10 @@ every product claim carries a `file:line` or an evidence path, and every row tha
 what would prove it.
 
 > **Read this first, it is the conclusion.** The candidate implements **A1 + B + C** and carries **live
-> D evidence** for the items listed in §3. It is **not a completed product acceptance**. Four items the
-> owner's D paragraph names are **REFUTED** or unreachable at a product entry, and **no capability row
-> is PRODUCT-PROVEN** (`CAPABILITY-MATRIX-C.md:71-74`). §6 lists them; §7 states the verdict without
-> rounding up.
+> D evidence** for the items listed in §3. It is **not a completed product acceptance**. One judged item
+> (`d3:persistent-subprocess`) is **REFUTED**, several product-entry gaps are unreachable, and **no
+> capability row is PRODUCT-PROVEN** (`CAPABILITY-MATRIX-C.md:71-74`). §6 lists them; §7 states the
+> verdict without rounding up.
 
 > **Round 66 addendum (C11).** Three node:test arms were added after the HEAD measurement in §1:
 > `ADM-107`…`ADM-109` prove the **Team-owned** projection (`projection/**`) is preserved in the new
@@ -35,6 +35,19 @@ what would prove it.
 > C5's "resolved" wording, C15's placement path), §6.9's stale realm-less sentence was corrected (the
 > code refuses that member), and §7's "Four live judges" was corrected to the nine it lists. Nothing is
 > upgraded to PRODUCT-PROVEN.
+
+> **Round 71 addendum (judge semantics).** Two judges were REFUTED for reasons about the JUDGE, not the
+> product, and both clauses were REWRITTEN to measure the contract strictly rather than relaxed:
+> `d2:revocation` now asserts the four directions (durable deny refuses with `ADMISSION_OVERLAY_DENY` +
+> zero body + settlement `REFUSED` + overlay named + policy generation; deny removal restores the call
+> as a NEW fact and `COMPLETED`; the in-lane control is admitted at every phase; and widening beyond the
+> compiled ceiling is refused, with the product's own answer measured) and `d:member-read-denied` now
+> measures the DECIDING CHANNEL (`LANE_DENY` with ZERO provider guard facts for that call, or
+> `IO_READ_DENIED` with its own guard deny fact), plus zero secret bytes, not-ENOENT, and a separate
+> in-process `ADM-100` clause for the provider channel. Both are **PROVEN on two agreeing boots** at
+> HEAD `82dfda0c3`; `run-boot.mjs` and `run-boot-d2.mjs` now exit 0 with their full clause sets. The two
+> rows in §3.2, §6.6, §6.13, §7 and the checklist are refreshed. Nothing is upgraded to PRODUCT-PROVEN,
+> and no product code changed for this round.
 
 ---
 
@@ -223,7 +236,7 @@ the P-rungs below.
 
 | proof | what the rung proves (verbatim obligation) | arms that carry it | live judge that carries it | negative control / must-red mutation | committed evidence |
 | --- | --- | --- | --- | --- | --- |
-| **P1** | **Binding monotonicity** (UTE-06): `EffectiveIO ⊆ AgentCeiling ∩ ToolRestriction` on every admitted call | `ADM-2` (out of lane is `LANE_DENY`; a write grant is never read as a read grant), `ADM-7` (deny wins), `ADM-29/30` (a TOOL restriction answers before the ceiling and **can only narrow**), `ADM-39` (an omitted axis does not inherit the ceiling), `ADM-45` (the durable overlay can only REMOVE authority), `ADM-52` (post-approval generation drift refuses) | `d:centre-facts` — one ledger holding `allow` **and** `deny/LANE_DENY` for the same member; `d2:multi-member-concurrency` — A's read of B's in-lane file is `LANE_DENY`, **zero** B bytes reach A, and **zero** guard facts exist for B's locator under A's identity | must-red mutation: widen one axis after approval ⇒ the same call refuses (`ADM-52`, `ADM-37`); live widening is refused by the overlay itself (`d2:revocation` step 3) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:452-461`; `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
+| **P1** | **Binding monotonicity** (UTE-06): `EffectiveIO ⊆ AgentCeiling ∩ ToolRestriction` on every admitted call | `ADM-2` (out of lane is `LANE_DENY`; a write grant is never read as a read grant), `ADM-7` (deny wins), `ADM-29/30` (a TOOL restriction answers before the ceiling and **can only narrow**), `ADM-39` (an omitted axis does not inherit the ceiling), `ADM-45` (the durable overlay can only REMOVE authority), `ADM-52` (post-approval generation drift refuses) | `d:centre-facts` — one ledger holding `allow` **and** `deny/LANE_DENY` for the same member; `d2:multi-member-concurrency` — A's read of B's in-lane file is `LANE_DENY`, **zero** B bytes reach A, and **zero** guard facts exist for B's locator under A's identity | must-red mutation: widen one axis after approval ⇒ the same call refuses (`ADM-52`, `ADM-37`); live widening is refused by the durable lane itself (`d2:revocation` direction (d): `changed:false`, reason `mutation-proposal-pending`, widened locator still `LANE_DENY`) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:452-461`; `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
 | **P2** | **Face completeness** (UTE-07): a tool with all required faces bound executes; a tool missing one face is refused **whole** | `ADM-4` (a tool with no declared axis is refused, never admitted by default), `ADM-18` (no compiled process lane ⇒ the subprocess family is EXPLICITLY unavailable), `ADM-33` (an MCP tool needs a **server** locator, no prefix matching), `ADM-78` (the binding IS the compiled answer; absent axes stay absent) | `d3:persistent-subprocess` — **REFUTED as a capability, and correct as a face-completeness witness**: `bash` is refused whole with `ADMISSION_AXIS_UNSUPPORTED` rather than run "without a shell lane" | must-red mutation: bind `faces.web = null` and assert the whole tool refuses, not "runs without web" (`04-SEAMS.md:63`); B's ladder rung 6 (`ADM-76`) is the live-shaped negative | `packages/runtime/test/vnext-b-probe-ladder.test.mjs` (`ADM-78`); `D-BOOT-FEASIBILITY.md:572-598` |
 | **P3** | **Fail-closed** (UTE-09): provider absent ⇒ refuse | `ADM-3` (UNWIRED refuses; it does **not** fall through to the composition provider), `ADM-42` (a native module specifier is judged before it is imported), `ADM-83` (an unwritable ledger is a refusal), `ADM-102` (`GOVERNED_NATIVE_MODULE_*` typed refusal, **never** a base-provider fallback), `SLICE-9` (with no binding the in-ceiling call never reaches the provider) | `d:guard-facts` — `out-lane-never-reached-provider 0` guard facts; the refused call never enters the provider at all. Residual 1 of `FINDING-native-tool-provider.md` is exactly this law: the centre's `LANE_DENY` precedes the body | **negative control that makes it falsifiable:** `SLICE-4` — **without** the realm mount, the same outside read **SUCCEEDS**. Also `SLICE-17/18/19` (observation policy OFF accepts an unobserved overwrite; ON refuses it; a moved version is refused) | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/test/vnext-fs-slice.test.mjs`; `FINDING-native-tool-provider.md:91-115` |
 | **P4** | **One fact** (UTE-15/17): one `ExecutionId`, one canonical outcome per physical attempt; a crash between emit and return leaves a recoverable fact | `ADM-21` (`ADMITTED → RUNNING → COMPLETED`), `ADM-79` (crash between the admission fact and the execution fact ⇒ a **new process** recovers `ADMITTED→UNKNOWN`, never `COMPLETED`), `ADM-80` (a callId with a durable fact is refused on a second attempt in a **fresh process**, before the body), `ADM-81` (a duplicate execution fact on disk is a refusal), `ADM-84` (an open settlement is classified `UNKNOWN` from disk with what is missing) | **`d3:crash-cold-recovery` — PROVEN.** A real `SIGKILL` (`signal=SIGKILL`, pid gone) and a restart on the **same** `DSH_HOME`: the in-flight `RUNNING` becomes `UNKNOWN` with **no execution fact** and one admission fact (never replayed); the completed call's fact/settlement are **byte-identical**; a new call is admitted with a **new** fact and completes | must-red mutation: kill the process after emit and assert recovery yields `unknown`/fact, never `succeeded` from memory (`04-SEAMS.md:65`); `ADM-79`'s control also completes a **different** call before dying, which stays `COMPLETED` (no blanket rewrite) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:599-617`; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
@@ -262,19 +275,19 @@ kernel; both were present.
 | `d:guard-facts` | **PROVEN** (2 allow facts: `stat`, `readText`; `memberIdentity=inst-0pe2z220bhfb`) | same |
 | `d:centre-facts` | **PROVEN** (2 `fs.read` admissions `allow` + `DENY/LANE_DENY`, 2 execution facts) | same |
 | `d:native-read-surface` | **PROVEN** after the round-62 re-anchor (all six clauses; the `native-description` clause now reads the top-level field and `native-file-path-description` reads the parameter field) | `D-BOOT-FEASIBILITY.md:494-511` |
-| `d:member-read-denied` | **REFUTED** — the clause requires the provider's `IO_READ_DENIED`, but the centre refuses **before** the provider (`LANE_DENY`), by design | `D-BOOT-FEASIBILITY.md:369-395`; `FINDING-native-tool-provider.md:93-99` |
+| `d:member-read-denied` | **PROVEN** after the round-71 rewrite (the clause measures the DECIDING CHANNEL: `LANE_DENY` with ZERO provider guard facts for that call, or `IO_READ_DENIED` with its own guard deny fact; zero secret bytes and not-ENOENT in both; plus a separate in-process `ADM-100` clause for the provider channel) | `FINDING-native-tool-provider.md` §"Round 71"; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/in-process-provider-channel.json` |
 | `d2:multi-member-concurrency` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
-| `d2:revocation` | **REFUTED** — the REQUIRED direction (revoke refuses a previously-succeeded call and a NEW policy generation appears) is not implementable at this HEAD; the **opposite** direction was measured live | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`; `FINDING-native-tool-provider.md:131-150` |
+| `d2:revocation` | **PROVEN** after the round-71 rewrite — (a) durable deny ⇒ `ADMISSION_OVERLAY_DENY`, zero body, settlement `REFUSED`, overlay named + policy generation; (b) deny removal ⇒ admitted + `COMPLETED`, a NEW fact; (c) in-lane control admitted at every phase; (d) widening beyond the compiled ceiling is a no-op proposal and the widened locator stays `LANE_DENY` | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`; `FINDING-native-tool-provider.md` §"Round 71" |
 | `d2:stop` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
 | `d3:persistent-subprocess` | **REFUTED** — both `bash` turns refused `ADMISSION_AXIS_UNSUPPORTED` on `process.exec`; only the one-shot `tool-bash` is mounted (`--plan`: `present=true mounted=false`); `io.process` is rejected live as `unknown-field` | `D-BOOT-FEASIBILITY.md:572-598` |
 | `d3:crash-cold-recovery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:work-delivery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 
-`overall=FAIL` for **both** live drivers (`run-boot.mjs`: 1 refuting judge; `run-boot-d3.mjs`: 1 of 4
-refutes) is unchanged and honest: a REFUTED judge maps to a FAIL case, and `evidence-complete=true,
-allProven=false` is the recorded state (`CAPABILITY-MATRIX-C.md:264-266`). A driver that exited 0 would
-be the finding.
+After round 71, `run-boot.mjs` (5/5 judges) and `run-boot-d2.mjs` (3/3) are `overall=PASS` on two
+agreeing boots each; `run-boot-d3.mjs` still records `overall=FAIL` (1 of 4 refutes, the absent process
+lane). A driver that exited 0 without a PROVEN judge would be the finding; every PASS above is a
+measured clause set, not an exit code (`evidence-complete=true, allProven` is per driver).
 
 ---
 
@@ -507,20 +520,30 @@ still refused and no team row live. `d3:alpha6` is PROVEN **as the typed-refusal
 whose gate admits the opt-in. Remaining limit: a row with no `centreStatePath` is refused but unwritten
 (there is no durable directory to write to), and no boot reaches a routed decision.
 
-### 6.6 The overlay cannot widen authority — by design, not by defect
+### 6.6 The overlay cannot widen authority — by design, and now measured in both directions
 
 `overlay-decision.mjs:9` (deny-only), `admission-port.mjs:498-521` (consulted only when the compiled lane
 allows; the only verdict is `ADMISSION_OVERLAY_DENY`), `permission-mutation.ts:435-436` (a revoke removes
 restrictions and "never needs expansion authority"). Measured live through the ONE durable
 `permissionOverlay` lane: pre-read admitted → `team_grant_permission` exact `read` deny (`changed:true`) →
-same read `ADMISSION_OVERLAY_DENY` → `team_revoke_permission` (`changed:true`) → same read **admitted
-again**; the untouched in-lane read still succeeds. The **REQUIRED** direction of `d2:revocation` ("revoke
-refuses the previously-succeeded call with a NEW policy generation") is therefore **REFUTED** —
-`centre-install.mjs:94` fixes the fact's `policyGeneration` to the COMPILED revision at bind.
-**D's "permission revocation" acceptance must be stated in the contract's own terms:** revocation of
-access = a durable deny (refused with zero body), restoration = removing that deny, widening beyond the
-compiled ceiling = refused. A judge requiring the overlay to grant tests a capability the contract
-forbids, and is REFUTED on purpose (`FINDING-native-tool-provider.md:131-150`).
+same read `ADMISSION_OVERLAY_DENY`, zero body, settlement `REFUSED`, the fact naming the overlay
+(`overlayOutcome=deny`, `laneDecision=allow`) and carrying the compiled `policyGeneration` →
+`team_revoke_permission` (`changed:true`) → same read **admitted again** and `COMPLETED` as a NEW fact;
+the untouched in-lane read is admitted at every phase.
+
+Round 71 replaced the old REQUIRED clause — which had demanded that the overlay WIDEN (revoke the deny ⇒
+the previously succeeded call must be refused with a new compiled generation) — with the contract's own
+terms, strictly. It also MEASURED the widening direction: the same lane was asked for an `allow` on a
+locator outside the member's compiled lane and answered
+`{"status":"permission-mutated", …, "changed":false, "reason":"mutation-proposal-pending"}` (a durable
+proposal, not a minted authority), and the widened locator stayed `LANE_DENY` with zero foreign bytes.
+`centre-install.mjs:94` fixes the fact's `policyGeneration` to the COMPILED revision at bind, which is
+what (a) and (b) now assert it carries.
+**D's "permission revocation" acceptance is stated in the contract's own terms:** revocation of access =
+a durable deny (refused with zero body), restoration = removing that deny, widening beyond the compiled
+ceiling = refused. `d2:revocation` is **PROVEN** on both boots
+(`dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`;
+`FINDING-native-tool-provider.md` §"Round 71").
 
 ### 6.7 The model is a scripted mock, not a real model
 
@@ -583,14 +606,31 @@ mount input. A
 product excludes such a call at the **tool registry**, not at admission (`ADM-97` step 5). *Would prove
 it:* an admission-time mount input, i.e. a contract change.
 
-### 6.13 `d:member-read-denied` is REFUTED as a judge clause (reported, not relaxed)
+### 6.13 `d:member-read-denied` — the two channels, each measured at its own layer (round 71)
 
-The clause requires the provider's typed `IO_READ_DENIED` on the live path. The centre decides **before**
-execution, so the out-of-lane call never reaches the provider and the result carries the centre's
-`LANE_DENY`. Making the judge pass would require running the provider **before** the centre — the wrong
-order for a governance system. The provider-side typed refusal **is** proven in-process (`ADM-100`: zero
-secret bytes). The clause is therefore a product-semantics finding, not a tolerance to widen
-(`FINDING-native-tool-provider.md:93-99`).
+The live path's contract is: the centre decides **before** execution, so an out-of-lane call is refused
+on the LANE channel (`LANE_DENY`) and never reaches the provider. The old clause required the provider's
+`IO_READ_DENIED` on that path, which asked the product to run the provider before the centre — the wrong
+order for a governance system — so it was an instrument defect about the judge, not a product gap.
+
+The rewritten judge measures the deciding channel, strictly:
+
+- the durable fact's `refusalCode` is `LANE_DENY` or `IO_READ_DENIED`, and the tool result names it;
+- **lane channel**: the result carries `LANE_DENY` AND **zero provider guard facts exist for that exact
+  call id** — the refusal genuinely preceded the provider;
+- **provider channel** (the alternative): the result carries `IO_READ_DENIED` AND the provider guard
+  recorded its own `deny` fact (`decidedBy=IO_READ_DENIED`) for that call;
+- zero secret bytes and not-ENOENT are required on BOTH channels.
+
+The provider channel is additionally evidenced in its own in-process population: a separate clause runs
+`node --test --test-name-pattern ADM-100 packages/runtime/test/vnext-admission.test.mjs` in the boot and
+requires the pass **and** the presence of that test's provider-deny assertion (a deleted assertion fails
+the clause). Raw result: `runs/boot01/in-process-provider-channel.json`.
+
+Measured live (two agreeing boots): `refusalCode=LANE_DENY`, `channel=lane`, `provider guard facts for
+this call=0`, zero secret bytes, not-ENOENT, and ADM-100 green in process. The judge is **PROVEN**
+(`D-BOOT-FEASIBILITY.md` §14; `FINDING-native-tool-provider.md` §"Round 71"). The two channels are both
+evidenced; neither is conflated with the other.
 
 ### 6.14 Other measured-or-missing coverage
 
@@ -619,16 +659,16 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
    `ute-vnext-a1` node leg (**180 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
    suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count, as are
    round 68's three entry-ordering arms.
-2. **There is live D evidence for the listed items.** Nine live judges are **PROVEN** at two agreeing
-   boots each (the earlier "Four" was a miscount against this same list): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
-   (repaired, not deleted), `d2:multi-member-concurrency`, `d2:stop`, `d3:crash-cold-recovery`,
+2. **There is live D evidence for the listed items.** Eleven live judges are **PROVEN** at two agreeing
+   boots each (round 71 added the two repaired judges to the earlier nine): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
+   (repaired, not deleted), `d:member-read-denied` (round 71: channel-typed, provider guard facts
+   required to be ABSENT on the lane channel), `d2:multi-member-concurrency`, `d2:revocation` (round 71:
+   the four contract directions, widening measured and refused), `d2:stop`, `d3:crash-cold-recovery`,
    `d3:work-delivery`, `d3:alpha6` (as the typed-refusal shape). The P1–P5 obligations each have a green
    assertion, a negative control, and a live carrier (§3).
 3. **It is NOT a completed product acceptance**, and the refuted items are named rather than rounded up:
    - `d3:persistent-subprocess` **REFUTED** — no process lane exists (`ADMISSION_AXIS_UNSUPPORTED`); B's
      bash/`run_code` positives are **NOT RUN** (§6.3).
-   - `d2:revocation` **REFUTED** in its REQUIRED direction — the overlay is deny-only by design (§6.6).
-   - `d:member-read-denied` **REFUTED** as a clause — the provider is never entered, by design (§6.13).
    - **Runtime team creation is 405 on a centre row** — governance and runtime creation are mutually
      exclusive today (§6.2).
    - **Alpha.6 is unreachable at a host entry**, and its routed path is unproven there (§6.5).
@@ -639,6 +679,10 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
    - **C14b** is preserved with its own positive+negative arms (`ADM-110`…`ADM-115`, round 67), but it is
      still **not PRODUCT-PROVEN**: the arms are in-process, the OS probe is a node-leg measurement, and
      the ungoverned (never-asked) row remains outside the centre by design (§2.3, §6.9).
+   - **The two round-71 judges are PROVEN as instruments, not as new product capability.** The provider
+     channel remains unreachable on the LIVE path by design (its proof is in-process, `ADM-100`), and
+     widening beyond the compiled ceiling remains impossible by design (§6.6, §6.13). A reviewer must
+     not read "PROVEN" there as "the overlay can widen" or "the live path reaches the provider".
 4. **Therefore:** the honest description is *"A1+B+C implemented and measured, with D live evidence for
    the named, listed items — **not** a completed product acceptance."* The centre behaves as an A1 cut
    should: an unwired controlled call is **refused with a typed code**, not forwarded. That is a
@@ -665,7 +709,7 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 | 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `189d6cabca5b4de9ec3059f9949ab9302364f789` (+ this docs-only audit's commits), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
 | 3 | **Gates green** | all eight required commands pass at this HEAD (dispatch 182/180/0/2; catalog 889/41; closure four zeros; assets 37/180/69,512; docs-sync 0 findings; 28 placements; CI-required 10/0; migrated layer 238/238) | §4.1–§4.8, pasted verbatim |
-| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, `d2:revocation` (REQUIRED direction), `d:member-read-denied`, 405 runtime creation, Alpha.6 routed path unreachable, search face lane-only | §3.2, §6.2–§6.5, §7 |
+| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, 405 runtime creation, Alpha.6 routed path unreachable, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design | §3.2, §6.2–§6.5, §6.6, §6.13, §7 |
 | 5 | **Owner decisions listed** | six, each with what is measured, the lawful options and their cost | `OWNER-DECISIONS.md` |
 | 6 | **Host untouched** | pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty; CORE PATCH BUDGET = 0 with no upstream patch | §5.1–§5.3 |
 | 7 | **No PRODUCT-PROVEN row** | by design at this stage: `DEV-LIVE` boots are not gates | §2.1, §6.1 |

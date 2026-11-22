@@ -756,21 +756,103 @@ function judgeAdmitted(sample) {
   )
 }
 
-function judgeDenied(sample) {
+/**
+ * ROUND 71 (judge semantics). The old clause demanded the PROVIDER's
+ * `IO_READ_DENIED` on the live path. That is not this layer's contract: the
+ * centre decides BEFORE execution, so an out-of-lane call is refused with
+ * `LANE_DENY` and never reaches the provider. The judge now measures the
+ * DECIDING CHANNEL and requires the channel's own evidence:
+ *
+ *   - lane channel     -> the result and the durable fact carry `LANE_DENY`,
+ *                         and ZERO provider guard facts exist FOR THAT CALL
+ *                         (the refusal genuinely preceded the provider);
+ *   - provider channel -> the result carries `IO_READ_DENIED` and the provider
+ *                         guard recorded its own `deny` fact for that call.
+ *
+ * Both channels are accepted, neither is weakened: zero secret bytes and
+ * not-ENOENT are required in both, and the provider channel is additionally
+ * evidenced in its PROPER layer by a separate clause (ADM-100, in process).
+ */
+function judgeDenied(sample, { centreRecords = [], facts = [], providerChannel = null } = {}) {
   const text = String(sample.result?.text ?? '')
+  // The live sample's call comes from the mock request (`id`); a transcript
+  // sample carries `callId`. Accept either, never a guessed empty id.
+  const callId = String(sample.call?.callId ?? sample.call?.id ?? '')
+  const fact = (centreRecords ?? []).find((r) => r?.kind === 'invocation-authority' && String(r?.callId ?? '') === callId) ?? null
+  const refusalCode = String(fact?.refusalCode ?? '')
+  const channel = refusalCode === 'IO_READ_DENIED'
+    ? 'provider'
+    : refusalCode === 'LANE_DENY'
+      ? 'lane'
+      : refusalCode === 'ADMISSION_OVERLAY_DENY'
+        ? 'overlay'
+        : null
+  const guardForCall = (facts ?? []).filter((f) => String(f?.callId ?? '') === callId)
+  const channelEvidence = channel === 'lane'
+    ? guardForCall.length === 0 && text.includes('LANE_DENY')
+    : channel === 'provider'
+      ? guardForCall.length >= 1
+        && guardForCall.every((f) => f?.decision === 'deny')
+        && guardForCall.some((f) => String(f?.decidedBy ?? '') === 'IO_READ_DENIED')
+        && text.includes('IO_READ_DENIED')
+      : false
   return verdictOf(
-    'the same native `read` REFUSES an out-of-ceiling locator with a typed guard denial and zero secret bytes — which a base-provider read could not do',
+    'the same native `read` REFUSES an out-of-ceiling locator on ONE typed channel that names its authority (lane: `LANE_DENY` with ZERO provider guard facts for that call, or provider: `IO_READ_DENIED` with its own guard deny fact), with zero secret bytes — and the provider channel is evidenced in its own in-process population (ADM-100)',
     [
       { id: 'call-issued', ok: sample.call !== null, detail: 'the Member issued the denied `read` call' },
       { id: 'call-is-read', ok: sample.call?.name === 'read', detail: `name=${String(sample.call?.name)}` },
       { id: 'native-arg', ok: typeof sample.call?.arguments?.file_path === 'string' && sample.call.arguments.file_path.endsWith(SECRET_FILE), detail: `file_path=${String(sample.call?.arguments?.file_path)}` },
       { id: 'result-present', ok: sample.result !== undefined, detail: 'the Member received a tool result for the denied call' },
       { id: 'result-is-error', ok: sample.result?.isError === true, detail: `isError=${String(sample.result?.isError)}` },
-      { id: 'typed-denial', ok: text.includes('IO_READ_DENIED'), detail: 'the tool result names the typed refusal code' },
+      { id: 'typed-denial-names-authority', ok: fact !== null && fact?.decision === 'deny' && channel !== null && channel !== 'overlay', detail: `callId=${callId} refusalCode=${refusalCode || '<none>'} decision=${String(fact?.decision)} channel=${String(channel)} fact=${fact === null ? '<none>' : 'centre ledger'}` },
+      { id: 'deciding-channel-evidenced', ok: channelEvidence === true, detail: channel === 'lane'
+        ? `lane decided: result carries LANE_DENY=${String(text.includes('LANE_DENY'))}; provider guard facts for this call=${String(guardForCall.length)} (0 is the proof the refusal preceded the provider)`
+        : channel === 'provider'
+          ? `provider decided: result carries IO_READ_DENIED=${String(text.includes('IO_READ_DENIED'))}; guard facts for this call=${String(guardForCall.length)} decisions=${JSON.stringify([...new Set(guardForCall.map((f) => f?.decision))])} decidedBy=${JSON.stringify([...new Set(guardForCall.map((f) => f?.decidedBy))])}`
+          : `no centre fact with a lane/provider refusal code for callId=${callId} (refusalCode=${refusalCode || '<none>'})` },
       { id: 'zero-secret-bytes', ok: text.includes(SECRET_TEXT) === false, detail: 'NO secret bytes reached the Member transcript' },
       { id: 'not-enoent', ok: /ENOENT|no such file/iu.test(text) === false, detail: 'the refusal is a policy denial, not a filesystem miss' },
+      // The provider channel at ITS layer. The live path cannot reach it (the
+      // centre runs first), so this clause runs the named in-process population
+      // (ADM-100) and requires both the pass and the provider-deny assertion to
+      // be present in that test — a deleted/emptied assertion fails this clause.
+      { id: 'provider-channel-in-process-ADM-100', ok: providerChannel?.ok === true, detail: providerChannel === null ? 'the in-process ADM-100 population was not run' : `file=${String(providerChannel.file)} exit=${String(providerChannel.status)} pass=${String(providerChannel.pass)} providerDenyAssertionPresent=${String(providerChannel.guardAssertion)} tail=${JSON.stringify(String(providerChannel.outputTail ?? '').slice(-240))}` },
     ],
   )
+}
+
+/**
+ * The provider-channel refusal in ITS OWN population: ADM-100 runs in process
+ * against the real pinned host and asserts the out-of-lane read is an error,
+ * leaks no secret bytes, and leaves the provider's own `deny` guard fact. The
+ * live driver runs it once per boot and records the raw result in the boot
+ * directory, so the clause is a measurement, not a citation.
+ */
+let IN_PROCESS_CACHE = null
+function runInProcessProviderChannel() {
+  if (IN_PROCESS_CACHE !== null) return IN_PROCESS_CACHE
+  const file = 'packages/runtime/test/vnext-admission.test.mjs'
+  const command = `node --test --test-name-pattern ADM-100 ${file}`
+  const source = readFileSync(join(REPO_ROOT, file), 'utf8')
+  // Instrument integrity: the test that passes must still CONTAIN the
+  // provider-deny assertion this clause claims it makes.
+  const guardAssertion = /world\.facts\(\)\.some\(\(fact\) => String\(fact\.locator \?\? ''\) === world\.outsideFile && fact\.decision === 'deny'\)/u.test(source)
+  const run = spawnSync(process.execPath, ['--test', '--test-name-pattern', 'ADM-100', file], {
+    cwd: REPO_ROOT, encoding: 'utf8', timeout: 60_000,
+  })
+  const output = `${run.stdout ?? ''}\n${run.stderr ?? ''}`
+  const pass = run.status === 0 && /ℹ pass 1\b/u.test(output) && /ℹ fail 0\b/u.test(output) && /ADM-100 — /u.test(output)
+  IN_PROCESS_CACHE = {
+    layer: 'in-process',
+    file,
+    command,
+    status: run.status,
+    pass,
+    guardAssertion,
+    ok: pass && guardAssertion,
+    outputTail: output.split('\n').filter((l) => l.trim() !== '').slice(-10).join('\n'),
+  }
+  return IN_PROCESS_CACHE
 }
 
 function judgeSurface(surface) {
@@ -1230,9 +1312,18 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     }, null, 2) + '\n')
 
     // ── judges ─────────────────────────────────────────────────────────────
+    // The provider channel is measured at its OWN layer (in process, ADM-100);
+    // the live lane channel is measured below from this boot's own artifacts.
+    const providerChannel = runInProcessProviderChannel()
+    writeFileSync(join(bootDir, 'in-process-provider-channel.json'), JSON.stringify({
+      schema: 'dboot/in-process-provider-channel/1',
+      at: new Date().toISOString(),
+      note: 'the provider-channel refusal measured in its own in-process population, not on the live path (where the centre decides first)',
+      ...providerChannel,
+    }, null, 2) + '\n')
     const verdicts = {
       admitted: judgeAdmitted(admitted),
-      denied: judgeDenied(denied),
+      denied: judgeDenied(denied, { centreRecords, facts, providerChannel }),
       surface: judgeSurface(memberSurface),
       facts: judgeFacts(facts),
       centre: judgeCentre(centreRecords),
@@ -1444,7 +1535,7 @@ async function main() {
   writeFileSync(join(EVIDENCE, 'driver-digest.json'), JSON.stringify({
     at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: TEST_USE_BASELINE_SHA,
     driverSha256: sha256(fileURLToPath(import.meta.url)), jsSubstitutions: layer.jsSubstitutions,
-    command: `node tests/world-factory/drivers/a5sf-live-member/run-boot.mjs${BOOTS_WANTED === 2 ? '' : ` --boots ${String(BOOTS_WANTED)}`}`,
+    command: `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs${BOOTS_WANTED === 2 ? '' : ` --boots ${String(BOOTS_WANTED)}`}`,
   }, null, 2) + '\n')
   log(`START head=${head} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA} boots=${String(BOOTS_WANTED)}`)
   log(`host porcelain before: ${JSON.stringify(hostPorcelain())}`)

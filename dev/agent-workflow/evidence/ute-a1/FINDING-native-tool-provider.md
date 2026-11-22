@@ -4,9 +4,11 @@ This is the owner's named risk, measured on a real host instead of argued about:
 解析到该 Agent 的受控 Provider（无 Shadow Definition）"*. Round 60 answered **NO** and recorded the defect
 below. Round 61 implements **shape A** (mount the preset's own host modules into the governed Member's
 isolated scope, by default) and re-measures the SAME unmodified acceptance driver: the admitted call is now
-served by the Member's controlled provider and the guard is consulted. One judge clause remains REFUTED
-(`d:member-read-denied`) for the cause recorded in "Residuals" — a finding, not a relaxation; the second
-round-61 red (`d:native-read-surface`) was an instrument defect, repaired and re-anchored in round 62.
+served by the Member's controlled provider and the guard is consulted. Both round-61 reds were instrument
+defects, and both are repaired rather than deleted: `d:native-read-surface` was re-anchored in round 62, and
+`d:member-read-denied` was rewritten in round 71 to measure the DECIDING CHANNEL at each channel's proper
+layer (live `LANE_DENY` with zero provider guard facts; in-process `IO_READ_DENIED`, `ADM-100`). Both judges
+are PROVEN on two agreeing boots. The residual history is kept in "Residuals" and §"Round 71".
 
 ## Round 60 measurement (the defect, kept as history)
 
@@ -91,13 +93,23 @@ body — the provider is not merely unproven for that call, it is never entered.
 
 ## Residuals (reported, not relaxed)
 
-1. **`d:member-read-denied` cannot pass while admission precedes execution.** The out-of-lane read is refused
-   by the centre with `LANE_DENY` (durable fact `refusalCode=LANE_DENY`), so `denyFacts=0` and the tool result
-   never names the provider's `IO_READ_DENIED`. The provider-side typed refusal IS proven in-process on the
-   same seam (`ADM-100`: the out-of-lane call is `isError`, no secret bytes, and the provider lane records its
-   own `deny` fact). Making the live judge pass would require the provider path to run BEFORE the centre —
-   the wrong order for a governance system. The judge's clause is therefore a product-semantics finding, not
-   a tolerance to widen.
+1. **`d:member-read-denied`: the PROVIDER channel cannot be reached on the live path while admission
+   precedes execution — the JUDGE was repaired in round 71, the product was not changed.** The out-of-lane
+   read is refused by the centre with `LANE_DENY` (durable fact `refusalCode=LANE_DENY`), so `denyFacts=0`
+   and the tool result never names the provider's `IO_READ_DENIED`. The provider-side typed refusal IS
+   proven in-process on the same seam (`ADM-100`: the out-of-lane call is `isError`, no secret bytes, and
+   the provider lane records its own `deny` fact). The old clause demanded the provider's code on the live
+   path, which would require the provider path to run BEFORE the centre — the wrong order for a governance
+   system — so it was a defect about the judge.
+   **Round 71 rewrites it, strictly, not permissively:** the clause now reads the deciding channel off the
+   durable fact. Lane channel (`LANE_DENY`) additionally requires **zero provider guard facts for that
+   exact call id** — the positive proof that the refusal preceded the provider. Provider channel
+   (`IO_READ_DENIED`) requires that call's own guard `deny` fact (`decidedBy=IO_READ_DENIED`). Both
+   channels require zero secret bytes and not-ENOENT. A separate clause runs the provider channel in its
+   own in-process population (`node --test --test-name-pattern ADM-100`, pass AND the provider-deny
+   assertion present). Measured on two agreeing boots: `refusalCode=LANE_DENY`, `channel=lane`,
+   `provider guard facts for this call=0`, `ADM-100` green. The judge is PROVEN; what remains a LIMIT is
+   exactly the lane-first ordering above, which is the contract.
 2. **`d:native-read-surface` `native-description` was an instrument defect — REPAIRED in round 62, kept
    here as history.** It required `resolved by the filesystem backend` in the top-level tool description,
    but in the pinned host that phrase is the **`file_path` PARAMETER** description
@@ -157,3 +169,65 @@ So D's "permission revocation" acceptance must be stated in the contract's own t
 a durable deny (refused with zero body), restoration = removing that deny, and widening beyond the compiled
 ceiling is refused.** A judge that requires the overlay to grant is testing for a capability the contract
 forbids; it is REFUTED on purpose.
+
+## Round 71 — the two judges that were REFUTED for reasons about the judge
+
+Two live clauses were rewritten in round 71. Neither was relaxed: each now measures the CONTRACT at the
+layer where the contract actually decides. Both drivers exit 0 with their full clause sets on two
+agreeing boots at HEAD `82dfda0c3` (host pin `639ed01539`), and no product code changed for the round.
+
+### `d:member-read-denied` (run-boot.mjs)
+
+Old clause: require the provider's `IO_READ_DENIED` on the live path. The centre decides before
+execution, so that code is unreachable there **by design** — the clause was testing an ordering that
+governance forbids.
+
+New clauses (all required):
+
+1. the call is the native `read`, is an error, and the result names a typed code;
+2. `typed-denial-names-authority` — the durable fact's `refusalCode` is `LANE_DENY` or
+   `IO_READ_DENIED`, and the tool result names the same code;
+3. `deciding-channel-evidenced` — **lane channel**: result carries `LANE_DENY` AND **zero provider
+   guard facts exist for that exact call id**; **provider channel**: result carries `IO_READ_DENIED`
+   AND that call's provider guard facts exist, are `deny`s, and name `decidedBy=IO_READ_DENIED`;
+4. `zero-secret-bytes` and `not-enoent` — required on BOTH channels;
+5. `provider-channel-in-process-ADM-100` — a separate clause runs
+   `node --test --test-name-pattern ADM-100 packages/runtime/test/vnext-admission.test.mjs` in the boot,
+   writes the raw result to `runs/boot0N/in-process-provider-channel.json`, and requires the pass **and**
+   the presence of that test's provider-deny assertion.
+
+Measured (boot1; boot2 identical): `refusalCode=LANE_DENY`, `channel=lane`,
+`provider guard facts for this call=0`, zero secret bytes, not-ENOENT, `ADM-100 exit=0 pass=true
+providerDenyAssertionPresent=true`. The lane channel is proven live; the provider channel is proven in
+its own in-process population — the two are evidenced, not conflated.
+
+### `d2:revocation` (run-boot-d2.mjs)
+
+Old clause: require that revoking a durable deny REFUSES the previously succeeded call with a new
+compiled generation. That is widening, which `overlay-decision.mjs:9` / `admission-port.mjs:498-521` /
+`permission-mutation.ts:435-436` forbid.
+
+New clauses (all required), measured live:
+
+- **(a)** durable deny lands (`changed:true`) → the same call is refused `ADMISSION_OVERLAY_DENY`, zero
+  body, settlement `REFUSED`/`not-started`; the fact is `decision=deny`, `refusalCode=ADMISSION_OVERLAY_DENY`,
+  `overlayOutcome=deny`, `laneDecision=allow`, with a non-empty `policyGeneration`;
+- **(b)** deny removal (`changed:true`) → the same call family is admitted again and settles
+  `COMPLETED`/`quiesced` as a NEW fact (pre/mid/post facts are distinct, same `call-d2-b-` family);
+- **(c)** an untouched in-lane read is admitted, returns its bytes, is an `allow` fact and settles
+  `COMPLETED` at ALL THREE phases (pre / deny / restore);
+- **(d)** widening is refused: `team_grant_permission` is asked for `effect:'allow'` on a locator outside
+  the member's compiled lane and answers
+  `{"status":"permission-mutated", …, "changed":false, "reason":"mutation-proposal-pending"}` — a
+  durable proposal, NOT a minted authority (the judge accepts a typed refusal or a no-op, and fails a
+  `changed:true` expansion); the widened locator then stays `LANE_DENY` with zero foreign bytes and a
+  `decision=deny` fact.
+
+The centre fact's `policyGeneration` is the COMPILED revision fixed at bind (`centre-install.mjs:94`);
+that is what (a) and (b) assert it carries, and why "a new compiled generation" is not part of the
+contract.
+
+**Everything not proven:** the live path never enters the provider (by design), so `IO_READ_DENIED` is
+an in-process fact only; widening beyond the compiled ceiling remains impossible by design, so direction
+(d) proves the REFUSAL and nothing about a permitted expansion; and both drivers remain `DEV-LIVE`
+records, never gates or candidate evidence.

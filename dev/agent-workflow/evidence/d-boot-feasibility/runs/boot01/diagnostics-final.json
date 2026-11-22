@@ -2,52 +2,52 @@
   "mockRequests": [
     {
       "seq": 0,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"DBOOT_DISC\\\"}]\"}]",
-      "isMemberRequest": false,
-      "tools": 0,
-      "reply": "{\"kind\":\"text\",\"content\":\"dboot read session\"}"
-    },
-    {
-      "seq": 1,
       "lastUser": "[{\"type\":\"text\",\"text\":\"DBOOT_DISC\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则\\n<!-- phase-baseline-ref: dev/engineering/current-authority.json — 当前基线唯一权威=该指针解析到的快照 baseline 字段；本文件只引用、不复制 SHA（tested/历史 SHA 不受此限） -->\\n<!-- phase-identity: alpha5-sandbox-first -->\\n\\n\\n本仓库是 DSH Team-mode **vNex",
       "isMemberRequest": false,
       "tools": 43,
       "reply": "{\"kind\":\"text\",\"content\":\"A5SF_LM_DISC_DONE\"}"
     },
     {
+      "seq": 1,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"DBOOT_DISC\\\"}]\"}]",
+      "isMemberRequest": false,
+      "tools": 0,
+      "reply": "{\"kind\":\"text\",\"content\":\"dboot read session\"}"
+    },
+    {
       "seq": 2,
       "lastUser": "[{\"type\":\"text\",\"text\":\"DBOOT_L1_DRIVE\"}]",
       "isMemberRequest": false,
       "tools": 43,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sflm-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-dboot-read-root\",\"requestToken\":\"dboot-read-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sflm-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace\",\"prompt\":\"dboot-read-turn:"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-a5sflm-delegate\",\"name\":\"team_delegate\",\"arguments\":{\"rootSessionId\":\"session-dboot-read-root\",\"requestToken\":\"dboot-read-turn-delegate\",\"delegationTemplateId\":\"worker\",\"label\":\"a5sflm-worker\",\"workspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace\",\"prompt\":\"dboot-read-turn:"
     },
     {
       "seq": 3,
-      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则",
-      "isMemberRequest": true,
-      "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-admit\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt\"}}]}"
-    },
-    {
-      "seq": 4,
       "lastUser": "[{\"type\":\"text\",\"text\":\"Generate the session title from this JSON array of human messages:\\n[{\\\"seq\\\":8,\\\"text\\\":\\\"[team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\\\"}]\"}]",
       "isMemberRequest": true,
       "tools": 0,
       "reply": "{\"kind\":\"text\",\"content\":\"dboot read session\"}"
     },
     {
-      "seq": 5,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-admit\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: DBOOT_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "seq": 4,
+      "lastUser": "[{\"type\":\"text\",\"text\":\"[team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\"},{\"type\":\"text\",\"text\":\"<system-reminder>\\nThe following workspace instructions may be relevant to your work. Use them as guidance when applicable. More specific instructions take precedence over broader ones. They do not override system, developer, or direct user instructions.\\n\\nInstructions from: AGENTS.md\\n\\n# AGENTS.md — dsh-agent-team 仓库代理规则",
       "isMemberRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-deny\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\"}}]}"
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-admit\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt\"}}]}"
+    },
+    {
+      "seq": 5,
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-admit\",\"content\":[{\"type\":\"text\",\"text\":\"<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt</path>\\n<type>file</type>\\n<content>\\n1: DBOOT_IN_LANE_BYTES\\n\\n(End of file - total 1 lines)\\n</content>\"}],\"is_error\":false}]",
+      "isMemberRequest": true,
+      "tools": 34,
+      "reply": "{\"kind\":\"tool-call\",\"toolCalls\":[{\"id\":\"call-dboot-read-deny\",\"name\":\"read\",\"arguments\":{\"file_path\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt\"}}]}"
     },
     {
       "seq": 6,
-      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's fs.read lane (policy generation a5sf1:7ea664b58f7c02003e38d25558349bca)\"}],\"is_error\":true}]",
+      "lastUser": "[{\"type\":\"tool_result\",\"tool_use_id\":\"call-dboot-read-deny\",\"content\":[{\"type\":\"text\",\"text\":\"Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's fs.read lane (policy generation a5sf1:9f4c2fc929663f3548230e9fee9a636a)\"}],\"is_error\":true}]",
       "isMemberRequest": true,
       "tools": 34,
-      "reply": "{\"kind\":\"text\",\"content\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}"
+      "reply": "{\"kind\":\"text\",\"content\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}"
     },
     {
       "seq": 7,
@@ -65,7 +65,7 @@
       "requestToken": "dboot-read-turn-delegate",
       "delegationTemplateId": "worker",
       "label": "a5sflm-worker",
-      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace",
       "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
       "async": false
     }
@@ -73,28 +73,28 @@
   "delegateResult": {
     "source": "model",
     "isError": false,
-    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pe2z220bhfb\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a\",\"operationId\":\"op-0jkcq8g1vzs5c30bu29uq0g0\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"succeeded\",\"body\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}},\"requestToken\":\"dboot-read-turn-delegate\"}"
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-root\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0pe2z220bhfb\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a\",\"operationId\":\"op-0jkcq8g1vzs5c30bu29uq0g0\",\"replayed\":false,\"ledgerSequence\":1,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":2,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"succeeded\",\"body\":\"DBOOT_MEMBER_DONE Error: LANE_DENY: fs.read \\\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/out-of-lane/secret-out-of-lane.txt\\\" is outside the binding's \"}},\"requestToken\":\"dboot-read-turn-delegate\"}"
   },
-  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3187/?token=<redacted>\n[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record\n",
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3193/?token=<redacted>\n[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record\n",
   "sessions": [
     {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
-      "bytes": 29138,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
+      "bytes": 29142,
       "id": "session-dboot-read-root",
       "kind": null
     },
     {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd",
-      "bytes": 26055,
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd",
+      "bytes": 26074,
       "id": "session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a",
       "kind": null
     }
   ],
   "sessionFiles": [
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.lock",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.lock",
-    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261121T22-27-22Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd"
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-dboot-read-root/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-dboot-read-root/session.v4.jsonl.zstd",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.lock",
+    "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/sessions/--home-armourpiercer-projects-dsh-agent-team-.worktrees-vnext-a1-cut-tests-homes-u5u5a5sfdev1-20261122T04-38-00Z-workspace--/session-team-child-958e43cfa98d7ec99ae2b757f53d2c7a/session.v4.jsonl.zstd"
   ],
   "homeListing": [
     ".anonymous-user-id",
@@ -122,13 +122,13 @@
       "realm": "member",
       "memberIdentity": "inst-0pe2z220bhfb",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:7ea664b58f7c02003e38d25558349bca",
+      "policyRevision": "a5sf1:9f4c2fc929663f3548230e9fee9a636a",
       "method": "stat",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 1,
-      "observedAt": "2026-11-21T22:28:42.540Z",
+      "observedAt": "2026-11-22T04:39:49.685Z",
       "tool": "read",
       "callId": "call-dboot-read-admit"
     },
@@ -137,13 +137,13 @@
       "realm": "member",
       "memberIdentity": "inst-0pe2z220bhfb",
       "toolBindingIdentity": null,
-      "policyRevision": "a5sf1:7ea664b58f7c02003e38d25558349bca",
+      "policyRevision": "a5sf1:9f4c2fc929663f3548230e9fee9a636a",
       "method": "readText",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261121T22-27-22Z/workspace/in-lane.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-38-00Z/workspace/in-lane.txt",
       "decision": "allow",
       "decidedBy": "ALLOW",
       "sequence": 2,
-      "observedAt": "2026-11-21T22:28:42.544Z",
+      "observedAt": "2026-11-22T04:39:49.690Z",
       "tool": "read",
       "callId": "call-dboot-read-admit"
     }
@@ -163,8 +163,8 @@
     "procBatches": 0,
     "otherBwrapPids": 1,
     "memberWindow": {
-      "from": "2026-11-21T22:28:41.858Z",
-      "to": "2026-11-21T22:28:43.136Z"
+      "from": "2026-11-22T04:39:48.974Z",
+      "to": "2026-11-22T04:39:50.256Z"
     }
   }
 }

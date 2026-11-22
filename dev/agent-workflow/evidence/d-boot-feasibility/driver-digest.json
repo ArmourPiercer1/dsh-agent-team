@@ -1,10 +1,10 @@
 {
-  "at": "2026-11-21T22:27:22.658Z",
-  "head": "e739ddbbb774d4b921ec0264a08881419df88b49",
-  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use",
+  "at": "2026-11-22T04:38:00.638Z",
+  "head": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
+  "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "d35fbc08b499d2778ecabdc86c4f41b5c26cedc87464a392ef8aff46a5af34d5",
+  "driverSha256": "c2840103594cb98ab5b0b7f971843be060e0274c5fdcedf554b8e3c32c3b5d07",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
@@ -23,5 +23,5 @@
       "value": false
     }
   ],
-  "command": "node tests/world-factory/drivers/a5sf-live-member/run-boot.mjs"
+  "command": "node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs"
 }

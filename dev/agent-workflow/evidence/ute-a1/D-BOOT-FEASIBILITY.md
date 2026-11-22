@@ -480,6 +480,22 @@ overlay snapshot and re-bind on generation change, so a revoked ALLOW recompiles
 carries the new generation. Neither is wiring-only, so the judge is REFUTED, never skipped and never
 reported as a pass.
 
+### Round 71 update — `d2:revocation` rewritten to the contract, and the widening direction MEASURED
+
+The table above is round 62's result and is kept as history. Round 71 replaced the clause that demanded
+widening with the contract's own four directions: (a) durable deny ⇒ `ADMISSION_OVERLAY_DENY`, zero
+body, settlement `REFUSED`, fact naming the overlay (`overlayOutcome=deny`, `laneDecision=allow`) with
+a `policyGeneration`; (b) deny removal ⇒ admitted + `COMPLETED` as a NEW fact in the same call-id
+family; (c) untouched in-lane read admitted at every phase; (d) widening beyond the compiled ceiling is
+refused — measured: the lane answered `{"status":"permission-mutated", …, "changed":false,
+"reason":"mutation-proposal-pending"}` and the widened locator stayed `LANE_DENY` with zero foreign
+bytes. Re-run at HEAD `82dfda0c3`, two agreeing boots: **all three judges PROVEN, overall PASS, exit
+0** (`dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`). The two "lawful shapes" above are
+NOT requirements of the contract; they remain unimplemented design options, not a gap this judge
+measures. The run-boot driver's `d:member-read-denied` was repaired in the same round (deciding-channel
+clauses; live `LANE_DENY` with zero provider guard facts + in-process `ADM-100`), and its five judges
+are PROVEN at two agreeing boots (`FINDING-native-tool-provider.md` §"Round 71").
+
 ### `d2:stop` — PROVEN
 
 A's follow-up read on the authored exact `ask` locator parked at a durable Control request

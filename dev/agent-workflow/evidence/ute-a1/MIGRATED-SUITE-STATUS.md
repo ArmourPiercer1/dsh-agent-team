@@ -1,7 +1,7 @@
 # The 16 migrated capability suites — measured, not assumed
 
-**CURRENT (round 70, consistency audit): 238/238, E3 GREEN, leg green.** The latest round is at the
-end (§"Round 70 (consistency audit)"); the round-30/31 narrative below is kept as history and its
+**CURRENT (round 71, judge semantics): 238/238, E3 GREEN, leg green.** The latest round is at the
+end (§"Round 71 (judge semantics)"); the round-30/31 narrative below is kept as history and its
 counts are that round's, not the current ones.
 
 **Measured:** 2026-11-22 (round 30) on `vnext/a1-cut`.
@@ -1673,3 +1673,109 @@ files, +107914 / −79603. This audit's docs-only commits sit on top (no code, n
   that round. It is now in `dev/ci/eb3-ci-manifest.json` (the migrated-suite leg in layer
   `ci-integration`; the node leg is `layers[4].legs[11]`), and the fresh `eb3-ci-required` run confirms
   `workflows=10 findings=0`. The text now says so instead of reading as a current gap.
+
+## Round 71 (judge semantics) — two REFUTED judges were measuring the judge, not the product; both rewritten to the contract and PROVEN
+
+Two live judges were REFUTED for reasons that were about the JUDGE. Both clauses were rewritten to be
+strictly MORE specific (never weaker), and both now measure the contract at the layer where it decides.
+**No product code and no test file changed for this round**; the node leg and the vitest population are
+untouched.
+
+### `d2:revocation` — the four directions, and the widening direction measured
+
+The old REQUIRED clause demanded that removing a durable deny REFUSE the previously succeeded call with
+a NEW compiled generation — i.e. that the overlay WIDEN authority, which the contract forbids
+(`overlay-decision.mjs:9`, `admission-port.mjs:498-521`, `permission-mutation.ts:435-436`). Rewritten,
+all four required:
+
+- **(a)** a durable DENY lands (`changed:true`) → the previously admitted call is refused
+  `ADMISSION_OVERLAY_DENY`, **zero body**, settlement `REFUSED`/`not-started`; the durable fact names
+  the overlay as the deciding authority (`overlayOutcome=deny`, `laneDecision=allow`,
+  `refusalCode=ADMISSION_OVERLAY_DENY`) and carries a `policyGeneration`;
+- **(b)** removing that deny restores the call (admitted + `COMPLETED`/`quiesced`) as a **NEW fact** in
+  the same `call-d2-b-` family (pre/mid/post facts distinct);
+- **(c)** an untouched in-lane read is admitted with its bytes and settles `COMPLETED` at **every**
+  phase — pre / deny / restore;
+- **(d)** **widening is refused, MEASURED:** `team_grant_permission` asked for `effect:'allow'` on a
+  locator outside the compiled lane answered
+  `{"status":"permission-mutated", …, "changed":false, "reason":"mutation-proposal-pending"}` (a durable
+  proposal, not minted authority); the widened locator then stayed `LANE_DENY` with zero foreign bytes.
+  The judge accepts a typed refusal or a no-op and fails a `changed:true` expansion; the answer shape is
+  recorded verbatim.
+
+### `d:member-read-denied` — the deciding channel, at each channel's own layer
+
+The old clause required the provider's `IO_READ_DENIED` on the live path; the centre decides BEFORE
+execution, so an out-of-lane call is `LANE_DENY` and never reaches the provider. Rewritten, all
+required: a typed refusal whose code names the channel (`LANE_DENY` or `IO_READ_DENIED`); **lane
+channel** ⇒ result carries `LANE_DENY` AND **zero provider guard facts for that exact call id**;
+**provider channel** ⇒ result carries `IO_READ_DENIED` AND that call's own guard `deny` fact
+(`decidedBy=IO_READ_DENIED`); zero secret bytes and not-ENOENT on BOTH; plus a separate clause running
+the provider channel in its own in-process population (`node --test --test-name-pattern ADM-100`, pass
+AND the provider-deny assertion present), recorded at
+`runs/boot0N/in-process-provider-channel.json`.
+
+### Measured live (two agreeing boots each, HEAD `82dfda0c3`, host pin `639ed01539`)
+
+```
+$ node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2
+overall                 PASS    PASS     (agreement agreeing=true differing=[])
+admittedVerdict         PROVEN  PROVEN
+deniedVerdict           PROVEN  PROVEN
+surfaceVerdict          PROVEN  PROVEN
+factsVerdict            PROVEN  PROVEN
+centreVerdict           PROVEN  PROVEN
+=> RESULT PASS (2/2 boots; agreeing pair=true)
+
+$ node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs --boots 2
+overall                 PASS    PASS     (agreement agreeing=true differing=[])
+multiMemberVerdict      PROVEN  PROVEN
+revocationVerdict       PROVEN  PROVEN
+stopVerdict             PROVEN  PROVEN
+=> RESULT PASS (2/2 boots; agreeing pair=true)
+```
+
+`denyFacts=0` on the run-boot agreement is CORRECT and now required: the provider guard is never
+consulted for the out-of-lane call (the centre refused first), which is exactly what the lane-channel
+clause asserts. Both drivers remain `DEV-LIVE` records, not gates; `run-boot-d3.mjs` still records
+`overall=FAIL` (the absent process lane).
+
+### Gates at this HEAD (fresh, round 71)
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 182
+ℹ pass 180
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67
+  DISCOVERED_AND_COLLECTED 834
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+DSH-TEST-CATALOG tests=889 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+**Population unchanged:** vitest **238/238** (`verdict=PASS`), node leg **180 pass / 0 fail / 2
+disclosed skips**. Nothing here upgrades any capability row to PRODUCT-PROVEN, and nothing here claims
+the overlay can widen or that the live path reaches the provider.

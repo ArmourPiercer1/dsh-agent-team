@@ -1,18 +1,18 @@
 {
   "aGuardFacts": 14,
-  "bGuardFacts": 8,
+  "bGuardFacts": 14,
   "aAdmissions": 9,
-  "bAdmissions": 5,
-  "mockRequests": 47,
-  "memberModelRequests": 20,
+  "bAdmissions": 9,
+  "mockRequests": 57,
+  "memberModelRequests": 25,
   "aWindow": {
-    "first": "2026-11-21T23:38:09.118Z",
-    "last": "2026-11-21T23:38:09.740Z",
+    "first": "2026-11-22T04:26:32.733Z",
+    "last": "2026-11-22T04:26:33.393Z",
     "count": 10
   },
   "bWindow": {
-    "first": "2026-11-21T23:38:09.352Z",
-    "last": "2026-11-21T23:38:09.478Z",
+    "first": "2026-11-22T04:26:32.988Z",
+    "last": "2026-11-22T04:26:33.099Z",
     "count": 3
   }
 }

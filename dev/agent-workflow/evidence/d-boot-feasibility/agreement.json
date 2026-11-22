@@ -1,44 +1,44 @@
 {
   "schema": "a5sf-live-member/agreement/1",
-  "at": "2026-11-21T22:30:06.899Z",
+  "at": "2026-11-22T04:41:43.577Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
   "rows": [
     {
       "boot": 1,
-      "overall": "FAIL",
+      "overall": "PASS",
       "admittedVerdict": "PROVEN",
-      "deniedVerdict": "REFUTED",
-      "surfaceVerdict": "REFUTED",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
       "factsVerdict": "PROVEN",
       "centreVerdict": "PROVEN",
       "allowFacts": 2,
       "denyFacts": 0,
       "centreAdmissions": 2,
       "centreExecutions": 2,
-      "governedSurface": false,
+      "governedSurface": true,
       "admittedBytes": true,
-      "deniedSecretAbsent": false,
+      "deniedSecretAbsent": true,
       "transcriptSourceCount": 2
     },
     {
       "boot": 2,
-      "overall": "FAIL",
+      "overall": "PASS",
       "admittedVerdict": "PROVEN",
-      "deniedVerdict": "REFUTED",
-      "surfaceVerdict": "REFUTED",
+      "deniedVerdict": "PROVEN",
+      "surfaceVerdict": "PROVEN",
       "factsVerdict": "PROVEN",
       "centreVerdict": "PROVEN",
       "allowFacts": 2,
       "denyFacts": 0,
       "centreAdmissions": 2,
       "centreExecutions": 2,
-      "governedSurface": false,
+      "governedSurface": true,
       "admittedBytes": true,
-      "deniedSecretAbsent": false,
+      "deniedSecretAbsent": true,
       "transcriptSourceCount": 2
     }
   ],
-  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\noverall                       FAIL                          FAIL\nadmittedVerdict               PROVEN                        PROVEN\ndeniedVerdict                 REFUTED                       REFUTED\nsurfaceVerdict                REFUTED                       REFUTED\nfactsVerdict                  PROVEN                        PROVEN\ncentreVerdict                 PROVEN                        PROVEN\nallowFacts                    2                             2\ndenyFacts                     0                             0\ncentreAdmissions              2                             2\ncentreExecutions              2                             2\ngovernedSurface               false                         false\nadmittedBytes                 true                          true\ndeniedSecretAbsent            false                         false\ntranscriptSourceCount         2                             2\n\nagreeing=true differing=[]"
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every row must be identical)\nfact                          boot1                         boot2\noverall                       PASS                          PASS\nadmittedVerdict               PROVEN                        PROVEN\ndeniedVerdict                 PROVEN                        PROVEN\nsurfaceVerdict                PROVEN                        PROVEN\nfactsVerdict                  PROVEN                        PROVEN\ncentreVerdict                 PROVEN                        PROVEN\nallowFacts                    2                             2\ndenyFacts                     0                             0\ncentreAdmissions              2                             2\ncentreExecutions              2                             2\ngovernedSurface               true                          true\nadmittedBytes                 true                          true\ndeniedSecretAbsent            true                          true\ntranscriptSourceCount         2                             2\n\nagreeing=true differing=[]"
 }
