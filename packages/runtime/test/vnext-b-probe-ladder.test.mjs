@@ -90,7 +90,7 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 // to run before the first product import, which is why those imports are dynamic and below.
 register(pathToFileURL(join(REPO_ROOT, 'scripts/run-tests-hooks.mjs')).href)
 
-const { bindingFromCompiledMember, installMemberCentre } = await import('../src/plugin/vnext/centre-install.mjs')
+const { bindingFromCompiledMember, executorReadinessOf, installMemberCentre } = await import('../src/plugin/vnext/centre-install.mjs')
 const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { hostNativeSpecs, mountHostModules } = await import('../src/plugin/vnext/realm-lane.mjs')
 const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
@@ -462,6 +462,14 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
 
   // ---- THE CENTRE: the product's one composition point, over durable sinks ----
   const answer = row.compiledAnswerOfRealm(realm)
+  // ROUND 76 — THE ANSWER CARRIES THE REALM'S OWN FACES. The centre derives its executor-readiness
+  // answer from them (`executorReadinessOf`), so an answer that dropped `subprocess` made a
+  // process-class declaration this realm DOES execute look like `ADMISSION_EXECUTOR_UNAVAILABLE`
+  // (measured live on the realm-mounted persistent `bash`). The faces are passed through verbatim;
+  // this arm fails if the stored answer loses them again.
+  assert.equal(answer.subprocess, subprocessFace, 'the compiled answer must carry the subprocess face it mounted')
+  assert.equal(answer.terminal?.mode, 'pty', 'the compiled answer must carry the PTY terminal face')
+  assert.equal(executorReadinessOf(answer)['confined-subprocess'], 'ready', 'a mounted confined subprocess face is a READY executor')
   const binding = bindingFromCompiledMember({
     member: answer.members[0],
     ...(answer.bindings === undefined ? {} : { bindings: answer.bindings }),

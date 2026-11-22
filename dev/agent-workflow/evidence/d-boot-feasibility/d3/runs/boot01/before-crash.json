@@ -1,9 +1,9 @@
 {
-  "at": "2026-11-22T09:26:03.934Z",
-  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z",
+  "at": "2026-11-22T12:19:23.857Z",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z",
   "aRead": {
     "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "dispatch": "quiesced",
@@ -24,20 +24,20 @@
       "instanceGeneration": 0,
       "toolName": "read",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-a/in-lane-a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace/team-a/in-lane-a.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:9a47702a111aea8616c60480c1424bd3",
+      "policyGeneration": "a5sf1:dd833b236b0ab46e9a914df270bc1e6e",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T09:25:59.026Z"
+      "at": "2026-11-22T12:19:18.649Z"
     }
   ],
   "bOpen": {
     "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
     "present": true,
     "state": "RUNNING",
     "dispatch": "started",
@@ -57,15 +57,15 @@
       "instanceGeneration": 0,
       "toolName": "edit",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-b/big-edit.bin",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace/team-b/big-edit.bin",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:4072aaa430a8fdaea684079cb6dd83e9",
+      "policyGeneration": "a5sf1:431b6d515a3766ae237c177d713bf930",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T09:26:03.922Z"
+      "at": "2026-11-22T12:19:23.845Z"
     }
   ],
   "bOpenExecutions": [],
@@ -78,16 +78,16 @@
       "instanceGeneration": 0,
       "toolName": "grep",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T09-23-54Z/workspace/team-b/corpus",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace/team-b/corpus",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:4072aaa430a8fdaea684079cb6dd83e9",
+      "policyGeneration": "a5sf1:431b6d515a3766ae237c177d713bf930",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "overlayOutcome": "no-opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T09:26:00.585Z"
+      "at": "2026-11-22T12:19:20.508Z"
     }
   ],
-  "aLedgerBytes": 3371
+  "aLedgerBytes": 2849
 }

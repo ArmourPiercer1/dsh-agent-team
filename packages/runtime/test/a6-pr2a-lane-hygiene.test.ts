@@ -30,6 +30,20 @@ function sourceFiles(dir: string): string[] {
   return out
 }
 
+/** Read a source file, tolerating one that a concurrent test removed after
+ *  `sourceFiles` stat'd it. The population scan walks OTHER suites' temp trees
+ *  (`packages/testkit/test/.tmp-fault/…`), whose owners delete them mid-run; a
+ *  vanished FIXTURE is not a lane-hygiene finding, and redding the scan for it
+ *  is a 5-second-window flake, not a measurement. */
+function readSource(file: string): string | null {
+  try {
+    return readFileSync(file, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
+    throw error
+  }
+}
+
 describe('a6-pr2a lane hygiene', () => {
   it('is in the shared typecheck face and has no production importer', () => {
     expect(readFileSync(join(RUNTIME_ROOT, 'tsconfig.json'), 'utf8')).toContain('"review-authority"')
@@ -37,7 +51,8 @@ describe('a6-pr2a lane hygiene', () => {
     for (const file of sourceFiles(join(REPO_ROOT, 'packages'))) {
       const rel = relative(REPO_ROOT, file)
       if (rel.startsWith(join('runtime', 'review-authority')) || rel.includes(join('runtime', 'test'))) continue
-      const text = readFileSync(file, 'utf8')
+      const text = readSource(file)
+      if (text === null) continue
       if (/from\s+['"][^'"]*review-authority/.test(text) && !/Alpha\.6 PR2a/.test(text)) offenders.push(rel)
     }
     // A6-PR2b is the first production consumer: the Control chain imports

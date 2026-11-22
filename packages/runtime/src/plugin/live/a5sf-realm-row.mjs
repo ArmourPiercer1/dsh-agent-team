@@ -974,9 +974,20 @@ export async function mountMemberA5sfRealm({ root, a5sfConfig, provider, member 
   // A WeakMap, not a spread: the mounted realm's surface is a live object with methods, and copying
   // it would produce a husk whose `dispose()` is detached from the fibers it describes. The compiled
   // answer is attached to the SAME object identity the caller already holds.
+  //
+  // ROUND 76 — THE FACES ARE PART OF THE ANSWER. The centre derives its EXECUTOR READINESS from the
+  // answer's own faces (`executorReadinessOf`: `confined-subprocess` is ready iff the answer carries
+  // a `subprocess` face whose provider has `spawnStreaming`). Storing only `{members, bindings}`
+  // dropped them, so a process-class declaration this realm DOES execute (it mounts the governed
+  // subprocess + PTY faces) was adjudicated `ADMISSION_EXECUTOR_UNAVAILABLE` — measured live this
+  // round on the realm-mounted persistent `bash`, whose refusal named the executor while the face
+  // was mounted. The faces are handed through verbatim; no default is invented here.
   COMPILED_REALM_ANSWERS.set(mounted, Object.freeze({
     members: compiled.members,
     ...(compiled.bindings === undefined ? {} : { bindings: compiled.bindings }),
+    ...(compiled.subprocess === undefined ? {} : { subprocess: compiled.subprocess }),
+    ...(compiled.terminal === undefined ? {} : { terminal: compiled.terminal }),
+    ...(compiled.web === undefined ? {} : { web: compiled.web }),
   }))
   return mounted
 }

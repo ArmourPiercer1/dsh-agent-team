@@ -174,6 +174,9 @@ const B_IN_LANE_TEXT = 'DBOOT_D3_B_UNIQUE_BYTES'
 const A_IN_LANE_FILE = 'in-lane-a.txt'
 const B_IN_LANE_FILE = 'in-lane-b.txt'
 const STATE_FILE = 'd3-persistent-state.txt'
+// ROUND 76 confinement probe: a path in worker-B's lane, written from WORKER-A's
+// shell. A's compiled write root is team-a, so the OS profile must refuse it.
+const ESCAPE_FILE = 'd3-escape.txt'
 const CORPUS_DIR = 'corpus'
 const BIG_EDIT_FILE = 'big-edit.bin'
 const CORPUS_NEEDLE = 'DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046'
@@ -290,8 +293,35 @@ function lane(allow) {
   return { mode: 'restricted', allow: [...allow], ask: [], deny: [] }
 }
 
+/**
+ * ROUND 76 — the EXECUTION authorization the acceptance world declares for
+ * `bash` (the world itself now exercises the positive arm; the negative `ask`
+ * and `deny` arms live in the in-process admission suite, `ADM-126/127`).
+ *
+ * The declaration is the shipped v4 grammar, unextended: a Team-scoped
+ * `toolBindings[]` entry with `authorization: allow` and
+ * `execution.executionBoundary: confined-subprocess`. It is Team-scoped by
+ * grammar, so it applies to every Member; the per-Member `memberIoCeilings`
+ * still supplies the PATH lanes and the intersection is the effective bound.
+ * `io` deliberately adds NO narrowing (`mode: all` + empty deny): process
+ * authority is not a lane, and this declaration must not silently become one.
+ */
+function bashToolBinding() {
+  return {
+    owner: 'dsh.subprocess',
+    name: 'bash',
+    authorization: 'allow',
+    io: {
+      read: { mode: 'all', deny: [] },
+      write: { mode: 'all', deny: [] },
+      network: { mode: 'allow' },
+    },
+    execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+  }
+}
+
 /** The v4 design of the TWO-member team this driver measures. */
-function v4Doc({ blueprintId, dirs, workers = ['worker-a', 'worker-b'] }) {
+function v4Doc({ blueprintId, dirs, workers = ['worker-a', 'worker-b'], declareBash = false }) {
   const memberIoCeilings = workers.map((templateId) => ({
     templateId,
     io: {
@@ -330,10 +360,13 @@ function v4Doc({ blueprintId, dirs, workers = ['worker-a', 'worker-b'] }) {
     teamHardEnvelope: { rules: [] },
     metadata: {},
     memberIoCeilings,
+    ...(declareBash ? { toolBindings: [bashToolBinding()] } : {}),
   }
 }
 function mainBlueprintYaml({ dirs }) {
-  return `---\n${JSON.stringify(v4Doc({ blueprintId: BP_MAIN_ID, dirs }), null, 2)}\n---\n`
+  // The main world declares the bash execution authorization: its whole point
+  // is the POSITIVE arm (a persistent shell admitted, confined and durable).
+  return `---\n${JSON.stringify(v4Doc({ blueprintId: BP_MAIN_ID, dirs, declareBash: true }), null, 2)}\n---\n`
 }
 function alpha6BlueprintYaml() {
   const dirs = { aDir: join(EVIDENCE, 'alpha6-plan', 'team-a'), bDir: join(EVIDENCE, 'alpha6-plan', 'team-b') }
@@ -431,6 +464,27 @@ function composedRows({ home, workspaceDir, mainYaml, alpha6 = false }) {
   return [
     { id: 'dsh-agent-team', name: pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'dist', 'packages', 'runtime', 'src', 'plugin', 'host.js')).href, config },
     { id: 'preset-a5sf-governed-member', name: '@deepseek-ai/dsh-agent-preset', config: presetConfig },
+    // ROUND 76 — THE DEPLOYMENT HALF OF THE PERSISTENT-SHELL COMPOSITION.
+    //
+    // The governed preset now carries the HOST's `dsh-tool-bash-persistent` row
+    // (`backendType: a5sf-governed-shell`). That row INJECTS `terminals`, and a
+    // preset can only bind when every one of its enabled rows is ACTIVE: the
+    // preset registry refuses a preset whose row is still waiting for a service
+    // (`agent-preset/invalid` … 'waiting for terminals', measured this round —
+    // such a row is NOT dormant). The preset's standing scope is created from
+    // the registry, not from the Member, so the governed PTY face (which lives
+    // on the Member's isolated realm) can never satisfy it; the DEPLOYMENT has
+    // to provide the service.
+    //
+    // This row provides the HOST's own PTY service with NO backend registered
+    // (`listBackends() === []`). It is INERT and FAIL-CLOSED on its own scope:
+    // the preset row spawns `a5sf-governed-shell`, which only the Member
+    // realm's governed PTY face registers, so the preset-scope definition can
+    // never open a shell — `spawn` throws `NO_BACKEND` before any process
+    // exists. Nothing here is unconfined: there is no unconfined backend to
+    // resolve, and the only live `bash` a governed Member sees is the realm
+    // mount of the SAME host module on the governed face (shape A).
+    { id: 'persistent-shell-terminals', name: '@deepseek-ai/dsh-terminal' },
     // The p6t6 row reads `p6t6-directive.json` from DSH_HOME and takes NO row
     // config (its directive is the file, measured).
     { id: 'p6t6-team-tools', name: pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'harness', 'plugin.mjs')).href },
@@ -500,7 +554,11 @@ function allMessagesText(records) {
 function makeDecide({ paths, ids }) {
   const text = (content) => ({ kind: 'text', content })
   const readCall = (id, filePath) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'read', arguments: { file_path: filePath } }] })
-  const bashCall = (id, command) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'bash', arguments: { command, description: 'D3 persistent-shell probe' } }] })
+  // ROUND 76: the model-visible `bash` is the pinned PERSISTENT definition,
+  // whose parameter surface is `command` ONLY (`description`/`workdir`/
+  // `timeoutMs` are gone). A driver that still sent the old fields would be
+  // measuring a surface that no longer exists.
+  const bashCall = (id, command) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'bash', arguments: { command } }] })
   const grepCall = (id, pattern, searchPath) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'grep', arguments: { pattern, path: searchPath } }] })
   const editCall = (id, filePath, oldString, newString) => ({ kind: 'tool-call', toolCalls: [{ id, name: 'edit', arguments: { file_path: filePath, old_string: oldString, new_string: newString } }] })
 
@@ -513,7 +571,16 @@ function makeDecide({ paths, ids }) {
       if (token === TOK_A) {
         if (!seen.has(CALL_A_READ)) return readCall(CALL_A_READ, paths.aInLane)
         if (!seen.has(CALL_A_BASH1)) {
-          return bashCall(CALL_A_BASH1, `printf '%s\\n' '${STATE_BYTES}' > '${paths.stateFile}' && printf 'DBOOT_D3_STATE_WRITTEN\\n'`)
+          // FIRST call writes the in-lane state file, then ATTEMPTS a write
+          // OUTSIDE A's lane (worker-B's directory) and reports what the OS
+          // profile did. The attempt is measured (shell report + on-disk
+          // absence) by the driver's confinement observation; it is not a judge
+          // clause, so the judge's propositions are untouched.
+          return bashCall(CALL_A_BASH1, [
+            `printf '%s\\n' '${STATE_BYTES}' > '${paths.stateFile}' && printf 'DBOOT_D3_STATE_WRITTEN\\n'`,
+            `printf 'DBOOT_D3_ESCAPE_BYTES' > '${paths.escape}' 2>/dev/null`,
+            `if [ -e '${paths.escape}' ]; then printf 'DBOOT_D3_ESCAPE_WROTE\\n'; else printf 'DBOOT_D3_ESCAPE_REFUSED\\n'; fi`,
+          ].join('; '))
         }
         return text(UNIT_A)
       }
@@ -569,6 +636,14 @@ function makeDecide({ paths, ids }) {
               delegationTemplateId: 'worker-a',
               label: 'dboot-d3-worker-a',
               async: true,
+              // ROUND 76: the Member's cwd must sit INSIDE its compiled write
+              // lane, because the governed PTY face narrows the deployment's
+              // sandbox policy to the DEEPEST declared write root containing
+              // the session cwd (a cwd outside every declared root is
+              // read-only by design, `terminal-pty.ts` `narrowSandboxPolicy`).
+              // Without this the shell would start read-only and the in-lane
+              // state write — the persistence proof — could never happen.
+              workspace: paths.aDir,
               prompt: [
                 `${TOK_A} You are worker-a in a D-stage acceptance run.`,
                 'Deliverable: read the in-lane file, then run the requested bash command, then reply with EXACTLY the line',
@@ -927,7 +1002,20 @@ function judgeCrash({ before, after, restart, home }) {
       { id: 'new-call-new-fact', ok: newFacts.length === 1 && String(newFacts[0]?.callId) === CALL_A_AFTER && newFacts[0]?.decision === 'allow', detail: `new facts=${JSON.stringify(newFacts.map((f) => ({ callId: f?.callId, decision: f?.decision, axis: f?.axis })))}` },
       { id: 'new-call-settled-completed', ok: after?.aNewSettle?.state === 'COMPLETED', detail: `new call settlement=${String(after?.aNewSettle?.state)} transitions=${JSON.stringify(after?.aNewSettle?.transitions ?? [])}` },
       { id: 'work-fact-survived', ok: (after?.workDiskHits ?? []).length > 0, detail: `fresh disk hits carrying the delivered unit=${JSON.stringify((after?.workDiskHits ?? []).map((h) => h.path))}` },
-      { id: 'state-file-never-written', ok: !existsSync(after?.stateFile ?? '/nonexistent'), detail: `the persistent-shell probe never ran a shell: ${String(after?.stateFile)} exists=${String(existsSync(after?.stateFile ?? '/nonexistent'))}` },
+      // ROUND 76 — THE OLD TRUTH IS NOW FALSE. This clause used to read
+      // `state-file-never-written` and PASSED only because the persistent-shell
+      // probe had been REFUTED (its bash never ran, so the file never existed):
+      // it was an absence-as-evidence control, not a crash fact. The persistence
+      // judge is now PROVEN, so the SAME file is written BEFORE the crash and
+      // must still hold the SAME bytes after the cold restart — a stronger claim
+      // (object state survives a SIGKILL) and the only one the world's own facts
+      // support. It still fails if the crash probe never produced a shell state.
+      {
+        id: 'state-file-survives-restart',
+        ok: existsSync(after?.stateFile ?? '/nonexistent')
+          && readFileSync(after?.stateFile ?? '/nonexistent', 'utf8').includes(STATE_BYTES),
+        detail: `the persistent-shell probe's state file ${String(after?.stateFile)} exists=${String(existsSync(after?.stateFile ?? '/nonexistent'))} bytes=${String(after?.stateFile === undefined ? 0 : statSize(after.stateFile))}`,
+      },
     ],
   )
 }
@@ -1002,7 +1090,7 @@ function planOnly() {
   // an ADMITTED call, and a path outside the member's compiled ceiling is
   // refused at admission (measured this round: an out-of-lane grep is
   // REFUSED, which cannot be the in-flight-at-crash record).
-  const dirs = { aDir, bDir, corpus: join(bDir, CORPUS_DIR), aInLane: join(aDir, A_IN_LANE_FILE), bInLane: join(bDir, B_IN_LANE_FILE), stateFile: join(aDir, STATE_FILE) }
+  const dirs = { aDir, bDir, corpus: join(bDir, CORPUS_DIR), aInLane: join(aDir, A_IN_LANE_FILE), bInLane: join(bDir, B_IN_LANE_FILE), stateFile: join(aDir, STATE_FILE), escape: join(bDir, ESCAPE_FILE) }
   const a = assertBlueprintText(anchorBlueprintYaml(), BP_ANCHOR_ID, 'anchor.yaml')
   const m = assertBlueprintText(mainBlueprintYaml({ dirs }), BP_MAIN_ID, 'main.yaml')
   log(`blueprints accepted: anchor=${JSON.stringify(a)} main=${JSON.stringify(m)}`)
@@ -1015,10 +1103,25 @@ function planOnly() {
   const preset = layer.rows.find((r) => r?.config?.id === PRESET_ID)
   const plugins = (preset?.config?.plugins ?? []).map((p) => p.id)
   log(`governed preset plugins (${String(plugins.length)}): ${plugins.join(',')}`)
-  for (const required of ['tool-bash', 'tool-fs', 'tool-fs-search']) {
+  // ROUND 76 SURFACE UPDATE (the OLD truth is now the WRONG assertion): the
+  // shipped governed preset mounts the HOST's persistent definition
+  // (`@deepseek-ai/dsh-tool-bash-persistent`, `backendType:
+  // a5sf-governed-shell`) as the module the governed realm lane mounts into the
+  // Member's isolated scope. The one-shot `tool-bash` row is retained ONLY as
+  // the surface baseline that lane replaces (its definition-identity check
+  // requires a baseline name); it is dormant on the preset's own scope here.
+  for (const required of ['tool-bash', 'tool-fs', 'tool-fs-search', 'tool-bash-persistent']) {
     if (!plugins.includes(required)) throw new Error(`the shipped governed preset lost '${required}'`)
   }
-  if (plugins.includes('tool-bash-persistent')) throw new Error('the shipped governed preset unexpectedly mounts tool-bash-persistent')
+  // The persistent row must be the HOST package with the GOVERNED backend name,
+  // not a Team module and not the base `shell` backend.
+  const persistentRow = (preset?.config?.plugins ?? []).find((p) => p?.id === 'tool-bash-persistent')
+  if (persistentRow?.name !== '@deepseek-ai/dsh-tool-bash-persistent') {
+    throw new Error(`the governed preset's persistent shell is not the HOST package: ${JSON.stringify(persistentRow?.name ?? null)}`)
+  }
+  if (persistentRow?.config?.backendType !== 'a5sf-governed-shell') {
+    throw new Error(`the governed preset's persistent shell does not name the governed backend: ${JSON.stringify(persistentRow?.config?.backendType ?? null)}`)
+  }
   const persistentPackage = existsSync(join(HOST_TREE, 'packages', 'shell', 'tool-bash-persistent', 'package.json'))
   log(`host persistent-bash package present=${String(persistentPackage)} mounted=${String(plugins.includes('tool-bash-persistent'))}`)
   log('PLAN OK')
@@ -1139,6 +1242,8 @@ async function bootOnce({ index, head, grant }) {
   let txB = null
   let leaderSurface = []
   let memberSurface = []
+  // ROUND 76 — the OS-confinement observation (recorded, never a judge clause).
+  let confinementProbe = null
   const ids = { a: null, b: null, pendingRequestId: null }
   const counters = {}
   let result = null
@@ -1293,6 +1398,7 @@ async function bootOnce({ index, head, grant }) {
         aInLane: join(aDir, A_IN_LANE_FILE),
         bInLane: join(bDir, B_IN_LANE_FILE),
         stateFile: join(aDir, STATE_FILE),
+        escape: join(bDir, ESCAPE_FILE),
         bigFile: join(bDir, BIG_EDIT_FILE),
       }
       writeFileSync(paths.aInLane, `${A_IN_LANE_TEXT}\n`, 'utf8')
@@ -1394,7 +1500,14 @@ async function bootOnce({ index, head, grant }) {
     // ── L1: delegate A (work unit + persistent-shell second turn) ──
     abortStage = 'delegate-a'
     await promptTurn(MK_L1, DONE_L1, 'd3l1')
-    if (!(await waitFor(() => sawReply(UNIT_A), 180_000))) throw new Error('member A never delivered its unit')
+    if (!(await waitFor(() => sawReply(UNIT_A), 180_000))) {
+      // FAIL CLOSED WITH DIAGNOSTICS: the delegate result and the member's own
+      // request count distinguish "the member was never created" from "its turn
+      // hung", instead of leaving the next reader to guess.
+      const delegateText = String(toolResultFor(requests(), CALL_D_A)?.text ?? '<absent>').slice(0, 1_400)
+      const memberRequestsA = requests().filter((r) => memberTokenOf(r) === TOK_A).length
+      throw new Error(`member A never delivered its unit (delegate=${delegateText}; memberRequests=${String(memberRequestsA)})`)
+    }
     let state = await readState(origin, cookie)
     rowA = membersOf(state).find((m) => String(m?.templateId ?? '') === 'worker-a') ?? null
     if (rowA === null) throw new Error(`the product projection does not carry worker-a: ${JSON.stringify(membersOf(state).map((m) => `${m?.templateId}:${m?.instanceId}`))}`)
@@ -1414,6 +1527,34 @@ async function bootOnce({ index, head, grant }) {
     const memberRequestA = tokenRequestsA.find((r) => surfaceNamesOf(r).length > 0) ?? tokenRequestsA[0] ?? null
     memberSurface = memberRequestA === null ? [] : surfaceNamesOf(memberRequestA)
     writeFileSync(join(bootDir, 'member-surface.json'), `${JSON.stringify({ token: TOK_A, tools: memberSurface, tokenRequests: tokenRequestsA.length }, null, 2)}\n`)
+
+    // ── ROUND 76 CONFINEMENT OBSERVATION (recorded, NOT a judge clause) ──
+    // The first bash call ran INSIDE the governed PTY under the deployment's
+    // OS sandbox. It wrote the in-lane state file and then ATTEMPTED a write
+    // into worker-B's directory (outside A's compiled write lane). Two facts
+    // are measured: what the shell itself reported, and what the driver sees on
+    // disk from OUTSIDE the sandbox. A judge is deliberately not added here —
+    // the round's proposition is the persistence judge; this observation is the
+    // evidence that the confinement is the OS's, not a claim in prose.
+    // `callOf` is declared later in this function; look the call up directly so
+    // this observation cannot run before its declaration (TDZ).
+    const memberBash1 = (txA1?.calls ?? []).find((call) => String(call.callId) === String(CALL_A_BASH1)) ?? null
+    const memberBash1Text = String(memberBash1?.result?.text ?? '')
+    confinementProbe = {
+      shellRow: 'member bash #1 under the governed PTY',
+      outOfLanePath: paths.escape,
+      inLaneStatePath: paths.stateFile,
+      shellSawStateWrite: /DBOOT_D3_STATE_WRITTEN/u.test(memberBash1Text),
+      shellReportedWrite: /DBOOT_D3_ESCAPE_WROTE/u.test(memberBash1Text),
+      shellReportedRefusal: /DBOOT_D3_ESCAPE_REFUSED/u.test(memberBash1Text),
+      outOfLaneFileExists: existsSync(paths.escape),
+      outOfLaneFileBytes: existsSync(paths.escape) ? statSize(paths.escape) : 0,
+      inLaneStateFileExists: existsSync(paths.stateFile),
+      inLaneStateFileBytes: existsSync(paths.stateFile) ? statSize(paths.stateFile) : 0,
+      note: 'the driver process reads the disk OUTSIDE the sandbox; the shell reports from INSIDE it',
+    }
+    writeFileSync(join(bootDir, 'confinement-probe.json'), `${JSON.stringify(confinementProbe, null, 2)}\n`)
+    log(`[boot${String(index)}] confinement probe: refusal=${String(confinementProbe.shellReportedRefusal)} wrote=${String(confinementProbe.shellReportedWrite)} outOfLaneExists=${String(confinementProbe.outOfLaneFileExists)} bytes=${String(confinementProbe.outOfLaneFileBytes)} inLaneState=${String(confinementProbe.inLaneStateFileExists)}`)
 
     // ── L2: collect A while the delegation result is terminal ──
     abortStage = 'collect-a'
@@ -1614,6 +1755,7 @@ async function bootOnce({ index, head, grant }) {
         work: verdicts.work.failing, alpha6: verdicts.alpha6.failing,
       },
       counters,
+      confinement: confinementProbe,
       evidence: bootDir,
       home: world.home,
       host: { port: bootInfo.port, log: bootInfo.logPath, restartLog: restartInfo?.logPath ?? null },
@@ -1640,7 +1782,9 @@ async function bootOnce({ index, head, grant }) {
     }
     if (world !== null) {
       try {
-        teardown = await world.teardown()
+        // Keep the home on abort: the host log is the only record of WHY a member
+        // never answered, and the harness home is gitignored.
+        teardown = await world.teardown({ keepHome: failure !== null })
         log(`[boot${String(index)}] teardown: ${JSON.stringify(teardown).slice(0, 400)}`)
       } catch (error) {
         log(`[boot${String(index)}] teardown failed: ${String(error?.message ?? error)}`)

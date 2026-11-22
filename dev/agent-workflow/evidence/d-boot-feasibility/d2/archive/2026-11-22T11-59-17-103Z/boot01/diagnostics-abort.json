@@ -1,0 +1,87 @@
+{
+  "label": "abort",
+  "at": "2026-11-22T11:51:40.215Z",
+  "mockRequests": [
+    {
+      "seq": 1,
+      "receivedAt": "2026-11-22T11:46:38.577Z",
+      "token": null,
+      "reply": "DBOOT_D2_DISC_DONE",
+      "tools": [
+        "read",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message"
+      ]
+    },
+    {
+      "seq": 2,
+      "receivedAt": "2026-11-22T11:46:38.579Z",
+      "token": null,
+      "reply": "dboot d2 session",
+      "tools": []
+    },
+    {
+      "seq": 3,
+      "receivedAt": "2026-11-22T11:46:39.392Z",
+      "token": null,
+      "reply": "",
+      "tools": [
+        "read",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message"
+      ]
+    },
+    {
+      "seq": 4,
+      "receivedAt": "2026-11-22T11:46:39.552Z",
+      "token": null,
+      "reply": "DBOOT_D2_L1_DONE",
+      "tools": [
+        "read",
+        "team_archive_member",
+        "team_collect",
+        "team_create_member",
+        "team_delegate",
+        "team_follow_up",
+        "team_grant_permission",
+        "team_inspect_config",
+        "team_list_members",
+        "team_list_pending_control",
+        "team_list_templates",
+        "team_report_progress",
+        "team_request_control",
+        "team_resolve_control",
+        "team_revoke_permission",
+        "team_send_message"
+      ]
+    }
+  ],
+  "guardFacts": [],
+  "hostLogTail": "[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\ndsh web: http://127.0.0.1:3193/?token=<redacted>\n[dsh-agent-team] remote mount: MOUNTED channel=/team-remote\n"
+}

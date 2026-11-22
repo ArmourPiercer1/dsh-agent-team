@@ -6514,3 +6514,280 @@ test('ADM-130 — a process\'s file reach is bounded by the OS profile and the t
   // measured by the OS arms (`dev/agent-workflow/evidence/a5sf-bl16-grep/`, `a5sf-p1-07/OS-RUNNER-
   // EVIDENCE.md`) and by the live boot; this arm would be dishonest if it claimed otherwise.
 })
+
+// ============================================================================
+// ROUND 76 — THE AUTHORED DECLARATION IS WHAT CARRIES EXECUTION AUTHORITY
+//
+// Round 75 pinned the ADMISSION half (a compiled per-tool entry admits/asks/
+// denies). This round closes the gap on the AUTHORING side: a Team's v4
+// blueprint now declares `toolBindings[]` for `bash`, and that declaration
+// alone must produce the compiled authorization the centre judges. The chain
+// exercised here is the product's own, end to end and with no hand-built
+// per-tool object:
+//
+//   authored entry → projectToolIoRestriction → compileEffectiveIo
+//                  → bindingFromCompiledMember → admit
+//
+// ADM-131 covers allow / ask / deny from the SAME authored document (one
+// positive and two negative arms), and asserts that the declaration is NOT a
+// path lane: the io lanes it declares do not narrow the Member's ceiling.
+// ADM-132 pins the model-visible `bash` SURFACE the governed composition now
+// mounts: the pinned HOST persistent definition, `command` as the only
+// parameter, over `ctx.terminals` (never `ctx.shell`).
+// ============================================================================
+
+/** The exact authored entry the D3 acceptance world puts in its blueprint. */
+const authoredBashBinding = (authorization = 'allow') => ({
+  owner: 'dsh.subprocess',
+  name: 'bash',
+  authorization,
+  io: {
+    read: { mode: 'all', deny: [] },
+    write: { mode: 'all', deny: [] },
+    network: { mode: 'allow' },
+  },
+  execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+})
+
+/** The compiled member the centre receives, built through the product's assembler. */
+const compiledBashBinding = async (authorization) => {
+  const { projectToolIoRestriction, compileEffectiveIo } = await import('../member-io-policy/src/compile.ts')
+  const tool = projectToolIoRestriction(authoredBashBinding(authorization))
+  assert.equal(tool.ok, true, `the authored binding must project: ${JSON.stringify(tool)}`)
+  const ceiling = {
+    memberIdentity: 'member-1',
+    templateId: 'worker-a',
+    revision: 'rev-1',
+    instanceGeneration: 2,
+    read: lane(['/work/a']),
+    write: lane(['/work/a']),
+    network: { access: 'allow' },
+  }
+  const invocation = {
+    memberIdentity: 'member-1',
+    callId: 'call-1',
+    policyRevision: 'rev-1',
+    toolBindingIdentity: tool.value.bindingIdentity,
+  }
+  const effective = compileEffectiveIo(ceiling, tool.value, invocation)
+  assert.equal(effective.ok, true, `the effective io must compile: ${JSON.stringify(effective)}`)
+  const binding = bindingFromCompiledMember({
+    member: {
+      policy: { value: ceiling },
+      identity: { instanceId: 'member-1', instanceGeneration: 2, blueprintRevision: 'bp-rev-1' },
+      definitionSource: '@deepseek-ai/dsh-tool-bash-persistent',
+    },
+    bindings: [{
+      toolName: tool.value.toolName,
+      effective: effective.value,
+      authorization: tool.value.authorization,
+      execution: tool.value.execution,
+    }],
+    agentId: 'agent-1',
+    sessionId: 'session-1',
+    workspaceRoot: '/work/a',
+    owner: 'team-root-1',
+    instanceId: 'member-1',
+    executors: { 'confined-subprocess': 'ready' },
+  })
+  return { tool: tool.value, effective: effective.value, binding }
+}
+
+test('ADM-131 — a v4-authored toolBindings[] alone carries allow / ask / deny into admission', async () => {
+  // ── allow: the authored declaration is the whole reason the shell is admitted ──
+  const allowed = await compiledBashBinding('allow')
+  assert.equal(allowed.tool.bindingIdentity, 'dsh.subprocess/bash', 'the binding identity is the authoring owner/name')
+  assert.equal(allowed.tool.authorization, 'allow', 'the authorization came from the authored entry, not a default')
+  assert.deepEqual(allowed.tool.execution, { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' })
+  // The authored io adds NO path narrowing: the effective lanes are exactly the
+  // Member's ceiling lanes (the projection's all/empty-deny lane contributes
+  // nothing to intersect). That is the property that keeps process authority
+  // from becoming a second, weaker lane.
+  assert.deepEqual(allowed.effective.read, lane(['/work/a']), 'an all/empty-deny lane adds NO path narrowing')
+  assert.deepEqual(allowed.effective.write, lane(['/work/a']), 'execution authority is not smuggled in as a path lane')
+  assert.equal(allowed.effective.network.access, 'allow')
+  assert.equal(allowed.binding.perTool.bash.authorization, 'allow')
+  const allowVerdict = admit({ binding: allowed.binding, toolName: 'bash', arguments: { command: 'echo r76' } })
+  assert.equal(allowVerdict.kind, 'allow', 'the authored allow is what admits the process tool')
+
+  // ── ask: the same document, one word changed, parks the call for a Control decision ──
+  const asked = await compiledBashBinding('ask')
+  const askVerdict = admit({ binding: asked.binding, toolName: 'bash', arguments: { command: 'echo r76' } })
+  assert.equal(askVerdict.kind, 'ask', 'an authored ask is a Control decision, never a silent allow')
+
+  // ── deny: and a deny refuses before any body ──
+  const denied = await compiledBashBinding('deny')
+  const denyVerdict = admit({ binding: denied.binding, toolName: 'bash', arguments: { command: 'echo r76' } })
+  assert.equal(denyVerdict.kind, 'deny')
+  assert.equal(denyVerdict.code, 'ADMISSION_EXECUTION_DENIED', 'a declared deny has its own typed refusal')
+
+  // ── and the truth that makes the three arms meaningful: with NO authored
+  //    binding, the same binding refuses as UNAUTHORIZED (it never defaults to allow) ──
+  const { bindingFromCompiledMember: assemble } = await import('../src/plugin/vnext/centre-install.mjs')
+  const noAuthority = assemble({
+    member: {
+      policy: { value: { memberIdentity: 'member-1', templateId: 'worker-a', revision: 'rev-1', read: lane(['/work/a']), write: lane(['/work/a']), network: { access: 'allow' } } },
+      identity: { instanceId: 'member-1', instanceGeneration: 2, blueprintRevision: 'bp-rev-1' },
+      definitionSource: '@deepseek-ai/dsh-tool-bash',
+    },
+    bindings: [],
+    agentId: 'agent-1',
+    sessionId: 'session-1',
+    workspaceRoot: '/work/a',
+    owner: 'team-root-1',
+    executors: { 'confined-subprocess': 'ready' },
+  })
+  const unauthorized = admit({ binding: noAuthority, toolName: 'bash', arguments: { command: 'echo r76' } })
+  assert.equal(unauthorized.kind, 'deny')
+  assert.equal(unauthorized.code, 'ADMISSION_EXECUTION_UNAUTHORIZED', 'no declaration is never an implicit allow')
+})
+
+test('ADM-132 — the governed bash SURFACE is the pinned HOST persistent definition, command-only, over terminals', async () => {
+  const { readFileSync } = await import('node:fs')
+  const { fileURLToPath } = await import('node:url')
+  const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
+
+  // (1) THE DEFINITION ITSELF: mount the pinned host module and read the tool it
+  //     registers. This is the model-visible surface, measured, not quoted.
+  const { apply, inject, name } = await import('@deepseek-ai/dsh-tool-bash-persistent')
+  assert.equal(name, 'tool-bash-persistent')
+  assert.ok(inject.includes('terminals'), 'the persistent body resolves ctx.terminals (the governed PTY face)')
+  assert.equal(inject.includes('shell'), false, 'and it never resolves the base unconfined ctx.shell')
+  const registered = []
+  let disposed = false
+  const fakeCtx = {
+    tools: { register: (definition) => { registered.push(definition) } },
+    terminals: { spawn: async () => { throw new Error('not spawned in this arm') }, list: () => [], kill: async () => {} },
+    effect: (factory) => { const value = factory(); return value },
+    on: () => () => {},
+  }
+  apply(fakeCtx, { backendType: 'a5sf-governed-shell' })
+  assert.equal(registered.length, 1, 'the module registers exactly one tool definition')
+  const definition = registered[0]
+  assert.equal(definition.name, 'bash', 'the model-visible tool is still called bash')
+  const schema = definition.parameters
+  assert.equal(schema.type, 'object')
+  assert.deepEqual(Object.keys(schema.properties), ['command'], 'the surface is command ONLY — description/workdir/timeoutMs are gone')
+  assert.equal(schema.properties.command.type, 'string')
+  assert.deepEqual(schema.required, ['command'])
+  // `description` is not a parameter any more; the default text describes the
+  // PERSISTENT semantics (state survives) instead of the one-shot contract.
+  assert.match(String(definition.description), /persistent/iu)
+  void disposed
+
+  // (2) THE COMPOSITION: the shipped governed preset declares that HOST package
+  //     with the governed backend, and mounts no Team copy under another name.
+  const patch = readFileSync(`${repoRoot}cordis.patch.yml`, 'utf8')
+  const presetStart = patch.indexOf('id: "a5sf-governed-member"')
+  assert.ok(presetStart > 0, 'the shipped composition must still declare the governed preset')
+  const presetBlock = patch.slice(presetStart, patch.indexOf('\n    - id:', presetStart + 10) === -1 ? undefined : patch.indexOf('\n    - id:', presetStart + 10))
+  assert.match(presetBlock, /- id: tool-bash-persistent\r?\n\s+name: '@deepseek-ai\/dsh-tool-bash-persistent'/u, 'the preset mounts the HOST persistent package')
+  assert.match(presetBlock, /backendType: a5sf-governed-shell/u, 'and names the governed PTY backend, not the base shell backend')
+  assert.equal((presetBlock.match(/name: '@deepseek-ai\/dsh-tool-bash-persistent'/gu) ?? []).length, 1, 'exactly one declaration of the persistent tool')
+  assert.equal(/tool-bash-persistent/u.test(presetBlock.replace(/- id: tool-bash-persistent[\s\S]*?backendType: a5sf-governed-shell/u, '')), false, 'no second/renamed persistent row')
+})
+
+test('ADM-133 — the product assembly ACCEPTS a confined-subprocess declaration exactly when the realm owns the process face', async () => {
+  // Round 76 measured this the hard way: a live Member creation refused
+  // `a5sfMemberPolicies.members[0].toolRestrictions[0].execution.executionBoundary=
+  // "confined-subprocess" has no realm face in this lane` EVEN THOUGH the
+  // governed realm passes `availableFaces.process: true`. The face check was a
+  // dead branch: `confined-subprocess` always fell through to the generic
+  // `boundary !== 'trusted-host'` refusal. This arm pins both halves of the one
+  // decision — accepted WITH the face, refused with the typed premise code
+  // WITHOUT it — so neither half can regress alone.
+  const { deriveProductRealmPlan } = await import('../team-services/src/index.ts')
+  // The version comes from the grammar's OWN constant, never an inline literal: the fence gate
+  // (`scripts/verify-blueprint-version-clean.mjs`) treats an authoring literal in a test as a
+  // RETIRED-document risk, and a constant cannot drift from the version the compiler accepts.
+  const { BLUEPRINT_V4_SCHEMA_VERSION } = await import('../../domain/blueprint/src/blueprint-v4.ts')
+  const document = {
+    schemaVersion: BLUEPRINT_V4_SCHEMA_VERSION,
+    blueprintId: 'team.r76.bindings',
+    revision: '1',
+    leader: { templateId: 'leader', persona: 'L' },
+    members: [{ templateId: 'worker-a', persona: 'W' }],
+    requirements: [],
+    teamEnvelope: { allow: [], deny: [] },
+    memberEnvelopes: [{ templateId: 'worker-a', envelope: { allow: [], deny: [] } }],
+    policyStates: [{ id: 'default', description: 'D' }],
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
+    metadata: {},
+    memberIoCeilings: [{ templateId: 'worker-a', io: { read: lane(['/work/a']), write: lane(['/work/a']), network: { mode: 'allow' } } }],
+    toolBindings: [authoredBashBinding('allow')],
+  }
+  const source = `---\n${JSON.stringify(document)}\n---\n`
+  const authority = { revision: 'rev-1', admitted: true }
+
+  const withFace = deriveProductRealmPlan({ blueprintSource: source, authority, availableFaces: { process: true } })
+  const restriction = withFace.members[0].restrictions[0]
+  assert.equal(restriction.bindingIdentity, 'dsh.subprocess/bash', 'the Team-scoped binding reaches the Member declaration')
+  assert.equal(restriction.authorization, 'allow', 'and its authorization is carried verbatim')
+  assert.deepEqual(restriction.execution, { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' })
+
+  // NEGATIVE CONTROL, same document: with no process face the SAME declaration
+  // is the typed premise refusal (never a silently narrower mount).
+  for (const faces of [undefined, { process: false }]) {
+    assert.throws(
+      () => deriveProductRealmPlan({ blueprintSource: source, authority, ...(faces === undefined ? {} : { availableFaces: faces }) }),
+      (error) => error?.code === 'SUBPROCESS_UNCONFINED_REALM',
+      `without the confined subprocess face the declaration must refuse SUBPROCESS_UNCONFINED_REALM (faces=${JSON.stringify(faces)})`,
+    )
+  }
+
+  // The acceptance is SCOPED to that one boundary: a delegated-remote
+  // declaration still refuses even when the process face exists.
+  const remote = JSON.parse(JSON.stringify(document))
+  remote.toolBindings[0].execution = { implementationOrigin: 'dsh-native', executionBoundary: 'delegated-remote' }
+  assert.throws(
+    () => deriveProductRealmPlan({ blueprintSource: `---\n${JSON.stringify(remote)}\n---\n`, authority, availableFaces: { process: true } }),
+    (error) => error?.code === 'NETWORK_UNCONFINED_REALM',
+    'the process face never authorizes a boundary it does not own',
+  )
+})
+
+test('ADM-134 — a process-class binding may only declare the CEILING lane; a narrower one is refused as unenforceable', async () => {
+  // Round 76's other half. A `confined-subprocess` binding is executed by the Member's process face,
+  // whose lane IS the compiled ceiling. If the assembler accepted a narrower io lane it would be
+  // shipping a claim no code path enforces on the shell — silently wider than declared. The
+  // declaration is therefore refused, typed, while the ceiling-lane form is accepted (ADM-133).
+  const { createProductRealmProvider, deriveProductRealmPlan } = await import('../team-services/src/index.ts')
+  const { BLUEPRINT_V4_SCHEMA_VERSION } = await import('../../domain/blueprint/src/blueprint-v4.ts')
+  const document = {
+    schemaVersion: BLUEPRINT_V4_SCHEMA_VERSION,
+    blueprintId: 'team.r76.narrow',
+    revision: '1',
+    leader: { templateId: 'leader', persona: 'L' },
+    members: [{ templateId: 'worker-a', persona: 'W' }],
+    requirements: [],
+    teamEnvelope: { allow: [], deny: [] },
+    memberEnvelopes: [{ templateId: 'worker-a', envelope: { allow: [], deny: [] } }],
+    policyStates: [{ id: 'default', description: 'D' }],
+    permissionMutationEnvelope: { rules: [] },
+    teamHardEnvelope: { rules: [] },
+    metadata: {},
+    memberIoCeilings: [{ templateId: 'worker-a', io: { read: lane(['/work/a']), write: lane(['/work/a']), network: { mode: 'allow' } } }],
+    toolBindings: [{
+      owner: 'dsh.subprocess',
+      name: 'bash',
+      authorization: 'allow',
+      io: { read: lane(['/work/a/sub']), write: lane(['/work/a/sub']), network: { mode: 'allow' } },
+      execution: { implementationOrigin: 'dsh-native', executionBoundary: 'confined-subprocess' },
+    }],
+  }
+  // The refusal is a COMPILATION fact: the plan carries the declaration, the provider is what
+  // compiles it against the ceiling and refuses an unenforceable narrowing.
+  assert.throws(
+    () => {
+      const plan = deriveProductRealmPlan({
+        blueprintSource: `---\n${JSON.stringify(document)}\n---\n`,
+        authority: { revision: 'rev-1', admitted: true },
+        availableFaces: { process: true },
+      })
+      return createProductRealmProvider(plan).compiledFor({ instanceId: 'inst-r76-narrow', templateId: 'worker-a' })
+    },
+    (error) => error?.code === 'REALM_DECLARATION_INVALID' && /process-class/.test(String(error.message)),
+    'a process-class binding that narrows the ceiling must refuse rather than mount an unenforced lane',
+  )
+})

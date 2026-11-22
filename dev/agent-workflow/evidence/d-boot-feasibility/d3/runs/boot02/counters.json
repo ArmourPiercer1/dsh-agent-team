@@ -8,8 +8,8 @@
   "inflightBefore": "open",
   "inflightAfter": "UNKNOWN",
   "collectStatus": "succeeded",
-  "bash1State": "REFUSED",
-  "bash2State": "REFUSED",
-  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T09-28-08Z/instance-port3193.log",
-  "elapsedMs": 254079
+  "bash1State": "COMPLETED",
+  "bash2State": "COMPLETED",
+  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T12-21-34Z/instance-port3193.log",
+  "elapsedMs": 265972
 }

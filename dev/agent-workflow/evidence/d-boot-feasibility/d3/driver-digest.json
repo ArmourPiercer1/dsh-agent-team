@@ -1,10 +1,10 @@
 {
-  "at": "2026-11-22T09:21:54.195Z",
-  "head": "dede0b13c491365529ac89c4281286e7f42921ec",
+  "at": "2026-11-22T12:15:01.783Z",
+  "head": "2e61087d5c41a90dab8ab30d475600c8a74d7dc7",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
-  "driverSha256": "966cf6c808a55f1d66f76c28ed711cf26a89b1e0938c2dc7be62507441ae404f",
+  "driverSha256": "dd67a38b0b870032017edb716b6fdb1af9a6b8eaa74f6afe69df85484b9c0d96",
   "jsSubstitutions": [
     {
       "expression": "(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')",
@@ -17,6 +17,10 @@
     {
       "expression": "process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''",
       "value": ""
+    },
+    {
+      "expression": "process.platform === 'win32'",
+      "value": false
     },
     {
       "expression": "process.platform === 'win32'",

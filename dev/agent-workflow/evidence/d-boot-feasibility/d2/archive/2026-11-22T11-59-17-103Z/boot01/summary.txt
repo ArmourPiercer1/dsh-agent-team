@@ -1,0 +1,1 @@
+RUN-SUMMARY run=a5sf-live-member-2026-11-22T11-44-31-931Z-b1 suite=a5sf-live-member overall=FAIL cases=3 FAIL:3 worlds=u5u5a5sfdev1-20261122T11-44-31Z partial=true abortedAt=multi-member-delegate recordClass=DEV-LIVE (not candidate evidence)

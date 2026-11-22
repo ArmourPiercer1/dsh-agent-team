@@ -930,6 +930,18 @@ export async function mountA5sfRealm(input: MountA5sfRealmInput): Promise<Mounte
 
   try {
     for (const binding of input.bindings ?? []) {
+      // ROUND 76 — A PROCESS-CLASS BINDING GETS NO IO REALM.
+      //
+      // `installToolBindingRealm` isolates `fs` only; a `confined-subprocess` binding is executed by
+      // the MEMBER's process face, whose lane is the compiled ceiling (`ToolBindingRealm.faces`
+      // documents the refusal for `subprocess`/`terminals` consumers). Mounting an IO realm for it
+      // would nevertheless claim the tool's NAME in the routing authority below (`bindingToolNames`)
+      // and the ceiling router would then DROP that name — leaving no fiber to serve `bash` and a
+      // `SERVICE_MOUNT_FAILED` 'UNCOVERED name(s)' refusal (measured, round 76). The binding still
+      // reaches admission: the compiled answer (`compiled.bindings`) is the carrier, not this list.
+      // The assembler refuses a process-class binding that would narrow the ceiling, so skipping the
+      // IO realm never drops an enforceable narrowing.
+      if (binding.execution?.executionBoundary === 'confined-subprocess') continue
       const spec: ToolBindingRealmSpec = {
         identity: binding.identity,
         toolBindingIdentity: binding.toolBindingIdentity,

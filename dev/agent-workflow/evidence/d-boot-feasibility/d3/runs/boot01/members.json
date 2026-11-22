@@ -4,8 +4,8 @@
     "templateId": "worker-a",
     "label": "dboot-d3-worker-a",
     "childSessionId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
-    "lifecycle": "RUNNING",
-    "activityVersion": 2
+    "lifecycle": "SETTLED",
+    "activityVersion": 3
   },
   "b": {
     "instanceId": "inst-1v36r931jr7r",

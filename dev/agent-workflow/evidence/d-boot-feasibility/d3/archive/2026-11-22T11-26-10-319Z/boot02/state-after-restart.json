@@ -1,0 +1,29 @@
+{
+  "members": [
+    {
+      "instanceId": "inst-1v36r931jr7r",
+      "templateId": "worker-b",
+      "lifecycle": "RUNNING"
+    },
+    {
+      "instanceId": "inst-1vd6cy21kl6k",
+      "templateId": "worker-a",
+      "lifecycle": "SETTLED"
+    },
+    {
+      "instanceId": "inst-leader",
+      "templateId": "leader",
+      "lifecycle": "undefined"
+    }
+  ],
+  "controlRequests": [],
+  "teamSession": {
+    "rootSessionId": "session-dboot-d3-root",
+    "blueprintId": "team.dboot.d3.main",
+    "revision": "1",
+    "contentHash": "sha256:efa7eec13803941b5bb767e994963398da97f76492d4879b3fe2eb4ebb6e53f1",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T11-22-01Z/workspace",
+    "createdAt": "2026-11-22T11:24:11.855Z",
+    "generation": 14
+  }
+}

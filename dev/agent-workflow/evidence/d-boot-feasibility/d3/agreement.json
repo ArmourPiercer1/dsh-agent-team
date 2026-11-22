@@ -1,14 +1,14 @@
 {
   "schema": "dboot-d3/agreement/1",
-  "at": "2026-11-22T09:30:24.172Z",
+  "at": "2026-11-22T12:23:56.024Z",
   "boots": 2,
   "agreeing": true,
   "differing": [],
   "rows": [
     {
       "boot": 1,
-      "overall": "FAIL",
-      "persistent": "REFUTED",
+      "overall": "PASS",
+      "persistent": "PROVEN",
       "crash": "PROVEN",
       "work": "PROVEN",
       "alpha6": "PROVEN",
@@ -17,13 +17,13 @@
       "inflightBefore": "open",
       "inflightAfter": "UNKNOWN",
       "collectStatus": "succeeded",
-      "bash1State": "REFUSED",
-      "bash2State": "REFUSED"
+      "bash1State": "COMPLETED",
+      "bash2State": "COMPLETED"
     },
     {
       "boot": 2,
-      "overall": "FAIL",
-      "persistent": "REFUTED",
+      "overall": "PASS",
+      "persistent": "PROVEN",
       "crash": "PROVEN",
       "work": "PROVEN",
       "alpha6": "PROVEN",
@@ -32,9 +32,9 @@
       "inflightBefore": "open",
       "inflightAfter": "UNKNOWN",
       "collectStatus": "succeeded",
-      "bash1State": "REFUSED",
-      "bash2State": "REFUSED"
+      "bash1State": "COMPLETED",
+      "bash2State": "COMPLETED"
     }
   ],
-  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             FAIL                                FAIL\npersistent                          REFUTED                             REFUTED\ncrash                               PROVEN                              PROVEN\nwork                                PROVEN                              PROVEN\nalpha6                              PROVEN                              PROVEN\naAdmissions                         4                                   4\nbAdmissions                         3                                   3\ninflightBefore                      open                                open\ninflightAfter                       UNKNOWN                             UNKNOWN\ncollectStatus                       succeeded                           succeeded\nbash1State                          REFUSED                             REFUSED\nbash2State                          REFUSED                             REFUSED\n\nagreeing=true differing=[]"
+  "table": "TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)\nfact                                boot1                               boot2\noverall                             PASS                                PASS\npersistent                          PROVEN                              PROVEN\ncrash                               PROVEN                              PROVEN\nwork                                PROVEN                              PROVEN\nalpha6                              PROVEN                              PROVEN\naAdmissions                         4                                   4\nbAdmissions                         3                                   3\ninflightBefore                      open                                open\ninflightAfter                       UNKNOWN                             UNKNOWN\ncollectStatus                       succeeded                           succeeded\nbash1State                          COMPLETED                           COMPLETED\nbash2State                          COMPLETED                           COMPLETED\n\nagreeing=true differing=[]"
 }

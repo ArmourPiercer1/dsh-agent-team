@@ -35,7 +35,9 @@ import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js'
  * @param {object} input
  * @param {object} input.agentCtx - the member agent's context (the scope admission listens on).
  * @param {object} input.realm - the mounted member realm.
- * @param {object} input.compiledAnswer - `compiledAnswerOfRealm(realm)`: `{members, bindings?}`.
+ * @param {object} input.compiledAnswer - `compiledAnswerOfRealm(realm)`: `{members, bindings?}` plus
+ *   the realm's OWN mounted faces (`subprocess?`, `terminal?`, `web?`) — the centre derives its
+ *   executor-readiness answers from them (`executorReadinessOf`), never from the declaration.
  * @param {object} input.config - the row config (only `centreStatePath` / `defaultWorkspace` are read).
  * @param {string} input.sessionId - the member's session id.
  * @param {string} input.instanceId - the member instance id (also the fact ledger's file stem).

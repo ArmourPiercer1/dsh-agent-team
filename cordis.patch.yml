@@ -209,10 +209,31 @@
     #     PD-27 note: PD-18 removed `tool-web` in the SAME change for the same
     #     reason (base `ctx.web`, zero facts); PD-27 below restores that half
     #     only, served by the Member's confined `web` face.
-    #   - `bash` KEEPS its name but is served by the confined terminal face once
-    #     the realm mounts, so it loses `run_in_background`, per-call
-    #     `timeoutMs`, `sandbox_permissions`/`justification` and the structured
-    #     result object (the face's answer is bounded text).
+    #   - `bash` KEEPS its name. Round 76 mounts the HOST's own PERSISTENT
+    #     definition (`@deepseek-ai/dsh-tool-bash-persistent`) beside the
+    #     one-shot row: the persistent row is the module the governed realm
+    #     lane mounts into the Member's isolated scope, where its
+    #     `backendType: a5sf-governed-shell` names the Member-bound PTY face
+    #     (the product's governed shell backend, registered by
+    #     `team-services/src/terminal-pty.ts`). The one-shot row is retained as
+    #     the SURFACE BASELINE that the realm lane replaces (its
+    #     definition-identity check refuses a mount that does not take the name
+    #     over), and it is dormant on the preset's own scope on this deployment
+    #     (no base `terminals` service); a governed Member never executes it.
+    #     DEPLOYMENT REQUIREMENT (measured, round 76): because the persistent
+    #     row INJECTS `terminals`, the preset registry refuses to bind this
+    #     preset unless the DEPLOYMENT provides a `terminals` service on an
+    #     ancestor scope (`agent-preset/invalid` … 'waiting for terminals' — a
+    #     pending row is NOT dormant). A deployment that mounts this preset must
+    #     therefore compose the HOST's `@deepseek-ai/dsh-terminal` service; a
+    #     deployment that composes it with NO PTY backend keeps the row
+    #     fail-closed on the preset scope (`spawn` → `NO_BACKEND`, zero
+    #     processes) while the Member's realm mount gets the governed face.
+    #     The persistent definition's model-visible surface is `command` only,
+    #     so `run_in_background`, per-call `timeoutMs`, `description`,
+    #     `workdir`, `sandbox_permissions`/`justification` and the structured
+    #     result object are GONE — cwd/env/background state now survives across
+    #     calls.
     #   - the whole `delegation` GROUP (PD-21, 2026-11-14) — `subagent`,
     #     `subagent_fork`, `tool-subagent-control` (`send_message`/
     #     `interrupt_agent`) and `list_agents`. MEASURED on the real Host: a
@@ -295,10 +316,22 @@
     #     children, and `interrupt_agent` answered a success-shaped `interrupt
     #     requested for agent …` for a target it never touched. They are absent
     #     on this head because the PD-21 group removal already took them.
-    #   - NO `persistent-shell`/`dsh-terminal` row appears anywhere on this
-    #     preset's scope: a persistent PTY would turn the realm install into
-    #     `TERMINALS_DOUBLE_TERMINAL_REFUSED` (no Member at all), and the
-    #     confined profile cannot ride a PTY.
+    #   - NO base `persistent-shell`/`dsh-terminal` SERVICE row appears on this
+    #     preset's scope. The persistent TOOL row above is a DEFINITION
+    #     registration; the shell a governed Member actually runs is the realm
+    #     lane's mount of the same host module INSIDE the Member's isolated
+    #     scope, over the Member-bound governed PTY face. When the deployment
+    #     composes the required ancestor `@deepseek-ai/dsh-terminal` (see
+    #     above), the row activates on the preset scope over THAT service; the
+    #     test worlds compose it with no PTY backend, so any use from the preset
+    #     scope fails closed (`NO_BACKEND`, zero processes). The realm lane is
+    #     not optional glue: it refuses a mount that leaves the Member resolving
+    #     the inherited definition (`DEFINITION_UNCHANGED`, `vnext-realm-lane`),
+    #     so a governed Member either gets the confined definition or its setup
+    #     fails — it never silently inherits the preset-scope one. Mounting the
+    #     base `persistent-shell`/`dsh-terminal` PAIR here instead would put an
+    #     unconfined PTY on the preset's scope and turn the realm install into
+    #     `TERMINALS_DOUBLE_TERMINAL_REFUSED`.
     - id: "preset-a5sf-governed-member"
       name: "@deepseek-ai/dsh-agent-preset"
       config:
@@ -308,7 +341,7 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: 'Your working directory is {{cwd}}. Each bash call runs in a fresh confined shell; pass `workdir` instead of using `cd`.'
+              suffix: 'Your working directory is {{cwd}}. `bash` is a PERSISTENT shell: the current directory, exported environment variables and background processes survive across calls, so `cd`/`export` are durable. You cannot pass `workdir` or `timeoutMs`.'
               prefix: You are a coding agent powered by the {{model}} model.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'
@@ -317,6 +350,21 @@
           - id: tool-bash
             name: '@deepseek-ai/dsh-tool-bash'
             disabled: !!js process.platform === 'win32'
+          # ROUND 76 — the HOST's own persistent definition (no Team copy, no
+          # shadow module). The preset's own scope resolves whatever `terminals`
+          # the DEPLOYMENT provides (this deployment mounts the host service with
+          # no PTY backend, so the preset-scope definition is fail-closed); the
+          # row exists so the governed realm lane can derive the module from the
+          # preset's own rows and mount it INSIDE each Member's isolated scope,
+          # where `ctx.terminals` IS the Member-bound governed PTY face.
+          # `a5sf-governed-shell` is that face's registered backend
+          # (`terminal-pty.ts`; the install default). The one-shot row above
+          # remains the surface baseline the lane replaces.
+          - id: tool-bash-persistent
+            name: '@deepseek-ai/dsh-tool-bash-persistent'
+            disabled: !!js process.platform === 'win32'
+            config:
+              backendType: a5sf-governed-shell
           - id: tool-fs
             name: '@deepseek-ai/dsh-tool-fs'
           - id: tool-fs-search

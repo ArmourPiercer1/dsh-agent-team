@@ -2230,3 +2230,79 @@ deployment and is left to its own composition round. `crash` / `work` / `alpha6`
 proof; kernel enforcement from an in-process arm; any remote executor (`delegated-remote` is refused
 rather than run locally); a `authorization: deny` honoured for non-process tools in the realm
 projection (unchanged limitation).
+
+## Round 76 (governed persistent shell) — the last REFUTED judge is PROVEN
+
+**Scope.** Round 75's live half. Two independent causes were closed by DECLARED composition, never by
+touching a judge:
+
+1. **The governed preset mounted only the one-shot `tool-bash`.** Round 76 adds the HOST's own
+   `@deepseek-ai/dsh-tool-bash-persistent` as a TOP-LEVEL preset row (`cordis.patch.yml:355-360`,
+   `config.backendType: a5sf-governed-shell` — the governed PTY face's registered backend), BESIDE the
+   one-shot row, which stays as the surface baseline the lane replaces (shape A requires a
+   definition-identity change and an unchanged surface NAME set; the same pattern as `tool-fs`). The row
+   is `disabled` on win32. No shadow, no Team copy: the module is the pinned host's.
+2. **The D3 world declared no `toolBindings[]` for `bash`.** The main blueprint now declares
+   (`run-boot-d3.mjs:309-321`): `authorization: allow`, `execution: { implementationOrigin:
+   'dsh-native', executionBoundary: 'confined-subprocess' }`, and `io` = the three lanes with `all` +
+   empty deny (process authority is not a lane; the declaration must not become one). The v4 grammar is
+   unchanged — no `io.process`, no new field.
+
+**Deployment requirement, measured (not a fixture).** The persistent row injects `terminals`; a preset
+with a pending row REFUSES to bind (`RemoteError: agent-preset/invalid: tool-bash-persistent
+(@deepseek-ai/dsh-tool-bash-persistent): waiting for terminals`), and member creation fails with
+`TEAM_RUNTIME_DURABLE_WRITE_FAILED … waiting for terminals`. Measured in D3 first, then reproduced in
+the D1 and D2 worlds, which compose the same preset. A governed deployment must compose
+`@deepseek-ai/dsh-terminal` on an ancestor scope; the test worlds add the host's module with NO backend
+(inert, fail-closed: `spawn` → `NO_BACKEND`, `listBackends() === []`, zero processes). The Member's live
+`bash` is the realm MOUNT of the same host module on the governed face, which carries the backend.
+
+**Three runtime defects found by making the path real (fixed, CORE PATCH BUDGET = 0):**
+
+| where | defect | fix |
+| --- | --- | --- |
+| `team-services/src/product-assembly.ts` (`projectedRestrictionOf`) | a `confined-subprocess` restriction was refused as "no realm face in this lane" although the answer HAD a confined process face (`availableFaces.process === true`) — measured as `REALM_DECLARATION_INVALID` at the durable write | `confinedProcessOwned` accepts exactly that form; a NARROWER process-class lane is still refused (`REALM_DECLARATION_INVALID`, `/process-class/`) because nothing enforces the narrowing |
+| `src/plugin/live/a5sf-realm-row.mjs` (`COMPILED_REALM_ANSWERS`) | the compiled answer the centre builds admission from kept only `{members, bindings}` and dropped the mounted faces ⇒ `executorReadinessOf` said `unavailable` for a realm that HAD mounted the confined subprocess face; measured live as `ADMISSION_EXECUTOR_UNAVAILABLE` on the realm-mounted `bash` | the stored answer carries `subprocess`/`terminal`/`web` verbatim |
+| `team-services/src/mount.ts` (binding loop) | a process-class `toolBindings[]` entry claimed `bash` for an `fs`-only IO binding realm ⇒ shape A's untargeted mount refused (`SERVICE_MOUNT_FAILED … registered UNCOVERED name(s) ["bash"]`) | process-class bindings get no IO realm; `compiled.bindings` remains the admission carrier |
+
+**Arms (node leg 194 → 198; vitest population unchanged 238):** `ADM-131` (authored v4 binding →
+`projectToolIoRestriction` → `compileEffectiveIo` → `bindingFromCompiledMember` → `admit`, allow/ask/deny
++ no-authority), `ADM-132` (the persistent definition: injects `terminals` not `shell`, `definition.name
+=== 'bash'`, schema `{command}` only, description `/persistent/iu`, and exactly one preset row with
+`backendType: a5sf-governed-shell`), `ADM-133` (`compiledFor` accepts the process-class binding when
+`availableFaces.process === true`; refuses `SUBPROCESS_UNCONFINED_REALM` when the face is absent/false;
+`delegated-remote` still `NETWORK_UNCONFINED_REALM`), `ADM-134` (a narrower process-class lane is
+`REALM_DECLARATION_INVALID` matching `/process-class/`), plus the B-ladder arm asserting the stored
+answer keeps its faces (`answer.subprocess === subprocessFace`,
+`executorReadinessOf(answer)['confined-subprocess'] === 'ready'`).
+
+**Live (D3, `--boots 2`, two agreeing boots, 2026-11-22T12:17-12:23Z):** `RESULT evidence-complete=true
+allProven=true (2/2 boots; agreeing pair=true)`, exit 0. All four judges PROVEN in BOTH boots:
+`persistent` (first call admitted `process.exec allow` + 32-byte in-lane state file + second turn reuses
+the SAME shell and reads `DBOOT_D3_PERSISTENT_SHELL_STATE` back; both settlements
+`ADMITTED→RUNNING→COMPLETED`), `crash`, `work`, `alpha6`. `confinement-probe.json` both boots:
+`refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true`; the SHELL itself reported
+`Read-only file system`, and the driver (outside the sandbox) found no out-of-lane file. The OS parts:
+the PTY's `spawn` is wrapped by the HOST `sandbox` provider (`terminal-bash` → `sandbox.confine`), whose
+Linux chain prefers **bubblewrap** (0.11.1 verified usable here; `--ro-bind / / --bind <in-lane>` refuses
+the out-of-lane write) with the **Landlock** launcher as the fallback rung.
+
+**Surface change (deliberate, disclosed).** The model-visible `bash` is now the persistent definition:
+`{command}` ONLY — `description`/`workdir`/`timeoutMs` are gone (`ADM-132`). Assertions moved: the D3
+scripted model sends `{command}` only; the preset persona says `bash` is persistent (no `workdir`, no
+`timeoutMs`); `run-boot.mjs`/`run-boot-d2.mjs` compose the inert `terminals` row; the D3 `crash` judge's
+`state-file-never-written` clause (an absence-as-evidence control that passed ONLY because persistence was
+refuted) became `state-file-survives-restart` (the same file exists and still holds the state bytes after
+the SIGKILL + cold restart — stronger, and the judge's proposition text is unchanged).
+
+**Probes of the other worlds (measured, not hidden):** before their worlds composed the service, D1
+(`run-boot.mjs --boots 1`) FAILED with `TEAM_RUNTIME_DURABLE_WRITE_FAILED … tool-bash-persistent …
+waiting for terminals` and D2 (`run-boot-d2.mjs --boots 1`) FAILED at `multi-member-delegate` (a member
+first turn never closed — the same refused activation). Both PASS after composing the inert
+`@deepseek-ai/dsh-terminal` row.
+
+**Not proven / not claimed:** DEV-LIVE is not a gate (no row becomes PRODUCT-PROVEN); no real-model
+interleaving; the `ask`/`deny` arms are in-process only (`ADM-126/127/131`); no Windows deployment (the
+row is disabled on win32); durable shell state is shell-local across two turns, not a tmux/Processo env
+proof; the deployment requirement above is real (a governed deployment without `@deepseek-ai/dsh-terminal`
+cannot bind the preset).

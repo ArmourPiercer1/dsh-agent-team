@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+UTE2-WRITER-LOCK reclaimed previousPid=112 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T11:19:52.138Z
+dsh web: http://127.0.0.1:3193/?token=cduQEqw-BvBWmizPHU8fu01BvJKn5NNVnZVAnS6J0Zc
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote (late, after 119ms — the connection service appeared after the mount step)
+UTE2-WRITER-LOCK reclaimed previousPid=112 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T11:19:52.287Z
+UTE2-WRITER-LOCK reclaimed previousPid=112 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T11:19:52.378Z

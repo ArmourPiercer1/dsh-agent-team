@@ -442,6 +442,18 @@ function composedRows({ home, workspaceDir, anchorYaml, layer }) {
       config,
     },
     { id: 'preset-a5sf-governed-member', name: '@deepseek-ai/dsh-agent-preset', config: presetConfig },
+    // ROUND 76 — DEPLOYMENT-HALF OF THE PERSISTENT-SHELL COMPOSITION.
+    //
+    // The governed preset now carries the HOST's `dsh-tool-bash-persistent` row,
+    // which INJECTS `terminals`. A preset binds only when every enabled row is
+    // ACTIVE (a pending row refuses the whole preset: `agent-preset/invalid` …
+    // 'waiting for terminals', measured in this world on 2026-11-22), so the
+    // DEPLOYMENT has to provide the service on an ancestor scope. This row is
+    // the HOST's own PTY service with NO backend registered: it is INERT and
+    // FAIL-CLOSED (`spawn('a5sf-governed-shell')` -> `NO_BACKEND`, zero
+    // processes), and the Member's live `bash` is the realm mount of the same
+    // host module on the governed face.
+    { id: 'persistent-shell-terminals', name: '@deepseek-ai/dsh-terminal' },
     { id: 'p6t6-team-tools', name: pathToFileURL(join(REPO_ROOT, 'packages', 'tools', 'harness', 'plugin.mjs')).href },
   ]
 }

@@ -1,0 +1,43 @@
+[2026-11-22T11:59:17.104Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/archive/2026-11-22T11-59-17-103Z
+[2026-11-22T11:59:17.108Z] START head=2e61087d5c41a90dab8ab30d475600c8a74d7dc7 hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=1
+[2026-11-22T11:59:17.535Z] host porcelain before: []
+[2026-11-22T11:59:17.612Z] [boot1] candidate: {"pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-22T11:59:17.613Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=2e61087d5c41a90dab8ab30d475600c8a74d7dc7
+[2026-11-22T11:59:17.622Z] [boot1] world=u5u5a5sfdev1-20261122T11-59-17Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T11-59-17Z
+[2026-11-22T11:59:17.662Z] [boot1] rows: dsh-agent-team,preset-a5sf-governed-member,persistent-shell-terminals,p6t6-team-tools
+[2026-11-22T12:00:16.528Z] [boot1] mock on 13050
+[2026-11-22T12:01:22.987Z] [boot1] BOOTED port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d2/driver/logs/u5u5a5sfdev1-20261122T11-59-17Z/instance-port3193.log
+[2026-11-22T12:01:23.594Z] [boot1] health ok
+[2026-11-22T12:01:23.865Z] [boot1] leader surface (43): team=team_archive_member,team_collect,team_create_member,team_delegate,team_follow_up,team_grant_permission,team_inspect_config,team_list_members,team_list_pending_control,team_list_templates,team_report_progress,team_request_control,team_resolve_control,team_revoke_permission,team_send_message
+[2026-11-22T12:01:25.624Z] [boot1] member first turns closed: A1=true B1=true
+[2026-11-22T12:01:25.638Z] [boot1] instances A=inst-1235q1w1rd1u B=inst-12x4j4t1rn1g lives=["worker-a:inst-1235q1w1rd1u:RUNNING","worker-b:inst-12x4j4t1rn1g:SETTLED","leader:inst-leader:undefined"]
+[2026-11-22T12:01:26.424Z] [boot1] pending ask={"requestId":"ctrl-1uotk6813a7all00kru1a0cm","target":"inst-1235q1w1rd1u","toolName":"read","status":"pending"}
+[2026-11-22T12:01:26.428Z] [boot1] session/cancel(member A)=200
+[2026-11-22T12:01:29.985Z] [boot1] case d2:multi-member-concurrency: PASS
+[2026-11-22T12:01:29.986Z] [boot1] case d2:revocation: PASS
+[2026-11-22T12:01:29.986Z] [boot1] case d2:stop: PASS
+[2026-11-22T12:01:29.986Z] [boot1] RUN-SUMMARY run=a5sf-live-member-2026-11-22T11-59-17-573Z-b1 suite=a5sf-live-member overall=PASS cases=3 PASS:3 worlds=u5u5a5sfdev1-20261122T11-59-17Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-22T12:01:30.157Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":100,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T11-59-17Z","releasedPorts":[3193,13050,3193],"killedPids":[100],"notes":[]}
+[2026-11-22T12:01:30.157Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-22T12:01:30.187Z] TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                boot1
+overall                             PASS
+multiMemberVerdict                  PROVEN
+revocationVerdict                   PROVEN
+stopVerdict                         PROVEN
+aAdmissions                         9
+bAdmissions                         9
+aGuardFacts                         14
+bGuardFacts                         14
+windowsOverlap                      true
+crossRefused                        true
+stopSettlementState                 REFUSED
+revocationDenyRefused               true
+revocationRestored                  true
+revocationWideningNotMinted         true
+bAfterStopCompleted                 true
+
+agreeing=false differing=[]
+[2026-11-22T12:01:30.214Z] host porcelain after: []
+[2026-11-22T12:01:30.214Z] RESULT PASS (1/1 boots; agreeing pair=false)
+EXIT=0
