@@ -196,3 +196,32 @@ host entry (unreachable before root construction; in-process only). A search-cap
 (`grep`/`glob` refused by the overlay). A real-model interleaving (the model is the product's scripted
 mock provider). The 256 MiB `edit` window is a timing aid, not a claim about long-running tools: the
 settlement is open at the kill in both boots, but the driver kills as soon as it observes the open state.
+
+---
+
+## Round 64 addendum — shape B: the `grep` finding above is FIXED, and the search face is now LANE-governed
+
+The EXTRA finding above was measured at round 63. Round 64 implements **shape B** of
+`CONTRACT-CHANGE-REQUEST-search-face.md`: the durable overlay classifies the tool by its CLOSED vocabulary
+BEFORE canonicalization, so a face it cannot express is `overlayOutcome: 'no-opinion'` — never a deny and
+never a fault — and the compiled LANE alone judges the call. A canonicalization fault on a COVERED tool is
+still `ADMISSION_OVERLAY_FAULT`.
+
+The re-measured record (`runs/boot01` + `runs/boot02`, two agreeing boots, driver digest bound to the
+implementation commit) shows B's in-lane probe now:
+
+```
+{ "callId": "call-d3-b-grep-probe", "toolName": "grep", "axis": "fs.read",
+  "locator": "…/workspace/team-b/corpus", "decision": "allow",
+  "overlayOutcome": "no-opinion" }
+```
+
+and the tool result is a real match (`Found 1 match … team-b/corpus/huge-7.txt`), with an execution fact
+`outcome=completed`; the fact is byte-identical before and after the SIGKILL cold restart. The crash judge
+still uses the `edit` as the in-flight call (the grep is the search probe before it); the other judges and
+their assertions are unchanged (`persistent-subprocess` REFUTED, `crash-cold-recovery` / `work-delivery` /
+`alpha6` PROVEN).
+
+**Residual:** the search face is governed by the LANE only — a durable overlay rule cannot restrict
+`grep`/`glob` because they are outside the overlay's vocabulary. Shape A (a search face in the closed
+vocabulary with a subtree resource) remains the durable answer and is still open.

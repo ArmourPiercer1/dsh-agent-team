@@ -45,3 +45,55 @@ vocabulary is smaller than the tool surface").
 - Do not widen the overlay into a grant path to work around this.
 - Do not silence `ADMISSION_OVERLAY_FAULT` generally: for a face the vocabulary DOES cover, a canonicalization
   fault must still deny.
+
+---
+
+## Shape B implemented (round 64, 2026-11-22) — no contract change
+
+**Decision: shape B, as recommended. The vocabulary is unchanged.** The rule is now expressed where the
+overlay's answer is produced, not at the caller:
+
+- `packages/runtime/src/plugin/vnext/overlay-decision.mjs` — `prepare` classifies the tool by vocabulary
+  membership (`isPermissionToolName`, the same closed set `canonicalizeOperation` throws from) BEFORE any
+  canonicalization. A tool outside it is stored as `noOpinion` and never canonicalized; a tool inside it is
+  canonicalized exactly as before (a failure there is still stored as a FAULT). `decide` returns
+  `'no-opinion'` for that entry — it neither denies nor throws.
+- `packages/runtime/src/plugin/vnext/admission-port.mjs` — the synchronous port treats `'no-opinion'` as an
+  abstention (the lane verdict stands) and records the overlay's own answer as the durable fact's
+  `overlayOutcome: 'deny' | 'no-opinion' | 'fault'`. A thrown canonicalization fault on a covered tool still
+  becomes `ADMISSION_OVERLAY_FAULT` and `overlayOutcome: 'fault'`; a lane `deny` never consults the overlay,
+  so its fact carries no `overlayOutcome` at all.
+- `packages/runtime/src/plugin/vnext/admission.ts` — `InvocationAuthorityFacts.overlayOutcome` is declared and
+  projected by `invocationFactsOf`, so the distinction is durable rather than inferable from prose.
+
+What the durable fact now answers, without parsing a refusal string: **why** the overlay abstained. A covered
+tool with no matching rule and an out-of-vocabulary tool both read `overlayOutcome: 'no-opinion'` (the overlay
+imposes nothing); a canonicalization fault reads `'fault'` and is a refusal; a stored restriction reads
+`'deny'`. The search face is admitted on the lane's verdict alone.
+
+**Arms** (`packages/runtime/test/vnext-admission.test.mjs`, `ADM-103`…`ADM-106`, node:test, real
+`installMemberCentre` + real `createOverlayDecisionProvider` + real canonicalizer; only the durable overlay
+PORT is a declared-input double): (a) a covered tool with a matching stored deny still denies
+(`ADMISSION_OVERLAY_DENY`, `overlayOutcome=deny`); (b) a covered tool whose fs seam cannot canonicalize still
+denies with `ADMISSION_OVERLAY_FAULT` (`overlayOutcome=fault`, reason names `resolver-threw`); (c) an in-lane
+`grep` is admitted, the fact reads `overlayOutcome=no-opinion`, and the fs seam is never consulted (the tool
+never enters canonicalization); (d) an out-of-lane `grep` is `LANE_DENY` with no `overlayOutcome` (the overlay
+was never asked) and never an overlay fault.
+
+**Live re-measure** (`run-boot-d3.mjs --boots 2`): the result is recorded in `D-BOOT-FEASIBILITY.md` §16 and
+`CAPABILITY-MATRIX-C.md` ("Round 64"). The crash judge's in-flight call stays the `edit`; the `grep` is now the
+admitted search probe before it.
+
+## Residual (what shape B does NOT buy)
+
+- **The search face is governed by the LANE only.** A durable overlay rule cannot restrict `grep`/`glob` (or
+  `web_fetch`, `run_code`, …): those faces are outside the overlay's vocabulary, so an operator cannot deny
+  them through `grantInstance`-style durable rules. The lane ceiling is the entire governance for them. That
+  is the explicit weakening shape B accepts.
+- **The CENTRE judges the search ROOT, not the traversal.** `grep`/`glob` are judged on the `path`
+  argument (defaulting to the workspace root), so a lane decision is about the root the call names. Whether
+  every file the scan opens is independently confined is the PROVIDER path's question, not this CCR's, and
+  is not measured here.
+- **Shape A is still the durable answer.** Adding a search face to the closed vocabulary (subtree resource +
+  canonical-operation + tests) is the only shape that lets the durable overlay deny a search precisely. It
+  remains open and belongs with the process-lane ruling.

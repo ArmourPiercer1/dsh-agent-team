@@ -1183,3 +1183,57 @@ EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 pass
 The vitest population is unchanged at **238**; the node leg is **164 pass + 2 disclosed skips** (the three
 new arms). `test-catalog` still reports 889 tests: the three arms live inside the existing
 `vnext-admission.test.mjs` file, whose collected count is per file. **No row is PRODUCT-PROVEN.**
+
+## Round 64 (D stage) — shape B of the search-face CCR: the overlay abstains, the lane admits an in-lane `grep`
+
+The round-63 D3 run measured an in-lane `grep` refused by the durable overlay with
+`laneDecision=allow`, `refusalCode=ADMISSION_OVERLAY_FAULT`, reason
+`canonicalization failed for tool "grep": tool-unsupported`. Shape B of
+`CONTRACT-CHANGE-REQUEST-search-face.md` is implemented with **no contract change**:
+
+- `packages/runtime/src/plugin/vnext/overlay-decision.mjs` — the supplier classifies the tool by CLOSED
+  VOCABULARY membership (`isPermissionToolName`) before canonicalization. A tool it cannot express is stored
+  as `noOpinion` and never canonicalized; `decide()` returns `'no-opinion'`, so the overlay neither denies
+  nor throws and the compiled lane alone judges the call. A tool INSIDE the vocabulary is canonicalized and
+  faults exactly as before (a fault is still stored and still refused).
+- `packages/runtime/src/plugin/vnext/admission-port.mjs` — `'no-opinion'` is an abstention, not a fault. The
+  durable fact now carries the overlay's own answer as `overlayOutcome: 'deny' | 'no-opinion' | 'fault'`
+  (`invocationFactsOf` in `admission.ts` declares it). A lane DENY never consults the overlay, so its fact
+  carries no `overlayOutcome` — "the lane refused first" is distinguishable from "the overlay abstained".
+- `packages/runtime/test/vnext-admission.test.mjs` — `ADM-103`…`ADM-106`, using the REAL
+  `installMemberCentre`, the REAL `createOverlayDecisionProvider` and the REAL canonicalizer (the only double
+  is the durable overlay PORT, the supplier's declared input boundary):
+  (a) covered tool + matching stored deny still refuses (`ADMISSION_OVERLAY_DENY`, `overlayOutcome=deny`);
+  (b) covered tool whose fs seam cannot canonicalize still refuses with `ADMISSION_OVERLAY_FAULT`
+  (`overlayOutcome=fault`, reason names `resolver-threw`) — faults are NOT silenced generally;
+  (c) in-lane `grep` is ADMITTED, `overlayOutcome=no-opinion`, and the fs seam is never consulted;
+  (d) out-of-lane `grep` is `LANE_DENY` with no `overlayOutcome`, never an overlay fault.
+- `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs` — probe comments/record fields now name
+  the admitted search probe (`bGrepFacts`/`bGrepResult`); the crash judge's in-flight call remains the
+  `edit`. No other judge's assertions changed.
+
+Live re-measure (`--boots 2`, after the implementation commit `6252e829e` and the driver instrument fix
+`af51d7a5a`, so `driver-digest.json` binds the committed driver): two agreeing boots. B's in-lane `grep` is
+admitted and completes —
+`decision=allow`, `overlayOutcome=no-opinion`, execution fact `outcome=completed`, tool result
+`Found 1 match … team-b/corpus/huge-7.txt`; the fact is byte-identical before/after the SIGKILL cold
+restart. The four judges are unchanged: `persistent-subprocess` REFUTED, `crash-cold-recovery` / `work-
+delivery` / `alpha6` PROVEN. Full detail: `D-BOOT-FEASIBILITY.md` §16.
+
+### Gates (round 64, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975  (168 pass + 2 disclosed skips; +4 ADM arms, ADM-103…106)
+DSH-TEST-CATALOG tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67 refused=0 findings=0 (uncollected=41 ≤ 41, excluded=14 with reason)
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+The vitest population is unchanged at **238**; the node leg is **168 pass + 2 disclosed skips** (the four
+new arms). `test-catalog` still reports 889 tests: the arms live inside the existing
+`vnext-admission.test.mjs` file, whose collected count is per file. **No row is PRODUCT-PROVEN; the search
+face is lane-governed only.**

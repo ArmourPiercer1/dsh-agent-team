@@ -9,4 +9,4 @@
     at composeError (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:199:18)
     at Fiber._execute (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1137:10)
     at Fiber._reload (file:///home/armourpiercer/projects/dsh-agent-team/tests/deepseek-harness-test-use/vendor/cordis/lib/index.js:1356:16)
-dsh web: http://127.0.0.1:3187/?token=d4JTFadHZJCeVM0k0Ud1YilYoZpIxtDZtp0E538owcw
+dsh web: http://127.0.0.1:3193/?token=XdVQlqAVyk0HcLqUxmVPwBbsv0yCDHis23lOa9WIskc

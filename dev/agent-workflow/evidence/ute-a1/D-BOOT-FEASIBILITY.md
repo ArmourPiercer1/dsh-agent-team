@@ -678,3 +678,99 @@ at a host entry (unreachable before root construction; in-process only). A searc
 (`grep`/`glob` refused by the overlay). A real-model interleaving (the model is the product's scripted mock
 provider). The 256 MiB `edit` is a timing aid, not a claim about long-running tools: the settlement is
 open at the kill in both boots, but the driver kills as soon as it observes the open state.
+
+## 16. Round 64 update (2026-11-22) — shape B of the search-face CCR: the overlay ABSTAINS on an in-lane `grep`, the LANE admits it
+
+HEAD at run start `af51d7a5a2b97a4961de821c5d75aa6db11eb009` (the implementation commit
+`6252e829e` plus the driver instrument fix below; `driver-digest.json` binds `af51d7a5a` and the committed
+driver byte-for-byte); host pin
+`639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty before and after); branch `vnext/a1-cut`;
+record class `DEV-LIVE`. Evidence: `dev/agent-workflow/evidence/d-boot-feasibility/d3/` (`runs/boot01` +
+`runs/boot02`, `agreement.*`; the round-63 runs are in `archive/`).
+
+### Why the overlay changed (the CCR)
+
+Round 63 measured an in-lane `grep` refused although the compiled lane allowed it
+(`laneDecision=allow`, `refusalCode=ADMISSION_OVERLAY_FAULT`, `canonicalization failed for tool "grep":
+tool-unsupported`). The durable overlay's vocabulary is closed (`read/read_image/write/edit` + `bash/pwsh`),
+so it could not express the search face and mapped its own inability to a DENY. Shape B of
+`CONTRACT-CHANGE-REQUEST-search-face.md` (no contract change) rules that the durable overlay governs ONLY the
+faces its vocabulary covers:
+
+- `packages/runtime/src/plugin/vnext/overlay-decision.mjs:226-228` — a tool outside the closed vocabulary is
+  stored as `noOpinion` BEFORE any canonicalization (never resolved, never faulted); `:275` returns
+  `'no-opinion'` from `decide()`.
+- `packages/runtime/src/plugin/vnext/admission-port.mjs:503-543` — `'no-opinion'` is an abstention (the lane
+  verdict stands), a throw on a COVERED tool is still `ADMISSION_OVERLAY_FAULT`, and the durable fact records
+  `overlayOutcome: 'deny' | 'no-opinion' | 'fault'` (`:406`, `:419`; `admission.ts:253` declares it). A lane
+  DENY never consults the overlay, so its fact carries no `overlayOutcome`.
+- In-process arms `ADM-103`…`ADM-106` (real centre + real supplier + real canonicalizer; only the overlay
+  PORT is a declared-input double) pin the four directions: covered deny, covered fault, out-of-vocabulary
+  in lane, out-of-vocabulary out of lane.
+
+The rule is deliberately narrow: `ADMISSION_OVERLAY_FAULT` is NOT silenced generally, and the overlay is not
+turned into a grant path.
+
+### The live probe, two boots
+
+`node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 2` — two boots, identical
+(`agreeing=true`, `differing=[]`). The B Member's in-lane `grep` (the round-63 extra finding) is now admitted
+and RUNS, in both boots, before and after the SIGKILL cold restart:
+
+```
+{ "callId": "call-d3-b-grep-probe", "toolName": "grep", "axis": "fs.read",
+  "locator": "…/workspace/team-b/corpus", "decision": "allow",
+  "overlayOutcome": "no-opinion", "kind": "invocation-authority" }
+```
+
+and the body's real answer (the corpus needle is in the LAST file written) is
+`Found 1 match\n\nteam-b/corpus/huge-7.txt\nLine 65537: DBOOT_D3_NEVER_MATCH_7f3c1a9e2b5d8046`, with an
+execution fact `outcome=completed`, `isError=false`. The same fact is read back BYTE-IDENTICAL after the cold
+restart (`bGrepFactsBefore` / `bGrepFactsAfter` in `settlement.json`). The probe is not the in-flight call:
+the crash judge still SIGKILLs the host while the following `edit` of the 256 MiB in-lane file is
+`ADMITTED`/`RUNNING` (its body reads/writes every byte), so the crash proposition is unchanged.
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| overall | FAIL (persistent subprocess refutes) | FAIL |
+| `d3:persistent-subprocess` | REFUTED | REFUTED |
+| `d3:crash-cold-recovery` | **PROVEN** | **PROVEN** |
+| `d3:work-delivery` | **PROVEN** | **PROVEN** |
+| `d3:alpha6` | **PROVEN** | **PROVEN** |
+| B `grep` decision / `overlayOutcome` | allow / `no-opinion` | allow / `no-opinion` |
+| B `grep` execution fact / result | completed / 1 real match | completed / 1 real match |
+| in-flight at SIGKILL / after recovery | open / UNKNOWN | open / UNKNOWN |
+| aAdmissions / bAdmissions | 4 / 3 | 4 / 3 |
+
+`overall=FAIL` is unchanged and honest: the persistent-subprocess proposition is still refuted (no process
+lane exists), and a refuted judge maps to a FAIL case. The other three judges keep their round-63 clauses; no
+judge was edited for this round (the driver change is limited to the probe comments/record field names for the
+grep observation, plus the instrument fix described next).
+
+### An instrument race was found and fixed, not retried away
+
+A run between the implementation commit and this one measured `d3:work-delivery` REFUTED on ONE boot with
+`member-surface-measured: member surface tools=[]`, while the other boot recorded the full 34-tool surface
+(the earlier pre-commit run had both boots intact). The recorded artefact shows the cause: the Member
+session carries FOUR requests whose text contains the delegation token, and the FIRST one is a tools-less
+auxiliary request (title/summary) over the same content. `.find(token)` therefore raced. `af51d7a5a` selects
+the token-carrying request that actually carries a tool list (`member-surface.json` now also records
+`tokenRequests`); the judge clause is unchanged (an empty surface would still fail). The two-boot record was
+then re-measured — not retried into agreement: the defective observation is gone and both boots report
+`tokenRequests: 4`, `tools: 34`.
+
+### Residual (the governance cost of shape B)
+
+The search face is now **LANE-GOVERNED ONLY**. A durable overlay rule cannot deny `grep`/`glob` (or
+`web_fetch`, …): those faces are outside the overlay's closed vocabulary, so `grantInstance`-style durable
+restrictions do not reach them. The lane ceiling is their entire governance. The centre also judges the
+search ROOT named by the call (`path`, defaulting to the workspace root), not every file a scan opens
+(provider-path question, not measured here). **Shape A** — adding a search face to the closed vocabulary with
+a subtree resource — remains the durable answer and is still open, with the process-lane ruling.
+
+### What this round does NOT prove
+
+Any candidate/product-proven status (all `DEV-LIVE`). That the durable overlay can DENY a search: it cannot
+(shape B residual). A process lane / persistent subprocess (unchanged CCR). The Alpha.6 recorded-fact path at
+a host entry (unchanged). That the search body's every file read is independently confined by the provider
+path (not measured). A real-model interleaving (scripted mock).

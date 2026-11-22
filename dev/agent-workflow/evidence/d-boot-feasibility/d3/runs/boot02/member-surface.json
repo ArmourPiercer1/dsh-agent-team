@@ -35,5 +35,6 @@
     "u6fs_probe",
     "update_goal",
     "write"
-  ]
+  ],
+  "tokenRequests": 4
 }

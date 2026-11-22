@@ -21,7 +21,7 @@
       {
         "id": "state-written-by-shell",
         "ok": false,
-        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-a/d3-persistent-state.txt exists=false"
+        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/workspace/team-a/d3-persistent-state.txt exists=false"
       },
       {
         "id": "second-turn-saw-state",
@@ -67,12 +67,12 @@
       {
         "id": "kill-was-sigkill",
         "ok": true,
-        "detail": "pid=718 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
+        "detail": "pid=739 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
       },
       {
         "id": "restart-same-home",
         "ok": true,
-        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z booted=true bootPhase=create-or-open"
+        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z booted=true bootPhase=create-or-open"
       },
       {
         "id": "completed-ledger-survives",
@@ -117,12 +117,12 @@
       {
         "id": "work-fact-survived",
         "ok": true,
-        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/storages/team_domain.json\"]"
       },
       {
         "id": "state-file-never-written",
         "ok": true,
-        "detail": "the persistent-shell probe never ran a shell: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-a/d3-persistent-state.txt exists=false"
+        "detail": "the persistent-shell probe never ran a shell: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/workspace/team-a/d3-persistent-state.txt exists=false"
       }
     ],
     "failing": []
@@ -169,7 +169,7 @@
       {
         "id": "work-fact-durable-on-disk",
         "ok": true,
-        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/storages/team_domain.json\"]"
       },
       {
         "id": "member-calls-in-own-ledger",
@@ -196,7 +196,7 @@
       {
         "id": "host-process-was-spawned",
         "ok": true,
-        "detail": "spawned=true port=3187 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T01-43-29Z/instance-port3187.log"
+        "detail": "spawned=true port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T02-22-01Z/instance-port3193.log"
       },
       {
         "id": "row-refused-with-typed-code",

@@ -7,14 +7,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-b/in-lane-b.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/workspace/team-b/in-lane-b.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
+    "policyGeneration": "a5sf1:f555f3799f2d0a31a4d54529703628d5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
+    "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T01:46:32.964Z"
+    "at": "2026-11-22T02:25:45.747Z"
   },
   {
     "callId": "call-d3-b-inlane",
@@ -23,9 +24,9 @@
     "agentId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
+    "policyGeneration": "a5sf1:f555f3799f2d0a31a4d54529703628d5",
     "kind": "execution",
-    "at": "2026-11-22T01:46:32.995Z"
+    "at": "2026-11-22T02:25:45.770Z"
   },
   {
     "callId": "call-d3-b-grep-probe",
@@ -35,29 +36,26 @@
     "instanceGeneration": 0,
     "toolName": "grep",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-b/corpus",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/workspace/team-b/corpus",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
+    "policyGeneration": "a5sf1:f555f3799f2d0a31a4d54529703628d5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
-    "decision": "deny",
-    "laneDecision": "allow",
-    "refusalCode": "ADMISSION_OVERLAY_FAULT",
-    "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
+    "decision": "allow",
+    "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T01:46:33.032Z"
+    "at": "2026-11-22T02:25:45.806Z"
   },
   {
     "callId": "call-d3-b-grep-probe",
     "executionId": "exec-a8ae9dd198c0aa665ddf0a4f97d5a06360b895b7",
     "toolName": "grep",
     "agentId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
-    "outcome": "admission-refusal",
-    "isError": true,
-    "refusalCode": "ADMISSION_OVERLAY_FAULT",
-    "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
+    "outcome": "completed",
+    "isError": false,
+    "policyGeneration": "a5sf1:f555f3799f2d0a31a4d54529703628d5",
     "kind": "execution",
-    "at": "2026-11-22T01:46:33.040Z"
+    "at": "2026-11-22T02:25:49.085Z"
   },
   {
     "callId": "call-d3-b-inflight-edit",
@@ -67,13 +65,14 @@
     "instanceGeneration": 0,
     "toolName": "edit",
     "axis": "fs.write",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-b/big-edit.bin",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-23-50Z/workspace/team-b/big-edit.bin",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
+    "policyGeneration": "a5sf1:f555f3799f2d0a31a4d54529703628d5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
+    "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T01:46:33.062Z"
+    "at": "2026-11-22T02:25:49.124Z"
   }
 ]

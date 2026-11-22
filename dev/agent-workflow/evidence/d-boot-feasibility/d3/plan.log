@@ -8,3 +8,13 @@
 [2026-11-22T01:50:36.701Z] governed preset plugins (14): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,command-goal,tool-goal,planning,compaction,tool-todo,tool-plugin-manager
 [2026-11-22T01:50:36.701Z] host persistent-bash package present=true mounted=false
 [2026-11-22T01:50:36.702Z] PLAN OK
+[2026-11-22T01:58:29.290Z] PLAN repo=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84
+[2026-11-22T01:58:29.291Z] shipped !!js substitutions: [{"expression":"(process.env.A5SF_WEB_TEST_ENDPOINTS ?? '').split(',').map((entry) => entry.trim()).filter((entry) => entry !== '')","value":[]},{"expression":"process.env.A5SF_WEB_SEARCH_BASE_URL ?? 'https://api.exa.ai'","value":"https://api.exa.ai"},{"expression":"process.env.A5SF_WEB_SEARCH_API_KEY ?? process.env.EXA_API_KEY ?? ''","value":""},{"expression":"process.platform === 'win32'","value":false}]
+[2026-11-22T01:58:29.321Z] blueprint anchor.yaml accepted: schemaVersion=3 id=team.dboot.d3.anchor
+[2026-11-22T01:58:29.326Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-22T01:58:29.326Z] blueprints accepted: anchor={"ok":true,"schemaVersion":3,"via":"parseBlueprint(dist runtime domain facade)"} main={"ok":true,"schemaVersion":4,"via":"parseBlueprint(dist runtime domain facade)"}
+[2026-11-22T01:58:29.328Z] CCR probe (v4 member ceiling with io.process): {"accepted":false,"code":"MALFORMED_DTO","error":"the v4 effect-governance families were refused; every problem is listed at its full path","details":{"problems":[{"code":"unknown-field","path":"$.memberIoCeilings[0].io.process","detail":"field 'process' is outside the closed io shape (read | write | network)"}]}}
+[2026-11-22T01:58:29.329Z] rows: [{"id":"dsh-agent-team","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtim"},{"id":"preset-a5sf-governed-member","name":"@deepseek-ai/dsh-agent-preset"},{"id":"p6t6-team-tools","name":"file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/tools/"}]
+[2026-11-22T01:58:29.329Z] governed preset plugins (14): persona,agent-instructions,tool-bash,tool-fs,tool-fs-search,tool-jobs,tool-skill,tool-present,command-goal,tool-goal,planning,compaction,tool-todo,tool-plugin-manager
+[2026-11-22T01:58:29.329Z] host persistent-bash package present=true mounted=false
+[2026-11-22T01:58:29.329Z] PLAN OK

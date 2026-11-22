@@ -1,0 +1,15 @@
+{
+  "aAdmissions": 4,
+  "bAdmissions": 3,
+  "aExecutions": 4,
+  "bExecutions": 2,
+  "mockRequests": 28,
+  "memberModelRequests": 10,
+  "inflightBefore": "open",
+  "inflightAfter": "UNKNOWN",
+  "collectStatus": "succeeded",
+  "bash1State": "REFUSED",
+  "bash2State": "REFUSED",
+  "restartAt": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T02-00-22Z/instance-port3193.log",
+  "elapsedMs": 229634
+}
