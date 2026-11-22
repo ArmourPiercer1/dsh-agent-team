@@ -300,7 +300,10 @@ test('F-03 CLI: the real tree passes --check, and --json is the contract-tiers a
   assert.equal(json.summary.met, 6)
   assert.equal(json.summary.excepted, 0)
   assert.ok(json.sources.l1.legs.length > 0)
-  assert.ok(json.sources.contract_runs.some((r) => r.tier === 'L1' && r.files === 12))
+  // Round 80: the A0/A1 cut took four bound files out of the L1 population (12 -> 8). Recorded, not
+  // loosened: the run still has to be a run over real files, and F-03's zero-file refusal is the
+  // control that keeps `files > 0` from becoming a vacuous pass.
+  assert.ok(json.sources.contract_runs.some((r) => r.tier === 'L1' && r.files === 8))
   assert.ok(json.executed.every((row) => row.tiers.length > 0))
 })
 

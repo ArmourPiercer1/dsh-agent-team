@@ -215,3 +215,45 @@ $ node --test scripts/ute-retirement-gate.test.mjs scripts/ute-family-inventory.
 4. **The PR is still a DRAFT with no labels** and `ci-census` is deferred while it stays a draft:
    mark it ready (`gh pr ready 822`) — the settlement comment is what the settlement gate grades,
    readiness is what makes the census job actually run on the pushed head.
+
+### 2.3 Third pass — the census population pins, after the second red
+
+Hosted `ci-required` on `0f6343e61` failed at `ci-integration` step 24 (`test catalog + TINF
+instruments`), and the log named ten failing tests, not one. They were the *third* layer of the same
+shape: the A0/A1 cut moved the census population from 12 roots / 712 files to **11 roots / 599 files**
+(`packages/tools/a5p5-tools` lost every file it had), and four instruments still carried the old
+number as a literal:
+
+| instrument | stale law | how it was re-pointed |
+| --- | --- | --- |
+| `scripts/census-plan.test.mjs` | root list includes `packages/tools/a5p5-tools`, `file_count 712`, `roots 12 / tasks 24`, baseline token `roots=12 files=712` | root list, `599`, `11 / 22`, token `roots=11 files=599`; header records that the root disappeared because the cut retired it |
+| `scripts/census-cutover.test.mjs` | `tasks=24 roots=12`, `expected=24 observed=24`, shard totals `1448/1424/24`, `replay.results.length === 12` | every count now derives from the fixture's own `plan` (`plan.tasks.length`, `plan.roots.length`, `plan.file_count`), so the law survives the next population change instead of pinning a number |
+| `scripts/test-catalog.test.mjs` | union digest `991845…` (recorded before the `ute-vnext-a1` leg existed) | the evidence was regenerated (union 70 -> 77) and the `ute-vnext-a1` step became a DECLARED post-base step in `scripts/dispatch-tests.mjs` (`POST_BASE_STEPS`: a leg added after the parity base has no old argv by construction). The declaration is closed: the test asserts the exact key set, and an undeclared step is still a problem |
+| `scripts/contract-tiers.test.mjs` | `contract_runs` L1 `files === 12` | still open — see §2.4 |
+
+`dispatch-tests --parity` now reports `problems=0 steps=19 old_files=25 new_files=77`; `census-plan`
+reports `11 roots / 22 tasks / 599 files`; the tinf leg's remaining failures are the ones listed in
+§2.4 and are NOT instrument drift — they are fixtures built on retired surfaces.
+
+### 2.4 Still red at the end of this pass (the next layer, named)
+
+The tinf leg (805 tests) still has 16 failing arms, all of them fixtures that consume a surface the
+A0/A1 cut retired, plus two count pins:
+
+- `a5sf-pd12-bash-governance.test.mjs` (6) and `a5sf-pd13-terminal-read-axis.test.mjs` (8): each
+  mounts a realm and calls `attachA5sfNativeToolModules`, expecting the row to APPEND the confined
+  shell / terminal / search / fs shadows. The A1 cut deleted that appending mechanism together with
+  `confinedBashSpecOf` / `confinedTerminalSpecOf` / `nativeBashPtySpecOf` — the composition supplies
+  the native module now. These arms therefore assert a mechanism that no longer exists; the subject
+  is retired, and the successor guarantee is the native lane (`tests/ute-g1-process/lane-suite.test.mjs`,
+  `ute-g1-fs`, the `ute-vnext-a1` leg's 238 green tests).
+- `a5sf-p01-realm-binding.test.mjs`: module-scope import of `packages/runtime/tool-dispatch/index.ts`,
+  a file the cut deleted — the suite cannot even load.
+- `binding-digests.test.mjs` C1-F1a and `a5sf-instrument-graph.test.mjs`: the oracle closure still
+  walks into that deleted `tool-dispatch` module, so the closure is `complete:false`.
+- `u6-arc-d.test.mjs` at :162: the probe row mounts the PR5 family "AS SHIPPED"; the family is retired.
+- `contract-tiers.test.mjs` L1 `files === 12`: one bound file left the population with the cut.
+
+None of these is a product regression: each is a test of a deleted surface, or a literal count. The
+next pass must retire them per subject (citation + successor, never a blanket skip) and re-point the
+two count pins.

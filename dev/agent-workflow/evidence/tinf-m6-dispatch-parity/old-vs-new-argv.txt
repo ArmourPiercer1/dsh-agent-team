@@ -100,6 +100,22 @@ WHY THIS BASE. 7e3b6532a (the M6 merge point) already deleted every old `node --
 REPRODUCE
   node scripts/dispatch-tests.mjs --parity --old-ref e5bf05670
 dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+
+ROUND 80 REGENERATION (2026-11-22). The `ute-vnext-a1` step dispatches a leg that was ADDED after the
+parity base (round 72), so it has no old `node --test` argv by construction. It is now a DECLARED
+post-base step (`POST_BASE_STEPS` in scripts/dispatch-tests.mjs): its suites join the union as a row
+with an empty old side, and a step that is not declared there is still a problem. The union therefore
+moves from 70 to 77 files; nothing was missing and no suite was dropped.
+dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workflows/census-runtime.yml,.github/workflows/ci-integration.yml,.github/workflows/pr-gate.yml
+  .github/workflows/census-runtime.yml
+    UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED): old=0 new=7 missing=none added=packages/runtime/test/vnext-admission.test.mjs,packages/runtime/test/vnext-b-probe-ladder.test.mjs,packages/runtime/test/vnext-fs-slice.test.mjs,packages/runtime/test/vnext-os-probe.test.mjs,packages/runtime/test/vnext-realm-lane.test.mjs,packages/runtime/test/vnext-template-binding.test.mjs,packages/runtime/test/vnext-work-turn-reader.test.mjs
+      new packages/runtime/test/vnext-admission.test.mjs
+      new packages/runtime/test/vnext-b-probe-ladder.test.mjs
+      new packages/runtime/test/vnext-fs-slice.test.mjs
+      new packages/runtime/test/vnext-os-probe.test.mjs
+      new packages/runtime/test/vnext-realm-lane.test.mjs
+      new packages/runtime/test/vnext-template-binding.test.mjs
+      new packages/runtime/test/vnext-work-turn-reader.test.mjs
   .github/workflows/ci-integration.yml
     EB4-B/D/E tooling suites (devex, integration-order, diag-call-chain — node:test, host-free): old=2 new=2 missing=none added=none
       old tests/diag-call-chain/diag-call-chain.test.mjs
@@ -215,8 +231,8 @@ dispatch-parity mode=inspect old=e5bf05670 new=worktree workflows=.github/workfl
     Unit tests (node --test, scripts convention): old=1 new=1 missing=none added=none
       old scripts/pr-settlement-gate.test.mjs
       new scripts/pr-settlement-gate.test.mjs
-  union old=25 new=70 set=sha256:991845176257f0bf51cd0ca264b8c7272709e45e57eaeea81934f277f1d4c234
-DISPATCH-PARITY mode=inspect DIFFERS steps=18 old_files=25 new_files=70 problems=0
+  union old=25 new=77 set=sha256:f8488aa9c0abf3282cde5e433c5cb426d343652118e531043ae9016aaf2ad609
+DISPATCH-PARITY mode=inspect DIFFERS steps=19 old_files=25 new_files=77 problems=0
 
 EXIT CODE
 1

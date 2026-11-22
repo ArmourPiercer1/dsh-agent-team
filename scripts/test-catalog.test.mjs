@@ -32,6 +32,7 @@ import {
   dispatchLegs,
   legByStep,
   loadManifest,
+  POST_BASE_STEPS,
   resolveLeg,
   setDigest,
   trackedFiles,
@@ -351,6 +352,16 @@ test('dispatch: the committed parity evidence still describes the resolved set',
   assert.equal(verdict[1], 'DIFFERS', 'the regenerated evidence records a deliberate growth')
   const added = [...evidence.matchAll(/^ {4}\S.*?added=([^\n]+)$/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(','))).sort()
   assert.deepEqual(added, [
+    // Round 80: the `ute-vnext-a1` step dispatches a leg ADDED after the parity base (round 72), so it
+    // has no old argv. It is a DECLARED post-base step (`POST_BASE_STEPS`), its seven suites join the
+    // union, and the declaration is asserted right below so the next addition still cannot hide.
+    'packages/runtime/test/vnext-admission.test.mjs',
+    'packages/runtime/test/vnext-b-probe-ladder.test.mjs',
+    'packages/runtime/test/vnext-fs-slice.test.mjs',
+    'packages/runtime/test/vnext-os-probe.test.mjs',
+    'packages/runtime/test/vnext-realm-lane.test.mjs',
+    'packages/runtime/test/vnext-template-binding.test.mjs',
+    'packages/runtime/test/vnext-work-turn-reader.test.mjs',
     'scripts/contract-tiers.test.mjs',
     'scripts/dispatch-tests.test.mjs',
     'scripts/eb3-ci-required.test.mjs',
@@ -432,6 +443,9 @@ test('dispatch: the committed parity evidence still describes the resolved set',
     // fields only, not the live `runtime.dirty_paths` instrument. Both leave
     // dev/ci/uncollected-baseline.json (48 -> 46).
   ])
+  assert.deepEqual(Object.keys(POST_BASE_STEPS), [
+    'UTE vNext A1 — realm mount + real FS slice + admission (pinned host, absence is RED)',
+  ], 'the declared post-base step set is closed and reviewed')
   const missing = [...evidence.matchAll(/^ {4}\S.*?missing=([^\n]+?)(?: added=|$)/gm)].flatMap((m) => (m[1] === 'none' ? [] : m[1].split(',')))
   assert.deepEqual(missing, [], 'parity may grow the set; it may never lose a suite')
   const recorded = /union old=\d+ new=\d+ set=(sha256:[0-9a-f]{64})/.exec(evidence)
