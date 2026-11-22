@@ -191,12 +191,17 @@ const BOOTS_WANTED = (() => {
 })()
 const startedAt = new Date().toISOString()
 
+/** `--plan` is HOST-FREE and must never touch the measured record: its own
+ *  lines go to `plan.log`, and its patch artefact to `plan/` (a plan run
+ *  rewriting the run's `driver.log`/`plan-patch.yml` was measured this round
+ *  and is not acceptable evidence hygiene). */
+const PLAN_MODE = process.argv.includes('--plan')
 function log(line) {
   const text = `[${new Date().toISOString()}] ${line}`
   console.log(text)
   try {
     mkdirSync(EVIDENCE, { recursive: true })
-    appendFileSync(join(EVIDENCE, 'driver.log'), `${text}\n`)
+    appendFileSync(join(EVIDENCE, PLAN_MODE ? 'plan.log' : 'driver.log'), `${text}\n`)
   } catch { /* --plan on a fresh clone may not have the evidence dir yet */ }
 }
 
@@ -991,7 +996,8 @@ function planOnly() {
   const probe = processLaneProbe()
   log(`CCR probe (v4 member ceiling with io.process): ${JSON.stringify(probe)}`)
   const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: planRoot, mainYaml: mainBlueprintYaml({ dirs }) })
-  writeFileSync(join(EVIDENCE, 'plan-patch.yml'), `${emitPatchLayer(['dboot-d3 plan (no World)'], rows)}\n`)
+  mkdirSync(join(EVIDENCE, 'plan'), { recursive: true })
+  writeFileSync(join(EVIDENCE, 'plan', 'plan-patch.yml'), `${emitPatchLayer(['dboot-d3 plan (no World)'], rows)}\n`)
   log(`rows: ${JSON.stringify(rows.map((r) => ({ id: r.id, name: String(r.name).slice(0, 90) })))}`)
   const preset = layer.rows.find((r) => r?.config?.id === PRESET_ID)
   const plugins = (preset?.config?.plugins ?? []).map((p) => p.id)

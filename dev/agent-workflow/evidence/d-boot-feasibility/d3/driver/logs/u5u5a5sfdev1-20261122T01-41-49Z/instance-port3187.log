@@ -1,0 +1,6 @@
+[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
+UTE2-WRITER-LOCK reclaimed previousPid=91 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T01:43:25.757Z
+dsh web: http://127.0.0.1:3187/?token=2Zw0HEcWF6JwOTG1ifFDtR0x9cpWgh5psHWrW0TiZlk
+[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record
+UTE2-WRITER-LOCK reclaimed previousPid=91 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T01:43:25.925Z
+UTE2-WRITER-LOCK reclaimed previousPid=91 previousBootId=213cb31f-60a1-4435-bcc1-8f3983b37a0f at=2026-11-22T01:43:25.990Z

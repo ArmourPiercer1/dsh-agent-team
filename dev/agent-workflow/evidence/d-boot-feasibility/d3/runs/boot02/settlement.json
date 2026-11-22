@@ -1,7 +1,7 @@
 {
   "bash1": {
     "executionId": "exec-8945de87213f27f7cffe24a44c0a67f1fa4e9bd2",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1vd6cy21kl6k/exec-8945de87213f27f7cffe24a44c0a67f1fa4e9bd2.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1vd6cy21kl6k/exec-8945de87213f27f7cffe24a44c0a67f1fa4e9bd2.settlement.json",
     "present": true,
     "state": "REFUSED",
     "dispatch": "not-started",
@@ -14,7 +14,7 @@
   },
   "bash2": {
     "executionId": "exec-6e161a7a87bf3fea939f3b7590e45bad6e5ba1e0",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1vd6cy21kl6k/exec-6e161a7a87bf3fea939f3b7590e45bad6e5ba1e0.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1vd6cy21kl6k/exec-6e161a7a87bf3fea939f3b7590e45bad6e5ba1e0.settlement.json",
     "present": true,
     "state": "REFUSED",
     "dispatch": "not-started",
@@ -27,7 +27,7 @@
   },
   "aReadAfterRestart": {
     "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "dispatch": "quiesced",
@@ -41,7 +41,7 @@
   },
   "bOpenAtKill": {
     "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
     "present": true,
     "state": "RUNNING",
     "dispatch": "started",
@@ -54,7 +54,7 @@
   },
   "bOpenAfterRestart": {
     "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
     "present": true,
     "state": "UNKNOWN",
     "dispatch": "started",
@@ -75,9 +75,9 @@
       "instanceGeneration": 0,
       "toolName": "grep",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/workspace/team-b/corpus",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-b/corpus",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:bffc54fac5ec585e0344ceac6cf3a756",
+      "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "deny",
@@ -85,7 +85,7 @@
       "refusalCode": "ADMISSION_OVERLAY_FAULT",
       "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T01:30:10.581Z"
+      "at": "2026-11-22T01:46:33.032Z"
     }
   ],
   "bGrepRefusalAfter": [
@@ -97,9 +97,9 @@
       "instanceGeneration": 0,
       "toolName": "grep",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/workspace/team-b/corpus",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/workspace/team-b/corpus",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:bffc54fac5ec585e0344ceac6cf3a756",
+      "policyGeneration": "a5sf1:9529a43fa08fc6556d7ac11a951407ce",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "deny",
@@ -107,12 +107,12 @@
       "refusalCode": "ADMISSION_OVERLAY_FAULT",
       "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T01:30:10.581Z"
+      "at": "2026-11-22T01:46:33.032Z"
     }
   ],
   "aAfter": {
     "executionId": "exec-4234abeefc2ea36ed069a700594f293419d220f4",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-28-14Z/centre/settlement/inst-1vd6cy21kl6k/exec-4234abeefc2ea36ed069a700594f293419d220f4.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-44-57Z/centre/settlement/inst-1vd6cy21kl6k/exec-4234abeefc2ea36ed069a700594f293419d220f4.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "dispatch": "quiesced",

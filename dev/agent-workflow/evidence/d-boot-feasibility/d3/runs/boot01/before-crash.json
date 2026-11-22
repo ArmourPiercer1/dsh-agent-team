@@ -1,9 +1,9 @@
 {
-  "at": "2026-11-22T01:26:19.307Z",
-  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z",
+  "at": "2026-11-22T01:43:24.440Z",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z",
   "aRead": {
     "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
     "present": true,
     "state": "COMPLETED",
     "dispatch": "quiesced",
@@ -24,19 +24,19 @@
       "instanceGeneration": 0,
       "toolName": "read",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z/workspace/team-a/in-lane-a.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z/workspace/team-a/in-lane-a.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:b8e3b85e5e76aacf7f81e0f777a18f59",
+      "policyGeneration": "a5sf1:058d47c7cfc57a8bcea75aee6f44f277",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "kind": "invocation-authority",
-      "at": "2026-11-22T01:26:17.777Z"
+      "at": "2026-11-22T01:43:23.105Z"
     }
   ],
   "bOpen": {
     "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
-    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
     "present": true,
     "state": "RUNNING",
     "dispatch": "started",
@@ -56,14 +56,14 @@
       "instanceGeneration": 0,
       "toolName": "edit",
       "axis": "fs.write",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z/workspace/team-b/big-edit.bin",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z/workspace/team-b/big-edit.bin",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:700df287c1a5a7eedef1aa4f396e2db4",
+      "policyGeneration": "a5sf1:24da01b820f37f316d883218e627de74",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "allow",
       "kind": "invocation-authority",
-      "at": "2026-11-22T01:26:19.295Z"
+      "at": "2026-11-22T01:43:24.427Z"
     }
   ],
   "bOpenExecutions": [],
@@ -76,9 +76,9 @@
       "instanceGeneration": 0,
       "toolName": "grep",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-24-22Z/workspace/team-b/corpus",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-41-49Z/workspace/team-b/corpus",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:700df287c1a5a7eedef1aa4f396e2db4",
+      "policyGeneration": "a5sf1:24da01b820f37f316d883218e627de74",
       "blueprintRevision": "",
       "owner": "session-dboot-d3-root",
       "decision": "deny",
@@ -86,7 +86,7 @@
       "refusalCode": "ADMISSION_OVERLAY_FAULT",
       "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
       "kind": "invocation-authority",
-      "at": "2026-11-22T01:26:19.264Z"
+      "at": "2026-11-22T01:43:24.395Z"
     }
   ],
   "aLedgerBytes": 3187
