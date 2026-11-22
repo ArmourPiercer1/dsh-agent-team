@@ -10626,3 +10626,23 @@ measured (6834 evidence files, 461 records) with headroom recorded as headroom.
 
 Gates: leg 180 + 2 disclosed skips, catalog 785 tests / 38 uncollected, cut-closure cut(0/148), P0 cut(148/148),
 docs-sync 0, 28 placements, ci-required 10 workflows, bound vitest 238.
+
+### R73 — the owner-approved Settlement ruling is implemented: an append-only recheck deny makes ADMITTED -> REFUSED legal
+
+Review 20261122-1536 §2 (Option A), now in the store rather than in a workaround:
+
+- `execution-settlement.ts` gained `recordRecheckDecision` (append-only, same callId/executionId, its OWN
+  policyGeneration, reason code from the existing `ADMISSION_RECHECK_*` composition) and `assertAdmissionCoherence`
+  now permits `REFUSED` against a cited `allow` ONLY when the store itself holds a durable recheck deny and the
+  record is still ADMITTED. The original allow reference is never touched; `terminalDecision` names the deny.
+- Abuse is closed by construction: no durable deny ⇒ the original `SETTLEMENT_ADMISSION_MISMATCH` still fires
+  (ADM-120); once RUNNING a pre-execution refusal cannot be back-filled (`RECHECK_NOT_BEFORE_BODY`, ADM-121), and
+  an existing deny blocks dispatch; Stop stays `CANCELLED` + stop fact and a refusal is never laundered into it
+  (ADM-122).
+- Crash window (ADM-123): deny written, record still ADMITTED, fresh store over the same directory ⇒ recovery
+  settles `REFUSED`/`not-started` citing that deny; a fresh ledger refuses the same callId as `ADMISSION_REPLAY`,
+  body counter 0, nothing rewritten. Fail-closed (ADM-124): a throwing deny write still refuses the call and
+  surfaces the fault.
+
+Gates: leg 188 cases / 186 pass + 2 disclosed skips, catalog 785 tests, cut-closure `cut(0/148)`, P0, docs-sync,
+28 placements, ci-required, bound vitest 238, artifact verdict ok/1935.
