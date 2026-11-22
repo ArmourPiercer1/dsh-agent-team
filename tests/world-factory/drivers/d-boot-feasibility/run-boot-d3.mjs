@@ -1351,9 +1351,17 @@ async function bootOnce({ index, head, grant }) {
     await waitSettled(ids.a, 'member A')
     txA1 = readMemberTranscript(world.home, rowA.childSessionId)
     const delegateResultA = toolResultFor(requests(), CALL_D_A) ?? null
-    const memberRequestA = requests().find((r) => memberTokenOf(r) === TOK_A) ?? null
+    // THE SURFACE IS READ FROM A REQUEST THAT CARRIES ONE. The first token-carrying request is not
+    // always the member's tool turn: the host also issues tools-less auxiliary requests (title /
+    // summary) over the same session content, so `.find(token)` alone is a race — a measured boot
+    // picked one and recorded `tools: []` while the member's surface was intact. Selecting the
+    // token-carrying request WITH a non-empty tool list observes the same fact deterministically; if
+    // NO request carries tools, the surface stays [] and the judge still fails (the clause is not
+    // relaxed: it still requires a non-empty surface containing `bash`).
+    const tokenRequestsA = requests().filter((r) => memberTokenOf(r) === TOK_A)
+    const memberRequestA = tokenRequestsA.find((r) => surfaceNamesOf(r).length > 0) ?? tokenRequestsA[0] ?? null
     memberSurface = memberRequestA === null ? [] : surfaceNamesOf(memberRequestA)
-    writeFileSync(join(bootDir, 'member-surface.json'), `${JSON.stringify({ token: TOK_A, tools: memberSurface }, null, 2)}\n`)
+    writeFileSync(join(bootDir, 'member-surface.json'), `${JSON.stringify({ token: TOK_A, tools: memberSurface, tokenRequests: tokenRequestsA.length }, null, 2)}\n`)
 
     // ── L2: collect A while the delegation result is terminal ──
     abortStage = 'collect-a'
