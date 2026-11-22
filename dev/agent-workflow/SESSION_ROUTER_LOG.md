@@ -10415,3 +10415,22 @@ GOVERNED_NATIVE_MODULE_* refusals, never a base-provider fallback. Ungoverned ro
 ADM-100/101/102 pin the behaviour. Gates at `26dde9dab`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed
 skips), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass,
 bound leg `PASS 238`.
+
+### R63 — cold recovery and work delivery PROVEN live; subprocess, search face and Alpha.6's fact half escalated
+
+D3 driver, two agreeing boots. PROVEN: a real SIGKILL crash with cold recovery on the same home (in-flight
+`RUNNING → UNKNOWN`, no execution fact, never replayed, completed facts byte-identical, a post-recovery call
+admitted with a NEW fact); work delivery (delegate → collect, prompt verbatim, terminal and durable, identical
+when re-collected after the restart, member calls in the MEMBER's ledger); Alpha.6's typed row refusal with
+nothing live behind it.
+
+REFUTED and escalated rather than worked around:
+- `bash` on a governed Member is `ADMISSION_AXIS_UNSUPPORTED` (`process.exec` deny) and v4's closed io shape
+  rejects `io.process` outright — the process-lane CCR, now measured live instead of argued;
+- an IN-LANE `grep` is refused as `ADMISSION_OVERLAY_FAULT` (`tool-unsupported`) because the closed permission
+  vocabulary has no search face (new CCR: `CONTRACT-CHANGE-REQUEST-search-face.md`);
+- Alpha.6's recorded-fact half cannot be reached at a host entry (the config gate runs at row validation,
+  before the refusal point exists).
+
+Gates at `aa05de669`: leg `suites=7 files=7 exit=0` (164 pass + 2 disclosed skips), catalog `tests=889
+findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
