@@ -381,6 +381,8 @@ export function checkInventoryArm({ root = ROOT, trackedPaths } = {}) {
   return {
     families: result.families.map((f) => f.familyId),
     universe: result.universe,
+    retired: result.retired ?? [],
+    retiredSharedFiles: result.retiredSharedFiles ?? [],
     findings: result.findings.map((f) => ({ code: f.code, path: f.familyId ?? 'dev/agent-workflow/ledgers/ute-family-inventory.json', detail: f.detail })),
   }
 }
@@ -409,11 +411,39 @@ if (invokedDirectly) {
     // argv, same manifest leg — the inventory's refusals are this leg's findings.
     const inventory = checkInventoryArm({ root: ROOT, trackedPaths: defaultTrackedPaths(ROOT) })
     const definitions = checkFamilyDefinitions({ files })
+    // THE A0 SUBJECT DISCHARGE (round 80). A census row is stale because A0 deleted the
+    // family's contribution files. When the same family is booked `retired-by-a0-cut` (with
+    // frozen modules + tracked citations + named successors, validated by ute-cut-closure)
+    // AND every file it booked is absent, the finding is replaced by one disposition naming
+    // the family and its frozen evidence. A path that is NOT covered, or that reappears,
+    // keeps the finding: a resurrection is graded, never retired.
+    const a0Retired = new Map(inventory.retired.map((r) => [r.familyId, r]))
+    const censusLedger = JSON.parse(readFileSync(join(ROOT, CENSUS_LEDGER_REL), 'utf8'))
+    const contributionFamily = new Map()
+    for (const fam of censusLedger.families ?? []) {
+      for (const rel of fam.contributionPaths ?? []) contributionFamily.set(rel, fam.familyId)
+      for (const rel of fam.contribution ?? []) contributionFamily.set(rel, fam.familyId)
+    }
+    const retiredA0 = []
+    const kept = []
+    for (const finding of definitions.findings) {
+      const familyId = contributionFamily.get(finding.path)
+      const subject = familyId === undefined ? undefined : a0Retired.get(familyId)
+      const absent = !files.has(finding.path) && !existsSync(join(ROOT, finding.path))
+      if (finding.code === 'DEF_CENSUS_DRIFT' && subject !== undefined && absent) {
+        retiredA0.push({ familyId, path: finding.path, frozenModules: subject.frozenModules, detail: finding.detail })
+      } else {
+        kept.push(finding)
+      }
+    }
     out = {
       files: files.size,
       ...definitions,
-      inventory: { families: inventory.families, universe: inventory.universe },
-      findings: [...definitions.findings, ...inventory.findings],
+      findings: [...kept, ...inventory.findings],
+      retiredByA0: retiredA0,
+      retiredFamilies: inventory.retired.map((r) => ({ familyId: r.familyId, kind: r.kind, files: r.files, frozenModules: r.frozenModules, successors: r.successors })),
+      retiredSharedFiles: inventory.retiredSharedFiles,
+      inventory: { families: inventory.families, universe: inventory.universe, retiredFamilies: inventory.retired.length },
     }
   } catch (e) {
     console.error(`EB3-FAMILY-DEFINITIONS refused could-not-grade: ${String(e?.message ?? e)}`)
@@ -425,7 +455,16 @@ if (invokedDirectly) {
     if ((out.retiredByCut ?? []).length > 0) {
       console.log(`  DEF_RETIRED_BY_CUT ${String(out.retiredByCut.length)} declared old-path file(s) are in the A0 frozen delete set — the cut, not a UTE-4 per-family retirement, licensed their deletion (graded by ute-cut-closure on every PR)`)
     }
-    console.log(`EB3-FAMILY-DEFINITIONS ${out.findings.length === 0 ? 'pass' : 'fail'} files=${String(out.files)} findings=${String(out.findings.length)}`)
+    for (const subject of out.retiredFamilies ?? []) {
+      console.log(`  DEF_RETIRED_BY_A0 family=${subject.familyId} kind=${subject.kind} files=${String(subject.files)} frozen=${subject.frozenModules.join(',')} successors=${subject.successors.filter((x) => !x.startsWith('node ')).join('|')}`)
+    }
+    for (const row of out.retiredByA0 ?? []) {
+      console.log(`  DEF_RETIRED_BY_A0 census-row=${row.path} family=${row.familyId} frozen=${row.frozenModules.join(',')}`)
+    }
+    if ((out.retiredSharedFiles ?? []).length > 0) {
+      console.log(`  DEF_RETIRED_BY_A0 shared=${out.retiredSharedFiles.join('|')}`)
+    }
+    console.log(`EB3-FAMILY-DEFINITIONS ${out.findings.length === 0 ? 'pass' : 'fail'} files=${String(out.files)} findings=${String(out.findings.length)} retiredFamilies=${String((out.retiredFamilies ?? []).length)} retiredCensusRows=${String((out.retiredByA0 ?? []).length)} retiredByCut=${String((out.retiredByCut ?? []).length)}`)
   }
   process.exit(out.findings.length === 0 ? 0 : 1)
 }

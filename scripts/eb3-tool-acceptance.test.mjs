@@ -222,6 +222,10 @@ test('(o) self-proof: weakening containsVerbatim to always-true breaks (m) — t
   try {
     const file = join(dir, 'eb3-tool-acceptance-mutant.mjs')
     writeFileSync(file, mutantSrc)
+    // The checker now imports the A0 retirement-record loader (round 80) so the claim set
+    // can be read from the frozen tree; a temp copy must carry that sibling or the import
+    // fails before the mutation is graded (which would make this control test ESM, not law ①).
+    writeFileSync(join(dir, 'ute-cut-closure.mjs'), readFileSync(new URL('./ute-cut-closure.mjs', import.meta.url), 'utf8'))
     const mod = await import(pathToFileURL(file).href)
     const records = { 'disclosure.md': 'The lane was exercised offline; the reviewer accepted the re-grade narration.' }
     const mutantGrade = (rows) => mod.checkToolAcceptance({

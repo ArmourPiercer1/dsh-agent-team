@@ -10815,3 +10815,67 @@ booted Member; rc.2's provider is exercised through the typed-refusal branch, no
 
 Remaining rc.5 drift reds are unchanged and recorded: the admission/pre-execute tool call `{input:"bash"}` form
 and the batch-dispatch probe. C-fs stays MECHANISM — lane evidence is not a booted measurement.
+
+### R80 — the A0/A1 cut is CLOSED on the hosted path: the instruments were cut with the surface, and the census baseline re-earned
+
+Review `docs/reviews/20261122-2305.txt` §3 (second P0): at `5cf7cba8a3` the REQUIRED path was
+`pr-gate` PASS / `ci-security` PASS / `ci-product` PASS / `ci-fast` PASS, **`ci-integration` FAIL**
+(`eb3-family-definitions` 473 findings), **`ci-census` never executed**, **`ci-required` FAIL**,
+**`pr-settlement-gate` FAIL`. The product was cut and green; the gates that graded the retired plane
+were not. This round cuts them with it — per subject, with a licence, and with named successors
+(evidence: `dev/agent-workflow/evidence/ute-a1/ROUND80-CI-CLOSURE.md`).
+
+**The 473, decomposed and discharged (no finding was silenced).** 10 `DEF_CENSUS_DRIFT` (9 booked
+Family Contribution files + the ARC-A probe contribution); 180 `INVENTORY_PATH_MISSING` + 129
+`INVENTORY_PATH_UNTRACKED` + 83 `INVENTORY_RUNTIME_PATH_BROKEN` + 44 `INVENTORY_AUTHORITY_INVALID` +
+27 `INVENTORY_DEPENDENCY_UNKNOWN` = 463 inventory findings over 9 families + 11 `shared` entries.
+Every path named is in the A0 frozen delete/replace set (`ute-p0-assets.snapshot.json`, frozen tree
+`a19d1df018e772f20602f93bc726694524bdeb2f`), so the licence is
+`ute-cut-closure.allow.json#retiredSurfaces` — schema `ute-a0-retired-surfaces/1`, **12 subjects**,
+each with frozen modules, citations and successors. The ledger is VALIDATED, not trusted:
+`--check` refuses an untracked citation, a module that is not delete/replace in the snapshot, an
+unknown kind, or a successor that does not exist (`A0_RETIRED_*`), and a family whose declared
+surface is not wholly frozen is graded as LIVE (`INVENTORY_RETIREMENT_UNEARNED`). Result:
+`EB3-FAMILY-DEFINITIONS pass files=0 findings=0 retiredFamilies=9 retiredCensusRows=10
+retiredByCut=87`. `eb3-family-definitions` was KEPT (it still grades set/member/lane/mount/definition
+parity, the census booking, `DEF_RETIREMENT_UNLICENSED` and the cut discharge, and its C7 control
+still fires); it is no longer a claim about a surface that does not exist.
+
+**The claim set and the controls re-pointed, not deleted.** `eb3-tool-acceptance` now reads the
+claims from the frozen A0 blob (`git show <frozenTree>:<path>`) and discharges a cited suite only
+when the suite is already booked in the round-72 `retiredSubjects` record: `pass tools=31
+L4-proven=19 L4-disclosed=11 L4-unverified=1 retiredSuites=31`. `eb3-ci-negative-controls` C3/C3c/C4
+stage their mutations on A0 blobs (same laws), C3b is re-expressed (the frozen `families/fs.mjs` is
+now a CUT deletion, so the unlicensed-deletion law is staged on a non-frozen declared file and the
+frozen branch asserted as discharged), C20 takes the leg's own `retiredSuitePaths`; **35/35**.
+
+**The census-lane fixtures re-based on the frozen twin (option (a) of MIGRATED-SUITE-STATUS §6.2).**
+`ute-p0-assets.test` derives the boundary from A0 and grades it in a materialised throwaway repo;
+`ute-family-inventory.test`, `ute-cut-closure.test` and `ute-retirement-gate.test` read the frozen
+tree by object id; the LIVE arms restate what the live tree now says (`retiredFiles=0`,
+`UTE_OLD_PATH_PARTIALLY_REMOVED` for the seeded rows — the cut, not a retirement). Mutation
+batteries intact: inventory 32/32, p0-assets 21, cut-closure 13, retirement-gate 45.
+`ute-cut-closure` also gained a REAL fix: its build-face arm graded a foreign `--root` fixture with
+THIS repo's placements; now `placements=self|fixture`.
+
+**Two successors are now REQUIRED** (they ran in no CI layer before): `ute-cut-closure --check`
+(dependency closure of the 148 deleted sources + the retirement record) and `ute-p0-assets --check`
+(the frozen 37-module/180-file boundary: 146 delete, 2 replace, 32 keep, `cut(148/148)`), declared
+as legs in `dev/ci/eb3-ci-manifest.json#ci-integration` and as steps in
+`.github/workflows/ci-integration.yml`. The manifest is graded by `eb3-ci-required` (workflows=10
+findings=0), so the steps cannot be decorative.
+
+**The census baseline was re-earned, not loosened.** `ci-census` refused `POPULATION_SHRANK`
+(`packages/runtime` −102 files, `packages/tools` −1, the `packages/tools/a5p5-tools` root absent) —
+correctly, since a population that shrank silently is how a deleted suite disappears. The baseline
+was regenerated through the instrument's own attributed path
+(`--write-population-baseline --accept-population-change … --accepted-by round80-a1-cut`): 712 → 599
+files, 11 roots, catalog digest `sha256:da8a452d…`, with the reason naming the A0/A1 cut. The
+population did not shrink by omission; it shrank by the licensed deletion, and the record says so.
+
+**Settlement.** The `pr-settlement-gate` requires a dated settlement comment whose first line carries
+the CURRENT head sha; it will be posted after this round's final commit, with the sha the gate will
+grade (owner action if the gate needs a repo variable/label is reported, never faked).
+
+NOT proven, stated: nothing here was observed on hosted runners in this session. Every job below was
+run with the hosted command locally; the `hosted` column says UNPROVEN until the workflow logs exist.

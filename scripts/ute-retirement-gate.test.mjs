@@ -73,7 +73,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { resolve, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import {
@@ -82,7 +82,34 @@ import {
   loadLedger,
 } from './ute-retirement-gate.mjs'
 
-const ROOT = fileURLToPath(new URL('..', import.meta.url))
+const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)))
+
+/**
+ * THE FROZEN TWIN (round 80). The committed retirement ledger grades a tree that existed
+ * before the A0/A1 cut deleted the declared old path. On today's tree the same row also
+ * reports UTE_OLD_PATH_PARTIALLY_REMOVED (the cut, not the UTE-4 retirement, is why the
+ * files are gone), which would mask the one refusal this arm is about. The row's own terms
+ * are therefore graded against the A0 frozen tree: the same blobs it was reviewed on, read
+ * by git object id — no restored module, no copied file.
+ */
+const A0_TREE = (() => {
+  const allow = JSON.parse(readFileSync(join(ROOT, 'dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+  const rev = allow.retiredSurfaces?.frozenTree
+  assert.match(String(rev), /^[0-9a-f]{40}$/, 'the A0 retirement record must name a 40-hex frozenTree')
+  return rev
+})()
+const A0_TRACKED = new Set(execFileSync('git', ['-C', ROOT, 'ls-tree', '-r', '--name-only', A0_TREE], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).split('\n').filter(Boolean))
+const a0Rel = (abs) => (String(abs).startsWith(ROOT) ? String(abs).slice(ROOT.length + 1) : String(abs))
+const a0Exists = (abs) => A0_TRACKED.has(a0Rel(abs))
+const a0Read = (abs) => execFileSync('git', ['-C', ROOT, 'show', `${A0_TREE}:${a0Rel(abs)}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+// The UNION universe: a file is present if it exists in the frozen tree OR on disk. Old-path
+// files exist only in the frozen tree (the cut deleted them); evidence added AFTER the
+// snapshot commit exists only on disk. The row's terms are graded on both, which is exactly
+// the world it was reviewed in.
+const unionExists = (abs) => a0Exists(abs) || existsSync(abs)
+const unionRead = (abs) => {
+  try { return a0Read(abs) } catch { return readFileSync(abs, 'utf8') }
+}
 const TMP_ROOT = join(ROOT, '.artifacts', 'tmp', 'ute-retirement-gate')
 const GATE_SRC = readFileSync(join(ROOT, 'scripts', 'ute-retirement-gate.mjs'), 'utf8')
 
@@ -440,7 +467,7 @@ test('NC-10 — a fabricated owner approval record is contradicted evidence', ()
 test('REAL — the seeded fs row is refused for new-path reproduction and unresolved differences, and fabricated claims change nothing', () => {
   const loaded = loadLedger({ root: ROOT })
   assert.equal(loaded.refused, undefined, `the committed ledger must be gradable: ${loaded.detail ?? ''}`)
-  const verdict = checkRetirement({ ledger: loaded.ledger, family: 'fs', root: ROOT })
+  const verdict = checkRetirement({ ledger: loaded.ledger, family: 'fs', root: ROOT, fileExists: unionExists, readFile: unionRead, isTracked: (_root, rel) => A0_TRACKED.has(rel) })
   assert.equal(verdict.allowed, false, 'fs must NOT be retireable while both differences are unapproved')
   assert.deepEqual(verdict.unit.members, ['read', 'write', 'edit', 'read_image'], 'the unit is derived from the census, not chosen by the row')
   // UTE-3 PR B1 added the read_image baselines and one control per member, and PR B2
@@ -474,7 +501,7 @@ test('REAL — the seeded fs row is refused for new-path reproduction and unreso
   row.note = `${row.note} UNIT-MEMBER read_image covered; UNIT-MEMBER newPathVerified PASS; UNIT-MEMBER negativeControlsPass PASS`
   row.unit.selfAssertedCoverage = ['read', 'write', 'edit', 'read_image']
   row.coverage = { oldBaseline: 4, newPathVerified: 4, negativeControlsPass: 4 }
-  const after = checkRetirement({ ledger: fabricated, family: 'fs', root: ROOT })
+  const after = checkRetirement({ ledger: fabricated, family: 'fs', root: ROOT, fileExists: unionExists, readFile: unionRead, isTracked: (_root, rel) => A0_TRACKED.has(rel) })
   assert.equal(after.allowed, false)
   const signature = (v) => v.findings.map((f) => `${f.code}@${f.term ?? '-'}`).sort().join(';')
   assert.equal(signature(after), signature(verdict), 'a fabricated UNIT-MEMBER claim must not change the verdict')
@@ -973,6 +1000,13 @@ control('OP-3', 'no `oldPath` block at all', 'UTE_OLD_PATH_UNDECLARED', (l) => {
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
+// LIVE-TREE CARVE-OUT (round 80). The A0/A1 cut deleted every seeded row's declared old path,
+// so the LIVE CLI also reports UTE_OLD_PATH_PARTIALLY_REMOVED for each of them. That is a true
+// fact about this tree, and it is graded on its own by scripts/eb3-family-definitions.mjs
+// (retiredByCut) and by the frozen-twin REAL arm above. These assertions are about each ROW's
+// terms, so the live code is removed BY NAME — never by a wildcard, so a new code still reds.
+const withoutCutRemoval = (list) => list.filter((c) => c !== 'UTE_OLD_PATH_PARTIALLY_REMOVED')
+
 test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal', () => {
   const run = (args) => {
     try {
@@ -988,7 +1022,12 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   assert.equal(payload.schema, 'ute-retirement-verdict/1')
   assert.deepEqual(payload.allowed, [])
   assert.equal(payload.refused[0].family, 'fs')
-  assert.deepEqual(payload.refused[0].codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'the CLI reports exactly one remaining refusal for fs')
+  // LIVE tree: the row is still refused for the unapproved difference, and ALSO reports
+  // UTE_OLD_PATH_PARTIALLY_REMOVED because the A0/A1 cut — not the UTE-4 retirement this
+  // ledger argues for — deleted the declared old path. Both are true facts about the live
+  // tree; the row's own terms are graded narrowly in the REAL arm above against the frozen
+  // twin, where the only remaining refusal is the difference.
+  assert.deepEqual([...payload.refused[0].codes].sort(), ['UTE_OLD_PATH_PARTIALLY_REMOVED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'the CLI reports the difference and the cut removal for fs')
   assert.deepEqual(payload.refused[0].unit.members, ['read', 'write', 'edit', 'read_image'])
   assert.deepEqual(payload.refused[0].coverage.oldBaseline, ['read', 'write', 'edit', 'read_image'])
   assert.deepEqual(payload.refused[0].coverage.negativeControlsPass, ['read', 'write', 'edit', 'read_image'])
@@ -1035,7 +1074,10 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // regression that drops a member would add a code and red here rather than hide inside
   // a still-refused row.
   const fs = codesFor('fs')
-  assert.deepEqual(fs.codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
+  // LIVE tree: the cut (not the UTE-4 retirement) deleted the declared old path, so the
+  // deletion half of the gate also reports UTE_OLD_PATH_PARTIALLY_REMOVED here. The row's
+  // own terms are graded narrowly in the REAL arm above against the frozen twin.
+  assert.deepEqual(withoutCutRemoval(fs.codes), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
   assert.match(fs.line, /state=NOT_RETIREABLE unit=4\/4$/u)
   // The SEARCH row legitimately still reports both codes (it has no new path at all), so
   // the assertion is scoped to FS evidence: a finding that names an FS vector or the
@@ -1053,7 +1095,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // that drops a vector or a member would add a code and red here instead of
   // hiding inside a still-refused row.
   const search = codesFor('search')
-  assert.deepEqual(search.codes, ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
+  assert.deepEqual(withoutCutRemoval(search.codes), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'])
   assert.match(search.line, /state=NOT_RETIREABLE unit=2\/2$/u)
   // The new-path axis must produce NO finding at all now: no unreproduced vector
   // and no uncovered member. Scoping the assertion to the term is what keeps it
@@ -1063,8 +1105,8 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // structured verdict instead: per family, the code list IS the statement.
   const asJson = JSON.parse(run(['--all', '--json']).stdout)
   const codesIn = (family) => (asJson.refused.find((row) => row.family === family) ?? { codes: [] }).codes
-  assert.deepEqual(codesIn('fs'), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'fs: only the unapproved difference remains')
-  assert.deepEqual(codesIn('search'), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'search: only the unapproved difference remains')
+  assert.deepEqual(withoutCutRemoval(codesIn('fs')), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'fs: only the unapproved difference remains')
+  assert.deepEqual(withoutCutRemoval(codesIn('search')), ['UTE_SEMANTIC_DIFFERENCES_UNRESOLVED'], 'search: only the unapproved difference remains')
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-1-grep-path-default/)
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-2-grep-vcs-ignore/)
   assert.match(all.stdout, /term=semanticDifferencesResolved[^\n]*SD-SEARCH-3-refusal-surface/)
@@ -1075,7 +1117,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // differences. A regression that dropped a member, a vector or a difference
   // changes this set and reds here.
   const web = codesFor('web')
-  assert.deepEqual(web.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.deepEqual(withoutCutRemoval(web.codes), ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
   assert.match(web.line, /state=NOT_RETIREABLE unit=0\/2$/u)
   // The baseline term must be ESTABLISHED for web (it is not one of the codes):
   // an UTE_MEMBER_UNCOVERED on the oldBaseline axis would mean the golden lost a
@@ -1107,7 +1149,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // evidence pointer is the non-retirement record, not a parseable baseline TSV
   // (there is no corpus to parse; that is the measured shape, not a schema bug).
   const inspect = codesFor('inspect')
-  assert.deepEqual(inspect.codes, [
+  assert.deepEqual(withoutCutRemoval(inspect.codes), [
     'UTE_NEGATIVE_CONTROLS_FAILING',
     'UTE_NEW_PATH_UNVERIFIED',
     'UTE_OLD_BASELINE_MISSING',
@@ -1129,7 +1171,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // established — the declared verdict now says the same thing as the derivation
   // instead of the previous `true` that only the coverage pass overrode.
   const processRow = codesFor('process')
-  assert.deepEqual(processRow.codes, [
+  assert.deepEqual(withoutCutRemoval(processRow.codes), [
     'UTE_MEMBER_UNCOVERED',
     'UTE_NEW_PATH_UNVERIFIED',
     'UTE_OLD_BASELINE_MISSING',
@@ -1173,7 +1215,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // uncovered on that axis) and three unapproved blocking differences. The exact
   // set is pinned so a dropped member or a fabricated new-path token reds here.
   const agentctl = codesFor('agent-control')
-  assert.deepEqual(agentctl.codes, [
+  assert.deepEqual(withoutCutRemoval(agentctl.codes), [
     'UTE_MEMBER_UNCOVERED',
     'UTE_NEW_PATH_UNVERIFIED',
     'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED',
@@ -1203,7 +1245,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
   // a difference changes the set and reds here, and neither row may borrow the
   // other's answer.
   const ui = codesFor('ui')
-  assert.deepEqual(ui.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.deepEqual(withoutCutRemoval(ui.codes), ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
   assert.match(ui.line, /state=NOT_RETIREABLE unit=0\/2$/u)
   const uiBlock = blockFor('ui')
   assert.match(uiBlock, /term=semanticDifferencesResolved[^\n]*SD-UI-two-implementations/)
@@ -1222,7 +1264,7 @@ test('CLI — --family fs exits 1 and prints JSON; --all never hides a refusal',
     'the ui controls axis must stay established (one NC-MEMBER line per member)',
   )
   const state = codesFor('agent-state')
-  assert.deepEqual(state.codes, ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
+  assert.deepEqual(withoutCutRemoval(state.codes), ['UTE_MEMBER_UNCOVERED', 'UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED'])
   assert.match(state.line, /state=NOT_RETIREABLE unit=0\/5$/u)
   const stateBlock = blockFor('agent-state')
   assert.match(stateBlock, /term=semanticDifferencesResolved[^\n]*SD-AS-state-sink/)

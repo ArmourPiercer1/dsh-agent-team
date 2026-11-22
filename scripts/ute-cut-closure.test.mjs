@@ -91,24 +91,75 @@ test('CLOSURE-5 — dist parity: a deleted source names exactly the artifacts th
 })
 
 test('CLOSURE-6 — the dynamic shadows that killed the first inventory are actually reported', () => {
-  const targets = new Set(
-    deriveClosure().findings
-      .filter((f) => f.referrer === 'packages/runtime/src/plugin/live/a5sf-realm-row.mjs')
-      .map((f) => f.target),
+  // The realm row that carried the original shadows (packages/runtime/src/plugin/live/
+  // a5sf-realm-row.mjs) was itself deleted by the A0/A1 cut, so the REAL tree can no longer
+  // contain the referrer: grading the law against it would be grading a file that is gone.
+  // The law — a `new URL('./x.mjs', import.meta.url)` shadow is a reference a static scanner
+  // misses — is graded on a fixture that carries the exact shape, with the shadows in the
+  // delete set. `deriveClosure` is injectable by root precisely for this.
+  assert.equal(
+    deriveClosure().findings.filter((f) => f.referrer === 'packages/runtime/src/plugin/live/a5sf-realm-row.mjs').length,
+    0,
+    'the realm row was retired by the cut; a finding naming it would mean it came back',
   )
-  for (const shadow of ['confined-fs-tool.mjs', 'confined-bash-tool.mjs', 'native-bash-tool.mjs']) {
-    assert.ok([...targets].some((t) => t.endsWith(shadow)), `realm row must reach ${shadow}; got ${JSON.stringify([...targets])}`)
+  const { dir, sh } = miniRepo()
+  try {
+    const SHADOWS = ['confined-fs-tool.mjs', 'confined-bash-tool.mjs', 'native-bash-tool.mjs']
+    mkdirSync(join(dir, 'packages/x/src'), { recursive: true })
+    writeFileSync(
+      join(dir, 'packages/x/src/a5sf-realm-row.mjs'),
+      SHADOWS.map((n) => `export const ${n.replace(/[^a-z]/g, '_')} = new URL('./${n}', import.meta.url).href`).join('\n') + '\n',
+    )
+    for (const n of SHADOWS) writeFileSync(join(dir, `packages/x/src/${n}`), 'export const x = 1\n')
+    const snapPath = join(dir, 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json')
+    const snap = JSON.parse(readFileSync(snapPath, 'utf8'))
+    snap.modules.push({
+      id: 'shadows', verdict: 'delete', bucket: 'B', wave: 1,
+      files: SHADOWS.map((n) => `packages/x/src/${n}`), lines: 3,
+    })
+    writeFileSync(snapPath, JSON.stringify(snap, null, 2))
+    sh(['add', '-A']); sh(['commit', '-qm', 'realm shadows'])
+    const targets = new Set(
+      deriveClosure({ root: dir }).findings
+        .filter((f) => f.referrer === 'packages/x/src/a5sf-realm-row.mjs')
+        .map((f) => f.target),
+    )
+    for (const shadow of SHADOWS) {
+      assert.ok([...targets].some((t) => t.endsWith(shadow)), `realm row must reach ${shadow}; got ${JSON.stringify([...targets])}`)
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 
 test('CLOSURE-7 — every surviving production referrer has a declared disposition', () => {
+  // On the REAL (post-cut) tree the property is: every production referrer of the delete set
+  // is disposed. After A0 the surviving production reference count is ZERO (`prodRefs=0` in
+  // the check line), so the loop is empty BY FACT, not by a skip — and the control that the
+  // arm still SEES a production referrer and REFUSES an undisposed one is the mini-repo half
+  // below, which plants exactly one.
   const production = [...new Set(deriveClosure().findings.filter((f) => f.class === 'production').map((f) => f.referrer))]
-  assert.ok(production.length > 0, 'the tree has production references; the check must see them')
   for (const p of production) {
     const d = DISPOSITIONS[p]
     assert.ok(d !== undefined, `${p} has no disposition`)
     assert.ok(['rewire', 'replace', 'delete-with-group'].includes(d.disposition), `${p}: ${d.disposition}`)
     assert.ok(typeof d.note === 'string' && d.note.length > 40, `${p}: a disposition needs a real note`)
+  }
+  const { dir, sh } = miniRepo()
+  try {
+    // The fixture's production keep.ts imports the retireable gone.ts and IS disposed, so the
+    // pending cut grades clean (after the report is written, as any real operator would).
+    execFileSync(process.execPath, [CHECK, '--write', '--root', dir], { stdio: 'pipe' })
+    const before = runCheck(dir)
+    assert.equal(before.code, 0, `a pending cut with a disposed production referrer should pass:\n${before.out}`)
+    // Remove the disposition: the same reference must now be a NAMED RED.
+    writeFileSync(join(dir, 'dev/agent-workflow/ledgers/ute-cut-closure.dispositions.json'), JSON.stringify({ schema: 'ute-cut-closure-dispositions/1', entries: {} }, null, 2))
+    sh(['add', '-A']); sh(['commit', '-qm', 'undisposed'])
+    const after = runCheck(dir)
+    assert.notEqual(after.code, 0, 'an undisposed production referrer MUST fail the check')
+    assert.match(after.out, /UTE_CLOSURE_UNDISPOSED/, after.out)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
   }
 })
 

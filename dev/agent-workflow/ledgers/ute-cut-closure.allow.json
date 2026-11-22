@@ -779,6 +779,473 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "tests/u6-arc-a-probe-family/src/probe-contribution.mjs",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "The ARC-A probe lane contribution: its subject is the retired centre-shadow row / governance-centre kernel the probe family existed to exercise (round 72 already recorded probe-assembly.mjs). Deleted with the lane in round 72; no preserved capability lost its arm - the native centre suites (vnext-admission, ute-g1-*) carry the admission laws the probe certified."
+      },
+      {
+        "path": "tests/u6-arc-a-probe-family/src/probe-assembly.d.mts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Type declaration of the probe lane assembly above; deleted with it in round 72. Recorded here so the lane has a per-file disposition (the Round-72 audit added the ten deleted suites that had none; this is the same repair for the probe lane remaining files)."
+      }
+    ]
+  },
+  "retiredSurfaces": {
+    "schema": "ute-a0-retired-surfaces/1",
+    "note": "Per-SUBJECT retirement record for the A0 Family Contribution surface and the four instruments that graded it (scripts/eb3-family-definitions.mjs census + inventory arms, scripts/eb3-family-boundaries.mjs, scripts/eb3-tool-acceptance.mjs, scripts/ute-family-inventory.mjs). A0 retired the whole legacy execution plane (146 modules deleted, 2 entries replaced) in the frozen snapshot; the instruments that booked it were left grading a surface that no longer exists, which is 473 findings on the Required path and a red census. Each row here is one SUBJECT, its citation into the frozen inventory/decision, the exact frozen modules that make the retirement lawful, and the NAMED successors that carry the guarantee now: the frozen deletion list (scripts/ute-p0-assets.mjs --check), the dependency closure (scripts/ute-cut-closure.mjs --check) and the native execution-centre suites. A row is a LICENCE, not a silence: the check refuses a row whose citations are not tracked, whose frozen modules are not delete/replace in the snapshot, or whose declared surface is not wholly inside the frozen set and absent from the tree. A subject whose surface reappears is a resurrection finding, never a retirer. Read by scripts/ute-cut-closure.mjs (--check validates it), scripts/ute-family-inventory.mjs, scripts/eb3-family-definitions.mjs and scripts/eb3-tool-acceptance.mjs.",
+    "frozenTree": "a19d1df018e772f20602f93bc726694524bdeb2f",
+    "frozenTreeNote": "The commit that FROZE the A0 boundary (dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json landed there, and the family plane still existed in its tree). It is the fixture tree the committed ute-family-inventory.json records and the source of the retired tool claim set — read by git object id, never copied.",
+    "subjects": [
+      {
+        "id": "dsh.fs-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/fs-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "row-fs"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-fs — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-fs — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-fs/lane-suite.test.mjs",
+          "tests/ute1-fs/native-fs-binding.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.process-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/process-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-process",
+          "row-process"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-process — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-process — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-process/lane-suite.test.mjs",
+          "tests/ute1-fs/native-fs-binding.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.search-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/search-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-search",
+          "row-search"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-search — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-search — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-search/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.inspect-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/inspect-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-inspect",
+          "row-inspect"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-inspect — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-inspect — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.web-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/web-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-web",
+          "row-web"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-web — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-web — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-web/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.agent-control-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/agent-control-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-agent-control",
+          "row-agent-control"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-agent-control — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-agent-control — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-agentctl/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.ui-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/ui-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-ui",
+          "row-ui"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-ui — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-ui — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-uistate/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.agent-state-family",
+        "kind": "family-contribution",
+        "lane": "packages/tools/agent-state-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-agent-state",
+          "row-agent-state"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-agent-state — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-agent-state — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "tests/ute-g1-uistate/lane-suite.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "dsh.u6-probe-family",
+        "kind": "test-only-family-lane",
+        "lane": "tests/u6-arc-a-probe-family",
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§rows-barrel — the reviewed keep/delete entry for this subject (DELETE, wave 1)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md",
+            "note": "the keep/delete decision over that inventory list"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-rows-barrel — the frozen attestation that licenses this retirement"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the per-file record of every suite that retired with this subject (round 72)"
+          },
+          {
+            "path": "dev/agent-workflow/evidence/ute-a1/ROUND72-DELETION-AUDIT.md",
+            "note": "§2 — the retired-subject classification that deleted this test-only lane"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check"
+        ]
+      },
+      {
+        "id": "tool-acceptance-claims",
+        "kind": "tool-acceptance-claims",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "the pre-cut claim set is read from the frozen A0 tree (frozenTree): packages/tools/families/manifest.json and the seven `claims:` descriptors it lists, plus the named-bridge trio (packages/runtime/src/plugin/live/jobs-family-bridge.mjs)"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§rows-barrel (the generated barrel = manifest.json + index)"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-rows-barrel — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the u7f per-tool suites that retired with this claim set (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "tests/ute-g1-fs/lane-suite.test.mjs",
+          "tests/checks/eb3-ute-migrated-suites.txt"
+        ]
+      },
+      {
+        "id": "family-lane-edges",
+        "kind": "family-lane-edges",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "scripts/eb3-family-boundaries.mjs",
+            "note": "the lane-edge law whose subject is the seven family lanes and the family-body barrel"
+          },
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "§family-fs … §family-agent-state — the whole lane set"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#module-family-fs — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-cut-closure.allow.json",
+            "note": "#retiredSubjects — the u7-w0b family-seam suites that retired with this subject (round 72)"
+          }
+        ],
+        "successors": [
+          "packages/runtime/test/vnext-admission.test.mjs",
+          "tests/ute-g1-search/lane-suite.test.mjs",
+          "tests/ute-g1-process/lane-suite.test.mjs"
+        ]
+      },
+      {
+        "id": "family-inventory-records",
+        "kind": "family-inventory-records",
+        "lane": null,
+        "disposition": "retired-by-a0-cut",
+        "frozenModules": [
+          "family-fs",
+          "family-search",
+          "family-web",
+          "family-process",
+          "family-ui",
+          "family-inspect",
+          "family-agent-control",
+          "family-agent-state",
+          "row-fs",
+          "row-search",
+          "row-web",
+          "row-process",
+          "row-ui",
+          "row-inspect",
+          "row-agent-control",
+          "row-agent-state",
+          "rows-barrel",
+          "governance-closed-world"
+        ],
+        "citations": [
+          {
+            "path": "docs/plans/memo/ute-p0-20261121/01-ASSET-INVENTORY.md",
+            "note": "the whole table — the family-lane implementation files the committed ute-family-inventory.json records"
+          },
+          {
+            "path": "dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json",
+            "note": "#modules — the frozen attestation"
+          },
+          {
+            "path": "dev/agent-workflow/evidence/ute-a1/ROUND72-DELETION-AUDIT.md",
+            "note": "§6 — the fixture-base disposition (option (a): grade the A0 frozen tree)"
+          }
+        ],
+        "successors": [
+          "scripts/ute-cut-closure.mjs --check",
+          "scripts/ute-p0-assets.mjs --check",
+          "tests/checks/eb3-ute-migrated-suites.txt"
+        ]
       }
     ]
   }

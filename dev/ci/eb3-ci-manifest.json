@@ -140,6 +140,28 @@
           ]
         },
         {
+          "id": "ute-cut-closure",
+          "cmd": [
+            "node",
+            "scripts/ute-cut-closure.mjs"
+          ],
+          "check": [
+            "--check"
+          ],
+          "why": "Round 80: A0 retired the Family Contribution surface and the four instruments that graded it. Each retirement is a per-SUBJECT licence in dev/agent-workflow/ledgers/ute-cut-closure.allow.json#retiredSurfaces (citation + frozen modules + named successors) and this check refuses a licence that is not earned. It is also the dependency closure of the cut: a surviving reference into the delete set, an unregistered exemption or a half-cut realm is a RED."
+        },
+        {
+          "id": "ute-p0-assets",
+          "cmd": [
+            "node",
+            "scripts/ute-p0-assets.mjs"
+          ],
+          "check": [
+            "--check"
+          ],
+          "why": "The frozen A0 asset list (37 modules, 180 files: delete 146 / replace 2 / keep 32) is the authority the retirement record cites, and this check is the deletion half of its successor guarantee. It ran in no CI layer before round 80 (only its own unit test ran, in the census next-host lane), so the property the retirement hands off was never enforced on a PR."
+        },
+        {
           "id": "eb3-run-manifest",
           "cmd": [
             "node",

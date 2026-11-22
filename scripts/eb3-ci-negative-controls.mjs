@@ -125,13 +125,40 @@ function retirementLedgerFile() {
 }
 
 /**
- * An injected file map is the COMPLETE universe for the retirement-licence arm,
- * so the declared old-path files must be in it too; otherwise every row looks
- * deleted. This is the map a deletion control mutates.
+ * THE A0 FROZEN TREE (round 80). The Family Contribution surface and the lanes that
+ * carried it were deleted by the cut, so a control that stages a mutation on
+ * `git ls-files` today finds NOTHING to mutate (C3, C3b, C3c, C4 all reported
+ * "cannot stage its own mutation"). The laws did not expire with the files: each
+ * control is re-pointed at the commit that froze the boundary, read by object id —
+ * no copy in the tree, no restored module. The retirement record names that commit.
  */
-function definitionUniverse(paths, retirementLedger) {
+const A0_TREE = (() => {
+  const allow = JSON.parse(readFileSync(join(ROOT, 'dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+  const rev = allow.retiredSurfaces?.frozenTree
+  if (!/^[0-9a-f]{40}$/.test(String(rev))) throw new Error('the A0 retirement record must name a 40-hex frozenTree')
+  return rev
+})()
+
+function a0LsFiles(...args) {
+  const out = execFileSync('git', ['-C', ROOT, 'ls-tree', '-r', '--name-only', A0_TREE, '--', ...args], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+  return out.split('\n').filter((p) => p.length > 0).map(posix)
+}
+
+function a0ReadMap(paths) {
+  const map = new Map()
+  for (const p of paths) {
+    try {
+      map.set(p, execFileSync('git', ['-C', ROOT, 'show', `${A0_TREE}:${p}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }))
+    } catch { /* absent at the frozen tree: not in the universe */ }
+  }
+  return map
+}
+
+/** Declared old-path files that existed at the frozen tree (the injected universe). */
+function a0DefinitionUniverse(paths, retirementLedger) {
+  const frozen = new Set(a0LsFiles('packages/tools', 'tests'))
   const oldPathFiles = [...new Set(retirementLedger.families.flatMap((row) => row?.oldPath?.files ?? []))]
-    .filter((p) => existsSync(join(ROOT, p)))
+    .filter((p) => frozen.has(p))
   return [...new Set([...paths, ...oldPathFiles])]
 }
 
@@ -246,19 +273,21 @@ control('C3 execution-definition-replaced', () => {
   // staged 3b only on contributions, where no `execute: async (` exists, so the
   // substitution silently did nothing and the control blamed the enforcement — a
   // mutation that does not mutate is a green light wired to nothing.
-  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
+  // FROZEN BASE (round 80): the contribution/row files were deleted by the cut; the
+  // four mutation shapes below are staged on the A0 tree, where they really exist.
+  const paths = a0LsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
   // The retirement-licence arm (UTE-4) grades a DECLARED file set, so the
   // injected map must contain the declared old-path files as well. The map is
   // the universe: deleting an entry from it is what C3b/C3c stage.
   const retirementLedger = retirementLedgerFile()
-  const universe = definitionUniverse(paths, retirementLedger)
-  const honest = checkFamilyDefinitions({ files: readMap(ROOT, universe), retirement: { ledger: retirementLedger } })
+  const universe = a0DefinitionUniverse(paths, retirementLedger)
+  const honest = checkFamilyDefinitions({ files: a0ReadMap(universe), retirement: { ledger: retirementLedger } })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already fails the definition check: ${honest.findings.slice(0, 3).map((f) => `${f.code} ${f.detail}`).join(' ;; ')}` }
   }
-  const seedPath = paths.find((p) => (readMap(ROOT, [p]).get(p) ?? '').includes('via: \'family-body\''))
+  const seedPath = paths.find((p) => (a0ReadMap([p]).get(p) ?? '').includes('via: \'family-body\''))
   if (seedPath === undefined) return { ok: false, detail: 'no contribution declares via family-body — the control cannot stage mutation 3a' }
-  const base = readMap(ROOT, universe)
+  const base = a0ReadMap(universe)
 
   // 3a: replace the execution arm with a named-bridge claim that names no bridge.
   const a = new Map(base)
@@ -270,7 +299,7 @@ control('C3 execution-definition-replaced', () => {
   // 3b: replace a row's execute transport with a computed member. The target is a
   // ROW file that actually declares `execute: async (`; failing to find one is a
   // control failure, never a silent no-op.
-  const rowPath = paths.find((p) => /-row\.mjs$/.test(p) && /^\s*execute: async \(/m.test(readMap(ROOT, [p]).get(p) ?? ''))
+  const rowPath = paths.find((p) => /-row\.mjs$/.test(p) && /^\s*execute: async \(/m.test(a0ReadMap([p]).get(p) ?? ''))
   if (rowPath === undefined) return { ok: false, detail: 'no row file declares a plain `execute: async (` — the control cannot stage mutation 3b' }
   const b = new Map(base)
   b.set(rowPath, b.get(rowPath).replace(/^(\s*)execute: async \(/m, '$1execute: __injectedTransport ?? (async ('))
@@ -321,14 +350,39 @@ control('C3 execution-definition-replaced', () => {
 control('C3b retirement-deletion-unlicensed', () => {
   const { checkFamilyDefinitions } = requireModule('scripts/eb3-family-definitions.mjs')
   const retirementLedger = retirementLedgerFile()
-  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
-  const files = readMap(ROOT, definitionUniverse(paths, retirementLedger))
-  const fsOldPath = 'packages/tools/families/fs.mjs'
-  if (!files.delete(fsOldPath)) return { ok: false, detail: `the control could not delete ${fsOldPath} from the injected file map` }
-  const findings = checkFamilyDefinitions({ files, retirement: { ledger: retirementLedger } }).findings
+  const paths = a0LsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
+  const base = a0ReadMap(a0DefinitionUniverse(paths, retirementLedger))
+  // ROUND 80: `packages/tools/families/fs.mjs` is inside the A0 FROZEN delete set, so its
+  // absence is a CUT deletion (`retiredByCut`), not an unlicensed UTE-4 deletion — the old
+  // seed now tests the wrong law. The law is re-staged on a declared old-path file that is
+  // NOT frozen, added to a row that the retirement gate does NOT allow (the fs row) and
+  // then deleted from the injected universe. Both branches are asserted: the unlicensed
+  // deletion is refused, and the frozen one is NOT (it is discharged to the cut's own
+  // instrument, which grades it on every PR).
+  const probe = 'packages/tools/fs-family/src/unlicensed-probe.mjs'
+  const ledger2 = structuredClone(retirementLedger)
+  const fsRow = ledger2.families.find((row) => row.family === 'fs')
+  if (fsRow === undefined || !Array.isArray(fsRow.oldPath?.files)) return { ok: false, detail: 'the retirement ledger has no fs row with oldPath.files — the control cannot stage its own mutation' }
+  fsRow.oldPath.files.push(probe)
+  const files = new Map(base)
+  files.set(probe, 'export const probe = 1\n')
+  if (!files.delete(probe)) return { ok: false, detail: `the control could not delete ${probe} from the injected file map` }
+  const findings = checkFamilyDefinitions({ files, retirement: { ledger: ledger2 } }).findings
   const hits = findings.filter((f) => f.code === 'DEF_RETIREMENT_UNLICENSED')
-  const ok = hits.length === 1 && hits[0].path === fsOldPath && hits[0].detail.includes('"fs"') && hits[0].detail.includes('UTE_')
-  return { ok, detail: ok ? `deleting ${fsOldPath} from the injected map => exactly DEF_RETIREMENT_UNLICENSED naming the file and the fs row's gate codes` : `expected exactly one DEF_RETIREMENT_UNLICENSED for ${fsOldPath}, got ${findings.map((f) => `${f.code}@${f.path}`).join(',') || 'none'}` }
+  const refused = hits.length === 1 && hits[0].path === probe && hits[0].detail.includes('"fs"') && hits[0].detail.includes('UTE_')
+  const frozenStill = new Map(base)
+  const frozenPath = 'packages/tools/families/fs.mjs'
+  const frozenDeleted = frozenStill.delete(frozenPath)
+  const frozenOut = checkFamilyDefinitions({ files: frozenStill, retirement: { ledger: retirementLedger } })
+  const frozenHits = frozenOut.findings.filter((f) => f.code === 'DEF_RETIREMENT_UNLICENSED')
+  const held = frozenDeleted && frozenHits.length === 0 && (frozenOut.retiredByCut ?? []).some((r) => r.path === frozenPath)
+  const ok = refused && held
+  return {
+    ok,
+    detail: ok
+      ? `deleting the non-frozen declared ${probe} from an un-allowed row => exactly DEF_RETIREMENT_UNLICENSED naming the file and the fs row's gate codes; deleting the FROZEN ${frozenPath} => discharged to retiredByCut, not refused`
+      : `deletion halves: non-frozen ${probe} => ${refused ? 'refused' : `${hits.length} finding(s) (${findings.map((f) => `${f.code}@${f.path}`).join(',') || 'none'})`}; frozen ${frozenPath} => ${held ? 'discharged' : `unexpected (${frozenHits.map((f) => f.code).join(',') || 'none'})`}`,
+  }
 })
 
 // ───────────────────────────── control 3c: the SAME deletion IS licensed when allowed
@@ -343,9 +397,14 @@ control('C3c retirement-deletion-licensed', () => {
   const { checkFamilyDefinitions } = requireModule('scripts/eb3-family-definitions.mjs')
   const retirementLedger = retirementLedgerFile()
   const selftestLedger = JSON.parse(readFileSync(join(ROOT, 'scripts/fixtures/ute-retirement-selftest/ledger.json'), 'utf8'))
-  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
-  const files = readMap(ROOT, definitionUniverse(paths, retirementLedger))
+  const paths = a0LsFiles('packages/tools', 'tests').filter((p) => (/contribution[^/]*\.mjs$/.test(p) || /-row\.mjs$/.test(p)) && !p.includes('/dist/'))
+  const files = a0ReadMap(a0DefinitionUniverse(paths, retirementLedger))
   const licensedPath = selftestLedger.families[0].oldPath.files[0]
+  if (!files.has(licensedPath)) {
+    // The selftest fixture's declared file is synthetic and may not exist at A0;
+    // record it from the fixture directory so the licensed-deletion half still stages.
+    files.set(licensedPath, readFileSync(join(ROOT, 'scripts/fixtures/ute-retirement-selftest/old-path.mjs'), 'utf8'))
+  }
   if (!files.delete(licensedPath)) return { ok: false, detail: `the control could not delete ${licensedPath} from the injected file map` }
   const hits = checkFamilyDefinitions({ files, retirement: { ledger: selftestLedger } }).findings.filter((f) => f.code === 'DEF_RETIREMENT_UNLICENSED')
   return { ok: hits.length === 0, detail: hits.length === 0 ? `deleting ${licensedPath} for the ALLOWED selftest row => no DEF_RETIREMENT_UNLICENSED` : `a licensed deletion was refused: ${hits.map((f) => f.detail).join(' ;; ')}` }
@@ -369,8 +428,8 @@ control('C4 cross-family-influence', () => {
   // The honest set mirrors trackedLanePaths EXACTLY (packages/tools + tests lanes):
   // the booked computed-import rows live under tests/, so the positive half of 4g —
   // a booked occurrence passes — is graded here on the real tree.
-  const paths = gitLsFiles('packages/tools', 'tests').filter((p) => /^((?:packages\/tools|tests)\/[a-z0-9-]+-family)\/src\/.*\.(mjs|ts|mts)$/.test(p) && !p.includes('/dist/'))
-  const honest = checkFamilyBoundaries({ files: readMap(ROOT, paths) })
+  const paths = a0LsFiles('packages/tools', 'tests').filter((p) => /^((?:packages\/tools|tests)\/[a-z0-9-]+-family)\/src\/.*\.(mjs|ts|mts)$/.test(p) && !p.includes('/dist/'))
+  const honest = checkFamilyBoundaries({ files: a0ReadMap(paths) })
   if (honest.findings.length !== 0) {
     return { ok: false, detail: `the real tree already carries ${honest.findings.length} undeclared cross-lane edge(s): ${honest.findings.slice(0, 3).map((f) => f.detail).join(' ;; ')}` }
   }
@@ -378,23 +437,23 @@ control('C4 cross-family-influence', () => {
   // the first file whose text contained "fs-family" (a comment in search-contribution),
   // so the 4a substitution matched nothing and the control blamed the enforcement.
   const IMPORT = "from '../../fs-family/src/index.mjs'"
-  const seedPath = paths.find((p) => p.startsWith('packages/tools/search-family/src/') && (readMap(ROOT, [p]).get(p) ?? '').includes(IMPORT))
+  const seedPath = paths.find((p) => p.startsWith('packages/tools/search-family/src/') && (a0ReadMap([p]).get(p) ?? '').includes(IMPORT))
   if (seedPath === undefined) return { ok: false, detail: 'no search-family source imports the fs-family public face — the control cannot stage its own mutation' }
 
   // 4a: reach into a sibling family's INTERNals instead of its public index.
-  const a = new Map(readMap(ROOT, paths))
+  const a = new Map(a0ReadMap(paths))
   a.set(seedPath, a.get(seedPath).replace(IMPORT, "from '../../fs-family/src/fs-mechanics.mjs'"))
-  if (a.get(seedPath) === readMap(ROOT, [seedPath]).get(seedPath)) return { ok: false, detail: `mutation 4a did not change ${seedPath}` }
+  if (a.get(seedPath) === a0ReadMap([seedPath]).get(seedPath)) return { ok: false, detail: `mutation 4a did not change ${seedPath}` }
   const aHit = checkFamilyBoundaries({ files: a }).findings.find((f) => f.code === 'FAMILY_CROSS_INFLUENCE' && f.path === seedPath)
 
   // 4b: a whole new edge into a family this lane declares no edge to.
-  const b = new Map(readMap(ROOT, paths))
+  const b = new Map(a0ReadMap(paths))
   b.set(seedPath, `import { buildReadRowDefinition } from '../../fs-family/src/read-row.mjs'\n${b.get(seedPath)}`)
   const bHit = checkFamilyBoundaries({ files: b }).findings.find((f) => f.code === 'FAMILY_CROSS_INFLUENCE' && f.path === seedPath && f.detail.includes('read-row'))
 
   // 4c: a lane importing the plane (the centre) is the influence direction the
   // READMEs forbid outright — influence must not flow centre-ward either.
-  const c = new Map(readMap(ROOT, paths))
+  const c = new Map(a0ReadMap(paths))
   c.set(seedPath, `import { x } from '../../../runtime/src/plugin/live/team-tool-plane.mjs'\n${c.get(seedPath)}`)
   const cHit = checkFamilyBoundaries({ files: c }).findings.find((f) => f.code === 'FAMILY_CROSS_INFLUENCE' && f.path === seedPath)
 
@@ -414,7 +473,7 @@ control('C4 cross-family-influence', () => {
   const engines = acornAvailable === true ? ['auto', 'ast', 'regex'] : ['auto', 'regex']
   const sigOf = (findings) => JSON.stringify(findings.map((f) => `${f.code}@${f.path}`))
   const grade = (files) => engines.map((engine) => checkFamilyBoundaries({ files, engine }).findings)
-  const staged = (src) => new Map([...readMap(ROOT, paths), [FIX, src]])
+  const staged = (src) => new Map([...a0ReadMap(paths), [FIX, src]])
 
   // 4d: computed dynamic import → fail-closed COMPUTED_DYNAMIC_IMPORT, file+line,
   // exactly one finding (the string holding the path is NOT an edge either).
@@ -437,17 +496,17 @@ control('C4 cross-family-influence', () => {
   // booked `CENTER_URL` passes (the honest-tree half above already asserts that),
   // the same load RENAMED must fail again.
   const probePath = 'tests/u6-arc-a-probe-family/src/probe-assembly.mjs'
-  const probeText = readMap(ROOT, [probePath]).get(probePath)
+  const probeText = a0ReadMap([probePath]).get(probePath)
   if (probeText === undefined || !probeText.includes('await import(CENTER_URL)')) {
     return { ok: false, detail: `${probePath} no longer stages await import(CENTER_URL) — the booked-allowlist control cannot stage its own mutation` }
   }
-  const gMap = new Map(readMap(ROOT, paths))
+  const gMap = new Map(a0ReadMap(paths))
   gMap.set(probePath, probeText.replace('await import(CENTER_URL)', 'await import(CENTER_URL_RENAMED)'))
   const gOk = grade(gMap).every((f) => f.length === 1 && f[0].code === 'COMPUTED_DYNAMIC_IMPORT' && f[0].path === probePath)
 
   // engines-agree: the honest tree must grade identically (here: empty) under every
   // engine — an extractor that quietly diverges is a second, unwritten law.
-  const honestPer = grade(readMap(ROOT, paths))
+  const honestPer = grade(a0ReadMap(paths))
   const enginesAgree = honestPer.every((f) => sigOf(f) === sigOf(honestPer[0]) && f.length === 0)
 
   const parts = [`4a ${aHit !== undefined ? 'detected' : 'MISSED'}`, `4b ${bHit !== undefined ? 'detected' : 'MISSED'}`, `4c ${cHit !== undefined ? 'detected' : 'MISSED'}`,
@@ -1401,12 +1460,15 @@ control('C19 census-leg-writes-captures-outside-tracked-evidence', () => {
  * tree that is already failing and proves nothing about the mutation.
  */
 control('C20 acceptance-ledger-refuses-unproven-proven', () => {
-  const { checkToolAcceptance, readClaims, loadLedger, LEDGER_REL } = requireModule('scripts/eb3-tool-acceptance.mjs')
+  const { checkToolAcceptance, readClaims, loadLedger, retiredEvidencePaths, LEDGER_REL } = requireModule('scripts/eb3-tool-acceptance.mjs')
   const tracked = new Set(gitLsFiles('dev/agent-workflow/evidence', 'packages', 'tests'))
   const read = (rel) => { const abs = join(ROOT, rel); return existsSync(abs) ? readFileSync(abs, 'utf8') : null }
   const claims = readClaims(ROOT)
   const ledger = loadLedger(ROOT)
-  const grade = (l) => checkToolAcceptance({ ledger: l, claims, readFile: read, isTracked: (r) => tracked.has(r) }).findings
+  // The leg grades with the per-FILE retirement universe (round 80); the honest half must use
+  // the SAME inputs, or it reports the cut's own deletions as the ledger's fault.
+  const retiredSuitePaths = retiredEvidencePaths(ROOT)
+  const grade = (l) => checkToolAcceptance({ ledger: l, claims, readFile: read, isTracked: (r) => tracked.has(r), retiredSuitePaths }).findings
   const honest = grade(ledger)
   if (honest.length !== 0) {
     return { ok: false, detail: `the real ${LEDGER_REL} already fails (${honest.length} finding(s)): ${honest.slice(0, 3).map((f) => `${f.code} ${f.detail}`).join(' ;; ')}` }

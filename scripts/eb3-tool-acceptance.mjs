@@ -100,6 +100,7 @@
  * @module scripts/eb3-tool-acceptance
  */
 import { execFileSync } from 'node:child_process'
+import { loadRetiredSurfaces, validateRetiredSurfaces } from './ute-cut-closure.mjs'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -291,7 +292,89 @@ const diskReader = (root) => (rel) => {
   const abs = join(root, rel)
   return existsSync(abs) ? readFileSync(abs, 'utf8') : null
 }
-export const readClaims = (root = ROOT) => readClaimsWith(diskReader(root))
+
+/**
+ * A reader over a FROZEN git tree: `rev:path` for every blob that existed at `rev`.
+ * The claim set is not a live surface after A0 (the family manifest and its seven
+ * descriptors were deleted by the cut), so it is read from the commit that froze the
+ * boundary — by object id, never copied into the tree. A missing blob is `null`, which
+ * every claim reader treats as a refusal.
+ */
+const frozenReader = (root, rev) => (rel) => {
+  try {
+    return execFileSync('git', ['-C', root, 'show', `${rev}:${rel}`], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  } catch {
+    return null
+  }
+}
+
+/**
+ * THE CLAIM SET IS A RETIRED SURFACE (round 80). `readClaims` reads the pre-cut claim set
+ * from the A0 frozen tree and REQUIRES the retirement record to book it:
+ *   - no record / no `tool-acceptance-claims` subject  → refusal (the claim set cannot be graded
+ *     without a licence, and a silent empty claim set would hide every ledger row);
+ *   - every claimed familyId must be booked `retired-by-a0-cut` → a claim for a family that was
+ *     not retired would mean the live tree still declares it (resurrection), which this leg
+ *     must never accept.
+ * The record is validated against the snapshot/index by `validateRetiredSurfaces`; any finding
+ * is a refusal, so a hand-edited row cannot quietly enable the collision.
+ */
+export function readClaims(root = ROOT) {
+  const record = loadRetiredSurfaces(root)
+  const validation = validateRetiredSurfaces({ record, root })
+  if (validation.findings.length > 0) {
+    throw new Error(`the A0 retirement record is not valid (${validation.findings.map((f) => f.code).join(', ')}): ${validation.findings[0].detail}`)
+  }
+  const subject = validation.subjects.get('tool-acceptance-claims')
+  if (subject === undefined) {
+    throw new Error(`the A0 retirement record books no \`tool-acceptance-claims\` subject — the pre-cut ${FAMILIES_DIR}/manifest.json claim set has no licence and cannot be graded`)
+  }
+  const claims = readClaimsWith(frozenReader(root, record.frozenTree))
+  const retiredFamilies = new Set([...validation.subjects.values()]
+    .filter((r) => r.kind === 'family-contribution' || r.kind === 'test-only-family-lane')
+    .map((r) => r.id))
+  // A claim for a family the record does NOT book retired is allowed only when its source
+  // is a TRACKED file at HEAD: that is a live claim (e.g. the native jobs bridge), not a
+  // resurrection of a retired descriptor. A retired family's claim must come from the
+  // frozen tree and must be booked — anything else is refused.
+  const tracked = new Set(execFileSync('git', ['-C', root, 'ls-files'], { encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 }).split('\n').filter(Boolean))
+  const resurrected = [...claims.values()].filter((c) => !retiredFamilies.has(c.familyId) && !tracked.has(c.source))
+  if (resurrected.length > 0) {
+    throw new Error(`the claim set names ${[...new Set(resurrected.map((c) => JSON.stringify(c.familyId)))].join(', ')} from ${resurrected[0].source}, which is neither a family the A0 retirement record books as retired nor a tracked live source — a claim for a deleted family is a resurrection, not a retired surface`)
+  }
+  return claims
+}
+
+/**
+ * The per-FILE retirement universe this ledger may cite: the round-72 `retiredSubjects`
+ * registry union the A0 frozen delete/replace set. Fail-closed: an unreadable ledger or
+ * snapshot returns an EMPTY set, so no citation is discharged and the leg stays red.
+ */
+export function retiredEvidencePaths (root = ROOT) {
+  const out = new Set()
+  try {
+    const allow = JSON.parse(readFileSync(join(root, 'dev/agent-workflow/ledgers/ute-cut-closure.allow.json'), 'utf8'))
+    for (const e of allow.retiredSubjects?.entries ?? []) if (typeof e.path === 'string') out.add(e.path)
+  } catch { /* empty */ }
+  try {
+    const snap = JSON.parse(readFileSync(join(root, 'dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json'), 'utf8'))
+    for (const m of snap.modules ?? []) {
+      if (m.verdict !== 'delete' && m.verdict !== 'replace') continue
+      for (const f of m.files ?? []) out.add(f)
+    }
+  } catch { /* empty */ }
+  return out
+}
+
+/** Provenance of the claim set, for the CLI line (the reader must SAY where it read from). */
+export function readClaimsProvenance(root = ROOT) {
+  const record = loadRetiredSurfaces(root)
+  return {
+    frozenTree: record?.frozenTree ?? null,
+    schema: record?.schema ?? null,
+    source: record === null ? 'absent' : `${record.frozenTree}:${FAMILIES_DIR}/manifest.json`,
+  }
+}
 export const loadLedger = (root = ROOT) => JSON.parse(readFileSync(join(root, LEDGER_REL), 'utf8'))
 
 /** Tracked = in the git index (a PROVEN level must cite a COMMITTED record). */
@@ -308,8 +391,10 @@ export function trackedSet(root = ROOT) {
  * @param {(rel:string)=>string|null} p.readFile    repo-relative read
  * @param {(rel:string)=>boolean} p.isTracked        committed-file predicate
  */
-export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candidateSha }) {
+export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candidateSha, retiredSuitePaths }) {
   const findings = []
+  const retiredSuites = []
+  const retired = retiredSuitePaths ?? new Set()
   const add = (code, detail) => findings.push({ code, detail })
   const counts = Object.fromEntries(LEVELS.map((l) => [l, { PROVEN: 0, DISCLOSED: 0, NOT_VERIFIED: 0 }]))
   let caseProofs = 0
@@ -371,7 +456,16 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candi
           const suite = ev.suite
           const text = typeof suite === 'string' ? readFile(suite) : null
           if (typeof suite !== 'string' || !/\.test\.(ts|mjs)$/.test(suite)) add('ACCEPT_PROVEN_UNBACKED', `${at}: PROVEN without evidence.suite naming a *.test.(ts|mjs) C1 suite`)
-          else if (text === null || !isTracked(suite)) add('ACCEPT_PROVEN_UNBACKED', `${at}: suite ${suite} is absent or not committed`)
+          else if (text === null || !isTracked(suite)) {
+            // THE ROUND-72 CLASS, APPLIED TO THIS LEDGER (round 80). The cited suite was
+            // deleted by the A0/A1 cut and is booked per-FILE in `retiredSubjects` (or in
+            // the frozen delete set). The PROVEN level cites a RECORD that still exists and
+            // still passes; only the suite that produced it is gone. Refusing here would
+            // demand a resurrection, and silently passing would hide a citation to nothing —
+            // so the level is kept, counted, and the retirement is reported with its file.
+            if (retired.has(suite)) retiredSuites.push({ at, suite, familyId: r.familyId ?? null })
+            else add('ACCEPT_PROVEN_UNBACKED', `${at}: suite ${suite} is absent or not committed`)
+          }
           else if (!new RegExp(`['"\`]${tool.replace(/[$]/g, '\\$')}['"\`]`).test(text)) add('ACCEPT_PROVEN_UNBACKED', `${at}: suite ${suite} never names '${tool}' — it cannot be this tool's definition suite`)
           continue
         }
@@ -437,7 +531,7 @@ export function checkToolAcceptance({ ledger, claims, readFile, isTracked, candi
       }
     }
   }
-  return { findings, counts, tools: claims.size, caseProofs }
+  return { findings, counts, tools: claims.size, caseProofs, retiredSuites }
 }
 
 /**
@@ -477,7 +571,7 @@ if (invokedDirectly) {
   try {
     const tracked = trackedSet(ROOT)
     const read = diskReader(ROOT)
-    out = checkToolAcceptance({ ledger: loadLedger(ROOT), claims: readClaims(ROOT), readFile: read, isTracked: (rel) => tracked.has(rel), candidateSha })
+    out = checkToolAcceptance({ ledger: loadLedger(ROOT), claims: readClaims(ROOT), readFile: read, isTracked: (rel) => tracked.has(rel), candidateSha, retiredSuitePaths: retiredEvidencePaths(ROOT) })
   } catch (e) {
     console.error(`EB3-TOOL-ACCEPTANCE refused could-not-grade: ${String(e?.message ?? e)}`)
     process.exit(2)
@@ -489,7 +583,12 @@ if (invokedDirectly) {
     for (const l of LEVELS) console.log(`  ${l}: PROVEN=${String(out.counts[l].PROVEN)} DISCLOSED=${String(out.counts[l].DISCLOSED)} NOT_VERIFIED=${String(out.counts[l].NOT_VERIFIED)}`)
     if (candidateSha !== undefined) console.log(`  candidate-sha: ${candidateSha}`)
     if (out.caseProofs > 0) console.log(`  CASE-proof levels: ${String(out.caseProofs)}`)
-    console.log(`EB3-TOOL-ACCEPTANCE ${out.findings.length === 0 ? 'pass' : 'fail'} tools=${String(out.tools)} L4-proven=${String(l4.PROVEN)} L4-disclosed=${String(l4.DISCLOSED)} L4-unverified=${String(l4.NOT_VERIFIED)}${out.findings.length === 0 ? '' : ` findings=${String(out.findings.length)}`}`)
+    for (const row of out.retiredSuites) {
+      console.log(`  ACCEPT_SUITE_RETIRED_BY_CUT ${row.at} suite=${row.suite} family=${row.familyId ?? '-'} (the record it cites still exists and passes; the suite was deleted by the A0/A1 cut and is booked in retiredSubjects)`)
+    }
+    const provenance = readClaimsProvenance(ROOT)
+    console.log(`  claim-set: ${String(out.tools)} tool(s) from ${provenance.source}`)
+    console.log(`EB3-TOOL-ACCEPTANCE ${out.findings.length === 0 ? 'pass' : 'fail'} tools=${String(out.tools)} L4-proven=${String(l4.PROVEN)} L4-disclosed=${String(l4.DISCLOSED)} L4-unverified=${String(l4.NOT_VERIFIED)} retiredSuites=${String(out.retiredSuites.length)}${out.findings.length === 0 ? '' : ` findings=${String(out.findings.length)}`}`)
     console.log('LIMIT honesty, not completeness: DISCLOSED and NOT_VERIFIED never fail this leg; every L4 PROVEN is the G5 release gate')
   }
   process.exit(out.findings.length === 0 ? 0 : 1)

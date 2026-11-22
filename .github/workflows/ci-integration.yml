@@ -133,6 +133,19 @@ jobs:
       - name: "EB3-A: family boundaries (a sibling lane's internals and the centre are not edges)"
         run: node scripts/eb3-family-boundaries.mjs
 
+      - name: "UTE-A1: the A0 retirement record is earned (per-subject citation, frozen modules, named successors)"
+        # Round 80: the family-definitions leg reports its retired surface as per-subject
+        # dispositions. The licence they cite is validated HERE, by the instrument that owns
+        # the allow ledger: a subject whose citations are not tracked, whose frozen modules are
+        # not delete/replace in the A0 snapshot, or whose successors do not exist is a RED.
+        run: node scripts/ute-cut-closure.mjs --check
+
+      - name: "UTE-A1: the A0 frozen deletion list still holds (146 deleted + 2 replaced, nothing restored)"
+        # The named successor of the retired Family Contribution surface on the deletion side.
+        # Until round 80 this check ran in NO CI layer: the guarantee the retirement cites was
+        # only ever exercised locally. It is required now, with the closure check above.
+        run: node scripts/ute-p0-assets.mjs --check
+
       - name: "EB3-D: RUN Manifest (sources, host pin, authority generation, case algebra, evidence)"
         shell: bash
         # ONE simple command (R2 F-2 allowlist): the script computes this PR's new records

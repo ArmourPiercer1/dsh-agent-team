@@ -185,6 +185,136 @@ export function loadExemptions (root = ROOT) {
   return m
 }
 
+// ─────────────────────────────────────────── A0 retired surfaces (round 80)
+/**
+ * THE SUBJECT-LEVEL RETIREMENT RECORD. Round 72 recorded retired *suites* per file
+ * (`retiredSubjects`); A0 also retired whole SURFACES that four instruments still graded
+ * (the Family Contribution census arm, the UTE-3 inventory, the family-lane boundary law and
+ * the per-tool acceptance claim set). Those instruments cannot be repaired by editing the
+ * old modules back into the tree, and they cannot be silenced: each surface needs a per-subject
+ * disposition that says (a) WHAT was retired, (b) the FROZEN evidence that licenses it, and
+ * (c) WHICH successor carries the guarantee now.
+ *
+ * This is a LICENCE, not a silence. `validateRetiredSurfaces` refuses:
+ *   A0_RETIRED_SCHEMA             the record is missing a schema/frozenTree/subjects
+ *   A0_RETIRED_TREE_UNKNOWN       `frozenTree` is not a commit object in this checkout
+ *   A0_RETIRED_SUBJECT_INVALID    a row lacks id/kind/disposition, or repeats an id
+ *   A0_RETIRED_KIND_UNKNOWN       a `kind` outside the closed set
+ *   A0_RETIRED_MODULE_UNKNOWN     a `frozenModules` id is not in the A0 snapshot
+ *   A0_RETIRED_MODULE_NOT_CUT     a named module is `keep` — a keep module can never retire a surface
+ *   A0_RETIRED_CITATION_UNTRACKED a cited path is not a tracked file (the citation must be auditable)
+ *   A0_RETIRED_SUCCESSOR_MISSING  a named successor path is not tracked (the handoff must be real)
+ *
+ * The surface itself (which files the subject owned) is NOT copied here: it is derived from the
+ * ledgers that recorded it, and each consumer grades it against the frozen set + the tree. A
+ * surface whose files reappear is a resurrection finding in the consumer, never a retirer.
+ */
+export const RETIRED_SURFACES_KEY = 'retiredSurfaces'
+export const RETIRED_SURFACES_SCHEMA = 'ute-a0-retired-surfaces/1'
+export const RETIRED_SUBJECT_KINDS = Object.freeze([
+  'family-contribution',
+  'test-only-family-lane',
+  'tool-acceptance-claims',
+  'family-lane-edges',
+  'family-inventory-records',
+])
+
+/** Read the retirement record out of the allow ledger. Absent is `null` (data, not an exemption). */
+export function loadRetiredSurfaces (root = ROOT) {
+  const p = join(root, EXEMPTIONS_PATH)
+  if (!existsSync(p)) return null
+  const raw = JSON.parse(readFileSync(p, 'utf8'))
+  const record = raw[RETIRED_SURFACES_KEY]
+  return record === undefined ? null : record
+}
+
+/** Tracked paths that look like a repo path (a successor may also be a command starting with `node`). */
+const SUCCESSOR_PATH_RE = /^(scripts|tests|packages|apps|dev|docs)\S*$/
+
+/**
+ * Validate the retirement record against the frozen snapshot, the git index and the docs.
+ * Returns `{ findings, subjects }`; `subjects` is the id → row map a consumer filters by.
+ */
+export function validateRetiredSurfaces ({ record, root = ROOT, trackedPaths } = {}) {
+  const findings = []
+  const subjects = new Map()
+  const add = (code, detail) => findings.push({ code, detail })
+  if (record === null || typeof record !== 'object') {
+    add('A0_RETIRED_SCHEMA', `the A0 retirement record is absent from ${EXEMPTIONS_PATH} — a surface that was retired must still be booked, or its instrument is either silent or red`)
+    return { findings, subjects }
+  }
+  if (record.schema !== RETIRED_SURFACES_SCHEMA) {
+    add('A0_RETIRED_SCHEMA', `schema is ${JSON.stringify(record.schema)}, expected ${JSON.stringify(RETIRED_SURFACES_SCHEMA)}`)
+    return { findings, subjects }
+  }
+  const tracked = trackedPaths ?? new Set(git(['ls-files'], root).split('\n').filter(Boolean))
+  const commitExists = (rev) => {
+    try {
+      execFileSync('git', ['-C', root, 'cat-file', '-e', `${rev}^{commit}`], { stdio: ['ignore', 'ignore', 'ignore'] })
+      return true
+    } catch { return false }
+  }
+  if (typeof record.frozenTree !== 'string' || !/^[0-9a-f]{40}$/.test(record.frozenTree) || !commitExists(record.frozenTree)) {
+    add('A0_RETIRED_TREE_UNKNOWN', `frozenTree ${JSON.stringify(record.frozenTree)} is not a 40-hex commit present in this checkout — the frozen claim set / fixture tree cannot be read`)
+  }
+  let snapshot = null
+  const snapPath = join(root, SNAPSHOT_PATH)
+  if (existsSync(snapPath)) snapshot = JSON.parse(readFileSync(snapPath, 'utf8'))
+  const moduleById = new Map((snapshot?.modules ?? []).map((m) => [m.id, m]))
+  const subjectsRaw = record.subjects
+  if (!Array.isArray(subjectsRaw) || subjectsRaw.length === 0) {
+    add('A0_RETIRED_SCHEMA', '`subjects` must be a non-empty array — an empty record retires nothing and cannot be validated')
+    return { findings, subjects }
+  }
+  for (const row of subjectsRaw) {
+    const id = row?.id
+    if (typeof id !== 'string' || id.length === 0 || row?.disposition !== 'retired-by-a0-cut') {
+      add('A0_RETIRED_SUBJECT_INVALID', `a subject row needs a non-empty id and disposition "retired-by-a0-cut": ${JSON.stringify(row)?.slice(0, 160)}`)
+      continue
+    }
+    if (subjects.has(id)) {
+      add('A0_RETIRED_SUBJECT_INVALID', `subject ${JSON.stringify(id)} is booked twice`)
+      continue
+    }
+    subjects.set(id, row)
+    if (!RETIRED_SUBJECT_KINDS.includes(row.kind)) {
+      add('A0_RETIRED_KIND_UNKNOWN', `subject ${id}: kind ${JSON.stringify(row.kind)} is not one of ${RETIRED_SUBJECT_KINDS.join('|')}`)
+    }
+    if (!Array.isArray(row.frozenModules) || row.frozenModules.length === 0) {
+      add('A0_RETIRED_SUBJECT_INVALID', `subject ${id}: \`frozenModules\` must name at least one A0 snapshot module — a retirement with no frozen evidence is an assertion`)
+    } else {
+      for (const mid of row.frozenModules) {
+        const mod = moduleById.get(mid)
+        if (mod === undefined) add('A0_RETIRED_MODULE_UNKNOWN', `subject ${id}: frozen module ${JSON.stringify(mid)} is not in ${SNAPSHOT_PATH}`)
+        else if (mod.verdict !== 'delete' && mod.verdict !== 'replace') add('A0_RETIRED_MODULE_NOT_CUT', `subject ${id}: frozen module ${JSON.stringify(mid)} is verdict=${JSON.stringify(mod.verdict)} — only a delete/replace module can license a retirement`)
+      }
+    }
+    if (!Array.isArray(row.citations) || row.citations.length === 0) {
+      add('A0_RETIRED_SUBJECT_INVALID', `subject ${id}: at least one citation is required`)
+    } else {
+      for (const citation of row.citations) {
+        if (citation === null || typeof citation !== 'object' || typeof citation.path !== 'string' || citation.path.length === 0) {
+          add('A0_RETIRED_SUBJECT_INVALID', `subject ${id}: a citation is \`{ "path": <tracked file>, "note": <why> }\`, got ${JSON.stringify(citation)}`)
+          continue
+        }
+        if (!tracked.has(citation.path)) add('A0_RETIRED_CITATION_UNTRACKED', `subject ${id}: citation path ${JSON.stringify(citation.path)} is not a tracked file`)
+      }
+    }
+    if (!Array.isArray(row.successors) || row.successors.length === 0) {
+      add('A0_RETIRED_SUBJECT_INVALID', `subject ${id}: at least one successor is required — where the guarantee lives now`)
+    } else {
+      for (const successor of row.successors) {
+        const trimmed = String(successor).trim()
+        const path = trimmed.startsWith('node ') ? trimmed.split(/\s+/)[1] : trimmed.split(/\s+/)[0]
+        if (!SUCCESSOR_PATH_RE.test(path) || !tracked.has(path)) {
+          add('A0_RETIRED_SUCCESSOR_MISSING', `subject ${id}: successor ${JSON.stringify(successor)} does not name a tracked file (${path})`)
+        }
+      }
+    }
+  }
+  return { findings, subjects }
+}
+
 /** Is a committed dist artifact the build output of a deleted source? */
 export function distCounterpartsOf (source) {
   const m = /^packages\/([^/]+)\/(.+)$/.exec(source)
@@ -347,6 +477,18 @@ if (!isMain) {
   }
 
   const findings = []
+  // THE SUBJECT-LEVEL RETIREMENT RECORD (round 80). Validated here because this check is the one
+  // that owns the allow ledger; the consumers (family definitions / inventory / tool acceptance)
+  // import the same loader, so a row cannot mean one thing to one gate and another to the next.
+  // Validated when PRESENT: a record that exists must be earned. When it is ABSENT this
+  // check stays silent (planted ute-cut-closure fixtures carry a minimal allow ledger);
+  // absence is refused by the CONSUMERS, which cannot grade a retired surface without it
+  // (scripts/eb3-family-definitions.mjs, scripts/eb3-tool-acceptance.mjs, scripts/ute-family-inventory.mjs).
+  const retiredRecord = loadRetiredSurfaces(root)
+  const retiredValidation = retiredRecord === null
+    ? { findings: [], subjects: new Map() }
+    : validateRetiredSurfaces({ record: retiredRecord, root })
+  findings.push(...retiredValidation.findings)
   if (!existsSync(reportPath)) {
     findings.push({ code: 'UTE_CLOSURE_REPORT_MISSING', detail: `${REPORT_PATH} is missing — run --write` })
   } else {
@@ -373,20 +515,28 @@ if (!isMain) {
   // not the glue — so a moved entry surfaces as a THROW from the import itself. That is still a
   // finding, not a crash: a gate that dies with a stack trace tells the operator nothing about which
   // invariant broke.
+  // THE BUILD FACE BELONGS TO THE REPOSITORY THAT DECLARES IT. place-dist-glue's placement
+  // list and GLUE_SRC describe THIS product's shipped face; grading a `--root` fixture with
+  // them reported every real placement source as missing in a tree that never declared one
+  // (three stale controls, round 80). A foreign root has no build face to grade, and the
+  // summary says so instead of quietly passing: `placements=self|fixture`.
+  const placementsSelf = resolve(root) === resolve(ROOT)
   let placementLoader
   let placements = []
-  try {
-    placementLoader = await import('./place-dist-glue.mjs')
-    placements = placementLoader.loadPlacements()
-  } catch (error) {
-    findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE', detail: `the dist placement list cannot be loaded: ${error instanceof Error ? error.message : String(error)}` })
-  }
-  if (placementLoader !== undefined && !existsSync(join(root, placementLoader.GLUE_SRC))) {
-    findings.push({ code: 'UTE_CLOSURE_GLUE_PATH', detail: `place-dist-glue's GLUE_SRC ${placementLoader.GLUE_SRC} does not exist — the production entry moved and the build was not told` })
-  }
-  for (const placement of placements) {
-    if (!existsSync(join(root, placement.src))) {
-      findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENT_MISSING', detail: `${placement.src} is a declared dist placement but does not exist; place-dist-glue cannot build the shipped face from it` })
+  if (placementsSelf) {
+    try {
+      placementLoader = await import('./place-dist-glue.mjs')
+      placements = placementLoader.loadPlacements()
+    } catch (error) {
+      findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENTS_UNREADABLE', detail: `the dist placement list cannot be loaded: ${error instanceof Error ? error.message : String(error)}` })
+    }
+    if (placementLoader !== undefined && !existsSync(join(root, placementLoader.GLUE_SRC))) {
+      findings.push({ code: 'UTE_CLOSURE_GLUE_PATH', detail: `place-dist-glue's GLUE_SRC ${placementLoader.GLUE_SRC} does not exist — the production entry moved and the build was not told` })
+    }
+    for (const placement of placements) {
+      if (!existsSync(join(root, placement.src))) {
+        findings.push({ code: 'UTE_CLOSURE_DIST_PLACEMENT_MISSING', detail: `${placement.src} is a declared dist placement but does not exist; place-dist-glue cannot build the shipped face from it` })
+      }
     }
   }
 
@@ -435,7 +585,9 @@ if (!isMain) {
   console.log(
     `UTE-CUT-CLOSURE ${findings.length === 0 ? 'pass' : 'fail'} deleted=${out.deletedCount} references=${out.findings.length} ` +
     `prodRefs=${cut.survivingProductionRefs} distResiduals=${out.distResiduals.length} ` +
-    `cut=${cut.state}(${cut.retiredSourcesOnDisk}/${out.deletedCount}) dupNames=${cut.duplicateDeclarants.length} findings=${findings.length}`,
+    `cut=${cut.state}(${cut.retiredSourcesOnDisk}/${out.deletedCount}) dupNames=${cut.duplicateDeclarants.length} ` +
+    `retiredSurfaces=${retiredRecord === null ? 'absent' : String(retiredValidation.subjects.size)} ` +
+    `placements=${placementsSelf ? 'self' : 'fixture'} findings=${findings.length}`,
   )
   process.exit(findings.length === 0 ? 0 : 1)
 }

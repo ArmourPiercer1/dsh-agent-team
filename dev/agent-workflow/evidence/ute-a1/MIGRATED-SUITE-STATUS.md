@@ -2467,3 +2467,49 @@ member turn (an upstream seam — `CORE_SEAM_BLOCKER` for that leg). No real int
 between admission and dispatch was produced. The drivers exercise the pipeline path, so their re-run
 proves no regression, not a live pre-dispatch observation. No matrix row upgrade (C-member (Stop)
 stays MECHANISM + lane evidence).
+
+## Round 80 (hosted-CI closure) — 2026-11-22, `vnext/a1-cut`
+
+**§6.2's open choice is taken: option (a), the fixture base is rebuilt on the A0 frozen tree — and the
+instruments are cut per subject, not skipped.** Full evidence: `ROUND80-CI-CLOSURE.md`.
+
+The review's second P0 was not a product defect: at `5cf7cba8a3` the cut was green and complete while
+four instruments still graded the retired plane (`eb3-family-definitions` 473 findings,
+`eb3-tool-acceptance` 31 unbacked claims, five negative controls staged on deleted files, twelve
+census-lane tests bound to the pre-cut tree) and the census baseline still booked the deleted files
+(`POPULATION_SHRANK`). Every red is decomposed, and each disposition is per subject with a citation
+into `ute-g1`'s frozen evidence and the round-72 per-file retirement record:
+
+- **RETIRED per subject (licence, not silence).** `ute-cut-closure.allow.json#retiredSurfaces` (new,
+  `ute-a0-retired-surfaces/1`, frozen tree `a19d1df018e772f20602f93bc726694524bdeb2f`) books **12
+  subjects**: the 9 Family Contribution subjects (8 booked families + the ARC-A probe lane) and the
+  three instrument subjects (`tool-acceptance-claims`, `family-lane-edges`,
+  `family-inventory-records`), each with frozen modules, citations and successors. `--check` refuses
+  an untracked citation / non-frozen module / unknown kind / missing successor (`A0_RETIRED_*`), and a
+  family whose surface is not wholly frozen grades as LIVE (`INVENTORY_RETIREMENT_UNEARNED`). The
+  per-file `retiredSubjects` record grew 107 → 110 (the three probe-lane files).
+- **RE-POINTED.** Acceptance claims now read the frozen A0 blob; 31 cited suites are discharged only
+  because they are booked in `retiredSubjects`. Controls C3/C3c/C4 stage on A0 blobs, C3b is
+  re-expressed (frozen deletion = cut-discharged; the unlicensed-deletion law is staged on a
+  non-frozen declared file), C20 consumes the leg's `retiredSuitePaths` — **35/35**.
+- **FIXED (a real instrument bug).** `ute-cut-closure`'s placement arm graded a foreign `--root`
+  fixture with THIS repo's build face; now scoped to `self` and reported as `placements=self|fixture`.
+- **RE-BASED, mutation batteries intact.** `ute-p0-assets.test` derives from A0 and grades in a
+  materialised throwaway repo (5 → 0 failures); `ute-family-inventory.test` (2 → 0, mutants 32/32),
+  `ute-cut-closure.test` (3 → 0), `ute-retirement-gate.test` (2 → 0, 45 pass) read the frozen tree by
+  object id; LIVE arms restate the post-cut facts (`retiredFiles=0`; the seeded rows add
+  `UTE_OLD_PATH_PARTIALLY_REMOVED`, which is the cut — the frozen twin still grades each row's terms
+  narrowly and positively).
+- **REQUIRED CI grew by two successors**, because the guarantee has to live somewhere: `ute-p0-assets
+  --check` (frozen 37 modules / 180 files: delete 146, replace 2, keep 32, `cut(148/148)`) and
+  `ute-cut-closure --check` (148 deleted sources, 0 prod refs, 0 dist residuals, 0 duplicate
+  declarants + the retirement record). Both were previously executed by NO CI layer; they are now
+  `ci-integration` legs in `dev/ci/eb3-ci-manifest.json` and steps in the workflow, and
+  `eb3-ci-required` stays `workflows=10 findings=0`.
+- **Census re-earned.** Baseline regenerated through the instrument's attributed path (712 → 599
+  files, 11 roots, `accepted_by round80-a1-cut`, reason naming the cut). The population shrank by the
+  licensed deletion, not by omission.
+
+The vitest population stays **238** (the `ute-vnext-a1` leg: 7 suites / 206 tests / exit 0; the
+bound `ci-integration` leg: 15 files / 238 passed). Nothing was restored, no skip widened, no
+negative control removed, no A0 evidence edited.
