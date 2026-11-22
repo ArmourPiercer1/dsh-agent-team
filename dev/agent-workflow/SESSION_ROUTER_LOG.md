@@ -10678,3 +10678,31 @@ Disclosed: settlement reason kept under the 512-char cap (E3 verified no SETTLEM
 also closed a pre-existing round-72 omission; blueprint-fence re-recorded one literal moved L4324->L4401.
 NOT proven: no PRODUCT-PROVEN row, scripted mock model, per-DSH_HOME operator model is NOT multi-user RBAC,
 `handoff.create` not exercised live, crash/Stop duplicate-safety cited from the earlier d2/d3 judges.
+
+### R75 — process execution authority: the v4 grammar was sufficient all along; the chain was broken in CARRIAGE
+
+Fitness check (the ruling's step 0): v4 already carries `toolBindings[].authorization` (allow/ask/deny) and
+`execution.executionBoundary` at the grammar (`blueprint-v4.ts:100-204`), the authoring map projects them
+(`v4-authoring-map.ts:146-210`), and then TWO links silently dropped them: the restriction projection
+(`member-io-policy/src/compile.ts:237-283`) and the centre binding (`centre-install.mjs:55-73`), which mapped only
+effective lanes. So admission was judging a `Binding.process` PATH lane that NO surface ever declared. No schema
+change is needed — this is a carriage bug, and `io.process` stays rejected (a cwd never bounds what a shell opens).
+
+Admission now keys on `ToolAuthorized ∧ MemberValid ∧ SandboxReady ∧ BindingValid`
+(`admission.ts:409-452`): no authorization -> `ADMISSION_EXECUTION_UNAUTHORIZED`; tool-level deny wins over
+everything; boundary outside the closed vocabulary -> unauthorized; executor not `ready` -> `ADMISSION_EXECUTOR_
+UNAVAILABLE` (UNKNOWN is not ready); ask -> the existing durable Control + one-shot grant + post-approval recheck;
+else allow. The cwd is recorded as CONTEXT (`judgedLocator`) and never consulted. Resource bounds remain the three
+lanes + the OS sandbox (declared-read-intent admission, then Landlock). `grep` stays `fs.read` (ADM-129), PTC
+stays refused for its four-part missing proof.
+
+Arms ADM-125..130 (leg 194 cases / 192 pass + 2 disclosed skips). Live `d3:persistent-subprocess` stays REFUTED,
+now deterministically and for a NEW, honest reason: the composition declares no `toolBindings[]` for `bash`
+(authorizing the one-shot shell row would run the host's base, unconfined `ctx.shell`), and mounting
+`dsh-tool-bash-persistent` changes the model-visible `bash` parameter surface for every governed deployment —
+a composition change that needs its own live verification, not a smuggled ruling.
+
+Gates at `9989c3289`: leg 194/192+2, catalog 785/38 uncollected, cut-closure, P0, docs-sync, 28 placements,
+ci-required, bound vitest 238, artifacts ok/1939, and full ci-pr-gate pass=10 fail=0 (census identity set identical
+across two captures). Two gate defects were repaired rather than waived: SLICE-33 and u6-pr3-bl01 asserted the
+DELETED process lane and now assert the real authorization; the blueprint fence re-recorded a LINE SHIFT only.
