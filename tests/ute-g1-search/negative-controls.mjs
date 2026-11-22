@@ -17,10 +17,12 @@
  *   NC-RETIRED-SHADOW-ABSENT    the deleted PD-16 module and every
  *                               `confined*SpecOf` stay gone (LIVE mount: the
  *                               attach appends nothing).
- *   NC-NEW-PATH-LANE-BITES-GREP re-point of NC-MEMBER grep: widening the READ
+ *   NC-MEMBER grep (was NC-NEW-PATH-LANE-BITES-GREP): widening the READ
  *                               lane on the NEW path turns the same denial into
  *                               an admitted, out-of-lane read.
- *   NC-NEW-PATH-LANE-BITES-GLOB re-point of NC-MEMBER glob, same law.
+ *   NC-MEMBER glob (was NC-NEW-PATH-LANE-BITES-GLOB), same law. The two ids
+ *   are the retirement unit's members, so the frozen ledger's
+ *   `NC-MEMBER <member>` coverage contract still has a REAL control per member.
  *   NC-GOLDEN-FROZEN            the 15-row fixture was NOT re-recorded: the new
  *                               path reproduces every cell byte-for-byte.
  *   NC-SUCCESSORS-EXIST         the named successors are on disk.
@@ -113,7 +115,7 @@ const controls = [
     },
   },
   {
-    id: 'NC-NEW-PATH-LANE-BITES-GREP',
+    id: 'NC-MEMBER grep',
     run: async () => {
       const surface = await loadNewPathSurface()
       const baseline = await runVector(vector('SR-G3-outside-denied'), surface)
@@ -125,7 +127,7 @@ const controls = [
     },
   },
   {
-    id: 'NC-NEW-PATH-LANE-BITES-GLOB',
+    id: 'NC-MEMBER glob',
     run: async () => {
       const surface = await loadNewPathSurface()
       const baseline = await runVector(vector('SR-L2-outside-denied'), surface)

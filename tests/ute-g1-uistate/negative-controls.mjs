@@ -70,7 +70,33 @@ const SUCCESSORS = Object.freeze([
 ])
 
 /** The control list, shared by the lane suite (module API) and the CLI. */
+
+/**
+ * The retirement unit's members, measured post-cut: the frozen golden still
+ * carries the member's rows (per family), and the governed body that served it
+ * is ABSENT. A golden that lost the member, or a resurrected governed family,
+ * turns one of these RED instead of hiding behind the frozen baseline.
+ */
+const memberControls = (members) => members.map(({ member, family }) => ({
+  id: `NC-MEMBER ${member}`,
+  run: () => {
+    const rows = golden.filter((record) => record.entry === member && record.family === family)
+    if (rows.length === 0) throw new Error(`${member} (${family}) has no frozen baseline row; the retirement unit lost the member`)
+    if (existsSync(join(REPO_ROOT, 'packages/tools/families/ui.mjs'))) throw new Error('the retired ui family body is back; the member is being re-served')
+    return `frozen-vectors=${String(rows.length)} successor=${family === 'ui' ? 'tests/world-factory/a5sf-ask-precedence.test.mjs' : 'packages/runtime/test/vnext-admission.test.mjs'}`
+  },
+}))
+
 export const CONTROLS = Object.freeze([
+  ...memberControls([
+    { member: 'ask_user_question', family: 'ui' },
+    { member: 'present', family: 'ui' },
+    { member: 'todo_write', family: 'agent-state' },
+    { member: 'get_goal', family: 'agent-state' },
+    { member: 'create_goal', family: 'agent-state' },
+    { member: 'update_goal', family: 'agent-state' },
+    { member: 'exit_plan_mode', family: 'agent-state' },
+  ]),
   {
     id: 'NC-RETIRED-FAMILY-ABSENT',
     run: () => {

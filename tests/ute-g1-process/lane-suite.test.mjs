@@ -202,7 +202,7 @@ test('PROC-5 the POST-CUT control battery is GREEN, and the committed transcript
   const lines = output.trim().split('\n')
   const verdict = lines.filter((line) => line.startsWith('NC-VERDICT ')).at(-1)
   assert.ok(verdict !== undefined, 'the control script must print a verdict')
-  assert.match(verdict, /^NC-VERDICT GREEN controls=8 failed=0$/u, `the controls are not green: ${verdict}`)
+  assert.match(verdict, /^NC-VERDICT GREEN controls=9 failed=0$/u, `the controls are not green: ${verdict}`)
   assert.equal(lines[0].startsWith('ACCEPTED-BY round81-a1-cut reason='), true, 'the re-recorded battery must name this round and its reason')
   // The retired appended-shadow controls are replaced one-for-one by controls
   // that prove the successor is load-bearing (see ROUND80-CI-CLOSURE.md §4).

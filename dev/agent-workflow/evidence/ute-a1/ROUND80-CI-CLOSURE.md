@@ -501,7 +501,7 @@ lane suite as a successor, and every lane suite still exists and is green.
 | suite (now) | pre-81 arm (the 18 hosted reds) | subject | citation | action | NAMED successor |
 | --- | --- | --- | --- | --- | --- |
 | `ute-g1-process` (8/8) | PROC-1 old-path capture | `dsh.process-family` / PD-12 bash shadow | `5d1349767` | **RETIRE** capture; keep `retirementPin` (14-row golden FROZEN) + LIVE mount asserting `attach=none`, `shadowReplaced=no`, definition unchanged | `packages/runtime/test/vnext-admission.test.mjs`, `tests/ute-g1-fs/lane-suite.test.mjs`, `tests/world-factory/a5sf-pd12-bash-governance.test.mjs` |
-| | PROC-5 battery (10 old controls) | same | `5d1349767`/`93ba0a1d1` | **RETIRE per subject** (member widening, shadow disposal, env/cap/timeout mutations); **KEEP/REPOINT** the host-free law controls; add absence/host-modules-only/successor pins → 8 controls | `tests/ute-g1-process/negative-controls.mjs` (new battery), `a5sf-pd12-bash-governance.test.mjs`, `vnext-admission` |
+| | PROC-5 battery (10 old controls) | same | `5d1349767`/`93ba0a1d1` | **RETIRE per subject** (member widening, shadow disposal, env/cap/timeout mutations); **KEEP/REPOINT** the host-free law controls; add absence/host-modules-only/successor pins + a real post-cut `NC-MEMBER bash` (host module serves an in-lane call) → 9 controls | `tests/ute-g1-process/negative-controls.mjs` (new battery), `a5sf-pd12-bash-governance.test.mjs`, `vnext-admission` |
 | | PROC-6 composition probe | governed plane + shadow ownership | `93ba0a1d1` | **REPOINT** to a host-free post-cut source-fact probe (no plane import, no fixture); transcript re-recorded | `packages/runtime/src/plugin/vnext/agent-bindings.mjs` (SHAPE A `mountHostModules`), `probe-composition.mjs` |
 | | PROC-8 pwsh exclusion | baseline scope law | — | **REPOINT** input (`measureWiring` now reads the post-cut probe); law and 1-of-2-members disclosure unchanged | `probe-composition.mjs`, `a5sf-pd12-bash-governance.test.mjs` |
 | `ute-g1-search` (8/8) | old-path corpus arm | `dsh.search-family` / PD-16 shadow | `5d1349767` | **RETIRE** capture; **new path owns the golden** (15/15 vectors reproduce, `verdict.oldBaseline=RETIRED-BY-A0`); golden NOT re-recorded | self new-path arm (`lib/new-path.mjs`), `new-path-controls.mjs`, `vnext-admission` |
@@ -509,14 +509,14 @@ lane suite as a successor, and every lane suite still exists and is green.
 | | old VERDICT arm | same | — | **REPOINT** the term: `oldBaseline=RETIRED-BY-A0` instead of a reproduced old baseline | self new-path arm |
 | `ute-g1-web` (9/9) | golden-stable capture (2 passes) | `dsh.web-family` / PD-27 shadow | `5d1349767`+`93ba0a1d1` | **RETIRE** capture; keep `retirementPin` (15-row golden FROZEN) + LIVE mount asserting `attachAppendedNothing` | `tests/world-factory/a5sf-pd18-web-ptc.test.mjs`, `tests/world-factory/a5sf-web-contract.test.mjs`, `vnext-admission` |
 | | socket-witness arm | the INSTRUMENT (undici connect bag) | `5d1349767` | **REPOINT**: drive the witness with a REAL undici `fetch` against the lane's own loopback fixture (was driven through the deleted shadow); the unwrap property is still measured | `tests/ute-g1-web/lane-suite.test.mjs` (this arm), `a5sf-pd18-web-ptc.test.mjs` (P1 guard) |
-| | NC battery (11) | same | `5d1349767`/`93ba0a1d1` | **RETIRE per subject** (member widening, shadow disposal/disposal-race, net shim, concurrent normalization); **KEEP** vocabulary/mutation/design-claim controls; add frozen-golden, absence, host-modules-only, successor, ledger pins → 8 controls | `tests/ute-g1-web/negative-controls.mjs` (new battery), `a5sf-pd18-web-ptc.test.mjs`, `vnext-admission` |
+| | NC battery (11) | same | `5d1349767`/`93ba0a1d1` | **RETIRE per subject** (member widening, shadow disposal/disposal-race, net shim, concurrent normalization); **KEEP** vocabulary/mutation/design-claim controls; add frozen-golden, absence, host-modules-only, successor, ledger pins + `NC-MEMBER` per member → 10 controls | `tests/ute-g1-web/negative-controls.mjs` (new battery), `a5sf-pd18-web-ptc.test.mjs`, `vnext-admission` |
 | | semantic-difference measurement | legacy `web.mjs` + `web-family/src/*` | `93ba0a1d1` | **RETIRE the measurement**, **KEEP the declaration**: 3 differences stay `blocking:true, approval:null`, recorded cells asserted from the B1 evidence transcript (`semantic-differences.txt`); sources asserted ABSENT | `dev/agent-workflow/evidence/ute3-web-b1-20261120/semantic-differences.txt` (historical), `a5sf-web-contract.test.mjs` |
 | `ute-g1-uistate` (9/9) | golden-stable capture | `dsh.ui-family` + `dsh.agent-state-family` | `5d1349767`+`93ba0a1d1` | **RETIRE** capture (the world imported the deleted `families/ui.mjs`); two `retirementPin`s (69-row golden FROZEN) assert both subjects' surfaces ABSENT | `tests/world-factory/a5sf-ask-precedence.test.mjs`, `vnext-admission` |
-| | per-member NC battery (13) | both families | `5d1349767` | **RETIRE per member** (8 member arms + store witness: no governed body left to mutate); add absence/host/frozen/vocabulary/design/absent-new-path/ledger pins → 8 controls | `a5sf-ask-precedence.test.mjs`, `vnext-admission` |
+| | per-member NC battery (13) | both families | `5d1349767` | **RETIRE per member** (8 member arms + store witness: no governed body left to mutate); add absence/host/frozen/vocabulary/design/absent-new-path/ledger pins + one `NC-MEMBER` per unit member → 14 controls | `a5sf-ask-precedence.test.mjs`, `vnext-admission` |
 | | semantic-difference measurement | `agent-state-family/src/executors.mjs` | `5d1349767` | **RETIRE the measurement** (`measureImplementationSites` read the deleted executors), **KEEP the declaration**: 3 differences blocking/unapproved; sources ABSENT; historical probe cited | `dev/agent-workflow/evidence/ute3-uistate-b1-20261121/composition-probe.txt` (historical) |
 | `ute-g1-agentctl` (7/7) | test 1 old-path capture | `dsh.agent-control-family` / tool plane | `93ba0a1d1` | **RETIRE** capture (the corpus was captured through `team-tool-plane.mjs`); `retirementPin` (42-row golden FROZEN) + absence pin | `vnext-admission`, `tests/world-factory/a5sf-pd21-subagent.test.mjs` |
 | | test 4 semantic measurement | same | `93ba0a1d1` | **RETIRE the measurement** (read the deleted plane), **KEEP the declaration** (3 blocking/unapproved) | `ute3-agentctl-b1-20261121/composition-probe.txt` (historical) |
-| | test 5 NC battery (24) | same | `93ba0a1d1` | **RETIRE per member** (7 `NC-MEMBER` arms + 17 harness arms; no plane to drive); add frozen/absence/host/absent-new-path/ledger pins + `NC-GATE-REFUSES` → 8 controls | `negative-controls.mjs` (new battery), `a5sf-pd21-subagent.test.mjs` |
+| | test 5 NC battery (24) | same | `93ba0a1d1` | **RETIRE per member** (7 `NC-MEMBER` arms + 17 harness arms; no plane to drive); add frozen/absence/host/absent-new-path/ledger pins + one `NC-MEMBER` per each of the seven members → 14 controls | `negative-controls.mjs` (new battery), `a5sf-pd21-subagent.test.mjs` |
 | | test 6 Stage-0 re-derivation | `packages/tools/families/agent-control.mjs` | `93ba0a1d1` | **REPOINT**: assert the COMMITTED probe transcript (the historical measurement) and the descriptor's ABSENCE, instead of re-reading the deleted descriptor | `ute3-agentctl-b1-20261121/composition-probe.txt` |
 
 `ute-g1-fs` is untouched and still green: it is the surviving route-C successor, not a red arm
@@ -533,12 +533,12 @@ one, a mutation arm proving the GREEN is measured):
 
 | transcript | old → new controls | reason |
 | --- | --- | --- |
-| `evidence/ute3-process-b1-20261120/negative-controls.txt` | 10 → 8 | per-subject retirement of the shadow-mutation arms |
+| `evidence/ute3-process-b1-20261120/negative-controls.txt` | 10 → 9 | per-subject retirement of the shadow-mutation arms |
 | `evidence/ute3-process-b1-20261120/composition-probe.txt` | probe → post-cut source facts | the plane import is gone; the probe measures the successor |
-| `evidence/ute3-search-b1-20261120/negative-controls.txt` | 8 → 7 | two lane controls repointed onto the new path, three pins added |
-| `evidence/ute3-web-b1-20261120/negative-controls.txt` | 11 → 8 | per-subject retirement of the shadow-mutation arms |
-| `evidence/ute3-uistate-b1-20261121/negative-controls.txt` | 13 → 8 | per-member retirement (no governed body left) |
-| `evidence/ute3-agentctl-b1-20261121/negative-controls.txt` | 24 → 8 | per-member retirement (no plane left) + gate-refusal control |
+| `evidence/ute3-search-b1-20261120/negative-controls.txt` | 8 → 7 (the two member ids are KEPT and repointed) | two lane controls repointed onto the new path, three pins added |
+| `evidence/ute3-web-b1-20261120/negative-controls.txt` | 11 → 10 | per-subject retirement of the shadow-mutation arms |
+| `evidence/ute3-uistate-b1-20261121/negative-controls.txt` | 13 → 15 | per-member retirement (no governed body left) |
+| `evidence/ute3-agentctl-b1-20261121/negative-controls.txt` | 24 → 14 | per-member retirement (no plane left) + gate-refusal control |
 
 **Zero golden/corpus files were re-recorded.** `tests/ute-g1-{process,web,uistate,agentctl}/golden/
 old-path.tsv` (14 / 15 / 69 / 42 rows) and `tests/ute-g1-search/golden/` stay byte-identical to their
@@ -560,6 +560,18 @@ Every suite also calls `assertSuccessorsExist()`, so a deleted successor turns t
 than leaving the retirement unjustified. `runRetirementControls()` prints the exact
 `NC <id> ok — detail` / `NC-VERDICT GREEN controls=n failed=0` transcript each lane compares.
 
+**The retirement ledger moved with its evidence, and only there.** `ute-retirement.json`'s seven
+`negativeControlsPass` rows pin the exact verdict tokens their evidence file must contain; a
+re-recorded transcript that no longer carries the old tokens is `UTE_EVIDENCE_CONTRADICTED` (the gate
+working as designed). Round 81 therefore updated each row's `evidence.expect` to the re-recorded
+transcript and left the `verdict: true` where the battery is green. The unit membership was NOT
+touched: every retirement unit keeps one `NC-MEMBER <member>` control, measured post-cut (the frozen
+golden still carries that member's vectors and the surface that served it is absent; search's two
+member controls are the new path's real lane-widening mutations). So the gate's
+`coverage.negativeControlsPass` still equals the unit's members, and dropping a member or
+resurrecting a retired surface reds the lane. The ledger's `note` fields gained a round-81 sentence
+saying exactly this.
+
 ### 4.5 Local verification at this round's tree
 
 The census argv, verbatim as the `ci-census` job runs it (89 tests):
@@ -579,7 +591,7 @@ tests/ute-g1-uistate/lane-suite.test.mjs ......... 9
 
 Suite verdict lines printed by the run: `UTE-G1-FS-VERDICT GREEN vectors=16 pending=0`,
 `UTE-G1-SEARCH … oldBaseline=RETIRED-BY-A0` + `NEW-PATH-VERDICT GREEN vectors=15`,
-`UTE-G1-WEB-CONTROLS GREEN controls=8 transcript=exact mutated=RED`,
-`PROC-GOLDEN vectors=14 state=FROZEN re-records=0` + `NC-VERDICT GREEN controls=8 failed=0`,
-`UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42 …`,
-`UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=8 transcript=exact`.
+`UTE-G1-WEB-CONTROLS GREEN controls=10 transcript=exact mutated=RED`,
+`PROC-GOLDEN vectors=14 state=FROZEN re-records=0` + `NC-VERDICT GREEN controls=9 failed=0`,
+`UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42 …` + `NC-VERDICT GREEN controls=14 failed=0`,
+`UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=15 transcript=exact`.

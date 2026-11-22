@@ -2,9 +2,10 @@ ACCEPTED-BY round81-a1-cut reason=re-record of the PROCESS battery: the appended
 NC NC-RETIRED-SHADOW-ABSENT ok — deleted=3 specSymbols=none route-c-row=host-modules-only
 NC NC-HOST-MODULES-ONLY ok — successor=composition-declared-native-modules appended=0
 NC NC-SUCCESSORS-EXIST ok — named=4
+NC NC-MEMBER bash ok — host-module=served in-lane-call=ok appended=0
 NC NC-GOLDEN-FROZEN ok — vectors=14 re-recorded=no
 NC NC-CATEGORY-TOTAL ok — entries=9 unknown-reachable=no
 NC NC-PWSH-EXCLUSION-CONDITIONAL ok — wiring=serves-none exclusion=LEGAL arms-refused=3 covered-arm=COVERED
 NC NC-VOCABULARY-CLOSED ok — categories=9 residual-rows=0
 NC NC-LEDGER-CITES-SUCCESSOR ok — subject=dsh.process-family citations=4 lane-booked=yes
-NC-VERDICT GREEN controls=8 failed=0
+NC-VERDICT GREEN controls=9 failed=0

@@ -175,7 +175,7 @@ test('the POST-CUT control battery holds and the committed transcript is exact',
   const { verdict, results, failures } = await runNegativeControls()
   assert.deepEqual(failures, [], 'a negative control failed; the retirement is not load-bearing')
   assert.equal(verdict, 'GREEN')
-  assert.equal(results.length, 8, 'the battery has EIGHT controls; dropping one must red, not silently lower the count')
+  assert.equal(results.length, 15, 'the battery has FIFTEEN controls; dropping one must red, not silently lower the count')
   // The per-member arms retired with the governed body. Their property is
   // carried by the named successors, asserted here rather than asserted away.
   for (const id of [
@@ -198,7 +198,7 @@ test('the POST-CUT control battery holds and the committed transcript is exact',
   assert.match(fresh[0], /^ACCEPTED-BY round81-a1-cut reason=/u, 'the re-recorded battery must name this round and its reason')
   const committed = readFileSync(join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'ute3-uistate-b1-20261121', 'negative-controls.txt'), 'utf8').trim().split('\n')
   assert.deepEqual(fresh, committed, 'the committed UI/AS negative-control transcript must be exactly a fresh run')
-  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=8 failed=0')
+  assert.equal(fresh.at(-1), 'NC-VERDICT GREEN controls=15 failed=0')
   console.log(`UTE-G1-UISTATE-CONTROLS verdict=${verdict} controls=${String(results.length)} transcript=exact`)
 })
 

@@ -22,13 +22,15 @@
  *                             (host-free, kept from B1).
  *   NC-NO-NEW-PATH-CLAIM      the evidence still records NEW-PATH-ABSENT.
  *   NC-LEDGER-CITES-SUCCESSOR the frozen licence books this subject and lane.
- *   NC-GATE-REFUSES           `ute-retirement-gate` still REFUSES the family for
- *                             the measured terms (the gate itself is the control).
+ * (The gate's own refusal is asserted by the lane suite's test 7, which runs it
+ * against the COMMITTED transcript; it is deliberately NOT a control here — a
+ * control that spawns the gate would read this very file mid-write.)
  *
  * Retired-control successor map (full table in ROUND80-CI-CLOSURE.md §4):
  *   NC-MEMBER <member> x7 -> packages/runtime/test/vnext-admission.test.mjs
  *                            + tests/world-factory/a5sf-pd21-subagent.test.mjs
- *   NC-TRANSCRIPT / harness arms -> NC-GATE-REFUSES (the refusal is still graded)
+ *   NC-TRANSCRIPT / harness arms -> tests/ute-g1-agentctl/lane-suite.test.mjs test 7
+ *                                  (the gate refusal is still graded there)
  *
  * The transcript is re-recorded under `accepted_by=round81-a1-cut`.
  *
@@ -64,7 +66,26 @@ const SUCCESSORS = Object.freeze([
   'tests/world-factory/a5sf-pd21-subagent.test.mjs',
 ])
 
+
+/**
+ * The retirement unit's SEVEN members, measured post-cut: the frozen golden
+ * still carries each member's vectors and the tool plane that served it is
+ * ABSENT. A golden that lost a member, or a resurrected plane, turns the
+ * corresponding control RED instead of hiding behind the frozen baseline.
+ */
+const memberControls = (members) => members.map((member) => ({
+  id: `NC-MEMBER ${member}`,
+  run: () => {
+    const rows = golden.filter((record) => record.entry === member)
+    if (rows.length === 0) throw new Error(`${member} has no frozen baseline row; the retirement unit lost the member`)
+    if (existsSync(join(REPO_ROOT, 'packages/runtime/src/plugin/live/team-tool-plane.mjs'))) throw new Error('the retired tool plane is back; the member is being re-served')
+    return `frozen-vectors=${String(rows.length)} plane=absent`
+  },
+}))
+const MEMBERS = Object.freeze(['subagent', 'subagent_fork', 'send_message', 'interrupt_agent', 'list_agents', 'list_subagent_models', 'workflow'])
+
 const controls = [
+  ...memberControls(MEMBERS),
   {
     id: 'NC-RETIRED-PLANE-ABSENT',
     run: () => {
@@ -126,20 +147,6 @@ const controls = [
       const row = subjectRow('dsh.agent-control-family')
       if (!row.successors.includes('tests/ute-g1-agentctl/lane-suite.test.mjs')) throw new Error('the frozen licence does not book this lane')
       return `subject=${row.id} citations=${String(row.citations.length)} lane-booked=yes`
-    },
-  },
-  {
-    id: 'NC-GATE-REFUSES',
-    run: () => {
-      const run = spawnSync(process.execPath, [join(REPO_ROOT, 'scripts', 'ute-retirement-gate.mjs'), '--family', 'agent-control', '--json'], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
-      if (run.status !== 1) throw new Error(`the gate must refuse the family (exit 1); got ${String(run.status)}: ${run.stderr}`)
-      const gate = JSON.parse(run.stdout)
-      if (gate.allowed.length !== 0) throw new Error('the gate ALLOWED a family it must refuse')
-      const codes = new Set(gate.refused[0].codes)
-      for (const code of ['UTE_NEW_PATH_UNVERIFIED', 'UTE_SEMANTIC_DIFFERENCES_UNRESOLVED', 'UTE_VECTOR_UNREPRODUCED']) {
-        if (!codes.has(code)) throw new Error(`the gate no longer refuses on ${code}; got ${[...codes].join(',')}`)
-      }
-      return `refused=${[...codes].sort().join(',')}`
     },
   },
 ]

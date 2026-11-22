@@ -187,7 +187,7 @@ test('the POST-CUT control battery re-runs, its committed transcript is exact, a
   })
   const freshLines = fresh.trim().split('\n')
   assert.ok(
-    freshLines.includes('NC-VERDICT GREEN controls=8 failed=0'),
+    freshLines.includes('NC-VERDICT GREEN controls=10 failed=0'),
     `the battery must print an exact GREEN verdict: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`,
   )
   assert.match(fresh, /^ACCEPTED-BY round81-a1-cut reason=/mu, 'the re-recorded battery must name this round and its reason')
@@ -202,8 +202,8 @@ test('the POST-CUT control battery re-runs, its committed transcript is exact, a
     env: { ...process.env, UTE_WEB_NC_MUTATE: 'drop-widening' },
   })
   assert.equal(mutated.status, 1, 'the mutated battery must exit 1')
-  assert.match(`${mutated.stdout}\n${mutated.stderr}`, /NC-VERDICT RED controls=8 failed=1/u, `the mutated battery did not red: ${mutated.stdout}${mutated.stderr}`)
-  console.log('UTE-G1-WEB-CONTROLS GREEN controls=8 transcript=exact mutated=RED')
+  assert.match(`${mutated.stdout}\n${mutated.stderr}`, /NC-VERDICT RED controls=10 failed=1/u, `the mutated battery did not red: ${mutated.stdout}${mutated.stderr}`)
+  console.log('UTE-G1-WEB-CONTROLS GREEN controls=10 transcript=exact mutated=RED')
 })
 
 test('the semantic differences stay DECLARED, blocking, and unapproved; their measurement retired with the source', async () => {

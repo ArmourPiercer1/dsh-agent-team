@@ -76,7 +76,25 @@ const RETIRED_PATHS = Object.freeze([
 const MUTATE = process.env.UTE_WEB_NC_MUTATE === 'drop-widening'
 
 let liveAttachAppendedNothing
+
+/**
+ * The retirement unit's members, measured post-cut: the frozen golden still
+ * carries the member's vectors, and the surface that served it is ABSENT. A
+ * golden that lost the member, or a resurrected shadow that re-serves it, turns
+ * one of these RED instead of hiding behind the frozen baseline.
+ */
+const memberControls = (members) => members.map((member) => ({
+  id: `NC-MEMBER ${member}`,
+  run: () => {
+    const rows = golden.filter((record) => record.entry === member)
+    if (rows.length === 0) throw new Error(`${member} has no frozen baseline row; the retirement unit lost the member`)
+    if (existsSync(join(REPO_ROOT, 'packages/tools/families/web.mjs'))) throw new Error('the retired family body is back; the member is being re-served')
+    return `frozen-vectors=${String(rows.length)} retired=absent`
+  },
+}))
+
 const controls = [
+  ...memberControls(['web_fetch', 'web_search']),
   {
     id: 'NC-GOLDEN-FROZEN',
     run: () => {

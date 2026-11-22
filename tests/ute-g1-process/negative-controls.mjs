@@ -104,6 +104,38 @@ const controls = [
     },
   },
   {
+    id: 'NC-MEMBER bash',
+    run: async () => {
+      // The retirement unit's only exercisable member. Post-cut there is no
+      // appended shadow to widen: the control proves the member is served by the
+      // preset's OWN module, that the A1 seam appends nothing, and that a real
+      // in-lane call reaches the host executor (a resurrected shadow, or a member
+      // that stopped routing, turns this RED).
+      const { mkdirSync, writeFileSync } = await import('node:fs')
+      const scratch = join(REPO_ROOT, '.artifacts', 'tmp', 'ute-g1-process', `nc-member-${String(process.pid)}`)
+      mkdirSync(join(scratch, 'inside'), { recursive: true })
+      writeFileSync(join(scratch, 'inside', 'a.txt'), 'alpha\n')
+      const { mountRouteCWorld } = await import('./lib/world.mjs')
+      const world = await mountRouteCWorld({
+        label: 'nc-member-bash',
+        fixtureRoot: scratch,
+        cwd: join(scratch, 'inside'),
+        readRoots: [join(scratch, 'inside')],
+      })
+      try {
+        if (world.attachAppendedNothing !== true) throw new Error('the attach appended a shadow: the member is not being served by the preset')
+        if (world.shadowReplaced !== false) throw new Error('the preset bash definition was replaced by an appended shadow')
+        const settled = await world.dispatch('bash', { command: 'printf ute-member-ok', description: 'NC-MEMBER bash' })
+        if (settled.isError === true) throw new Error(`the host bash module refused an in-lane call: ${settled.text}`)
+        if (!settled.text.includes('ute-member-ok')) throw new Error(`the host bash module did not run the command: ${settled.text}`)
+        if (world.baseCalls() < 1) throw new Error('the host bash executor was never called')
+        return 'host-module=served in-lane-call=ok appended=0'
+      } finally {
+        await world.dispose()
+      }
+    },
+  },
+  {
     id: 'NC-GOLDEN-FROZEN',
     run: () => {
       if (golden.length !== CORPUS.length) throw new Error(`the frozen fixture carries ${String(golden.length)} rows but the corpus has ${String(CORPUS.length)}`)

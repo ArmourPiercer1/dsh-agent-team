@@ -1,4 +1,11 @@
 ACCEPTED-BY round81-a1-cut reason=re-record of the AGENT-CONTROL battery: the retired tool plane retired per subject (ROUND80-CI-CLOSURE.md §4)
+NC NC-MEMBER subagent ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER subagent_fork ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER send_message ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER interrupt_agent ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER list_agents ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER list_subagent_models ok — frozen-vectors=6 plane=absent
+NC NC-MEMBER workflow ok — frozen-vectors=6 plane=absent
 NC NC-RETIRED-PLANE-ABSENT ok — deleted=3 specSymbols=none
 NC NC-HOST-MODULES-ONLY ok — successor=composition-declared-native-modules appended=0
 NC NC-SUCCESSORS-EXIST ok — named=3
@@ -6,5 +13,4 @@ NC NC-GOLDEN-FROZEN ok — vectors=42 re-recorded=no
 NC NC-CATEGORY-TOTAL ok — invented=refused
 NC NC-NO-NEW-PATH-CLAIM ok — new-path=ABSENT claimed=no
 NC NC-LEDGER-CITES-SUCCESSOR ok — subject=dsh.agent-control-family citations=4 lane-booked=yes
-NC NC-GATE-REFUSES ok — refused=UTE_EVIDENCE_CONTRADICTED,UTE_MEMBER_UNCOVERED,UTE_NEW_PATH_UNVERIFIED,UTE_OLD_PATH_PARTIALLY_REMOVED,UTE_SEMANTIC_DIFFERENCES_UNRESOLVED,UTE_VECTOR_UNREPRODUCED
-NC-VERDICT GREEN controls=8 failed=0
+NC-VERDICT GREEN controls=14 failed=0

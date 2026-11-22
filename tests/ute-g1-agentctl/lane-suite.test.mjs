@@ -143,7 +143,7 @@ function semanticDifferenceLineOf(difference) {
 test('5. the POST-CUT negative-control battery is green and the committed transcript is a fresh run', () => {
   const fresh = execFileSync(process.execPath, [join(REPO_ROOT, 'tests', 'ute-g1-agentctl', 'negative-controls.mjs')], { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
   const freshLines = fresh.split('\n').filter((line) => line.length > 0)
-  assert.ok(freshLines.includes('NC-VERDICT GREEN controls=8 failed=0'), `the battery must be green: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`)
+  assert.ok(freshLines.includes('NC-VERDICT GREEN controls=14 failed=0'), `the battery must be green: ${freshLines.filter((line) => line.startsWith('NC-VERDICT')).join(' | ')}`)
   assert.match(freshLines[0], /^ACCEPTED-BY round81-a1-cut reason=/u, 'the re-recorded battery must name this round and its reason')
   for (const id of [
     'NC-RETIRED-PLANE-ABSENT',
@@ -153,13 +153,12 @@ test('5. the POST-CUT negative-control battery is green and the committed transc
     'NC-CATEGORY-TOTAL',
     'NC-NO-NEW-PATH-CLAIM',
     'NC-LEDGER-CITES-SUCCESSOR',
-    'NC-GATE-REFUSES',
   ]) {
     assert.ok(freshLines.some((line) => line.startsWith(`NC ${id} `)), `${id} must be present`)
   }
   const committed = readFileSync(join(EVIDENCE, 'negative-controls.txt'), 'utf8').split('\n').filter((line) => line.length > 0)
   assert.deepEqual(freshLines, committed, 'the committed negative-control transcript must be exactly a fresh run (no shrunk battery)')
-  console.log('NC-VERDICT GREEN controls=8 failed=0')
+  console.log('NC-VERDICT GREEN controls=14 failed=0')
 })
 
 test('6. the Stage-0 evidence is seven dual members and route-C serves none', () => {

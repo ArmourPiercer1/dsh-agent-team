@@ -1,4 +1,6 @@
 ACCEPTED-BY round81-a1-cut reason=re-record of the WEB battery: old-path shadow controls retired per subject (ROUND80-CI-CLOSURE.md §4)
+NC NC-MEMBER web_fetch ok — frozen-vectors=12 retired=absent
+NC NC-MEMBER web_search ok — frozen-vectors=3 retired=absent
 NC NC-GOLDEN-FROZEN ok — vectors=15 re-recorded=no
 NC NC-RETIRED-SHADOW-ABSENT ok — deleted=3 live-attach=appends-nothing
 NC NC-HOST-MODULES-ONLY ok — successor=composition-declared-native-modules appended=0
@@ -7,4 +9,4 @@ NC NC-CATEGORY-TOTAL ok — observed=8 invented=refused categories=9
 NC NC-GOLDEN-MUTATION ok — flipped=WB-F1-inline-text differs=yes
 NC NC-GOLDEN-DESIGN-CLAIMS ok — rows=15 claims=hold
 NC NC-LEDGER-CITES-SUCCESSOR ok — subject=dsh.web-family citations=4 lane-booked=yes
-NC-VERDICT GREEN controls=8 failed=0
+NC-VERDICT GREEN controls=10 failed=0

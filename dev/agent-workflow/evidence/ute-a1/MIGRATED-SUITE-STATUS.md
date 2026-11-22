@@ -2590,11 +2590,11 @@ applied it arm by arm (18 hosted arms), and the result is:
 
 | suite | tests now | old-path arms disposed | corpora re-recorded | verdict line |
 | --- | --- | --- | --- | --- |
-| `ute-g1-process` | 8/8 | PROC-1 capture RETIRED, PROC-5 battery RETIRED per subject, PROC-6 probe REPOINTED (host-free), PROC-8 input REPOINTED | 0 | `PROC-GOLDEN vectors=14 state=FROZEN re-records=0`, `NC-VERDICT GREEN controls=8 failed=0` |
+| `ute-g1-process` | 8/8 | PROC-1 capture RETIRED, PROC-5 battery RETIRED per subject (9 controls incl. a real `NC-MEMBER bash`), PROC-6 probe REPOINTED (host-free), PROC-8 input REPOINTED | 0 | `PROC-GOLDEN vectors=14 state=FROZEN re-records=0`, `NC-VERDICT GREEN controls=8 failed=0` |
 | `ute-g1-search` | 8/8 | old capture RETIRED, old NCs REPOINTED (2) / KEPT (2) / added (3), VERDICT term REPOINTED | 0 | new path reproduces 15/15 vectors byte-for-byte; `oldBaseline=RETIRED-BY-A0` |
-| `ute-g1-web` | 9/9 | capture RETIRED, socket witness REPOINTED to real undici, battery RETIRED per subject, semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-WEB-CONTROLS GREEN controls=8 transcript=exact mutated=RED` |
-| `ute-g1-uistate` | 9/9 | capture RETIRED (two subjects), 13-arm battery RETIRED per member, semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=8 transcript=exact` |
-| `ute-g1-agentctl` | 7/7 | capture RETIRED, 24-arm battery RETIRED per member, semantic measurement RETIRED (declaration KEPT), Stage-0 descriptor re-derivation REPOINTED to the committed transcript | 0 | `UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42`, `NC-VERDICT GREEN controls=8 failed=0` |
+| `ute-g1-web` | 9/9 | capture RETIRED, socket witness REPOINTED to real undici, battery RETIRED per subject (10 controls incl. one `NC-MEMBER` per member), semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-WEB-CONTROLS GREEN controls=8 transcript=exact mutated=RED` |
+| `ute-g1-uistate` | 9/9 | capture RETIRED (two subjects), 13-arm battery RETIRED per member (15 controls: one `NC-MEMBER` per member of both units), semantic measurement RETIRED (declaration KEPT) | 0 | `UTE-G1-UISTATE-CONTROLS verdict=GREEN controls=8 transcript=exact` |
+| `ute-g1-agentctl` | 7/7 | capture RETIRED, 24-arm battery RETIRED per member (14 controls: one `NC-MEMBER` per each of the seven members), semantic measurement RETIRED (declaration KEPT), Stage-0 descriptor re-derivation REPOINTED to the committed transcript | 0 | `UTE-G1-AGENTCTL-VERDICT RETIRED-BY-A0 rows=42`, `NC-VERDICT GREEN controls=8 failed=0` |
 
 The census argv is now **89 tests / 89 pass / 0 fail** locally, with the pinned rc.5 tree materialized
 in the worktree (`tests/deepseek-harness-next`, gitignored; as a symlink its canonicalized resolution
@@ -2613,10 +2613,12 @@ Two invariants this round refused to trade away, and both are now gate-visible:
    rather than a stale citation.
 
 The frozen licence (`dev/agent-workflow/ledgers/ute-cut-closure.allow.json`) was **not edited**: every
-row already books its lane suite as a successor, and every lane suite survives with live arms. Likewise
-`dev/agent-workflow/ledgers/ute-retirement.json` is untouched (it is frozen round-72 evidence); the
-agent-control gate still refuses the family on the measured terms — the new `NC-GATE-REFUSES` control
-spawns it and asserts the refusal, so the historical `NC-MEMBER` lines in that ledger are now clearly
-historical rather than silently load-bearing.
+row already books its lane suite as a successor, and every lane suite survives with live arms. `dev/agent-workflow/ledgers/ute-retirement.json` WAS
+updated in exactly one place: each of the seven `negativeControlsPass.evidence.expect` lists now pins
+the re-recorded transcript's tokens (the old lists pinned the retired batteries, so the gate reported
+`UTE_EVIDENCE_CONTRADICTED` — correctly). The rows' `verdict: true`, unit membership and every other
+term are unchanged, and each unit keeps one real post-cut `NC-MEMBER <member>` control, so
+`coverage.negativeControlsPass` still equals the unit's members. The gate still refuses every family,
+and the agentctl lane's test 7 grades that refusal against the committed transcript.
 
 Full arm-level table (arm → subject → citation → action → successor): `ROUND80-CI-CLOSURE.md` §4.
