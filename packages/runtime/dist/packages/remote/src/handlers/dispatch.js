@@ -280,6 +280,15 @@ export const REMOTE_BACKING_ERROR_CODES = [
     // s6-principal — S6_PRINCIPAL_ERROR_CODES (A32 spoof rejections)
     'TEAM_REMOTE_FOREIGN_TEAM',
     'TEAM_REMOTE_PRINCIPAL_INVALID',
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — the
+    // host-surface refusal vocabulary's REMOTE code. A governed (centre-configured)
+    // row serves the S6 plane as a CONTROL PLANE only; a command whose actual
+    // effect is agent execution (dispatch a native tool / shell / agent I/O) is
+    // refused with this EXISTING code (the product's own host-surface refusal
+    // vocabulary — no new policy code is invented). It reaches the wire because
+    // the production dispatcher raises it as a typed `TeamPluginError`, and
+    // invariant 4b only passes an enumerated backing code.
+    'ADMISSION_REMOTE_UNAVAILABLE',
     // s6-remote — S6_REMOTE_ERROR_CODES (A31 remote-facing codes)
     'TEAM_REMOTE_LEDGER_PAGE_REJECTED',
     'TEAM_REMOTE_COMPATIBILITY_STATE_ABSENT',

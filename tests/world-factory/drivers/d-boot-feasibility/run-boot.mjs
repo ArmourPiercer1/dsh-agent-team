@@ -103,24 +103,24 @@
  *      shape is inherited from the ancestor driver. Artifacts under
  *      evidence/d-boot-feasibility are this driver's, and the report says so.
  *
- * ROUND 60 (2026-11-22, escalation path 3 — `ESCALATION-centre-row-creation-entrance.md`).
- * The round-59 blocker was that the driver's ONLY creation entrance was
- * `POST /team-remote/team.create`, which a centre-configured row refuses by
- * design (C-remote will not build the S6 plane: `root.ts:4324`, seam only
- * installed at `root.ts:4722-4730`; host.ts then records `skipped`, so the
- * route 405s). This revision exercises the entrance the product ALREADY has on
- * such a row: the boot create (`root.ts:4888-4925`). The row's
- * `blueprintSource` is now the v4 `main` blueprint itself (the identical
- * document the remote entrance used to receive via `blueprintId`), the
- * boot-created Team lives on `BOOT_ROOT`, and the Leader's first turn is sent
- * with `apiPrompt` instead of the remote `initialWork`. NO judge, assertion,
- * timeout, retry, composition row or fixture value changed.
+ * ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3; the escalation it
+ * answers = `ESCALATION-centre-row-creation-entrance.md`, RESOLVED). The S6
+ * Remote plane is a GOVERNED MANAGEMENT CONTROL PLANE again on a
+ * centre-configured row: `root.ts` builds and installs it, and the driver's
+ * creation path 3 goes BACK to `POST /team-remote/team.create` on
+ * `ACCEPTANCE_ROOT` with the v4 `main` blueprint and `initialWork.prompt`.
+ * The round-60 boot-create workaround is REMOVED — the row's `blueprintSource`
+ * is the anchor again (the boot root exists only to host the discovery turn),
+ * and the measured Team is minted at RUNTIME through
+ * `root.ts#createAndStartTeam()`.
  *
- * DISCLOSED LIMIT (not hidden): on a centre-configured row the product has no
- * RUNTIME team-creation entrance. The measured Team is boot-created; a second
- * team cannot be created at runtime on this row. That is a product gap
- * (escalation shapes 1/2), not a measurement artifact, and this driver must
- * not be read as proving it away.
+ * THE BOUNDARY IS MEASURED, NOT ASSUMED (four extra live clauses on this same
+ * run, no fixture/judge weakened): an UNAUTHENTICATED `team.create` is refused
+ * and mints no Team; a CROSS-TEAM read is refused with the typed code; a
+ * DUPLICATE `team.create` mints no second Team; and an S6 AGENT-EXECUTION
+ * command (`member.send`) is refused with `ADMISSION_REMOTE_UNAVAILABLE`
+ * (durable fact) with ZERO mock requests added — no S6 request can reach a
+ * model tool without UTE.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
@@ -141,7 +141,7 @@ import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
 import {
-  lastUserTextOfStatic, messagesOf, surfaceNamesOf, textOf,
+  lastUserTextOfStatic, messagesOf, remoteCall, surfaceNamesOf, textOf,
 } from '../../lib/u6-fs-assembly.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -157,11 +157,12 @@ const LEDGER_PATH = join(EVIDENCE, 'run-ledger.jsonl')
 const GRANT_PATH = join(REPO_ROOT, 'dev', 'agent-workflow', 'evidence', 'a5sf-fs-devlive', 'dev-live-grant.json')
 
 const LINE = 'u5a5sfdev1'
-// ROUND 60: ONE root. The Team is minted by the boot create (`root.ts:4888`),
-// so the root the discovery turn and the Leader chain run on IS the team root.
-// The former second `session-dboot-read-team` root existed only because
-// `team.create` minted a fresh team on demand.
+// ROUND 74: TWO roots again, and the split is the point. `BOOT_ROOT` is the
+// row's boot anchor (the discovery turn runs on it); `ACCEPTANCE_ROOT` is minted
+// AT RUNTIME by `POST /team-remote/team.create` through the product's
+// `createAndStartTeam()` path. The measured Team is the runtime-created one.
 const BOOT_ROOT = 'session-dboot-read-root'
+const ACCEPTANCE_ROOT = 'session-dboot-read-team'
 const BP_ANCHOR_ID = 'team.dboot.read.anchor'
 const BP_MAIN_ID = 'team.dboot.read.main'
 const PRESET_ID = 'a5sf-governed-member'
@@ -188,6 +189,7 @@ const SELECTED_CASES = Object.freeze([
   'd:native-read-surface',
   'd:guard-facts',
   'd:centre-facts',
+  'd:remote-creation',
 ])
 
 // Facts the judges read. Set once per boot from the composed rows / fixtures /
@@ -369,10 +371,10 @@ function assertBlueprintText(text, wantId, label) {
 // the composed rows
 // ─────────────────────────────────────────────────────────────────────────────
 function p6t6Directive({ worldId, logDir }) {
-  return { boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: BOOT_ROOT }
+  return { boot: 1, phase: 'create', reportDir: logDir, runStamp: worldId, rootSessionId: ACCEPTANCE_ROOT }
 }
 
-function composedRows({ home, workspaceDir, mainYaml, layer }) {
+function composedRows({ home, workspaceDir, anchorYaml, layer }) {
   const hostRow = layer.rows.find((row) => row?.name === 'dsh-agent-team/host')
   const presetRow = layer.rows.find((row) => row?.config?.id === PRESET_ID)
   if (hostRow === undefined) throw new Error('the shipped layer carries no dsh-agent-team/host row')
@@ -401,14 +403,12 @@ function composedRows({ home, workspaceDir, mainYaml, layer }) {
     ...hostRow.config,
     rootSessionId: BOOT_ROOT,
     bootPhase: 'create',
-    // ROUND 60 (escalation path 3): the row's bootstrap anchor IS the v4
-    // acceptance blueprint, so the boot-created Team (`root.ts:4888-4925`)
-    // binds the same document the driver measures. A centre-configured row
-    // refuses the S6 remote plane (`root.ts:4324`), so `POST
-    // /team-remote/team.create` is a 405 and the boot create is that row's
-    // ONLY creation entrance. This is the identical blueprint the remote
-    // entrance used to receive; no assertion, judge or fixture moves with it.
-    blueprintSource: mainYaml,
+    // ROUND 74: the row's bootstrap anchor is the ANCHOR document again. The
+    // v4 `main` blueprint is written to `blueprintDir` after the discovery turn
+    // and minted at RUNTIME by `POST /team-remote/team.create` — the product
+    // entrance the ruling restored on a centre-configured row. Nothing here
+    // pre-creates the measured Team.
+    blueprintSource: anchorYaml,
     blueprintDir: join(home, 'blueprints'),
     seedMembers: [],
     // THE OPT-IN (both keys are explicit; a v3 design or a missing ceiling
@@ -549,7 +549,7 @@ function makeDecide({ inLanePath, secretPath, workspaceDir }) {
             id: 'call-a5sflm-delegate',
             name: 'team_delegate',
             arguments: {
-              rootSessionId: BOOT_ROOT,
+              rootSessionId: ACCEPTANCE_ROOT,
               requestToken: `${TOK_MEMBER}-delegate`,
               delegationTemplateId: 'worker',
               label: 'a5sflm-worker',
@@ -922,6 +922,37 @@ function judgeCentre(centreRecords) {
   )
 }
 
+/**
+ * ROUND 74 — THE GOVERNED MANAGEMENT PLANE, measured live: the S6 remote plane
+ * is on a centre-configured row, `team.create` mints the Team at RUNTIME, and
+ * the boundary holds (no unauthenticated/cross-team/duplicate creation, no
+ * agent-execution command without UTE).
+ */
+function judgeRemoteCreation(sample) {
+  const s = sample ?? {}
+  const unauth = s.unauthenticated ?? {}
+  const cross = s.crossTeam ?? {}
+  const created = s.created ?? {}
+  const duplicate = s.duplicate ?? {}
+  const execution = s.executionRefusal ?? {}
+  const before = Array.isArray(s.rootsBefore) ? s.rootsBefore : []
+  const after = Array.isArray(s.rootsAfterCreate) ? s.rootsAfterCreate : []
+  const duplicateNewRoots = Array.isArray(duplicate.newRoots) ? duplicate.newRoots : null
+  return verdictOf(
+    'the S6 plane is a GOVERNED MANAGEMENT CONTROL PLANE on a centre row: `team.create` mints the Team at runtime through `createAndStartTeam()`, while unauthenticated, cross-team, duplicate and agent-execution requests all fail closed with zero unauthorised creation',
+    [
+      { id: 'unauth-refused', ok: unauth.status !== 200, detail: `unauthenticated team.create status=${String(unauth.status)} code=${String(unauth.bodyCode)}` },
+      { id: 'unauth-no-team', ok: unauth.mintedTeam === false, detail: `durable roots minted by the unauthenticated request=${String(unauth.mintedTeam)}` },
+      { id: 'cross-team-refused', ok: cross.ok === false && cross.code === 'TEAM_REMOTE_FOREIGN_TEAM', detail: `getProjection(${String(cross.foreignRoot)}) ok=${String(cross.ok)} code=${String(cross.code)}` },
+      { id: 'create-served', ok: created.status === 200 && created.ok === true, detail: `runtime team.create status=${String(created.status)} ok=${String(created.ok)} path=${String(created.path)}` },
+      { id: 'created-runtime-root', ok: before.includes(ACCEPTANCE_ROOT) === false && after.includes(ACCEPTANCE_ROOT), detail: `rootsBefore=${JSON.stringify(before)} rootsAfter=${JSON.stringify(after)}` },
+      { id: 'duplicate-no-second-team', ok: duplicateNewRoots !== null && duplicateNewRoots.length === 1 && duplicateNewRoots[0] === ACCEPTANCE_ROOT, detail: `duplicate create ok=${String(duplicate.ok)} code=${String(duplicate.code)} newRoots=${JSON.stringify(duplicateNewRoots)}` },
+      { id: 'duplicate-no-second-turn', ok: duplicate.mockRequestsAdded === 0, detail: `provider requests added by the duplicate=${String(duplicate.mockRequestsAdded)}` },
+      { id: 'no-execution-without-admission', ok: execution.ok === false && execution.code === 'ADMISSION_REMOTE_UNAVAILABLE' && execution.mockRequestsAdded === 0, detail: `member.send ok=${String(execution.ok)} code=${String(execution.code)} provider requests added=${String(execution.mockRequestsAdded)}` },
+    ],
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // plan (host-free)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -934,7 +965,7 @@ function planOnly() {
   const a = assertBlueprintText(anchor, BP_ANCHOR_ID, 'anchor.yaml')
   const m = assertBlueprintText(main, BP_MAIN_ID, 'main.yaml')
   log(`blueprints accepted: anchor=${JSON.stringify(a)} main=${JSON.stringify(m)}`)
-  const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: join(EVIDENCE, 'plan-workspace'), mainYaml: main, layer })
+  const rows = composedRows({ home: join(EVIDENCE, 'plan-home'), workspaceDir: join(EVIDENCE, 'plan-workspace'), anchorYaml: anchor, layer })
   writeFileSync(join(EVIDENCE, 'plan-patch.yml'), emitPatchLayer(['a5sf-live-member plan (no World)'], rows) + '\n')
   log(`rows: ${JSON.stringify(rows.map((r) => ({ id: r.id, name: String(r.name).slice(0, 80) })))}`)
   log(`composition drops: ${JSON.stringify(COMPOSITION_DROPS)}`)
@@ -997,17 +1028,18 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       writeFileSync(secretPath, `${SECRET_TEXT}\n`, 'utf8')
       writeFileSync(join(world.home, 'p6t6-directive.json'), JSON.stringify(p6t6Directive({ worldId: world.id, logDir: world.logDir }), null, 2) + '\n')
 
-      // ROUND 60: the v4 acceptance blueprint is the row's BOOTSTRAP ANCHOR, so
-      // it must exist before the host boots (the boot create freezes/binds it).
-      // The former anchor document is gone with the remote entrance it served.
-      // The Leader declares NO capabilities (see mainBlueprintYaml), so the deny
-      // list is the empty list both before and after the discovery turn; the
-      // discovery turn below still MEASURES the real Leader surface and records
-      // it — this is a binding-order move, not a guessed composition.
-      const mainText = mainBlueprintYaml({ denyList: [], workspace })
-      assertBlueprintText(mainText, BP_MAIN_ID, 'main.yaml')
-      writeFileSync(join(world.home, 'blueprints', 'main.yaml'), mainText)
-      const rows = composedRows({ home: world.home, workspaceDir: workspace, mainYaml: mainText, layer })
+      // ROUND 74: the row boots on the ANCHOR blueprint (no Team is minted at
+      // boot on `BOOT_ROOT` beyond the anchor identity). The v4 acceptance
+      // blueprint is written AFTER the discovery turn and minted at runtime by
+      // `POST /team-remote/team.create`, exactly the entrance the ruling
+      // restored. The Leader declares NO capabilities (see mainBlueprintYaml),
+      // so the deny list is the empty list both before and after the discovery
+      // turn; the discovery turn below still MEASURES the real Leader surface
+      // and records it.
+      const anchorText = anchorBlueprintYaml()
+      assertBlueprintText(anchorText, BP_ANCHOR_ID, 'anchor.yaml')
+      writeFileSync(join(world.home, 'blueprints', 'anchor.yaml'), anchorText)
+      const rows = composedRows({ home: world.home, workspaceDir: workspace, anchorYaml: anchorText, layer })
       world.u6Fs.rows.push(...rows)
       record.record.bindings.compositionDrops = COMPOSITION_DROPS
       record.record.bindings.layout = process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre'
@@ -1104,18 +1136,121 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     }
     writeFileSync(join(bootDir, 'leader-surface.json'), JSON.stringify({ at: new Date().toISOString(), tools: leaderSurface, denyList }, null, 2) + '\n')
 
-    // ── the Leader turn on the BOOT-CREATED Team ──────────────────────────
-    // ROUND 60 (escalation path 3): NO `POST /team-remote/team.create`. On a
-    // centre-configured row that route is a 405 by design (C-remote refuses to
-    // build the S6 plane, `root.ts:4324`), and the boot create is the row's
-    // only creation entrance. This prompt is the SAME first turn the remote
-    // `initialWork.prompt` used to carry, sent through the public session
-    // prompt route; the Leader's chain (delegate → Member turn → collect) and
-    // every judge are untouched.
-    abortStage = 'leader-turn'
-    const lead = await apiPrompt(origin, cookie, BOOT_ROOT, MK_L1, 'a5sflm')
-    log(`[boot${String(index)}] leader turn status=${String(lead.status)} root=${BOOT_ROOT}`)
-    if (lead.status !== 200) throw new Error(`session/prompt failed: status=${String(lead.status)} body=${redact(JSON.stringify(lead.body ?? null)).slice(0, 400)}`)
+    // ── the v4 acceptance blueprint is published, then created at RUNTIME ──
+    // ROUND 74: the Team is minted by `POST /team-remote/team.create` on
+    // `ACCEPTANCE_ROOT` — the S6 management control plane the ruling restored
+    // (`root.ts#createAndStartTeam`). The Leader's first turn is the remote
+    // `initialWork.prompt`, exactly as before round 60. The boundary around that
+    // entrance is MEASURED first/last on this same live row.
+    const mainText = mainBlueprintYaml({ denyList, workspace: paths.workspace })
+    assertBlueprintText(mainText, BP_MAIN_ID, 'main.yaml')
+    writeFileSync(join(world.home, 'blueprints', 'main.yaml'), mainText)
+
+    const rootsOf = (response) => {
+      const data = response?.body?.result?.value?.data
+      return Array.isArray(data?.roots) ? data.roots : []
+    }
+    const rootIdsOf = (response) => rootsOf(response).map((root) => String(root?.rootSessionId ?? ''))
+
+    abortStage = 'remote-boundary'
+    const rootsBefore = await remoteCall(fetchJson, origin, cookie, 'team.listRoots', {}, 'a5sflm', 3)
+    const rootsBeforeIds = rootIdsOf(rootsBefore)
+
+    // (1) UNAUTHENTICATED: no session cookie. The transport gate must refuse,
+    // and the refused request must mint NO Team (checked against the durable
+    // ownership index, not the HTTP body alone).
+    const UNAUTH_ROOT = 'session-dboot-unauth'
+    const unauth = await fetchJson(`${origin}/team-remote/team.create`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        type: 'client-request',
+        rpcId: 'dboot-unauth-create',
+        method: 'team.create',
+        payload: { version: 1, params: { rootSessionId: UNAUTH_ROOT, blueprintId: BP_MAIN_ID } },
+      }),
+    })
+    const rootsAfterUnauth = await remoteCall(fetchJson, origin, cookie, 'team.listRoots', {}, 'a5sflm', 3)
+    const unauthenticated = {
+      status: unauth.status,
+      bodyCode: unauth.body?.result?.error?.code ?? unauth.body?.error?.code ?? null,
+      mintedTeam: rootIdsOf(rootsAfterUnauth).includes(UNAUTH_ROOT),
+    }
+    log(`[boot${String(index)}] unauthenticated team.create: status=${String(unauth.status)} code=${String(unauthenticated.bodyCode)} minted=${String(unauthenticated.mintedTeam)}`)
+
+    // (2) CROSS-TEAM: authenticated, but the addressed TeamSession is not this
+    // host's bound root. Typed FOREIGN_TEAM, no state read.
+    const foreignRoot = 'session-dboot-foreign-team'
+    const foreign = await remoteCall(fetchJson, origin, cookie, 'team.getProjection', { teamSessionId: foreignRoot }, 'a5sflm', 1)
+    const crossTeam = {
+      status: foreign.status,
+      code: foreign.body?.result?.error?.code ?? null,
+      ok: foreign.body?.result?.ok === true,
+      foreignRoot,
+    }
+    log(`[boot${String(index)}] cross-team getProjection(${foreignRoot}): status=${String(foreign.status)} code=${String(crossTeam.code)} ok=${String(crossTeam.ok)}`)
+
+    // (3) LEGITIMATE CREATION through the governed management plane.
+    abortStage = 'team-create'
+    const created = await remoteCall(fetchJson, origin, cookie, 'team.create', {
+      rootSessionId: ACCEPTANCE_ROOT,
+      blueprintId: BP_MAIN_ID,
+      initialWork: { prompt: MK_L1 },
+    }, 'a5sflm')
+    const createOk = created.status === 200 && created.body?.result?.ok === true
+    const createdData = created.body?.result?.value?.data ?? null
+    log(`[boot${String(index)}] remote team.create status=${String(created.status)} ok=${String(createOk)} data=${redact(JSON.stringify(createdData)).slice(0, 300)}`)
+    if (!createOk) {
+      throw new Error(`remote team.create failed: status=${String(created.status)} body=${redact(JSON.stringify(created.body ?? null)).slice(0, 600)}`)
+    }
+
+    // (4) DUPLICATE: the SAME root created again (no initialWork) must NOT mint
+    // a second Team nor start a second Leader turn.
+    const requestsBeforeDuplicate = (world.mock?.requests ?? []).length
+    const duplicate = await remoteCall(fetchJson, origin, cookie, 'team.create', {
+      rootSessionId: ACCEPTANCE_ROOT,
+      blueprintId: BP_MAIN_ID,
+    }, 'a5sflm')
+    const rootsAfterDuplicate = await remoteCall(fetchJson, origin, cookie, 'team.listRoots', {}, 'a5sflm', 3)
+    const duplicateCreate = {
+      status: duplicate.status,
+      ok: duplicate.body?.result?.ok === true,
+      code: duplicate.body?.result?.error?.code ?? null,
+      rootsAfter: rootsOf(rootsAfterDuplicate).length,
+      newRoots: rootIdsOf(rootsAfterDuplicate).filter((id) => rootsBeforeIds.includes(id) === false),
+      mockRequestsAdded: (world.mock?.requests ?? []).length - requestsBeforeDuplicate,
+    }
+    log(`[boot${String(index)}] duplicate team.create: ok=${String(duplicateCreate.ok)} roots=${String(duplicateCreate.rootsAfter)} newRoots=${JSON.stringify(duplicateCreate.newRoots)} mockAdded=${String(duplicateCreate.mockRequestsAdded)}`)
+
+    // (5) NO S6 COMMAND REACHES A MODEL TOOL WITHOUT ADMISSION: `member.send` is
+    // on the closed agent-execution list and is refused before params/ports.
+    const requestsBeforeExecutionRefusal = (world.mock?.requests ?? []).length
+    const refusedSend = await remoteCall(fetchJson, origin, cookie, 'member.send', {
+      teamSessionId: ACCEPTANCE_ROOT,
+      memberInstanceId: 'member-instance-1',
+      payload: { kind: 'text', text: 'dboot refusal probe' },
+      requestToken: 'dboot-refusal-probe',
+    }, 'a5sflm')
+    const executionRefusal = {
+      status: refusedSend.status,
+      code: refusedSend.body?.result?.error?.code ?? null,
+      ok: refusedSend.body?.result?.ok === true,
+      mockRequestsAdded: (world.mock?.requests ?? []).length - requestsBeforeExecutionRefusal,
+    }
+    log(`[boot${String(index)}] refused member.send: status=${String(executionRefusal.status)} code=${String(executionRefusal.code)} mockAdded=${String(executionRefusal.mockRequestsAdded)}`)
+
+    const remoteCreation = {
+      rootsBefore: rootsBeforeIds,
+      rootsBeforeStatus: rootsBefore.status,
+      unauthenticated,
+      crossTeam,
+      created: { status: created.status, ok: createOk, path: createdData?.path ?? null, durable: createdData?.durable ?? null },
+      rootsAfterCreate: rootIdsOf(await remoteCall(fetchJson, origin, cookie, 'team.listRoots', {}, 'a5sflm', 3)),
+      duplicate: duplicateCreate,
+      executionRefusal,
+      authority: 'the created Team is `ACCEPTANCE_ROOT`; the Leader turn and the Member chain below run on it',
+    }
+    writeFileSync(join(bootDir, 'remote-creation.json'), JSON.stringify({ at: new Date().toISOString(), ...remoteCreation }, null, 2) + '\n')
 
     abortStage = 'member-turn'
     // A turn that never settles must still leave a diagnosable trail: the
@@ -1199,7 +1334,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     const member = members.find((m) => String(m?.templateId ?? '') === 'worker') ?? members[0] ?? null
     const instanceId = member?.instanceId ?? null
     const childSessionId = member?.childSessionId ?? member?.row?.childSessionId
-      ?? (instanceId === null ? null : `session-team-child-${createHash('sha256').update(`${BOOT_ROOT}\u0000${instanceId}`).digest('hex').slice(0, 32)}`)
+      ?? (instanceId === null ? null : `session-team-child-${createHash('sha256').update(`${ACCEPTANCE_ROOT}\u0000${instanceId}`).digest('hex').slice(0, 32)}`)
     log(`[boot${String(index)}] members=${JSON.stringify(members.map((m) => ({ instanceId: m.instanceId, templateId: m.templateId, lifecycle: m.lifecycle })))} childSessionId=${String(childSessionId)}`)
 
     const transcript = childSessionId === null ? null : readMemberTranscript(world.home, childSessionId)
@@ -1327,6 +1462,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
       surface: judgeSurface(memberSurface),
       facts: judgeFacts(facts),
       centre: judgeCentre(centreRecords),
+      remoteCreation: judgeRemoteCreation(remoteCreation),
     }
     // NOTE: `detail` must NOT carry a `verdict` key — the record spreads it
     // AFTER the passed verdict and would silently overwrite it.
@@ -1341,6 +1477,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
     add('d:native-read-surface', verdicts.surface.verdict, verdicts.surface)
     add('d:guard-facts', verdicts.facts.verdict, verdicts.facts)
     add('d:centre-facts', verdicts.centre.verdict, verdicts.centre)
+    add('d:remote-creation', verdicts.remoteCreation.verdict, verdicts.remoteCreation)
 
     collectDiagnostics('final')
     const final = record.finalize()
@@ -1359,6 +1496,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
         calls: transcript.calls,
       },
       counters, facts, centreRecords, verdicts,
+      remoteCreation,
       locus: buildLocus({ world, bootInfo, transcript, facts, centreRecords, paths, bootDir }),
       paths,
       memberPromptAt, memberDoneAt,

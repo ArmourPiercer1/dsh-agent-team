@@ -2111,3 +2111,48 @@ workflows / 0 findings; bound migrated layer → **PASS 238/238** (population un
 the recheck path in this round, so no matrix row becomes PRODUCT-PROVEN and the settlement row stays
 MECHANISM. The Stop rule is unchanged: a refusal is never recorded as `CANCELLED`, and no Stop is
 invented.
+
+---
+
+## Round 74 (governed management plane) — S6 Remote restored per command class
+
+**Owner ruling:** `docs/reviews/20261122-1536.txt` §3 (裁决三). **Escalation closed:**
+`ESCALATION-centre-row-creation-entrance.md` now carries the RESOLUTION section.
+
+**What changed, and what did NOT.** The S6 Remote plane is built and installed on a centre-configured
+row again, but it is **not** a second agent-tool executor. Every command is classified by its ACTUAL
+effect in ONE closed table (`packages/runtime/src/plugin/s6-command-classification.ts`), and the
+dispatcher refuses the `agent-execution` class BEFORE envelope/params/ports with the EXISTING
+host-surface vocabulary (`ADMISSION_REMOTE_UNAVAILABLE`, axis `team.control`), including the durable
+fact + `REFUSED`/`not-started` settlement. `admission.ts` was NOT touched, no new axis was added, and
+no management request is routed through the member admission point. Creation authority remains the S6
+Principal (`s6-principal.ts`) + TeamDomain/Control + the existing `root.ts#createAndStartTeam()`.
+
+**The closed classification (36 catalog methods):**
+
+| effect class | commands | authority |
+| --- | --- | --- |
+| `control-plane-creation` | `team.create`, `handoff.create` | S6 Principal + TeamDomain + `createAndStartTeam()` gates |
+| `control-plane-read` / `control-plane-management` | every other catalog method (team reads, projection/ledger, overrides, policy state, lifecycle, control resolution, handoff prepare, catalog/intent/team roots, compatibility, intervention, legacy inspect, `member.archive/restore/dispose`) | S6 Principal + TeamDomain/Control ownership and operation authority |
+| `agent-execution` (**REFUSED**) | `team.admitInitialWork`, `team.ensureRootLive`, `member.create`, `member.send`, `member.followup` | would dispatch a native tool / execute a shell / produce agent I/O ⇒ only UTE may admit a bound member's call; this plane cannot |
+
+The table is pinned in BOTH directions against `REMOTE_METHOD_NAMES` (`ADM-86`), and an unclassified
+command has no effect class: `isS6ControlPlaneCommand` returns false, so a future catalog addition can
+never default to allowed.
+
+**Arms changed (population still 238):** `ADM-86` rewritten (was the blanket "no remote-command axis"
+refusal) to the per-command closed table + served control read + refused execution with zero ports +
+durable fact/settlement + unauthenticated-principal refusal; `a3p4-pr4-production-entry-regression`
+E3 extended (real production root on `centreStatePath`: `remoteHandlerRegistration.installed===true`,
+served `catalog.list`, five agent-execution commands type-refused with facts on the row's own ledger).
+
+**Live driver (round 74):** creation path 3 is restored to `POST /team-remote/team.create` on
+`ACCEPTANCE_ROOT`; the round-60 boot-create workaround is removed. New judge `d:remote-creation`:
+unauthenticated refused and mints no Team; `TEAM_REMOTE_FOREIGN_TEAM` for a foreign TeamSession; runtime
+`team.create` succeeds; a duplicate mints no second Team and adds no provider request; `member.send` is
+refused with zero provider requests. `D-BOOT-FEASIBILITY.md` §17 records the run; see
+`D-ACCEPTANCE-REPORT.md` for the verdict and the still-unproven list.
+
+**Not proven / not claimed:** multi-user RBAC (it is a per-DSH_HOME authenticated operator model);
+`handoff.create` live (classified, not exercised); any S6 command that would execute a tool (refused by
+design, so its positive path does not exist).

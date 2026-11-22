@@ -46,7 +46,7 @@
  * @module @dsh-agent-team/runtime/test/a3p4-pr4-production-entry-regression
  */
 
-import { mkdirSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { dirname, join, resolve, relative, sep, isAbsolute } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
@@ -1157,7 +1157,38 @@ describe('E3 — the REAL createAgentBindings consumes a FILLED plane ref (BLOCK
       fsContainsKeys: makeContainKeys(),
       permissionPlaneRef,
     })
-    void planeRoot
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — ON A CENTRE-CONFIGURED ROW the S6
+    // command plane is BUILT and INSTALLED again (the blanket refusal is gone), and the dispatcher
+    // serves the CONTROL PLANE while refusing every AGENT-EXECUTION command with the existing typed
+    // code. This is the production root the host mounts; the assertions below are the root-level half
+    // of ADM-86 (which pins the closed classification and the durable refusal).
+    expect(
+      planeRoot.seams.remoteHandlerRegistration.installed,
+      'a centre-configured root must install the S6 remote registration seam (round 74)',
+    ).toBe(true)
+    const governedRemote = planeRoot.remoteDispatcher
+    if (governedRemote === undefined) throw new Error('a centre-configured root must expose the root-assembled remote dispatcher')
+    // CONTROL PLANE: a team read is served (no execution, no member binding needed).
+    const catalogRead = (await governedRemote('catalog.list', { version: 1, params: {} })) as { ok?: boolean }
+    expect(catalogRead.ok, `a control-plane read must be served on a governed row, got ${JSON.stringify(catalogRead)}`).toBe(true)
+    // AGENT EXECUTION: refused with the EXISTING host-surface code, and the refusal is durable.
+    for (const method of ['member.send', 'member.create', 'member.followup', 'team.admitInitialWork', 'team.ensureRootLive']) {
+      const refused = (await governedRemote(method, { version: 1, params: {} })) as {
+        ok?: boolean
+        error?: { code?: string }
+      }
+      expect(refused.ok, `${method}: an agent-execution command must be refused on a governed row`).toBe(false)
+      expect(refused.error?.code, `${method}: the refusal carries the existing host-surface code`).toBe('ADMISSION_REMOTE_UNAVAILABLE')
+    }
+    const refusalFacts = `${centreStatePath}/remote.host-surface.facts.jsonl`
+    expect(existsSync(refusalFacts), 'the refusal must be on the durable record').toBe(true)
+    const recorded = readFileSync(refusalFacts, 'utf8').trim().split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as Record<string, unknown>)
+    for (const method of ['member.send', 'member.create', 'member.followup', 'team.admitInitialWork', 'team.ensureRootLive']) {
+      const fact = recorded.find((row) => row.kind === 'invocation-authority' && row.toolName === `remote.command:${method}`)
+      expect(fact, `${method}: the refusal must leave an invocation-authority fact`).toBeDefined()
+      expect(fact?.decision).toBe('deny')
+      expect(fact?.axis).toBe('team.control')
+    }
     const plane = permissionPlaneRef.current
     if (plane === undefined) throw new Error('the a3p4e3 root did not fill the plane reference')
 

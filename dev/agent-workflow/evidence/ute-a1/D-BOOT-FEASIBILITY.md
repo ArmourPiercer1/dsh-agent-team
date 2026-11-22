@@ -20,6 +20,11 @@
 > are unmeasured. Verdict for round 59: **PARTIAL** (host live, Member blocked). Full record, exact
 > commands and gate outputs: `MIGRATED-SUITE-STATUS.md`, "Round 59 (D stage)". This report's §1–§10 remain
 > the round-58 record at `3fb8882f8`; see §11 for the round-59 delta.
+>
+> **ROUND 74 SUPERSEDES THE CREATION ENTRANCE IN THIS NOTE:** the owner ruling restored S6 Remote as a
+> governed management control plane, so `POST /team-remote/team.create` works on a centre row again and
+> the round-60 boot-create workaround is removed. See §17 for the live two-boot record (`d:remote-creation`
+> PROVEN, `RESULT PASS 2/2`); §11–§16 stay as the historical record of the round-59/60 limitation.
 
 ---
 
@@ -810,3 +815,68 @@ Any candidate/product-proven status (all `DEV-LIVE`). That the durable overlay c
 (shape B residual). A process lane / persistent subprocess (unchanged CCR). The Alpha.6 recorded-fact path at
 a host entry (unchanged). That the search body's every file read is independently confined by the provider
 path (not measured). A real-model interleaving (scripted mock).
+
+---
+
+## 17. Round 74 update (2026-11-22) — the runtime creation entrance is RESTORED and the management plane is governed per command
+
+**HEAD:** `9a1fdaefc3` + the round-74 working-tree changes (dist rebuilt in place). **Driver:**
+`tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2`. **Status update at the top and
+§11–§16 (round 59/60) are HISTORY for the creation entrance:** the round-60 boot-create workaround is
+REMOVED and path 3 is again `POST /team-remote/team.create`.
+
+**Owner ruling:** `docs/reviews/20261122-1536.txt` §3 (裁决三): restore S6 Remote as an authenticated
+Team-management control plane, reuse Principal + TeamDomain + Control + creation/start gates, and do not
+let it become a second agent-tool executor. Escalation closed:
+`ESCALATION-centre-row-creation-entrance.md` (RESOLVED).
+
+### What the driver does now
+
+- row boots on the ANCHOR blueprint (`BOOT_ROOT` = `session-dboot-read-root`) and only hosts the
+  discovery turn; the v4 acceptance blueprint is written after discovery and minted at RUNTIME on
+  `ACCEPTANCE_ROOT` (`session-dboot-read-team`) with `initialWork.prompt = DBOOT_L1_DRIVE`;
+- the Leader chain (delegate → Member turn → collect) runs on the runtime-created Team; the Member's
+  calls are admitted by its OWN centre (`AMBIENT`/ledger unchanged);
+- four NEW boundary clauses ride the same boot, before/after the create, and a new judge
+  `d:remote-creation`.
+
+### Measured (both boots, byte-identical rows)
+
+```
+[boot1] unauthenticated team.create: status=401 code=null minted=false
+[boot1] cross-team getProjection(session-dboot-foreign-team): status=200 code=TEAM_REMOTE_FOREIGN_TEAM ok=false
+[boot1] remote team.create status=200 ok=true data={"path":"fresh-root", ... "rootSessionId":"session-dboot-read-team" ...}
+[boot1] duplicate team.create: ok=true roots=2 newRoots=["session-dboot-read-team"] mockAdded=0
+[boot1] refused member.send: status=200 code=ADMISSION_REMOTE_UNAVAILABLE mockAdded=0
+[boot1] case d:remote-creation: PASS
+[boot2] … identical …
+RESULT PASS (2/2 boots; agreeing pair=true)
+```
+
+| judge | verdict | detail |
+| --- | --- | --- |
+| `d:member-read-admitted` | **PROVEN** | in-lane native `read` admitted and executed |
+| `d:member-read-denied` | **PROVEN** | out-of-lane `read` refused `LANE_DENY`, zero secret bytes |
+| `d:native-read-surface` | **PROVEN** | the real native definition is on the Member surface |
+| `d:guard-facts` | **PROVEN** | 2 provider `allow` facts (`stat`, `readText`) |
+| `d:centre-facts` | **PROVEN** | 2 `fs.read` admissions (`allow` + `DENY/LANE_DENY`), 2 execution facts |
+| **`d:remote-creation`** | **PROVEN (NEW)** | unauthenticated refused (401) and **no Team minted**; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate `team.create` **200 / path `fresh-root`** with the durable TeamSession + leader row; duplicate create adds **no second root** and **0 provider requests**; `member.send` is refused `ADMISSION_REMOTE_UNAVAILABLE` with **0 provider requests** |
+
+`d:remote-creation` clauses: `unauth-refused`, `unauth-no-team`, `cross-team-refused`,
+`create-served`, `created-runtime-root`, `duplicate-no-second-team`, `duplicate-no-second-turn`,
+`no-execution-without-admission` — all PASS on both boots.
+
+### Evidence
+
+- console: `dev/agent-workflow/evidence/d-boot-feasibility/round74-console.log`
+- agreement: `dev/agent-workflow/evidence/d-boot-feasibility/agreement.txt` / `agreement.json`
+- per boot: `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`
+  (and the existing `run-record.json`, `summary.txt`, `centre-facts.json`, transcripts)
+
+### What this round does NOT prove
+
+- The model is the product's scripted mock (unchanged), not a real provider.
+- `handoff.create` is classified control-plane-creation but not exercised live.
+- Multi-user RBAC is NOT claimed: the principal is a per-DSH_HOME authenticated operator.
+- No S6 command that would execute a tool/agent I/O has a positive path (they are refused by design,
+  which is the point); `member.create`/`member.followup` are refused like `member.send`.

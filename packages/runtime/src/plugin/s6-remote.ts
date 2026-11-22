@@ -139,6 +139,10 @@ import { corruptControlLegsValue } from '../../../remote/src/handlers/team.js'
 // `permission-plane.ts` precedent): a pure type import, the control
 // package stays unmodified and this lane reads/judges NOTHING itself.
 import type { ControlCorruptLegRecord } from '../../control/types.js'
+// ROUND 74 — the ONE closed S6 command-effect classification (see the module docs). The dispatcher
+// consults it for every endpoint; an unclassified command is NOT control-plane and is refused.
+import { isS6ControlPlaneCommand } from './s6-command-classification.js'
+import type { HostSurfaceDenial } from './vnext/host-surface-refusal.mjs'
 import type { RemoteDispatcher } from '../../../remote/src/handlers/dispatch.js'
 import type { RemoteHandlerOutcome } from '../../../remote/src/handlers/ports.js'
 import { REMOTE_RPC_CHANNEL } from '../../../remote/src/handlers/register.js'
@@ -1329,6 +1333,23 @@ export interface S6RemoteOptions {
   readonly legacyHome: LegacyHomePort | undefined
   /** The installed A32 principal derivation (the seam's `current()`). */
   readonly principal: ServerPrincipalDerivation
+  /**
+   * ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — the governed
+   * row's per-command refusal hook. Present ONLY on a centre-configured row
+   * (`root.ts` builds it from the SAME host-surface refusal point the other
+   * host-surface refusals use); absent on a row that never configured the
+   * centre, where the S6 plane keeps its pre-round behaviour byte-for-byte.
+   *
+   * The DISPATCHER — not the root, not a handler — classifies every endpoint
+   * against the ONE closed table (`s6-command-classification.ts`) and calls
+   * this hook for every command whose effect is agent execution BEFORE the
+   * contract envelope, the params or a handler are touched. The hook records
+   * the durable fact + settlement and returns the centre's admission denial;
+   * the dispatcher then answers the caller with that typed code. It is never
+   * consulted for a control-plane command, and it cannot widen: the surface
+   * rejects, it never forwards.
+   */
+  readonly refuseExecutionCommand?: (method: string) => HostSurfaceDenial
   /**
    * The P6-T3 messaging coordinator (the live send path: facade admission
    * + the durable intent fact, LIVE delivery of the attributed input, the
@@ -4714,12 +4735,18 @@ function toS6RemoteErrorResult(error: unknown, ctx: RemoteProvenanceContext): Re
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (defaults to the connection-gate basis).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook (absent = no governed row; every command keeps the pre-round
+ *   path). Called for EVERY endpoint whose effect class is `agent-execution`,
+ *   before the envelope/params/handler, and its denial becomes the typed wire
+ *   answer. Control-plane commands are never passed to it.
  * @returns the seam entry point: `(endpoint, payload) => Promise<RemoteResponse>`.
  */
 export function createS6RemoteDispatcher(
   ports: S6RemotePorts,
   principal: ServerPrincipalDerivation,
   principalContext?: ServerPrincipalContext,
+  refuseExecutionCommand?: (method: string) => HostSurfaceDenial,
 ): RemoteDispatcher {
   const handlers = buildS6CategoryHandlers(ports, principal)
   const context: ServerPrincipalContext =
@@ -4752,6 +4779,21 @@ export function createS6RemoteDispatcher(
           `endpoint '${endpoint}' is not a method of the closed Remote contract v1 catalog`,
           { reason: 'unknown-endpoint' },
         )
+      }
+      // ROUND 74 — THE EFFECT BOUNDARY, before the envelope, the params and
+      // every handler. A governed row serves CONTROL-PLANE commands only: the
+      // classification is the ONE closed table, and an unknown command has no
+      // entry, so `isS6ControlPlaneCommand` answers false and it is refused
+      // exactly like a known agent-execution command (a new command cannot
+      // default to allowed). The hook records the durable fact + settlement
+      // and returns the centre's own admission denial; this surface rejects —
+      // it never forwards, so no S6 request can reach a model tool without UTE.
+      if (refuseExecutionCommand !== undefined && !isS6ControlPlaneCommand(endpoint)) {
+        const denial = refuseExecutionCommand(endpoint)
+        throw new TeamPluginError(denial.code, denial.reason, {
+          reason: 'not-a-control-plane-command',
+          method: endpoint,
+        })
       }
       // Invariant 2: the request envelope (closed: version + params).
       const request = parseRemoteRequest(payload)
@@ -4786,6 +4828,9 @@ export function createS6RemoteDispatcher(
  * @param principal - the installed A32 principal derivation.
  * @param principalContext - the trusted PrincipalContext of the mounting
  *   transport (T12-B4; defaults to the connection-gate basis).
+ * @param readiness - the BP-G boot-readiness gate (absent = legacy).
+ * @param refuseExecutionCommand - ROUND 74: the governed row's per-command
+ *   refusal hook, threaded to the dispatcher this registration mounts.
  * @returns the `RemoteHandlerRegistration` the A31 seam installs.
  */
 export function createS6RemoteRegistration(
@@ -4793,8 +4838,9 @@ export function createS6RemoteRegistration(
   principal: ServerPrincipalDerivation,
   principalContext?: ServerPrincipalContext,
   readiness?: () => RemoteReadiness,
+  refuseExecutionCommand?: (method: string) => HostSurfaceDenial,
 ): RemoteHandlerRegistration {
-  const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext)
+  const dispatcher = createS6RemoteDispatcher(ports, principal, principalContext, refuseExecutionCommand)
   // BP-G (issue #2 blueprint-loading, plan §12.2): the readiness gate —
   // ABSENT (the pre-BP-G worlds) = the legacy unguarded dispatcher,
   // byte-for-byte. A non-`ready` state refuses EVERY closed method except
@@ -5034,10 +5080,16 @@ export function createS6RemoteSurfaces(options: S6RemoteOptions): S6RemoteSurfac
   const principalContext = createServerPrincipalContext({
     transport: SERVER_PRINCIPAL_TRANSPORTS.CONNECTION_GATE,
   })
-  const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext)
+  const dispatcher = createS6RemoteDispatcher(ports, options.principal, principalContext, options.refuseExecutionCommand)
   const completion = createS6RemoteQueryCommandCompletion(ports, options, dispatcher)
   return {
-    registration: createS6RemoteRegistration(ports, options.principal, principalContext, options.readiness),
+    registration: createS6RemoteRegistration(
+      ports,
+      options.principal,
+      principalContext,
+      options.readiness,
+      options.refuseExecutionCommand,
+    ),
     completion,
     dispatcher,
   }

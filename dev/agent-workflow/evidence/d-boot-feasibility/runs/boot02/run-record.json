@@ -1,26 +1,28 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-member-2026-11-22T04-39-52-163Z-b2",
+  "runId": "a5sf-live-member-2026-11-22T08-35-23-014Z-b2",
   "suite": "a5sf-live-member",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-22T04:39:52.164Z",
+  "startedAt": "2026-11-22T08:35:23.014Z",
   "selectedCases": [
     "d:member-read-admitted",
     "d:member-read-denied",
     "d:native-read-surface",
     "d:guard-facts",
-    "d:centre-facts"
+    "d:centre-facts",
+    "d:remote-creation"
   ],
   "allCases": [
     "d:member-read-admitted",
     "d:member-read-denied",
     "d:native-read-surface",
     "d:guard-facts",
-    "d:centre-facts"
+    "d:centre-facts",
+    "d:remote-creation"
   ],
   "subset": false,
-  "selected": 5,
-  "totalCases": 5,
+  "selected": 6,
+  "totalCases": 6,
   "bindings": {
     "authority": {
       "pointerPath": "dev/engineering/current-authority.json",
@@ -32,7 +34,7 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
+      "head": "9a1fdaefc3be9c312bcdf8a1be1c6080075cb0dd",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -46,18 +48,18 @@
     "compositionDrops": [],
     "layout": "centre",
     "installGraph": "provisioned",
-    "teamSha": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
+    "teamSha": "9a1fdaefc3be9c312bcdf8a1be1c6080075cb0dd",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
     "worldIds": [
-      "u5u5a5sfdev1-20261122T04-39-52Z"
+      "u5u5a5sfdev1-20261122T08-35-23Z"
     ]
   },
   "cases": [
     {
       "id": "d:member-read-admitted",
       "verdict": "PASS",
-      "at": "2026-11-22T04:41:43.412Z",
+      "at": "2026-11-22T08:37:02.763Z",
       "proposition": "the Member's model-visible NATIVE `read` admits an in-ceiling locator and returns the planted bytes",
       "failed": [],
       "clauses": [
@@ -74,7 +76,7 @@
         {
           "id": "native-arg",
           "ok": true,
-          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-39-52Z/workspace/in-lane.txt"
+          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T08-35-23Z/workspace/in-lane.txt"
         },
         {
           "id": "result-present",
@@ -101,7 +103,7 @@
     {
       "id": "d:member-read-denied",
       "verdict": "PASS",
-      "at": "2026-11-22T04:41:43.412Z",
+      "at": "2026-11-22T08:37:02.763Z",
       "proposition": "the same native `read` REFUSES an out-of-ceiling locator on ONE typed channel that names its authority (lane: `LANE_DENY` with ZERO provider guard facts for that call, or provider: `IO_READ_DENIED` with its own guard deny fact), with zero secret bytes — and the provider channel is evidenced in its own in-process population (ADM-100)",
       "failed": [],
       "clauses": [
@@ -118,7 +120,7 @@
         {
           "id": "native-arg",
           "ok": true,
-          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-39-52Z/out-of-lane/secret-out-of-lane.txt"
+          "detail": "file_path=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T08-35-23Z/out-of-lane/secret-out-of-lane.txt"
         },
         {
           "id": "result-present",
@@ -153,14 +155,14 @@
         {
           "id": "provider-channel-in-process-ADM-100",
           "ok": true,
-          "detail": "file=packages/runtime/test/vnext-admission.test.mjs exit=0 pass=true providerDenyAssertionPresent=true tail=\"r mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (320.433228ms)\\nℹ tests 1\\nℹ suites 0\\nℹ pass 1\\nℹ fail 0\\nℹ cancelled 0\\nℹ skipped 0\\nℹ todo 0\\nℹ duration_ms 471.825053\""
+          "detail": "file=packages/runtime/test/vnext-admission.test.mjs exit=0 pass=true providerDenyAssertionPresent=true tail=\"ber mounts the host native module BY DEFAULT, and the admitted read is served by the realm's confined provider (guard consulted) (321.915483ms)\\nℹ tests 1\\nℹ suites 0\\nℹ pass 1\\nℹ fail 0\\nℹ cancelled 0\\nℹ skipped 0\\nℹ todo 0\\nℹ duration_ms 509.4246\""
         }
       ]
     },
     {
       "id": "d:native-read-surface",
       "verdict": "PASS",
-      "at": "2026-11-22T04:41:43.412Z",
+      "at": "2026-11-22T08:37:02.763Z",
       "proposition": "the Member's model-visible `read` is the pinned host's OWN native definition, registered once, and the row carries no shadow module",
       "failed": [],
       "clauses": [
@@ -199,7 +201,7 @@
     {
       "id": "d:guard-facts",
       "verdict": "PASS",
-      "at": "2026-11-22T04:41:43.412Z",
+      "at": "2026-11-22T08:37:02.763Z",
       "proposition": "the confined Provider's guard was consulted for the ADMITTED native read (ALLOW facts naming the real Member identity) — a base-provider read would leave ZERO facts — and the out-of-lane read never reached a Provider at all",
       "failed": [],
       "clauses": [
@@ -211,7 +213,7 @@
         {
           "id": "allow-identity",
           "ok": true,
-          "detail": "memberIdentity=[\"inst-0pe2z220bhfb\"]"
+          "detail": "memberIdentity=[\"inst-0e23ryd1fmn2\"]"
         },
         {
           "id": "allow-decidedBy",
@@ -233,7 +235,7 @@
     {
       "id": "d:centre-facts",
       "verdict": "PASS",
-      "at": "2026-11-22T04:41:43.412Z",
+      "at": "2026-11-22T08:37:02.763Z",
       "proposition": "the ONE centre ADMITTED the in-lane native read, REFUSED the out-of-lane one on the fs.read axis, and recorded both as durable facts (plus an execution fact for the admitted call)",
       "failed": [],
       "clauses": [
@@ -260,7 +262,7 @@
         {
           "id": "out-lane-refusal-code",
           "ok": true,
-          "detail": "refusalCode=LANE_DENY reason=fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-39-52Z/out-of-lane/secret-out-of-lane.txt\" is "
+          "detail": "refusalCode=LANE_DENY reason=fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T08-35-23Z/out-of-lane/secret-out-of-lane.txt\" is "
         },
         {
           "id": "out-lane-axis",
@@ -270,7 +272,7 @@
         {
           "id": "member-identity",
           "ok": true,
-          "detail": "instanceId/agentId=[\"inst-0pe2z220bhfb/inst-0pe2z220bhfb\"] expected=inst-0pe2z220bhfb"
+          "detail": "instanceId/agentId=[\"inst-0e23ryd1fmn2/inst-0e23ryd1fmn2\"] expected=inst-0e23ryd1fmn2"
         },
         {
           "id": "execution-fact",
@@ -280,7 +282,56 @@
         {
           "id": "durable-source",
           "ok": true,
-          "detail": "ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T04-39-52Z/centre/inst-0pe2z220bhfb.facts.jsonl"
+          "detail": "ledger=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T08-35-23Z/centre/inst-0e23ryd1fmn2.facts.jsonl"
+        }
+      ]
+    },
+    {
+      "id": "d:remote-creation",
+      "verdict": "PASS",
+      "at": "2026-11-22T08:37:02.763Z",
+      "proposition": "the S6 plane is a GOVERNED MANAGEMENT CONTROL PLANE on a centre row: `team.create` mints the Team at runtime through `createAndStartTeam()`, while unauthenticated, cross-team, duplicate and agent-execution requests all fail closed with zero unauthorised creation",
+      "failed": [],
+      "clauses": [
+        {
+          "id": "unauth-refused",
+          "ok": true,
+          "detail": "unauthenticated team.create status=401 code=null"
+        },
+        {
+          "id": "unauth-no-team",
+          "ok": true,
+          "detail": "durable roots minted by the unauthenticated request=false"
+        },
+        {
+          "id": "cross-team-refused",
+          "ok": true,
+          "detail": "getProjection(session-dboot-foreign-team) ok=false code=TEAM_REMOTE_FOREIGN_TEAM"
+        },
+        {
+          "id": "create-served",
+          "ok": true,
+          "detail": "runtime team.create status=200 ok=true path=fresh-root"
+        },
+        {
+          "id": "created-runtime-root",
+          "ok": true,
+          "detail": "rootsBefore=[\"session-dboot-read-root\"] rootsAfter=[\"session-dboot-read-root\",\"session-dboot-read-team\"]"
+        },
+        {
+          "id": "duplicate-no-second-team",
+          "ok": true,
+          "detail": "duplicate create ok=true code=null newRoots=[\"session-dboot-read-team\"]"
+        },
+        {
+          "id": "duplicate-no-second-turn",
+          "ok": true,
+          "detail": "provider requests added by the duplicate=0"
+        },
+        {
+          "id": "no-execution-without-admission",
+          "ok": true,
+          "detail": "member.send ok=false code=ADMISSION_REMOTE_UNAVAILABLE provider requests added=0"
         }
       ]
     }
@@ -290,8 +341,8 @@
     "thisRunCount": 2,
     "thisRunEntries": [
       {
-        "at": "2026-11-22T04:39:52.197Z",
-        "runId": "a5sf-live-member-2026-11-22T04-39-52-163Z-b2",
+        "at": "2026-11-22T08:35:23.049Z",
+        "runId": "a5sf-live-member-2026-11-22T08-35-23-014Z-b2",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -302,15 +353,15 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "82dfda0c367e2a193d764f7c1054327b2e3ea133",
+        "headCommit": "9a1fdaefc3be9c312bcdf8a1be1c6080075cb0dd",
         "plannedStarts": 1
       },
       {
-        "at": "2026-11-22T04:40:35.577Z",
-        "runId": "a5sf-live-member-2026-11-22T04-39-52-163Z-b2",
+        "at": "2026-11-22T08:36:10.427Z",
+        "runId": "a5sf-live-member-2026-11-22T08-35-23-014Z-b2",
         "suite": "a5sf-live-member",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261122T04-39-52Z",
+        "world": "u5u5a5sfdev1-20261122T08-35-23Z",
         "phase": "a5sf-live-member-boot2"
       }
     ]
@@ -318,17 +369,17 @@
   "boots": [
     {
       "phase": "a5sf-live-member-boot2",
-      "world": "u5u5a5sfdev1-20261122T04-39-52Z",
-      "port": 3193,
-      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261122T04-39-52Z/instance-port3193.log"
+      "world": "u5u5a5sfdev1-20261122T08-35-23Z",
+      "port": 3187,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/driver/logs/u5u5a5sfdev1-20261122T08-35-23Z/instance-port3187.log"
     }
   ],
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-member-2026-11-22T04-39-52-163Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-member-2026-11-22T08-35-23-014Z-b2' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "PASS",
   "partial": false,
-  "finishedAt": "2026-11-22T04:41:43.413Z"
+  "finishedAt": "2026-11-22T08:37:02.764Z"
 }

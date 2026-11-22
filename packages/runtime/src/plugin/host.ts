@@ -1722,16 +1722,16 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     // construction (A31); current() throws the seam's stable
     // not-installed code if that ever regresses (propagated as-is).
     //
-    // C-remote (round 58): a CENTRE-configured row does NOT build the S6 command plane at all — the
-    // dispatcher is authorized by a server-derived principal, which the centre's compiled ceiling cannot
-    // speak for, so the surface is refused (fact + REFUSED settlement) rather than left as an ungoverned
-    // second command authority beside the centre. The seam is therefore absent BY DESIGN on those rows, and
-    // dereferencing it turned an intended refusal into a boot failure. A disabled seam is a "skipped" mount
-    // (not "failed"): the refusal is already on the durable record, and this leg has nothing to register.
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3): a centre-configured row BUILDS the
+    // S6 command plane again (as a governed management control plane), so this branch is no longer the
+    // centre-row path — `installed` is true there and the registration mounts below. The branch stays
+    // as the DEFENSIVE leg for any root whose seam is genuinely absent (a future composition that does
+    // not build the plane, or a test root): a disabled seam is a "skipped" mount (not "failed"), never
+    // a boot failure, and this leg has nothing to register.
     if (!root.seams.remoteHandlerRegistration.installed) {
       const skipped: RemoteMountState = {
         state: 'skipped',
-        reason: 'the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record',
+        reason: 'the root did not install a remote handler registration seam (no S6 command plane in this composition); nothing to register',
       }
       remoteMountState = skipped
       return skipped

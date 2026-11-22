@@ -2988,11 +2988,13 @@ test('ADM-84 — a settlement left OPEN by a crash is CLASSIFIED from disk as UN
 // «silently absent» is indistinguishable from «working» in every log that does not mention it.
 //
 // Both states are proved here, on the product's own modules:
-//  - C-remote and C-alpha6: the host-surface refusal point (the SAME `refuseHostSurfaceBefore` the
-//    product composition calls in `root.ts`) records the refusal with the product fact ledger and the
-//    product settlement store, and the surface body is NOT run. The point is undefined exactly when
-//    the row never configured the centre — the same world in which the surface IS built and runs,
-//    which is what makes the refusal meaningful rather than a permanently broken fixture.
+//  - C-remote (ROUND 74: PER COMMAND, not per surface) and C-alpha6: the host-surface refusal point
+//    (the SAME product recorder `root.ts` wires) records the refusal with the product fact ledger and
+//    the product settlement store, and the surface body is NOT run. For remote the unit is the
+//    COMMAND: the governed dispatcher serves the control-plane commands and refuses only the
+//    agent-execution ones (the ONE closed table in `s6-command-classification.ts`). The point is
+//    undefined exactly when the row never configured the centre — the same world in which no command
+//    is refused, which is what makes the refusal meaningful rather than a permanently broken fixture.
 //  - C-ptc: the real centre composition (`installMemberCentre` over the product ledger/store) refuses
 //    `run_code` with a PTC-specific code BEFORE the body, records it on `process.exec`, and settles
 //    REFUSED/not-started. `bash` keeps the generic process-axis code, so the two absences stay
@@ -3070,36 +3072,103 @@ test('ADM-85 — C-alpha6 is EXPLICITLY UNAVAILABLE: the decision is refused bef
   assert.match(String(centreConfigViolation({ alpha6ReviewRouting: true, centreStatePath: '/srv/centre' })), new RegExp(HOST_SURFACE_REFUSALS.alpha6.code, 'u'))
 })
 
-test('ADM-86 — C-remote is EXPLICITLY UNAVAILABLE: the S6 surface is refused before it is built, recorded on team.control, settled REFUSED', async () => {
-  const { refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+test('ADM-86 — ROUND 74: a governed row serves the S6 CONTROL PLANE and refuses AGENT-EXECUTION commands with the existing typed code, recorded on team.control and settled REFUSED', async () => {
+  const { HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { createS6RemoteDispatcher } = await import('../src/plugin/s6-remote.ts')
+  const { REMOTE_METHOD_NAMES } = await import('../../remote/src/contracts/catalog.ts')
+  const {
+    S6_AGENT_EXECUTION_COMMANDS,
+    S6_CLASSIFIED_COMMANDS,
+    S6_CONTROL_PLANE_COMMANDS,
+    isS6ControlPlaneCommand,
+    s6CommandEffectOf,
+  } = await import('../src/plugin/s6-command-classification.ts')
+
+  // 1. THE CLOSED TABLE, PINNED IN BOTH DIRECTIONS.
+  // Every frozen catalog method is classified (a catalog addition cannot silently fall through), and
+  // the classification table carries no method the catalog does not know.
+  assert.deepEqual(
+    [...S6_CLASSIFIED_COMMANDS].sort(),
+    [...REMOTE_METHOD_NAMES].sort(),
+    'the closed S6 effect table and the frozen remote catalog must be the SAME set',
+  )
+  for (const method of REMOTE_METHOD_NAMES) {
+    assert.notEqual(s6CommandEffectOf(method), undefined, `${method}: every catalog method needs an effect class`)
+  }
+  // The refused set is pinned LITERALLY (a widened allow set turns this red).
+  assert.deepEqual(
+    [...S6_AGENT_EXECUTION_COMMANDS],
+    ['member.create', 'member.followup', 'member.send', 'team.admitInitialWork', 'team.ensureRootLive'],
+    'the agent-execution set is the closed refusal list: dispatch a native tool / shell / agent I/O',
+  )
+  // And every other catalog command is control-plane — no third bucket, no silent gap.
+  assert.deepEqual(
+    [...S6_CONTROL_PLANE_COMMANDS],
+    [...REMOTE_METHOD_NAMES].filter((method) => S6_AGENT_EXECUTION_COMMANDS.includes(method) === false).sort(),
+    'every non-refused catalog command is control-plane',
+  )
+  // A NEW command cannot default to allowed: there is no fallback branch.
+  assert.equal(s6CommandEffectOf('team.executeNativeTool'), undefined, 'an unclassified command has NO effect class')
+  assert.equal(isS6ControlPlaneCommand('team.executeNativeTool'), false, 'an unclassified command is REFUSED, never default-allowed')
+  assert.equal(isS6ControlPlaneCommand('member.send'), false)
+  assert.equal(isS6ControlPlaneCommand('team.create'), true, 'creation is a control-plane command')
+  assert.equal(isS6ControlPlaneCommand('team.getProjection'), true, 'a team read is a control-plane command')
+
+  // 2. THE GOVERNED DISPATCHER: control plane served, agent execution refused BEFORE the handler.
   const world = await hostSurfaceWorld('remote')
-  const dispatcher = { calls: 0, dispatch: () => { dispatcher.calls += 1; return { ok: true } } }
-  // POSITIVE CONTROL: the ungoverned row builds and dispatches.
-  const ungated = refuseHostSurfaceBefore(undefined, { subject: 'remote.surface', owner: 'root-host-surface' })
-  assert.equal(ungated, false)
-  if (!ungated) dispatcher.dispatch()
-  assert.equal(dispatcher.calls, 1)
-
-  // THE REFUSAL: the row is centre-configured, so the command plane is not installed at all.
-  const refused = refuseHostSurfaceBefore(world.point('remote'), {
-    subject: 'remote.surface',
-    owner: 'root-host-surface',
-    locator: 'root-host-surface',
-    detail: 'endpoint team.delegate',
+  const point = world.point('remote')
+  const called = []
+  // Deliberately NO messaging/member/admission ports: a refused command must never reach one, so a
+  // missing port would be a TypeError rather than a green. `catalog.list` is the served control arm.
+  const ports = { catalog: { list: async () => { called.push('catalog.list'); return [] } } }
+  const principal = () => ({ kind: 'human', humanId: 'operator' })
+  const refusals = []
+  const dispatcher = createS6RemoteDispatcher(ports, principal, undefined, (method) => {
+    refusals.push(method)
+    return point.refuse({
+      subject: `remote.command:${method}`,
+      owner: 'root-host-surface',
+      locator: 'root-host-surface',
+      detail: method,
+    }).admission
   })
-  assert.equal(refused, true)
-  assert.equal(dispatcher.calls, 1, 'ZERO side effects: no dispatcher was built or called after the refusal')
 
-  const fact = world.ledger.readAll().find((record) => record.kind === 'invocation-authority')
+  const served = await dispatcher('catalog.list', { version: 1, params: {} })
+  assert.equal(served.ok, true, `a control-plane read must be served, got ${JSON.stringify(served)}`)
+  assert.deepEqual(called, ['catalog.list'])
+  assert.deepEqual(refusals, [], 'the refusal hook is never consulted for a control-plane command')
+
+  const refused = await dispatcher('member.send', { version: 1, params: {} })
+  assert.equal(refused.ok, false)
+  assert.equal(refused.error.code, HOST_SURFACE_REFUSALS.remote.code, 'the typed wire code is the EXISTING host-surface code')
+  assert.match(String(refused.error.message), /explicitly unavailable/u, 'the wire message names the refusal')
+  assert.equal(refused.error.details.reason, 'domain-error', 'invariant 4b stamps the vocabulary pass-through reason')
+  assert.deepEqual(refusals, ['member.send'])
+  assert.deepEqual(called, ['catalog.list'], 'ZERO side effects: no handler/port/agent path ran for the refused command')
+
+  // 3. THE REFUSAL IS DURABLE (fact + settlement), the same shape as the other host-surface refusals.
+  const fact = world.ledger.readAll().find(
+    (record) => record.kind === 'invocation-authority' && record.toolName === 'remote.command:member.send',
+  )
+  assert.notEqual(fact, undefined, 'the refused command must leave an invocation-authority fact')
   assert.equal(fact.decision, 'deny')
   assert.equal(fact.refusalCode, 'ADMISSION_REMOTE_UNAVAILABLE')
   assert.equal(fact.axis, 'team.control', 'a remote command belongs to the team control plane, not to an invented axis')
-  assert.match(String(fact.reason), /no remote-command axis/u)
+  assert.match(String(fact.reason), /member Binding for UTE/u, 'the reason names the missing member binding/axis')
   const settled = world.store.read(world.identityOf({ callId: fact.callId }).executionId)
   assert.equal(settled.state, 'REFUSED')
   assert.equal(settled.observation.dispatch, 'not-started')
 
-  // The three codes are distinct BY CONSTRUCTION (the closed table), not by a comment.
+  // 4. UNAUTHENTICATED: without the connection-gate authority basis EVERY command is refused before
+  // the effect guard, the params and any port — the same fail-closed principal context as before.
+  const unauthenticated = createS6RemoteDispatcher(ports, principal, {})
+  const denied = await unauthenticated('catalog.list', { version: 1, params: {} })
+  assert.equal(denied.ok, false)
+  assert.equal(denied.error.code, 'TEAM_REMOTE_PRINCIPAL_INVALID', 'an unauthenticated request cannot reach a command at all')
+  assert.deepEqual(called, ['catalog.list'], 'the unauthenticated request reached no port')
+  assert.deepEqual(refusals, ['member.send'], 'the unauthenticated request reached no guard/handler')
+
+  // The three host-surface codes stay distinct BY CONSTRUCTION (the closed table), not by a comment.
   const codes = [HOST_SURFACE_REFUSALS.remote.code, HOST_SURFACE_REFUSALS.alpha6.code, HOST_SURFACE_REFUSALS.ptc.code]
   assert.equal(new Set(codes).size, 3, `the capabilities must be individually identifiable, got ${codes.join(', ')}`)
 })

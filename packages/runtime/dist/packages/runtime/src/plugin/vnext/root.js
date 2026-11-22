@@ -3420,18 +3420,40 @@ export function createTeamProductionRoot(params) {
     });
     seams.projectionLiveOverlay.install(liveOverlay);
     // --- A31 + A33 + A34 the remote surfaces (built once, installed once) -----------------------------
-    // C-remote (round 55): on a centre-configured row the S6 command plane is EXPLICITLY UNAVAILABLE.
-    // The dispatcher is authorized by a server-derived principal, not by a member binding, so the
-    // compiled ceiling the centre judges cannot speak for it and there is no axis to admit a remote
-    // command on. Rather than leave an ungoverned second command authority beside the centre, the
-    // surface is not built at all and the refusal is written (fact + settlement REFUSED/not-started).
-    const remoteRefused = refuseHostSurfaceBefore(hostSurfaceRefusalPoint('remote'), {
-        subject: 'remote.surface',
-        owner: rootSid,
-        locator: rootSid,
-        detail: 'the row is configured for the centre, which has no remote-command axis',
-    });
-    const remoteSurfaces = remoteRefused ? undefined : createS6RemoteSurfaces({
+    // ROUND 74 (owner ruling `docs/reviews/20261122-1536.txt` §3) — the S6 plane is BUILT on a
+    // centre-configured row again, as a governed MANAGEMENT control plane.
+    //
+    // Why the blanket refusal is gone: the plane is the product's only runtime `team.create` entrance,
+    // and creation is a TeamDomain/principal question (the existing `s6-principal.ts` derivation and the
+    // existing `createAndStartTeam()` path), NOT an admission axis. Refusing the whole surface made
+    // governance and runtime creation mutually exclusive (ESCALATION-centre-row-creation-entrance.md).
+    //
+    // What has NOT changed: the plane is not a second agent-tool execution authority. Every endpoint is
+    // classified by its ACTUAL effect in the ONE closed table (`s6-command-classification.ts`), and the
+    // dispatcher refuses any command whose effect is agent execution — dispatching a native tool,
+    // executing a shell or producing agent I/O — BEFORE the envelope/params/handler, because such a
+    // command has no member Binding the UTE centre could admit it on. The refusal is recorded through
+    // the SAME host-surface refusal point as every other host-surface refusal (invocation-authority
+    // fact first, then a settlement closed REFUSED/not-started), and it is a typed wire code from the
+    // existing vocabulary (ADMISSION_REMOTE_UNAVAILABLE).
+    //
+    // On a row that never configured the centre the point is `undefined`, no command hook is passed,
+    // and the plane keeps its pre-round behaviour byte-for-byte (every command served, as before).
+    const remoteCommandRefusal = hostSurfaceRefusalPoint('remote');
+    const remoteSurfaces = createS6RemoteSurfaces({
+        ...(remoteCommandRefusal === undefined
+            ? {}
+            : {
+                refuseExecutionCommand: (method) => {
+                    const recorded = remoteCommandRefusal.refuse({
+                        subject: `remote.command:${method}`,
+                        owner: rootSid,
+                        locator: rootSid,
+                        detail: `the command '${method}' is not control-plane (agent execution); only UTE admits a bound member's tool call`,
+                    });
+                    return recorded.admission;
+                },
+            }),
         rootSessionId: rootSid,
         isOwnedRoot: ownsTeamSessionRoot,
         ...(config.defaultWorkspace !== undefined

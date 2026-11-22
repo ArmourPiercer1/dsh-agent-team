@@ -49,6 +49,18 @@ what would prove it.
 > rows in §3.2, §6.6, §6.13, §7 and the checklist are refreshed. Nothing is upgraded to PRODUCT-PROVEN,
 > and no product code changed for this round.
 
+> **Round 74 addendum (governed management plane).** The owner ruled on the round-59 escalation
+> (`docs/reviews/20261122-1536.txt` §3): S6 Remote is restored as an authenticated **management control
+> plane**, not a second agent-tool executor. A centre-configured row now builds/installs the S6 plane;
+> `POST /team-remote/team.create` mints the Team at runtime through `createAndStartTeam()`. Commands are
+> classified by ACTUAL EFFECT in one closed table (`s6-command-classification.ts`); the
+> `agent-execution` class (`team.admitInitialWork`, `team.ensureRootLive`, `member.create`,
+> `member.send`, `member.followup`) is refused with the existing `ADMISSION_REMOTE_UNAVAILABLE` on
+> `team.control`, with a durable fact + `REFUSED`/`not-started` settlement. The round-60 boot-create
+> workaround in the D driver is REMOVED; a new live judge `d:remote-creation` is **PROVEN on two
+> agreeing boots** (`RESULT PASS 2/2`). §2 C1/C4/C9, §3.2, §6.2, §7 and the checklist are refreshed;
+> the escalation is RESOLVED. This is not multi-user RBAC, and no S6 command may execute a model tool.
+
 ---
 
 ## 1. HEAD, branch, and scope facts
@@ -153,15 +165,15 @@ Status vocabulary — these are not interchangeable:
 
 | # | capability (verbatim) | disposition (verbatim) | status at this HEAD | evidence | what would prove it (if not PRODUCT-PROVEN) |
 | --- | --- | --- | --- | --- | --- |
-| **C1** | the **15** `team_*` tools (member/template/delegation/control board) | **preserve** — not the retired plane; the earlier draft credited the plane, which was wrong | MECHANISM + DEV-LIVE surface. The closed list is `CENTRE_TOOL_NAMES` (`packages/runtime/src/plugin/vnext/admission.ts:57-73`); `ADM-31` pins it against `createTeamTools` **in both directions**; `ADM-89/90/91` admit all 15 on `team.control`, refuse all 15 unbound, and refuse an unlisted name. Live: the booted centre row's model-visible surface carries all 15 (`ESCALATION-centre-row-creation-entrance.md:8-9`) | `packages/runtime/test/vnext-admission.test.mjs`; `ESCALATION-centre-row-creation-entrance.md:8-9` | a governed row that **creates and drives** the board end to end through a product entrance (GUI or remote) with a real model. Blocked today by the 405 in §6.2 |
+| **C1** | the **15** `team_*` tools (member/template/delegation/control board) | **preserve** — not the retired plane; the earlier draft credited the plane, which was wrong | MECHANISM + DEV-LIVE surface. The closed list is `CENTRE_TOOL_NAMES` (`packages/runtime/src/plugin/vnext/admission.ts:57-73`); `ADM-31` pins it against `createTeamTools` **in both directions**; `ADM-89/90/91` admit all 15 on `team.control`, refuse all 15 unbound, and refuse an unlisted name. Live: the booted centre row's model-visible surface carries all 15 (`ESCALATION-centre-row-creation-entrance.md:8-9`) | `packages/runtime/test/vnext-admission.test.mjs`; `ESCALATION-centre-row-creation-entrance.md:8-9` | a governed row that **creates and drives** the board end to end through a product entrance with a real model. **Round 74 removed the entrance blocker** (`POST /team-remote/team.create` mints the Team at runtime on a centre row); the live driver still uses the product's scripted mock, so a **real model** remains unproven |
 | **C2** | member create / resume / archive | **preserve** | MECHANISM. `ADM-92` creates through `team_create_member` and installs the **member's own** centre at its bind; `ADM-93` archives through `team_archive_member` (production step ports: quiesce → settle-then-archive → `release-residency`), and the next call is `ADMISSION_MEMBER_CLOSED`. **DEV-LIVE (create only):** the D3 delegate produced a real `member-activated` effect with `instanceId`/`childSessionId` (`d3:work-delivery`, §15) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md` §15; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` | a live **archive** and a live **resume** on a booted host. Archive's live path currently refuses **earlier**, at the durable lifecycle gate (`LIFECYCLE_ADMISSION_CLOSED` / `memberResumeRefusal`) — `CAPABILITY-MATRIX-C.md:61-64`. Resume is not measured live at all |
 | **C3** | work delegation + delivery receipts | **preserve** | **DEV-LIVE PROVEN** (`d3:work-delivery`, two agreeing boots). `team_delegate` → `effect.kind=member-activated`, prompt delivered **verbatim** as the Member's first user message, final text and `memberResult.body` both exactly `DBOOT_D3_DELIVERED_UNIT_ALPHA`; `team_collect` returns the terminal `succeeded` entry, **byte-identical when collected again after a SIGKILL cold restart**; the unit is on disk; every member call fact is in the member's own ledger. `ADM-94/95` carry the in-process positive and negative | `D-BOOT-FEASIBILITY.md:618-628`; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a **real-model** interleaving (the current model is the product's scripted mock, §6.7) and a delivery driven at a product entrance rather than the driver's boot-bound team |
-| **C4** | Blueprint binding + identity generation | **preserve** (KEEP module) | MECHANISM. `ADM-26` maps a compiled member onto a binding by reference, never by re-interpretation; `TB-1…TB-6` pin the durable-row resolution and the four typed refusal reasons with **no** legacy degradation. Live: the round-60 path-3 boot binds a v4 blueprint at boot and reaches a governed Member (`CAPABILITY-MATRIX-C.md:137-141`) | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/test/vnext-template-binding.test.mjs`; `CAPABILITY-MATRIX-C.md:137-141` | an identity generated for a member **created at runtime** on a governed row (needs the 405 entrance, §6.2) |
+| **C4** | Blueprint binding + identity generation | **preserve** (KEEP module) | MECHANISM. `ADM-26` maps a compiled member onto a binding by reference, never by re-interpretation; `TB-1…TB-6` pin the durable-row resolution and the four typed refusal reasons with **no** legacy degradation. Live: the round-60 path-3 boot binds a v4 blueprint at boot and reaches a governed Member (`CAPABILITY-MATRIX-C.md:137-141`) | `packages/runtime/test/vnext-admission.test.mjs`; `packages/runtime/test/vnext-template-binding.test.mjs`; `CAPABILITY-MATRIX-C.md:137-141` | an identity generated for a member **created at runtime** on a governed row — **round 74 now has the runtime Team/Leader identity** (`team.create` → `createAndStartTeam`); a runtime-created **Member** (`member.create`, which is refused as agent-execution) and a real-model identity are still unproven |
 | **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and **stopped** it through the public `session/cancel` RPC — a Stop, not an approval (no decision row is granted; the live record stops at the pending request and the `ADMISSION_STOPPED` fact) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal. The product *does* install the grant binder and the durable approval port when the row has a `controlServiceRef` (`agent-bindings.mjs:688-706`); a row without one still refuses asks as `ADMISSION_ASK_UNWIRED`, and no live approval/consume has been observed |
 | **C6** | Officer assignment + ReviewCapability routing | **preserve** (KEEP module) — *and* the contract's own rule: if Alpha.6 is not wired, "the corresponding approval and auto-wake paths must be **explicitly disabled**, never silently fall back" (`06-CAPABILITY-CONTRACT.md:95-98`) | **REFUSED-BY-DESIGN**, and that is the contract-compliant state. `ADMISSION_ALPHA6_UNAVAILABLE` in two independent gates: `centre-config.ts:73` rejects the opt-in on **every** row (`ADM-34`, `ADM-99`), and `root.ts:2496-2510` records the refusal then types the boot refusal. **Live:** `d3:alpha6` **PROVEN** as the typed-refusal shape — no team root (`/__p6t6/state` 404), no decision, no wake intent. **ROUND 68:** the row's refusal is now RECORDED at the host entry through the product's own point (`host.ts` -> `createAlpha6RowRefusalHook` at the centre rule -> `createHostSurfaceRefusalPoint`): both live boots measured one `ADMISSION_ALPHA6_UNAVAILABLE` invocation-authority fact on `host.service` and a `REFUSED`/`not-started` settlement (`ADMITTED→REFUSED`) under the row's `centreStatePath`, while the same typed refusal and the same no-team-row boot outcome are unchanged. A row with no `centreStatePath` is still refused but unwritten (no durable directory). `ADM-116/117/118` carry the in-process shape | `D-BOOT-FEASIBILITY.md:629-643`; `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a compiled review-routing **axis** in the member contract, or an owner ruling that a record-only approval fact on `host.service` **is** adjudication (`CAPABILITY-MATRIX-C.md:119-123`) |
 | **C7** | durable Wake intents + cold wake | **preserve** | MECHANISM, in-process only. `ADM-98` composes `createAlpha6RootWiring` directly, the ONE shared `createAlpha6RootRouter` takes a real `recipient` decision off a durable control row (Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that a **fresh** reader sees naming exactly the routed reviewer | `packages/runtime/test/vnext-admission.test.mjs` | the same, reached at a **product entry**. Unreachable while C6's axis is missing: the config gate runs before root construction, so at a host entry the machinery is never built (§6.5) |
 | **C8** | Stop (sticky, durable, non-replaying) | **preserve** | MECHANISM + **DEV-LIVE PROVEN** (`d2:stop`, two boots). Stop is the host's own `exec.signal` — no second stop mechanism. `ADM-56…ADM-62` cover Stop before the body, while an ask is pending, after the approval and before the body, lifecycle close with a call in flight, and the product composition's own close. Live: `POST /api/session/cancel` → tool result `ADMISSION_STOPPED`, centre fact `refusalCode=ADMISSION_STOPPED`, settlement `REFUSED`/`dispatch=not-started` with **no** execution fact, never `UNKNOWN`; a second Member completed with zero stops | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493`; `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` | Stop **under load** and a real Stop keypress; and the one open cell: a Stop that lands **after** an `allow` was recorded cannot be `REFUSED` under the frozen settlement contract (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`) |
-| **C9** | remote entry (`s6-remote`, remote control surface) | **preserve** | **REFUSED-BY-DESIGN**, with a disclosed product cost. `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`; the S6 plane is not built at all (`root.ts:4322` via `refuseHostSurfaceBefore`, `ADM-86`), while an ungoverned row still builds and dispatches (positive control). The cost: a centre-configured row has **no remote API** (`root.remoteDispatcher` absent) | `CAPABILITY-MATRIX-C.md:25`; `D-BOOT-FEASIBILITY.md:171-222`; `ESCALATION-centre-row-creation-entrance.md:17-24` | a declared axis for remote commands (contract change), or a non-remote creation route — shapes 1/2 of the escalation. Shape 3 (boot-created teams only) is what D currently measures |
+| **C9** | remote entry (`s6-remote`, remote control surface) | **preserve** | **RESTORED as a GOVERNED MANAGEMENT CONTROL PLANE (round 74)** under owner ruling `docs/reviews/20261122-1536.txt` §3. The S6 plane is BUILT and INSTALLED on a centre-configured row; `POST /team-remote/team.create` mints a Team at runtime through `createAndStartTeam()` with the existing S6 Principal + TeamDomain/Control + creation/start gates. Commands are classified by ACTUAL EFFECT in ONE closed table (`s6-command-classification.ts`): control-plane reads/creation/management are served; agent-execution commands (`team.admitInitialWork`, `team.ensureRootLive`, `member.create`, `member.send`, `member.followup`) are REFUSED with the existing `ADMISSION_REMOTE_UNAVAILABLE` on `team.control` + durable fact + `REFUSED`/`not-started` settlement. `ADM-86` (rewritten) pins the closed table both ways, the no-default-allow rule, a served control read, a refused execution (zero ports), the durable shapes, and the unauthenticated principal refusal; E3 pins the real production root (`installed===true`, served read, five type-refused executions with facts). Live `d:remote-creation` (round 74, two boots): unauthenticated refused/mints no Team, `TEAM_REMOTE_FOREIGN_TEAM`, runtime create success, duplicate no second Team/no provider request, `member.send` refused with zero provider requests. LIMIT: per-DSH_HOME authenticated operator, NOT multi-user RBAC | `CAPABILITY-MATRIX-C.md` C-remote; `ESCALATION-centre-row-creation-entrance.md` RESOLUTION; `packages/runtime/test/vnext-admission.test.mjs` (`ADM-86`); `a3p4-pr4-production-entry-regression.test.ts` (E3); `D-BOOT-FEASIBILITY.md` §17 | a real-model drive through the remote entrance, and a user-level identity isolation claim (out of scope/not claimed) |
 | **C10** | MCP catalog + initial grant + live loss | **preserve** — "may land in C, but must never be enabled by default while unmanaged" (`06-CAPABILITY-CONTRACT.md:99`) | MECHANISM. `ADM-96` mounts the product's own real HTTP mini-MCP server through the **exact production call**, reads the tool off the model-visible surface, admits it on `net.mcp` with the **server** as locator, and the real body answers `pong:mounted`; `ADM-97` proves mounting ≠ permission, that a tool-level restriction narrows, and that a bare `mcp__` prefix is refused by name. `f15-mcp-live-loss` is green inside the 238-suite vitest population. Not enabled by default: the remote mount is `SKIPPED` on the centre row | `packages/runtime/test/vnext-admission.test.mjs`; `tests/checks/eb3-ute-migrated-suites.txt`; `D-BOOT-FEASIBILITY.md:171-222` | a **live mount at a host boot** (unknown at D: the row's remote mount is skipped) and a live server-loss observation. Also: the centre is **not mount-aware**, so a well-formed name for a never-mounted server is decided on the network axis alone (`ADM-97` step 5) |
 | **C11** | state projections (`sessionProjections`) | **preserve** | **MECHANISM, measured (round 66).** The row names two owners. (a) The Team-owned projection (`projection/**`) is **PRESERVED in the new assembly** and proven to derive from the TeamDomain's own facts: `ADM-107` wires it exactly as the entry does — `createProjectionService(createTeamDomainReadPort(domain, readPortDeps), <live overlay>, { clock, schemaVersion: 2 })` (`root.ts:4275-4279`) — over the REAL durable `TeamDomain`, and asserts the identity core, every member row and the ledger summary field-by-field against the durable rows; a real `team_create_member` is then what the **next** reader sees (fresh port + service), and every durable value survives a **cold domain reopen**. `ADM-108` (negative) proves a mutation **REFUSED at the ONE centre** (`ADMISSION_NO_BINDING`, `LANE_DENY`) moves **nothing** — projection byte-identical, no new member row, no ledger entry, no generation move — with a same-world positive control. `ADM-109` (negative) proves the live overlay is **not a second authority** (a live handle invents no member; dropping one moves only residency, never lifecycle/creation/generation), that an absent TeamSession **fails closed** (`TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT`, never an invented empty team), and that a projection pass **writes nothing**. Falsified not assumed: stamping v1 and emptying the catalog template rows each turn the arms red. (b) The other named owner — the host's native `sessionProjections` service behind the `todo`/`goal` faces — is preserved **by construction, not by this cut**: neither the retired entry (`live/agent-bindings.mjs`, `root.ts` at `1617d5839^`) nor the new one references it (`grep -c sessionProjections` → **0** in all four files), so the entry replacement cannot have un-wired it; those faces stay bound on `host.service` (`ADM-32`). The Team-side uses are pass-through **reads** of the HOST's service, never a registration of its own: the PTY facade hands `ctx.get('sessionProjections')` to the pinned backend (`team-services/src/terminal-pty.ts:400`) and the P5-T5 real-instance harness restores the durable model selection with `stateOf(session, 'modelSelection')` (`root-binding/harness/plugin.mjs:969-982`) | `packages/runtime/test/vnext-admission.test.mjs` (`ADM-107`…`ADM-109`); `MIGRATED-SUITE-STATUS.md` "Round 66 (C11)" | (i) a **live boot** reading the Member's todo/goal projection state through the host's own `sessionProjections.stateOf` — that service is the HOST's, so no in-process arm can read it; (ii) a projection read at a **product entry** (`team.getProjection`), which a centre-configured row cannot reach today because the S6 plane is refused by design (C9). **The `sessionProjections.stateOf` half is NOT claimed here**, and no cell above is PRODUCT-PROVEN |
 | **C12** | tool admission (guard, builtin deny, selector) | **preserve** (KEEP module) | MECHANISM + DEV-LIVE. `ADM-1…ADM-45` (lanes, deny precedence, unbound refusal, `ADMISSION_TOOL_UNBOUND`), `ADM-29/30` (tool restriction answers before the ceiling and only narrows), `ADM-31` (closed list matches `createTeamTools` both ways), `ADM-35` (a governed member refuses to run unrecorded), `ADM-44` (`MEMBER_CENTRE_UNWIRED`). Live: `d:centre-facts` PROVEN — 2 `fs.read` admissions (`allow` + `DENY/LANE_DENY`) and 2 execution facts, read back from disk | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:369-395` | a real model choosing tools adversarially (the mock is scripted), and a policy compiled at runtime rather than passed as an input (`CAPABILITY-MATRIX-C.md:66-67`) |
@@ -283,9 +295,10 @@ kernel; both were present.
 | `d3:crash-cold-recovery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:work-delivery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
+| **`d:remote-creation`** | **PROVEN (round 74, new)** — unauthenticated refused (401) and mints NO Team; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate runtime `team.create` 200 / `path:"fresh-root"`; duplicate mints no second root and adds 0 provider requests; `member.send` refused `ADMISSION_REMOTE_UNAVAILABLE` with 0 provider requests | `D-BOOT-FEASIBILITY.md` §17; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`; `round74-console.log` |
 
-After round 71, `run-boot.mjs` (5/5 judges) and `run-boot-d2.mjs` (3/3) are `overall=PASS` on two
-agreeing boots each; `run-boot-d3.mjs` still records `overall=FAIL` (1 of 4 refutes, the absent process
+After round 74, `run-boot.mjs` (6/6 judges, incl. `d:remote-creation`) and `run-boot-d2.mjs` (3/3) are
+`overall=PASS` on two agreeing boots each; `run-boot-d3.mjs` still records `overall=FAIL` (1 of 4 refutes, the absent process
 lane). A driver that exited 0 without a PROVEN judge would be the finding; every PASS above is a
 measured clause set, not an exit code (`evidence-complete=true, allProven` is per driver).
 
@@ -440,7 +453,7 @@ of three lawful shapes:
 | subprocess / PTY / PTC | typed refusals + `CONTRACT-CHANGE-REQUEST-process-lane.md` | the host already offers the families; the missing piece is a **declaration source**, i.e. a product contract question |
 | search face and the durable overlay | shape B implemented in this repo (`overlay-decision.mjs`, `admission-port.mjs`), shape A left open in `CONTRACT-CHANGE-REQUEST-search-face.md` | the change is to this repo's plugin and its fact shape, not to the host |
 | Alpha.6 review routing | typed refusal + two lawful shapes (`CAPABILITY-MATRIX-C.md:119-123`) | needs a compiled axis or an owner ruling; nothing upstream |
-| runtime team creation on a centre row | `ESCALATION-centre-row-creation-entrance.md` (405) | a ruling, not a patch (see §6.2) |
+| runtime team creation on a centre row | **RESOLVED in round 74 by owner ruling** (`docs/reviews/20261122-1536.txt` §3) — S6 Remote restored as a governed management control plane, per-command refusal for agent execution; `ESCALATION-centre-row-creation-entrance.md` now RESOLVED | the change is inside this repo's plugin; the original was an owner decision and the owner ruled |
 | admitted-then-refused settlement | **RESOLVED in round 73 by owner-approved Option A** — the settled contract now appends a durable recheck deny beside the allow and reaches `REFUSED`/`not-started` (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`; `ADM-119`…`ADM-124`) | the change is inside this repo's settlement store and plugin, not a host patch; the original escalation was an owner decision and the owner ruled |
 
 ### 5.3 No DSH upstream patch exists
@@ -466,20 +479,33 @@ moves only with a real host boot line at a named commit — and even the `DEV-LI
 gates (`CAPABILITY-MATRIX-C.md:7`). *Would prove a row:* a gate-grade run (not a driver record) that boots
 the product at a named commit and drives that row end to end.
 
-### 6.2 Runtime team creation returns **405** on a centre row
+### 6.2 Runtime team creation on a centre row — **RESOLVED (round 74)**
 
-Measured: `[boot1] team.create status=405 ok=false null`. The driver's only creation entrance is the S6
-remote plane (`tests/world-factory/lib/u6-fs-assembly.mjs:505`); C-remote refuses to build that plane on a
-centre row (`root.ts:4324`) and therefore never installs its registration seam (`root.ts:4725`);
-`host.ts:1638` correctly turns that into `skipped` rather than a boot failure — with no dispatcher there
-is no route, hence 405. **Governance and runtime creation are mutually exclusive today**
-(`ESCALATION-centre-row-creation-entrance.md:12-24`). The A/B control is clean: the *no-centre* arm got
-`status=200` on the same driver and then refused the Member for want of a centre.
+The round-59 measurement was `[boot1] team.create status=405 ok=false null`: the S6 plane was not built on
+a centre-configured row, so the driver's only runtime creation entrance 404/405'd and D fell back to a
+boot-created Team (shape 3). **Owner ruling** `docs/reviews/20261122-1536.txt` §3 rejected shapes 1/2/3 as
+the product answer and restored S6 Remote as a **governed management control plane**:
 
-What D actually measures is **shape 3**: bind the v4 blueprint **at boot** and measure the boot-created
-Team. That is a **MEASUREMENT-ONLY** concession and must stay labelled as a limit. *Would prove it:* shape
-1 (a declared axis for a governed creation command — contract change) or shape 2 (a non-remote product
-creation route through the centre).
+- the plane is BUILT and INSTALLED on a centre row (`root.ts`; `host.ts` mounts the `installed` seam);
+- `POST /team-remote/team.create` mints the Team at runtime through the existing
+  `root.ts#createAndStartTeam()` (Principal + TeamDomain/Control + creation/start gates);
+- every S6 command is classified by ACTUAL EFFECT in ONE closed table
+  (`packages/runtime/src/plugin/s6-command-classification.ts`); only control-plane
+  read/creation/management commands are served, while `agent-execution` commands are REFUSED before
+  params/handlers with the existing `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`, a durable
+  invocation-authority fact and a `REFUSED`/`not-started` settlement;
+- **no new admission axis**, no change to `admission.ts`, and no member admission on the management route.
+
+Measured live (round 74, two agreeing boots): unauthenticated `team.create` → **401, no Team minted**;
+foreign TeamSession → **`TEAM_REMOTE_FOREIGN_TEAM`**; legitimate create → **200, `path:"fresh-root"`**
+with the durable TeamSession + leader row; duplicate create → **no second root, 0 provider requests**;
+`member.send` → **`ADMISSION_REMOTE_UNAVAILABLE`, 0 provider requests**. See §3.2 and
+`D-BOOT-FEASIBILITY.md` §17.
+
+**Limit, stated rather than hidden:** the principal is a **per-DSH_HOME authenticated operator**
+(Connection Gate), **not** multi-user RBAC, and no user-level identity isolation is claimed. The created
+Team's Member runs with its OWN compiled Binding and its OWN centre ledger — the management request never
+carries a member Binding.
 
 ### 6.3 The process lane is unavailable (persistent bash / PTY / PTC)
 
@@ -653,9 +679,10 @@ evidenced; neither is conflated with the other.
   projection is preserved in the new assembly and derives only from durable TeamDomain facts. What it still
   lacks is a **live boot** reading the HOST's `sessionProjections.stateOf` for a Member's todo/goal state —
   the host service, not the Team's (`§2` C11 row).
-- **`test-catalog` is at its ceiling** (`UNCOLLECTED=41` exactly), so the collected population has zero
-  headroom.
-- **The boot-bound team is a measurement concession**, not the product's runtime creation path (§6.2).
+- **`test-catalog` is close to its ceiling** (`UNCOLLECTED=38` against a 41 ceiling), so the collected
+  population has three units of headroom.
+- **The measured Team is runtime-created** (round 74), removing the boot-bound concession (§6.2). The
+  model is still the product's scripted mock.
 
 ---
 
@@ -669,8 +696,8 @@ evidenced; neither is conflated with the other.
    `ute-vnext-a1` node leg (**186 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
    suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count, as are
    round 68's three entry-ordering arms and round 73's six settlement-Option-A arms (`ADM-119`…`ADM-124`).
-2. **There is live D evidence for the listed items.** Eleven live judges are **PROVEN** at two agreeing
-   boots each (round 71 added the two repaired judges to the earlier nine): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
+2. **There is live D evidence for the listed items.** Twelve live judges are **PROVEN** at two agreeing
+   boots each (round 74 added `d:remote-creation` to the eleven): `d:remote-creation`, `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
    (repaired, not deleted), `d:member-read-denied` (round 71: channel-typed, provider guard facts
    required to be ABSENT on the lane channel), `d2:multi-member-concurrency`, `d2:revocation` (round 71:
    the four contract directions, widening measured and refused), `d2:stop`, `d3:crash-cold-recovery`,
@@ -679,8 +706,9 @@ evidenced; neither is conflated with the other.
 3. **It is NOT a completed product acceptance**, and the refuted items are named rather than rounded up:
    - `d3:persistent-subprocess` **REFUTED** — no process lane exists (`ADMISSION_AXIS_UNSUPPORTED`); B's
      bash/`run_code` positives are **NOT RUN** (§6.3).
-   - **Runtime team creation is 405 on a centre row** — governance and runtime creation are mutually
-     exclusive today (§6.2).
+   - **Runtime team creation is RESOLVED, not a gap** (round 74): the governed management plane is live
+     and `d:remote-creation` is PROVEN on two boots (§6.2). The remaining limit is scope, not existence:
+     per-DSH_HOME operator, not RBAC. This moves no C row to PRODUCT-PROVEN (the model is still a mock).
    - **Alpha.6 is unreachable at a host entry**, and its routed path is unproven there (§6.5).
    - **The search face is lane-only governance** — a durable overlay rule cannot deny it (§6.4).
    - **No row is PRODUCT-PROVEN**, and the model is a **scripted mock** (§6.1, §6.7).
@@ -703,9 +731,8 @@ evidenced; neither is conflated with the other.
    release note, or review summary.
 
 **What would change this verdict** (in order): an owner ruling on the process lane (one declaration
-source), a ruling/wiring for Alpha.6's review-routing axis, a governed runtime creation entrance (shape
-2, then 1), a real-model interleaving, and then a gate-grade product acceptance run that boots at a
-named commit and drives each C row end to end. (The settlement-recheck ruling was given and implemented
+source), a ruling/wiring for Alpha.6's review-routing axis, a real-model interleaving, and then a
+gate-grade product acceptance run that boots at a named commit and drives each C row end to end. (The settlement-recheck ruling was given and implemented
 in round 73; it removed a red cell, not the product-acceptance gap.)
 
 **Nothing in this report authorises a merge, a release, or a deployment.** `master` is untouched by this
@@ -723,7 +750,7 @@ A box a reviewer can tick against this HEAD. Every line names the check and wher
 | 1 | **Branch and base** | `vnext/a1-cut`, measurement commit `189d6cabca5b4de9ec3059f9949ab9302364f789` (+ this docs-only audit's commits), base `a19d1df01` (frozen A0, PR #821, `master`) | `git rev-parse HEAD`; §1 |
 | 2 | **No auto-merge** | PR #822 is **draft**, base **`master`**, state **OPEN**; the engine may sync the body but must never mark it ready or merge it. **Merging is the OWNER's act** — not the engine's, not this branch's | `gh pr view 822 --json isDraft,baseRefName,state` → `{"baseRefName":"master","isDraft":true,"state":"OPEN"}` |
 | 3 | **Gates green** | all eight required commands pass at this HEAD (dispatch 188/186/0/2; catalog 785/38; closure four zeros; assets 37/180/69,512; docs-sync 0 findings; 28 placements; CI-required 10/0; migrated layer 238/238) | §4.1–§4.8, pasted verbatim |
-| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, 405 runtime creation, Alpha.6 routed path unreachable, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design | §3.2, §6.2–§6.5, §6.6, §6.13, §7 |
+| 4 | **Refuted / unreachable items listed** | `d3:persistent-subprocess`, Alpha.6 routed path unreachable, search face lane-only, provider channel unreachable on the LIVE path (in-process only), widening beyond the ceiling impossible by design. **Runtime creation is no longer on this list** (round 74 RESOLVED, `d:remote-creation` PROVEN) | §3.2, §6.2–§6.5, §6.6, §6.13, §7 |
 | 5 | **Owner decisions listed** | six, each with what is measured, the lawful options and their cost | `OWNER-DECISIONS.md` |
 | 6 | **Host untouched** | pinned host `639ed015397290b3745d163aafe02ffee4aa3f84`, porcelain empty; CORE PATCH BUDGET = 0 with no upstream patch | §5.1–§5.3 |
 | 7 | **No PRODUCT-PROVEN row** | by design at this stage: `DEV-LIVE` boots are not gates | §2.1, §6.1 |

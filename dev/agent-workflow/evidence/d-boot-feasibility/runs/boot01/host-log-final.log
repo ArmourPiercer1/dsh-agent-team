@@ -1,4 +1,4 @@
 [dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source "dsh-agent-team", provider "dsh-agent-team", rank 550)
-dsh web: http://127.0.0.1:3193/?token=<redacted>
-[dsh-agent-team] remote mount: SKIPPED — the root refused the remote surface (C-remote: a centre-configured row has no remote-command axis); the refusal is on the durable record
+dsh web: http://127.0.0.1:3187/?token=<redacted>
+[dsh-agent-team] remote mount: MOUNTED channel=/team-remote
 

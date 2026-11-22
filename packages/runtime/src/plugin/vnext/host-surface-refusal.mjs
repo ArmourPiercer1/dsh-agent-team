@@ -1,6 +1,6 @@
 /**
- * host-surface-refusal.mjs — the centre's EXPLICIT UNAVAILABILITY for the three capabilities that
- * have no member I/O axis to be admitted on.
+ * host-surface-refusal.mjs — the centre's EXPLICIT UNAVAILABILITY for a capability that has no member
+ * I/O axis to be admitted on.
  *
  * WHY THIS MODULE EXISTS (round 55, C stage). The A1 cut's law is "an unwired controlled call is
  * refused with a code that names why, never forwarded to a second authority". Three capabilities
@@ -15,6 +15,12 @@
  *  - a PTC escalation asks the HOST sandbox to widen the process lane, which this contract does not
  *    compile at all (`CONTRACT-CHANGE-REQUEST-process-lane.md`), and the surviving escalation row
  *    mints its own one-shot grants outside the centre.
+ *
+ * ROUND 74 UPDATE (owner ruling `docs/reviews/20261122-1536.txt` §3). For S6 the unit of refusal
+ * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
+ * entrance, so a centre row now builds it as a governed control plane and refuses only the commands
+ * whose actual effect is agent execution (`s6-command-classification.ts`). The `remote` entry below
+ * therefore describes the refused SUBSET. Alpha.6 and PTC are unchanged (still surface-level).
  *
  * Each therefore ends EXPLICITLY UNAVAILABLE rather than silently absorbed by whichever surface
  * happened to answer first. The refusal is one closed table (so the three codes cannot collapse into
@@ -47,13 +53,22 @@ import { openFactLedger } from './fact-ledger.mjs'
 /**
  * The closed capability table. `missing` is the reason, not a TODO: it names the axis the contract
  * does not have and the shape that would be needed to change this row (never invented here).
+ *
+ * ROUND 74 — THE REMOTE ENTRY IS NOW PER-COMMAND, NOT PER-SURFACE. The owner ruling
+ * (`docs/reviews/20261122-1536.txt` §3) restored the S6 plane on a centre-configured row as a governed
+ * MANAGEMENT control plane. The unit of judgement is the COMMAND (`s6-command-classification.ts`): the
+ * control-plane commands are served through the existing principal + TeamDomain + creation/start gates,
+ * and only a command whose actual effect is agent execution is refused — because it has no member
+ * Binding and no member I/O axis for the centre to admit it on, and serving it would be a second
+ * execution authority. The code/axis/subject are unchanged; `missing` now names the refused SUBSET
+ * truthfully instead of claiming the whole surface is unavailable.
  */
 export const HOST_SURFACE_REFUSALS = Object.freeze({
   remote: Object.freeze({
     code: 'ADMISSION_REMOTE_UNAVAILABLE',
     axis: 'team.control',
     subject: 'S6 remote command',
-    missing: 'no remote-command axis exists: the S6 dispatcher is a host admin surface authorized by the server-derived principal, not by a bound member, so the compiled ceiling the centre judges cannot speak for it',
+    missing: 'an S6 command that would dispatch a native tool, execute a shell or produce agent I/O has no member Binding for UTE to admit, and the S6 dispatcher\'s principal is not a member: serving it would be a second execution authority',
   }),
   alpha6: Object.freeze({
     code: 'ADMISSION_ALPHA6_UNAVAILABLE',

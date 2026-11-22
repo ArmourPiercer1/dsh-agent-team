@@ -163,5 +163,9 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 #     Team-create document, the same shape a6-root-wiring authors. ONE v5 literal.
 # Both are documents a TEST authors and feeds to the parser. No shipped surface gained a blueprint
 # namespace literal, nothing was resolved, and no existing identity line moved.
+# 2026-11-22 (UTE A1 cut, Round 74, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4324 -> L4401 because round 74 rewrote ADM-86 (the C-remote arm) earlier
+# in the file. No literal was added or removed and no shipped surface gained a namespace literal; the
+# identity is re-recorded in the open from the gate's own report, not by guessing an offset.
 OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4324=v5
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4401=v5

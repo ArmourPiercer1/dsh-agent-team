@@ -216,12 +216,14 @@ subject's existing axis, through the product's own ledger and settlement — no 
 
 | row | code | axis | refused at |
 | --- | --- | --- | --- |
-| C-remote | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts:4322` — the surface is not built; the refusal is recorded, then the dispatcher is omitted |
+| C-remote (round 74: per command) | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts` per-command hook — the S6 plane IS built/installed; only `agent-execution` commands are refused before params/handlers (control-plane commands are served) |
 | C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts:73` (config) + `root.ts:2496` (recorded fact, then a typed boot refusal before any wake) |
 | C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:326` — the ONE centre, before the body |
 
 ADM-85..88 carry positives and negatives: an ungoverned remote row still dispatches (calls=1) while a
-governed row records the deny and settles `REFUSED`/`not-started`; a wake runs without the point and does
+governed row records the deny and settles `REFUSED`/`not-started`; round 74 rewrote ADM-86 to the
+per-command closed table (served control read, refused execution with zero ports, immutable fact +
+settlement, unauthenticated refusal) and restored the S6 management plane on centre rows; a wake runs without the point and does
 not with it; the same centre world admits an in-lane `read` (`COMPLETED`) while `run_code` never reaches the
 body; and `bash` keeps `ADMISSION_AXIS_UNSUPPORTED`, so the two absences are distinguishable from the
 durable record alone. ADM-88 pins the closed table: exactly three capabilities, pairwise distinct codes,
