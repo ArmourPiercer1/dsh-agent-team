@@ -1605,7 +1605,8 @@ $ node scripts/ute-a1-window.mjs --check
 UTE-A1-WINDOW pass branch=vnext/a1-cut red=0/0 cut=(148/52) findings=0
 ```
 
-`git rev-list --count a19d1df01..HEAD` = 144; `git diff --stat` = 1643 files, +107914 / −79603.
+`git rev-list --count a19d1df01..HEAD` = 144 at the measured commit `189d6cab`; `git diff --stat` = 1643
+files, +107914 / −79603. This audit adds one docs-only commit on top (no code, no gate change).
 
 ### Mismatches found and fixed (numbers)
 
