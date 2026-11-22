@@ -297,3 +297,21 @@ is 168 pass + 2 disclosed skips; the vitest population stays 238.
 is their entire governance. The centre also judges the search ROOT the call names, not every file the scan
 opens. Shape A (adding a search face to the closed vocabulary with a subtree resource) remains the durable
 answer and is still open.
+
+## MEASURED (round 66): C11 — the Team-owned state projection (`projection/**`)
+
+`06-CAPABILITY-CONTRACT.md:44` freezes C11 as capability "state projections (`sessionProjections`)",
+where it lives "`projection/**` + `todo`/`goal` faces", disposition **preserve**. The row names two
+owners and they are not the same thing, so they are measured separately.
+
+| C row | capability | where the centre stands | status |
+| --- | --- | --- | --- |
+| C-projection | the Team's whole-projection read (`projection/**`) — the piece the cut could have un-wired | **PRESERVED in the new assembly.** All three arms live in `packages/runtime/test/vnext-admission.test.mjs` and ride the `ute-vnext-a1` leg. Each builds the projection the way the entry does — `createTeamDomainReadPort(domain, readPortDeps)` → `createProjectionService(…, <live overlay>, { clock, schemaVersion: 2 })`, the wiring at `root.ts:4275-4279` — over the REAL durable `TeamDomain`, the REAL catalog-backed template resolver, the REAL committed-policy-state resolver and the REAL live-residency overlay (`s6-live-overlay.ts`). **`ADM-107` (positive):** the identity core, every member row (instanceId / templateId / label / lifecycle / childSessionId / createdAt, including the leader's production shape and invariant-14 omission) and the ledger summary are asserted field-by-field against the durable rows; a real `team_create_member` through the product tool surface is what the **next** reader sees (a FRESH port + service), and every durable value (member, ledger counts, generation) survives a **cold domain reopen** through `restartP6T1World`. **`ADM-108` (negative):** a mutation REFUSED at the ONE centre (`ADMISSION_NO_BINDING`, `LANE_DENY`) leaves the projection **byte-identical** and the durable store untouched (no member row, no ledger entry, no generation move), with a same-world positive control that the same tool DOES move both. **`ADM-109` (negative):** the live overlay is not a second authority (a live handle with no durable row invents no member; dropping a real handle moves only `liveActivity`, never lifecycle / createdAt / generation / ledger), an absent TeamSession **fails closed** (`TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT`, never an invented empty team), and a projection pass **writes nothing** (`seam.writeCount` unchanged). **Falsifiability, measured:** setting the stamp to v1 reds `ADM-107`; returning zero template rows reds all three. NOT PROVEN: a projection read at a PRODUCT ENTRY (`team.getProjection` over S6) — a centre-configured row has no remote plane by design (C9) | MECHANISM (real TeamDomain → real read port → real fold; NO host boot) |
+| C-sessionProjections | the HOST's native `sessionProjections` service behind the `todo`/`goal` faces | **Preserved by construction, not by this cut.** Neither the retired entry (`packages/runtime/src/plugin/live/agent-bindings.mjs` and `root.ts` at `1617d5839^`) nor the new one (`plugin/vnext/root.ts`, `plugin/vnext/agent-bindings.mjs`) references `sessionProjections` at all (`grep -c sessionProjections` → 0 in all four). The Team therefore never owned, wrapped or shadowed the host service, and the `todo`/`goal` faces stay bound on `host.service` (`ADM-32`). NOT PROVEN: reading `stateOf` for a Member's todo/goal state — that requires a real host boot and remains a D item | PRESERVED BY CONSTRUCTION; live read UNPROVEN |
+
+**What round 66 does NOT establish.** No row is PRODUCT-PROVEN. The `sessionProjections.stateOf` read is a
+host-boot measurement, not an in-process one; `todo`/`goal` state for a Member was not observed. The
+projection arms use the product functions over the product's durable domain with the fixture seeded to the
+production leader shape (`leaderChildSessionIsRoot`) — the fixture adjustment is disclosed in the arm
+(`vnext-admission.test.mjs`, `cStage`), because the P6-T2 seed's synthetic leader child id is a shape
+production never writes and the frozen DTO contract rightly rejects it.

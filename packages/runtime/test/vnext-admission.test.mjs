@@ -3281,7 +3281,7 @@ const cStage = async (label, options = {}) => {
   const { existsSync, mkdtempSync } = await import('node:fs')
   const { tmpdir } = await import('node:os')
   const { join } = await import('node:path')
-  const { createP6T2World, P6T2_ROOT, P6T2_NOW, P6T2_SEEDS, createFakeLifecycleCommitPort, TEST_STATIC_MODEL } = await import('./p6t2-helpers.ts')
+  const { createP6T2World, p6t2Seed, P6T2_ROOT, P6T2_NOW, P6T2_SEEDS, createFakeLifecycleCommitPort, TEST_STATIC_MODEL } = await import('./p6t2-helpers.ts')
   const { destroyP6T1World } = await import('./p6t1-helpers.ts')
   const { scratchDir, destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
   const { createTeamTools } = await import('../../tools/src/index.ts')
@@ -3299,7 +3299,20 @@ const cStage = async (label, options = {}) => {
   // The p6t1 world uses a DETERMINISTIC scratch dir per basename, so a killed run must not poison the
   // next one: the dir is removed first and in `destroy()`.
   destroyDir(scratchDir(label))
-  const world = await createP6T2World(label, options.seed ?? ['leader', 'worker'])
+  // C11 (projection): the PRODUCTION boot world seeds the LEADER row with its own child session equal
+  // to the ROOT session — the durable read port documents and normalizes exactly that shape
+  // (`projection-source.ts` `memberRowsOf`, the `childSessionId === root` structural leader branch),
+  // and the frozen DTO contract REJECTS a LeaderInstance carrying any other child session
+  // (invariant 14). The P6-T2 fixture seeds a synthetic leader child id instead (its satellite worlds
+  // never project), so the projection arms ask the fixture for the PRODUCTION shape rather than
+  // teaching the projection to tolerate a shape production never writes. Nothing else changes: the
+  // same leader row, same instance id, same satellite wiring — only the child session id it is seeded
+  // with (the store has no update path, so it must be seeded right the first time).
+  const world = options.leaderChildSessionIsRoot === true
+    ? await createP6T2World(label, (options.seed ?? ['leader', 'worker']).filter((name) => name !== 'leader'), {
+        seedMembers: [p6t2Seed('leader', { childSessionId: root })],
+      })
+    : await createP6T2World(label, options.seed ?? ['leader', 'worker'])
   const dir = mkdtempSync(join(tmpdir(), `${label}-`))
   const centreStatePath = dir
 
@@ -4943,5 +4956,334 @@ test('ADM-106 — an out-of-vocabulary tool (grep) OUT of lane is a LANE deny, n
     assert.equal(fact.overlayOutcome, undefined, 'the overlay was never consulted: the lane refused first')
   } finally {
     rig.dispose()
+  }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// C11 — state projections (`sessionProjections`), disposition "preserve"
+//
+// The frozen row (`docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:44`) reads:
+// capability "state projections (`sessionProjections`)", where it lives "`projection/**` +
+// `todo`/`goal` faces", disposition "preserve", evidence "projection suite".
+//
+// Two owners are named in that row, and they are NOT the same thing:
+//
+//   * `projection/**` — the TEAM's whole-projection read service (`packages/runtime/projection`),
+//     wired by the assembly at `root.ts:4275-4279` as
+//     `createProjectionService(createTeamDomainReadPort(domain, readPortDeps),
+//      createFailClosedOverlayProxy(seams.projectionLiveOverlay), { clock, schemaVersion: 2 })`
+//     and served to readers as `team.getProjection` (S6). The cut replaced the entry files, so
+//     THIS is the piece the cut could have silently un-wired, and it is what these arms drive.
+//   * the `todo`/`goal` faces — HOST rows on the `host.service` axis (`ADM-32`), whose state lives
+//     in the host's own native `sessionProjections` service. Neither the retired entry
+//     (`live/agent-bindings.mjs`, `root.ts` at 1617d5839^) nor the new one references that service
+//     at all (measured: `grep -c sessionProjections` → 0 in both), so the Team never owned,
+//     wrapped, or shadowed it: it is preserved by construction. Reading it (`stateOf`) for a
+//     Member's todo/goal needs a real host boot and stays on the D list — it is NOT claimed here.
+//
+// The arms below therefore prove the C11 half a test CAN prove without a boot: the projection is
+// PRESERVED in the new assembly and derives from the TeamDomain's own durable facts, with a
+// positive control (a real domain change is what a reader sees, read back from the durable store
+// across a cold reopen) and two negative controls (nothing is projected before the fact exists and
+// a centre-refused mutation moves nothing; the live overlay is not a second authority and a
+// projection pass writes nothing, while an absent TeamSession fails closed instead of being
+// invented).
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Build the projection the way the production entry does (`root.ts:4275-4279`): the REAL
+ * `createTeamDomainReadPort` over the REAL durable domain, with the REAL catalog-backed template
+ * resolver and the REAL committed-policy-state resolver (the same two closures the entry installs),
+ * the REAL live-residency overlay (`s6-live-overlay.ts`), and `schemaVersion: 2`.
+ *
+ * The only INPUTS are the live glue's own residency flags and the deterministic clock — neither
+ * decides a durable value. A FRESH port + service is built on every call, so a stale cache could not
+ * pass the read-back assertions.
+ */
+const cProjectionRig = async (world, live, root) => {
+  const { createTeamDomainReadPort } = await import('../src/plugin/projection-source.ts')
+  const { createProjectionService } = await import('../projection/index.ts')
+  const { createLiveResidencyOverlay } = await import('../src/plugin/s6-live-overlay.ts')
+  const { listDurablePolicyStateTransitions } = await import('../src/plugin/durable-mutation-store.ts')
+  const { committedPolicyState } = await import('../effective-policy/types.ts')
+  const { DEFAULT_CONTEXT_POLICY } = await import('../../domain/member/src/index.ts')
+  const { isContextPolicy } = await import('../../contracts/src/index.ts')
+  const { P6T2_NOW } = await import('./p6t2-helpers.ts')
+
+  const readPort = createTeamDomainReadPort(world.domain, {
+    // The entry's own template resolver: the BOUND SNAPSHOT's rows from the CATALOG (the durable
+    // home of that content), never derived from member rows.
+    templates: (row) => {
+      const resolved = world.catalog.resolve(row.blueprint.blueprintId, row.blueprint.revision)
+      const rowOf = (kind, template, instanceQuota) => ({
+        kind,
+        templateId: template.templateId,
+        displayName: template.displayName ?? template.templateId,
+        ...(template.description !== undefined ? { description: template.description } : {}),
+        contextPolicy:
+          template.contextPolicy !== undefined && isContextPolicy(template.contextPolicy)
+            ? template.contextPolicy
+            : DEFAULT_CONTEXT_POLICY,
+        ...(instanceQuota !== undefined ? { instanceQuota } : {}),
+      })
+      return [
+        rowOf('leader', resolved.leader, undefined),
+        ...resolved.members.map((member) => rowOf('member', member, resolved.quotas?.members?.maxInstances)),
+      ]
+    },
+    // The entry's own policy-state resolver: the LAST durable transition in commit order.
+    policyState: (rootSessionId) =>
+      committedPolicyState(
+        listDurablePolicyStateTransitions(world.domain.repositories, rootSessionId),
+      ).state.stateId,
+  })
+  const overlay = createLiveResidencyOverlay({
+    repositories: world.domain.repositories,
+    live,
+    now: () => P6T2_NOW,
+  })
+  const service = createProjectionService(readPort, overlay, { clock: () => P6T2_NOW, schemaVersion: 2 })
+  return { readPort, service, project: () => service.project(root) }
+}
+
+/** The root-filtered durable ledger entries (the same read the port's summary computes over). */
+const cRootLedger = (world, root) =>
+  world.domain.repositories.ledger.list().filter((entry) => String(entry.rootSessionId) === String(root))
+
+/** The durable member rows of the team root. */
+const cMemberRows = (world, root) => world.domain.repositories.memberInstances.list(String(root))
+
+/** The live-residency flags over the stage's own handle set (an INPUT, never a decision). */
+const cLiveFlags = (stage) => ({
+  hasLive: (sessionId) => stage.handles.has(String(sessionId)),
+  isResuming: () => false,
+})
+
+test('ADM-107 — C11 POSITIVE: the projection is the TeamDomain’s own durable facts, and a real domain change is what the next reader sees (including after a cold reopen)', async () => {
+  const { restartP6T1World, destroyP6T1World } = await import('./p6t1-helpers.ts')
+  const { destroyDir } = await import('../../testkit/fault-injection/file-seam.mjs')
+  const stage = await cStage('vnext-c11-projection-positive', { leaderChildSessionIsRoot: true })
+  let reopened
+  try {
+    const world = stage.world
+    const p0 = (await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    const durableRow = world.domain.repositories.teamSessions.get(stage.root)
+    assert.notEqual(durableRow, undefined, 'the durable TeamSession row exists')
+
+    // (1) THE IDENTITY CORE IS THE DURABLE ROW, VERBATIM — not a re-derivation.
+    assert.equal(p0.schemaVersion, 2, 'the production entry stamps the v2 projection (root.ts:4271-4279)')
+    assert.equal(p0.teamSessionId, stage.root)
+    assert.equal(p0.generation, durableRow.generation, 'the generation is the durable row’s generation')
+    assert.deepEqual(p0.blueprint, durableRow.blueprint, 'the bound snapshot ref is the durable ref')
+    assert.equal(p0.root.createdAt, durableRow.createdAt)
+    assert.equal(p0.root.policyState, 'default', 'the committed durable policy state (the blueprint’s only state)')
+
+    // (2) EVERY MEMBER ROW IS A DURABLE ROW: same set, same fields. The projection cannot add,
+    //     drop, or relabel one.
+    const durableRows = cMemberRows(world, stage.root)
+    assert.deepEqual(
+      p0.members.map((row) => row.instanceId).sort(),
+      durableRows.map((row) => String(row.instanceId)).sort(),
+      'the projected member set is EXACTLY the durable member set',
+    )
+    for (const row of durableRows) {
+      const projected = p0.members.find((member) => member.instanceId === String(row.instanceId))
+      assert.notEqual(projected, undefined)
+      assert.equal(projected.templateId, String(row.templateId))
+      assert.equal(projected.label, row.label)
+      assert.equal(projected.lifecycle, row.lifecycle, 'lifecycle is the durable fact, never a live inference')
+      assert.equal(projected.createdAt, row.createdAt)
+      if (String(row.instanceId) === C_LEADER) {
+        // The production leader row's child session IS the root; the frozen DTO contract forbids the
+        // key on the LeaderInstance, and the read port normalizes exactly that shape (never invents a
+        // child session for the leader, never forwards the root as one).
+        assert.equal(String(row.childSessionId), stage.root, 'the fixture seeds the production leader shape')
+        assert.equal('childSessionId' in projected, false, 'the LeaderInstance carries no child session (invariant 14)')
+      } else {
+        assert.equal(projected.childSessionId, String(row.childSessionId))
+      }
+    }
+
+    // (3) THE LEDGER SUMMARY IS THE DURABLE LEDGER: the frozen invariants, computed by the port from
+    //     the same list an independent read returns.
+    const ledger0 = cRootLedger(world, stage.root)
+    assert.equal(p0.ledger.totalEntries, ledger0.length)
+    assert.equal(
+      p0.ledger.latestSequence,
+      ledger0.reduce((max, entry) => Math.max(max, entry.sequence), 0),
+    )
+    assert.equal(
+      Object.values(p0.ledger.byCategory).reduce((sum, count) => sum + count, 0),
+      p0.ledger.totalEntries,
+      'totalEntries == sum(byCategory)',
+    )
+    assert.equal(p0.ledger.pendingControlCount, 0)
+
+    // (4) THE TEMPLATES COME FROM THE BOUND SNAPSHOT, not from the member rows: the `scout` TEMPLATE
+    //     exists while no `scout` MEMBER does — so "before the fact exists" the projection shows no
+    //     such member. This is the negative control INSIDE the positive arm: nothing is presaged.
+    assert.deepEqual(p0.templates.map((row) => row.templateId), ['leader', 'worker', 'scout'])
+    assert.equal(p0.templates.find((row) => row.templateId === 'scout').contextPolicy, 'fresh_per_delegation')
+    assert.equal(p0.members.some((row) => row.templateId === 'scout'), false, 'no scout member exists yet')
+
+    // (5) POSITIVE CONTROL: a REAL domain change through the product tool surface. The create runs
+    //     the product body against the REAL runtime + REAL durable domain (ADM-92's path).
+    const created = await stage.leader.dispatch('team_create_member', {
+      requestToken: 'tok-c11-create',
+      delegationTemplateId: 'scout',
+      label: 'c11-scout',
+    })
+    assert.equal(created.verdict.kind, 'allow')
+    assert.equal(created.bodyRan, true)
+    assert.equal(created.result.status, 'executed')
+    const instanceId = created.result.effect.instanceId
+    const childSessionId = created.result.effect.childSessionId
+
+    // A FRESH port + service over the SAME domain (no state kept between reads, invariant 45).
+    const p1 = (await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    const newRow = cMemberRows(world, stage.root).find((row) => String(row.instanceId) === instanceId)
+    assert.notEqual(newRow, undefined, 'the create committed a durable member row')
+    const projectedNew = p1.members.find((row) => row.instanceId === instanceId)
+    assert.notEqual(projectedNew, undefined, 'the reader sees the member the domain committed')
+    assert.equal(projectedNew.templateId, 'scout')
+    assert.equal(projectedNew.label, 'c11-scout')
+    assert.equal(projectedNew.childSessionId, String(childSessionId))
+    assert.equal(projectedNew.lifecycle, String(newRow.lifecycle))
+    assert.equal(p1.members.length, p0.members.length + 1, 'the member list grew by exactly the one real change')
+    assert.ok(p1.ledger.totalEntries > p0.ledger.totalEntries, 'the create committed durable ledger facts')
+    assert.equal(p1.ledger.totalEntries, cRootLedger(world, stage.root).length)
+    assert.equal(p1.generation, world.domain.repositories.teamSessions.get(stage.root).generation)
+
+    // (6) DURABLE READ-BACK: close the domain and reopen the SAME store; a brand-new world and a
+    //     brand-new projection agree on every durable value (the live overlay has no handles, so the
+    //     residency facts — and only they — are cold).
+    reopened = await restartP6T1World(world)
+    const p2 = (await cProjectionRig(reopened, { hasLive: () => false, isResuming: () => false }, stage.root)).project()
+    assert.equal(p2.generation, p1.generation)
+    assert.equal(p2.ledger.totalEntries, p1.ledger.totalEntries)
+    assert.equal(p2.ledger.latestSequence, p1.ledger.latestSequence)
+    assert.deepEqual(p2.ledger.byCategory, p1.ledger.byCategory)
+    assert.deepEqual(p2.members.map((row) => row.instanceId), p1.members.map((row) => row.instanceId))
+    for (const row of p2.members) {
+      const liveRow = p1.members.find((member) => member.instanceId === row.instanceId)
+      assert.equal(row.lifecycle, liveRow.lifecycle)
+      assert.equal(row.createdAt, liveRow.createdAt)
+      assert.equal(row.templateId, liveRow.templateId)
+    }
+    assert.equal(
+      p2.members.find((row) => row.instanceId === instanceId).childSessionId,
+      String(childSessionId),
+      'the created member survives the cold reopen',
+    )
+  } finally {
+    if (reopened !== undefined) {
+      await destroyP6T1World(reopened)
+      destroyDir(stage.dir)
+    } else {
+      await stage.destroy()
+    }
+  }
+})
+
+test('ADM-108 — C11 NEGATIVE: a mutation REFUSED at the ONE centre moves NOTHING in the projection (no row, no fact, no generation)', async () => {
+  const stage = await cStage('vnext-c11-projection-refusal', { leaderChildSessionIsRoot: true })
+  try {
+    const world = stage.world
+    const read = async () => (await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    const p0 = await read()
+    const rows0 = cMemberRows(world, stage.root).map((row) => String(row.instanceId)).sort()
+    const ledger0 = cRootLedger(world, stage.root).length
+
+    // Refusal #1: an UNBOUND agent creating a member — the centre refuses BEFORE the body.
+    stage.leader.setBinding(undefined)
+    const unbound = await stage.leader.dispatch('team_create_member', {
+      requestToken: 'tok-c11-refused',
+      delegationTemplateId: 'scout',
+      label: 'c11-refused-scout',
+    })
+    assert.equal(unbound.verdict.kind, 'deny')
+    assert.match(String(unbound.verdict.reason), /ADMISSION_NO_BINDING/u)
+    assert.equal(unbound.bodyRan, false, 'a refused create never reaches the product body')
+
+    // Refusal #2: a BOUND agent, an out-of-lane locator — LANE_DENY, still before the body.
+    stage.leader.setBinding(stage.leader.binding)
+    const outOfLane = await stage.leader.probe('read', { file_path: '/outside/secret.txt' }, 'c11-lane-refused')
+    assert.equal(outOfLane.verdict.kind, 'deny')
+    assert.match(String(outOfLane.verdict.reason), /LANE_DENY/u)
+    assert.equal(outOfLane.bodyRan, false)
+
+    // THE PROJECTION DID NOT MOVE: byte-identical (the clock is deterministic, so a moved value —
+    // a member, a ledger count, a generation, a stamp — would show up).
+    const p1 = await read()
+    assert.deepEqual(p1, p0, 'a refused mutation is not a TeamDomain fact, so the projection shows none of it')
+    // ... and the DURABLE store is untouched too (the projection is not the authority asserting this).
+    assert.deepEqual(cMemberRows(world, stage.root).map((row) => String(row.instanceId)).sort(), rows0)
+    assert.equal(cRootLedger(world, stage.root).length, ledger0)
+    assert.equal(world.domain.repositories.teamSessions.get(stage.root).generation, p0.generation)
+    assert.equal(p1.members.some((row) => row.label === 'c11-refused-scout'), false)
+
+    // POSITIVE CONTROL on the SAME world: the same tool with the binding restored DOES move both the
+    // durable store and the projection — the arm is not vacuous.
+    const admitted = await stage.leader.dispatch('team_create_member', {
+      requestToken: 'tok-c11-admitted',
+      delegationTemplateId: 'scout',
+      label: 'c11-admitted-scout',
+    })
+    assert.equal(admitted.verdict.kind, 'allow')
+    assert.equal(admitted.bodyRan, true)
+    const p2 = await read()
+    assert.notEqual(p2.members.length, p0.members.length)
+    assert.equal(cRootLedger(world, stage.root).length > ledger0, true)
+  } finally {
+    await stage.destroy()
+  }
+})
+
+test('ADM-109 — C11 NEGATIVE: the live overlay is not a second authority, an absent TeamSession fails closed, and a projection pass writes nothing', async () => {
+  const stage = await cStage('vnext-c11-projection-no-second-authority', { leaderChildSessionIsRoot: true })
+  try {
+    const world = stage.world
+    const rig = await cProjectionRig(world, cLiveFlags(stage), stage.root)
+    const p0 = rig.project()
+    const worker = p0.members.find((row) => row.instanceId === stage.worker)
+    assert.notEqual(worker, undefined)
+    assert.equal(worker.liveActivity.residency, 'resident', 'the seeded member’s handle IS live (the overlay input)')
+    assert.equal(worker.lifecycle, 'RUNNING')
+
+    // (1) A LIVE SESSION WITH NO DURABLE MEMBER ROW INVENTS NO MEMBER. The overlay iterates the
+    //     DURABLE rows; a live handle for an unknown session contributes nothing.
+    stage.handles.set('session-child-c11-ghost', { async dispose () {} })
+    const p1 = (await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    assert.equal(p1.members.length, p0.members.length)
+    assert.equal(p1.members.some((row) => row.instanceId === 'inst-c11-ghost'), false)
+
+    // (2) DROPPING THE LIVE HANDLE MOVES ONLY THE LIVE FACT. The member, its lifecycle, its durable
+    //     creation stamp and the generation all survive — the durable domain, not the live glue, is
+    //     the projection's authority.
+    stage.handles.delete(worker.childSessionId)
+    const p2 = (await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    const worker2 = p2.members.find((row) => row.instanceId === stage.worker)
+    assert.equal(worker2.liveActivity.residency, 'cold')
+    assert.equal(worker2.lifecycle, worker.lifecycle)
+    assert.equal(worker2.createdAt, worker.createdAt)
+    assert.equal(worker2.childSessionId, worker.childSessionId)
+    assert.equal(p2.generation, p0.generation, 'residency never moves the durable generation')
+    assert.equal(p2.ledger.totalEntries, p0.ledger.totalEntries)
+
+    // (3) AN ABSENT TEAM IS REFUSED, never projected as an empty team (inventing a TeamSession whose
+    //     every field would be a guess).
+    assert.throws(
+      () => rig.readPort.readProjectionSource('session-c11-no-such-team'),
+      /TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT/u,
+    )
+    assert.throws(() => rig.service.project('session-c11-no-such-team'), /TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT/u)
+
+    // (4) A PROJECTION PASS WRITES NOTHING: the durable store's write counter is unchanged by reads.
+    const writes = world.seam.writeCount
+    rig.project()
+    ;(await cProjectionRig(world, cLiveFlags(stage), stage.root)).project()
+    assert.equal(world.seam.writeCount, writes, 'the projection is a read service: it cannot create a fact')
+  } finally {
+    await stage.destroy()
   }
 })

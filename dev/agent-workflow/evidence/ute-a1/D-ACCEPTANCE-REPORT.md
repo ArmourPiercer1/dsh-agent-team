@@ -15,6 +15,16 @@ what would prove it.
 > is PRODUCT-PROVEN** (`CAPABILITY-MATRIX-C.md:71-74`). §6 lists them; §7 states the verdict without
 > rounding up.
 
+> **Round 66 addendum (C11).** Three node:test arms were added after the HEAD measurement in §1:
+> `ADM-107`…`ADM-109` prove the **Team-owned** projection (`projection/**`) is preserved in the new
+> assembly and derives only from durable TeamDomain facts (positive control: a real
+> `team_create_member` is what the next reader sees, read back across a cold reopen; negatives: a
+> centre-REFUSED mutation moves nothing, the live overlay invents nothing, an absent TeamSession fails
+> closed, and a projection pass writes nothing). The §2 C11 row, §4.1 leg counts and §7 counts are
+> refreshed for those arms; §1's HEAD/diff facts stay as measured. C11's **host**
+> `sessionProjections.stateOf` half is still unproven and needs a live boot. Nothing is upgraded to
+> PRODUCT-PROVEN.
+
 ---
 
 ## 1. HEAD, branch, and scope facts
@@ -122,7 +132,7 @@ Status vocabulary — these are not interchangeable:
 | **C8** | Stop (sticky, durable, non-replaying) | **preserve** | MECHANISM + **DEV-LIVE PROVEN** (`d2:stop`, two boots). Stop is the host's own `exec.signal` — no second stop mechanism. `ADM-56…ADM-62` cover Stop before the body, while an ask is pending, after the approval and before the body, lifecycle close with a call in flight, and the product composition's own close. Live: `POST /api/session/cancel` → tool result `ADMISSION_STOPPED`, centre fact `refusalCode=ADMISSION_STOPPED`, settlement `REFUSED`/`dispatch=not-started` with **no** execution fact, never `UNKNOWN`; a second Member completed with zero stops | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493`; `.../d2/README.md` | Stop **under load** and a real Stop keypress; and the one open cell: a Stop that lands **after** an `allow` was recorded cannot be `REFUSED` under the frozen settlement contract (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`) |
 | **C9** | remote entry (`s6-remote`, remote control surface) | **preserve** | **REFUSED-BY-DESIGN**, with a disclosed product cost. `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`; the S6 plane is not built at all (`root.ts:4325` via `refuseHostSurfaceBefore`, `ADM-86`), while an ungoverned row still builds and dispatches (positive control). The cost: a centre-configured row has **no remote API** (`root.remoteDispatcher` absent) | `CAPABILITY-MATRIX-C.md:25`; `D-BOOT-FEASIBILITY.md:171-222`; `ESCALATION-centre-row-creation-entrance.md:17-24` | a declared axis for remote commands (contract change), or a non-remote creation route — shapes 1/2 of the escalation. Shape 3 (boot-created teams only) is what D currently measures |
 | **C10** | MCP catalog + initial grant + live loss | **preserve** — "may land in C, but must never be enabled by default while unmanaged" (`06-CAPABILITY-CONTRACT.md:99`) | MECHANISM. `ADM-96` mounts the product's own real HTTP mini-MCP server through the **exact production call**, reads the tool off the model-visible surface, admits it on `net.mcp` with the **server** as locator, and the real body answers `pong:mounted`; `ADM-97` proves mounting ≠ permission, that a tool-level restriction narrows, and that a bare `mcp__` prefix is refused by name. `f15-mcp-live-loss` is green inside the 238-suite vitest population. Not enabled by default: the remote mount is `SKIPPED` on the centre row | `packages/runtime/test/vnext-admission.test.mjs`; `tests/checks/eb3-ute-migrated-suites.txt`; `D-BOOT-FEASIBILITY.md:171-222` | a **live mount at a host boot** (unknown at D: the row's remote mount is skipped) and a live server-loss observation. Also: the centre is **not mount-aware**, so a well-formed name for a never-mounted server is decided on the network axis alone (`ADM-97` step 5) |
-| **C11** | state projections (`sessionProjections`) | **preserve** | **UNPROVEN in this cut's required legs.** Preserved as native host services and reachable through the `todo`/`goal` faces (`ADM-32`, `host.service`), but **no arm in `ute-vnext-a1` or the migrated population exercises `sessionProjections`**, and no D judge measures projection state | `packages/runtime/test/vnext-admission.test.mjs` (`ADM-32`); absence of a projection arm is the evidence | a suite that reads `sessionProjections` through the governed composition, plus a live boot asserting todo/goal projection state for a Member. **This row must not be reported as covered** |
+| **C11** | state projections (`sessionProjections`) | **preserve** | **MECHANISM, measured (round 66).** The row names two owners. (a) The Team-owned projection (`projection/**`) is **PRESERVED in the new assembly** and proven to derive from the TeamDomain's own facts: `ADM-107` wires it exactly as the entry does — `createProjectionService(createTeamDomainReadPort(domain, readPortDeps), <live overlay>, { clock, schemaVersion: 2 })` (`root.ts:4275-4279`) — over the REAL durable `TeamDomain`, and asserts the identity core, every member row and the ledger summary field-by-field against the durable rows; a real `team_create_member` is then what the **next** reader sees (fresh port + service), and every durable value survives a **cold domain reopen**. `ADM-108` (negative) proves a mutation **REFUSED at the ONE centre** (`ADMISSION_NO_BINDING`, `LANE_DENY`) moves **nothing** — projection byte-identical, no new member row, no ledger entry, no generation move — with a same-world positive control. `ADM-109` (negative) proves the live overlay is **not a second authority** (a live handle invents no member; dropping one moves only residency, never lifecycle/creation/generation), that an absent TeamSession **fails closed** (`TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT`, never an invented empty team), and that a projection pass **writes nothing**. Falsified not assumed: stamping v1 and emptying the catalog template rows each turn the arms red. (b) The other named owner — the host's native `sessionProjections` service behind the `todo`/`goal` faces — is preserved **by construction, not by this cut**: neither the retired entry (`live/agent-bindings.mjs`, `root.ts` at `1617d5839^`) nor the new one references it (`grep -c sessionProjections` → **0** in both), so the Team never owned, wrapped or shadowed it; those faces stay bound on `host.service` (`ADM-32`) | `packages/runtime/test/vnext-admission.test.mjs` (`ADM-107`…`ADM-109`); `MIGRATED-SUITE-STATUS.md` "Round 66 (C11)" | (i) a **live boot** reading the Member's todo/goal projection state through the host's own `sessionProjections.stateOf` — that service is the HOST's, so no in-process arm can read it; (ii) a projection read at a **product entry** (`team.getProjection`), which a centre-configured row cannot reach today because the S6 plane is refused by design (C9). **The `sessionProjections.stateOf` half is NOT claimed here**, and no cell above is PRODUCT-PROVEN |
 | **C12** | tool admission (guard, builtin deny, selector) | **preserve** (KEEP module) | MECHANISM + DEV-LIVE. `ADM-1…ADM-45` (lanes, deny precedence, unbound refusal, `ADMISSION_TOOL_UNBOUND`), `ADM-29/30` (tool restriction answers before the ceiling and only narrows), `ADM-31` (closed list matches `createTeamTools` both ways), `ADM-35` (a governed member refuses to run unrecorded), `ADM-44` (`MEMBER_CENTRE_UNWIRED`). Live: `d:centre-facts` PROVEN — 2 `fs.read` admissions (`allow` + `DENY/LANE_DENY`) and 2 execution facts, read back from disk | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:369-395` | a real model choosing tools adversarially (the mock is scripted), and a policy compiled at runtime rather than passed as an input (`CAPABILITY-MATRIX-C.md:66-67`) |
 | **C13** | confined I/O faces (fs/web/subprocess/terminals/userQuestions) | **replace** with provider lanes | MECHANISM + DEV-LIVE for **fs and web**; **process family REFUSED**. fs: `d:guard-facts` **PROVEN** (2 `allow` facts, methods `stat`/`readText`, `memberIdentity=inst-0pe2z220bhfb`), `SLICE-1…SLICE-36`, and `d2:multi-member-concurrency` live. web: `SLICE-31/32` (transport reached / never reached), `ADM-67/74`. subprocess/PTY/PTC: `ADMISSION_AXIS_UNSUPPORTED` / `ADMISSION_PTC_UNAVAILABLE` (`admission.ts:318`), see §6.3 | `D-BOOT-FEASIBILITY.md:349-414`; `packages/runtime/test/vnext-fs-slice.test.mjs`; `packages/runtime/test/vnext-b-probe-ladder.test.mjs` | a process-lane declaration (CCR), a live `web_fetch` at a boot, and `userQuestions`/terminals beyond the PTY-owner refusal (`SLICE-33`) |
 | **C14** | **old governed-family execution implementations**: each family's own tool body, its duplicated policy computation, and the historical per-family semantic-equivalence requirement … | **dropped** — the host rows own execution now, and the equivalence criterion is retired with the bodies; the differences that mattered were defects of the deleted body (`SD-SEARCH-1`) | **DROPPED-AS-RULED**, and closure holds: `deleted=148 prodRefs=0 distResiduals=0 dupNames=0` (fresh run, §1.1); no legacy Plane/Family Body/Kernel/PA Bridge is wrapped as an internal component and there is no legacy fallback (`PR-BODY-draft.md:8-10`) | `ute-cut-closure` line in §1.1; `CUT-BOUNDARY-ADDITIONS.md`; `docs/plans/memo/ute-p0-20261121/03-RETIRE-KEEP.md` | nothing — a drop is complete when the closure gate is green and the ruling is named, which it is (`06-CAPABILITY-CONTRACT.md:90`) |
@@ -133,9 +143,11 @@ Status vocabulary — these are not interchangeable:
 | **C18** | `a5p5-tools` lane helpers (arg parsing, effects, render, spill) | **dropped** — dormant, nothing dispatched | **DROPPED-AS-RULED.** `packages/tools/a5p5-tools` no longer exists under `packages/tools/src` (only `builtin-deny.ts`, `guard.ts`, `index.ts`, `native-fs-binding.ts`, `tokens.ts`, `tool-selector.ts`, `tools.ts`, `types.ts`), it is absent from the migrated population, and the cut-closure run reports 148 sources gone with zero residual references | `ls packages/tools/src`; `grep a5p5 tests/checks/eb3-ute-migrated-suites.txt` → none; `ute-cut-closure` line in §1.1 | nothing — dormant-and-deleted with an empty dispatch path is the ruling's own completion criterion |
 
 **Rows that are not proven, at a glance** (this is the honest subset a reviewer should carry forward):
-**C11** has no arm at all; **C1/C2/C4/C5/C6/C7/C9/C10/C15/C16** are MECHANISM at best and several are
+**C1/C2/C4/C5/C6/C7/C9/C10/C15/C16** are MECHANISM at best and several are
 REFUSED-BY-DESIGN by owner ruling; **C3/C8/C12/C13/C14b** carry DEV-LIVE evidence but are still not
-PRODUCT-PROVEN. **No cell above says PRODUCT-PROVEN, and none may be upgraded by narration.**
+PRODUCT-PROVEN. **C11 now has mechanism arms** (`ADM-107`…`ADM-109`, round 66) for the Team projection;
+its host `sessionProjections.stateOf` half is still unproven and needs a live boot.
+**No cell above says PRODUCT-PROVEN, and none may be upgraded by narration.**
 
 ---
 
@@ -211,8 +223,8 @@ All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim
 
 ```
 $ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
-ℹ tests 170
-ℹ pass 168
+ℹ tests 173
+ℹ pass 171
 ℹ fail 0
 ℹ skipped 2
 DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
@@ -508,8 +520,10 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
 - **No real Stop keypress** (the public RPC was used).
 - **`userQuestions` and terminals** are covered only by the PTY-owner refusal (`SLICE-33`), not by a
   positive.
-- **C11 (state projections)** has **no arm** in either required population (§2.2) — the one checklist row
-  with no mechanism evidence at all.
+- **C11 (state projections)** now has its Team-owned half measured (`ADM-107`…`ADM-109`, round 66): the
+  projection is preserved in the new assembly and derives only from durable TeamDomain facts. What it still
+  lacks is a **live boot** reading the HOST's `sessionProjections.stateOf` for a Member's todo/goal state —
+  the host service, not the Team's (`§2` C11 row).
 - **`test-catalog` is at its ceiling** (`UNCOLLECTED=41` exactly), so the collected population has zero
   headroom.
 - **The boot-bound team is a measurement concession**, not the product's runtime creation path (§6.2).
@@ -522,8 +536,8 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
 
 1. **The candidate implements A1 + B + C.** The A1 cut is closed by measurement, not by prose: 148 sources
    gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 28 byte-identical dist placements, and the 37/180/
-   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-106` in the
-   `ute-vnext-a1` node leg (**168 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
+   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-109` in the
+   `ute-vnext-a1` node leg (**171 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
    suites (**238/238**, `verdict=PASS`) (§4).
 2. **There is live D evidence for the listed items.** Four live judges are **PROVEN** at two agreeing
    boots each: `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
@@ -540,7 +554,8 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
    - **Alpha.6 is unreachable at a host entry**, and its routed path is unproven there (§6.5).
    - **The search face is lane-only governance** — a durable overlay rule cannot deny it (§6.4).
    - **No row is PRODUCT-PROVEN**, and the model is a **scripted mock** (§6.1, §6.7).
-   - **C11 (state projections) has no arm at all** (§2.2).
+   - **C11 (state projections)** has mechanism arms for its Team-owned projection (`ADM-107`…`ADM-109`,
+     round 66), but its host `sessionProjections.stateOf` half is unproven and needs a live boot (§2.2).
 4. **Therefore:** the honest description is *"A1+B+C implemented and measured, with D live evidence for
    the named, listed items — **not** a completed product acceptance."* The centre behaves as an A1 cut
    should: an unwired controlled call is **refused with a typed code**, not forwarded. That is a

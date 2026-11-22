@@ -1267,3 +1267,67 @@ Three measurements this round worth keeping:
 
 `PR-BODY-draft.md` gained a five-line pointer to the report (not a duplicate). No product code, no test,
 no gate-definition change. The vitest population stays 238; the node leg stays 168 pass + 2 disclosed skips.
+
+## Round 66 (C11) — state projections: the Team-owned projection gets its arm, and its host half stays named
+
+C11 was the one checklist row with **no arm at all** (`D-ACCEPTANCE-REPORT.md` §2.2). The frozen row
+(`docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:44`) is capability "state projections
+(`sessionProjections`)", where it lives "`projection/**` + `todo`/`goal` faces", disposition
+**preserve**. Three node:test arms now ride the `ute-vnext-a1` leg (`ADM-107`…`ADM-109` in
+`packages/runtime/test/vnext-admission.test.mjs`), built exactly the way the entry builds the
+projection — `createTeamDomainReadPort(domain, readPortDeps)` → `createProjectionService(…,
+<live overlay>, { clock, schemaVersion: 2 })` (`root.ts:4275-4279`) — over the REAL durable
+`TeamDomain`.
+
+- **`ADM-107` (positive).** The projection is the durable TeamDomain's own facts: identity core,
+  every member row and the ledger summary checked field-by-field against the durable rows (including
+  the leader's production `childSessionId === root` shape and the invariant-14 omission). A real
+  `team_create_member` through the product tool surface is what the **next** reader sees through a
+  FRESH port + service, and every durable value survives a **cold domain reopen**
+  (`restartP6T1World`). The "before the fact exists" control lives in the same arm: the `scout`
+  TEMPLATE is visible while no `scout` MEMBER is, so nothing is presaged.
+- **`ADM-108` (negative).** A mutation **REFUSED at the ONE centre** (`ADMISSION_NO_BINDING` and
+  `LANE_DENY`) leaves the projection **byte-identical** and the durable store untouched — no member
+  row, no ledger entry, no generation move — with a same-world positive control proving the same tool
+  DOES move both once the binding is restored. A refused call is a centre fact, never a TeamDomain
+  fact, so it cannot appear in a reader's projection.
+- **`ADM-109` (negative).** The live overlay is not a second authority: a live handle for a session
+  with no durable member row invents no member, and dropping a real handle moves only `liveActivity`,
+  never lifecycle / `createdAt` / generation / ledger. An absent TeamSession **fails closed**
+  (`TEAM_PROJECTION_SOURCE_TEAM_SESSION_ABSENT`), never an invented empty team. A projection pass
+  writes nothing (`seam.writeCount` unchanged).
+
+**Falsifiability, measured not assumed:** stamping the projection v1 reds `ADM-107`; returning zero
+template rows reds all three arms. Neither mutation was left in the tree.
+
+**The other owner named by the row is NOT claimed.** The host's native `sessionProjections` service
+(behind the `todo`/`goal` faces, `host.service`, `ADM-32`) is preserved **by construction**: neither
+the retired entry (`live/agent-bindings.mjs`, `root.ts` at `1617d5839^`) nor the new one references it
+(`grep -c sessionProjections` → 0 in all four). Reading `stateOf` for a Member's todo/goal state is a
+**host-boot** measurement and stays on the D list — no in-process arm can read the host's service.
+
+One fixture fact is disclosed in the arm rather than hidden: `cStage` gained
+`leaderChildSessionIsRoot`, which seeds the LEADER row with its child session equal to the ROOT — the
+shape the production boot world writes and the durable read port normalizes. The P6-T2 seed's synthetic
+leader child id is a shape production never writes, and the frozen DTO contract rightly rejects it
+(invariant 14), so the projection arms ask the fixture for the production shape instead of teaching the
+projection to tolerate a fake one.
+
+### Gates (round 66, pasted)
+
+```
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+  (node:test file: tests 173 / pass 171 / fail 0 / skipped 2; +3 ADM arms, ADM-107…109)
+DSH-TEST-CATALOG tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67 refused=0 findings=0 (uncollected=41 ≤ 41, excluded=14 with reason)
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (28 placement(s))
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+The vitest population is unchanged at **238**; the node leg is **171 pass + 2 disclosed skips** (the
+three new arms). `test-catalog` is unchanged at 889 tests (the arms live inside the existing
+`vnext-admission.test.mjs`, whose collected count is per file). **No row is PRODUCT-PROVEN; C11's host
+`sessionProjections.stateOf` half remains unproven pending a live boot.**
