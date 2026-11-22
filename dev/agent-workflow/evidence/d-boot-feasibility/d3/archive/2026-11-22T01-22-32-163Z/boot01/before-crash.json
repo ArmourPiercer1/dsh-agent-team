@@ -1,0 +1,106 @@
+{
+  "at": "2026-11-22T01:21:14.863Z",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z",
+  "aRead": {
+    "executionId": "exec-dd89435a21b0e5d2052c725b301bda0fc1e88071",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/centre/settlement/inst-1vd6cy21kl6k/exec-dd89435a21b0e5d2052c725b301bda0fc1e88071.settlement.json",
+    "present": true,
+    "state": "COMPLETED",
+    "dispatch": "quiesced",
+    "bodyOutcome": "completed",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING",
+      "COMPLETED"
+    ]
+  },
+  "aReadFacts": [
+    {
+      "callId": "call-d3-a-inlane",
+      "agentId": "inst-1vd6cy21kl6k",
+      "instanceId": "inst-1vd6cy21kl6k",
+      "sessionId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
+      "instanceGeneration": 0,
+      "toolName": "read",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/workspace/team-a/in-lane-a.txt",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:b92093ee5c040bf06058ccac4e669d5a",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T01:21:13.516Z"
+    }
+  ],
+  "bOpen": {
+    "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+    "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/centre/settlement/inst-1v36r931jr7r/exec-c7761249d1064b23c36e5e4f76a48778dd895896.settlement.json",
+    "present": true,
+    "state": "RUNNING",
+    "dispatch": "started",
+    "bodyOutcome": "not-started",
+    "stops": [],
+    "transitions": [
+      "ADMITTED",
+      "RUNNING"
+    ]
+  },
+  "bOpenAdmissions": [
+    {
+      "callId": "call-d3-b-inflight-edit",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "edit",
+      "axis": "fs.write",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/workspace/team-b/big-edit.bin",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:63ca6ada2099be6ca117f3e84ba5b8e9",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "allow",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T01:21:14.850Z"
+    }
+  ],
+  "bOpenExecutions": [
+    {
+      "callId": "call-d3-b-inflight-edit",
+      "executionId": "exec-c7761249d1064b23c36e5e4f76a48778dd895896",
+      "toolName": "edit",
+      "agentId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "outcome": "failed",
+      "isError": true,
+      "errorMessage": "cannot modify \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/workspace/team-b/big-edit.bin\": file has not been read — read the file, then retry",
+      "policyGeneration": "a5sf1:63ca6ada2099be6ca117f3e84ba5b8e9",
+      "kind": "execution",
+      "at": "2026-11-22T01:21:14.862Z"
+    }
+  ],
+  "bGrepRefusal": [
+    {
+      "callId": "call-d3-b-grep-probe",
+      "agentId": "inst-1v36r931jr7r",
+      "instanceId": "inst-1v36r931jr7r",
+      "sessionId": "session-team-child-6788a23a6d1be9784107fcb7631d08f9",
+      "instanceGeneration": 0,
+      "toolName": "grep",
+      "axis": "fs.read",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T01-19-17Z/workspace/team-b/corpus",
+      "definitionSource": "",
+      "policyGeneration": "a5sf1:63ca6ada2099be6ca117f3e84ba5b8e9",
+      "blueprintRevision": "",
+      "owner": "session-dboot-d3-root",
+      "decision": "deny",
+      "laneDecision": "allow",
+      "refusalCode": "ADMISSION_OVERLAY_FAULT",
+      "reason": "the durable overlay could not be consulted (canonicalization failed for tool \"grep\": tool-unsupported); a fault is a refusal, never an absence of opinion",
+      "kind": "invocation-authority",
+      "at": "2026-11-22T01:21:14.820Z"
+    }
+  ],
+  "aLedgerBytes": 3187
+}

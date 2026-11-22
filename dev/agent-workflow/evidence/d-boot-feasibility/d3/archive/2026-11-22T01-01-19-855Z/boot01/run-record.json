@@ -1,0 +1,152 @@
+{
+  "schema": "u5-run-record/1",
+  "runId": "a5sf-live-d3-2026-11-22T00-56-45-457Z-b1",
+  "suite": "a5sf-live-d3",
+  "recordClass": "DEV-LIVE",
+  "startedAt": "2026-11-22T00:56:45.458Z",
+  "selectedCases": [
+    "d3:persistent-subprocess",
+    "d3:crash-cold-recovery",
+    "d3:work-delivery",
+    "d3:alpha6"
+  ],
+  "allCases": [
+    "d3:persistent-subprocess",
+    "d3:crash-cold-recovery",
+    "d3:work-delivery",
+    "d3:alpha6"
+  ],
+  "subset": false,
+  "selected": 4,
+  "totalCases": 4,
+  "bindings": {
+    "authority": {
+      "pointerPath": "dev/engineering/current-authority.json",
+      "pointer": {
+        "content_digest": "sha256:d85fdc1a78f055dc460799a6ff560daab541d0d7f96bb48294ff3dee76a398b3",
+        "snapshot_version": "as20261109r1"
+      },
+      "pointerSha256": "814b31f798a25fa963c5810d7733e73c127083bebd74641778ac33ad8c9a5351",
+      "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
+    },
+    "candidate": {
+      "head": "b779d9fab86be64154b8d9a2de81ea1a8c2baa4e",
+      "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+      "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
+    },
+    "grant": {
+      "grantId": "devlive-fs-search-1",
+      "scope": "DEV-LIVE",
+      "face": "FS Provider",
+      "world": "u5a5sfdev1"
+    },
+    "recordClass": "DEV-LIVE",
+    "compositionDrops": [],
+    "layout": "centre",
+    "installGraph": "provisioned",
+    "teamSha": "b779d9fab86be64154b8d9a2de81ea1a8c2baa4e",
+    "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
+    "note": "DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction",
+    "driver": "run-boot-d3",
+    "worldIds": [
+      "u5u5a5sfdev1-20261122T00-58-34Z"
+    ]
+  },
+  "cases": [
+    {
+      "id": "d3:persistent-subprocess",
+      "verdict": "FAIL",
+      "at": "2026-11-22T01:00:30.651Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "d3:crash-cold-recovery",
+      "verdict": "FAIL",
+      "at": "2026-11-22T01:00:30.651Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "d3:work-delivery",
+      "verdict": "FAIL",
+      "at": "2026-11-22T01:00:30.651Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    },
+    {
+      "id": "d3:alpha6",
+      "verdict": "FAIL",
+      "at": "2026-11-22T01:00:30.651Z",
+      "detail": {
+        "reason": "selected case produced no verdict (fail-closed)"
+      }
+    }
+  ],
+  "hostStarts": {
+    "ledgerPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/run-ledger.jsonl",
+    "thisRunCount": 3,
+    "thisRunEntries": [
+      {
+        "at": "2026-11-22T00:56:45.488Z",
+        "runId": "a5sf-live-d3-2026-11-22T00-56-45-457Z-b1",
+        "suite": "a5sf-read",
+        "recordClass": "DEV-LIVE",
+        "kind": "budget-intent",
+        "scope": "dev-live",
+        "phase": "a5sf-read-dev-live-intent",
+        "world": "intent:devlive-fs-search-1",
+        "grantId": "devlive-fs-search-1",
+        "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
+        "face": "FS Provider",
+        "worldLine": "u5a5sfdev1",
+        "headCommit": "b779d9fab86be64154b8d9a2de81ea1a8c2baa4e",
+        "plannedStarts": 2
+      },
+      {
+        "at": "2026-11-22T00:57:29.144Z",
+        "runId": "a5sf-live-d3-2026-11-22T00-56-45-457Z-b1",
+        "suite": "a5sf-live-d3",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261122T00-56-45Z",
+        "phase": "a5sf-live-d3-boot1-alpha6"
+      },
+      {
+        "at": "2026-11-22T00:59:22.870Z",
+        "runId": "a5sf-live-d3-2026-11-22T00-56-45-457Z-b1",
+        "suite": "a5sf-live-d3",
+        "recordClass": "DEV-LIVE",
+        "world": "u5u5a5sfdev1-20261122T00-58-34Z",
+        "phase": "a5sf-live-d3-boot1"
+      }
+    ]
+  },
+  "boots": [
+    {
+      "phase": "a5sf-live-d3-boot1",
+      "world": "u5u5a5sfdev1-20261122T00-58-34Z",
+      "port": 3193,
+      "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T00-58-34Z/instance-port3193.log",
+      "role": "main"
+    }
+  ],
+  "partial": true,
+  "abortedAt": "sigkill-restart",
+  "abort": {
+    "stage": "sigkill-restart",
+    "detail": "boot 1 aborted at sigkill-restart",
+    "error": "ReferenceError: settleOf is not defined\n    at killAndRestart (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:1590:169)\n    at bootOnce (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:1347:19)\n    at async main (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs:1739:15)"
+  },
+  "candidateClaimEligibility": {
+    "eligible": false,
+    "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
+    "reason": "run 'a5sf-live-d3-2026-11-22T00-56-45-457Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+  },
+  "overall": "FAIL",
+  "judgedCases": [],
+  "neverObserved": [],
+  "finishedAt": "2026-11-22T01:00:30.651Z"
+}

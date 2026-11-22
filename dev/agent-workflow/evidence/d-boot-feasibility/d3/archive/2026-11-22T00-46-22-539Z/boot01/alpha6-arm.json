@@ -1,0 +1,28 @@
+{
+  "spawned": true,
+  "port": 3193,
+  "threw": false,
+  "reachable": true,
+  "bootUrl": "http://127.0.0.1:3193/?token=<redacted>",
+  "error": "",
+  "errorHead": "",
+  "rowRefused": true,
+  "teamRowLive": null,
+  "liveAlpha6Decision": null,
+  "liveStateError": null,
+  "liveMemberCount": null,
+  "recordedFactPresent": false,
+  "recordedFactReachable": false,
+  "recordedFactReason": "the row config gate (host.ts:723 validateTeamPluginConfig -> centre-config.ts:62-70) refuses the row before the root/plugin graph is built, so host-surface-refusal.mjs's createHostSurfaceRefusalPoint (which writes the fact file) is never reached at this entry",
+  "wakeIntentFiles": 0,
+  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T00-40-41Z/instance-port3193.log",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T00-40-41Z",
+  "configGate": "ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim",
+  "refusalTable": {
+    "code": "ADMISSION_ALPHA6_UNAVAILABLE",
+    "axis": "host.service",
+    "subject": "Alpha.6 review-routing decision",
+    "missing": "no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority"
+  },
+  "liveState": null
+}
