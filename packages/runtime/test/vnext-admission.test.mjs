@@ -4808,3 +4808,140 @@ test('ADM-102 — a preset native module that cannot be RESOLVED is a TYPED fail
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ADM-103 … ADM-106 — SHAPE B of the search-face CCR (round 63): the durable overlay governs ONLY
+// the faces inside its closed permission vocabulary.
+//
+// MEASURED DEFECT: an in-lane `grep` on a governed Member was refused with
+// `laneDecision=allow refusalCode=ADMISSION_OVERLAY_FAULT detail=canonicalization failed for tool
+// "grep": tool-unsupported`. The lane ALLOWED the call; the overlay could not express it and turned
+// its own inability into a deny. The rule now is: for a tool outside the vocabulary the overlay has
+// NO OPINION (never a deny, never a fault) and the compiled LANE alone judges the call; a
+// canonicalization fault on a COVERED tool is still a refusal. The durable fact records WHY
+// (`overlayOutcome`), so an abstention outside the vocabulary is never read as a fault.
+//
+// These arms use the REAL admission centre (`installMemberCentre` → `installAdmissionPoint`), the
+// REAL overlay supplier (`createOverlayDecisionProvider`), and the REAL canonicalizer. The only
+// double is the durable overlay PORT (`latest`), which is the supplier's declared input boundary.
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { createOverlayDecisionProvider } = await import('../src/plugin/vnext/overlay-decision.mjs')
+
+/** One durable overlay snapshot, in the shape the real port answers (`metadata.generation` + `state.rules`). */
+const overlaySnapshot = (rules, generation = 1) => ({ metadata: { generation }, state: { rules } })
+
+/**
+ * The fs seam the supplier canonicalizes through — the supplier's OWN contract (`resolve` →
+ * `{ targetKey, displayPath }`, optional `contains`). `resolved` counts resolutions so an arm can
+ * prove a face outside the vocabulary never even enters canonicalization.
+ */
+const overlayFs = (over = {}) => {
+  const resolved = []
+  return {
+    resolved,
+    async resolve (path, opts) {
+      if (typeof over.throwOn === 'string' && path === over.throwOn) throw new Error(`fs seam refused ${path}`)
+      const key = path.startsWith('/') ? path : `${opts?.cwd ?? '/work/a'}/${path}`
+      resolved.push(key)
+      return { targetKey: key, displayPath: path }
+    },
+    async contains (root, target) {
+      return String(target?.targetKey ?? '').startsWith(`${String(root?.targetKey ?? '')}/`)
+    },
+  }
+}
+
+/** A member centre over the REAL overlay supplier, the REAL centre, and one durable overlay port. */
+const overlayCentre = async ({ rules, fs = overlayFs() }) => {
+  const host = fakeHost()
+  const admitted = []
+  const binding = bindingFromCompiledMember({ member: compiledMember(), agentId: 'agent-1', sessionId: 'session-1', workspaceRoot: '/work/a' })
+  const supplier = createOverlayDecisionProvider({
+    overlay: { latest: async () => overlaySnapshot(rules) },
+    teamSessionId: 'session-1',
+    memberInstanceId: 'member-1',
+    workspaceRoot: '/work/a',
+    fsOf: () => fs,
+  })
+  const centre = installMemberCentre({
+    ctx: host.ctx,
+    binding,
+    recordAdmission: (fact) => admitted.push(fact),
+    recordExecution: () => {},
+    overlayDecision: supplier.decide,
+  })
+  /** The production ordering: the prepare listener resolves the call AHEAD of the centre's decision. */
+  const dispatch = async (name, callId, args) => {
+    const exec = { name, callId, arguments: args, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    await supplier.prepare(exec)
+    const verdict = await host.preExecute(exec)
+    return { verdict, fact: admitted.find((f) => f.callId === callId) }
+  }
+  return { host, admitted, fs, dispatch, dispose: () => centre.dispose() }
+}
+
+test('ADM-103 — a COVERED tool with a matching durable deny rule still refuses (positive control)', async () => {
+  const rig = await overlayCentre({ rules: [{ operation: 'read', effect: 'deny', resource: 'exact:/work/a/secret.txt' }] })
+  try {
+    const { verdict, fact } = await rig.dispatch('read', 'adm103-deny', { file_path: '/work/a/secret.txt' })
+    assert.equal(verdict.kind, 'deny', 'a stored deny over a covered face must still remove authority')
+    assert.equal(fact.refusalCode, 'ADMISSION_OVERLAY_DENY')
+    assert.equal(fact.laneDecision, 'allow', 'the lane really allowed it; the overlay is what refused')
+    assert.equal(fact.overlayOutcome, 'deny', 'the fact says the OVERLAY denied, not the lane')
+
+    // Negative control on the same rig/rule: an uncovered path in the same lane is not restricted.
+    const allowed = await rig.dispatch('read', 'adm103-allow', { file_path: '/work/a/doc.txt' })
+    assert.equal(allowed.verdict.kind, 'allow')
+    assert.equal(allowed.fact.overlayOutcome, 'no-opinion', 'a consulted overlay with no matching rule imposes nothing')
+    assert.equal(allowed.fact.refusalCode, undefined)
+  } finally {
+    rig.dispose()
+  }
+})
+
+test('ADM-104 — a canonicalization fault on a COVERED tool is STILL ADMISSION_OVERLAY_FAULT (faults are not silenced)', async () => {
+  // `read` IS in the vocabulary, and the lane allows the locator; the FAULT is the fs seam refusing
+  // to canonicalize it. Shape B must not turn this into an allow.
+  const fs = overlayFs({ throwOn: '/work/a/boom.txt' })
+  const rig = await overlayCentre({ rules: [], fs })
+  try {
+    const { verdict, fact } = await rig.dispatch('read', 'adm104-fault', { file_path: '/work/a/boom.txt' })
+    assert.equal(verdict.kind, 'deny')
+    assert.equal(fact.refusalCode, 'ADMISSION_OVERLAY_FAULT')
+    assert.equal(fact.laneDecision, 'allow')
+    assert.equal(fact.overlayOutcome, 'fault', 'the fact distinguishes a fault from an abstention')
+    assert.match(String(fact.reason), /resolver-threw/u, 'the fault names the canonicalization failure')
+  } finally {
+    rig.dispose()
+  }
+})
+
+test('ADM-105 — an out-of-vocabulary tool (grep) IN lane is ADMITTED, and the fact says the overlay abstained', async () => {
+  const rig = await overlayCentre({ rules: [{ operation: 'read', effect: 'deny', resource: 'exact:/work/a/secret.txt' }] })
+  try {
+    // The CCR's own shape: a search inside the Member's compiled read lane.
+    const { verdict, fact } = await rig.dispatch('grep', 'adm105-grep', { pattern: 'needle', path: '/work/a/docs' })
+    assert.equal(verdict.kind, 'allow', 'the compiled lane alone judges a face the overlay cannot express')
+    assert.equal(fact.decision, 'allow')
+    assert.equal(fact.refusalCode, undefined)
+    assert.equal(fact.axis, 'fs.read', 'grep is judged on the read axis by the lane')
+    assert.equal(fact.overlayOutcome, 'no-opinion', 'the fact records WHY the overlay abstained')
+    assert.deepEqual(rig.fs.resolved, [], 'an out-of-vocabulary tool never even enters canonicalization')
+  } finally {
+    rig.dispose()
+  }
+})
+
+test('ADM-106 — an out-of-vocabulary tool (grep) OUT of lane is a LANE deny, not an overlay fault', async () => {
+  const rig = await overlayCentre({ rules: [] })
+  try {
+    const { verdict, fact } = await rig.dispatch('grep', 'adm106-grep', { pattern: 'needle', path: '/work/b' })
+    assert.equal(verdict.kind, 'deny')
+    assert.equal(fact.refusalCode, 'LANE_DENY', 'the LANE refuses an out-of-lane search')
+    assert.notEqual(fact.refusalCode, 'ADMISSION_OVERLAY_FAULT')
+    assert.equal(fact.overlayOutcome, undefined, 'the overlay was never consulted: the lane refused first')
+  } finally {
+    rig.dispose()
+  }
+})

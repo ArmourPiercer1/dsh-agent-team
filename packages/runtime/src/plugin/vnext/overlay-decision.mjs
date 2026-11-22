@@ -32,13 +32,19 @@
  * overlay's carrier grammar: the row is decoded with the SAME `parsePermissionResourceText` the mutation
  * kernel renders it with, and the verdict is the SAME `resolveOperationPermission` the retired adapter
  * used. `ask` and `allow` overlay rules are not expressed here: the admission port's contract is
- * "deny | undefined" (a restriction), so this supplier answers `deny` only. A durable ALLOW can never
- * widen the compiled lane, and a durable ASK is not turned into a deny by this module.
+ * "deny | no-opinion | undefined" (a restriction, or an explicit abstention), so this supplier answers
+ * `deny` only when a stored rule restricts a face it can express. A durable ALLOW can never widen the
+ * compiled lane, and a durable ASK is not turned into a deny by this module.
+ *
+ * SHAPE B (CCR search-face, round 63): the overlay governs ONLY the faces inside the closed permission
+ * vocabulary. For anything else (`grep`/`glob`/`web_fetch`/…) it answers `no-opinion` — never a deny and
+ * never a fault — so the compiled lane alone judges the call. A canonicalization fault on a COVERED
+ * tool is still a fault (and therefore still a refusal).
  *
  * @module packages/runtime/src/plugin/vnext/overlay-decision
  */
 
-import { canonicalizeOperation } from '../../../operation-permission/canonical-operation.js'
+import { canonicalizeOperation, isPermissionToolName } from '../../../operation-permission/canonical-operation.js'
 import { resolveOperationPermission } from '../../../operation-permission/permission-resolver.js'
 import { parsePermissionResourceText } from '../../../governance/permission-mutation.js'
 
@@ -142,7 +148,7 @@ function denyFingerprint (view, operation) {
  * @param {string|undefined} input.workspaceRoot - the canonicalization cwd (the Member's real workspace).
  * @param {() => {resolve: Function, contains?: Function}|undefined} input.fsOf - the lazy per-call fs seam;
  *   `contains` is the pinned public `FileSystem.contains`, the ONE legal subtree authority.
- * @returns {{prepare: (exec: object) => Promise<void>, decide: (facts: object) => 'deny'|undefined}}
+ * @returns {{prepare: (exec: object) => Promise<void>, decide: (facts: object) => 'deny'|'no-opinion'|undefined}}
  */
 export function createOverlayDecisionProvider ({ overlay, teamSessionId, memberInstanceId, workspaceRoot, fsOf }) {
   if (overlay === undefined || overlay === null || typeof overlay.latest !== 'function') {
@@ -208,6 +214,19 @@ export function createOverlayDecisionProvider ({ overlay, teamSessionId, memberI
   const prepare = async (exec) => {
     const args = exec?.arguments
     if (!isRecord(args)) return
+    // SHAPE B (CCR search-face, round 63). The durable overlay governs ONLY the faces its closed
+    // permission vocabulary can express (read/read_image/write/edit + bash/pwsh). A tool it cannot
+    // classify — `grep`, `glob`, `web_fetch`, … — is NOT a fault: the overlay has NO OPINION about
+    // it, and the compiled LANE alone judges the call. Turning `tool-unsupported` into a fault made
+    // the overlay refuse calls the lane allowed; answering `no-opinion` keeps the lane's verdict and
+    // makes the durable fact say WHY the overlay abstained. This is checked by vocabulary membership
+    // (the same closed set `canonicalizeOperation` throws from), BEFORE any canonicalization, and it
+    // deliberately applies ONLY to such tools: a covered tool whose canonicalization fails still
+    // records a fault below and is still refused with ADMISSION_OVERLAY_FAULT.
+    if (!isPermissionToolName(exec.name)) {
+      prepared.set(args, { noOpinion: true })
+      return
+    }
     try {
       // The seam is read lazily: a tool-level call (the shell class) needs no file resolution, so an
       // absent fs must not turn a shell call into a fault. A FILE call that needs it throws below, and
@@ -250,6 +269,10 @@ export function createOverlayDecisionProvider ({ overlay, teamSessionId, memberI
       )
     }
     if (entry.fault !== undefined) throw entry.fault
+    // The overlay cannot express this face, so it never DENIES and never faults: the lane's verdict
+    // stands. `no-opinion` (not `undefined`) is the recorded answer, so the durable fact can tell
+    // "outside the vocabulary" from "consulted and not restricted".
+    if (entry.noOpinion === true) return 'no-opinion'
     if (entry.operation.tool !== facts.toolName) {
       throw new Error(
         `overlay-decision: the prepared operation is for tool ${JSON.stringify(entry.operation.tool)}, not ${JSON.stringify(facts.toolName)}`,

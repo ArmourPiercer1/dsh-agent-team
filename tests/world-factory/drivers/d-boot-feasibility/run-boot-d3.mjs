@@ -23,9 +23,11 @@
  *      NOT mounted). The verdict is the PRODUCT proposition ("the session
  *      survives across turns"); a refusal is the measured verdict, never a pass.
  *   2. `d3:crash-cold-recovery` — a Member turn is SIGKILLed (the real host
- *      process) while one of its calls is genuinely in flight (`grep` over a
- *      large in-lane corpus: the centre has already moved the settlement to
- *      RUNNING). The host is restarted against the SAME `DSH_HOME`/state with
+ *      process) while one of its calls is genuinely in flight (an `edit` over a
+ *      256 MiB in-lane file, whose body is slow enough to observe; the turn
+ *      first runs an IN-LANE `grep` probe over a large corpus, which shape B now
+ *      ADMITS and runs — its fact/result are recorded). The host is restarted
+ *      against the SAME `DSH_HOME`/state with
  *      `bootPhase: 'create-or-open'` (the product's own restart semantic), and
  *      every durable record is re-read with FRESH readers: completed ledger
  *      facts and settlement survived, the in-flight call reads UNKNOWN (never
@@ -521,10 +523,15 @@ function makeDecide({ paths, ids }) {
       if (token === TOK_B) {
         if (!seen.has(CALL_B_READ)) return readCall(CALL_B_READ, paths.bInLane)
         if (!seen.has(CALL_B_GREP)) return grepCall(CALL_B_GREP, CORPUS_NEEDLE, paths.corpus)
+        // THE IN-LANE SEARCH PROBE: shape B (CCR search-face, round 64) makes
+        // the durable overlay abstain on a face outside its vocabulary
+        // (`overlayOutcome: 'no-opinion'`), so the compiled LANE alone judges
+        // this `grep` and it is ADMITTED and RUNS. Its fact and tool result are
+        // recorded; the flow continues to the in-flight call below either way.
+        //
         // THE IN-FLIGHT CALL: a small-argument `edit` over a 256 MiB in-lane
-        // file. `grep` cannot be it — the centre refuses it at the durable
-        // overlay (ADMISSION_OVERLAY_FAULT/tool-unsupported, recorded as its
-        // own measured refusal), and `bash` has no process axis at all.
+        // file. `grep` is not used as the in-flight record (its corpus scan is
+        // the search probe), and `bash` has no process axis at all.
         if (!seen.has(CALL_B_EDIT)) return editCall(CALL_B_EDIT, paths.bigFile, EDIT_NEEDLE, `${EDIT_NEEDLE}_edited`)
         return text(`${DONE_MEMBER_B1} ${lastToolResultText(req).slice(0, 200)}`)
       }
@@ -1448,8 +1455,11 @@ async function bootOnce({ index, head, grant }) {
       aReadAfterRestart: settlementOf(world.home, ids.a, CALL_A_READ),
       bOpenAtKill: before.bOpen,
       bOpenAfterRestart: settlementOf(world.home, ids.b, CALL_B_EDIT),
-      bGrepRefusalBefore: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
-      bGrepRefusalAfter: factsFor(readLedger(world.home, ids.b), CALL_B_GREP, 'invocation-authority'),
+      // The in-lane search probe's DURABLE FACT (shape B: decision=allow, overlayOutcome=no-opinion)
+      // and its tool result, recorded on both sides of the cold restart. Not a judge — an observation.
+      bGrepFactsBefore: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
+      bGrepFactsAfter: factsFor(readLedger(world.home, ids.b), CALL_B_GREP, 'invocation-authority'),
+      bGrepResult: callOf(txB, CALL_B_GREP)?.result ?? null,
       aAfter: settlementOf(world.home, ids.a, CALL_A_AFTER),
     }
     writeFileSync(join(bootDir, 'settlement.json'), `${JSON.stringify(settlements, null, 2)}\n`)
@@ -1459,7 +1469,7 @@ async function bootOnce({ index, head, grant }) {
         bOpenCall: callOf(txB, CALL_B_EDIT),
         bGrepCall: callOf(txB, CALL_B_GREP),
         bReadCall: callOf(txB, CALL_B_READ),
-        note: 'the crashed call is present with NO tool result (the grep body never returned); the same callId never reappears as a second admission',
+        note: 'the crashed call (the edit) is present with NO tool result (its body never returned); the same callId never reappears as a second admission. The grep probe before it is a COMPLETED admitted call, not the in-flight record',
       }, null, 2)}\n`)
     }
 
@@ -1471,7 +1481,7 @@ async function bootOnce({ index, head, grant }) {
       bOpen: settlementOf(world.home, ids.b, CALL_B_EDIT),
       bOpenAdmissions: factsFor(ledgerB, CALL_B_EDIT, 'invocation-authority'),
       bOpenExecutions: factsFor(ledgerB, CALL_B_EDIT, 'execution'),
-      bGrepRefusal: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
+      bGrepFacts: factsFor(ledgerB, CALL_B_GREP, 'invocation-authority'),
       aNewFacts: factsFor(ledgerA, CALL_A_AFTER, 'invocation-authority'),
       aNewSettle: settlementOf(world.home, ids.a, CALL_A_AFTER),
       workDiskHits: diskFilesContaining(world.home, UNIT_A),
@@ -1636,7 +1646,7 @@ async function killAndRestart({ world, harness, phase, bootDir, ids, bootInfo })
     bOpen: settlementOf(firstHome, ids.b, CALL_B_EDIT),
     bOpenAdmissions: factsFor(readLedger(firstHome, ids.b), CALL_B_EDIT, 'invocation-authority'),
     bOpenExecutions: factsFor(readLedger(firstHome, ids.b), CALL_B_EDIT, 'execution'),
-    bGrepRefusal: factsFor(readLedger(firstHome, ids.b), CALL_B_GREP, 'invocation-authority'),
+    bGrepFacts: factsFor(readLedger(firstHome, ids.b), CALL_B_GREP, 'invocation-authority'),
     aLedgerBytes: (() => { try { return readFileSync(ledgerPathOf(firstHome, ids.a), 'utf8').length } catch { return null } })(),
   }
   if (before.bOpen.state !== 'RUNNING' && before.bOpen.state !== 'ADMITTED') {

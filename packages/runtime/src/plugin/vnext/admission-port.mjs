@@ -242,9 +242,11 @@ export function createControlApprovalPort ({
  * @param {object} [input.settlement] - the settlement writer (`settlement-port`). Optional, because a
  *   port may be installed in a diagnostic context; when present the three transitions follow the
  *   decision, and a fault is reported rather than turning a decision into a different one.
- * @param {(facts: object) => 'allow' | 'deny' | undefined} [input.overlayDecision] - the durable
+ * @param {(facts: object) => 'deny' | 'no-opinion' | undefined} [input.overlayDecision] - the durable
  *   permission-plane restriction, consulted per call beside the lane verdict (E3, round 38). Absent means
- *   "no overlay wired", which is recorded as such rather than presented as an allow.
+ *   "no overlay wired", which is recorded as such rather than presented as an allow. `no-opinion` means
+ *   the overlay's closed vocabulary cannot express this call's face (shape B): it neither denies nor
+ *   faults, and the lane's verdict stands. The distinction is recorded as the fact's `overlayOutcome`.
  * @param {{binder: object, memberOf: (binding: object) => object}} [input.grants] - the product's
  *   one-shot grant binder (`member-io-policy`) and the projection from a binding to the trusted
  *   member identity. Without it an ask stays refused: an approval nobody can spend is not one.
@@ -401,7 +403,7 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
    * terminal at birth: the store's own admission writer closes a refusal as REFUSED, so a denied or
    * expired approval leaves no open record to recover as UNKNOWN.
    */
-  const commit = (exec, { binding, admission, decision, capability, wanted }) => {
+  const commit = (exec, { binding, admission, decision, capability, wanted, overlayOutcome }) => {
     const callId = callIdOfExec(exec)
     try {
       record(invocationFactsOf({
@@ -411,6 +413,10 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         arguments: exec.arguments,
         admission: decision,
         ...(admission.kind === decision.kind ? {} : { laneDecision: admission.kind }),
+        // WHY the durable overlay did or did not restrict this call: 'deny' | 'no-opinion' | 'fault'.
+        // Absent when the overlay was never consulted (the lane refused first), so a reader never has
+        // to guess whether an abstention means "no rule matched" or "this face is outside the overlay".
+        ...(overlayOutcome === undefined ? {} : { overlayOutcome }),
       }))
     } catch (error) {
       // The decision was made but cannot be recorded: a decision no reviewer can find is not one this
@@ -494,7 +500,15 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
     // Ordering is deliberate: the overlay is asked only about calls the lane would otherwise ALLOW, so it
     // can never upgrade an `ask` into an `allow`, and a throw is treated as a REFUSAL (fail closed) rather
     // than as "no opinion".
+    //
+    // SHAPE B (CCR search-face, round 63): an EXPLICIT `no-opinion` is NOT a throw. The overlay's closed
+    // vocabulary cannot express some faces (`grep`/`glob`/`web_fetch`); for those it abstains and the
+    // compiled LANE alone judges the call. A canonicalization fault on a COVERED face still arrives here
+    // as a throw and is still refused below. The enforced/abstained reason is carried into the durable
+    // fact as `overlayOutcome`, so "outside the vocabulary" is never conflated with "fault".
     let overlay
+    /** The durable overlay's own answer for the fact: 'deny' | 'no-opinion' | 'fault' (absent = not asked). */
+    let overlayOutcome
     if (admission.kind === 'allow' && typeof overlayDecision === 'function') {
       try {
         overlay = overlayDecision({
@@ -510,12 +524,21 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
           code: 'ADMISSION_OVERLAY_FAULT',
           reason: `the durable overlay could not be consulted (${String(error?.message ?? error)}); a fault is a refusal, never an absence of opinion`,
         }
+        overlayOutcome = 'fault'
       }
-      if (overlay === 'deny' && decision === admission) {
-        decision = {
-          kind: 'deny',
-          code: 'ADMISSION_OVERLAY_DENY',
-          reason: 'a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)',
+      if (overlayOutcome === undefined) {
+        if (overlay === 'deny' && decision === admission) {
+          decision = {
+            kind: 'deny',
+            code: 'ADMISSION_OVERLAY_DENY',
+            reason: 'a durable permission-plane restriction denies this call; the compiled binding allowed it, so the overlay wins (it can remove authority, never grant it)',
+          }
+          overlayOutcome = 'deny'
+        } else {
+          // No restriction: either the overlay named this face as outside its vocabulary, or it was
+          // consulted and no stored rule matched. Both are "the overlay imposes nothing"; the fact says
+          // so instead of leaving a reader to infer it from an absent refusal code.
+          overlayOutcome = 'no-opinion'
         }
       }
     }
@@ -558,7 +581,7 @@ export function installAdmissionPoint ({ ctx, resolveBinding, record, callIdOf, 
         }
       }
     }
-    return { entry: commit(exec, { binding, admission, decision }) }
+    return { entry: commit(exec, { binding, admission, decision, overlayOutcome }) }
   }
 
   /** Complete a wired ask: record the CONTROL decision, then mint the one-shot grant it authorizes. */

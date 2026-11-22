@@ -243,6 +243,14 @@ export interface InvocationAuthorityFacts {
   /** Present for a refusal or an ask; absent for a plain allow. */
   readonly refusalCode?: string
   readonly reason?: string
+  /**
+   * The durable overlay's own answer, when it was consulted (the lane allowed the call).
+   * `deny` = a stored rule removed authority; `no-opinion` = the overlay imposed nothing (either no
+   * rule matched or the call's face is outside the overlay's closed vocabulary — shape B, CCR
+   * search-face); `fault` = canonicalization/overlay failure, which is a refusal. Absent when the
+   * lane refused first and the overlay was never asked.
+   */
+  readonly overlayOutcome?: 'deny' | 'no-opinion' | 'fault'
 }
 
 const refuse = (code: AdmissionDenialCode, reason: string): Admission => ({ kind: 'deny', code, reason })
@@ -389,8 +397,10 @@ export function invocationFactsOf (input: {
   readonly admission: Admission
   /** The lane's own answer when the centre ENFORCED something else (an ask it could not adjudicate). */
   readonly laneDecision?: 'allow' | 'ask' | 'deny'
+  /** The durable overlay's own answer when it was consulted; absent when the lane refused first. */
+  readonly overlayOutcome?: 'deny' | 'no-opinion' | 'fault'
 }): InvocationAuthorityFacts {
-  const { binding, toolName, callId, arguments: args, admission, laneDecision } = input
+  const { binding, toolName, callId, arguments: args, admission, laneDecision, overlayOutcome } = input
   const axis = (CENTRE_TOOLS.has(toolName)
     ? 'team.control'
     : HOST_CAPABILITY_TOOLS.has(toolName)
@@ -424,6 +434,9 @@ export function invocationFactsOf (input: {
     // adjudicate), `laneDecision` keeps what the lane answered. Losing it would make "who refused"
     // unanswerable from the record.
     ...(laneDecision === undefined || laneDecision === admission.kind ? {} : { laneDecision }),
+    // WHY the overlay did (not) restrict: a reader can tell an abstention outside the overlay's
+    // vocabulary from a canonicalization fault without parsing the refusal prose.
+    ...(overlayOutcome === undefined ? {} : { overlayOutcome }),
     ...(admission.kind === 'deny' ? { refusalCode: admission.code, reason: admission.reason } : {}),
     ...(admission.kind === 'ask' ? { reason: admission.reason } : {}),
   })

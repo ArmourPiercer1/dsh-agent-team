@@ -267,7 +267,7 @@ export function admit(input) {
 }
 /** Project the decision into the durable record. One call produces exactly one record. */
 export function invocationFactsOf(input) {
-    const { binding, toolName, callId, arguments: args, admission, laneDecision } = input;
+    const { binding, toolName, callId, arguments: args, admission, laneDecision, overlayOutcome } = input;
     const axis = (CENTRE_TOOLS.has(toolName)
         ? 'team.control'
         : HOST_CAPABILITY_TOOLS.has(toolName)
@@ -301,6 +301,9 @@ export function invocationFactsOf(input) {
         // adjudicate), `laneDecision` keeps what the lane answered. Losing it would make "who refused"
         // unanswerable from the record.
         ...(laneDecision === undefined || laneDecision === admission.kind ? {} : { laneDecision }),
+        // WHY the overlay did (not) restrict: a reader can tell an abstention outside the overlay's
+        // vocabulary from a canonicalization fault without parsing the refusal prose.
+        ...(overlayOutcome === undefined ? {} : { overlayOutcome }),
         ...(admission.kind === 'deny' ? { refusalCode: admission.code, reason: admission.reason } : {}),
         ...(admission.kind === 'ask' ? { reason: admission.reason } : {}),
     });
