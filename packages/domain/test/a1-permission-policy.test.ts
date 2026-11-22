@@ -520,6 +520,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
   function bashContractSource(
     lane: 'allow' | 'ask' | 'deny',
     resource: { kind: 'exact'; path: string } | { kind: 'any' },
+    shellTool: 'bash' | 'pwsh' = 'bash',
   ): string {
     const resourceLines =
       resource.kind === 'any'
@@ -527,7 +528,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
         : ['          resource:', '            kind: exact', `            path: "${resource.path}"`]
     const laneOf = (name: 'allow' | 'ask' | 'deny'): string[] =>
       name === lane
-        ? [`      ${name}:`, '        - tool: bash', ...resourceLines]
+        ? [`      ${name}:`, `        - tool: ${shellTool}`, ...resourceLines]
         : [`      ${name}: []`]
     return [
       '---',
@@ -575,6 +576,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
   function memberBashContractSource(
     lane: 'allow' | 'ask' | 'deny',
     resource: { kind: 'exact'; path: string } | { kind: 'any' },
+    shellTool: 'bash' | 'pwsh' = 'bash',
   ): string {
     const resourceLines =
       resource.kind === 'any'
@@ -586,7 +588,7 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
           ]
     const laneOf = (name: 'allow' | 'ask' | 'deny'): string[] =>
       name === lane
-        ? [`        ${name}:`, '          - tool: bash', ...resourceLines]
+        ? [`        ${name}:`, `          - tool: ${shellTool}`, ...resourceLines]
         : [`        ${name}: []`]
     return [
       '---',
@@ -627,6 +629,41 @@ describe('A1: bash contract (H2 ruling — the schema is the enforcement point)'
       '',
     ].join('\n')
   }
+
+// ---------------------------------------------------------------------------
+// pwsh — the OTHER shell-class token. The suite above pins the bash lanes;
+// A2C-1's pwsh rule-contract arm lived in `a2c1-pwsh-permission.test.ts`,
+// which the Round-72 deletion removed because its end-to-end adapter retired.
+// The schema law did NOT retire (the validator is shell-class generic, and the
+// `pwsh` token is still in PERMISSION_TOOL_NAMES), so it is restated here.
+// ---------------------------------------------------------------------------
+describe('A1: pwsh shell-class contract (migrated from a2c1 by the Round-72 audit)', () => {
+  it('leader: pwsh + exact rejects in the ask and deny lanes (same closed rule as bash)', () => {
+    for (const lane of ['ask', 'deny'] as const) {
+      const err = expectErrorDetails(
+        () => parseBlueprint(bashContractSource(lane, { kind: 'exact', path: '/bin' }, 'pwsh')),
+        'MALFORMED_DTO',
+        { path: `$.leader.capabilities.permissions.${lane}[0].resource.kind`, lane },
+      )
+      expect(err.message.includes('the pwsh tool')).toBe(true)
+      expect(err.message.includes("does not accept an 'exact' resource")).toBe(true)
+    }
+  })
+
+  it('member: pwsh + any in the allow lane rejects (no positive whole-tool permission)', () => {
+    const err = expectErrorDetails(
+      () => parseBlueprint(memberBashContractSource('allow', { kind: 'any' }, 'pwsh')),
+      'MALFORMED_DTO',
+      { path: '$.members[0].capabilities.permissions.allow[0].resource.kind', lane: 'allow' },
+    )
+    expect(err.message.includes('grants no positive whole-tool permission for pwsh')).toBe(true)
+  })
+
+  it('pwsh + any PARSES in the ask lane (the minimal shell permission stays legal)', () => {
+    const policy = policyOf(bashContractSource('ask', { kind: 'any' }, 'pwsh'))
+    expect(policy.ask).toEqual([{ tool: 'pwsh', resource: { kind: 'any' } }])
+  })
+})
 
   // Role-aware exact diagnostics (exec-autonomy-contract review fix):
   // the MEMBER trailing stays byte-identical to the pre-PR text (the H2

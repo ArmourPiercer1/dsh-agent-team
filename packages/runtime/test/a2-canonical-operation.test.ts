@@ -402,6 +402,41 @@ await failOp('bash', { command: 'ls', sandbox_permissions: 42 }, failResolver)
 const real: RealBackendCasesResult = await runRealBackendCases()
 
 // ---------------------------------------------------------------------------
+// pwsh — the OTHER shell-class token (A2C-1), MIGRATED here by the Round-72
+// deletion audit from `a2c1-pwsh-permission.test.ts`. That suite's end-to-end
+// legs drove the retired `installParameterPermissionListener` adapter and
+// retired with it; its canonicalization / fingerprint / fail-closed laws did
+// NOT retire (the algebra is a KEEP module and `pwsh` is a live host
+// capability, `admission.ts` maps it to `process.exec`), and after the
+// deletion they had NO arm left anywhere in the tree. The assertions below are
+// the pure-API half of that suite, restated at the same strength.
+// ---------------------------------------------------------------------------
+const P = {
+  base: await op('pwsh', { command: 'ls -la' }, fakeResolver()),
+  sameCommand: await op('pwsh', { command: 'ls -la' }, fakeResolver()),
+  cmdOther: await op('pwsh', { command: 'ls -la /tmp' }, fakeResolver()),
+  bashSame: await op('bash', { command: 'ls -la' }, fakeResolver()),
+  bg: await op('pwsh', { command: 'ls -la', run_in_background: true }, fakeResolver()),
+  timeout: await op('pwsh', { command: 'ls -la', timeoutMs: 5000 }, fakeResolver()),
+  sandbox: await op('pwsh', { command: 'ls -la', sandbox_permissions: 'workspace-write' }, fakeResolver()),
+  descA: await op('pwsh', { command: 'ls -la', description: 'explain A' }, fakeResolver()),
+  descB: await op('pwsh', { command: 'ls -la', description: 'explain B' }, fakeResolver()),
+  workdirOther: await op('pwsh', { command: 'ls -la', workdir: 'sub' }, fakeResolver()),
+  // Fail-closed: the per-tool-mirrored `pwsh-*` reasons (A2C-1 §5.4).
+  failWorkdir: await failOp('pwsh', { command: 'ls', workdir: 42 }, fakeResolver()),
+  failBackground: await failOp('pwsh', { command: 'ls', run_in_background: 'yes' }, fakeResolver()),
+  failTimeout: await failOp('pwsh', { command: 'ls', timeoutMs: -1 }, fakeResolver()),
+  failSandbox: await failOp('pwsh', { command: 'ls', sandbox_permissions: 42 }, fakeResolver()),
+  failCommandMissing: await failOp('pwsh', {}, fakeResolver()),
+  failCommandNonString: await failOp('pwsh', { command: 42 }, fakeResolver()),
+  failCommandEmpty: await failOp('pwsh', { command: '   ' }, fakeResolver()),
+}
+// The resolver is consulted EXACTLY ONCE for the workdir key, and only there
+// (the pwsh path must not gain a second resolver round-trip).
+const pwshResolverCalls: string[] = []
+const pwshResolved = await op('pwsh', { command: 'ls -la', workdir: './w' }, fakeResolver({ calls: pwshResolverCalls }))
+
+// ---------------------------------------------------------------------------
 // Classification (plan §7.5: the A5 adapter distinguishes the three
 // classes BEFORE any parameter resolution)
 // ---------------------------------------------------------------------------
@@ -701,5 +736,57 @@ describe('a2 real fs-local backend (plan §7.6)', () => {
     const { absentKey, absentTraversalKey, absentOtherKey } = real.cases
     expect(absentTraversalKey).toBe(absentKey)
     expect(absentOtherKey).not.toBe(absentKey)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// pwsh shell-class laws (migrated from a2c1-pwsh-permission.test.ts)
+// ---------------------------------------------------------------------------
+describe('a2c1 pwsh — the shell class, both tokens (migrated by the Round-72 audit)', () => {
+  it('classifies pwsh as tool-level and keeps the closed seven-name vocabulary', () => {
+    expect(classifyPermissionTool('pwsh')).toEqual({ kind: 'tool-level', tool: 'pwsh' })
+    expect(isPermissionToolName('pwsh')).toBe(true)
+    // The authority separation is the RESOURCE key: one token per tool.
+    expect(P.base.resource).toEqual({ kind: 'tool', key: 'pwsh', display: 'pwsh' })
+    expect(P.bashSame.resource).toEqual({ kind: 'tool', key: 'bash', display: 'bash' })
+  })
+
+  it('bash and pwsh with the SAME command have DISTINCT fingerprints', () => {
+    expect(P.base.fingerprint).not.toBe(P.bashSame.fingerprint)
+    expect(P.base.fingerprint).toBe(P.sameCommand.fingerprint)
+  })
+
+  it('the command is bound raw (no normalization) and each effect dimension changes the fingerprint', () => {
+    expect(P.cmdOther.fingerprint).not.toBe(P.base.fingerprint)
+    expect(P.base.fingerprint.includes('ls -la')).toBe(false)
+    for (const leg of [P.bg, P.timeout, P.sandbox, P.workdirOther]) {
+      expect(leg.fingerprint).not.toBe(P.base.fingerprint)
+    }
+    expect(new Set([P.bg.fingerprint, P.timeout.fingerprint, P.sandbox.fingerprint]).size).toBe(3)
+    // description is presentation-only and never enters the projection.
+    expect(P.descA.fingerprint).toBe(P.base.fingerprint)
+    expect(P.descA.fingerprint).toBe(P.descB.fingerprint)
+  })
+
+  it('the resolver is consulted EXACTLY ONCE, for the workdir key', () => {
+    expect(pwshResolverCalls).toEqual(['./w'])
+    expect(pwshResolved.resource).toEqual({ kind: 'tool', key: 'pwsh', display: 'pwsh' })
+  })
+
+  it('malformed pwsh effect fields fail closed with the per-tool-mirrored pwsh-* reasons BEFORE any resolver call', () => {
+    const legs: readonly (readonly [FailCapture, string])[] = [
+      [P.failWorkdir, 'pwsh-workdir-not-a-string'],
+      [P.failBackground, 'pwsh-run-in-background-not-boolean'],
+      [P.failTimeout, 'pwsh-timeout-ms-invalid'],
+      [P.failSandbox, 'pwsh-sandbox-permissions-not-a-string'],
+      [P.failCommandMissing, 'pwsh-command-missing'],
+      [P.failCommandNonString, 'pwsh-command-not-a-string'],
+      [P.failCommandEmpty, 'pwsh-command-empty'],
+    ]
+    for (const [leg, reason] of legs) {
+      expect(leg.typed).toBe(true)
+      expect(leg.reason).toBe(reason)
+      expect(leg.code).toBe(OPERATION_PERMISSION_ERROR_CODES.OPERATION_CANONICALIZATION_FAILED)
+    }
   })
 })

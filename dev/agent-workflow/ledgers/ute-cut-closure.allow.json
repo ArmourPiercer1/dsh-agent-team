@@ -22,8 +22,36 @@
   ],
   "retiredSubjects": {
     "schema": "ute-cut-closure-retired-subjects/2",
-    "note": "Per-FILE retirement record for suites whose SUBJECT the A0/A1 cut removed. Round 72 (hosted-CI repair) deleted them, because a suite that cannot load (its module is gone) is not coverage — it is a red gate. Each entry states the subject it tested and why no preserved capability lost its arm. A file listed here is GONE from the tree; the entry stays so a reviewer can see the disposition without reading the deletion diff. The check reads `entries` only; this key is the record.",
+    "note": "Per-FILE retirement record for suites whose SUBJECT the A0/A1 cut removed. Round 72 (hosted-CI repair) deleted them, because a suite that cannot load (its module is gone) is not coverage — it is a red gate. Each entry states the subject it tested and why no preserved capability lost its arm. A file listed here is GONE from the tree; the entry stays so a reviewer can see the disposition without reading the deletion diff. The check reads `entries` only; this key is the record. A file that STILL EXISTS (a migrated or re-anchored suite, however it was edited) is NEVER a retired subject and must not be listed here — the live migrated population is declared in tests/checks/eb3-ute-migrated-suites.txt. Round 72 originally listed three live files here; the Round-72 deletion audit removed them and added the ten deleted suites that had no disposition at all.",
     "entries": [
+      {
+        "path": "packages/runtime/test/a2c1-pwsh-permission.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c2-permission-coverage.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c4-external-lastmile.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a2c7-subtree-matcher.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
       {
         "path": "packages/runtime/test/a3p4-pr4-decision-routing-regression.test.ts",
         "subject": "retired-module",
@@ -44,6 +72,27 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-capability-vs-permission.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a4p4-operation-single-shot.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
       },
       {
         "path": "packages/runtime/test/a5-cancel-glob.test.ts",
@@ -137,6 +186,13 @@
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
       },
       {
+        "path": "packages/runtime/test/a5a-pre-execute.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
         "path": "packages/runtime/test/a5b2-exit-code-fidelity.test.ts",
         "subject": "retired-module",
         "cut": "ute-a0/ute-a1",
@@ -156,6 +212,13 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/a5intr3-kit-runner.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "A shim that drives `dev/agent-workflow/evidence/alpha5/int-r3/a5intr3-plane-mount-kit.mjs`, which mounts `team-tool-plane` + the search/glob rows -> both in the A1 delete set. The kit file itself survives as an evidence-record exemption; its runner is a test whose only subject retired."
       },
       {
         "path": "packages/runtime/test/a5mcp-native-trust-filter.test.ts",
@@ -277,11 +340,46 @@
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
       },
       {
+        "path": "packages/runtime/test/a6-stop-fence.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/a6a-production-wiring.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the A6 PRODUCTION WIRING of the A5 `tools/pre-execute` listener installed by the replaced root/glue (assembly-root + assembly-agent-bindings in the frozen set). The install-decision and listener-lifecycle laws it proved are re-expressed by the new centre: vnext-admission.test.mjs ADM-26/27 (compiled member -> binding by reference; installMemberCentre wires admission/facts/settlement over ONE callId) and ADM-44 (a row that asked for the centre cannot run unmediated)."
+      },
+      {
+        "path": "packages/runtime/test/alpha2-explicit-agent-setup.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drives the host setup contract through the replaced assembly (t12a-live-bridge -> old root/glue). The explicit-Agent setup seam it pinned is now owned by the new entry; the setup-time permission-coverage gate it also exercised is a kept module but is NOT wired by the new entry, which is recorded as an open finding in ROUND72-DELETION-AUDIT.md (a2c2 alpha) rather than claimed here."
+      },
+      {
         "path": "packages/runtime/test/alpha5-g1-deny-lane.test.ts",
         "subject": "retired-module",
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-g6b-rc-first.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the search-family glob row (`family-search/src/glob-backend.mjs`, A1 delete set) and its rc-first adjudication; the row retired whole (03-RETIRE-KEEP.md §1, family-search group: \"deleted with the provider lane each family needs\"). The host now owns the walker; the typed-refusal law survives at the admission axis (ADM-16 search family on fs.read)."
+      },
+      {
+        "path": "packages/runtime/test/alpha5-glob-backend-adversarial.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the retired anchored-glob row (`family-search/src/glob-backend.mjs`). Its NEGATIVE CONTROL (a symlinked middle/last component, or a swapped root, escaping the governed root is refused before spawn) is a C14b safety invariant and it SURVIVES on the product lane: packages/runtime/test/a5sf-path-rules.test.ts (symlink escape + symlinked-parent escape + prefix-trap over member-io-policy). The real-rg RACE loop (A4/A5) retired with the row; it is not re-expressed and is recorded in the audit as a retired-subject arm."
       },
       {
         "path": "packages/runtime/test/alpha5-glob-backend.test.ts",
@@ -319,6 +417,48 @@
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
       },
       {
+        "path": "packages/runtime/test/artifact-read-permission-lane.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/exec-contract-dual-gate.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h1a-pre-execute-endcap.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h4-rule-identity.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/h5-bash-effects.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
+        "path": "packages/runtime/test/issue2-capability-permission-precedence.test.ts",
+        "subject": "retired-execution-route",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
+      },
+      {
         "path": "packages/runtime/test/pd41-allow-semantics.test.ts",
         "subject": "retired-module",
         "cut": "ute-a0/ute-a1",
@@ -331,6 +471,27 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/rc2a1-fs-containment.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the replaced production root/glue (`assembly-root` -> src/plugin/host.ts, replaced whole) and the `fs` facade receiver-preservation bug it pinned. The CONTAINMENT LAW it proved (resolve + contains, sibling prefix trap, relative/absolute equivalence) is C14b and survives in a5sf-path-rules.test.ts + a3p4-permission-lifecycle-e2e.test.ts; the host-facade receiver bug surface itself retired with host.ts."
+      },
+      {
+        "path": "packages/runtime/test/u6-arc-a-fitness.test.ts",
+        "subject": "governance-center-fitness-gate",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "ARC-A fitness gate C1: its four laws scanned the Governance Center source set, the retired family census ledger and the retired contribution schema. All four subjects retired with the Center; the centre-only equivalent would be a new gate, not a migration of this one."
+      },
+      {
+        "path": "packages/runtime/test/u6-arc-a-probe-family.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the U6 ARC-A PROBE FAMILY (governance-closed-world, A1 delete set) whose kit lived in tests/u6-arc-a-probe-family/ (deleted with it, see CUT-BOUNDARY-ADDITIONS.md §1 precedent). The centre it probed retired whole; no preserved capability is claimed by it."
       },
       {
         "path": "packages/runtime/test/u6-fixk-kernel-safety.test.ts",
@@ -424,6 +585,13 @@
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
       },
       {
+        "path": "packages/runtime/test/u6-pr5-search-move-law.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the search family MOVE LAW (family-search byte-identity against master + the retired CANDIDATE-A glob factory). Both sides of the comparison retired in the A1 cut, so the pin has no subject; the no-dual-ledger law it enforced is moot once the second copy is deleted."
+      },
+      {
         "path": "packages/runtime/test/u6-pr6-arc-d-adversarial.test.ts",
         "subject": "retired-module",
         "cut": "ute-a0/ute-a1",
@@ -480,6 +648,13 @@
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
       },
       {
+        "path": "packages/runtime/test/u7-f-agent-control-native-output-schema-c1.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is `family-agent-control` (native-output-schemas.mjs + the family rows), all in the A1 delete set. The re-homed `subagent_fork` row (06-CAPABILITY-CONTRACT C16) is the preserved capability and it is tested by the new row, not by this family schema comparison."
+      },
+      {
         "path": "packages/runtime/test/u7-f-agentb-agent-state-c1.test.ts",
         "subject": "retired-module",
         "cut": "ute-a0/ute-a1",
@@ -499,6 +674,13 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
+      },
+      {
+        "path": "packages/runtime/test/u7-g6b-late-stream.test.ts",
+        "subject": "retired-module",
+        "cut": "ute-a0/ute-a1",
+        "round": 72,
+        "reason": "Its subject is the retired CANDIDATE-A glob factory in `family-search/src/search-mechanics.mjs` plus the production glob row (both deleted). It is a deterministic RED reproducer of a row that no longer exists; its late-stream law belongs to the host walker now."
       },
       {
         "path": "packages/runtime/test/u7-grep-late-stream.test.ts",
@@ -597,139 +779,6 @@
         "cut": "ute-a0/ute-a1",
         "round": 72,
         "reason": "Already registered here as subject=retired-module by the cut (its module is in the A0 delete set); Round 72 deleted the file itself. The A1 cut left these 85 referrers registered instead of removed, which is why typecheck, lint and the security layer stayed red on a \"closed\" cut."
-      },
-      {
-        "path": "packages/runtime/test/a2c1-pwsh-permission.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a2c2-permission-coverage.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a2c4-external-lastmile.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a2c7-subtree-matcher.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a4p4-capability-vs-permission.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a4p4-operation-approval-authority.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a4p4-operation-single-shot.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a5a-pre-execute.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/a6-stop-fence.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/artifact-read-permission-lane.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/exec-contract-dual-gate.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/h1a-pre-execute-endcap.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/h4-rule-identity.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/h5-bash-effects.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/issue2-capability-permission-precedence.test.ts",
-        "subject": "retired-execution-route",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "Drove the retired operation-permission pre-execute adapter (`installParameterPermissionListener`) and the retired scoped tool guard. The pipeline it observed no longer exists; the preserved ALGEBRA it exercised keeps its own non-adapter arms (a2-canonical-operation, a3-permission-resolver, a3p2-*, a2c5-read-fingerprint, permission-overlay-port-surface)."
-      },
-      {
-        "path": "packages/runtime/test/u6-arc-a-fitness.test.ts",
-        "subject": "governance-center-fitness-gate",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "ARC-A fitness gate C1: its four laws scanned the Governance Center source set, the retired family census ledger and the retired contribution schema. All four subjects retired with the Center; the centre-only equivalent would be a new gate, not a migration of this one."
-      },
-      {
-        "path": "packages/runtime/test/u6-pr2-review-r1.test.ts",
-        "subject": "migrated-positive-control",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "RETIRED LEGS + PRESERVED CONTROL: the R1/B1/B2 legs drove the retired scoped tool guard and Center kernel and retired with them; the non-Team native READ positive control is demanded BY TEXT by scripts/eb3-ci-negative-controls.mjs (P1) and is re-expressed over the host `tools/pre-execute` + `tools.guard` seam, with two negative halves on the same double."
-      },
-      {
-        "path": "packages/runtime/test/u6-pr3-bl01-ask-door.test.ts",
-        "subject": "migrated-positive-control",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "RETIRED LEGS + PRESERVED CONTROL: the BL-01 ask-lane and door legs drove the retired plane assembly, Control legs and scoped tool guard; the non-Team native BASH positive control is demanded BY TEXT by scripts/eb3-ci-negative-controls.mjs (P1) and is re-expressed over the same seam, with two negative halves on the same double."
-      },
-      {
-        "path": "packages/runtime/test/a5-pindir-reserved-native.test.ts",
-        "subject": "migrated-preserved-control",
-        "cut": "ute-a0/ute-a1",
-        "round": 72,
-        "reason": "RE-ANCHORED: the plane-assembly legs (verifyPlaneNames over the 13 C-16 names, two injection legs, the defaults/alias/mcp__ leg) retired with team-tool-plane.mjs; the LAW is preserved and re-anchored on the reviewed authority artifact dev/engineering/tool-obligations/authoritative-tool-sources.v1.json (bidirectional drift + per-booking provenance + host pin + the subagent_fork registration), with two in-memory falsifiability mutations. It stays listed in tests/checks/eb3-host-security-suites.txt, so ci-census keeps grading it."
       }
     ]
   }
