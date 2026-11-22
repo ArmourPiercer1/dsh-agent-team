@@ -4977,9 +4977,13 @@ test('ADM-106 — an out-of-vocabulary tool (grep) OUT of lane is a LANE deny, n
 //   * the `todo`/`goal` faces — HOST rows on the `host.service` axis (`ADM-32`), whose state lives
 //     in the host's own native `sessionProjections` service. Neither the retired entry
 //     (`live/agent-bindings.mjs`, `root.ts` at 1617d5839^) nor the new one references that service
-//     at all (measured: `grep -c sessionProjections` → 0 in both), so the Team never owned,
-//     wrapped, or shadowed it: it is preserved by construction. Reading it (`stateOf`) for a
-//     Member's todo/goal needs a real host boot and stays on the D list — it is NOT claimed here.
+//     at all (measured: `grep -c sessionProjections` → 0 in all four), so the entry replacement
+//     cannot have un-wired it: it is preserved by construction. The Team-side uses are pass-through
+//     READS of the HOST service, never a registration of its own — the PTY facade hands
+//     `ctx.get('sessionProjections')` to the pinned backend (`team-services/src/terminal-pty.ts:400`)
+//     and the P5-T5 real-instance harness restores the durable model selection with
+//     `stateOf(session, 'modelSelection')` (`root-binding/harness/plugin.mjs:969-982`). Both need a
+//     real host boot, so reading the service stays on the D list — it is NOT claimed here.
 //
 // The arms below therefore prove the C11 half a test CAN prove without a boot: the projection is
 // PRESERVED in the new assembly and derives from the TeamDomain's own durable facts, with a

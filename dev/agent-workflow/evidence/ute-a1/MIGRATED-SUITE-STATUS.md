@@ -1303,7 +1303,11 @@ template rows reds all three arms. Neither mutation was left in the tree.
 **The other owner named by the row is NOT claimed.** The host's native `sessionProjections` service
 (behind the `todo`/`goal` faces, `host.service`, `ADM-32`) is preserved **by construction**: neither
 the retired entry (`live/agent-bindings.mjs`, `root.ts` at `1617d5839^`) nor the new one references it
-(`grep -c sessionProjections` → 0 in all four). Reading `stateOf` for a Member's todo/goal state is a
+(`grep -c sessionProjections` → 0 in all four), so the entry replacement cannot have un-wired it. The
+Team-side uses are pass-through **reads** of the HOST service, never a registration of its own — the
+PTY facade hands it to the pinned backend (`team-services/src/terminal-pty.ts:400`) and the P5-T5
+real-instance harness restores the durable model selection with `stateOf(session, 'modelSelection')`
+(`root-binding/harness/plugin.mjs:969-982`). Reading `stateOf` for a Member's todo/goal state is a
 **host-boot** measurement and stays on the D list — no in-process arm can read the host's service.
 
 One fixture fact is disclosed in the arm rather than hidden: `cStage` gained
