@@ -10480,3 +10480,29 @@ completed product acceptance."
 
 Gates: docs-sync `findings=0 blocking=0`, catalog `tests=889 findings=0`, leg `suites=7 files=7 exit=0`
 (168 pass + 2 disclosed skips, digest unchanged).
+
+### R66 — C11 stops being an unevidenced row: projections proven to derive from TeamDomain facts only
+
+The D report's biggest hole was C11 ("state projections — preserve — projection suite") with NO arm at all. Now
+ADM-107..109 ride the `ute-vnext-a1` leg, over the real durable TeamDomain, the real catalog-backed template
+resolver, the real committed-policy-state resolver and the real live overlay — built exactly as the entry wires
+them (`root.ts:4275-4279`), no mocked centre, no re-implemented body.
+
+- positive: identity core, every member row and the ledger summary match durable rows; a template is visible
+  while no member exists (nothing presaged); a real `team_create_member` is what a FRESH port+service sees; every
+  value survives a cold reopen;
+- negative (refusal): a create refused for an unbound agent and an out-of-lane call leave the projection
+  byte-identical and the durable store untouched, while the restored binding moves both;
+- negative (no second authority): a live handle with no durable row invents no member; dropping a handle moves
+  only `liveActivity`; an absent TeamSession fails closed; a projection pass writes nothing.
+
+Falsifiability measured: stamping schemaVersion 1 reds ADM-107; zero template rows reds all three. Both mutations
+reverted. Disclosed fixture adjustment: the leader row now seeds the production `childSessionId === root` shape
+(P6-T2's synthetic id is a shape production never writes).
+
+NOT proven, stated: the `stateOf` half of the row names the HOST's `sessionProjections` service, which neither
+the retired nor the new entry references (grep 0) — preserved by construction, needs a real boot to measure; and
+a projection read at a product entry is impossible on a centre row (C9). No row is PRODUCT-PROVEN.
+
+Gates at `e581cc205`: leg 173 cases / 171 pass + 2 disclosed skips, catalog `tests=889 findings=0`, cut-closure,
+P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
