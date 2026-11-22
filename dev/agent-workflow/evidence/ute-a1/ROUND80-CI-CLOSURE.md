@@ -405,3 +405,57 @@ Required steps, or skipping the arms, would not be.
    draft") was written against an older head and is stale; this section supersedes it.
 4. **`ci-census` needs the provisioned rc.5 host** on a fresh runner; absent, the lane REFUSES by name
    (a refusal, not a pass).
+
+### 3.8 Hosted verdicts at `a58c731da` — the §3.5 UNPROVEN rows, measured
+
+Pushed head `a58c731da88e5844d663d3783e9aaefb06c57e94`. `gh run list` / `gh api …/jobs`:
+
+| check | verdict at `a58c731da` | evidence |
+| --- | --- | --- |
+| `ci-integration / ci-integration` | **SUCCESS** | the job that was RED at `8428c9d72` (step 24 `tinf-instruments`). The tinf fix holds on a fresh hosted runner: 51/51 files, 0 fail |
+| `ci-product / ci-product` | **SUCCESS** | — |
+| `ci-fast / ci-fast` | **SUCCESS** | — |
+| `ci-security / ci-security` | **SUCCESS** | — |
+| `candidate-protection` | **SUCCESS** | — |
+| `pr-gate` (job `pr-gate`) | **SUCCESS** | — |
+| `pr-gate` (job `pr-settlement-gate`) | **SUCCESS** after re-running the failed job | the first attempt at this head ran BEFORE the settlement comment existed, so it failed by construction (§8.5.2: a head with no covering comment is FAIL). `gh run rerun --failed` after posting: `pr-settlement-gate success` |
+| `ci-census / census-runtime` | **FAILURE** | and it now fails LATER than at `8428c9d72`. The `next-host` step (the two stale `ute2-settlement` pins) is GREEN at this head: hosted `ℹ tests 184 / pass 184 / fail 0` for that step's argv |
+| `ci-required` (`grade`) | **FAILURE** | aggregates the `ci-census` failure; nothing else is red |
+
+#### The census job's UTE G1 step, hosted — 18 arms, exactly §3.6
+
+```
+node --test --test-force-exit --test-timeout=480000 --test-reporter=spec \
+  tests/ute1-fs/native-fs-binding.test.mjs tests/ute-g1-fs/lane-suite.test.mjs \
+  tests/ute-g1-fs/lib/refusal-categories.test.mjs tests/ute-g1-fs/product-route-image.test.mjs \
+  tests/ute-g1-search/lane-suite.test.mjs tests/ute-g1-web/lane-suite.test.mjs \
+  tests/ute-g1-process/lane-suite.test.mjs tests/ute-g1-agentctl/lane-suite.test.mjs \
+  tests/ute-g1-uistate/lane-suite.test.mjs
+ℹ tests 89   ℹ pass 71   ℹ fail 18
+```
+
+The hosted log names the cause per suite, and it is the §3.6 cause three times over:
+
+| suite | hosted failure | deleted subject |
+| --- | --- | --- |
+| `ute-g1-agentctl` (4 arms: 1, 4, 5, 6) | `ERR_MODULE_NOT_FOUND …/plugin/live/team-tool-plane.mjs`, `ENOENT …/tools/families/agent-control.mjs`; the negative-control battery reports `NC-VERDICT RED controls=24 failed=17` for the same reason | the Agent-Control family contribution + its plane row module (A0 delete set) |
+| `ute-g1-process` (4: PROC-1, PROC-5, PROC-6, PROC-8) | `AssertionError: the attach must answer the fibers it created` (`lib/world.mjs:361`) | the appended confined-bash shadow (`5d1349767`) |
+| `ute-g1-search` (3: old-path corpus, family NCs, VERDICT), `ute-g1-web` (3), `ute-g1-uistate` (3) | the same attach assertion, then the golden/negative-control comparisons that can no longer run | the appended confined grep/glob/fetch/… shadows |
+
+Two facts worth recording because they bound the decision:
+
+- `ute-g1-fs` is **GREEN hosted** — `UTE-G1-FS-VERDICT GREEN vectors=16 pending=0 host=9c2670d3…` — which is
+  why §3.1 cites it as the surviving route-C successor and the process lane as NOT one.
+- `ute-g1-search` reports `new-path=VERIFIED` with `NEW-PATH-NC-VERDICT GREEN controls=12` on the SAME
+  run whose old-path arms are red: the lane already carries a new-path half. So the §3.6 decision is
+  narrower than "delete five files" — for search it is "drop the old-path half and keep the verified
+  new-path half", and the other four need their own reading.
+- `ute1-fs/native-fs-binding`'s four assembly arms are red only where the pinned next-host tree is
+  absent (locally); hosted they are GREEN, so they are not part of this layer.
+
+The settlement comment for this head is posted (`issues/822/comments`, first line
+`[dated settlement, 2026-11-22 — round 80, fourth pass …]`) and covers the exact 40-hex head:
+`node scripts/pr-settlement-gate.mjs --pr 822 --expected-head a58c731da…` →
+`DSH-SETTLEMENT-VERDICT PASS marker=none matches=1 candidates=4` (`settlement: candidates=4 valid=1
+settled=true`; the three earlier comments are rejected `SHA_NOT_CURRENT_HEAD`, which is §8.5.2's
+covered-sha rule working as designed).
