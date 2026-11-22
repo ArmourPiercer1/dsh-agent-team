@@ -537,10 +537,41 @@ double for the lane arms, the real pinned `LocalFileSystem` for `ADM-140`) and t
 `createMemberFsGuard`. NOT PROVEN: a live `apply_patch`/delete/move through a booted Member; any
 kernel boundary (the guard is in-process; the base provider's own TOCTOU is inherited, not closed);
 `moveFile`'s version-guarded / patched-on-move path (only the unconditional case is exercised); and
-the rc.5 lane's pre-existing reds (`ADM-96/97/100/101/102`, the `vnext-b-probe-ladder` hang) are
-untouched by this round and remain open rc.5 drift.
+the rc.5 lane's pre-existing reds (`ADM-96/97/101/102`, the `vnext-b-probe-ladder` hang) are
+untouched by this round and remain open rc.5 drift. **Round 78 update: `ADM-100` is no longer red on
+rc.5** — its world now mounts rc.5's `workingDirectory` service and executor and dispatches the batch
+shape (assertions unchanged); it passes on both hosts.
 
 **Deliberate non-change.** `MANAGED_FS_METHODS` (`member-io-policy/src/provider-capabilities.ts:51`)
 was NOT grown by the three names: the install must keep accepting an rc.2 provider (which lacks
 them), so capability is decided per call, and the refusal is typed. Growing that list would refuse
 every rc.2 install — a compatibility break masquerading as a confinement fix.
+
+---
+
+## ROUND 78 (2026-11-22) — the same rows, measured on 0.2.2-rc.5
+
+The three D drivers were made **host-selectable** (`TEAM_TEST_HOST=next`; one
+selection authority, `tests/next-host/host-select.mjs`) and re-run against
+`tests/deepseek-harness-next` (`dsh-v0.2.2-rc.5`, pin
+`9c2670d3bce5275e0d1610272958121af87787bb`, ports 13000-13049, DSH_HOME suffix
+`-next`). Full side-by-side tables, drift resolutions and limits:
+`RC5-ACCEPTANCE.md`. Every row below was re-measured with two agreeing boots
+on BOTH hosts and produced the same counted facts.
+
+| C row | now measured on rc.5 | how |
+| --- | --- | --- |
+| C-tools | the 15 `team_*` tools on the real leader surface (49 tools total) | `run-boot` / `d2` / `d3` live boots |
+| C-member | member create (`member-activated`, durable row) and the member's own centre judging its calls | `d2` two-member concurrency, `d3` delegate |
+| C-work | delegate → member turn → collected body (`succeeded`), stable across a SIGKILL cold restart | `d3:work-delivery`, `d3:crash-cold-recovery` |
+| C-fs | native `read` admitted in-lane with provider guard `allow` facts naming the member; out-of-lane refused with zero bytes | `d:member-read-*`, `d:guard-facts` |
+| C-subprocess / C-pty | the persistent governed shell: two turns on the SAME shell, out-of-lane write refused by the OS profile | `d3:persistent-subprocess` |
+| C-remote | `team.create` served; duplicate mints no root; `member.send` refused with zero provider requests; unauthenticated refused | `d:remote-creation` |
+| C-alpha6 | the same typed `ADMISSION_ALPHA6_UNAVAILABLE` refusal on a real rc.5 boot | `d3:alpha6` |
+| ADM-100 (C-fs provider channel, in-process) | PASS on rc.5 after the world mounts `workingDirectory` + executor and uses the batch `tools.execute` shape; assertions unchanged | `TEAM_TEST_HOST=next node --test --test-name-pattern ADM-100 …` |
+
+**Status stays what it was** (MECHANISM or DEV-LIVE, never PRODUCT-PROVEN): the
+driver boots are DEV-LIVE, the model is the scripted mock, and the rest of the
+238-suite vitest population was not run on rc.5. Rows NOT re-measured on rc.5:
+C-web, C-ptc, C-mcp (live mount), C-goal, C-skill, C-fork, C-policy, and the
+`apply_patch`/delete/move live face.

@@ -283,26 +283,50 @@ kernel; both were present.
 
 ### 3.2 All live judges, actual verdicts (do not read the list as all-green)
 
-| judge | verdict (both boots) | recorded at |
-| --- | --- | --- |
-| `d:member-read-admitted` | **PROVEN** | `D-BOOT-FEASIBILITY.md:369-395`; `dev/agent-workflow/evidence/d-boot-feasibility/runs/` |
-| `d:guard-facts` | **PROVEN** (2 allow facts: `stat`, `readText`; `memberIdentity=inst-0pe2z220bhfb`) | same |
-| `d:centre-facts` | **PROVEN** (2 `fs.read` admissions `allow` + `DENY/LANE_DENY`, 2 execution facts) | same |
-| `d:native-read-surface` | **PROVEN** after the round-62 re-anchor (all six clauses; the `native-description` clause now reads the top-level field and `native-file-path-description` reads the parameter field) | `D-BOOT-FEASIBILITY.md:494-511` |
-| `d:member-read-denied` | **PROVEN** after the round-71 rewrite (the clause measures the DECIDING CHANNEL: `LANE_DENY` with ZERO provider guard facts for that call, or `IO_READ_DENIED` with its own guard deny fact; zero secret bytes and not-ENOENT in both; plus a separate in-process `ADM-100` clause for the provider channel) | `FINDING-native-tool-provider.md` §"Round 71"; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/in-process-provider-channel.json` |
-| `d2:multi-member-concurrency` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
-| `d2:revocation` | **PROVEN** after the round-71 rewrite — (a) durable deny ⇒ `ADMISSION_OVERLAY_DENY`, zero body, settlement `REFUSED`, overlay named + policy generation; (b) deny removal ⇒ admitted + `COMPLETED`, a NEW fact; (c) in-lane control admitted at every phase; (d) widening beyond the compiled ceiling is a no-op proposal and the widened locator stays `LANE_DENY` | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`; `FINDING-native-tool-provider.md` §"Round 71" |
-| `d2:stop` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
-| `d3:persistent-subprocess` | **PROVEN (round 76)** — both boots, all clauses: `bash` on the Member surface, preset shell rows `["tool-bash","tool-bash-persistent"]`, first call admitted (`process.exec`, `allow`) writing durable state, second turn reusing the SAME shell and reading it back (`DBOOT_D3_PERSISTENT_SHELL_STATE`/`DBOOT_D3_STATE_READ`), both settlements `ADMITTED→RUNNING→COMPLETED`; the out-of-lane write is refused by the OS profile (`Read-only file system` in the shell, 0 bytes on disk from outside) while the in-lane 32-byte file is written. Round-75 history: the same judge was REFUTED with `ADMISSION_EXECUTION_UNAUTHORIZED` before the preset mounted the persistent row and the world declared the binding | `dev/agent-workflow/evidence/d-boot-feasibility/d3/runs/boot01/verdicts.json` + `confinement-probe.json`; `D-BOOT-FEASIBILITY.md` round-76 section |
-| `d3:crash-cold-recovery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
-| `d3:work-delivery` | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
-| `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
-| **`d:remote-creation`** | **PROVEN (round 74, new)** — unauthenticated refused (401) and mints NO Team; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate runtime `team.create` 200 / `path:"fresh-root"`; duplicate mints no second root and adds 0 provider requests; `member.send` refused `ADMISSION_REMOTE_UNAVAILABLE` with 0 provider requests | `D-BOOT-FEASIBILITY.md` §17; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`; `round74-console.log` |
+| judge | rc.2 verdict (both boots) | rc.5 verdict (both boots) | recorded at |
+| --- | --- | --- | --- |
+| `d:member-read-admitted` | **PROVEN** | **PROVEN** | `D-BOOT-FEASIBILITY.md:369-395`; `dev/agent-workflow/evidence/d-boot-feasibility/runs/`; `dev/agent-workflow/evidence/ute-a1/rc5/run-boot.log` |
+| `d:guard-facts` | **PROVEN** (2 allow facts: `stat`, `readText`; `memberIdentity=inst-0pe2z220bhfb`) | **PROVEN** (2 allow facts) | same |
+| `d:centre-facts` | **PROVEN** (2 `fs.read` admissions `allow` + `DENY/LANE_DENY`, 2 execution facts) | **PROVEN** (same counters) | same |
+| `d:native-read-surface` | **PROVEN** after the round-62 re-anchor (all six clauses; the `native-description` clause now reads the top-level field and `native-file-path-description` reads the parameter field) | **PROVEN** (same clauses) | `D-BOOT-FEASIBILITY.md:494-511` |
+| `d:member-read-denied` | **PROVEN** after the round-71 rewrite (the clause measures the DECIDING CHANNEL: `LANE_DENY` with ZERO provider guard facts for that call, or `IO_READ_DENIED` with its own guard deny fact; zero secret bytes and not-ENOENT in both; plus a separate in-process `ADM-100` clause for the provider channel) | **PROVEN** after the rc.5 porting fix to the in-process world (batch `tools.execute` shape + `workingDirectory`/executor; assertions unchanged) | `FINDING-native-tool-provider.md` §"Round 71"; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01/in-process-provider-channel.json` |
+| `d2:multi-member-concurrency` | **PROVEN** | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
+| `d2:revocation` | **PROVEN** after the round-71 rewrite — (a) durable deny ⇒ `ADMISSION_OVERLAY_DENY`, zero body, settlement `REFUSED`, overlay named + policy generation; (b) deny removal ⇒ admitted + `COMPLETED`, a NEW fact; (c) in-lane control admitted at every phase; (d) widening beyond the compiled ceiling is a no-op proposal and the widened locator stays `LANE_DENY` | **PROVEN** (identical clauses; a/b admissions 9/9, guard facts 14/14) | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md`; `FINDING-native-tool-provider.md` §"Round 71" |
+| `d2:stop` | **PROVEN** | **PROVEN** (`stopSettlementState=REFUSED`) | `dev/agent-workflow/evidence/d-boot-feasibility/d2/README.md` |
+| `d3:persistent-subprocess` | **PROVEN (round 76)** — both boots, all clauses: `bash` on the Member surface, preset shell rows `["tool-bash","tool-bash-persistent"]`, first call admitted (`process.exec`, `allow`) writing durable state, second turn reusing the SAME shell and reading it back (`DBOOT_D3_PERSISTENT_SHELL_STATE`/`DBOOT_D3_STATE_READ`), both settlements `ADMITTED→RUNNING→COMPLETED`; the out-of-lane write is refused by the OS profile (`Read-only file system` in the shell, 0 bytes on disk from outside) while the in-lane 32-byte file is written. Round-75 history: the same judge was REFUTED with `ADMISSION_EXECUTION_UNAUTHORIZED` before the preset mounted the persistent row and the world declared the binding | **PROVEN** (identical clauses; both bash states `COMPLETED`) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/runs/boot01/verdicts.json` + `confinement-probe.json`; `D-BOOT-FEASIBILITY.md` round-76 section |
+| `d3:crash-cold-recovery` | **PROVEN** | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
+| `d3:work-delivery` | **PROVEN** | **PROVEN** (`collectStatus=succeeded`, `inflightAfter=UNKNOWN` by contract) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
+| `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | **PROVEN** (same typed refusal) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
+| **`d:remote-creation`** | **PROVEN (round 74, new)** — unauthenticated refused (401) and mints NO Team; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate runtime `team.create` 200 / `path:"fresh-root"`; duplicate mints no second root and adds 0 provider requests; `member.send` refused `ADMISSION_REMOTE_UNAVAILABLE` with 0 provider requests | **PROVEN** (identical observations) | `D-BOOT-FEASIBILITY.md` §17; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`; `round74-console.log` |
 
-After round 74, `run-boot.mjs` (6/6 judges, incl. `d:remote-creation`) and `run-boot-d2.mjs` (3/3) are
-`overall=PASS` on two agreeing boots each; `run-boot-d3.mjs` still records `overall=FAIL` (1 of 4 refutes, the absent process
-lane). A driver that exited 0 without a PROVEN judge would be the finding; every PASS above is a
-measured clause set, not an exit code (`evidence-complete=true, allProven` is per driver).
+**rc.5 host column (round 78).** All twelve judges are `PROVEN` on 0.2.2-rc.5
+with the same counted facts as rc.2 (two agreeing boots each). Three rc.5
+drifts had to be ported to get there: (a) model selection must exist at Agent
+creation (`AgentOptions` from the host's `agentDefaultModel`; rc.5's
+`installModelSelection` no longer takes the rc.2 ref) — product fix in
+`packages/runtime/src/plugin/host.ts` + `vnext/agent-bindings.mjs`; (b)
+`{{cwd}}` is no longer a registered prompt variable, so the governed preset's
+persona suffix now names "the session workspace" (`cordis.patch.yml`); (c) the
+in-process ADM-100 world needs rc.5's `workingDirectory` service, executor and
+batch `tools.execute` shape (`vnext-admission.test.mjs`; assertions unchanged).
+Full side-by-side tables, the exact errors, and the deployment requirements are
+in `RC5-ACCEPTANCE.md`; the rc.5 logs are kept under
+`dev/agent-workflow/evidence/ute-a1/rc5/`.
+
+**rc.5 limitations (not proven).** Only these three scripted drivers ran on
+rc.5: the other 238-suite vitest population and the other node:test slices were
+not executed on rc.5 (ADM-100 was re-run individually). The model is the
+scripted mock; no real model, MCP server, PTY backend, Windows host or hosted
+deployment was exercised. `d3` records `inflightAfter=UNKNOWN` by contract and
+Alpha.6 routing is unavailable by design. The `{{cwd}}` removal changes the
+persona text on both hosts (verdicts unchanged); that the runtime context still
+states the same directory on rc.5 is assumed, not judged.
+
+After round 76, `run-boot.mjs` (6/6 judges, incl. `d:remote-creation`), `run-boot-d2.mjs` (3/3) and
+`run-boot-d3.mjs` (4/4, `evidence-complete=true allProven=true`) are `overall=PASS` on two agreeing
+boots each, on rc.2 AND on rc.5 (round 78). A driver that exited 0 without a PROVEN judge would be the
+finding; every PASS above is a measured clause set, not an exit code (`evidence-complete=true,
+allProven` is per driver).
 
 ---
 

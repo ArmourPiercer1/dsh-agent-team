@@ -16,12 +16,12 @@
       {
         "id": "first-call-admitted",
         "ok": true,
-        "detail": "isError=false text=DBOOT_D3_STATE_WRITTEN\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/workspace/team-b/d3-escape.txt: Read-only file system\nDBOOT_D3_ESCAPE_REFUSED\n[Command finished with exit code 0]"
+        "detail": "isError=false text=DBOOT_D3_STATE_WRITTEN\nbash: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/workspace/team-b/d3-escape.txt: Read-only file system\nDBOOT_D3_ESCAPE_REFUSED\n[Command finished with exit code 0]"
       },
       {
         "id": "state-written-by-shell",
         "ok": true,
-        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/workspace/team-a/d3-persistent-state.txt exists=true"
+        "detail": "state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/workspace/team-a/d3-persistent-state.txt exists=true"
       },
       {
         "id": "second-turn-saw-state",
@@ -58,12 +58,12 @@
       {
         "id": "kill-was-sigkill",
         "ok": true,
-        "detail": "pid=794 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
+        "detail": "pid=798 signal=SIGKILL pidGone=true exit={\"code\":null,\"signal\":\"SIGKILL\"}"
       },
       {
         "id": "restart-same-home",
         "ok": true,
-        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z booted=true bootPhase=create-or-open"
+        "detail": "firstHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z restartHome=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z booted=true bootPhase=create-or-open"
       },
       {
         "id": "completed-ledger-survives",
@@ -108,12 +108,12 @@
       {
         "id": "work-fact-survived",
         "ok": true,
-        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the delivered unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/storages/team_domain.json\"]"
       },
       {
         "id": "state-file-survives-restart",
         "ok": true,
-        "detail": "the persistent-shell probe's state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/workspace/team-a/d3-persistent-state.txt exists=true bytes=32"
+        "detail": "the persistent-shell probe's state file /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/workspace/team-a/d3-persistent-state.txt exists=true bytes=32"
       }
     ],
     "failing": []
@@ -160,7 +160,7 @@
       {
         "id": "work-fact-durable-on-disk",
         "ok": true,
-        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-21-34Z/storages/team_domain.json\"]"
+        "detail": "fresh disk hits carrying the unit=[\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/storages/session_projcache/sessions/session-team-child-cdf16bb82ce585d862f447bf6cd8c80f.json\",\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z/storages/team_domain.json\"]"
       },
       {
         "id": "member-calls-in-own-ledger",
@@ -187,7 +187,7 @@
       {
         "id": "host-process-was-spawned",
         "ok": true,
-        "detail": "spawned=true port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T12-19-29Z/instance-port3193.log"
+        "detail": "spawned=true port=3193 log=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T15-06-02Z/instance-port3193.log"
       },
       {
         "id": "row-refused-with-typed-code",
@@ -197,7 +197,7 @@
       {
         "id": "typed-code-present",
         "ok": true,
-        "detail": "refusal text=\n[dsh-agent-team] row refused at validation and RECORDED: code=ADMISSION_ALPHA6_UNAVAILABLE callId=alpha6:f1fe39c6-b0de-48f7-9404-6220f03e9087:0 fact=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-19-29Z/centre/alpha6.host-surface.facts.jsonl settlement=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-19-29Z/centre/settlement/host-surface/alpha6\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted"
+        "detail": "refusal text=\n[dsh-agent-team] row refused at validation and RECORDED: code=ADMISSION_ALPHA6_UNAVAILABLE callId=alpha6:76be9712-351e-4ca5-9179-1d17b9995f70:0 fact=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-06-02Z/centre/alpha6.host-surface.facts.jsonl settlement=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-06-02Z/centre/settlement/host-surface/alpha6\n[dsh-agent-team] registered 2 bundled team skill(s) from /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/.agents/skills (source \"dsh-agent-team\", provider \"dsh-agent-team\", rank 550)\n[dsh-agent-team] bootstrap FAILED: TeamPluginError: dsh-agent-team row config: ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted"
       },
       {
         "id": "missing-axis-named",

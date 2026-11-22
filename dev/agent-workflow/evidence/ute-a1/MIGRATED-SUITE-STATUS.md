@@ -2366,3 +2366,48 @@ findings 0; 28 placements; ci-required `workflows=10 findings=0`; bound vitest *
 **Not proven.** In-process only (no booted `apply_patch`/delete/move, no model turn); no kernel
 boundary (the base provider's TOCTOU is inherited); `moveFile`'s version-guarded / patched-on-move
 path is not exercised; no matrix upgrade (C-fs stays MECHANISM).
+
+---
+
+## Round 78 (2026-11-22) — rc.5 acceptance (host-selectable drivers)
+
+**What changed.** The three D drivers are host-selectable through the existing
+single authority: `TEAM_TEST_HOST=next` selects `tests/deepseek-harness-next`
+(0.2.2-rc.5, pin `9c2670d3bc`), ports 13000-13049, DSH_HOME suffix `-next`, and
+a `host-loader.mjs` preload so the booted product resolves bare
+`@deepseek-ai/*` from the selected tree. rc.2 stays the default (no
+`NODE_OPTIONS` change, ports 3181-3199, no suffix). Every driver prints its
+`candidate` row (`host`, `pin`, `source`) before boot and re-verifies the tree
+HEAD; `git status --porcelain` on the host tree was empty before and after
+every boot. `--keep-home` was added to `run-boot.mjs` as a diagnostic-only flag.
+
+**Live judges on rc.5, two agreeing boots each** (same commands with
+`TEAM_TEST_HOST=next`): `run-boot.mjs` 6/6 PASS, `run-boot-d2.mjs` 3/3 PASS,
+`run-boot-d3.mjs` 4/4 PASS (`evidence-complete=true allProven=true`). Every
+counted fact is identical to rc.2 (allowFacts 2; a/bAdmissions 9/9;
+a/bGuardFacts 14/14; stopSettlementState REFUSED; aAdmissions 4 / bAdmissions
+3; bash states COMPLETED; transcriptSourceCount 2). Side-by-side tables and the
+full drift record: `RC5-ACCEPTANCE.md`.
+
+**rc.5 drifts ported (no judge weakened, no upstream patch).** (1) rc.5 needs a
+model at Agent creation (`AgentOptions` from the host's `agentDefaultModel`);
+product fix in `packages/runtime/src/plugin/host.ts` (dep + pass site) and
+`vnext/agent-bindings.mjs` (`teamAgentOptions()` on create/resume). (2) rc.5
+registers only `provider`/`model` as prompt variables, so `{{cwd}}` in the
+governed preset's persona suffix failed every member turn with `unknown prompt
+variable "{{cwd}}"`; the suffix now names "the session workspace". (3) The
+in-process ADM-100 world needs rc.5's `workingDirectory` service, executor and
+batch `tools.execute` shape — added host-conditionally in
+`vnext-admission.test.mjs` with the assertions untouched.
+
+**Suite census.** NOT re-run in full on rc.5 this round. `ADM-100` was run
+individually and is now **PASS on rc.5 and rc.2** (it was one of the five
+pre-existing rc.5 admission reds; `ADM-101/102`, `SLICE-21/30` and the
+`vnext-b-probe-ladder` hang were not re-examined). rc.2 lanes: the three drivers
+above, unchanged verdicts. No vitest population change (still 238).
+
+**Not proven.** Only three scripted drivers ran on rc.5; the scripted mock, no
+real model/MCP/PTY backend/Windows/hosted deployment; `d3` `inflightAfter` is
+UNKNOWN by contract; Alpha.6 routing unavailable by design; the `{{cwd}}`
+removal changes persona text on both hosts (verdicts unchanged); the runtime
+context stating the same working directory on rc.5 is assumed, not judged.

@@ -1,0 +1,23 @@
+{
+  "tools": [],
+  "read": null,
+  "note": "the model-visible schema captured from the mock provider request, i.e. what the model actually saw",
+  "shadowModules": [],
+  "presetPlugins": [
+    "persona",
+    "agent-instructions",
+    "tool-bash",
+    "tool-bash-persistent",
+    "tool-fs",
+    "tool-fs-search",
+    "tool-jobs",
+    "tool-skill",
+    "tool-present",
+    "command-goal",
+    "tool-goal",
+    "planning",
+    "compaction",
+    "tool-todo",
+    "tool-plugin-manager"
+  ]
+}

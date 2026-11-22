@@ -18,7 +18,29 @@
 import { spawn } from 'node:child_process'
 import { closeSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, readlinkSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { testHostMode } from '../../next-host/host-select.mjs'
 import { logTail, portInUse, waitForLogLine, waitForPortFree } from './util.mjs'
+
+/**
+ * The rc.5 lane's resolution hook, as a `--import` argument for a BOOTED child.
+ *
+ * WHY A CHILD NEEDS IT. In-process lanes register `scripts/run-tests-hooks.mjs`
+ * themselves; a booted Host is a separate Node process, so the same hook is
+ * registered there through this file (`tests/next-host/host-loader.mjs`) and
+ * only when `TEAM_TEST_HOST=next`. Without it the product dist inside the
+ * child resolves the repo's rc.2 `node_modules` while the Host tree is rc.5.
+ *
+ * The variable is read HERE (the parent) and the flag is added explicitly, so
+ * an inherited `NODE_OPTIONS` is preserved and legacy boots are untouched.
+ * @returns {string|undefined} the `--import` token, or undefined on the legacy host.
+ */
+function selectedHostNodeOptions() {
+  if (testHostMode() !== 'next') return undefined
+  const loader = new URL('../../next-host/host-loader.mjs', import.meta.url).href
+  const existing = typeof process.env.NODE_OPTIONS === 'string' ? process.env.NODE_OPTIONS.trim() : ''
+  const flag = `--import=${loader}`
+  return existing === '' ? flag : `${existing} ${flag}`
+}
 
 const BOOT_MARKER = /dsh web: http:\/\/127\.0\.0\.1:(\d+)\/\?token=[A-Za-z0-9_-]+/
 
@@ -94,6 +116,13 @@ export class DshInstance {
             ...process.env,
             DSH_HOME: this.config.dshHome,
             DSH_CLIENT_COMMIT_HASH: this.config.clientCommitHash,
+            ...(() => {
+              // TEAM_TEST_HOST=next only: register the lane's ONE resolution
+              // hook inside the child, so the product dist imports the HOST's
+              // packages instead of the repo's rc.2 install.
+              const nodeOptions = selectedHostNodeOptions()
+              return nodeOptions === undefined ? {} : { NODE_OPTIONS: nodeOptions }
+            })(),
           },
         },
       )

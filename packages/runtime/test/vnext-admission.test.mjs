@@ -4659,7 +4659,7 @@ const shapeALane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.
  * `mountRealm: false` is the ungoverned control: there is no controlled provider at all.
  */
 async function buildShapeAWorld ({ dir, mountRealm = true }) {
-  const { instrumentedFileSystemClass, loadFsContractSeams } = await import('../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs')
+  const { instrumentedFileSystemClass, loadFsContractSeams, provideWorkingDirectoryDouble } = await import('../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs')
   const { mountA5sfRealm } = await import('../team-services/src/mount.ts')
   const seams = await loadFsContractSeams(DOMAIN_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules } = seams
@@ -4676,6 +4676,17 @@ async function buildShapeAWorld ({ dir, mountRealm = true }) {
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // B4/B3 host parity (rc.5): the same two facts the fs-contract world mounts.
+  // rc.5 selects a ToolExecutor service before dispatch (without one every call
+  // throws TOOL_EXECUTOR_UNAVAILABLE) and its tool-fs statically injects
+  // `workingDirectory` (without it Cordis defers the whole module, so the
+  // member's `read` never exists and this world would prove nothing). The
+  // legacy host has neither seam; mounting them only under `next` keeps the
+  // rc.2 world byte-identical.
+  if (seams.hostMode === 'next') {
+    await root.plugin(seams.NativeToolExecutor)
+    provideWorkingDirectoryDouble(root, dir)
+  }
   // The composition's provider: what a member resolves if nothing confines it.
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
 
@@ -4741,13 +4752,24 @@ async function buildShapeAWorld ({ dir, mountRealm = true }) {
   }
 
   const dispatch = async (name, args, callId) => {
-    const settled = await root.get('tools').execute({
-      signal: new AbortController().signal,
-      callId,
-      name,
-      arguments: args,
-      agent: agentKey,
-    })
+    // rc.5 dispatches a BATCH through the selected executor: `execute` takes
+    // `{calls:[{id,name,arguments}], signal, agent}` and returns
+    // `{results:[{callId,result}]}`; the legacy host takes one call inline and
+    // returns the settled result. Adapt the world's observation to the host's
+    // real contract — the assertions below still read the host's own result.
+    const settled = seams.hostMode === 'next'
+      ? (await root.get('tools').execute({
+        signal: new AbortController().signal,
+        calls: [{ id: callId, name, arguments: JSON.stringify(args) }],
+        agent: agentKey,
+      })).results[0]?.result
+      : await root.get('tools').execute({
+        signal: new AbortController().signal,
+        callId,
+        name,
+        arguments: args,
+        agent: agentKey,
+      })
     const text = Array.isArray(settled.content)
       ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
       : ''

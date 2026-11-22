@@ -30,7 +30,9 @@ import { createRequire } from 'node:module'
 import { join, resolve } from 'node:path'
 
 import { assertNextHostTree, resolveInsideTree } from './host-next-lib.mjs'
-import { NEXT_HOST, findTestRepoRoot, testUseTree } from '../paths.mjs'
+import {
+  CLIENT_COMMIT_HASH, DSH_BASELINE_VERSION, HOST_PORT_BANDS, NEXT_HOST, TEST_USE_BASELINE_SHA, findTestRepoRoot, testUseTree,
+} from '../paths.mjs'
 
 /** The one environment variable that selects a host. */
 export const TEST_HOST_ENV = 'TEAM_TEST_HOST'
@@ -80,4 +82,64 @@ export function resolveSelectedHostModule(spec, repoRoot, mode = testHostMode())
  */
 export function selectedHostTree(repoRoot, mode = testHostMode()) {
   return mode === 'next' ? assertNextHostTree(repoRoot).tree : testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot)
+}
+
+/**
+ * The PIN the selected host is graded against, in one shape for both
+ * generations. It is read from `tests/paths.mjs` (the pin authority) — never
+ * re-typed by a caller — and for `next` it is the VERIFIED tree identity, so a
+ * drifted checkout refuses here instead of being graded as the pin.
+ *
+ * `legacy` is the default, so a caller that does not opt in gets the same
+ * 0.2.0-rc.2 pin it always had.
+ *
+ * @param {string} repoRoot - the Team checkout the harness lives in.
+ * @param {'legacy'|'next'} [mode] - selected generation.
+ * `clientCommitHash` is the DSH_CLIENT_COMMIT_HASH the launcher passes to skip
+ * the in-build git spawn; it must be the SELECTED host's revision or the client
+ * bundle is stamped with another generation's rev.
+ *
+ * @returns {{host: 'legacy'|'next', version: string, sha: string, clientCommitHash: string, tag: string|null, tree: string}}
+ */
+export function selectedHostPin(repoRoot, mode = testHostMode()) {
+  if (mode === 'next') {
+    const { tree, head, version } = assertNextHostTree(repoRoot)
+    return { host: 'next', version, sha: head, clientCommitHash: NEXT_HOST.shortSha, tag: NEXT_HOST.tag, tree }
+  }
+  return {
+    host: 'legacy',
+    version: DSH_BASELINE_VERSION,
+    sha: TEST_USE_BASELINE_SHA,
+    clientCommitHash: CLIENT_COMMIT_HASH,
+    tag: null,
+    tree: testUseTree(findTestRepoRoot(repoRoot) ?? repoRoot),
+  }
+}
+
+/**
+ * The host-instance port bands the selected generation may lease.
+ *
+ * RULING (UTE-Prep, 2026-11-16): the bands are partitioned BY GENERATION —
+ * legacy 3181-3199, the next host 13000-13049 only. A boot of the rc.5 tree on
+ * a legacy port would violate the partition even though nothing asserts it, so
+ * the band follows the same selector as the tree and the pin. Legacy is the
+ * default and returns the exact array it always did.
+ *
+ * @param {'legacy'|'next'} [mode] - selected generation.
+ * @returns {ReadonlyArray<readonly [number, number]>}
+ */
+export function selectedHostPortBands(mode = testHostMode()) {
+  return mode === 'next' ? NEXT_HOST.portBands : HOST_PORT_BANDS
+}
+
+/**
+ * The DSH_HOME basename suffix for the selected generation. The next-host lane
+ * protocol is `tests/homes/<world>-next` (docs/TEST_METHODS.md §11.4) so a
+ * next-host home can never share a directory with a legacy one.
+ *
+ * @param {'legacy'|'next'} [mode] - selected generation.
+ * @returns {string}
+ */
+export function selectedHostHomeSuffix(mode = testHostMode()) {
+  return mode === 'next' ? NEXT_HOST.homeSuffix : ''
 }

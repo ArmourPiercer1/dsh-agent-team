@@ -75,7 +75,7 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, renameSync, writeFileSync, writeSync,
+  appendFileSync, closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, realpathSync, renameSync, writeFileSync, writeSync,
 } from 'node:fs'
 import { createConnection } from 'node:net'
 import { createRequire } from 'node:module'
@@ -87,7 +87,7 @@ import {
   apiPrompt, authenticate, emitPatchLayer, fetchJson,
 } from '../../lib/world-factory.mjs'
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
-import { TEST_USE_BASELINE_SHA } from '../../../paths.mjs'
+import { selectedHostPin, selectedHostTree } from '../../../next-host/host-select.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
@@ -226,7 +226,16 @@ const redact = (t) => String(t ?? '').replace(/\?token=[A-Za-z0-9_-]+/gu, '?toke
 const utcStamp = () => new Date().toISOString().replace(/[:.]/gu, '-')
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-const HOST_TREE = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
+/**
+ * HOST-SELECTABLE (round 78). Tree + pin from the ONE lane selector
+ * (`tests/next-host/host-select.mjs`): rc.2 by default, rc.5 under
+ * `TEAM_TEST_HOST=next`; realpath'd for the native-asset containment check.
+ */
+const HOST_PIN = selectedHostPin(REPO_ROOT)
+const HOST_TREE = realpathSync(selectedHostTree(REPO_ROOT))
+if (realpathSync(HOST_PIN.tree) !== HOST_TREE) {
+  throw new Error(`host selector disagreement: tree ${HOST_TREE} != pin tree ${HOST_PIN.tree}`)
+}
 const require_ = createRequire(join(REPO_ROOT, 'package.json'))
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1081,7 +1090,7 @@ function judgeAlpha6({ arm, refusalTable, configGate }) {
 // plan (host-free)
 // ─────────────────────────────────────────────────────────────────────────────
 function planOnly() {
-  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA}`)
+  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${HOST_PIN.sha}`)
   log(`shipped !!js substitutions: ${JSON.stringify(layer.jsSubstitutions)}`)
   const planRoot = join(EVIDENCE, 'plan-workspace')
   const aDir = join(planRoot, 'team-a')
@@ -1933,14 +1942,14 @@ function indent(text) {
 function runBindings(head, grant) {
   return {
     authority: readAuthorityBinding(REPO_ROOT),
-    candidate: { head, hostSha: TEST_USE_BASELINE_SHA, baseline: TEST_USE_BASELINE_SHA },
+    candidate: { head, hostSha: HOST_PIN.sha, baseline: HOST_PIN.sha },
     grant: { grantId: grant.grantId, scope: 'DEV-LIVE', face: grant.face, world: grant.world },
     recordClass: 'DEV-LIVE',
     compositionDrops: COMPOSITION_DROPS,
     layout: 'centre',
     installGraph: process.env.A5SF_WF_NO_INSTALL_GRAPH === '1' ? 'skipped (negative control A5SF_WF_NO_INSTALL_GRAPH=1)' : 'provisioned',
     teamSha: head,
-    hostSha: TEST_USE_BASELINE_SHA,
+    hostSha: HOST_PIN.sha,
     note: 'DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction',
     driver: 'run-boot-d3',
   }
@@ -2000,11 +2009,11 @@ async function main() {
   const archived = archivePriorRuns()
   log(`ARCHIVE: ${archived === null ? '(nothing to archive)' : archived}`)
   writeFileSync(join(EVIDENCE, 'driver-digest.json'), `${JSON.stringify({
-    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: TEST_USE_BASELINE_SHA,
+    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: HOST_PIN.sha,
     driverSha256: sha256(fileURLToPath(import.meta.url)), jsSubstitutions: layer.jsSubstitutions,
     command: `node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs${BOOTS_WANTED === 2 ? '' : ` --boots ${String(BOOTS_WANTED)}`}`,
   }, null, 2)}\n`)
-  log(`START head=${head} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA} boots=${String(BOOTS_WANTED)}`)
+  log(`START head=${head} hostTree=${HOST_TREE} pin=${HOST_PIN.sha} boots=${String(BOOTS_WANTED)}`)
   log(`host porcelain before: ${JSON.stringify(hostPorcelain())}`)
   if (hostPorcelain().length !== 0) throw new Error('the pinned host tree is not clean (porcelain non-empty): refusing to boot')
 

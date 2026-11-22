@@ -1,0 +1,13 @@
+{
+  "schema": "dboot/in-process-provider-channel/1",
+  "at": "2026-11-22T14:31:00.436Z",
+  "note": "the provider-channel refusal measured in its own in-process population, not on the live path (where the centre decides first)",
+  "layer": "in-process",
+  "file": "packages/runtime/test/vnext-admission.test.mjs",
+  "command": "node --test --test-name-pattern ADM-100 packages/runtime/test/vnext-admission.test.mjs",
+  "status": 1,
+  "pass": false,
+  "guardAssertion": true,
+  "ok": false,
+  "outputTail": "      at TestContext.<anonymous> (file:///home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/packages/runtime/test/vnext-admission.test.mjs:4793:12)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    expected: undefined,\n    operator: 'notStrictEqual',\n    diff: 'simple'\n  }"
+}

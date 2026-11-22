@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-22T08:35:21.080Z",
+  "at": "2026-11-22T14:52:26.784Z",
   "rootsBefore": [
     "session-dboot-read-root"
   ],
@@ -26,11 +26,11 @@
         "blueprint": {
           "blueprintId": "team.dboot.read.main",
           "revision": "1",
-          "contentHash": "sha256:a8c55a39e0e29e34b0c01ebf4578a47735e0bcd3531f5816d2703184c9f6953f"
+          "contentHash": "sha256:725f6a3f48e50c715a2dd942403579b5de45768a8e1d6c85425e1f4f114bd741"
         },
-        "createdAt": "2026-11-22T08:35:20.129Z",
+        "createdAt": "2026-11-22T14:52:25.670Z",
         "generation": 1,
-        "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T08-33-45Z/workspace"
+        "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-50-21Z/workspace"
       },
       "binding": {
         "schemaVersion": 1,
@@ -44,7 +44,7 @@
         "instanceId": "inst-leader",
         "templateId": "leader",
         "label": "leader",
-        "createdAt": "2026-11-22T08:35:20.141Z",
+        "createdAt": "2026-11-22T14:52:25.682Z",
         "activityVersion": 1
       }
     }

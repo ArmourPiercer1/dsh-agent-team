@@ -334,6 +334,17 @@ interface GlueModule {
     readonly domain: TeamDomain & { readonly consumption: DomainConsumption }
     readonly config: TeamPluginConfig
     readonly teamToolsRef: { current: unknown }
+    /**
+     * ROUND 78 (rc.5 acceptance): the host's default model selection. rc.5
+     * reads an Agent's provider/model from AgentOptions (or a recorded
+     * selection) BEFORE the step waterfall; the rc.2 per-request default no
+     * longer rescues an agent created without one. A plugin that creates
+     * Agents through the public `agents.create` must therefore supply the
+     * deployment default at creation — exactly what the host's own
+     * session-controller does. Optional: a profile without the service keeps
+     * the previous behaviour (and fails the same way rc.5 would).
+     */
+    readonly agentDefaultModel?: { currentSelection(): { provider: string, model: string, reasoningEffort?: string } }
     /** alpha5 PTC fs half-arm (10:04Z work order): the plain
      *  `{ current }` reference carrying the escalation router created by
      *  the install line below (undefined = the glue ships no row = every
@@ -2509,6 +2520,13 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
     teamToolsRef,
     controlServiceRef,
     ptcEscalationRef,
+    // ROUND 78: resolved lazily at bindings construction (the base bundle's
+    // agent-default-model row), never an inject dependency of this row — a
+    // profile without a model default must still mount and fail exactly where
+    // rc.5 fails (at the first step), not be parked at apply time.
+    agentDefaultModel: ctx.get('agentDefaultModel') as {
+      currentSelection(): { provider: string, model: string, reasoningEffort?: string }
+    } | undefined,
     now: () => new Date().toISOString(),
     // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
     // blueprint resolver (the glue's dynamic Team authority — the three-

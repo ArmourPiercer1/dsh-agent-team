@@ -21,9 +21,9 @@
     "rootSessionId": "session-dboot-d3-root",
     "blueprintId": "team.dboot.d3.main",
     "revision": "1",
-    "contentHash": "sha256:3f35e76e955ada34e1c151c34389163ef11052eb4fd53378ddcfa4c379bfe94b",
-    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace",
-    "createdAt": "2026-11-22T12:19:17.682Z",
+    "contentHash": "sha256:77335bdccb1297144af7e919e5bf89d98540a2c9156ede02e6e91dd17e645320",
+    "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-03-41Z/workspace",
+    "createdAt": "2026-11-22T15:05:50.683Z",
     "generation": 14
   }
 }

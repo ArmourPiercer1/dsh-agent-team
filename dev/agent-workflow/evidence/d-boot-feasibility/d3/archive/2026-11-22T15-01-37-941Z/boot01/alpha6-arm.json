@@ -1,0 +1,53 @@
+{
+  "spawned": true,
+  "port": 13000,
+  "threw": false,
+  "reachable": true,
+  "bootUrl": "http://127.0.0.1:13000/?token=<redacted>",
+  "error": "",
+  "errorHead": "",
+  "rowRefused": true,
+  "recordedLogLine": true,
+  "teamRowLive": false,
+  "liveAlpha6Decision": null,
+  "liveStateError": null,
+  "liveStateHttp": 404,
+  "liveMemberCount": 0,
+  "recordedFactPresent": false,
+  "recordedFactReachable": true,
+  "recordedFactReason": "round 68: the row gate (host.ts validateTeamPluginConfig -> centre-config.ts) builds the product host-surface point at the refusal and records the invocation-authority fact + REFUSED/not-started settlement before the unchanged typed throw; this probe reads them back from disk",
+  "refusalFactFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-44-25Z-next/centre/alpha6.host-surface.facts.jsonl",
+  "refusalFactCount": 1,
+  "refusalFact": {
+    "callId": "alpha6:795de454-aca8-474e-8230-50b25c23209b:0",
+    "decision": "deny",
+    "refusalCode": "ADMISSION_ALPHA6_UNAVAILABLE",
+    "axis": "host.service",
+    "toolName": "alpha6.review-routing",
+    "reason": "Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority (the row is refused at row validation, before any root is built)"
+  },
+  "nonRefusalFactCount": 0,
+  "refusalSettlement": {
+    "state": "REFUSED",
+    "dispatch": "not-started",
+    "bodyOutcome": "not-started",
+    "terminalReason": "ADMISSION_ALPHA6_UNAVAILABLE: Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority (the row is refused at row validation, before an",
+    "transitions": [
+      "ADMITTED",
+      "REFUSED"
+    ]
+  },
+  "refusalSettlementRecordFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-44-25Z-next/centre/settlement/host-surface/alpha6/exec-98f1a628e763a92088313a60797c57ec9d3ba3ad.settlement.json",
+  "refusalSettlementError": null,
+  "wakeIntentFiles": 0,
+  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T14-44-25Z-next/instance-port13000.log",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-44-25Z-next",
+  "configGate": "ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim",
+  "refusalTable": {
+    "code": "ADMISSION_ALPHA6_UNAVAILABLE",
+    "axis": "host.service",
+    "subject": "Alpha.6 review-routing decision",
+    "missing": "no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority"
+  },
+  "liveState": null
+}

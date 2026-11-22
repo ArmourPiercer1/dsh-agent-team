@@ -23,7 +23,7 @@
  */
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -269,6 +269,69 @@ const PER_SPEC_ANCHORS = [
  * The tree may be a SYMLINK shared with other worktrees, so containment is
  * checked against its realpath: resolving through the symlink is not an escape.
  */
+/**
+ * The tree's OWN workspace package index (`name` -> package directory), built
+ * once per tree and cached.
+ *
+ * WHY THIS EXISTS, measured 2026-11-22 booting the Team product on rc.5: the
+ * fixed anchor list above covers the packages the SLICE imports. A BOOTED host
+ * loads the product's whole graph, which imports packages no anchor declares
+ * (the first was `@deepseek-ai/dsh-storage-domain`). Node's resolver then
+ * walked OUT of the tree into the Team repo's rc.2 `node_modules` from three
+ * anchors at once and the lane refused — correctly: that is the false green it
+ * exists to prevent. The fix is not a longer hand-written list (it would drift
+ * with every import); it is the host's OWN package graph: the package that
+ * DECLARES a workspace name is inside the tree, and Node's self-reference
+ * resolution resolves the name from that package's `package.json` inside the
+ * tree. Still one resolver, still host-anchored.
+ */
+const workspaceIndexCache = new Map()
+function workspacePackageIndex(tree) {
+  let index = workspaceIndexCache.get(tree)
+  if (index !== undefined) return index
+  index = new Map()
+  const groups = [
+    ['apps', 1],
+    ['packages', 2],
+    ['vendor', 1],
+    ['native', 3],
+  ]
+  for (const [top, depth] of groups) {
+    const root = join(tree, top)
+    if (!existsSync(root)) continue
+    const walk = (dir, remaining) => {
+      let entries
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        return
+      }
+      if (remaining === 0) {
+        const manifest = join(dir, 'package.json')
+        if (!existsSync(manifest)) return
+        try {
+          const name = JSON.parse(readFileSync(manifest, 'utf8')).name
+          if (typeof name === 'string' && name !== '' && !index.has(name)) index.set(name, dir)
+        } catch { /* an unreadable manifest is not a workspace member */ }
+        return
+      }
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name === 'node_modules' || entry.name === 'lib') continue
+        walk(join(dir, entry.name), remaining - 1)
+      }
+    }
+    walk(root, depth)
+  }
+  workspaceIndexCache.set(tree, index)
+  return index
+}
+
+/** The package name a bare specifier starts with (`@scope/name/sub` -> `@scope/name`). */
+function packageNameOf(spec) {
+  const parts = spec.split('/')
+  return spec.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0]
+}
+
 export function resolveInsideTree(spec, tree = nextTree(), anchors = PER_SPEC_ANCHORS) {
   const resolvedTree = realpathSync(tree)
   const escapes = []
@@ -288,6 +351,18 @@ export function resolveInsideTree(spec, tree = nextTree(), anchors = PER_SPEC_AN
     }
     if (file === resolvedTree || file.startsWith(`${resolvedTree}${sep}`)) return file
     escapes.push(`${rel} -> ${file}`)
+  }
+  // GENERIC FALLBACK: the tree's own package that declares this name. A package
+  // resolves its own name through the self-reference rule, inside the tree.
+  const owner = workspacePackageIndex(tree).get(packageNameOf(spec))
+  if (owner !== undefined) {
+    try {
+      const file = realpathSync(createRequire(resolve(owner, 'package.json')).resolve(spec))
+      if (file === resolvedTree || file.startsWith(`${resolvedTree}${sep}`)) return file
+      escapes.push(`${owner}/package.json -> ${file}`)
+    } catch (error) {
+      if (error?.code !== 'MODULE_NOT_FOUND') throw error
+    }
   }
   throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} inside itself`
     + `${escapes.length === 0 ? '' : `; ${String(escapes.length)} anchor(s) escaped into another tree (${escapes.slice(0, 3).join(' | ')})`}`

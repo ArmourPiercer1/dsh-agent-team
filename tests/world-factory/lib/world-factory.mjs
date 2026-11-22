@@ -45,7 +45,8 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { createConnection } from 'node:net'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CLIENT_COMMIT_HASH, HOST_PORT_BANDS, homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT, TEST_USE_BASELINE_SHA, testUseTree } from '../../paths.mjs'
+import { homeDir, MOCK_PORT_BANDS, portsOfBands, STABLE_INSTANCE_PORT } from '../../paths.mjs'
+import { selectedHostHomeSuffix, selectedHostPin, selectedHostPortBands, selectedHostTree, testHostMode } from '../../next-host/host-select.mjs'
 import { DshInstance, redactLaunchToken } from '../../characterization/lib/instance.mjs'
 import { logTail, portInUse, waitForPortFree } from '../../characterization/lib/util.mjs'
 import { startMockModel } from '../../../packages/tools/harness/mock-deepseek.mjs'
@@ -136,7 +137,9 @@ export const EXT_CONTRIBUTOR_DISABLE = [
   '    enabled: false',
   '',
 ].join('\n')
-const HOME_RE = new RegExp(`^${WORLD_PREFIX}[a-z0-9-]*-\\d{8}T\\d{2}-\\d{2}-\\d{2}Z(?:-r\\d+)?$`)
+// A next-host World carries the `-next` suffix (docs/TEST_METHODS.md §11.4), so
+// a next-host home can never be mistaken for (or collide with) a legacy one.
+const HOME_RE = new RegExp(`^${WORLD_PREFIX}[a-z0-9-]*-\\d{8}T\\d{2}-\\d{2}-\\d{2}Z(?:-r\\d+)?(?:-next)?$`)
 
 /** Real provider credential keys removed from the child env before spawn
  *  (names only are ever logged; s1-h0-m1 precedent). */
@@ -233,13 +236,22 @@ export class TestWorldFactory {
    * @param {string} opts.repoRoot   team-repo root (worktree) holding tests/
    * @param {string} opts.evidenceRoot  gitignored dir for raw logs/RUN records
    * @param {string} [opts.leaseRoot]   shared port-lease dir (cross-worktree)
-   * @param {string} [opts.hostTree]    defaults to <repoRoot>/tests/deepseek-harness-test-use
+   * @param {string} [opts.hostTree]    defaults to the SELECTED host tree
+   *   (`tests/next-host/host-select.mjs`): rc.2 at
+   *   <repoRoot>/tests/deepseek-harness-test-use, or the rc.5 tree when
+   *   `TEAM_TEST_HOST=next`. The generation, its pin and its port band are read
+   *   from that ONE selector, so a caller cannot mix an rc.5 tree with an rc.2
+   *   pin or a legacy port.
    */
   constructor({ repoRoot, evidenceRoot, leaseRoot, hostTree }) {
     this.repoRoot = resolve(repoRoot)
     this.evidenceRoot = resolve(evidenceRoot)
     this.homeRoot = join(this.repoRoot, 'tests', 'homes')
-    this.hostTree = resolve(hostTree ?? testUseTree(this.repoRoot))
+    /** The selected generation: 'legacy' (default, rc.2) or 'next' (rc.5). */
+    this.hostMode = testHostMode()
+    /** The selected generation's pin, from tests/paths.mjs (never re-typed). */
+    this.hostPin = selectedHostPin(this.repoRoot, this.hostMode)
+    this.hostTree = resolve(hostTree ?? selectedHostTree(this.repoRoot, this.hostMode))
     // Default lease root: the MAIN checkout's .artifacts/tmp so Worlds
     // created from sibling worktrees contend on the SAME lease files.
     this.leaseRoot = resolve(leaseRoot ?? this.#defaultLeaseRoot())
@@ -285,7 +297,12 @@ export class TestWorldFactory {
    */
   async preflightHostSandbox({ provision = true, force = false } = {}) {
     if (this.sandboxPreflight !== null && force !== true) return this.sandboxPreflight
-    const record = await measureSandboxPreflight({ runtimeTree: this.hostTree, repoRoot: this.repoRoot, provision })
+    // `host` selects the MANIFEST/PIN entry the pre-flight is measured
+    // against: legacy (default) or next. Without it an rc.5 tree would be
+    // graded against the rc.2 baseline row and its provenance would be wrong.
+    const record = await measureSandboxPreflight({
+      runtimeTree: this.hostTree, repoRoot: this.repoRoot, provision, host: this.hostMode,
+    })
     this.sandboxPreflight = record
     for (const r of this.runRecords) bindSandboxPreflight(r?.record?.bindings, record)
     this.onSandboxPreflight?.(record)
@@ -299,13 +316,20 @@ export class TestWorldFactory {
     return join(main, '.artifacts', 'tmp', 'port-leases')
   }
 
-  /** git HEAD + porcelain of the pristine host base. Throws on drift. */
+  /**
+   * git HEAD + porcelain of the pristine host base. Throws on drift.
+   *
+   * The expected HEAD is the SELECTED generation's pin (`this.hostPin`, read
+   * from `tests/paths.mjs`): rc.2 by default, rc.5 under `TEAM_TEST_HOST=next`.
+   * The law is unchanged — a tree at any other commit refuses — only its
+   * authority follows the tree the World is actually built from.
+   */
   assertHostBase(phase = 'check') {
     const head = spawnSync('git', ['-C', this.hostTree, 'rev-parse', 'HEAD'], { encoding: 'utf8' })
     if (head.status !== 0) throw new HostBaseError(`${phase}: git rev-parse failed (exit ${String(head.status)})`)
     const headSha = String(head.stdout ?? '').trim()
-    if (headSha !== TEST_USE_BASELINE_SHA) {
-      throw new HostBaseError(`${phase}: HEAD ${headSha} != TEST_USE_BASELINE_SHA ${TEST_USE_BASELINE_SHA}`)
+    if (headSha !== this.hostPin.sha) {
+      throw new HostBaseError(`${phase}: HEAD ${headSha} != ${this.hostPin.host} pin ${this.hostPin.sha} (${this.hostPin.host === 'next' ? 'tests/paths.mjs#NEXT_HOST' : 'tests/paths.mjs#TEST_USE_BASELINE_SHA'})`)
     }
     const st = spawnSync('git', ['-C', this.hostTree, 'status', '--porcelain'], { encoding: 'utf8' })
     if (st.status !== 0) throw new HostBaseError(`${phase}: git status failed (exit ${String(st.status)})`)
@@ -365,10 +389,11 @@ export class TestWorldFactory {
     // natural name is taken, move the stamp forward a second at a time (the §7 name grammar is
     // `u5<line>-<UTC>`, so the discriminator has to be the clock, not a suffix). A genuine leftover
     // from an earlier run still refuses after the bounded search.
-    let name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}`)
+    const hostSuffix = selectedHostHomeSuffix(this.hostMode)
+    let name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp()}${suffix}${hostSuffix}`)
     let home = homeDir(this.repoRoot, name)
     for (let bump = 1; bump <= 5 && (existsSync(home) || lstatSafe(home) !== null); bump += 1) {
-      name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp(new Date(Date.now() + bump * 1_000))}${suffix}`)
+      name = validateWorldName(`${WORLD_PREFIX}${line}-${utcStamp(new Date(Date.now() + bump * 1_000))}${suffix}${hostSuffix}`)
       home = homeDir(this.repoRoot, name)
     }
     if (existsSync(home) || lstatSafe(home) !== null) {
@@ -675,7 +700,9 @@ export class TestWorld {
         leaseRoot: this.factory.leaseRoot,
         world: this.id,
         purpose: 'host',
-        include: portsOfBands(HOST_PORT_BANDS),
+        // The selected generation's OWN band (legacy 3181-3199; next
+        // 13000-13049). The 2026-11-16 partition is a law, not a convention.
+        include: portsOfBands(selectedHostPortBands(this.factory.hostMode)),
         preferred: [],
       })
       this.hostLease = lease
@@ -713,7 +740,10 @@ export class TestWorld {
       hostTree: this.factory.hostTree,
       dshHome: this.home,
       port: lease.port,
-      clientCommitHash: CLIENT_COMMIT_HASH,
+      // The SELECTED host's revision (rc.2 by default, rc.5 under
+      // TEAM_TEST_HOST=next) — a mismatched rev stamps the client bundle with
+      // another generation's commit.
+      clientCommitHash: this.factory.hostPin.clientCommitHash,
       logDir: this.logDir,
     })
     // Public seam mount: one plugin row beside the patch file (never the

@@ -125,7 +125,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  appendFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync,
+  appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
@@ -136,7 +136,7 @@ import {
   apiPrompt, authenticate, emitPatchLayer, fetchJson,
 } from '../../lib/world-factory.mjs'
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
-import { TEST_USE_BASELINE_SHA } from '../../../paths.mjs'
+import { selectedHostPin, selectedHostTree } from '../../../next-host/host-select.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
@@ -204,6 +204,10 @@ let COMPOSITION_DROPS = []
 
 const argv = process.argv.slice(2)
 const PLAN_ONLY = argv.includes('--plan')
+// DIAGNOSTIC ONLY: keeps the world's DSH_HOME after teardown so a failing
+// session log can be read. Never used for an evidence run (the home is
+// machine-local state, not evidence).
+const KEEP_HOME = argv.includes('--keep-home')
 const BOOTS_WANTED = (() => {
   const i = argv.indexOf('--boots')
   if (i === -1) return 2
@@ -235,18 +239,22 @@ const parseJsonl = (p) => {
 const redact = (t) => String(t ?? '').replace(/\?token=[A-Za-z0-9_-]+/gu, '?token=<redacted>')
 const utcStamp = () => new Date().toISOString().replace(/[:.]/gu, '-')
 
-/** The pristine pinned host tree. This driver never writes it. A worktree may
- *  carry a symlink; a symlink would resolve OUTSIDE the runtime tree for the
- *  native-asset preflight, so the shared read-only checkout is used directly. */
-function hostTreePath() {
-  const local = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
-  try {
-    const st = lstatSync(local)
-    if (st.isDirectory() && st.isSymbolicLink() === false) return local
-  } catch { /* absent */ }
-  return resolve(REPO_ROOT, '..', '..', 'tests', 'deepseek-harness-test-use')
+/**
+ * HOST-SELECTABLE (round 78). The tree, its pin and its port band come from the
+ * ONE lane selector (`tests/next-host/host-select.mjs`): rc.2 by default,
+ * 0.2.2-rc.5 when `TEAM_TEST_HOST=next`. Nothing here re-implements resolution.
+ *
+ * The driver never writes this tree. It is REALPATH'd because a worktree's
+ * `tests/deepseek-harness-next` is a symlink to the shared checkout, and the
+ * native-asset pre-flight's containment check compares the launcher's real path
+ * against the runtime tree it was given; a symlink spelling would be refused as
+ * `LAUNCHER_PATH_OUTSIDE_TREE` even though the bytes are inside.
+ */
+const HOST_PIN = selectedHostPin(REPO_ROOT)
+const HOST_TREE = realpathSync(selectedHostTree(REPO_ROOT))
+if (realpathSync(HOST_PIN.tree) !== HOST_TREE) {
+  throw new Error(`host selector disagreement: tree ${HOST_TREE} != pin tree ${HOST_PIN.tree}`)
 }
-const HOST_TREE = hostTreePath()
 
 const require_ = createRequire(join(REPO_ROOT, 'package.json'))
 
@@ -970,7 +978,7 @@ function judgeRemoteCreation(sample) {
 // ─────────────────────────────────────────────────────────────────────────────
 function planOnly() {
   const layer = shippedLayer()
-  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA}`)
+  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${HOST_PIN.sha}`)
   log(`shipped !!js substitutions: ${JSON.stringify(layer.jsSubstitutions)}`)
   const anchor = anchorBlueprintYaml()
   const main = mainBlueprintYaml({ denyList: ['u5_canary'], workspace: join(EVIDENCE, 'plan-workspace') })
@@ -1130,9 +1138,24 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
 
     // ── discovery turn: the REAL Leader surface (to compute the deny list) ──
     abortStage = 'discovery'
-    await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sflm')
-    await waitFor(() => (world.mock?.requests ?? []).some((r) => String(r.reply?.content ?? '').startsWith('A5SF_LM_DISC_DONE')), 60_000)
+    const discReply = await apiPrompt(origin, cookie, BOOT_ROOT, MK_DISC, 'a5sflm')
+    const discServed = await waitFor(() => (world.mock?.requests ?? []).some((r) => String(r.reply?.content ?? '').startsWith('A5SF_LM_DISC_DONE')), 60_000)
     const discRequests = world.mock?.requests ?? []
+    // DISCOVERY IS A MEASUREMENT: record what the Host actually answered and
+    // what the provider actually received, so a surface failure is a fact (with
+    // its request bodies) instead of an empty list.
+    writeFileSync(join(bootDir, 'discovery.json'), `${JSON.stringify({
+      at: new Date().toISOString(),
+      prompt: { status: discReply?.status ?? null, body: discReply?.body ?? null },
+      scriptedReplyServed: discServed,
+      requestCount: discRequests.length,
+      requests: discRequests.map((r) => ({
+        model: r?.model ?? null,
+        tools: surfaceNamesOf(r),
+        tails: messagesOf(r).map((m) => textOf(m)).slice(-4),
+        reply: r?.reply ?? null,
+      })),
+    }, null, 2)}\n`)
     const byMarker = discRequests.filter((r) => messagesOf(r).some((m) => textOf(m).includes(MK_DISC)) && surfaceNamesOf(r).length > 0).at(-1) ?? null
     const byTools = discRequests.filter((r) => surfaceNamesOf(r).length > 0).at(-1) ?? null
     const discRequest = byMarker ?? byTools ?? null
@@ -1526,7 +1549,7 @@ async function bootOnce({ index, head, grant, layer, baseDir }) {
   } finally {
     if (world !== null) {
       try {
-        teardown = await world.teardown({ keepHome: false })
+        teardown = await world.teardown({ keepHome: KEEP_HOME })
         log(`[boot${String(index)}] teardown: ${JSON.stringify(teardown).slice(0, 600)}`)
       } catch (error) {
         log(`[boot${String(index)}] teardown failed: ${String(error?.message ?? error)}`)
@@ -1642,14 +1665,14 @@ function indent(text) {
 function runBindings(head, grant) {
   return {
     authority: readAuthorityBinding(REPO_ROOT),
-    candidate: { head, hostSha: TEST_USE_BASELINE_SHA, baseline: TEST_USE_BASELINE_SHA },
+    candidate: { head, hostSha: HOST_PIN.sha, baseline: HOST_PIN.sha },
     grant: { grantId: grant.grantId, scope: 'DEV-LIVE', face: grant.face, world: grant.world },
     recordClass: 'DEV-LIVE',
     compositionDrops: COMPOSITION_DROPS,
     layout: process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre',
     installGraph: process.env.A5SF_WF_NO_INSTALL_GRAPH === '1' ? 'skipped (negative control A5SF_WF_NO_INSTALL_GRAPH=1)' : 'provisioned',
     teamSha: head,
-    hostSha: TEST_USE_BASELINE_SHA,
+    hostSha: HOST_PIN.sha,
     note: 'DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction',
   }
 }
@@ -1683,11 +1706,11 @@ async function main() {
   const archived = archivePriorRuns()
   log(`ARCHIVE: ${archived === null ? '(nothing to archive)' : archived}`)
   writeFileSync(join(EVIDENCE, 'driver-digest.json'), JSON.stringify({
-    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: TEST_USE_BASELINE_SHA,
+    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: HOST_PIN.sha,
     driverSha256: sha256(fileURLToPath(import.meta.url)), jsSubstitutions: layer.jsSubstitutions,
     command: `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs${BOOTS_WANTED === 2 ? '' : ` --boots ${String(BOOTS_WANTED)}`}`,
   }, null, 2) + '\n')
-  log(`START head=${head} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA} boots=${String(BOOTS_WANTED)}`)
+  log(`START head=${head} hostTree=${HOST_TREE} pin=${HOST_PIN.sha} boots=${String(BOOTS_WANTED)}`)
   log(`host porcelain before: ${JSON.stringify(hostPorcelain())}`)
   if (hostPorcelain().length !== 0) throw new Error('the pinned host tree is not clean (porcelain non-empty): refusing to boot')
 

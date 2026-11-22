@@ -1,7 +1,7 @@
 {
   "shellRow": "member bash #1 under the governed PTY",
-  "outOfLanePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace/team-b/d3-escape.txt",
-  "inLaneStatePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T12-17-07Z/workspace/team-a/d3-persistent-state.txt",
+  "outOfLanePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-03-41Z/workspace/team-b/d3-escape.txt",
+  "inLaneStatePath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-03-41Z/workspace/team-a/d3-persistent-state.txt",
   "shellSawStateWrite": true,
   "shellReportedWrite": false,
   "shellReportedRefusal": true,

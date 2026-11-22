@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-dboot-read-team",
+      "requestToken": "dboot-read-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-24-08Z-next/workspace",
+      "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0e23ryd1fmn2\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-56a707050f4095d1acddaa687cf3ed41\",\"operationId\":\"op-0i9924504pzw3a1dotivr1jw\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TURN_UNREADABLE\",\"message\":\"no delivered user message for requestToken 'dboot-read-turn-delegate' found in the child session log\"}}},\"requestToken\":\"dboot-read-turn-delegate\"}"
+  }
+}

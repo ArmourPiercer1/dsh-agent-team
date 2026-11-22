@@ -1,0 +1,20 @@
+{
+  "call": {
+    "id": "call-a5sflm-delegate",
+    "name": "team_delegate",
+    "arguments": {
+      "rootSessionId": "session-dboot-read-team",
+      "requestToken": "dboot-read-turn-delegate",
+      "delegationTemplateId": "worker",
+      "label": "a5sflm-worker",
+      "workspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-31-39Z-next/workspace",
+      "prompt": "dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.",
+      "async": false
+    }
+  },
+  "result": {
+    "source": "model",
+    "isError": false,
+    "text": "{\"status\":\"executed\",\"action\":\"delegate\",\"rootSessionId\":\"session-dboot-read-team\",\"callerRole\":\"leader\",\"effect\":{\"kind\":\"member-activated\",\"instanceId\":\"inst-0e23ryd1fmn2\",\"templateId\":\"worker\",\"childSessionId\":\"session-team-child-56a707050f4095d1acddaa687cf3ed41\",\"operationId\":\"op-0i9924504pzw3a1dotivr1jw\",\"replayed\":false,\"ledgerSequence\":2,\"admissionCode\":\"ADMISSION_OPEN\",\"workSequence\":3,\"workSettled\":true,\"memberResult\":{\"requestToken\":\"dboot-read-turn-delegate\",\"status\":\"unavailable\",\"error\":{\"code\":\"WORK_TURN_UNREADABLE\",\"message\":\"no delivered user message for requestToken 'dboot-read-turn-delegate' found in the child session log [diag agentStatus=idle sid=session-team-child-56a707050f4095d1acddaa687cf3ed41 events=9 dump=[{\\\"t\\\":\\\"permission/preset\\\",\\\"d\\\":\\\"{\\\\\\\"preset\\\\\\\":\\\\\\\"workspace-write\\\\\\\"}\\\"},{\\\"t\\\":\\\"sandbox/mode\\\",\\\"d\\\":\\\"{\\\\\\\"mode\\\\\\\":\\\\\\\"workspace-write\\\\\\\"}\\\"},{\\\"t\\\":\\\"approval/policy\\\",\\\"d\\\":\\\"{\\\\\\\"policy\\\\\\\":\\\\\\\"ask\\\\\\\"}\\\"},{\\\"t\\\":\\\"agent/inbox/spliced\\\",\\\"d\\\":\\\"{\\\\\\\"target\\\\\\\":\\\\\\\"next-turn\\\\\\\",\\\\\\\"start\\\\\\\":0,\\\\\\\"inserted\\\\\\\":[{\\\\\\\"content\\\\\\\":[{\\\\\\\"type\\\\\\\":\\\\\\\"text\\\\\\\",\\\\\\\"text\\\\\\\":\\\\\\\"[team-work requestToken=dboot-read-turn-delegate] dboot-read-turn: call the native read tool twice, exactly once per probe, one tool call at a time, then report. Probe A: the in-lane fixture. Probe B: the out-of-lane fixture.\\\\\\\"}],\\\\\\\"source\\\\\\\":{\\\\\\\"kind\\\\\\\":\\\\\\\"user\\\\\\\"},\\\\\\\"role\\\\\\\":\\\\\\\"user\\\\\\\",\\\\\\\"id\\\\\\\":\\\\\\\"1bf714ee-916a-48d6-abb4-33d78e05164d\\\\\\\"}]}\\\"},{\\\"t\\\":\\\"turn/start\\\",\\\"d\\\":\\\"{\\\\\\\"turn\\\\\\\":1}\\\"},{\\\"t\\\":\\\"agent/inbox/spliced\\\",\\\"d\\\":\\\"{\\\\\\\"target\\\\\\\":\\\\\\\"next-turn\\\\\\\",\\\\\\\"start\\\\\\\":0,\\\\\\\"removedCount\\\\\\\":1,\\\\\\\"inserted\\\\\\\":[]}\\\"},{\\\"t\\\":\\\"step/start\\\",\\\"d\\\":\\\"{\\\\\\\"turn\\\\\\\":1,\\\\\\\"step\\\\\\\":1}\\\"},{\\\"t\\\":\\\"step/end\\\",\\\"d\\\":\\\"{\\\\\\\"turn\\\\\\\":1,\\\\\\\"step\\\\\\\":1}\\\"},{\\\"t\\\":\\\"turn/end\\\",\\\"d\\\":\\\"{\\\\\\\"turn\\\\\\\":1,\\\\\\\"reason\\\\\\\":{\\\\\\\"kind\\\\\\\":\\\\\\\"error\\\\\\\",\\\\\\\"error\\\\\\\":{\\\\\\\"message\\\\\\\":\\\\\\\"unknown prompt variable \\\\\\\\\\\\\\\"{{cwd}}\\\\\\\\\\\\\\\" in section \\\\\\\\\\\\\\\"deployment:persona-suffix\\\\\\\\\\\\\\\"; registered variables: provider, model\\\\\\\",\\\\\\\"code\\\\\\\":\\\\\\\"UNKNOWN\\\\\\\"}}}\\\"}]]\"}}},\"requestToken\":\"dboot-read-turn-delegate\"}"
+  }
+}

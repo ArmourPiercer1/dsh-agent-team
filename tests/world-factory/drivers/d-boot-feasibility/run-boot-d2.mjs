@@ -60,7 +60,7 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import {
-  appendFileSync, existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync,
+  appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync,
 } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
@@ -71,7 +71,7 @@ import {
   apiPrompt, apiSessionCancel, authenticate, emitPatchLayer, fetchJson,
 } from '../../lib/world-factory.mjs'
 import { createRunRecord, formatSummary, readAuthorityBinding } from '../../lib/run-record.mjs'
-import { TEST_USE_BASELINE_SHA } from '../../../paths.mjs'
+import { selectedHostPin, selectedHostTree } from '../../../next-host/host-select.mjs'
 import { createA5sfHarness } from '../../lib/a5sf-harness.mjs'
 import { settleDevLiveLease } from '../../lib/dev-live-slots.mjs'
 import { preRegisterDevLiveBudget, resolveHeadCommit } from '../../suites/150-a5sf-read.mjs'
@@ -235,18 +235,17 @@ const parseJsonl = (p) => {
 const redact = (t) => String(t ?? '').replace(/\?token=[A-Za-z0-9_-]+/gu, '?token=<redacted>')
 const utcStamp = () => new Date().toISOString().replace(/[:.]/gu, '-')
 
-/** The pristine pinned host tree. This driver never writes it. A worktree may
- *  carry a symlink; a symlink would resolve OUTSIDE the runtime tree for the
- *  native-asset preflight, so the shared read-only checkout is used directly. */
-function hostTreePath() {
-  const local = join(REPO_ROOT, 'tests', 'deepseek-harness-test-use')
-  try {
-    const st = lstatSync(local)
-    if (st.isDirectory() && st.isSymbolicLink() === false) return local
-  } catch { /* absent */ }
-  return resolve(REPO_ROOT, '..', '..', 'tests', 'deepseek-harness-test-use')
+/**
+ * HOST-SELECTABLE (round 78). Tree + pin come from the ONE lane selector
+ * (`tests/next-host/host-select.mjs`): rc.2 by default, rc.5 under
+ * `TEAM_TEST_HOST=next`. Realpath'd so the native-asset pre-flight's
+ * containment check sees the shared checkout, not the worktree symlink.
+ */
+const HOST_PIN = selectedHostPin(REPO_ROOT)
+const HOST_TREE = realpathSync(selectedHostTree(REPO_ROOT))
+if (realpathSync(HOST_PIN.tree) !== HOST_TREE) {
+  throw new Error(`host selector disagreement: tree ${HOST_TREE} != pin tree ${HOST_PIN.tree}`)
 }
-const HOST_TREE = hostTreePath()
 
 const require_ = createRequire(join(REPO_ROOT, 'package.json'))
 
@@ -1211,7 +1210,7 @@ function judgeStop({ a, b, paths, control, settlement }) {
 // ─────────────────────────────────────────────────────────────────────────────
 function planOnly() {
   const layer = shippedLayer()
-  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA}`)
+  log(`PLAN repo=${REPO_ROOT} hostTree=${HOST_TREE} pin=${HOST_PIN.sha}`)
   log(`shipped !!js substitutions: ${JSON.stringify(layer.jsSubstitutions)}`)
   const anchor = anchorBlueprintYaml()
   const planRoot = join(EVIDENCE, 'plan-workspace')
@@ -1782,14 +1781,14 @@ function indent(text) {
 function runBindings(head, grant) {
   return {
     authority: readAuthorityBinding(REPO_ROOT),
-    candidate: { head, hostSha: TEST_USE_BASELINE_SHA, baseline: TEST_USE_BASELINE_SHA },
+    candidate: { head, hostSha: HOST_PIN.sha, baseline: HOST_PIN.sha },
     grant: { grantId: grant.grantId, scope: 'DEV-LIVE', face: grant.face, world: grant.world },
     recordClass: 'DEV-LIVE',
     compositionDrops: COMPOSITION_DROPS,
     layout: process.env.DBOOT_WITHOUT_CENTRE === '1' ? 'no-centre (diagnostic arm)' : 'centre',
     installGraph: process.env.A5SF_WF_NO_INSTALL_GRAPH === '1' ? 'skipped (negative control A5SF_WF_NO_INSTALL_GRAPH=1)' : 'provisioned',
     teamSha: head,
-    hostSha: TEST_USE_BASELINE_SHA,
+    hostSha: HOST_PIN.sha,
     note: 'DEV-LIVE: development evidence, never a candidate claim; candidateClaimEligibility is false by construction',
   }
 }
@@ -1823,11 +1822,11 @@ async function main() {
   const archived = archivePriorRuns()
   log(`ARCHIVE: ${archived === null ? '(nothing to archive)' : archived}`)
   writeFileSync(join(EVIDENCE, 'driver-digest.json'), JSON.stringify({
-    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: TEST_USE_BASELINE_SHA,
+    at: startedAt, head, hostTree: HOST_TREE, hostSha: hostDigest(), pin: HOST_PIN.sha,
     driverSha256: sha256(fileURLToPath(import.meta.url)), jsSubstitutions: layer.jsSubstitutions,
     command: `node tests/world-factory/drivers/d-boot-feasibility/run-boot-d2.mjs${BOOTS_WANTED === 2 ? '' : ` --boots ${String(BOOTS_WANTED)}`}`,
   }, null, 2) + '\n')
-  log(`START head=${head} hostTree=${HOST_TREE} pin=${TEST_USE_BASELINE_SHA} boots=${String(BOOTS_WANTED)}`)
+  log(`START head=${head} hostTree=${HOST_TREE} pin=${HOST_PIN.sha} boots=${String(BOOTS_WANTED)}`)
   log(`host porcelain before: ${JSON.stringify(hostPorcelain())}`)
   if (hostPorcelain().length !== 0) throw new Error('the pinned host tree is not clean (porcelain non-empty): refusing to boot')
 

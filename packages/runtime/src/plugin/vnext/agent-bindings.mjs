@@ -670,7 +670,7 @@ export function createAgentBindings(deps) {
   // ensureLiveAgent rollback / writer-conflict waits are skipped — the
   // pre-C1 behavior, so no pre-C1 test double breaks wholesale). The
   // production host ALWAYS passes the fence (guide §4.3: "生产 host 必须传").
-  const { agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend } = deps
+  const { agents, sessionPersistence, domain, config, teamToolsRef, controlServiceRef, agentPresets, resolveBoundBlueprint, permissionOverlay, activationFence, policyReaderRef, resolvePersonaSubstrate, a5sfRealmProvider, resolveMemberMount, fsBackend, agentDefaultModel } = deps
 
   // ── B (the ask path): THE ONE grant binder + THE ONE durable approval authority ─────────────
   //
@@ -1027,10 +1027,32 @@ export function createAgentBindings(deps) {
    * @param {{sessionId: string, setup: function}} args
    * @returns {Promise<object>} the AgentHandle.
    */
+  /**
+   * ROUND 78 (rc.5 acceptance): the deployment's default model selection as
+   * AgentOptions. rc.5 reads `agent.model.current()` at the FIRST pre-step and
+   * throws "has no provider/model" when neither AgentOptions nor a recorded
+   * selection exists; the session-controller's rc.2 per-request default no
+   * longer covers an Agent a plugin created directly. Passing the host's own
+   * `agentDefaultModel` selection is the rc.5 creation contract (and rc.2
+   * accepts the same options), so Team Agents keep the deployment route on
+   * both generations. Getters, not a snapshot: the same live-config behaviour
+   * the host's session-controller gives its own Agents.
+   */
+  function teamAgentOptions() {
+    if (agentDefaultModel === undefined || agentDefaultModel === null
+      || typeof agentDefaultModel.currentSelection !== 'function') return undefined
+    return {
+      get provider() { return agentDefaultModel.currentSelection().provider },
+      get model() { return agentDefaultModel.currentSelection().model },
+      get reasoningEffort() { return agentDefaultModel.currentSelection().reasoningEffort },
+    }
+  }
+
   async function resumeTeamAgent({ sessionId, setup }) {
     return await runOwnedActivation(sessionId, () =>
       agents.resume({
         resumeSessionId: SessionId(sessionId),
+        agentOptions: teamAgentOptions(),
         setup: teamOwnedSetup(sessionId, setup),
       }),
     )
@@ -1048,6 +1070,7 @@ export function createAgentBindings(deps) {
     return await runOwnedActivation(sessionId, () =>
       agents.create({
         sessionId: SessionId(sessionId),
+        agentOptions: teamAgentOptions(),
         meta,
         setup: teamOwnedSetup(sessionId, setup),
       }),

@@ -341,7 +341,15 @@
           - id: persona
             name: '@deepseek-ai/dsh-persona'
             config:
-              suffix: 'Your working directory is {{cwd}}. `bash` is a PERSISTENT shell: the current directory, exported environment variables and background processes survive across calls, so `cd`/`export` are durable. You cannot pass `workdir` or `timeoutMs`.'
+              # ROUND 78 (rc.5 acceptance, deployment truth): `{{cwd}}` is NOT a
+              # prompt variable on 0.2.2-rc.5 — its agent-loop registers only
+              # `provider` and `model`, so an unregistered group makes EVERY turn
+              # fail closed with `unknown prompt variable`. rc.2 happened to
+              # register `cwd`; a composition must not depend on that. The
+              # working directory is already stated by the runtime context, so
+              # the suffix names it without a placeholder and behaves the same
+              # on both hosts. (`{{model}}` below IS registered on both.)
+              suffix: 'Your working directory is the session workspace. `bash` is a PERSISTENT shell: the current directory, exported environment variables and background processes survive across calls, so `cd`/`export` are durable. You cannot pass `workdir` or `timeoutMs`.'
               prefix: You are a coding agent powered by the {{model}} model.
           - id: agent-instructions
             name: '@deepseek-ai/dsh-agent-instructions'

@@ -1712,6 +1712,11 @@ export async function apply(ctx, config) {
             teamToolsRef,
             controlServiceRef,
             ptcEscalationRef,
+            // ROUND 78: resolved lazily at bindings construction (the base bundle's
+            // agent-default-model row), never an inject dependency of this row — a
+            // profile without a model default must still mount and fail exactly where
+            // rc.5 fails (at the first step), not be parked at apply time.
+            agentDefaultModel: ctx.get('agentDefaultModel'),
             now: () => new Date().toISOString(),
             // BP-F (issue #2 blueprint-loading, plan §11.1): the per-Team bound-
             // blueprint resolver (the glue's dynamic Team authority — the three-

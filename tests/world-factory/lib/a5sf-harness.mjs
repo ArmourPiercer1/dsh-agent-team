@@ -71,7 +71,6 @@ import { register } from 'node:module'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { TEST_USE_BASELINE_SHA } from '../../paths.mjs'
 import { DEFAULT_MAX_HOST_STARTS, hostStartBudgetPosition } from './run-record.mjs'
 import { assertDevLiveSlotHeld } from './dev-live-slots.mjs'
 import { createOracle, oraclePaths } from './oracle.mjs'
@@ -268,11 +267,24 @@ export function createA5sfHarness(opts = {}) {
      * porcelain empty) and therefore requires a real pristine host tree.
      */
     candidate() {
-      return Object.freeze({ pin: TEST_USE_BASELINE_SHA, source: 'tests/paths.mjs#TEST_USE_BASELINE_SHA', hostTree: factory.hostTree, asserted: false })
+      return Object.freeze({
+        host: factory.hostPin.host,
+        pin: factory.hostPin.sha,
+        source: factory.hostPin.host === 'next' ? 'tests/paths.mjs#NEXT_HOST' : 'tests/paths.mjs#TEST_USE_BASELINE_SHA',
+        hostTree: factory.hostTree,
+        asserted: false,
+      })
     },
     assertCandidate() {
       const base = factory.assertHostBase('a5sf-harness')
-      return Object.freeze({ pin: TEST_USE_BASELINE_SHA, source: 'tests/paths.mjs#TEST_USE_BASELINE_SHA', hostTree: factory.hostTree, asserted: true, head: base.head })
+      return Object.freeze({
+        host: factory.hostPin.host,
+        pin: factory.hostPin.sha,
+        source: factory.hostPin.host === 'next' ? 'tests/paths.mjs#NEXT_HOST' : 'tests/paths.mjs#TEST_USE_BASELINE_SHA',
+        hostTree: factory.hostTree,
+        asserted: true,
+        head: base.head,
+      })
     },
 
     budget,

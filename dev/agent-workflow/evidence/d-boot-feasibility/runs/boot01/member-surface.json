@@ -53,6 +53,7 @@
     "persona",
     "agent-instructions",
     "tool-bash",
+    "tool-bash-persistent",
     "tool-fs",
     "tool-fs-search",
     "tool-jobs",
