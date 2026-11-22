@@ -42,9 +42,12 @@
  *      live host row (`alpha6ReviewRouting: true` + `centreStatePath`). The
  *      product must be in exactly ONE lawful shape: routed/reachable, or refused
  *      through the typed `ADMISSION_ALPHA6_UNAVAILABLE` path. The measured shape
- *      is the config gate; the closed refusal table supplies code/axis/missing,
- *      and the recorded-fact half is reported as NOT REACHED at this entry with
- *      the exact file:line reason (never faked).
+ *      is the config gate; the closed refusal table supplies code/axis/missing.
+ *      Round 68: the gate now records the refusal it decides through the
+ *      product's own host-surface point, so this probe additionally reads the
+ *      durable fact + settlement back from DISK. The judge is unchanged: a fact
+ *      that claims a ROUTE still fails `no-silent-route`; only the probe
+ *      distinguishes a recorded refusal from an admitted one.
  *
  * BOOT DISCIPLINE (TEST_METHODS §2/§5/§7): DSH_HOME under the workspace
  * (`tests/homes/u5a5sfdev1-*`), ports from the 3180 family through WorldFactory
@@ -978,7 +981,10 @@ function judgeAlpha6({ arm, refusalTable, configGate }) {
       { id: 'config-gate-is-product-rule', ok: typeof configGate === 'string' && configGate.includes('ADMISSION_ALPHA6_UNAVAILABLE') && configGate.includes('no review-routing axis'), detail: `centreConfigViolation=${String(configGate).slice(0, 600)}` },
       { id: 'closed-refusal-table-entry', ok: refusalTable?.code === 'ADMISSION_ALPHA6_UNAVAILABLE' && refusalTable?.axis === 'host.service' && String(refusalTable?.missing ?? '').includes('no review-routing axis'), detail: `HOST_SURFACE_REFUSALS.alpha6=${JSON.stringify(refusalTable).slice(0, 700)}` },
       { id: 'no-team-row-live', ok: arm?.teamRowLive === false && arm?.liveMemberCount === 0, detail: `teamSession present=${String(arm?.teamRowLive)} liveMembers=${String(arm?.liveMemberCount)} stateHttp=${String(arm?.liveStateHttp)} stateError=${String(arm?.liveStateError)}` },
-      { id: 'no-silent-route', ok: arm?.liveAlpha6Decision === null && arm?.recordedFactPresent === false && arm?.wakeIntentFiles === 0, detail: `alpha6 decision in live state=${JSON.stringify(arm?.liveAlpha6Decision)} fact file present=${String(arm?.recordedFactPresent)} wake-intent files=${String(arm?.wakeIntentFiles)}` },
+      // ROUND 68: the CONDITION is unchanged; the probe now evaluates it as "a fact that claims a
+      // route (or is not this row's typed denial)" instead of "any fact file exists", because the
+      // refusal itself is now correctly durable. A recorded refusal is not a silent route.
+      { id: 'no-silent-route', ok: arm?.liveAlpha6Decision === null && arm?.recordedFactPresent === false && arm?.wakeIntentFiles === 0, detail: `alpha6 decision in live state=${JSON.stringify(arm?.liveAlpha6Decision)} non-refusal fact present=${String(arm?.recordedFactPresent)} wake-intent files=${String(arm?.wakeIntentFiles)}` },
     ],
   )
 }
@@ -1196,6 +1202,43 @@ async function bootOnce({ index, head, grant }) {
       const teamRowLive = liveState !== null ? Boolean(liveState.teamSession) : (liveStateError === null ? false : null)
       const liveMemberCount = liveState === null ? 0 : membersOf(liveState).length
       const factFile = join(alpha6World.home, CENTRE_DIR, 'alpha6.host-surface.facts.jsonl')
+      // ── ROUND 68 PROBE (probe only; the judge's assertion strength is untouched) ──
+      // The row gate now records its refusal through the product's own host-surface point, so
+      // the probe reads the durable fact + settlement back from DISK and splits the old
+      // `recordedFactPresent` into what it always meant for `no-silent-route`: an ADMITTED /
+      // route-claiming fact. A refusal fact is the lawful record and must NOT fail that clause;
+      // any fact that is not this row's typed denial still does.
+      let factRows = []
+      try { factRows = existsSync(factFile) ? readFileSync(factFile, 'utf8').split('\n').filter((line) => line.trim() !== '').map((line) => JSON.parse(line)) : [] } catch { factRows = [] }
+      const alpha6AdmissionFacts = factRows.filter((row) => row?.kind === 'invocation-authority')
+      const refusalFacts = alpha6AdmissionFacts.filter((row) => row?.decision === 'deny' && row?.refusalCode === HOST_SURFACE_REFUSALS.alpha6.code)
+      const nonRefusalFacts = alpha6AdmissionFacts.filter((row) => row?.decision !== 'deny' || row?.refusalCode !== HOST_SURFACE_REFUSALS.alpha6.code)
+      const refusalFact = refusalFacts[0] ?? null
+      let refusalSettlement = null
+      let refusalSettlementError = null
+      let refusalSettlementRecordFile = null
+      if (refusalFact !== null) {
+        try {
+          // READ-ONLY probe: the HOST process still owns the settlement writer lock at this point
+          // (the store enforces one live writer per root), so opening a store here would be a
+          // SETTLEMENT_WRITER_CONFLICT, not a missing record. The raw envelope is the durable record
+          // the host wrote; the probe only parses it.
+          const settlementDir = join(alpha6World.home, CENTRE_DIR, 'settlement', 'host-surface', 'alpha6')
+          const identity = dispatchExecutionId({ rootSessionId: ALPHA6_ROOT, agentInstanceId: 'host-surface' }, String(refusalFact.callId))
+          refusalSettlementRecordFile = join(settlementDir, `${identity}.settlement.json`)
+          const envelope = JSON.parse(readFileSync(refusalSettlementRecordFile, 'utf8'))
+          const payload = envelope?.payload ?? null
+          refusalSettlement = {
+            state: payload?.state ?? null,
+            dispatch: payload?.observation?.dispatch ?? null,
+            bodyOutcome: payload?.observation?.bodyOutcome ?? null,
+            terminalReason: String(payload?.terminalReason ?? '').slice(0, 400),
+            transitions: (payload?.transitions ?? []).map((transition) => transition?.to ?? null),
+          }
+        } catch (error) {
+          refusalSettlementError = String(error?.message ?? error)
+        }
+      }
       alpha6Arm = {
         spawned: alpha6Log !== null,
         port: alpha6World.hostLease?.port ?? null,
@@ -1206,16 +1249,25 @@ async function bootOnce({ index, head, grant }) {
         errorHead: errorText.slice(0, 2000),
         hostLog: logText.slice(-6000),
         rowRefused: /bootstrap FAILED/u.test(logText) && logText.includes('ADMISSION_ALPHA6_UNAVAILABLE'),
+        // The entry's own observability line (it cannot un-refuse anything; it names the files).
+        recordedLogLine: /row refused at validation and RECORDED/u.test(logText),
         teamRowLive,
         liveAlpha6Decision: liveState === null ? null : (liveState.alpha6 ?? liveState.reviewRouting ?? null),
         liveStateError,
         liveStateHttp,
         liveMemberCount,
-        recordedFactPresent: existsSync(factFile),
-        // The recorded-fact shape exists only when the refusal POINT is built;
-        // the config gate runs before root construction, so it cannot be here.
-        recordedFactReachable: false,
-        recordedFactReason: 'the row config gate (host.ts:723 validateTeamPluginConfig -> centre-config.ts:62-70) refuses the row before the root/plugin graph is built, so host-surface-refusal.mjs\'s createHostSurfaceRefusalPoint (which writes the fact file) is never reached at this entry',
+        // `no-silent-route` semantics, preserved: a fact that claims a ROUTE (or is not this row's
+        // typed denial) is still present=false-forbidden. The recorded REFUSAL is measured separately.
+        recordedFactPresent: nonRefusalFacts.length > 0,
+        recordedFactReachable: refusalFact !== null,
+        recordedFactReason: 'round 68: the row gate (host.ts validateTeamPluginConfig -> centre-config.ts) builds the product host-surface point at the refusal and records the invocation-authority fact + REFUSED/not-started settlement before the unchanged typed throw; this probe reads them back from disk',
+        refusalFactFile: factFile,
+        refusalFactCount: refusalFacts.length,
+        refusalFact: refusalFact === null ? null : { callId: refusalFact.callId, decision: refusalFact.decision, refusalCode: refusalFact.refusalCode, axis: refusalFact.axis, toolName: refusalFact.toolName, reason: String(refusalFact.reason ?? '').slice(0, 600) },
+        nonRefusalFactCount: nonRefusalFacts.length,
+        refusalSettlement,
+        refusalSettlementRecordFile,
+        refusalSettlementError,
         wakeIntentFiles: walkFiles(alpha6World.home).filter((f) => f.name.includes('wake-intent')).length,
         logPath: alpha6Log,
         home: alpha6World.home,
@@ -1565,7 +1617,13 @@ async function bootOnce({ index, head, grant }) {
       evidence: bootDir,
       home: world.home,
       host: { port: bootInfo.port, log: bootInfo.logPath, restartLog: restartInfo?.logPath ?? null },
-      alpha6: { thrown: alpha6Arm.threw, recordedFactPresent: alpha6Arm.recordedFactPresent },
+      alpha6: {
+        thrown: alpha6Arm.threw,
+        recordedFactPresent: alpha6Arm.recordedFactPresent,
+        refusalFactRecorded: alpha6Arm.refusalFactCount === 1,
+        refusalFactCount: alpha6Arm.refusalFactCount,
+        refusalSettlement: alpha6Arm.refusalSettlement,
+      },
     }
   } catch (error) {
     failure = error

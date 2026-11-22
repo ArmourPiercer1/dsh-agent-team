@@ -73,6 +73,7 @@ import type {
 } from '../../artifact-read/index.js'
 import type { ControlService } from '../../control/index.js'
 import { centreConfigViolation } from './vnext/centre-config.js'
+import { createAlpha6RowRefusalHook, type CentreConfigRefusalHook } from './vnext/row-refusal-entry.js'
 import {
   MCP_FACET_WILDCARD,
   resolveDurableMcpFacet,
@@ -686,14 +687,27 @@ function registerUpstreamResolverOnce(): void {
 }
 
 /**
+ * Hooks the host ENTRY attaches to the row validator. They observe a refusal; they cannot grant one.
+ *
+ * `onCentreRefusal` runs at the exact point the centre rule refuses, BEFORE the unchanged typed throw.
+ * The entry uses it to write the refusal through the product's own host-surface point (round 68): the
+ * decision stays in `centreConfigViolation`, and a caller that passes no hooks behaves byte-identically
+ * to the pre-round validator.
+ */
+export interface TeamPluginConfigValidationHooks {
+  readonly onCentreRefusal?: CentreConfigRefusalHook
+}
+
+/**
  * Validate the row `config` channel loudly (plan §19.2: the row config is
  * the entry's ONLY input channel — a malformed composition must reject
  * apply, not degrade).
  * @param raw - the unvalidated `config:` of the row.
+ * @param hooks - entry-side observers of a refusal (see {@link TeamPluginConfigValidationHooks}).
  * @returns the validated config.
  * @throws {TeamPluginError} TEAM_PLUGIN_CONFIG_INVALID with the failing field.
  */
-export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
+export function validateTeamPluginConfig(raw: unknown, hooks?: TeamPluginConfigValidationHooks): TeamPluginConfig {
   // NB: function declaration, not a const arrow — TypeScript 6.0.3 control
   // flow only treats a never-returning call as an abrupt completion when the
   // callee is a function declaration (or ambient declaration); never-typed
@@ -721,7 +735,21 @@ export function validateTeamPluginConfig(raw: unknown): TeamPluginConfig {
   // booting the host (host.ts reaches the remote handler tree through `.js` specifiers that only
   // exist after a build). This call is the only place they are enforced.
   const centreViolation = centreConfigViolation(c as { centreStatePath?: unknown; alpha6ReviewRouting?: unknown })
-  if (centreViolation !== undefined) fail(centreViolation)
+  if (centreViolation !== undefined) {
+    // The refusal is decided HERE. The entry gets the chance to make it durable through the product's
+    // own point before the unchanged throw below; a hook fault is reported, never allowed to soften or
+    // delay the refusal (the validator still fails on the next line).
+    try {
+      hooks?.onCentreRefusal?.(centreViolation, c as Record<string, unknown>)
+    } catch (error: unknown) {
+      console.warn(
+        `[dsh-agent-team] row refusal could not be recorded (the row is still refused): ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      )
+    }
+    fail(centreViolation)
+  }
   if (!Array.isArray(c.seedMembers)) fail('seedMembers must be an array')
   for (const seed of c.seedMembers as readonly TeamPluginSeedMember[]) {
     if (
@@ -1828,7 +1856,28 @@ export async function apply(ctx: TeamPluginHostContext, config?: unknown): Promi
   async function bootstrap(): Promise<TeamProductionRoot> {
     // A broken row must not arm the upstream resolution hook: validate the
     // row config first, then register the resolver exactly once per process.
-    const validatedConfig = validateTeamPluginConfig(config)
+    //
+    // ROUND 68 (shape A): the row gate decides the refusal, and THIS entry makes it durable. The hook
+    // writes the product's own invocation-authority fact + `REFUSED`/`not-started` settlement through
+    // `createHostSurfaceRefusalPoint` at the exact moment `centreConfigViolation` refuses, then the
+    // validator throws the SAME typed error it threw before (the hook cannot un-refuse anything).
+    const validatedConfig = validateTeamPluginConfig(config, {
+      onCentreRefusal: createAlpha6RowRefusalHook({
+        onFault: (error: unknown, context: object) => {
+          console.warn(
+            `[dsh-agent-team] row refusal could not be recorded (${JSON.stringify(context)}): ${
+              error instanceof Error ? error.message : String(error)
+            } — the row is still refused`,
+          )
+        },
+        onRecorded: (recorded) => {
+          console.warn(
+            `[dsh-agent-team] row refused at validation and RECORDED: code=${recorded.code} ` +
+              `callId=${recorded.callId} fact=${recorded.ledgerPath} settlement=${recorded.settlementDir}`,
+          )
+        },
+      }),
+    })
     // D9: the launch-directory default workspace (explicit config wins).
     const rowConfig = withDefaultWorkspace(validatedConfig, process.cwd())
     registerUpstreamResolverOnce()

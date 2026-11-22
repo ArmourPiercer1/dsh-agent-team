@@ -28,6 +28,15 @@
  * family), and the settlement writer is the product's own. It decides nothing a surface could
  * overrule: the caller refuses, and the record says so.
  *
+ * WHERE IT IS BUILT (round 68). Two product points construct it through the ONE shared constructor
+ * (`row-refusal-entry.ts#createCentreHostSurfacePoint`): the host ENTRY, when the row-config gate
+ * refuses an Alpha.6 opt-in at validation (before any root exists — `host.ts` ->
+ * `validateTeamPluginConfig`), and the ROOT composition, for a caller that built a centre-configured
+ * root directly. Before round 68 only the root path existed, so the row's typed refusal left no
+ * durable fact; the entry now records the same refusal through this point before the unchanged throw.
+ * The refusal is not weakened and no new capability is created: a row without `centreStatePath` has no
+ * durable directory to write to and is still refused, just unwritten.
+ *
  * @module packages/runtime/src/plugin/vnext/host-surface-refusal
  */
 

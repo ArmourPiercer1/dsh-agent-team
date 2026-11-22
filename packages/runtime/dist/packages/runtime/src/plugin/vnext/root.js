@@ -174,9 +174,10 @@ import { createS6RemoteSurfaces, governanceStartRefusal } from '../s6-remote.js'
 // host surfaces that cannot be admitted by the centre (S6 remote, Alpha.6 review routing) are
 // refused HERE, at the product composition point, with their own durable fact + settlement: a row
 // configured for the centre must not run them through whichever surface happens to answer first.
-import { createHostSurfaceRefusalPoint, refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs';
-import { createExecutionSettlementStore } from '../../../settlement/execution-settlement.js';
-import { dispatchExecutionId } from '../../../settlement/dispatch-settlement.js';
+import { refuseHostSurfaceBefore, HOST_SURFACE_REFUSALS } from './host-surface-refusal.mjs';
+// Round 68: the point CONSTRUCTION is shared with the host entry (`row-refusal-entry.ts`), so a row
+// refused at validation and a root refused at construction name the same ledger/settlement files.
+import { createCentreHostSurfacePoint } from './row-refusal-entry.js';
 import { buildTeamRootOwnershipIndex, toTeamRootWireRow } from '../../team-ownership-index.js';
 import { TEAM_PLUGIN_ERROR_CODES, TeamPluginError } from '../types.js';
 // --- the ephemeral mutation store (documented boot-world wiring) -------------------
@@ -424,21 +425,14 @@ export function createTeamProductionRoot(params) {
     // configured the centre keeps the pre-round behaviour exactly (no point is built, no file is
     // touched), which is the same boundary `MEMBER_CENTRE_UNWIRED` draws for members.
     const centreStatePath = typeof config.centreStatePath === 'string' && config.centreStatePath !== '' ? config.centreStatePath : undefined;
-    const hostSurfaceRefusalPoint = (capability) => centreStatePath === undefined
-        ? undefined
-        : createHostSurfaceRefusalPoint({
-            capability,
-            ledgerPath: join(centreStatePath, `${capability}.host-surface.facts.jsonl`),
-            store: createExecutionSettlementStore({ dir: join(centreStatePath, 'settlement', 'host-surface', capability) }),
-            identityOf: (exec) => ({
-                executionId: dispatchExecutionId({ rootSessionId: rootSid, agentInstanceId: 'host-surface' }, exec.callId),
-                actorId: 'host-surface',
-                worldId: rootSid,
-            }),
-            onFault: (error, context) => {
-                console.warn(`[dsh-agent-team] host-surface refusal could not be recorded (${capability}, ${JSON.stringify(context)}): ${String(error?.message ?? error)}`);
-            },
-        });
+    const hostSurfaceRefusalPoint = (capability) => createCentreHostSurfacePoint({
+        capability,
+        centreStatePath,
+        rootSessionId: rootSid,
+        onFault: (error, context) => {
+            console.warn(`[dsh-agent-team] host-surface refusal could not be recorded (${capability}, ${JSON.stringify(context)}): ${String(error?.message ?? error)}`);
+        },
+    });
     // --- A02 handle / write ports ------------------------------------------------------
     const readHandle = createTeamDomainReadHandle(repos);
     const rootWritePort = createTeamDomainWritePort(repos);
@@ -1745,6 +1739,10 @@ export function createTeamProductionRoot(params) {
     // before the throw. Two independent gates exist on purpose: the config rule
     // stops the row at validation, and this stops a caller that built the root
     // directly (the test/fixture shape) from running a second review authority.
+    // ROUND 68: the config rule's own refusal is no longer silent — the HOST
+    // ENTRY records it through this same constructor (`row-refusal-entry.ts`)
+    // before the row gate throws, so the two paths leave identical durable shapes
+    // in the same ledger/settlement files.
     if (alpha6Wiring.mode === 'alpha6') {
         const alpha6Refused = refuseHostSurfaceBefore(hostSurfaceRefusalPoint('alpha6'), {
             subject: 'alpha6.review-routing',

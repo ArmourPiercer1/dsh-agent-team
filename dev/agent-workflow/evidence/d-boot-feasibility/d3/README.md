@@ -1,8 +1,15 @@
-# D3 — four D items measured live (round 63)
+# D3 — four D items measured live (round 63; re-run round 68)
 
-Branch `vnext/a1-cut`, HEAD at run start `b779d9fab86be64154b8d9a2de81ea1a8c2baa4e`, host pin
+Branch `vnext/a1-cut`, HEAD at run start `b779d9fab86be64154b8d9a2de81ea1a8c2baa4e` (round 63) and
+`b5bbb0a9087ec2678b014fc1e0453f752c12cd2f` (round 68 re-run), host pin
 `639ed015397290b3745d163aafe02ffee4aa3f84` (porcelain empty before and after every boot). Record class
 **DEV-LIVE**: development evidence only, never candidate evidence, and never a `V@B=yes` claim.
+
+> **Round 68 re-run (Alpha.6 recorded refusal, shape A).** The same driver and the same four judges were
+> re-run with the product change that records the Alpha.6 row refusal at the host entry. Round-63 run
+> evidence is preserved under `archive/`. The four verdicts are unchanged (`persistent-subprocess`
+> REFUTED, `crash-cold-recovery` PROVEN, `work-delivery` PROVEN, `alpha6` PROVEN) and the `d3:alpha6`
+> arm now also measures a durable fact + settlement — see the section below.
 
 Driver: `tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs` (a COPY of the D2 skeleton with
 its own probes; the round-61/round-62 drivers are untouched).
@@ -126,7 +133,7 @@ Through the product's real team tools on the governed Member:
   REMOTE-PLANE refusal fact (a host-surface refusal, not a member call) — recorded as evidence, not
   counted as a violation.
 
-## `d3:alpha6` — PROVEN (the typed-refusal shape)
+## `d3:alpha6` — PROVEN (the typed-refusal shape, recorded at the entry after round 68)
 
 The arm boots a SEPARATE World whose row sets `alpha6ReviewRouting: true`. MEASURED shape, both boots:
 the host PROCESS BOOTS (`reachable=true`) and the ROW is refused inside the plugin bootstrap:
@@ -141,16 +148,38 @@ authority beside the centre, so the row is refused rather than booted with an un
 ```
 
 and NOTHING is live: `/__p6t6/state` answers **404** (no team root), `teamSession present=false`,
-`liveMembers=0`, no Alpha.6 decision, no wake-intent file, no fact file. The typed refusal is a product
-rule, not a driver string: `centreConfigViolation` (`packages/runtime/src/plugin/vnext/centre-config.ts:
-62-70`) at row validation (`host.ts:723`), over the closed refusal table
+`liveMembers=0`, no Alpha.6 decision, no wake-intent file. The typed refusal is a product rule, not a
+driver string: `centreConfigViolation` (`packages/runtime/src/plugin/vnext/centre-config.ts:67`) at row
+validation (`host.ts` `validateTeamPluginConfig`), over the closed refusal table
 (`host-surface-refusal.mjs:50`, `code=ADMISSION_ALPHA6_UNAVAILABLE, axis=host.service`).
 
-**The recorded-fact half is UNREACHABLE at this entry, and the driver says so instead of faking it.** The
-config gate runs BEFORE root construction, so `createHostSurfaceRefusalPoint` (the fact writer) is never
-built; the refusal is typed in the host log and the host keeps running without the team row. In-process
-ADM-85/ADM-98/ADM-99 cover the fact/settlement shapes; a host-boot path that can write the fact would need
-the gate moved below root construction (a product change, not a driver change).
+**Round 68 — the recorded-fact half is now REACHED at this entry.** Before the product change the config
+gate ran before any root existed, so `createHostSurfaceRefusalPoint` was never built and the refusal left
+no fact. Now `host.ts` passes `createAlpha6RowRefusalHook` (`row-refusal-entry.ts`) to the validator; the
+hook runs at the centre rule before the unchanged throw and records through the product's own point. Both
+boots measured (`runs/boot01|02/alpha6-arm.json`):
+
+| fact | boot1 | boot2 |
+| --- | --- | --- |
+| `rowRefused` (host log carries the typed refusal) | true | true |
+| `recordedLogLine` (entry's own "recorded" line) | true | true |
+| `refusalFactCount` (`centre/alpha6.host-surface.facts.jsonl`) | 1 | 1 |
+| fact shape | `deny` / `ADMISSION_ALPHA6_UNAVAILABLE` / `host.service` / `alpha6.review-routing` | same |
+| `nonRefusalFactCount` (a route-claiming fact) | 0 | 0 |
+| `refusalSettlement.state` | REFUSED | REFUSED |
+| settlement `dispatch` / `bodyOutcome` | `not-started` / `not-started` | same |
+| settlement transitions | `ADMITTED → REFUSED` | same |
+| `wakeIntentFiles` / `liveAlpha6Decision` | 0 / null | 0 / null |
+
+The settlement is read READ-ONLY from the raw envelope: at probe time the HOST still owns the settlement
+writer lock, so opening a second store would be a `SETTLEMENT_WRITER_CONFLICT`, not a missing record. The
+`no-silent-route` judge is unchanged; the probe now feeds it "a fact that claims a route"
+(`recordedFactPresent`), so the recorded refusal cannot be counted as a silent route. The row refusal
+text, the boot outcome and the no-team-row state are byte-identical in shape to round 63.
+
+**Remaining limit:** a row that opts in with NO `centreStatePath` has no durable directory and is refused
+but unwritten; the routed path stays unreachable. In-process shapes: `ADM-85` (point), `ADM-116/117/118`
+(entry ordering: recorded refusal, unaffected row, untouched covered face).
 
 ## EXTRA measured finding (not a judge): a governed Member's `grep` is REFUSED by the durable overlay
 

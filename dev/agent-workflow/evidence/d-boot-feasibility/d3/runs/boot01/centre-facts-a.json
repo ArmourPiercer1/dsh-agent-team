@@ -7,15 +7,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-19-57Z/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T02:21:51.430Z"
+    "at": "2026-11-22T03:40:47.468Z"
   },
   {
     "callId": "call-d3-a-inlane",
@@ -24,9 +24,9 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "kind": "execution",
-    "at": "2026-11-22T02:21:51.452Z"
+    "at": "2026-11-22T03:40:47.491Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -36,16 +36,16 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-19-57Z/workspace",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "deny",
     "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
     "reason": "tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused",
     "kind": "invocation-authority",
-    "at": "2026-11-22T02:21:51.490Z"
+    "at": "2026-11-22T03:40:47.528Z"
   },
   {
     "callId": "call-d3-a-bash-write-state",
@@ -55,9 +55,9 @@
     "outcome": "admission-refusal",
     "isError": true,
     "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "kind": "execution",
-    "at": "2026-11-22T02:21:51.499Z"
+    "at": "2026-11-22T03:40:47.537Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -67,16 +67,16 @@
     "instanceGeneration": 0,
     "toolName": "bash",
     "axis": "process.exec",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-19-57Z/workspace",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "deny",
     "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
     "reason": "tool \"bash\" needs a subprocess lane, which this binding does not compile; a call the centre cannot judge is refused",
     "kind": "invocation-authority",
-    "at": "2026-11-22T02:21:52.452Z"
+    "at": "2026-11-22T03:40:48.241Z"
   },
   {
     "callId": "call-d3-a-bash-read-state",
@@ -86,9 +86,9 @@
     "outcome": "admission-refusal",
     "isError": true,
     "refusalCode": "ADMISSION_AXIS_UNSUPPORTED",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "kind": "execution",
-    "at": "2026-11-22T02:21:52.462Z"
+    "at": "2026-11-22T03:40:48.251Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -98,15 +98,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T02-19-57Z/workspace/team-a/in-lane-a.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T03-38-52Z/workspace/team-a/in-lane-a.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "blueprintRevision": "",
     "owner": "session-dboot-d3-root",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T02:21:58.802Z"
+    "at": "2026-11-22T03:40:54.780Z"
   },
   {
     "callId": "call-d3-a-after-recovery",
@@ -115,8 +115,8 @@
     "agentId": "session-team-child-cdf16bb82ce585d862f447bf6cd8c80f",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:e46398fc7ec660fa0c1408c90f849abf",
+    "policyGeneration": "a5sf1:3f24d466cf1edb388bcd80a5c8e8fbe5",
     "kind": "execution",
-    "at": "2026-11-22T02:21:58.823Z"
+    "at": "2026-11-22T03:40:54.798Z"
   }
 ]

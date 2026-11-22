@@ -5706,3 +5706,167 @@ test('ADM-115 — C14b NAME DISCIPLINE: the dropped families’ tool names are n
     w.close()
   }
 })
+
+// ============================================================================================
+// Round 68 (shape A) — the host entry records the refusal it already decides.
+//
+// The round-63 live measurement found the one honest gap in the Alpha.6 row: the gate
+// (`centre-config.ts` at `host.ts`) refused the row correctly, but the product's own recorder
+// (`createHostSurfaceRefusalPoint`) was only built inside `root.ts`, so the refusal left NO durable
+// fact and NO settlement at the host entry. These arms drive the EXACT functions the entry now wires:
+// `centreConfigViolation` (the unchanged rule), `createAlpha6RowRefusalHook` (what `host.ts` passes to
+// `validateTeamPluginConfig`), and `createCentreHostSurfacePoint` (the ONE construction `root.ts` and
+// the entry share). No arm needs a host boot, and none re-implements the rule.
+// ============================================================================================
+
+const alpha6RowConfig = (over = {}) => ({
+  bootPhase: 'create',
+  rootSessionId: 'session-row-68',
+  blueprintSource: 'blueprintId: ROW-68\nrevision: "1"\n',
+  generation: 1,
+  seedMembers: [],
+  staticModel: { provider: 'p', model: 'm' },
+  deniedSelection: null,
+  mcpServer: null,
+  environmentFacts: [],
+  externalPolicyFacts: { hard: {}, capabilityExists: {} },
+  ...over,
+})
+
+test('ADM-116 — C-alpha6 recorded refusal (a): the Alpha.6 row is still refused AND the refusal now exists as a durable fact + REFUSED settlement', async () => {
+  const { mkdtempSync, existsSync, readFileSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const { HOST_SURFACE_REFUSALS } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { createAlpha6RowRefusalHook } = await import('../src/plugin/vnext/row-refusal-entry.ts')
+
+  const dir = mkdtempSync(join(tmpdir(), 'row68-recorded-'))
+  const config = alpha6RowConfig({ alpha6ReviewRouting: true, centreStatePath: dir })
+
+  // (1) THE DECISION IS UNCHANGED. The rule still refuses with its own code and names the missing
+  //     axis, and the message a caller sees is byte-identical to the pre-round text (`fail()` wraps
+  //     it in `TEAM_PLUGIN_CONFIG_INVALID`, which this rule does not touch).
+  const violation = centreConfigViolation(config)
+  assert.equal(typeof violation, 'string', 'an Alpha.6 opt-in is still refused, not accepted')
+  assert.match(String(violation), new RegExp(`^${HOST_SURFACE_REFUSALS.alpha6.code}:`, 'u'))
+  assert.match(String(violation), /no review-routing axis/u)
+  assert.match(String(violation), /explicitly unavailable in this cut/u)
+
+  // (2) THE RECORD. This is the hook the host entry passes to `validateTeamPluginConfig`; the entry
+  //     runs it AT the centre rule, before the unchanged throw.
+  const recorded = []
+  const faults = []
+  const hook = createAlpha6RowRefusalHook({
+    onFault: (error, context) => faults.push([error, context]),
+    onRecorded: (row) => recorded.push(row),
+  })
+  hook(String(violation), config)
+  assert.equal(faults.length, 0, `recording must be clean: ${String(faults[0]?.[0]?.message ?? '')}`)
+  assert.equal(recorded.length, 1, 'the entry records exactly one refusal for exactly one row')
+  assert.equal(recorded[0].code, HOST_SURFACE_REFUSALS.alpha6.code)
+  assert.equal(recorded[0].capability, 'alpha6')
+
+  // (3) THE FACT, read back from DISK through a FRESH ledger (never the writer's memory).
+  const factPath = join(dir, 'alpha6.host-surface.facts.jsonl')
+  assert.equal(existsSync(factPath), true, 'the refusal fact file exists at the row centre path')
+  const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
+  const facts = openFactLedger({ path: factPath }).readAll()
+  const admissionFacts = facts.filter((record) => record.kind === 'invocation-authority')
+  assert.equal(admissionFacts.length, 1)
+  const fact = admissionFacts[0]
+  assert.equal(fact.decision, 'deny')
+  assert.equal(fact.refusalCode, HOST_SURFACE_REFUSALS.alpha6.code)
+  assert.equal(fact.axis, 'host.service', 'the record uses the subject\'s EXISTING axis; no new axis was invented')
+  assert.equal(fact.toolName, 'alpha6.review-routing')
+  assert.equal(fact.callId, recorded[0].callId)
+  assert.match(String(fact.reason), /no review-routing axis/u)
+
+  // (4) THE SETTLEMENT, read back from DISK through a FRESH store: closed REFUSED at birth.
+  const store = createExecutionSettlementStore({ dir: join(dir, 'settlement', 'host-surface', 'alpha6') })
+  const settled = store.read(dispatchExecutionId({ rootSessionId: 'session-row-68', agentInstanceId: 'host-surface' }, fact.callId))
+  assert.equal(settled.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+  assert.equal(settled.observation.bodyOutcome, 'not-started')
+  assert.deepEqual(settled.transitions.map((transition) => transition.to), ['ADMITTED', 'REFUSED'])
+
+  // (5) THE WIRING IS PINNED AT THE ENTRY: `host.ts` passes this hook to the validator at the centre
+  //     rule, and `root.ts` builds the point through the same constructor. A source-shape assertion is
+  //     used because `host.ts` cannot be imported under node type-stripping (parameter properties).
+  const hostSource = readFileSync(new URL('../src/plugin/host.ts', import.meta.url), 'utf8')
+  assert.match(hostSource, /validateTeamPluginConfig\(config, \{\s*onCentreRefusal: createAlpha6RowRefusalHook\(/u)
+  assert.match(hostSource, /hooks\?\.onCentreRefusal\?\.\(centreViolation/u)
+  const rootSource = readFileSync(new URL('../src/plugin/vnext/root.ts', import.meta.url), 'utf8')
+  assert.match(rootSource, /createCentreHostSurfacePoint\(\{/u)
+})
+
+test('ADM-117 — C-alpha6 recorded refusal (b) POSITIVE CONTROL: a row without the Alpha.6 point is unaffected — it validates/binds and writes NO refusal', async () => {
+  const { mkdtempSync, existsSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const { createAlpha6RowRefusalHook } = await import('../src/plugin/vnext/row-refusal-entry.ts')
+
+  const dir = mkdtempSync(join(tmpdir(), 'row68-control-'))
+  const config = alpha6RowConfig({ centreStatePath: dir })
+
+  // (1) The SAME row without the opt-in passes the centre rule, so validation proceeds and the row
+  //     would bind. The centre configuration alone is not a refusal.
+  assert.equal(centreConfigViolation(config), undefined)
+
+  // (2) No centre refusal happens, so the entry's hook is never called by the validator. Driving it
+  //     with the absence of a violation must be inert (the hook is not a second gate).
+  const recorded = []
+  const hook = createAlpha6RowRefusalHook({ onRecorded: (row) => recorded.push(row) })
+  hook(undefined, config) // defensive: no violation string means nothing was refused
+  assert.equal(recorded.length, 0)
+  assert.equal(existsSync(join(dir, 'alpha6.host-surface.facts.jsonl')), false, 'a bound row never gets a refusal fact')
+  assert.equal(existsSync(join(dir, 'settlement', 'host-surface', 'alpha6')), false, 'a bound row never gets a refusal settlement')
+
+  // (3) AND THE BIND STILL WORKS: the same centre composition admits an in-lane call and settles it
+  //     COMPLETED, so "unaffected" is measured, not asserted from the absence of an exception.
+  const w = await centreWorld('row68-control', { binding: binding() })
+  try {
+    const verdict = await w.dispatch(readExec('row68-control-read'))
+    assert.equal(verdict.kind, 'allow')
+    assert.equal(w.body.count, 1)
+    assert.equal(w.store.read(w.executionIdOf(readExec('row68-control-read'))).state, 'COMPLETED')
+  } finally {
+    w.close()
+  }
+})
+
+test('ADM-118 — C-alpha6 recorded refusal (c): a covered-face fault elsewhere is untouched — the shared point still records remote, and a non-Alpha.6 centre violation records nothing', async () => {
+  const { mkdtempSync, existsSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { centreConfigViolation } = await import('../src/plugin/vnext/centre-config.ts')
+  const { HOST_SURFACE_REFUSALS, refuseHostSurfaceBefore } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  const { createAlpha6RowRefusalHook, createCentreHostSurfacePoint, recordAlpha6RowRefusal } = await import('../src/plugin/vnext/row-refusal-entry.ts')
+
+  const dir = mkdtempSync(join(tmpdir(), 'row68-covered-'))
+
+  // (1) THE OTHER COVERED FACE still records through the SAME construction (the constructor root.ts
+  //     uses), into ITS own file — the new entry recorder did not take over or displace it.
+  const remotePoint = createCentreHostSurfacePoint({ capability: 'remote', centreStatePath: dir, rootSessionId: 'session-row-68' })
+  assert.notEqual(remotePoint, undefined)
+  assert.equal(refuseHostSurfaceBefore(remotePoint, { subject: 'remote.surface', owner: 'session-row-68', locator: 'session-row-68' }), true)
+  assert.equal(existsSync(join(dir, 'remote.host-surface.facts.jsonl')), true)
+  const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
+  const remoteFacts = openFactLedger({ path: join(dir, 'remote.host-surface.facts.jsonl') }).readAll()
+    .filter((record) => record.kind === 'invocation-authority')
+  assert.equal(remoteFacts.length, 1)
+  assert.equal(remoteFacts[0].refusalCode, HOST_SURFACE_REFUSALS.remote.code)
+  assert.equal(existsSync(join(dir, 'alpha6.host-surface.facts.jsonl')), false, 'the remote refusal writes only the remote face')
+
+  // (2) A NON-Alpha.6 centre violation is refused exactly as before and the emergency recorder stays
+  //     out of the way: it must not blame Alpha.6 for a different fault.
+  const badField = alpha6RowConfig({ centreStatePath: 42 })
+  const badViolation = centreConfigViolation(badField)
+  assert.match(String(badViolation), /centreStatePath must be a non-empty string/u)
+  assert.equal(recordAlpha6RowRefusal({ violation: String(badViolation), config: badField }), undefined)
+  const recorded = []
+  createAlpha6RowRefusalHook({ onRecorded: (row) => recorded.push(row) })(String(badViolation), badField)
+  assert.equal(recorded.length, 0, 'a covered-face config fault elsewhere writes no Alpha.6 refusal')
+  assert.equal(existsSync(join(dir, 'alpha6.host-surface.facts.jsonl')), false)
+})

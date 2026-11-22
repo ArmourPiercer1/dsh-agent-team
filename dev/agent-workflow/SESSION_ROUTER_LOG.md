@@ -10530,3 +10530,31 @@ won each time.
 Gates at `a04ebb60d`: leg 179 cases / 177 pass + 2 disclosed skips (the bash/run_code process-lane positives,
 still never passes), catalog `tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required
 pass, bound leg `PASS 238`.
+
+### R68 — Alpha.6 recorded refusal (shape A): the host entry now writes the refusal it already decides
+
+Round 63 left one honest gap: C-alpha6 is EXPLICITLY UNAVAILABLE, and the typed row refusal was measured
+live, but the recorded-fact half was unreachable at the host entry — the config gate ran at row validation
+before the root existed, so `createHostSurfaceRefusalPoint` was never built ("no fact file"). Shape A fixes
+the recording, not the refusal:
+
+- `vnext/row-refusal-entry.ts` (new) is the ONE point construction (`createCentreHostSurfacePoint`, shared
+  with `root.ts`), the recorder (`recordAlpha6RowRefusal`: only the Alpha.6 code + a `centreStatePath`), and
+  the hook `host.ts` passes to `validateTeamPluginConfig`;
+- `host.ts` runs the hook AT the unchanged `centreConfigViolation` decision, then the unchanged typed throw
+  refuses the row — same code, same boot outcome, no new capability/axis/grant, Alpha.6 still unreachable;
+- arms `ADM-116` (refused AND recorded: fact + settlement read from disk), `ADM-117` (positive control:
+  a row without the opt-in validates/binds and writes nothing), `ADM-118` (covered-face fault elsewhere
+  untouched: the shared point still records `remote`; a non-Alpha.6 violation writes nothing).
+
+Live (`run-boot-d3.mjs --boots 2`, probe adjusted, four judges unchanged): `d3:alpha6` PROVEN both boots
+with `refusalFactCount=1`, `nonRefusalFactCount=0`, settlement `REFUSED` / `not-started` /
+`ADMITTED → REFUSED` under the row centre dir, while `/__p6t6/state` is 404, `liveMembers=0`, no decision,
+no wake intent. The other three judges are unchanged (persistent REFUTED; crash/work PROVEN;
+`overall=FAIL evidence-complete=true allProven=false`). NOT proven: a row with the opt-in but no
+`centreStatePath` is refused but unwritten; the routed path is still unreachable; no row PRODUCT-PROVEN.
+
+Gates at `b5bbb0a90` + this change: leg 182 cases / 180 pass + 2 disclosed skips, catalog
+`tests=889 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg
+`PASS 238`. Test-infra note: this worktree's test-use tree was a symlink whose realpath broke the sandbox
+launcher containment check; it is now a real pinned copy (gitignored, porcelain-empty).

@@ -137,7 +137,7 @@ Status vocabulary — these are not interchangeable:
 | **C3** | work delegation + delivery receipts | **preserve** | **DEV-LIVE PROVEN** (`d3:work-delivery`, two agreeing boots). `team_delegate` → `effect.kind=member-activated`, prompt delivered **verbatim** as the Member's first user message, final text and `memberResult.body` both exactly `DBOOT_D3_DELIVERED_UNIT_ALPHA`; `team_collect` returns the terminal `succeeded` entry, **byte-identical when collected again after a SIGKILL cold restart**; the unit is on disk; every member call fact is in the member's own ledger. `ADM-94/95` carry the in-process positive and negative | `D-BOOT-FEASIBILITY.md:618-628`; `.../d-boot-feasibility/d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a **real-model** interleaving (the current model is the product's scripted mock, §6.7) and a delivery driven at a product entrance rather than the driver's boot-bound team |
 | **C4** | Blueprint binding + identity generation | **preserve** (KEEP module) | MECHANISM. `ADM-26` maps a compiled member onto a binding by reference, never by re-interpretation; `TB-1…TB-6` pin the durable-row resolution and the four typed refusal reasons with **no** legacy degradation. Live: the round-60 path-3 boot binds a v4 blueprint at boot and reaches a governed Member (`CAPABILITY-MATRIX-C.md:137-141`) | `packages/runtime/test/vnext-admission.test.mjs`; `.../vnext-template-binding.test.mjs`; `CAPABILITY-MATRIX-C.md:137-141` | an identity generated for a member **created at runtime** on a governed row (needs the 405 entrance, §6.2) |
 | **C5** | Control: ask / grant / deny / consume | **preserve** (KEEP module), fed by the three contracts | MECHANISM. `ADM-46…ADM-55` cover wiring, deny, expired, fault, the **real** `ControlService` (one request → one durable allow → one-shot spend), a real service deny, generation drift, incomplete identity, and the supply-chain pin. Live: `d2:stop` parked a Member turn at a durable `admission-ask` Control request `status=pending` and **stopped** it through the public `session/cancel` RPC — a Stop, not an approval (no decision row is granted; the live record stops at the pending request and the `ADMISSION_STOPPED` fact) | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493` | a live **approval** (leader allows) and a live **consume** of the one-shot grant. Today the live ask is only exercised in its Stop terminal; the product wires no approval binder, so asks that reach the port are refusals (`PR-BODY-draft.md:313-314`) |
-| **C6** | Officer assignment + ReviewCapability routing | **preserve** (KEEP module) — *and* the contract's own rule: if Alpha.6 is not wired, "the corresponding approval and auto-wake paths must be **explicitly disabled**, never silently fall back" (`06-CAPABILITY-CONTRACT.md:95-98`) | **REFUSED-BY-DESIGN**, and that is the contract-compliant state. `ADMISSION_ALPHA6_UNAVAILABLE` in two independent gates: `centre-config.ts:62-70` rejects the opt-in on **every** row (`ADM-34`, `ADM-99`), and `root.ts:2498-2512` records the refusal then types the boot refusal. **Live:** `d3:alpha6` **PROVEN** as the typed-refusal shape — no team root (`/__p6t6/state` 404), no decision, no wake intent, no fact file | `D-BOOT-FEASIBILITY.md:629-643`; `.../d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a compiled review-routing **axis** in the member contract, or an owner ruling that a record-only approval fact on `host.service` **is** adjudication (`CAPABILITY-MATRIX-C.md:119-123`) |
+| **C6** | Officer assignment + ReviewCapability routing | **preserve** (KEEP module) — *and* the contract's own rule: if Alpha.6 is not wired, "the corresponding approval and auto-wake paths must be **explicitly disabled**, never silently fall back" (`06-CAPABILITY-CONTRACT.md:95-98`) | **REFUSED-BY-DESIGN**, and that is the contract-compliant state. `ADMISSION_ALPHA6_UNAVAILABLE` in two independent gates: `centre-config.ts:62-70` rejects the opt-in on **every** row (`ADM-34`, `ADM-99`), and `root.ts:2498-2512` records the refusal then types the boot refusal. **Live:** `d3:alpha6` **PROVEN** as the typed-refusal shape — no team root (`/__p6t6/state` 404), no decision, no wake intent. **ROUND 68:** the row's refusal is now RECORDED at the host entry through the product's own point (`host.ts` -> `createAlpha6RowRefusalHook` at the centre rule -> `createHostSurfaceRefusalPoint`): both live boots measured one `ADMISSION_ALPHA6_UNAVAILABLE` invocation-authority fact on `host.service` and a `REFUSED`/`not-started` settlement (`ADMITTED→REFUSED`) under the row's `centreStatePath`, while the same typed refusal and the same no-team-row boot outcome are unchanged. A row with no `centreStatePath` is still refused but unwritten (no durable directory). `ADM-116/117/118` carry the in-process shape | `D-BOOT-FEASIBILITY.md:629-643`; `.../d3/README.md`; `packages/runtime/test/vnext-admission.test.mjs` | a compiled review-routing **axis** in the member contract, or an owner ruling that a record-only approval fact on `host.service` **is** adjudication (`CAPABILITY-MATRIX-C.md:119-123`) |
 | **C7** | durable Wake intents + cold wake | **preserve** | MECHANISM, in-process only. `ADM-98` composes `createAlpha6RootWiring` directly, the ONE shared `createAlpha6RootRouter` takes a real `recipient` decision off a durable control row (Officer, `routeRole='officer'`), and the real `dispatchLatch` + `createFileWakeIntentDirectory` persist a row that a **fresh** reader sees naming exactly the routed reviewer | `packages/runtime/test/vnext-admission.test.mjs` | the same, reached at a **product entry**. Unreachable while C6's axis is missing: the config gate runs before root construction, so at a host entry the machinery is never built (§6.5) |
 | **C8** | Stop (sticky, durable, non-replaying) | **preserve** | MECHANISM + **DEV-LIVE PROVEN** (`d2:stop`, two boots). Stop is the host's own `exec.signal` — no second stop mechanism. `ADM-56…ADM-62` cover Stop before the body, while an ask is pending, after the approval and before the body, lifecycle close with a call in flight, and the product composition's own close. Live: `POST /api/session/cancel` → tool result `ADMISSION_STOPPED`, centre fact `refusalCode=ADMISSION_STOPPED`, settlement `REFUSED`/`dispatch=not-started` with **no** execution fact, never `UNKNOWN`; a second Member completed with zero stops | `packages/runtime/test/vnext-admission.test.mjs`; `D-BOOT-FEASIBILITY.md:483-493`; `.../d2/README.md` | Stop **under load** and a real Stop keypress; and the one open cell: a Stop that lands **after** an `allow` was recorded cannot be `REFUSED` under the frozen settlement contract (`CONTRACT-CHANGE-REQUEST-settlement-recheck.md`) |
 | **C9** | remote entry (`s6-remote`, remote control surface) | **preserve** | **REFUSED-BY-DESIGN**, with a disclosed product cost. `ADMISSION_REMOTE_UNAVAILABLE` on `team.control`; the S6 plane is not built at all (`root.ts:4325` via `refuseHostSurfaceBefore`, `ADM-86`), while an ungoverned row still builds and dispatches (positive control). The cost: a centre-configured row has **no remote API** (`root.remoteDispatcher` absent) | `CAPABILITY-MATRIX-C.md:25`; `D-BOOT-FEASIBILITY.md:171-222`; `ESCALATION-centre-row-creation-entrance.md:17-24` | a declared axis for remote commands (contract change), or a non-remote creation route — shapes 1/2 of the escalation. Shape 3 (boot-created teams only) is what D currently measures |
@@ -261,7 +261,7 @@ kernel; both were present.
 | `d3:persistent-subprocess` | **REFUTED** — both `bash` turns refused `ADMISSION_AXIS_UNSUPPORTED` on `process.exec`; only the one-shot `tool-bash` is mounted (`--plan`: `present=true mounted=false`); `io.process` is rejected live as `unknown-field` | `D-BOOT-FEASIBILITY.md:572-598` |
 | `d3:crash-cold-recovery` | **PROVEN** | `.../d3/README.md` |
 | `d3:work-delivery` | **PROVEN** | `.../d3/README.md` |
-| `d3:alpha6` | **PROVEN** (as the typed-refusal shape) | `.../d3/README.md` |
+| `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | `.../d3/README.md` |
 
 `overall=FAIL` for **both** live drivers (`run-boot.mjs`: 1 refuting judge; `run-boot-d3.mjs`: 1 of 4
 refutes) is unchanged and honest: a REFUTED judge maps to a FAIL case, and `evidence-complete=true,
@@ -278,12 +278,15 @@ All eight commands were run fresh at this HEAD in this worktree. Pasted verbatim
 
 ```
 $ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
-ℹ tests 179
-ℹ pass 177
+ℹ tests 182
+ℹ pass 180
 ℹ fail 0
 ℹ skipped 2
 DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
 ```
+
+Round 68 adds three in-process arms (`ADM-116/117/118`); the population rises by three and the two
+disclosed skips are unchanged.
 
 The **2 skips are disclosed and labelled**, never passes:
 
@@ -478,17 +481,22 @@ call names, not every file a scan opens (`CAPABILITY-MATRIX-C.md:295-299`;
 `CONTRACT-CHANGE-REQUEST-search-face.md`). *Would prove it:* shape A — a search face with a subtree
 resource in the closed vocabulary, plus a durable deny that reaches it.
 
-### 6.5 Alpha.6 is unreachable at a host entry, and its routed path is unproven there
+### 6.5 Alpha.6 is unreachable at a host entry; its refusal is now recorded there, its routed path is still unproven
 
 Two independent gates refuse the opt-in **on every row** (`centre-config.ts:62-70`, `root.ts:2498-2512`),
 so there is **no product-config path on which Alpha.6 is reachable at all** — stronger than "a
 centre-configured row is refused" (`ADM-99`). The machinery behind it is measured **in-process, composed
 directly** (`ADM-98`: real router takes a `recipient` decision; real `dispatchLatch` +
-`createFileWakeIntentDirectory` persist a row a fresh reader sees). At the **host entry** the
-recorded-fact half is **unreachable**: the config gate runs before root construction, so
-`createHostSurfaceRefusalPoint` is never built (`D-BOOT-FEASIBILITY.md:641-643`). `d3:alpha6` is PROVEN
-**only as the typed-refusal shape**. *Would prove the routed path:* a compiled review-routing axis (or the
-record-only ruling), and a boot where the gate sits below root construction so the fact can be written.
+`createFileWakeIntentDirectory` persist a row a fresh reader sees). **Round 68 closed the recorded-fact
+gap at the host entry:** `host.ts` runs `createAlpha6RowRefusalHook` (`vnext/row-refusal-entry.ts`) at the
+config rule, before the unchanged typed throw, and that hook builds the product's own
+`createHostSurfaceRefusalPoint` through `createCentreHostSurfacePoint` (shared with `root.ts`) and writes
+the invocation-authority fact + `REFUSED`/`not-started` settlement under the row's `centreStatePath`.
+Measured live in both D3 boots (`refusalFactCount=1`, `refusalSettlement.state=REFUSED`), with the row
+still refused and no team row live. `d3:alpha6` is PROVEN **as the typed-refusal shape WITH its record**.
+*Would prove the routed path:* a compiled review-routing axis (or the record-only ruling), and a boot
+whose gate admits the opt-in. Remaining limit: a row with no `centreStatePath` is refused but unwritten
+(there is no durable directory to write to), and no boot reaches a routed decision.
 
 ### 6.6 The overlay cannot widen authority — by design, not by defect
 
@@ -597,9 +605,10 @@ secret bytes). The clause is therefore a product-semantics finding, not a tolera
 
 1. **The candidate implements A1 + B + C.** The A1 cut is closed by measurement, not by prose: 148 sources
    gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 28 byte-identical dist placements, and the 37/180/
-   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-115` in the
-   `ute-vnext-a1` node leg (**177 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
-   suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count.
+   69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by `ADM-1…ADM-118` in the
+   `ute-vnext-a1` node leg (**180 pass, 0 fail, 2 disclosed skips**) and by the 15 migrated capability
+   suites (**238/238**, `verdict=PASS`) (§4). C14b's six invariant arms are part of that count, as are
+   round 68's three entry-ordering arms.
 2. **There is live D evidence for the listed items.** Nine live judges are **PROVEN** at two agreeing
    boots each (the earlier "Four" was a miscount against this same list): `d:member-read-admitted`, `d:guard-facts`, `d:centre-facts`, `d:native-read-surface`
    (repaired, not deleted), `d2:multi-member-concurrency`, `d2:stop`, `d3:crash-cold-recovery`,

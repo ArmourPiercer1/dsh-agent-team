@@ -48,6 +48,12 @@ export declare function memberCentreUnwiredViolation(config: CentreConfigFacts |
  * The code lives in `host-surface-refusal.ts`, the ONE closed table for the capabilities with no
  * member I/O axis, so a config refusal and a recorded refusal can never name the same absence twice
  * with two different strings.
+ *
+ * ROUND 68: this rule still DECIDES the refusal, and the host entry now RECORDS it. `host.ts` passes
+ * `createAlpha6RowRefusalHook` to `validateTeamPluginConfig`, which runs at the exact point below and
+ * writes the product's own invocation-authority fact + `REFUSED`/`not-started` settlement through
+ * `host-surface-refusal.mjs` — then the unchanged throw refuses the row. A row with no
+ * `centreStatePath` has no durable directory, so its refusal stays unwritten but is still a refusal.
  */
 export declare function centreConfigViolation(config: CentreConfigFacts | null | undefined): string | undefined;
 //# sourceMappingURL=centre-config.d.ts.map

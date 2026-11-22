@@ -1451,3 +1451,108 @@ The vitest population stays **238**; the node leg is **177 pass + 2 disclosed sk
 `run_code` positives are still NOT RUN, never passes). **No row is PRODUCT-PROVEN**; C14b's arms are
 in-process, the OS probe is a node-leg measurement, and a product-entry drive of each invariant is still
 missing.
+
+## Round 68 (Alpha.6 recorded refusal)
+
+Shape A of the recorded escalation: C-alpha6 is EXPLICITLY UNAVAILABLE and stays that way, but its
+**recorded-fact half was unreachable at the host entry** — the config gate (`centre-config.ts:67`)
+ran at row validation (enforced by `host.ts`), before the root existed, so
+`createHostSurfaceRefusalPoint` was never built and the typed refusal wrote no durable fact and no
+settlement (round-63 live verdict: PROVEN as the typed-refusal shape, "no fact file").
+
+### The change (one decision, one record)
+
+- `packages/runtime/src/plugin/vnext/row-refusal-entry.ts` (new) — `createCentreHostSurfacePoint`
+  (the ONE point construction, now shared by the entry and `root.ts`), `recordAlpha6RowRefusal`
+  (records only when the rule's violation IS the Alpha.6 code and the row has a `centreStatePath`),
+  and `createAlpha6RowRefusalHook` (the hook `host.ts` passes to the validator).
+- `packages/runtime/src/plugin/host.ts` — `validateTeamPluginConfig(raw, hooks?)`: the unchanged
+  `centreConfigViolation` decision runs first, then `hooks.onCentreRefusal` records it, then the
+  unchanged typed `fail()` throws. `bootstrap()` passes `createAlpha6RowRefusalHook`.
+- `packages/runtime/src/plugin/vnext/root.ts` — builds its refusal point through the same
+  `createCentreHostSurfacePoint`, so the entry's record and the root gate's record name the same
+  ledger/settlement files and identity scheme.
+
+The refusal is NOT weakened: the rule and its throw are byte-identical, the gate still fires on every
+row, Alpha.6 remains unreachable, and a row with no `centreStatePath` is still refused (unwritten —
+there is no durable directory). No new axis/grant/policy, no retry, no widened timeout, no upstream
+patch.
+
+### Arms (ute-vnext-a1 node leg; `packages/runtime/test/vnext-admission.test.mjs`)
+
+- **`ADM-116` (a)** — an Alpha.6-configured row is still refused (`ADMISSION_ALPHA6_UNAVAILABLE` +
+  "no review-routing axis"), and the hook the entry wires records through the product point: the fact
+  is read back from DISK (`decision=deny`, `refusalCode=ADMISSION_ALPHA6_UNAVAILABLE`,
+  `axis=host.service`, `toolName=alpha6.review-routing`) and the settlement reads `REFUSED` with
+  `dispatch`/`bodyOutcome` `not-started` and `ADMITTED → REFUSED` transitions. Source-shape pins: the
+  validator hook call site and the shared constructor in `root.ts`.
+- **`ADM-117` (b, positive control)** — the same valid row WITHOUT the Alpha.6 opt-in passes the
+  centre rule, the entry hook is inert, no refusal fact/settlement is created, and the centre
+  composition still admits an in-lane call to `COMPLETED` (it binds; nothing else changed).
+- **`ADM-118` (c)** — a covered-face fault elsewhere is untouched: the shared constructor still
+  records the `remote` refusal into `remote.host-surface.facts.jsonl` (and not the Alpha.6 file), and
+  a non-Alpha.6 centre violation (invalid `centreStatePath`) is refused with its own message while
+  the recorder writes nothing.
+
+### Live measurement (driver probe adjusted; judge unchanged)
+
+`node tests/world-factory/drivers/d-boot-feasibility/run-boot-d3.mjs --boots 2` — two boots, agreeing.
+**Before:** `d3:alpha6` PROVEN, typed refusal, `no-silent-route` satisfied only because no fact file
+existed (`recordedFactReachable=false`), round-63 evidence. **After:** `d3:alpha6` PROVEN both boots
+with `refusalFactCount=1`, `nonRefusalFactCount=0`, `refusalSettlement.state=REFUSED`
+(`not-started`/`not-started`, `ADMITTED → REFUSED`), the entry's "row refused at validation and
+RECORDED" log line present, and the same typed refusal / no-team-row outcome
+(`/__p6t6/state` 404, `liveMembers=0`, no decision, no wake intent). Probe change only: the probe now
+reads the fact and raw settlement envelope from disk (`no-silent-route` is evaluated as "no
+ROUTE-claiming fact"; the judge condition is untouched) and avoids opening a competing settlement
+store while the host owns the writer lock. The other three judges are unchanged
+(`persistent-subprocess` REFUTED, `crash-cold-recovery` PROVEN, `work-delivery` PROVEN; overall=FAIL,
+`evidence-complete=true allProven=false`).
+
+### Gates (round 68, pasted)
+
+```
+$ node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+ℹ tests 182
+ℹ pass 180
+ℹ fail 0
+ℹ skipped 2
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+
+$ node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  tests=889 instruments=3 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67
+  DISCOVERED_AND_COLLECTED 834
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              41
+DSH-TEST-CATALOG tests=889 digest=sha256:3e409a68e913fbcb68f2ea73f1cb5068bc1690c6eabd4ddfcbd47ebf80694e67 refused=0 findings=0
+
+$ node scripts/ute-cut-closure.mjs --check
+UTE-CUT-CLOSURE pass deleted=148 references=163 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 findings=0
+
+$ node scripts/ute-p0-assets.mjs --check
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+
+$ node scripts/docs-sync.mjs --check
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+LIMIT complete static check: no C1/C2/C3, no security negative, no runtime behaviour proof
+
+$ node scripts/place-dist-glue.mjs
+place-dist-glue: done (28 placement(s))
+
+$ node scripts/eb3-ci-required.mjs
+EB3-CI-REQUIRED pass workflows=10 findings=0
+
+$ node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+```
+
+The vitest population stays **238**; the node leg is **180 pass + 2 disclosed skips** (the three new
+arms). **No row is PRODUCT-PROVEN; C-alpha6 remains REFUSED-BY-DESIGN and no routed path is proven.**
+
+### Test-infrastructure note (disclosed)
+
+This worktree's `tests/deepseek-harness-test-use` was a **symlink** to the main checkout's tree; the
+host-sandbox preflight refuses a launcher whose realpath escapes the runtime tree
+(`LAUNCHER_PATH_OUTSIDE_TREE`). It was replaced with a real, self-contained copy of the same
+porcelain-empty tree at the pinned baseline (`639ed01539`), which is what TEST_METHODS §1 describes
+per worktree. No tracked file and no shared baseline was written.
