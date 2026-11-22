@@ -22,10 +22,14 @@
  *   A3 each failing arm refuses ALONE: plane-owned, off-surface, unreadable.
  *      Fail closed: a refused name is not declared, so it keeps the pre-P01
  *      refusal rather than getting a wider bind.
- *   A4 the GUARD consequence, measured on the real algebra: a name bound
- *      `verified:true` dispatches with NO unverified denial, while the same
- *      name on the inherited lane answers `TOOL_BINDING_UNVERIFIED` — i.e. a
- *      name ABSENT from `forwarded` stays refused exactly as before.
+ *   A4 RETIRED-BY-A0 (round 80): the guard consequence used to be measured on
+ *      the legacy dispatch algebra (`packages/runtime/tool-dispatch/index.ts`),
+ *      which the A0 cut deleted and the A1 execution centre replaced. The
+ *      declaration contract is still measured here (A1/A2/A3/A5); the guard
+ *      consequence is carried by `packages/runtime/test/vnext-admission.test.mjs`
+ *      and `packages/runtime/test/a5p2-admission-kernel.test.ts`. See the
+ *      retirement pin below for the subject, citation and successors. Nothing
+ *      was skipped.
  *   A5 the "no realm" world is byte-identical: no fibers => no receipt names =>
  *      nothing declared, and the plane's own-name handling is untouched.
  *
@@ -34,6 +38,7 @@
  * owned by the native-preservation lane, not by this binding repair.
  */
 import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -45,10 +50,8 @@ const REPO_ROOT = join(HERE, '..', '..')
 register(pathToFileURL(join(REPO_ROOT, 'scripts', 'run-tests-hooks.mjs')).href)
 
 const row = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs')).href)
-const dispatch = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'tool-dispatch', 'index.ts')).href)
 /** The receipt property the mount publishes on every route-C fiber. */
 const mountSeam = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'mount.ts')).href)
-const domain = await import(pathToFileURL(join(REPO_ROOT, 'packages', 'domain', 'tool-governance', 'src', 'index.ts')).href)
 
 /** A fiber double carrying only the registration receipt the mount publishes. */
 function fiberOf(routing) {
@@ -135,76 +138,43 @@ test('A3c an empty receipt declares nothing at all (never a wide bind)', () => {
   assert.deepEqual([...out.skipped], [])
 })
 
-// ── A4 the guard consequence, on the real algebra ───────────────────────────
-
-const SCOPE = { agentScopeKey: 'session-p01', trustedIdentities: ['session-p01'] }
-
-function bindingFor(name) {
-  const parsed = domain.parseToolBinding({
-    bindingId: `team-own:session-p01:${name}`,
-    agentScopeKey: 'session-p01',
-    toolName: name,
-    definitionIdentity: `team-own:${name}`,
-    providerId: 'dsh-agent-team',
-    implementationOrigin: 'team-trusted-extension',
-    executionBoundary: 'trusted-host',
-    assurance: dispatch.untestedAssurance('team-trusted-extension', 'trusted-host'),
-    policyGeneration: 0,
-    authorityGeneration: 0,
-    revision: 1,
-    status: 'ACTIVE',
-  })
-  assert.equal(parsed.ok, true, 'fixture ToolBinding must parse')
-  return parsed.value
-}
-
-/**
- * What the Guard answers for `name` over a surface that bound it `verified` or
- * not — the REAL algebra, with the definition fingerprint the Binding pinned so
- * the R2 definition check is a match rather than a drift.
- */
-function verdictFor(name, verified) {
-  const surface = dispatch.createGovernedSurface(SCOPE)
-  const binding = bindingFor(name)
-  const bound = surface.bind({ name, origin: 'team-own', binding, verified })
-  assert.equal(bound.ok, true)
-  return dispatch.guardDecision({
-    exec: { name, agentIdentity: 'session-p01' },
-    scope: SCOPE,
-    surface,
-    active: true,
-    policyGeneration: 0,
-    authorityGeneration: 0,
-    definition: { ok: true, fingerprint: binding.definitionIdentity },
-  })
-}
-
-test('A4 DECLARED (verified) dispatches; the SAME name on the inherited lane is refused unverified', () => {
-  const declared = verdictFor('read', true)
-  assert.notEqual(declared.kind, 'deny', `a declared realm-forwarded name must dispatch: ${JSON.stringify(declared)}`)
-
-  // The pre-P01 world: the name exists on the model surface but the assembly
-  // never bound it, so the Guard holds no verified Binding for it.
-  const refused = verdictFor('read', false)
-  assert.equal(refused.kind, 'deny')
-  assert.equal(refused.error.code, 'TOOL_BINDING_UNVERIFIED')
-  assert.equal(refused.reason, dispatch.GUARD_DENIAL_REASONS.BINDING_UNVERIFIED)
-})
-
-test('A4b a name ABSENT from `forwarded` is never declared => it keeps the pre-P01 refusal', () => {
-  const forwarded = new Set(row.a5sfAttachedToolNames([fiberOf(ROUTING_CEILING)]))
-  assert.ok(forwarded.has('read'))
-  assert.ok(!forwarded.has('bash'), 'bash is not forwarded by the realm in this composition')
-  const admitted = row.a5sfBindableRealmNames({
-    attachedNames: [...forwarded],
-    surface: new Set([...SURFACE, 'bash']),
-    planeOwned: new Set(['bash']),
-    lookup: (name) => ({ name }),
-  })
-  assert.ok(!admitted.declared.includes('bash'), 'bash never enters the realm bind set')
-  const bash = verdictFor('bash', false)
-  assert.equal(bash.kind, 'deny')
-  assert.equal(bash.error.code, 'TOOL_BINDING_UNVERIFIED')
+// ── A4 RETIRED-BY-A0 (round 80): the guard consequence ───────────────────────
+// WHAT WAS HERE. Two arms (A4, A4b) measured the CONSEQUENCE of the declaration
+// on the retired dispatch algebra — `createGovernedSurface` / `guardDecision`,
+// `untestedAssurance`, `GUARD_DENIAL_REASONS`, imported at module scope from
+// `packages/runtime/tool-dispatch/index.ts`:
+//   A4   a name bound `verified:true` dispatches with no unverified denial,
+//        while the same name on the inherited lane answers TOOL_BINDING_UNVERIFIED;
+//   A4b  a name absent from `forwarded` is never declared, so it keeps that refusal.
+//
+// WHY THEY ARE RETIRED (per SUBJECT, never "the check was red").
+//   subject:   the legacy guard algebra in `packages/runtime/tool-dispatch/index.ts`.
+//   citation:  the module is in the A0 frozen delete set
+//              (`dev/agent-workflow/ledgers/ute-p0-assets.snapshot.json`;
+//              `dev/agent-workflow/ledgers/ute-cut-closure.allow.json`
+//              `#retiredSubjects` books the per-file loss), and the A1 execution
+//              centre replaced it: `TOOL_BINDING_UNVERIFIED` is now answered by
+//              the centre's admission port, not by a governed surface.
+//   successor: `packages/runtime/test/vnext-admission.test.mjs` (the
+//              `ute-vnext-a1` CI leg: the ONE admission point, including the
+//              no-binding / no-axis / no-locator refusals) and
+//              `packages/runtime/test/a5p2-admission-kernel.test.ts` (the
+//              kernel's TOOL_BINDING_UNVERIFIED arms).
+//
+// WHAT THIS PIN STILL ENFORCES. The retired module must stay absent (a
+// re-introduced import is a module-load failure, i.e. RED), and the surviving
+// declaration contract in A1/A1b/A2/A3/A3b/A5 above is still measured: a name
+// is declared only when it was forwarded, is on the post-attach surface, is not
+// plane-owned and is readable. No skip was added anywhere in this file.
+test('A4 RETIRED-BY-A0: the legacy guard algebra stays gone and its successors exist', () => {
+  for (const rel of [
+    'packages/runtime/test/vnext-admission.test.mjs',
+    'packages/runtime/test/a5p2-admission-kernel.test.ts',
+  ]) {
+    assert.ok(existsSync(join(REPO_ROOT, rel)), `successor ${rel} must exist — a retirement without a target is a silence`)
+  }
+  assert.equal(existsSync(join(REPO_ROOT, 'packages', 'runtime', 'tool-dispatch', 'index.ts')), false,
+    'the A0 cut retired packages/runtime/tool-dispatch/index.ts; a restored module would re-open the second policy the centre replaced')
 })
 
 // ── A5 the no-realm world ───────────────────────────────────────────────────

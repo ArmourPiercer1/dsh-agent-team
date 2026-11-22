@@ -685,11 +685,21 @@ test('NO SECOND AUTHORITY: the module surface cannot grant, deny, or mint an adm
   const store = storeAt('authority-surface')
   const methods = Object.getOwnPropertyNames(store).filter((name) => typeof store[name] === 'function')
   assert.deepEqual(methods.filter((name) => forbidden.test(name)), [], `store methods must not decide: ${methods.join(', ')}`)
+  // RE-POINTED (round 80) — the set gained ONE RECORDER, and that is the whole
+  // change: `recordRecheckDecision` (commit 710edb87f, round 73 settlement
+  // Option A; contract change request + arms ADM-119…ADM-124 in
+  // `dev/agent-workflow/evidence/ute-a1/CONTRACT-CHANGE-REQUEST-settlement-recheck.md`)
+  // appends the durable recheck deny BESIDE the untouched allow, so the record
+  // can settle REFUSED/not-started citing it. It cannot grant, deny, or mint an
+  // admission reference — it writes a fact about a decision made elsewhere — so
+  // the forbidden-grant assertion above still covers it, and the list stays an
+  // exact set: a new DECIDER still turns this arm RED.
   assert.deepEqual([...methods].sort(), [
     'enterRunning',
     'list',
     'read',
     'recordAdmission',
+    'recordRecheckDecision',
     'recordStop',
     'recoverUnsettled',
     'settle',

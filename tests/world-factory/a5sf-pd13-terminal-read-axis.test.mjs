@@ -5,34 +5,19 @@
  * WHAT THIS SUITE PINS (host-free; in-process Cordis roots, no boot, no
  * DSH_HOME, no pinned host tree, no real PTY):
  *
- *   P0  THE DEFECT PIN (env-gated). The same world that the fix serves — a
- *       Member realm that declares a confined terminal face — on the PRE-FIX
- *       tree runs the `bash` command on the confined `subprocess` face, whose
- *       read admission is DECLARED-ROOT based: the body's `cat` of a path the
- *       compiled read lane denies returns the bytes, and NO guard fact names
- *       that path. The arm asserts that old behaviour verbatim, so it is GREEN
- *       before the fix and RED after it; the gate skips it unless
- *       `A5SF_PD13_PIN=1` (the before/after logs live in the evidence dir).
- *   D1  THE FIX: the SAME read is refused through the Member's own `bash` with
- *       the typed `IO_READ_DENIED`, ZERO bytes returned, ZERO confined provider
- *       calls, and exactly ONE guard fact naming the locator.
- *   D2  LOCUS: the realm reports `faces.terminals`, and the model-visible
- *       `bash` definition is the confined terminal module's — the refusal is
- *       attributed to the face, not to "bash is broken".
- *   A1  THE ALLOW LANE still works: an in-lane read runs through the confined
- *       terminal face to the confined process provider exactly once, returns
- *       its stdout/exit code, and records an ALLOW fact for the read root.
- *   A2  THE WRITE LANE IS NOT TOUCHED: a command whose path token is a
- *       redirection target is not treated as a read, so an in-lane write runs
- *       (the read axis is the only axis this face adds).
- *   A3  NO PATH, NO CONSULT: a command with no path-shaped token produces no
- *       `shellRead` fact at all.
+ * WHAT THIS SUITE PINS TODAY (host-free; in-process Cordis roots, no boot, no
+ * DSH_HOME, no pinned host tree, no real PTY):
+ *
+ *   P0  THE DEFECT PIN (env-gated). The pre-fix world ran the shell command on
+ *       the confined `subprocess` face, whose read admission is DECLARED-ROOT
+ *       based, so a body `cat` of a lane-denied path returned the bytes with no
+ *       guard fact; `A5SF_PD13_PIN=1` re-enables the pin. RETIRED-BY-A0 (round
+ *       80): its "fixed" counterpart (D1) retired with the appended shadow, so
+ *       the pin now records the post-cut behaviour only.
  *   S1  SURFACE NEUTRAL: the model-visible name set is unchanged (one `bash`).
- *   C1  CONTROL — remove the shadow (dispose the native modules): the fixed
- *       refusal goes RED in place (the ungoverned path returns the bytes).
  *   C2  CONTROL — a realm with the confined `subprocess` face but NO terminal
- *       face keeps the PD-12 shape: the body's read is NOT attributed and the
- *       bytes come back. The read axis is the new face's, not `bash`'s.
+ *       face answers `faces.terminals === null`, the attach stays
+ *       surface-neutral and it routes nothing (0 confined calls, 0 read facts).
  *   C3  CONTROL — a terminal face declared without a confined `subprocess` face
  *       is refused at install (`TERMINALS_UNCONFINED_REALM`): the face cannot
  *       run a command and never falls back to the inherited shell.
@@ -45,6 +30,11 @@
  *   C6  DECLARED WEAKNESS — a DYNAMIC read (`$(...)`/backticks) is not
  *       lexically attributable and is NOT refused at admission; it is the OS
  *       profile's problem. Pinned so the limit cannot be quietly claimed away.
+ *   RETIRED-BY-A0  the seven arms whose subject was the APPENDED confined
+ *       terminal (read-axis) shadow: D1, the D2 definition-locus half, A1, A2,
+ *       A3 and the C1 disposal control. See the retirement pin at the end of
+ *       this file for the subject, the citation and the named successors.
+ *       Nothing was skipped and no retired expectation was kept as green.
  *
  * Run: node --test tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
  * Pin:  A5SF_PD13_PIN=1 node --test tests/world-factory/a5sf-pd13-terminal-read-axis.test.mjs
@@ -470,104 +460,8 @@ test('P0 PD-13 defect pin (PRE-FIX): the Member shell reads the lane-denied secr
 })
 
 // ===========================================================================
-// D1 + D2 — THE FIX and its LOCUS.
+// S1 — the surface stays neutral.
 // ===========================================================================
-test('D1 fix: the Member\'s bash read of a lane-denied path is IO_READ_DENIED, 0 bytes, 1 guard fact, 0 provider calls', async () => {
-  const world = await makeWorld('deny')
-  world.label = 'deny'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-deny.jsonl') })
-  try {
-    const { result, delta } = await runBash(world, `cat ${world.secret}`)
-    assert.equal(result.isError, true, `the denied read is REFUSED, not delivered: ${result.text}`)
-    assert.match(result.text, /IO_READ_DENIED/u, 'the refusal carries the face\'s typed code')
-    assert.doesNotMatch(result.text, new RegExp(SECRET_MARKER, 'u'), 'ZERO bytes of the secret are returned')
-    assert.equal(delta.confined, 0, '0 confined provider calls: no command was requested')
-    assert.equal(delta.base, 0, '0 inherited base spawns')
-    const naming = readFacts(world).filter((fact) => fact.locator === world.secret)
-    assert.equal(naming.length, 1, `exactly ONE read fact names the locator (got ${String(naming.length)})`)
-    assert.equal(naming[0].decision, 'deny')
-    assert.equal(naming[0].decidedBy, 'IO_READ_DENIED')
-    assert.equal(naming[0].memberIdentity, IDENTITY.memberInstanceId, 'the fact is attributed to the Member')
-    assert.equal(naming[0].policyRevision, REVISION, 'the fact carries the compiled revision')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-test('D2 locus: the realm reports faces.terminals and the model-visible bash definition is the confined terminal module\'s', async () => {
-  const world = await makeWorld('locus')
-  world.label = 'locus'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-locus.jsonl') })
-  try {
-    const member = mounted.installation.members[0]
-    assert.notEqual(member.faces.terminals, null, 'the realm owns a confined terminal face')
-    assert.equal(member.faces.terminals, member.ctx.get('terminals'), 'the Member scope resolves THAT face, not the inherited service')
-    const definition = world.root.tools.get('bash', world.agentKey)
-    assert.match(String(definition?.description ?? ''), /confined terminal/u, 'the model resolves the confined terminal definition')
-    const { result } = await runBash(world, 'printf A5SF_PD13_LOCUS')
-    assert.equal(result.isError, false, `the allow lane still runs: ${result.text}`)
-    assert.equal(JSON.parse(result.value).kind, 'confined-terminal', 'the result says which face served it')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-// ===========================================================================
-// A1/A2/A3 + S1 — the allow axis and the surface.
-// ===========================================================================
-test('A1 allow lane: an in-lane read runs through the confined terminal face exactly once, with an ALLOW read fact', async () => {
-  const world = await makeWorld('allow')
-  world.label = 'allow'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-allow.jsonl') })
-  try {
-    const inLane = join(world.workspace, 'in-lane.txt')
-    const { result, delta } = await runBash(world, `cat ${inLane}`)
-    assert.equal(result.isError, false, `the in-lane read is admitted: ${result.text}`)
-    const payload = JSON.parse(result.value)
-    assert.equal(payload.kind, 'confined-terminal')
-    assert.equal(payload.exitCode, 0)
-    assert.match(payload.stdout, /CONFINED-EXECUTOR/u, 'the confined provider\'s child produced the stdout')
-    assert.equal(delta.confined, 1, 'exactly ONE confined provider call')
-    assert.equal(delta.base, 0, 'the inherited base executor was never reached')
-    assert.deepEqual(world.confined.calls.at(-1)?.argv, [PROGRAM, '-c', `cat ${inLane}`])
-    const naming = readFacts(world).filter((fact) => fact.locator === inLane)
-    assert.equal(naming.length, 1, 'one read consultation for the in-lane operand')
-    assert.equal(naming[0].decision, 'allow')
-    assert.equal(naming[0].decidedBy, 'ALLOW')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-test('A2 write lane untouched: a redirection target is not a read, so an in-lane write still runs', async () => {
-  const world = await makeWorld('write')
-  world.label = 'write'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-write.jsonl') })
-  try {
-    const target = join(world.workspace, 'out-lane.txt')
-    const { result, delta } = await runBash(world, `printf rewritten > ${target}`)
-    assert.equal(result.isError, false, `an in-lane write is not this face's read axis: ${result.text}`)
-    assert.equal(delta.confined, 1, 'the command ran through the confined face')
-    assert.deepEqual(readFacts(world), [], 'no read fact was produced for a redirection target')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-test('A3 no path token: a command with no path-shaped operand produces no shellRead fact', async () => {
-  const world = await makeWorld('nopath')
-  world.label = 'nopath'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-nopath.jsonl') })
-  try {
-    const { result, delta } = await runBash(world, 'printf A5SF_PD13_NOPATH')
-    assert.equal(result.isError, false, `a path-free command runs: ${result.text}`)
-    assert.equal(delta.confined, 1)
-    assert.deepEqual(readFacts(world), [], 'no read axis consultation without a path token')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
 test('S1 surface neutral: exactly one `bash`, same name set before and after the shadow', async () => {
   const world = await makeWorld('surface')
   world.label = 'surface'
@@ -582,38 +476,30 @@ test('S1 surface neutral: exactly one `bash`, same name set before and after the
 })
 
 // ===========================================================================
-// C1 — remove the shadow: the ungoverned read returns (the fixed assertion reds).
+// C2 — no terminal face: the realm answers "no terminal face", and the unioned
+//      row adds NO shell of its own on top of the preset's.
 // ===========================================================================
-test('C1 control (shadow removed): the body read returns the secret bytes again', async () => {
-  const world = await makeWorld('no-shadow')
-  world.label = 'no-shadow'
-  const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-no-shadow.jsonl') })
-  try {
-    await mounted.disposeNativeToolModules()
-    const { result, delta } = await runBash(world, `cat ${world.secret}`)
-    assert.equal(result.isError, false, 'without the shadow the command executes (the hole returns)')
-    assert.match(result.text, new RegExp(SECRET_MARKER, 'u'), 'the bytes come back through the ungoverned path')
-    assert.equal(delta.base, 1, 'the inherited executor served it')
-    assert.deepEqual(readFacts(world), [], 'the read axis was never consulted')
-  } finally {
-    await mounted.dispose()
-  }
-})
-
-// ===========================================================================
-// C2 — no terminal face: the PD-12 shape (permanent contrast).
-// ===========================================================================
-test('C2 control (no terminal face): bash keeps the PD-12 shape and the body read is not attributed', async () => {
+// RETIRED-BY-A0 (round 80): this control used to assert that the confined
+// `subprocess` face served the command (delta.confined === 1) with no read fact.
+// That expectation belonged to the appended PD-12 shadow, which the A1 cut
+// deleted (see the retirement pin at the end of this file). The locus half is
+// LIVE and still enforced: the realm must answer `faces.terminals === null`
+// when it was declared without a terminal face, and the attach must add no
+// shell. If a shadow ever returns, `delta.confined` becomes 1 and this arm is
+// the control that names it.
+test('C2 control (no terminal face): the realm answers "no terminal face" and the attach adds no shell', async () => {
   const world = await makeWorld('no-terminal-face', { terminalFace: false })
   world.label = 'no-terminal-face'
+  const before = toolNames(world.root, world.agentKey)
   const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-no-terminal-face.jsonl') })
   try {
     assert.equal(mounted.installation.members[0].faces.terminals, null, 'the realm answers "no terminal face"')
+    assert.deepEqual(toolNames(world.root, world.agentKey), before, 'the attach is surface-neutral')
     const { result, delta } = await runBash(world, `cat ${world.secret}`)
-    assert.equal(result.isError, false, 'the confined subprocess face still runs the command')
-    assert.match(result.text, new RegExp(SECRET_MARKER, 'u'), 'its declared-root admission does not attribute the body read')
-    assert.equal(delta.confined, 1, 'the confined subprocess face served it')
-    assert.deepEqual(readFacts(world), [], 'no read fact: the read axis is the terminal face\'s')
+    assert.equal(result.isError, false, 'the preset executor still serves the command in this world')
+    assert.equal(delta.confined, 0, 'the confined face is NOT consulted: no shadow routes this call (post-cut)')
+    assert.equal(delta.legacy, 0, 'and no legacy terminal is allocated')
+    assert.deepEqual(readFacts(world), [], 'no read fact exists: the lexical read axis is retired with the shadow')
   } finally {
     await mounted.dispose()
   }
@@ -664,15 +550,110 @@ test('C5 control (no shell class): the terminal face refuses at install, because
 // C6 — declared weakness: a DYNAMIC read is not lexically attributable.
 // ===========================================================================
 test('C6 declared weakness: a dynamic read (`$(...)`) is not attributed and is not refused at admission', async () => {
+  // RETIRED-BY-A0 (round 80) — re-pointed, NOT retired. The DECLARED WEAKNESS
+  // this arm exists to pin is unchanged: a dynamic token (`$(...)`, backticks)
+  // is not lexically attributable, so no `shellRead` fact exists for it and
+  // admission cannot refuse it. Only the executor sentence changed: the appended
+  // terminal shadow used to run it under the confined process face
+  // (`delta.confined === 1`); that shadow retired with the A1 cut, so the same
+  // command now runs on the preset executor (`delta.base === 1`). The weakness
+  // is asserted exactly as before — never that a refusal happened.
   const world = await makeWorld('dynamic')
   world.label = 'dynamic'
   const mounted = await mountAndAttach(world, { a5sfEvidencePath: join(world.workspace, '..', 'consult-dynamic.jsonl') })
   try {
     const { result, delta } = await runBash(world, `cat "$(printf ${world.secret})"`)
     assert.equal(result.isError, false, 'the dynamic read is NOT refused at admission (declared limit)')
-    assert.equal(delta.confined, 1, 'it ran under the confined process face (the OS profile is its boundary)')
+    assert.equal(delta.base, 1, 'it ran on the preset executor (no appended face serves this row post-cut)')
+    assert.equal(delta.confined, 0, 'the confined faces are not consulted for it')
     assert.deepEqual(readFacts(world), [], 'no lexical read fact exists for a dynamic token')
   } finally {
     await mounted.dispose()
+  }
+})
+
+// ===========================================================================
+// RETIRED-BY-A0 (round 80) — the appended confined terminal (read-axis) shadow
+// ===========================================================================
+// WHAT WAS HERE. Seven arms (D1, D2, A1, A2, A3, C1) mounted a realm and called
+// `attachA5sfNativeToolModules`, expecting it to APPEND a Team-authored
+// confined terminal shadow (`confinedTerminalSpecOf`) that replaced the
+// model-visible `bash` with a lexically read-admitted shell over the realm's
+// confined `terminals` face:
+//   D1  a lane-denied read refused with IO_READ_DENIED, 0 bytes, 1 read fact;
+//   D2  the realm reports faces.terminals AND the model-visible bash definition
+//       is the confined terminal module's;
+//   A1  an in-lane read runs through the terminal face once with an ALLOW fact;
+//   A2  a redirection target is not a read, so an in-lane write still runs;
+//   A3  a command with no path token produces no shellRead fact;
+//   C1  the control: with the shadow disposed, the secret bytes come back.
+//
+// WHY THEY ARE RETIRED (per SUBJECT, never "the check was red").
+//   subject:   the appended confined-terminal read axis — `confinedTerminalSpecOf`
+//              and the `live/confined-terminal-tool.mjs` module it named.
+//   citation:  commit 5d1349767 ("refactor(ute-a1): re-point the surviving
+//              referrers and the kept-capability tests") deleted that spec
+//              function and its module together with the PD-12 bash, PD-16
+//              search, PD-17 fs and PD-27 web appends, because a Team-authored
+//              shadow definition is exactly what the A1 cut forbids: the
+//              composition supplies its native module specs and
+//              `attachA5sfNativeToolModules` appends no tool of its own (the law
+//              survives verbatim at
+//              `packages/runtime/src/plugin/live/a5sf-realm-row.mjs:1164-1180`).
+//              The process FAMILY contribution is booked per subject in
+//              `dev/agent-workflow/ledgers/ute-cut-closure.allow.json`
+//              `#retiredSurfaces[dsh.process-family]` (citations: the reviewed
+//              inventory §family-process, the keep/delete decision, and the
+//              round-72 per-file record).
+//   successor: `tests/ute-g1-fs/lane-suite.test.mjs` (the one route-C lane that
+//              still reproduces its golden post-cut, 5/5) and
+//              `packages/runtime/test/vnext-admission.test.mjs` (the
+//              `ute-vnext-a1` CI leg: the ONE admission point). The governed
+//              shell's replacement backend — the HOST's own persistent-`bash`
+//              definition over a Member-bound PTY, whose ceiling is handed to
+//              the OS profile instead of a lexical read scan — is pinned by
+//              `tests/world-factory/a5sf-native-bash-preservation.test.mjs`
+//              (P4 measures an out-of-root write refused by the enforcement
+//              provider with zero bytes written). NOT a successor:
+//              `tests/ute-g1-process/lane-suite.test.mjs` — it is the process
+//              lane's old-path world and mounts the same deleted append
+//              (`lib/world.mjs:361`), so it is red at this head; see
+//              ROUND80-CI-CLOSURE.md §3.6 for that disposition.
+//
+// WHAT THIS PIN STILL ENFORCES. A resurrection is RED, not silent: the three
+// retired spec functions must stay absent from the row, the D2 LOCUS half that
+// survives is still measured (the realm reports the terminal face it was
+// declared with), the attach appends no tool and records no read fact, and
+// every successor must still exist on disk. Nothing below asserts a retired
+// expectation as green, and no arm was skipped.
+test('RETIRED-BY-A0: the appended confined-terminal read axis stays gone and its successors exist', async () => {
+  for (const name of ['confinedTerminalSpecOf', 'confinedBashSpecOf', 'nativeBashPtySpecOf']) {
+    assert.equal(row[name], undefined, `${name} was retired with the A0/A1 cut; restoring it rebuilds a Team-authored shadow, which A1 forbids`)
+  }
+  const world = await makeWorld('retired')
+  world.label = 'retired'
+  const mounted = await world.mount()
+  try {
+    // D2's LIVE half: the realm still answers the terminal face it was declared
+    // with; only the appended definition shadow retired.
+    assert.notEqual(mounted.installation.members[0].faces.terminals, null, 'the realm still reports its confined terminal face')
+    const before = toolNames(world.root, world.agentKey)
+    const appended = await row.attachA5sfNativeToolModules(
+      mounted,
+      world.agentCtx,
+      row.a5sfRealmConfigOf({ a5sfEvidencePath: join(world.workspace, '..', 'consult-retired.jsonl') }),
+    )
+    assert.equal(appended, undefined, 'with no configured native module the attach appends NOTHING (the appending mechanism is gone)')
+    assert.deepEqual(toolNames(world.root, world.agentKey), before, 'and it changes no model-visible name')
+    assert.deepEqual(readFacts(world), [], 'and it records no shellRead fact: the lexical read axis is retired')
+  } finally {
+    await mounted.dispose()
+  }
+  for (const rel of [
+    'tests/ute-g1-fs/lane-suite.test.mjs',
+    'packages/runtime/test/vnext-admission.test.mjs',
+    'tests/world-factory/a5sf-native-bash-preservation.test.mjs',
+  ]) {
+    assert.ok(existsSync(join(REPO_ROOT, rel)), `successor ${rel} must exist — a retirement without a target is a silence`)
   }
 })

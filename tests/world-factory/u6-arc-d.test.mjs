@@ -8,10 +8,11 @@
  * file proves OFFLINE, with zero spawns: (1) the SUITE_CASES/parseArgs
  * wiring; (2) the assembly's blueprints pass the SAME closed-grammar
  * validator the host catalog runs, and the CI-03 member carries NO
- * capabilities block; (3) the probe row mounts the PR5 probe FAMILY
- * unchanged against the shipped dist seam faces and every adversarial leg
- * holds at the real kernel with ZERO-effect refusals (the marker dir is the
- * oracle); (4) makeArcDDecide answers each trigger with exactly ONE tool
+ * capabilities block; (3) RETIRED-BY-A0 (round 80): the arm that mounted the
+ * PR5 probe FAMILY "as shipped" retired with that lane
+ * (`ute-cut-closure.allow.json#retiredSurfaces[dsh.u6-probe-family]`); its
+ * retirement pin at the bottom of this file asserts the lane stays gone and
+ * names the successor (`vnext-admission`); (4) makeArcDDecide answers each trigger with exactly ONE tool
  * call and closes each leg by its own fence; (5) the judge's sensitivity
  * law — a synthetic all-green digest PASSes all nine cases and EVERY
  * verdict moves when its own evidence moves; (6) the factory's u6ArcD
@@ -19,10 +20,9 @@
  */
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 test('G4-D recorded native failure: same mock drive reads exact effect before edit; missing observation mutation stays RED', async () => {
   const { createArcDAssembly, makeArcDDecide, judgeU6ArcD } = await import('./lib/u6-arc-d-assembly.mjs')
@@ -159,123 +159,55 @@ test('u6-arc-d: the assembly materializes the CI-03 lane (NO capabilities block)
   }
 })
 
-test('u6-arc-d: the probe row mounts the PR5 family AS SHIPPED and the kernel holds every adversarial leg at ZERO effect (dist seams)', async () => {
-  // The row + lane + BOTH public seams run here in plain node against the
-  // shipped dist faces — the exact resolution the Host world uses. THE
-  // MARKER DIR IS THE ORACLE: every refusal leg reads the DIRECTORY, never
-  // the row's return value. No shadow twin exists: a shadow kernel still
-  // computes refuse verdicts, so an unguarded "twin" could only masquerade
-  // (the honest unguarded legs live at the offline C1 seams).
-  const repoRoot = process.cwd()
-  const dir = mkdtempSync(join(tmpdir(), 'u6arcd-row-'))
-  process.env.U6ARCD_LEDGER = join(dir, 'ledger.jsonl')
-  process.env.U6ARCD_MARKER_DIR = join(dir, 'markers')
-  process.env.U6ARCD_WORLD = 'offline'
-  process.env.U6ARCD_ASSEMBLY_URL = new URL('../../tests/u6-arc-a-probe-family/src/probe-assembly.mjs', import.meta.url).href
-  process.env.U6ARCD_CENTER_URL = pathToFileURL(join(repoRoot, 'packages/runtime/dist/packages/runtime/governance-center/index.js')).href
-  process.env.U6ARCD_CONTRACTS_URL = pathToFileURL(join(repoRoot, 'packages/runtime/dist/packages/contracts/src/index.js')).href
-  try {
-    const mod = await import(`./canary/u6-arc-d-probe-host.mjs?rowtest=${String(Date.now())}`)
-    const defs = []
-    const ctx = {
-      tools: { register: (d) => { defs.push(d); return () => {} } },
-      on: () => () => {},
-      effect: (fn) => fn(),
-    }
-    mod.apply(ctx)
-    assert.equal(mod.name, 'u6-arc-d-probe-host')
-    assert.deepEqual(mod.inject, ['tools'])
-    assert.deepEqual(defs.map((d) => d.name), ['u6arcd_probe', 'u6arcd_govern', 'u6arcd_pair_effect'])
-    const execute = defs[0].execute
-    const markers = () => {
-      try { return readdirSync(join(dir, 'markers')).filter((m) => m.endsWith('-marker.txt')).sort() } catch { return [] }
-    }
-    // positive walk: the family's own effect on disk, nonce inside the file
-    const pos = await execute({ action: 'walk', callId: 'pos-1', grantId: 'grant-pos', nonce: 'N1' })
-    assert.equal(pos.ok, true, JSON.stringify(pos))
-    assert.deepEqual(markers(), ['pos-1-marker.txt'])
-    assert.equal(readFileSync(join(dir, 'markers', 'pos-1-marker.txt'), 'utf8').trim(), 'N1')
-    // spoof: self-reported foreign scope — refuse at plan, ZERO effect
-    const spoof = await execute({ action: 'spoof', callId: 'spoof-1', nonce: 'N2' })
-    assert.equal(spoof.ok, false, JSON.stringify(spoof))
-    assert.equal(spoof.refused, true)
-    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'spoof wrote nothing')
-    // swap: an identity the table never bound — IDENTITY_MISMATCH, ZERO
-    const swap = await execute({ action: 'swap', callId: 'swap-1', nonce: 'N3', identity: 'def#moved-under-swap' })
-    assert.equal(swap.ok, false, JSON.stringify(swap))
-    assert.equal(String(swap.code), 'IDENTITY_MISMATCH')
-    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'swap wrote nothing')
-    // unbound name: never 'allow', ZERO effect
-    const unbound = await execute({ action: 'unbound', callId: 'unbound-1' })
-    assert.notEqual(unbound.outcome, 'allow')
-    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'unbound wrote nothing')
-    // report: the family's own faces, still ACTIVE before teardown
-    const rep = await execute({ action: 'report' })
-    assert.equal(rep.ok, true)
-    // replay: the SETTLED grant re-presented on another callId — refused
-    const replay = await execute({ action: 'walk', callId: 'replay-1', grantId: 'grant-pos', nonce: 'N4' })
-    assert.equal(replay.ok, false, JSON.stringify(replay))
-    assert.equal(replay.code, 'GRANT_REPLAY')
-    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'replay wrote nothing')
-    // honest teardown, then the post-teardown call is refused at ZERO effect
-    const td = await execute({ action: 'teardown' })
-    assert.equal(td.ok, true)
-    assert.equal(td.settled, true)
-    const post = await execute({ action: 'walk', callId: 'post-1', grantId: 'grant-post', nonce: 'N5' })
-    assert.equal(post.ok, false, JSON.stringify(post))
-    assert.equal(post.code, 'KERNEL_NOT_ACTIVE')
-    assert.deepEqual(markers(), ['pos-1-marker.txt'], 'post-teardown wrote nothing')
-    // the LEDGER (the second hard channel) holds the same story
-    const rows = readFileSync(join(dir, 'ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l))
-    assert.ok(rows.some((r) => r.leg === 'family-mount' && r.ok === true))
-    assert.ok(rows.some((r) => r.leg === 'register' && r.kind === 'probe-tool' && r.ok === true))
-    assert.ok(rows.some((r) => r.leg === 'walk' && r.action === 'spoof' && r.ok === false))
-    assert.ok(rows.some((r) => r.leg === 'walk' && r.action === 'swap' && r.ok === false))
-    assert.ok(rows.some((r) => r.leg === 'walk' && r.action === 'unbound' && r.outcome !== 'allow'))
-    assert.ok(rows.some((r) => r.leg === 'walk' && r.code === 'GRANT_REPLAY'))
-    assert.ok(rows.some((r) => r.leg === 'teardown' && r.ok === true))
-    const okWalks = rows.filter((r) => r.leg === 'walk' && r.ok === true).map((r) => r.callId)
-    assert.deepEqual(okWalks, ['pos-1'], 'exactly ONE ok walk row for the whole adversarial walk — the marker-ledger arithmetic the live judge runs')
-    // R-U6P6-1: the govern row — the live deny-change lane OFFLINE, with a
-    // scripted agent ctx whose tools.restrict returns a recorded disposer.
-    // restrict-on must call restrict with the masked builtin and store the
-    // disposer; restrict-off must DISPOSE it; both must land durable ledger
-    // rows (the judge's durable witnesses); a caller WITHOUT a scoped
-    // tools.restrict must fail with ok:false (never a silent success).
-    const govern = defs[1].execute
-    let restricted = null
-    let disposed = 0
-    const agentExec = { agent: { ctx: { tools: { restrict: (spec) => { restricted = spec.deny.slice(); return () => { disposed += 1 } } } } } }
-    const rOn = await govern({ action: 'restrict-on' }, agentExec)
-    assert.equal(rOn.ok, true, JSON.stringify(rOn))
-    assert.deepEqual(restricted, ['bash', 'u6arcd_pair_effect'], 'the mask covers the built-in bash (the applyBuiltInToolDeny lane) AND the pair effect-writer — the deny leg is a refusal and a zero-effect at once')
-    const efDef = defs.find((d) => d.name === 'u6arcd_pair_effect')
-    assert.equal(typeof efDef?.execute, 'function', 'the pair effect-writer is a registered tool with an execute')
-    assert.deepEqual(Object.keys(efDef.parameters.properties).sort(), ['marker', 'path'], 'the effect-writer takes only { path, marker } — no general-purpose write surface')
-    // Its execute is the pair's ONLY disk producer, so the seam test runs it
-    // once per shape: the run-unique marker lands (and the row is durable),
-    // while anything else is refused BEFORE any write.
-    const efPath = join(dir, 'pair-effect-seam.txt')
-    const efOk = await efDef.execute({ path: efPath, marker: 'U6ARCD_PAIR_LIFT_seam1' })
-    assert.equal(efOk.ok, true, JSON.stringify(efOk))
-    assert.equal(readFileSync(efPath, 'utf8').trim(), 'U6ARCD_PAIR_LIFT_seam1', 'the effect the judge later reads off DISK is exactly what this writer wrote')
-    for (const bad of [{ path: efPath, marker: 'SOMETHING_ELSE_1' }, { path: join(dir, 'pair-effect-seam.bak'), marker: 'U6ARCD_PAIR_DENY_seam1' }]) {
-      const efBad = await efDef.execute(bad)
-      assert.equal(efBad.ok, false, `${JSON.stringify(bad)}: only the run-unique PAIR marker shape writes — a general write surface would be its own hole`)
-    }
-    assert.equal(readFileSync(efPath, 'utf8').trim(), 'U6ARCD_PAIR_LIFT_seam1', 'a refused effect call changed nothing on disk')
-    const rOff = await govern({ action: 'restrict-off' }, agentExec)
-    assert.equal(rOff.ok, true, JSON.stringify(rOff))
-    assert.equal(disposed, 1, 'restrict-off DISPOSES the mask (the lift is a real unwind, not a note)')
-    const rNoCtx = await govern({ action: 'restrict-on' }, {})
-    assert.equal(rNoCtx.ok, false, 'no scoped tools.restrict = an honest failure, never a claimed success')
-    const gRows = rows.concat(readFileSync(join(dir, 'ledger.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l))).filter((r) => r.leg === 'govern')
-    assert.ok(gRows.some((r) => r.action === 'restrict-on' && r.ok === true && r.agentCaptured === true))
-    assert.ok(gRows.some((r) => r.action === 'restrict-off' && r.ok === true))
-    assert.ok(gRows.some((r) => r.action === 'restrict-on' && r.ok === false), 'the failed no-ctx attempt is on the record too — the ledger holds the WHOLE story')
-  } finally {
-    for (const k of ['U6ARCD_LEDGER', 'U6ARCD_MARKER_DIR', 'U6ARCD_WORLD', 'U6ARCD_ASSEMBLY_URL', 'U6ARCD_CENTER_URL', 'U6ARCD_CONTRACTS_URL', 'U6ARC_CENTER_URL', 'U6ARC_CONTRACTS_URL']) delete process.env[k]
-    rmSync(dir, { recursive: true, force: true })
+// ===========================================================================
+// RETIRED-BY-A0 (round 80) — the PR5 probe family mount arm
+// ===========================================================================
+// WHAT WAS HERE. One arm (119 lines) mounted the ARC-D canary row and drove it
+// against the PR5 probe family "AS SHIPPED" — `tests/u6-arc-a-probe-family/
+// src/probe-assembly.mjs` through `U6ARCD_ASSEMBLY_URL`, with the marker
+// directory as the oracle and every adversarial leg (spoof / swap / unbound /
+// replay / post-teardown) held at ZERO effect. It now dies at module load:
+// `ERR_MODULE_NOT_FOUND ... /tests/u6-arc-a-probe-family/src/probe-assembly.mjs`,
+// imported from tests/world-factory/canary/u6-arc-d-probe-host.mjs.
+//
+// WHY IT IS RETIRED (per SUBJECT, never "the check was red").
+//   subject:   the U6 ARC-A probe family lane — a test-only family that existed
+//              to exercise the retired centre-shadow row / governance-centre
+//              kernel (governance-closed-world).
+//   citation:  `dev/agent-workflow/ledgers/ute-cut-closure.allow.json`
+//              `#retiredSurfaces[dsh.u6-probe-family]` (kind
+//              `test-only-family-lane`, disposition `retired-by-a0-cut`;
+//              citations: the reviewed inventory §rows-barrel, the keep/delete
+//              decision, the frozen attestation, the round-72 per-file record and
+//              `ROUND72-DELETION-AUDIT.md` §2). Its three files are booked
+//              per-file in `#retiredSubjects` (`probe-assembly.mjs`,
+//              `probe-contribution.mjs`, `probe-assembly.d.mts`).
+//   successor: `packages/runtime/test/vnext-admission.test.mjs` (the
+//              `ute-vnext-a1` CI leg — the ONE admission point and its
+//              zero-effect refusals), plus `scripts/ute-cut-closure.mjs --check`
+//              and `scripts/ute-p0-assets.mjs --check`, which enforce that the
+//              retired lane stays gone. The kernel laws the probe certified are
+//              carried there; no preserved capability lost its arm.
+//
+// WHAT THIS PIN STILL ENFORCES. The probe lane must stay gone (a restored file
+// is RED here and in `ute-cut-closure`), the ledger row that licenses the
+// retirement must still name this subject and its successors, and every
+// successor must exist on disk. Nothing was skipped.
+test('RETIRED-BY-A0: the PR5 probe family stays gone and its licence names the successors', async () => {
+  for (const rel of [
+    'tests/u6-arc-a-probe-family/src/probe-assembly.mjs',
+    'tests/u6-arc-a-probe-family/src/probe-contribution.mjs',
+    'tests/u6-arc-a-probe-family/src/probe-assembly.d.mts',
+  ]) {
+    assert.equal(existsSync(join(process.cwd(), rel)), false, `${rel} was retired with the A0/A1 cut; restoring it would re-open a shadow lane`)
+  }
+  const ledger = JSON.parse(readFileSync(new URL('../../dev/agent-workflow/ledgers/ute-cut-closure.allow.json', import.meta.url), 'utf8'))
+  const row = ledger.retiredSurfaces.subjects.find((subject) => subject.id === 'dsh.u6-probe-family')
+  assert.ok(row, 'the retirement must be licensed by name, not implied')
+  assert.equal(row.disposition, 'retired-by-a0-cut')
+  assert.ok(row.successors.includes('packages/runtime/test/vnext-admission.test.mjs'), 'the successor set must still name the admission suite')
+  for (const rel of row.successors.filter((entry) => !entry.includes(' '))) {
+    assert.ok(existsSync(join(process.cwd(), rel)), `successor ${rel} must exist — a retirement without a target is a silence`)
   }
 })
 

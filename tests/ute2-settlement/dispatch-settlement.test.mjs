@@ -26,7 +26,7 @@
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import test, { after } from 'node:test'
@@ -537,16 +537,65 @@ test('off by default: no production path imports or registers the dispatch wrapp
     const text = readFileSync(path, 'utf8')
     if (text.includes('dispatch-settlement')) references.push(path.slice(REPO_ROOT.length + 1))
   }
-  assert.deepEqual(references.sort(), [
+  // RE-POINTED (round 80) — the LAW is unchanged and is now measured in two
+  // halves instead of one literal list, because the module's PURE id helper
+  // gained consumers while the OBSERVING WRAPPER stayed unwired:
+  //   `dispatchExecutionId`  — imported by the A1 execution centre
+  //     (packages/runtime/src/plugin/vnext/member-execution.mjs, commit
+  //     4fd8f8e75 "one member's execution composition becomes a component") and
+  //     by the host refusal entry
+  //     (packages/runtime/src/plugin/vnext/row-refusal-entry.ts, commit
+  //     d2453e45d "the host entry records the Alpha.6 refusal it already
+  //     decides"). Both DERIVE an id from a dispatch; neither mounts anything.
+  //   `createSettlementObservingDefinition` — the wrapper that would OBSERVE
+  //     every dispatch — is still named by no production path (asserted below
+  //     across EVERY production reference, not just the three seam files).
+  // Hard-coding the test referrers into a "no production path" list would have
+  // been the weaker reading, so they are excluded by CLASS and counted.
+  const production = references.filter((rel) => !/\.test\.(?:ts|mts|js|mjs|cjs)$/u.test(rel)).sort()
+  const testReferrers = references.filter((rel) => /\.test\.(?:ts|mts|js|mjs|cjs)$/u.test(rel)).sort()
+  assert.deepEqual(production, [
+    'packages/runtime/settlement/dispatch-settlement.ts',
+    'packages/runtime/settlement/index.ts',
+    'packages/runtime/src/plugin/vnext/member-execution.mjs',
+    'packages/runtime/src/plugin/vnext/row-refusal-entry.ts',
+  ], `production references to dispatch-settlement must stay nameable: ${production.join(', ')}`)
+  assert.ok(testReferrers.length > 0, 'the vnext admission leg must keep naming this module (a vanished referrer is a silence, not a pass)')
+  // No production reference may name the WRAPPER, the store, or the observer.
+  // The OBSERVER is the subject; the settlement STORE is deliberately NOT in
+  // this list — the A1 centre legitimately opens one to record admission/stop
+  // facts (member-execution.mjs:29). What must never appear is the wrapper that
+  // observes every dispatch, or its observer handle.
+  const wrapperSymbols = [
+    'createSettlementObservingDefinition',
+    'settlementObserver',
+  ]
+  const declarants = new Set([
     'packages/runtime/settlement/dispatch-settlement.ts',
     'packages/runtime/settlement/index.ts',
   ])
-  // The seams that would mount it stay untouched by name.
+  for (const rel of production.filter((entry) => !declarants.has(entry))) {
+    const text = readFileSync(join(REPO_ROOT, rel), 'utf8')
+    for (const symbol of wrapperSymbols) {
+      assert.equal(text.includes(symbol), false, `${rel} must not name ${symbol}: the wrapper is off by default, only the id helper is shared`)
+    }
+  }
+  // The seams that would mount it stay untouched by name. RE-POINTED (round
+  // 80): `packages/runtime/tool-dispatch/install.ts` is GONE — the A0/A1 cut
+  // deleted the legacy dispatch plane (it is in the frozen delete set;
+  // `ute-cut-closure.allow.json#retiredSubjects` books the file). An absent
+  // seam is the strongest form of "does not mount it", so the arm asserts the
+  // absence and keeps the by-name assertion on every seam that still exists.
+  assert.equal(
+    existsSync(join(REPO_ROOT, 'packages', 'runtime', 'tool-dispatch', 'install.ts')),
+    false,
+    'the legacy dispatch install seam was retired by the A0/A1 cut; a restored file must re-earn this arm',
+  )
   for (const path of [
-    join(REPO_ROOT, 'packages', 'runtime', 'tool-dispatch', 'install.ts'),
     join(REPO_ROOT, 'packages', 'runtime', 'team-services', 'src', 'mount.ts'),
     join(REPO_ROOT, 'packages', 'runtime', 'src', 'plugin', 'live', 'a5sf-realm-row.mjs'),
   ]) {
+    assert.ok(existsSync(path), `seam ${path} must exist: the by-name assertion below would otherwise be vacuous`)
     assert.equal(readFileSync(path, 'utf8').includes('createSettlementObservingDefinition'), false)
   }
   // No grant-shaped export: the wrapper records references, it never decides.
@@ -555,7 +604,7 @@ test('off by default: no production path imports or registers the dispatch wrapp
     .filter(([name, value]) => typeof value === 'function' && forbidden.test(name))
     .map(([name]) => name)
   assert.deepEqual(offenders, [])
-  console.log(`UTE3-NOT-WIRED production-imports=0 references=${references.length} grant-shaped=0`)
+  console.log(`UTE3-NOT-WIRED production-imports=${production.length - 2} (id-helper consumers only) wrapper=0 test-referrers=${testReferrers.length} grant-shaped=0`)
 })
 
 // ------------------------------------------------------------ mutation controls

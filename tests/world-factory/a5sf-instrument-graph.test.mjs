@@ -54,9 +54,19 @@ test('PD32-GRAPH: a World provisions the tree\'s own package into its profile mo
     for (const subpath of profilePackageOf(REPO_ROOT).subpaths) {
       assert.ok(graph.verified[subpath], `subpath ${subpath} is not recorded as resolved`)
     }
-    assert.ok(graph.verified['./web-tool'].includes('confined-web-tool.mjs'))
+    // RE-POINTED (round 80, A0/A1 cut) — the witness used to be `./web-tool`
+    // (`live/confined-web-tool.mjs`), a route-C SHADOW definition the cut
+    // retired. Commit 2e2d36543 removed it from this package's exports map AFTER
+    // every WorldFactory world refused with A5SF_PROFILE_GRAPH_UNRESOLVED while
+    // `ute-cut-closure` stayed green; the subpath and the module are gone
+    // (ute-cut-closure now also scans the NAME class, UTE_CLOSURE_NAMED_REF).
+    // The surviving web subpath is the one the shipped assembly actually uses,
+    // and the retired one must NOT come back: restoring it would re-name a
+    // deleted module, which is the exact reference class the cut closed.
     assert.ok(graph.verified['./web-transport'].includes('a5sf-web-transport.mjs'))
     assert.ok(graph.verified['./host'].includes('host.js') || graph.verified['./host'].includes('host.mjs'))
+    assert.equal(graph.verified['./web-tool'], undefined, 'the retired `./web-tool` shadow subpath must resolve nowhere')
+    assert.ok(!profilePackageOf(REPO_ROOT).subpaths.includes('./web-tool'), 'and it must stay out of the declaration the graph is built from')
   } finally {
     rmSync(root, { recursive: true, force: true })
   }

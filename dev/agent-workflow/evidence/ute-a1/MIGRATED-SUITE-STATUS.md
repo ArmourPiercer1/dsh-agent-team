@@ -2536,3 +2536,45 @@ more failures, and one of them was not a stale test:
   text), W5 (the legacy appended shell shadow is a retired surface; the revision-identity arm and
   the forged-revision refusal stay), PA15 (stale since round 75: Team-scoped `toolBindings` are
   carried VERBATIM onto every Member by design — asserted, with the residual still named).
+
+### Round 80, final pass — the tinf layer closes; the census layer's next exposure is named
+
+The tinf leg is **GREEN**: `803 tests / 797 pass / 0 fail / 6 skipped` over the same 51-file set
+(`sha256:6954daa6…`), from `805 / 784 / 15` at `8428c9d72`. The 15 red arms were all fixtures built on
+the appending mechanism the A1 cut deleted; the two count/closure instruments §2.4 named were
+re-pointed instead of retired. Full disposition (arm → subject → citation → successor) is
+`ROUND80-CI-CLOSURE.md` §3.1; the shape is the same in all six files: 12 retired blocks collapse into
+4 `RETIRED-BY-A0` pins that assert (a) the retired surface stays absent, (b) the post-cut mechanism
+directly (attach appends nothing, surface unchanged, zero confined calls, zero read facts), (c) every
+named successor exists. `ute-vnext-a1` stays 238 in the vitest population / 206 in the dispatch leg
+(204 pass, 2 declared skips) and `eb3-security-run --layer ci-integration` stays `passed=238 failed=0`.
+
+Re-pointed, not retired: `binding-digests` C1-F1a (the closure must still FOLLOW a literal dynamic
+import out of `tests/world-factory`, must FAIL CLOSED and NAME the deleted target, and a surviving
+consumer — `tinf-observer-closeout` → `packages/testkit/src/{effect-witness,contract-oracle}.ts` —
+carries the positive half); `a5sf-instrument-graph` PD32-GRAPH (`./web-tool` → the shipped
+`./web-transport`, plus a negative assertion that the retired subpath resolves nowhere);
+`a5sf-pd13` C2/C6 (locus and the DECLARED dynamic-read weakness kept verbatim; only the executor
+sentence moved from `delta.confined===1` to `delta.base===1`); `a5sf-p01` seven of eight arms kept by
+dropping a single dead import.
+
+Two `ute2-settlement` pins the hosted `ci-census` job died on were stale, not regressed, and are
+re-pointed: the settlement store's exact recorder set gained `recordRecheckDecision` (round 73 option
+A, `710edb87f`, `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, arms ADM-119…ADM-124 — a recorder,
+still covered by the forbidden-grant regex), and the dispatch wrapper's "off by default" arm now
+splits production/test references and asserts EVERY production referrer names only the pure
+`dispatchExecutionId` (the two legitimate consumers are the A1 centre, `4fd8f8e75`, and the host
+refusal entry, `d2453e45d`), with the retired `tool-dispatch/install.ts` seam asserted ABSENT.
+
+Census population: **unchanged, 11 roots / 599 files**, `accepted_by round80-a1-cut`. Regenerating the
+baseline at this tree reproduces the committed file byte for byte except `generated_at`; every file
+this pass edits is a `node:test` suite outside the vitest census population, so there is no honest
+"599 → lower" to record and no baseline commit was made.
+
+**Not closed:** the hosted `ci-census` job aborts before its own later steps, and running those steps
+locally exposes 18 arms in 5 route-C lane suites (`tests/ute-g1-{search,web,process,agentctl,uistate}`)
+that die on the same deleted append (`assert.ok(Array.isArray(fibers), 'the attach must answer the
+fibers it created')`). Their goldens were recorded WITH the shadow, so reproducing them requires
+either re-recording five corpora against the A1 composition or retiring five Required-path steps —
+an owner ruling, named in `ROUND80-CI-CLOSURE.md` §3.6, not an instrument fix. `ci-census` /
+`ci-required` therefore stay RED at this head, and no claim to the contrary is made anywhere.

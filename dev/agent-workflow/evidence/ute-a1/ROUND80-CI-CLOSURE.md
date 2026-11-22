@@ -257,3 +257,151 @@ A0/A1 cut retired, plus two count pins:
 None of these is a product regression: each is a test of a deleted surface, or a literal count. The
 next pass must retire them per subject (citation + successor, never a blanket skip) and re-point the
 two count pins.
+
+## 3. Final — the tinf layer is closed; the census layer's next exposure is NAMED, not claimed
+
+Head at the start of this pass: `8428c9d72` ("re-point the census population pins the cut moved").
+The pass closes §2.4 in full (the tinf leg goes `805 tests / 784 pass / 15 fail` → `803 / 797 / 0`),
+re-points the two instruments §2.4 only named, and then measures the layer the hosted `ci-census` job
+had never reached. That last measurement found a NEW red layer and it is **not** repaired here; §3.6
+says why, per subject, and what decision it needs.
+
+### 3.1 Disposition, per ARM (subject → citation → successor)
+
+Every retirement below is per SUBJECT: the arm tested a mechanism or module the A0/A1 cut deleted, and
+each row names the instrument that carries the guarantee now. No arm was skipped, no retired
+expectation was left asserting green, and no retired module was restored.
+
+| arm(s) | subject (what it measured) | citation | disposition → successor |
+| --- | --- | --- | --- |
+| `a5sf-pd12-bash-governance` D1, A1, A2, C1, C4 | the APPENDED confined-bash shadow (`confinedBashSpecOf` + `live/confined-bash-tool.mjs`) replacing the model-visible `bash` | `5d1349767` deleted the spec function and its module (the A1 law survives at `a5sf-realm-row.mjs:1164-1180`: the attach appends nothing); `ute-cut-closure.allow.json#retiredSurfaces[dsh.process-family]` | RETIRED (one falsifiable pin per suite) → `tests/ute-g1-fs/lane-suite.test.mjs`, `packages/runtime/test/vnext-admission.test.mjs`, `tests/world-factory/a5sf-native-bash-preservation.test.mjs` |
+| `a5sf-pd12` P0, S1, C2 | the pre-fix defect pin, surface neutrality, the PD-12 contrast | — | KEPT live, unchanged |
+| `a5sf-pd13-terminal-read-axis` D1, A1, A2, A3, C1 | the appended confined-TERMINAL read axis (`confinedTerminalSpecOf` + `live/confined-terminal-tool.mjs`): IO_READ_DENIED, the allow lane, the write lane, no-path-no-consult, shadow disposal | same commit; same ledger row (`dsh.process-family`) | RETIRED → `packages/runtime/test/vnext-admission.test.mjs` (the ONE admission point + its refusals), `tests/ute-g1-fs/lane-suite.test.mjs`, `a5sf-native-bash-preservation.test.mjs` (P4: the ceiling is the OS profile, not a lexical scan) |
+| `a5sf-pd13` D2 (definition-locus half) | the model-visible `bash` definition was the confined module's | same | RETIRED, but its **locus half stays live**: the realm still answers `faces.terminals`, and the retirement pin re-measures it |
+| `a5sf-pd13` C2, C6 | no-terminal-face contrast; the DECLARED weakness (a dynamic token is not attributable) | — | RE-POINTED: locus + weakness kept verbatim, only the executor sentence moved (`delta.confined===1` → `delta.base===1`, 0 confined calls) |
+| `a5sf-p01-realm-binding` A4, A4b | the guard consequence on the legacy dispatch algebra (`createGovernedSurface` / `guardDecision` / `GUARD_DENIAL_REASONS`) | `packages/runtime/tool-dispatch/index.ts` is in the A0 frozen delete set; `ute-cut-closure.allow.json#retiredSubjects` books the file | RETIRED → `packages/runtime/test/vnext-admission.test.mjs`, `packages/runtime/test/a5p2-admission-kernel.test.ts` |
+| `a5sf-p01` A1, A1b, A2, A3, A3b, A3c, A5 | the receipt reader / declaration contract of `a5sfAttachedToolNames` + `a5sfBindableRealmNames` (the row survives) | — | KEPT live (7 of 8 arms); only the import of the dead module left the file |
+| `binding-digests` C1-F1a | the oracle closure FOLLOWS a literal dynamic import out of `tests/world-factory` and binds the production bytes | target `packages/tools/agent-state-family/src/fs-state-store.mjs` is in the A0 delete set | RE-POINTED, not retired: the closure must still follow the edge, must FAIL CLOSED and NAME the missing target, and a SURVIVOR (`tinf-observer-closeout` → `packages/testkit/src/{effect-witness,contract-oracle}.ts`) carries the positive half |
+| `a5sf-instrument-graph` PD32-GRAPH | the profile module graph verifies the shipped `./web-tool` subpath | `2e2d36543` removed the subpath and `live/confined-web-tool.mjs` | RE-POINTED to `./web-transport` (the shipped assembly's subpath) + a negative assertion that `./web-tool` resolves nowhere and is not declared |
+| `u6-arc-d` (:162) | the ARC-D canary row mounting the PR5 probe FAMILY "AS SHIPPED" (spoof / swap / unbound / replay / post-teardown) | `ute-cut-closure.allow.json#retiredSurfaces[dsh.u6-probe-family]` (+ its three per-file `retiredSubjects` entries) | RETIRED → `packages/runtime/test/vnext-admission.test.mjs`; the pin also asserts the ledger row still names this subject and every successor exists |
+| `ute2-settlement/settlement.test.mjs` "NO SECOND AUTHORITY" | the settlement store surface is recorders/readers only — exact method set | stale since `710edb87f` (round 73 option A): `recordRecheckDecision` is a RECORDER, owner-approved, `CONTRACT-CHANGE-REQUEST-settlement-recheck.md`, arms ADM-119…ADM-124 | RE-POINTED: the recorder joins the exact set; the forbidden-grant regex still covers it, so a new DECIDER is still RED |
+| `ute2-settlement/dispatch-settlement.test.mjs` "off by default" | the dispatch-observing wrapper is mounted by no production path | stale since `4fd8f8e75` + `d2453e45d` import only the pure `dispatchExecutionId`; and `packages/runtime/tool-dispatch/install.ts` is in the A0 delete set | RE-POINTED and STRENGTHENED: references are split production/test, EVERY production referrer must not name the observing wrapper, and the retired install seam must stay absent |
+
+Retirement implementation (identical shape in all six files): the retired arms are replaced by ONE
+`RETIRED-BY-A0` pin that (a) asserts the retired spec functions stay `undefined` / the module stays
+absent, (b) asserts the post-cut mechanism directly (attach appends nothing, surface unchanged, zero
+spawns, zero confined calls, zero read facts), and (c) asserts every named successor exists on disk.
+A resurrected shadow or module is RED, not silent. `test('RETIRED-BY-A0' ...)` count: 4.
+
+### 3.2 What the tinf leg measures now
+
+```
+node scripts/dispatch-tests.mjs --run --leg tinf-instruments        # A5SF_REQUIRE_PINNED_HOST=1
+ℹ tests 803   ℹ pass 797   ℹ fail 0   ℹ skipped 6   (302 s; re-measured green at the commit: 803/797/0/6)
+DSH-TEST-DISPATCH mode=run leg=tinf-instruments suites=51 files=51 exit=0
+  set=sha256:6954daa63c627bfe8968b1221dadf58b2e6fcfdd8a562c39d3a7a51f6c49d556
+```
+
+The set hash is the same 51-file set as the red run: the population did not shrink, the arms changed
+disposition. 805 → 803 because 12 retired blocks collapsed into 4 pins (−2 net: pd12 −4, pd13 −5,
+p01 −1, u6-arc-d ±0, and the two re-pointed instruments kept their count).
+
+### 3.3 Census population — delta 0, and that is the honest answer
+
+`node scripts/census-plan.mjs --write-population-baseline --out /tmp/… --accepted-by round80-a1-cut`
+reproduces `dev/ci/census-population-baseline.json` byte for byte except `generated_at` (and the
+`accepted_reason` I passed on the command line). `roots=11 files=599`, `accepted_by=round80-a1-cut`
+were already landed at `93ba0a1d1`/`8428c9d72`; **this pass moves no census file** (all six files it
+edits are `node:test` suites outside the vitest census population). Regenerating the baseline to
+"lower" the number would have been a lie about the population, so no baseline commit is made here.
+
+### 3.4 Gates, as run at this working tree (all pasted verbatim)
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+  ℹ tests 206  ℹ pass 204  ℹ fail 0  ℹ skipped 2 ; suites=7 files=7 exit=0
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d… refused=0 findings=0 ; UNCOLLECTED 38
+node scripts/ute-cut-closure.mjs --check
+  UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+node scripts/ute-p0-assets.mjs --check
+  UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+node scripts/docs-sync.mjs --check
+  docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+node scripts/place-dist-glue.mjs .
+  place-dist-glue: done (29 placement(s))   # every one byte-identical
+node scripts/eb3-ci-required.mjs
+  EB3-CI-REQUIRED pass workflows=10 findings=0
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+  EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+node scripts/ci-pr-gate.mjs --full --census-captures 2
+  DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=279.1
+  census leg: pass, 234.3 s, captured 599f/7412l ×2, identity sets identical, counts moved /
+    set did not vs the published 626 / 7936; comparison artifact committed at
+    dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261122T194752Z-3.json
+node --test tests/ute2-settlement/settlement.test.mjs tests/ute2-settlement/dispatch-settlement.test.mjs
+  ℹ tests 32  ℹ pass 32  ℹ fail 0   (the hosted ci-census lane's failing step, green)
+```
+
+### 3.5 Per-job verdicts
+
+| job | evidence in this pass | verdict |
+| --- | --- | --- |
+| `pr-gate` | `ci-pr-gate --full --census-captures 2` (the exact hosted argv) | **PASS** — 10/10 legs |
+| `ci-integration` | hosted red at `8428c9d72` was step 24 `tinf-instruments` (log: `##[error]` right after that step's `✔` block, truncated spec lines). Locally: 51/51 files, 803 tests, 0 fail; plus `ute-p0-assets`, `ute-cut-closure`, family-definitions/boundaries, tool-acceptance, the bound vitest leg 238/238 | **PASS locally**; hosted re-run is the proof |
+| `ci-security` | hosted green at `8428c9d72`; unchanged by this pass | **PASS** (hosted) |
+| `ci-product` / `ci-fast` | hosted green at `8428c9d72`; the eight host-free legs are inside `--full` above (typecheck, lint-identities new 0/resolved 13, artifacts-at-head 1940/0) | **PASS** |
+| `ci-census` | hosted red at `8428c9d72` = step "Next host — the rc.5 lane", `tests/ute2-settlement/settlement.test.mjs` "NO SECOND AUTHORITY" + `dispatch-settlement.test.mjs` "off by default". Both re-pointed above; the lane's full argv is 165/165 locally. **The job then aborts before its own later steps** — see §3.6, which is what those steps expose. | **lane step PASS; job NOT green** |
+| `ci-required` (`grade`) | needs GitHub's `needs` payload; the manifest half is `EB3-CI-REQUIRED pass workflows=10 findings=0` | **UNPROVEN locally**; it will be RED while `ci-census` is red |
+| `pr-settlement-gate` | new dated comment covering the pushed 40-hex head (§3.7) | **PASS after the comment** |
+
+### 3.6 The layer the census job had never reached — 18 arms, 5 suites, OWNER DECISION
+
+Once the `next-host` step is green the census job proceeds to the UTE G1 argv
+(`census-runtime.yml:434` = `tests/ute1-fs/… tests/ute-g1-{fs,search,web,process,agentctl,uistate}/…`).
+Run locally at this tree, the argv is **89 tests / 67 pass / 22 fail**. Four of the 22 are the
+`tests/ute1-fs/native-fs-binding.test.mjs` assembly arms refusing because the pinned next-host tree is
+not materialized here (`ute1-fs: '@deepseek-ai/dsh-tool-fs' resolved OUTSIDE the pinned next-host
+tree; refusing the legacy fallback`) — that is a local prerequisite, not a red. The other **18 arms in
+5 suites are one single root cause**:
+
+```
+tests/ute-g1-{search,web,process,agentctl,uistate}/lib/world.mjs
+  const fibers = await row.attachA5sfNativeToolModules(...)
+  assert.ok(Array.isArray(fibers), 'the attach must answer the fibers it created')   # ← throws
+```
+
+`ute-g1-process/lib/world.mjs:1-30` states the subject in one sentence: the world is "the route-C
+`bash` shadow over the Member's confined `subprocess` face … the attach appends
+`confined-bash-tool.mjs` (PD-12)". The A1 cut deleted that appending mechanism and every
+`confined*SpecOf` (`5d1349767`) — the composition supplies the natives now — so these worlds have no
+tool to measure, their goldens (recorded WITH the shadow) can no longer be reproduced, and the
+negative-control battery reports `NC-VERDICT RED controls=6 failed=5` because five of its six controls
+also go through `mountRouteCWorld`.
+
+This is the SAME retirement class as §3.1, but its disposition is NOT a test-local edit, and I did not
+make it:
+
+- retiring it means deleting or rewriting **five `census-runtime.yml` steps and their manifest legs**
+  — i.e. removing part of the Required path's own composition, and re-deciding the lane's verdict
+  vocabulary (`UTE-G1-*-VERDICT … new-path=ABSENT … retirement=FORBIDDEN`), which is an owner ruling,
+  not an instrument fix;
+- re-pointing it means re-recording five golden corpora against the A1 composition, which is a new
+  suite (the "new path" these lanes deliberately refuse to claim), again an owner decision;
+- resurrecting the shadow is forbidden by A1.
+
+So §3.4's green `ci-pr-gate` and §3.5's green `ci-integration` stand, and **`ci-census` / `ci-required`
+stay RED** at this head for these 18 arms. Naming them here is the deliverable; silently deleting five
+Required steps, or skipping the arms, would not be.
+
+### 3.7 Owner items
+
+1. **The UTE G1 route-C lane retirement (§3.6)** — needs the ruling described there before
+   `ci-census` can go green.
+2. **`ci-required`'s `grade` job** needs GitHub's `needs` payload; locally only the manifest half is
+   provable.
+3. **The PR is NOT a draft** (`gh pr view 822`: `isDraft=false`, no labels) — `ci-census` therefore
+   DOES run on every pushed head, which is how §3.6's layer was found. §6.4 above ("deferred while a
+   draft") was written against an older head and is stale; this section supersedes it.
+4. **`ci-census` needs the provisioned rc.5 host** on a fresh runner; absent, the lane REFUSES by name
+   (a refusal, not a pass).
