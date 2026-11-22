@@ -436,4 +436,35 @@ The vitest population is unchanged at **238**; the new arms are node:test arms i
 `ute-vnext-a1` leg (204 pass, was 202). `ci-pr-gate --full --census-captures 2` and its census
 artifact are recorded in §7 below, which is committed after this paragraph so the gate runs against
 a committed tree (the round-78 §5 disclosure applies identically: an uncommitted install surface is
-red by construction for the A4-PR7 freshness fence, and that red was NOT papered over).
+red by construction for the A4-PR7 freshness fence, and that red was NOT papered over). Its first
+run at the code commit was RED on the p4t6 scannable-surface ledger (one unbooked new module); §7
+records that red, its booking fix and the passing re-run rather than hiding it.
+
+## 7. `ci-pr-gate --full --census-captures 2` at the committed tree
+
+```
+$ node scripts/ci-pr-gate.mjs --full --census-captures 2
+DSH-CI-LEG leg=census verdict=pass seconds=257.6 detail=roots: nine (packages/*/test) via the root
+  vitest config; baseline … = 0 titled reds + 0 collection files; captured 599f/7412l, 599f/7412l
+  vs baseline-declared 626 / 7936; 2 captures, identical identity sets — COUNTS MOVED, SET DID NOT
+  — identity set IDENTICAL to the published baseline — comparison written to
+  dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261122T161736Z-3.json
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=301.9
+```
+
+**One honest red before this pass, not papered over.** The FIRST run at the code commit
+(`274aec2cc`, census artifact `census-comparison-20261122T161119Z-3.json`) was
+`pass=9 fail=1`: the census leg reported six new reds in
+`packages/testkit/test/p4t6-session-event-scan.test.ts` — the p4t6 scannable-surface ledger counts
+every `packages/**` source and the round-79 module `vnext/pre-dispatch-abort.mjs` was not booked
+(`scanner counts 1312, ledger derives 0 + 1311 = 1311`). That is the ledger's job: a new file
+reddens the population until it is booked. The fix is the established, boring one — a booking file
+(`p4t6-bookings/round79predispatch.json`, measured delta 1311 -> 1312) and the coverage title's
+literal updated to the measured population; no assertion was relaxed, and the ledger's own
+RED-first sensitivity controls still pass (20/20 in that file). After the booking commit
+`64a841c72` the full gate passed as pasted above, with the census artifact
+`census-comparison-20261122T161736Z-3.json` committed alongside this paragraph.
+
+The census counts note (`COUNTS MOVED, SET DID NOT`) is the standing condition the gate itself
+resolves: the counts are context, the identity set is the verdict, and the set is IDENTICAL to the
+published baseline in both captures.

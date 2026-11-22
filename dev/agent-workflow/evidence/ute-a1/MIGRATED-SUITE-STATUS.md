@@ -2451,7 +2451,10 @@ reproduced unchanged), realm-lane / os-probe / work-turn-reader / template-bindi
 78. vitest population **238 pass** (unchanged; the new arms are node:test). Catalog `785 / 38
 uncollected / 14 excluded` findings 0; cut-closure `cut(0/148)` findings 0; P0 `cut(148/148)`
 findings 0; docs-sync findings 0; **29** placements; ci-required `workflows=10 findings=0`;
-`ci-pr-gate --full --census-captures 2` **PASS** (recorded in `RC5-ACCEPTANCE.md` §7).
+`ci-pr-gate --full --census-captures 2` **PASS pass=10 fail=0** at `64a841c72` (census 2 captures,
+identity set IDENTICAL to the published baseline). Its FIRST run at the code commit was red on the
+p4t6 scannable-surface ledger (the new module was unbooked); booked with measured delta
+1311 -> 1312, no assertion relaxed — the red and the fix are in `RC5-ACCEPTANCE.md` §7.
 
 **D drivers, both hosts, `--boots 2`, re-run at the code commit** (transcripts:
 `dev/agent-workflow/evidence/ute-a1/rc5/round79/*.log`): `run-boot.mjs` PASS 2/2, `run-boot-d2.mjs`

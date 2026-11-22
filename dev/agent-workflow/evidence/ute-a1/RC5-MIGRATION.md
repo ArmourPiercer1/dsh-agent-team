@@ -635,8 +635,12 @@ vnext-admission on rc.2         124/124
 vnext-admission on rc.5         122/124 (ADM-96/97 red: pre-existing rc.5 MCP `AbortSignal.any` shape, unchanged by this round)
 ```
 
-`ci-pr-gate --full --census-captures 2` is recorded in `RC5-ACCEPTANCE.md` §7 (it is run against the
-committed tree, as in round 78).
+`ci-pr-gate --full --census-captures 2` **pass=10 fail=0** at `64a841c72` (census 2 captures,
+identity set IDENTICAL to the published baseline; artifact
+`dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261122T161736Z-3.json`).
+Its first run at the code commit was red for one honest bookkeeping reason — the new module was not
+yet in the p4t6 scannable-surface ledger — fixed by booking it (1311 -> 1312), never by relaxing the
+arm; `RC5-ACCEPTANCE.md` §7 keeps both runs.
 
 ### Not proven (this round)
 
