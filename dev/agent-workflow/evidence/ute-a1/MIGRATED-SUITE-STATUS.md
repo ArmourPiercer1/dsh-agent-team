@@ -2000,3 +2000,61 @@ And the other hosted layers, re-measured after the last edit: `ci-security`
 `contracts=6 files=8 exit=0` (64 tests). `ci-fast` is docs-only: `docs-probe blocking=0`,
 `docs-sync findings=0 blocking=0`. The one hosted leg this workstation cannot run is `next-host`
 (§6.1) and the one instrument still red is `ute-family-inventory.test.mjs` (§6.2).
+
+## Round 72b (rc.5 migration) — 2026-11-22
+
+Full evidence: `RC5-MIGRATION.md`. The external review's #1 priority was that the product is validated
+only on DSH **0.2.0-rc.2** while A0 targets **0.2.2-rc.5**, so rc.2 greens cannot be promoted. This
+round makes the rc.5 lane RUN (B1–B4), collects the B5 signal, and reports the truth.
+
+**Provisioned and built.** `tests/deepseek-harness-next` (a SYMLINK into the main checkout, i.e. one
+tree shared by every worktree — recorded deliberately) is now installed and built:
+HEAD `9c2670d3bce5275e0d1610272958121af87787bb`, version `0.2.2-rc.5`, pnpm 11.28.5, own build
+10/10 gates. Pinned native assets (`@deepseek-ai/node-addon-system-linux-x64@0.1.2`) verified:
+`system.node` `54a9c25c…/17360 B/0o755`, `landlock-run` `a752bc72…/38552 B/0o755`. The tree's
+`git status --porcelain` is empty: pristine upstream, no patch. (`--assets` had to be run through the
+same transport anchored at the resolved tree because the CLI's containment check is lexical and a
+symlinked worktree can never satisfy it; recorded, worked around, not "fixed" here.)
+
+**Resolution is host-anchored, and a real false green is closed.** The lane's old resolver returned
+the first successful `createRequire(<tree>/<anchor>)` hit **without containment**; measured, that
+returns the repo's rc.2 `dsh-tool-fs`. `resolveInsideTree` now requires the realpath to be inside the
+tree, skips escapes, and names them on failure. `TEAM_TEST_HOST=next|legacy` (new
+`tests/next-host/host-select.mjs`) selects the host, and the test loader hook redirects TEAM bare
+`@deepseek-ai/*` imports into the selected tree so the product cannot bind rc.2 scope while the world
+builds rc.5 scope. Legacy is the default and inert.
+
+**B3/B4 ported.** A LABELED `workingDirectory` double (the `approval` double's precedent) because
+rc.5 `tool-fs` statically injects it and Cordis silently defers otherwise — measured: without the
+double rc.5 registers **no** read/write/edit; with it, all three. Dispatch now has the rc.5 batch
+shape (`calls:[{type:'tool-call',…}]` → `batch.results[0].result`) with
+`dsh-tool-executor-native` mounted; the legacy shape is kept verbatim for rc.2.
+
+**Measured, per suite:**
+
+| suite | result |
+| --- | --- |
+| `tests/next-host` (existing lane) | **19/19 PASS**, incl. a real rc.5 boot on :13000 (boot 1255 ms, session served, session log on disk) and A1–A6 host-runtime behaviours |
+| `tests/ute-g1-fs/lane-suite` (rc.5 lane) | **5/5 PASS**; 16/16 vectors reproduce the rc.2 golden through rc.5, 13/13 negative controls |
+| A1 slice on rc.2 (default) | **36/36 PASS** — the port changed nothing for the legacy host |
+| A1 slice on rc.5 | **33/36 PASS** — first rc.5 measurement of the product slice |
+
+**The three rc.5 reds, named:**
+
+1. **SLICE-35** — the confinement invariant is RED on rc.5, the intended B5 signal: the confined
+   provider does not override `patchText`, `deleteFile`, `moveFile` (plus four internal helpers of the
+   rc.5 concrete provider: `patchContent`, `requireFile`, `withLocks`, `writeTarget`). `apply_patch`,
+   delete and move reach the backend with the Member lane never consulted. **B5 not fixed** (separate
+   product task). No claim of "FS confinement holds on rc.5" may be made until it is.
+2. **SLICE-21 / SLICE-30** — genuine rc.5 drift (B6), NOT a porting bug. A pre-dispatch abort on rc.5
+   is settled by the batch scheduler's synthetic `ABORTED_BEFORE_DISPATCH` result and the pipeline
+   never runs, so `tools/result` never fires. One probe, both hosts:
+   `ABORT-PROBE mode=legacy toolsResultEvents=1` vs `mode=next toolsResultEvents=0`. The arms stay
+   red on purpose: a product that keys durable Stop evidence off `tools/result` sees nothing on rc.5,
+   and that needs a product decision, not a weakened assertion.
+
+**Gates, unchanged and green:** leg 182 cases / 180 pass + 2 disclosed skips, catalog 785 tests /
+38 uncollected / 14 excluded, cut-closure `cut(0/148)`, P0 `cut(148/148)`, docs-sync 0 findings,
+28 placements, ci-required 10 workflows / 0 findings, bound vitest `PASS 238`. No row in
+`CAPABILITY-MATRIX-C.md` was upgraded by this round — the rc.5 greens are lane evidence, and the
+matrix upgrade is an owner decision.

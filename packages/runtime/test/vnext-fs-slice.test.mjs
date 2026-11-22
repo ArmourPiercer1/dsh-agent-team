@@ -33,11 +33,43 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { after, before, test } from 'node:test'
-import { register } from 'node:module'
+import { createRequire, register } from 'node:module'
 import { hostNativeSpecs, mountHostModules } from '../src/plugin/vnext/realm-lane.mjs'
-import { instrumentedFileSystemClass, loadFsContractSeams } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+import {
+  executeToolDispatch, instrumentedFileSystemClass, loadFsContractSeams, provideWorkingDirectoryDouble,
+} from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+import { resolveSelectedHostModule, testHostMode } from '../../../tests/next-host/host-select.mjs'
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
+/** WHICH pinned host this slice grades against (TEAM_TEST_HOST=next | legacy). */
+const HOST_MODE = testHostMode()
+
+/**
+ * Resolve a host module entry for the SELECTED host. On rc.2 the repo's own install is the host,
+ * so a `packages/runtime`-anchored require is correct; on rc.5 the same require returns the rc.2
+ * package, which is the mixed-host substitution this lane refuses.
+ */
+const resolveHostEntry = (spec) => (HOST_MODE === 'next'
+  ? resolveSelectedHostModule(spec, REPO_ROOT)
+  : createRequire(join(REPO_ROOT, 'packages/runtime/package.json')).resolve(spec))
+
+/** A require anchored at the package that OWNS `spec`'s entry (`<pkg>/lib/index.js` -> `<pkg>`). */
+const requireOfOwningPackage = (spec) => createRequire(join(dirname(dirname(resolveHostEntry(spec))), 'package.json'))
+
+/**
+ * Resolve from the owning package first, then from the SELECTED host. Some prerequisite providers
+ * are not dependencies of the package that consumes them (a real composition mounts them explicitly),
+ * so the owning-package walk is the narrow first try; the host resolver is the fallback that keeps
+ * rc.5 from silently borrowing an rc.2 package.
+ */
+const resolveFromPackageOrHost = (requireOfPackage, spec) => {
+  try {
+    return requireOfPackage.resolve(spec)
+  } catch (error) {
+    if (error?.code !== 'MODULE_NOT_FOUND') throw error
+    return resolveHostEntry(spec)
+  }
+}
 
 // The admission point is TypeScript importing product packages with `.js` specifiers; the repo's
 // hooks resolve those to `.ts`. Register them BEFORE the dynamic import (a static import would be
@@ -62,8 +94,8 @@ const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze
 
 /** Build one world. `mountRealm: false` is the negative control, not a second composition. */
 async function buildWorld ({ mountRealm, dir, admission, durable, askPath, observation, approvalMode = 'allowed-once', search = false, web = false, webNetwork = 'allow', webTestEndpoints, bash = false, revokeAfterDecision = false }) {
-  const seams = await loadFsContractSeams(REPO_ROOT)
-  const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
+  const seams = await loadFsContractSeams(REPO_ROOT, HOST_MODE)
+  const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, NativeToolExecutor, createScope, bindScopeParent, nativeToolModules, row } = seams
 
   const inside = join(dir, 'inside')
   const outside = join(dir, 'outside')
@@ -77,25 +109,31 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   const root = new Context()
   await root.plugin(SystemPrompt)
   await root.plugin(ToolRuntime)
+  // B4 (rc.5 only): dispatch is behind a selected ToolExecutor service. On the legacy host it is
+  // built in; on rc.5 an unmounted executor is TOOL_EXECUTOR_UNAVAILABLE, not a tool refusal.
+  if (HOST_MODE === 'next') await root.plugin(NativeToolExecutor)
   // The composition's provider: what a member would resolve if nothing confined it.
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
+  // B3 (rc.5 only): `dsh-tool-fs` statically injects `workingDirectory`; Cordis defers the plugin
+  // silently when it is absent, so the world would have NO read/write/edit. LABELED DOUBLE — the
+  // same shape as the `approval` double below: it answers "which directory is this session in?"
+  // and nothing else. Never mounted on rc.2, where the inject does not exist.
+  if (HOST_MODE === 'next') provideWorkingDirectoryDouble(root, dir)
   // RUNG 4. The search module injects `subprocess` and `spill` (and `systemPrompt`, already here),
   // so those two providers are mounted only when the world is asking for the search family. Loading
   // them always would make every other arm depend on a spawn service it never uses.
   let searchModules
   if (search || bash) {
-    const { createRequire } = await import('node:module')
-    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
     // The subprocess provider is not a direct dependency of packages/runtime; it resolves from the
     // search module's own scope, which is the package that declares it. BOTH rung 4 and rung 6 need
     // it: the confined face WRAPS the base service, so the base service has to exist first.
-    const searchRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search/package.json'))
+    const searchRequire = requireOfOwningPackage('@deepseek-ai/dsh-tool-fs-search')
     const LocalSubprocessRuntime = (await import(pathToFileURL(searchRequire.resolve('@deepseek-ai/dsh-subprocess-local')).href)).default
     await root.plugin(LocalSubprocessRuntime)
     if (search) {
-      const LocalSpillStore = (await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-spill-local')).href)).default
+      const LocalSpillStore = (await import(pathToFileURL(resolveHostEntry('@deepseek-ai/dsh-spill-local')).href)).default
       await root.plugin(LocalSpillStore, { root: join(dir, 'spill'), cleanupPeriodDays: 1 })
-      searchModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-fs-search')).href)
+      searchModules = await import(pathToFileURL(resolveHostEntry('@deepseek-ai/dsh-tool-fs-search')).href)
     }
   }
   // The two states of the observation policy. The product default in A1/B is OFF, which in this
@@ -171,18 +209,16 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   // allocates the PTY through the BASE subprocess service; both are host plugins, and the launcher
   // pin is the composition's (the same one the OS arms measured).
   if (bash) {
-    const { createRequire } = await import('node:module')
     const launcher = join(REPO_ROOT, 'packages/runtime/sandbox-provider/launcher/landlock-prelauncher.py')
     // Neither sandbox package is a direct dependency of packages/runtime; they resolve from the
     // shell module's own scope, which is what a real composition that hosts a PTY would declare.
-    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
-    const shellRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-bash-persistent/package.json'))
-    const SandboxPolicyService = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-sandbox-policy')).href)).default
-    const LocalSandboxProvider = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-sandbox-local')).href)).default
+    const shellRequire = requireOfOwningPackage('@deepseek-ai/dsh-tool-bash-persistent')
+    const SandboxPolicyService = (await import(pathToFileURL(resolveFromPackageOrHost(shellRequire, '@deepseek-ai/dsh-sandbox-policy')).href)).default
+    const LocalSandboxProvider = (await import(pathToFileURL(resolveFromPackageOrHost(shellRequire, '@deepseek-ai/dsh-sandbox-local')).href)).default
     // `sandboxPolicy` statically injects `sessionProjections`, and Cordis DEFERS a plugin whose
     // static inject is unmet - silently, from the caller's point of view. The first attempt mounted
     // it this way and root.get('sandboxPolicy') stayed undefined. Give it what it injects.
-    const SessionProjection = (await import(pathToFileURL(shellRequire.resolve('@deepseek-ai/dsh-session-projection')).href)).default
+    const SessionProjection = (await import(pathToFileURL(resolveFromPackageOrHost(shellRequire, '@deepseek-ai/dsh-session-projection')).href)).default
     await root.plugin(SessionProjection)
     await root.plugin(SandboxPolicyService, { mode: 'workspace-write', workspaceRoot: inside })
     await root.plugin(LocalSandboxProvider, {
@@ -198,13 +234,11 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   let webModules
   let webFetchCalls = 0
   if (web) {
-    const { createRequire } = await import('node:module')
-    const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
     // `dsh-web` is not a direct dependency of packages/runtime; the tool module that consumes it is,
     // so the base class resolves from that module's own scope.
-    const toolWebRequire = createRequire(hostRequire.resolve('@deepseek-ai/dsh-tool-web/package.json'))
+    const toolWebRequire = requireOfOwningPackage('@deepseek-ai/dsh-tool-web')
     const WebRuntime = (await import(pathToFileURL(toolWebRequire.resolve('@deepseek-ai/dsh-web')).href)).default
-    webModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-web')).href)
+    webModules = await import(pathToFileURL(resolveHostEntry('@deepseek-ai/dsh-tool-web')).href)
     await root.plugin(WebRuntime)
     webFace = {
       effective: {
@@ -301,9 +335,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
       ...(web ? [{ url: '@deepseek-ai/dsh-tool-web', module: webModules, expectedTools: ['web_fetch'] }] : []),
     ]
     if (bash) {
-      const { createRequire } = await import('node:module')
-      const hostRequire = createRequire(join(REPO_ROOT, 'packages/runtime/package.json'))
-      shellModules = await import(pathToFileURL(hostRequire.resolve('@deepseek-ai/dsh-tool-bash-persistent')).href)
+      shellModules = await import(pathToFileURL(resolveHostEntry('@deepseek-ai/dsh-tool-bash-persistent')).href)
       extra.push({ url: '@deepseek-ai/dsh-tool-bash-persistent', module: shellModules, expectedTools: ['bash'] })
     }
     const specs = hostNativeSpecs(extra.length === 0 ? [primary] : [primary, ...extra])
@@ -421,13 +453,15 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   }
 
   const dispatch = async (name, args, callId, options = {}) => {
-    const settled = await root.get('tools').execute({
+    // B4: rc.5 takes a BATCH input (`calls:[{type:'tool-call', …}]` with JSON-string arguments)
+    // and answers `batch.results[0].result`; the legacy shape stays verbatim for rc.2.
+    const settled = await executeToolDispatch(root.get('tools'), {
       signal: options.signal ?? new AbortController().signal,
       callId,
       name,
       arguments: args,
       agent: agentKey,
-    })
+    }, { hostMode: HOST_MODE })
     const text = Array.isArray(settled.content)
       ? settled.content.map((part) => (part?.type === 'text' ? part.text : '')).join('')
       : ''
@@ -1153,7 +1187,7 @@ test('SLICE-35 — the confined provider covers EVERY base entry point that touc
   const { createConfinedFileSystemClass } = await import('../team-services/src/fs.ts')
   // The same seam loader the rest of this suite uses: the provider under test is the PINNED baseline's
   // fs-local, resolved from the host tree, never a copy the test happens to find.
-  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT)
+  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT, HOST_MODE)
   // NOT IO ENTRY POINTS, and why: path algebra and locking (resolve / processPath /
   // processPathFromHostPath / fileUrl / contains) compute names without touching the filesystem, and
   // the confined callers always pass their result through an admitted method; withLock is the
@@ -1198,7 +1232,7 @@ test('SLICE-36 — the coverage invariant actually detects an unconfined entry p
   // host does - and require the same derivation to name it. Without this, a refactor that made
   // SLICE-35 vacuously green (empty derivation) would look like success.
   const { createConfinedFileSystemClass } = await import('../team-services/src/fs.ts')
-  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT)
+  const { LocalFileSystem } = await loadFsContractSeams(REPO_ROOT, HOST_MODE)
   const NOT_IO = new Set([
     'constructor', 'withLock', 'resolve', 'processPath', 'processPathFromHostPath',
     'fileUrl', 'contains', 'versionAfterWrite', 'sandboxMode',
@@ -1220,9 +1254,21 @@ test('SLICE-36 — the coverage invariant actually detects an unconfined entry p
   const ConfinedFuture = createConfinedFileSystemClass(FutureProvider, async () => {})
   const confined = new Set(Object.getOwnPropertyNames(ConfinedFuture.prototype))
   const unconfined = derive(FutureProvider).filter((name) => !confined.has(name))
+  // HOST-RELATIVE EXPECTATION, still exact. The fixture ADDS three names to whatever the selected
+  // host already declares, so the expected set is "the selected base's own un-overridden entry
+  // points PLUS those three". Deriving it (instead of hard-coding three) is what lets this control
+  // run on rc.5, whose base carries four MORE path-touching entry points than rc.2: a hard-coded
+  // expectation would fail here for the right reason but with the wrong message, and satisfying it
+  // by allowlisting rc.5's names would turn the control into a no-op.
+  const ConfinedBase = createConfinedFileSystemClass(LocalFileSystem, async () => {})
+  const confinedBase = new Set(Object.getOwnPropertyNames(ConfinedBase.prototype))
+  const expected = [...new Set([
+    ...derive(LocalFileSystem).filter((name) => !confinedBase.has(name)),
+    'deleteFile', 'moveFile', 'patchText',
+  ])].sort()
   assert.deepEqual(
     unconfined.sort(),
-    ['deleteFile', 'moveFile', 'patchText'],
-    'the derivation must name exactly the un-overridden path-touching methods a newer host would add',
+    expected,
+    'the derivation must name exactly the un-overridden path-touching methods: the selected base\'s own + the three the fixture adds',
   )
 })

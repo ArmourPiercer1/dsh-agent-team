@@ -25,7 +25,7 @@ import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { join, resolve } from 'node:path'
+import { join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 import { HOST_PORT_BANDS, NEXT_HOST, nextHostTree, portsOfBands } from '../paths.mjs'
@@ -227,23 +227,76 @@ export function assertNextHostAssets(repoRoot = NEXT_LANE_REPO_ROOT, pinned = NE
  * here rather than as a silent private-path import).
  */
 const PER_SPEC_ANCHORS = [
+  'packages/fs/tool-fs/package.json',
+  'packages/fs/tool-fs-search/package.json',
+  'packages/fs/fs-local/package.json',
+  'packages/fs/fs-observation-policy/package.json',
+  'packages/fs/fs-patch/package.json',
+  'packages/fs/fs-sandbox/package.json',
+  'packages/shell/tool-bash-persistent/package.json',
+  'packages/sandbox/sandbox/package.json',
+  'packages/sandbox/sandbox-local/package.json',
+  'packages/sandbox/sandbox-policy/package.json',
+  'packages/web/tool-web/package.json',
+  'packages/web/web/package.json',
+  'packages/spill/spill-local/package.json',
+  'packages/subprocess/subprocess-local/package.json',
   'packages/core/tools/package.json',
+  'packages/core/scope/package.json',
+  'packages/core/tool-executor-native/package.json',
+  'packages/core/session/package.json',
+  'packages/core/agent/package.json',
+  'packages/llm/llm/package.json',
+  'packages/attachment/attachment-local/package.json',
   'packages/test-support/agent-loop-testkit/package.json',
   'packages/test-support/tool-testkit/package.json',
   'packages/ptc-runtime/ptc-runtime/package.json',
-  'packages/core/agent/package.json',
+  'apps/cli/package.json',
 ]
 
-/** Resolve one host package entry to an absolute file path. */
-export function resolveHostModule(spec, tree = nextTree()) {
-  for (const rel of PER_SPEC_ANCHORS) {
+/**
+ * Resolve one package specifier to a file INSIDE the pinned next tree.
+ *
+ * WHY CONTAINMENT IS PART OF RESOLUTION (measured 2026-11-22): Node's resolver
+ * walks UP, so `createRequire(<tree>/packages/fs/fs-local/package.json)`
+ * resolves `@deepseek-ai/dsh-tool-fs` — which fs-local does not depend on — by
+ * climbing out of the host tree into the Team repo's own `node_modules` and
+ * returning the 0.2.0-rc.2 copy. That is a FALSE GREEN of exactly the kind this
+ * lane exists to prevent: the test would claim rc.5 while executing rc.2. An
+ * out-of-tree hit is therefore not a resolution; the next anchor is tried, and
+ * if every anchor escapes or misses, the lane refuses with the escape evidence.
+ *
+ * The tree may be a SYMLINK shared with other worktrees, so containment is
+ * checked against its realpath: resolving through the symlink is not an escape.
+ */
+export function resolveInsideTree(spec, tree = nextTree(), anchors = PER_SPEC_ANCHORS) {
+  const resolvedTree = realpathSync(tree)
+  const escapes = []
+  for (const rel of anchors) {
+    let require
     try {
-      return createRequire(join(tree, rel)).resolve(spec)
+      require = createRequire(join(tree, rel))
+    } catch {
+      continue
+    }
+    let file
+    try {
+      file = realpathSync(require.resolve(spec))
     } catch (error) {
       if (error?.code !== 'MODULE_NOT_FOUND') throw error
+      continue
     }
+    if (file === resolvedTree || file.startsWith(`${resolvedTree}${sep}`)) return file
+    escapes.push(`${rel} -> ${file}`)
   }
-  throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} — is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?`)
+  throw new NextHostMissingError('MODULE_UNRESOLVED', `the next host tree at ${tree} does not resolve ${spec} inside itself`
+    + `${escapes.length === 0 ? '' : `; ${String(escapes.length)} anchor(s) escaped into another tree (${escapes.slice(0, 3).join(' | ')})`}`
+    + ' — an out-of-tree hit is the LEGACY host, not this one; is the tree installed (pnpm install --ignore-scripts --frozen-lockfile)?')
+}
+
+/** Resolve one host package entry to an absolute file path (contained in the tree). */
+export function resolveHostModule(spec, tree = nextTree()) {
+  return resolveInsideTree(spec, tree)
 }
 
 /** Dynamic-import one host public package entry by package name. */
