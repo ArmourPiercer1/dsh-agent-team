@@ -10452,3 +10452,31 @@ picked a tools-less auxiliary request; the probe now selects a tool-carrying req
 
 Gates at `186d2c5c4`: leg `suites=7 files=7 exit=0` (168 pass + 2 disclosed skips), catalog `tests=889
 findings=0`, cut-closure, P0, docs-sync, place-dist-glue 28, ci-required pass, bound leg `PASS 238`.
+
+### R65 — the owner-facing D acceptance report exists, with the frozen C1–C18 list quoted verbatim
+
+`dev/agent-workflow/evidence/ute-a1/D-ACCEPTANCE-REPORT.md` is now the single reviewable document. It uses the
+FROZEN list from `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md:30-52` (19 rows: C1..C18 plus the
+owner's C14b split of C14), quotes each row's capability and disposition verbatim, and adds status/evidence
+columns.
+
+Fresh facts pasted in the report: HEAD, 132 commits since A0, `deleted=148` / `delete=146 replace=2 keep=32`,
+28 dist placements, leg 168 pass + 2 disclosed skips, catalog `tests=889` with UNCOLLECTED=41 exactly at the
+ceiling, migrated population 238, host pristine at the pinned SHA with porcelain empty (CORE PATCH BUDGET = 0
+honoured).
+
+Honest outcomes it states rather than smooths: no row is PRODUCT-PROVEN; `d3:persistent-subprocess` and
+`d2:revocation` are REFUTED; `d:member-read-denied` sees only the centre's LANE_DENY; runtime team creation is
+405 on a centre row; Alpha.6 is unreachable at a host entry; the search face is lane-only; the overlay cannot
+widen authority by design; the model is the product's scripted mock; and C11 (state projections) has NO arm at
+all — marked UNPROVEN with what would prove it.
+
+Two discrepancies recorded instead of papered over: the brief's `tests/checks/ute-migrated-suites.txt` does not
+exist (the real file is `eb3-ute-migrated-suites.txt`; the report pastes both the REFUSED line and the PASS
+line), and `place-dist-glue` is 28 placements, not the 26/27 older notes claim.
+
+Verdict wording: "A1+B+C implemented and measured, with D live evidence for the named, listed items — not a
+completed product acceptance."
+
+Gates: docs-sync `findings=0 blocking=0`, catalog `tests=889 findings=0`, leg `suites=7 files=7 exit=0`
+(168 pass + 2 disclosed skips, digest unchanged).
