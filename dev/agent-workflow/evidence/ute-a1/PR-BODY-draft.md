@@ -29,6 +29,19 @@ is step D, not this PR. Two contract questions are escalated rather than worked 
   for "admitted as allow, then refused before the body"; the centre reports `SETTLEMENT_CONTRACT_GAP`
   rather than fabricate a Stop or claim UNKNOWN certainty.
 
+## Owner decisions needed (six, all consolidated)
+
+`dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` states, per item, what is MEASURED today, the lawful
+options and their cost — no item can be closed by re-enabling an ungoverned plane, inventing an axis, or
+widening an invariant:
+
+1. **process lane** (`bash`/PTY/`run_code`): refused `ADMISSION_AXIS_UNSUPPORTED`; v4's closed io set rejects
+   `io.process`. Options A (add the lane), B (v5), C (declare unsupported);
+2. **runtime team creation on a centre row**: `team.create` 405 — the acceptance Team is boot-created;
+3. settlement recheck cell; 4. realmless admission (code refuses today); 5. search-face governance depth
+   (shape B shipped, shape A open); 6. Alpha.6 routing (refusal recorded at the host entry, routed path
+   unreachable).
+
 ## D acceptance report
 
 The single reviewable document for this candidate is
