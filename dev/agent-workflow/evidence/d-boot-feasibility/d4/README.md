@@ -231,6 +231,23 @@ So even a fully routed, fully granted Alpha.6 review could not make the reviewed
 today. This is the second reason the live routed-wake acceptance cannot be completed in this tree,
 and it is again **Team-side and backlog-owned**, not upstream.
 
+> **ROUND 88 STATUS — gap 1 measured as a CONTRACT CONFLICT; still OPEN, still REFUSED.**
+> (`dev/agent-workflow/evidence/bl-30-ask-consumer/README.md`; two new arms in
+> `packages/runtime/test/a5sf-approval-takeover.test.ts`.) The round-88 task was to wire
+> `resolveAskClassCall` here. It cannot be wired as a wiring change, and the reason is now measured
+> rather than cited: the adapter's `AskApprovalAuthority` is the last-mile guard `guardOperation`,
+> which by DESIGN never authorizes or consumes an **inline** durable allow (B2/§D.4 —
+> `control/service.ts:4155-4165`, `:4289-4291` → `no-request`), and the admission ask recorded above
+> is `executionCoupling: 'inline'` by construction (`admission-port.mjs:76-79`, `:163`) — exactly what
+> `runs/boot01/control-ask.json` shows for `ctrl-1xxrzo21…`. Same scope, same world: guarded ⇒ the
+> adapter accepts and consumes exactly one row; inline ⇒ `no-request` / `APPROVAL_DENIED` / **0**
+> consumptions. The one-shot grant that does authorize the call is already SPENT by the host tool
+> guard (`admission-port.mjs:770-784`) before the body reaches the refusing Provider plane, so the
+> Provider cannot be a second consumer without a second authority. **No product byte changed and no
+> boot was spent re-measuring an unchanged refusal**; the lawful routes (flip the coupling and lose
+> `ADM-57`'s Stop-cancels-the-ask law, or give the OS plane a read port onto the centre's enforced
+> decision) are owner decisions. `d4:routed-wake` therefore stays **REFUTED** on both axes.
+
 ### 4.3 Classification
 
 * **`CORE_SEAM_BLOCKER`: NONE.** No upstream source patch, no private upstream API, no host-side

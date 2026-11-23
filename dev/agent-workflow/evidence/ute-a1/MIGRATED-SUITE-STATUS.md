@@ -2908,3 +2908,51 @@ human Sticky Stop not cleared by a machine wake; a routed decision taken *from* 
 row on a booted host). No leg was fabricated, no control route was added to the harness, no wake file
 was written by the driver, no upstream patch was attempted, and `run-boot.mjs` / `run-boot-d2.mjs` /
 `run-boot-d3.mjs` were NOT re-run this round (no product or test code changed; the probe is additive).
+
+---
+
+## Round 88 (BL-30, the ask consumer) — MEASURED, NOT WIRED; no level moved
+
+**2026-11-23 · branch `vnext/a1-cut` · PR #822 (DRAFT) · evidence
+`dev/agent-workflow/evidence/bl-30-ask-consumer/README.md`.**
+
+The round's task was the FIRST of the round-87 D4 gaps: wire the `ask`-disposition approval consumer
+(`resolveAskClassCall`, `member-io-policy/src/approval-takeover.ts:206`) so a granted `ask` executes.
+**The wire-up is blocked by a product invariant, and the blocker was measured rather than argued, so the
+round STOPPED instead of bending it** (the round's own rule 5).
+
+**The measurement (two new arms, real `ControlService`, same admission-shaped scope, only the durable
+row's coupling differs — `packages/runtime/test/a5sf-approval-takeover.test.ts`,
+`describe('BL-30 · the admission ask is INLINE, and an inline allow is not a guard token')`):**
+
+| durable row | `guardOperation(scope)` | `resolveAskClassCall` | consumption rows |
+| --- | --- | --- | --- |
+| `executionCoupling: 'guarded'` | allows, then `allow-consumed` | **ok** (one `ask → allow`) | **1** |
+| `executionCoupling: 'inline'` (production) | **`no-request`** | **`APPROVAL_DENIED`** | **0** |
+
+**The invariant** (B2 / plan §D.4 lane disjointness): an INLINE durable allow is the frozen invocation's
+own continuation and is NEVER a guard token — `control/service.ts:4155-4165` states it, `:4289-4291`
+enforces it (`continue` → `NO_REQUEST`); `admission-port.mjs:76-79` states the same law from the
+producer's side. The only production ask producer hard-codes `executionCoupling: 'inline'`
+(`admission-port.mjs:163`), which the round-87 live D4 row confirms
+(`d4/runs/boot01/control-ask.json`). In addition, the one-shot grant that DOES authorize the call is
+spent at the host tool guard (`admission-port.mjs:770-784`) BEFORE the body reaches the refusing Provider
+plane (`provider-capabilities.ts:315`), so a Provider-level consumer would be a second consumption of one
+approval (or a second authority over the same one-shot bit), and `team-services/**` holds no Control
+reference, no TeamSession root, no compile tuple and no call identity.
+
+**Deliberately NOT done:** no product source change, no coupling flip, no second approval authority, no
+per-call registry/grant ledger, no change to `provider-capabilities.ts` behaviour, no widened timeout, no
+weakened assertion, no upstream patch. Suite population for the touched file: 23 → **25** (both new arms
+pass; no existing assertion edited).
+
+**Level: unchanged.** `ask` still refuses at every Provider plane until an owner decides between the two
+lawful routes named in the evidence README §3 (flip the ask to `guarded` and lose the Stop-cancels-the-
+pending-ask law `ADM-57`; or give the OS plane a read port onto the centre's already-enforced per-call
+decision). BL-30 stays open; BL-33's consumption half stays blocked on it; the round-87 `d4:routed-wake`
+stays REFUTED and was not re-driven (no product byte changed — a boot could only re-measure the same
+refusal).
+
+**Not proven:** any configuration in which a granted `ask` executes; a live `ask → grant → execute` arm;
+the routed Alpha.6 wake; the BL-33 consumption half; and routes (a)/(d) of the evidence README are
+designs, not implementations.

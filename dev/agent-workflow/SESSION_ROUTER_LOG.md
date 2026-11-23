@@ -11060,3 +11060,50 @@ clean. The first full `ci-pr-gate` red was `blueprint-fence` only (the one pre-e
 NOT proven: no live governed `run_code` run (so no live nested/Stop arm), durable facts do not project
 `rootCallId`/`parentCallId`, and the worker's kernel enforcement was not measured — the finding is that
 it is governed by the WRONG policy, not that the sandbox is broken. No upstream patch was attempted.
+
+## Round 88 (2026-11-23) — `vnext/a1-cut`: BL-30 STOPPED on a MEASURED invariant (the ask consumer cannot be wired without bending the Control plane)
+
+Task (from round 87's D4 evidence, gap 1): wire the `ask`-disposition approval consumer
+(`resolveAskClassCall`) so a call the Control plane granted actually executes, instead of being refused
+by `provider-capabilities.ts:315`.
+
+**Outcome: STOP under the round's rule 5 — the seam's contract cannot be satisfied by the only
+production ask producer without changing a product invariant, and the blocker is now MEASURED, not
+argued.** No product source file changed; no coupling flipped; no second authority, ledger, registry or
+observer added; no assertion weakened; no timeout widened; no upstream patch; no boot spent.
+
+Measurement (two new arms, real `ControlService`, same admission-shaped scope, only the durable row's
+coupling differs — `packages/runtime/test/a5sf-approval-takeover.test.ts`, suite 23 → 25 tests, all
+pass): guarded ⇒ `resolveAskClassCall` ok + exactly ONE durable consumption; **inline ⇒
+`guardOperation` `no-request`, adapter `APPROVAL_DENIED`, ZERO consumptions**.
+
+The invariant: B2/§D.4 Control-plane lane disjointness — an INLINE allow is the frozen invocation's own
+continuation and is never a guard token (`control/service.ts:4155-4165`, `:4289-4291`;
+`admission-port.mjs:76-79`). The only production ask producer hard-codes `executionCoupling: 'inline'`
+(`admission-port.mjs:163`; confirmed on the round-87 live row `d4/runs/boot01/control-ask.json`), and the
+one-shot grant that DOES authorize the call is spent by the host tool guard
+(`admission-port.mjs:770-784`) before the body reaches the refusing Provider plane — so a Provider-level
+consumer would be a second consumption of one approval (or a second authority over the same one-shot
+bit), and `team-services/**` holds no Control reference, no TeamSession root, no compile tuple and no
+call id (its only per-call channel is the attribution-only ambient store, whose contract forbids this
+use).
+
+Lawful routes (owner decisions, named not chosen): (a) flip the ask to `guarded` — loses the
+Stop-cancels-a-pending-ask law (`ADM-57`, round-62 live stop) and gives one approval two one-shot paths;
+(b) give the OS plane a read port onto the centre's already-enforced per-call decision (the OS plane
+stops being an independent refusal). Both are shape changes, not wiring.
+
+Live: the granted ask still refuses on a booted host; the round-87 D4 probe was NOT re-run (no product
+byte changed — a boot could only re-measure the same refusal). `d4:routed-wake` stays REFUTED; BL-30
+stays open; BL-33's consumption half stays blocked on it.
+
+Docs/evidence: new `dev/agent-workflow/evidence/bl-30-ask-consumer/` (README + `gates.log` +
+`ci-pr-gate.log`); `d-boot-feasibility/d4/README.md` §4.2 round-88 status; `ute-a1/CAPABILITY-MATRIX-C.md`
+(C-fs + C-tools (Control) rows); `ute-a1/D-ACCEPTANCE-REPORT.md` (C5 + §6.5); `ute-a1/MIGRATED-SUITE-STATUS.md`
+(new round-88 section). `docs/plans/active/**` was NOT edited (worker read-only per AGENTS.md) — BL-30's
+own status line still needs the integrator's edit.
+
+Gates (verbatim in `bl-30-ask-consumer/gates.log` + `ci-pr-gate.log`): leg `ute-vnext-a1` 211 cases /
+209 pass + 2 pre-existing skips exit 0; catalog 785 / uncollected 38 / excluded 14 (bounds 41/7);
+ute-cut-closure, ute-p0-assets, docs-sync, place-dist-glue (30), eb3-ci-required (10/0) all pass; bound
+vitest leg 238/238; UTE G1 argv 89/89; full `ci-pr-gate --full --census-captures 2` per its log.
