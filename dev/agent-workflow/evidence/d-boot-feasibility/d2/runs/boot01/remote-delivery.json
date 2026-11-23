@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-23T02:36:20.251Z",
+  "at": "2026-11-23T10:03:03.241Z",
   "root": "session-dboot-d2-root",
   "target": "inst-12x4j4t1rn1g",
   "operator": {
@@ -7,8 +7,8 @@
     "humanId": "session-dboot-d2-root"
   },
   "requestToken": "dboot-d2-remote-send",
-  "requestedAt": "2026-11-23T02:36:19.105Z",
-  "ackedAt": "2026-11-23T02:36:19.173Z",
+  "requestedAt": "2026-11-23T10:03:02.066Z",
+  "ackedAt": "2026-11-23T10:03:02.136Z",
   "before": {
     "requests": 57,
     "centreB": 18,
@@ -49,15 +49,15 @@
         "instanceGeneration": 0,
         "toolName": "read",
         "axis": "fs.read",
-        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/workspace/team-b/in-lane-b.txt",
+        "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/workspace/team-b/in-lane-b.txt",
         "definitionSource": "",
-        "policyGeneration": "a5sf1:08492f2349721402105f9ecaa6f61be6",
+        "policyGeneration": "a5sf1:534c580a581be166c8615debfab4fa3d",
         "blueprintRevision": "",
         "owner": "session-dboot-d2-root",
         "decision": "allow",
         "overlayOutcome": "no-opinion",
         "kind": "invocation-authority",
-        "at": "2026-11-23T02:36:19.228Z"
+        "at": "2026-11-23T10:03:02.194Z"
       }
     ],
     "executions": [
@@ -68,13 +68,13 @@
         "agentId": "session-team-child-ce84089af9f38ed55ba2d0bdf5442691",
         "outcome": "completed",
         "isError": false,
-        "policyGeneration": "a5sf1:08492f2349721402105f9ecaa6f61be6",
+        "policyGeneration": "a5sf1:534c580a581be166c8615debfab4fa3d",
         "kind": "execution",
-        "at": "2026-11-23T02:36:19.245Z"
+        "at": "2026-11-23T10:03:02.210Z"
       }
     ],
     "settlement": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/centre/settlement/inst-12x4j4t1rn1g/exec-b7da47d13cfb9caa5f86436b73bcc8e7e019da51.settlement.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/centre/settlement/inst-12x4j4t1rn1g/exec-b7da47d13cfb9caa5f86436b73bcc8e7e019da51.settlement.json",
       "state": "COMPLETED",
       "dispatch": "quiesced",
       "bodyOutcome": "completed",
@@ -89,8 +89,8 @@
     "memberResult": {
       "callId": "call-d2-remote-delivery",
       "isError": false,
-      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
-      "at": 1795401379250
+      "text": "<path>/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/workspace/team-b/in-lane-b.txt</path>\n<type>file</type>\n<content>\n1: DBOOT_D2_B_UNIQUE_BYTES\n\n(End of file - total 1 lines)\n</content>",
+      "at": 1795428182215
     }
   },
   "unknownMember": {
@@ -160,9 +160,9 @@
       "instanceGeneration": 0,
       "toolName": "read",
       "axis": "fs.read",
-      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/workspace/team-a-ask/ask-me.txt",
+      "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/workspace/team-a-ask/ask-me.txt",
       "definitionSource": "",
-      "policyGeneration": "a5sf1:ddce3c61146c842a2511929958caf181",
+      "policyGeneration": "a5sf1:6b9e5b6c54d0a89f613e5ea24e8df551",
       "blueprintRevision": "",
       "owner": "session-dboot-d2-root",
       "decision": "deny",
@@ -170,7 +170,7 @@
       "refusalCode": "ADMISSION_STOPPED",
       "reason": "the execution \"call-d2-remote-delivery-stop\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
       "kind": "invocation-authority",
-      "at": "2026-11-23T02:36:20.059Z"
+      "at": "2026-11-23T10:03:03.048Z"
     },
     "executions": [
       {
@@ -181,13 +181,13 @@
         "outcome": "admission-refusal",
         "isError": true,
         "refusalCode": "ADMISSION_STOPPED",
-        "policyGeneration": "a5sf1:ddce3c61146c842a2511929958caf181",
+        "policyGeneration": "a5sf1:6b9e5b6c54d0a89f613e5ea24e8df551",
         "kind": "execution",
-        "at": "2026-11-23T02:36:20.068Z"
+        "at": "2026-11-23T10:03:03.056Z"
       }
     ],
     "settlement": {
-      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/centre/settlement/inst-1235q1w1rd1u/exec-d227aa2fd63013fbd14639118d2ef095440213f8.settlement.json",
+      "file": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/centre/settlement/inst-1235q1w1rd1u/exec-d227aa2fd63013fbd14639118d2ef095440213f8.settlement.json",
       "state": "REFUSED",
       "dispatch": "not-started",
       "bodyOutcome": "not-started",
@@ -201,13 +201,13 @@
       "callId": "call-d2-remote-delivery-stop",
       "name": "read",
       "arguments": {
-        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T02-34-06Z/workspace/team-a-ask/ask-me.txt"
+        "file_path": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-00-33Z/workspace/team-a-ask/ask-me.txt"
       },
       "result": {
         "callId": "call-d2-remote-delivery-stop",
         "isError": true,
         "text": "Error: ADMISSION_STOPPED: the execution \"call-d2-remote-delivery-stop\" was aborted before its body; a Stop is not a lane denial, an expiry or a fault, and nothing that arrives after it may authorize this call",
-        "at": 1795401380069
+        "at": 1795428183056
       }
     }
   }

@@ -1,6 +1,6 @@
 {
-  "at": "2026-11-23T07:19:51.307Z",
-  "head": "775be06d7ac21ea4f815eb93338ff4556944dcd5",
+  "at": "2026-11-23T10:24:31.764Z",
+  "head": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
   "hostTree": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use",
   "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
   "pin": "639ed015397290b3745d163aafe02ffee4aa3f84",
@@ -27,5 +27,5 @@
       "value": false
     }
   ],
-  "boots": 2
+  "boots": 1
 }

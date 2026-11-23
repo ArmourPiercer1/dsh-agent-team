@@ -1,5 +1,5 @@
 {
-  "at": "2026-11-22T14:52:26.784Z",
+  "at": "2026-11-23T09:57:16.561Z",
   "rootsBefore": [
     "session-dboot-read-root"
   ],
@@ -26,11 +26,11 @@
         "blueprint": {
           "blueprintId": "team.dboot.read.main",
           "revision": "1",
-          "contentHash": "sha256:725f6a3f48e50c715a2dd942403579b5de45768a8e1d6c85425e1f4f114bd741"
+          "contentHash": "sha256:acbff2a2251118717bbf07f6e684fcfd74e15298d5f30fa88456686e14f4b296"
         },
-        "createdAt": "2026-11-22T14:52:25.670Z",
+        "createdAt": "2026-11-23T09:57:15.666Z",
         "generation": 1,
-        "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-50-21Z/workspace"
+        "defaultWorkspace": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z/workspace"
       },
       "binding": {
         "schemaVersion": 1,
@@ -44,7 +44,7 @@
         "instanceId": "inst-leader",
         "templateId": "leader",
         "label": "leader",
-        "createdAt": "2026-11-22T14:52:25.682Z",
+        "createdAt": "2026-11-23T09:57:15.678Z",
         "activityVersion": 1
       }
     }
@@ -64,9 +64,22 @@
     "mockRequestsAdded": 0
   },
   "executionRefusal": {
-    "status": 200,
-    "code": "ADMISSION_REMOTE_UNAVAILABLE",
-    "ok": false,
+    "rootWork": {
+      "status": 200,
+      "code": "ADMISSION_REMOTE_UNAVAILABLE",
+      "ok": false
+    },
+    "rootLive": {
+      "status": 200,
+      "code": "ADMISSION_REMOTE_UNAVAILABLE",
+      "ok": false
+    },
+    "delivery": {
+      "status": 200,
+      "code": "TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED",
+      "ok": false,
+      "servedNotRefused": true
+    },
     "mockRequestsAdded": 0
   },
   "authority": "the created Team is `ACCEPTANCE_ROOT`; the Leader turn and the Member chain below run on it"

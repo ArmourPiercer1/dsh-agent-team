@@ -1334,3 +1334,69 @@ bash2State                          COMPLETED                           COMPLETE
 agreeing=true differing=[]
 [2026-11-22T15:10:28.399Z] host porcelain after: []
 [2026-11-22T15:10:28.399Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)
+[2026-11-23T10:06:07.790Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/archive/2026-11-23T10-06-07-790Z
+[2026-11-23T10:06:07.791Z] ARCHIVE: /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/archive/2026-11-23T10-06-07-790Z
+[2026-11-23T10:06:07.793Z] START head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f hostTree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use pin=639ed015397290b3745d163aafe02ffee4aa3f84 boots=2
+[2026-11-23T10:06:07.820Z] host porcelain before: []
+[2026-11-23T10:06:07.878Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:06:07.879Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:06:07.895Z] [boot1] alpha6 config gate: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_R
+[2026-11-23T10:06:07.906Z] blueprint alpha6.yaml accepted: schemaVersion=4 id=team.dboot.d3.alpha6
+[2026-11-23T10:08:30.306Z] [boot1] world=u5u5a5sfdev1-20261123T10-08-30Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-08-30Z
+[2026-11-23T10:08:34.161Z] [boot1] grep corpus built in 3853ms (50000 small + 64 big + 8 huge files)
+[2026-11-23T10:08:34.166Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-23T10:10:58.100Z] [boot1] host ready on http://127.0.0.1:3194; health={"ok":true,"boot":1,"ready":true,"rootSessionId":"session-dboot-d3-root","liveSessions":["session-dboot-d3-root"],"toolCount":15}
+[2026-11-23T10:10:58.321Z] [boot1] leader surface tools=43 team=15
+[2026-11-23T10:10:59.334Z] [boot1] member A instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+[2026-11-23T10:10:59.397Z] [boot1] confinement probe: refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true
+[2026-11-23T10:11:00.578Z] [boot1] member B instance=inst-1v36r931jr7r childSession=session-team-child-6788a23a6d1be9784107fcb7631d08f9
+[2026-11-23T10:11:03.947Z] [boot1] in-flight settlement state=ADMITTED executionId=exec-c7761249d1064b23c36e5e4f76a48778dd895896
+[2026-11-23T10:11:03.993Z] [boot] SIGKILL pid=112 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-23T10:11:06.055Z] [boot1] restarted host ready on http://127.0.0.1:3194
+[2026-11-23T10:11:08.105Z] [boot1] case d3:persistent-subprocess: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:work-delivery: PASS (PROVEN)
+[2026-11-23T10:11:08.105Z] [boot1] case d3:alpha6: PASS (PROVEN)
+[2026-11-23T10:11:08.106Z] [boot1] RUN-SUMMARY run=a5sf-live-d3-2026-11-23T10-06-07-850Z-b1 suite=a5sf-live-d3 overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-08-30Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:11:09.086Z] [boot1] teardown: {"host":{"wasRunning":true,"pid":532,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-08-30Z","releasedPorts":[3194,13056,3194],"killedPids":[532],"notes":[]}
+[2026-11-23T10:11:09.087Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T10:11:09.157Z] [boot2] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:11:09.157Z] [boot2] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:11:09.158Z] [boot2] alpha6 config gate: ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_R
+[2026-11-23T10:11:09.166Z] blueprint alpha6.yaml accepted: schemaVersion=4 id=team.dboot.d3.alpha6
+[2026-11-23T10:13:32.562Z] [boot2] world=u5u5a5sfdev1-20261123T10-13-32Z home=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-13-32Z
+[2026-11-23T10:13:36.382Z] [boot2] grep corpus built in 3818ms (50000 small + 64 big + 8 huge files)
+[2026-11-23T10:13:36.386Z] blueprint main.yaml accepted: schemaVersion=4 id=team.dboot.d3.main
+[2026-11-23T10:16:00.580Z] [boot2] host ready on http://127.0.0.1:3194; health={"ok":true,"boot":1,"ready":true,"rootSessionId":"session-dboot-d3-root","liveSessions":["session-dboot-d3-root"],"toolCount":15}
+[2026-11-23T10:16:00.797Z] [boot2] leader surface tools=43 team=15
+[2026-11-23T10:16:01.809Z] [boot2] member A instance=inst-1vd6cy21kl6k childSession=session-team-child-cdf16bb82ce585d862f447bf6cd8c80f
+[2026-11-23T10:16:01.865Z] [boot2] confinement probe: refusal=true wrote=false outOfLaneExists=false bytes=0 inLaneState=true
+[2026-11-23T10:16:03.054Z] [boot2] member B instance=inst-1v36r931jr7r childSession=session-team-child-6788a23a6d1be9784107fcb7631d08f9
+[2026-11-23T10:16:06.430Z] [boot2] in-flight settlement state=ADMITTED executionId=exec-c7761249d1064b23c36e5e4f76a48778dd895896
+[2026-11-23T10:16:06.469Z] [boot] SIGKILL pid=794 exit={"code":null,"signal":"SIGKILL"} pidGone=true portFree=true
+[2026-11-23T10:16:08.547Z] [boot2] restarted host ready on http://127.0.0.1:3194
+[2026-11-23T10:16:10.574Z] [boot2] case d3:persistent-subprocess: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:crash-cold-recovery: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:work-delivery: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] case d3:alpha6: PASS (PROVEN)
+[2026-11-23T10:16:10.574Z] [boot2] RUN-SUMMARY run=a5sf-live-d3-2026-11-23T10-11-09-120Z-b2 suite=a5sf-live-d3 overall=PASS cases=4 PASS:4 worlds=u5u5a5sfdev1-20261123T10-13-32Z recordClass=DEV-LIVE (not candidate evidence)
+[2026-11-23T10:16:11.551Z] [boot2] teardown: {"host":{"wasRunning":true,"pid":1210,"killed":true,"portFree":true},"homeDeleted":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-13-32Z","releasedPorts":[3194,13056,3194],"killedPids":[1210],"notes":[]}
+[2026-11-23T10:16:11.552Z] [boot2] dev-live slot released (released=true held=false)
+[2026-11-23T10:16:11.584Z] TWO-RUN AGREEMENT (the same command, two boots; every measured row must be identical)
+fact                                boot1                               boot2
+overall                             PASS                                PASS
+persistent                          PROVEN                              PROVEN
+crash                               PROVEN                              PROVEN
+work                                PROVEN                              PROVEN
+alpha6                              PROVEN                              PROVEN
+aAdmissions                         4                                   4
+bAdmissions                         3                                   3
+inflightBefore                      open                                open
+inflightAfter                       UNKNOWN                             UNKNOWN
+collectStatus                       succeeded                           succeeded
+bash1State                          COMPLETED                           COMPLETED
+bash2State                          COMPLETED                           COMPLETED
+
+agreeing=true differing=[]
+[2026-11-23T10:16:11.617Z] host porcelain after: []
+[2026-11-23T10:16:11.617Z] RESULT evidence-complete=true allProven=true (2/2 boots; agreeing pair=true)

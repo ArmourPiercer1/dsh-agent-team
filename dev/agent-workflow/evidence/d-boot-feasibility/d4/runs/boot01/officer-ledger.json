@@ -15,7 +15,7 @@
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-23T07:08:02.225Z"
+    "at": "2026-11-23T10:20:06.217Z"
   },
   {
     "callId": "call-d4-officer-read",
@@ -26,6 +26,6 @@
     "isError": false,
     "policyGeneration": "a5sf1:7b9287e7f4b05ad540e34d23cb2c70af",
     "kind": "execution",
-    "at": "2026-11-23T07:08:02.259Z"
+    "at": "2026-11-23T10:20:06.241Z"
   }
 ]

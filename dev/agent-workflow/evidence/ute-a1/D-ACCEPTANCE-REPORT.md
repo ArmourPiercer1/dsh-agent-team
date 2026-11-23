@@ -371,7 +371,7 @@ code change, reports `network-deny=present` and the five arms run as on this hos
 | `d3:crash-cold-recovery` | **PROVEN** | **PROVEN** | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:work-delivery` | **PROVEN** | **PROVEN** (`collectStatus=succeeded`, `inflightAfter=UNKNOWN` by contract) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
 | `d3:alpha6` | **PROVEN** (as the typed-refusal shape, now with its durable fact + settlement — round 68) | **PROVEN** (same typed refusal) | `dev/agent-workflow/evidence/d-boot-feasibility/d3/README.md` |
-| **`d:remote-creation`** | **PROVEN (round 74, new)** — unauthenticated refused (401) and mints NO Team; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate runtime `team.create` 200 / `path:"fresh-root"`; duplicate mints no second Team (after round 74's fix) and adds 0 provider requests. The round-74 `member.send` refusal is **history**: round 83 re-classified it as work-delivery (next row) | **PROVEN** (identical observations) | `D-BOOT-FEASIBILITY.md` §17; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`; `round74-console.log` |
+| **`d:remote-creation`** | **PROVEN (round 74; judge-shape repaired round 91 — §12)** — unauthenticated refused (401) and mints NO Team; cross-team `TEAM_REMOTE_FOREIGN_TEAM`; legitimate runtime `team.create` 200 / `path:"fresh-root"`; duplicate mints no second Team (after round 74's fix) and adds 0 provider requests. The round-74 `member.send` refusal is **history**: round 83 re-classified it as work-delivery (next row) | **PROVEN** (round 78 observations; not re-run in round 91) | `D-BOOT-FEASIBILITY.md` §17; `dev/agent-workflow/evidence/d-boot-feasibility/runs/boot01|boot02/remote-creation.json`; `round74-console.log`; round-91 repair `dev/agent-workflow/evidence/ute-a1/round91/diagnosis.md` |
 | **`d2:remote-delivery`** (round 83, **new**) | **PROVEN** (round 83, two boots, host `legacy` = rc.2) — `member.send` → HTTP 200 with the coordinator's `delivered` acknowledgement (intent 39 / confirmation 40) while the Member's delivered call had **0 admissions / 0 executions at the ack**; the delivered prompt then ran in the Member's own turn and the centre's `allow` for that `read` appeared in the MEMBER's ledger under the MEMBER's binding ~113 ms later, execution `completed`; unknown member, archived member, duplicate send (at-least-once, no operator-side execution), restore, and Stop during a delivered turn (`ADMISSION_STOPPED`) all measured on the same row | **NOT RECORDED on rc.5** — the rc.5 acceptance log (`ute-a1/rc5/run-boot-d2.log`) predates this judge and carries 3 d2 judges, not 4 | `dev/agent-workflow/evidence/d-boot-feasibility/d2/driver.log:1214-1313` (`"host":"legacy"`); `d2/README.md`; §9.3 |
 
 **rc.5 host column (round 78).** **Thirteen of the fourteen** judges are `PROVEN` on 0.2.2-rc.5
@@ -403,6 +403,15 @@ After round 76, `run-boot.mjs` (6/6 judges, incl. `d:remote-creation`), `run-boo
 boots each, on rc.2 AND on rc.5 (round 78). A driver that exited 0 without a PROVEN judge would be the
 finding; every PASS above is a measured clause set, not an exit code (`evidence-complete=true,
 allProven` is per driver).
+
+**Round-91 instrumentation correction (append, §8.5.5).** The rc.2 `run-boot` half of that sentence was
+**not true between round 83 and round 91**: after `5c09cbd82` changed the driver's refusal sample from
+`{ok, code}` to `{rootWork, rootLive, delivery}` and left `judgeRemoteCreation`'s last clause reading the
+old fields, `d:remote-creation` reported REFUTED unconditionally on a product-passing sample (the
+round-90 red). Round 91 reproduced it on two agreeing boots, proved the cause is the stale clause and not
+the port/home/product, and repaired the clause to the round-83 shape. The rc.5 driver runs were **not**
+repeated in round 91. Full mechanism and evidence: §12 and
+`dev/agent-workflow/evidence/ute-a1/round91/diagnosis.md`.
 
 ---
 
@@ -1390,3 +1399,119 @@ register renumbered 12→14 and pointed at §10; §7 adds the four round-87 PROV
 §8 rows 1/3/4/5 re-stated for this HEAD; §9.5/§9.6 split; PR body HEAD/gate/limits blocks (the PR body's
 own count is in its round-89 block); and the four
 owner-decision items in `OWNER-DECISIONS.md` now carry the round-89 addendum.
+
+---
+
+## 12. Round 91 — the `d:remote-creation` red was a STALE JUDGE, not the product
+
+**2026-11-23 · branch `vnext/a1-cut` · PR #822 (DRAFT) · head `b67a3eb38` + this round's repair ·
+evidence `dev/agent-workflow/evidence/ute-a1/round91/`.**
+
+The round-90 red (`run-boot.mjs --boots 1` → `5 PASS / 1 FAIL`, `d:remote-creation`) was reproduced with
+the real driver on the unmodified tree, diagnosed to its clause, and repaired at the instrument layer.
+No product byte changed; no timeout, retry, skip or assertion was widened.
+
+### 12.1 Reproduction and failing assertion
+
+`node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2` → `RESULT FAIL (2/2 boots;
+agreeing pair=true)`, both boots on **port 3194**, with exactly one failing clause in the case's own
+record:
+
+```
+no-execution-without-admission: member.send ok=undefined code=undefined provider requests added=0
+```
+
+while the same boot measured `team.create` 200 / `path:"fresh-root"`, the runtime root
+`session-dboot-read-team`, duplicate no-second-Team, and this refusal sample:
+
+```json
+{"rootWork":{"status":200,"code":"ADMISSION_REMOTE_UNAVAILABLE","ok":false},
+ "rootLive":{"status":200,"code":"ADMISSION_REMOTE_UNAVAILABLE","ok":false},
+ "delivery":{"status":200,"code":"TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED","ok":false,"servedNotRefused":true},
+ "mockRequestsAdded":0}
+```
+
+### 12.2 Mechanism (proved, not inferred)
+
+Round 83 (`5c09cbd82`) reclassified `member.send` as `work-delivery` and changed the driver's sample
+from `{status, code, ok, mockRequestsAdded}` to `{rootWork, rootLive, delivery, mockRequestsAdded}`. The
+`no-execution-without-admission` clause kept reading `execution.ok` / `execution.code`; both are
+`undefined` on the new shape, so `ok === false` is false and the clause **cannot pass regardless of the
+product**. Same clause id, three runs:
+
+| evidence | sample | clause | verdict |
+| --- | --- | --- | --- |
+| `d-boot-feasibility/archive/2026-11-22T14-50-21-474Z` (pre-`5c09cbd82`) | flat `{ok:false, code:"ADMISSION_REMOTE_UNAVAILABLE"}` | true | **PASS** |
+| `archive/2026-11-23T09-54-52-433Z` (this head, pre-fix) | nested `{rootWork, rootLive, delivery}` | false (`undefined`) | **FAIL** |
+| `d-boot-feasibility/runs/boot0{1,2}` (this head, post-fix) | identical nested sample | true (see §12.3) | **PASS** |
+
+`bde902939` (round 90) touched no driver source; the round-90 before/after pair recorded the same FAIL
+both times. The defect predates round 90 and was exposed by it.
+
+### 12.3 The four suspects, settled
+
+- **(a) D4 port/home collision — REFUTED.** `HOST_PORT_BANDS` is one global legacy band (`3181-3199`);
+  the probe declares no band (its README's "port 3194/3195" is an observation of leased ports). The
+  decisive fact: **the same port 3194** produced FAIL before the repair and PASS after it, 2/2 boots
+  each, with the same product answer; the created Team's `defaultWorkspace` is this boot's own
+  `tests/homes/u5u5a5sfdev1-…` home, so the request reached this world's host. Homes are guarded
+  against same-second collisions by `world-factory.mjs`'s bounded stamp bump.
+- **(b) Round-90 decomposition — REFUTED.** No driver source in `bde902939`; verdicts identical
+  before/after by that round's own pair.
+- **(c) Product regression 83–89 — REFUTED.** The product answer in the FAIL and PASS runs is identical
+  and is exactly round 83's contract (two ROOT commands refused, delivery served typed with zero
+  provider requests, `team.create` 200 + runtime root).
+- **(d) Driver sequencing flake — REFUTED.** Deterministic 2/2 identical before and after; the failing
+  value is a shape lookup, not a timing measurement.
+
+### 12.4 The repair
+
+`judgeRemoteCreation()` now judges the measured shape, keeping the clause id and **adding** conditions:
+both ROOT commands `ok:false` + `ADMISSION_REMOTE_UNAVAILABLE`; the delivery command HTTP 200, served
+(`servedNotRefused`), `ok:false` with a typed non-empty code that is not the execution refusal; and
+`mockRequestsAdded === 0`. This is strictly stronger than the old single-command clause. Proposition text
+now states the round-83 delivery law. Driver: `tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs`.
+
+### 12.5 Four live drivers, rc.2, this head (after the repair)
+
+| driver | command | boots | judges | overall |
+| --- | --- | --- | --- | --- |
+| `run-boot.mjs` | `--boots 2` | 2, agreeing (`differing=[]`) | `d:member-read-admitted`, `d:member-read-denied`, `d:native-read-surface`, `d:guard-facts`, `d:centre-facts`, **`d:remote-creation`** = **PASS (6/6)** | **PASS**, exit 0 |
+| `run-boot-d2.mjs` | `--boots 2` | 2, agreeing | `d2:multi-member-concurrency`, `d2:revocation`, `d2:stop`, `d2:remote-delivery` = **PASS (4/4)** | **PASS**, exit 0 |
+| `run-boot-d3.mjs` | `--boots 2` | 2, agreeing | `d3:persistent-subprocess`, `d3:crash-cold-recovery`, `d3:work-delivery`, `d3:alpha6` = **PASS (4/4)** | `evidence-complete=true allProven=true`, exit 0 |
+| `probe-d4-routed-wake.mjs` | `--boots 1` | 1 | `d4:enablement`, `d4:officer-up`, `d4:officer-binding`, `d4:refusal` = **PASS**; `d4:routed-wake` = **FAIL (REFUTED)** | **BLOCKED** (known open gap, §10 G1), exit 3 |
+
+All four boots of the three acceptance drivers leased port 3194 and used distinct homes. Logs:
+`round91/after-run-boot.log`, `after-run-boot-d2.log`, `after-run-boot-d3.log`, `after-probe-d4.log`;
+the `d:remote-creation` clause in both boots reads
+`rootWork ok=false code=ADMISSION_REMOTE_UNAVAILABLE; rootLive ok=false code=ADMISSION_REMOTE_UNAVAILABLE;
+delivery status=200 ok=false code=TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED servedNotRefused=true; provider
+requests added=0`.
+
+### 12.6 Gates at this head
+
+```
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+  (DISCOVERED_AND_COLLECTED 733 / EXCLUDED_WITH_REASON 14 / UNCOLLECTED 38; bounds --max-uncollected 41 --max-excluded 7)
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+place-dist-glue: done (34 placement(s))   — every line (byte-identical)
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
+node --test (UTE G1 nine-file argv): tests 89 / pass 89 / fail 0 / skipped 0, exit 0
+DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975
+  tests 211 / pass 209 / fail 0 / skipped 2
+
+ci-pr-gate --full --census-captures 2:
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=282.9
+  census: captured 599f/7416l, 599f/7416l vs baseline-declared 626 / 7936 — 2 captures, identical identity sets — COUNTS MOVED, SET DID NOT
+```
+
+### 12.7 What this does NOT prove
+
+The row is still a scripted-mock, per-DSH_HOME-operator measurement (round 74/83 scope); the judge's
+`delivery.ok:false` is specific to this probe addressing a member that does not exist; `d4:routed-wake`
+stays REFUTED (§10 G1/G2) and was not "fixed"; no capability row moves, no C row becomes PRODUCT-PROVEN.
+The claim is about the acceptance instrument and the measured product answer, not about new product
+behaviour.

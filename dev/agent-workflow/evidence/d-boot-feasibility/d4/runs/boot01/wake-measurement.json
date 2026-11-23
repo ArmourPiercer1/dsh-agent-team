@@ -11,7 +11,7 @@
       "requestId": "ctrl-1xxrzo21k29yc31rawhls0qn",
       "decision": "allow"
     },
-    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\"},\"requestSequence\":9,\"decisionSequence\":10,\"createdAt\":\"2026-11-23T07:08:03.417Z\"}}",
+    "result": "{\"status\":\"control-resolved\",\"decision\":{\"requestId\":\"ctrl-1xxrzo21k29yc31rawhls0qn\",\"decision\":\"allow\",\"decider\":{\"kind\":\"instance\",\"instanceId\":\"inst-leader\",\"role\":\"leader\"},\"scope\":{\"rootSessionId\":\"session-dboot-d4-root\",\"subject\":{\"kind\":\"instance\",\"instanceId\":\"inst-0ty67u70r99a\"},\"targetInstanceId\":\"inst-0ty67u70r99a\",\"actionName\":\"admission-ask\",\"correlation\":\"admission:call-d4-worker-write\",\"toolName\":\"write\"},\"requestSequence\":9,\"decisionSequence\":10,\"createdAt\":\"2026-11-23T10:20:07.371Z\"}}",
     "isError": false
   },
   "durableRowShape": {

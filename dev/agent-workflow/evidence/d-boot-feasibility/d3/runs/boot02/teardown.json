@@ -1,20 +1,20 @@
 {
-  "at": "2026-11-22T15:10:28.365Z",
+  "at": "2026-11-23T10:16:11.584Z",
   "teardown": {
     "host": {
       "wasRunning": true,
-      "pid": 1216,
+      "pid": 1210,
       "killed": true,
       "portFree": true
     },
-    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-08-06Z",
+    "homeDeleted": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-13-32Z",
     "releasedPorts": [
-      3193,
-      13050,
-      3193
+      3194,
+      13056,
+      3194
     ],
     "killedPids": [
-      1216
+      1210
     ],
     "notes": []
   },

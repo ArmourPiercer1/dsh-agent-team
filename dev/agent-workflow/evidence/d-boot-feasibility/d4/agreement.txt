@@ -1,16 +1,16 @@
 TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
-fact                              boot1                               boot2                               
-overall                              "BLOCKED"                            "BLOCKED"                           
-enablement                           "PROVEN"                             "PROVEN"                            
-officerUp                            "PROVEN"                             "PROVEN"                            
-officerBinding                       "PROVEN"                             "PROVEN"                            
-routedWake                           "REFUTED"                            "REFUTED"                           
-refusal                              "PROVEN"                             "PROVEN"                            
-askAppeared                          true                                 true                                
-pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"      "ctrl-1xxrzo21k29yc31rawhls0qn"     
-wakeFacts                            0                                    0                                   
-wakeIntentFiles                      0                                    0                                   
-reviewWakeHits                       0                                    0                                   
-officerAllowFacts                    1                                    1                                   
+fact                              boot1                               
+overall                              "BLOCKED"                           
+enablement                           "PROVEN"                            
+officerUp                            "PROVEN"                            
+officerBinding                       "PROVEN"                            
+routedWake                           "REFUTED"                           
+refusal                              "PROVEN"                            
+askAppeared                          true                                
+pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"     
+wakeFacts                            0                                   
+wakeIntentFiles                      0                                   
+reviewWakeHits                       0                                   
+officerAllowFacts                    1                                   
 
 agreeing=true differing=[]

@@ -7,15 +7,15 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-50-21Z/workspace/in-lane.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z/workspace/in-lane.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:d416b78555a7ccfa597194cb5cead7ef",
+    "policyGeneration": "a5sf1:27dd014a40e92de9983813056dc7c6d1",
     "blueprintRevision": "",
     "owner": "session-dboot-read-team",
     "decision": "allow",
     "overlayOutcome": "no-opinion",
     "kind": "invocation-authority",
-    "at": "2026-11-22T14:52:26.337Z"
+    "at": "2026-11-23T09:57:16.150Z"
   },
   {
     "callId": "call-dboot-read-admit",
@@ -24,9 +24,9 @@
     "agentId": "session-team-child-56a707050f4095d1acddaa687cf3ed41",
     "outcome": "completed",
     "isError": false,
-    "policyGeneration": "a5sf1:d416b78555a7ccfa597194cb5cead7ef",
+    "policyGeneration": "a5sf1:27dd014a40e92de9983813056dc7c6d1",
     "kind": "execution",
-    "at": "2026-11-22T14:52:26.361Z"
+    "at": "2026-11-23T09:57:16.173Z"
   },
   {
     "callId": "call-dboot-read-deny",
@@ -36,16 +36,16 @@
     "instanceGeneration": 0,
     "toolName": "read",
     "axis": "fs.read",
-    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-50-21Z/out-of-lane/secret-out-of-lane.txt",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z/out-of-lane/secret-out-of-lane.txt",
     "definitionSource": "",
-    "policyGeneration": "a5sf1:d416b78555a7ccfa597194cb5cead7ef",
+    "policyGeneration": "a5sf1:27dd014a40e92de9983813056dc7c6d1",
     "blueprintRevision": "",
     "owner": "session-dboot-read-team",
     "decision": "deny",
     "refusalCode": "LANE_DENY",
-    "reason": "fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T14-50-21Z/out-of-lane/secret-out-of-lane.txt\" is outside the binding's fs.read lane (policy generation a5sf1:d416b78555a7ccfa597194cb5cead7ef)",
+    "reason": "fs.read \"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T09-54-52Z/out-of-lane/secret-out-of-lane.txt\" is outside the binding's fs.read lane (policy generation a5sf1:27dd014a40e92de9983813056dc7c6d1)",
     "kind": "invocation-authority",
-    "at": "2026-11-22T14:52:26.399Z"
+    "at": "2026-11-23T09:57:16.210Z"
   },
   {
     "callId": "call-dboot-read-deny",
@@ -55,8 +55,8 @@
     "outcome": "admission-refusal",
     "isError": true,
     "refusalCode": "LANE_DENY",
-    "policyGeneration": "a5sf1:d416b78555a7ccfa597194cb5cead7ef",
+    "policyGeneration": "a5sf1:27dd014a40e92de9983813056dc7c6d1",
     "kind": "execution",
-    "at": "2026-11-22T14:52:26.408Z"
+    "at": "2026-11-23T09:57:16.218Z"
   }
 ]

@@ -3008,3 +3008,56 @@ moved modules have no separate unit test (they are exercised through the same gl
 would be new surface, not preservation); `root.ts` was not decomposed, so its 5,239 lines remain; and the
 `d:remote-creation` red on `run-boot` is untouched and still open.
 
+
+---
+
+## Round 91 (2026-11-23) — `d:remote-creation` red: the JUDGE was stale, not the product
+
+**Branch `vnext/a1-cut` · PR #822 (DRAFT) · head `b67a3eb38` + this round's repair · evidence
+`dev/agent-workflow/evidence/ute-a1/round91/`.** The round-90 live re-run recorded
+`run-boot.mjs --boots 1` → `overall=FAIL`, `5 PASS / 1 FAIL`, `d:remote-creation` FAIL
+(`round90/drivers-before.log:27`). This round reproduced it with the real driver, found the mechanism,
+and repaired the instrument.
+
+**Reproduction.** `node tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs --boots 2` on the
+unmodified tree → `RESULT FAIL (2/2 boots; agreeing pair=true)`, both boots on port 3194; the case's own
+record named exactly one failing clause:
+`no-execution-without-admission: member.send ok=undefined code=undefined provider requests added=0`
+(`round91/repro-run-boot.log`; pre-fix artefacts in
+`d-boot-feasibility/archive/2026-11-23T09-54-52-433Z/`).
+
+**Cause: a round-83 driver refactor left its judge behind.** `5c09cbd82` (round 83) reclassified
+`member.send` as `work-delivery` and changed the driver's refusal sample from `{status, code, ok,
+mockRequestsAdded}` to `{rootWork, rootLive, delivery, mockRequestsAdded}`, but the
+`no-execution-without-admission` clause still read `execution.ok`/`execution.code`. Both are `undefined`
+on the new shape, so `undefined === false` made the clause REFUTED unconditionally. Not a round-90
+decomposition defect (`bde902939` touched no driver source; its before/after pair was identical), not a
+product regression (the FAIL run and the PASS run carry the identical product answer: two ROOT commands
+refused with `ADMISSION_REMOTE_UNAVAILABLE`, `member.send` served as a typed
+`TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED` with **0** provider requests, `team.create` 200 + runtime root),
+not a flake (2/2 identical boots before and after), and not a port/home collision (the **same port
+3194** produced FAIL before and PASS after; the created Team's `defaultWorkspace` is the boot's own
+home; homes are stamp-bumped on collision).
+
+**Fix (instrument layer only).** `tests/world-factory/drivers/d-boot-feasibility/run-boot.mjs#judgeRemoteCreation`
+now judges the measured shape, keeping the clause id and adding conditions: both ROOT commands
+`ok:false` + `ADMISSION_REMOTE_UNAVAILABLE`; delivery HTTP 200, served, `ok:false` with a typed non-empty
+code that is not the execution refusal; `mockRequestsAdded === 0`. Strictly stronger than the old
+single-command clause. No timeout, retry, skip, weakened assertion, compatibility shim or upstream patch.
+
+**All four live drivers re-run on rc.2 at this head.** `run-boot` **PASS 6/6** (`d:remote-creation`
+PASS on two agreeing boots), `run-boot-d2` **PASS 4/4** (2/2 agreeing), `run-boot-d3`
+`evidence-complete=true allProven=true` **4/4** (2/2 agreeing), `probe-d4-routed-wake --boots 1`
+**BLOCKED** with `d4:enablement`/`d4:officer-up`/`d4:officer-binding`/`d4:refusal` PASS and
+`d4:routed-wake` **REFUTED** (the known open gap, unchanged). All driver hosts leased port 3194.
+
+**Gates at this head.** catalog `785 / 38 uncollected / 14 excluded` (bounds 41/7) findings=0; cut-closure
+`cut(0/148)` findings=0; p0-assets `37/180/69512` findings=0; docs-sync `193 docs / 0 findings`;
+`place-dist-glue` 34 placements, every line byte-identical; eb3-ci-required 10/0; bound vitest
+`verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0`; `dispatch-tests --run --leg
+ute-vnext-a1` `tests 211 / pass 209 / fail 0 / skipped 2`, digest unchanged; UTE G1 argv 89/89. Full
+`ci-pr-gate --full --census-captures 2` transcript: `round91/ci-pr-gate-full.log`.
+
+**Not proven:** no product byte changed, so no capability or matrix row moves. The row remains a
+scripted-mock, per-DSH_HOME-operator measurement; the judge's `delivery.ok:false` is specific to this
+member-less probe; `d4:routed-wake` stays REFUTED; no row is PRODUCT-PROVEN.

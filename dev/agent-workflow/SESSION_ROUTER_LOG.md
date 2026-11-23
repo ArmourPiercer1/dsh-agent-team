@@ -11204,3 +11204,52 @@ Docs: `D-ACCEPTANCE-REPORT.md` gains §6.16 (the decomposition, the proof table,
 entry-file row (§1) and the placement count (§1.2/§7); `MIGRATED-SUITE-STATUS.md` gains the round-90 section.
 No level, matrix row or capability claim moves; `root.ts` remains 5,239 lines; the `d:remote-creation` red is
 untouched and still open. PR #822 stays DRAFT/unmerged; :3080 and its DSH_HOME were never touched.
+
+## Round 91 (2026-11-23) — `d:remote-creation` red diagnosed to a STALE DRIVER JUDGE; repaired, all four live drivers re-measured
+
+The round-90 live re-run left `run-boot.mjs --boots 1` at `overall=FAIL`, `5 PASS / 1 FAIL`,
+`d:remote-creation` FAIL. This round reproduced it with the real driver on the unmodified tree
+(`RESULT FAIL (2/2 boots; agreeing pair=true)`, both boots on port 3194) and read the failing clause out of
+the case's own record: `no-execution-without-admission: member.send ok=undefined code=undefined provider
+requests added=0`. The product answer in that same boot was round 83's contract: two ROOT commands refused
+with `ADMISSION_REMOTE_UNAVAILABLE`, `member.send` served as a typed `TEAM_RUNTIME_ACTION_ADDRESSING_REJECTED`
+with zero provider requests, `team.create` 200 + runtime root, duplicate no-second-Team.
+
+Cause, proved: `5c09cbd82` (round 83) reclassified `member.send` as work-delivery and changed the driver's
+refusal sample from `{status, code, ok, mockRequestsAdded}` to `{rootWork, rootLive, delivery,
+mockRequestsAdded}`, but `judgeRemoteCreation`'s last clause still read `execution.ok`/`execution.code`.
+Both are `undefined` on the new shape, so `undefined === false` made the clause REFUTED unconditionally —
+the red could not pass regardless of the product. Pre-round-83 archive PASS (flat sample), this head
+pre-fix FAIL (`undefined`), this head post-fix PASS (nested sample): same clause, three runs. Round 90's
+decomposition touched no driver source; its before/after pair recorded the same FAIL both times.
+
+The four suspects are settled with evidence, not assertion: (a) D4 port/home collision REFUTED — one
+global `HOST_PORT_BANDS` band `3181-3199`, the probe declares none, the same port 3194 failed pre-fix and
+passed post-fix, the created Team's `defaultWorkspace` is this boot's own home, and homes are stamp-bumped
+on collision; (b) round-90 decomposition REFUTED — no driver source in `bde902939`; (c) product regression
+REFUTED — identical product answer in the FAIL and PASS runs; (d) sequencing flake REFUTED — deterministic
+2/2 boots before and after, failing value is a shape lookup.
+
+Fix (instrument layer only): `judgeRemoteCreation()` now judges the measured shape — both ROOT commands
+`ok:false` + `ADMISSION_REMOTE_UNAVAILABLE`, delivery HTTP 200 served with a typed non-empty code that is
+not the execution refusal, `mockRequestsAdded === 0`. Strictly stronger than the old single-command clause.
+No timeout, retry, skip, weakened assertion, compatibility shim, upstream patch or product edit.
+
+All four live drivers on rc.2 at this head: `run-boot` **PASS 6/6** (`d:remote-creation` PASS on 2/2
+agreeing boots, port 3194), `run-boot-d2` **PASS 4/4** (2/2 agreeing), `run-boot-d3`
+`evidence-complete=true allProven=true` **4/4** (2/2 agreeing), `probe-d4-routed-wake --boots 1`
+**BLOCKED** with enablement/officer-up/officer-binding/refusal PASS and `d4:routed-wake` **REFUTED** (the
+known open gap, unchanged). Logs: `evidence/ute-a1/round91/drivers.log`.
+
+Gates at this head: catalog `785 / 38 uncollected / 14 excluded` (bounds 41/7) findings=0; cut-closure
+`cut(0/148)` findings=0; p0-assets `37/180/69512` findings=0; docs-sync `193 docs / 0 findings`;
+place-dist-glue 34 placements all byte-identical; eb3-ci-required 10/0; bound vitest `suites=15 files=15
+describes=76 passed=238 failed=0`; `dispatch-tests --run --leg ute-vnext-a1` `tests 211 / pass 209 /
+fail 0 / skipped 2`, digest unchanged; UTE G1 argv 89/89; `ci-pr-gate --full --census-captures 2`
+`DSH-CI-VERDICT pass pass=10 fail=0 legs=10 seconds=282.9`, census 2 identical captures
+(599f/7416l vs baseline-declared 626/7936, identity set unchanged).
+
+Docs: `D-ACCEPTANCE-REPORT.md` §12 (mechanism, four-suspect disposition, repair, driver table, gates,
+limits) and the `d:remote-creation` judge row re-cited; `MIGRATED-SUITE-STATUS.md` gains the round-91
+section. No capability row moves, `d4:routed-wake` stays REFUTED, no row is PRODUCT-PROVEN. PR #822 stays
+DRAFT/unmerged; :3080 and its DSH_HOME were never touched.

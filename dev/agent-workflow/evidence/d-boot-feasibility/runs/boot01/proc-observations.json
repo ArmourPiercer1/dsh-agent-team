@@ -1,6 +1,6 @@
 {
   "schema": "a5sf-live-member/proc-observations/1",
-  "at": "2026-11-22T14:52:27.996Z",
+  "at": "2026-11-23T09:57:17.773Z",
   "note": "independent /proc/<pid>/cmdline scan; a sighting is an OS-level fact, not a product counter",
   "sightings": []
 }

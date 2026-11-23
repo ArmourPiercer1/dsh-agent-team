@@ -1,9 +1,9 @@
 {
   "schema": "u5-run-record/1",
-  "runId": "a5sf-live-d4-2026-11-23T07-05-28-461Z-b1",
+  "runId": "a5sf-live-d4-2026-11-23T10-17-42-713Z-b1",
   "suite": "a5sf-live-d4-probe",
   "recordClass": "DEV-LIVE",
-  "startedAt": "2026-11-23T07:05:28.462Z",
+  "startedAt": "2026-11-23T10:17:42.714Z",
   "selectedCases": [
     "d4:enablement",
     "d4:officer-up",
@@ -32,7 +32,7 @@
       "snapshotDigest": "9e2a211ff34196c68fd8db5a0d0d19af124df8fd949190c9c6b990cf3600ede8"
     },
     "candidate": {
-      "head": "775be06d7ac21ea4f815eb93338ff4556944dcd5",
+      "head": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
       "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
       "baseline": "639ed015397290b3745d163aafe02ffee4aa3f84"
     },
@@ -45,7 +45,7 @@
     "recordClass": "DEV-LIVE",
     "compositionDrops": [],
     "layout": "centre",
-    "teamSha": "775be06d7ac21ea4f815eb93338ff4556944dcd5",
+    "teamSha": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
     "hostSha": "639ed015397290b3745d163aafe02ffee4aa3f84",
     "note": "DEV-LIVE probe: a blocker measurement, never a candidate claim and never an acceptance driver",
     "driver": "probe-d4-routed-wake"
@@ -54,7 +54,7 @@
     {
       "id": "d4:enablement",
       "verdict": "PASS",
-      "at": "2026-11-23T07:12:38.526Z",
+      "at": "2026-11-23T10:24:31.495Z",
       "proposition": "a COHERENT Alpha.6 row (v5 reviewRouting + centreStatePath + absolute alpha6WakeIntentPath) is ENABLED — the host boots, the TeamSession exists, and the row is not refused",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -72,7 +72,7 @@
         {
           "id": "team-session-served",
           "ok": true,
-          "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T07-05-28Z/workspace\",\"createdAt\":\"2026-11-23T07:08:01.007Z\",\"generation\":11}"
+          "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-17-42Z/workspace\",\"createdAt\":\"2026-11-23T10:20:05.226Z\",\"generation\":11}"
         },
         {
           "id": "no-alpha6-refusal-in-host-log",
@@ -89,7 +89,7 @@
     {
       "id": "d4:officer-up",
       "verdict": "PASS",
-      "at": "2026-11-23T07:12:38.526Z",
+      "at": "2026-11-23T10:24:31.495Z",
       "proposition": "the Officer MemberTemplate comes up as its own Member instance with a bound child session, and the Officer session actually runs",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -119,7 +119,7 @@
     {
       "id": "d4:officer-binding",
       "verdict": "PASS",
-      "at": "2026-11-23T07:12:38.526Z",
+      "at": "2026-11-23T10:24:31.495Z",
       "proposition": "the Officer's OWN tool call is admitted by the ONE centre under the OFFICER's binding: an allow invocation-authority fact for ITS callId in the OFFICER's own ledger, settled COMPLETED",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -149,7 +149,7 @@
     {
       "id": "d4:routed-wake",
       "verdict": "FAIL",
-      "at": "2026-11-23T07:12:38.526Z",
+      "at": "2026-11-23T10:24:31.495Z",
       "proposition": "the routed review decision is taken from the durable control row and the wake is DELIVERED through the governed delivery (team-review-wake-routed intent + team-review-wake-delivered confirmation, machine attribution), with the Officer woken in its own session",
       "probeVerdict": "REFUTED",
       "failing": [
@@ -216,7 +216,7 @@
     {
       "id": "d4:refusal",
       "verdict": "PASS",
-      "at": "2026-11-23T07:12:38.526Z",
+      "at": "2026-11-23T10:24:31.495Z",
       "proposition": "the refusal side still works for an incoherent row: the SAME v5 document WITHOUT the absolute wake-intent path is refused by the closed enablement rule, the refusal is recorded, the team is absent and no wake exists",
       "probeVerdict": "PROVEN",
       "failing": [],
@@ -229,7 +229,7 @@
         {
           "id": "refusal-recorded",
           "ok": true,
-          "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:42f74cdd-70b8-47df-8698-6405da3fe98b:0\"}]"
+          "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:75bd66f6-c801-4f5f-ac00-04a9d84518c0:0\"}]"
         },
         {
           "id": "refusal-is-not-a-route",
@@ -249,8 +249,8 @@
     "thisRunCount": 3,
     "thisRunEntries": [
       {
-        "at": "2026-11-23T07:05:28.492Z",
-        "runId": "a5sf-live-d4-2026-11-23T07-05-28-461Z-b1",
+        "at": "2026-11-23T10:17:42.744Z",
+        "runId": "a5sf-live-d4-2026-11-23T10-17-42-713Z-b1",
         "suite": "a5sf-read",
         "recordClass": "DEV-LIVE",
         "kind": "budget-intent",
@@ -261,23 +261,23 @@
         "grantedBy": "owner 2026-11-09 ruling (relayed): scope authorisation for the FS Provider face — repeated self-authorised development starts, no per-start approval, no cumulative cap",
         "face": "FS Provider",
         "worldLine": "u5a5sfdev1",
-        "headCommit": "775be06d7ac21ea4f815eb93338ff4556944dcd5",
+        "headCommit": "b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f",
         "plannedStarts": 2
       },
       {
-        "at": "2026-11-23T07:06:47.928Z",
-        "runId": "a5sf-live-d4-2026-11-23T07-05-28-461Z-b1",
+        "at": "2026-11-23T10:18:57.846Z",
+        "runId": "a5sf-live-d4-2026-11-23T10-17-42-713Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261123T07-05-28Z",
+        "world": "u5u5a5sfdev1-20261123T10-17-42Z",
         "phase": "a5sf-live-d4-boot1"
       },
       {
-        "at": "2026-11-23T07:11:25.068Z",
-        "runId": "a5sf-live-d4-2026-11-23T07-05-28-461Z-b1",
+        "at": "2026-11-23T10:23:24.407Z",
+        "runId": "a5sf-live-d4-2026-11-23T10-17-42-713Z-b1",
         "suite": "a5sf-live-d4-probe",
         "recordClass": "DEV-LIVE",
-        "world": "u5u5a5sfdev1-20261123T07-10-04Z",
+        "world": "u5u5a5sfdev1-20261123T10-22-08Z",
         "phase": "a5sf-live-d4-boot1-refusal"
       }
     ]
@@ -285,9 +285,9 @@
   "candidateClaimEligibility": {
     "eligible": false,
     "code": "DEV_LIVE_EVIDENCE_NOT_CANDIDATE",
-    "reason": "run 'a5sf-live-d4-2026-11-23T07-05-28-461Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
+    "reason": "run 'a5sf-live-d4-2026-11-23T10-17-42-713Z-b1' is recordClass=DEV-LIVE: a development-boot record may be used for development and PR review, but it may NOT satisfy a V@B=yes / frozen-candidate claim. Only recordClass=CANDIDATE-C2 (frozen SHA + Authority + Host + Oracle + independent adjudication) may."
   },
   "overall": "FAIL",
   "partial": false,
-  "finishedAt": "2026-11-23T07:12:38.724Z"
+  "finishedAt": "2026-11-23T10:24:31.733Z"
 }

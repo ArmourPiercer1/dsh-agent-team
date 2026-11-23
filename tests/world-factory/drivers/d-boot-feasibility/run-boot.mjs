@@ -958,8 +958,14 @@ function judgeRemoteCreation(sample) {
   const before = Array.isArray(s.rootsBefore) ? s.rootsBefore : []
   const after = Array.isArray(s.rootsAfterCreate) ? s.rootsAfterCreate : []
   const duplicateNewRoots = Array.isArray(duplicate.newRoots) ? duplicate.newRoots : null
+  // ROUND 83 classified `member.send` as WORK-DELIVERY (served, never executed)
+  // and kept the two ROOT commands on the agent-execution refusal. The sample
+  // carries that shape (`rootWork` / `rootLive` / `delivery`); this clause judges
+  // it, rather than the pre-round-83 flat `{ok, code}` it no longer has.
+  const refused = (probe) => probe?.ok === false && probe?.code === 'ADMISSION_REMOTE_UNAVAILABLE'
+  const delivery = execution.delivery ?? {}
   return verdictOf(
-    'the S6 plane is a GOVERNED MANAGEMENT CONTROL PLANE on a centre row: `team.create` mints the Team at runtime through `createAndStartTeam()`, while unauthenticated, cross-team, duplicate and agent-execution requests all fail closed with zero unauthorised creation',
+    'the S6 plane is a GOVERNED MANAGEMENT CONTROL PLANE on a centre row: `team.create` mints the Team at runtime through `createAndStartTeam()`, while unauthenticated, cross-team and duplicate creation fail closed with zero unauthorised creation, the two ROOT agent-execution commands stay REFUSED, and the work-delivery command is SERVED — typed, with zero provider requests, so nothing executed',
     [
       { id: 'unauth-refused', ok: unauth.status !== 200, detail: `unauthenticated team.create status=${String(unauth.status)} code=${String(unauth.bodyCode)}` },
       { id: 'unauth-no-team', ok: unauth.mintedTeam === false, detail: `durable roots minted by the unauthenticated request=${String(unauth.mintedTeam)}` },
@@ -968,7 +974,7 @@ function judgeRemoteCreation(sample) {
       { id: 'created-runtime-root', ok: before.includes(ACCEPTANCE_ROOT) === false && after.includes(ACCEPTANCE_ROOT), detail: `rootsBefore=${JSON.stringify(before)} rootsAfter=${JSON.stringify(after)}` },
       { id: 'duplicate-no-second-team', ok: duplicateNewRoots !== null && duplicateNewRoots.length === 1 && duplicateNewRoots[0] === ACCEPTANCE_ROOT, detail: `duplicate create ok=${String(duplicate.ok)} code=${String(duplicate.code)} newRoots=${JSON.stringify(duplicateNewRoots)}` },
       { id: 'duplicate-no-second-turn', ok: duplicate.mockRequestsAdded === 0, detail: `provider requests added by the duplicate=${String(duplicate.mockRequestsAdded)}` },
-      { id: 'no-execution-without-admission', ok: execution.ok === false && execution.code === 'ADMISSION_REMOTE_UNAVAILABLE' && execution.mockRequestsAdded === 0, detail: `member.send ok=${String(execution.ok)} code=${String(execution.code)} provider requests added=${String(execution.mockRequestsAdded)}` },
+      { id: 'no-execution-without-admission', ok: refused(execution.rootWork) && refused(execution.rootLive) && delivery.status === 200 && delivery.servedNotRefused === true && delivery.ok === false && typeof delivery.code === 'string' && delivery.code !== '' && delivery.code !== 'ADMISSION_REMOTE_UNAVAILABLE' && execution.mockRequestsAdded === 0, detail: `rootWork ok=${String(execution.rootWork?.ok)} code=${String(execution.rootWork?.code)}; rootLive ok=${String(execution.rootLive?.ok)} code=${String(execution.rootLive?.code)}; delivery status=${String(delivery.status)} ok=${String(delivery.ok)} code=${String(delivery.code)} servedNotRefused=${String(delivery.servedNotRefused)}; provider requests added=${String(execution.mockRequestsAdded)}` },
     ],
   )
 }

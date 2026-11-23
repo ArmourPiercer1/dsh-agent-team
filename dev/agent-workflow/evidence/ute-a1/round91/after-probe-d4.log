@@ -1,0 +1,44 @@
+[2026-11-23T10:17:42.677Z] archived previous runs -> /home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/archive/2026-11-23T10-17-42-677Z
+[2026-11-23T10:17:42.712Z] host tree=/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use HEAD=639ed015397290b3745d163aafe02ffee4aa3f84 pin=639ed015397290b3745d163aafe02ffee4aa3f84 porcelain=[]
+[2026-11-23T10:17:42.712Z] started 2026-11-23T10:17:42.651Z boots=1
+[2026-11-23T10:17:42.743Z] [boot1] candidate: {"host":"legacy","pin":"639ed015397290b3745d163aafe02ffee4aa3f84","source":"tests/paths.mjs#TEST_USE_BASELINE_SHA","hostTree":"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/deepseek-harness-test-use","asserted":true,"head":"639ed015397290b3745d163aafe02ffee4aa3f84"}
+[2026-11-23T10:17:42.747Z] [boot1] dev-live lease grant=devlive-fs-search-1 world=u5a5sfdev1 head=b67a3eb38d617b2aa7dbe0cddd2fb9f2a49e334f
+[2026-11-23T10:17:42.772Z] blueprint main.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting={"enabled":true,"officerTemplateId":"officer","ordinaryToolApprovals":{"default":"officer","leaderExceptions":[]},"whenOfficerUnavailable":"hold"}
+[2026-11-23T10:17:42.774Z] [boot1] alpha6 config gate (positive): null
+[2026-11-23T10:20:05.551Z] [boot1] host ready on http://127.0.0.1:3194
+[2026-11-23T10:20:05.570Z] [boot1] prompt(d4disc) status=200
+[2026-11-23T10:20:05.770Z] [boot1] discovery answered (mock requests=2)
+[2026-11-23T10:20:05.791Z] [boot1] prompt(d4off) status=200
+[2026-11-23T10:20:06.191Z] [boot1] officer delegated
+[2026-11-23T10:20:06.210Z] [boot1] officer instance=inst-1crltnl0089j childSession=session-team-child-1d56dbb16a118ba3573db3c4b2641997
+[2026-11-23T10:20:06.715Z] [boot1] d4:officer-up=PROVEN d4:officer-binding=PROVEN
+[2026-11-23T10:20:06.722Z] [boot1] prompt(d4wrk) status=200
+[2026-11-23T10:20:07.123Z] [boot1] worker delegated
+[2026-11-23T10:20:07.172Z] [boot1] worker ask appeared=true requestId=ctrl-1xxrzo21k29yc31rawhls0qn
+[2026-11-23T10:20:07.176Z] [boot1] prompt(d4res) status=200
+[2026-11-23T10:22:07.201Z] [boot1] leader resolve result: {"status":"control-resolved","decision":{"requestId":"ctrl-1xxrzo21k29yc31rawhls0qn","decision":"allow","decider":{"kind":"instance","instanceId":"inst-leader","role":"leader"},"scope":{"rootSessionId
+[2026-11-23T10:22:08.724Z] [boot1] d4:routed-wake=REFUTED failing=["row-carries-approval-case","wake-intent-fact-routed","wake-confirmed-delivered","wake-intent-file-written","officer-woken-in-its-session","wake-has-machine-attribution"]
+[2026-11-23T10:22:08.729Z] blueprint incoherent.yaml accepted: schemaVersion=5 id=team.dboot.d4.v5 reviewRouting=null
+[2026-11-23T10:24:31.492Z] [boot1] d4:refusal=PROVEN failing=[]
+[2026-11-23T10:24:31.494Z] [boot1] d4:enablement=PROVEN failing=[]
+[2026-11-23T10:24:31.495Z] [boot1] overall=BLOCKED (408734ms)
+[2026-11-23T10:24:31.733Z] [boot1] dev-live slot released (released=true held=false)
+[2026-11-23T10:24:31.763Z] host porcelain after: []
+[2026-11-23T10:24:31.764Z] TWO-RUN AGREEMENT (the same probe, two boots; every measured row must be identical)
+fact                              boot1                               
+overall                              "BLOCKED"                           
+enablement                           "PROVEN"                            
+officerUp                            "PROVEN"                            
+officerBinding                       "PROVEN"                            
+routedWake                           "REFUTED"                           
+refusal                              "PROVEN"                            
+askAppeared                          true                                
+pendingRequestId                     "ctrl-1xxrzo21k29yc31rawhls0qn"     
+wakeFacts                            0                                   
+wakeIntentFiles                      0                                   
+reviewWakeHits                       0                                   
+officerAllowFacts                    1                                   
+
+agreeing=true differing=[]
+[2026-11-23T10:24:31.764Z] RESULT evidence-complete=true allBooted=true blocked=true (1/1 boots; agreeing pair=true)
+EXIT=3

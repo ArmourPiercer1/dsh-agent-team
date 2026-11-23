@@ -1,9 +1,9 @@
 {
   "spawned": true,
-  "port": 3193,
+  "port": 3194,
   "threw": false,
   "reachable": true,
-  "bootUrl": "http://127.0.0.1:3193/?token=<redacted>",
+  "bootUrl": "http://127.0.0.1:3194/?token=<redacted>",
   "error": "",
   "errorHead": "",
   "rowRefused": true,
@@ -16,38 +16,38 @@
   "recordedFactPresent": false,
   "recordedFactReachable": true,
   "recordedFactReason": "round 68: the row gate (host.ts validateTeamPluginConfig -> centre-config.ts) builds the product host-surface point at the refusal and records the invocation-authority fact + REFUSED/not-started settlement before the unchanged typed throw; this probe reads them back from disk",
-  "refusalFactFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-01-38Z/centre/alpha6.host-surface.facts.jsonl",
+  "refusalFactFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-06-07Z/centre/alpha6.host-surface.facts.jsonl",
   "refusalFactCount": 1,
   "refusalFact": {
-    "callId": "alpha6:47922b85-bd5e-4178-a760-b04f32928436:0",
+    "callId": "alpha6:ee20c1cf-195b-4d50-a4f3-344522ce8f3b:0",
     "decision": "deny",
     "refusalCode": "ADMISSION_ALPHA6_UNAVAILABLE",
     "axis": "host.service",
     "toolName": "alpha6.review-routing",
-    "reason": "Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority (the row is refused at row validation, before any root is built)"
+    "reason": "Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding (row validation, before any root is built: ADMISSION_ALPHA6_ROUTING_REQUIRED)"
   },
   "nonRefusalFactCount": 0,
   "refusalSettlement": {
     "state": "REFUSED",
     "dispatch": "not-started",
     "bodyOutcome": "not-started",
-    "terminalReason": "ADMISSION_ALPHA6_UNAVAILABLE: Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority (the row is refused at row validation, before an",
+    "terminalReason": "ADMISSION_ALPHA6_UNAVAILABLE: Alpha.6 review-routing decision is explicitly unavailable in the A1 cut: a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFIC",
     "transitions": [
       "ADMITTED",
       "REFUSED"
     ]
   },
-  "refusalSettlementRecordFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-01-38Z/centre/settlement/host-surface/alpha6/exec-80079ce2bcb1d3568ff742dfe355cb4d8667b1f9.settlement.json",
+  "refusalSettlementRecordFile": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-06-07Z/centre/settlement/host-surface/alpha6/exec-cf4cdc2ff31792c041c07de8bf430a0ad17f96b8.settlement.json",
   "refusalSettlementError": null,
   "wakeIntentFiles": 0,
-  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261122T15-01-38Z/instance-port3193.log",
-  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261122T15-01-38Z",
-  "configGate": "ADMISSION_ALPHA6_UNAVAILABLE: alpha6ReviewRouting is explicitly unavailable in this cut. no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority. A row that enables it would run a second review authority beside the centre, so the row is refused rather than booted with an unrecorded governance claim",
+  "logPath": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d3/driver/logs/u5u5a5sfdev1-20261123T10-06-07Z/instance-port3194.log",
+  "home": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-06-07Z",
+  "configGate": "ADMISSION_ALPHA6_UNAVAILABLE: ADMISSION_ALPHA6_ROUTING_REQUIRED — alpha6ReviewRouting needs a v5 Blueprint whose authored `reviewRouting` block is enabled — with no authored policy there is no routing decision to take, and Alpha.6 has no implicit default. a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding",
   "refusalTable": {
     "code": "ADMISSION_ALPHA6_UNAVAILABLE",
     "axis": "host.service",
     "subject": "Alpha.6 review-routing decision",
-    "missing": "no review-routing axis exists: Alpha.6 decides who may review whom from the trusted review facts before any tool call, so there is no locator or lane for the centre to judge, and the decision would otherwise be made by a second governance authority"
+    "missing": "a coherent configuration (ADMISSION_ALPHA6_ROUTING_REQUIRED / _CENTRE_REQUIRED / _WAKE_INTENT_PATH_REQUIRED). A routing decision executes nothing, so no axis is invented: the wake is a governed DELIVERY with durable intent + confirmation facts, and the Officer's calls are admitted under the OFFICER's binding"
   },
   "liveState": null
 }

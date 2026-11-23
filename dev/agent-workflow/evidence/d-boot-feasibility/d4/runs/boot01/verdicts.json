@@ -16,7 +16,7 @@
       {
         "id": "team-session-served",
         "ok": true,
-        "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T07-05-28Z/workspace\",\"createdAt\":\"2026-11-23T07:08:01.007Z\",\"generation\":11}"
+        "detail": "teamSession={\"rootSessionId\":\"session-dboot-d4-root\",\"blueprintId\":\"team.dboot.d4.v5\",\"revision\":\"1\",\"contentHash\":\"sha256:ca9ca0a091aa70526ecc796e117dce81b906a69776fb64b72c59501f6170e46b\",\"defaultWorkspace\":\"/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/tests/homes/u5u5a5sfdev1-20261123T10-17-42Z/workspace\",\"createdAt\":\"2026-11-23T10:20:05.226Z\",\"generation\":11}"
       },
       {
         "id": "no-alpha6-refusal-in-host-log",
@@ -161,7 +161,7 @@
       {
         "id": "refusal-recorded",
         "ok": true,
-        "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:42f74cdd-70b8-47df-8698-6405da3fe98b:0\"}]"
+        "detail": "deny facts=[{\"refusalCode\":\"ADMISSION_ALPHA6_UNAVAILABLE\",\"axis\":\"host.service\",\"callId\":\"alpha6:75bd66f6-c801-4f5f-ac00-04a9d84518c0:0\"}]"
       },
       {
         "id": "refusal-is-not-a-route",

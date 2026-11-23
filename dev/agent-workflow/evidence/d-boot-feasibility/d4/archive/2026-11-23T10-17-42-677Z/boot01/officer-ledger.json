@@ -1,0 +1,31 @@
+[
+  {
+    "callId": "call-d4-officer-read",
+    "agentId": "inst-1crltnl0089j",
+    "instanceId": "inst-1crltnl0089j",
+    "sessionId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
+    "instanceGeneration": 0,
+    "toolName": "read",
+    "axis": "fs.read",
+    "locator": "/home/armourpiercer/projects/dsh-agent-team/.worktrees/vnext-a1-cut/dev/agent-workflow/evidence/d-boot-feasibility/d4/runs-workspace/boot1/officer-read.txt",
+    "definitionSource": "",
+    "policyGeneration": "a5sf1:7b9287e7f4b05ad540e34d23cb2c70af",
+    "blueprintRevision": "",
+    "owner": "session-dboot-d4-root",
+    "decision": "allow",
+    "overlayOutcome": "no-opinion",
+    "kind": "invocation-authority",
+    "at": "2026-11-23T07:08:02.225Z"
+  },
+  {
+    "callId": "call-d4-officer-read",
+    "executionId": "exec-9ffe85796938c28e962b77ae4692c7788bc5e6c0",
+    "toolName": "read",
+    "agentId": "session-team-child-1d56dbb16a118ba3573db3c4b2641997",
+    "outcome": "completed",
+    "isError": false,
+    "policyGeneration": "a5sf1:7b9287e7f4b05ad540e34d23cb2c70af",
+    "kind": "execution",
+    "at": "2026-11-23T07:08:02.259Z"
+  }
+]
