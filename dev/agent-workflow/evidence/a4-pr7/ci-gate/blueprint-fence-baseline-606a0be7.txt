@@ -191,9 +191,10 @@ OFFENDING tests/kits/a6-cold-wake-nudge-20261113/a6-cold-wake-nudge.mjs :: L844=
 # removed and no shipped surface gained a namespace literal. Re-recorded from the gate's own
 # `verify-blueprint-version-clean.mjs` report, not by hand-guessing an offset.
 OFFENDING packages/runtime/test/a3p4-pr4-production-entry-regression.test.ts :: L933=v4
-# 2026-11-23 (UTE A1 cut, Round 85, vnext/a1-cut): the SAME ONE v5 literal in
-# vnext-admission.test.mjs moved L4567 -> L4571 because round 85 added assertions to ADM-18 and ADM-87
-# (+4 lines) earlier in the file. The assert added to ADM-87 checks the REFUSAL TEXT, not a blueprint
-# document; the literal itself is unchanged. Re-recorded from the gate's own
+# 2026-11-24 (UTE A1 cut, Round 92, vnext/a1-cut): the SAME ONE v5 literal in
+# vnext-admission.test.mjs moved L4571 -> L4641 because round 92 added the PTC rulings status
+# assertions to ADM-87 and the two ruled NOT-APPLICABLE marker arms (ADM-147/ADM-148, ~70 lines)
+# earlier in the file. Those arms author NO blueprint document: the v5 literal belongs to the
+# pre-existing C-alpha6 fixture, unchanged in content. Re-recorded from the gate's own
 # `verify-blueprint-version-clean.mjs` report, not by hand-guessing an offset.
-OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4571=v5
+OFFENDING packages/runtime/test/vnext-admission.test.mjs :: L4641=v5
