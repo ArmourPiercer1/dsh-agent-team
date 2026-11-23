@@ -2798,8 +2798,40 @@ before the body with `ADMISSION_PTC_UNAVAILABLE`, fact `deny` on `process.exec`,
 
 **Arms / gates.** `ADM-87`/`ADM-88`/`ADM-76` were re-stated, not weakened, to the narrowed reason
 (`WORKER process` + `per-execution policy seam`; the old `second execution authority` phrase is gone).
-Vitest population stays 238; the node leg count is unchanged. Gate blocks for this HEAD are in the
-round-85 settlement comment on PR #822.
+Vitest population stays 238; the node leg count is unchanged.
+
+Gate outputs at the code commit (`ab7442`):
+
+```
+node scripts/dispatch-tests.mjs --run --leg ute-vnext-a1
+  DSH-TEST-DISPATCH mode=run leg=ute-vnext-a1 suites=7 files=7 exit=0 set=sha256:edd4f1c4…
+  tests 211 pass 209 fail 0 skipped 2
+node scripts/test-catalog.mjs --max-uncollected 41 --max-excluded 7
+  DSH-TEST-CATALOG tests=785 refused=0 findings=0 (collected 733 / excluded 14 / uncollected 38)
+node scripts/ute-cut-closure.mjs --check
+  UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+node scripts/ute-p0-assets.mjs --check
+  UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+node scripts/docs-sync.mjs --check
+  docs:sync --check: docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20 pairs compared
+node scripts/place-dist-glue.mjs
+  place-dist-glue: done (30 placement(s))
+node scripts/eb3-ci-required.mjs
+  EB3-CI-REQUIRED pass workflows=10 findings=0
+pnpm -r run typecheck
+  clean (all packages)
+node scripts/eb3-security-run.mjs --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt --timeout 30000
+  EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0
+node --test (the census-runtime UTE G1 argv)
+  89/89 pass, exit 0
+```
+
+The full `ci-pr-gate --full --census-captures 2` at `ab7442` returned pass=9 fail=1: the ONLY red was
+`blueprint-fence`, because this round's 4 added test lines moved the one pre-existing v5 literal
+(L4567 → L4571). The baseline was re-recorded in the open from the verifier's own report; the fence leg
+then passed, and the final full run at the head carrying this section is pasted in the round-85
+settlement comment. The census leg itself passed with 2 identical captures (identity set identical to
+the published baseline).
 
 **NOT proven.** No live governed `run_code` run, so no live nested-call/Stop arm; the durable facts do
 not yet project `rootCallId`/`parentCallId` (product work, not a host seam); the worker's OS

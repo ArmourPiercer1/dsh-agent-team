@@ -11013,3 +11013,50 @@ root commands stay unavailable (no async root-work seam exists and none was inve
 scripted mock; the operator is a per-DSH_HOME authenticated human with an owned-root claim, NOT multi-user
 RBAC; no cell moves to PRODUCT-PROVEN.
 
+
+### R85 — PTC's four parts were measured BEFORE coding: three HOLD, the WORKER's OS profile is a `CORE_SEAM_BLOCKER`, so the refusal is narrowed and stays a refusal
+
+Round 75 refused `run_code` on a four-part missing proof. Review `20261122-2305 §4.3` required PTC to be
+validated as a SEPARATE mechanism, in order, before any implementation: (a) the worker's OS confinement,
+(b) nested calls re-entering the host pipeline/admission, (c) escalation through ControlService with a
+durable ask + one-shot grant, (d) Stop reaching the worker and its nested calls. The finding was written
+FIRST (`dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`) and each part was read in the pinned
+host at `639ed01539`.
+
+Measured:
+- **(a) FAILS.** `core/tools/src/index.ts:948-951` resolves PTC's policy from
+  `ctx.get('sandboxPolicy').resolve({session: exec.agent.session})`; `sandbox-policy/src/index.ts:164-169`
+  returns only `{mode, session.header.cwd}`; `sandbox/src/index.ts:40-53` has no per-path rules; and
+  `ptc-runtime-node/src/index.ts:224` skips `confine` under `danger-full-access`. The worker IS a real
+  confined Node child, but under the HOST session's policy — the member's compiled read/write ruleset
+  cannot be expressed, and the declared `confined-subprocess` executor (the realm face) is never used by
+  PTC. No public seam supplies a per-execution member policy → `CORE_SEAM_BLOCKER`.
+- **(b) HOLDS.** `ptc.ts:538-625` builds `${callId}:ptc:${n}` with `agent: exec.agent` and calls the
+  registry scheduler; `core/tools/src/index.ts:1504-1508` dispatches `tools/pre-execute` on
+  `scopeTarget(exec.agent)` — the same scope `installAdmissionPoint` listens on.
+- **(c) HOLDS.** `escalation.ts:171-226` asks `ctx.approval.request` with the exact
+  `escalate sandbox to <mode>: …` reason; `user-approval/src/index.ts:270-285` runs the waterfall; and
+  `ptc-escalation-row.mjs:334-465` opens a durable ControlService request, awaits the decision, mints
+  exactly ONE one-shot grant on `allow` and consumes it once.
+- **(d) HOLDS.** `ptc.ts:412-414` maps `exec.signal` to the run controller; `:553-554`/`:697-705` pass it
+  to nested calls and the runtime; `ptc-runtime-node:153-201` terminates the child; facts settle
+  `aborted` → `CANCELLED`.
+
+Decision: refuse, because (a) fails the security bar. `host-surface-refusal.mjs` and `admission.ts` now
+name ONLY the worker OS profile and the per-execution policy seam it needs; the old "all four missing"
+text is gone. No product behaviour changed: `run_code` is still refused before the body with
+`ADMISSION_PTC_UNAVAILABLE` on `process.exec`, fact `deny`, settlement `REFUSED`/`not-started`, zero
+worker spawn/confine. `ADM-76/87/88` were re-stated to the narrowed reason (not weakened), and the B
+ladder's four-part comment/title now records the measurement.
+
+Evidence/docs updated: `PTC-FOUR-PART-FINDING.md` (new), `CAPABILITY-MATRIX-C.md` C-ptc, `D-ACCEPTANCE-REPORT.md`
+(C13, §4.1, §4.3), `MIGRATED-SUITE-STATUS.md` (new round-85 section), `CONTRACT-CHANGE-REQUEST-process-lane.md`,
+and the PTC escalation doc (`evidence/alpha5/ptc-fs-impl/README.md`). Gate outputs are in the round-85
+MIGRATED section and the PR settlement comment: leg 211 cases / 209 pass + 2 disclosed skips, catalog 785,
+cut-closure, P0, docs-sync, 30 placements, ci-required, bound vitest 238/238, UTE G1 89/89, typecheck
+clean. The first full `ci-pr-gate` red was `blueprint-fence` only (the one pre-existing v5 literal moved
+4 lines with the added assertions); re-recorded from the verifier's own report in the open.
+
+NOT proven: no live governed `run_code` run (so no live nested/Stop arm), durable facts do not project
+`rootCallId`/`parentCallId`, and the worker's kernel enforcement was not measured — the finding is that
+it is governed by the WRONG policy, not that the sandbox is broken. No upstream patch was attempted.
