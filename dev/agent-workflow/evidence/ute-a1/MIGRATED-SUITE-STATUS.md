@@ -2837,3 +2837,74 @@ the published baseline).
 not yet project `rootCallId`/`parentCallId` (product work, not a host seam); the worker's OS
 enforcement was not measured on this kernel (the finding is about the WRONG policy, not about a broken
 sandbox). No upstream patch was attempted.
+
+---
+
+## Round 87 (2026-11-23) — D4: the live routed review wake is BLOCKED, by measurement
+
+**What changed.** A fourth live driver-class artefact,
+`tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs`, written to the D3 template
+(same harness, DEV-LIVE lease/grant, archive-before-start, host-selectable through
+`tests/next-host/host-select.mjs`, own DSH_HOME under `tests/homes/`, ports 3194/3195) and run with
+`--boots 2` against rc.2 (`639ed015397290b3745d163aafe02ffee4aa3f84`; host tree porcelain empty before
+and after). It is a **probe, not `run-boot-d4.mjs`**: the judge a D4 acceptance driver would carry
+cannot be satisfied by this tree, and a driver whose central case always reads REFUTED is not an
+acceptance instrument. Evidence: `dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md`.
+
+**The world (the configuration the round asked for).** Authored **v5** `team.dboot.d4.v5` with
+`reviewRouting {enabled: true, officerTemplateId: "officer", ordinaryToolApprovals.default: "officer",
+whenOfficerUnavailable: "hold"}`, templates `leader`/`officer`/`worker`, a worker `write` lane whose
+authored disposition is `ask`, row opt-in `alpha6ReviewRouting: true` + `centreStatePath` + an
+ABSOLUTE `alpha6WakeIntentPath`, and the shipped `a5sf-governed-member` preset. The product's own
+`centreConfigViolation` admits exactly this document and refuses both incoherent variants by name
+(`plan/enablement-rule.json`, host-free).
+
+**Live judges, two agreeing boots** (`agreeing=true differing=[]`):
+`d4:enablement` **PROVEN** (coherent row admitted, host boots, TeamSession served, zero refusal
+facts — the first live boot of a COHERENT Alpha.6 row), `d4:officer-up` **PROVEN**, `d4:officer-binding`
+**PROVEN** (the Officer's own `read` admitted under ITS binding, settlement
+`ADMITTED→RUNNING→COMPLETED`), `d4:refusal` **PROVEN**, `d4:routed-wake` **REFUTED**; overall
+**BLOCKED**. Counters identical across boots: `askAppeared=true`,
+`pendingRequestId=ctrl-1xxrzo21k29yc31rawhls0qn`, `wakeFacts=0`, `wakeIntentFiles=0`,
+`reviewWakeHits=0`, `officerAllowFacts=1`.
+
+**Why `d4:routed-wake` is REFUTED — the product's own answer.** The worker's authored `ask` lane
+creates a real durable `leader-approval` row (`control-request-recorded`, `actionName: admission-ask`,
+`toolName: write`) with **no `approvalCaseId`/`legOrdinal`/`reviewAuthority`**; the product's own
+`createAlpha6RootRouter.route()` answers `null` for it with `memberListCalls: 0`; the world's durable
+fact census holds zero `team-review-wake-routed`/`-delivered` facts, the wake-intent directory does not
+exist, and a disk-wide scan for `[team-review-wake` finds nothing. The **Leader** receives the plain
+C1 ask (`[team-control … waiting for Leader approval`) and its `allow` is durably recorded — the world
+is coherent; the ROUTE is missing.
+
+**Two Team-side seams are missing; NEITHER is a `CORE_SEAM_BLOCKER`** (no upstream patch, no private
+API, no host change; host porcelain empty):
+
+1. **No live producer of a case-bearing ordinary ask.** `route()` requires `approvalCaseId` +
+   `legOrdinal` (`alpha6/root-router.ts:209`); the case-less branch wakes the Leader by design
+   (`alpha6/notifier.ts:159-169`); the only live leg producer `requestApprovalLeg`
+   (`control/service.ts:5607`) is called solely for `envelope-mutation` (`governance/service.ts:1016`),
+   which `isDelegableOrdinaryToolAsk` excludes (`review-router/policy.ts:68`); both ordinary-ask
+   producers are case-less (`src/plugin/vnext/admission-port.mjs:155-165`; `packages/tools/src/tools.ts:973-1000`);
+   the Alpha.4 PA ask lane was deleted by the A1 cut (`1617d5839`), leaving `routeOperationApproval` /
+   `createOperationApprovalFactsReader` pure/test-only or consumption-only (`root.ts:3268`).
+   **Minimal lawful fix:** open the admission ask through the case-forming call with the operation
+   identity Alpha.6 already requires (the "Alpha.6-aware ask lane" of the J06 comment,
+   `root-router.ts:212-216`). No new axis.
+2. **No consumer for an `ask`-disposition call even after an allow.** The centre refused the granted
+   call verbatim: *"…has the disposition 'ask', but this admission plane has no approval consumer
+   (`resolveAskClassCall` has no production caller); refusing rather than auto-approving"*
+   (`member-io-policy/src/provider-capabilities.ts:315`; comment `:200-205` names **BL-30**;
+   `ALPHA5-SANDBOX-BACKLOG.md:559` BL-30 READY, `:562` BL-33's consumption half blocked on it).
+
+**Docs updated truthfully, no level moved.** `ute-a1/ALPHA6-FORMAL-ROUTING.md` gained a round-87
+section; `ute-a1/CAPABILITY-MATRIX-C.md` C-alpha6 and `ute-a1/D-ACCEPTANCE-REPORT.md` C6/§6.5 carry the
+measured result. **Level stays MECHANISM**; the live ROUTED wake remains UNPROVEN — now by measurement.
+Duplicate-route (ONE wake) and machine-wake-vs-Sticky-Stop stay unreachable (in-process
+`ADM-143`/`ADM-146` unchanged).
+
+**NOT proven.** The live routed wake and everything downstream of it (duplicate route ⇒ ONE wake; a
+human Sticky Stop not cleared by a machine wake; a routed decision taken *from* a case-bearing durable
+row on a booted host). No leg was fabricated, no control route was added to the harness, no wake file
+was written by the driver, no upstream patch was attempted, and `run-boot.mjs` / `run-boot-d2.mjs` /
+`run-boot-d3.mjs` were NOT re-run this round (no product or test code changed; the probe is additive).

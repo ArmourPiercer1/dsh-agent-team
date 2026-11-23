@@ -156,3 +156,61 @@ publishes a v4 blueprint with a single worker member, so it cannot express (b) a
 binding, (c) a pending ordinary `leader-approval` leg, or (d) an Officer resolution through the mock
 model — it can express only the refusal side, which it continues to measure. No cell is upgraded to
 PRODUCT-PROVEN, and the capability matrix says so.
+
+---
+
+## ROUND 87 (2026-11-23) — the live answer: (b) and (d) are reachable, (c) is NOT, and the product says why
+
+The round-87 task was the last piece named above: author a v5 world with an Officer and an ordinary
+tool ask, boot it, and prove the routed wake live — or stop with the precise blocker instead of
+simulating it. The instrument is
+`tests/world-factory/drivers/d-boot-feasibility/probe-d4-routed-wake.mjs` (two agreeing DEV-LIVE
+boots, rc.2 host `639ed015…`, HEAD `775be06d7`); the evidence and the full argument are
+`dev/agent-workflow/evidence/d-boot-feasibility/d4/README.md`.
+
+**What is now LIVE (new, and better than the mechanism half):**
+
+| judge | live result |
+| --- | --- |
+| `d4:enablement` | **PROVEN** — a COHERENT row is admitted by `alpha6EnablementRefusal` and the host really boots a Team (`teamSession` served, zero Alpha.6 denial facts). Round 63/68 could only measure the refusal. |
+| `d4:officer-up` | **PROVEN** — the Officer MemberTemplate comes up as a RUNNING instance with its own child session that runs. |
+| `d4:officer-binding` | **PROVEN** — the Officer's OWN call is admitted by the ONE centre under ITS binding (1 allow `invocation-authority` fact for its callId, settlement `ADMITTED→RUNNING→COMPLETED`). |
+| `d4:refusal` | **PROVEN** — the same v5 document with `reviewRouting` removed is still refused by name, recorded, settled `REFUSED`, with zero wakes. |
+
+**What is NOT reachable, measured (not inferred):**
+
+| judge | live result |
+| --- | --- |
+| `d4:routed-wake` | **REFUTED** — the worker's authored `ask` lane creates a real durable `leader-approval` row, and it carries **no `approvalCaseId` / `legOrdinal` / `reviewAuthority`**. The PRODUCT's own `createAlpha6RootRouter.route()` answers `null` for that row with `memberListCalls: 0`; **zero** `team-review-wake-routed` / `-delivered` facts, **zero** wake-intent files, the **Officer is never woken**, and the **Leader** receives the plain C1 ask instead (`[team-control … waiting for Leader approval`). A disk-wide scan for `[team-review-wake` finds nothing. |
+
+**TWO Team-side seams are missing — and NEITHER is a `CORE_SEAM_BLOCKER`:**
+
+1. **No live producer of a case-bearing ordinary ask.** `route()` needs `approvalCaseId` +
+   `legOrdinal` (`alpha6/root-router.ts:209`); the case-less branch routes to the Leader by design
+   (`alpha6/notifier.ts:159-169`). The only live leg producer is `requestApprovalLeg`
+   (`control/service.ts:5607`), whose single live caller is the governance **envelope-mutation** lane
+   (`governance/service.ts:1016`) — excluded by `isDelegableOrdinaryToolAsk`
+   (`review-router/policy.ts:68`). Both ordinary-ask producers are case-less by construction: the
+   centre admission ask (`src/plugin/vnext/admission-port.mjs:155-165`, no `leg`/`reviewPayload`/
+   `operationFingerprint`) and the model-facing `team_request_control` (`packages/tools/src/tools.ts:
+   973-1000`, no case argument in its schema). The lane that used to mint ordinary-operation legs was
+   the Alpha.4 PA ask path, **deleted by the A1 cut** (`1617d5839`); its survivors
+   (`routeOperationApproval`, `createOperationApprovalFactsReader`) are pure/test-only or
+   consumption-only (`root.ts:3268`), as the repo's own test comment records
+   (`a4p7-live-descendant-authority.test.ts:579`).
+   **Minimal lawful fix:** open the admission ask through the case-forming call with the operation
+   identity Alpha.6 already requires, i.e. an "Alpha.6-aware ask lane" — the exact thing the J06
+   comment at `root-router.ts:212-216` anticipates. **No new axis** (unchanged from round 84).
+2. **No consumer for an `ask`-disposition call, even after an allow.** With the Leader's allow
+   durably recorded, the call was refused verbatim: *"authored locator … has the disposition 'ask',
+   but this admission plane has no approval consumer (`resolveAskClassCall` has no production
+   caller); refusing rather than auto-approving"*
+   (`member-io-policy/src/provider-capabilities.ts:315`; its comment at `:200-205` names
+   **BL-30**, and the backlog agrees: `ALPHA5-SANDBOX-BACKLOG.md:559` BL-30 READY, `:562` BL-33's
+   consumption half blocked on it).
+
+**Classification.** `CORE_SEAM_BLOCKER`: **none** — no upstream patch, no private API and no host
+change is needed; both seams are our own product's tracked work. **Level stays MECHANISM**; the live
+routed wake remains UNPROVEN, now by measurement. Duplicate-route (ONE wake) and
+Sticky-Stop-not-cleared-by-machine-input stay unreachable with it, and their in-process arms
+(`ADM-143`, `ADM-146`) are unchanged.
