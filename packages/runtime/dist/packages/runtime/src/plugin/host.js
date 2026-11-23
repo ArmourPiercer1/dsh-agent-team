@@ -1700,6 +1700,13 @@ export async function apply(ctx, config) {
         // sync residency port leaves open (quiesce.ts release-residency does not
         // await the dispose); this listener is the state-cleanup face, never a
         // race the row depends on.
+        //
+        // ROUND 92 / OWNER RULING (`docs/reviews/20261124-0151.txt` §PTC, 2026-11-24): PTC / `run_code`
+        // is NOT SUPPORTED this generation, and this install line STAYS. The row adjudicates EVERY sandbox
+        // escalation ask on the public waterfall (the host bash/pwsh process tools raise the same
+        // `escalate sandbox to <mode>:` prefix), so it is shared escalation governance, not a PTC tool
+        // surface; the ruling closed the TOOL, and `vnext/admission.ts` refuses it before this row can be
+        // asked. See `ADR-ptc-unsupported.md` for the kept-wiring rationale.
         const ptcEscalationRef = { current: null };
         if (typeof ctx.on === 'function' && typeof glue.createPtcEscalationRouter === 'function') {
             const ptcRouter = glue.createPtcEscalationRouter();

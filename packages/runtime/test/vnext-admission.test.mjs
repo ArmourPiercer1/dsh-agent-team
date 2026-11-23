@@ -29,6 +29,8 @@ const { createSettlementWriter } = await import('../src/plugin/vnext/settlement-
 const { bindingFromCompiledMember, installMemberCentre } = await import('../src/plugin/vnext/centre-install.mjs')
 const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
 const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
+// The owner ruling as a machine declaration (marker/status + the closed list of not-applicable arms).
+const { PTC_NOT_APPLICABLE_MARKER, PTC_PRODUCT_RULING, productUnsupportedReport, reportProductUnsupported } = await import('../src/plugin/vnext/ptc-product-ruling.mjs')
 
 const lane = (allow = [], ask = [], deny = []) => ({ mode: 'restricted', allow, ask, deny })
 
@@ -3341,7 +3343,7 @@ test('ADM-86 — ROUND 83: a governed row DELIVERS work and never executes it �
   assert.equal(new Set(codes).size, 3, `the capabilities must be individually identifiable, got ${codes.join(', ')}`)
 })
 
-test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is refused by its own code, recorded and settled, before the body', async () => {
+test('ADM-87 — C-ptc is NOT SUPPORTED BY PRODUCT RULING at the ONE centre: run_code is refused by its own code with the ruling status, recorded and settled, before the body', async () => {
   const world = await centreWorld('ptc', { binding: binding() })
   // POSITIVE CONTROL: the same world admits an in-lane read, runs its body and settles COMPLETED.
   const read = await world.dispatch(readExec('ptc-read-1'))
@@ -3366,14 +3368,23 @@ test('ADM-87 — C-ptc is EXPLICITLY UNAVAILABLE at the ONE centre: run_code is 
   assert.equal(fact.axis, 'process.exec')
   assert.match(String(fact.reason), /PTC entry/u)
   assert.match(String(fact.reason), /WORKER process/u, 'the reason names the ONE measured failing part')
-  assert.match(String(fact.reason), /per-execution policy seam/u, 'the reason names the seam the worker needs')
+  assert.match(String(fact.reason), /per-execution policy seam/u, 'the reason names the seam a future upstream would need')
+  assert.match(String(fact.reason), /status=unsupported-by-product-ruling/u, 'the reason names the RULING, not a missing provider or a misconfiguration')
+  assert.equal(fact.status, 'unsupported-by-product-ruling', 'the durable FACT carries the status as a field')
   assert.doesNotMatch(String(fact.reason), /second execution authority/u, 'the old four-part absence is narrowed: it was measured, not assumed')
 
-  // SETTLEMENT: REFUSED, not-started, never UNKNOWN (the body provably never ran).
+  // The declaration the ruling is implemented by, and the durable table it must agree with.
+  assert.equal(PTC_PRODUCT_RULING.status, fact.status, 'the machine declaration and the durable fact carry ONE status')
+  assert.equal(PTC_PRODUCT_RULING.marker, PTC_NOT_APPLICABLE_MARKER)
+
+  // SETTLEMENT: REFUSED, not-started, never UNKNOWN (the body provably never ran) — and the REPORT
+  // carries the same status, so a reader of the settlement alone can tell the ruling from a fault.
   const settled = world.store.read(world.executionIdOf(exec))
   assert.equal(settled.state, 'REFUSED')
   assert.equal(settled.observation.dispatch, 'not-started')
   assert.equal(settled.observation.bodyOutcome, 'not-started')
+  assert.match(String(settled.terminalReason ?? ''), /ADMISSION_PTC_UNAVAILABLE/u, 'the report names the typed code')
+  assert.match(String(settled.terminalReason ?? ''), /unsupported-by-product-ruling/u, 'the report carries the ruling status')
 
   // DISTINCT: a plain shell with no compiled execution authorization keeps the EXECUTION code, so a
   // reader can tell the two absences apart from the durable record alone.
@@ -3402,6 +3413,65 @@ test('ADM-88 — the capability table is CLOSED, each refusal names its own miss
     assert.equal(['team.control', 'host.service', 'process.exec'].includes(entry.axis), true, `${capability}: ${entry.axis}`)
   }
   assert.throws(() => hostSurfaceRefusal('mcp'), (error) => /closed table/u.test(error.message), 'a new capability cannot be refused by being forgotten')
+})
+
+test('ADM-147 — the governed PTC POSITIVE on a world that DECLARES the process authorization: NOT APPLICABLE — PRODUCT UNSUPPORTED (declared, reported, never silently skipped)', async (t) => {
+  // THIS ARM IS THE DECLARED VACANCY, not a pass. The rung-6 positive cannot be run under the ruling,
+  // so the honest arm is: build the world that WOULD have carried it (a compiled `run_code` execution
+  // authorization + a ready executor, the ADM-125 shape applied to PTC), prove the declaration cannot
+  // make PTC supported, and report the not-applicable marker through the machine declaration.
+  const world = await centreWorld('ptc-declared-world', {
+    binding: processBinding('allow', {
+      perTool: { run_code: processTool('allow') },
+      executors: { 'confined-subprocess': 'ready', ptc: 'ready' },
+    }),
+  })
+  try {
+    const exec = { name: 'run_code', callId: 'ptc-declared-1', arguments: { code: 'return 1' }, agent: { id: 'agent-1' }, turn: 1, step: 1 }
+    const verdict = await world.dispatch(exec)
+    assert.equal(verdict.kind, 'deny', 'a DECLARED authorization must not make the PTC tool admissible: the refusal is the ruling, not the missing declaration')
+    assert.match(String(verdict.reason), /ADMISSION_PTC_UNAVAILABLE/u, 'the refusal keeps its own code even when the authorization exists')
+    assert.equal(world.body.count, 0, 'ZERO effect: the not-applicable positive never runs a body')
+    const fact = world.admissionFact('ptc-declared-1')
+    assert.equal(fact.axis, 'process.exec')
+    assert.equal(fact.decision, 'deny')
+    assert.equal(fact.status, PTC_PRODUCT_RULING.status, 'the declared world gets the SAME ruling status, not a different one')
+    const settled = world.store.read(world.executionIdOf(exec))
+    assert.equal(settled.state, 'REFUSED')
+    assert.equal(settled.observation.dispatch, 'not-started')
+
+    // The declaration must ENUMERATE this arm; an undeclared not-applicable skip cannot exist.
+    const declared = PTC_PRODUCT_RULING.notApplicableArms.find((entry) => entry.id === 'ADM-147')
+    assert.notEqual(declared, undefined, 'the ruling declaration must enumerate ADM-147')
+    assert.match(declared.claim, /DECLARES the process authorization/u)
+    process.stdout.write(`${reportProductUnsupported('ADM-147')}\n`)
+    t.skip(`${PTC_NOT_APPLICABLE_MARKER} — ${PTC_PRODUCT_RULING.ruling}: the declared-world PTC POSITIVE has no supported target this generation (the ADM-125 shape applied to run_code refuses, by ruling)`)
+  } finally {
+    world.dispose()
+  }
+})
+
+test('ADM-148 — the PTC not-applicable marker is REPORTED with its status and the declaration agrees with the durable table (no silent skips)', async () => {
+  const reports = productUnsupportedReport().filter((entry) => entry.arm === 'ADM-147')
+  assert.equal(reports.length, 1, 'ADM-147 must emit exactly one machine-readable report: a silent skip is not a marker')
+  const line = reports[0].line
+  assert.match(line, new RegExp(`marker="${PTC_NOT_APPLICABLE_MARKER}"`, 'u'))
+  assert.match(line, /status=unsupported-by-product-ruling/u)
+  assert.match(line, /verdict=NOT_APPLICABLE/u)
+  assert.match(line, /ADR-ptc-unsupported\.md/u)
+  // The DECLARATION and the DURABLE TABLE must agree; two sources of truth for a status is how a
+  // "temporarily unavailable" story sneaks back in.
+  const { HOST_SURFACE_REFUSALS, HOST_SURFACE_CAPABILITIES } = await import('../src/plugin/vnext/host-surface-refusal.mjs')
+  assert.deepEqual([...HOST_SURFACE_CAPABILITIES], ['remote', 'alpha6', 'ptc'])
+  assert.equal(HOST_SURFACE_REFUSALS.ptc.status, PTC_PRODUCT_RULING.status)
+  assert.match(HOST_SURFACE_REFUSALS.ptc.missing, /status=unsupported-by-product-ruling/u)
+  assert.match(HOST_SURFACE_REFUSALS.ptc.missing, /NOT SUPPORTED/u)
+  // CLOSED LIST: exactly the two ruled PTC positives — ADM-69 lives in the B-ladder suite, ADM-147 here.
+  assert.deepEqual(PTC_PRODUCT_RULING.notApplicableArms.map((entry) => entry.id), ['ADM-69', 'ADM-147'])
+  assert.throws(() => reportProductUnsupported('ADM-999'), /not one of the ruled not-applicable arms/u)
+  // A ruled status never widens: the other capabilities carry no status field at all.
+  assert.equal(HOST_SURFACE_REFUSALS.remote.status, undefined)
+  assert.equal(HOST_SURFACE_REFUSALS.alpha6.status, undefined)
 })
 
 // ================================================ C STAGE (round 56): C-tools / C-member / C-work OVER THE ONE CENTRE

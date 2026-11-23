@@ -41,28 +41,36 @@
  *                  `openFactLedger` and the product `ExecutionSettlementStore`. The suite never
  *                  installs the admission point by hand and never wraps a definition.
  *
- * WHAT THIS SUITE DOES NOT PROVE (reported, never silently reduced):
+ * THE B-LADDER IS AMENDED (owner ruling `docs/reviews/20261124-0151.txt` §PTC, 2026-11-24). The
+ * SUPPORTED positive verification scope is `read → write → grep → web_fetch → bash`; PTC (`run_code`)
+ * is verified ONLY as `run_code → typed refusal → zero worker execution → REFUSED/not-started`. The
+ * amendment cites the frozen A0 contract instead of editing it: `ADR-ptc-unsupported.md`. What this
+ * suite proves per rung, and what it does NOT prove, is reported — never silently reduced:
  *
- *   bash / run_code POSITIVE controls stay BLOCKED in THIS world, and round 75 changed WHY. Process
- *   execution no longer needs (and no longer has) a path lane: a shell is admitted on the v4
- *   tool-level EXECUTION authorization (`toolBindings[].authorization` + `execution.executionBoundary`)
- *   carried into the compiled per-tool answer. This world's compiled answer declares NO tool binding
- *   for `bash`, so the centre refuses `process.exec` with `ADMISSION_EXECUTION_UNAUTHORIZED` (and the
- *   PTC entry `run_code` with its own `ADMISSION_PTC_UNAVAILABLE`, narrowed in round 85 to the ONE
- *   measured failing part: the worker's OS policy is the host session's, not the member's compiled
- *   read/write lanes (nested calls, Control escalation and Stop were measured as passing the same
- *   governance; see `PTC-FOUR-PART-FINDING.md`)). The positive control is no longer contract-blocked; it needs
- *   a world whose blueprint declares the binding (proven in `vnext-admission.test.mjs` ADM-125+).
- *   Fabricating that declaration here — or granting it from the write lane — would be a SECOND
- *   decision authority, which this round forbids. The NEGATIVE control for both rungs IS proven below
- *   (refused before the body, zero side effects, fact + settlement REFUSED/not-started).
+ *   bash POSITIVE stays BLOCKED IN THIS WORLD, and round 75 changed WHY. Process execution no longer
+ *   needs (and no longer has) a path lane: a shell is admitted on the v4 tool-level EXECUTION
+ *   authorization (`toolBindings[].authorization` + `execution.executionBoundary`) carried into the
+ *   compiled per-tool answer. This world's compiled answer declares NO tool binding for `bash`, so the
+ *   centre refuses `process.exec` with `ADMISSION_EXECUTION_UNAUTHORIZED`. The positive control is not
+ *   contract-blocked; it needs a world whose blueprint declares the binding (proven in
+ *   `vnext-admission.test.mjs` ADM-125+). Fabricating that declaration here — or granting it from the
+ *   write lane — would be a SECOND decision authority, which this round forbids.
+ *
+ *   run_code POSITIVE is NOT APPLICABLE — PRODUCT UNSUPPORTED (ADM-69). Under the ruling there is no
+ *   supported PTC positive to run, so the arm reports the ruling's marker and status and asserts the
+ *   declaration — it is NOT "skipped pending a fix" and it is NOT deleted. The refusal side is the
+ *   real control and stays proven: ADM-76 (out-of-lane) and ADM-79 (the retained entry point on the
+ *   real composition) both show the typed `ADMISSION_PTC_UNAVAILABLE`, the
+ *   `unsupported-by-product-ruling` status on fact + settlement, zero worker, zero side effects, and
+ *   REFUSED/not-started. ADM-80 asserts the not-applicable marker was REPORTED, so neither arm can
+ *   become a silent skip.
  *
  * HOST REFUSAL follows `tests/world-factory/a5sf-fs-contract.test.mjs`: absent pinned host ⇒ one
  * machine-readable `VNEXT-B-LADDER-HOST-REFUSED` line and EVERY case `t.skip` (never a pass); host
  * present but an entry missing ⇒ hard `VNEXT-B-LADDER-HOST-INCOMPLETE` throw; complete ⇒ the arms
  * run. `A5SF_REQUIRE_PINNED_HOST=1` (set by the `ci-census` leg) turns the refusal into a failure.
  *
- * ARMS ADM-63 … ADM-78. The numbering continues `vnext-admission.test.mjs` (which stops at ADM-62)
+ * ARMS ADM-63 … ADM-80. The numbering continues `vnext-admission.test.mjs` (which stops at ADM-62)
  * rather than restarting, so a reader can follow one arm series across the two files. They live here
  * because they need the pinned host's built `lib/` entries, which the in-process admission suite
  * deliberately does not.
@@ -98,6 +106,9 @@ const { openFactLedger } = await import('../src/plugin/vnext/fact-ledger.mjs')
 const { hostNativeSpecs, mountHostModules } = await import('../src/plugin/vnext/realm-lane.mjs')
 const { createExecutionSettlementStore } = await import('../settlement/execution-settlement.ts')
 const { dispatchExecutionId } = await import('../settlement/dispatch-settlement.ts')
+// The owner ruling as a machine declaration: the marker/status the two not-applicable arms report and
+// the closed arm list a marker arm asserts. A skip that is not one of these arms cannot borrow it.
+const { PTC_NOT_APPLICABLE_MARKER, PTC_PRODUCT_RULING, productUnsupportedReport, reportProductUnsupported } = await import('../src/plugin/vnext/ptc-product-ruling.mjs')
 
 // ---------------------------------------------------------------- the world's fixed identities
 
@@ -130,10 +141,13 @@ const LADDER = Object.freeze([
   Object.freeze({ rung: 6, tool: 'run_code', axis: 'process.exec', refusalCode: 'ADMISSION_PTC_UNAVAILABLE' }),
 ])
 
-/** The two rungs whose POSITIVE control the compiled answer cannot carry today (see the header). */
+/**
+ * The ONE rung whose POSITIVE control the compiled answer cannot carry in this world (see the header).
+ * PTC is no longer in this table: its positive is NOT APPLICABLE — PRODUCT UNSUPPORTED (the ruling),
+ * which is a different state from "blocked pending a world that declares the authorization".
+ */
 const POSITIVE_BLOCKED = Object.freeze({
   bash: 'execution-authority-not-declared-in-this-world: the compiled answer carries no toolBindings[] entry for bash, so there is no tool-level authorization to admit it (round 75 admission now keys on that declaration, not on a path lane)',
-  run_code: 'ptc-worker-os-profile: run_code\'s worker resolves its sandbox policy from the HOST session, not the member\'s compiled read/write lanes (round 85; nested calls, Control escalation and Stop measured as holding)',
 })
 
 // ---------------------------------------------------------------- host gate (declared, not guessed)
@@ -223,7 +237,7 @@ const lane = (allow) => Object.freeze({ mode: 'restricted', allow: Object.freeze
  * @param {string} input.label - directory/marker label.
  * @param {'in-lane' | 'out-of-lane'} input.ceiling - which compiled answer this world enforces.
  */
-async function buildLadderWorld ({ label, ceiling, dir }) {
+async function buildLadderWorld ({ label, ceiling, dir, presentation = 'both' }) {
   const seams = await loadFsContractSeams(REPO_ROOT)
   const { Context, ToolRuntime, SystemPrompt, LocalFileSystem, createScope, bindScopeParent, nativeToolModules, row } = seams
 
@@ -252,8 +266,11 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
   const root = new Context()
   await root.plugin(SystemPrompt)
   // `mode: 'both'` is what makes the host registry register its RESERVED `run_code` transport; the
-  // PTC runtime service below is what the transport dispatches into. Neither is a Team module.
-  await root.plugin(ToolRuntime, { mode: 'both', ptc: {} })
+  // PTC runtime service below is what the transport dispatches into. Neither is a Team module. The
+  // `offered` world builds the SAME composition under the SHIPPED presentation (`native`) instead:
+  // that is where the model-visible/ofered set is measured, because it is the deployment the product
+  // ships, while the `both` world is where the host still RETAINS the entry point (ADM-79 drives both).
+  await root.plugin(ToolRuntime, presentation === 'native' ? { mode: 'native' } : { mode: 'both', ptc: {} })
   await root.plugin(LocalFileSystem, { cwd: dir, diffBasisMaxBytes: 10 * 1024 * 1024 })
 
   const LocalSubprocessRuntime = (await import(pathToFileURL(searchAnchor.require.resolve('@deepseek-ai/dsh-subprocess-local')).href)).default
@@ -531,6 +548,7 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
 
   const world = {
     label,
+    presentation,
     dir,
     inside,
     outside,
@@ -550,6 +568,10 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
     recordsOf,
     settlementOf: (callId) => settlementStore.read(settlementIdentity({ callId }).executionId),
     definitionOf: (name) => root.get('tools').get(name, agentKey),
+    /** The model-visible set the host would OFFER this member (`tools.schemas(scope)`). */
+    schemas: () => root.get('tools').schemas(agentKey),
+    /** The HOST-registry view (no scope): what the process retains regardless of the member's offer. */
+    globalDefinitionOf: (name) => root.get('tools').get(name),
     /**
      * The host bash module's OWN definition for THIS member's terminals face. The preset scope has
      * no `terminals`, so the module registers nothing there and has no reference to compare against;
@@ -590,6 +612,7 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
 let scratchDir
 let inLane
 let outOfLane
+let offered
 const positiveLog = []
 const negativeLog = []
 
@@ -753,12 +776,20 @@ arm('ADM-68 — BASH positive: NOT RUN in this world (no compiled execution auth
   t.skip(`BASH positive control NOT RUN (${POSITIVE_BLOCKED.bash}); the positive control on a declared world is ADM-125, the negative IS proven (ADM-75)`)
 })
 
-arm('ADM-69 — RUN_CODE positive: NOT RUN (the PTC worker\'s OS profile is the HOST session policy, not the member ceiling) — disclosed, never a pass', (t) => {
+arm('ADM-69 — RUN_CODE positive: NOT APPLICABLE — PRODUCT UNSUPPORTED (owner ruling 20261124-0151 §PTC; a ruled scope, not a pending fix)', (t) => {
   const world = inLane
-  assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry\'s reserved transport IS registered: the block is the missing PTC governance proof')
-  assert.equal(world.binding.process, undefined)
-  process.stdout.write(`VNEXT-B-LADDER-BLOCKED rung=6 tool=run_code control=positive verdict=NOT_RUN reason=${POSITIVE_BLOCKED.run_code}\n`)
-  t.skip(`RUN_CODE positive control NOT RUN (${POSITIVE_BLOCKED.run_code}); the negative control IS proven (ADM-76)`)
+  // The host registry's reserved transport IS registered in this world: what is absent is not a tool
+  // but a SUPPORTED governance story. The ruling closes the rung as a SCOPE decision, so the positive
+  // claim has no supported target — and saying so is not the same as "skipped pending a fix".
+  assert.notEqual(world.definitionOf('run_code'), undefined, 'the host registry retains the transport, which is exactly why the REFUSAL (not the hiding) is the control')
+  assert.equal(world.binding.process, undefined, 'the compiled answer carries no process authorization, and the ruling does not invent one')
+  assert.equal(PTC_PRODUCT_RULING.status, 'unsupported-by-product-ruling')
+  assert.equal(PTC_PRODUCT_RULING.marker, PTC_NOT_APPLICABLE_MARKER)
+  const declared = PTC_PRODUCT_RULING.notApplicableArms.find((entry) => entry.id === 'ADM-69')
+  assert.notEqual(declared, undefined, 'the ruling declaration must enumerate this arm; an undeclared not-applicable skip is not allowed')
+  assert.match(declared.claim, /executes in the governed Member world/u)
+  process.stdout.write(`${reportProductUnsupported('ADM-69')}\n`)
+  t.skip(`${PTC_NOT_APPLICABLE_MARKER} — ${PTC_PRODUCT_RULING.ruling}: the rung-6 POSITIVE has no supported target this generation; the refusal controls ADM-76/ADM-79 stand, with the rung verified ONLY as run_code -> typed refusal -> zero worker -> REFUSED/not-started`)
 })
 
 arm('ADM-70 — ORDER (positive): the durable facts read back in LADDER order', async (t) => {
@@ -898,7 +929,8 @@ arm('ADM-76 — RUN_CODE negative: PTC stays refused before the body with zero s
   assert.equal(admission.toolName, 'run_code')
   assert.equal(admission.axis, 'process.exec')
   assert.equal(admission.decision, 'deny')
-  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry names its own absence (the worker\'s OS profile)')
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the PTC entry keeps its own code')
+  assert.equal(admission.status, PTC_PRODUCT_RULING.status, 'the refusal carries the PRODUCT-RULING status, not a fault status')
   assert.match(String(admission.reason ?? ''), /WORKER process/u, 'the reason names the ONE measured failing part')
   assert.match(String(admission.reason ?? ''), /per-execution policy seam/u, 'the reason names the seam the worker needs')
   assert.equal(execution.outcome, 'admission-refusal')
@@ -916,6 +948,65 @@ arm('ADM-77 — ORDER (negative): the durable refusals read back in LADDER order
   const executions = outOfLane.ledger.readAll().filter((record) => record.kind === 'execution')
   assert.equal(executions.length, LADDER.length, 'one execution fact per rung, and no more')
   for (const execution of executions) assert.equal(execution.outcome, 'admission-refusal', 'every rung must record that its body never started')
+})
+
+arm('ADM-79 — PTC is ABSENT from the governed Member\'s OFFERED set, and the host-retained entry is a TYPED refusal with zero worker start (the real composition, shipped and PTC presentations)', async () => {
+  // ---- (1) THE OFFER, under the presentation the product ships (`native`) ----
+  // `schemas()` is the host's model-visible projection for THIS member's scope: it is the set a model
+  // would be shown. `definitionOf` is the per-scope resolution the executor uses. Neither may offer
+  // the PTC tool: hiding it from the prompt while resolving it at execution time would not be a
+  // boundary, so the negative below proves the tool is refused even where the host DOES retain it.
+  const offeredNames = offered.schemas().map((schema) => schema.name)
+  assert.equal(offeredNames.includes('run_code'), false, `the model-visible set must not offer run_code; offered: ${offeredNames.join(',')}`)
+  assert.equal(offered.definitionOf('run_code'), undefined, 'no per-member definition may resolve run_code under the shipped presentation')
+  assert.equal(offered.globalDefinitionOf('run_code'), undefined, 'the shipped presentation does not even register the reserved transport')
+  assert.equal(offered.installed.mounted.includes('run_code'), false, 'the mounted host modules must not include a PTC tool row')
+
+  // ---- (2) THE HOST-RETAINED ENTRY, where PTC IS presented (`both`) ----
+  // A deployment that presents PTC keeps the transport registered host-wide; a mis-wired member scope
+  // could still reach it. That is the accidental path the ruling requires to fail TYPED, not to fall
+  // through to a worker.
+  assert.notEqual(inLane.globalDefinitionOf('run_code'), undefined, 'the PTC-presenting deployment retains the host transport: the entry point exists')
+  assert.notEqual(inLane.definitionOf('run_code'), undefined, 'and on this member scope it resolves, so the refusal below is reached through the REAL entry, not a fabricated one')
+  const before = { spawn: inLane.spawnCalls(), confine: inLane.confineCalls() }
+  const callId = 'ladder-ptc-retained-entry'
+  const result = await inLane.dispatch('run_code', { code: `return '${RUN_CODE_MARKER}'`, description: 'accidental PTC call through the retained entry' }, callId)
+  assert.equal(result.isError, true, `the retained entry must refuse, not execute: ${result.text}`)
+  assert.doesNotMatch(result.text, new RegExp(RUN_CODE_MARKER, 'u'), 'the refused code must not have run')
+  const { admission, execution } = inLane.recordsOf(callId)
+  assert.equal(admission.toolName, 'run_code')
+  assert.equal(admission.decision, 'deny')
+  assert.equal(admission.refusalCode, 'ADMISSION_PTC_UNAVAILABLE', 'the refusal keeps its own code (the decision stays individually identifiable)')
+  assert.equal(admission.status, PTC_PRODUCT_RULING.status, 'the durable FACT carries the product-ruling status as a field')
+  assert.match(String(admission.reason), /unsupported-by-product-ruling/u, 'and the reason names the ruling, not a missing provider')
+  assert.equal(execution.status, PTC_PRODUCT_RULING.status, 'the EXECUTION fact carries the same status: a reader joining the two must not parse prose')
+  assert.equal(execution.outcome, 'admission-refusal')
+  assert.equal(inLane.spawnCalls(), before.spawn, 'ZERO WORKER: a refused run_code must not start the PTC worker or any process')
+  assert.equal(inLane.confineCalls(), before.confine, 'and it must not reach the sandbox provider')
+  const settled = inLane.settlementOf(callId)
+  assert.equal(settled?.state, 'REFUSED')
+  assert.equal(settled.observation.dispatch, 'not-started')
+  assert.equal(settled.observation.bodyOutcome, 'not-started')
+  assert.match(String(settled.terminalReason ?? ''), /ADMISSION_PTC_UNAVAILABLE/u, 'the REPORT surface names the typed code')
+  assert.match(String(settled.terminalReason ?? ''), /unsupported-by-product-ruling/u, 'the REPORT surface carries the product-ruling status, not the fact alone')
+})
+
+arm('ADM-80 — the PTC not-applicable marker was REPORTED with its status (not a silent skip), and the ruled arm list is CLOSED', () => {
+  const reports = productUnsupportedReport().filter((entry) => entry.arm === 'ADM-69')
+  assert.equal(reports.length, 1, 'ADM-69 must emit exactly one machine-readable report')
+  const line = reports[0].line
+  assert.match(line, new RegExp(`marker="${PTC_NOT_APPLICABLE_MARKER}"`, 'u'))
+  assert.match(line, /status=unsupported-by-product-ruling/u)
+  assert.match(line, /verdict=NOT_APPLICABLE/u)
+  assert.match(line, /ADR-ptc-unsupported\.md/u)
+  assert.match(line, /arm=ADM-69/u)
+  // CLOSED LIST: exactly the two ruled positives (the second is ADM-147, in the admission suite), so a
+  // new "temporarily skipped" PTC positive cannot borrow the status — the reporter throws by name.
+  assert.deepEqual(PTC_PRODUCT_RULING.notApplicableArms.map((entry) => entry.id), ['ADM-69', 'ADM-147'])
+  assert.throws(() => reportProductUnsupported('ADM-999'), /not one of the ruled not-applicable arms/u)
+  // The REFUSAL CONTROLS are declared and still exist here; a not-applicable arm never replaces them.
+  assert.deepEqual([...PTC_PRODUCT_RULING.refusalControls], ['ADM-76', 'ADM-87'])
+  assert.ok(ARMS.some((entry) => entry.title.startsWith('ADM-76')), 'ADM-76 must still be registered')
 })
 
 arm('ADM-78 — the binding is the COMPILED answer, and its absent axes stay absent (no second policy)', () => {
@@ -940,11 +1031,18 @@ if (HOST_REFUSAL !== undefined) {
     scratchDir = mkdtempSync(join(tmpdir(), 'vnext-b-ladder-'))
     inLane = await buildLadderWorld({ label: 'in-lane', ceiling: 'in-lane', dir: join(scratchDir, 'in-lane') })
     outOfLane = await buildLadderWorld({ label: 'out-of-lane', ceiling: 'out-of-lane', dir: join(scratchDir, 'out-of-lane') })
-    process.stdout.write('VNEXT-B-LADDER rungs=read,write,grep,web_fetch,bash,run_code negatives=6/6 positives=4/6 blocked=bash,run_code reason=process-lane-contract-change-request\n')
+    // The SAME composition under the SHIPPED presentation: the model-visible offer is measured here,
+    // because "the host could be configured to present PTC" is not the deployment the product ships.
+    offered = await buildLadderWorld({ label: 'offered-native', ceiling: 'in-lane', dir: join(scratchDir, 'offered-native'), presentation: 'native' })
+    // The A0 B-ladder, AMENDED by the owner ruling: supported positive scope read→write→grep→web_fetch→bash,
+    // and PTC verified ONLY as run_code→typed refusal→zero worker→REFUSED/not-started. This line is the
+    // machine summary the acceptance report quotes; it must state the ruling, not a pending blocker.
+    process.stdout.write('VNEXT-B-LADDER rungs=read,write,grep,web_fetch,bash,run_code negatives=6/6 positives=4/5 bash-positive=ADM-68-blocked-in-this-world-ADM-125-proves-it ptc=ADM-69-NOT-APPLICABLE-product-unsupported amendment=ADR-ptc-unsupported.md\n')
     const capability = await probeEnvCapabilities()
     process.stdout.write(`${capabilityProbeLine(capability)}\n`)
   })
   after(async () => {
+    if (offered !== undefined) await offered.dispose()
     if (outOfLane !== undefined) await outOfLane.dispose()
     if (inLane !== undefined) await inLane.dispose()
     if (scratchDir !== undefined) rmSync(scratchDir, { recursive: true, force: true })

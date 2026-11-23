@@ -68,6 +68,15 @@
  * all grade through the real ledger. The `grantsState` mirror is
  * OBSERVABILITY ONLY (never authority), same as every prior row's ledger.
  *
+ * ROUND 92 / OWNER RULING (`docs/reviews/20261124-0151.txt` §PTC, 2026-11-24): PTC is NOT SUPPORTED
+ * this generation, and this row STAYS. It is NOT PTC-only wiring: it adjudicates the host
+ * `approval/request` waterfall for EVERY sandbox escalation ask (`escalate sandbox to <mode>: …`,
+ * raised by the host bash/pwsh process tools as well as by a PTC-mode deployment), so deleting it
+ * would remove a shared second-authority control and let an `ask` fall through to the next listener.
+ * The ruling closes the PTC TOOL, not escalation governance; the refusal in `vnext/admission.ts`
+ * makes the PTC ask unreachable for a governed Member, and this row keeps the durable one-shot grant
+ * semantics for the paths that remain. Its negative controls stay (a5ptc-escalation-row.test.ts).
+ *
  * Purity: no module-level state; no timers; the clock is injected.
  *
  * @module runtime/plugin/live/ptc-escalation-row

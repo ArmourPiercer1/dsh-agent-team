@@ -24,7 +24,8 @@ with `references=3` non-production references remaining, census unchanged at 37/
 the centre real: one admission authority on three unmerged axes, durable facts, an ask path, Stop and
 crash recovery that never replays, and a probe ladder over unmodified host tools. **C** disposes of all
 19 contract rows — 15 team tools, member lifecycle, work delivery, a real MCP mount — and refuses PTC
-with its own code and a `CORE_SEAM_BLOCKER` on the worker OS profile; the S6 management plane is
+with its own code and the ruled status `unsupported-by-product-ruling` (round 92: PTC is NOT SUPPORTED
+this generation by owner ruling, a scope reduction recorded in `ADR-ptc-unsupported.md`, not a blocker); the S6 management plane is
 restored (round 74) and serves work delivery (round 83); Alpha.6's formal routing is implemented
 (round 84) while its **live routed wake is REFUTED (round 87)** on two named Team-side seams, and the
 `ask`-disposition execution path has **no production consumer (BL-30, round 88)**. **D** adds live
@@ -61,8 +62,9 @@ resolved and one open** (round 86 audit corrected this section, which still desc
 
 - `CONTRACT-CHANGE-REQUEST-process-lane.md` — **RESOLVED / SUPERSEDED** (round 75 + owner ruling §1). The
   v4 grammar already carried the declaration; the projection dropped it. `bash`/PTY are live-proven
-  (round 76). What remains is **PTC only**, and it is a `CORE_SEAM_BLOCKER` on the worker OS profile
-  (`PTC-FOUR-PART-FINDING.md`), not a lane question.
+  (round 76). **PTC is not a remaining contract question**: the round-92 owner ruling formally closes it
+  as NOT SUPPORTED this generation (`ADR-ptc-unsupported.md`), so the refusal is the product boundary and
+  no upstream seam is being requested for it.
 - `CONTRACT-CHANGE-REQUEST-settlement-recheck.md` — **RESOLVED, owner Option A (round 73)**: a durable
   deny is the legal state for "admitted as allow, then refused before the body"; `ADM-119` is the
   positive. The store's own Stop shape is `Stop + CANCELLED`, never a fabricated allow/UNKNOWN.
@@ -70,14 +72,17 @@ resolved and one open** (round 86 audit corrected this section, which still desc
   out-of-vocabulary face, the compiled lane judges it); **shape A, a search face the overlay can deny, is
   still open** — this one needs a ruling.
 
-## Owner decisions needed (two older rulings + PTC's upstream seam + four rulings the new seams need)
+## Owner decisions needed (two older rulings + four rulings the new seams need; PTC is RULED)
 
 `dev/agent-workflow/evidence/ute-a1/OWNER-DECISIONS.md` carries a round-86 correction block and a
 **round-89 addendum**; its historical text still describes states from rounds 59–68. Current state:
 
-1. **PTC (`run_code`) only** — `bash`/PTY are no longer refused (round 76, live-proven). PTC is refused
-   with a `CORE_SEAM_BLOCKER` on the **worker's OS profile**; the owner may accept the refusal for this
-   generation or pursue the upstream per-execution `SandboxExecutionPolicy` seam.
+1. **PTC (`run_code`) — ANSWERED BY THE OWNER (round 92): NOT SUPPORTED this generation.** The ruling
+   (`docs/reviews/20261124-0151.txt` §PTC) closes the upstream-seam ask; the amendment is
+   `ADR-ptc-unsupported.md`. The governed Member is never offered `run_code`, and the host-retained entry
+   is a typed refusal with status `unsupported-by-product-ruling` and zero worker. This is a RULED SCOPE
+   REDUCTION: the two PTC POSITIVE arms are `NOT APPLICABLE — PRODUCT UNSUPPORTED` with machine-visible
+   markers (asserted), and the refusal negative controls are kept — not deleted tests.
 2. **runtime team creation** — **answered and implemented** (round 74); `team.create` is served.
 3. **settlement recheck** — **answered** (Option A, round 73); no action.
 4. **realm-less admission** — one sentence: is `MEMBER_CENTRE_UNWIRED` the final answer?
@@ -100,7 +105,7 @@ short, none of these is closed, and none may be narrated closed:
 | --- | --- | --- |
 | **G1 Alpha.6 case-bearing ask producer** (Team-side, NOT upstream) | `requestApprovalLeg` only serves `envelope-mutation`; the ordinary ask is case-less, so `alpha6/root-router.ts:209` returns `null` and `d4:routed-wake` is REFUTED on 2/2 agreeing boots | **R1** (owner) |
 | **G2 BL-30 ask consumer** (Team-side, NOT upstream) | production ask is `inline`; inline allow is never a guard token (`control/service.ts:4155-4165`, `:4289`); the grant is spent at the host guard (`admission-port.mjs:770-784`); `resolveAskClassCall` has no production caller, so `IO_ASK_REQUIRES_APPROVAL` (`provider-capabilities.ts:315`). **A Member can ASK, be GRANTED, and still not run the granted call.** Product source unchanged; test arms only (25/25) | **R2/R3/R4** (owner) |
-| **G3 PTC upstream seam** | `run_code` refused `CORE_SEAM_BLOCKER`; 3 of 4 parts hold, worker OS profile does not | accept or pursue upstream seam |
+| **G3 PTC upstream seam** | **CLOSED BY OWNER RULING (round 92)** — NOT SUPPORTED this generation; `run_code` is refused typed with status `unsupported-by-product-ruling` and zero worker; 3 of 4 parts hold and the worker OS profile does not (that is the measured BASIS, no longer an ask) | nothing — answered; future support is a new feature with the ADR's revisit criteria |
 | **G4 root-work commands** | `team.admitInitialWork` / `team.ensureRootLive` refused (`s6-command-classification.ts:111-112`); no async root-work seam | product work / scope ruling |
 | **G5 rc.5 pre-dispatch-abort wiring** | observer module present, not wired into a booted rc.5 production turn (`RC5-MIGRATION.md:492-504`) | product wiring + live boot |
 | **G6 `member.create` / `member.followup` live evidence** | only `member.send` was driven through the real S6 API over two boots | extend D2 cases and re-boot |
@@ -116,8 +121,9 @@ The single reviewable document for this candidate is
 verbatim from `docs/plans/memo/ute-p0-20261121/06-CAPABILITY-CONTRACT.md`), the HEAD/scope facts, the
 P1–P5 ladder with its live judges, all eight required-CI lines, the host-authority statement, and the
 limits. Its verdict: **A1+B+C implemented with live D evidence for the listed items, not a completed
-product acceptance** — no PRODUCT-PROVEN row, PTC refused on a named upstream seam, two older open owner
-rulings plus the four the round-87/88 seams need, and the complete open-gap register in **§10** (G1–G10).
+product acceptance** — no PRODUCT-PROVEN row, PTC **UNSUPPORTED BY RULING** (round 92, a scope reduction
+with a proven refusal chain — no longer an upstream-seam ask), two older open owner rulings plus the four
+the round-87/88 seams need, and the complete open-gap register in **§10** (G1–G10).
 (Round 86: the three judges this paragraph used to call REFUTED are PROVEN, and the 405 creation entrance
 was removed in round 74. Round 89: `d4:routed-wake` is REFUTED and the ask/execution gap is measured.)
 
@@ -229,9 +235,9 @@ durable facts read back FROM DISK and the product settlement store:
 | `grep` | match found, confined subprocess actually spawned | `LANE_DENY`, ZERO subprocess spawns |
 | `web_fetch` | loopback fixture body, exactly one transport call | denied network axis ⇒ `NETWORK_DENY`, ZERO transport calls |
 | persistent `bash` | **BLOCKED — NOT RUN** | `ADMISSION_AXIS_UNSUPPORTED`, zero spawns, zero `confine` calls |
-| `run_code` | **BLOCKED — NOT RUN** | same refusal, zero spawns, zero confines |
+| `run_code` | **NOT APPLICABLE — PRODUCT UNSUPPORTED** (round 92; ADM-69 marker + status, asserted by ADM-80) | typed `ADMISSION_PTC_UNAVAILABLE` + `unsupported-by-product-ruling`, zero worker spawns, zero confines (ADM-76, ADM-79) |
 
-**The two blocked positives are not environmental** (no ENV_BLOCK): `bash`/`run_code` are `process.exec`, and
+**The two "blocked" positives of this round-53 record are not environmental** (no ENV_BLOCK): `bash`/`run_code` are `process.exec`, and
 the v4 member ceiling's frozen `io` set is `{read, write, network}`, so no compiled answer can carry
 `binding.process`. I did not mint a lane in the test or derive one from the write lane — that would be
 the second authority this cut forbids. ADM-78 pins the block in code so a future process-lane change flips
@@ -240,10 +246,11 @@ the two disclosures loudly instead of leaving a stale waiver.
 **Round 86 correction (this table is a round-53 record, not the current state).** The process lane was
 **resolved** in round 75 and the `CONTRACT-CHANGE-REQUEST-process-lane.md` is **RESOLVED / SUPERSEDED**:
 `bash` is ADMITTED on a compiled execution declaration and the live persistent shell is **PROVEN** in two
-agreeing boots (round 76, `d3:persistent-subprocess`). `run_code` (PTC) is still refused, but by a
-narrowed, measured reason — the **worker's OS profile** is the host session's policy, not the Member's
-compiled lanes, which needs an upstream public seam (`CORE_SEAM_BLOCKER`, round 85). The row above is
-kept as the round-53 history.
+agreeing boots (round 76, `d3:persistent-subprocess`). `run_code` (PTC) is refused, and round 92 makes that
+a RULED SCOPE DECISION: the owner ruled PTC NOT SUPPORTED this generation (`ADR-ptc-unsupported.md`), so
+the measured worker-OS-profile gap is the basis rather than an open upstream ask, and the refusal carries
+`unsupported-by-product-ruling` on fact + settlement with zero worker. The row above is kept as the
+round-53 history.
 
 ORDER and IDENTITY are asserted: facts read back in ladder order, and every rung must resolve the host
 module's own body (compared against the preset definition object, not just "registered").
@@ -277,22 +284,25 @@ subject's existing axis, through the product's own ledger and settlement — no 
 | --- | --- | --- | --- |
 | C-remote (round 74: per command) | `ADMISSION_REMOTE_UNAVAILABLE` | `team.control` | `root.ts` per-command hook — the S6 plane IS built/installed; only `agent-execution` commands are refused before params/handlers (control-plane commands are served) |
 | C-alpha6 | `ADMISSION_ALPHA6_UNAVAILABLE` | `host.service` | `centre-config.ts#alpha6EnablementRefusal` (config) + `root.ts:2508` (records the refusal or admits a coherent row, before any wake). Round 84 removed the "every row is refused" rule |
-| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | `admission.ts:421-423` — the ONE centre, before the body; the reason names the worker OS-profile seam (round 85) |
+| C-ptc | `ADMISSION_PTC_UNAVAILABLE` | `process.exec` | the PTC branch in `admission.ts` — the ONE centre, before the body; round 92: status `unsupported-by-product-ruling`, not offered to the Member, retained-entry refusal with zero worker (`ADM-79`) |
 
 ADM-85..88 carry positives and negatives: an ungoverned remote row still dispatches (calls=1) while a
 governed row records the deny and settles `REFUSED`/`not-started`; round 74 rewrote ADM-86 to the
 per-command closed table (served control read, refused execution with zero ports, immutable fact +
 settlement, unauthenticated refusal) and restored the S6 management plane on centre rows; a wake runs without the point and does
 not with it; the same centre world admits an in-lane `read` (`COMPLETED`) while `run_code` never reaches the
-body; and `bash` keeps `ADMISSION_AXIS_UNSUPPORTED`, so the two absences are distinguishable from the
-durable record alone. ADM-88 pins the closed table: exactly three capabilities, pairwise distinct codes,
-each naming its own missing axis.
+body; and `bash` keeps its own execution code, so the two absences are distinguishable from the durable
+record alone. ADM-88 pins the closed table: exactly three capabilities, pairwise distinct codes, each
+naming its own missing axis. **Round 92 adds the ruling status and two marker arms** (`ADM-79`/`ADM-80`
+in the ladder, `ADM-147`/`ADM-148` here): the PTC positives are `NOT APPLICABLE — PRODUCT UNSUPPORTED`,
+reported and asserted, never silently skipped and never deleted.
 
 **Disclosed cost (round 55 record):** a centre-configured row loses its remote API (`root.remoteDispatcher`
 is absent) — that was the price of refusing rather than half-wiring. **Round 74 removed that cost**: the S6
 plane is built and installed as a governed management control plane, and only `agent-execution` commands
-are refused per command. The PTC router-side refusal is still not built; what is proven is the tool
-refusal that makes escalation unreachable, now with the worker-OS-profile reason (round 85).
+are refused per command. The PTC tool refusal is what makes the escalation unreachable for a governed
+Member; the escalation row itself STAYS because it is a SHARED `approval/request` control for every
+sandbox-escalation prefix (round 92 wiring audit, `ADR-ptc-unsupported.md` §6).
 
 ## C stage, second slice: the 15 team tools, member lifecycle and work delivery (round 56)
 
@@ -420,14 +430,14 @@ worktree, full transcript in the round-89 session log; the round-86 audit's bloc
 
 | gate | result |
 | --- | --- |
-| `dispatch-tests --run --leg ute-vnext-a1` | `suites=7 files=7` · `tests=211 pass=209 fail=0 skipped=2` · `exit=0` · `set=sha256:edd4f1c4…` (the 2 disclosed skips are ADM-68 bash / ADM-69 run_code) |
+| `dispatch-tests --run --leg ute-vnext-a1` | `suites=7 files=7` · `tests=215 pass=212 fail=0 skipped=3` · `exit=0` · `set=sha256:edd4f1c4…` (the 3 skips: ADM-68 bash disclosure + the TWO ruled PTC markers ADM-69/ADM-147) |
 | `test-catalog --max-uncollected 41 --max-excluded 7` | `tests=785` · collected 733 · excluded 14 · **uncollected 38** (3 under the 41 ceiling) · `refused=0 findings=0` · by runner `node=146 none=7 vitest=632` |
 | `ute-p0-assets --check` | `pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 cut=cut(148/148)` |
 | `ute-cut-closure --check` | `pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0` |
 | `ute-a1-window --check` | `pass branch=vnext/a1-cut red=0/0 cut=(148/52)` findings=0 |
 | `eb3-ci-required` | `pass workflows=10 findings=0` |
 | `docs-sync --check` | `docs=193 notes=4 plans=152(0 declaring) findings=0 blocking=0 contracts=20` |
-| `place-dist-glue` | `done (30 placement(s))` |
+| `place-dist-glue` | `done (34 placement(s))`, every line byte-identical |
 | `eb3-security-run --layer ci-security` (bound vitest leg) | `verdict=PASS suites=14 files=14 describes=61 passed=216 failed=0` |
 | `eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt` | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` |
 | `node --test` (the UTE G1 nine-file argv) | `tests 89 pass 89 fail 0 skipped 0` |
@@ -488,9 +498,11 @@ failing assertion and ends mid-line at `D17` with no `DSH-TEST-DISPATCH` token, 
 
 **This PR is not merged and must not be auto-merged. No release, no deploy, no version bump, no tag.
 `master` and `stable` are untouched.** PR #822 is `DRAFT`; only the owner marks it ready and merges.
-No capability row is PRODUCT-PROVEN, PTC carries a `CORE_SEAM_BLOCKER`, `d4:routed-wake` is REFUTED and
-BL-30 leaves a granted `ask` unable to execute, and six owner rulings are open (two older + four for the
-new seams) — so even after review this candidate is **not** a completed product acceptance.
+No capability row is PRODUCT-PROVEN, PTC is UNSUPPORTED BY RULING (round 92 — a ruled scope reduction,
+not a blocker), `d4:routed-wake` is REFUTED and
+BL-30 leaves a granted `ask` unable to execute, and the owner still has two older rulings + four for the
+new seams open (PTC is no longer among them) — so even after review this candidate is **not** a completed
+product acceptance.
 
 ## Round 83 — work DELIVERY on the management plane (the round-74 refusal narrowed)
 

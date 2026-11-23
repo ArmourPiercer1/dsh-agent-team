@@ -124,6 +124,10 @@ export function createExecutionFacts ({ record, admissionOf, executionIdOf, onFa
         : refusedAtAdmission ? { refusalCode: admission.refusalCode ?? 'ADMISSION_REFUSED' } : {}),
       ...(isError && !refusedAtAdmission && typeof result?.error?.message === 'string' ? { errorMessage: result.error.message } : {}),
       ...(admission?.policyGeneration === undefined ? {} : { policyGeneration: admission.policyGeneration }),
+      // The refusal's POLICY status (a ruled product scope, not a fault) is the admission fact's own
+      // field, carried into the execution fact VERBATIM: a reader joining the two must not have to
+      // parse the reason prose to tell "PTC is out of scope by ruling" from "a provider was missing".
+      ...(typeof admission?.status !== 'string' ? {} : { status: admission.status }),
     })
     try {
       record(fact)

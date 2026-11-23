@@ -41,7 +41,12 @@ import {
   type HostSurfaceRefusalPoint,
 } from './host-surface-refusal.mjs'
 
-/** The capabilities whose point the centre builds (the closed table has a third: PTC, member-side). */
+/**
+ * The capabilities whose point the centre builds. The closed table has a third, PTC: it is refused
+ * MEMBER-side by the centre's admission (`admission.ts`), because the PTC entry point is a tool call
+ * a Member makes, not a host surface a row builds. ROUND 92: PTC is NOT SUPPORTED by product ruling
+ * (`ADR-ptc-unsupported.md`), and its refusal still rides the same table/point vocabulary.
+ */
 export type CentreHostSurfaceCapability = 'remote' | 'alpha6'
 
 /** What a recorded row refusal leaves behind, for the caller to report (never to decide with). */

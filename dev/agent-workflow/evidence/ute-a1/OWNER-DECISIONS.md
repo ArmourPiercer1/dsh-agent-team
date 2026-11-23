@@ -16,14 +16,15 @@ history and the option analysis.
 
 | item | state at round 86 | evidence |
 | --- | --- | --- |
-| 1 process lane (`bash`/PTY/PTC) | **bash/PTY resolved and live-proven** — the shipped preset DOES mount `@deepseek-ai/dsh-tool-bash-persistent` (`cordis.patch.yml:363-368`), `io.process` is no longer needed (process authority is a compiled tool-level `execution` declaration, `admission.ts:424-466`), and `d3:persistent-subprocess` is PROVEN in two agreeing boots (round 76). **PTC only** is refused, now with a narrowed `CORE_SEAM_BLOCKER` on the worker OS profile (round 85). The "shipped preset never mounts the persistent shell" and "`d3` stays REFUTED" sentences below are FALSE at this HEAD. | `OWNER-DECISIONS.md` §1 (historical); `PTC-FOUR-PART-FINDING.md`; report §6.3 |
+| 1 process lane (`bash`/PTY/PTC) | **bash/PTY resolved and live-proven** — the shipped preset DOES mount `@deepseek-ai/dsh-tool-bash-persistent` (`cordis.patch.yml:363-368`), `io.process` is no longer needed (process authority is a compiled tool-level `execution` declaration, `admission.ts:424-466`), and `d3:persistent-subprocess` is PROVEN in two agreeing boots (round 76). **PTC: CLOSED BY OWNER RULING (round 92)** — `docs/reviews/20261124-0151.txt` §PTC formally rules PTC / `run_code` NOT SUPPORTED this generation (amendment `ADR-ptc-unsupported.md`). It is no longer a `CORE_SEAM_BLOCKER` and no longer an open owner ask: the refusal is the supported behaviour, typed, with status `unsupported-by-product-ruling` and zero worker. The "shipped preset never mounts the persistent shell", "`d3` stays REFUTED" and "PTC's upstream seam is an open decision" sentences below are FALSE at this HEAD. | `OWNER-DECISIONS.md` §1 (historical); `ADR-ptc-unsupported.md`; `PTC-FOUR-PART-FINDING.md` (the measured basis); report §6.3 |
 | 2 runtime team creation (405) | **RESOLVED (round 74)** — the S6 management plane is built/installed and `team.create` mints a Team at runtime; the "cannot create a team at runtime / 405" section below is history. | `ESCALATION-centre-row-creation-entrance.md`; report §6.2 |
 | 3 settlement recheck | **RESOLVED (round 73, owner Option A)** — the "cannot be produced without widening the settlement state machine" text below is superseded; `ADM-119` is the positive. | `CONTRACT-CHANGE-REQUEST-settlement-recheck.md:51` |
 | 4 realm-less admission | **OPEN** — the ruling is still wanted; the code refuses (`MEMBER_CENTRE_UNWIRED`, `ADM-44`). | `ESCALATION-realmless-admission.md` |
 | 5 search-face governance depth | **OPEN** — shape B shipped; shape A (overlay can deny a search) is the open ruling. | `CONTRACT-CHANGE-REQUEST-search-face.md` |
 | 6 Alpha.6 routing | **IMPLEMENTED (round 84)** — formal routing is a join on existing surfaces (no new axis, no `CORE_SEAM_BLOCKER`); a coherent row is admitted, incoherent pieces are refused and recorded. The "config gate refuses the opt-in on every row / routed path unreachable" text below is superseded; the remaining gap is a **live routed wake**, not a ruling. | `ALPHA6-FORMAL-ROUTING.md`; report §6.5 |
 
-**So the owner is asked for two rulings (items 4 and 5) + one decision on PTC's upstream seam**, not six.
+**So the owner is asked for two rulings (items 4 and 5)** — the PTC upstream-seam ask was ANSWERED by the
+round-92 owner ruling (NOT SUPPORTED this generation; `ADR-ptc-unsupported.md`) — not six.
 
 ---
 

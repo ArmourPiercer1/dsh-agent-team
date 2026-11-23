@@ -205,7 +205,13 @@
     #     argv at admission by design, so it cannot be routed onto this realm. A
     #     Member that cannot name it gets the host router's typed `UNKNOWN_TOOL`
     #     and runs nothing; the capability is GONE from the governed preset until
-    #     a governed face exists for it. `run_code` was never on this surface.
+    #     a governed face exists for it. `run_code` was never on this surface, and
+    #     ROUND 92 (owner ruling `docs/reviews/20261124-0151.txt` §PTC, 2026-11-24)
+    #     closes it for the whole generation: PTC is NOT SUPPORTED BY PRODUCT RULING,
+    #     never offered to a governed Member, and a call through the host-retained
+    #     entry is a TYPED refusal with the `unsupported-by-product-ruling` status and
+    #     zero worker start (`ADR-ptc-unsupported.md`). This is a RULED scope
+    #     reduction, not a temporary removal waiting for a fix.
     #     PD-27 note: PD-18 removed `tool-web` in the SAME change for the same
     #     reason (base `ctx.web`, zero facts); PD-27 below restores that half
     #     only, served by the Member's confined `web` face.

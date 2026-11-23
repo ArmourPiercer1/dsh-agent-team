@@ -45,13 +45,20 @@ Blocking reasons against "candidate complete" (all disclosed in the report; none
 defect any more):
 
 1. **No capability row is PRODUCT-PROVEN** and every live claim is `DEV-LIVE` (not a gate).
-2. **PTC (`run_code`) is REFUSED with `CORE_SEAM_BLOCKER`** on the worker OS-profile seam
-   (`PTC-FOUR-PART-FINDING.md`; `admission.ts:421-423`); three of its four parts hold, part (a) does not.
+2. **PTC (`run_code`) is NOT SUPPORTED BY PRODUCT RULING (round 92)** — the owner formally closed it for
+   this generation (`docs/reviews/20261124-0151.txt` §PTC; amendment `ADR-ptc-unsupported.md`). The refusal
+   is typed (`ADMISSION_PTC_UNAVAILABLE`) with status `unsupported-by-product-ruling` on fact + settlement and
+   zero worker (`ADM-76`/`ADM-79`/`ADM-87`); the two PTC POSITIVE arms are `NOT APPLICABLE — PRODUCT
+   UNSUPPORTED` with asserted machine markers (`ADM-69`/`ADM-80`, `ADM-147`/`ADM-148`), not deleted. The old
+   `CORE_SEAM_BLOCKER` is CLOSED as a ruled scope reduction; round 85's four-part measurement remains the
+   basis (three parts hold, the worker OS profile does not).
 3. **Two S6 root-work commands stay refused** (`team.admitInitialWork`, `team.ensureRootLive` —
    `s6-command-classification.ts:111-112`); no async root-work delivery seam exists.
 4. **The pre-dispatch Stop observer is not wired into a booted rc.5 production turn**
    (`RC5-MIGRATION.md:492-501`).
-5. **Owner rulings still open:** realm-less admission (item 4) and search-face shape A (item 5); the PTC
+5. **Owner rulings still open:** realm-less admission (item 4) and search-face shape A (item 5). **PTC is no
+   longer an open ask** (round-92 ruling, `ADR-ptc-unsupported.md`); the rest of the sentence below is the
+   pre-round-92 state: the PTC
    upstream seam is an owner/escalation decision, not product work.
 6. **Hosted `ci-required` is RED at this HEAD — solely because `ci-census` is SKIPPED on a draft PR**
    (`gh run view 45117815545`); the six layer jobs are green. `pr-settlement-gate` was red for lack of a
@@ -81,7 +88,7 @@ Every row was re-measured at `c29da52d3` in this session.
 | 10 | §8 checklist row 1 "measured at `189d6cab`" (`:944`) | measured at `c29da52d3` | corrected |
 | 11 | §8 row 3 "dispatch 188/186/0/2 … 28 placements" (`:946`) | 211/209/0/2; 30 placements | corrected |
 | 12 | §9.4 migrated-vitest row says 238 (`:1044`) | **confirmed** 238 (`suites=15 files=15 passed=238 failed=0`) | unchanged |
-| 13 | `admission.ts` line citations throughout §2 (`:170`, `:182`, `:185`, `:186`, `:187`, `:211-220`) | round 85's PTC comment block shifted the file. Actual: `TOOL_AXES` `:61-74`; `CENTRE_TOOL_NAMES` `:86-102`; `HOST_CAPABILITY_TOOL_NAMES` `:143-153`; `DEFAULTED_LOCATORS` `:196`; PTC refusal `:421-423`; process branch `:424-466`; `net.fetch` `:468-476`; MCP-server refusal `:387`; host-service limit comment `:137` | all citations remapped |
+| 13 | `admission.ts` line citations throughout §2 (`:170`, `:182`, `:185`, `:186`, `:187`, `:211-220`) | round 85's PTC comment block shifted the file. Actual (re-checked after round 92's comment edits): `TOOL_AXES` `:64-77`; `CENTRE_TOOL_NAMES` `:89-105`; `HOST_CAPABILITY_TOOL_NAMES` `:146-156`; `DEFAULTED_LOCATORS` `:199`; PTC refusal `:435-437`; process branch `:438-480`; `net.fetch` `:482-490`; MCP-server refusal `:403`; host-service limit comment `:140`. **Round 92 note: prefer the FUNCTION name over a line number in new text — the PTC branch and its comment block moved once already** | all citations remapped |
 | 14 | C1/C15/C16/C17 cite `admission.ts:57-73` / `:114-122` / `:32-41` (`:170`, `:185-187`) | `:86-102` / `:143-153` / `:61-74` | remapped |
 | 15 | C11 cites `root.ts:4275-4279` as `createProjectionService` (`:180`) | `createProjectionService` is called at **`root.ts:4302`**; the current file is `packages/runtime/src/plugin/vnext/root.ts` (5,239 lines) | remapped |
 | 16 | C6 cites `root.ts:2496-2510` for the Alpha.6 gate (`:175`) | the gate call is **`root.ts:2508`** (comment block `:2490-2507`) | remapped |
@@ -94,13 +101,13 @@ Every row was re-measured at `c29da52d3` in this session.
 | 23 | C13 status "MECHANISM + DEV-LIVE for **fs, web and subprocess**" (`:182`) | `fs` and `subprocess` have live judges (`d:guard-facts`, `d3:persistent-subprocess`); **`web_fetch` has no booted measurement** — `SLICE-31/32` are in-process, and the row's own "what would prove it" says so | downgraded |
 | 24 | C14b status "MECHANISM + DEV-LIVE" (`:184`) | the six invariant arms are in-process; the DEV-LIVE carriers are the live judges for fs/subprocess/Stop. The **network-deny OS control is a node-leg probe** (`ENV-LIMITED-CAPABILITY-20261123.md` §2/§3), ENV-LIMITED on an incapable runner | narrowed |
 | 25 | C18 "148 sources gone with **zero residual references**" (`:188`) | closure reads `references=3 prodRefs=0` — three non-production references remain (and `retiredSurfaces=12`) | corrected to `references=3, prodRefs=0` |
-| 26 | §6.1 "**Every row** is MECHANISM or UNPROVEN" (`:558`) | rows are also `DROPPED-AS-RULED` (C14, C17, C18), `REFUSED-BY-DESIGN` (C13/PTC), and `ENV-LIMITED` (five arms) | restated as "no row is PRODUCT-PROVEN" |
+| 26 | §6.1 "**Every row** is MECHANISM or UNPROVEN" (`:558`) | rows are also `DROPPED-AS-RULED` (C14, C17, C18), `UNSUPPORTED BY RULING` (C13/PTC, round 92), and `ENV-LIMITED` (five arms) | restated as "no row is PRODUCT-PROVEN" |
 | 27 | §6.8 "`overall=FAIL` for both drivers" (`:732`) | since round 76 all three drivers are `overall=PASS` (`:373-377` already said so); the report contradicted itself | corrected |
 | 28 | `OWNER-DECISIONS.md` items 1/2/3/6 (`:9-13`, `:29-33`, `:49-55`, `:75-81`) | item 1: `bash` proven live and the preset **does** mount `dsh-tool-bash-persistent` (round 76; only PTC is refused, by seam); item 2: `team.create` is served since round 74 (**not** 405); item 3: **resolved** round 73; item 6: formal routing **implemented** round 84. Only items 4 and 5 remain rulings | dated correction block added to the file |
 | 29 | PR body gate table: dispatch 182/180, catalog `tests=889 uncollected=41` "zero headroom", closure `references=163`, `28 placement(s)` (`PR-BODY-draft.md:350-357`) | 211/209/0/2; catalog `tests=785 collected=733 excluded=14 uncollected=38` (3 under the 41 ceiling); closure `references=3`; 30 placements | table replaced with the fresh block |
 | 30 | PR body "**nine** judges PROVEN and the refuted items named (`d3:persistent-subprocess`, `d2:revocation`, `d:member-read-denied`, 405)" (`:16-17`) | **fourteen** judges PROVEN (13 rc.5 + `d2:remote-delivery` rc.2); all three previously-refuted judges are now PROVEN; the 405 was removed in round 74 | corrected |
 | 31 | PR body "**4,780** lines today" for `agent-bindings.mjs` (`:381`) | **4,967** lines; `root.ts` is **5,239** lines. `DECOMPOSITION-PLAN.md:4` (5,042 / 5,110) is also stale | corrected in both files |
-| 32 | PR body: "Owner decisions needed (**six**, all consolidated)" (`:52`) | two open rulings (4, 5) + one blocked upstream seam (PTC) + one missing live proof (Alpha.6 routed wake) + the runtime-created-Member live proof | section rewritten |
+| 32 | PR body: "Owner decisions needed (**six**, all consolidated)" (`:52`) | two open rulings (4, 5) + four seams from rounds 87/88; **PTC is ruled, not open** (round 92) + one missing live proof (Alpha.6 routed wake) + the runtime-created-Member live proof | section rewritten (round 92 re-check: the PTC ask is gone) |
 | 33 | PR body "**16** migrated capability suites" heading (`:196` region) | **15** suites (the 16th bookkeeping entry is a helper; the list file itself says so) | heading corrected |
 | 34 | Report §1 "HEAD measured at round 70 … the audit's own docs-only commits sit on top" (`:4-7`) | the candidate head is `c29da52d3`; round 85/86 commits are on top of the round-70 measurement | §1 states the audited head and records what the docs-only commit on top does |
 
@@ -126,7 +133,7 @@ Statuses: `MECHANISM` (in-process arms) · `DEV-LIVE` (a real host boot, not a g
 | C10 | MCP catalog/grant/live loss | MECHANISM | `ADM-36`, `f15-mcp-live-loss` inside the 238 | a live mount and a live server loss |
 | C11 | state projections (`sessionProjections`) | MECHANISM (Team-owned projection) | `ADM-107…109` | the **host** `sessionProjections.stateOf` half; a product-entry `team.getProjection` arm |
 | C12 | tool admission (guard/deny/selector) | MECHANISM + DEV-LIVE | `d:centre-facts` (allow + `LANE_DENY`), `ADM-96` | UNSET/unreadable binding live |
-| C13 | confined I/O faces | MECHANISM + DEV-LIVE for **fs and subprocess**; **web in-process only**; PTC **REFUSED / `CORE_SEAM_BLOCKER`** | `SLICE-1…30/35`, `d:guard-facts`, `d3:persistent-subprocess`; `PTC-FOUR-PART-FINDING.md` | live `web_fetch`; PTC worker OS profile (upstream seam); persistent-bash needs `@deepseek-ai/dsh-terminal` deployed or the host row is absent (`:629-635`) |
+| C13 | confined I/O faces | MECHANISM + DEV-LIVE for **fs and subprocess**; **web in-process only**; PTC **UNSUPPORTED BY RULING** (round 92) — typed refusal + status + zero worker proven, positive NOT APPLICABLE by ruling | `SLICE-1…30/35`, `d:guard-facts`, `d3:persistent-subprocess`; `PTC-FOUR-PART-FINDING.md` (basis); `ADR-ptc-unsupported.md` | live `web_fetch`; no governed PTC positive is claimed (ruled out, revisit path in the ADR); persistent-bash needs `@deepseek-ai/dsh-terminal` deployed or the host row is absent (`:629-635`) |
 | C14 | old family bodies | **DROPPED-AS-RULED** | closure `deleted=148 prodRefs=0 references=3` | — |
 | C14b | preserved safety invariants | MECHANISM + DEV-LIVE for fs/subprocess/Stop carriers; **network-deny ENV-LIMITED on an incapable runner** | `ADM-110…115`; `ENV-LIMITED-CAPABILITY-20261123.md` | PRODUCT-PROVEN; a network-capable runner for the five arms |
 | C15 | `team_skill` | MECHANISM | `ADM-75`; `admission.ts:143-153` | nothing beyond the host service's own limit |
@@ -166,7 +173,7 @@ is absent and those five guarantees are UNPROVEN there. This is an environment a
 | C10 | MECHANISM | **yes** | |
 | C11 | MECHANISM | **yes, after correction** | "unreachable because S6 refused" was false |
 | C12 | MECHANISM + DEV-LIVE | **yes** | |
-| C13 | MECHANISM + DEV-LIVE (fs/subprocess); web in-process; PTC REFUSED | **yes, after correction** | web DEV-LIVE was unsupported |
+| C13 | MECHANISM + DEV-LIVE (fs/subprocess); web in-process; PTC UNSUPPORTED BY RULING (round 92) | **yes, after correction** | web DEV-LIVE was unsupported; PTC's status is now a ruled scope reduction with a proven refusal chain |
 | C14 | DROPPED-AS-RULED | **yes** | |
 | C14b | MECHANISM + DEV-LIVE (fs/subprocess/Stop); network ENV-LIMITED | **yes, after narrowing** | |
 | C15 | MECHANISM | **yes** | |
@@ -200,7 +207,7 @@ is absent and those five guarantees are UNPROVEN there. This is an environment a
 | --- | --- | --- | --- |
 | 1 | root-work async seam — `team.admitInitialWork` / `team.ensureRootLive` refused | an async root-work delivery (enqueue + acknowledgement, no awaited turn) | report C9; `s6-command-classification.ts:94-112` |
 | 2 | `member.create` / `member.followup` live evidence | a live management-plane run of both (only `member.send` was driven) | report §9.5; C9 |
-| 3 | PTC worker OS-profile seam | upstream public seam or owner ruling to accept the refusal | `PTC-FOUR-PART-FINDING.md`; C13 |
+| 3 | PTC worker OS-profile seam | **ANSWERED (round 92): owner ruled PTC NOT SUPPORTED this generation** — the refusal is the product boundary; future support is a new feature gated on an upstream per-execution policy seam | `ADR-ptc-unsupported.md`; `PTC-FOUR-PART-FINDING.md`; C13 |
 | 4 | Alpha.6 live route | a booted routed wake through the governed delivery seam | report §6.5; C6/C7; `ALPHA6-FORMAL-ROUTING.md` |
 | 5 | `{{cwd}}` persona change (rc.5 no longer registers `{{cwd}}`) | a ruling or a prompt-template migration; live on rc.5 the driver substitutes the literal | report §3.2 rc.5 limits; `RC5-ACCEPTANCE.md` |
 | 6 | operator model is per-DSH_HOME authenticated human, **not RBAC** | an owner ruling on multi-operator isolation | report §6.2; §9.5 |

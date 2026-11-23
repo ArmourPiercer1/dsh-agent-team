@@ -14,6 +14,12 @@ export interface HostSurfaceRefusal {
   readonly subject: string
   /** The measured missing axis, in words. */
   readonly missing: string
+  /**
+   * The distinct POLICY status of the refusal, when it is a product-scope decision rather than a
+   * lane answer. Currently only `unsupported-by-product-ruling` (the PTC row, owner ruling
+   * `docs/reviews/20261124-0151.txt` §PTC). Absent for the other rows.
+   */
+  readonly status?: string
 }
 
 export declare const HOST_SURFACE_REFUSALS: Readonly<{

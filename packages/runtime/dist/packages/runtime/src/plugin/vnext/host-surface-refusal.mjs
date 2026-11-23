@@ -14,6 +14,12 @@
  *    governance decision that precedes any tool call and has no I/O locator;
  *  - a PTC escalation asks the HOST sandbox to widen the process execution domain; `run_code` also
  *    spawns a WORKER whose OS profile is not the member's compiled one (round 85 four-part finding).
+ *    ROUND 92 / OWNER RULING `docs/reviews/20261124-0151.txt` §PTC (2026-11-24): PTC is NOT SUPPORTED
+ *    in this generation BY PRODUCT RULING. The refusal is no longer "pending an upstream seam"; it is
+ *    the supported behaviour, it is a TYPED refusal with zero worker start and zero effect, and its
+ *    fact/report carry the distinct status `unsupported-by-product-ruling`. The `ptc` entry below
+ *    states that decision; `ADR-ptc-unsupported.md` is the amendment that cites the frozen A0 contract
+ *    instead of editing it, and `ptc-product-ruling.mjs` is the machine declaration the tests read.
  *
  * ROUND 74 UPDATE (owner ruling `docs/reviews/20261122-1536.txt` §3). For S6 the unit of refusal
  * moved from the SURFACE to the COMMAND: the plane is the product's only runtime team-creation
@@ -24,8 +30,9 @@
  * through ControlService (durable ask + one-shot grant), and Stop DOES abort the run controller, its
  * nested dispatches and the Node child. The one part that fails is the WORKER's OS profile: PTC
  * resolves its `SandboxExecutionPolicy` from the HOST session, not from the member's compiled
- * read/write lanes, and skips confinement under `danger-full-access`. The refusal is narrowed to that
- * part; see `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`.
+ * read/write lanes, and skips confinement under `danger-full-access`. Round 92 keeps that measured
+ * basis and closes it as a RULED scope reduction; see
+ * `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md` and `ADR-ptc-unsupported.md`.
  *
  * ROUND 84 UPDATE. The Alpha.6 entry is no longer "the capability cannot be judged at all". What round
  * 55 measured — that the routing decision had no centre join and no durable record — is closed by
@@ -105,14 +112,20 @@ export const HOST_SURFACE_REFUSALS = Object.freeze({
     code: 'ADMISSION_PTC_UNAVAILABLE',
     axis: 'process.exec',
     subject: 'PTC escalation',
-    // ROUND 85 — the four parts were measured, not assumed: nested calls, Control escalation and Stop
-    // hold; the WORKER's OS profile does not. PTC resolves its policy from the HOST session
-    // (core/tools/src/index.ts:948-951 -> sandbox-policy:164-169), which carries only
-    // {mode, workspaceRoot}; the member's compiled read/write ruleset cannot be expressed in it, and
-    // `danger-full-access` skips confinement entirely (ptc-runtime-node/src/index.ts:224). The
-    // declared `confined-subprocess` executor is the realm face PTC never uses. `missing` stays under
-    // the settlement reason bound (512 chars) so the refusal is RECORDED, not merely thrown.
-    missing: 'the WORKER process: PTC resolves its OS policy from the HOST session (core/tools/src/index.ts:948-951), not the member\'s compiled read/write lanes, and skips confinement under danger-full-access (ptc-runtime-node/src/index.ts:224); the declared confined-subprocess executor is the realm face PTC never uses. Nested calls, Control escalation and Stop hold (PTC-FOUR-PART-FINDING.md); needed: a per-execution policy seam.',
+    // ROUND 92 — OWNER RULING `docs/reviews/20261124-0151.txt` §PTC (2026-11-24). PTC is NOT
+    // SUPPORTED in this generation, by product ruling: not "missing a provider", not "misconfigured".
+    // The measured basis did not change (round 85: nested calls, Control escalation and Stop HOLD; the
+    // WORKER's OS profile does not — PTC resolves its policy from the HOST session
+    // `sandboxPolicy.resolve({session})`, which carries only `{mode, workspaceRoot}`, and rc.5's
+    // `additionalWritableRoots` only adds WRITABLE roots, so the Member's independent read/write/deny
+    // subtrees cannot be expressed; `danger-full-access` skips confinement). What changed is the
+    // DECISION: the refusal no longer waits for an upstream seam, it IS the supported behaviour, and
+    // the distinct status travels on the fact and the report. The amendment that CITES the frozen A0
+    // contract (instead of editing it) is `ADR-ptc-unsupported.md`; the machine declaration is
+    // `ptc-product-ruling.mjs`. `missing` stays under the settlement reason bound (512 chars) so the
+    // refusal is always RECORDED, not merely thrown.
+    status: 'unsupported-by-product-ruling',
+    missing: 'status=unsupported-by-product-ruling (20261124-0151; ADR-ptc-unsupported.md): the WORKER process is NOT SUPPORTED this generation. A governed Member is never offered run_code; this entry is refused typed, zero worker, zero effect. Revisit only with an upstream per-execution policy seam: rc.5 resolves policy from sandboxPolicy.resolve({session}) and additionalWritableRoots cannot express the Member\'s read/write/deny subtrees.',
   }),
 })
 
@@ -224,6 +237,9 @@ export function createHostSurfaceRefusalPoint ({ capability, ledger, ledgerPath,
         decision: 'deny',
         refusalCode: admission.code,
         reason: admission.reason,
+        // The row's POLICY status (only PTC has one today): a durable reader must be able to tell a
+        // ruled scope decision from a fault, so it rides the fact as a field as well as in the reason.
+        ...(entry.status === undefined ? {} : { status: entry.status }),
       })
       if (factSink !== undefined) {
         try {

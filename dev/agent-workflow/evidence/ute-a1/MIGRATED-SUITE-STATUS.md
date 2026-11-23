@@ -610,12 +610,15 @@ centre at all.
 | 3 | `grep` | **PROVEN** (ADM-66): admitted, `Found 1 match`, the confined subprocess face is actually used, fact names the judged locator, settlement `COMPLETED` — on a host that proves the confined face's `network: deny` profile. **HOSTED (no such proof, round 82): ENV-BLOCK** (`NETWORK_DENY_UNPROVEN`): the spawn is refused before any process; admission `allow`/execution `failed`/settlement `FAILED`/zero spawns are asserted, the search is NOT claimed | **PROVEN** (ADM-73): out-of-lane path ⇒ `LANE_DENY`, **zero confined-subprocess spawns**, the secret never appears, settlement `REFUSED`/`not-started` (this half is capability-independent and runs on BOTH kinds of host) |
 | 4 | `web_fetch` | **PROVEN** (ADM-67): admitted, the loopback fixture body arrives (`HTTP 200`), exactly ONE transport call, fact `allow`/`net.fetch`, settlement `COMPLETED` | **PROVEN** (ADM-74): denied network axis ⇒ `NETWORK_DENY` before the body, **zero transport calls**, no body bytes, settlement `REFUSED`/`not-started` |
 | 5 | persistent `bash` | **BLOCKED — NOT RUN, never a pass** (ADM-68, `t.skip` + a machine-readable line): the compiled answer carries no process lane, so the centre can only answer `ADMISSION_AXIS_UNSUPPORTED`. Reason: the v4 member ceiling's frozen `io` field set is `{read, write, network}` (`blueprint-v4.ts`) and `bindingFromCompiledMember` projects only what the compiler produced — `CONTRACT-CHANGE-REQUEST-process-lane.md`, which names B's rung-6 positive control as blocked. Minting a lane in the test, or deriving one from the write lane, would be the SECOND decision authority this cut refuses | **PROVEN** (ADM-75): refused with `ADMISSION_AXIS_UNSUPPORTED` (the reason names the missing subprocess lane), zero subprocess spawns, **zero sandbox `confine` calls**, execution `admission-refusal`, settlement `REFUSED`/`not-started` |
-| 6 | `run_code` | **BLOCKED — NOT RUN, never a pass** (ADM-69, same compiled process lane; `run_code` is `process.exec` and shares it). The transport itself IS present: the member resolves the registry's reserved `run_code` object | **PROVEN** (ADM-76): `ADMISSION_AXIS_UNSUPPORTED`, zero subprocess spawns, zero sandbox `confine` calls, settlement `REFUSED`/`not-started` |
+| 6 | `run_code` | **NOT APPLICABLE — PRODUCT UNSUPPORTED** (round 92, owner ruling 20261124-0151 §PTC; ADM-69 reports the marker + status, asserted by ADM-80). The transport itself IS present: the member resolves the registry's reserved `run_code` object; what does not exist is a supported PTC governance story (`ADR-ptc-unsupported.md`) | **PROVEN** (ADM-76 and the retained-entry arm ADM-79): `ADMISSION_PTC_UNAVAILABLE` with status `unsupported-by-product-ruling` on fact + settlement, zero worker spawns, zero sandbox `confine` calls, settlement `REFUSED`/`not-started`. The out-of-lane form's code was `ADMISSION_AXIS_UNSUPPORTED` when this table was written; the PTC-specific code has been the durable one since round 85 |
 
 **ENV_BLOCK on THIS host (round 7x, when this section was written): none** — no probe was environment-blocked
-here. The two blocked rungs are blocked by the product CONTRACT (a missing declaration source), not by a
-missing capability, and they are reported as such in the suite's own stdout (`VNEXT-B-LADDER-BLOCKED
-rung=5|6 … verdict=NOT_RUN`) and in the `t.skip` reason.
+here. **ROUND 92 amends the two "blocked rungs":** rung 5 remains a disclosed bash-only skip (the compiled
+answer declares no execution authorization in THIS world; its positive control is `ADM-125`), and rung 6 is
+NOT a "blocked positive" any more — the owner ruled PTC NOT SUPPORTED this generation, so the arm reports
+`NOT APPLICABLE — PRODUCT UNSUPPORTED` and the ladder proves the REFUSAL chain instead (§ Round 92 below;
+`ADR-ptc-unsupported.md`). Neither is a silent skip: each emitted a machine-readable line and each marker is
+asserted by a companion arm.
 
 **ENV_BLOCK on the HOSTED runner (round 82): five named arms, one code.** `OS-2`, `OS-3`, `ADM-66`,
 `SLICE-28` and cascade `ADM-70` ride the confined process lane's `network: deny` profile, which the
@@ -3061,3 +3064,58 @@ ute-vnext-a1` `tests 211 / pass 209 / fail 0 / skipped 2`, digest unchanged; UTE
 **Not proven:** no product byte changed, so no capability or matrix row moves. The row remains a
 scripted-mock, per-DSH_HOME-operator measurement; the judge's `delivery.ok:false` is specific to this
 member-less probe; `d4:routed-wake` stays REFUTED; no row is PRODUCT-PROVEN.
+
+
+## Round 92 (2026-11-24) — PTC / `run_code`: NOT SUPPORTED BY PRODUCT RULING (scope reduction, not deletion)
+
+**Decision.** Owner ruling `docs/reviews/20261124-0151.txt` §PTC formally closes PTC / `run_code` for this
+generation. The amendment instrument is `ADR-ptc-unsupported.md` (it CITES the frozen A0 contract; no frozen
+file was edited). No upstream patch, no fork, CORE PATCH BUDGET = 0.
+
+**What changed (product).**
+- `host-surface-refusal.mjs` `ptc` row: `status: 'unsupported-by-product-ruling'` + a reason that NAMES the
+  ruling (and still names the measured WORKER-process/per-execution-seam basis). The reason stays under the
+  512-char settlement cap (longest path 511), so the refusal is RECORDED, not merely thrown.
+- `admission.ts`: the `run_code` refusal keeps `ADMISSION_PTC_UNAVAILABLE`, and the invocation-authority fact
+  gains a `status` FIELD (derived from the closed table, so fact and table cannot disagree).
+  `execution-facts.mjs` carries the same field into the execution fact; the settlement `terminalReason`
+  carries the token via the reason.
+- `ptc-product-ruling.mjs` (new): the machine declaration — marker `NOT APPLICABLE — PRODUCT UNSUPPORTED`,
+  status, the CLOSED list of the two not-applicable arms, the refusal controls, the amended positive ladder,
+  and the reported-line emitter the marker arms assert.
+- `cordis.patch.yml` governed-preset comment, `row-refusal-entry.ts`, `agent-bindings.mjs`, `host.ts` and
+  `ptc-escalation-row.mjs`: the ruling recorded, and the KEPT shared escalation wiring documented.
+
+**What did NOT change.** DSH host PTC (host smokes untouched), native `bash`, persistent bash, PTY, Control,
+Stop, every lane/invariant, and every frozen A0 evidence file.
+
+**Tests (the amendment, arm by arm).**
+- `ADM-69` (B ladder rung 6 positive) — `NOT APPLICABLE — PRODUCT UNSUPPORTED`, emits
+  `VNEXT-PTC-PRODUCT-UNSUPPORTED … status=unsupported-by-product-ruling … verdict=NOT_APPLICABLE`, asserted by
+  `ADM-80` (the marker MUST have been reported; the not-applicable list is CLOSED — a new skipped positive
+  cannot borrow the status; the refusal control `ADM-76` must still exist).
+- `ADM-147` (the declared-world governed PTC positive the A1 header described as needing a world that
+  declares the authorization) — same marker; it BUILDS that declared world (`perTool.run_code` allow +
+  ready executor) and proves the DECLARATION cannot make PTC supported (typed refusal, zero body), then
+  reports; asserted by `ADM-148`.
+- `ADM-76` (out-of-lane) and `ADM-87` (the ONE centre) — the refusal controls, KEPT and extended with the
+  `status` assertions on fact + execution + settlement.
+- `ADM-79` (new, real composition, BOTH presentations): `tools.schemas(member)` contains no `run_code` and
+  the per-member definition does not resolve it under the SHIPPED `native` presentation; in a
+  PTC-presenting deployment the host RETAINS the transport and an accidental call through it is the typed
+  refusal with zero worker spawn / zero `confine`, and both durable shapes carry the ruling status.
+
+**Counts that moved.** `ute-vnext-a1`: `tests 211 → 215`, `pass 209 → 212`, `skipped 2 → 3` — four arms
+ADDED and one skip ADDED (the second ruled marker, `ADM-147`); the pre-existing bash disclosure `ADM-68`
+is unchanged and no other skip was widened. Suite/file set unchanged (7 files), so the leg set digest is
+unchanged. Catalog/file counts are unchanged in KIND (no test FILE added or removed).
+
+**Wiring audit.** Nothing was deleted: the refusal table row and the admission branch ARE the enforcement;
+`ptc-escalation-row.mjs` (+ its `host.ts` install line and `agent-bindings.mjs` re-export) is a SHARED
+`approval/request` escalation control (every sandbox-escalation prefix, host bash/pwsh included), and
+deleting it would remove a second-authority control the ruling explicitly preserves. Full rationale:
+`ADR-ptc-unsupported.md` §6.
+
+**Not proven / not claimed.** No governed PTC positive is claimed. PTC is verified ONLY as
+`run_code → typed refusal → zero worker execution → REFUSED/not-started`. The revisit path is an upstream
+per-execution policy seam with the acceptance criteria in `ADR-ptc-unsupported.md` §7.

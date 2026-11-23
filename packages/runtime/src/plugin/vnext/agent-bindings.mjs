@@ -398,7 +398,10 @@ import { createMcpWitnessLane } from './mcp-witness-lane.mjs'
 import { createRootDelivery } from './root-delivery.mjs'
 import { createStopDrainLane } from './stop-drain-lane.mjs'
 // The PTC escalation row survives the A0 boundary; the host entry keeps
-// building its router through this glue surface.
+// building its router through this glue surface. ROUND 92: it STAYS — it is the SHARED
+// `approval/request` adjudication row (every sandbox escalation prefix, host bash/pwsh included), not
+// PTC-only wiring; the owner ruling closed the PTC TOOL, not escalation governance
+// (`ADR-ptc-unsupported.md`).
 export { createPtcEscalationRouter } from '../live/ptc-escalation-row.mjs'
 // A56-SEMANTICS: the ONE input-provenance law shared by the producers here
 // (which source kind a delivery carries) and the Host's Alpha.6 Sticky Stop

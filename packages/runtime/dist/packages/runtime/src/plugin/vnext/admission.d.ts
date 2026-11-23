@@ -33,14 +33,17 @@
  * native search tool, so a search call is admitted on the `fs.read` lane and never requires bash
  * execution authority.
  *
- * PTC (`run_code`) stays refused, for ONE measured part (round 85): nested calls re-enter this
- * pipeline on the member agent's scope, the escalation goes through ControlService with a durable ask
- * and a one-shot grant, and Stop aborts the run controller and the Node child. The WORKER's OS
- * profile is not the member's compiled one — PTC resolves its `SandboxExecutionPolicy` from the HOST
- * session (only `{mode, workspaceRoot}`), so the member's read/write ruleset cannot be carried, and
- * `danger-full-access` skips confinement. That is a `CORE_SEAM_BLOCKER`, so the call is refused
- * before the body with its own code rather than admitted on faith. See
- * `dev/agent-workflow/evidence/ute-a1/PTC-FOUR-PART-FINDING.md`.
+ * PTC (`run_code`) is NOT SUPPORTED in this generation, BY PRODUCT RULING (owner ruling
+ * `docs/reviews/20261124-0151.txt` §PTC, 2026-11-24). The measured basis did not change (round 85:
+ * nested calls re-enter this pipeline on the member agent's scope, the escalation goes through
+ * ControlService with a durable ask and a one-shot grant, and Stop aborts the run controller and the
+ * Node child; the WORKER's OS profile is not the member's compiled one — PTC resolves its
+ * `SandboxExecutionPolicy` from the HOST session (only `{mode, workspaceRoot}`), so the member's
+ * read/write ruleset cannot be carried, and `danger-full-access` skips confinement). What changed is
+ * the DECISION: the call is refused TYPED before the body with its own code, the refusal carries the
+ * distinct status `unsupported-by-product-ruling` on its fact and report, no worker is started, and
+ * hiding the tool is never the only defence. See `ADR-ptc-unsupported.md` (the amendment that cites
+ * the frozen A0 contract) and `ptc-product-ruling.mjs` (the machine declaration).
  *
  * THE UNWIRED RULE, AS CODE. `admit` refuses when the binding is absent, when the tool has no
  * declared axis, or when the arguments carry no locator the axis can be judged on. A controlled
@@ -179,11 +182,11 @@ export type AdmissionRefusalCode = 'ADMISSION_NO_BINDING' | 'ADMISSION_TOOL_UNBO
 /** The axis is known but has no enforceable lane this round: refusing is the contract, not a TODO. */
  | 'ADMISSION_AXIS_UNSUPPORTED'
 /**
- * C7 (PTC) is EXPLICITLY UNAVAILABLE and must be individually identifiable. `run_code` is the PTC
- * tool, and lumping it in with the generic subprocess refusal (`ADMISSION_AXIS_UNSUPPORTED`) made
- * "a shell could not be judged" and "the escalation authority is not the centre" one code. They are
- * two different absences: the process lane (a contract question) and the escalation row (a second
- * authority). A PTC call is refused with its own code and the same durable shapes.
+ * C7 (PTC) is NOT SUPPORTED BY PRODUCT RULING and must be individually identifiable. `run_code` is
+ * the PTC tool, and lumping it in with the generic subprocess refusal (`ADMISSION_AXIS_UNSUPPORTED`)
+ * would collapse "a shell could not be judged" and "PTC is outside this generation's product scope"
+ * into one code. A PTC call is refused with its own code, the distinct
+ * `unsupported-by-product-ruling` status and the same durable shapes.
  */
  | 'ADMISSION_PTC_UNAVAILABLE'
 /**
@@ -242,6 +245,14 @@ export interface InvocationAuthorityFacts {
     /** Present for a refusal or an ask; absent for a plain allow. */
     readonly refusalCode?: string;
     readonly reason?: string;
+    /**
+     * The distinct POLICY status of a refusal, when the refusal is a product-scope decision rather
+     * than a lane answer. Today exactly one value exists — `unsupported-by-product-ruling`, on the PTC
+     * code (owner ruling `docs/reviews/20261124-0151.txt` §PTC) — and it is deliberately NOT the same
+     * fact as "missing provider" or "misconfigured": a reader of the durable record can tell a ruled
+     * scope reduction from a fault without parsing prose.
+     */
+    readonly status?: string;
     /**
      * The durable overlay's own answer, when it was consulted (the lane allowed the call).
      * `deny` = a stored rule removed authority; `no-opinion` = the overlay imposed nothing (either no
