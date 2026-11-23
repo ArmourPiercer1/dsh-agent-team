@@ -1,0 +1,16 @@
+{
+  "schema": "p4t6-booking/1",
+  "lane": "ROUND90DECOMPOSITION",
+  "paths": [
+    "packages/runtime/src/plugin/vnext/governed-preset-modules.mjs",
+    "packages/runtime/src/plugin/vnext/mcp-witness-lane.mjs",
+    "packages/runtime/src/plugin/vnext/root-delivery.mjs",
+    "packages/runtime/src/plugin/vnext/stop-drain-lane.mjs"
+  ],
+  "expectedDelta": {
+    "from": 1313,
+    "to": 1317
+  },
+  "reason": "Round 90 (UTE vNext A1, behaviour-preserving decomposition) adds FOUR scannable production sources under packages/runtime/src/plugin/vnext: governed-preset-modules.mjs (the governed preset's enabled row module specifiers + each row's own declared config, the SHAPE A derivation), mcp-witness-lane.mjs (the MCP capability witness: capability telemetry, the F15 public tool-surface readers, fiber retirement), root-delivery.mjs (the Root/Leader input delivery ports: the ONE shared real-input path plus the B6 context, TCM-M3 initial work and C1 control-notification callers) and stop-drain-lane.mjs (interrupt + PD-29 goal disarm, the recursive descendant drain, the live-residency port). All four are PURE MOVES out of agent-bindings.mjs: every moved byte is identical to its source range and is ABSENT from the glue afterwards, so the scan adds four FILES and removes none. The four files carry no denylist vocabulary; the denylist hit set is measured unchanged (the two quarantine files only).",
+  "tieNote": "MEASURED on this tree, not copied: with the four files on disk and no booking, `packages/testkit/test/p4t6-session-event-scan.test.ts` printed detail `scanner counts 1317, ledger derives 0 + 1313 = 1313` and `expected 1313 to be 1317`; the four unbooked scanned paths were exactly the four above. 1313 + 4 = 1317."
+}

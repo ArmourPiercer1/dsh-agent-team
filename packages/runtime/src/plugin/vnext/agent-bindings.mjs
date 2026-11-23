@@ -390,13 +390,16 @@ import { createOverlayDecisionProvider } from './overlay-decision.mjs'
 import { createSessionIdentity } from './session-identity.mjs'
 // WHICH template a session is, under WHICH bound snapshot - one component (plan M4).
 import { createTemplateBinding } from './template-binding.mjs'
+// Round 90 decomposition (behaviour-preserving): four cohesive spans of this closure now live in
+// sibling modules and are imported back VERBATIM. Each module's header states what it owns and what
+// deliberately stayed here (the two spans that read the row's `closing` primitive).
+import { governedPresetModuleSpecifiers } from './governed-preset-modules.mjs'
+import { createMcpWitnessLane } from './mcp-witness-lane.mjs'
+import { createRootDelivery } from './root-delivery.mjs'
+import { createStopDrainLane } from './stop-drain-lane.mjs'
 // The PTC escalation row survives the A0 boundary; the host entry keeps
 // building its router through this glue surface.
 export { createPtcEscalationRouter } from '../live/ptc-escalation-row.mjs'
-// SHAPE A (round 61): the preset's DECLARED row configs are read from the public `readDocument`
-// seam. `yaml` is a runtime dependency of this package (the same document dialect the preset
-// registry emits), and the `!!js` tag is preserved as data — this glue never evaluates it.
-import { parse as parsePresetDocument } from 'yaml'
 // A56-SEMANTICS: the ONE input-provenance law shared by the producers here
 // (which source kind a delivery carries) and the Host's Alpha.6 Sticky Stop
 // resume arbour (whether a claimed input is an explicit HUMAN interaction).
@@ -531,133 +534,8 @@ export function a5PlaneSubtreeContains(a, b) {
   return child.startsWith(`${root.replace(/\/+$/, '')}/`)
 }
 
-/**
- * SHAPE A (round 61) — the ACTIVE preset's own row module specifiers, for the governed default
- * native mount.
- *
- * WHY THE PRESET REGISTRY: the module set must be derived from what the product already knows. The
- * preset's composition inventory is that source (`compositionInventory()` returns each row's
- * `moduleName` and enablement), so this glue reads it instead of carrying a second list of host
- * packages that could drift from `cordis.patch.yml`. A preset whose rows cannot be read is a typed
- * refusal (`GOVERNED_NATIVE_PRESET_UNAVAILABLE`) — a governed member's confinement may not rest on
- * a guess about what its preset declared.
- *
- * @param {object} presets - the `agentPresets` service (already mounted for this agent).
- * @param {object} agentCtx - the agent Context whose composed preset is read.
- * @param {boolean} isRoot - root rows use `config.rootPresetId`; members `config.memberPresetId`.
- * @param {object} config - the row config.
- * @returns {Promise<readonly {url: string, config?: unknown}[]>} enabled row module specifiers with
- *   each row's own declared `config`, in composition order.
- */
-async function governedPresetModuleSpecifiers(presets, agentCtx, isRoot, config) {
-  if (presets === undefined || presets === null || typeof presets.compositionInventory !== 'function') {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      'a governed member needs its preset\'s composition rows to derive the native tool modules to mount, but the agentPresets service cannot answer compositionInventory(); refusing rather than leaving the module set on the base provider',
-    )
-  }
-  const composed = typeof presets.composedPreset === 'function' ? presets.composedPreset(agentCtx) : undefined
-  const wanted = composed ?? (isRoot ? config.rootPresetId : config.memberPresetId) ?? presets.defaultId
-  const inventory = await presets.compositionInventory()
-  const preset = Array.isArray(inventory) ? inventory.find((entry) => entry?.id === wanted) : undefined
-  if (preset === undefined) {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      `a governed member names preset ${JSON.stringify(String(wanted))} but the composition inventory does not carry it; the native tool module set cannot be derived (fail closed)`,
-    )
-  }
-  if (typeof preset.broken === 'string' && preset.broken !== '') {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      `a governed member's preset ${JSON.stringify(String(preset.id))} is broken (${preset.broken}); its native tool rows cannot be read (fail closed)`,
-    )
-  }
-  // THE ROW'S OWN CONFIG, not a second set of defaults. The inventory carries the LIVE enablement
-  // answer, but not the declared `config`; the public `readDocument` seam carries the config and
-  // is the same document the registry composes. A module that requires a config value (the pinned
-  // `dsh-tool-fs-search` requires `sampleOverCapGlobResults`) can therefore be mounted with the
-  // EXACT configuration its preset row would have received — no invented default, no skipped row.
-  const configOfRow = await declaredPresetRowConfigs(presets, wanted)
-  return Object.freeze((preset.rows ?? [])
-    .filter((row) => row?.enabled === true && typeof row?.moduleName === 'string')
-    .map((row) => {
-      const byEntry = typeof row.entryId === 'string' && row.entryId !== ''
-        ? configOfRow.entry.get(`${row.entryId}\u0000${row.moduleName}`)
-        : undefined
-      const config = byEntry !== undefined ? byEntry : configOfRow.byModule.get(row.moduleName)
-      return Object.freeze({
-        url: row.moduleName,
-        ...(config !== undefined ? { config } : {}),
-      })
-    }))
-}
-
-/** The `!!js` tag the preset registry's document dialect emits; preserved as data, never evaluated. */
-const PRESET_JS_TAG = Object.freeze({
-  tag: 'tag:yaml.org,2002:js',
-  resolve: (value) => ({ __jsExpr: value }),
-})
-
-/**
- * Map every DECLARED row of a preset document to its own `config` (entry-id+module and module
- * keys). Group rows are structural and flattened the way the Loader flattens them.
- * @param {object} presets - the agentPresets accessor (must expose `readDocument`).
- * @param {string} presetId - the preset whose declared rows are read.
- * @returns {Promise<{entry: Map<string, unknown>, byModule: Map<string, unknown>}>}
- */
-async function declaredPresetRowConfigs(presets, presetId) {
-  if (typeof presets.readDocument !== 'function') {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      'a governed member needs its preset rows\' declared config (each host module is mounted with the configuration its own preset row carries), but the agentPresets accessor cannot answer readDocument(); refusing rather than mounting a module with invented defaults',
-    )
-  }
-  const document = await presets.readDocument(presetId)
-  // The REAL public service answers `{ agentPreset, content }`; a test-world double may answer
-  // the bare YAML string. Both are the declared document; anything else is unreadable (typed).
-  const content = typeof document === 'string'
-    ? document
-    : (document !== null && typeof document === 'object' && typeof document.content === 'string' ? document.content : undefined)
-  if (content === undefined) {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      `the agentPresets readDocument returned no YAML content for preset ${JSON.stringify(presetId)}; the native module configs cannot be read (fail closed)`,
-    )
-  }
-  let parsed
-  try {
-    parsed = parsePresetDocument(content, { customTags: [PRESET_JS_TAG] })
-  } catch (error) {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      `a governed member could not parse the declared document of preset ${JSON.stringify(presetId)} (${error instanceof Error ? error.message : String(error)}); its native module configs cannot be read (fail closed)`,
-    )
-  }
-  if (!Array.isArray(parsed)) {
-    throw new VnextRealmError(
-      'GOVERNED_NATIVE_PRESET_UNAVAILABLE',
-      `the declared document of preset ${JSON.stringify(presetId)} is not a plugin row list; the native module configs cannot be read (fail closed)`,
-    )
-  }
-  const entry = new Map()
-  const byModule = new Map()
-  const visit = (rows) => {
-    for (const row of rows) {
-      if (row === null || typeof row !== 'object') continue
-      if (row.group === true && Array.isArray(row.config)) {
-        visit(row.config)
-        continue
-      }
-      if (typeof row.name !== 'string') continue
-      if (row.config !== undefined && !byModule.has(row.name)) byModule.set(row.name, row.config)
-      if (typeof row.id === 'string' && row.id !== '') {
-        entry.set(`${row.id}\u0000${row.name}`, row.config)
-      }
-    }
-  }
-  visit(parsed)
-  return { entry, byModule }
-}
+// SHAPE A (round 61): the governed preset's row module specifiers + each row's declared config are
+// one question with one owner - see `governed-preset-modules.mjs` (extracted verbatim).
 
 /**
  * Create the bindings closure over one row instance's deps.
@@ -1363,164 +1241,19 @@ export function createAgentBindings(deps) {
   // error codes).
   const MCP_REASON_PUBLIC_TOOL_SURFACE_WITHDRAWN = 'MCP_PUBLIC_TOOL_SURFACE_WITHDRAWN'
   const MCP_REASON_LIVE_WITNESS_UNAVAILABLE = 'MCP_LIVE_WITNESS_UNAVAILABLE'
-  // The optional telemetry hook (the production wiring fills it; a test
-  // world without the durable telemetry omits it → emit is a no-op).
-  const capabilityTelemetry =
-    typeof deps.capabilityTelemetry === 'function' ? deps.capabilityTelemetry : undefined
-
-  /**
-   * Emit one capability-runtime telemetry event for an MCP mount transition
-   * (plan §C.6/§C.7). BEST-EFFORT: a telemetry write failure is observed,
-   * never propagated (it must NOT fail the member's MCP reconciliation). A
-   * no-op when the production wiring passed no `capabilityTelemetry` hook
-   * (a test world without the durable telemetry).
-   * @param {object} state - the session's consumption state (carries the
-   *   owning team root the event is stamped with).
-   * @param {string} kind - the closed event kind (e.g. `mount-failed`,
-   *   `mount-restored`).
-   * @param {string} serverName - the MCP server (the capability name).
-   * @param {string} verdict - the 3-state readiness verdict.
-   * @param {number} attempt - the attempt count for this server.
-   * @param {string|undefined} reason - the failure diagnostic (failed slots).
-   * @param {string} [source] - the observation source provenance
-   *   (default `mcp-fiber` — every pre-F15 call site; the F15
-   *   confirmed-loss path passes `mcp-public-tool-surface`, plan §11).
-   */
-  async function emitMcpCapabilityEvent(state, kind, serverName, verdict, attempt, reason, source) {
-    if (typeof capabilityTelemetry !== 'function') return
-    const event = {
-      kind,
-      capabilityType: 'mcpServer',
-      capabilityName: serverName,
-      verdict,
-      source: source === undefined ? 'mcp-fiber' : source,
-      observedAt: new Date().toISOString(),
-      attempt,
-    }
-    if (reason !== undefined) event.reason = reason
-    try {
-      await capabilityTelemetry(state.teamRootSessionId, event)
-    } catch (error) {
-      observations.push(`p6t6: capability telemetry write failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
-    }
-  }
-
-  // ── F15 (MCP live-loss zero-core, plan §5.1-B/C/§5.3): the public ────────
-  // ── tool-surface witness + the idempotent exhausted-fiber retirement ────
+  // ── the MCP CAPABILITY WITNESS half of the lane ───────────────────────
   //
-  // The upstream connection supervisor (0.1.7-rc.1, connection.d.ts)
-  // WITHDRAWS the server's tools when the reconnect budget exhausts —
-  // the fiber/handle stays live ("disposal … is the only way back").
-  // The plugin therefore observes the CAPABILITY through its PUBLIC
-  // TOOL SURFACE (`mcp__<serverName>__*` on the agent scope, read via
-  // the public `ctx.tools.schemas(scope)` seam — the same seam the
-  // A2C-2 permission coverage gate reads): fiber presence alone is NOT
-  // reachability. No private map is read, no mcp-client internal is
-  // touched, no monkey-patch (CORE PATCH BUDGET = 0).
-
-  /**
-   * Read the server's public tool names off the MCP mount ctx (the
-   * agent-scoped surface — the model-visible `mcp__<serverName>__*`
-   * set). Returns `null` when the surface CANNOT be read (the mount ctx
-   * is absent or has no `tools.schemas` seam) — the caller fails soft
-   * (`unknown`, never a fabricated `unreachable`).
-   * @param {object} state - the session's consumption state (carries
-   *   `mcpMountCtx`, the Agent-keyed scope context every serverName is
-   *   registered under).
-   * @param {string} serverName - the MCP server (the capability name).
-   * @returns {string[]|null} the server-qualified public tool names
-   *   (empty array = a readable-but-empty surface), or `null`
-   *   (unreadable).
-   */
-  function readMcpServerToolSurface(state, serverName) {
-    const ctx = state.mcpMountCtx
-    if (ctx === undefined || ctx === null || typeof ctx.tools?.schemas !== 'function') return null
-    // The mount ctx is ALWAYS scope-tagged (the agent's own tag — the
-    // common case — or the Finding-1 bridge scope minted keyed by the
-    // runtime Agent), so `scopeOf` names the registration layer; the
-    // `ctx.root` fallback mirrors the upstream registry key
-    // (`scopeOf(ctx) ?? ctx.root`).
-    const scope = scopeOf(ctx) ?? ctx.root
-    let schemas
-    try {
-      schemas = ctx.tools.schemas(scope)
-    } catch {
-      return null
-    }
-    if (!Array.isArray(schemas)) return null
-    const prefix = `mcp__${serverName}__`
-    return schemas
-      .map((t) => (t !== null && typeof t === 'object' && typeof t.name === 'string' ? t.name : undefined))
-      .filter((n) => n !== undefined && n.startsWith(prefix))
-  }
-
-  /**
-   * Record one surface observation in the session's EPHEMERAL tool
-   * witness (plan §5.1-B: `everToolBearing` + `lastObservedNames`).
-   * A zero-tool observation NEVER clears `everToolBearing` (a server
-   * that once bore tools does not become a zero-tool server by
-   * fluke — only a fresh mount re-seeds the record). `null` (an
-   * unreadable surface) leaves the record untouched.
-   * @param {object} state - the session's consumption state.
-   * @param {string} serverName - the MCP server.
-   * @param {string[]|null} names - the observed server-qualified names
-   *   (`null` = unreadable surface — the record is left alone).
-   */
-  function recordMcpToolWitness(state, serverName, names) {
-    if (names === null) return
-    const record = state.mcpToolWitness.get(serverName) ?? { everToolBearing: false, lastObservedNames: [] }
-    record.lastObservedNames = [...names]
-    if (names.length > 0) record.everToolBearing = true
-    state.mcpToolWitness.set(serverName, record)
-  }
-
-  /**
-   * F15 (plan §5.3) — the IDEMPOTENT exhausted-fiber retirement. After
-   * a confirmed loss the upstream supervisor has stopped reconnecting;
-   * unless the plugin retires the exhausted fiber, the server is a
-   * PERMANENT DEAD SLOT (upstream never retries + the plugin's
-   * `!mcpFibers.has(name)` mount guard never re-mounts). Retirement:
-   * the materialization slot is written `failed` with
-   * `lastAttemptAt = now` (the existing 30 s retry cooldown then blocks
-   * a same-boundary remount — the failure is NOT "washed away" by an
-   * immediate fresh mount, plan §5.3), the fiber is disposed + deleted,
-   * the witness record is cleared (a fresh remount re-seeds it), and
-   * EXACTLY ONE `capability-lost` telemetry is written
-   * (`mcp-public-tool-surface` provenance, plan §11).
-   *
-   * IDEMPOTENCE (plan L6 / §5.3): a repeat call finds no fiber and is
-   * a total no-op — NO double dispose, NO second `capability-lost`, NO
-   * attempt advance, NO slot rewrite.
-   * @param {object} state - the session's consumption state.
-   * @param {string} serverName - the MCP server.
-   * @param {string} reason - the plugin-owned reason code (provenance).
-   * @returns {Promise<{retired: boolean}>} whether THIS call performed
-   *   the retirement (a repeat call reports `retired: false`).
-   */
-  async function retireExhaustedMcpFiber(state, serverName, reason) {
-    const fiber = state.mcpFibers.get(serverName)
-    if (fiber === undefined) {
-      // Already retired (or never mounted) — the idempotent no-op.
-      return { retired: false }
-    }
-    const slot = state.mcpMaterialization.get(serverName)
-    const attempts = slot !== undefined && typeof slot.attempts === 'number' ? slot.attempts : 0
-    state.mcpMaterialization.set(
-      serverName,
-      { status: 'failed', attempts, lastAttemptAt: Date.now(), reason },
-    )
-    state.mcpFibers.delete(serverName)
-    state.mcpActivationErrors.delete(serverName)
-    state.mcpToolWitness.delete(serverName)
-    try {
-      fiber.dispose()
-    } catch (error) {
-      observations.push(`p6t6: mcp fiber retire dispose failed [server ${serverName}]: ${error instanceof Error ? error.message : String(error)}`)
-    }
-    observations.push(`p6t6: mcp fiber retired [server ${serverName}] (confirmed loss: ${reason})`)
-    await emitMcpCapabilityEvent(state, 'capability-lost', serverName, 'unreachable', attempts, reason, 'mcp-public-tool-surface')
-    return { retired: true }
-  }
+  // Telemetry, the public tool-surface readers and fiber retirement now live in
+  // `mcp-witness-lane.mjs` (extracted verbatim). The mount transaction
+  // (`reconcileMcpSet`) and the plugin-owned cooldown/reconnect constants STAY here: the §9.2
+  // static witness reads THIS file and pins the ONE mount call site plus those literals.
+  const mcpWitnessLane = createMcpWitnessLane({ deps, observations })
+  const {
+    emitMcpCapabilityEvent,
+    readMcpServerToolSurface,
+    recordMcpToolWitness,
+    retireExhaustedMcpFiber,
+  } = mcpWitnessLane
 
   /**
    * F15 (plan §5.1-C) — the confirmed-loss detector: observe one
@@ -3808,214 +3541,15 @@ export function createAgentBindings(deps) {
     await sessionPersistence.ensureMaterialized(handle.agent.session)
   }
 
-  /**
-   * The shared REAL Agent input path for one team root (TCM-M3: extracted
-   * privately out of deliverRootContext — zero behavior change): the text
-   * goes in as a REAL model-visible input turn on the same path the
-   * delegate work uses: the request-boundary reconciliation under the
-   * root's own team truth, createUserMessage + agent.followup,
-   * observe-to-idle (a rejection PROPAGATES — the caller owns the
-   * at-least-once/dedup contract), then the public persistence seam
-   * materializes the durable log so the delivered turn is on disk before
-   * the caller settles.
-   * @param {{rootSessionId: string, text: string}} input
-   * @param {{livenessOnly?: boolean, machineSource?: boolean}} [options]
-   *   - `livenessOnly: true` marks the LIVENESS-PRESERVED notification
-   *     class (the C1 control notification — the consolidated-revision
-   *     P2a fix, the explicit final-input-boundary distinction between
-   *     the control notification and normal root work): the boundary
-   *     reconcile still runs (the mount attempt stays admissible) but
-   *     the final-input verdict is NOT consulted — the notification is
-   *     NOT model-visible work input (the frozen matrix's
-   *     liveness-preserved class, the same family as the completion
-   *     notification: the pending-approval leader must stay reachable
-   *     even while the root's required mcp materialization is failed —
-   *     a swallowed control notification is a liveness hole in the C1
-   *     channel). NORMAL root work (the Root initial work, the B6
-   *     context) passes NO such flag and REMAINS gated.
-   *   - `machineSource: true` marks the NOTIFICATION provenance class: the
-   *     turn carries the producer-owned machine source kind instead of the
-   *     human attribution, so it can neither authorize a goal on the root nor
-   *     be read as an explicit human interaction by the Alpha.6 Sticky Stop
-   *     arbour. The WORK classes (handoff context, creation-time root work)
-   *     keep the human attribution — a Root's `create_goal` authority is
-   *     decided by it — and are classified machine through the machine-input
-   *     ledger instead (A56-SEMANTICS).
-   * @returns {Promise<void>}
-   */
-  async function deliverRootInput(input, options) {
-    const livenessOnly = options !== undefined && options.livenessOnly === true
-    // A56-SEMANTICS: the provenance class of THIS root input. `machineSource`
-    // marks the notification classes (they must not read as human work); the
-    // work classes keep the human attribution for goal authority and are
-    // machine-classified through the ledger instead.
-    const machineSource = options !== undefined && options.machineSource === true
-    const sid = String(input?.rootSessionId ?? '')
-    const text = String(input?.text ?? '')
-    if (sid === '') {
-      throw new Error('agent-bindings: deliverRootInput requires a non-empty rootSessionId')
-    }
-    if (text === '') {
-      throw new Error('agent-bindings: deliverRootInput requires a non-empty text')
-    }
-    const handle = await ensureLiveAgent(sid)
-    // The target root IS the team root of its own team — the boundary
-    // reconciliation resolves under that root's durable truth.
-    const prepared = await prepareAgentForRequest(sid, sid)
-    // Finding F residual round (the requirement-aware FINAL-INPUT
-    // verdict): the root input IS ACTUAL input on the root session — the
-    // root's (the leader's) FINAL required-truth gates it exactly like
-    // the work delivery (the cold-resume shape: the admission reads the
-    // stale cold truth and admits; the failure stands where the first
-    // model-visible input would go). A `blocked` verdict throws BEFORE
-    // the followup: the root initial-work strategy maps the rejection to
-    // WORK_DELIVERY_FAILED (the remote
-    // TEAM_CREATE_ROOT_WORK_DELIVERY_FAILED) and keeps the durable
-    // admission for the same-token retry (NO terminal root-work fact);
-    // the B6 context caller owns its at-least-once contract over the
-    // same throw. The C1 CONTROL notification is EXPLICITLY DISTINGUISHED
-    // at this final-input boundary (the consolidated-revision P2a fix):
-    // it is not model-visible work input, so it arrives on this path
-    // with `livenessOnly: true` and is NOT gated by the verdict (the
-    // frozen matrix's liveness-preserved class — same family as the
-    // completion notification). The optional / no-requirement outage
-    // degrades (the input delivers).
-    if (prepared.verdict.blocked && !livenessOnly) {
-      throw new Error(
-        `root input delivery blocked before input: the root's required mcp materialization is failed after this boundary [${prepared.verdict.blockedServers.join(', ')}] — the materialization must succeed before real work (Finding F residual round: the requirement-aware final-input verdict)`,
-      )
-    }
-    const message = createUserMessage({
-      content: [{ type: 'text', text }],
-      // A56-SEMANTICS — resolution (a), the same split as work delivery:
-      //   - ROOT WORK (the handoff context, the creation-time initial work) is
-      //     a work input: the target Root is a runtime root and its goal
-      //     authority is decided by this turn's source kind, so it keeps the
-      //     human attribution and is registered as MACHINE in the ledger (the
-      //     Sticky Stop arbour therefore still refuses to read it as human);
-      //   - a CONTROL notification (`machineSource`) is not work input at all:
-      //     it carries the producer-owned machine kind, so it cannot authorize
-      //     a goal and cannot resume a stopped session.
-      source: machineSource ? TEAM_PRODUCER_SOURCE : { kind: 'user' },
-    })
-    machineInputs.note(sid, message)
-    handle.agent.followup(message)
-    await handle.agent.whenIdle()
-    await sessionPersistence.ensureMaterialized(handle.agent.session)
-  }
-
-  /**
-   * Deliver the frozen handoff context into the target Root Agent (the B6
-   * at-least-once seam): `text` — token-leading, so the target side dedupes
-   * on the contextToken — goes in as a REAL model-visible input turn on
-   * the same path the delegate work uses (the shared deliverRootInput).
-   * NO dedupe here: at-least-once is B6's durable contract.
-   * @param {{rootSessionId: string, contextToken: string, text: string}} input
-   * @returns {Promise<void>}
-   */
-  async function deliverRootContext(input) {
-    const sid = String(input?.rootSessionId ?? '')
-    const token = String(input?.contextToken ?? '')
-    const text = String(input?.text ?? '')
-    if (sid === '') {
-      throw new Error('agent-bindings: deliverRootContext requires a non-empty rootSessionId')
-    }
-    if (token === '') {
-      throw new Error('agent-bindings: deliverRootContext requires a non-empty contextToken')
-    }
-    if (text === '') {
-      throw new Error('agent-bindings: deliverRootContext requires a non-empty text (the token-leading frozen context)')
-    }
-    await deliverRootInput({ rootSessionId: sid, text })
-  }
-
-  /**
-   * TCM-M3 — deliver ONE creation-time Root initial work into the Root
-   * Agent (the thin adapter over the shared deliverRootInput): the
-   * model-visible text is token-leading — `[team-root-work
-   * requestToken=<token>]` — so the model can dedupe the at-least-once
-   * redelivery, followed by the exact prompt and (when present and
-   * non-empty) the same `[attached-context]` block the member work
-   * delivery uses. NO dedupe here: the Root initial-work strategy's
-   * durable side (the `team-work-admitted` / `team-root-work-delivered`
-   * facts) owns replay/retry — the glue only submits and propagates
-   * rejections (the strategy maps the rejection to WORK_DELIVERY_FAILED
-   * and keeps the durable admission for the same-token retry).
-   * @param {{rootSessionId: string, requestToken: string, prompt: string, attachedContext?: string}} input
-   * @returns {Promise<void>}
-   */
-  async function deliverRootWork(input) {
-    const sid = String(input?.rootSessionId ?? '')
-    const token = String(input?.requestToken ?? '')
-    const prompt = String(input?.prompt ?? '')
-    if (sid === '') {
-      throw new Error('agent-bindings: deliverRootWork requires a non-empty rootSessionId')
-    }
-    if (token === '') {
-      throw new Error('agent-bindings: deliverRootWork requires a non-empty requestToken')
-    }
-    if (prompt === '') {
-      throw new Error('agent-bindings: deliverRootWork requires a non-empty prompt')
-    }
-    const attachedContext = input?.attachedContext !== undefined ? String(input.attachedContext) : undefined
-    const body = attachedContext !== undefined && attachedContext.length > 0
-      ? `${prompt}\n\n[attached-context]\n${attachedContext}`
-      : prompt
-    await deliverRootInput({
-      rootSessionId: sid,
-      text: `[team-root-work requestToken=${token}] ${body}`,
-    })
-  }
-
-  /**
-   * C1 (leader-approval reachability) — deliver ONE control-plane
-   * liveness notification to the Root (Leader) Agent: a NEWLY-CREATED
-   * durable `leader-approval` request becomes a model-visible input turn
-   * on the SAME private root-input path the delegate work uses (the
-   * shared deliverRootInput: boundary reconciliation + createUserMessage
-   * + followup + whenIdle + materialization). NON-AUTHORITY by
-   * construction: the glue writes no TeamDomain state, records no
-   * decision, and the notification CANNOT approve/deny/alter the request
-   * — the durable control row + `team_resolve_control` stay the
-   * authority. At-least-once: the text is token-leading
-   * (`[team-control requestId=<id>]`, deterministic per request) so a
-   * redelivery is recognizable; the control service fires this
-   * fire-and-forget AFTER the per-team lock is released (a delivery
-   * failure is a liveness failure only — it never blocks the request
-   * path and never changes the outcome). Consolidated-revision P2a:
-   * this notification is the LIVENESS-PRESERVED class at the
-   * final-input boundary (the shared deliverRootInput with
-   * `livenessOnly: true`) — it is delivered even while the root's
-   * REQUIRED mcp materialization is failed (the verdict does not gate
-   * it), while normal root work on the same path REMAINS gated.
-   * @param {{rootSessionId: string, requestId: string, text: string}} input
-   * @returns {Promise<void>}
-   */
-  async function deliverRootControlNotification(input) {
-    const sid = String(input?.rootSessionId ?? '')
-    const requestId = String(input?.requestId ?? '')
-    const text = String(input?.text ?? '')
-    if (sid === '') {
-      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty rootSessionId')
-    }
-    if (requestId === '') {
-      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty requestId')
-    }
-    if (text === '') {
-      throw new Error('agent-bindings: deliverRootControlNotification requires a non-empty text (the token-leading notification)')
-    }
-    // The consolidated-revision P2a fix: the control notification is
-    // the LIVENESS-PRESERVED class at the final-input boundary — the
-    // boundary reconcile still runs (the mount attempt stays admissible;
-    // the failure stands on the slot) but the verdict does NOT gate it
-    // (the pending-approval leader must stay reachable while the root's
-    // required mcp materialization is failed). Normal root work stays
-    // gated (no flag on those paths).
-    await deliverRootInput(
-      { rootSessionId: sid, text },
-      { livenessOnly: true, machineSource: true },
-    )
-  }
+  // The Root (Leader) input delivery ports now live in `root-delivery.mjs` (extracted verbatim):
+  // the ONE shared real-input path plus the B6 context, the TCM-M3 initial work and the C1 control
+  // notification callers. The completion notification stays in this closure (it reads `closing`).
+  const {
+    deliverRootInput,
+    deliverRootContext,
+    deliverRootWork,
+    deliverRootControlNotification,
+  } = createRootDelivery({ ensureLiveAgent, prepareAgentForRequest, sessionPersistence, machineInputs })
 
   /**
    * Work-completion wake-up (async work completion → Leader wakeup) —
@@ -4276,114 +3810,14 @@ export function createAgentBindings(deps) {
     }
   }
 
-  // The P7-T3 lifecycle bindings over the REAL production surfaces: close-
-  // admission stays with the production row (no separate in-process
-  // admission gate — the router's per-team lock serializes the whole
-  // procedure); interrupt is the public Agent cancel (upstream contract:
-  // no-op when the phase is idle); drain is the REAL recursive descendant
-  // drain (T12-M3: whenIdle + the subagents service, honest count, typed
-  // fail-closed); residency is the live-agent handle map (drop = forget the
-  // resident handle, the durable session stays on disk under DSH_HOME).
-  //
-  // PD-29 (2026-11-14, goal-stop): "interrupt" must ALSO withdraw the
-  // Member's goal-continuation authority, and it must do so even when the
-  // upstream cancel is a no-op. Upstream's own contract is explicit —
-  // `Agent.cancel` with no active activity "is a no-op and does not arm
-  // later work" — so a Member that is between two goal rounds (idle, goal
-  // still `active`+`armed`) would be left with an armed goal after the Team
-  // stop and the goal-round driver could start the NEXT round. The upstream
-  // goal service publishes exactly the seam for this (GoalService.disarm:
-  // "Lifecycle owners use this before unloading a driver"), so the Team
-  // withdraws the process-local activation on the SAME stop that closes
-  // admission. The DURABLE transition is `pause` — the very transition the
-  // user's `/goal pause` performs — because a member that the Leader just
-  // archived must not keep reporting `phase: active` while nothing can run
-  // (a label without a mechanism). Pause keeps the goal readable, bumps its
-  // revision, and a later human `resume`/`/goal resume` stays the legal
-  // re-arm. No second policy source, no round budget, no core change; a goal
-  // already in a terminal or paused phase cannot be paused, so the disarm
-  // below still withdraws activation in that case.
-  async function interrupt(target) {
-    const row = domain.repositories.memberInstances.list(rootSid).find(
-      (m) => String(m.instanceId) === String(target.instanceId),
-    )
-    // The durable row may not carry `childSessionId` yet (the id is DERIVED
-    // from root+instance and only some writers persist it), so fall back to
-    // the same derivation `childSessionIdFor` uses. Looking the handle up by
-    // the row alone silently missed every member whose row was written by a
-    // path that leaves the column empty — exactly the "interrupt returned,
-    // nothing happened" shape this lane exists to catch.
-    const childSid = row?.childSessionId === undefined || row?.childSessionId === null
-      ? childSessionIdFor(String(target.rootSessionId ?? rootSid), String(target.instanceId))
-      : String(row.childSessionId)
-    const handle = liveAgents.get(childSid)
-    if (handle === undefined) {
-      observations.push(`pd29: Team interrupt of '${String(target?.instanceId ?? '<unknown>')}' found NO live agent (childSessionId=${childSid}); nothing to cancel or disarm`)
-      return // no activity in flight: no-op by contract
-    }
-    // A6 provenance: a Team machine stop is NOT human input, so it carries the
-    // hook cause and cannot clear a human Sticky Stop. The durable pause below
-    // is what withdraws continuation; the human Stop button reaches the host
-    // through its own client RPC and does not pass through this function.
-    handle.agent.cancel({ kind: 'hook', reason: 'team-member-interrupt' })
-    disarmStoppedGoal(handle.agent, target)
-  }
-
-  /** Withdraw goal-continuation authority on a Team stop (PD-29). */
-  function disarmStoppedGoal(agent, target) {
-    let goals
-    try {
-      goals = typeof deps.goals === 'function' ? deps.goals() : undefined
-    } catch (error) {
-      goals = undefined
-      observations.push(`pd29: goal service accessor threw on stop of '${String(target?.instanceId ?? '<unknown>')}': ${String(error?.message ?? error)}`)
-    }
-    if (goals === undefined || goals === null || typeof goals.disarm !== 'function') {
-      observations.push(`pd29: no goals service on this host; stop of '${String(target?.instanceId ?? '<unknown>')}' disarmed nothing (no goal continuation can exist without it)`)
-      return
-    }
-    let before
-    try {
-      before = typeof goals.get === 'function' ? goals.get(agent) : undefined
-    } catch {
-      before = undefined
-    }
-    if (before === undefined || before === null) {
-      observations.push(`pd29: stop of '${String(target?.instanceId ?? '<unknown>')}' found no current goal; nothing to disarm`)
-      return
-    }
-    // The durable pause FIRST (the same CAS the goal bar uses), then the
-    // process-local withdrawal. A pause that the service refuses (the goal was
-    // already paused/complete/blocked) is not an error: there is nothing to
-    // pause, and the disarm below is still required.
-    let paused = null
-    if (typeof goals.pause === 'function' && before.phase === 'active') {
-      try {
-        paused = goals.pause(agent, { id: before.id, revision: before.revision })
-      } catch (error) {
-        observations.push(`pd29: durable pause refused on stop of '${String(target?.instanceId ?? '<unknown>')}' (phase=${String(before.phase)}): ${String(error?.message ?? error)}`)
-      }
-    }
-    try {
-      const after = goals.disarm(agent)
-      observations.push(`pd29: goal stopped on Team interrupt of '${String(target?.instanceId ?? '<unknown>')}': id=${String(after?.id)} revision=${String(after?.revision)} phase=${String(after?.phase)} paused=${String(paused === null ? '<refused>' : `${String(paused.phase)}@${String(paused.revision)}`)} activation ${String(before?.activation)}->${String(after?.activation)}`)
-    } catch (error) {
-      observations.push(`pd29: goal disarm FAILED on stop of '${String(target?.instanceId ?? '<unknown>')}': ${String(error?.message ?? error)}`)
-    }
-  }
-
-  // T12-M3: the typed fail-closed error for a drain that cannot ESTABLISH
-  // quiescence (no live agent, subagents service absent/unusable,
-  // infrastructural rejection). Carries code 'recursive-drain-unavailable';
-  // the lifecycle layer (lifecycle/quiesce.ts) maps the REJECTION to a
-  // live-effect failure and the archive/dispose procedure REFUSES
-  // completion — quiescence is never faked.
-  function recursiveDrainUnavailable(sessionId, reason) {
-    const error = new Error(`agent-bindings: recursive drain unavailable for '${sessionId}': ${reason} (code: recursive-drain-unavailable)`)
-    error.code = 'recursive-drain-unavailable'
-    observations.push(`p6t6: recursive-drain-unavailable for ${sessionId}: ${reason}`)
-    return error
-  }
+  // The P7-T3 lifecycle bindings over the REAL production surfaces - interrupt (with the PD-29 goal
+  // withdrawal), the recursive descendant drain, and the live-residency port - now live in
+  // `stop-drain-lane.mjs` (extracted verbatim).
+  const {
+    interrupt,
+    drainDescendants,
+    residency,
+  } = createStopDrainLane({ domain, rootSid, childSessionIdFor, liveAgents, observations, deps })
 
   // D1 (v2): the typed fail-closed error for a member setup that cannot
   // mount its ordinary preset substrate (the agentPresets service absent or
@@ -4415,105 +3849,6 @@ export function createAgentBindings(deps) {
     error.code = 'root-base-tools-unavailable'
     observations.push(`p6t6: root-base-tools-unavailable for ${sessionId}: ${reason}`)
     return error
-  }
-
-  /**
-   * T12-M3: the REAL recursive descendant drain (stop + quiesce).
-   *
-   * Cancel semantics: this is invoked BEFORE any dropResidency /
-   * handle.dispose (a disposed agent cannot be quiesced — the durable
-   * session on disk is not quiescence). The sequence:
-   *   (a) `await handle.agent.whenIdle()` — the member's own in-flight turn
-   *       settles first (a rejection PROPAGATES as a fault: a rejected
-   *       settle is not quiescence);
-   *   (b) `await subagents.drainContinuableDescendants([handle.agent])` —
-   *       the SubagentRuntime closes admission below the member, stops its
-   *       visible descendant Activations, and awaits them; it REJECTS with
-   *       an aggregate AFTER ALL BRANCHES SETTLE when any failed — that
-   *       rejection is a DRAIN FAILURE: the report is
-   *       `{drained: <count>, quiescent: false}`, never `quiescent: true`;
-   *   (c) `await subagents.listDescendants(handle.agent.session.id)` — the
-   *       HONEST descendant count (the complete tree after the drain).
-   *
-   * `quiescent: true` is returned ONLY when (a) and (b) settled without
-   * rejection and (c) listed successfully.
-   *
-   * Throws the typed `recursive-drain-unavailable` error (the lifecycle
-   * maps the rejection to LIFECYCLE_LIVE_EFFECT_FAILED; the procedure
-   * refuses before any commit) when:
-   *   - there is no live agent for the session (quiescence cannot be
-   *     established for a member that has no resident agent);
-   *   - the subagents service is absent or structurally unusable (the
-   *     production host seam is not wired yet — integrator note: host.ts
-   *     must pass `subagents: ctx.get('subagents')` into the glue deps for
-   *     this drain to be active in production);
-   *   - the drain or the listing fails for an infrastructural reason (as
-   *     opposed to the (b) aggregate drain FAILURE, which reports
-   *     `quiescent: false` with the best-effort count).
-   *
-   * @param {string} childSessionId
-   * @returns {Promise<{drained: number, quiescent: boolean}>}
-   */
-  async function drainDescendants(childSessionId) {
-    const sid = String(childSessionId)
-    const handle = liveAgents.get(sid)
-    if (handle === undefined) {
-      throw recursiveDrainUnavailable(sid, 'no live agent (quiescence cannot be established)')
-    }
-    // (a) the member's own turn settles first.
-    await handle.agent.whenIdle()
-    // (b) the real recursive drain of every continuable descendant.
-    const subagents = deps.subagents
-    if (
-      subagents === undefined ||
-      typeof subagents.drainContinuableDescendants !== 'function' ||
-      typeof subagents.listDescendants !== 'function'
-    ) {
-      throw recursiveDrainUnavailable(sid, 'the subagents service is absent or unusable')
-    }
-    let drainFailed = false
-    try {
-      await subagents.drainContinuableDescendants([handle.agent])
-    } catch {
-      // The aggregate settles only AFTER all branches: a rejection here is
-      // a DRAIN FAILURE (residual descendant activity), not a fault — it
-      // reports quiescent: false, never a throw and never quiescent: true.
-      drainFailed = true
-    }
-    // (c) the honest descendant count (the tree after the drain).
-    let drained
-    try {
-      const entries = await subagents.listDescendants(handle.agent.session.id)
-      drained = entries.length
-    } catch (error) {
-      const detail = error instanceof Error ? error.message : String(error)
-      throw recursiveDrainUnavailable(
-        sid,
-        drainFailed ? `the drain failed and the descendant listing rejected: ${detail}` : `the descendant listing rejected: ${detail}`,
-      )
-    }
-    if (drainFailed) return { drained, quiescent: false }
-    return { drained, quiescent: true }
-  }
-
-  const residency = {
-    has(sessionId) { return liveAgents.has(String(sessionId)) },
-    // alias: the frozen port name
-    hasResidency(sessionId) { return liveAgents.has(String(sessionId)) },
-    dropResidency(sessionId) {
-      const sid = String(sessionId)
-      const handle = liveAgents.get(sid)
-      if (handle === undefined) return false // the handle may be absent: no-op by contract
-      liveAgents.delete(sid)
-      // The sync port cannot await: the public handle dispose (stop the
-      // loop, unregister, remove the session from the store) proceeds
-      // in flight. Quiescence was already observed at the previous step,
-      // so no model-visible write can follow the unregister.
-      handle.dispose().catch((error) => {
-        observations.push(`p6t6: residency dispose failed for '${sid}': ${error instanceof Error ? error.message : String(error)}`)
-      })
-      return true
-    },
   }
 
   // SD-CALLER: the tool layer only LOOKS UP the caller identity from the

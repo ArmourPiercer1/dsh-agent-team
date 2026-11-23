@@ -99,7 +99,7 @@ named in that same row/section (the reviewable set uses this to keep the tables 
 | working tree at measurement start | clean | `git status --porcelain` (empty) |
 | diff vs A0 | **3,476** files changed, **+249,967 / −160,719** | `git diff --shortstat a19d1df01..HEAD` |
 | file-status counts vs A0 | **2,646 A · 616 D · 211 M · 2 R094 · 1 R095** | `git diff --name-status a19d1df01..HEAD \| awk '{print $1}' \| sort \| uniq -c` (git warns that exhaustive rename detection was skipped; the rename counts are a lower bound) |
-| entry files | `agent-bindings.mjs` **4,967** lines · `root.ts` **5,239** lines | `wc -l` on `packages/runtime/src/plugin/vnext/{agent-bindings.mjs,root.ts}` |
+| entry files | `agent-bindings.mjs` **4,302** lines (round 90: was 4,967; four cohesive spans moved VERBATIM into the sibling modules listed in §6.16) · `root.ts` **5,239** lines (unchanged) | `wc -l` on `packages/runtime/src/plugin/vnext/{agent-bindings.mjs,root.ts,governed-preset-modules.mjs,mcp-witness-lane.mjs,root-delivery.mjs,stop-drain-lane.mjs}` |
 | `master` containment | `git merge-base --is-ancestor HEAD origin/master` → **false** | `origin/master` = `a19d1df01`, the A0 PR #821 |
 
 ### 1.1 Cut closure (fresh runs, this HEAD, pasted verbatim)
@@ -128,14 +128,18 @@ Reading the two together, precisely:
 
 ```
 $ node scripts/place-dist-glue.mjs
-place-dist-glue: done (30 placement(s))
+place-dist-glue: done (34 placement(s))
 ```
 
-**30** byte-identical `.mjs`/`.py` placements (every line at the run reads `(byte-identical)`; the
+**34** byte-identical `.mjs`/`.py` placements — round 90 added the four decomposition modules
+(`scripts/dist-placements/260-ute-a1-decomposition.json`; 30 → 34). Every line at the run reads
+`(byte-identical)`; the
 `artifacts-at-head` leg independently reports 1,941 files and 30 glue placements). This is a *different measurement* from the frozen A0 figure: A0 counted **52 committed dist artifacts**, and the
 closure gate cannot see the aggregated `packages/runtime/dist/packages/<other-pkg>/…` mirrors or `.mjs`
 byte-copies — `CUT-BOUNDARY-ADDITIONS.md:27-32` explains the mapping. The two numbers are not comparable
-and neither is quoted here as the other.
+and neither is quoted here as the other. (The `artifacts-at-head` "30 glue placements" figure in this
+sentence is that leg's own class count at the round-89 head and was not re-measured this round; the
+authoritative placement number is the `place-dist-glue` line above.)
 
 ### 1.3 A0 frozen numbers (for comparison)
 
@@ -969,6 +973,79 @@ rc.5" claim could be made for those three operations.
 - **No matrix upgrade.** C-fs stays MECHANISM: rc.5 greens are lane evidence, and a PRODUCT-PROVEN
   row would require a booted measurement.
 
+### 6.16 The two entry files are still large — round 90 is a REVIEWABILITY change, and this is exactly what it does not prove
+
+**The limitation.** The A1 cut replaced the two entry files wholesale and they carry the whole centre
+assembly: `agent-bindings.mjs` was **4,967** lines and `root.ts` **5,239**. Nothing in the acceptance
+argument depended on their size, but a reviewer cannot hold a 5,000-line closure in view, so the size
+was itself the review risk. Round 90 (branch `vnext/a1-cut`, evidence
+`round90/`) moves four cohesive spans of `agent-bindings.mjs` into sibling modules under
+`packages/runtime/src/plugin/vnext/`, **verbatim**, and imports them back.
+
+| span (what it owns) | new module | moved lines | module lines |
+| --- | --- | --- | --- |
+| the governed preset's enabled row module specifiers + each row's declared `config` (SHAPE A) | `governed-preset-modules.mjs` | 127 | 156 |
+| the MCP CAPABILITY WITNESS: capability telemetry, the F15 public tool-surface readers, fiber retirement | `mcp-witness-lane.mjs` | 158 | 205 |
+| the Root (Leader) input delivery ports: the ONE shared real-input path + the B6 context, TCM-M3 initial work, C1 control notification | `root-delivery.mjs` | 208 | 248 |
+| the Member stop lane: interrupt + PD-29 goal disarm, the recursive descendant drain, the live-residency port | `stop-drain-lane.mjs` | 205 (3 chunks: 95 + 12 + 98) | 249 |
+
+`agent-bindings.mjs` went **4,967 → 4,302** lines; `root.ts` is untouched (5,239). Every module is a
+factory over one row instance — no module-level mutable state, exactly like the closure it came from.
+
+**How "verbatim" was proved, not asserted.** Each moved range was copied by line range from
+`git show HEAD:…/agent-bindings.mjs` and the receipt
+(`round90/byte-identity.txt`) is a substring test in both directions: the exact original text is present
+in the new module AND ABSENT from the rewritten glue. Six ranges, 698 lines, all
+`verbatim_in_module=True absent_from_glue=True`. The only new lines at the move sites are the
+import/destructure lines and a comment; the only deleted lines are the moved ones. The exported surface
+of `agent-bindings.mjs` is unchanged (`createAgentBindings`, `a5PlaneSubtreeContains` and the existing
+`createPtcEscalationRouter` re-export).
+
+**Same counts, same digest, before and after.**
+
+| gate | before | after |
+| --- | --- | --- |
+| `dispatch-tests --run --leg ute-vnext-a1` | `suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975` | identical |
+| `eb3-security-run --layer ci-integration --list-file tests/checks/eb3-ute-migrated-suites.txt` | `verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` | identical |
+| `run-boot.mjs --boots 1` | `RESULT FAIL` (5 PASS / 1 FAIL: `d:remote-creation`), exit 1 | identical |
+| `run-boot-d2.mjs --boots 1` | `RESULT PASS`, 4/4 PASS, exit 0 | identical |
+| `run-boot-d3.mjs --boots 1` | `evidence-complete=true allProven=true`, 4/4 PROVEN, exit 0 | identical |
+
+The `run-boot` FAIL is the pre-existing `d:remote-creation` arm at this HEAD (it is FAIL before and
+after the decomposition; this round neither fixes nor hides it — the point of the pair is that the
+verdict is *unchanged*).
+
+`place-dist-glue` mirrors all four new files (30 → 34 placements, every line `(byte-identical)`), and
+the round-90 p4t6 booking (`packages/testkit/test/p4t6-bookings/round90decomposition.json`) records the
+**measured** scannable-surface delta `1313 → 1317` — the scanner printed
+`scanner counts 1317, ledger derives 0 + 1313 = 1313` with the four files unbooked, and the ledger is
+green with exactly those four paths booked. No arm was relaxed.
+
+**Three things deliberately did NOT move, each with its reason.**
+- `observeMcpOperationalWitness` (the F15 confirmed-loss classifier) reads the row's `closing`
+  primitive (`let closing`, set once by `close()`). A primitive cannot be passed by reference, so a move
+  would have forced an edit to the moved condition — a logic edit this round refuses. It stays in the
+  glue and consumes the moved readers through the factory return.
+- `deliverRootWorkCompletionNotification` and `deliverReviewWake` read the same `closing` primitive; they
+  stay for the same reason.
+- `reconcileMcpSet` (the mount/dispose transaction) and the plugin-owned cooldown/reconnect constants
+  stay: `f15-mcp-live-loss.test.ts` §9.2 is a STATIC call-site witness that reads `agent-bindings.mjs`
+  and pins exactly one `state.mcpMountCtx.plugin(mcpClient,` site plus the literal policy constants.
+  Moving the transaction would have required editing that test, which the round's rules forbid; the
+  alternative — leaving the assertion pointing at a file that no longer holds the call site — would have
+  been a silent weakening. This is the one span the round wanted and could not take without a test edit,
+  and it is reported as such.
+
+**What this does NOT prove.** No behaviour was changed, so nothing new is proven — and that is the whole
+claim. Specifically: (a) the moved modules are exercised through the SAME suite population as before
+(the leg populations did not grow; there is no new unit test for a factory boundary, because inventing
+one would be new surface, not preservation); (b) `root.ts` was **not** decomposed, so the reviewer's
+size concern is only partly addressed (5,239 lines remain); (c) the decomposition does not make the
+centre assembly easier to *test* — it makes it easier to *review*, and that is a line-count and
+diff-shape claim, not an acceptance level; (d) the `d:remote-creation` red at `run-boot` is unchanged and
+still open (§10 register). CORE PATCH BUDGET = 0: no upstream file was touched, no port was opened, no
+second server was started.
+
 ---
 
 ## 7. Verdict
@@ -976,7 +1053,8 @@ rc.5" claim could be made for those three operations.
 **What a reviewer may conclude.**
 
 1. **The candidate implements A1 + B + C.** The A1 cut is closed by measurement, not by prose: 148 sources
-   gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 30 byte-identical dist placements, and the 37/180/
+   gone, `prodRefs=0`, `distResiduals=0`, `dupNames=0`, 34 byte-identical dist placements (30 at the
+   round-89 head; round 90 added the four decomposition modules), and the 37/180/
    69,512-line frozen census unchanged (§1.1–§1.2). B and C are carried by the arms through `ADM-146` and
    `SLICE-21…SLICE-38` in the `ute-vnext-a1` node leg (**211 tests / 209 pass, 0 fail, 2 disclosed skips**)
    and by the 15 migrated capability

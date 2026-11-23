@@ -11163,3 +11163,44 @@ Gates at `97d7d7c8d` (verbatim in the `ute-a1` evidence set and this session's l
 35/35. Hosted at this HEAD: six layers green, `ci-integration` FAILURE on `tinf-instruments` (no named failing
 assertion; **same leg green locally**), `ci-census` skipped (draft), `ci-required` red for both — carried as G10,
 not explained away. PR #822 stays DRAFT/OPEN/unmerged.
+
+## Round 90 (2026-11-23) — behaviour-preserving decomposition of `agent-bindings.mjs` (reviewability, ZERO behaviour change)
+
+The A1 cut left the two entry files at 4,967 lines (`packages/runtime/src/plugin/vnext/agent-bindings.mjs`) and
+5,239 (`root.ts`). The review risk is size, not behaviour, so this round moves four cohesive spans out of the glue
+**verbatim** into sibling modules and imports them back. No logic edit, no rename beyond what the move forces, no
+new abstraction, no test/assertion/skip/timeout change, no upstream patch, no compatibility layer.
+
+Moved (old lines → new module → module size): governed preset row module specifiers + declared row configs
+(127 lines → `governed-preset-modules.mjs`, 156); the MCP capability witness — telemetry, F15 public tool-surface
+readers, fiber retirement (158 → `mcp-witness-lane.mjs`, 205); the Root input delivery ports — the ONE shared
+real-input path + B6/TCM-M3/C1 callers (208 → `root-delivery.mjs`, 248); the Member stop lane — interrupt + PD-29
+goal disarm, recursive drain, residency (205 in 3 chunks → `stop-drain-lane.mjs`, 249). `agent-bindings.mjs`
+**4,967 → 4,302**; `root.ts` untouched.
+
+Proof: every moved range was copied by line range from `git show HEAD:` and the receipt
+(`evidence/ute-a1/round90/byte-identity.txt`) is a TWO-WAY substring test — each of the six ranges is present in its
+module AND absent from the rewritten glue (698 lines, all True). The exported surface of the glue is unchanged.
+
+Same counts, same digest, before and after: `dispatch-tests --run --leg ute-vnext-a1` `suites=7 files=7 exit=0
+set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975` (identical); bound vitest
+`verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0` (identical); D drivers on rc.2 `--boots 1`
+identical verdicts (`run-boot` FAIL 5P/1F `d:remote-creation`; `run-boot-d2` PASS 4/4; `run-boot-d3` allProven
+4/4). Gates: catalog 785 / collected 733 / excluded 14 / uncollected 38 (bounds 41/7, digest unchanged),
+ute-cut-closure and ute-p0-assets lines unchanged, docs-sync 0 findings, place-dist-glue **30 → 34**
+(all byte-identical; `scripts/dist-placements/260-ute-a1-decomposition.json`), eb3-ci-required 10/0, UTE G1
+**89/89**. p4t6 scannable ledger: ONE new booking (`round90decomposition.json`) with the MEASURED delta
+**1313 → 1317** (the scanner printed `scanner counts 1317, ledger derives 0 + 1313 = 1313` with the four files
+unbooked). No arm relaxed.
+
+Three spans deliberately did NOT move: `observeMcpOperationalWitness`, `deliverRootWorkCompletionNotification` and
+`deliverReviewWake` read the row's `closing` primitive (`let closing`) — a primitive cannot be passed by reference,
+so a move would have forced an edit to the moved condition. `reconcileMcpSet` + the reconnect/cooldown constants
+stay because `f15-mcp-live-loss.test.ts` §9.2 is a STATIC witness over `agent-bindings.mjs` pinning the one mount
+call site and the literal policy constants; moving it would have needed a test edit. That span is reported as NOT
+taken, not worked around.
+
+Docs: `D-ACCEPTANCE-REPORT.md` gains §6.16 (the decomposition, the proof table, the limits) and re-measures the
+entry-file row (§1) and the placement count (§1.2/§7); `MIGRATED-SUITE-STATUS.md` gains the round-90 section.
+No level, matrix row or capability claim moves; `root.ts` remains 5,239 lines; the `d:remote-creation` red is
+untouched and still open. PR #822 stays DRAFT/unmerged; :3080 and its DSH_HOME were never touched.

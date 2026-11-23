@@ -1,0 +1,18 @@
+=== test-catalog ===
+test-catalog (test-catalog/1) — discovery + the node:test predicate the dispatcher resolves legs against
+  tests=785 instruments=3 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32
+  DISCOVERED_AND_COLLECTED 733
+  EXCLUDED_WITH_REASON     14
+  UNCOLLECTED              38
+  by runner: node=146 none=7 vitest=632
+DSH-TEST-CATALOG tests=785 digest=sha256:da8a452d65130a3a7f62ef90b549a5289909e689e1ff619c4b3e0c45d5f5ed32 refused=0 findings=0
+EXIT=0
+=== ute-cut-closure ===
+UTE-CUT-CLOSURE pass deleted=148 references=3 prodRefs=0 distResiduals=0 cut=cut(0/148) dupNames=0 retiredSurfaces=12 placements=self findings=0
+EXIT=0
+=== ute-p0-assets ===
+UTE-P0-ASSETS pass modules=37 files=180 lines=69512 delete=146 replace=2 keep=32 wave1=146 wave2=0 cut=cut(148/148) findings=0
+EXIT=0
+=== eb3-ci-required ===
+EB3-CI-REQUIRED pass workflows=10 findings=0
+EXIT=0

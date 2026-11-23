@@ -2956,3 +2956,55 @@ refusal).
 **Not proven:** any configuration in which a granted `ask` executes; a live `ask → grant → execute` arm;
 the routed Alpha.6 wake; the BL-33 consumption half; and routes (a)/(d) of the evidence README are
 designs, not implementations.
+
+---
+
+## Round 90 (behaviour-preserving decomposition of `agent-bindings.mjs`) — NO level moved, no population moved
+
+**2026-11-23 · branch `vnext/a1-cut` · PR #822 (DRAFT) · evidence
+`dev/agent-workflow/evidence/ute-a1/round90/`.**
+
+The round's task was reviewability, not capability: the A1 cut left the two entry files at 4,967
+(`agent-bindings.mjs`) and 5,239 (`root.ts`) lines, and a reviewer cannot hold a 5,000-line closure in
+view. Four cohesive spans of `agent-bindings.mjs` moved **verbatim** into sibling modules and are
+imported back:
+
+| moved span | new module | moved lines |
+| --- | --- | --- |
+| governed preset row module specifiers + declared row configs (SHAPE A) | `governed-preset-modules.mjs` | 127 |
+| MCP capability witness (telemetry, F15 tool-surface readers, fiber retirement) | `mcp-witness-lane.mjs` | 158 |
+| Root input delivery ports (shared real-input path + B6/TCM-M3/C1 callers) | `root-delivery.mjs` | 208 |
+| Member stop lane (interrupt + PD-29 disarm, recursive drain, residency) | `stop-drain-lane.mjs` | 205 (3 chunks) |
+
+`agent-bindings.mjs` **4,967 → 4,302** lines. The byte-identity receipt
+(`round90/byte-identity.txt`) is a two-way substring test — each of the six original ranges is present in
+its module AND absent from the rewritten glue (698 lines, all `True`). The exported surface is unchanged.
+
+**Suite populations and digests are UNCHANGED, which is the whole proof.**
+
+- `dispatch-tests --run --leg ute-vnext-a1`:
+  `suites=7 files=7 exit=0 set=sha256:edd4f1c494a777b941baa47a286d29455f79eb71d20ae7e48cf46a5580c8a975`
+  — identical before and after.
+- bound vitest leg (`eb3-security-run --layer ci-integration --list-file
+  tests/checks/eb3-ute-migrated-suites.txt`): `verdict=PASS suites=15 files=15 describes=76 passed=238
+  failed=0` — identical before and after. **No test file, assertion, skip or timeout was edited.**
+- catalog `785 / 38 uncollected / 14 excluded`, cut-closure and p0-assets lines identical to the round-89
+  head; `place-dist-glue` 30 → **34** placements (all `(byte-identical)`); the p4t6 ledger gained ONE
+  booking (`round90decomposition.json`, measured delta **1313 → 1317** — the four new scannable files,
+  no arm relaxed).
+- D drivers on rc.2, `--boots 1` each, before and after: `run-boot` **FAIL** (5 PASS / 1 FAIL
+  `d:remote-creation`), `run-boot-d2` **PASS 4/4**, `run-boot-d3` **allProven 4/4** — identical verdicts.
+
+**Not moved, with the reason.** `observeMcpOperationalWitness`, `deliverRootWorkCompletionNotification`
+and `deliverReviewWake` read the row's `closing` primitive (`let closing`), which cannot be passed by
+reference, so moving them would have forced a logic edit. `reconcileMcpSet` + the reconnect/cooldown
+constants stay because `f15-mcp-live-loss.test.ts` §9.2 is a STATIC witness over `agent-bindings.mjs`
+that pins the one mount call site and the literal constants; moving it would have required a test edit,
+which the round forbids. That is the one span the round could not take, reported rather than worked
+around.
+
+**Not proven:** nothing new — no behaviour changed, so no level, matrix row or capability claim moves. The
+moved modules have no separate unit test (they are exercised through the same glue suites; adding one
+would be new surface, not preservation); `root.ts` was not decomposed, so its 5,239 lines remain; and the
+`d:remote-creation` red on `run-boot` is untouched and still open.
+
