@@ -39,6 +39,7 @@ import {
   executeToolDispatch, instrumentedFileSystemClass, loadFsContractSeams, provideWorkingDirectoryDouble,
 } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
 import { resolveSelectedHostModule, testHostMode } from '../../../tests/next-host/host-select.mjs'
+import { createConfinedProvider, probeEnvCapabilities, envLimited } from '../../../tests/world-factory/lib/a5sf-env-capability.mjs'
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 /** WHICH pinned host this slice grades against (TEAM_TEST_HOST=next | legacy). */
@@ -189,7 +190,10 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
         write: lane([inside]),
         network: Object.freeze({ access: 'deny' }),
       },
-      provider: sandbox.createConfinedProcessProvider({ realmId: IDENTITY.memberInstanceId, trustRoot: dir, scratchRoot: join(dir, 'scratch') }),
+      // The product provider, built through the capability helper: without the documented probe
+      // override this is the production constructor unchanged; with it, the capability-absent path
+      // is exercised at the provider's own `deps.probeFacts` seam.
+      provider: await createConfinedProvider({ realmId: IDENTITY.memberInstanceId, trustRoot: dir, scratchRoot: join(dir, 'scratch') }),
       // The realm id the provider was created for: a request naming a different realm is refused.
       realmId: IDENTITY.memberInstanceId,
       bindingId: 'member-subprocess',
@@ -1072,20 +1076,48 @@ test('SLICE-27 — edit: outside the ceiling it is refused before the provider i
   }
 })
 
-test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused outside it', async () => {
+test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused outside it', async (t) => {
   // The realm owns a confined subprocess face (compiled profile + P1-07 provider), which is what
   // makes the search module admissible at all: without it the product refuses the composition
   // (measured in the previous round as SUBPROCESS_UNCONFINED_REALM). Now the family is mounted on
   // the MEMBER scope, so `grep` resolves the confined `subprocess`, never the inherited base one.
+  //
+  // THE ENVIRONMENT PRECONDITION, measured not assumed (a5sf-env-capability): the confined face
+  // requests `network: deny` (the compiled profile below), and the product admits that request ONLY
+  // when its own `--net-leg` probe proves a network namespace. On a runner that cannot prove it, the
+  // product REFUSES the spawn before any process (fail-closed). The positive half then cannot run:
+  // it is reported ENV-LIMITED and the arm is NOT a pass. The lane refusal half still runs.
+  const capability = await probeEnvCapabilities()
   const world = await buildWorld({ mountRealm: true, dir: join(dir, 'search'), admission: 'bound', search: true })
   try {
     assert.equal(world.mountRefusal, undefined, `the composition must mount now: ${world.mountRefusal?.message ?? ''}`)
     const inside = await world.dispatch('grep', { pattern: 'alpha', path: world.inside }, 'grep-in')
-    assert.equal(inside.isError, false, `an in-ceiling grep must succeed: ${inside.text}`)
-    assert.match(String(inside.text), /alpha/u, 'the match must come back from the real ripgrep run')
     const facts = world.facts()
-    assert.equal(facts[0].axis, 'fs.read')
-    // The negative control: the same tool and pattern, a locator outside the ceiling.
+    if (inside.isError) {
+      // The ONLY admissible reason for a failed in-ceiling grep is the absent network-deny proof.
+      // If the probe says the capability is present, a failure here is a REAL regression and the
+      // assertion below fails the arm.
+      assert.equal(capability.networkDeny.present, false, `an in-ceiling grep must not fail on a host that proves network-deny: ${inside.text}`)
+      assert.equal(facts.length, 1, 'the admitted call must still produce its admission fact before the body is refused')
+      assert.equal(facts[0].decision, 'allow', 'the CENTRE admitted the call: the refusal is the confined face, not the lane')
+      assert.equal(facts[0].axis, 'fs.read')
+      const executions = world.executions()
+      assert.equal(executions.length, 1)
+      assert.equal(executions[0].outcome, 'failed', 'the body never produced a search result: the product refused the spawn')
+      assert.doesNotMatch(String(inside.text), /Found 1 match/u, 'a refused spawn must not fabricate a match')
+      envLimited({
+        arm: 'SLICE-28',
+        disposition: 'ENV-BLOCK',
+        code: capability.networkDeny.code,
+        probe: capability.networkDeny.detail,
+        reason: 'the in-ceiling grep positive did not run: the confined face requests network=deny and this host cannot prove it, so the product refused the spawn before any process (fail-closed). The lane refusal half below still runs and is asserted',
+      })
+    } else {
+      assert.match(String(inside.text), /alpha/u, 'the match must come back from the real ripgrep run')
+      assert.equal(facts[0].axis, 'fs.read')
+    }
+    // The negative control: the same tool and pattern, a locator outside the ceiling. It is decided
+    // by the CENTRE before any process, so it is provable on BOTH kinds of host.
     const outside = await world.dispatch('grep', { pattern: 'alpha', path: world.outside }, 'grep-out')
     assert.equal(outside.isError, true, `an out-of-ceiling grep must fail: ${outside.text}`)
     // The refusal is the CENTRE's admission decision, not ripgrep failing: the call never reached a
@@ -1098,6 +1130,9 @@ test('SLICE-28 — rung 4: grep runs confined inside the ceiling and is refused 
     assert.equal(executions.length, 2)
     assert.equal(executions[1].outcome, 'admission-refusal')
     assert.equal(executions[1].toolName, 'grep')
+    if (inside.isError) {
+      t.skip(`ENV-LIMITED ${capability.networkDeny.code}: the confined grep positive cannot run (see A5SF-CAPABILITY line); the fail-closed refusal AND the lane refusal are proven, the search is NOT`)
+    }
   } finally {
     await world.dispose()
   }

@@ -11,7 +11,7 @@
 
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -22,6 +22,16 @@ const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 register(pathToFileURL(join(REPO_ROOT, 'scripts/run-tests-hooks.mjs')).href)
 
 const sandbox = await import(join(REPO_ROOT, 'packages/runtime/sandbox-provider/index.ts'))
+const { createConfinedProvider, probeEnvCapabilities, capabilityProbeLine, envLimited } = await import(
+  pathToFileURL(join(REPO_ROOT, 'tests/world-factory/lib/a5sf-env-capability.mjs')).href
+)
+
+// THE PROBE, ONCE. The product's own `runNetworkLeg` answers whether this host offers the
+// network-deny profile the requests below carry. When it does not (a runner whose kernel/container
+// refuses the unprivileged user+net namespace the launcher needs), the two arms become the
+// product's FAIL-CLOSED CONTROL and are reported ENV-LIMITED, never counted as a pass.
+const CAPABILITY = await probeEnvCapabilities()
+process.stdout.write(`${capabilityProbeLine(CAPABILITY)}\n`)
 
 const world = () => {
   const dir = mkdtempSync(join(tmpdir(), 'vnext-os-probe-'))
@@ -34,7 +44,7 @@ const world = () => {
   return { dir, inside, outside }
 }
 
-const providerFor = (dir) => sandbox.createConfinedProcessProvider({
+const providerFor = async (dir) => createConfinedProvider({
   realmId: 'os-probe-realm',
   trustRoot: dir,
   scratchRoot: join(dir, 'scratch'),
@@ -74,10 +84,32 @@ test('OS-1 — the host answers the Landlock ABI the provider requires', () => {
   console.log(`OS-1 measured landlock abiVersion=${abi.abiVersion}`)
 })
 
-test('OS-2 — NEGATIVE CONTROL: a confined payload CANNOT read outside its allow set', async () => {
+test('OS-2 — NEGATIVE CONTROL: a confined payload CANNOT read outside its allow set', async (t) => {
   const w = world()
-  const provider = providerFor(w.dir)
-  const plan = await provider.prepare(request({ dir: w.dir, argv: ['/bin/cat', join(w.outside, 'outside.txt')] }))
+  const provider = await providerFor(w.dir)
+  const req = request({ dir: w.dir, argv: ['/bin/cat', join(w.outside, 'outside.txt')] })
+  if (!CAPABILITY.networkDeny.present) {
+    // ENV-LIMITED (FAIL-CLOSED CONTROL). The request asks for `networkProfile: 'deny'`; this host
+    // cannot prove that profile, so the product must REFUSE before any process exists. Proving that
+    // refusal is the truthful control here — and it is NOT the kernel-denial guarantee OS-2 names.
+    const plan = await provider.prepare(req)
+    assert.equal(plan.ok, false, `with no network-deny capability the product MUST refuse, not spawn: ${JSON.stringify(plan)}`)
+    assert.equal(plan.error.code, 'IO_POLICY_UNSUPPORTED', `the refusal must be the lane's typed absence: ${JSON.stringify(plan.error)}`)
+    assert.match(String(plan.error.message), /network profile 'deny' is not offered/u, 'the refusal must name the profile this host cannot offer')
+    assert.match(String(plan.error.message), /PoC-4b|not count|not a mechanism/u, 'the refusal must say WHY an ABI number is not a network guarantee')
+    assert.equal(existsSync(join(w.dir, 'scratch', 'plans')), false, 'a refused prepare must leave no plan')
+    assert.equal(existsSync(join(w.dir, 'scratch', 'out')), false, 'a refused prepare must leave no output dir for a payload')
+    envLimited({
+      arm: 'OS-2',
+      disposition: 'FAIL-CLOSED-CONTROL',
+      code: CAPABILITY.networkDeny.code,
+      probe: CAPABILITY.networkDeny.detail,
+      reason: 'the kernel-denial negative control was not run because this host cannot prove network=deny; the product refused before any process, which is the fail-closed behaviour, NOT the OS-2 guarantee',
+    })
+    t.skip(`ENV-LIMITED ${CAPABILITY.networkDeny.code}: network-deny capability absent (see A5SF-CAPABILITY line); the fail-closed refusal IS proven, the kernel denial is NOT`)
+    return
+  }
+  const plan = await provider.prepare(req)
   assert.equal(plan.ok, true, `prepare must succeed for a well-formed request: ${JSON.stringify(plan)}`)
   const run = await provider.execute(plan.value)
   assert.equal(run.ok, true, `the payload runs to completion: ${JSON.stringify(run).slice(0, 400)}`)
@@ -88,10 +120,29 @@ test('OS-2 — NEGATIVE CONTROL: a confined payload CANNOT read outside its allo
   assert.notEqual(String(run.value.output.stderr ?? '').trim(), '', 'the denial must be visible to the payload')
 })
 
-test('OS-3 — POSITIVE CONTROL: the same payload CAN read inside its allow set', async () => {
+test('OS-3 — POSITIVE CONTROL: the same payload CAN read inside its allow set', async (t) => {
   const w = world()
-  const provider = providerFor(w.dir)
-  const plan = await provider.prepare(request({ dir: w.dir, argv: ['/bin/cat', join(w.inside, 'inside.txt')] }))
+  const provider = await providerFor(w.dir)
+  const req = request({ dir: w.dir, argv: ['/bin/cat', join(w.inside, 'inside.txt')] })
+  if (!CAPABILITY.networkDeny.present) {
+    // Same fail-closed control as OS-2: the POSITIVE half cannot run without the deny proof, so the
+    // truthful assertion is that the provider refuses rather than running under an unprovable claim.
+    const plan = await provider.prepare(req)
+    assert.equal(plan.ok, false, `with no network-deny capability the positive payload must also be refused: ${JSON.stringify(plan)}`)
+    assert.equal(plan.error.code, 'IO_POLICY_UNSUPPORTED')
+    assert.match(String(plan.error.message), /network profile 'deny' is not offered/u)
+    assert.equal(existsSync(join(w.dir, 'scratch', 'plans')), false, 'a refused prepare must leave no plan')
+    envLimited({
+      arm: 'OS-3',
+      disposition: 'FAIL-CLOSED-CONTROL',
+      code: CAPABILITY.networkDeny.code,
+      probe: CAPABILITY.networkDeny.detail,
+      reason: 'the positive FS control cannot run because the same request carries networkProfile=deny, which this host cannot prove; the product refused before any process (fail-closed), so the in-allow-set read is NOT proven here',
+    })
+    t.skip(`ENV-LIMITED ${CAPABILITY.networkDeny.code}: network-deny capability absent (see A5SF-CAPABILITY line); the fail-closed refusal IS proven, the in-allow-set read is NOT`)
+    return
+  }
+  const plan = await provider.prepare(req)
   assert.equal(plan.ok, true)
   const run = await provider.execute(plan.value)
   assert.equal(run.ok, true)

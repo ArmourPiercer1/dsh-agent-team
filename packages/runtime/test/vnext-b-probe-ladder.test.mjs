@@ -83,6 +83,7 @@ import {
   instrumentedFileSystemClass,
   loadFsContractSeams,
 } from '../../../tests/world-factory/lib/a5sf-fs-contract-world.mjs'
+import { capabilityProbeLine, createConfinedProvider, probeEnvCapabilities, envLimited } from '../../../tests/world-factory/lib/a5sf-env-capability.mjs'
 
 const REPO_ROOT = fileURLToPath(new URL('../../../', import.meta.url))
 
@@ -327,7 +328,10 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
   })
   if (!profile.ok) throw new Error(`the ladder world's execution profile must compile: ${profile.code} ${profile.detail}`)
 
-  const baseProcessProvider = sandbox.createConfinedProcessProvider({
+  // The product's provider, built through the capability helper so the documented probe override
+  // (A5SF_FORCE_NETWORK_DENY_ABSENT=1) can force the capability-absent path at the provider's own
+  // `deps.probeFacts` seam. Without the override this is the production constructor, unchanged.
+  const baseProcessProvider = await createConfinedProvider({
     realmId: IDENTITY.memberInstanceId,
     trustRoot: dir,
     scratchRoot: join(dir, 'scratch'),
@@ -674,14 +678,40 @@ arm('ADM-65 — WRITE positive: in-lane write is admitted, lands on disk, and se
   positiveLog.push('write')
 })
 
-arm('ADM-66 — GREP positive: in-lane search is admitted, runs on the confined face, and settles COMPLETED', async () => {
+arm('ADM-66 — GREP positive: in-lane search is admitted, runs on the confined face, and settles COMPLETED', async (t) => {
   const world = inLane
   const callId = 'ladder-pos-grep'
   const before = world.spawnCalls()
   const result = await world.dispatch('grep', { pattern: 'alpha', path: world.inside }, callId)
+  const capability = await probeEnvCapabilities()
+  const { admission, execution } = world.recordsOf(callId)
+  if (result.isError) {
+    // ENV-LIMITED. The confined subprocess face requests `network: deny`; the product admits that
+    // request only on its own `--net-leg` proof. This host cannot prove it, so the product refused
+    // the spawn BEFORE any process (fail-closed). The positive grep guarantee is therefore NOT
+    // proven; the refusal and the admission fact ARE. A failure on a host that proves the
+    // capability is a real regression and fails here.
+    assert.equal(capability.networkDeny.present, false, `an in-lane grep must not fail on a host that proves network-deny: ${result.text}`)
+    assert.equal(admission?.toolName, 'grep', 'the admitted call must still produce its authority fact')
+    assert.equal(admission?.decision, 'allow', 'the CENTRE admitted it: the refusal came from the confined face')
+    assert.equal(admission?.axis, 'fs.read')
+    assert.equal(admission?.locator, world.inside)
+    assert.equal(execution?.outcome, 'failed', 'the body never ran: the product refused the confined spawn')
+    assert.equal(world.settlementOf(callId)?.state, 'FAILED', 'a refused-by-provider call settles FAILED, never COMPLETED')
+    assert.equal(world.spawnCalls(), before, 'the confined provider was never asked to spawn a process')
+    assert.doesNotMatch(String(result.text), /Found 1 match/u, 'a refused spawn must not fabricate a search result')
+    envLimited({
+      arm: 'ADM-66',
+      disposition: 'ENV-BLOCK',
+      code: capability.networkDeny.code,
+      probe: capability.networkDeny.detail,
+      reason: 'the in-lane grep body did not run: the confined face requests network=deny and this host cannot prove it, so the product refused the spawn before any process (fail-closed). The search is NOT proven; the admission fact and the refusal are',
+    })
+    t.skip(`ENV-LIMITED ${capability.networkDeny.code}: the confined grep positive cannot run (see A5SF-CAPABILITY line); the fail-closed refusal IS proven, the search is NOT`)
+    return
+  }
   assert.equal(result.isError, false, `an in-lane grep must succeed: ${result.text} ${String(result.errorMessage)}`)
   assert.match(result.text, /Found 1 match/u, `the search must find the in-lane file: ${result.text}`)
-  const { admission, execution } = world.recordsOf(callId)
   assert.equal(admission.toolName, 'grep')
   assert.equal(admission.axis, 'fs.read')
   assert.equal(admission.decision, 'allow')
@@ -730,7 +760,27 @@ arm('ADM-69 — RUN_CODE positive: NOT RUN (the PTC worker/nested/escalation/Sto
   t.skip(`RUN_CODE positive control NOT RUN (${POSITIVE_BLOCKED.run_code}); the negative control IS proven (ADM-76)`)
 })
 
-arm('ADM-70 — ORDER (positive): the durable facts read back in LADDER order', () => {
+arm('ADM-70 — ORDER (positive): the durable facts read back in LADDER order', async (t) => {
+  const capability = await probeEnvCapabilities()
+  if (!capability.networkDeny.present) {
+    // The grep rung's BODY could not run (ADM-66 ENV-BLOCK), so the 4-rung positive ladder cannot be
+    // claimed. What is still true is asserted: the rungs that did run are in ladder order, and the
+    // DURABLE admission facts still carry grep in its ladder position (it was admitted before the
+    // confined face refused the spawn).
+    assert.deepEqual(positiveLog, ['read', 'write', 'web_fetch'], 'the rungs that ran must still be in ladder order')
+    const admissions = inLane.ledger.readAll().filter((record) => record.kind === 'invocation-authority' && record.decision === 'allow')
+    assert.deepEqual(admissions.map((record) => record.toolName), ['read', 'write', 'grep', 'web_fetch'], 'the DURABLE admission facts must still appear in ladder order (grep was admitted; its body was refused by the confined face)')
+    assert.deepEqual(admissions.map((record) => record.axis), ['fs.read', 'fs.write', 'fs.read', 'net.fetch'])
+    envLimited({
+      arm: 'ADM-70',
+      disposition: 'ENV-BLOCK',
+      code: capability.networkDeny.code,
+      probe: capability.networkDeny.detail,
+      reason: 'the full positive ladder order cannot be claimed because the grep rung body did not run (ADM-66 ENV-BLOCK); the order of the runnable rungs and of the DURABLE admission facts is asserted, but the 4-rung positive ladder is NOT proven',
+    })
+    t.skip(`ENV-LIMITED ${capability.networkDeny.code}: the grep rung body did not run, so the 4-rung positive ladder order is NOT proven (the admission-fact order and the runnable-rung order are)`)
+    return
+  }
   assert.deepEqual(positiveLog, ['read', 'write', 'grep', 'web_fetch'], 'the positive probes must run in the B ladder order; a complete-but-shuffled fact stream is not the ladder')
   const admissions = inLane.ledger.readAll().filter((record) => record.kind === 'invocation-authority' && record.decision === 'allow')
   assert.deepEqual(admissions.map((record) => record.toolName), ['read', 'write', 'grep', 'web_fetch'], 'the DURABLE admission facts must appear in ladder order (rungs 5-6 are blocked positives, disclosed above)')
@@ -889,6 +939,8 @@ if (HOST_REFUSAL !== undefined) {
     inLane = await buildLadderWorld({ label: 'in-lane', ceiling: 'in-lane', dir: join(scratchDir, 'in-lane') })
     outOfLane = await buildLadderWorld({ label: 'out-of-lane', ceiling: 'out-of-lane', dir: join(scratchDir, 'out-of-lane') })
     process.stdout.write('VNEXT-B-LADDER rungs=read,write,grep,web_fetch,bash,run_code negatives=6/6 positives=4/6 blocked=bash,run_code reason=process-lane-contract-change-request\n')
+    const capability = await probeEnvCapabilities()
+    process.stdout.write(`${capabilityProbeLine(capability)}\n`)
   })
   after(async () => {
     if (outOfLane !== undefined) await outOfLane.dispose()

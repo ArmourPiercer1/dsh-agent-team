@@ -462,6 +462,24 @@ function main(argv) {
   if (run.stdout) process.stdout.write(run.stdout)
   if (run.stderr) process.stderr.write(run.stderr)
   const status = run.status ?? 1
+  // ENV-LIMITED LEDGER, printed at the LEG level. A capability-absent arm reports itself with a
+  // stable `UTE-VNEXT-A1-ENV-LIMITED …` line and SKIPS (never passes). This aggregates those lines so
+  // the leg's own summary names every env-limited arm, with its code and disposition, instead of
+  // leaving the count buried in per-file stdout. It runs on failure too: a red leg must still say
+  // which guarantees were unproven for environmental reasons.
+  const envLimited = [...String(run.stdout ?? '').matchAll(/^UTE-VNEXT-A1-ENV-LIMITED arm=(\S+) disposition=(\S+) code=(\S+)/gm)]
+    .map((match) => ({ arm: match[1], disposition: match[2], code: match[3] }))
+  if (envLimited.length > 0) {
+    for (const s of selected) {
+      const blockers = envLimited.filter((row) => row.disposition === 'ENV-BLOCK')
+      const controls = envLimited.filter((row) => row.disposition === 'FAIL-CLOSED-CONTROL')
+      process.stdout.write(
+        `DSH-TEST-DISPATCH-ENV-LIMITED mode=run leg=${s.id} count=${String(envLimited.length)} proven=0 ` +
+          `env_blocks=${String(blockers.length)} fail_closed_controls=${String(controls.length)} ` +
+          `arms=${envLimited.map((row) => `${row.arm}:${row.disposition}:${row.code}`).join(',')}\n`,
+      )
+    }
+  }
   for (const s of selected) {
     process.stdout.write(`DSH-TEST-DISPATCH mode=run leg=${s.id} suites=${String(s.suites.length)} files=${String(s.suites.length)} exit=${String(status)} set=${setDigest(s.suites)}\n`)
   }
