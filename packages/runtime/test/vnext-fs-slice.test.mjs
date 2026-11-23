@@ -171,8 +171,7 @@ async function buildWorld ({ mountRealm, dir, admission, durable, askPath, obser
   let subprocessFace
   if (search || bash) {
     const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
-    const sandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/sandbox-provider/index.ts')).href)
-    const profile = teamSandbox.compileExecutionProfile({
+      const profile = teamSandbox.compileExecutionProfile({
       memberIdentity: IDENTITY.memberInstanceId,
       revision: 'rev-vnext-slice',
       read: lane(askPath === undefined ? [inside] : [inside, askPath]),

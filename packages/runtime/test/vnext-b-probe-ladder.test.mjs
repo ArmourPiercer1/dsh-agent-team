@@ -316,7 +316,6 @@ async function buildLadderWorld ({ label, ceiling, dir }) {
 
   // ---- the composition's faces (physically identical in both worlds) ----
   const teamSandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/team-sandbox/src/index.ts')).href)
-  const sandbox = await import(pathToFileURL(join(REPO_ROOT, 'packages/runtime/sandbox-provider/index.ts')).href)
   const physicalRead = lane([inside])
   const physicalWrite = lane([inside])
   const profile = teamSandbox.compileExecutionProfile({
