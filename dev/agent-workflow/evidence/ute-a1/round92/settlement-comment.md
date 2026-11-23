@@ -59,6 +59,13 @@ fails.
   — no test FILE added or removed; bounds 41/7 remain).
 - No frozen A0 file changed; no upstream file changed; dist mirrors rebuilt and committed
   (`place-dist-glue` 34 placements byte-identical).
+- **Instrument ledgers, updated by their own rules (second commit, no product byte):**
+  the p4t6 scanned-source ledger books the ONE new module (`ptc-product-ruling.mjs`, 1317 → 1318,
+  with its measured tie note), and the blueprint-fence baseline re-records ONE line-shift of the
+  PRE-EXISTING v5 C-alpha6 fixture (L4571 → L4641) caused by the ~70 lines added above it — same
+  identity, same fixture, nothing added or resolved, cause written in the open. Without the booking
+  the census leg is RED (`expected 1317 to be 1318`); without the re-record the fence names a new
+  path that is not new content. Neither change touches an assertion.
 
 ## Gates at this head
 
@@ -75,7 +82,11 @@ EB3-CI-REQUIRED pass workflows=10 findings=0
 EB3-LAYER layer=ci-integration verdict=PASS suites=15 files=15 describes=76 passed=238 failed=0 clock_ms=30000
 node --test (UTE G1 nine-file argv): tests 89 / pass 89 / fail 0 / skipped 0, exit 0
 ci-pr-gate --full --census-captures 2:
-@@CIPRGATE@@
+DSH-CI-VERDICT pass pass=10 fail=0 skip=0 skipped=none legs=10 refused=0 refusedlegs=none seconds=273.9
+  census: captured 599f/7416l, 599f/7416l vs baseline-declared 626 / 7936 — 2 captures, identical identity sets — COUNTS MOVED, SET DID NOT
+  (blueprint-fence: `no new offending path` after the open re-record — see the instrument note below;
+   artifacts-at-head: HEAD carries its own build, 1945 files, drift=0; comparison JSON:
+   dev/agent-workflow/evidence/a4-pr7/ci-gate/scratch/census-comparison-20261123T182815Z-3.json)
 ```
 
 ## Seat and model disclosure
